@@ -105,7 +105,7 @@ public class CommandLineTest {
     }
     @Test
     public void testDefaults() {
-        SupportedTypes bean = new CommandLine<SupportedTypes>(new SupportedTypes()).parse();
+        SupportedTypes bean = CommandLine.parse(new SupportedTypes());
         assertEquals("boolean", false, bean.booleanField);
         assertEquals("Boolean", null, bean.aBooleanField);
         assertEquals("byte", 0, bean.byteField);
@@ -140,7 +140,7 @@ public class CommandLineTest {
     @Test
     public void testTypeConversion()
             throws MalformedURLException, URISyntaxException, UnknownHostException, ParseException {
-        SupportedTypes bean = new CommandLine<SupportedTypes>(new SupportedTypes()).parse(
+        SupportedTypes bean = CommandLine.parse(new SupportedTypes(),
                 "-boolean", "-Boolean", //
                 "-byte", "12", "-Byte", "23", //
                 "-char", "p", "-Character", "i", //
@@ -195,22 +195,22 @@ public class CommandLineTest {
     }
     @Test
     public void testTimeFormatHHmmSupported() throws ParseException {
-        SupportedTypes bean = new CommandLine<SupportedTypes>(new SupportedTypes()).parse("-Time", "23:59");
+        SupportedTypes bean = CommandLine.parse(new SupportedTypes(), "-Time", "23:59");
         assertEquals("Time", new Time(new SimpleDateFormat("HH:mm").parse("23:59").getTime()), bean.aTimeField);
     }
     @Test
     public void testTimeFormatHHmmssSupported() throws ParseException {
-        SupportedTypes bean = new CommandLine<SupportedTypes>(new SupportedTypes()).parse("-Time", "23:59:58");
+        SupportedTypes bean = CommandLine.parse(new SupportedTypes(), "-Time", "23:59:58");
         assertEquals("Time", new Time(new SimpleDateFormat("HH:mm:ss").parse("23:59:58").getTime()), bean.aTimeField);
     }
     @Test
     public void testTimeFormatHHmmssDotSSSSupported() throws ParseException {
-        SupportedTypes bean = new CommandLine<SupportedTypes>(new SupportedTypes()).parse("-Time", "23:59:58.123");
+        SupportedTypes bean = CommandLine.parse(new SupportedTypes(), "-Time", "23:59:58.123");
         assertEquals("Time", new Time(new SimpleDateFormat("HH:mm:ss.SSS").parse("23:59:58.123").getTime()), bean.aTimeField);
     }
     @Test
     public void testTimeFormatHHmmssCommaSSSSupported() throws ParseException {
-        SupportedTypes bean = new CommandLine<SupportedTypes>(new SupportedTypes()).parse("-Time", "23:59:58,123");
+        SupportedTypes bean = CommandLine.parse(new SupportedTypes(), "-Time", "23:59:58,123");
         assertEquals("Time", new Time(new SimpleDateFormat("HH:mm:ss,SSS").parse("23:59:58,123").getTime()), bean.aTimeField);
     }
 
@@ -241,7 +241,7 @@ public class CommandLineTest {
     }
     @Test
     public void testCanInitializeFinalFields() {
-        FinalFields ff = new CommandLine<FinalFields>(new FinalFields()).parse("-f", "some value");
+        FinalFields ff = CommandLine.parse(new FinalFields(), "-f", "some value");
         assertEquals("some value", ff.field);
     }
 
@@ -250,7 +250,7 @@ public class CommandLineTest {
     }
     @Test(expected = MissingParameterException.class)
     public void testErrorIfRequiredOptionNotSpecified() {
-        new CommandLine<RequiredField>(new RequiredField()).parse("arg1", "arg2");
+        CommandLine.parse(new RequiredField(), "arg1", "arg2");
     }
 
     class CompactFields {
@@ -266,35 +266,35 @@ public class CommandLineTest {
         //cmd -a -o arg -- path path
         //cmd -a -oarg path path
         //cmd -aoarg path path
-        CompactFields compact = new CommandLine<CompactFields>(new CompactFields()).parse("-rvoout");
+        CompactFields compact = CommandLine.parse(new CompactFields(), "-rvoout");
         verifyCompact(compact, true, true, "out", null);
 
         // change order within compact group
-        compact = new CommandLine<CompactFields>(new CompactFields()).parse("-vroout");
+        compact = CommandLine.parse(new CompactFields(), "-vroout");
         verifyCompact(compact, true, true, "out", null);
 
-        compact = new CommandLine<CompactFields>(new CompactFields()).parse("-rv p1 p2".split(" "));
+        compact = CommandLine.parse(new CompactFields(), "-rv p1 p2".split(" "));
         verifyCompact(compact, true, true, null, fileArray("p1", "p2"));
 
-        compact = new CommandLine<CompactFields>(new CompactFields()).parse("-voout p1 p2".split(" "));
+        compact = CommandLine.parse(new CompactFields(), "-voout p1 p2".split(" "));
         verifyCompact(compact, true, false, "out", fileArray("p1", "p2"));
 
-        compact = new CommandLine<CompactFields>(new CompactFields()).parse("-voout -r p1 p2".split(" "));
+        compact = CommandLine.parse(new CompactFields(), "-voout -r p1 p2".split(" "));
         verifyCompact(compact, true, true, "out", fileArray("p1", "p2"));
 
-        compact = new CommandLine<CompactFields>(new CompactFields()).parse("-r -v -oout p1 p2".split(" "));
+        compact = CommandLine.parse(new CompactFields(), "-r -v -oout p1 p2".split(" "));
         verifyCompact(compact, true, true, "out", fileArray("p1", "p2"));
 
-        compact = new CommandLine<CompactFields>(new CompactFields()).parse("-oout -r -v p1 p2".split(" "));
+        compact = CommandLine.parse(new CompactFields(), "-oout -r -v p1 p2".split(" "));
         verifyCompact(compact, true, true, "out", fileArray("p1", "p2"));
 
-        compact = new CommandLine<CompactFields>(new CompactFields()).parse("-rvo out p1 p2".split(" "));
+        compact = CommandLine.parse(new CompactFields(), "-rvo out p1 p2".split(" "));
         verifyCompact(compact, true, true, "out", fileArray("p1", "p2"));
     }
 
     @Test
     public void testDoubleDashSeparatesPositionalParameters() {
-        CompactFields compact = new CommandLine<CompactFields>(new CompactFields()).parse("-oout -- -r -v p1 p2".split(" "));
+        CompactFields compact = CommandLine.parse(new CompactFields(), "-oout -- -r -v p1 p2".split(" "));
         verifyCompact(compact, false, false, "out", fileArray("-r", "-v", "p1", "p2"));
     }
 
@@ -319,7 +319,7 @@ public class CommandLineTest {
 
     @Test
     public void testNonSpacedOptions() {
-        CompactFields compact = new CommandLine<CompactFields>(new CompactFields()).parse("-rvo arg path path".split(" "));
+        CompactFields compact = CommandLine.parse(new CompactFields(), "-rvo arg path path".split(" "));
         assertTrue("-r", compact.recursive);
         assertTrue("-v", compact.verbose);
         assertEquals("-o", new File("arg"), compact.outputFile);
@@ -331,7 +331,7 @@ public class CommandLineTest {
     }
     @Test
     public void testPrimitiveParameters() {
-        PrimitiveParameters params = new CommandLine<PrimitiveParameters>(new PrimitiveParameters()).parse("1 2 3 4".split(" "));
+        PrimitiveParameters params = CommandLine.parse(new PrimitiveParameters(), "1 2 3 4".split(" "));
         assertArrayEquals(new int[] {1, 2, 3, 4}, params.intParams);
     }
 
@@ -340,6 +340,6 @@ public class CommandLineTest {
     }
     @Test(expected = MissingTypeConverterException.class)
     public void testMissingTypeConverter() {
-        new CommandLine<MissingConverter>(new MissingConverter()).parse("--socket anyString".split(" "));
+        CommandLine.parse(new MissingConverter(), "--socket anyString".split(" "));
     }
 }

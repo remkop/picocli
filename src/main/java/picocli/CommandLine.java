@@ -50,8 +50,63 @@ import java.util.UUID;
 import java.util.regex.Pattern;
 
 /**
+ * <p>
  * CommandLine interpreter that uses reflection to initialize an annotated domain object with values obtained from the
- * command line arguments String[] array.
+ * command line arguments.
+ * </p><p>
+ * <h2>Example</h2>
+ * </p>
+ * <pre>import static picocli.CommandLine.*;
+ *
+ * public class MyClass {
+ *     &#064;Parameters(type = File.class, description = "Any number of input files")
+ *     private List<File> files = new ArrayList<File>();
+ *
+ *     &#064;Option(names = { "-v", "--verbose"}, description = "Verbosely list files processed")
+ *     private boolean verbose;
+ *
+ *     &#064;Option(names = { "-o", "--out" }, description = "Output file (default: print to console)")
+ *     private File outputFile;
+ *
+ *     &#064;Option(names = { "-h", "--help", "-?", "-help"}, help = true, description = "Display this help and exit")
+ *     private boolean help;
+ *
+ *     &#064;Option(names = { "-V", "--version"}, help = true, description = "Display version information and exit")
+ *     private boolean version;
+ * }
+ * </pre>
+ * <p>
+ * Use {@code CommandLine} to initialize a domain object as follows:
+ * </p><pre>
+ * public static void main(String... args) {
+ *     try {
+ *         MyClass myClass = CommandLine.parse(new MyClass(), args);
+ *         if (myClass.help) {
+ *             CommandLine.usage(MyClass.class, System.out);
+ *         } else if (myClass.version) {
+ *             System.out.println("MyProgram version 1.2.3");
+ *         } else {
+ *             runProgram(myClass);
+ *         }
+ *     } catch (ParameterException ex) { // command line arguments could not be parsed
+ *         System.err.println(ex.getMessage());
+ *         CommandLine.usage(MyClass.class, System.err);
+ *     }
+ * }
+ * </pre><p>
+ * Invoke the above program with some command line arguments. The below are all equivalent:
+ * </p>
+ * <pre>
+ * -vooutfile in1 in2
+ * -vo outfile in1 in2
+ * -vo=outfile in1 in2
+ * -v -ooutfile in1 in2
+ * -v -o outfile in1 in2
+ * -v -o=outfile in1 in2
+ * -v --out outfile in1 in2
+ * -v --out=outfile in1 in2
+ * --verbose --out=outfile in1 in2
+ * </pre>
  *
  * https://www.gnu.org/prep/standards/html_node/Command_002dLine-Interfaces.html#Command_002dLine-Interfaces
  * http://stackoverflow.com/questions/2160083/what-is-the-general-syntax-of-a-unix-shell-command/2160165#2160165
@@ -67,20 +122,64 @@ import java.util.regex.Pattern;
 // TODO Usage (with description and footer)
 // TODO support commands
 // TODO do we need to check duplicates if child & super have same name? same option name?
-public class CommandLine<T> {
+public class CommandLine {
+    /** This is PicoCLI version {@value}. */
     public static final String VERSION = "0.1.0";
 
-    private final Interpreter<T> interpreter;
+    private final Interpreter interpreter;
 
-    public CommandLine(T annotatedObject) {
+    /**
+     * Constructs a new {@code CommandLine} interpreter with the specified annotated object.
+     * When the {@link #parse(String...)} method is called, fields of the specified object that are annotated
+     * with {@code @Option} or {@code @Parameters} will be initialized based on command line arguments.
+     * @param annotatedObject the object to initialize from the command line arguments
+     */
+    public CommandLine(Object annotatedObject) {
         interpreter = new Interpreter(annotatedObject);
     }
 
-    public T parse(String... args) {
+    /**
+     * <p>
+     * Convenience method that initializes the specified annotated object from the specified command line arguments.
+     * </p><p>
+     * This is equivalent to
+     * </p><pre>
+     * CommandLine cli = new CommandLine(annotatedObject);
+     * cli.parse(args);
+     * return annotatedObject;
+     * </pre>
+     *
+     * @param annotatedObject the object to initialize. This object contains fields annotated with
+     *          {@code @Option} or {@code @Parameters}.
+     * @param args the command line arguments to parse
+     * @param <T> the type of the annotated object
+     * @return the specified annotated object
+     */
+    public static <T> T parse(T annotatedObject, String... args) {
+        CommandLine cli = new CommandLine(annotatedObject);
+        cli.parse(args);
+        return annotatedObject;
+    }
+
+    /**
+     * <p>
+     * Initializes the annotated object that this {@code CommandLine} was constructed with, based on
+     * the specified command line arguments.
+     * </p>
+     *
+     * @param args the command line arguments to parse
+     * @return the annotated object that this {@code CommandLine} was constructed with
+     */
+    public Object parse(String... args) {
         return interpreter.parse(args);
     }
 
-    public void usage(final PrintStream out) {
+    /**
+     * Prints a usage help message for the specified annotated class to the specified {@code PrintStream}.
+     * @param annotatedClass the class with fields annotated with {@code @Parameters} and {@code @Option}
+     * @param out the {@code PrintStream} to print the usage help message to
+     */
+    public static void usage(Class<?> annotatedClass, PrintStream out) {
         throw new UnsupportedOperationException("TODO");// FIXME
     }
 
@@ -178,13 +277,13 @@ public class CommandLine<T> {
          * optionally taking a parameter, which may be attached to the option name or separated by a space or
          * a {@code '='} character. The below examples are all equivalent:
          * </p><pre>
-         * <program> -xvfFILE
-         * <program> -xvf FILE
-         * <program> -xvf=FILE
-         * <program> -xv --file FILE
-         * <program> -xv --file=FILE
-         * <program> -x -v --file FILE
-         * <program> -x -v --file=FILE
+         * -xvfFILE
+         * -xvf FILE
+         * -xvf=FILE
+         * -xv --file FILE
+         * -xv --file=FILE
+         * -x -v --file FILE
+         * -x -v --file=FILE
          * </pre><p>
          * <b>DOS</b>
          * </p><p>
@@ -193,10 +292,9 @@ public class CommandLine<T> {
          * must be specified separately. For example:
          * </p><pre>
          * DIR /S /A:D /T:C
-         * </pre>
+         * </pre><p>
          * <b>PowerShell</b>
          * </p><p>
-         * <p>
          * Windows PowerShell options generally are a word preceded by a single {@code '-'} character, e.g., {@code `-Help'}.
          * Option parameters are separated by a space or by a {@code ':'} character.
          * </p>
@@ -253,9 +351,9 @@ public class CommandLine<T> {
          * This will accept any of the below without throwing an exception:
          * </p>
          * <pre>
-         * <program> -v [other options or parameters]
-         * <program> -v true [other options or parameters]
-         * <program> -v false [other options or parameters]
+         * -v
+         * -v true
+         * -v false
          * </pre>
          * @return how many arguments this option requires
          */
@@ -449,11 +547,10 @@ public class CommandLine<T> {
 
     /**
      * Helper class responsible for processing command line arguments.
-     * @param <T> type of the annotated result object to initialize
      */
-    private class Interpreter<T> {
+    private class Interpreter {
         private final Map<Class<?>, ITypeConverter<?>> converterRegistry = new HashMap<Class<?>, ITypeConverter<?>>();
-        private final T annotatedObject;
+        private final Object annotatedObject;
         private final Map<String, Field> optionName2Field;
         private final Map<Character, Field> singleCharOption2Field;
         private Field positionalParametersField;
@@ -461,7 +558,7 @@ public class CommandLine<T> {
         private String separator = "=";
         private boolean isHelpRequested;
 
-        Interpreter(T annotatedObject) {
+        Interpreter(Object annotatedObject) {
             converterRegistry.put(String.class,        new BuiltIn.StringConverter());
             converterRegistry.put(StringBuilder.class, new BuiltIn.StringBuilderConverter());
             converterRegistry.put(CharSequence.class,  new BuiltIn.CharSequenceConverter());
@@ -521,7 +618,7 @@ public class CommandLine<T> {
                         }
                         if (name.length() == 2 && name.startsWith("-")) {
                             char flag = name.charAt(1);
-                            Field existing2 = singleCharOption2Field.put(Character.valueOf(flag), field);
+                            Field existing2 = singleCharOption2Field.put(flag, field);
                             if (existing2 != null && existing2 != field) {
                                 throw DuplicateOptionAnnotationsException.create(name, field, existing2);
                             }
@@ -541,7 +638,7 @@ public class CommandLine<T> {
             }
         }
 
-        T parse(String... args) {
+        Object parse(String... args) {
             Assert.notNull(args, "argument array");
             Set<Field> required = new HashSet<Field>(requiredFields);
             for (int i = 0; i < args.length; i++) {
@@ -573,7 +670,8 @@ public class CommandLine<T> {
             // 4. a combination of stand-alone options, like "-vxr". Equivalent to "-v -x -r", "-v true -x true -r true"
             // 5. a combination of stand-alone options and one option with an argument, like "-vxrffile"
 
-            // double-dash separates options from positional arguments. If found, stop interpreting args as options.
+            // Double-dash separates options from positional arguments.
+            // If found, then interpret the remaining args as positional parameters.
             if ("--".equals(arg)) {
                 setPositionalArguments(args, index + 1);
                 return args.length; // we are done
@@ -601,7 +699,8 @@ public class CommandLine<T> {
                 Field field = optionName2Field.get(arg);
                 required.remove(field);
                 int arity = arity(field);
-                int argsConsumed = applyOption(field, arity, value, index, args);
+                boolean varargs = field.getAnnotation(Option.class).varargs();
+                int argsConsumed = applyOption(field, Option.class, varargs, arity, value, index, args);
                 if (paramAttachedToKey) {
                     argsConsumed = argsConsumed > 0 ? argsConsumed - 1 : argsConsumed;
                 }
@@ -618,6 +717,7 @@ public class CommandLine<T> {
                         field = singleCharOption2Field.get(compact.charAt(0));
                         required.remove(field);
                         compact = compact.length() > 0 ? compact.substring(1) : "";
+                        boolean varargs = field.getAnnotation(Option.class).varargs();
                         arity = arity(field);
                         if (arity >= 1 || compact.startsWith(separator)) { // must interpret the remainder as an option argument
                             String optionParam = compact; // assume arg is attached: -fFILE
@@ -628,16 +728,26 @@ public class CommandLine<T> {
                             } else if (compact.startsWith(separator)) { // attached with separator: -f=FILE
                                 optionParam = compact.substring(separator.length());
                             }
-                            applyOption(field, arity, optionParam, index, args); // TODO may return > 1
-                            return index; // only advances position if option param was not attached to option
-                        } else {
-                            applyOption(field, 0, null, index, args);
-                            // don't return: compact may contain more concatenated options, continue do-while loop
+                            int consumed = applyOption(field, Option.class, varargs, arity, optionParam, index, args);
+                            // if 1 consumed then don't advance position: option param was attached to option
+                            consumed = consumed > 0 ? consumed - 1: 0;
+                            return index + consumed;
+                        } else { // arity <= 0 && !compact.startsWith(separator)
+                            // e.g., boolean @Option("-v", arity=0, varargs=true); arg "-rvTRUE", remainder compact="TRUE"
+                            int consumed = applyOption(field, Option.class, varargs, 0, compact, index, args);
+                            // only return if compact (and maybe more) was consumed, otherwise continue do-while loop
+                            if (consumed > 0) {
+                                return index + consumed - 1; // don't count compact: it was attached
+                            }
                         }
-                    } else {
+                    } else { // compact is empty || compact.charAt(0) is not a short option key
+                        // FIXME when do we come here? OK to remove?
                         if (field != null) {
-                            applyOption(field, arity, compact, index, args);
-                            return index; // don't advance position: option param was attached to option
+                            boolean varargs = field.getAnnotation(Option.class).varargs();
+                            int consumed = applyOption(field, Option.class, varargs, arity, compact, index, args);
+                            // if 1 consumed then don't advance position: option param was attached to option
+                            consumed = consumed > 0 ? consumed - 1: 0;
+                            return index + consumed;
                         }
                     }
                 } while (field != null);
@@ -649,9 +759,14 @@ public class CommandLine<T> {
             return args.length; // we are done
         }
 
-        private int arity(final Field field) {
+        private boolean isOption(String arg) {
+            // FIXME not just arg prefix: we may be in the middle of parsing -xrvfFILE
+            return optionName2Field.containsKey(arg);
+        }
+
+        private int arity(Field field) {
             int arity = field.getAnnotation(Option.class).arity();
-            if (arity >= 0) {
+            if (arity >= 0) { // if arity was specified, use the specified value
                 return arity;
             }
             Class<?> type = field.getType();
@@ -664,23 +779,51 @@ public class CommandLine<T> {
             return 1;
         }
 
-        private int applyOption(Field field, int arity, String value, int index, String[] args) throws Exception {
+        @SuppressWarnings("unchecked")
+        private int applyOption(Field field, Class<?> annotation, boolean varargs, int arity, String value, int index, String[] args) throws Exception {
+            updateHelpRequested(field);
             Class<?> cls = field.getType();
-//            if (cls.isPrimitive()) {
-//                return PrimitiveType.lookup(cls).set(field, arity, annotatedObject, value) ? 1 : 0;
-//            }
-            if (cls.isEnum()) {
-                field.set(annotatedObject, Enum.valueOf((Class<Enum>) field.getType(), value));
-                return 1;
-            }
+            int length = args.length - index;
+            assertNoMissingParameters(field, arity, length);
             if (cls.isArray()) {
-                //cls.isArray() ? cls.getComponentType() : cls;
+                Class<?> type = cls.getComponentType();
+                ITypeConverter converter = getTypeConverter(type);
+                List<Object> converted = consumeArguments(annotation, varargs, arity, value, index, args, converter);
+                Object array = Array.newInstance(type, length);
+                field.set(annotatedObject, array);
+                for (int i = 0; i < converted.size(); i++) { // get remaining values from the args array
+                    Array.set(array, i, converted.get(i));
+                }
+                return converted.size();
             } else if (Collection.class.isAssignableFrom(cls)) {
-                ((Collection<String>) field.get(annotatedObject)).add(value); // NPE is handled by caller
+                Collection<Object> collection = (Collection<Object>) field.get(annotatedObject);
+                Class<?> type = getTypeAttribute(field);
+                ITypeConverter converter = getTypeConverter(type);
+                List<Object> converted = consumeArguments(annotation, varargs, arity, value, index, args, converter);
+                if (collection == null) {
+                    collection = (Collection<Object>) createCollection(cls, type);
+                    field.set(annotatedObject, collection);
+                }
+                for (Object element : converted) {
+                    if (element instanceof Collection) {
+                        collection.addAll((Collection) element);
+                    } else {
+                        collection.add(value);
+                    }
+                }
+                return converted.size();
             } else {
                 ITypeConverter<?> converter = getTypeConverter(cls);
+
+                // special logic for booleans: BooleanConverter accepts only "true" or "false". Use when arity >= 1.
                 if ((cls == Boolean.class || cls == Boolean.TYPE) && arity <= 0) {
-                    value = "true";
+                    if (!varargs || isOption(value)) {
+                        // if !varargs, we don't expect a parameter, but assign true
+                        // if the next value is an option (and not "true" or "false"), it's a simple flag: assign true
+                        value = "true";
+                    } else {
+                        arity = 1; // we consume one argument
+                    }
                 }
                 Object objValue = converter.convert(value);
                 field.set(annotatedObject, objValue);
@@ -688,41 +831,61 @@ public class CommandLine<T> {
             return arity;
         }
 
-        private void setPositionalArguments(String[] args, int index) throws Exception {
-            if (positionalParametersField == null) {
-                return;
+        private List<Object> consumeArguments(Class<?> annotation, boolean varargs, int arity,
+                String value, int index, String[] args, ITypeConverter converter) throws Exception {
+            List<Object> result = new ArrayList<Object>();
+            if (arity > 0) { // first do the arity mandatory parameters
+                // special treatment for the first value: it may have been attached to the option name
+                result.add(converter.convert(value));
+                for (int i = 1; i < arity; i++) { // get the remaining values from the args array
+                    result.add(converter.convert(args[i + index]));
+                }
             }
-            Class<?> cls = positionalParametersField.getType();
-            if (cls.isArray()) {
-                Class<?> type = cls.getComponentType();
-                ITypeConverter converter = getTypeConverter(type);
-                int length = args.length - index;
-                Object array = Array.newInstance(type, length);
-
-                positionalParametersField.set(annotatedObject, array);
-                for (int i = 0; i < length; i++) {
-                    Array.set(array, i, converter.convert(args[i + index]));
-                }
-            } else if (Collection.class.isAssignableFrom(cls)) {
-                Collection<Object> collection = (Collection<Object>) positionalParametersField.get(annotatedObject);
-                Class<?> type = positionalParametersField.getAnnotation(Parameters.class).type();
-                if (collection == null) {
-                    collection = (Collection<Object>) createCollection(cls, type);
-                    positionalParametersField.set(annotatedObject, collection);
-                }
-                ITypeConverter converter = getTypeConverter(type);
-                for (int i = index; i < args.length; i++) {
-                    Object value = converter.convert(args[i]);
-                    if (value instanceof Collection) {
-                        collection.addAll((Collection) value);
-                    } else {
-                        collection.add(value);
+            if (varargs) { // now process the varargs if any
+                if (result.isEmpty()) {
+                    if (annotation == Parameters.class || !isOption(value)) {
+                        result.add(converter.convert(value));
                     }
+                }
+                for (int i = index + result.size(); i < args.length; i++) {
+                    if (annotation == Parameters.class || !isOption(args[i])) {
+                        result.add(converter.convert(args[i]));
+                    }
+                }
+            }
+            return result;
+        }
+
+        private Class<?> getTypeAttribute(Field field) {
+            if (field.isAnnotationPresent(Parameters.class)) {
+                return field.getAnnotation(Parameters.class).type();
+            } else if (field.isAnnotationPresent(Option.class)) {
+                return field.getAnnotation(Option.class).type();
+            }
+            throw new IllegalStateException(field + " has neither @Parameters nor @Option annotation");
+        }
+
+        private void updateHelpRequested(Field field) {
+            if (field.isAnnotationPresent(Option.class)) {
+                Option option = field.getAnnotation(Option.class);
+                if (option.help()) {
+                    isHelpRequested = true;
                 }
             }
         }
 
-        private <K> Collection<K> createCollection(Class<?> collectionClass, final Class<K> type)
+        @SuppressWarnings("unchecked")
+        private void setPositionalArguments(String[] args, int index) throws Exception {
+            if (positionalParametersField == null) {
+                return;
+            }
+            int length = args.length - index;
+            boolean varargs = positionalParametersField.getAnnotation(Parameters.class).varargs();
+            applyOption(positionalParametersField, Parameters.class, varargs, length, args[index], index, args);
+        }
+
+        @SuppressWarnings("unchecked")
+        private <K> Collection<K> createCollection(Class<?> collectionClass, Class<K> type)
                 throws Exception {
             if (collectionClass.isInterface()) {
                 if (List.class.isAssignableFrom(collectionClass)) {
@@ -741,10 +904,28 @@ public class CommandLine<T> {
 
         private ITypeConverter<?> getTypeConverter(final Class<?> type) {
             ITypeConverter<?> result = converterRegistry.get(type);
-            if (result == null) {
-                throw new MissingTypeConverterException(type.getName());
+            if (result != null) {
+                return result;
             }
-            return result;
+            if (type.isEnum()) {
+                return new ITypeConverter<Object>() {
+                    @SuppressWarnings("unchecked")
+                    public Object convert(final String value) throws Exception {
+                        return Enum.valueOf((Class<Enum>) type, value);
+                    }
+                };
+            }
+            throw new MissingTypeConverterException("No TypeConverter registered for " + type.getName());
+        }
+
+        private void assertNoMissingParameters(Field field, int arity, int length) {
+            if (arity > length) {
+                if (arity == 1) {
+                    throw new MissingParameterException("Missing required parameter for " + field.getName());
+                }
+                throw new MissingParameterException(field.getName() + " requires at least " + arity
+                        + " parameters, but only " + length + " were specified.");
+            }
         }
 
         private String trim(String value) {
@@ -788,7 +969,7 @@ public class CommandLine<T> {
                 if (value.length() > 1) {
                     throw new ParameterException("'" + value + " is not a single character.");
                 }
-                return Character.valueOf(value.charAt(0));
+                return value.charAt(0);
             }
         }
         static class ShortConverter implements ITypeConverter<Short> {
@@ -920,7 +1101,7 @@ public class CommandLine<T> {
             for (Field field : missing) {
                 names.add(field.getName());
             }
-            return new MissingParameterException(names.toString());
+            return new MissingParameterException("Missing options " + names.toString());
         }
     }
 
@@ -933,8 +1114,8 @@ public class CommandLine<T> {
         }
 
         private static DuplicateOptionAnnotationsException create(String name, Field field1, Field field2) {
-            return new DuplicateOptionAnnotationsException(name + " is used in both " + field1.getName() + " and "
-                    + field2.getName());
+            return new DuplicateOptionAnnotationsException("Option name '" + name + "' is used in both "
+                    + field1.getName() + " and " + field2.getName());
         }
     }
 
