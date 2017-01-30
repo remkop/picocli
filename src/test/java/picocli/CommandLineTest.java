@@ -226,7 +226,7 @@ public class CommandLineTest {
             public String[] bothOptionAndParameters;
         }
     }
-    @Test(expected = DuplicateOptionsException.class)
+    @Test(expected = DuplicateOptionAnnotationsException.class)
     public void testDuplicateOptionsAreRejected() {
         new CommandLine(new DuplicateOptions());
     }

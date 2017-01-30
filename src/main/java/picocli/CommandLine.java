@@ -86,7 +86,7 @@ public class CommandLine<T> {
 
     /**
      * Registers the specified type converter for the specified class. When initializing fields annotated with
-     * {@link Option}, the Field's type is used as a lookup key to find the associated type converter, and this
+     * {@link Option}, the field's type is used as a lookup key to find the associated type converter, and this
      * type converter converts the original command line argument string value to the correct type.
      * <p>
      * Java 8 lambdas make it easy to register custom type converters:
@@ -126,19 +126,80 @@ public class CommandLine<T> {
     }
 
     /**
-     * Options or option-arguments can be captured in fields annotated with {@code @Option}.
+     * <p>
+     * Annotate fields in your class with {@code @Option} and picoCLI will initialize these fields when matching
+     * arguments are specified on the command line.
+     * </p><p>
+     * For example:
+     * </p>
+     * <pre>import static picocli.CommandLine.*;
+     *
+     * public class MyClass {
+     *     &#064;Parameters(type = File.class, description = "Any number of input files")
+     *     private List<File> files = new ArrayList<File>();
+     *
+     *     &#064;Option(names = { "-v", "--verbose"}, description = "Verbosely list files processed")
+     *     private boolean verbose;
+     *
+     *     &#064;Option(names = { "-o", "--out" }, description = "Output file (default: print to console)")
+     *     private File outputFile;
+     *
+     *     &#064;Option(names = { "-h", "--help", "-?", "-help"}, help = true, description = "Display this help and exit")
+     *     private boolean help;
+     *
+     *     &#064;Option(names = { "-V", "--version"}, help = true, description = "Display version information and exit")
+     *     private boolean version;
+     * }
+     * </pre>
+     * <p>
+     * A field cannot be annotated with both {@code @Parameters} and {@code @Option} or a
+     * {@code ParameterException} is thrown.
+     * </p>
      */
     @Retention(RetentionPolicy.RUNTIME)
     @Target(ElementType.FIELD)
     public @interface Option {
         /**
          * One or more option names. At least one option name is required.
-         * <p><em>Short</em> options following the XBD
-         * <a href="http://pubs.opengroup.org/onlinepubs/9699919799/basedefs/V1_chap12.html#tag_12_02">Utility Syntax
-         * Guidelines</a> are single-character, preceded by the '-' character, e.g., `-v'.</p>
-         * <p><a href="https://www.gnu.org/software/tar/manual/html_node/Long-Options.html">GNU-style</a> <em>long</em>
-         * (or <em>mnemonic</em>) options start with two dashes in a row, e.g., `--list'.</p>
-         * <p>It is common for an option to have both a short and a long name, but this is not required.</p>
+         * <p>
+         * Different environments have different conventions for naming options, but usually options have a prefix
+         * that sets them apart from parameters.
+         * PicoCLI supports all of the below styles. The default separator is {@code '='}, but this can be configured.
+         * </p><p>
+         * <b>*nix</b>
+         * </p><p>
+         * In Unix and Linux, options have a short (single-character) name, a long name or both.
+         * Short options
+         * (<a href="http://pubs.opengroup.org/onlinepubs/9699919799/basedefs/V1_chap12.html#tag_12_02">POSIX
+         * style</a> are single-character and are preceded by the {@code '-'} character, e.g., {@code `-v'}.
+         * <a href="https://www.gnu.org/software/tar/manual/html_node/Long-Options.html">GNU-style</a> long
+         * (or <em>mnemonic</em>) options start with two dashes in a row, e.g., {@code `--file'}.
+         * </p><p>PicoCLI supports the POSIX convention that short options can be grouped, with the last option
+         * optionally taking a parameter, which may be attached to the option name or separated by a space or
+         * a {@code '='} character. The below examples are all equivalent:
+         * </p><pre>
+         * <program> -xvfFILE
+         * <program> -xvf FILE
+         * <program> -xvf=FILE
+         * <program> -xv --file FILE
+         * <program> -xv --file=FILE
+         * <program> -x -v --file FILE
+         * <program> -x -v --file=FILE
+         * </pre><p>
+         * <b>DOS</b>
+         * </p><p>
+         * DOS options mostly have upper case single-character names and start with a single slash {@code '/'} character.
+         * Option parameters are separated by a {@code ':'} character. Options cannot be grouped together but
+         * must be specified separately. For example:
+         * </p><pre>
+         * DIR /S /A:D /T:C
+         * </pre>
+         * <b>PowerShell</b>
+         * </p><p>
+         * <p>
+         * Windows PowerShell options generally are a word preceded by a single {@code '-'} character, e.g., {@code `-Help'}.
+         * Option parameters are separated by a space or by a {@code ':'} character.
+         * </p>
          * @return one or more option names
          */
         String[] names();
@@ -150,35 +211,83 @@ public class CommandLine<T> {
         String description() default "";
 
         /**
-         * Indicates whether this option is required. By default this is false. A {@link MissingParameterException}
-         * is thrown when a required option is not specified.
+         * Indicates whether this option is required. By default this is false.
+         * If an option is required, but a user invokes the program without specifying the required option,
+         * a {@link MissingParameterException} is thrown from the {@link #parse(String...)} method.
          * @return whether this option is required
          */
         boolean required() default false;
 
         /**
-         * Specifies how many arguments this option requires. By default, flags (boolean options) have arity zero,
-         * and single-valued type fields (String, int, Integer, double, Double, etc) have arity one.
-         * Fields with types that cannot hold multiple values can omit the {@code arity} attribute.
+         * Specifies how many parameters are required. If a positive arity is declared, and the user
+         * specifies an insufficient number of parameters on the command line,
+         * {@link MissingParameterException} is thrown by the {@link #parse(String...)} method.
          * <p>
+         * In many cases picoCLI can deduce the number of required parameters from the field's type.
+         * By default, flags (boolean options) have arity zero,
+         * and single-valued type fields (String, int, Integer, double, Double, File, Date, etc) have arity one.
+         * Generally, fields with types that cannot hold multiple values can omit the {@code arity} attribute.
+         * </p><p>
          * Fields used to capture options with arity two or higher should have a type that can hold multiple values,
-         * like arrays or Collections.
+         * like arrays or Collections. See {@link #type()} for strongly-typed Collection fields.
          * </p><p>
-         * If the Field's type is a {@code Collection}, the generic type parameter of the collection is erased and
-         * cannot be determined at runtime, so the raw String values will be added to the collection.
-         * When the Field's type is an array, the values will be converted to the array component type
-         * and the array will be replaced with a new instance.
+         * For example, if an option has 2 required parameters and any number of optional parameters,
+         * specify {@code @Option(names="-name", arity=2, varargs=true)}.
+         * </p>
+         * <b>A note on boolean options</b>
+         * <p>
+         * By default picoCLI does not expect boolean options (also called "flags" or "switches") to have a parameter.
+         * You can make a boolean option take a required parameter by defining your field with arity=1. For example:
+         * </p>
+         * <pre>&#064;Option(names="-v", arity=1) boolean verbose;</pre>
+         * <p>
+         * Because this boolean field is defined with arity 1, the user must specify either {@code <program> -v false}
+         * or {@code <program> -v true}
+         * on the command line, or a {@link MissingParameterException} is thrown by the {@link #parse(String...)}
+         * method.
          * </p><p>
-         * Options that have variable arity can specify a negative number:</p>
-         * <ul><li>-1: zero or more arguments</li>
-         * <li>-2: one or more arguments</li>
-         * <li>-3: two or more arguments</li>
-         * <li>... generally, if arity is negative, the number of required arguments is {@code (-arity - 1)}, followed
-         *   by any number of optional arguments</li>
-         * </ul>
+         * To make the boolean parameter possible but optional, define the field with varargs=true. For example:
+         * </p>
+         * <pre>&#064;Option(names="-v", varargs=true) boolean verbose;</pre>
+         * <p>
+         * This will accept any of the below without throwing an exception:
+         * </p>
+         * <pre>
+         * <program> -v [other options or parameters]
+         * <program> -v true [other options or parameters]
+         * <program> -v false [other options or parameters]
+         * </pre>
          * @return how many arguments this option requires
          */
         int arity() default -1;
+
+        /**
+         * Set {@code varargs=true} when this option accepts a variable number of parameters.
+         * The default is {@code false}, so the number of parameters required by this option is fixed
+         * (and determined by the field type and the specified {@linkplain #arity() arity}).
+         * <p>
+         * For example, if an option has 2 required parameters and any number of optional parameters,
+         * specify {@code @Option(names="-name", arity=2, varargs=true)}.</p>
+         * @return whether this option accepts any optional arguments
+         */
+        boolean varargs() default false;
+
+        /**
+         * <p>
+         * Specify a {@code type} if the annotated field is a {@code Collection} that should hold objects other than Strings.
+         * </p><p>
+         * If the field's type is a {@code Collection}, the generic type parameter of the collection is erased and
+         * cannot be determined at runtime. Specify a {@code type} attribute to store values other than String in
+         * the Collection. PicoCLI will use the {@link ITypeConverter}
+         * that is {@linkplain #registerConverter(Class, ITypeConverter) registered} for that type to convert
+         * the raw String values before they are added to the collection.
+         * </p><p>
+         * When the field's type is an array, the {@code type} attribute is ignored: the values will be converted
+         * to the array component type and the array will be replaced with a new instance.
+         * </p>
+         * @return the type to convert the raw String values to before adding them to the Collection
+         */
+        Class<?> type() default String.class;
 
         /**
          * Set {@code hidden=true} if this option should not be included in the usage documentation.
@@ -187,7 +296,7 @@ public class CommandLine<T> {
         boolean hidden() default false;
 
         /**
-         * Set {@code help=true} if this option should disable validation of the other arguments:
+         * Set {@code help=true} if this option should disable validation of the remaining arguments:
          * If the {@code help} option is specified, no error message is generated for missing required options.
          * <p>
          * This attribute is useful for special options like help ({@code -h} and {@code --help} on unix,
@@ -196,8 +305,8 @@ public class CommandLine<T> {
          * </p>
          * <p>
          * Note that the {@link #parse(String...)} method will not print help documentation. It will only set
-         * the value of the annotated field. It is the responsibility of the caller to inspect this field and take
-         * the appropriate action.
+         * the value of the annotated field. It is the responsibility of the caller to inspect the annotated fields
+         * and take the appropriate action.
          * </p>
          * @return whether this option disables validation of the other arguments
          */
@@ -205,10 +314,41 @@ public class CommandLine<T> {
     }
 
     /**
-     * Any arguments that follow the options and option-arguments can be captured in a field annotated with
-     * {@code @Parameters}. The argument values will not be converted to another type, so the field with this
-     * annotation must either be of type {@code String[]} (and the value will be replaced by a new String[] array),
-     * or of type {@code Collection<String>} or a subclass.
+     * <p>
+     * Annotate at most one field in your class with {@code @Parameters} and picoCLI will initialize this field
+     * with the positional parameters.
+     * </p><p>
+     * When parsing the command line arguments, picoCLI first tries to match arguments to {@link Option Options}.
+     * Positional parameters are the arguments that follow the options, or the arguments that follow a "--" (double
+     * dash) argument on the command line.
+     * </p><p>
+     * For example:
+     * </p>
+     * <pre>import static picocli.CommandLine.*;
+     *
+     * public class MyCalcParameters {
+     *     &#064;Parameters(type = BigDecimal.class, description = "Any number of input numbers")
+     *     private List<BigDecimal> files = new ArrayList<BigDecimal>();
+     *
+     *     &#064;Option(names = { "-v", "--verbose"}, description = "Verbosely show process information")
+     *     private boolean verbose;
+     *
+     *     &#064;Option(names = { "-h", "--help", "-?", "-help"}, help = true, description = "Display this help and exit")
+     *     private boolean help;
+     *
+     *     &#064;Option(names = { "-V", "--version"}, help = true, description = "Display version information and exit")
+     *     private boolean version;
+     * }
+     * </pre>
+     * <p>
+     * By default a variable number of parameters can be specified,
+     * so the field with this annotation must either be an array (and the value will be replaced by a new array),
+     * or a class that implements {@code Collection}.
+     * See {@link #type()} for strongly-typed Collection fields.
+     * </p><p>
+     * There can be only one field annotated with {@code @Parameters}, and a field cannot be annotated with
+     * both {@code @Parameters} and {@code @Option} or a {@code ParameterException} is thrown.
+     * </p>
      */
     @Retention(RetentionPolicy.RUNTIME)
     @Target(ElementType.FIELD)
@@ -221,21 +361,38 @@ public class CommandLine<T> {
         String description() default "";
 
         /**
-         * Specifies how many parameters are required. If a positive arity is declared, then a
-         * {@link MissingParameterException} is thrown by the {@link #parse(String...)} method if the number of
-         * parameters specified on the command line was insufficient.
+         * Specifies how many parameters are required. If a positive arity is declared, and the user
+         * specifies an insufficient number of parameters on the command line,
+         * {@link MissingParameterException} is thrown by the {@link #parse(String...)} method.
+         * <p>
+         * The default is zero: all parameters are optional.
+         * </p>
          * @return how many parameters this command requires
          */
         int arity() default 0;
 
         /**
-         * If the Field's type is a {@code Collection}, the generic type parameter of the collection is erased and
-         * cannot be determined at runtime. If a {@code type} attribute is specified, the {@link ITypeConverter}
-         * that is {@linkplain #registerConverter(Class, ITypeConverter) registered} for that type will be used to convert
-         * the raw String values before they are added to the collection.
+         * Set {@code varargs=false} when a fixed number of parameters is required.
+         * The default is {@code true}, meaning any number of parameters can be specified.
          * <p>
-         * When the Field's type is an array, the values will be converted to the array component type
-         * and the array will be replaced with a new instance.
+         * For example, if a program has 2 required parameters and no optional parameters,
+         * specify {@code @Parameters(arity=2, varargs=false)}.</p>
+         * @return whether the program accepts a variable number of parameters
+         */
+        boolean varargs() default true;
+
+        /**
+         * <p>
+         * Specify a {@code type} if the annotated field is a {@code Collection} that should hold objects other than Strings.
+         * </p><p>
+         * If the field's type is a {@code Collection}, the generic type parameter of the collection is erased and
+         * cannot be determined at runtime. Specify a {@code type} attribute to store values other than String in
+         * the Collection. PicoCLI will use the {@link ITypeConverter}
+         * that is {@linkplain #registerConverter(Class, ITypeConverter) registered} for that type to convert
+         * the raw String values before they are added to the collection.
+         * </p><p>
+         * When the field's type is an array, the {@code type} attribute is ignored: the values will be converted
+         * to the array component type and the array will be replaced with a new instance.
          * </p>
          * @return the type to convert the raw String values to before adding them to the Collection
          */
@@ -243,9 +400,14 @@ public class CommandLine<T> {
     }
 
     /**
+     * <p>
+     * When parsing command line arguments and initializing
+     * fields annotated with {@link Option @Option} or {@link Parameters @Parameters},
+     * String values can be converted to any type for which a {@code ITypeConverter} is registered.
+     * </p><p>
      * This interface defines the contract for classes that know how to convert a String into some domain object.
      * Custom converters can be registered with the {@link #registerConverter(Class, ITypeConverter)} method.
-     * <p>
+     * </p><p>
      * Java 8 lambdas make it easy to register custom type converters:
      * </p>
      * <pre>
@@ -355,22 +517,24 @@ public class CommandLine<T> {
                     for (String name : option.names()) { // cannot be null or empty
                         Field existing = optionName2Field.put(name, field);
                         if (existing != null && existing != field) {
-                            throw DuplicateOptionsException.create(name, field, existing);
+                            throw DuplicateOptionAnnotationsException.create(name, field, existing);
                         }
                         if (name.length() == 2 && name.startsWith("-")) {
                             char flag = name.charAt(1);
                             Field existing2 = singleCharOption2Field.put(Character.valueOf(flag), field);
                             if (existing2 != null && existing2 != field) {
-                                throw DuplicateOptionsException.create(name, field, existing2);
+                                throw DuplicateOptionAnnotationsException.create(name, field, existing2);
                             }
                         }
                     }
                 }
                 if (field.isAnnotationPresent(Parameters.class)) {
                     if (positionalParametersField != null) {
-                        throw new ParameterException(""); // TODO msg
+                        throw new ParameterException("Only one @Parameters field allowed, but found on '"
+                                + positionalParametersField.getName() + "' and '" + field.getName() + "'.");
                     } else if (field.isAnnotationPresent(Option.class)) {
-                        throw new ParameterException(""); // TODO msg
+                        throw new ParameterException("A field can be either @Option or @Parameters, but '"
+                                + field.getName() + "' is both.");
                     }
                     positionalParametersField = field;
                 }
@@ -761,15 +925,15 @@ public class CommandLine<T> {
     }
 
     /**
-     * Exception indicating that multiple fields have the same Option name. This is currently not supported.
+     * Exception indicating that multiple fields have been annotated with the same Option name.
      */
-    public static class DuplicateOptionsException extends ParameterException {
-        public DuplicateOptionsException(String msg) {
+    public static class DuplicateOptionAnnotationsException extends ParameterException {
+        public DuplicateOptionAnnotationsException(String msg) {
             super(msg);
         }
 
-        private static DuplicateOptionsException create(String name, Field field1, Field field2) {
-            return new DuplicateOptionsException(name + " is used in both " + field1.getName() + " and "
+        private static DuplicateOptionAnnotationsException create(String name, Field field1, Field field2) {
+            return new DuplicateOptionAnnotationsException(name + " is used in both " + field1.getName() + " and "
                     + field2.getName());
         }
     }
