@@ -138,7 +138,7 @@ public class CommandLineTest {
         assertEquals("UUID", null, bean.anUUIDField);
     }
     @Test
-    public void testTypeConversion()
+    public void testTypeConversionSucceedsForValidInput()
             throws MalformedURLException, URISyntaxException, UnknownHostException, ParseException {
         SupportedTypes bean = CommandLine.parse(new SupportedTypes(),
                 "-boolean", "-Boolean", //
@@ -179,7 +179,8 @@ public class CommandLineTest {
         assertEquals("double", 3.45, bean.doubleField, Double.MIN_VALUE);
         assertEquals("Double", Double.valueOf(4.56), bean.aDoubleField);
         assertEquals("String", "abc", bean.aStringField);
-        assertEquals("StringBuilder", new StringBuilder("bcd").toString(), bean.aStringBuilderField.toString());
+        assertEquals("StringBuilder type", StringBuilder.class, bean.aStringBuilderField.getClass());
+        assertEquals("StringBuilder", "bcd", bean.aStringBuilderField.toString());
         assertEquals("CharSequence", "xyz", bean.aCharSequenceField);
         assertEquals("File", new File("abc.txt"), bean.aFileField);
         assertEquals("URL", new URL("http://pico-cli.github.io"), bean.anURLField);
@@ -212,6 +213,102 @@ public class CommandLineTest {
     public void testTimeFormatHHmmssCommaSSSSupported() throws ParseException {
         SupportedTypes bean = CommandLine.parse(new SupportedTypes(), "-Time", "23:59:58,123");
         assertEquals("Time", new Time(new SimpleDateFormat("HH:mm:ss,SSS").parse("23:59:58,123").getTime()), bean.aTimeField);
+    }
+    @Test
+    public void testTimeFormatHHmmssSSSInvalidError() throws ParseException {
+        try {
+            CommandLine.parse(new SupportedTypes(), "-Time", "23:59:58;123");
+            fail("Invalid format was accepted");
+        } catch (ParameterException expected) {
+            assertEquals("'23:59:58;123' is not a HH:mm[:ss[.SSS]] time", expected.getMessage());
+        }
+    }
+    @Test
+    public void testTimeFormatHHmmssDotInvalidError() throws ParseException {
+        try {
+            CommandLine.parse(new SupportedTypes(), "-Time", "23:59:58.");
+            fail("Invalid format was accepted");
+        } catch (ParameterException expected) {
+            assertEquals("'23:59:58.' is not a HH:mm[:ss[.SSS]] time", expected.getMessage());
+        }
+    }
+    @Test
+    public void testTimeFormatHHmmsssInvalidError() throws ParseException {
+        try {
+            CommandLine.parse(new SupportedTypes(), "-Time", "23:59:587");
+            fail("Invalid format was accepted");
+        } catch (ParameterException expected) {
+            assertEquals("'23:59:587' is not a HH:mm[:ss[.SSS]] time", expected.getMessage());
+        }
+    }
+    @Test
+    public void testTimeFormatHHmmssColonInvalidError() throws ParseException {
+        try {
+            CommandLine.parse(new SupportedTypes(), "-Time", "23:59:");
+            fail("Invalid format was accepted");
+        } catch (ParameterException expected) {
+            assertEquals("'23:59:' is not a HH:mm[:ss[.SSS]] time", expected.getMessage());
+        }
+    }
+    @Test
+    public void testDateFormatYYYYmmddInvalidError() throws ParseException {
+        try {
+            CommandLine.parse(new SupportedTypes(), "-Date", "20170131");
+            fail("Invalid format was accepted");
+        } catch (ParameterException expected) {
+            assertEquals("'20170131' is not a yyyy-MM-dd date", expected.getMessage());
+        }
+    }
+    @Test
+    public void testCharConverterInvalidError() throws ParseException {
+        try {
+            CommandLine.parse(new SupportedTypes(), "-Character", "aa");
+            fail("Invalid format was accepted");
+        } catch (ParameterException expected) {
+            assertEquals("'aa' is not a single character.", expected.getMessage());
+        }
+        try {
+            CommandLine.parse(new SupportedTypes(), "-char", "aa");
+            fail("Invalid format was accepted");
+        } catch (ParameterException expected) {
+            assertEquals("'aa' is not a single character.", expected.getMessage());
+        }
+    }
+    @Test
+    public void testNumberConvertersInvalidError() {
+        parseInvalidValue("-Byte", "aa");
+        parseInvalidValue("-byte", "aa");
+        parseInvalidValue("-Short", "aa");
+        parseInvalidValue("-short", "aa");
+        parseInvalidValue("-Integer", "aa");
+        parseInvalidValue("-int", "aa");
+        parseInvalidValue("-Long", "aa");
+        parseInvalidValue("-long", "aa");
+        parseInvalidValue("-Float", "aa");
+        parseInvalidValue("-float", "aa");
+        parseInvalidValue("-Double", "aa");
+        parseInvalidValue("-double", "aa");
+        parseInvalidValue("-BigDecimal", "aa");
+        parseInvalidValue("-BigInteger", "aa");
+    }
+    @Test
+    public void testDomainObjectConvertersInvalidError() {
+        parseInvalidValue("-URL", ":::");
+        parseInvalidValue("-URI", ":::");
+        parseInvalidValue("-Charset", "aa");
+        parseInvalidValue("-InetAddress", "::a?*!a");
+        parseInvalidValue("-Pattern", "[[(aa");
+        parseInvalidValue("-UUID", "aa");
+    }
+
+    private void parseInvalidValue(String option, String value) {
+        try {
+            CommandLine.parse(new SupportedTypes(), option, value);
+            fail("Invalid format " + value + " was accepted for " + option);
+        } catch (ParameterException expected) {
+            String type = option.substring(1);
+            assertEquals("Could not convert '" + value + "' to a " + type, expected.getMessage());
+        }
     }
 
     static class InvalidAnnotations {
