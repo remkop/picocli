@@ -681,26 +681,30 @@ public class CommandLine {
             // A single option may be without option parameters, like "-v" or "--verbose" (a boolean value),
             // or an option may have one or more option parameters.
             // A parameter may be attached to the option.
-            String value = null;
+            String optionParam = null;
             int separatorIndex = arg.indexOf(separator);
             if (separatorIndex > 0) {
                 String key = arg.substring(0, separatorIndex);
                 // be greedy. Consume the whole arg as an option if possible.
                 if (optionName2Field.containsKey(key) && !optionName2Field.containsKey(arg)) {
+                    optionParam = arg.substring(separatorIndex + separator.length());
                     arg = key;
-                    value = arg.substring(separatorIndex + separator.length());
                 }
             }
             if (optionName2Field.containsKey(arg)) {
-                boolean paramAttachedToKey = value != null;
-                if (!paramAttachedToKey) {
-                    value = (args.length > index + 1) ? args[index + 1] : null;
-                }
                 Field field = optionName2Field.get(arg);
                 required.remove(field);
                 int arity = arity(field);
                 boolean varargs = field.getAnnotation(Option.class).varargs();
-                int argsConsumed = applyOption(field, Option.class, varargs, arity, value, index, args);
+                boolean paramAttachedToKey = optionParam != null;
+                int paramIndex = index;
+                if (paramAttachedToKey) {
+                    arity = Math.max(1, arity); // if key=value, arity is at least 1
+                } else {
+                    paramIndex = index + 1;
+                    optionParam = (args.length > paramIndex) ? args[paramIndex] : null;
+                }
+                int argsConsumed = applyOption(field, Option.class, varargs, arity, optionParam, paramIndex, args);
                 if (paramAttachedToKey) {
                     argsConsumed = argsConsumed > 0 ? argsConsumed - 1 : argsConsumed;
                 }
@@ -720,7 +724,7 @@ public class CommandLine {
                         boolean varargs = field.getAnnotation(Option.class).varargs();
                         arity = arity(field);
                         if (arity >= 1 || compact.startsWith(separator)) { // must interpret the remainder as an option argument
-                            String optionParam = compact; // assume arg is attached: -fFILE
+                            optionParam = compact; // assume arg is attached: -fFILE
                             boolean paramAttachedToOption = compact.length() > 0; // but only if we *have* a remainder
                             if (!paramAttachedToOption) {
                                 index++; // we consume the next argument, need to pass that back
@@ -792,7 +796,7 @@ public class CommandLine {
                 Class<?> type = cls.getComponentType();
                 ITypeConverter converter = getTypeConverter(type);
                 List<Object> converted = consumeArguments(annotation, varargs, arity, value, index, args, converter, cls);
-                Object array = Array.newInstance(type, length);
+                Object array = Array.newInstance(type, converted.size());
                 field.set(annotatedObject, array);
                 for (int i = 0; i < converted.size(); i++) { // get remaining values from the args array
                     Array.set(array, i, converted.get(i));
@@ -820,12 +824,10 @@ public class CommandLine {
 
                 // special logic for booleans: BooleanConverter accepts only "true" or "false". Use when arity >= 1.
                 if ((cls == Boolean.class || cls == Boolean.TYPE) && arity <= 0) {
-                    if (!varargs || isOption(value)) {
-                        // if !varargs, we don't expect a parameter, but assign true
-                        // if the next value is an option (and not "true" or "false"), it's a simple flag: assign true
-                        value = "true";
+                    if (varargs && ("true".equalsIgnoreCase(value) || "false".equalsIgnoreCase(value))) {
+                        arity = 1; // if it is a varargs we only consume 1 argument if it is a boolean value
                     } else {
-                        arity = 1; // we consume one argument
+                        value = "true"; // just specifying the option name sets the boolean to true
                     }
                 }
                 Object objValue = tryConvert(converter, value, cls);
