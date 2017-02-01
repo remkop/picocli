@@ -726,11 +726,14 @@ public class CommandLine {
                         if (arity >= 1 || compact.startsWith(separator)) { // must interpret the remainder as an option argument
                             optionParam = compact; // assume arg is attached: -fFILE
                             boolean paramAttachedToOption = compact.length() > 0; // but only if we *have* a remainder
-                            if (!paramAttachedToOption) {
+                            if (paramAttachedToOption) {
+                                if (compact.startsWith(separator)) { // attached with separator: -f=FILE
+                                    arity = Math.max(1, arity); // arity is at least 1
+                                    optionParam = compact.substring(separator.length());
+                                }
+                            } else {
                                 index++; // we consume the next argument, need to pass that back
                                 optionParam = (args.length > index) ? args[index] : null;
-                            } else if (compact.startsWith(separator)) { // attached with separator: -f=FILE
-                                optionParam = compact.substring(separator.length());
                             }
                             int consumed = applyOption(field, Option.class, varargs, arity, optionParam, index, args);
                             // if 1 consumed then don't advance position: option param was attached to option
@@ -745,14 +748,17 @@ public class CommandLine {
                             }
                         }
                     } else { // compact is empty || compact.charAt(0) is not a short option key
-                        // FIXME when do we come here? OK to remove?
-                        if (field != null) {
-                            boolean varargs = field.getAnnotation(Option.class).varargs();
-                            int consumed = applyOption(field, Option.class, varargs, arity, compact, index, args);
-                            // if 1 consumed then don't advance position: option param was attached to option
-                            consumed = consumed > 0 ? consumed - 1: 0;
-                            return index + consumed;
+                        if (compact.length() == 0) { // we finished parsing a group of short options like -rxv
+                            return index; // return normally and parse the next arg
                         }
+                        // We get here when the remainder of the compact group is neither an option,
+                        // nor a parameter that the last option could consume.
+                        // Consume it and any other remaining parameters as positional parameters.
+                        String[] remainder = new String[args.length - index];
+                        System.arraycopy(args, index, remainder, 0, remainder.length);
+                        remainder[0] = compact;
+                        setPositionalArguments(remainder, 0);
+                        return args.length;
                     }
                 } while (field != null);
             }

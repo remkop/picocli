@@ -505,35 +505,36 @@ public class CommandLineTest {
 
     private static class VarargsBooleanOptions0ArityAndParameters {
         @Parameters String[] params;
-        @Option(names = "-bool", arity = 0, varargs = true) boolean aBoolean;
-        @Option(names = "-other") boolean otherBoolean;
+        @Option(names = "-bool", arity = 0, varargs = true) boolean bool;
+        @Option(names = {"-v", "-other"}, arity=0, varargs = true) boolean vOrOther;
+        @Option(names = "-r") boolean rBoolean;
     }
     @Test
     public void testVarargsBooleanOptionsArity0Consume1ArgumentIfPossible() { // ignores varargs
         VarargsBooleanOptions0ArityAndParameters
                 params = CommandLine.parse(new VarargsBooleanOptions0ArityAndParameters(), "-bool false false true".split(" "));
-        assertFalse(params.aBoolean);
+        assertFalse(params.bool);
         assertArrayEquals(new String[]{ "false", "true"}, params.params);
     }
     @Test
     public void testVarargsBooleanOptionsArity0RequiresNoArgument() { // ignores varargs
         VarargsBooleanOptions0ArityAndParameters
                 params = CommandLine.parse(new VarargsBooleanOptions0ArityAndParameters(), "-bool".split(" "));
-        assertTrue(params.aBoolean);
+        assertTrue(params.bool);
     }
     @Test
     public void testVarargsBooleanOptionsArity0Consume0ArgumentsIfNextArgIsOption() { // ignores varargs
         VarargsBooleanOptions0ArityAndParameters
                 params = CommandLine.parse(new VarargsBooleanOptions0ArityAndParameters(), "-bool -other".split(" "));
-        assertTrue(params.aBoolean);
-        assertTrue(params.otherBoolean);
+        assertTrue(params.bool);
+        assertTrue(params.vOrOther);
     }
     @Test
     public void testVarargsBooleanOptionsArity0Consume0ArgumentsIfNextArgIsParameter() { // ignores varargs
         VarargsBooleanOptions0ArityAndParameters
                 params = CommandLine.parse(new VarargsBooleanOptions0ArityAndParameters(), "-bool 123 -other".split(" "));
-        assertTrue(params.aBoolean);
-        assertFalse(params.otherBoolean);
+        assertTrue(params.bool);
+        assertFalse(params.vOrOther);
         assertArrayEquals(new String[]{ "123", "-other"}, params.params);
     }
     @Test
@@ -543,6 +544,24 @@ public class CommandLineTest {
             fail("was able to assign 123 to boolean");
         } catch (ParameterException ex) {
             assertEquals("'123' is not a boolean.", ex.getMessage());
+        }
+    }
+    @Test
+    public void testVarargsBooleanOptionsArity0ShortFormFailsIfAttachedParamNotABoolean() { // ignores varargs
+        VarargsBooleanOptions0ArityAndParameters params =
+            CommandLine.parse(new VarargsBooleanOptions0ArityAndParameters(), "-rv234 -bool".split(" "));
+        assertTrue(params.vOrOther);
+        assertTrue(params.rBoolean);
+        assertArrayEquals(new String[]{ "234", "-bool"}, params.params);
+        assertFalse(params.bool);
+    }
+    @Test
+    public void testVarargsBooleanOptionsArity0ShortFormFailsIfAttachedWithSepParamNotABoolean() { // ignores varargs
+        try {
+            CommandLine.parse(new VarargsBooleanOptions0ArityAndParameters(), "-rv=234 -bool".split(" "));
+            fail("was able to assign 234 to boolean");
+        } catch (ParameterException ex) {
+            assertEquals("'234' is not a boolean.", ex.getMessage());
         }
     }
 
