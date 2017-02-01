@@ -784,6 +784,9 @@ public class CommandLine {
             updateHelpRequested(field);
             Class<?> cls = field.getType();
             int length = args.length - index;
+            if (arity == Integer.MAX_VALUE) {
+                arity = length; // consume all available args
+            }
             assertNoMissingParameters(field, arity, length);
             if (cls.isArray()) {
                 Class<?> type = cls.getComponentType();
