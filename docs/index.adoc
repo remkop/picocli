@@ -1,4 +1,5 @@
-# picoCLI - a mighty tiny Command Line Interpreter
+= picoCLI - a mighty tiny Command Line Interface
+Remko Popma <rpopma@apache.org>
 
 A CLI framework in a single file, designed to be easy to include in your application _in source form_:
 allowing you to parse command line arguments without dragging in an external dependency.
@@ -9,11 +10,12 @@ with special support for POSIX-style short groupable options.
 Generates online "usage" help. Can be configured to make option matching case-insensitive,
 and supports abbreviated options when unambiguous. Works with Java 5 or higher.
 
-##Example
+An introduction to http://asciidoc.org[AsciiDoc].
 
-Annotate fields with the command line parameter names and description.
+== Example
 
-```java
+[source,java]
+----
 import picocli.CommandLine.Option;
 import java.io.File;
 
@@ -31,13 +33,14 @@ public class MyApplication {
     private boolean verbose = false;
     ...
 }
-```
+----
 
 Then invoke `CommandLine.parse` with the command line parameters and an object you want to initialize.
 
-```java
+[source,java]
+----
 MyApplication app = new MyApplication();
 CommandLine.parse(app, "--in", "path/to/inputFile", "--out", "path/to/outputFile");
 assert app.inputFile != null;
-```
+----
 
