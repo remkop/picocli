@@ -38,8 +38,8 @@
               <sourceDirectory>${basedir}/docs</sourceDirectory>
               <backend>html</backend>
               <attributes>
-                <toc/>
                 <linkcss>false</linkcss>
+                <icons>font</icons>
               </attributes>
             </configuration>
           </execution>

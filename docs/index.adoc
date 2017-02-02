@@ -1,5 +1,8 @@
 = picoCLI - a mighty tiny Command Line Interface
 Remko Popma <rpopma@apache.org>
+v0.1.0, 2017-02-02
+:toc: left
+:toc-title: Features
 
 A CLI framework in a single file, designed to be easy to include in your application _in source form_:
 allowing you to parse command line arguments without dragging in an external dependency.
@@ -9,8 +12,6 @@ converting the input to strongly typed data. Any option prefix style works,
 with special support for POSIX-style short groupable options.
 Generates online "usage" help. Can be configured to make option matching case-insensitive,
 and supports abbreviated options when unambiguous. Works with Java 5 or higher.
-
-An introduction to http://asciidoc.org[AsciiDoc].
 
 == Example
 
@@ -44,3 +45,11 @@ CommandLine.parse(app, "--in", "path/to/inputFile", "--out", "path/to/outputFile
 assert app.inputFile != null;
 ----
 
+== Download
+
+NOTE: Here is the source. Copy and paste it into a file called `CommandLine.java`, add it to your project, and enjoy!
+
+[source,java]
+----
+include::../src/main/java/picocli/CommandLine.java[]
+----
