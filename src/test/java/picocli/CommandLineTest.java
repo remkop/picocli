@@ -34,6 +34,7 @@ import java.util.Date;
 import java.util.UUID;
 import java.util.regex.Pattern;
 
+import org.junit.Ignore;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
@@ -687,5 +688,53 @@ public class CommandLineTest {
     @Test(expected = MissingTypeConverterException.class)
     public void testMissingTypeConverter() {
         CommandLine.parse(new MissingConverter(), "--socket anyString".split(" "));
+    }
+
+    @Ignore
+    @Test
+    public void testVarargArrayParametersWithNegativeArity() {
+        fail();
+    }
+
+    @Ignore
+    @Test
+    public void testVarargArrayParametersWithArity0() {
+        fail();
+    }
+
+    @Ignore
+    @Test
+    public void testVarargArrayParametersWithArity1() {
+        fail();
+    }
+
+    @Ignore
+    @Test
+    public void testVarargArrayParametersWithArity2() {
+        fail();
+    }
+
+    @Ignore
+    @Test
+    public void testNonVarargArrayParametersWithNegativeArity() {
+        fail();
+    }
+
+    @Ignore
+    @Test
+    public void testNonVarargArrayParametersWithArity0() {
+        fail();
+    }
+
+    @Ignore
+    @Test
+    public void testNonVarargArrayParametersWithArity1() {
+        fail();
+    }
+
+    @Ignore
+    @Test
+    public void testNonVarargArrayParametersWithArity2() {
+        fail();
     }
 }
