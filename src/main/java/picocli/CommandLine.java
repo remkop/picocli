@@ -692,81 +692,92 @@ public class CommandLine {
                 }
             }
             if (optionName2Field.containsKey(arg)) {
-                Field field = optionName2Field.get(arg);
-                required.remove(field);
-                int arity = arity(field);
-                boolean varargs = field.getAnnotation(Option.class).varargs();
-                boolean paramAttachedToKey = optionParam != null;
-                int paramIndex = index;
-                if (paramAttachedToKey) {
-                    arity = Math.max(1, arity); // if key=value, arity is at least 1
-                } else {
-                    paramIndex = index + 1;
-                    optionParam = (args.length > paramIndex) ? args[paramIndex] : null;
-                }
-                int argsConsumed = applyOption(field, Option.class, varargs, arity, optionParam, paramIndex, args);
-                if (paramAttachedToKey) {
-                    argsConsumed = argsConsumed > 0 ? argsConsumed - 1 : argsConsumed;
-                }
-                return index + argsConsumed;
+                return processStandaloneOption(required, arg, index, args, optionParam);
             }
             // Compact (single-letter) options can be grouped with other options or with an argument.
             // only single-letter options can be combined with other options or with an argument
             if (arg.length() > 2 && arg.startsWith("-")) {
-                String compact = arg.substring(1);
-                Field field = null;
-                int arity = 0;
-                do {
-                    if (compact.length() > 0 && singleCharOption2Field.containsKey(compact.charAt(0))) {
-                        field = singleCharOption2Field.get(compact.charAt(0));
-                        required.remove(field);
-                        compact = compact.length() > 0 ? compact.substring(1) : "";
-                        boolean varargs = field.getAnnotation(Option.class).varargs();
-                        arity = arity(field);
-                        if (arity >= 1 || compact.startsWith(separator)) { // must interpret the remainder as an option argument
-                            optionParam = compact; // assume arg is attached: -fFILE
-                            boolean paramAttachedToOption = compact.length() > 0; // but only if we *have* a remainder
-                            if (paramAttachedToOption) {
-                                if (compact.startsWith(separator)) { // attached with separator: -f=FILE
-                                    arity = Math.max(1, arity); // arity is at least 1
-                                    optionParam = compact.substring(separator.length());
-                                }
-                            } else {
-                                index++; // we consume the next argument, need to pass that back
-                                optionParam = (args.length > index) ? args[index] : null;
-                            }
-                            int consumed = applyOption(field, Option.class, varargs, arity, optionParam, index, args);
-                            // if 1 consumed then don't advance position: option param was attached to option
-                            consumed = consumed > 0 ? consumed - 1: 0;
-                            return index + consumed;
-                        } else { // arity <= 0 && !compact.startsWith(separator)
-                            // e.g., boolean @Option("-v", arity=0, varargs=true); arg "-rvTRUE", remainder compact="TRUE"
-                            int consumed = applyOption(field, Option.class, varargs, 0, compact, index, args);
-                            // only return if compact (and maybe more) was consumed, otherwise continue do-while loop
-                            if (consumed > 0) {
-                                return index + consumed - 1; // don't count compact: it was attached
-                            }
-                        }
-                    } else { // compact is empty || compact.charAt(0) is not a short option key
-                        if (compact.length() == 0) { // we finished parsing a group of short options like -rxv
-                            return index; // return normally and parse the next arg
-                        }
-                        // We get here when the remainder of the compact group is neither an option,
-                        // nor a parameter that the last option could consume.
-                        // Consume it and any other remaining parameters as positional parameters.
-                        String[] remainder = new String[args.length - index];
-                        System.arraycopy(args, index, remainder, 0, remainder.length);
-                        remainder[0] = compact;
-                        setPositionalArguments(remainder, 0);
-                        return args.length;
-                    }
-                } while (field != null);
+                return processClusteredOptions(required, arg, index, args);
             }
 
             // The argument could not be interpreted as an option.
             // We take this to mean that the remainder are positional arguments
             setPositionalArguments(args, index);
             return args.length; // we are done
+        }
+
+        private int processStandaloneOption(final Set<Field> required, final String arg, final int index,
+                final String[] args, String optionParam) throws Exception {
+            Field field = optionName2Field.get(arg);
+            required.remove(field);
+            int arity = arity(field);
+            boolean varargs = field.getAnnotation(Option.class).varargs();
+            boolean paramAttachedToKey = optionParam != null;
+            int paramIndex = index;
+            if (paramAttachedToKey) {
+                arity = Math.max(1, arity); // if key=value, arity is at least 1
+            } else {
+                paramIndex = index + 1;
+                optionParam = (args.length > paramIndex) ? args[paramIndex] : null;
+            }
+            int argsConsumed = applyOption(field, Option.class, varargs, arity, optionParam, paramIndex, args);
+            if (paramAttachedToKey) {
+                argsConsumed = argsConsumed > 0 ? argsConsumed - 1 : argsConsumed;
+            }
+            return index + argsConsumed;
+        }
+
+        private int processClusteredOptions(Set<Field> required, String arg, int index, String[] args) throws Exception {
+            String optionParam;
+            String compact = arg.substring(1);
+            Field field;
+            int arity = 0;
+            do {
+                if (compact.length() > 0 && singleCharOption2Field.containsKey(compact.charAt(0))) {
+                    field = singleCharOption2Field.get(compact.charAt(0));
+                    required.remove(field);
+                    compact = compact.length() > 0 ? compact.substring(1) : "";
+                    boolean varargs = field.getAnnotation(Option.class).varargs();
+                    arity = arity(field);
+                    if (arity >= 1 || compact.startsWith(separator)) { // must interpret the remainder as an option argument
+                        optionParam = compact; // assume arg is attached: -fFILE
+                        boolean paramAttachedToOption = compact.length() > 0; // but only if we *have* a remainder
+                        if (paramAttachedToOption) {
+                            if (compact.startsWith(separator)) { // attached with separator: -f=FILE
+                                arity = Math.max(1, arity); // arity is at least 1
+                                optionParam = compact.substring(separator.length());
+                            }
+                        } else {
+                            index++; // we consume the next argument, need to pass that back
+                            optionParam = (args.length > index) ? args[index] : null;
+                        }
+                        int consumed = applyOption(field, Option.class, varargs, arity, optionParam, index, args);
+                        // if 1 consumed then don't advance position: option param was attached to option
+                        consumed = consumed > 0 ? consumed - 1: 0;
+                        return index + consumed;
+                    } else { // arity <= 0 && !compact.startsWith(separator)
+                        // e.g., boolean @Option("-v", arity=0, varargs=true); arg "-rvTRUE", remainder compact="TRUE"
+                        int consumed = applyOption(field, Option.class, varargs, 0, compact, index, args);
+                        // only return if compact (and maybe more) was consumed, otherwise continue do-while loop
+                        if (consumed > 0) {
+                            return index + consumed - 1; // don't count compact: it was attached
+                        }
+                    }
+                } else { // compact is empty || compact.charAt(0) is not a short option key
+                    if (compact.length() == 0) { // we finished parsing a group of short options like -rxv
+                        return index; // return normally and parse the next arg
+                    }
+                    // We get here when the remainder of the compact group is neither an option,
+                    // nor a parameter that the last option could consume.
+                    // Consume it and any other remaining parameters as positional parameters.
+                    String[] remainder = new String[args.length - index];
+                    System.arraycopy(args, index, remainder, 0, remainder.length);
+                    remainder[0] = compact;
+                    setPositionalArguments(remainder, 0);
+                    return args.length;
+                }
+            } while (field != null);
+            throw new IllegalStateException(); // we should never get here
         }
 
         private boolean isOption(String arg) {
@@ -814,7 +825,7 @@ public class CommandLine {
                 ITypeConverter converter = getTypeConverter(type);
                 List<Object> converted = consumeArguments(annotation, varargs, arity, value, index, args, converter, type);
                 if (collection == null) {
-                    collection = (Collection<Object>) createCollection(cls, type);
+                    collection = createCollection(cls);
                     field.set(annotatedObject, collection);
                 }
                 for (Object element : converted) {
@@ -825,20 +836,18 @@ public class CommandLine {
                     }
                 }
                 return converted.size();
-            } else {
-                ITypeConverter<?> converter = getTypeConverter(cls);
-
-                // special logic for booleans: BooleanConverter accepts only "true" or "false". Use when arity >= 1.
-                if ((cls == Boolean.class || cls == Boolean.TYPE) && arity <= 0) {
-                    if (varargs && ("true".equalsIgnoreCase(value) || "false".equalsIgnoreCase(value))) {
-                        arity = 1; // if it is a varargs we only consume 1 argument if it is a boolean value
-                    } else {
-                        value = "true"; // just specifying the option name sets the boolean to true
-                    }
-                }
-                Object objValue = tryConvert(converter, value, cls);
-                field.set(annotatedObject, objValue);
             }
+            // special logic for booleans: BooleanConverter accepts only "true" or "false". Use when arity >= 1.
+            if ((cls == Boolean.class || cls == Boolean.TYPE) && arity <= 0) {
+                if (varargs && ("true".equalsIgnoreCase(value) || "false".equalsIgnoreCase(value))) {
+                    arity = 1; // if it is a varargs we only consume 1 argument if it is a boolean value
+                } else {
+                    value = "true"; // just specifying the option name sets the boolean to true
+                }
+            }
+            ITypeConverter<?> converter = getTypeConverter(cls);
+            Object objValue = tryConvert(converter, value, cls);
+            field.set(annotatedObject, objValue);
             return arity;
         }
 
@@ -888,14 +897,10 @@ public class CommandLine {
 
         private void updateHelpRequested(Field field) {
             if (field.isAnnotationPresent(Option.class)) {
-                Option option = field.getAnnotation(Option.class);
-                if (option.help()) {
-                    isHelpRequested = true;
-                }
+                isHelpRequested |= field.getAnnotation(Option.class).help();
             }
         }
 
-        @SuppressWarnings("unchecked")
         private void setPositionalArguments(String[] args, int index) throws Exception {
             if (positionalParametersField == null) {
                 return;
@@ -906,21 +911,21 @@ public class CommandLine {
         }
 
         @SuppressWarnings("unchecked")
-        private <K> Collection<K> createCollection(Class<?> collectionClass, Class<K> type)
-                throws Exception {
+        private Collection<Object> createCollection(Class<?> collectionClass) throws Exception {
             if (collectionClass.isInterface()) {
                 if (List.class.isAssignableFrom(collectionClass)) {
-                    return new ArrayList<K>();
+                    return new ArrayList<Object>();
                 } else if (SortedSet.class.isAssignableFrom(collectionClass)) {
-                    return new TreeSet<K>();
+                    return new TreeSet<Object>();
                 } else if (Set.class.isAssignableFrom(collectionClass)) {
-                    return new HashSet<K>();
+                    return new HashSet<Object>();
                 } else if (Queue.class.isAssignableFrom(collectionClass)) {
-                    return new LinkedList<K>(); // ArrayDeque is only available since 1.6
+                    return new LinkedList<Object>(); // ArrayDeque is only available since 1.6
                 }
-                return new ArrayList<K>();
+                return new ArrayList<Object>();
             }
-            return (Collection<K>) collectionClass.newInstance();
+            // custom Collection implementation class must have default constructor
+            return (Collection<Object>) collectionClass.newInstance();
         }
 
         private ITypeConverter<?> getTypeConverter(final Class<?> type) {
