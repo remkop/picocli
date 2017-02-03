@@ -640,6 +640,10 @@ public class CommandLine {
 
         Object parse(String... args) {
             Assert.notNull(args, "argument array");
+            if (positionalParametersField != null) {
+                int arity = positionalParametersField.getAnnotation(Parameters.class).arity();
+                assertNoMissingParameters(positionalParametersField, arity, args.length);
+            }
             Set<Field> required = new HashSet<Field>(requiredFields);
             for (int i = 0; i < args.length; i++) {
                 String arg = trim(args[i]);
@@ -905,8 +909,10 @@ public class CommandLine {
             if (positionalParametersField == null) {
                 return;
             }
-            int length = args.length - index;
             boolean varargs = positionalParametersField.getAnnotation(Parameters.class).varargs();
+            int arity = positionalParametersField.getAnnotation(Parameters.class).arity();
+            int length = args.length - index;
+            assertNoMissingParameters(positionalParametersField, arity, length);
             applyOption(positionalParametersField, Parameters.class, varargs, length, args[index], index, args);
         }
 
@@ -947,9 +953,10 @@ public class CommandLine {
         private void assertNoMissingParameters(Field field, int arity, int length) {
             if (arity > length) {
                 if (arity == 1) {
-                    throw new MissingParameterException("Missing required parameter for " + field.getName());
+                    throw new MissingParameterException("Missing required parameter for field '"
+                            + field.getName() + "'");
                 }
-                throw new MissingParameterException(field.getName() + " requires at least " + arity
+                throw new MissingParameterException("Field '" + field.getName() + "' requires at least " + arity
                         + " parameters, but only " + length + " were specified.");
             }
         }

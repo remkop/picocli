@@ -699,47 +699,147 @@ public class CommandLineTest {
     public void testVarargArrayParametersWithNegativeArity() {
         VarArgArrayParamsNegativeArity params = CommandLine.parse(new VarArgArrayParamsNegativeArity(), "a", "b", "c");
         assertEquals(Arrays.asList("a", "b", "c"), params.params);
+
+        params = CommandLine.parse(new VarArgArrayParamsNegativeArity(), "a");
+        assertEquals(Arrays.asList("a"), params.params);
+
+        params = CommandLine.parse(new VarArgArrayParamsNegativeArity());
+        assertEquals(null, params.params);
     }
 
-    @Ignore
+    static class VarArgArrayParamsZeroArity {
+        @Parameters(arity = 0)
+        List<String> params;
+    }
     @Test
     public void testVarargArrayParametersWithArity0() {
-        fail();
+        VarArgArrayParamsZeroArity params = CommandLine.parse(new VarArgArrayParamsZeroArity(), "a", "b", "c");
+        assertEquals(Arrays.asList("a", "b", "c"), params.params);
+
+        params = CommandLine.parse(new VarArgArrayParamsZeroArity(), "a");
+        assertEquals(Arrays.asList("a"), params.params);
+
+        params = CommandLine.parse(new VarArgArrayParamsZeroArity());
+        assertEquals(null, params.params);
     }
 
-    @Ignore
+    static class VarArgArrayParamsArity1 {
+        @Parameters(arity = 1)
+        List<String> params;
+    }
     @Test
     public void testVarargArrayParametersWithArity1() {
-        fail();
+        VarArgArrayParamsArity1 params = CommandLine.parse(new VarArgArrayParamsArity1(), "a", "b", "c");
+        assertEquals(Arrays.asList("a", "b", "c"), params.params);
+
+        params = CommandLine.parse(new VarArgArrayParamsArity1(), "a");
+        assertEquals(Arrays.asList("a"), params.params);
+
+        try {
+            params = CommandLine.parse(new VarArgArrayParamsArity1());
+            fail("Should not accept input with missing parameter");
+        } catch (MissingParameterException ex) {
+            assertEquals("Missing required parameter for field 'params'", ex.getMessage());
+        }
     }
 
-    @Ignore
+    static class VarArgArrayParamsArity2 {
+        @Parameters(arity = 2)
+        List<String> params;
+    }
     @Test
     public void testVarargArrayParametersWithArity2() {
-        fail();
+        VarArgArrayParamsArity2 params = CommandLine.parse(new VarArgArrayParamsArity2(), "a", "b", "c");
+        assertEquals(Arrays.asList("a", "b", "c"), params.params);
+
+        try {
+            params = CommandLine.parse(new VarArgArrayParamsArity2(), "a");
+            fail("Should not accept input with missing parameter");
+        } catch (MissingParameterException ex) {
+            assertEquals("Field 'params' requires at least 2 parameters, but only 1 were specified.", ex.getMessage());
+        }
+
+        try {
+            params = CommandLine.parse(new VarArgArrayParamsArity2());
+            fail("Should not accept input with missing parameter");
+        } catch (MissingParameterException ex) {
+            assertEquals("Field 'params' requires at least 2 parameters, but only 0 were specified.", ex.getMessage());
+        }
     }
 
-    @Ignore
+    static class NonVarArgArrayParamsNegativeArity {
+        @Parameters(varargs = false, arity = -1)
+        List<String> params;
+    }
     @Test
     public void testNonVarargArrayParametersWithNegativeArity() {
-        fail();
+        NonVarArgArrayParamsNegativeArity params = CommandLine.parse(new NonVarArgArrayParamsNegativeArity(), "a", "b", "c");
+        assertEquals(Arrays.asList("a", "b", "c"), params.params);
+
+        params = CommandLine.parse(new NonVarArgArrayParamsNegativeArity(), "a");
+        assertEquals(Arrays.asList("a"), params.params);
+
+        params = CommandLine.parse(new NonVarArgArrayParamsNegativeArity());
+        assertEquals(null, params.params);
     }
 
-    @Ignore
+    static class NonVarArgArrayParamsZeroArity {
+        @Parameters(varargs = false, arity = 0)
+        List<String> params;
+    }
     @Test
     public void testNonVarargArrayParametersWithArity0() {
-        fail();
+        NonVarArgArrayParamsZeroArity params = CommandLine.parse(new NonVarArgArrayParamsZeroArity(), "a", "b", "c");
+        assertEquals(Arrays.asList("a", "b", "c"), params.params);
+
+        params = CommandLine.parse(new NonVarArgArrayParamsZeroArity(), "a");
+        assertEquals(Arrays.asList("a"), params.params);
+
+        params = CommandLine.parse(new NonVarArgArrayParamsZeroArity());
+        assertEquals(null, params.params);
     }
 
-    @Ignore
+    static class NonVarArgArrayParamsArity1 {
+        @Parameters(varargs = false, arity = 1)
+        List<String> params;
+    }
     @Test
     public void testNonVarargArrayParametersWithArity1() {
-        fail();
+        NonVarArgArrayParamsArity1 params = CommandLine.parse(new NonVarArgArrayParamsArity1(), "a", "b", "c");
+        assertEquals(Arrays.asList("a"), params.params);
+
+        params = CommandLine.parse(new NonVarArgArrayParamsArity1(), "a");
+        assertEquals(Arrays.asList("a"), params.params);
+
+        try {
+            params = CommandLine.parse(new NonVarArgArrayParamsArity1());
+            fail("Should not accept input with missing parameter");
+        } catch (MissingParameterException ex) {
+            assertEquals("Missing required parameter for field 'params'", ex.getMessage());
+        }
     }
 
-    @Ignore
+    static class NonVarArgArrayParamsArity2 {
+        @Parameters(varargs = false, arity = 2)
+        List<String> params;
+    }
     @Test
     public void testNonVarargArrayParametersWithArity2() {
-        fail();
+        NonVarArgArrayParamsArity2 params = CommandLine.parse(new NonVarArgArrayParamsArity2(), "a", "b", "c");
+        assertEquals(Arrays.asList("a", "b"), params.params);
+
+        try {
+            params = CommandLine.parse(new NonVarArgArrayParamsArity2(), "a");
+            fail("Should not accept input with missing parameter");
+        } catch (MissingParameterException ex) {
+            assertEquals("Field 'params' requires at least 2 parameters, but only 1 were specified.", ex.getMessage());
+        }
+
+        try {
+            params = CommandLine.parse(new NonVarArgArrayParamsArity2());
+            fail("Should not accept input with missing parameter");
+        } catch (MissingParameterException ex) {
+            assertEquals("Field 'params' requires at least 2 parameters, but only 0 were specified.", ex.getMessage());
+        }
     }
 }
