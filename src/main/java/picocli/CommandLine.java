@@ -832,7 +832,7 @@ public class CommandLine {
                     if (element instanceof Collection) {
                         collection.addAll((Collection) element);
                     } else {
-                        collection.add(value);
+                        collection.add(element);
                     }
                 }
                 return converted.size();

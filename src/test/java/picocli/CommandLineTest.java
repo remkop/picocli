@@ -31,6 +31,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.List;
 import java.util.UUID;
 import java.util.regex.Pattern;
 
@@ -690,10 +691,14 @@ public class CommandLineTest {
         CommandLine.parse(new MissingConverter(), "--socket anyString".split(" "));
     }
 
-    @Ignore
+    static class VarArgArrayParamsNegativeArity {
+        @Parameters(arity = -1)
+        List<String> params;
+    }
     @Test
     public void testVarargArrayParametersWithNegativeArity() {
-        fail();
+        VarArgArrayParamsNegativeArity params = CommandLine.parse(new VarArgArrayParamsNegativeArity(), "a", "b", "c");
+        assertEquals(Arrays.asList("a", "b", "c"), params.params);
     }
 
     @Ignore
