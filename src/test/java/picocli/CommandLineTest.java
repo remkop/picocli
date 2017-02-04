@@ -348,15 +348,58 @@ public class CommandLineTest {
     }
 
     private static class RequiredField {
+        @Option(names = {"-h", "--help", "-?", "/?"}, help = true) boolean isHelpRequested;
         @Option(names = "--required", required = true) private String required;
     }
-    @Test(expected = MissingParameterException.class)
+    @Test
     public void testErrorIfRequiredOptionNotSpecified() {
-        CommandLine.parse(new RequiredField(), "arg1", "arg2");
+        try {
+            CommandLine.parse(new RequiredField(), "arg1", "arg2");
+            fail("Missing required field should have thrown exception");
+        } catch (MissingParameterException ex) {
+            assertEquals("Missing required option 'required'", ex.getMessage());
+        }
     }
     @Test
     public void testNoErrorIfRequiredOptionSpecified() {
         CommandLine.parse(new RequiredField(), "--required", "arg1", "arg2");
+    }
+    @Test
+    public void testNoErrorIfRequiredOptionNotSpecifiedWhenHelpRequested() {
+        RequiredField requiredField = CommandLine.parse(new RequiredField(), "--help");
+        assertTrue("help requested", requiredField.isHelpRequested);
+    }
+    @Test
+    public void testHelpRequestedFlagResetWhenParsing_staticMethod() {
+        RequiredField requiredField = CommandLine.parse(new RequiredField(), "--help");
+        assertTrue("help requested", requiredField.isHelpRequested);
+
+        requiredField.isHelpRequested = false;
+
+        // should throw error again on second pass (no help was requested here...)
+        try {
+            CommandLine.parse(requiredField, "arg1", "arg2");
+            fail("Missing required field should have thrown exception");
+        } catch (MissingParameterException ex) {
+            assertEquals("Missing required option 'required'", ex.getMessage());
+        }
+    }
+    @Test
+    public void testHelpRequestedFlagResetWhenParsing_instanceMethod() {
+        RequiredField requiredField = new RequiredField();
+        CommandLine commandLine = new CommandLine(requiredField);
+        commandLine.parse("--help");
+        assertTrue("help requested", requiredField.isHelpRequested);
+
+        requiredField.isHelpRequested = false;
+
+        // should throw error again on second pass (no help was requested here...)
+        try {
+            commandLine.parse("arg1", "arg2");
+            fail("Missing required field should have thrown exception");
+        } catch (MissingParameterException ex) {
+            assertEquals("Missing required option 'required'", ex.getMessage());
+        }
     }
 
     private class CompactFields {
