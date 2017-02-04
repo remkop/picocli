@@ -29,6 +29,7 @@ import java.nio.charset.Charset;
 import java.sql.Time;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
@@ -774,10 +775,10 @@ public class CommandLineTest {
     @Test
     public void testNonVarargArrayParametersWithNegativeArity() {
         NonVarArgArrayParamsNegativeArity params = CommandLine.parse(new NonVarArgArrayParamsNegativeArity(), "a", "b", "c");
-        assertEquals(Arrays.asList("a", "b", "c"), params.params);
+        assertEquals(new ArrayList<String>(), params.params);
 
         params = CommandLine.parse(new NonVarArgArrayParamsNegativeArity(), "a");
-        assertEquals(Arrays.asList("a"), params.params);
+        assertEquals(new ArrayList<String>(), params.params);
 
         params = CommandLine.parse(new NonVarArgArrayParamsNegativeArity());
         assertEquals(null, params.params);
@@ -790,10 +791,10 @@ public class CommandLineTest {
     @Test
     public void testNonVarargArrayParametersWithArity0() {
         NonVarArgArrayParamsZeroArity params = CommandLine.parse(new NonVarArgArrayParamsZeroArity(), "a", "b", "c");
-        assertEquals(Arrays.asList("a", "b", "c"), params.params);
+        assertEquals(new ArrayList<String>(), params.params);
 
         params = CommandLine.parse(new NonVarArgArrayParamsZeroArity(), "a");
-        assertEquals(Arrays.asList("a"), params.params);
+        assertEquals(new ArrayList<String>(), params.params);
 
         params = CommandLine.parse(new NonVarArgArrayParamsZeroArity());
         assertEquals(null, params.params);

@@ -913,7 +913,7 @@ public class CommandLine {
             int arity = positionalParametersField.getAnnotation(Parameters.class).arity();
             int length = args.length - index;
             assertNoMissingParameters(positionalParametersField, arity, length);
-            applyOption(positionalParametersField, Parameters.class, varargs, length, args[index], index, args);
+            applyOption(positionalParametersField, Parameters.class, varargs, arity, args[index], index, args);
         }
 
         @SuppressWarnings("unchecked")
