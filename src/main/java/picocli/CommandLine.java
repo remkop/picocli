@@ -644,6 +644,8 @@ public class CommandLine {
                 int arity = positionalParametersField.getAnnotation(Parameters.class).arity();
                 assertNoMissingParameters(positionalParametersField, arity, args.length);
             }
+            // first reset any state in case this CommandLine instance is being reused
+            isHelpRequested = false;
             Set<Field> required = new HashSet<Field>(requiredFields);
             for (int i = 0; i < args.length; i++) {
                 String arg = trim(args[i]);
@@ -1127,13 +1129,14 @@ public class CommandLine {
 
         private static MissingParameterException create(Set<Field> missing) {
             if (missing.size() == 1) {
-                return new MissingParameterException(missing.iterator().next().getName());
+                return new MissingParameterException("Missing required option '"
+                        + missing.iterator().next().getName() + "'");
             }
             List<String> names = new ArrayList<String>(missing.size());
             for (Field field : missing) {
                 names.add(field.getName());
             }
-            return new MissingParameterException("Missing options " + names.toString());
+            return new MissingParameterException("Missing required options " + names.toString());
         }
     }
 
