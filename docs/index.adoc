@@ -45,6 +45,10 @@ CommandLine.parse(app, "--in", "path/to/inputFile", "--out", "path/to/outputFile
 assert app.inputFile != null;
 ----
 
+
+== Short options can be grouped
+Single-character options preceded with a '-', like `-v` or `-r`, can be grouped, so `-vxr` is equivalent to `-v -x -r`.
+
 == Download
 
 NOTE: Here is the source. Copy and paste it into a file called `CommandLine.java`, add it to your project, and enjoy!
