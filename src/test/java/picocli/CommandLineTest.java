@@ -40,6 +40,7 @@ import java.util.regex.Pattern;
 import org.junit.Ignore;
 import org.junit.Test;
 
+import static java.util.concurrent.TimeUnit.*;
 import static org.junit.Assert.*;
 import static picocli.CommandLine.*;
 import static picocli.CommandLineTest.InvalidAnnotations.*;
@@ -326,8 +327,8 @@ public class CommandLineTest {
     public void testEnumTypeConversionSuceedsForValidInput() {
         EnumParams params = CommandLine.parse(new EnumParams(),
                 "-timeUnit DAYS -timeUnitArray HOURS MINUTES -timeUnitList SECONDS MICROSECONDS NANOSECONDS".split(" "));
-        assertEquals(TimeUnit.DAYS, params.timeUnit);
-        assertArrayEquals(new TimeUnit[]{TimeUnit.HOURS, TimeUnit.MINUTES}, params.timeUnitArray);
+        assertEquals(DAYS, params.timeUnit);
+        assertArrayEquals(new TimeUnit[]{HOURS, TimeUnit.MINUTES}, params.timeUnitArray);
         List<TimeUnit> expected = new ArrayList<TimeUnit>(Arrays.asList(TimeUnit.SECONDS, TimeUnit.MICROSECONDS, TimeUnit.NANOSECONDS));
         assertEquals(expected, params.timeUnitList);
     }
@@ -368,6 +369,62 @@ public class CommandLineTest {
         }
     }
 
+    @Test
+    public void testArrayOptionParametersAreAlwaysInstantiated() {
+        EnumParams params = new EnumParams();
+        TimeUnit[] array = params.timeUnitArray;
+        new CommandLine(params).parse("-timeUnitArray", "DAYS", "HOURS");
+        assertNotSame(array, params.timeUnitArray);
+    }
+    @Test
+    public void testListOptionParametersAreInstantiatedIfNull() {
+        EnumParams params = new EnumParams();
+        assertNull(params.timeUnitList);
+        new CommandLine(params).parse("-timeUnitList", "DAYS", "HOURS", "DAYS");
+        assertEquals(Arrays.asList(DAYS, HOURS, DAYS), params.timeUnitList);
+    }
+    @Test
+    public void testListOptionParametersAreReusedInstantiatedIfNonNull() {
+        EnumParams params = new EnumParams();
+        List<TimeUnit> list = new ArrayList<TimeUnit>();
+        params.timeUnitList = list;
+        new CommandLine(params).parse("-timeUnitList", "DAYS", "HOURS", "DAYS");
+        assertEquals(Arrays.asList(DAYS, HOURS, DAYS), params.timeUnitList);
+        assertSame(list, params.timeUnitList);
+    }
+    class ArrayPositionalParams {
+        @Parameters() int[] array;
+    }
+    @Test
+    public void testArrayPositionalParametersAreAlwaysInstantiated() {
+        ArrayPositionalParams params = new ArrayPositionalParams();
+        params.array = new int[3];
+        int[] array = params.array;
+        new CommandLine(params).parse("3", "2", "1");
+        assertNotSame(array, params.array);
+        assertArrayEquals(new int[]{3, 2, 1}, params.array);
+    }
+    class ListPositionalParams {
+        @Parameters(type = Integer.class) List<Integer> list;
+    }
+    @Test
+    public void testListPositionalParametersAreInstantiatedIfNull() {
+        ListPositionalParams params = new ListPositionalParams();
+        assertNull(params.list);
+        new CommandLine(params).parse("3", "2", "1");
+        assertNotNull(params.list);
+        assertEquals(Arrays.asList(3, 2, 1), params.list);
+    }
+    @Test
+    public void testListPositionalParametersAreReusedIfNonNull() {
+        ListPositionalParams params = new ListPositionalParams();
+        params.list = new ArrayList<Integer>();
+        List<Integer> list = params.list;
+        new CommandLine(params).parse("3", "2", "1");
+        assertSame(list, params.list);
+        assertEquals(Arrays.asList(3, 2, 1), params.list);
+    }
+
     static class InvalidAnnotations {
         /** Duplicate parameter names are invalid. */
         static class DuplicateOptions {
@@ -397,6 +454,11 @@ public class CommandLineTest {
     public void testCanInitializeFinalFields() {
         FinalFields ff = CommandLine.parse(new FinalFields(), "-f", "some value");
         assertEquals("some value", ff.field);
+    }
+    @Test
+    public void testLastValueSelectedIfOptionSpecifiedMultipleTimes() {
+        FinalFields ff = CommandLine.parse(new FinalFields(), "-f", "111", "-f", "222");
+        assertEquals("222", ff.field);
     }
 
     private static class RequiredField {
