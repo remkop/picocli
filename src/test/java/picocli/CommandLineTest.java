@@ -37,7 +37,6 @@ import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 
-import org.junit.Ignore;
 import org.junit.Test;
 
 import static java.util.concurrent.TimeUnit.*;
@@ -999,5 +998,29 @@ public class CommandLineTest {
         } catch (MissingParameterException ex) {
             assertEquals("Field 'params' requires at least 2 parameters, but only 0 were specified.", ex.getMessage());
         }
+    }
+
+    class VariousPrefixCharacters {
+        @Option(names = {"-d", "--dash"}) int dash;
+        @Option(names = {"/S"}) int slashS;
+        @Option(names = {"/T"}) int slashT;
+        @Option(names = {"/4"}) boolean fourDigit;
+        @Option(names = {"/Owner"}) String owner;
+        @Option(names = {"-SingleDash"}) boolean singleDash;
+        @Option(names = {"[CPM"}) String cpm;
+        @Option(names = {"(CMS"}) String cms;
+    }
+    @Test
+    public void testOptionsMayDefineAnyPrefixChar() {
+        VariousPrefixCharacters params = CommandLine.parse(new VariousPrefixCharacters(),
+                "-d 123 /4 /S 765 /T=98 /Owner=xyz -SingleDash [CPM CP/M (CMS=cmsVal".split(" "));
+        assertEquals("-d", 123, params.dash);
+        assertEquals("/S", 765, params.slashS);
+        assertEquals("/T", 98, params.slashT);
+        assertTrue("/4", params.fourDigit);
+        assertTrue("-SingleDash", params.singleDash);
+        assertEquals("/Owner", "xyz", params.owner);
+        assertEquals("[CPM", "CP/M", params.cpm);
+        assertEquals("(CMS", "cmsVal", params.cms);
     }
 }
