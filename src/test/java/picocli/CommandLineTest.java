@@ -48,15 +48,15 @@ import static picocli.CommandLineTest.InvalidAnnotations.*;
  * CommandLine unit tests.
  */
 // DONE arrays
-// TODO collection fields
+// DONE collection fields
 // DONE all built-in types
-// TODO private fields, public fields (methods?)
-// TODO arity 2, 3
-// TODO arity -1, -2, -3
+// DONE private fields, public fields (TODO methods?)
+// DONE arity 2, 3
+// DONE arity -1, -2, -3
 // TODO arity ignored for single-value types (non-array, non-collection)
 // DONE positional arguments with '--' separator (where positional arguments look like options)
 // DONE positional arguments without '--' separator (based on arity of last option?)
-// TODO positional arguments based on arity of last option
+// DONE positional arguments based on arity of last option
 // TODO ambiguous options: writing --input ARG (as opposed to --input=ARG) is ambiguous,
 // meaning it is not possible to tell whether ARG is option's argument or a positional argument.
 // In usage patterns this will be interpreted as an option with argument only if a description (covered below)
@@ -66,15 +66,16 @@ import static picocli.CommandLineTest.InvalidAnnotations.*;
 // In the latter case it is not possible to tell whether it is a number of stacked short options,
 // or an option with an argument. These notations will be interpreted as an option with argument only if a
 // description for the option is provided.
-// TODO compact flags
-// TODO compact flags where last option has an argument, separate by space
-// TODO compact flags where last option has an argument attached to the option character
-// TODO long options with argument separate by space
-// TODO long options with argument separated by '=' (no spaces)
+// DONE compact flags
+// DONE compact flags where last option has an argument, separate by space
+// DONE compact flags where last option has an argument attached to the option character
+// DONE long options with argument separate by space
+// DONE long options with argument separated by '=' (no spaces)
+// TODO document that if arity>1 and args="-opt=val1 val2", arity overrules the "=": both values are assigned
 // TODO test superclass bean and child class bean where child class field shadows super class and have same annotation Option name
 // TODO test superclass bean and child class bean where child class field shadows super class and have different annotation Option name
-// TODO -vrx, -vro outputFile, -vrooutputFile, -vro=outputFile, -vro:outputFile, -vro=, -vro:, -vro
-// TODO --out outputFile, --out=outputFile, --out:outputFile, --out=, --out:, --out
+// DONE -vrx, -vro outputFile, -vrooutputFile, -vro=outputFile, -vro:outputFile, -vro=, -vro:, -vro
+// DONE --out outputFile, --out=outputFile, --out:outputFile, --out=, --out:, --out
 public class CommandLineTest {
 
     private static class SupportedTypes {
@@ -561,10 +562,44 @@ public class CommandLineTest {
     }
 
     @Test
+    public void testCompactWithOptionParamAttachedEqualsSeparatorChar() {
+        CompactFields compact = CommandLine.parse(new CompactFields(), "-rvo=out p1 p2".split(" "));
+        verifyCompact(compact, true, true, "out", fileArray("p1", "p2"));
+    }
+
+    @Test
+    public void testCompactWithOptionParamAttachedColonSeparatorChar() {
+        CompactFields compact = new CompactFields();
+        CommandLine cmd = new CommandLine(compact);
+        cmd.setSeparator(":");
+        cmd.parse("-rvo:out p1 p2".split(" "));
+        verifyCompact(compact, true, true, "out", fileArray("p1", "p2"));
+    }
+
+    @Test
     public void testOptionsAfterParamAreInterpretedAsParameters() {
         CompactFields compact = CommandLine.parse(new CompactFields(), "-r -v p1 -o out p2".split(" "));
         verifyCompact(compact, true, true, null, fileArray("p1", "-o", "out", "p2"));
     }
+    @Test
+    public void testShortOptionsWithSeparatorButNoValueAssignsEmptyStringEvenIfNotLast() {
+        CompactFields compact = CommandLine.parse(new CompactFields(), "-ro= -v".split(" "));
+        verifyCompact(compact, true, true, "", null);
+    }
+    @Test
+    public void testShortOptionsWithColonSeparatorButNoValueAssignsEmptyStringEvenIfNotLast() {
+        CompactFields compact = new CompactFields();
+        CommandLine cmd = new CommandLine(compact);
+        cmd.setSeparator(":");
+        cmd.parse("-ro: -v".split(" "));
+        verifyCompact(compact, true, true, "", null);
+    }
+    @Test
+    public void testShortOptionsWithSeparatorButNoValueAssignsEmptyStringIfLast() {
+        CompactFields compact = CommandLine.parse(new CompactFields(), "-rvo=".split(" "));
+        verifyCompact(compact, true, true, "", null);
+    }
+
 
     @Test
     public void testDoubleDashSeparatesPositionalParameters() {
@@ -826,6 +861,14 @@ public class CommandLineTest {
                 new double[] {1.1, 2.2, }, params.doubleOptions, 0.000001);
         assertArrayEquals(new double[]{3.3, 4.4}, params.doubleParams, 0.000001);
     }
+    @Test
+    public void testArrayOptionsWithArity2Consume2ArgumentsEvenIfFirstIsAttached() {
+        Options2ArityAndParameters
+                params = CommandLine.parse(new Options2ArityAndParameters(), "-doubles=1.1 2.2 3.3 4.4".split(" "));
+        assertArrayEquals(Arrays.toString(params.doubleOptions),
+                new double[] {1.1, 2.2, }, params.doubleOptions, 0.000001);
+        assertArrayEquals(new double[]{3.3, 4.4}, params.doubleParams, 0.000001);
+    }
 
     private static class OptionsNoArityAndParameters {
         @Parameters char[] charParams;
@@ -1005,7 +1048,7 @@ public class CommandLineTest {
         @Option(names = {"/S"}) int slashS;
         @Option(names = {"/T"}) int slashT;
         @Option(names = {"/4"}) boolean fourDigit;
-        @Option(names = {"/Owner"}) String owner;
+        @Option(names = {"/Owner", "--owner"}) String owner;
         @Option(names = {"-SingleDash"}) boolean singleDash;
         @Option(names = {"[CPM"}) String cpm;
         @Option(names = {"(CMS"}) String cms;
@@ -1023,6 +1066,66 @@ public class CommandLineTest {
         assertEquals("[CPM", "CP/M", params.cpm);
         assertEquals("(CMS", "cmsVal", params.cms);
     }
+    @Test
+    public void testGnuLongOptionsWithVariousSeparators() {
+        VariousPrefixCharacters params = CommandLine.parse(new VariousPrefixCharacters(), "--dash 123".split(" "));
+        assertEquals("--dash val", 123, params.dash);
+
+        params = CommandLine.parse(new VariousPrefixCharacters(), "--dash=234 --owner=x".split(" "));
+        assertEquals("--dash=val", 234, params.dash);
+        assertEquals("--owner=x", "x", params.owner);
+
+        params = new VariousPrefixCharacters();
+        CommandLine cmd = new CommandLine(params);
+        cmd.setSeparator(":");
+        cmd.parse("--dash:345");
+        assertEquals("--dash:val", 345, params.dash);
+
+        params = new VariousPrefixCharacters();
+        cmd = new CommandLine(params);
+        cmd.setSeparator(":");
+        cmd.parse("--dash:345 --owner:y".split(" "));
+        assertEquals("--dash:val", 345, params.dash);
+        assertEquals("--owner:y", "y", params.owner);
+    }
+    @Test
+    public void testGnuLongOptionsWithVariousSeparatorsOnlyAndNoValue() {
+        VariousPrefixCharacters params;
+        try {
+            params = CommandLine.parse(new VariousPrefixCharacters(), "--dash".split(" "));
+            fail("int option needs arg");
+        } catch (ParameterException ex) {
+            assertEquals("Missing required parameter for field 'dash'", ex.getMessage());
+        }
+
+        try {
+            params = CommandLine.parse(new VariousPrefixCharacters(), "--owner".split(" "));
+        } catch (ParameterException ex) {
+            assertEquals("Missing required parameter for field 'owner'", ex.getMessage());
+        }
+
+        params = CommandLine.parse(new VariousPrefixCharacters(), "--owner=".split(" "));
+        assertEquals("--owner= (at end)", "", params.owner);
+
+        params = CommandLine.parse(new VariousPrefixCharacters(), "--owner= /4".split(" "));
+        assertEquals("--owner= (in middle)", "", params.owner);
+        assertEquals("/4", true, params.fourDigit);
+
+        try {
+            params = CommandLine.parse(new VariousPrefixCharacters(), "--dash=".split(" "));
+            fail("int option (with sep but no value) needs arg");
+        } catch (ParameterException ex) {
+            assertEquals("Could not convert '' to int for field 'dash'", ex.getMessage());
+        }
+
+        try {
+            params = CommandLine.parse(new VariousPrefixCharacters(), "--dash= /4".split(" "));
+            fail("int option (with sep but no value, followed by other option) needs arg");
+        } catch (ParameterException ex) {
+            assertEquals("Could not convert '' to int for field 'dash'", ex.getMessage());
+        }
+    }
+
     @Test
     public void testOptionParameterSeparatorIsCustomizable() {
         VariousPrefixCharacters params = new VariousPrefixCharacters();
