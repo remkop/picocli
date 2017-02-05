@@ -224,6 +224,14 @@ public class CommandLine {
         interpreter.converterRegistry.put(Assert.notNull(cls, "class"), Assert.notNull(converter, "converter"));
     }
 
+    public String getSeparator() {
+        return interpreter.separator;
+    }
+
+    public void setSeparator(String separator) {
+        interpreter.separator = Assert.notNull(separator, "separator");
+    }
+
     /**
      * <p>
      * Annotate fields in your class with {@code @Option} and picoCLI will initialize these fields when matching
