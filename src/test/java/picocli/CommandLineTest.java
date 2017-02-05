@@ -34,6 +34,7 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 
 import org.junit.Ignore;
@@ -313,6 +314,57 @@ public class CommandLineTest {
         } catch (ParameterException expected) {
             String type = option.substring(1);
             assertEquals("Could not convert '" + value + "' to a " + type, expected.getMessage());
+        }
+    }
+
+    static class EnumParams {
+        @Option(names = "-timeUnit") TimeUnit timeUnit;
+        @Option(names = "-timeUnitArray", arity = 2) TimeUnit[] timeUnitArray;
+        @Option(names = "-timeUnitList", type = TimeUnit.class, arity = 3) List<TimeUnit> timeUnitList;
+    }
+    @Test
+    public void testEnumTypeConversionSuceedsForValidInput() {
+        EnumParams params = CommandLine.parse(new EnumParams(),
+                "-timeUnit DAYS -timeUnitArray HOURS MINUTES -timeUnitList SECONDS MICROSECONDS NANOSECONDS".split(" "));
+        assertEquals(TimeUnit.DAYS, params.timeUnit);
+        assertArrayEquals(new TimeUnit[]{TimeUnit.HOURS, TimeUnit.MINUTES}, params.timeUnitArray);
+        List<TimeUnit> expected = new ArrayList<TimeUnit>(Arrays.asList(TimeUnit.SECONDS, TimeUnit.MICROSECONDS, TimeUnit.NANOSECONDS));
+        assertEquals(expected, params.timeUnitList);
+    }
+    @Test
+    public void testEnumTypeConversionFailsForInvalidInput() {
+        try {
+            CommandLine.parse(new EnumParams(), "-timeUnit", "xyz");
+            fail("Accepted invalid timeunit");
+        } catch (Exception ex) {
+            assertEquals("Could not convert 'xyz' to a TimeUnit", ex.getMessage());
+        }
+    }
+    @Test
+    public void testEnumTypeConversionFailsForInvalidLowerCase() {
+        try {
+            CommandLine.parse(new EnumParams(), "-timeUnit", "hours");
+            fail("Accepted invalid timeunit");
+        } catch (Exception ex) {
+            assertEquals("Could not convert 'hours' to a TimeUnit", ex.getMessage());
+        }
+    }
+    @Test
+    public void testEnumArrayTypeConversionFailsForInvalidInput() {
+        try {
+            CommandLine.parse(new EnumParams(), "-timeUnitArray", "a", "b");
+            fail("Accepted invalid timeunit");
+        } catch (Exception ex) {
+            assertEquals("Could not convert 'a' to a TimeUnit[]", ex.getMessage());
+        }
+    }
+    @Test
+    public void testEnumListTypeConversionFailsForInvalidInput() {
+        try {
+            CommandLine.parse(new EnumParams(), "-timeUnitList", "DAYS", "b", "c");
+            fail("Accepted invalid timeunit");
+        } catch (Exception ex) {
+            assertEquals("Could not convert 'b' to a TimeUnit", ex.getMessage());
         }
     }
 
