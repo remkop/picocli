@@ -1146,4 +1146,16 @@ public class CommandLineTest {
         CommandLine cmd = new CommandLine(new VariousPrefixCharacters());
         cmd.setSeparator(null);
     }
+
+    @Test
+    public void testPotentiallyNestedOptionParsedCorrectly() {
+        class MyOption {
+            @CommandLine.Option(names = "-p") String path;
+        }
+        MyOption opt = CommandLine.parse(new MyOption(), "-pa-p");
+        assertEquals("a-p", opt.path);
+
+        opt = CommandLine.parse(new MyOption(), "-p-ap");
+        assertEquals("-ap", opt.path);
+    }
 }
