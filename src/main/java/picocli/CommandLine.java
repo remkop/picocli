@@ -826,7 +826,7 @@ public class CommandLine {
             if (cls.isArray()) {
                 Class<?> type = cls.getComponentType();
                 ITypeConverter converter = getTypeConverter(type);
-                List<Object> converted = consumeArguments(annotation, varargs, arity, value, index, args, converter, cls);
+                List<Object> converted = consumeArguments(field, annotation, varargs, arity, value, index, args, converter, cls);
                 Object array = Array.newInstance(type, converted.size());
                 field.set(annotatedObject, array);
                 for (int i = 0; i < converted.size(); i++) { // get remaining values from the args array
@@ -837,7 +837,7 @@ public class CommandLine {
                 Collection<Object> collection = (Collection<Object>) field.get(annotatedObject);
                 Class<?> type = getTypeAttribute(field);
                 ITypeConverter converter = getTypeConverter(type);
-                List<Object> converted = consumeArguments(annotation, varargs, arity, value, index, args, converter, type);
+                List<Object> converted = consumeArguments(field, annotation, varargs, arity, value, index, args, converter, type);
                 if (collection == null) {
                     collection = createCollection(cls);
                     field.set(annotatedObject, collection);
@@ -860,40 +860,54 @@ public class CommandLine {
                 }
             }
             ITypeConverter<?> converter = getTypeConverter(cls);
-            Object objValue = tryConvert(converter, value, cls);
+            Object objValue = tryConvert(field, -1, converter, value, cls);
             field.set(annotatedObject, objValue);
             return arity;
         }
 
-        private Object tryConvert(ITypeConverter<?> converter, String value, Class<?> type) throws Exception {
+        private Object tryConvert(Field field, int index, ITypeConverter<?> converter, String value, Class<?> type) throws Exception {
             try {
                 return converter.convert(value);
             } catch (ParameterException ex) {
-                throw ex;
+                throw new ParameterException(ex.getMessage() + optionDescription(field, index));
             } catch (Exception other) {
-                throw new ParameterException("Could not convert '" + value + "' to a " + type.getSimpleName());
+                String desc = optionDescription(field, index);
+                throw new ParameterException("Could not convert '" + value + "' to " + type.getSimpleName() + desc);
             }
         }
 
-        private List<Object> consumeArguments(Class<?> annotation, boolean varargs, int arity,
+        private String optionDescription(Field field, int index) {
+            String desc = "";
+            if (field.isAnnotationPresent(Option.class)) {
+                desc = " for option '" + field.getAnnotation(Option.class).names()[0] + "'";
+                if (index >= 0) {
+                    desc += " parameter[" + index + "]";
+                }
+            } else if (field.isAnnotationPresent(Parameters.class)) {
+                desc = " for parameter[" + index + "]";
+            }
+            return desc;
+        }
+
+        private List<Object> consumeArguments(Field field, Class<?> annotation, boolean varargs, int arity,
                 String value, int index, String[] args, ITypeConverter converter, Class<?> type) throws Exception {
             List<Object> result = new ArrayList<Object>();
             if (arity > 0) { // first do the arity mandatory parameters
                 // special treatment for the first value: it may have been attached to the option name
-                result.add(tryConvert(converter, value, type));
+                result.add(tryConvert(field, 0, converter, value, type));
                 for (int i = 1; i < arity; i++) { // get the remaining values from the args array
-                    result.add(tryConvert(converter, args[i + index], type));
+                    result.add(tryConvert(field, i, converter, args[i + index], type));
                 }
             }
             if (varargs) { // now process the varargs if any
                 if (result.isEmpty()) {
                     if (annotation == Parameters.class || !isOption(value)) {
-                        result.add(tryConvert(converter, value, type));
+                        result.add(tryConvert(field, 0, converter, value, type));
                     }
                 }
                 for (int i = index + result.size(); i < args.length; i++) {
                     if (annotation == Parameters.class || !isOption(args[i])) {
-                        result.add(tryConvert(converter, args[i], type));
+                        result.add(tryConvert(field, result.size(), converter, args[i], type));
                     }
                 }
             }
@@ -1003,14 +1017,14 @@ public class CommandLine {
                 if ("true".equalsIgnoreCase(value) || "false".equalsIgnoreCase(value)) {
                     return Boolean.parseBoolean(value);
                 } else {
-                    throw new ParameterException("'" + value + "' is not a boolean.");
+                    throw new ParameterException("'" + value + "' is not a boolean");
                 }
             }
         }
         static class CharacterConverter implements ITypeConverter<Character> {
             public Character convert(String value) {
                 if (value.length() > 1) {
-                    throw new ParameterException("'" + value + "' is not a single character.");
+                    throw new ParameterException("'" + value + "' is not a single character");
                 }
                 return value.charAt(0);
             }

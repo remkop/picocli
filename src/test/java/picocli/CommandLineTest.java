@@ -227,7 +227,7 @@ public class CommandLineTest {
             CommandLine.parse(new SupportedTypes(), "-Time", "23:59:58;123");
             fail("Invalid format was accepted");
         } catch (ParameterException expected) {
-            assertEquals("'23:59:58;123' is not a HH:mm[:ss[.SSS]] time", expected.getMessage());
+            assertEquals("'23:59:58;123' is not a HH:mm[:ss[.SSS]] time for option '-Time'", expected.getMessage());
         }
     }
     @Test
@@ -236,7 +236,7 @@ public class CommandLineTest {
             CommandLine.parse(new SupportedTypes(), "-Time", "23:59:58.");
             fail("Invalid format was accepted");
         } catch (ParameterException expected) {
-            assertEquals("'23:59:58.' is not a HH:mm[:ss[.SSS]] time", expected.getMessage());
+            assertEquals("'23:59:58.' is not a HH:mm[:ss[.SSS]] time for option '-Time'", expected.getMessage());
         }
     }
     @Test
@@ -245,7 +245,7 @@ public class CommandLineTest {
             CommandLine.parse(new SupportedTypes(), "-Time", "23:59:587");
             fail("Invalid format was accepted");
         } catch (ParameterException expected) {
-            assertEquals("'23:59:587' is not a HH:mm[:ss[.SSS]] time", expected.getMessage());
+            assertEquals("'23:59:587' is not a HH:mm[:ss[.SSS]] time for option '-Time'", expected.getMessage());
         }
     }
     @Test
@@ -254,7 +254,7 @@ public class CommandLineTest {
             CommandLine.parse(new SupportedTypes(), "-Time", "23:59:");
             fail("Invalid format was accepted");
         } catch (ParameterException expected) {
-            assertEquals("'23:59:' is not a HH:mm[:ss[.SSS]] time", expected.getMessage());
+            assertEquals("'23:59:' is not a HH:mm[:ss[.SSS]] time for option '-Time'", expected.getMessage());
         }
     }
     @Test
@@ -263,7 +263,7 @@ public class CommandLineTest {
             CommandLine.parse(new SupportedTypes(), "-Date", "20170131");
             fail("Invalid format was accepted");
         } catch (ParameterException expected) {
-            assertEquals("'20170131' is not a yyyy-MM-dd date", expected.getMessage());
+            assertEquals("'20170131' is not a yyyy-MM-dd date for option '-Date'", expected.getMessage());
         }
     }
     @Test
@@ -272,13 +272,13 @@ public class CommandLineTest {
             CommandLine.parse(new SupportedTypes(), "-Character", "aa");
             fail("Invalid format was accepted");
         } catch (ParameterException expected) {
-            assertEquals("'aa' is not a single character.", expected.getMessage());
+            assertEquals("'aa' is not a single character for option '-Character'", expected.getMessage());
         }
         try {
             CommandLine.parse(new SupportedTypes(), "-char", "aa");
             fail("Invalid format was accepted");
         } catch (ParameterException expected) {
-            assertEquals("'aa' is not a single character.", expected.getMessage());
+            assertEquals("'aa' is not a single character for option '-char'", expected.getMessage());
         }
     }
     @Test
@@ -314,7 +314,8 @@ public class CommandLineTest {
             fail("Invalid format " + value + " was accepted for " + option);
         } catch (ParameterException expected) {
             String type = option.substring(1);
-            assertEquals("Could not convert '" + value + "' to a " + type, expected.getMessage());
+            assertEquals("Could not convert '" + value + "' to " + type
+                    + " for option '" + option + "'", expected.getMessage());
         }
     }
 
@@ -338,7 +339,7 @@ public class CommandLineTest {
             CommandLine.parse(new EnumParams(), "-timeUnit", "xyz");
             fail("Accepted invalid timeunit");
         } catch (Exception ex) {
-            assertEquals("Could not convert 'xyz' to a TimeUnit", ex.getMessage());
+            assertEquals("Could not convert 'xyz' to TimeUnit for option '-timeUnit'", ex.getMessage());
         }
     }
     @Test
@@ -347,7 +348,7 @@ public class CommandLineTest {
             CommandLine.parse(new EnumParams(), "-timeUnit", "hours");
             fail("Accepted invalid timeunit");
         } catch (Exception ex) {
-            assertEquals("Could not convert 'hours' to a TimeUnit", ex.getMessage());
+            assertEquals("Could not convert 'hours' to TimeUnit for option '-timeUnit'", ex.getMessage());
         }
     }
     @Test
@@ -356,7 +357,7 @@ public class CommandLineTest {
             CommandLine.parse(new EnumParams(), "-timeUnitArray", "a", "b");
             fail("Accepted invalid timeunit");
         } catch (Exception ex) {
-            assertEquals("Could not convert 'a' to a TimeUnit[]", ex.getMessage());
+            assertEquals("Could not convert 'a' to TimeUnit[] for option '-timeUnitArray' parameter[0]", ex.getMessage());
         }
     }
     @Test
@@ -365,7 +366,7 @@ public class CommandLineTest {
             CommandLine.parse(new EnumParams(), "-timeUnitList", "DAYS", "b", "c");
             fail("Accepted invalid timeunit");
         } catch (Exception ex) {
-            assertEquals("Could not convert 'b' to a TimeUnit", ex.getMessage());
+            assertEquals("Could not convert 'b' to TimeUnit for option '-timeUnitList' parameter[1]", ex.getMessage());
         }
     }
 
@@ -737,7 +738,7 @@ public class CommandLineTest {
             CommandLine.parse(new VarargsBooleanOptions0ArityAndParameters(), "-bool=123 -other".split(" "));
             fail("was able to assign 123 to boolean");
         } catch (ParameterException ex) {
-            assertEquals("'123' is not a boolean.", ex.getMessage());
+            assertEquals("'123' is not a boolean for option '-bool'", ex.getMessage());
         }
     }
     @Test
@@ -755,7 +756,7 @@ public class CommandLineTest {
             CommandLine.parse(new VarargsBooleanOptions0ArityAndParameters(), "-rv=234 -bool".split(" "));
             fail("was able to assign 234 to boolean");
         } catch (ParameterException ex) {
-            assertEquals("'234' is not a boolean.", ex.getMessage());
+            assertEquals("'234' is not a boolean for option '-v'", ex.getMessage());
         }
     }
 
@@ -795,7 +796,7 @@ public class CommandLineTest {
             CommandLine.parse(new VarargsBooleanOptions1ArityAndParameters(), "-bool abc".split(" "));
             fail("Invalid format abc was accepted for boolean");
         } catch (ParameterException expected) {
-            assertEquals("'abc' is not a boolean.", expected.getMessage());
+            assertEquals("'abc' is not a boolean for option '-bool'", expected.getMessage());
         }
     }
 
@@ -1115,14 +1116,14 @@ public class CommandLineTest {
             params = CommandLine.parse(new VariousPrefixCharacters(), "--dash=".split(" "));
             fail("int option (with sep but no value) needs arg");
         } catch (ParameterException ex) {
-            assertEquals("Could not convert '' to int for field 'dash'", ex.getMessage());
+            assertEquals("Could not convert '' to int for option '-d'", ex.getMessage());
         }
 
         try {
             params = CommandLine.parse(new VariousPrefixCharacters(), "--dash= /4".split(" "));
             fail("int option (with sep but no value, followed by other option) needs arg");
         } catch (ParameterException ex) {
-            assertEquals("Could not convert '' to int for field 'dash'", ex.getMessage());
+            assertEquals("Could not convert '' to int for option '-d'", ex.getMessage());
         }
     }
 
