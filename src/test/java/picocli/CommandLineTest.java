@@ -1168,4 +1168,67 @@ public class CommandLineTest {
         opt = CommandLine.parse(new Arity2(), "-p a b".split(" "));
         assertEquals("a", opt.path);
     }
+
+    @Test
+    public void testOptionParameterQuotesRemovedFromValue() {
+        class TextOption {
+            @CommandLine.Option(names = "-t") String text;
+        }
+        TextOption opt = CommandLine.parse(new TextOption(), "-t", "\"a text\"");
+        assertEquals("a text", opt.text);
+    }
+
+    @Test
+    public void testLongOptionAttachedQuotedParameterQuotesRemovedFromValue() {
+        class TextOption {
+            @CommandLine.Option(names = "--text") String text;
+        }
+        TextOption opt = CommandLine.parse(new TextOption(), "--text=\"a text\"");
+        assertEquals("a text", opt.text);
+    }
+
+    @Test
+    public void testShortOptionAttachedQuotedParameterQuotesRemovedFromValue() {
+        class TextOption {
+            @CommandLine.Option(names = "-t") String text;
+        }
+        TextOption opt = CommandLine.parse(new TextOption(), "-t\"a text\"");
+        assertEquals("a text", opt.text);
+
+        opt = CommandLine.parse(new TextOption(), "-t=\"a text\"");
+        assertEquals("a text", opt.text);
+    }
+
+    @Test
+    public void testOptionMultiParameterQuotesRemovedFromValue() {
+        class TextOption {
+            @CommandLine.Option(names = "-t", varargs = true) String[] text;
+        }
+        TextOption opt = CommandLine.parse(new TextOption(), "-t", "\"a text\"", "\"another text\"", "\"x z\"");
+        assertArrayEquals(new String[]{"a text", "another text", "x z"}, opt.text);
+
+        opt = CommandLine.parse(new TextOption(), "-t\"a text\"", "\"another text\"", "\"x z\"");
+        assertArrayEquals(new String[]{"a text", "another text", "x z"}, opt.text);
+
+        opt = CommandLine.parse(new TextOption(), "-t=\"a text\"", "\"another text\"", "\"x z\"");
+        assertArrayEquals(new String[]{"a text", "another text", "x z"}, opt.text);
+    }
+
+    @Test
+    public void testPositionalParameterQuotesRemovedFromValue() {
+        class TextParams {
+            @CommandLine.Parameters() String[] text;
+        }
+        TextParams opt = CommandLine.parse(new TextParams(), "\"a text\"");
+        assertEquals("a text", opt.text[0]);
+    }
+
+    @Test
+    public void testPositionalMultiParameterQuotesRemovedFromValue() {
+        class TextParams {
+            @CommandLine.Parameters() String[] text;
+        }
+        TextParams opt = CommandLine.parse(new TextParams(), "\"a text\"", "\"another text\"", "\"x z\"");
+        assertArrayEquals(new String[]{"a text", "another text", "x z"}, opt.text);
+    }
 }

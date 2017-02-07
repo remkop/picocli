@@ -656,7 +656,7 @@ public class CommandLine {
             isHelpRequested = false;
             Set<Field> required = new HashSet<Field>(requiredFields);
             for (int i = 0; i < args.length; i++) {
-                String arg = trim(args[i]);
+                String arg = args[i];
                 try {
                     i = processOption(required, arg, i, args);
                 } catch (ParameterException ex) {
@@ -823,6 +823,7 @@ public class CommandLine {
                 arity = length; // consume all available args
             }
             assertNoMissingParameters(field, arity, length);
+            value = trim(value); // unquote the value
             if (cls.isArray()) {
                 Class<?> type = cls.getComponentType();
                 ITypeConverter converter = getTypeConverter(type);
@@ -896,7 +897,7 @@ public class CommandLine {
                 // special treatment for the first value: it may have been attached to the option name
                 result.add(tryConvert(field, 0, converter, value, type));
                 for (int i = 1; i < arity; i++) { // get the remaining values from the args array
-                    result.add(tryConvert(field, i, converter, args[i + index], type));
+                    result.add(tryConvert(field, i, converter, trim(args[i + index]), type));
                 }
             }
             if (varargs) { // now process the varargs if any
@@ -906,8 +907,8 @@ public class CommandLine {
                     }
                 }
                 for (int i = index + result.size(); i < args.length; i++) {
-                    if (annotation == Parameters.class || !isOption(args[i])) {
-                        result.add(tryConvert(field, result.size(), converter, args[i], type));
+                    if (annotation == Parameters.class || !isOption(args[i])) { // don't trim: quoted strings are not options
+                        result.add(tryConvert(field, result.size(), converter, trim(args[i]), type));
                     }
                 }
             }
@@ -990,9 +991,11 @@ public class CommandLine {
         }
 
         private String unquote(String value) {
-            return (value.length() > 1 && value.startsWith("\"") && value.endsWith("\""))
-                    ? value.substring(1, value.length() - 1)
-                    : value;
+            return value == null
+                    ? null
+                    : (value.length() > 1 && value.startsWith("\"") && value.endsWith("\""))
+                        ? value.substring(1, value.length() - 1)
+                        : value;
         }
     }
 
