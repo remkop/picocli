@@ -1200,6 +1200,21 @@ public class CommandLineTest {
     }
 
     @Test
+    public void testShortOptionQuotedParameterTypeConversion() {
+        class TextOption {
+            @CommandLine.Option(names = "-t") int[] number;
+        }
+        TextOption opt = CommandLine.parse(new TextOption(), "-t", "\"123\"");
+        assertEquals(123, opt.number[0]);
+
+        opt = CommandLine.parse(new TextOption(), "-t\"123\"");
+        assertEquals(123, opt.number[0]);
+
+        opt = CommandLine.parse(new TextOption(), "-t=\"345\"");
+        assertEquals(345, opt.number[0]);
+    }
+
+    @Test
     public void testOptionMultiParameterQuotesRemovedFromValue() {
         class TextOption {
             @CommandLine.Option(names = "-t", varargs = true) String[] text;
@@ -1230,6 +1245,15 @@ public class CommandLineTest {
         }
         TextParams opt = CommandLine.parse(new TextParams(), "\"a text\"", "\"another text\"", "\"x z\"");
         assertArrayEquals(new String[]{"a text", "another text", "x z"}, opt.text);
+    }
+
+    @Test
+    public void testPositionalMultiQuotedParameterTypeConversion() {
+        class TextParams {
+            @CommandLine.Parameters() int[] numbers;
+        }
+        TextParams opt = CommandLine.parse(new TextParams(), "\"123\"", "\"456\"", "\"999\"");
+        assertArrayEquals(new int[]{123, 456, 999}, opt.numbers);
     }
 
     @Test
