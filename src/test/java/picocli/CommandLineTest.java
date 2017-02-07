@@ -42,7 +42,6 @@ import org.junit.Test;
 import static java.util.concurrent.TimeUnit.*;
 import static org.junit.Assert.*;
 import static picocli.CommandLine.*;
-import static picocli.CommandLineTest.InvalidAnnotations.*;
 
 /**
  * CommandLine unit tests.
@@ -393,11 +392,11 @@ public class CommandLineTest {
         assertEquals(Arrays.asList(DAYS, HOURS, DAYS), params.timeUnitList);
         assertSame(list, params.timeUnitList);
     }
-    class ArrayPositionalParams {
-        @Parameters() int[] array;
-    }
     @Test
     public void testArrayPositionalParametersAreAlwaysInstantiated() {
+        class ArrayPositionalParams {
+            @Parameters() int[] array;
+        }
         ArrayPositionalParams params = new ArrayPositionalParams();
         params.array = new int[3];
         int[] array = params.array;
@@ -426,25 +425,23 @@ public class CommandLineTest {
         assertEquals(Arrays.asList(3, 2, 1), params.list);
     }
 
-    static class InvalidAnnotations {
+    @Test(expected = DuplicateOptionAnnotationsException.class)
+    public void testDuplicateOptionsAreRejected() {
         /** Duplicate parameter names are invalid. */
-        static class DuplicateOptions {
+        class DuplicateOptions {
             @Option(names = "-duplicate") public int value1;
             @Option(names = "-duplicate") public int value2;
         }
-        static class ClashingAnnotation {
-            @Option(names = "-o")
-            @Parameters
-            public String[] bothOptionAndParameters;
-        }
-    }
-    @Test(expected = DuplicateOptionAnnotationsException.class)
-    public void testDuplicateOptionsAreRejected() {
         new CommandLine(new DuplicateOptions());
     }
 
     @Test(expected = ParameterException.class)
     public void testClashingAnnotationsAreRejected() {
+        class ClashingAnnotation {
+            @Option(names = "-o")
+            @Parameters
+            public String[] bothOptionAndParameters;
+        }
         new CommandLine(new ClashingAnnotation());
     }
 
@@ -636,35 +633,35 @@ public class CommandLineTest {
         assertArrayEquals("args", new File[]{new File("path"), new File("path")}, compact.inputFiles);
     }
 
-    private static class PrimitiveIntParameters {
-        @Parameters int[] intParams;
-    }
     @Test
     public void testPrimitiveParameters() {
+        class PrimitiveIntParameters {
+            @Parameters int[] intParams;
+        }
         PrimitiveIntParameters params = CommandLine.parse(new PrimitiveIntParameters(), "1 2 3 4".split(" "));
         assertArrayEquals(new int[] {1, 2, 3, 4}, params.intParams);
     }
 
-    private static class VarargOptions0ArityAndParameters {
-        static final double[] DEFAULT_PARAMS = new double[] {1, 2};
-        @Parameters double[] doubleParams = DEFAULT_PARAMS;
-        @Option(names = "-doubles", arity = 0, varargs = true) double[] doubleOptions;
-    }
     @Test
     public void testVarargsArrayOptionsWithArity0ConsumeAllArguments() {
+        final double[] DEFAULT_PARAMS = new double[] {1, 2};
+        class VarargOptions0ArityAndParameters {
+            @Parameters double[] doubleParams = DEFAULT_PARAMS;
+            @Option(names = "-doubles", arity = 0, varargs = true) double[] doubleOptions;
+        }
         VarargOptions0ArityAndParameters
                 params = CommandLine.parse(new VarargOptions0ArityAndParameters(), "-doubles 1.1 2.2 3.3 4.4".split(" "));
         assertArrayEquals(Arrays.toString(params.doubleOptions),
                 new double[] {1.1, 2.2, 3.3, 4.4}, params.doubleOptions, 0.000001);
-        assertArrayEquals(VarargOptions0ArityAndParameters.DEFAULT_PARAMS, params.doubleParams, 0.000001);
+        assertArrayEquals(DEFAULT_PARAMS, params.doubleParams, 0.000001);
     }
 
-    private static class VarargOptions1ArityAndParameters {
-        @Parameters double[] doubleParams;
-        @Option(names = "-doubles", arity = 1, varargs = true) double[] doubleOptions;
-    }
     @Test
     public void testVarargsArrayOptionsWithArity1ConsumeAllArguments() {
+        class VarargOptions1ArityAndParameters {
+            @Parameters double[] doubleParams;
+            @Option(names = "-doubles", arity = 1, varargs = true) double[] doubleOptions;
+        }
         VarargOptions1ArityAndParameters
                 params = CommandLine.parse(new VarargOptions1ArityAndParameters(), "-doubles 1.1 2.2 3.3 4.4".split(" "));
         assertArrayEquals(Arrays.toString(params.doubleOptions),
@@ -672,12 +669,12 @@ public class CommandLineTest {
         assertArrayEquals(null, params.doubleParams, 0.000001);
     }
 
-    private static class VarargOptions2ArityAndParameters {
-        @Parameters double[] doubleParams;
-        @Option(names = "-doubles", arity = 2, varargs = true) double[] doubleOptions;
-    }
     @Test
     public void testVarargsArrayOptionsWithArity2ConsumeAllArguments() {
+        class VarargOptions2ArityAndParameters {
+            @Parameters double[] doubleParams;
+            @Option(names = "-doubles", arity = 2, varargs = true) double[] doubleOptions;
+        }
         VarargOptions2ArityAndParameters
                 params = CommandLine.parse(new VarargOptions2ArityAndParameters(), "-doubles 1.1 2.2 3.3 4.4".split(" "));
         assertArrayEquals(Arrays.toString(params.doubleOptions),
@@ -685,12 +682,12 @@ public class CommandLineTest {
         assertArrayEquals(null, params.doubleParams, 0.000001);
     }
 
-    private static class VarargOptionsNoArityAndParameters {
-        @Parameters char[] charParams;
-        @Option(names = "-chars", varargs = true) char[] charOptions;
-    }
     @Test
     public void testVarargsArrayOptionsWithoutArityConsumeAllArguments() {
+        class VarargOptionsNoArityAndParameters {
+            @Parameters char[] charParams;
+            @Option(names = "-chars", varargs = true) char[] charOptions;
+        }
         VarargOptionsNoArityAndParameters
                 params = CommandLine.parse(new VarargOptionsNoArityAndParameters(), "-chars a b c d".split(" "));
         assertArrayEquals(Arrays.toString(params.charOptions),
@@ -800,36 +797,36 @@ public class CommandLineTest {
         }
     }
 
-    private static class BooleanOptions0ArityAndParameters {
-        @Parameters boolean[] boolParams;
-        @Option(names = "-bool", arity = 0) boolean aBoolean;
-    }
     @Test
     public void testBooleanOptionsWithArity0Consume0Arguments() {
+        class BooleanOptions0ArityAndParameters {
+            @Parameters boolean[] boolParams;
+            @Option(names = "-bool", arity = 0) boolean aBoolean;
+        }
         BooleanOptions0ArityAndParameters
                 params = CommandLine.parse(new BooleanOptions0ArityAndParameters(), "-bool true false true".split(" "));
         assertTrue(params.aBoolean);
         assertArrayEquals(new boolean[]{true, false, true}, params.boolParams);
     }
 
-    private static class VarargsIntOptionsArity1AndParameters {
-        @Parameters int[] intParams;
-        @Option(names = "-int", arity = 1, varargs = true) int anInt;
-    }
     @Test
     public void testVarargsIntOptionsWithArity1Consume1Argument() { // ignores varargs
+        class VarargsIntOptionsArity1AndParameters {
+            @Parameters int[] intParams;
+            @Option(names = "-int", arity = 1, varargs = true) int anInt;
+        }
         VarargsIntOptionsArity1AndParameters
                 params = CommandLine.parse(new VarargsIntOptionsArity1AndParameters(), "-int 23 42 7".split(" "));
         assertEquals(23, params.anInt);
         assertArrayEquals(new int[]{ 42, 7}, params.intParams);
     }
 
-    private static class OptionsArray0ArityAndParameters {
-        @Parameters double[] doubleParams;
-        @Option(names = "-doubles", arity = 0) double[] doubleOptions;
-    }
     @Test
     public void testArrayOptionsWithArity0Consume0Arguments() {
+        class OptionsArray0ArityAndParameters {
+            @Parameters double[] doubleParams;
+            @Option(names = "-doubles", arity = 0) double[] doubleOptions;
+        }
         OptionsArray0ArityAndParameters
                 params = CommandLine.parse(new OptionsArray0ArityAndParameters(), "-doubles 1.1 2.2 3.3 4.4".split(" "));
         assertArrayEquals(Arrays.toString(params.doubleOptions),
@@ -837,12 +834,12 @@ public class CommandLineTest {
         assertArrayEquals(new double[]{1.1, 2.2, 3.3, 4.4}, params.doubleParams, 0.000001);
     }
 
-    private static class Options1ArityAndParameters {
-        @Parameters double[] doubleParams;
-        @Option(names = "-doubles", arity = 1) double[] doubleOptions;
-    }
     @Test
     public void testArrayOptionsWithArity1Consume1Argument() {
+        class Options1ArityAndParameters {
+            @Parameters double[] doubleParams;
+            @Option(names = "-doubles", arity = 1) double[] doubleOptions;
+        }
         Options1ArityAndParameters
                 params = CommandLine.parse(new Options1ArityAndParameters(), "-doubles 1.1 2.2 3.3 4.4".split(" "));
         assertArrayEquals(Arrays.toString(params.doubleOptions),
@@ -871,12 +868,12 @@ public class CommandLineTest {
         assertArrayEquals(new double[]{3.3, 4.4}, params.doubleParams, 0.000001);
     }
 
-    private static class OptionsNoArityAndParameters {
-        @Parameters char[] charParams;
-        @Option(names = "-chars") char[] charOptions;
-    }
     @Test
     public void testArrayOptionsWithoutArityConsumeAllArguments() {
+        class OptionsNoArityAndParameters {
+            @Parameters char[] charParams;
+            @Option(names = "-chars") char[] charOptions;
+        }
         OptionsNoArityAndParameters
                 params = CommandLine.parse(new OptionsNoArityAndParameters(), "-chars a b c d".split(" "));
         assertArrayEquals(Arrays.toString(params.charOptions),
@@ -884,20 +881,20 @@ public class CommandLineTest {
         assertArrayEquals(null, params.charParams);
     }
 
-    private static class MissingConverter {
-        @Option(names = "--socket") Socket socket;
-    }
     @Test(expected = MissingTypeConverterException.class)
     public void testMissingTypeConverter() {
+        class MissingConverter {
+            @Option(names = "--socket") Socket socket;
+        }
         CommandLine.parse(new MissingConverter(), "--socket anyString".split(" "));
     }
 
-    static class VarArgArrayParamsNegativeArity {
-        @Parameters(arity = -1)
-        List<String> params;
-    }
     @Test
     public void testVarargArrayParametersWithNegativeArity() {
+        class VarArgArrayParamsNegativeArity {
+            @Parameters(arity = -1)
+            List<String> params;
+        }
         VarArgArrayParamsNegativeArity params = CommandLine.parse(new VarArgArrayParamsNegativeArity(), "a", "b", "c");
         assertEquals(Arrays.asList("a", "b", "c"), params.params);
 
@@ -908,12 +905,12 @@ public class CommandLineTest {
         assertEquals(null, params.params);
     }
 
-    static class VarArgArrayParamsZeroArity {
-        @Parameters(arity = 0)
-        List<String> params;
-    }
     @Test
     public void testVarargArrayParametersWithArity0() {
+        class VarArgArrayParamsZeroArity {
+            @Parameters(arity = 0)
+            List<String> params;
+        }
         VarArgArrayParamsZeroArity params = CommandLine.parse(new VarArgArrayParamsZeroArity(), "a", "b", "c");
         assertEquals(Arrays.asList("a", "b", "c"), params.params);
 
@@ -924,12 +921,12 @@ public class CommandLineTest {
         assertEquals(null, params.params);
     }
 
-    static class VarArgArrayParamsArity1 {
-        @Parameters(arity = 1)
-        List<String> params;
-    }
     @Test
     public void testVarargArrayParametersWithArity1() {
+        class VarArgArrayParamsArity1 {
+            @Parameters(arity = 1)
+            List<String> params;
+        }
         VarArgArrayParamsArity1 params = CommandLine.parse(new VarArgArrayParamsArity1(), "a", "b", "c");
         assertEquals(Arrays.asList("a", "b", "c"), params.params);
 
@@ -944,12 +941,12 @@ public class CommandLineTest {
         }
     }
 
-    static class VarArgArrayParamsArity2 {
-        @Parameters(arity = 2)
-        List<String> params;
-    }
     @Test
     public void testVarargArrayParametersWithArity2() {
+        class VarArgArrayParamsArity2 {
+            @Parameters(arity = 2)
+            List<String> params;
+        }
         VarArgArrayParamsArity2 params = CommandLine.parse(new VarArgArrayParamsArity2(), "a", "b", "c");
         assertEquals(Arrays.asList("a", "b", "c"), params.params);
 
@@ -968,12 +965,12 @@ public class CommandLineTest {
         }
     }
 
-    static class NonVarArgArrayParamsNegativeArity {
-        @Parameters(varargs = false, arity = -1)
-        List<String> params;
-    }
     @Test
     public void testNonVarargArrayParametersWithNegativeArity() {
+        class NonVarArgArrayParamsNegativeArity {
+            @Parameters(varargs = false, arity = -1)
+            List<String> params;
+        }
         NonVarArgArrayParamsNegativeArity params = CommandLine.parse(new NonVarArgArrayParamsNegativeArity(), "a", "b", "c");
         assertEquals(new ArrayList<String>(), params.params);
 
@@ -984,12 +981,12 @@ public class CommandLineTest {
         assertEquals(null, params.params);
     }
 
-    static class NonVarArgArrayParamsZeroArity {
-        @Parameters(varargs = false, arity = 0)
-        List<String> params;
-    }
     @Test
     public void testNonVarargArrayParametersWithArity0() {
+        class NonVarArgArrayParamsZeroArity {
+            @Parameters(varargs = false, arity = 0)
+            List<String> params;
+        }
         NonVarArgArrayParamsZeroArity params = CommandLine.parse(new NonVarArgArrayParamsZeroArity(), "a", "b", "c");
         assertEquals(new ArrayList<String>(), params.params);
 
@@ -1000,12 +997,12 @@ public class CommandLineTest {
         assertEquals(null, params.params);
     }
 
-    static class NonVarArgArrayParamsArity1 {
-        @Parameters(varargs = false, arity = 1)
-        List<String> params;
-    }
     @Test
     public void testNonVarargArrayParametersWithArity1() {
+        class NonVarArgArrayParamsArity1 {
+            @Parameters(varargs = false, arity = 1)
+            List<String> params;
+        }
         NonVarArgArrayParamsArity1 params = CommandLine.parse(new NonVarArgArrayParamsArity1(), "a", "b", "c");
         assertEquals(Arrays.asList("a"), params.params);
 
@@ -1020,12 +1017,12 @@ public class CommandLineTest {
         }
     }
 
-    static class NonVarArgArrayParamsArity2 {
-        @Parameters(varargs = false, arity = 2)
-        List<String> params;
-    }
     @Test
     public void testNonVarargArrayParametersWithArity2() {
+        class NonVarArgArrayParamsArity2 {
+            @Parameters(varargs = false, arity = 2)
+            List<String> params;
+        }
         NonVarArgArrayParamsArity2 params = CommandLine.parse(new NonVarArgArrayParamsArity2(), "a", "b", "c");
         assertEquals(Arrays.asList("a", "b"), params.params);
 
@@ -1158,5 +1155,17 @@ public class CommandLineTest {
 
         opt = CommandLine.parse(new MyOption(), "-p-ap");
         assertEquals("-ap", opt.path);
+    }
+
+    @Test
+    public void testArityGreaterThanOneForSingleValuedFields() {
+        class Arity2 {
+            @CommandLine.Option(names = "-p", arity=2) String path;
+            @CommandLine.Option(names = "-o", arity=2) String[] otherPath;
+        }
+        Arity2 opt = CommandLine.parse(new Arity2(), "-o a b".split(" "));
+
+        opt = CommandLine.parse(new Arity2(), "-p a b".split(" "));
+        assertEquals("a", opt.path);
     }
 }
