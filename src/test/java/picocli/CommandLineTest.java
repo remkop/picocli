@@ -1231,4 +1231,48 @@ public class CommandLineTest {
         TextParams opt = CommandLine.parse(new TextParams(), "\"a text\"", "\"another text\"", "\"x z\"");
         assertArrayEquals(new String[]{"a text", "another text", "x z"}, opt.text);
     }
+
+    @Test
+    public void testSubclassedOptions() {
+        class ParentOption {
+            @CommandLine.Option(names = "-p") String path;
+        }
+        class ChildOption extends ParentOption {
+            @CommandLine.Option(names = "-t") String text;
+        }
+        ChildOption opt = CommandLine.parse(new ChildOption(), "-p", "somePath", "-t", "\"a text\"");
+        assertEquals("somePath", opt.path);
+        assertEquals("a text", opt.text);
+    }
+
+    @Test
+    public void testSubclassedOptionsWithShadowedOptionNameThrowsDuplicateOptionAnnotationsException() {
+        class ParentOption {
+            @CommandLine.Option(names = "-p") String path;
+        }
+        class ChildOption extends ParentOption {
+            @CommandLine.Option(names = "-p") String text;
+        }
+        try {
+            CommandLine.parse(new ChildOption(), "");
+            fail("expected CommandLine$DuplicateOptionAnnotationsException");
+        } catch (DuplicateOptionAnnotationsException ex) {
+            assertEquals("Option name '-p' is used in both path and text", ex.getMessage());
+        }
+    }
+
+    @Test
+    public void testSubclassedOptionsWithShadowedFieldInitializesChildField() {
+        class ParentOption {
+            @CommandLine.Option(names = "-parentPath") String path;
+        }
+        class ChildOption extends ParentOption {
+            @CommandLine.Option(names = "-childPath") String path;
+        }
+        ChildOption opt = CommandLine.parse(new ChildOption(), "-childPath", "somePath");
+        assertEquals("somePath", opt.path);
+
+        opt = CommandLine.parse(new ChildOption(), "-parentPath", "somePath");
+        assertNull(opt.path);
+    }
 }
