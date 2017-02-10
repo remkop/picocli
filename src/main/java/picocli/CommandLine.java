@@ -724,17 +724,17 @@ public class CommandLine {
                 final String[] args, String optionParam) throws Exception {
             Field field = optionName2Field.get(arg);
             required.remove(field);
-            int arity = arity(field);
+            int estimatedArity = estimateArity(field);
             boolean varargs = field.getAnnotation(Option.class).varargs();
             boolean paramAttachedToKey = optionParam != null;
             int paramIndex = index;
             if (paramAttachedToKey) {
-                arity = Math.max(1, arity); // if key=value, arity is at least 1
+                estimatedArity = Math.max(1, estimatedArity); // if key=value, arity is at least 1
             } else {
                 paramIndex = index + 1;
                 optionParam = (args.length > paramIndex) ? args[paramIndex] : null;
             }
-            int argsConsumed = applyOption(field, Option.class, varargs, arity, optionParam, paramIndex, args);
+            int argsConsumed = applyOption(field, Option.class, varargs, estimatedArity, optionParam, paramIndex, args);
             if (paramAttachedToKey) {
                 argsConsumed = argsConsumed > 0 ? argsConsumed - 1 : argsConsumed;
             }
@@ -745,27 +745,27 @@ public class CommandLine {
             String optionParam;
             String compact = arg.substring(1);
             Field field;
-            int arity = 0;
+            int estimatedArity = 0;
             do {
                 if (compact.length() > 0 && singleCharOption2Field.containsKey(compact.charAt(0))) {
                     field = singleCharOption2Field.get(compact.charAt(0));
                     required.remove(field);
                     compact = compact.length() > 0 ? compact.substring(1) : "";
                     boolean varargs = field.getAnnotation(Option.class).varargs();
-                    arity = arity(field);
-                    if (arity >= 1 || compact.startsWith(separator)) { // must interpret the remainder as an option argument
+                    estimatedArity = estimateArity(field);
+                    if (estimatedArity >= 1 || compact.startsWith(separator)) { // must interpret the remainder as an option argument
                         optionParam = compact; // assume arg is attached: -fFILE
                         boolean paramAttachedToOption = compact.length() > 0; // but only if we *have* a remainder
                         if (paramAttachedToOption) {
                             if (compact.startsWith(separator)) { // attached with separator: -f=FILE
-                                arity = Math.max(1, arity); // arity is at least 1
+                                estimatedArity = Math.max(1, estimatedArity); // arity is at least 1
                                 optionParam = compact.substring(separator.length());
                             }
                         } else {
                             index++; // we consume the next argument, need to pass that back
                             optionParam = (args.length > index) ? args[index] : null;
                         }
-                        int consumed = applyOption(field, Option.class, varargs, arity, optionParam, index, args);
+                        int consumed = applyOption(field, Option.class, varargs, estimatedArity, optionParam, index, args);
                         // if 1 consumed then don't advance position: option param was attached to option
                         consumed = consumed > 0 ? consumed - 1: 0;
                         return index + consumed;
@@ -799,7 +799,7 @@ public class CommandLine {
             return optionName2Field.containsKey(arg);
         }
 
-        private int arity(Field field) {
+        private int estimateArity(Field field) {
             int arity = field.getAnnotation(Option.class).arity();
             if (arity >= 0) { // if arity was specified, use the specified value
                 return arity;
@@ -866,6 +866,10 @@ public class CommandLine {
             return arity;
         }
 
+        private int actualArity(Field field, int defaultValue) {
+            return field.isAnnotationPresent(Option.class) ? field.getAnnotation(Option.class).arity() : defaultValue;
+        }
+
         private Object tryConvert(Field field, int index, ITypeConverter<?> converter, String value, Class<?> type) throws Exception {
             try {
                 return converter.convert(value);
@@ -892,6 +896,9 @@ public class CommandLine {
 
         private List<Object> consumeArguments(Field field, Class<?> annotation, boolean varargs, int arity,
                 String value, int index, String[] args, ITypeConverter converter, Class<?> type) throws Exception {
+
+            int specifiedArity = actualArity(field, arity);
+            arity = specifiedArity;
             List<Object> result = new ArrayList<Object>();
             if (arity > 0) { // first do the arity mandatory parameters
                 // special treatment for the first value: it may have been attached to the option name
@@ -902,13 +909,17 @@ public class CommandLine {
             }
             if (varargs) { // now process the varargs if any
                 if (result.isEmpty()) {
-                    if (annotation == Parameters.class || !isOption(value)) {
+                    if (annotation == Parameters.class || !isOption(value) || varargs) {
                         result.add(tryConvert(field, 0, converter, value, type));
+                    } else {
+                        return result;
                     }
                 }
                 for (int i = index + result.size(); i < args.length; i++) {
-                    if (annotation == Parameters.class || !isOption(args[i])) { // don't trim: quoted strings are not options
+                    if (annotation == Parameters.class || !isOption(args[i]) || varargs) { // don't trim: quoted strings are not options
                         result.add(tryConvert(field, result.size(), converter, trim(args[i]), type));
+                    } else {
+                        return result;
                     }
                 }
             }
