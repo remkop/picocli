@@ -76,6 +76,10 @@ import static picocli.CommandLine.*;
 // DONE -vrx, -vro outputFile, -vrooutputFile, -vro=outputFile, -vro:outputFile, -vro=, -vro:, -vro
 // DONE --out outputFile, --out=outputFile, --out:outputFile, --out=, --out:, --out
 public class CommandLineTest {
+    @Test
+    public void testVersion() {
+        assertEquals("0.2.0", CommandLine.VERSION);
+    }
 
     private static class SupportedTypes {
         @Option(names = "-boolean")       boolean booleanField;
@@ -572,6 +576,11 @@ public class CommandLineTest {
         cmd.setSeparator(":");
         cmd.parse("-rvo:out p1 p2".split(" "));
         verifyCompact(compact, true, true, "out", fileArray("p1", "p2"));
+    }
+
+    @Test
+    public void testDefaultSeparatorIsEquals() {
+        assertEquals("=", new CommandLine(new CompactFields()).getSeparator());
     }
 
     @Test
