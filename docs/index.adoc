@@ -21,9 +21,6 @@ import picocli.CommandLine.Option;
 import java.io.File;
 
 public class MyApplication {
-    @Option(names = { "--failfast", "-f" }, description = "Stop on the first failure.")
-    private boolean failFast = true;
-
     @Option(names = { "--in", "-i" }, description = "Specifies the input file.", required = true)
     private File inputFile;
 
@@ -45,9 +42,73 @@ CommandLine.parse(app, "--in", "path/to/inputFile", "--out", "path/to/outputFile
 assert app.inputFile != null;
 ----
 
+== Options and Parameters
+Imagine an application that takes some input files and compresses them to an output file.
+----
+Compress -o outputFile file1 file2 file3
+----
+The program takes one option (`-o`, the output file) and any number of input files. One way to accomplish this with picoCLI looks like this:
+
+[source, java]
+----
+import picocli.CommandLine.*;
+import java.io.File;
+
+@Usage(program = "Compress", header = "takes some input files and compresses them to an output file")
+public class Compress {
+    @Parameters(arity = 1, usage = "one or more files to compress")
+    File[] inputFiles;
+
+    @Option(names = {"-o", "--outfile"}, usage = "optional output file name. If omitted directory name is used.")
+    File outputFile;
+
+    @Option(names = {"-h", "--help"}, help = true, usage = "display this help message")
+    boolean helpRequested;
+
+    public static void main(String... args) {
+        try {
+            Compress compress = CommandLine.parse(new Compress(), args);
+            if (compress.helpRequested) {
+                CommandLine.usage(compress, System.err);
+                return;
+            }
+            doCompress();
+        } catch (ParseException ex) {
+            System.err.println(ex.getMessage());
+            CommandLine.usage(compress, System.err);
+        }
+    }
+
+    private void doCompress() { ... } // business logic of the application
+}
+----
+
+== Standalone Options are Booleans
+== Options with Parameters
+== parameters are strongly typed
+== built-in type converters
+== registering custom type converters
+== option short form
 
 == Short options can be grouped
 Single-character options preceded with a '-', like `-v` or `-r`, can be grouped, so `-vxr` is equivalent to `-v -x -r`.
+
+// TODO ambiguous short options: ambiguity with the -f FILE and -fFILE notation.
+// TODO ambiguous options: writing --input ARG (as opposed to --input=ARG) is ambiguous,
+// TODO document that if arity>1 and args="-opt=val1 val2", arity overrules the "=": both values are assigned
+
+== Ambiguity
+[source,java]
+----
+class TextOption {
+    @CommandLine.Option(names = "-t") int[] number;
+    @CommandLine.Option(names = "-f") File file;
+}
+TextOption opt = CommandLine.parse(new TextOption(), "-t", "123", "-f", "path/to/file");
+----
+Above example with throw a `ParameterException: Could not convert '-f' to int[] for option '-t' parameter[1]`. PicoCLI finds that the number field is an array, and since no `arity` is specified, it assumes you want to assign all arguments that follow the `-f` option to this field.
+
+TODO: How can users work around this? Do they need to rely on their users specifying -f last? Can we use varargs? What if varargs=false is also specified?
 
 == Download
 
