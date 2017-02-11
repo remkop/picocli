@@ -652,7 +652,7 @@ public class CommandLineTest {
     }
 
     @Test
-    public void testVarargsArrayOptionsWithArity0ConsumeAllArguments() {
+    public void testVarargArrayOptionsWithArity0ConsumeAllArguments() {
         final double[] DEFAULT_PARAMS = new double[] {1, 2};
         class VarargOptions0ArityAndParameters {
             @Parameters double[] doubleParams = DEFAULT_PARAMS;
@@ -666,7 +666,7 @@ public class CommandLineTest {
     }
 
     @Test
-    public void testVarargsArrayOptionsWithArity1ConsumeAllArguments() {
+    public void testVarargArrayOptionsWithArity1ConsumeAllArguments() {
         class VarargOptions1ArityAndParameters {
             @Parameters double[] doubleParams;
             @Option(names = "-doubles", arity = 1, varargs = true) double[] doubleOptions;
@@ -679,7 +679,7 @@ public class CommandLineTest {
     }
 
     @Test
-    public void testVarargsArrayOptionsWithArity2ConsumeAllArguments() {
+    public void testVarargArrayOptionsWithArity2ConsumeAllArguments() {
         class VarargOptions2ArityAndParameters {
             @Parameters double[] doubleParams;
             @Option(names = "-doubles", arity = 2, varargs = true) double[] doubleOptions;
@@ -692,7 +692,7 @@ public class CommandLineTest {
     }
 
     @Test
-    public void testVarargsArrayOptionsWithoutArityConsumeAllArguments() {
+    public void testVarargArrayOptionsWithoutArityConsumeAllArguments() {
         class VarargOptionsNoArityAndParameters {
             @Parameters char[] charParams;
             @Option(names = "-chars", varargs = true) char[] charOptions;
@@ -711,27 +711,27 @@ public class CommandLineTest {
         @Option(names = "-r") boolean rBoolean;
     }
     @Test
-    public void testVarargsBooleanOptionsArity0Consume1ArgumentIfPossible() { // ignores varargs
+    public void testVarargBooleanOptionsArity0Consume1ArgumentIfPossible() { // ignores varargs
         VarargsBooleanOptions0ArityAndParameters
                 params = CommandLine.parse(new VarargsBooleanOptions0ArityAndParameters(), "-bool false false true".split(" "));
         assertFalse(params.bool);
         assertArrayEquals(new String[]{ "false", "true"}, params.params);
     }
     @Test
-    public void testVarargsBooleanOptionsArity0RequiresNoArgument() { // ignores varargs
+    public void testVarargBooleanOptionsArity0RequiresNoArgument() { // ignores varargs
         VarargsBooleanOptions0ArityAndParameters
                 params = CommandLine.parse(new VarargsBooleanOptions0ArityAndParameters(), "-bool".split(" "));
         assertTrue(params.bool);
     }
     @Test
-    public void testVarargsBooleanOptionsArity0Consume0ArgumentsIfNextArgIsOption() { // ignores varargs
+    public void testVarargBooleanOptionsArity0Consume0ArgumentsIfNextArgIsOption() { // ignores varargs
         VarargsBooleanOptions0ArityAndParameters
                 params = CommandLine.parse(new VarargsBooleanOptions0ArityAndParameters(), "-bool -other".split(" "));
         assertTrue(params.bool);
         assertTrue(params.vOrOther);
     }
     @Test
-    public void testVarargsBooleanOptionsArity0Consume0ArgumentsIfNextArgIsParameter() { // ignores varargs
+    public void testVarargBooleanOptionsArity0Consume0ArgumentsIfNextArgIsParameter() { // ignores varargs
         VarargsBooleanOptions0ArityAndParameters
                 params = CommandLine.parse(new VarargsBooleanOptions0ArityAndParameters(), "-bool 123 -other".split(" "));
         assertTrue(params.bool);
@@ -739,7 +739,7 @@ public class CommandLineTest {
         assertArrayEquals(new String[]{ "123", "-other"}, params.params);
     }
     @Test
-    public void testVarargsBooleanOptionsArity0FailsIfAttachedParamNotABoolean() { // ignores varargs
+    public void testVarargBooleanOptionsArity0FailsIfAttachedParamNotABoolean() { // ignores varargs
         try {
             CommandLine.parse(new VarargsBooleanOptions0ArityAndParameters(), "-bool=123 -other".split(" "));
             fail("was able to assign 123 to boolean");
@@ -748,7 +748,7 @@ public class CommandLineTest {
         }
     }
     @Test
-    public void testVarargsBooleanOptionsArity0ShortFormFailsIfAttachedParamNotABoolean() { // ignores varargs
+    public void testVarargBooleanOptionsArity0ShortFormFailsIfAttachedParamNotABoolean() { // ignores varargs
         VarargsBooleanOptions0ArityAndParameters params =
             CommandLine.parse(new VarargsBooleanOptions0ArityAndParameters(), "-rv234 -bool".split(" "));
         assertTrue(params.vOrOther);
@@ -757,7 +757,7 @@ public class CommandLineTest {
         assertFalse(params.bool);
     }
     @Test
-    public void testVarargsBooleanOptionsArity0ShortFormFailsIfAttachedWithSepParamNotABoolean() { // ignores varargs
+    public void testVarargBooleanOptionsArity0ShortFormFailsIfAttachedWithSepParamNotABoolean() { // ignores varargs
         try {
             CommandLine.parse(new VarargsBooleanOptions0ArityAndParameters(), "-rv=234 -bool".split(" "));
             fail("was able to assign 234 to boolean");
@@ -771,7 +771,7 @@ public class CommandLineTest {
         @Option(names = "-bool", arity = 1, varargs = true) boolean aBoolean;
     }
     @Test
-    public void testVarargsBooleanOptionsArity1Consume1Argument() { // ignores varargs
+    public void testVarargBooleanOptionsArity1Consume1Argument() { // ignores varargs
         VarargsBooleanOptions1ArityAndParameters
                 params = CommandLine.parse(new VarargsBooleanOptions1ArityAndParameters(), "-bool false false true".split(" "));
         assertFalse(params.aBoolean);
@@ -782,7 +782,7 @@ public class CommandLineTest {
         assertArrayEquals(new boolean[]{ false, true}, params.boolParams);
     }
     @Test
-    public void testVarargsBooleanOptionsArity1CaseInsensitive() { // ignores varargs
+    public void testVarargBooleanOptionsArity1CaseInsensitive() { // ignores varargs
         VarargsBooleanOptions1ArityAndParameters
                 params = CommandLine.parse(new VarargsBooleanOptions1ArityAndParameters(), "-bool fAlsE false true".split(" "));
         assertFalse(params.aBoolean);
@@ -819,7 +819,7 @@ public class CommandLineTest {
     }
 
     @Test
-    public void testVarargsIntOptionsWithArity1Consume1Argument() { // ignores varargs
+    public void testVarargIntOptionsWithArity1Consume1Argument() { // ignores varargs
         class VarargsIntOptionsArity1AndParameters {
             @Parameters int[] intParams;
             @Option(names = "-int", arity = 1, varargs = true) int anInt;
@@ -878,7 +878,7 @@ public class CommandLineTest {
     }
 
     @Test
-    public void testArrayOptionsWithoutArityConsumeAllArguments() {
+    public void testNonVarargArrayOptionWithoutArityConsumesOnlyOneArgument() {
         class OptionsNoArityAndParameters {
             @Parameters char[] charParams;
             @Option(names = "-chars") char[] charOptions;
@@ -886,8 +886,9 @@ public class CommandLineTest {
         OptionsNoArityAndParameters
                 params = CommandLine.parse(new OptionsNoArityAndParameters(), "-chars a b c d".split(" "));
         assertArrayEquals(Arrays.toString(params.charOptions),
-                new char[] {'a', 'b', 'c', 'd'}, params.charOptions);
-        assertArrayEquals(null, params.charParams);
+                new char[] {'a'}, params.charOptions);
+        assertArrayEquals(Arrays.toString(params.charParams),
+                new char[] {'b', 'c', 'd'}, params.charParams);
     }
 
     @Test(expected = MissingTypeConverterException.class)
@@ -975,16 +976,16 @@ public class CommandLineTest {
     }
 
     @Test
-    public void testNonVarargArrayParametersWithNegativeArity() {
+    public void testNonVarargArrayParametersWithNegativeArityConsumesOnlyOneArgument() {
         class NonVarArgArrayParamsNegativeArity {
             @Parameters(varargs = false, arity = -1)
             List<String> params;
         }
         NonVarArgArrayParamsNegativeArity params = CommandLine.parse(new NonVarArgArrayParamsNegativeArity(), "a", "b", "c");
-        assertEquals(new ArrayList<String>(), params.params);
+        assertEquals(Arrays.asList("a"), params.params);
 
         params = CommandLine.parse(new NonVarArgArrayParamsNegativeArity(), "a");
-        assertEquals(new ArrayList<String>(), params.params);
+        assertEquals(Arrays.asList("a"), params.params);
 
         params = CommandLine.parse(new NonVarArgArrayParamsNegativeArity());
         assertEquals(null, params.params);
