@@ -1,6 +1,6 @@
 = picoCLI - a mighty tiny Command Line Interface
 Remko Popma <rpopma@apache.org>
-v0.1.0, 2017-02-02
+v0.2.0, 2017-02-11
 :toc: left
 :toc-title: Features
 
@@ -21,6 +21,9 @@ import picocli.CommandLine.Option;
 import java.io.File;
 
 public class MyApplication {
+    @Option(names = { "--failfast", "-f" }, description = "Stop on the first failure.")
+    private boolean failFast = true;
+
     @Option(names = { "--in", "-i" }, description = "Specifies the input file.", required = true)
     private File inputFile;
 
@@ -87,6 +90,9 @@ public class Compress {
 == Options with Parameters
 == parameters are strongly typed
 == built-in type converters
+
+Converters for byte, short, int and long (and their wrapper classes) use the https://docs.oracle.com/javase/7/docs/api/java/lang/Integer.html#decode(java.lang.String)[`decode`] method to convert String values, so you can specify hexadecimal and even octal values in additional to the normal decimal values.
+
 == registering custom type converters
 == option short form
 
