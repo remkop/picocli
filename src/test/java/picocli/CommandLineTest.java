@@ -205,6 +205,54 @@ public class CommandLineTest {
         assertEquals("UUID", UUID.fromString("c7d51423-bf9d-45dd-a30d-5b16fafe42e2"), bean.anUUIDField);
     }
     @Test
+    public void testByteFieldsCanBeSpecifiedInHexadecimal() {
+        SupportedTypes bean = CommandLine.parse(new SupportedTypes(), "-byte", "0x1F", "-Byte", "0x0F");
+        assertEquals(0x1F, bean.byteField);
+        assertEquals(Byte.valueOf((byte) 0x0F), bean.aByteField);
+    }
+    @Test
+    public void testShortFieldsCanBeSpecifiedInHexadecimal() {
+        SupportedTypes bean = CommandLine.parse(new SupportedTypes(), "-short", "0xFF", "-Short", "0x6FFE");
+        assertEquals(255, bean.shortField);
+        assertEquals(Short.valueOf((short) 0x6FFE), bean.aShortField);
+    }
+    @Test
+    public void testIntFieldsCanBeSpecifiedInHexadecimal() {
+        SupportedTypes bean = CommandLine.parse(new SupportedTypes(), "-int", "0xFF", "-Integer", "0xFFFF");
+        assertEquals(255, bean.intField);
+        assertEquals(Integer.valueOf(0xFFFF), bean.anIntegerField);
+    }
+    @Test
+    public void testLongFieldsCanBeSpecifiedInHexadecimal() {
+        SupportedTypes bean = CommandLine.parse(new SupportedTypes(), "-long", "0xAABBCC", "-Long", "0xAABBCCDD");
+        assertEquals(0xAABBCC, bean.longField);
+        assertEquals(Long.valueOf(0xAABBCCDDL), bean.aLongField);
+    }
+    @Test
+    public void testByteFieldsCanBeSpecifiedInOctal() {
+        SupportedTypes bean = CommandLine.parse(new SupportedTypes(), "-byte", "010", "-Byte", "010");
+        assertEquals(8, bean.byteField);
+        assertEquals(Byte.valueOf((byte) 8), bean.aByteField);
+    }
+    @Test
+    public void testShortFieldsCanBeSpecifiedInOctal() {
+        SupportedTypes bean = CommandLine.parse(new SupportedTypes(), "-short", "010", "-Short", "010");
+        assertEquals(8, bean.shortField);
+        assertEquals(Short.valueOf((short) 8), bean.aShortField);
+    }
+    @Test
+    public void testIntFieldsCanBeSpecifiedInOctal() {
+        SupportedTypes bean = CommandLine.parse(new SupportedTypes(), "-int", "010", "-Integer", "010");
+        assertEquals(8, bean.intField);
+        assertEquals(Integer.valueOf(8), bean.anIntegerField);
+    }
+    @Test
+    public void testLongFieldsCanBeSpecifiedInOctal() {
+        SupportedTypes bean = CommandLine.parse(new SupportedTypes(), "-long", "010", "-Long", "010");
+        assertEquals(8, bean.longField);
+        assertEquals(Long.valueOf(8), bean.aLongField);
+    }
+    @Test
     public void testTimeFormatHHmmSupported() throws ParseException {
         SupportedTypes bean = CommandLine.parse(new SupportedTypes(), "-Time", "23:59");
         assertEquals("Time", new Time(new SimpleDateFormat("HH:mm").parse("23:59").getTime()), bean.aTimeField);

@@ -1010,7 +1010,7 @@ public class CommandLine {
             public String convert(String value) { return value; }
         }
         static class ByteConverter implements ITypeConverter<Byte> {
-            public Byte convert(String value) { return Byte.valueOf(value); }
+            public Byte convert(String value) { return Byte.decode(value); }
         }
         static class BooleanConverter implements ITypeConverter<Boolean> {
             public Boolean convert(String value) {
@@ -1030,13 +1030,13 @@ public class CommandLine {
             }
         }
         static class ShortConverter implements ITypeConverter<Short> {
-            public Short convert(String value) { return Short.valueOf(value); }
+            public Short convert(String value) { return Short.decode(value); }
         }
         static class IntegerConverter implements ITypeConverter<Integer> {
-            public Integer convert(String value) { return Integer.valueOf(value); }
+            public Integer convert(String value) { return Integer.decode(value); }
         }
         static class LongConverter implements ITypeConverter<Long> {
-            public Long convert(String value) { return Long.valueOf(value); }
+            public Long convert(String value) { return Long.decode(value); }
         }
         static class FloatConverter implements ITypeConverter<Float> {
             public Float convert(String value) { return Float.valueOf(value); }
