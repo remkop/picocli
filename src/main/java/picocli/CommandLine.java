@@ -45,6 +45,7 @@ import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
 import java.util.SortedSet;
+import java.util.Stack;
 import java.util.TreeSet;
 import java.util.UUID;
 import java.util.regex.Pattern;
@@ -113,18 +114,9 @@ import java.util.regex.Pattern;
  * http://catb.org/~esr/writings/taoup/html/ch10s05.html
  *
  */
-// TODO support long options with value separated by "=" or by space
-// TODO support short options with value attached or separated by space
-// TODO support abbreviated long options when unambiguous
-// TODO support arity with array or collection fields, negative arity means variable arity (1 or more)
-// TODO ignore arity for single-value fields, special case arity=1 for booleans to make parameter mandatory
-// TODO support positional arguments (either with "--" separator or without)
-// TODO Usage (with description and footer)
-// TODO support commands
-// TODO do we need to check duplicates if child & super have same name? same option name?
 public class CommandLine {
     /** This is PicoCLI version {@value}. */
-    public static final String VERSION = "0.1.0";
+    public static final String VERSION = "0.2.0";
 
     private final Interpreter interpreter;
 
@@ -655,18 +647,17 @@ public class CommandLine {
             // first reset any state in case this CommandLine instance is being reused
             isHelpRequested = false;
             Set<Field> required = new HashSet<Field>(requiredFields);
-            for (int i = 0; i < args.length; i++) {
-                String arg = args[i];
-                try {
-                    i = processOption(required, arg, i, args);
-                } catch (ParameterException ex) {
-                    throw ex;
-                } catch (Exception ex) {
-                    throw ParameterException.create(ex, arg, i, args);
-                }
-                if (isHelpRequested) {
-                    break;
-                }
+            Stack<String> arguments = new Stack<String>();
+            for (int i = args.length - 1; i >= 0; i--) {
+                arguments.push(args[i]);
+            }
+            try {
+                processArguments(arguments, required);
+            } catch (ParameterException ex) {
+                throw ex;
+            } catch (Exception ex) {
+                //throw ParameterException.create(ex, arg, i, args);
+                throw ParameterException.create(ex, "???", arguments.size(), args);
             }
             if (!isHelpRequested && !required.isEmpty()) {
                 throw MissingParameterException.create(required);
@@ -674,7 +665,7 @@ public class CommandLine {
             return annotatedObject;
         }
 
-        private int processOption(Set<Field> required, String arg, int index, String[] args) throws Exception {
+        private void processArguments(Stack<String> args, Set<Field> required) throws Exception {
             // arg must be one of:
             // 1. the "--" double dash separating options from positional arguments
             // 1. a stand-alone flag, like "-v" or "--verbose": no value required, must map to boolean or Boolean field
@@ -684,114 +675,107 @@ public class CommandLine {
             // 4. a combination of stand-alone options, like "-vxr". Equivalent to "-v -x -r", "-v true -x true -r true"
             // 5. a combination of stand-alone options and one option with an argument, like "-vxrffile"
 
-            // Double-dash separates options from positional arguments.
-            // If found, then interpret the remaining args as positional parameters.
-            if ("--".equals(arg)) {
-                setPositionalArguments(args, index + 1);
-                return args.length; // we are done
-            }
+            while (!args.isEmpty()) {
+                String arg = args.pop();
 
-            // First try to interpret the argument as a single option (as opposed to a compact group of options).
-            // A single option may be without option parameters, like "-v" or "--verbose" (a boolean value),
-            // or an option may have one or more option parameters.
-            // A parameter may be attached to the option.
-            String optionParam = null;
-            int separatorIndex = arg.indexOf(separator);
-            if (separatorIndex > 0) {
-                String key = arg.substring(0, separatorIndex);
-                // be greedy. Consume the whole arg as an option if possible.
-                if (optionName2Field.containsKey(key) && !optionName2Field.containsKey(arg)) {
-                    optionParam = arg.substring(separatorIndex + separator.length());
-                    arg = key;
+                // Double-dash separates options from positional arguments.
+                // If found, then interpret the remaining args as positional parameters.
+                if ("--".equals(arg)) {
+                    processPositionalParameters(args);
+                    return; // we are done
+                }
+
+                // First try to interpret the argument as a single option (as opposed to a compact group of options).
+                // A single option may be without option parameters, like "-v" or "--verbose" (a boolean value),
+                // or an option may have one or more option parameters.
+                // A parameter may be attached to the option.
+                boolean paramAttachedToOption = false;
+                int separatorIndex = arg.indexOf(separator);
+                if (separatorIndex > 0) {
+                    String key = arg.substring(0, separatorIndex);
+                    // be greedy. Consume the whole arg as an option if possible.
+                    if (optionName2Field.containsKey(key) && !optionName2Field.containsKey(arg)) {
+                        paramAttachedToOption = true;
+                        String optionParam = arg.substring(separatorIndex + separator.length());
+                        args.push(optionParam);
+                        arg = key;
+                    }
+                }
+                if (optionName2Field.containsKey(arg)) {
+                    processStandaloneOption(required, arg, args, paramAttachedToOption);
+                }
+                // Compact (single-letter) options can be grouped with other options or with an argument.
+                // only single-letter options can be combined with other options or with an argument
+                else if (arg.length() > 2 && arg.startsWith("-")) {
+                    processClusteredOptions(required, arg, args);
+                }
+                // The argument could not be interpreted as an option.
+                // We take this to mean that the remainder are positional arguments
+                else {
+                    args.push(arg);
+                    processPositionalParameters(args);
+                    return;
                 }
             }
-            if (optionName2Field.containsKey(arg)) {
-                return processStandaloneOption(required, arg, index, args, optionParam);
-            }
-            // Compact (single-letter) options can be grouped with other options or with an argument.
-            // only single-letter options can be combined with other options or with an argument
-            if (arg.length() > 2 && arg.startsWith("-")) {
-                return processClusteredOptions(required, arg, index, args);
-            }
-
-            // The argument could not be interpreted as an option.
-            // We take this to mean that the remainder are positional arguments
-            setPositionalArguments(args, index);
-            return args.length; // we are done
         }
 
-        private int processStandaloneOption(final Set<Field> required, final String arg, final int index,
-                final String[] args, String optionParam) throws Exception {
+        private void processPositionalParameters(Stack<String> args) throws Exception {
+            if (positionalParametersField == null || args.isEmpty()) {
+                return;
+            }
+            boolean varargs = positionalParametersField.getAnnotation(Parameters.class).varargs();
+            int arity = positionalParametersField.getAnnotation(Parameters.class).arity();
+            assertNoMissingParameters(positionalParametersField, arity, args.size());
+            applyOption(positionalParametersField, Parameters.class, varargs, arity, false, args);
+        }
+
+        private void processStandaloneOption(Set<Field> required, String arg, Stack<String> args, boolean paramAttachedToKey) throws Exception {
             Field field = optionName2Field.get(arg);
             required.remove(field);
             int estimatedArity = estimateArity(field);
             boolean varargs = field.getAnnotation(Option.class).varargs();
-            boolean paramAttachedToKey = optionParam != null;
-            int paramIndex = index;
             if (paramAttachedToKey) {
                 estimatedArity = Math.max(1, estimatedArity); // if key=value, arity is at least 1
-            } else {
-                paramIndex = index + 1;
-                optionParam = (args.length > paramIndex) ? args[paramIndex] : null;
             }
-            int argsConsumed = applyOption(field, Option.class, varargs, estimatedArity, optionParam, paramIndex, args);
-            if (paramAttachedToKey) {
-                argsConsumed = argsConsumed > 0 ? argsConsumed - 1 : argsConsumed;
-            }
-            return index + argsConsumed;
+            applyOption(field, Option.class, varargs, estimatedArity, paramAttachedToKey, args);
         }
 
-        private int processClusteredOptions(Set<Field> required, String arg, int index, String[] args) throws Exception {
-            String optionParam;
+        private void processClusteredOptions(Set<Field> required, String arg, Stack<String> args) throws Exception {
             String compact = arg.substring(1);
-            Field field;
-            int estimatedArity = 0;
             do {
                 if (compact.length() > 0 && singleCharOption2Field.containsKey(compact.charAt(0))) {
-                    field = singleCharOption2Field.get(compact.charAt(0));
+                    Field field = singleCharOption2Field.get(compact.charAt(0));
                     required.remove(field);
                     compact = compact.length() > 0 ? compact.substring(1) : "";
                     boolean varargs = field.getAnnotation(Option.class).varargs();
-                    estimatedArity = estimateArity(field);
-                    if (estimatedArity >= 1 || compact.startsWith(separator)) { // must interpret the remainder as an option argument
-                        optionParam = compact; // assume arg is attached: -fFILE
-                        boolean paramAttachedToOption = compact.length() > 0; // but only if we *have* a remainder
-                        if (paramAttachedToOption) {
-                            if (compact.startsWith(separator)) { // attached with separator: -f=FILE
-                                estimatedArity = Math.max(1, estimatedArity); // arity is at least 1
-                                optionParam = compact.substring(separator.length());
-                            }
-                        } else {
-                            index++; // we consume the next argument, need to pass that back
-                            optionParam = (args.length > index) ? args[index] : null;
-                        }
-                        int consumed = applyOption(field, Option.class, varargs, estimatedArity, optionParam, index, args);
-                        // if 1 consumed then don't advance position: option param was attached to option
-                        consumed = consumed > 0 ? consumed - 1: 0;
-                        return index + consumed;
-                    } else { // arity <= 0 && !compact.startsWith(separator)
-                        // e.g., boolean @Option("-v", arity=0, varargs=true); arg "-rvTRUE", remainder compact="TRUE"
-                        int consumed = applyOption(field, Option.class, varargs, 0, compact, index, args);
-                        // only return if compact (and maybe more) was consumed, otherwise continue do-while loop
-                        if (consumed > 0) {
-                            return index + consumed - 1; // don't count compact: it was attached
-                        }
+                    int estimatedArity = estimateArity(field);
+                    boolean paramAttachedToOption = compact.length() > 0;
+                    if (compact.startsWith(separator)) {// attached with separator, like -f=FILE or -v=true
+                        compact = compact.substring(separator.length());
+                        estimatedArity = Math.max(1, estimatedArity); // arity is at least 1
                     }
+                    args.push(compact); // interpret remainder as option parameter (CAUTION: may be empty string!)
+                    // arity may be >= 1, or
+                    // arity <= 0 && !compact.startsWith(separator)
+                    // e.g., boolean @Option("-v", arity=0, varargs=true); arg "-rvTRUE", remainder compact="TRUE"
+                    int consumed = applyOption(field, Option.class, varargs, estimatedArity, paramAttachedToOption, args);
+                    // only return if compact (and maybe more) was consumed, otherwise continue do-while loop
+                    if (consumed > 0) {
+                        return;
+                    }
+                    compact = args.pop();
                 } else { // compact is empty || compact.charAt(0) is not a short option key
                     if (compact.length() == 0) { // we finished parsing a group of short options like -rxv
-                        return index; // return normally and parse the next arg
+                        return; // return normally and parse the next arg
                     }
                     // We get here when the remainder of the compact group is neither an option,
                     // nor a parameter that the last option could consume.
                     // Consume it and any other remaining parameters as positional parameters.
-                    String[] remainder = new String[args.length - index];
-                    System.arraycopy(args, index, remainder, 0, remainder.length);
-                    remainder[0] = compact;
-                    setPositionalArguments(remainder, 0);
-                    return args.length;
+                    args.push(compact);
+                    processPositionalParameters(args);
+                    return;
                 }
-            } while (field != null);
-            throw new IllegalStateException(); // we should never get here
+            } while (true);
         }
 
         private boolean isOption(String arg) {
@@ -815,19 +799,24 @@ public class CommandLine {
         }
 
         @SuppressWarnings("unchecked")
-        private int applyOption(Field field, Class<?> annotation, boolean varargs, int arity, String value, int index, String[] args) throws Exception {
+        private int applyOption(Field field, Class<?> annotation, boolean varargs, int arity,
+                boolean valueAttachedToOption, Stack<String> args) throws Exception {
             updateHelpRequested(field);
             Class<?> cls = field.getType();
-            int length = args.length - index;
+            int length = args.size();
             if (arity == Integer.MAX_VALUE) {
                 arity = length; // consume all available args
             }
             assertNoMissingParameters(field, arity, length);
+            String value = args.isEmpty() ? null : args.pop();
+            if (value != null && value.length() == 0 && !valueAttachedToOption) {
+                value = args.isEmpty() ? null : args.pop();
+            }
             value = trim(value); // unquote the value
             if (cls.isArray()) {
                 Class<?> type = cls.getComponentType();
                 ITypeConverter converter = getTypeConverter(type);
-                List<Object> converted = consumeArguments(field, annotation, varargs, arity, value, index, args, converter, cls);
+                List<Object> converted = consumeArguments(field, annotation, varargs, arity, value, args, converter, cls);
                 Object array = Array.newInstance(type, converted.size());
                 field.set(annotatedObject, array);
                 for (int i = 0; i < converted.size(); i++) { // get remaining values from the args array
@@ -838,7 +827,7 @@ public class CommandLine {
                 Collection<Object> collection = (Collection<Object>) field.get(annotatedObject);
                 Class<?> type = getTypeAttribute(field);
                 ITypeConverter converter = getTypeConverter(type);
-                List<Object> converted = consumeArguments(field, annotation, varargs, arity, value, index, args, converter, type);
+                List<Object> converted = consumeArguments(field, annotation, varargs, arity, value, args, converter, type);
                 if (collection == null) {
                     collection = createCollection(cls);
                     field.set(annotatedObject, collection);
@@ -852,11 +841,15 @@ public class CommandLine {
                 }
                 return converted.size();
             }
-            // special logic for booleans: BooleanConverter accepts only "true" or "false". Use when arity >= 1.
+            // special logic for booleans: BooleanConverter accepts only "true" or "false".
             if ((cls == Boolean.class || cls == Boolean.TYPE) && arity <= 0) {
+                // Usually, boolean fields have arity=0 and don't take a parameter, but if varargs=true it MAY be a param
                 if (varargs && ("true".equalsIgnoreCase(value) || "false".equalsIgnoreCase(value))) {
                     arity = 1; // if it is a varargs we only consume 1 argument if it is a boolean value
                 } else {
+                    if (value != null) {
+                        args.push(value); // we don't consume the value
+                    }
                     value = "true"; // just specifying the option name sets the boolean to true
                 }
             }
@@ -895,29 +888,33 @@ public class CommandLine {
         }
 
         private List<Object> consumeArguments(Field field, Class<?> annotation, boolean varargs, int arity,
-                String value, int index, String[] args, ITypeConverter converter, Class<?> type) throws Exception {
+                String value, Stack<String> args, ITypeConverter converter, Class<?> type) throws Exception {
 
-            int specifiedArity = actualArity(field, arity);
-            arity = specifiedArity;
+            arity = actualArity(field, arity);
             List<Object> result = new ArrayList<Object>();
             if (arity > 0) { // first do the arity mandatory parameters
                 // special treatment for the first value: it may have been attached to the option name
                 result.add(tryConvert(field, 0, converter, value, type));
                 for (int i = 1; i < arity; i++) { // get the remaining values from the args array
-                    result.add(tryConvert(field, i, converter, trim(args[i + index]), type));
+                    result.add(tryConvert(field, i, converter, trim(args.pop()), type));
                 }
+            } else {
+                args.push(value);
             }
-            if (varargs) { // now process the varargs if any
+            // if no mandatory parameters, and we are not forbidden (arity != 0), then consume at least one arg
+            if (arity != 0) {
                 if (result.isEmpty()) {
-                    if (annotation == Parameters.class || !isOption(value) || varargs) {
-                        result.add(tryConvert(field, 0, converter, value, type));
+                    if (annotation == Parameters.class || !isOption(args.peek())) {
+                        result.add(tryConvert(field, 0, converter, args.pop(), type));
                     } else {
                         return result;
                     }
                 }
-                for (int i = index + result.size(); i < args.length; i++) {
-                    if (annotation == Parameters.class || !isOption(args[i]) || varargs) { // don't trim: quoted strings are not options
-                        result.add(tryConvert(field, result.size(), converter, trim(args[i]), type));
+            }
+            if (varargs) { // now process the varargs if any
+                while (!args.isEmpty()) {
+                    if (annotation == Parameters.class || !isOption(args.peek())) { // don't trim: quoted strings are not options
+                        result.add(tryConvert(field, result.size(), converter, trim(args.pop()), type));
                     } else {
                         return result;
                     }
@@ -939,17 +936,6 @@ public class CommandLine {
             if (field.isAnnotationPresent(Option.class)) {
                 isHelpRequested |= field.getAnnotation(Option.class).help();
             }
-        }
-
-        private void setPositionalArguments(String[] args, int index) throws Exception {
-            if (positionalParametersField == null) {
-                return;
-            }
-            boolean varargs = positionalParametersField.getAnnotation(Parameters.class).varargs();
-            int arity = positionalParametersField.getAnnotation(Parameters.class).arity();
-            int length = args.length - index;
-            assertNoMissingParameters(positionalParametersField, arity, length);
-            applyOption(positionalParametersField, Parameters.class, varargs, arity, args[index], index, args);
         }
 
         @SuppressWarnings("unchecked")
@@ -978,7 +964,7 @@ public class CommandLine {
             if (type.isEnum()) {
                 return new ITypeConverter<Object>() {
                     @SuppressWarnings("unchecked")
-                    public Object convert(final String value) throws Exception {
+                    public Object convert(String value) throws Exception {
                         return Enum.valueOf((Class<Enum>) type, value);
                     }
                 };
@@ -1103,16 +1089,16 @@ public class CommandLine {
             public BigInteger convert(String value) { return new BigInteger(value); }
         }
         static class CharsetConverter implements ITypeConverter<Charset> {
-            public Charset convert(final String s) { return Charset.forName(s); }
+            public Charset convert(String s) { return Charset.forName(s); }
         }
         static class InetAddressConverter implements ITypeConverter<InetAddress> {
-            public InetAddress convert(final String s) throws Exception { return InetAddress.getByName(s); }
+            public InetAddress convert(String s) throws Exception { return InetAddress.getByName(s); }
         }
         static class PatternConverter implements ITypeConverter<Pattern> {
-            public Pattern convert(final String s) { return Pattern.compile(s); }
+            public Pattern convert(String s) { return Pattern.compile(s); }
         }
         static class UUIDConverter implements ITypeConverter<UUID> {
-            public UUID convert(final String s) throws Exception { return UUID.fromString(s); }
+            public UUID convert(String s) throws Exception { return UUID.fromString(s); }
         }
     }
 
@@ -1127,7 +1113,7 @@ public class CommandLine {
          * @param <T> type of the object to check
          * @return the verified object
          */
-        static <T> T notNull(final T object, final String description) {
+        static <T> T notNull(T object, String description) {
             if (object == null) {
                 throw new NullPointerException(description);
             }
