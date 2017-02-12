@@ -740,6 +740,91 @@ public class CommandLineTest {
     }
 
     @Test
+    public void testVarargArrayOptionConsumesAllArgumentsUpToClusteredOption() {
+        class VarargOptions2ArityAndParameters {
+            @Parameters String[] stringParams;
+            @Option(names = "-s", arity = 2, varargs = true) String[] stringOptions;
+            @Option(names = "-v") boolean verbose;
+            @Option(names = "-f") File file;
+        }
+        VarargOptions2ArityAndParameters
+                params = CommandLine.parse(new VarargOptions2ArityAndParameters(), "-s 1.1 2.2 3.3 4.4 -vfFILE 5.5".split(" "));
+        assertArrayEquals(Arrays.toString(params.stringOptions),
+                new String[] {"1.1", "2.2", "3.3", "4.4"}, params.stringOptions);
+        assertTrue(params.verbose);
+        assertEquals(new File("FILE"), params.file);
+        assertArrayEquals(new String[] {"5.5"}, params.stringParams);
+    }
+
+    @Test
+    public void testVarargArrayOptionConsumesAllArgumentIncludingQuotedSimpleOption() {
+        class VarargOptions2ArityAndParameters {
+            @Parameters String[] stringParams;
+            @Option(names = "-s", arity = 2, varargs = true) String[] stringOptions;
+            @Option(names = "-v") boolean verbose;
+            @Option(names = "-f") File file;
+        }
+        VarargOptions2ArityAndParameters
+                params = CommandLine.parse(new VarargOptions2ArityAndParameters(), "-s 1.1 2.2 3.3 4.4 \"-v\" \"-f\" \"FILE\" 5.5".split(" "));
+        assertArrayEquals(Arrays.toString(params.stringOptions),
+                new String[] {"1.1", "2.2", "3.3", "4.4", "-v", "-f", "FILE", "5.5"}, params.stringOptions);
+        assertFalse("verbose", params.verbose);
+        assertNull("file", params.file);
+        assertArrayEquals(null, params.stringParams);
+    }
+
+    @Test
+    public void testVarargArrayOptionConsumesAllArgumentIncludingQuotedClusteredOption() {
+        class VarargOptions2ArityAndParameters {
+            @Parameters String[] stringParams;
+            @Option(names = "-s", arity = 2, varargs = true) String[] stringOptions;
+            @Option(names = "-v") boolean verbose;
+            @Option(names = "-f") File file;
+        }
+        VarargOptions2ArityAndParameters
+                params = CommandLine.parse(new VarargOptions2ArityAndParameters(), "-s 1.1 2.2 3.3 4.4 \"-vfFILE\" 5.5".split(" "));
+        assertArrayEquals(Arrays.toString(params.stringOptions),
+                new String[] {"1.1", "2.2", "3.3", "4.4", "-vfFILE", "5.5"}, params.stringOptions);
+        assertFalse("verbose", params.verbose);
+        assertNull("file", params.file);
+        assertArrayEquals(null, params.stringParams);
+    }
+
+    @Test
+    public void testVarargArrayOptionConsumesAllArgumentsUpToNextSimpleOption() {
+        class VarargOptions2ArityAndParameters {
+            @Parameters double[] doubleParams;
+            @Option(names = "-s", arity = 2, varargs = true) String[] stringOptions;
+            @Option(names = "-v") boolean verbose;
+            @Option(names = "-f") File file;
+        }
+        VarargOptions2ArityAndParameters
+                params = CommandLine.parse(new VarargOptions2ArityAndParameters(), "-s 1.1 2.2 3.3 4.4 -v -f=FILE 5.5".split(" "));
+        assertArrayEquals(Arrays.toString(params.stringOptions),
+                new String[] {"1.1", "2.2", "3.3", "4.4"}, params.stringOptions);
+        assertTrue(params.verbose);
+        assertEquals(new File("FILE"), params.file);
+        assertArrayEquals(new double[] {5.5}, params.doubleParams, 0.000001);
+    }
+
+    @Test
+    public void testVarargArrayOptionConsumesAllArgumentsUpToNextOptionWithAttachment() {
+        class VarargOptions2ArityAndParameters {
+            @Parameters double[] doubleParams;
+            @Option(names = "-s", arity = 2, varargs = true) String[] stringOptions;
+            @Option(names = "-v") boolean verbose;
+            @Option(names = "-f") File file;
+        }
+        VarargOptions2ArityAndParameters
+                params = CommandLine.parse(new VarargOptions2ArityAndParameters(), "-s 1.1 2.2 3.3 4.4 -f=FILE -v 5.5".split(" "));
+        assertArrayEquals(Arrays.toString(params.stringOptions),
+                new String[] {"1.1", "2.2", "3.3", "4.4"}, params.stringOptions);
+        assertTrue(params.verbose);
+        assertEquals(new File("FILE"), params.file);
+        assertArrayEquals(new double[] {5.5}, params.doubleParams, 0.000001);
+    }
+
+    @Test
     public void testVarargArrayOptionsWithoutArityConsumeAllArguments() {
         class VarargOptionsNoArityAndParameters {
             @Parameters char[] charParams;
