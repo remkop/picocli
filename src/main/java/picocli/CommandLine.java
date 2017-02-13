@@ -638,6 +638,11 @@ public class CommandLine {
             }
         }
 
+        /**
+         * Entry point into parsing command line arguments.
+         * @param args the command line arguments
+         * @return the annotated object, initialized with the command line arguments
+         */
         Object parse(String... args) {
             Assert.notNull(args, "argument array");
             if (positionalParametersField != null) {
@@ -729,7 +734,10 @@ public class CommandLine {
             applyOption(positionalParametersField, Parameters.class, varargs, arity, false, args);
         }
 
-        private void processStandaloneOption(Set<Field> required, String arg, Stack<String> args, boolean paramAttachedToKey) throws Exception {
+        private void processStandaloneOption(Set<Field> required,
+                                             String arg,
+                                             Stack<String> args,
+                                             boolean paramAttachedToKey) throws Exception {
             Field field = optionName2Field.get(arg);
             required.remove(field);
             int estimatedArity = estimateArity(field);
@@ -741,41 +749,161 @@ public class CommandLine {
         }
 
         private void processClusteredOptions(Set<Field> required, String arg, Stack<String> args) throws Exception {
-            String compact = arg.substring(1);
+            String cluster = arg.substring(1);
             do {
-                if (compact.length() > 0 && singleCharOption2Field.containsKey(compact.charAt(0))) {
-                    Field field = singleCharOption2Field.get(compact.charAt(0));
+                if (cluster.length() > 0 && singleCharOption2Field.containsKey(cluster.charAt(0))) {
+                    Field field = singleCharOption2Field.get(cluster.charAt(0));
                     required.remove(field);
-                    compact = compact.length() > 0 ? compact.substring(1) : "";
+                    cluster = cluster.length() > 0 ? cluster.substring(1) : "";
                     boolean varargs = field.getAnnotation(Option.class).varargs();
                     int estimatedArity = estimateArity(field);
-                    boolean paramAttachedToOption = compact.length() > 0;
-                    if (compact.startsWith(separator)) {// attached with separator, like -f=FILE or -v=true
-                        compact = compact.substring(separator.length());
+                    boolean paramAttachedToOption = cluster.length() > 0;
+                    if (cluster.startsWith(separator)) {// attached with separator, like -f=FILE or -v=true
+                        cluster = cluster.substring(separator.length());
                         estimatedArity = Math.max(1, estimatedArity); // arity is at least 1
                     }
-                    args.push(compact); // interpret remainder as option parameter (CAUTION: may be empty string!)
+                    args.push(cluster); // interpret remainder as option parameter (CAUTION: may be empty string!)
                     // arity may be >= 1, or
-                    // arity <= 0 && !compact.startsWith(separator)
-                    // e.g., boolean @Option("-v", arity=0, varargs=true); arg "-rvTRUE", remainder compact="TRUE"
+                    // arity <= 0 && !cluster.startsWith(separator)
+                    // e.g., boolean @Option("-v", arity=0, varargs=true); arg "-rvTRUE", remainder cluster="TRUE"
                     int consumed = applyOption(field, Option.class, varargs, estimatedArity, paramAttachedToOption, args);
-                    // only return if compact (and maybe more) was consumed, otherwise continue do-while loop
+                    // only return if cluster (and maybe more) was consumed, otherwise continue do-while loop
                     if (consumed > 0) {
                         return;
                     }
-                    compact = args.pop();
-                } else { // compact is empty || compact.charAt(0) is not a short option key
-                    if (compact.length() == 0) { // we finished parsing a group of short options like -rxv
+                    cluster = args.pop();
+                } else { // cluster is empty || cluster.charAt(0) is not a short option key
+                    if (cluster.length() == 0) { // we finished parsing a group of short options like -rxv
                         return; // return normally and parse the next arg
                     }
-                    // We get here when the remainder of the compact group is neither an option,
+                    // We get here when the remainder of the cluster group is neither an option,
                     // nor a parameter that the last option could consume.
                     // Consume it and any other remaining parameters as positional parameters.
-                    args.push(compact);
+                    args.push(cluster);
                     processPositionalParameters(args);
                     return;
                 }
             } while (true);
+        }
+
+        private int applyOption(Field field,
+                                Class<?> annotation,
+                                boolean varargs,
+                                int arity,
+                                boolean valueAttachedToOption,
+                                Stack<String> args) throws Exception {
+            updateHelpRequested(field);
+            if (!args.isEmpty() && args.peek().length() == 0 && !valueAttachedToOption) {
+                args.pop(); // throw out empty string we get at the end of a group of clustered short options
+            }
+            int length = args.size();
+            if (arity == Integer.MAX_VALUE) {
+                arity = length; // consume all available args
+            }
+            assertNoMissingParameters(field, arity, length);
+            Class<?> cls = field.getType();
+            if (cls.isArray()) {
+                return applyValuesToArrayField(field, annotation, varargs, arity, args, cls);
+            } else if (Collection.class.isAssignableFrom(cls)) {
+                return applyValuesToCollectionField(field, annotation, varargs, arity, args, cls);
+            }
+            String value = args.isEmpty() ? null : trim(args.pop()); // unquote the value
+
+            // special logic for booleans: BooleanConverter accepts only "true" or "false".
+            if ((cls == Boolean.class || cls == Boolean.TYPE) && arity <= 0) {
+
+                // Usually, boolean fields have arity=0 and don't take a parameter, but if varargs=true it MAY be a param
+                if (varargs && ("true".equalsIgnoreCase(value) || "false".equalsIgnoreCase(value))) {
+                    arity = 1;            // if it is a varargs we only consume 1 argument if it is a boolean value
+                } else {
+                    if (value != null) {
+                        args.push(value); // we don't consume the value
+                    }
+                    value = "true";      // just specifying the option name sets the boolean to true
+                }
+            }
+            ITypeConverter<?> converter = getTypeConverter(cls);
+            Object objValue = tryConvert(field, -1, converter, value, cls);
+            field.set(annotatedObject, objValue);
+            return arity;
+        }
+
+        private int applyValuesToArrayField(Field field,
+                                            Class<?> annotation,
+                                            boolean varargs,
+                                            int arity,
+                                            Stack<String> args,
+                                            Class<?> cls) throws Exception {
+            Class<?> type = cls.getComponentType();
+            ITypeConverter converter = getTypeConverter(type);
+            List<Object> converted = consumeArguments(field, annotation, varargs, arity, args, converter, cls);
+            Object array = Array.newInstance(type, converted.size());
+            field.set(annotatedObject, array);
+            for (int i = 0; i < converted.size(); i++) { // get remaining values from the args array
+                Array.set(array, i, converted.get(i));
+            }
+            return converted.size();
+        }
+
+        @SuppressWarnings("unchecked")
+        private int applyValuesToCollectionField(Field field,
+                                                 Class<?> annotation,
+                                                 boolean varargs,
+                                                 int arity,
+                                                 Stack<String> args,
+                                                 Class<?> cls) throws Exception {
+            Collection<Object> collection = (Collection<Object>) field.get(annotatedObject);
+            Class<?> type = getTypeAttribute(field);
+            ITypeConverter converter = getTypeConverter(type);
+            List<Object> converted = consumeArguments(field, annotation, varargs, arity, args, converter, type);
+            if (collection == null) {
+                collection = createCollection(cls);
+                field.set(annotatedObject, collection);
+            }
+            for (Object element : converted) {
+                if (element instanceof Collection) {
+                    collection.addAll((Collection) element);
+                } else {
+                    collection.add(element);
+                }
+            }
+            return converted.size();
+        }
+
+        private List<Object> consumeArguments(Field field,
+                                              Class<?> annotation,
+                                              boolean varargs,
+                                              int arity,
+                                              Stack<String> args,
+                                              ITypeConverter converter,
+                                              Class<?> type) throws Exception {
+            arity = actualArity(field, arity);
+            List<Object> result = new ArrayList<Object>();
+            if (arity > 0) {                       // first do the arity mandatory parameters
+                for (int i = 0; i < arity; i++) { // get the remaining values from the args array
+                    result.add(tryConvert(field, i, converter, trim(args.pop()), type));
+                }
+            }
+            // if no mandatory parameters, and we are not forbidden (arity != 0), then consume at least one arg
+            if (arity != 0) {
+                if (result.isEmpty()) {
+                    if (annotation == Parameters.class || !isOption(args.peek())) {
+                        result.add(tryConvert(field, 0, converter, trim(args.pop()), type));
+                    } else {
+                        return result;
+                    }
+                }
+            }
+            if (varargs) { // now process the varargs if any
+                while (!args.isEmpty()) {
+                    if (annotation == Parameters.class || !isOption(args.peek())) { // don't trim: quoted strings are not options
+                        result.add(tryConvert(field, result.size(), converter, trim(args.pop()), type));
+                    } else {
+                        return result;
+                    }
+                }
+            }
+            return result;
         }
 
         /**
@@ -816,72 +944,12 @@ public class CommandLine {
             return 1;
         }
 
-        @SuppressWarnings("unchecked")
-        private int applyOption(Field field, Class<?> annotation, boolean varargs, int arity,
-                boolean valueAttachedToOption, Stack<String> args) throws Exception {
-            updateHelpRequested(field);
-            Class<?> cls = field.getType();
-            int length = args.size();
-            if (arity == Integer.MAX_VALUE) {
-                arity = length; // consume all available args
-            }
-            assertNoMissingParameters(field, arity, length);
-            String value = args.isEmpty() ? null : args.pop();
-            if (value != null && value.length() == 0 && !valueAttachedToOption) {
-                value = args.isEmpty() ? null : args.pop();
-            }
-            value = trim(value); // unquote the value
-            if (cls.isArray()) {
-                Class<?> type = cls.getComponentType();
-                ITypeConverter converter = getTypeConverter(type);
-                List<Object> converted = consumeArguments(field, annotation, varargs, arity, value, args, converter, cls);
-                Object array = Array.newInstance(type, converted.size());
-                field.set(annotatedObject, array);
-                for (int i = 0; i < converted.size(); i++) { // get remaining values from the args array
-                    Array.set(array, i, converted.get(i));
-                }
-                return converted.size();
-            } else if (Collection.class.isAssignableFrom(cls)) {
-                Collection<Object> collection = (Collection<Object>) field.get(annotatedObject);
-                Class<?> type = getTypeAttribute(field);
-                ITypeConverter converter = getTypeConverter(type);
-                List<Object> converted = consumeArguments(field, annotation, varargs, arity, value, args, converter, type);
-                if (collection == null) {
-                    collection = createCollection(cls);
-                    field.set(annotatedObject, collection);
-                }
-                for (Object element : converted) {
-                    if (element instanceof Collection) {
-                        collection.addAll((Collection) element);
-                    } else {
-                        collection.add(element);
-                    }
-                }
-                return converted.size();
-            }
-            // special logic for booleans: BooleanConverter accepts only "true" or "false".
-            if ((cls == Boolean.class || cls == Boolean.TYPE) && arity <= 0) {
-                // Usually, boolean fields have arity=0 and don't take a parameter, but if varargs=true it MAY be a param
-                if (varargs && ("true".equalsIgnoreCase(value) || "false".equalsIgnoreCase(value))) {
-                    arity = 1; // if it is a varargs we only consume 1 argument if it is a boolean value
-                } else {
-                    if (value != null) {
-                        args.push(value); // we don't consume the value
-                    }
-                    value = "true"; // just specifying the option name sets the boolean to true
-                }
-            }
-            ITypeConverter<?> converter = getTypeConverter(cls);
-            Object objValue = tryConvert(field, -1, converter, value, cls);
-            field.set(annotatedObject, objValue);
-            return arity;
-        }
-
         private int actualArity(Field field, int defaultValue) {
             return field.isAnnotationPresent(Option.class) ? field.getAnnotation(Option.class).arity() : defaultValue;
         }
 
-        private Object tryConvert(Field field, int index, ITypeConverter<?> converter, String value, Class<?> type) throws Exception {
+        private Object tryConvert(Field field, int index, ITypeConverter<?> converter, String value, Class<?> type)
+                throws Exception {
             try {
                 return converter.convert(value);
             } catch (ParameterException ex) {
@@ -903,42 +971,6 @@ public class CommandLine {
                 desc = " for parameter[" + index + "]";
             }
             return desc;
-        }
-
-        private List<Object> consumeArguments(Field field, Class<?> annotation, boolean varargs, int arity,
-                String value, Stack<String> args, ITypeConverter converter, Class<?> type) throws Exception {
-
-            arity = actualArity(field, arity);
-            List<Object> result = new ArrayList<Object>();
-            if (arity > 0) { // first do the arity mandatory parameters
-                // special treatment for the first value: it may have been attached to the option name
-                result.add(tryConvert(field, 0, converter, value, type));
-                for (int i = 1; i < arity; i++) { // get the remaining values from the args array
-                    result.add(tryConvert(field, i, converter, trim(args.pop()), type));
-                }
-            } else {
-                args.push(value);
-            }
-            // if no mandatory parameters, and we are not forbidden (arity != 0), then consume at least one arg
-            if (arity != 0) {
-                if (result.isEmpty()) {
-                    if (annotation == Parameters.class || !isOption(args.peek())) {
-                        result.add(tryConvert(field, 0, converter, args.pop(), type));
-                    } else {
-                        return result;
-                    }
-                }
-            }
-            if (varargs) { // now process the varargs if any
-                while (!args.isEmpty()) {
-                    if (annotation == Parameters.class || !isOption(args.peek())) { // don't trim: quoted strings are not options
-                        result.add(tryConvert(field, result.size(), converter, trim(args.pop()), type));
-                    } else {
-                        return result;
-                    }
-                }
-            }
-            return result;
         }
 
         private Class<?> getTypeAttribute(Field field) {
