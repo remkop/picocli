@@ -712,7 +712,7 @@ public class CommandLine {
                 // Compact (single-letter) options can be grouped with other options or with an argument.
                 // only single-letter options can be combined with other options or with an argument
                 else if (arg.length() > 2 && arg.startsWith("-")) {
-                    processClusteredOptions(required, arg, args);
+                    processClusteredShortOptions(required, arg, args);
                 }
                 // The argument could not be interpreted as an option.
                 // We take this to mean that the remainder are positional arguments
@@ -748,7 +748,8 @@ public class CommandLine {
             applyOption(field, Option.class, varargs, estimatedArity, paramAttachedToKey, args);
         }
 
-        private void processClusteredOptions(Set<Field> required, String arg, Stack<String> args) throws Exception {
+        private void processClusteredShortOptions(Set<Field> required, String arg, Stack<String> args)
+                throws Exception {
             String cluster = arg.substring(1);
             do {
                 if (cluster.length() > 0 && singleCharOption2Field.containsKey(cluster.charAt(0))) {
@@ -801,12 +802,14 @@ public class CommandLine {
                 arity = length; // consume all available args
             }
             assertNoMissingParameters(field, arity, length);
+
             Class<?> cls = field.getType();
             if (cls.isArray()) {
                 return applyValuesToArrayField(field, annotation, varargs, arity, args, cls);
             } else if (Collection.class.isAssignableFrom(cls)) {
                 return applyValuesToCollectionField(field, annotation, varargs, arity, args, cls);
             }
+
             String value = args.isEmpty() ? null : trim(args.pop()); // unquote the value
 
             // special logic for booleans: BooleanConverter accepts only "true" or "false".
