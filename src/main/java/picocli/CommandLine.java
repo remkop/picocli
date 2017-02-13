@@ -806,10 +806,18 @@ public class CommandLine {
             Class<?> cls = field.getType();
             if (cls.isArray()) {
                 return applyValuesToArrayField(field, annotation, varargs, arity, args, cls);
-            } else if (Collection.class.isAssignableFrom(cls)) {
+            }
+            if (Collection.class.isAssignableFrom(cls)) {
                 return applyValuesToCollectionField(field, annotation, varargs, arity, args, cls);
             }
+            return applyValueToSingleValuedField(field, varargs, arity, args, cls);
+        }
 
+        private int applyValueToSingleValuedField(Field field,
+                                                  boolean varargs,
+                                                  int arity,
+                                                  Stack<String> args,
+                                                  Class<?> cls) throws Exception {
             String value = args.isEmpty() ? null : trim(args.pop()); // unquote the value
 
             // special logic for booleans: BooleanConverter accepts only "true" or "false".
