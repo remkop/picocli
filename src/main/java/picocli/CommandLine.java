@@ -38,6 +38,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -48,6 +49,7 @@ import java.util.Queue;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.Stack;
+import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.UUID;
 import java.util.regex.Pattern;
@@ -174,7 +176,7 @@ public class CommandLine {
      * @param out the {@code PrintStream} to print the usage help message to
      */
     public static void usage(Class<?> annotatedClass, PrintStream out) {
-        throw new UnsupportedOperationException("TODO");// FIXME
+        out.println(new Help(annotatedClass).usage(new StringBuilder()));
     }
 
     /**
@@ -547,18 +549,59 @@ public class CommandLine {
         K convert(String value) throws Exception;
     }
 
+    private static Field init(Class<?> cls,
+                              List<Field> requiredFields,
+                              Map<String, Field> optionName2Field,
+                              Map<Character, Field> singleCharOption2Field,
+                              Field positionalParametersField) {
+        Field[] declaredFields = cls.getDeclaredFields();
+        for (Field field : declaredFields) {
+            if (field.isAnnotationPresent(Option.class)) {
+                field.setAccessible(true);
+                Option option = field.getAnnotation(Option.class);
+                if (option.required()) {
+                    requiredFields.add(field);
+                }
+                for (String name : option.names()) { // cannot be null or empty
+                    Field existing = optionName2Field.put(name, field);
+                    if (existing != null && existing != field) {
+                        throw DuplicateOptionAnnotationsException.create(name, field, existing);
+                    }
+                    if (name.length() == 2 && name.startsWith("-")) {
+                        char flag = name.charAt(1);
+                        Field existing2 = singleCharOption2Field.put(flag, field);
+                        if (existing2 != null && existing2 != field) {
+                            throw DuplicateOptionAnnotationsException.create(name, field, existing2);
+                        }
+                    }
+                }
+            }
+            if (field.isAnnotationPresent(Parameters.class)) {
+                if (positionalParametersField != null) {
+                    throw new ParameterException("Only one @Parameters field allowed, but found on '"
+                            + positionalParametersField.getName() + "' and '" + field.getName() + "'.");
+                } else if (field.isAnnotationPresent(Option.class)) {
+                    throw new ParameterException("A field can be either @Option or @Parameters, but '"
+                            + field.getName() + "' is both.");
+                }
+                positionalParametersField = field;
+            }
+        }
+        return positionalParametersField;
+    }
+
     /**
      * Helper class responsible for processing command line arguments.
      */
     private class Interpreter {
         private final Map<Class<?>, ITypeConverter<?>> converterRegistry = new HashMap<Class<?>, ITypeConverter<?>>();
+        private final Map<String, Field> optionName2Field                = new HashMap<String, Field>();
+        private final Map<Character, Field> singleCharOption2Field       = new HashMap<Character, Field>();
+        private final List<Field> requiredFields                         = new ArrayList<Field>();
         private final Object annotatedObject;
-        private final Map<String, Field> optionName2Field;
-        private final Map<Character, Field> singleCharOption2Field;
         private Field positionalParametersField;
-        private final List<Field> requiredFields;
-        private String separator = "=";
         private boolean isHelpRequested;
+        private String separator = "=";
 
         Interpreter(Object annotatedObject) {
             converterRegistry.put(String.class,        new BuiltIn.StringConverter());
@@ -593,50 +636,10 @@ public class CommandLine {
             converterRegistry.put(UUID.class,          new BuiltIn.UUIDConverter());
 
             this.annotatedObject    = Assert.notNull(annotatedObject, "annotatedObject");
-            optionName2Field        = new HashMap<String, Field>();
-            singleCharOption2Field  = new HashMap<Character, Field>();
-            requiredFields          = new ArrayList<Field>();
-
             Class<?> cls = annotatedObject.getClass();
             while (cls != null) {
-                init(cls);
+                positionalParametersField = init(cls, requiredFields, optionName2Field, singleCharOption2Field, positionalParametersField);
                 cls = cls.getSuperclass();
-            }
-        }
-
-        private void init(Class<?> cls) {
-            Field[] declaredFields = cls.getDeclaredFields();
-            for (Field field : declaredFields) {
-                if (field.isAnnotationPresent(Option.class)) {
-                    field.setAccessible(true);
-                    Option option = field.getAnnotation(Option.class);
-                    if (option.required()) {
-                        requiredFields.add(field);
-                    }
-                    for (String name : option.names()) { // cannot be null or empty
-                        Field existing = optionName2Field.put(name, field);
-                        if (existing != null && existing != field) {
-                            throw DuplicateOptionAnnotationsException.create(name, field, existing);
-                        }
-                        if (name.length() == 2 && name.startsWith("-")) {
-                            char flag = name.charAt(1);
-                            Field existing2 = singleCharOption2Field.put(flag, field);
-                            if (existing2 != null && existing2 != field) {
-                                throw DuplicateOptionAnnotationsException.create(name, field, existing2);
-                            }
-                        }
-                    }
-                }
-                if (field.isAnnotationPresent(Parameters.class)) {
-                    if (positionalParametersField != null) {
-                        throw new ParameterException("Only one @Parameters field allowed, but found on '"
-                                + positionalParametersField.getName() + "' and '" + field.getName() + "'.");
-                    } else if (field.isAnnotationPresent(Option.class)) {
-                        throw new ParameterException("A field can be either @Option or @Parameters, but '"
-                                + field.getName() + "' is both.");
-                    }
-                    positionalParametersField = field;
-                }
             }
         }
 
@@ -1165,32 +1168,81 @@ public class CommandLine {
         }
     }
 
+    static class Help {
+        private final Map<Option, Field> option2Field = new TreeMap<Option, Field>(new AlphabeticOrder());
+        private Field positionalParametersField;
+        Help(Class<?> cls) {
+            while (cls != null) {
+                for (Field field : cls.getDeclaredFields()) {
+                    field.setAccessible(true);
+                    if (field.isAnnotationPresent(Option.class)) {
+                        option2Field.put(field.getAnnotation(Option.class), field);
+                    }
+                    if (field.isAnnotationPresent(Parameters.class)) {
+                        positionalParametersField = positionalParametersField == null ? field : positionalParametersField;
+                    }
+                }
+                cls = cls.getSuperclass();
+            }
+        }
+        StringBuilder usage(StringBuilder sb) {
+            TextTable textTable = new TextTable();
+            for (Option option : option2Field.keySet()) {
+                String[] names = new ShortestFirst().sort(option.names());
+                if (names[0].length() == 2) {
+                    textTable.addRow(names[0], join(names, 1, names.length - 1, ", "), option.description());
+                } else {
+                    textTable.addRow("", join(names, 0, names.length, ", "), option.description());
+                }
+            }
+            return textTable.toString(sb);
+        }
+
+        private String join(String[] names, int offset, int length, String separator) {
+            StringBuilder result = new StringBuilder();
+            for (int i = offset; i < offset + length; i++) {
+                result.append((i > offset) ? separator : "").append(names[i]);
+            }
+            return result.toString();
+        }
+
+        class ShortestFirst implements Comparator<String> {
+            public int compare(String o1, String o2) {
+                return o1.length() - o2.length();
+            }
+            private String[] sort(String[] names) {
+                Arrays.sort(names, this);
+                return names;
+            }
+        }
+
+        class AlphabeticOrder implements Comparator<Option> {
+            ShortestFirst shortestFirst = new ShortestFirst();
+            public int compare(Option o1, Option o2) {
+                String[] names1 = shortestFirst.sort(o1.names());
+                String[] names2 = shortestFirst.sort(o2.names());
+                int result = names1[0].toUpperCase().compareTo(names2[0].toUpperCase());
+                result = result == 0 ? -names1[0].compareTo(names2[0]) : result; // lower before upper
+                return o1.help() == o2.help() ? result : o2.help() ? -1 : 1;
+            }
+        }
+    }
+
     protected static class TextTable {
-        private static char[] PAD = new char[120];
-        static { Arrays.fill(PAD, ' '); }
-        ;
-        protected final int[] columnIndices;
-        protected final List<char[]> columns = new ArrayList<char[]>();
-        // TODO more user-friendly API
+        protected final int[] columnWidths;
+        protected final List<char[]> columnValues = new ArrayList<char[]>();
         public TextTable() {
             // "  -c, --create                Creates a ...."
             this(2, 4, 24, 50);
         }
-        public TextTable(int... columnIndices) {
-            this.columnIndices = Assert.notNull(columnIndices, "column indices");
-            for (int i = 1; i < columnIndices.length; i++) {
-                if (columnIndices[i - 1] >= columnIndices[i]) {
-                    throw new IllegalArgumentException(String.format(
-                            "column index[%d] (%d) is not greater than column[%d] (%d)",
-                            i - 1, columnIndices[i - 1], i, columnIndices[i]));
-                }
-            }
+        public TextTable(int... columnWidths) { // TODO more user-friendly API
+            this.columnWidths = Assert.notNull(columnWidths, "column widths");
         }
 
-        private List<char[]> createColumns() {
-            List<char[]> result = new ArrayList<char[]>(columnIndices.length);
-            for (int i = 0; i < columnIndices.length; i++) {
-                result.add(new char[columnIndices[i]]);
+        protected List<char[]> createColumns() {
+            List<char[]> result = new ArrayList<char[]>(columnWidths.length);
+            for (int i = 0; i < columnWidths.length; i++) {
+                result.add(new char[columnWidths[i]]);
                 Arrays.fill(result.get(i), ' ');
             }
             return result;
@@ -1243,7 +1295,7 @@ public class CommandLine {
                             line.setText(text);
                             for (int start = line.first(), end = line.next(); end != BreakIterator.DONE; start = end, end = line.next()) {
                                 String word = text.substring(start, end);
-                                if (column.length >= offset + word.length()) {
+                                if (column.length >= offset + length(word)) {
                                     offset += copy(word, column, offset);
                                 } else {
                                     text = text.substring(start);
@@ -1257,7 +1309,11 @@ public class CommandLine {
                         } while (text.length() > 0);
                 }
             }
-            this.columns.addAll(columns);
+            this.columnValues.addAll(columns);
+        }
+
+        private static int length(String str) {
+            return str.length(); // TODO count some characters as double length
         }
 
         private static boolean empty(final String value) {
@@ -1269,17 +1325,16 @@ public class CommandLine {
             return value.length();
         }
 
-        public String toString() {
-            StringBuilder text = new StringBuilder();
-            int columnCount = this.columnIndices.length;
-            for (int i = 0; i < columns.size(); i++) {
-                char[] column = columns.get(i);
+        public StringBuilder toString(StringBuilder text) {
+            int columnCount = this.columnWidths.length;
+            for (int i = 0; i < columnValues.size(); i++) {
+                char[] column = columnValues.get(i);
                 text.append(column);
                 if (i % columnCount == columnCount - 1) {
                     text.append(System.getProperty("line.separator"));
                 }
             }
-            return text.toString();
+            return text;
         }
     }
 

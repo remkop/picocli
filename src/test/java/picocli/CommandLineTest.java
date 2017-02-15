@@ -1464,16 +1464,6 @@ public class CommandLineTest {
     }
 
     @Test
-    public void testBreakIterator() {
-        BreakIterator iter = BreakIterator.getLineInstance();
-        String text = "the quick brown fox jumped over the lazy dog. -c --test The quick brown fox jumped over the lazy dog.";
-        iter.setText(text);
-        for (int start = iter.current(), end = iter.next(); end != BreakIterator.DONE; start = end, end = iter.next()) {
-            System.out.printf("index=%d: %s%n", start, text.substring(start, end));
-        }
-    }
-
-    @Test
     public void testTextTable() {
         TextTable table = new TextTable();
         table.addRow("-v", "--verbose", "show what you're doing while you are doing it");
@@ -1482,12 +1472,32 @@ public class CommandLineTest {
                 "  -v, --verbose               show what you're doing while you are doing it     %n" +
                 "  -p                          the quick brown fox jumped over the lazy dog. The %n" +
                 "                                quick brown fox jumped over the lazy dog.       %n"
-        ,""), table.toString());
+        ,""), table.toString(new StringBuilder()).toString());
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void testTextTableRejectsWhenTooManyValuesSpecified() {
         TextTable table = new TextTable();
         table.addRow("-c", "--create", "description", "INVALID");
+    }
+
+    @Test
+    public void testCat() {
+        //@Usage(program = "cat", header = "Concatenate FILE(s), or standard input, to standard output.")
+        class Cat {
+            @Option(names = "--help", help = true, description = "display this help and exit") boolean help;
+            @Option(names = "--version", help = true, description = "output version information and exit") boolean version;
+            @Option(names = "-u", description = "(ignored)") boolean u;
+            @Option(names = "-t", description = "equivalent to -vT") boolean t;
+            @Option(names = "-e", description = "equivalent to -vET") boolean e;
+            @Option(names = {"-A", "--show-all"}, description = "equivalent to -vET") boolean showAll;
+            @Option(names = {"-s", "--squeeze-blank"}, description = "suppress repeated empty output lines") boolean squeeze;
+            @Option(names = {"-v", "--show-nonprinting"}, description = "use ^ and M- notation, except for LDF and TAB") boolean v;
+            @Option(names = {"-b", "--number-nonblank"}, description = "number nonempty output lines, overrides -n") boolean b;
+            @Option(names = {"-T", "--show-tabs"}, description = "display TAB characters as ^I") boolean T;
+            @Option(names = {"-E", "--show-ends"}, description = "display $ at end of each line") boolean E;
+            @Option(names = {"-n", "--number"}, description = "number all output lines") boolean n;
+        }
+        CommandLine.usage(Cat.class, System.out);
     }
 }
