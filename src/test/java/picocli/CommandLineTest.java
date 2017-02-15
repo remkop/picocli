@@ -15,7 +15,9 @@
  */
 package picocli;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.PrintStream;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.net.InetAddress;
@@ -27,6 +29,7 @@ import java.net.URL;
 import java.net.UnknownHostException;
 import java.nio.charset.Charset;
 import java.sql.Time;
+import java.text.BreakIterator;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -39,6 +42,7 @@ import java.util.regex.Pattern;
 
 import org.junit.Test;
 
+import static java.lang.String.*;
 import static java.util.concurrent.TimeUnit.*;
 import static org.junit.Assert.*;
 import static picocli.CommandLine.*;
@@ -1445,5 +1449,45 @@ public class CommandLineTest {
 
         opt = CommandLine.parse(new ChildOption(), "-parentPath", "somePath");
         assertNull(opt.path);
+    }
+
+    @Test
+    public void testUsageNoUsageAnnotation1RequiredOptionWith1Param0PositionalParams() throws Exception {
+        // no @Usage annotation
+        class Params {
+            @Option(names = {"-f", "--file"}, required = true) File file;
+        }
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        CommandLine.usage(Params.class, new PrintStream(baos, true, "UTF8"));
+        String result = baos.toString("UTF8");
+        assertEquals(format("Usage: java %s (-f <file> | --file <file>)", Params.class.getName()), result);
+    }
+
+    @Test
+    public void testBreakIterator() {
+        BreakIterator iter = BreakIterator.getLineInstance();
+        String text = "the quick brown fox jumped over the lazy dog. -c --test The quick brown fox jumped over the lazy dog.";
+        iter.setText(text);
+        for (int start = iter.current(), end = iter.next(); end != BreakIterator.DONE; start = end, end = iter.next()) {
+            System.out.printf("index=%d: %s%n", start, text.substring(start, end));
+        }
+    }
+
+    @Test
+    public void testTextTable() {
+        TextTable table = new TextTable();
+        table.addRow("-v", "--verbose", "show what you're doing while you are doing it");
+        table.addRow("-p", null, "the quick brown fox jumped over the lazy dog. The quick brown fox jumped over the lazy dog.");
+        assertEquals(String.format(
+                "  -v, --verbose               show what you're doing while you are doing it     %n" +
+                "  -p                          the quick brown fox jumped over the lazy dog. The %n" +
+                "                                quick brown fox jumped over the lazy dog.       %n"
+        ,""), table.toString());
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testTextTableRejectsWhenTooManyValuesSpecified() {
+        TextTable table = new TextTable();
+        table.addRow("-c", "--create", "description", "INVALID");
     }
 }

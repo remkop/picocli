@@ -32,9 +32,11 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.charset.Charset;
 import java.sql.Time;
+import java.text.BreakIterator;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
@@ -1160,6 +1162,124 @@ public class CommandLine {
         }
         static class UUIDConverter implements ITypeConverter<UUID> {
             public UUID convert(String s) throws Exception { return UUID.fromString(s); }
+        }
+    }
+
+    protected static class TextTable {
+        private static char[] PAD = new char[120];
+        static { Arrays.fill(PAD, ' '); }
+        ;
+        protected final int[] columnIndices;
+        protected final List<char[]> columns = new ArrayList<char[]>();
+        // TODO more user-friendly API
+        public TextTable() {
+            // "  -c, --create                Creates a ...."
+            this(2, 4, 24, 50);
+        }
+        public TextTable(int... columnIndices) {
+            this.columnIndices = Assert.notNull(columnIndices, "column indices");
+            for (int i = 1; i < columnIndices.length; i++) {
+                if (columnIndices[i - 1] >= columnIndices[i]) {
+                    throw new IllegalArgumentException(String.format(
+                            "column index[%d] (%d) is not greater than column[%d] (%d)",
+                            i - 1, columnIndices[i - 1], i, columnIndices[i]));
+                }
+            }
+        }
+
+        private List<char[]> createColumns() {
+            List<char[]> result = new ArrayList<char[]>(columnIndices.length);
+            for (int i = 0; i < columnIndices.length; i++) {
+                result.add(new char[columnIndices[i]]);
+                Arrays.fill(result.get(i), ' ');
+            }
+            return result;
+        }
+
+        public void addRow(String... values) {
+            List<char[]> columns = createColumns();
+            int columnCount = columns.size(); // first column is for padding and does not count
+            if (values.length >= columns.size()) {
+                throw new IllegalArgumentException("Only " + (columnCount - 1) + " columns defined but " +
+                        values.length + " specified: " + Arrays.toString(values));
+            }
+
+            int row = 0;
+            BreakIterator line = BreakIterator.getLineInstance();
+            for (int i = 0; i < values.length; i++) {
+                int descriptionOffset = 0;
+                int columnIndex = i + 1; // first column is for padding
+                if (empty(values[i])) { continue; }
+                char[] column = columns.get(columnIndex + (row * columnCount));
+                switch (i) {
+                    case 0:
+                        if (values.length > 1 &&  !empty(values[1])) {
+                            copy(values[i] + ",", column, 0);
+                        } else {
+                            copy(values[i], column, 0); // no comma if no long option in second column
+                        }
+                        break;
+                    case 1:
+                        copy(values[i], column, 0);
+
+                        // if the long options exceed the column length...
+                        if (values[i].length() > column.length) {
+
+                            // copy the remainder into the description column
+                            copy(values[i].substring(column.length), columns.get(columnIndex + 1), 0);
+
+                            // and add a row for the description (if one exists)
+                            if (values.length > 2 &&  !empty(values[2])) {
+                                columns.addAll(createColumns());
+                                row++;
+                            }
+                        }
+                        break;
+                    case 2:
+                        String text = values[i];
+                        OUTER: do {
+                            column = columns.get(columnIndex + (row * columnCount));
+                            int offset = descriptionOffset;
+                            line.setText(text);
+                            for (int start = line.first(), end = line.next(); end != BreakIterator.DONE; start = end, end = line.next()) {
+                                String word = text.substring(start, end);
+                                if (column.length >= offset + word.length()) {
+                                    offset += copy(word, column, offset);
+                                } else {
+                                    text = text.substring(start);
+                                    columns.addAll(createColumns());
+                                    row++;
+                                    descriptionOffset = 2; // indent subsequent rows with 2 spaces
+                                    continue OUTER;
+                                }
+                            }
+                            break;
+                        } while (text.length() > 0);
+                }
+            }
+            this.columns.addAll(columns);
+        }
+
+        private static boolean empty(final String value) {
+            return value == null || value.trim().length() == 0;
+        }
+
+        private static int copy(String value, char[] destination, int offset) {
+            value.getChars(0, Math.min(value.length(), destination.length), destination, offset);
+            return value.length();
+        }
+
+        public String toString() {
+            StringBuilder text = new StringBuilder();
+            int columnCount = this.columnIndices.length;
+            for (int i = 0; i < columns.size(); i++) {
+                char[] column = columns.get(i);
+                text.append(column);
+                if (i % columnCount == columnCount - 1) {
+                    text.append(System.getProperty("line.separator"));
+                }
+            }
+            return text.toString();
         }
     }
 
