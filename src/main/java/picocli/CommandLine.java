@@ -532,9 +532,9 @@ public class CommandLine {
         /** If {@code true}, the "Usage" line will have a detailed list of options and parameters. */
         boolean detailedUsage() default false;
         /** Optional text to display between the first "Usage" line and the list of options. */
-        String summary() default "";
+        String[] summary() default {};
          /** Optional text to display after the list of options. */
-        String footer() default "";
+        String[] footer() default {};
     }
     /**
      * <p>
@@ -1212,8 +1212,8 @@ public class CommandLine {
         public final Map<Option, Field> option2Field = new LinkedHashMap<Option, Field>();
         public Field positionalParametersField;
         public String programName = DEFAULT_PROGRAM_NAME;
-        public String summary = null;
-        public String footer = null;
+        public String[] summary = {};
+        public String[] footer = {};
 
         public Help(Class<?> cls) {
             while (cls != null) {
@@ -1235,10 +1235,10 @@ public class CommandLine {
                     if (DEFAULT_PROGRAM_NAME.equals(programName)) {
                         programName = usage.programName();
                     }
-                    if (summary == null || summary.length() == 0) {
+                    if (summary == null || summary.length == 0) {
                         summary = usage.summary();
                     }
-                    if (footer == null || footer.length() == 0) {
+                    if (footer == null || footer.length == 0) {
                         footer = usage.footer();
                     }
                 }
@@ -1275,14 +1275,18 @@ public class CommandLine {
             return textTable.toString(sb);
         }
         public StringBuilder appendSummary(StringBuilder sb) {
-            if (summary != null && summary.length() > 0) {
-                sb.append(summary).append(System.getProperty("line.separator"));
+            if (summary != null) {
+                for (String summaryLine : summary) {
+                    sb.append(summaryLine).append(System.getProperty("line.separator"));
+                }
             }
             return sb;
         }
         public StringBuilder appendFooter(StringBuilder sb) {
-            if (footer != null && footer.length() > 0) {
-                sb.append(footer).append(System.getProperty("line.separator"));
+            if (footer != null) {
+                for (String line : footer) {
+                    sb.append(line).append(System.getProperty("line.separator"));
+                }
             }
             return sb;
         }
@@ -1360,6 +1364,7 @@ public class CommandLine {
                 int row                   = 0;
                 for (int i = 0; i < values.length; i++) {
                     int columnIndex    = Math.min(i, columns.length - 1);
+                    boolean lastColumn = columnIndex == columns.length - 1;
                     Column column      = columns[columnIndex];
                     int indent         = column.indent;
                     if (columnIndex < i) {
@@ -1369,7 +1374,7 @@ public class CommandLine {
                     }
                     char[] columnValue = columnValues.get(columnIndex + (row * columns.length));
                     String value       = values[i] == null ? "" : values[i]; // tolerate null values
-                    int done           = copy(value, columnValue, indent);
+                    int done           = lastColumn ? copy(line, value, columnValue, indent) : copy(value, columnValue, indent);
                     boolean addRow     = false;
                     while (done < value.length()) { // value did not fit in column: spill into next column(s)
                         value = value.substring(done);
@@ -1381,8 +1386,9 @@ public class CommandLine {
                             row++;
                             indent = column.indent + indentWrappedLines;
                         }
+                        lastColumn = columnIndex == columns.length - 1;
                         columnValue = columnValues.get(columnIndex + (row * columns.length));
-                        done        = copy(value, columnValue, indent);
+                        done        = lastColumn ? copy(line, value, columnValue, indent) : copy(value, columnValue, indent);
                         addRow      = true; // we've spilled over into neighbouring column, add row for next value
                     }
                     if (addRow && i < values.length - 1 && !empty(values[i + 1])) { // if we have more values
@@ -1391,69 +1397,6 @@ public class CommandLine {
                     }
                 }
                 this.columnValues.addAll(columnValues);
-            }
-            public void addRow0(String... values) {
-                List<char[]> columns = newRow();
-                int columnCount = columns.size(); // first column is for padding and does not count
-                if (values.length >= columns.size()) {
-                    throw new IllegalArgumentException("Only " + (columnCount - 1) + " columns defined but " +
-                            values.length + " specified: " + Arrays.toString(values));
-                }
-
-                int row = 0;
-                BreakIterator line = BreakIterator.getLineInstance();
-                for (int i = 0; i < values.length; i++) {
-                    int descriptionOffset = 0;
-                    int columnIndex = i + 1; // first column is for padding
-                    if (empty(values[i])) { continue; }
-                    char[] column = columns.get(columnIndex + (row * columnCount));
-                    switch (i) {
-                        case 0:
-                            if (values.length > 1 &&  !empty(values[1])) {
-                                copy(values[i] + ",", column, 0);
-                            } else {
-                                copy(values[i], column, 0); // no comma if no long option in second column
-                            }
-                            break;
-                        case 1:
-                            copy(values[i], column, 0);
-
-                            // if the long options exceed the column length...
-                            if (values[i].length() > column.length) {
-
-                                // copy the remainder into the description column
-                                copy(values[i].substring(column.length), columns.get(columnIndex + 1), 0);
-
-                                // and add a row for the description (if one exists)
-                                if (values.length > 2 &&  !empty(values[2])) {
-                                    columns.addAll(newRow());
-                                    row++;
-                                }
-                            }
-                            break;
-                        case 2:
-                            String text = values[i];
-                            OUTER: do {
-                                column = columns.get(columnIndex + (row * columnCount));
-                                int offset = descriptionOffset;
-                                line.setText(text);
-                                for (int start = line.first(), end = line.next(); end != BreakIterator.DONE; start = end, end = line.next()) {
-                                    String word = text.substring(start, end);
-                                    if (column.length >= offset + length(word)) {
-                                        offset += copy(word, column, offset);
-                                    } else {
-                                        text = text.substring(start);
-                                        columns.addAll(newRow());
-                                        row++;
-                                        descriptionOffset = 2; // indent subsequent rows with 2 spaces
-                                        continue OUTER;
-                                    }
-                                }
-                                break;
-                            } while (text.length() > 0);
-                    }
-                }
-                this.columnValues.addAll(columns);
             }
 
             private static int length(String str) {
@@ -1464,6 +1407,20 @@ public class CommandLine {
                 return value == null || value.trim().length() == 0;
             }
 
+            private int copy(BreakIterator line, String text, char[] columnValue, int offset) {
+                line.setText(text);
+                int done = 0;
+                for (int start = line.first(), end = line.next(); end != BreakIterator.DONE; start = end, end = line.next()) {
+                    String word = text.substring(start, end);
+                    if (columnValue.length >= offset + done + length(word)) {
+                        done += copy(word, columnValue, offset + done); // TODO localized length
+                    } else {
+                        break;
+                    }
+                }
+                return done;
+            }
+
             private static int copy(String value, char[] destination, int offset) {
                 int length = Math.min(value.length(), destination.length - offset);
                 value.getChars(0, length, destination, offset);
@@ -1471,7 +1428,6 @@ public class CommandLine {
             }
 
             public StringBuilder toString(StringBuilder text) {
-                // TODO put ',' separator here?
                 int columnCount = this.columns.length;
                 for (int i = 0; i < columnValues.size(); i++) {
                     char[] column = columnValues.get(i);
