@@ -71,24 +71,24 @@ public class CommandLineHelpTest {
     }
 
     @Test
-    public void testCat() {
+    public void testCatUsageFormat() {
         @CommandLine.Usage(programName = "cat",
                 summary = "Concatenate FILE(s), or standard input, to standard output.",
                 footer = "Copyright(c) 2017")
         class Cat {
-            @CommandLine.Parameters( description = "Files whose contents to display")
-            @CommandLine.Option(names = "--help", help = true, description = "display this help and exit") boolean help;
-            @CommandLine.Option(names = "--version", help = true, description = "output version information and exit") boolean version;
-            @CommandLine.Option(names = "-u", description = "(ignored)") boolean u;
-            @CommandLine.Option(names = "-t", description = "equivalent to -vT") boolean t;
-            @CommandLine.Option(names = "-e", description = "equivalent to -vET") boolean e;
-            @CommandLine.Option(names = {"-A", "--show-all"}, description = "equivalent to -vET") boolean showAll;
-            @CommandLine.Option(names = {"-s", "--squeeze-blank"}, description = "suppress repeated empty output lines") boolean squeeze;
+            @CommandLine.Parameters(description = "Files whose contents to display")
+            @CommandLine.Option(names = "--help",    help = true,     description = "display this help and exit") boolean help;
+            @CommandLine.Option(names = "--version", help = true,     description = "output version information and exit") boolean version;
+            @CommandLine.Option(names = "-u",                         description = "(ignored)") boolean u;
+            @CommandLine.Option(names = "-t",                         description = "equivalent to -vT") boolean t;
+            @CommandLine.Option(names = "-e",                         description = "equivalent to -vET") boolean e;
+            @CommandLine.Option(names = {"-A", "--show-all"},         description = "equivalent to -vET") boolean showAll;
+            @CommandLine.Option(names = {"-s", "--squeeze-blank"},    description = "suppress repeated empty output lines") boolean squeeze;
             @CommandLine.Option(names = {"-v", "--show-nonprinting"}, description = "use ^ and M- notation, except for LDF and TAB") boolean v;
-            @CommandLine.Option(names = {"-b", "--number-nonblank"}, description = "number nonempty output lines, overrides -n") boolean b;
-            @CommandLine.Option(names = {"-T", "--show-tabs"}, description = "display TAB characters as ^I") boolean T;
-            @CommandLine.Option(names = {"-E", "--show-ends"}, description = "display $ at end of each line") boolean E;
-            @CommandLine.Option(names = {"-n", "--number"}, description = "number all output lines") boolean n;
+            @CommandLine.Option(names = {"-b", "--number-nonblank"},  description = "number nonempty output lines, overrides -n") boolean b;
+            @CommandLine.Option(names = {"-T", "--show-tabs"},        description = "display TAB characters as ^I") boolean T;
+            @CommandLine.Option(names = {"-E", "--show-ends"},        description = "display $ at end of each line") boolean E;
+            @CommandLine.Option(names = {"-n", "--number"},           description = "number all output lines") boolean n;
         }
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         CommandLine.usage(Cat.class, new PrintStream(baos));
