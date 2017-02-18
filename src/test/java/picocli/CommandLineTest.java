@@ -15,9 +15,9 @@
  */
 package picocli;
 
-import java.io.ByteArrayOutputStream;
+import org.junit.Test;
+
 import java.io.File;
-import java.io.PrintStream;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.net.InetAddress;
@@ -29,7 +29,6 @@ import java.net.URL;
 import java.net.UnknownHostException;
 import java.nio.charset.Charset;
 import java.sql.Time;
-import java.text.BreakIterator;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -40,15 +39,12 @@ import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 
-import org.junit.Test;
-
-import static java.lang.String.*;
 import static java.util.concurrent.TimeUnit.*;
 import static org.junit.Assert.*;
 import static picocli.CommandLine.*;
 
 /**
- * CommandLine unit tests.
+ * Tests for the CommandLine argument parsing interpreter functionality.
  */
 // DONE arrays
 // DONE collection fields
@@ -1449,55 +1445,5 @@ public class CommandLineTest {
 
         opt = CommandLine.parse(new ChildOption(), "-parentPath", "somePath");
         assertNull(opt.path);
-    }
-
-    @Test
-    public void testUsageNoUsageAnnotation1RequiredOptionWith1Param0PositionalParams() throws Exception {
-        // no @Usage annotation
-        class Params {
-            @Option(names = {"-f", "--file"}, required = true) File file;
-        }
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        CommandLine.usage(Params.class, new PrintStream(baos, true, "UTF8"));
-        String result = baos.toString("UTF8");
-        assertEquals(format("Usage: java %s (-f <file> | --file <file>)", Params.class.getName()), result);
-    }
-
-    @Test
-    public void testTextTable() {
-        TextTable table = new TextTable();
-        table.addRow("-v", "--verbose", "show what you're doing while you are doing it");
-        table.addRow("-p", null, "the quick brown fox jumped over the lazy dog. The quick brown fox jumped over the lazy dog.");
-        assertEquals(String.format(
-                "  -v, --verbose               show what you're doing while you are doing it     %n" +
-                "  -p                          the quick brown fox jumped over the lazy dog. The %n" +
-                "                                quick brown fox jumped over the lazy dog.       %n"
-        ,""), table.toString(new StringBuilder()).toString());
-    }
-
-    @Test(expected = IllegalArgumentException.class)
-    public void testTextTableRejectsWhenTooManyValuesSpecified() {
-        TextTable table = new TextTable();
-        table.addRow("-c", "--create", "description", "INVALID");
-    }
-
-    @Test
-    public void testCat() {
-        //@Usage(program = "cat", header = "Concatenate FILE(s), or standard input, to standard output.")
-        class Cat {
-            @Option(names = "--help", help = true, description = "display this help and exit") boolean help;
-            @Option(names = "--version", help = true, description = "output version information and exit") boolean version;
-            @Option(names = "-u", description = "(ignored)") boolean u;
-            @Option(names = "-t", description = "equivalent to -vT") boolean t;
-            @Option(names = "-e", description = "equivalent to -vET") boolean e;
-            @Option(names = {"-A", "--show-all"}, description = "equivalent to -vET") boolean showAll;
-            @Option(names = {"-s", "--squeeze-blank"}, description = "suppress repeated empty output lines") boolean squeeze;
-            @Option(names = {"-v", "--show-nonprinting"}, description = "use ^ and M- notation, except for LDF and TAB") boolean v;
-            @Option(names = {"-b", "--number-nonblank"}, description = "number nonempty output lines, overrides -n") boolean b;
-            @Option(names = {"-T", "--show-tabs"}, description = "display TAB characters as ^I") boolean T;
-            @Option(names = {"-E", "--show-ends"}, description = "display $ at end of each line") boolean E;
-            @Option(names = {"-n", "--number"}, description = "number all output lines") boolean n;
-        }
-        CommandLine.usage(Cat.class, System.out);
     }
 }
