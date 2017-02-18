@@ -1203,6 +1203,10 @@ public class CommandLine {
         }
     }
 
+    /**
+     * A collection of methods and inner classes that provide fine-grained control over the contents and layout of
+     * the usage help message to display to end users when help is requested or invalid input values were specified.
+     */
     public static class Help {
         public static final String DEFAULT_PROGRAM_NAME = "<main class>";
         public final Map<Option, Field> option2Field = new LinkedHashMap<Option, Field>();
@@ -1318,6 +1322,14 @@ public class CommandLine {
             }
         }
 
+        /**
+         * <p>Provides a table layout for text values, applicable for arranging option names and their description on
+         * the console. A table has a fixed number of columns, where each column has a fixed indent.
+         * </p><p>
+         * If a value is longer than the column length, it overflows into the next column.
+         * When more values are specified than there are columns, new rows are added.
+         * </p>
+         */
         public static class TextTable {
             protected final Column[] columns;
             protected final List<char[]> columnValues = new ArrayList<char[]>();
@@ -1471,6 +1483,11 @@ public class CommandLine {
                 return text;
             }
         }
+
+        /**
+         * Columns define the width and indent (leading number of spaces in a column before the value) of a column
+         * in a TextTable.
+         */
         public static class Column {
             public final int width;
             public final int indent;
