@@ -42,6 +42,7 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -176,7 +177,12 @@ public class CommandLine {
      * @param out the {@code PrintStream} to print the usage help message to
      */
     public static void usage(Class<?> annotatedClass, PrintStream out) {
-        out.println(new Help(annotatedClass).usage(new StringBuilder()));
+        Help help = new Help(annotatedClass);
+        StringBuilder sb = help.appendUsage(new StringBuilder());
+        help.appendSummary(sb);
+        help.appendOptionDetails(sb);
+        help.appendFooter(sb);
+        out.print(sb);
     }
 
     /**
@@ -501,6 +507,35 @@ public class CommandLine {
         Class<?> type() default String.class;
     }
 
+    /**
+     * <p>
+     * Annotate your class with {@code @Usage} when you want more control over the format of the generated help message
+     * or when you want to add a summary description of what the program does or a footer following the option details.
+     * </p><p>
+     * The structure of a help message looks like this:
+     * </p><ul>
+     *   <li>{@code Usage: java <programName> [OPTIONS] [PARAMS}}</li>
+     *   <li>[summary]</li>
+     *   <li>a list of options with their usage message</li>
+     *   <li>[footer]</li>
+     * </ul>
+     * <p>
+     * If the {@code detailedUsage} attribute is {@code true}, the "Usage" line will have a detailed list of options
+     * and parameters.
+     * </p>
+     */
+    @Retention(RetentionPolicy.RUNTIME)
+    @Target(ElementType.TYPE)
+    public @interface Usage {
+        /** Program name to show in the "Usage" message. If omitted, the annotated class name is used. */
+        String programName() default "<main class>";
+        /** If {@code true}, the "Usage" line will have a detailed list of options and parameters. */
+        boolean detailedUsage() default false;
+        /** Optional text to display between the first "Usage" line and the list of options. */
+        String summary() default "";
+         /** Optional text to display after the list of options. */
+        String footer() default "";
+    }
     /**
      * <p>
      * When parsing command line arguments and initializing
@@ -1168,36 +1203,85 @@ public class CommandLine {
         }
     }
 
-    static class Help {
-        private final Map<Option, Field> option2Field = new TreeMap<Option, Field>(new AlphabeticOrder());
-        private Field positionalParametersField;
-        Help(Class<?> cls) {
+    public static class Help {
+        public static final String DEFAULT_PROGRAM_NAME = "<main class>";
+        public final Map<Option, Field> option2Field = new LinkedHashMap<Option, Field>();
+        public Field positionalParametersField;
+        public String programName = DEFAULT_PROGRAM_NAME;
+        public String summary = null;
+        public String footer = null;
+
+        public Help(Class<?> cls) {
             while (cls != null) {
                 for (Field field : cls.getDeclaredFields()) {
                     field.setAccessible(true);
                     if (field.isAnnotationPresent(Option.class)) {
-                        option2Field.put(field.getAnnotation(Option.class), field);
+                        Option option = field.getAnnotation(Option.class);
+                        if (!option.hidden()) {
+                            // TODO remember longest concatenated option string length
+                            option2Field.put(option, field);
+                        }
                     }
                     if (field.isAnnotationPresent(Parameters.class)) {
                         positionalParametersField = positionalParametersField == null ? field : positionalParametersField;
                     }
                 }
+                if (cls.isAnnotationPresent(Usage.class)) {
+                    Usage usage = cls.getAnnotation(Usage.class);
+                    if (DEFAULT_PROGRAM_NAME.equals(programName)) {
+                        programName = usage.programName();
+                    }
+                    if (summary == null || summary.length() == 0) {
+                        summary = usage.summary();
+                    }
+                    if (footer == null || footer.length() == 0) {
+                        footer = usage.footer();
+                    }
+                }
                 cls = cls.getSuperclass();
             }
         }
-        StringBuilder usage(StringBuilder sb) {
+        public StringBuilder appendUsage(StringBuilder sb) {
+            sb.append("Usage: ").append(programName);
+            // TODO configurably show detailed usage
+            if (!this.option2Field.isEmpty()) { // only show if annotated object actually has options
+                sb.append(" [OPTIONS]");
+            }
+            if (this.positionalParametersField != null) {
+                sb.append(" [PARAMETERS]"); // TODO configurable show parameter type or alias
+            }
+            return sb.append(System.getProperty("line.separator"));
+        }
+        public StringBuilder appendOptionDetails(StringBuilder sb) {
             TextTable textTable = new TextTable();
-            for (Option option : option2Field.keySet()) {
+            Map<Option, Field> map = new TreeMap<Option, Field>(new AlphabeticOrder()); // default: sort ABC
+            map.putAll(option2Field); // options are stored in order of declaration for custom layouts
+            for (Option option : map.keySet()) {
+                if (option.hidden()) { continue; }
                 String[] names = new ShortestFirst().sort(option.names());
-                if (names[0].length() == 2) {
-                    textTable.addRow(names[0], join(names, 1, names.length - 1, ", "), option.description());
-                } else {
-                    textTable.addRow("", join(names, 0, names.length, ", "), option.description());
-                }
+                int shortOptionCount = names[0].length() == 2 ? 1 : 0;
+                String shortOption = shortOptionCount > 0 ? names[0] : "";
+                String sep = shortOptionCount > 0 && names.length > 1 ? "," : "";
+                String longOption = join(names, shortOptionCount, names.length - shortOptionCount, ", ");
+                // TODO required options
+                // TODO default value (unless it is a "help" Option)
+                // TODO option parameter: field name or field type?
+                textTable.addRow(shortOption, sep, longOption, option.description());
             }
             return textTable.toString(sb);
         }
-
+        public StringBuilder appendSummary(StringBuilder sb) {
+            if (summary != null && summary.length() > 0) {
+                sb.append(summary).append(System.getProperty("line.separator"));
+            }
+            return sb;
+        }
+        public StringBuilder appendFooter(StringBuilder sb) {
+            if (footer != null && footer.length() > 0) {
+                sb.append(footer).append(System.getProperty("line.separator"));
+            }
+            return sb;
+        }
         private String join(String[] names, int offset, int length, String separator) {
             StringBuilder result = new StringBuilder();
             for (int i = offset; i < offset + length; i++) {
@@ -1206,135 +1290,194 @@ public class CommandLine {
             return result.toString();
         }
 
-        class ShortestFirst implements Comparator<String> {
+        /**
+         * Sorts short strings before longer strings.
+         */
+        public static class ShortestFirst implements Comparator<String> {
             public int compare(String o1, String o2) {
                 return o1.length() - o2.length();
             }
-            private String[] sort(String[] names) {
-                Arrays.sort(names, this);
+            public static String[] sort(String[] names) {
+                Arrays.sort(names, new ShortestFirst());
                 return names;
             }
         }
 
-        class AlphabeticOrder implements Comparator<Option> {
+        /**
+         * Sorts {@code Option} instances by their name in case-insensitive alphabetic order. If an Option has
+         * multiple names, the shortest name is used for the sorting. Help options follow non-help options.
+         */
+        public static class AlphabeticOrder implements Comparator<Option> {
             ShortestFirst shortestFirst = new ShortestFirst();
             public int compare(Option o1, Option o2) {
                 String[] names1 = shortestFirst.sort(o1.names());
                 String[] names2 = shortestFirst.sort(o2.names());
-                int result = names1[0].toUpperCase().compareTo(names2[0].toUpperCase());
-                result = result == 0 ? -names1[0].compareTo(names2[0]) : result; // lower before upper
-                return o1.help() == o2.help() ? result : o2.help() ? -1 : 1;
+                int result = names1[0].toUpperCase().compareTo(names2[0].toUpperCase()); // case insensitive sort
+                result = result == 0 ? -names1[0].compareTo(names2[0]) : result; // lower case before upper case
+                return o1.help() == o2.help() ? result : o2.help() ? -1 : 1; // help options come last
             }
         }
-    }
 
-    protected static class TextTable {
-        protected final int[] columnWidths;
-        protected final List<char[]> columnValues = new ArrayList<char[]>();
-        public TextTable() {
-            // "  -c, --create                Creates a ...."
-            this(2, 4, 24, 50);
-        }
-        public TextTable(int... columnWidths) { // TODO more user-friendly API
-            this.columnWidths = Assert.notNull(columnWidths, "column widths");
-        }
-
-        protected List<char[]> createColumns() {
-            List<char[]> result = new ArrayList<char[]>(columnWidths.length);
-            for (int i = 0; i < columnWidths.length; i++) {
-                result.add(new char[columnWidths[i]]);
-                Arrays.fill(result.get(i), ' ');
+        public static class TextTable {
+            protected final Column[] columns;
+            protected final List<char[]> columnValues = new ArrayList<char[]>();
+            /** By default, indent wrapped lines by 2 spaces. */
+            public int indentWrappedLines = 2;
+            public TextTable() {
+                // "  -c, --create                Creates a ...."
+                this(new Column(4, 2),
+                        new Column(1, 0),
+                        new Column(24, 1),
+                        new Column(51, 1));
             }
-            return result;
-        }
-
-        public void addRow(String... values) {
-            List<char[]> columns = createColumns();
-            int columnCount = columns.size(); // first column is for padding and does not count
-            if (values.length >= columns.size()) {
-                throw new IllegalArgumentException("Only " + (columnCount - 1) + " columns defined but " +
-                        values.length + " specified: " + Arrays.toString(values));
+            public TextTable(Column... columns) {
+                this.columns = Assert.notNull(columns, "columns");
             }
 
-            int row = 0;
-            BreakIterator line = BreakIterator.getLineInstance();
-            for (int i = 0; i < values.length; i++) {
-                int descriptionOffset = 0;
-                int columnIndex = i + 1; // first column is for padding
-                if (empty(values[i])) { continue; }
-                char[] column = columns.get(columnIndex + (row * columnCount));
-                switch (i) {
-                    case 0:
-                        if (values.length > 1 &&  !empty(values[1])) {
-                            copy(values[i] + ",", column, 0);
-                        } else {
-                            copy(values[i], column, 0); // no comma if no long option in second column
+            protected List<char[]> newRow() {
+                List<char[]> result = new ArrayList<char[]>(columns.length);
+                for (int i = 0; i < columns.length; i++) {
+                    result.add(new char[columns[i].width]);
+                    Arrays.fill(result.get(i), ' ');
+                }
+                return result;
+            }
+            public void addRow(String... values) {
+                List<char[]> columnValues = newRow();
+                BreakIterator line        = BreakIterator.getLineInstance();
+                int row                   = 0;
+                for (int i = 0; i < values.length; i++) {
+                    int columnIndex    = Math.min(i, columns.length - 1);
+                    Column column      = columns[columnIndex];
+                    int indent         = column.indent;
+                    if (columnIndex < i) {
+                        columnValues.addAll(newRow());
+                        row++;
+                        indent = column.indent + indentWrappedLines;
+                    }
+                    char[] columnValue = columnValues.get(columnIndex + (row * columns.length));
+                    String value       = values[i] == null ? "" : values[i]; // tolerate null values
+                    int done           = copy(value, columnValue, indent);
+                    boolean addRow     = false;
+                    while (done < value.length()) { // value did not fit in column: spill into next column(s)
+                        value = value.substring(done);
+                        columnIndex++;
+                        indent = 0; // no gaps in the middle of a value
+                        if (columnIndex >= columns.length) { // we exceeded the last column, add new row
+                            columnIndex = Math.min(i, columns.length - 1); // and start from original column
+                            columnValues.addAll(newRow());
+                            row++;
+                            indent = column.indent + indentWrappedLines;
                         }
-                        break;
-                    case 1:
-                        copy(values[i], column, 0);
+                        columnValue = columnValues.get(columnIndex + (row * columns.length));
+                        done        = copy(value, columnValue, indent);
+                        addRow      = true; // we've spilled over into neighbouring column, add row for next value
+                    }
+                    if (addRow && i < values.length - 1 && !empty(values[i + 1])) { // if we have more values
+                        columnValues.addAll(newRow());
+                        row++;
+                    }
+                }
+                this.columnValues.addAll(columnValues);
+            }
+            public void addRow0(String... values) {
+                List<char[]> columns = newRow();
+                int columnCount = columns.size(); // first column is for padding and does not count
+                if (values.length >= columns.size()) {
+                    throw new IllegalArgumentException("Only " + (columnCount - 1) + " columns defined but " +
+                            values.length + " specified: " + Arrays.toString(values));
+                }
 
-                        // if the long options exceed the column length...
-                        if (values[i].length() > column.length) {
-
-                            // copy the remainder into the description column
-                            copy(values[i].substring(column.length), columns.get(columnIndex + 1), 0);
-
-                            // and add a row for the description (if one exists)
-                            if (values.length > 2 &&  !empty(values[2])) {
-                                columns.addAll(createColumns());
-                                row++;
+                int row = 0;
+                BreakIterator line = BreakIterator.getLineInstance();
+                for (int i = 0; i < values.length; i++) {
+                    int descriptionOffset = 0;
+                    int columnIndex = i + 1; // first column is for padding
+                    if (empty(values[i])) { continue; }
+                    char[] column = columns.get(columnIndex + (row * columnCount));
+                    switch (i) {
+                        case 0:
+                            if (values.length > 1 &&  !empty(values[1])) {
+                                copy(values[i] + ",", column, 0);
+                            } else {
+                                copy(values[i], column, 0); // no comma if no long option in second column
                             }
-                        }
-                        break;
-                    case 2:
-                        String text = values[i];
-                        OUTER: do {
-                            column = columns.get(columnIndex + (row * columnCount));
-                            int offset = descriptionOffset;
-                            line.setText(text);
-                            for (int start = line.first(), end = line.next(); end != BreakIterator.DONE; start = end, end = line.next()) {
-                                String word = text.substring(start, end);
-                                if (column.length >= offset + length(word)) {
-                                    offset += copy(word, column, offset);
-                                } else {
-                                    text = text.substring(start);
-                                    columns.addAll(createColumns());
+                            break;
+                        case 1:
+                            copy(values[i], column, 0);
+
+                            // if the long options exceed the column length...
+                            if (values[i].length() > column.length) {
+
+                                // copy the remainder into the description column
+                                copy(values[i].substring(column.length), columns.get(columnIndex + 1), 0);
+
+                                // and add a row for the description (if one exists)
+                                if (values.length > 2 &&  !empty(values[2])) {
+                                    columns.addAll(newRow());
                                     row++;
-                                    descriptionOffset = 2; // indent subsequent rows with 2 spaces
-                                    continue OUTER;
                                 }
                             }
                             break;
-                        } while (text.length() > 0);
+                        case 2:
+                            String text = values[i];
+                            OUTER: do {
+                                column = columns.get(columnIndex + (row * columnCount));
+                                int offset = descriptionOffset;
+                                line.setText(text);
+                                for (int start = line.first(), end = line.next(); end != BreakIterator.DONE; start = end, end = line.next()) {
+                                    String word = text.substring(start, end);
+                                    if (column.length >= offset + length(word)) {
+                                        offset += copy(word, column, offset);
+                                    } else {
+                                        text = text.substring(start);
+                                        columns.addAll(newRow());
+                                        row++;
+                                        descriptionOffset = 2; // indent subsequent rows with 2 spaces
+                                        continue OUTER;
+                                    }
+                                }
+                                break;
+                            } while (text.length() > 0);
+                    }
                 }
+                this.columnValues.addAll(columns);
             }
-            this.columnValues.addAll(columns);
-        }
 
-        private static int length(String str) {
-            return str.length(); // TODO count some characters as double length
-        }
+            private static int length(String str) {
+                return str.length(); // TODO count some characters as double length
+            }
 
-        private static boolean empty(final String value) {
-            return value == null || value.trim().length() == 0;
-        }
+            private static boolean empty(final String value) {
+                return value == null || value.trim().length() == 0;
+            }
 
-        private static int copy(String value, char[] destination, int offset) {
-            value.getChars(0, Math.min(value.length(), destination.length), destination, offset);
-            return value.length();
-        }
+            private static int copy(String value, char[] destination, int offset) {
+                int length = Math.min(value.length(), destination.length - offset);
+                value.getChars(0, length, destination, offset);
+                return length;
+            }
 
-        public StringBuilder toString(StringBuilder text) {
-            int columnCount = this.columnWidths.length;
-            for (int i = 0; i < columnValues.size(); i++) {
-                char[] column = columnValues.get(i);
-                text.append(column);
-                if (i % columnCount == columnCount - 1) {
-                    text.append(System.getProperty("line.separator"));
+            public StringBuilder toString(StringBuilder text) {
+                // TODO put ',' separator here?
+                int columnCount = this.columns.length;
+                for (int i = 0; i < columnValues.size(); i++) {
+                    char[] column = columnValues.get(i);
+                    text.append(column);
+                    if (i % columnCount == columnCount - 1) {
+                        text.append(System.getProperty("line.separator"));
+                    }
                 }
+                return text;
             }
-            return text;
+        }
+        public static class Column {
+            public final int width;
+            public final int indent;
+            public Column(int width, int indent) {
+                this.width = width;
+                this.indent = indent;
+            }
         }
     }
 
