@@ -229,10 +229,12 @@ public class CommandLine {
         interpreter.converterRegistry.put(Assert.notNull(cls, "class"), Assert.notNull(converter, "converter"));
     }
 
+    /** Returns the String that separates option names from option values. {@code '='} by default. */
     public String getSeparator() {
         return interpreter.separator;
     }
 
+    /** Sets the String that separates option names from option values to the specified value. */
     public void setSeparator(String separator) {
         interpreter.separator = Assert.notNull(separator, "separator");
     }
@@ -1211,13 +1213,29 @@ public class CommandLine {
      * the usage help message to display to end users when help is requested or invalid input values were specified.
      */
     public static class Help {
+        /** Constant String holding the default program name: {@value} */
         public static final String DEFAULT_PROGRAM_NAME = "<main class>";
+
+        /** LinkedHashMap mapping {@link Option} instances to the {@code Field} they annotate, in declaration order. */
         public final Map<Option, Field> option2Field = new LinkedHashMap<Option, Field>();
+
+        /** The {@code Field} annotated with {@link Parameters}, or {@code null} if no such field exists. */
         public Field positionalParametersField;
+
+        /** The String to use as the program name in the Usage line of the help message. {@value} by default. */
         public String programName = DEFAULT_PROGRAM_NAME;
+
+        /** The text lines to use as the summary of the help message. Initialized from {@link Usage#summary()}
+         *  if the {@code Usage} annotation is present, otherwise this is an empty array and the help message has no
+         *  summary. Applications may programmatically set this field to create a custom help message. */
         public String[] summary = {};
+
+        /** The text lines to use as the summary of the help message. Initialized from {@link Usage#footer()}
+         *  if the {@code Usage} annotation is present, otherwise this is an empty array and the help message has no
+         *  footer. Applications may programmatically set this field to create a custom help message. */
         public String[] footer = {};
 
+        /** Constructs a new {@code Help} instance, initialized from annotatations on the specified class and super classes. */
         public Help(Class<?> cls) {
             while (cls != null) {
                 for (Field field : cls.getDeclaredFields()) {
@@ -1225,7 +1243,7 @@ public class CommandLine {
                     if (field.isAnnotationPresent(Option.class)) {
                         Option option = field.getAnnotation(Option.class);
                         if (!option.hidden()) {
-                            // TODO remember longest concatenated option string length
+                            // TODO remember longest concatenated option string length (issue #45)
                             option2Field.put(option, field);
                         }
                     }
@@ -1250,12 +1268,12 @@ public class CommandLine {
         }
         public StringBuilder appendUsage(StringBuilder sb) {
             sb.append("Usage: ").append(programName);
-            // TODO configurably show detailed usage
+            // TODO configurably show detailed usage (issue #44)
             if (!this.option2Field.isEmpty()) { // only show if annotated object actually has options
                 sb.append(" [OPTIONS]");
             }
             if (this.positionalParametersField != null) {
-                sb.append(" [PARAMETERS]"); // TODO configurable show parameter type or alias
+                sb.append(" [PARAMETERS]"); // TODO configurable show parameter type or alias (#44)
             }
             return sb.append(System.getProperty("line.separator"));
         }
@@ -1294,7 +1312,10 @@ public class CommandLine {
             }
             return result.toString();
         }
-        /** When showing online help for Option details, this interface is responsible for converting an Option to text.*/
+        /** When showing online help for {@link Option} details, the Renderer is responsible for creating a textual
+         * representation of an Option in a tabular format: one or more rows of one or more columns.
+         * The {@link ILayout} is responsible for placing these text values in the {@link TextTable}.
+         */
         public interface IRenderer {
             /**
              * Returns a text representation of the specified Option and the Field that captures the option value.
@@ -1332,19 +1353,41 @@ public class CommandLine {
                 return result;
             }
         }
+        /**
+         * When showing online usage help for {@link Option} details, Layout is responsible for placing the text values
+         * produced by the {@link IRenderer} in the correct location in the {@link TextTable}.
+         */
         public interface ILayout {
+            /**
+             * Copies the specified text values into the correct cells in the {@link TextTable}. Implementations are
+             * responsible for {@linkplain TextTable#addEmptyRow() adding an empty row} before populating cells in the
+             * table. The {@link TextTable#putValue(int, int, String)} method may write into multiple columns or even
+             * multiple rows if the value is larger than the {@link Column} width, depending on the Column's
+             * {@link Column.Overflow} setting. It is the responsibility of this method to detect that this happened
+             * and adjust the location of subsequent values accordingly.
+             * @param option the Option that the text values are generated from
+             * @param field the field annotated with the specified Option
+             * @param values the text values representing the Option, which are to be displayed in tabular form
+             * @param textTable the data structure holding {@code char[]} objects for each cell in the table
+             */
             void layout(Option option, Field field, String[][] values, TextTable textTable);
         }
+        /**
+         * The default Layout simply adds each row of text values to the {@link TextTable} on a separate row.
+         */
         public static class DefaultLayout implements ILayout {
+            /**
+             * The DefaultLayout relies on the {@link IRenderer} having created exactly as many {@link Column Columns}
+             * as the {@link TextTable} was constructed with, so it can simply call {@link TextTable#addRow(String...)}
+             * for each row.
+             */
             public void layout(Option option, Field field, String[][] cellValues, TextTable table) {
                 for (String[] oneRow : cellValues) {
                     table.addRow(oneRow);
                 }
             }
         }
-        /**
-         * Sorts short strings before longer strings.
-         */
+        /** Sorts short strings before longer strings. */
         public static class ShortestFirst implements Comparator<String> {
             public int compare(String o1, String o2) {
                 return o1.length() - o2.length();
@@ -1355,10 +1398,8 @@ public class CommandLine {
             }
         }
 
-        /**
-         * Sorts {@code Option} instances by their name in case-insensitive alphabetic order. If an Option has
-         * multiple names, the shortest name is used for the sorting. Help options follow non-help options.
-         */
+        /** Sorts {@code Option} instances by their name in case-insensitive alphabetic order. If an Option has
+         * multiple names, the shortest name is used for the sorting. Help options follow non-help options. */
         public static class AlphabeticOrder implements Comparator<Option> {
             ShortestFirst shortestFirst = new ShortestFirst();
             public int compare(Option o1, Option o2) {
@@ -1369,13 +1410,11 @@ public class CommandLine {
                 return o1.help() == o2.help() ? result : o2.help() ? -1 : 1; // help options come last
             }
         }
-
         /**
          * <p>Provides a table layout for text values, applicable for arranging option names and their description on
-         * the console. A table has a fixed number of columns, where each column has a fixed indent.
-         * </p><p>
-         * If a value is longer than the column length, it overflows into the next column.
-         * When more values are specified than there are columns, new rows are added.
+         * the console. A table has a fixed number of {@link Column Columns}, where each column has a fixed width,
+         * indent and {@link Column.Overflow} policy. The Overflow policy determines what happens when a value is
+         * longer than the column width.
          * </p>
          */
         public static class TextTable {
@@ -1410,8 +1449,10 @@ public class CommandLine {
             }
             /** Returns the {@code char[]} slot at the specified row and column to write a text value into. */
             public char[] cellAt(int row, int col) { return columnValues.get(col + (row * columns.length)); }
+
             /** Returns the current number of rows of this {@code TextTable}. */
             public int rowCount() { return columnValues.size() / columns.length; }
+
             /** Adds the required {@code char[]} slots for a new row to the {@link #columnValues} field. */
             public void addEmptyRow() {
                 for (int i = 0; i < columns.length; i++) {
@@ -1420,10 +1461,24 @@ public class CommandLine {
                     columnValues.add(array);
                 }
             }
+            /**
+             * Convenience method that delegates to the configured {@link TextTable#renderer renderer} to obtain text
+             * values for the specified {@link Option}, and then delegates to the configured {@link TextTable#layout
+             * layout} to write these text values into the correct cells in this TextTable.
+             * @param option the Option whose details and description to print to the console
+             * @param field the field annotated with the specified Option
+             */
             public void addOption(Option option, Field field) {
                 String[][] values = renderer.render(option, field);
                 layout.layout(option, field, values, this);
             }
+            /**
+             * Adds a new {@linkplain TextTable#addEmptyRow() empty row}, then calls {@link
+             * TextTable#putValue(int, int, String) putValue} for each of the specified values, adding more empty rows
+             * if the return value indicates that the value spanned multiple columns or was wrapped to multiple rows.
+             * @param values the values to write into a new row in this TextTable
+             * @throws IllegalArgumentException if the number of values exceeds the number of Columns in this table
+             */
             public void addRow(String... values) {
                 if (values.length > columns.length) {
                     throw new IllegalArgumentException(values.length + " values don't fit in " +
@@ -1440,6 +1495,18 @@ public class CommandLine {
                     }
                 }
             }
+            /**
+             * Writes the specified value into the cell at the specified row and column and returns the last row and
+             * column written to. Depending on the Column's {@link Column#overflow Overflow} policy, the value may span
+             * multiple columns or wrap to multiple rows when larger than the column width.
+             * @param row the target row in the table
+             * @param col the target column in the table to write to
+             * @param value the value to write
+             * @return a Point whose {@code x} value is the last column written to and whose {@code y} value is the
+             *          last row written to
+             * @throws IllegalArgumentException if the specified row exceeds the table's {@linkplain
+             *          TextTable#rowCount() row count}
+             */
             public Point putValue(int row, int col, String value) {
                 if (row > rowCount() - 1) {
                     throw new IllegalArgumentException("Cannot write to row " + row + ": rowCount=" + rowCount());
