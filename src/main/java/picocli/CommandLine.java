@@ -1360,11 +1360,12 @@ public class CommandLine {
         public interface ILayout {
             /**
              * Copies the specified text values into the correct cells in the {@link TextTable}. Implementations are
-             * responsible for {@linkplain TextTable#addEmptyRow() adding an empty row} before populating cells in the
-             * table. The {@link TextTable#putValue(int, int, String)} method may write into multiple columns or even
-             * multiple rows if the value is larger than the {@link Column} width, depending on the Column's
-             * {@link Column.Overflow} setting. It is the responsibility of this method to detect that this happened
-             * and adjust the location of subsequent values accordingly.
+             * responsible for ensuring the row exists by {@linkplain TextTable#addEmptyRow() adding an empty row}
+             * before populating cells in the table. The {@link TextTable#putValue(int, int, String) putValue} method
+             * may write into multiple columns or even multiple rows if the value is larger than the {@link Column}
+             * width, depending on the Column's {@link Column.Overflow} setting.
+             * It is the responsibility of the Layout to detect that this happened by inspecting the return value
+             * and to adjust the location of subsequent values accordingly.
              * @param option the Option that the text values are generated from
              * @param field the field annotated with the specified Option
              * @param values the text values representing the Option, which are to be displayed in tabular form
