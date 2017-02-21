@@ -15,6 +15,7 @@
  */
 package picocli;
 
+import java.awt.*;
 import java.io.File;
 import java.io.PrintStream;
 import java.lang.annotation.ElementType;
@@ -1303,27 +1304,22 @@ public class CommandLine {
                 String shortOption = shortOptionCount > 0 ? names[0] : "";
                 String sep = shortOptionCount > 0 && names.length > 1 ? "," : "";
                 String longOption = join(names, shortOptionCount, names.length - shortOptionCount, ", ");
-                return new String[][] {
-                        {shortOption}, {sep}, {longOption}, option.description()
-                };
+
+                String[][] result = new String[option.description().length][4];
+                result[0] = new String[] { shortOption, sep, longOption, option.description()[0] };
+                for (int i = 1; i < option.description().length; i++) {
+                    result[i] = new String[] { "", "", "", option.description()[i] };
+                }
+                return result;
             }
         }
         public interface ILayout {
-            void layout(Option option, Field field, TextTable textTable, String[][] values);
+            void layout(Option option, Field field, String[][] values, TextTable textTable);
         }
         public static class DefaultLayout implements ILayout {
-            public void layout(Option option,
-                               Field field,
-                               TextTable table,
-                               String[][] cellValues) {
+            public void layout(Option option, Field field, String[][] cellValues, TextTable table) {
                 for (String[] oneRow : cellValues) {
-                    if (oneRow.length > table.columns.length) {
-                        throw new IllegalArgumentException(oneRow.length + " values don't fit in " +
-                                table.columns.length + " columns");
-                    }
-                    for (int i = 0; i < oneRow.length; i++) {
-                        table.putValue(table.rowCount(), i, oneRow[i]);
-                    }
+                    table.addRow(oneRow);
                 }
             }
         }
@@ -1383,59 +1379,76 @@ public class CommandLine {
                 this.columns = Assert.notNull(columns, "columns");
             }
             public char[] cellAt(int row, int col) { return columnValues.get(col + (row * columns.length)); }
-            public int rowCount() { return columnValues.size() % columns.length; }
+            public int rowCount() { return columnValues.size() / columns.length; }
             public void addEmptyRow() {
                 for (int i = 0; i < columns.length; i++) {
-                    columnValues.add(new char[columns[i].width]);
-                    Arrays.fill(columnValues.get(i), ' ');
+                    char[] array = new char[columns[i].width];
+                    Arrays.fill(array, ' ');
+                    columnValues.add(array);
                 }
             }
             public void addOption(Option option, Field field) {
                 String[][] values = renderer.render(option, field);
-                layout.layout(option, field, this, values);
+                layout.layout(option, field, values, this);
             }
-            public void putValue(int row, int col, String value) {
-                if (row >= rowCount() - 1) {
-                    addEmptyRow();
+            public void addRow(String... oneRow) {
+                if (oneRow.length > columns.length) {
+                    throw new IllegalArgumentException(oneRow.length + " values don't fit in " +
+                            columns.length + " columns");
                 }
-                if (value == null || value.length() == 0) {return;}
+                addEmptyRow();
+                for (int i = 0; i < oneRow.length; i++) {
+                    putValue(rowCount() - 1, i, oneRow[i]); // write to last row: some values may span multiple rows
+                }
+            }
+            public Point putValue(int row, int col, String value) {
+                if (row > rowCount() - 1) {
+                    throw new IllegalArgumentException("Cannot write to row " + row + ": rowCount=" + rowCount());
+                }
+                if (value == null || value.length() == 0) {return new Point(col, row);}
                 Column column = columns[col];
                 int indent = column.indent;
                 switch (column.overflow) {
                     case TRUNCATE:
                         copy(value, cellAt(row, col), indent);
-                        break;
+                        return new Point(col, row);
                     case SPAN:
-                        int remain = value.length();
                         int startColumn = col;
+                        boolean spannedMultipleColumns = false;
                         do {
-                            remain -= copy(value, cellAt(row, col), indent);
+                            boolean lastColumn = col == columns.length - 1;
+                            int charsWritten = lastColumn
+                                    ? copy(BreakIterator.getLineInstance(), value, cellAt(row, col), indent)
+                                    : copy(value, cellAt(row, col), indent);
+                            value = value.substring(charsWritten);
                             indent = 0;
-                            if (remain > 0) {  // value did not fit in column
-                                ++col;         // write remainder of value in next column
-                                addEmptyRow(); // write remaining columns on next row
+                            if (value.length() > 0) { // value did not fit in column
+                                ++col;                // write remainder of value in next column
+                                spannedMultipleColumns = true;
                             }
-                            if (remain > 0 && col >= columns.length) { // we filled up all columns on this row
+                            if (value.length() > 0 && col >= columns.length) { // we filled up all columns on this row
                                 addEmptyRow();
                                 row++;
                                 col = startColumn;
                                 indent = column.indent + indentWrappedLines;
                             }
-                        } while (remain > 0);
-                        break;
+                        } while (value.length() > 0);
+                        if (spannedMultipleColumns) { addEmptyRow(); }// write remaining columns on next row
+                        return new Point(col, row);
                     case WRAP:
                         BreakIterator lineBreakIterator = BreakIterator.getLineInstance();
-                        remain = value.length();
                         do {
-                            remain -= copy(lineBreakIterator, value, cellAt(row, col), indent);
+                            int charsWritten = copy(lineBreakIterator, value, cellAt(row, col), indent);
+                            value = value.substring(charsWritten);
                             indent = column.indent + indentWrappedLines;
-                            if (remain > 0) {  // value did not fit in column
+                            if (value.length() > 0) {  // value did not fit in column
                                 ++row;         // write remainder of value in next row
                                 addEmptyRow();
                             }
-                        } while (remain > 0);
-                        break;
+                        } while (value.length() > 0);
+                        return new Point(col, row);
                 }
+                throw new IllegalStateException(column.overflow.toString());
             }
             private static int length(String str) {
                 return str.length(); // TODO count some characters as double length

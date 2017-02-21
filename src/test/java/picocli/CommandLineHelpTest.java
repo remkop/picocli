@@ -23,14 +23,18 @@ import picocli.CommandLine.Help.TextTable;
 import picocli.CommandLine.Option;
 import picocli.CommandLine.Usage;
 
+import java.awt.*;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.PrintStream;
 import java.lang.String;
+import java.lang.reflect.Field;
+import java.util.Arrays;
 import java.util.Iterator;
 
 import static java.lang.String.format;
 import static org.junit.Assert.*;
+import static picocli.CommandLine.Help.Column.Overflow.*;
 
 /**
  * Tests for picoCLI's "Usage" help functionality.
@@ -67,15 +71,15 @@ public class CommandLineHelpTest {
                 ,""), table.toString(new StringBuilder()).toString());
     }
 
-    @Test
+    @Test(expected = IllegalArgumentException.class)
     public void testTextTableAddsNewRowWhenTooManyValuesSpecified() {
         TextTable table = new TextTable();
         table.addRow("-c", ",", "--create", "description", "INVALID", "Row 3");
-        assertEquals(String.format("" +
-                        "  -c, --create                description                                       %n" +
-                        "                                INVALID                                         %n" +
-                        "                                Row 3                                           %n"
-                ,""), table.toString(new StringBuilder()).toString());
+//        assertEquals(String.format("" +
+//                        "  -c, --create                description                                       %n" +
+//                        "                                INVALID                                         %n" +
+//                        "                                Row 3                                           %n"
+//                ,""), table.toString(new StringBuilder()).toString());
     }
 
     @Test
@@ -83,13 +87,21 @@ public class CommandLineHelpTest {
         TextTable table = new TextTable();
         table.addRow("-c", ",",
                 "--create, --create2, --create3, --create4, --create5, --create6, --create7, --create8",
-                "description", "INVALID", "Row 3");
+                "description");
         assertEquals(String.format("" +
                         "  -c, --create, --create2, --create3, --create4, --create5, --create6, --       %n" +
                         "        create7, --create8                                                      %n" +
-                        "                              description                                       %n" +
-                        "                                INVALID                                         %n" +
-                        "                                Row 3                                           %n"
+                        "                              description                                       %n"
+                ,""), table.toString(new StringBuilder()).toString());
+
+        table = new TextTable();
+        table.addRow("-c", ",",
+                "--create, --create2, --create3, --create4, --create5, --create6, --createAA7, --create8",
+                "description");
+        assertEquals(String.format("" +
+                        "  -c, --create, --create2, --create3, --create4, --create5, --create6, --       %n" +
+                        "        createAA7, --create8                                                    %n" +
+                        "                              description                                       %n"
                 ,""), table.toString(new StringBuilder()).toString());
     }
 
@@ -195,35 +207,50 @@ public class CommandLineHelpTest {
                 "  -T   test zipfile integrity       -X   eXclude eXtra file attributes        %n" +
                 "  -y   store symbolic links as the link instead of the referenced file        %n" +
                 "  -e   encrypt                      -n   don't compress these suffixes        %n" +
-                "  -h2  show more help              %n", "");
+                "  -h2  show more help                                                         %n", "");
         Help help = new Help(Zip.class);
         StringBuilder sb = new StringBuilder();
-        help.appendSummary(sb);
-        TextTable textTable = new TextTable(new Column(5, 2),
-                                            new Column(30, 2),
-                                            new Column(4, 1),
-                                            new Column(39, 2));
-        Iterator<Option> iter = help.option2Field.keySet().iterator();
-        while (iter.hasNext()) {
-            Option option = iter.next();
-            if (option.hidden()) { continue; }
-            String[] names = option.names();
+        help.appendSummary(sb); // show the first 6 lines, including copyright, description and usage
+        TextTable textTable = new TextTable(new Column(5, 2, TRUNCATE), // values should fit
+                                            new Column(30, 2, SPAN), // overflow into adjacent columns
+                                            new Column(4,  1, TRUNCATE), // values should fit again
+                                            new Column(39, 2, WRAP)); // overflow into next row (same column)
+        textTable.renderer = new Help.IRenderer() { // define and install a custom renderer
+            public String[][] render(Option option, Field field) { // renderer only shows 1st option name and 1st line
+                return new String[][] {{option.names()[0], option.description()[0]}}; // of option description
+            }
+        };
+        textTable.layout = new Help.ILayout() { // define and install a custom layout
+            Point previous = new Point(0, 0);
+            public void layout(Option option, Field field, String[][] values, TextTable table) {
+                String[] columnValues = values[0]; // we know renderer creates a single row with two values
 
-            String name2 = "";
-            String description2 = "";
-            if (iter.hasNext()) {
-                Option option2 = iter.next();
-                while (option2.hidden() && iter.hasNext()) {
-                    option2 = iter.next();
+                // We want to show two options on one row, next to each other,
+                // unless the first option spanned multiple columns (in which case there are not enough columns left)
+                int col = previous.x + 1;
+                if (col == 1 || col + columnValues.length > table.columns.length) { // if true, write into next row
+
+                    // table also adds an empty row if a text value spanned multiple columns
+                    if (table.rowCount() == 0 || table.rowCount() == previous.y + 1) { // avoid adding 2 empty rows
+                        table.addEmptyRow(); // create the slots to write the text values into
+                    }
+                    col = 0; // we are starting a new row, reset the column to write into
                 }
-                if (!option2.hidden()) {
-                    name2 = option2.names()[0];
-                    description2 = option2.description();
+                for (int i = 0; i < columnValues.length; i++) {
+                    // always write to the last row, column depends on what happened previously
+                    previous = table.putValue(table.rowCount() - 1, col + i, columnValues[i]);
                 }
             }
-            textTable.addRow(names[0], option.description(), name2, description2);
+        };
+        // Now that the textTable has a renderer and layout installed,
+        // we add Options to the textTable to build up the option details help text.
+        // Note that we don't sort the options, so they appear in the order the fields are declared in the Zip class.
+        for (Option option : help.option2Field.keySet()) {
+            if (!option.hidden()) {
+                textTable.addOption(option, help.option2Field.get(option));
+            }
         }
-        textTable.toString(sb);
+        textTable.toString(sb); // finally, copy the options details help text into the StringBuilder
         assertEquals(expected, sb.toString());
     }
 }
