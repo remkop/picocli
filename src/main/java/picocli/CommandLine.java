@@ -55,6 +55,8 @@ import java.util.TreeSet;
 import java.util.UUID;
 import java.util.regex.Pattern;
 
+import static picocli.CommandLine.Help.Column.Overflow.*;
+
 /**
  * <p>
  * CommandLine interpreter that uses reflection to initialize an annotated domain object with values obtained from the
@@ -316,7 +318,7 @@ public class CommandLine {
          * Description of this option, used when generating the usage documentation.
          * @return the description of this option
          */
-        String description() default "";
+        String[] description() default {};
 
         /**
          * Indicates whether this option is required. By default this is false.
@@ -1258,22 +1260,16 @@ public class CommandLine {
         }
         public StringBuilder appendOptionDetails(StringBuilder sb) {
             TextTable textTable = new TextTable();
-            Map<Option, Field> map = new TreeMap<Option, Field>(new AlphabeticOrder()); // default: sort ABC
+            Map<Option, Field> map = new TreeMap<Option, Field>(new AlphabeticOrder()); // default: sort options ABC
             map.putAll(option2Field); // options are stored in order of declaration for custom layouts
             for (Option option : map.keySet()) {
-                if (option.hidden()) { continue; }
-                String[] names = new ShortestFirst().sort(option.names());
-                int shortOptionCount = names[0].length() == 2 ? 1 : 0;
-                String shortOption = shortOptionCount > 0 ? names[0] : "";
-                String sep = shortOptionCount > 0 && names.length > 1 ? "," : "";
-                String longOption = join(names, shortOptionCount, names.length - shortOptionCount, ", ");
-                // TODO required options
-                // TODO default value (unless it is a "help" Option)
-                // TODO option parameter: field name or field type?
-                textTable.addRow(shortOption, sep, longOption, option.description());
+                if (!option.hidden()) {
+                    textTable.addOption(option, map.get(option));
+                }
             }
             return textTable.toString(sb);
         }
+
         public StringBuilder appendSummary(StringBuilder sb) {
             if (summary != null) {
                 for (String summaryLine : summary) {
@@ -1290,14 +1286,47 @@ public class CommandLine {
             }
             return sb;
         }
-        private String join(String[] names, int offset, int length, String separator) {
+        private static String join(String[] names, int offset, int length, String separator) {
             StringBuilder result = new StringBuilder();
             for (int i = offset; i < offset + length; i++) {
                 result.append((i > offset) ? separator : "").append(names[i]);
             }
             return result.toString();
         }
-
+        public interface IRenderer {
+            String[][] render(Option option, Field field);
+        }
+        public static class DefaultRenderer implements IRenderer {
+            public String[][] render(Option option, Field field) {
+                String[] names = new ShortestFirst().sort(option.names());
+                int shortOptionCount = names[0].length() == 2 ? 1 : 0;
+                String shortOption = shortOptionCount > 0 ? names[0] : "";
+                String sep = shortOptionCount > 0 && names.length > 1 ? "," : "";
+                String longOption = join(names, shortOptionCount, names.length - shortOptionCount, ", ");
+                return new String[][] {
+                        {shortOption}, {sep}, {longOption}, option.description()
+                };
+            }
+        }
+        public interface ILayout {
+            void layout(Option option, Field field, TextTable textTable, String[][] values);
+        }
+        public static class DefaultLayout implements ILayout {
+            public void layout(Option option,
+                               Field field,
+                               TextTable table,
+                               String[][] cellValues) {
+                for (String[] oneRow : cellValues) {
+                    if (oneRow.length > table.columns.length) {
+                        throw new IllegalArgumentException(oneRow.length + " values don't fit in " +
+                                table.columns.length + " columns");
+                    }
+                    for (int i = 0; i < oneRow.length; i++) {
+                        table.putValue(table.rowCount(), i, oneRow[i]);
+                    }
+                }
+            }
+        }
         /**
          * Sorts short strings before longer strings.
          */
@@ -1335,70 +1364,79 @@ public class CommandLine {
          * </p>
          */
         public static class TextTable {
+            /** The column definitions of this table. */
             protected final Column[] columns;
             protected final List<char[]> columnValues = new ArrayList<char[]>();
             /** By default, indent wrapped lines by 2 spaces. */
             public int indentWrappedLines = 2;
+            public IRenderer renderer = new DefaultRenderer();
+            public ILayout layout = new DefaultLayout();
+            private int col, row;
             public TextTable() {
                 // "  -c, --create                Creates a ...."
-                this(new Column(4, 2),
-                        new Column(1, 0),
-                        new Column(24, 1),
-                        new Column(51, 1));
+                this(  new Column(4,  2, TRUNCATE),   // "  -c"
+                        new Column(1,  0, TRUNCATE),   // ","
+                        new Column(24, 1, SPAN),  // " --create"
+                        new Column(51, 1, WRAP)); // " Creates a ..."
             }
             public TextTable(Column... columns) {
                 this.columns = Assert.notNull(columns, "columns");
             }
-
-            protected List<char[]> newRow() {
-                List<char[]> result = new ArrayList<char[]>(columns.length);
+            public char[] cellAt(int row, int col) { return columnValues.get(col + (row * columns.length)); }
+            public int rowCount() { return columnValues.size() % columns.length; }
+            public void addEmptyRow() {
                 for (int i = 0; i < columns.length; i++) {
-                    result.add(new char[columns[i].width]);
-                    Arrays.fill(result.get(i), ' ');
+                    columnValues.add(new char[columns[i].width]);
+                    Arrays.fill(columnValues.get(i), ' ');
                 }
-                return result;
             }
-            public void addRow(String... values) {
-                List<char[]> columnValues = newRow();
-                BreakIterator line        = BreakIterator.getLineInstance();
-                int row                   = 0;
-                for (int i = 0; i < values.length; i++) {
-                    int columnIndex    = Math.min(i, columns.length - 1);
-                    boolean lastColumn = columnIndex == columns.length - 1;
-                    Column column      = columns[columnIndex];
-                    int indent         = column.indent;
-                    if (columnIndex < i) {
-                        columnValues.addAll(newRow());
-                        row++;
-                        indent = column.indent + indentWrappedLines;
-                    }
-                    char[] columnValue = columnValues.get(columnIndex + (row * columns.length));
-                    String value       = values[i] == null ? "" : values[i]; // tolerate null values
-                    int done           = lastColumn ? copy(line, value, columnValue, indent) : copy(value, columnValue, indent);
-                    boolean addRow     = false;
-                    while (done < value.length()) { // value did not fit in column: spill into next column(s)
-                        value = value.substring(done);
-                        columnIndex++;
-                        indent = 0; // no gaps in the middle of a value
-                        if (columnIndex >= columns.length) { // we exceeded the last column, add new row
-                            columnIndex = Math.min(i, columns.length - 1); // and start from original column
-                            columnValues.addAll(newRow());
-                            row++;
+            public void addOption(Option option, Field field) {
+                String[][] values = renderer.render(option, field);
+                layout.layout(option, field, this, values);
+            }
+            public void putValue(int row, int col, String value) {
+                if (row >= rowCount() - 1) {
+                    addEmptyRow();
+                }
+                if (value == null || value.length() == 0) {return;}
+                Column column = columns[col];
+                int indent = column.indent;
+                switch (column.overflow) {
+                    case TRUNCATE:
+                        copy(value, cellAt(row, col), indent);
+                        break;
+                    case SPAN:
+                        int remain = value.length();
+                        int startColumn = col;
+                        do {
+                            remain -= copy(value, cellAt(row, col), indent);
+                            indent = 0;
+                            if (remain > 0) {  // value did not fit in column
+                                ++col;         // write remainder of value in next column
+                                addEmptyRow(); // write remaining columns on next row
+                            }
+                            if (remain > 0 && col >= columns.length) { // we filled up all columns on this row
+                                addEmptyRow();
+                                row++;
+                                col = startColumn;
+                                indent = column.indent + indentWrappedLines;
+                            }
+                        } while (remain > 0);
+                        break;
+                    case WRAP:
+                        BreakIterator lineBreakIterator = BreakIterator.getLineInstance();
+                        remain = value.length();
+                        do {
+                            remain -= copy(lineBreakIterator, value, cellAt(row, col), indent);
                             indent = column.indent + indentWrappedLines;
-                        }
-                        lastColumn = columnIndex == columns.length - 1;
-                        columnValue = columnValues.get(columnIndex + (row * columns.length));
-                        done        = lastColumn ? copy(line, value, columnValue, indent) : copy(value, columnValue, indent);
-                        addRow      = true; // we've spilled over into neighbouring column, add row for next value
-                    }
-                    if (addRow && i < values.length - 1 && !empty(values[i + 1])) { // if we have more values
-                        columnValues.addAll(newRow());
-                        row++;
-                    }
+                            if (remain > 0) {  // value did not fit in column
+                                ++row;         // write remainder of value in next row
+                                addEmptyRow();
+                            }
+                        } while (remain > 0);
+                        break;
                 }
-                this.columnValues.addAll(columnValues);
             }
-
             private static int length(String str) {
                 return str.length(); // TODO count some characters as double length
             }
@@ -1445,11 +1483,18 @@ public class CommandLine {
          * in a TextTable.
          */
         public static class Column {
+            /** Policy for handling text that is longer than the column width:
+             *  span multiple columns, wrap to the next row, or simply truncate the portion that doesn't fit. */
+            public enum Overflow { TRUNCATE, SPAN, WRAP }
+            /** Column width in characters */
             public final int width;
+            /** Indent (number of empty spaces at the start of the column preceding the text value) */
             public final int indent;
-            public Column(int width, int indent) {
+            public final Overflow overflow;
+            public Column(int width, int indent, Overflow overflow) {
                 this.width = width;
                 this.indent = indent;
+                this.overflow = Assert.notNull(overflow, "overflow");
             }
         }
     }
