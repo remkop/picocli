@@ -1294,9 +1294,28 @@ public class CommandLine {
             }
             return result.toString();
         }
+        /** When showing online help for Option details, this interface is responsible for converting an Option to text.*/
         public interface IRenderer {
+            /**
+             * Returns a text representation of the specified Option and the Field that captures the option value.
+             * @param option the command line option to show online usage help for
+             * @param field the field that will hold the value for the command line option
+             * @return a 2-dimensional array of text values: one or more rows of one or more columns. The number of
+             *          columns needs to match the {@link Column Columns} that the TextTable was constructed with.
+             */
             String[][] render(Option option, Field field);
         }
+        /** The default renderer converts {@link Option Options} to text to match the TextTable
+         * {@link TextTable default columns}. The first row of values looks like this:
+         * <ol>
+         * <li>2-character short option name (or empty string if no short option exists)</li>
+         * <li>comma separator (only if both short option and long option exist, empty string otherwise)</li>
+         * <li>comma-separated string with long option name(s)</li>
+         * <li>first element of the {@link Option#description()} array</li>
+         * </ol>
+         * <p>Following this, there will be one row for each of the remaining {@link Option#description()} lines,
+         *   and these rows look like {@code {"", "", "", option.description()[i]}}.</p>
+         */
         public static class DefaultRenderer implements IRenderer {
             public String[][] render(Option option, Field field) {
                 String[] names = new ShortestFirst().sort(option.names());
@@ -1370,7 +1389,7 @@ public class CommandLine {
             public IRenderer renderer = new DefaultRenderer();
             /** The layout used to select which columns and rows in the text table to populate for an Option. */
             public ILayout layout = new DefaultLayout();
-            /** Constructs a default TextTable with 4 columns:
+            /** Constructs a default TextTable with 4 columns. Default TextTable column definitions are:
              * <ol>
              * <li>short option name (width: 4, indent: 2, TRUNCATE on overflow)</li>
              * <li>comma separator (width: 1, indent: 0, TRUNCATE on overflow)</li>
