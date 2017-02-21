@@ -1362,12 +1362,22 @@ public class CommandLine {
         public static class TextTable {
             /** The column definitions of this table. */
             protected final Column[] columns;
+            /** The {@code char[]} slots of the {@code TextTable} to copy text values into. */
             protected final List<char[]> columnValues = new ArrayList<char[]>();
             /** By default, indent wrapped lines by 2 spaces. */
             public int indentWrappedLines = 2;
+            /** The renderer used to create a text representation of an Option. */
             public IRenderer renderer = new DefaultRenderer();
+            /** The layout used to select which columns and rows in the text table to populate for an Option. */
             public ILayout layout = new DefaultLayout();
-            private int col, row;
+            /** Constructs a default TextTable with 4 columns:
+             * <ol>
+             * <li>short option name (width: 4, indent: 2, TRUNCATE on overflow)</li>
+             * <li>comma separator (width: 1, indent: 0, TRUNCATE on overflow)</li>
+             * <li>long option name(s) (width: 24, indent: 1, SPAN multiple columns on overflow)</li>
+             * <li>description line(s) (width: 51, indent: 1, WRAP to next row on overflow)</li>
+             * </ol>
+             */
             public TextTable() {
                 // "  -c, --create                Creates a ...."
                 this(  new Column(4,  2, TRUNCATE),   // "  -c"
@@ -1375,11 +1385,15 @@ public class CommandLine {
                         new Column(24, 1, SPAN),  // " --create"
                         new Column(51, 1, WRAP)); // " Creates a ..."
             }
+            /** Constructs a {@code TextTable} with the specified column definitions. */
             public TextTable(Column... columns) {
                 this.columns = Assert.notNull(columns, "columns");
             }
+            /** Returns the {@code char[]} slot at the specified row and column to write a text value into. */
             public char[] cellAt(int row, int col) { return columnValues.get(col + (row * columns.length)); }
+            /** Returns the current number of rows of this {@code TextTable}. */
             public int rowCount() { return columnValues.size() / columns.length; }
+            /** Adds the required {@code char[]} slots for a new row to the {@link #columnValues} field. */
             public void addEmptyRow() {
                 for (int i = 0; i < columns.length; i++) {
                     char[] array = new char[columns[i].width];
@@ -1391,14 +1405,20 @@ public class CommandLine {
                 String[][] values = renderer.render(option, field);
                 layout.layout(option, field, values, this);
             }
-            public void addRow(String... oneRow) {
-                if (oneRow.length > columns.length) {
-                    throw new IllegalArgumentException(oneRow.length + " values don't fit in " +
+            public void addRow(String... values) {
+                if (values.length > columns.length) {
+                    throw new IllegalArgumentException(values.length + " values don't fit in " +
                             columns.length + " columns");
                 }
                 addEmptyRow();
-                for (int i = 0; i < oneRow.length; i++) {
-                    putValue(rowCount() - 1, i, oneRow[i]); // write to last row: some values may span multiple rows
+                for (int col = 0; col < values.length; col++) {
+                    int row = rowCount() - 1;// write to last row: previous value may have wrapped to next row
+                    Point cell = putValue(row, col, values[col]);
+
+                    // add row if a value spanned/wrapped and there are still remaining values
+                    if ((cell.y != row || cell.x != col) && col != values.length - 1) {
+                        addEmptyRow();
+                    }
                 }
             }
             public Point putValue(int row, int col, String value) {
@@ -1414,7 +1434,6 @@ public class CommandLine {
                         return new Point(col, row);
                     case SPAN:
                         int startColumn = col;
-                        boolean spannedMultipleColumns = false;
                         do {
                             boolean lastColumn = col == columns.length - 1;
                             int charsWritten = lastColumn
@@ -1424,7 +1443,6 @@ public class CommandLine {
                             indent = 0;
                             if (value.length() > 0) { // value did not fit in column
                                 ++col;                // write remainder of value in next column
-                                spannedMultipleColumns = true;
                             }
                             if (value.length() > 0 && col >= columns.length) { // we filled up all columns on this row
                                 addEmptyRow();
@@ -1433,7 +1451,6 @@ public class CommandLine {
                                 indent = column.indent + indentWrappedLines;
                             }
                         } while (value.length() > 0);
-                        if (spannedMultipleColumns) { addEmptyRow(); }// write remaining columns on next row
                         return new Point(col, row);
                     case WRAP:
                         BreakIterator lineBreakIterator = BreakIterator.getLineInstance();
@@ -1453,11 +1470,6 @@ public class CommandLine {
             private static int length(String str) {
                 return str.length(); // TODO count some characters as double length
             }
-
-            private static boolean empty(final String value) {
-                return value == null || value.trim().length() == 0;
-            }
-
             private int copy(BreakIterator line, String text, char[] columnValue, int offset) {
                 line.setText(text);
                 int done = 0;
@@ -1471,13 +1483,13 @@ public class CommandLine {
                 }
                 return done;
             }
-
             private static int copy(String value, char[] destination, int offset) {
                 int length = Math.min(value.length(), destination.length - offset);
                 value.getChars(0, length, destination, offset);
                 return length;
             }
 
+            /** Copies the text representation that we built up from the options into the specified StringBuilder. */
             public StringBuilder toString(StringBuilder text) {
                 int columnCount = this.columns.length;
                 for (int i = 0; i < columnValues.size(); i++) {
