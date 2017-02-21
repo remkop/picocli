@@ -29,8 +29,6 @@ import java.io.File;
 import java.io.PrintStream;
 import java.lang.String;
 import java.lang.reflect.Field;
-import java.util.Arrays;
-import java.util.Iterator;
 
 import static java.lang.String.format;
 import static org.junit.Assert.*;
