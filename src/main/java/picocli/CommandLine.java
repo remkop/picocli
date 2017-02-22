@@ -67,21 +67,20 @@ import static picocli.CommandLine.Help.Column.Overflow.*;
  * </p>
  * <pre>import static picocli.CommandLine.*;
  *
- * public class MyClass {
+ * &#064;Usage(summary = "Encrypt FILE(s), or standard input, to standard output or to the output file.")
+ * public class Encrypt {
+ *
  *     &#064;Parameters(type = File.class, description = "Any number of input files")
  *     private List<File> files = new ArrayList<File>();
- *
- *     &#064;Option(names = { "-v", "--verbose"}, description = "Verbosely list files processed")
- *     private boolean verbose;
  *
  *     &#064;Option(names = { "-o", "--out" }, description = "Output file (default: print to console)")
  *     private File outputFile;
  *
+ *     &#064;Option(names = { "-v", "--verbose"}, description = "Verbosely list files processed")
+ *     private boolean verbose;
+ *
  *     &#064;Option(names = { "-h", "--help", "-?", "-help"}, help = true, description = "Display this help and exit")
  *     private boolean help;
- *
- *     &#064;Option(names = { "-V", "--version"}, help = true, description = "Display version information and exit")
- *     private boolean version;
  * }
  * </pre>
  * <p>
@@ -89,34 +88,32 @@ import static picocli.CommandLine.Help.Column.Overflow.*;
  * </p><pre>
  * public static void main(String... args) {
  *     try {
- *         MyClass myClass = CommandLine.parse(new MyClass(), args);
- *         if (myClass.help) {
- *             CommandLine.usage(MyClass.class, System.out);
- *         } else if (myClass.version) {
- *             System.out.println("MyProgram version 1.2.3");
+ *         Encrypt encrypt = CommandLine.parse(new Encrypt(), args);
+ *         if (encrypt.help) {
+ *             CommandLine.usage(Encrypt.class, System.out);
  *         } else {
- *             runProgram(myClass);
+ *             runProgram(encrypt);
  *         }
  *     } catch (ParameterException ex) { // command line arguments could not be parsed
  *         System.err.println(ex.getMessage());
- *         CommandLine.usage(MyClass.class, System.err);
+ *         CommandLine.usage(Encrypt.class, System.err);
  *     }
  * }
  * </pre><p>
  * Invoke the above program with some command line arguments. The below are all equivalent:
  * </p>
  * <pre>
- * -vooutfile in1 in2
+ * --verbose --out=outfile in1 in2
+ * --verbose --out outfile in1 in2
+ * -v --out=outfile in1 in2
+ * -v -o outfile in1 in2
+ * -v -o=outfile in1 in2
  * -vo outfile in1 in2
  * -vo=outfile in1 in2
  * -v -ooutfile in1 in2
- * -v -o outfile in1 in2
- * -v -o=outfile in1 in2
- * -v --out outfile in1 in2
- * -v --out=outfile in1 in2
- * --verbose --out=outfile in1 in2
+ * -vooutfile in1 in2
  * </pre>
- *
+ * FIXME
  * https://www.gnu.org/prep/standards/html_node/Command_002dLine-Interfaces.html#Command_002dLine-Interfaces
  * http://stackoverflow.com/questions/2160083/what-is-the-general-syntax-of-a-unix-shell-command/2160165#2160165
  * http://catb.org/~esr/writings/taoup/html/ch10s05.html
@@ -266,11 +263,11 @@ public class CommandLine {
      *     &#064;Parameters(type = File.class, description = "Any number of input files")
      *     private List<File> files = new ArrayList<File>();
      *
-     *     &#064;Option(names = { "-v", "--verbose"}, description = "Verbosely list files processed")
-     *     private boolean verbose;
-     *
      *     &#064;Option(names = { "-o", "--out" }, description = "Output file (default: print to console)")
      *     private File outputFile;
+     *
+     *     &#064;Option(names = { "-v", "--verbose"}, description = "Verbosely list files processed")
+     *     private boolean verbose;
      *
      *     &#064;Option(names = { "-h", "--help", "-?", "-help"}, help = true, description = "Display this help and exit")
      *     private boolean help;
@@ -457,14 +454,8 @@ public class CommandLine {
      *     &#064;Parameters(type = BigDecimal.class, description = "Any number of input numbers")
      *     private List<BigDecimal> files = new ArrayList<BigDecimal>();
      *
-     *     &#064;Option(names = { "-v", "--verbose"}, description = "Verbosely show process information")
-     *     private boolean verbose;
-     *
      *     &#064;Option(names = { "-h", "--help", "-?", "-help"}, help = true, description = "Display this help and exit")
      *     private boolean help;
-     *
-     *     &#064;Option(names = { "-V", "--version"}, help = true, description = "Display version information and exit")
-     *     private boolean version;
      * }
      * </pre>
      * <p>
@@ -530,7 +521,18 @@ public class CommandLine {
      * <p>
      * Annotate your class with {@code @Usage} when you want more control over the format of the generated help message
      * or when you want to add a summary description of what the program does or a footer following the option details.
-     * </p><p>
+     * </p><pre>
+     * &#064;Usage(programName = "Encrypt",
+     *        summary     = "Encrypt FILE(s), or standard input, to standard output or to the output file.",
+     *        footer      = "Copyright (c) 2017")
+     * public class Encrypt {
+     *     &#064;Parameters(type = File.class, description = "Any number of input files")
+     *     private List<File> files = new ArrayList<File>();
+     *
+     *     &#064;Option(names = { "-o", "--out" }, description = "Output file (default: print to console)")
+     *     private File outputFile;
+     * }</pre>
+     * <p>
      * The structure of a help message looks like this:
      * </p><ul>
      *   <li>{@code Usage: <programName> [OPTIONS] [PARAMETERS}}</li>
@@ -1361,17 +1363,16 @@ public class CommandLine {
             }
             return result.toString();
         }
-        /** When showing online help for {@link Option} details, the Renderer is responsible for creating a textual
-         * representation of an Option in a tabular format: one or more rows of one or more columns.
-         * The {@link ILayout} is responsible for placing these text values in the {@link TextTable}.
+        /** When showing online help for {@link Option Option} details, the Renderer is responsible for creating a
+         * textual representation of an Option in a tabular format: one or more rows, each containing one or more columns.
+         * The {@link ILayout ILayout} is responsible for placing these text values in the {@link TextTable TextTable}.
          */
         public interface IRenderer {
             /**
              * Returns a text representation of the specified Option and the Field that captures the option value.
              * @param option the command line option to show online usage help for
              * @param field the field that will hold the value for the command line option
-             * @return a 2-dimensional array of text values: one or more rows of one or more columns. The number of
-             *          columns needs to match the {@link Column Columns} that the TextTable was constructed with.
+             * @return a 2-dimensional array of text values: one or more rows, each containing one or more columns
              */
             String[][] render(Option option, Field field);
         }
@@ -1402,10 +1403,9 @@ public class CommandLine {
                 return result;
             }
         }
-        /**
-         * When showing online usage help for {@link Option} details, Layout is responsible for placing the text values
-         * produced by the {@link IRenderer} in the correct location in the {@link TextTable}.
-         */
+        /** When showing online usage help for {@link Option Option} details, Layout is responsible for placing the text
+         * values produced by the {@linkplain IRenderer renderer} in the correct location in the
+         * {@link TextTable TextTable}. */
         public interface ILayout {
             /**
              * Copies the specified text values into the correct cells in the {@link TextTable}. Implementations are
@@ -1441,12 +1441,12 @@ public class CommandLine {
             public int compare(String o1, String o2) {
                 return o1.length() - o2.length();
             }
+            /** Sorts the specified array of Strings shortest-first and returns it. */
             public static String[] sort(String[] names) {
                 Arrays.sort(names, new ShortestFirst());
                 return names;
             }
         }
-
         /** Sorts {@code Option} instances by their name in case-insensitive alphabetic order. If an Option has
          * multiple names, the shortest name is used for the sorting. Help options follow non-help options. */
         public static class AlphabeticOrder implements Comparator<Option> {
@@ -1648,6 +1648,7 @@ public class CommandLine {
             public final int width;
             /** Indent (number of empty spaces at the start of the column preceding the text value) */
             public final int indent;
+            /** Policy that determines how to handle values larger than the column width. */
             public final Overflow overflow;
             public Column(int width, int indent, Overflow overflow) {
                 this.width = width;
