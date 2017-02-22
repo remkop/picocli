@@ -176,15 +176,29 @@ public class CommandLine {
 
     /**
      * Prints a usage help message for the specified annotated class to the specified {@code PrintStream}.
-     * @param annotatedClass the class with fields annotated with {@code @Parameters} and {@code @Option}
+     * Delegates construction of the usage help message to the {@link Help} inner class and is equivalent to:
+     * <pre>
+     * StringBuilder sb = new StringBuilder();
+     * new Help(annotatedClass).appendUsage(sb)         // Usage &lt;main class&gt; [OPTIONS] [PARAMETERS]
+     *                         .appendSummary(sb)       // from @Usage.summary() - may be omitted
+     *                         .appendOptionDetails(sb) // from @Option names and descriptions
+     *                         .appendFooter(sb);       // from @Usage.footer() - may be omitted
+     * out.print(sb);</pre>
+     * <p>Specify a {@link Usage} annotation to control the program name, or whether the "usage" message
+     * should be a generic {@code "Usage <main class> [OPTIONS] [PARAMETERS]"} message or a detailed message
+     * that shows options and parameters.</p>
+     * <p>To customize how option details are displayed, instantiate a {@link Help} object and install a custom
+     * option {@linkplain Help.IRenderer renderer} and/or a custom {@linkplain Help.ILayout layout} to control
+     * which aspects of an Option or Field are displayed where in the {@link Help.TextTable}.</p>
+     * @param annotatedClass the class annotated with {@link Usage}, {@link Option} and {@link Parameters}
      * @param out the {@code PrintStream} to print the usage help message to
      */
     public static void usage(Class<?> annotatedClass, PrintStream out) {
-        Help help = new Help(annotatedClass);
-        StringBuilder sb = help.appendUsage(new StringBuilder());
-        help.appendSummary(sb);
-        help.appendOptionDetails(sb);
-        help.appendFooter(sb);
+        StringBuilder sb = new StringBuilder();
+        new Help(annotatedClass).appendUsage(sb)
+                                .appendSummary(sb)
+                                .appendOptionDetails(sb)
+                                .appendFooter(sb);
         out.print(sb);
     }
 
@@ -1266,7 +1280,7 @@ public class CommandLine {
                 cls = cls.getSuperclass();
             }
         }
-        public StringBuilder appendUsage(StringBuilder sb) {
+        public Help appendUsage(StringBuilder sb) {
             sb.append("Usage: ").append(programName);
             // TODO configurably show detailed usage (issue #44)
             if (!this.option2Field.isEmpty()) { // only show if annotated object actually has options
@@ -1275,9 +1289,10 @@ public class CommandLine {
             if (this.positionalParametersField != null) {
                 sb.append(" [PARAMETERS]"); // TODO configurable show parameter type or alias (#44)
             }
-            return sb.append(System.getProperty("line.separator"));
+            sb.append(System.getProperty("line.separator"));
+            return this;
         }
-        public StringBuilder appendOptionDetails(StringBuilder sb) {
+        public Help appendOptionDetails(StringBuilder sb) {
             TextTable textTable = new TextTable();
             Map<Option, Field> map = new TreeMap<Option, Field>(new AlphabeticOrder()); // default: sort options ABC
             map.putAll(option2Field); // options are stored in order of declaration for custom layouts
@@ -1286,24 +1301,25 @@ public class CommandLine {
                     textTable.addOption(option, map.get(option));
                 }
             }
-            return textTable.toString(sb);
+            textTable.toString(sb);
+            return this;
         }
 
-        public StringBuilder appendSummary(StringBuilder sb) {
+        public Help appendSummary(StringBuilder sb) {
             if (summary != null) {
                 for (String summaryLine : summary) {
                     sb.append(summaryLine).append(System.getProperty("line.separator"));
                 }
             }
-            return sb;
+            return this;
         }
-        public StringBuilder appendFooter(StringBuilder sb) {
+        public Help appendFooter(StringBuilder sb) {
             if (footer != null) {
                 for (String line : footer) {
                     sb.append(line).append(System.getProperty("line.separator"));
                 }
             }
-            return sb;
+            return this;
         }
         private static String join(String[] names, int offset, int length, String separator) {
             StringBuilder result = new StringBuilder();
