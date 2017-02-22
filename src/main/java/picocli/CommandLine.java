@@ -184,7 +184,7 @@ public class CommandLine {
      *                         .appendOptionDetails(sb) // from @Option names and descriptions
      *                         .appendFooter(sb);       // from @Usage.footer() - may be omitted
      * out.print(sb);</pre>
-     * <p>Specify a {@link Usage} annotation to control the program name, or whether the "usage" message
+     * <p>Annotate your class with {@link Usage} to control the program name, or whether the "usage" message
      * should be a generic {@code "Usage <main class> [OPTIONS] [PARAMETERS]"} message or a detailed message
      * that shows options and parameters.</p>
      * <p>To customize how option details are displayed, instantiate a {@link Help} object and install a custom
@@ -533,7 +533,7 @@ public class CommandLine {
      * </p><p>
      * The structure of a help message looks like this:
      * </p><ul>
-     *   <li>{@code Usage: java <programName> [OPTIONS] [PARAMS}}</li>
+     *   <li>{@code Usage: <programName> [OPTIONS] [PARAMETERS}}</li>
      *   <li>[summary]</li>
      *   <li>a list of options with their usage message</li>
      *   <li>[footer]</li>
@@ -1265,6 +1265,7 @@ public class CommandLine {
                         positionalParametersField = positionalParametersField == null ? field : positionalParametersField;
                     }
                 }
+                // superclass values should not overwrite values if both class and superclass have a @Usage annotation
                 if (cls.isAnnotationPresent(Usage.class)) {
                     Usage usage = cls.getAnnotation(Usage.class);
                     if (DEFAULT_PROGRAM_NAME.equals(programName)) {
@@ -1280,6 +1281,14 @@ public class CommandLine {
                 cls = cls.getSuperclass();
             }
         }
+        /**
+         * Appends a "Usage" help message to the specified StringBuilder. By default, this generates a generic
+         * {@code "Usage <main class> [OPTIONS] [PARAMETERS]"} message. Annotate your class with {@link Usage} to
+         * control the program name, or whether the generic "Usage" message should be replaced by a detailed message
+         * that shows options and parameters.
+         * @param sb the StringBuilder to append the "Usage" help message line to
+         * @return this {@code Help} object, to allow method chaining for a more fluent API
+         */
         public Help appendUsage(StringBuilder sb) {
             sb.append("Usage: ").append(programName);
             // TODO configurably show detailed usage (issue #44)
@@ -1292,6 +1301,17 @@ public class CommandLine {
             sb.append(System.getProperty("line.separator"));
             return this;
         }
+        /**
+         * <p>Appends a description of the {@linkplain Option options} supported by the application to the specified
+         * StringBuilder. This implementation {@linkplain AlphabeticOrder sorts options alphabetically}, and shows
+         * only the {@linkplain Option#hidden() non-hidden} options in a {@linkplain TextTable tabular format}
+         * using the {@linkplain DefaultRenderer default renderer} and {@linkplain DefaultLayout default layout}.</p>
+         * <p>To customize how option details are displayed, instantiate a {@link TextTable} object and install a
+         * custom option {@linkplain Help.IRenderer renderer} and/or a custom {@linkplain Help.ILayout layout} to
+         * control which aspects of an Option or Field are displayed where.</p>
+         * @param sb the StringBuilder to append the "Usage" help message line to
+         * @return this {@code Help} object, to allow method chaining for a more fluent API
+         */
         public Help appendOptionDetails(StringBuilder sb) {
             TextTable textTable = new TextTable();
             Map<Option, Field> map = new TreeMap<Option, Field>(new AlphabeticOrder()); // default: sort options ABC
@@ -1304,7 +1324,13 @@ public class CommandLine {
             textTable.toString(sb);
             return this;
         }
-
+        /** Appends program summary text to the specified StringBuilder. Summary text can be zero or more lines, and
+         * can be specified declaratively with the {@link Usage#summary()} annotation attribute. Text values are
+         * appended as is and are not reformatted. Applications can programmatically specify a custom summary by
+         * instantiating a {@link Help} instance and setting its {@link Help#summary} field.
+         * @param sb the StringBuilder to append the program summary text lines to
+         * @return this {@code Help} object, to allow method chaining for a more fluent API
+         */
         public Help appendSummary(StringBuilder sb) {
             if (summary != null) {
                 for (String summaryLine : summary) {
@@ -1313,6 +1339,13 @@ public class CommandLine {
             }
             return this;
         }
+        /** Appends usage help footer text to the specified StringBuilder. Footer text can be zero or more lines, and
+         * can be specified declaratively with the {@link Usage#footer()} annotation attribute. Text values are
+         * appended as is and are not reformatted. Applications can programmatically specify a custom footer by
+         * instantiating a {@link Help} instance and setting its {@link Help#footer} field.
+         * @param sb the StringBuilder to append the usage help footer text lines to
+         * @return this {@code Help} object, to allow method chaining for a more fluent API
+         */
         public Help appendFooter(StringBuilder sb) {
             if (footer != null) {
                 for (String line : footer) {
@@ -1342,16 +1375,16 @@ public class CommandLine {
              */
             String[][] render(Option option, Field field);
         }
-        /** The default renderer converts {@link Option Options} to text to match the TextTable
-         * {@link TextTable default columns}. The first row of values looks like this:
+        /** The default Renderer converts {@link Option Options} to four columns of text to match the default
+         * {@linkplain TextTable TextTable} column layout. The first row of values looks like this:
          * <ol>
          * <li>2-character short option name (or empty string if no short option exists)</li>
          * <li>comma separator (only if both short option and long option exist, empty string otherwise)</li>
          * <li>comma-separated string with long option name(s)</li>
          * <li>first element of the {@link Option#description()} array</li>
          * </ol>
-         * <p>Following this, there will be one row for each of the remaining {@link Option#description()} lines,
-         *   and these rows look like {@code {"", "", "", option.description()[i]}}.</p>
+         * <p>Following this, there will be one row for each of the remaining elements of the {@link
+         *   Option#description()} array, and these rows look like {@code {"", "", "", option.description()[i]}}.</p>
          */
         public static class DefaultRenderer implements IRenderer {
             public String[][] render(Option option, Field field) {
@@ -1389,9 +1422,8 @@ public class CommandLine {
              */
             void layout(Option option, Field field, String[][] values, TextTable textTable);
         }
-        /**
-         * The default Layout simply adds each row of text values to the {@link TextTable} on a separate row.
-         */
+        /** The default Layout displays each array of text values representing an Option on a separate row in the
+         * {@linkplain TextTable TextTable}. */
         public static class DefaultLayout implements ILayout {
             /**
              * The DefaultLayout relies on the {@link IRenderer} having created exactly as many {@link Column Columns}
@@ -1604,12 +1636,10 @@ public class CommandLine {
                 }
                 return text;
             }
+            public String toString() { return toString(new StringBuilder()).toString(); }
         }
-
-        /**
-         * Columns define the width and indent (leading number of spaces in a column before the value) of a column
-         * in a TextTable.
-         */
+        /** Columns define the width, indent (leading number of spaces in a column before the value) and
+         * {@linkplain Overflow Overflow} policy of a column in a {@linkplain TextTable TextTable}. */
         public static class Column {
             /** Policy for handling text that is longer than the column width:
              *  span multiple columns, wrap to the next row, or simply truncate the portion that doesn't fit. */
