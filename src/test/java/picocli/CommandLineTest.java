@@ -252,6 +252,19 @@ public class CommandLineTest {
         assertEquals(8, bean.longField);
         assertEquals(Long.valueOf(8), bean.aLongField);
     }
+    @Test(expected = MissingParameterException.class)
+    public void testSingleValueFieldDefaultMinArityIs1() {
+        CommandLine.parse(new SupportedTypes(),  "-Long");
+    }
+    @Test
+    public void testSingleValueFieldDefaultMinArityIsOne() {
+        try {
+            CommandLine.parse(new SupportedTypes(),  "-Long", "-boolean");
+            fail("should fail");
+        } catch (ParameterException ex) {
+            assertEquals("Could not convert '-boolean' to Long for option '-Long'", ex.getMessage());
+        }
+    }
     @Test
     public void testTimeFormatHHmmSupported() throws ParseException {
         SupportedTypes bean = CommandLine.parse(new SupportedTypes(), "-Time", "23:59");
