@@ -113,11 +113,11 @@ import static picocli.CommandLine.Help.Column.Overflow.*;
  * -v -ooutfile in1 in2
  * -vooutfile in1 in2
  * </pre>
- * FIXME
- * https://www.gnu.org/prep/standards/html_node/Command_002dLine-Interfaces.html#Command_002dLine-Interfaces
- * http://stackoverflow.com/questions/2160083/what-is-the-general-syntax-of-a-unix-shell-command/2160165#2160165
- * http://catb.org/~esr/writings/taoup/html/ch10s05.html
  *
+ * @see <a href="http://catb.org/~esr/writings/taoup/html/ch10s05.html#id2948149">TAOUP's hints for designing good
+ *        command line user interfaces</a>
+ * @see <a href="https://www.gnu.org/prep/standards/html_node/Command_002dLine-Interfaces.html#Command_002dLine-Interfaces">GNU
+ *        Standards for Command Line Interfaces</a>
  */
 public class CommandLine {
     /** This is PicoCLI version {@value}. */
@@ -343,9 +343,9 @@ public class CommandLine {
         boolean required() default false;
 
         /**
-         * Specifies how many parameters are required. If a positive arity is declared, and the user
-         * specifies an insufficient number of parameters on the command line,
-         * {@link MissingParameterException} is thrown by the {@link #parse(String...)} method.
+         * Specifies the minimum number of required parameters and the maximum number of accepted parameters.
+         * If an option declares a positive arity, and the user specifies an insufficient number of parameters on the
+         * command line, a {@link MissingParameterException} is thrown by the {@link #parse(String...)} method.
          * <p>
          * In many cases picoCLI can deduce the number of required parameters from the field's type.
          * By default, flags (boolean options) have arity zero,
@@ -383,7 +383,7 @@ public class CommandLine {
          * </pre>
          * @return how many arguments this option requires
          */
-        int arity() default -1;
+        String arity() default "";
 
         /**
          * Set {@code varargs=true} when this option accepts a variable number of parameters.
@@ -487,7 +487,7 @@ public class CommandLine {
          * </p>
          * @return how many parameters this command requires
          */
-        int arity() default 0;
+        String arity() default "0..*";
 
         /**
          * Set {@code varargs=false} when a fixed number of parameters is required.
@@ -605,6 +605,75 @@ public class CommandLine {
         K convert(String value) throws Exception;
     }
 
+    public static class Arity {
+        public int min;
+        public int max;
+        private final boolean isVariable;
+        private final boolean isRange;
+        private final boolean isUnspecified;
+        private final String originalValue;
+
+        public Arity(int min, int max, boolean variable, boolean range, boolean unspecified, String originalValue) {
+            this.min = min;
+            this.max = max;
+            this.isRange = range;
+            this.isVariable = variable;
+            this.isUnspecified = unspecified;
+            this.originalValue = originalValue;
+        }
+        public static Arity forOption(Field field) {
+            return adjustForType(Arity.valueOf(field.getAnnotation(Option.class).arity()), field);
+        }
+        public static Arity forParameters(Field field) {
+            return adjustForType(Arity.valueOf(field.getAnnotation(Parameters.class).arity()), field);
+        }
+        static Arity adjustForType(Arity result, Field field) {
+            if (result.isUnspecified) {
+                Arity def = forType(field.getType());
+                result.min = def.min;
+                result.max = def.max;
+            }
+            return result;
+        }
+        public static Arity forType(Class<?> type) {
+            if (type == Boolean.class || type == Boolean.TYPE) {
+                return Arity.valueOf("0");
+            } else if (type.isArray() || Collection.class.isAssignableFrom(type)) {
+                return Arity.valueOf("0..*");
+            }
+            return Arity.valueOf("1");// for single-valued fields
+        }
+        public static Arity valueOf(String arity) {
+            arity = arity.trim();
+            boolean unspecified = arity.length() == 0 || arity.startsWith(".."); // || arity.endsWith("..");
+            int min = -1, max = -1;
+            boolean variable = false, range = false;
+            int dots = -1;
+            if ((dots = arity.indexOf("..")) >= 0) {
+                range = true;
+                min = parseInt(arity.substring(0, dots), 0);
+                max = parseInt(arity.substring(dots + 2), Integer.MAX_VALUE);
+                variable = max == Integer.MAX_VALUE;
+            } else {
+                max = parseInt(arity, Integer.MAX_VALUE);
+                variable = max == Integer.MAX_VALUE;
+                min = variable ? 0 : max;
+            }
+            Arity result = new Arity(min, max, variable, range, unspecified, arity);
+            return result;
+        }
+        private static int parseInt(String str, int defaultValue) {
+            try {
+                return Integer.parseInt(str);
+            } catch (Exception ex) {
+                return defaultValue;
+            }
+        }
+        public String toString() {
+            return (min == max ? String.valueOf(min) : min + ".." + max) + " ('" + originalValue + "')";
+        }
+    }
+
     private static Field init(Class<?> cls,
                               List<Field> requiredFields,
                               Map<String, Field> optionName2Field,
@@ -707,8 +776,8 @@ public class CommandLine {
         Object parse(String... args) {
             Assert.notNull(args, "argument array");
             if (positionalParametersField != null) {
-                int arity = positionalParametersField.getAnnotation(Parameters.class).arity();
-                assertNoMissingParameters(positionalParametersField, arity, args.length);
+                Arity arity = Arity.forParameters(positionalParametersField);
+                assertNoMissingParameters(positionalParametersField, arity.min, args.length);
             }
             // first reset any state in case this CommandLine instance is being reused
             isHelpRequested = false;
@@ -789,10 +858,9 @@ public class CommandLine {
             if (positionalParametersField == null || args.isEmpty()) {
                 return;
             }
-            boolean varargs = positionalParametersField.getAnnotation(Parameters.class).varargs();
-            int arity = positionalParametersField.getAnnotation(Parameters.class).arity();
-            assertNoMissingParameters(positionalParametersField, arity, args.size());
-            applyOption(positionalParametersField, Parameters.class, varargs, arity, false, args);
+            Arity arity = Arity.forParameters(positionalParametersField);
+            assertNoMissingParameters(positionalParametersField, arity.min, args.size());
+            applyOption(positionalParametersField, Parameters.class, arity, false, args);
         }
 
         private void processStandaloneOption(Set<Field> required,
@@ -801,12 +869,11 @@ public class CommandLine {
                                              boolean paramAttachedToKey) throws Exception {
             Field field = optionName2Field.get(arg);
             required.remove(field);
-            int estimatedArity = estimateArity(field);
-            boolean varargs = field.getAnnotation(Option.class).varargs();
+            Arity arity = Arity.forOption(field);
             if (paramAttachedToKey) {
-                estimatedArity = Math.max(1, estimatedArity); // if key=value, arity is at least 1
+                arity.min = Math.max(1, arity.min); // if key=value, minimum arity is at least 1
             }
-            applyOption(field, Option.class, varargs, estimatedArity, paramAttachedToKey, args);
+            applyOption(field, Option.class, arity, paramAttachedToKey, args);
         }
 
         private void processClusteredShortOptions(Set<Field> required, String arg, Stack<String> args)
@@ -817,18 +884,17 @@ public class CommandLine {
                     Field field = singleCharOption2Field.get(cluster.charAt(0));
                     required.remove(field);
                     cluster = cluster.length() > 0 ? cluster.substring(1) : "";
-                    boolean varargs = field.getAnnotation(Option.class).varargs();
-                    int estimatedArity = estimateArity(field);
                     boolean paramAttachedToOption = cluster.length() > 0;
+                    Arity arity = Arity.forOption(field);
                     if (cluster.startsWith(separator)) {// attached with separator, like -f=FILE or -v=true
                         cluster = cluster.substring(separator.length());
-                        estimatedArity = Math.max(1, estimatedArity); // arity is at least 1
+                        arity.min = Math.max(1, arity.min); // if key=value, minimum arity is at least 1
                     }
                     args.push(cluster); // interpret remainder as option parameter (CAUTION: may be empty string!)
                     // arity may be >= 1, or
                     // arity <= 0 && !cluster.startsWith(separator)
                     // e.g., boolean @Option("-v", arity=0, varargs=true); arg "-rvTRUE", remainder cluster="TRUE"
-                    int consumed = applyOption(field, Option.class, varargs, estimatedArity, paramAttachedToOption, args);
+                    int consumed = applyOption(field, Option.class, arity, paramAttachedToOption, args);
                     // only return if cluster (and maybe more) was consumed, otherwise continue do-while loop
                     if (consumed > 0) {
                         return;
@@ -850,8 +916,7 @@ public class CommandLine {
 
         private int applyOption(Field field,
                                 Class<?> annotation,
-                                boolean varargs,
-                                int arity,
+                                Arity arity,
                                 boolean valueAttachedToOption,
                                 Stack<String> args) throws Exception {
             updateHelpRequested(field);
@@ -859,34 +924,31 @@ public class CommandLine {
                 args.pop(); // throw out empty string we get at the end of a group of clustered short options
             }
             int length = args.size();
-            if (arity == Integer.MAX_VALUE) {
-                arity = length; // consume all available args
+            if (arity.max == Integer.MAX_VALUE) {
+                arity.max = length; // consume all available args
             }
-            assertNoMissingParameters(field, arity, length);
+            assertNoMissingParameters(field, arity.min, length);
 
             Class<?> cls = field.getType();
             if (cls.isArray()) {
-                return applyValuesToArrayField(field, annotation, varargs, arity, args, cls);
+                return applyValuesToArrayField(field, annotation, arity, args, cls);
             }
             if (Collection.class.isAssignableFrom(cls)) {
-                return applyValuesToCollectionField(field, annotation, varargs, arity, args, cls);
+                return applyValuesToCollectionField(field, annotation, arity, args, cls);
             }
-            return applyValueToSingleValuedField(field, varargs, arity, args, cls);
+            return applyValueToSingleValuedField(field, arity, args, cls);
         }
 
-        private int applyValueToSingleValuedField(Field field,
-                                                  boolean varargs,
-                                                  int arity,
-                                                  Stack<String> args,
-                                                  Class<?> cls) throws Exception {
+        private int applyValueToSingleValuedField(Field field, Arity arity, Stack<String> args, Class<?> cls) throws Exception {
             String value = args.isEmpty() ? null : trim(args.pop()); // unquote the value
+            int result = arity.min; // the number or args we need to consume
 
             // special logic for booleans: BooleanConverter accepts only "true" or "false".
-            if ((cls == Boolean.class || cls == Boolean.TYPE) && arity <= 0) {
+            if ((cls == Boolean.class || cls == Boolean.TYPE) && arity.min <= 0) {
 
-                // Usually, boolean fields have arity=0 and don't take a parameter, but if varargs=true it MAY be a param
-                if (varargs && ("true".equalsIgnoreCase(value) || "false".equalsIgnoreCase(value))) {
-                    arity = 1;            // if it is a varargs we only consume 1 argument if it is a boolean value
+                // boolean option with arity = 0..1 or 0..*: value MAY be a param
+                if (arity.max > 0 && ("true".equalsIgnoreCase(value) || "false".equalsIgnoreCase(value))) {
+                    result = 1;            // if it is a varargs we only consume 1 argument if it is a boolean value
                 } else {
                     if (value != null) {
                         args.push(value); // we don't consume the value
@@ -897,18 +959,17 @@ public class CommandLine {
             ITypeConverter<?> converter = getTypeConverter(cls);
             Object objValue = tryConvert(field, -1, converter, value, cls);
             field.set(annotatedObject, objValue);
-            return arity;
+            return result;
         }
 
         private int applyValuesToArrayField(Field field,
                                             Class<?> annotation,
-                                            boolean varargs,
-                                            int arity,
+                                            Arity arity,
                                             Stack<String> args,
                                             Class<?> cls) throws Exception {
             Class<?> type = cls.getComponentType();
             ITypeConverter converter = getTypeConverter(type);
-            List<Object> converted = consumeArguments(field, annotation, varargs, arity, args, converter, cls);
+            List<Object> converted = consumeArguments(field, annotation, arity, args, converter, cls);
             Object array = Array.newInstance(type, converted.size());
             field.set(annotatedObject, array);
             for (int i = 0; i < converted.size(); i++) { // get remaining values from the args array
@@ -920,14 +981,13 @@ public class CommandLine {
         @SuppressWarnings("unchecked")
         private int applyValuesToCollectionField(Field field,
                                                  Class<?> annotation,
-                                                 boolean varargs,
-                                                 int arity,
+                                                 Arity arity,
                                                  Stack<String> args,
                                                  Class<?> cls) throws Exception {
             Collection<Object> collection = (Collection<Object>) field.get(annotatedObject);
             Class<?> type = getTypeAttribute(field);
             ITypeConverter converter = getTypeConverter(type);
-            List<Object> converted = consumeArguments(field, annotation, varargs, arity, args, converter, type);
+            List<Object> converted = consumeArguments(field, annotation, arity, args, converter, type);
             if (collection == null) {
                 collection = createCollection(cls);
                 field.set(annotatedObject, collection);
@@ -944,35 +1004,21 @@ public class CommandLine {
 
         private List<Object> consumeArguments(Field field,
                                               Class<?> annotation,
-                                              boolean varargs,
-                                              int arity,
+                                              Arity arity,
                                               Stack<String> args,
                                               ITypeConverter converter,
                                               Class<?> type) throws Exception {
-            arity = actualArity(field, arity);
             List<Object> result = new ArrayList<Object>();
-            if (arity > 0) {                       // first do the arity mandatory parameters
-                for (int i = 0; i < arity; i++) { // get the remaining values from the args array
-                    result.add(tryConvert(field, i, converter, trim(args.pop()), type));
-                }
+            for (int i = 0; i < arity.min; i++) { // first do the arity.min mandatory parameters
+                result.add(tryConvert(field, i, converter, trim(args.pop()), type));
             }
-            // if no mandatory parameters, and we are not forbidden (arity != 0), then consume at least one arg
-            if (arity != 0) {
-                if (result.isEmpty()) {
-                    if (annotation == Parameters.class || !isOption(args.peek())) {
-                        result.add(tryConvert(field, 0, converter, trim(args.pop()), type));
-                    } else {
-                        return result;
-                    }
-                }
-            }
-            if (varargs) { // now process the varargs if any
-                while (!args.isEmpty()) {
-                    if (annotation == Parameters.class || !isOption(args.peek())) { // don't trim: quoted strings are not options
-                        result.add(tryConvert(field, result.size(), converter, trim(args.pop()), type));
-                    } else {
-                        return result;
-                    }
+            int remain = arity.max - arity.min;
+            while (remain > 0 && !args.isEmpty()) {// now process the varargs if any
+                remain--;
+                if (annotation == Parameters.class || !isOption(args.peek())) { // don't trim: quoted strings are not options
+                    result.add(tryConvert(field, result.size(), converter, trim(args.pop()), type));
+                } else {
+                    return result;
                 }
             }
             return result;
@@ -1000,26 +1046,6 @@ public class CommandLine {
             }
             return (arg.length() > 2 && arg.startsWith("-") && singleCharOption2Field.containsKey(arg.charAt(1)));
         }
-
-        private int estimateArity(Field field) {
-            int arity = field.getAnnotation(Option.class).arity();
-            if (arity >= 0) { // if arity was specified, use the specified value
-                return arity;
-            }
-            Class<?> type = field.getType();
-            if (type == Boolean.class || type == Boolean.TYPE) {
-                return 0;
-            }
-            if (type.isArray() || Collection.class.isAssignableFrom(type)) {
-                return Integer.MAX_VALUE;
-            }
-            return 1;
-        }
-
-        private int actualArity(Field field, int defaultValue) {
-            return field.isAnnotationPresent(Option.class) ? field.getAnnotation(Option.class).arity() : defaultValue;
-        }
-
         private Object tryConvert(Field field, int index, ITypeConverter<?> converter, String value, Class<?> type)
                 throws Exception {
             try {
@@ -1241,6 +1267,9 @@ public class CommandLine {
         /** The String to use as the program name in the Usage line of the help message. {@value} by default. */
         public String programName = DEFAULT_PROGRAM_NAME;
 
+        /** If {@code true}, the "Usage" line will have a detailed list of options and parameters. */
+        public Boolean detailedUsage;
+
         /** The text lines to use as the summary of the help message. Initialized from {@link Usage#summary()}
          *  if the {@code Usage} annotation is present, otherwise this is an empty array and the help message has no
          *  summary. Applications may programmatically set this field to create a custom help message. */
@@ -1273,6 +1302,9 @@ public class CommandLine {
                     if (DEFAULT_PROGRAM_NAME.equals(programName)) {
                         programName = usage.programName();
                     }
+                    if (detailedUsage == null) {
+                        detailedUsage = usage.detailedUsage();
+                    }
                     if (summary == null || summary.length == 0) {
                         summary = usage.summary();
                     }
@@ -1292,8 +1324,31 @@ public class CommandLine {
          * @return this {@code Help} object, to allow method chaining for a more fluent API
          */
         public Help appendUsage(StringBuilder sb) {
-            sb.append("Usage: ").append(programName);
-            // TODO configurably show detailed usage (issue #44)
+            if (detailedUsage) {
+                return appendDetailedUsage("Usage: ", new AlphabeticOrder(), sb);
+            }
+            return appendGenericUsage("Usage: ", sb);
+        }
+        public Help appendDetailedUsage(String prefix, Comparator<Option> optionSort, StringBuilder sb) {
+            sb.append(prefix).append(programName);
+            Map<Option, Field> map = option2Field; // iterate in declaration order
+            if (optionSort != null) {
+                map = new TreeMap<Option, Field>(optionSort); // iterate in specified sort order
+                map.putAll(option2Field);
+            }
+            for (Option option : map.keySet()) {
+                sb.append(" ");
+                String pattern = option.required() ? "%s" : "[%s]";
+                Arity arity = Arity.forOption(map.get(option));
+                String optionNames = join(option.names(), 0, option.names().length, "|");
+                optionNames += DefaultRenderer.renderParameter(map.get(option));
+                sb.append(String.format(pattern, optionNames));
+            }
+            sb.append(System.getProperty("line.separator"));
+            return this;
+        }
+        public Help appendGenericUsage(String prefix, StringBuilder sb) {
+            sb.append(prefix).append(programName);
             if (!this.option2Field.isEmpty()) { // only show if annotated object actually has options
                 sb.append(" [OPTIONS]");
             }
@@ -1394,6 +1449,7 @@ public class CommandLine {
                 String shortOption = shortOptionCount > 0 ? names[0] : "";
                 String sep = shortOptionCount > 0 && names.length > 1 ? "," : "";
                 String longOption = join(names, shortOptionCount, names.length - shortOptionCount, ", ");
+                longOption += renderParameter(field);
 
                 String[][] result = new String[option.description().length][4];
                 result[0] = new String[] { shortOption, sep, longOption, option.description()[0] };
@@ -1401,6 +1457,38 @@ public class CommandLine {
                     result[i] = new String[] { "", "", "", option.description()[i] };
                 }
                 return result;
+            }
+
+            public static String renderParameter(Field field) {
+                Arity arity = Arity.forOption(field);
+                String result = "";
+                String sep = "=";
+                if (arity.min > 0) {
+                    for (int i = 0; i < arity.min; i++) {
+                        result += sep + "<" + field.getType().getSimpleName() + ">";
+                        sep = " ";
+                    }
+                }
+                if (arity.max > arity.min) {
+                    sep = result.length() == 0 ? "=" : " ";
+                    int max = arity.isVariable ? 2 : arity.max - arity.min;
+                    for (int i = 0; i < max; i++) {
+                        result += sep + "[<" + field.getType().getSimpleName() + ">";
+                    }
+                    if (arity.isVariable) {
+                        result += "...";
+                    }
+                    for (int i = 0; i < max; i++) { result += "]"; }
+                }
+                return result;
+            }
+        }
+        /** The minimal Renderer converts {@link Option Options} to a single row with two columns of text: an option
+         * name and a description. If multiple names or description lines exist, the first value is used. */
+        public static class MinimalRenderer implements IRenderer {
+            public String[][] render(Option option, Field field) {
+                return new String[][] {{ option.names()[0] + DefaultRenderer.renderParameter(field),
+                                           option.description().length == 0 ? "" : option.description()[0] }};
             }
         }
         /** When showing online usage help for {@link Option Option} details, Layout is responsible for placing the text

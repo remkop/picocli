@@ -213,11 +213,7 @@ public class CommandLineHelpTest {
                                             new Column(30, 2, SPAN), // overflow into adjacent columns
                                             new Column(4,  1, TRUNCATE), // values should fit again
                                             new Column(39, 2, WRAP)); // overflow into next row (same column)
-        textTable.renderer = new Help.IRenderer() { // define and install a custom renderer
-            public String[][] render(Option option, Field field) { // renderer only shows 1st option name and 1st line
-                return new String[][] {{option.names()[0], option.description()[0]}}; // of option description
-            }
-        };
+        textTable.renderer = new Help.MinimalRenderer(); // define and install a custom renderer
         textTable.layout = new Help.ILayout() { // define and install a custom layout
             Point previous = new Point(0, 0);
             public void layout(Option option, Field field, String[][] values, TextTable table) {
@@ -249,6 +245,125 @@ public class CommandLineHelpTest {
             }
         }
         textTable.toString(sb); // finally, copy the options details help text into the StringBuilder
+        assertEquals(expected, sb.toString());
+    }
+
+    /** for Netstat test */
+    private enum Protocol {IP, IPv6, ICMP, ICMPv6, TCP, TCPv6, UDP, UDPv6}
+    @Test
+    public void testNetstatUsageFormat() {
+        @Usage(programName = "NETSTAT",
+                detailedUsage = true,
+                summary = {"Displays protocol statistics and current TCP/IP network connections.", ""})
+        class Netstat {
+            @Option(names="-a", description="Displays all connections and listening ports.")
+            boolean displayAll;
+            @Option(names="-b", description="Displays the executable involved in creating each connection or "
+                    + "listening port. In some cases well-known executables host "
+                    + "multiple independent components, and in these cases the "
+                    + "sequence of components involved in creating the connection "
+                    + "or listening port is displayed. In this case the executable "
+                    + "name is in [] at the bottom, on top is the component it called, "
+                    + "and so forth until TCP/IP was reached. Note that this option "
+                    + "can be time-consuming and will fail unless you have sufficient "
+                    + "permissions.")
+            boolean displayExecutable;
+            @Option(names="-e", description="Displays Ethernet statistics. This may be combined with the -s "
+                    + "option.")
+            boolean displayEthernetStats;
+            @Option(names="-f", description="Displays Fully Qualified Domain Names (FQDN) for foreign "
+                    + "addresses.")
+            boolean displayFQCN;
+            @Option(names="-n", description="Displays addresses and port numbers in numerical form.")
+            boolean displayNumerical;
+            @Option(names="-o", description="Displays the owning process ID associated with each connection.")
+            boolean displayOwningProcess;
+            @Option(names="-p", description="Shows connections for the protocol specified by proto; proto "
+                    + "may be any of: TCP, UDP, TCPv6, or UDPv6.  If used with the -s "
+                    + "option to display per-protocol statistics, proto may be any of: "
+                    + "IP, IPv6, ICMP, ICMPv6, TCP, TCPv6, UDP, or UDPv6.")
+            Protocol proto;
+            @Option(names="-q", description="Displays all connections, listening ports, and bound "
+                    + "nonlistening TCP ports. Bound nonlistening ports may or may not "
+                    + "be associated with an active connection.")
+            boolean query;
+            @Option(names="-r", description="Displays the routing table.")
+            boolean displayRoutingTable;
+            @Option(names="-s", description="Displays per-protocol statistics.  By default, statistics are "
+                    + "shown for IP, IPv6, ICMP, ICMPv6, TCP, TCPv6, UDP, and UDPv6; "
+                    + "the -p option may be used to specify a subset of the default.")
+            boolean displayStatistics;
+            @Option(names="-t", description="Displays the current connection offload state.")
+            boolean displayOffloadState;
+            @Option(names="-x", description="Displays NetworkDirect connections, listeners, and shared endpoints.")
+            boolean displayNetDirect;
+            @Option(names="-y", description="Displays the TCP connection template for all connections. "
+                    + "Cannot be combined with the other options.")
+            boolean displayTcpConnectionTemplate;
+            @CommandLine.Parameters(description = "Redisplays selected statistics, pausing interval seconds "
+                    + "between each display.  Press CTRL+C to stop redisplaying "
+                    + "statistics.  If omitted, netstat will print the current "
+                    + "configuration information once.")
+            int interval;
+        }
+        StringBuilder sb = new StringBuilder();
+        Help help = new Help(Netstat.class);
+        help.appendSummary(sb).appendDetailedUsage("", null, sb);
+        sb.append(System.getProperty("line.separator"));
+
+        TextTable textTable = new TextTable(
+                new Column(15, 2, TRUNCATE),
+                new Column(65, 1, WRAP));
+        textTable.renderer = new Help.MinimalRenderer();
+        textTable.indentWrappedLines = 0;
+        for (Option option : help.option2Field.keySet()) {
+            textTable.addOption(option, help.option2Field.get(option));
+        }
+        textTable.toString(sb);
+        String expected = String.format("" +
+                "Displays protocol statistics and current TCP/IP network connections.%n" +
+                "%n" +
+                "NETSTAT [-a] [-b] [-e] [-f] [-n] [-o] [-p proto] [-q] [-r] [-s] [-t] [-x] [interval]%n" +
+                "NETSTAT [-y] [interval]%n" +
+                "%n" +
+                "  -a            Displays all connections and listening ports.                   %n" +
+                "  -b            Displays the executable involved in creating each connection or %n" +
+                "                listening port. In some cases well-known executables host       %n" +
+                "                multiple independent components, and in these cases the         %n" +
+                "                sequence of components involved in creating the connection or   %n" +
+                "                listening port is displayed. In this case the executable name   %n" +
+                "                is in [] at the bottom, on top is the component it called, and  %n" +
+                "                so forth until TCP/IP was reached. Note that this option can be %n" +
+                "                time-consuming and will fail unless you have sufficient         %n" +
+                "                permissions.                                                    %n" +
+                "  -e            Displays Ethernet statistics. This may be combined with the -s  %n" +
+                "                option.                                                         %n" +
+                "  -f            Displays Fully Qualified Domain Names (FQDN) for foreign        %n" +
+                "                addresses.                                                      %n" +
+                "  -n            Displays addresses and port numbers in numerical form.          %n" +
+                "  -o            Displays the owning process ID associated with each connection. %n" +
+                "  -p proto      Shows connections for the protocol specified by proto; proto    %n" +
+                "                may be any of: TCP, UDP, TCPv6, or UDPv6.  If used with the -s  %n" +
+                "                option to display per-protocol statistics, proto may be any of: %n" +
+                "                IP, IPv6, ICMP, ICMPv6, TCP, TCPv6, UDP, or UDPv6.              %n" +
+                "  -q            Displays all connections, listening ports, and bound            %n" +
+                "                nonlistening TCP ports. Bound nonlistening ports may or may not %n" +
+                "                be associated with an active connection.                        %n" +
+                "  -r            Displays the routing table.                                     %n" +
+                "  -s            Displays per-protocol statistics.  By default, statistics are   %n" +
+                "                shown for IP, IPv6, ICMP, ICMPv6, TCP, TCPv6, UDP, and UDPv6;   %n" +
+                "                the -p option may be used to specify a subset of the default.   %n" +
+                "  -t            Displays the current connection offload state.                  %n" +
+                "  -x            Displays NetworkDirect connections, listeners, and shared       %n" +
+                "                endpoints.                                                      %n" +
+                "  -y            Displays the TCP connection template for all connections.       %n" +
+                "                Cannot be combined with the other options.                      %n" +
+                "  interval      Redisplays selected statistics, pausing interval seconds        %n" +
+                "                between each display.  Press CTRL+C to stop redisplaying        %n" +
+                "                statistics.  If omitted, netstat will print the current         %n" +
+                "                configuration information once.                                 %n"
+        , "");
+        System.out.println(sb);
         assertEquals(expected, sb.toString());
     }
 }
