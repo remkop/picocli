@@ -120,6 +120,62 @@ public class CommandLineHelpTest {
     }
 
     @Test
+    public void testCreateDefaultOptionRenderer_ReturnsMinimalOptionRenderer() {
+        assertEquals(Help.DefaultOptionRenderer.class, Help.createDefaultOptionRenderer().getClass());
+    }
+
+    @Test
+    public void testDefaultOptionRenderer_rendersShortestOptionNameThenOtherOptionNamesAndDescription() {
+        class Example {
+            @Option(names = {"---long", "-L"}, description = "long description") String longField;
+            @Option(names = {"-b", "-a", "--alpha"}, description = "other") String otherField;
+        }
+        Help.IOptionRenderer renderer = Help.createDefaultOptionRenderer();
+        Help.IParameterRenderer parameterRenderer = Help.createDefaultParameterRenderer(" ");
+        Help help = new Help(Example.class);
+        Iterator<Map.Entry<Option, Field>> iterator = help.option2Field.entrySet().iterator();
+        Map.Entry<Option, Field> entry = iterator.next();
+        String[][] row1 = renderer.render(entry.getKey(), entry.getValue(), parameterRenderer);
+        assertEquals(1, row1.length);
+        assertArrayEquals(Arrays.toString(row1[0]), new String[]{"-L", ",", "---long <longField>", "long description"}, row1[0]);
+
+        entry = iterator.next();
+        String[][] row2 = renderer.render(entry.getKey(), entry.getValue(), parameterRenderer);
+        assertEquals(1, row2.length);
+        assertArrayEquals(Arrays.toString(row2[0]), new String[]{"-b", ",", "-a, --alpha <otherField>", "other"}, row2[0]);
+    }
+
+    @Test
+    public void testDefaultOptionRenderer_rendersCommaOnlyIfBothShortAndLongOptionNamesExist() {
+        class Example {
+            @Option(names = {"-v"}, description = "shortBool") boolean shortBoolean;
+            @Option(names = {"--verbose"}, description = "longBool") boolean longBoolean;
+            @Option(names = {"-x", "--xeno"}, description = "combiBool") boolean combiBoolean;
+            @Option(names = {"-s"}, description = "shortOnly") String shortOnlyField;
+            @Option(names = {"--long"}, description = "longOnly") String longOnlyField;
+            @Option(names = {"-b", "--beta"}, description = "combi") String combiField;
+        }
+        Help.IOptionRenderer renderer = Help.createDefaultOptionRenderer();
+        Help.IParameterRenderer parameterRenderer = Help.createDefaultParameterRenderer(" ");
+        Help help = new Help(Example.class);
+
+        String[][] expected = new String[][] {
+                {"-v", "",  "", "shortBool"},
+                {"",   "",  "--verbose", "longBool"},
+                {"-x", ",", "--xeno", "combiBool"},
+                {"-s", "",  " <shortOnlyField>", "shortOnly"},
+                {"",   "",  "--long <longOnlyField>", "longOnly"},
+                {"-b", ",", "--beta <combiField>", "combi"},
+        };
+        int i = -1;
+        for (Map.Entry<Option, Field> entry : help.option2Field.entrySet()) {
+            String[][] row = renderer.render(entry.getKey(), entry.getValue(), parameterRenderer);
+            assertEquals(1, row.length);
+            assertArrayEquals(Arrays.toString(row[0]), expected[++i], row[0]);
+        }
+    }
+
+    @Test
     public void testTextTable() {
         TextTable table = new TextTable();
         table.addRow("-v", ",", "--verbose", "show what you're doing while you are doing it");
