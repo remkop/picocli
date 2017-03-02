@@ -176,6 +176,36 @@ public class CommandLineHelpTest {
     }
 
     @Test
+    public void testCreateDefaultParameterRenderer_ReturnsDefaultParameterRenderer() {
+        assertEquals(Help.DefaultParameterRenderer.class, Help.createDefaultParameterRenderer("=").getClass());
+    }
+
+    @Test
+    public void testDefaultParameterRenderer_showsParamLabelIfPresentOrFieldNameOtherwise() {
+        class Example {
+            @Option(names = "--without" ) String longField;
+            @Option(names = "--with", paramLabel = "LABEL") String otherField;
+        }
+        Help.IOptionRenderer renderer = Help.createDefaultOptionRenderer();
+        Help.IParameterRenderer spaceSeparatedParameterRenderer = Help.createDefaultParameterRenderer(" ");
+        Help.IParameterRenderer equalSeparatedParameterRenderer = Help.createDefaultParameterRenderer("=");
+        Help help = new Help(Example.class);
+
+        String[] expected = new String[] {
+                "<longField>",
+                "LABEL",
+        };
+        int i = -1;
+        for (Map.Entry<Option, Field> entry : help.option2Field.entrySet()) {
+            i++;
+            String withSpace = spaceSeparatedParameterRenderer.renderParameter(entry.getValue());
+            assertEquals(withSpace, " " + expected[i], withSpace);
+            String withEquals = equalSeparatedParameterRenderer.renderParameter(entry.getValue());
+            assertEquals(withEquals, "=" + expected[i], withEquals);
+        }
+    }
+
+    @Test
     public void testTextTable() {
         TextTable table = new TextTable();
         table.addRow("-v", ",", "--verbose", "show what you're doing while you are doing it");
