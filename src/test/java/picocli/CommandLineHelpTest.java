@@ -84,6 +84,14 @@ public class CommandLineHelpTest {
     }
 
     @Test
+    public void testShortestFirstComparator_sortsDeclarationOrderIfEqualLength() {
+        String[] values = {"-d", "-", "-a", "--alpha", "--b", "--a", "--beta"};
+        Arrays.sort(values, new Help.ShortestFirst());
+        String[] expected = {"-", "-d", "-a", "--b", "--a", "--beta", "--alpha"};
+        assertArrayEquals(expected, values);
+    }
+
+    @Test
     public void testTextTable() {
         TextTable table = new TextTable();
         table.addRow("-v", ",", "--verbose", "show what you're doing while you are doing it");
