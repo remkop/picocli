@@ -1126,7 +1126,7 @@ public class CommandLineTest {
     @Test
     public void testNonVarargArrayParametersWithNegativeArityConsumesZeroArguments() {
         class NonVarArgArrayParamsNegativeArity {
-            @Parameters(varargs = false, arity = "-1")
+            @Parameters(arity = "-1")
             List<String> params;
         }
         NonVarArgArrayParamsNegativeArity params = CommandLine.parse(new NonVarArgArrayParamsNegativeArity(), "a", "b", "c");
@@ -1142,7 +1142,7 @@ public class CommandLineTest {
     @Test
     public void testNonVarargArrayParametersWithArity0() {
         class NonVarArgArrayParamsZeroArity {
-            @Parameters(varargs = false, arity = "0")
+            @Parameters(arity = "0")
             List<String> params;
         }
         NonVarArgArrayParamsZeroArity params = CommandLine.parse(new NonVarArgArrayParamsZeroArity(), "a", "b", "c");
@@ -1158,7 +1158,7 @@ public class CommandLineTest {
     @Test
     public void testNonVarargArrayParametersWithArity1() {
         class NonVarArgArrayParamsArity1 {
-            @Parameters(varargs = false, arity = "1")
+            @Parameters(arity = "1")
             List<String> params;
         }
         NonVarArgArrayParamsArity1 params = CommandLine.parse(new NonVarArgArrayParamsArity1(), "a", "b", "c");
@@ -1178,7 +1178,7 @@ public class CommandLineTest {
     @Test
     public void testNonVarargArrayParametersWithArity2() {
         class NonVarArgArrayParamsArity2 {
-            @Parameters(varargs = false, arity = "2")
+            @Parameters(arity = "2")
             List<String> params;
         }
         NonVarArgArrayParamsArity2 params = CommandLine.parse(new NonVarArgArrayParamsArity2(), "a", "b", "c");
@@ -1379,7 +1379,7 @@ public class CommandLineTest {
     @Test
     public void testOptionMultiParameterQuotesRemovedFromValue() {
         class TextOption {
-            @CommandLine.Option(names = "-t", varargs = true) String[] text;
+            @CommandLine.Option(names = "-t") String[] text;
         }
         TextOption opt = CommandLine.parse(new TextOption(), "-t", "\"a text\"", "\"another text\"", "\"x z\"");
         assertArrayEquals(new String[]{"a text", "another text", "x z"}, opt.text);
