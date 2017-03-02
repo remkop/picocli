@@ -21,14 +21,17 @@ import picocli.CommandLine.Help;
 import picocli.CommandLine.Help.Column;
 import picocli.CommandLine.Help.TextTable;
 import picocli.CommandLine.Option;
+import picocli.CommandLine.Parameters;
 import picocli.CommandLine.Usage;
 
 import java.awt.Point;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.PrintStream;
+import java.io.UnsupportedEncodingException;
 import java.lang.String;
 import java.lang.reflect.Field;
+import java.util.Arrays;
 import java.util.List;
 
 import static java.lang.String.format;
@@ -39,20 +42,36 @@ import static picocli.CommandLine.Help.Column.Overflow.*;
  * Tests for picoCLI's "Usage" help functionality.
  */
 public class CommandLineHelpTest {
+    private static String usageString(Class<?> annotatedClass) throws UnsupportedEncodingException {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        CommandLine.usage(annotatedClass, new PrintStream(baos, true, "UTF8"));
+        String result = baos.toString("UTF8");
+        return result;
+    }
 
     @Test
     public void testUsageAnnotationDetailedUsage() throws Exception {
         @Usage(detailedUsageHeader = true)
         class Params {
-            @Option(names = {"-f", "--file"}, required = true, description = "the file to use")
-            File file;
+            @Option(names = {"-f", "--file"}, required = true, description = "the file to use") File file;
         }
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        CommandLine.usage(Params.class, new PrintStream(baos, true, "UTF8"));
-        String result = baos.toString("UTF8");
+        String result = usageString(Params.class);
         assertEquals(format("" +
                         "Usage: <main class> -f <file>%n" +
                         "  -f, --file <file>           the file to use                                   %n",
+                ""), result);
+    }
+
+    @Test
+    public void testUsageSeparator() throws Exception {
+        @Usage(separator = "=", detailedUsageHeader = true)
+        class Params {
+            @Option(names = {"-f", "--file"}, required = true, description = "the file to use") File file;
+        }
+        String result = usageString(Params.class);
+        assertEquals(format("" +
+                        "Usage: <main class> -f=<file>%n" +
+                        "  -f, --file=<file>           the file to use                                   %n",
                 ""), result);
     }
 
@@ -108,7 +127,7 @@ public class CommandLineHelpTest {
                 summary = "Concatenate FILE(s), or standard input, to standard output.",
                 footer = "Copyright(c) 2017")
         class Cat {
-            @CommandLine.Parameters(paramLabel = "FILE",  description = "Files whose contents to display") List<File> files;
+            @Parameters(paramLabel = "FILE",              description = "Files whose contents to display") List<File> files;
             @Option(names = "--help",    help = true,     description = "display this help and exit") boolean help;
             @Option(names = "--version", help = true,     description = "output version information and exit") boolean version;
             @Option(names = "-u",                         description = "(ignored)") boolean u;
@@ -268,11 +287,9 @@ public class CommandLineHelpTest {
                     + "can be time-consuming and will fail unless you have sufficient "
                     + "permissions.")
             boolean displayExecutable;
-            @Option(names="-e", description="Displays Ethernet statistics. This may be combined with the -s "
-                    + "option.")
+            @Option(names="-e", description="Displays Ethernet statistics. This may be combined with the -s option.")
             boolean displayEthernetStats;
-            @Option(names="-f", description="Displays Fully Qualified Domain Names (FQDN) for foreign "
-                    + "addresses.")
+            @Option(names="-f", description="Displays Fully Qualified Domain Names (FQDN) for foreign addresses.")
             boolean displayFQCN;
             @Option(names="-n", description="Displays addresses and port numbers in numerical form.")
             boolean displayNumerical;
@@ -301,7 +318,7 @@ public class CommandLineHelpTest {
             @Option(names="-y", description="Displays the TCP connection template for all connections. "
                     + "Cannot be combined with the other options.")
             boolean displayTcpConnectionTemplate;
-            @CommandLine.Parameters(arity = "0..1", paramLabel = "interval", description = ""
+            @Parameters(arity = "0..1", paramLabel = "interval", description = ""
                     + "Redisplays selected statistics, pausing interval seconds "
                     + "between each display.  Press CTRL+C to stop redisplaying "
                     + "statistics.  If omitted, netstat will print the current "

@@ -1417,6 +1417,7 @@ public class CommandLine {
          */
         public Help appendOptionDetailsTo(StringBuilder sb) {
             TextTable textTable = new TextTable();
+            textTable.parameterRenderer = this.parameterRenderer;
             Map<Option, Field> map = new TreeMap<Option, Field>(new AlphabeticOrder()); // default: sort options ABC
             map.putAll(option2Field); // options are stored in order of declaration for custom layouts
             for (Option option : map.keySet()) {
