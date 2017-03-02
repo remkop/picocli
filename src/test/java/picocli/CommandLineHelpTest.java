@@ -120,7 +120,7 @@ public class CommandLineHelpTest {
     }
 
     @Test
-    public void testCreateDefaultOptionRenderer_ReturnsMinimalOptionRenderer() {
+    public void testCreateDefaultOptionRenderer_ReturnsDefaultOptionRenderer() {
         assertEquals(Help.DefaultOptionRenderer.class, Help.createDefaultOptionRenderer().getClass());
     }
 
