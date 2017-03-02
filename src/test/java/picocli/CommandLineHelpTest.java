@@ -23,12 +23,13 @@ import picocli.CommandLine.Help.TextTable;
 import picocli.CommandLine.Option;
 import picocli.CommandLine.Usage;
 
-import java.awt.*;
+import java.awt.Point;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.PrintStream;
 import java.lang.String;
 import java.lang.reflect.Field;
+import java.util.List;
 
 import static java.lang.String.format;
 import static org.junit.Assert.*;
@@ -40,9 +41,8 @@ import static picocli.CommandLine.Help.Column.Overflow.*;
 public class CommandLineHelpTest {
 
     @Test
-    @Ignore("requires support for detailedUsage")
     public void testUsageAnnotationDetailedUsage() throws Exception {
-        @Usage(detailedUsage = true)
+        @Usage(detailedUsageHeader = true)
         class Params {
             @Option(names = {"-f", "--file"}, required = true, description = "the file to use")
             File file;
@@ -50,11 +50,10 @@ public class CommandLineHelpTest {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         CommandLine.usage(Params.class, new PrintStream(baos, true, "UTF8"));
         String result = baos.toString("UTF8");
-        String programName = "<main class>"; //Params.class.getName();
         assertEquals(format("" +
-                        "Usage: java %s -f <file>%n" +
-                        "  -f, --file                  the file to use                                   %n",
-                programName), result);
+                        "Usage: <main class> -f <file>%n" +
+                        "  -f, --file <file>           the file to use                                   %n",
+                ""), result);
     }
 
     @Test
@@ -109,7 +108,7 @@ public class CommandLineHelpTest {
                 summary = "Concatenate FILE(s), or standard input, to standard output.",
                 footer = "Copyright(c) 2017")
         class Cat {
-            @CommandLine.Parameters(description = "Files whose contents to display")
+            @CommandLine.Parameters(paramLabel = "FILE",  description = "Files whose contents to display") List<File> files;
             @Option(names = "--help",    help = true,     description = "display this help and exit") boolean help;
             @Option(names = "--version", help = true,     description = "output version information and exit") boolean version;
             @Option(names = "-u",                         description = "(ignored)") boolean u;
@@ -126,7 +125,7 @@ public class CommandLineHelpTest {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         CommandLine.usage(Cat.class, new PrintStream(baos));
         String expected = String.format(
-                "Usage: cat [OPTIONS] [PARAMETERS]%n" +
+                "Usage: cat [OPTIONS] [FILE...]%n" +
                         "Concatenate FILE(s), or standard input, to standard output.%n" +
                         "  -A, --show-all              equivalent to -vET                                %n" +
                         "  -b, --number-nonblank       number nonempty output lines, overrides -n        %n" +
@@ -208,12 +207,12 @@ public class CommandLineHelpTest {
                 "  -h2  show more help                                                         %n", "");
         Help help = new Help(Zip.class);
         StringBuilder sb = new StringBuilder();
-        help.appendSummary(sb); // show the first 6 lines, including copyright, description and usage
+        help.appendSummaryTo(sb); // show the first 6 lines, including copyright, description and usage
         TextTable textTable = new TextTable(new Column(5, 2, TRUNCATE), // values should fit
                                             new Column(30, 2, SPAN), // overflow into adjacent columns
                                             new Column(4,  1, TRUNCATE), // values should fit again
                                             new Column(39, 2, WRAP)); // overflow into next row (same column)
-        textTable.renderer = new Help.MinimalRenderer(); // define and install a custom renderer
+        textTable.optionRenderer = Help.createMinimalOptionRenderer(); // define and install a custom renderer
         textTable.layout = new Help.ILayout() { // define and install a custom layout
             Point previous = new Point(0, 0);
             public void layout(Option option, Field field, String[][] values, TextTable table) {
@@ -253,7 +252,8 @@ public class CommandLineHelpTest {
     @Test
     public void testNetstatUsageFormat() {
         @Usage(programName = "NETSTAT",
-                detailedUsage = true,
+                separator = " ",
+                detailedUsageHeader = true,
                 summary = {"Displays protocol statistics and current TCP/IP network connections.", ""})
         class Netstat {
             @Option(names="-a", description="Displays all connections and listening ports.")
@@ -278,7 +278,8 @@ public class CommandLineHelpTest {
             boolean displayNumerical;
             @Option(names="-o", description="Displays the owning process ID associated with each connection.")
             boolean displayOwningProcess;
-            @Option(names="-p", description="Shows connections for the protocol specified by proto; proto "
+            @Option(names="-p", paramLabel = "proto",
+                    description="Shows connections for the protocol specified by proto; proto "
                     + "may be any of: TCP, UDP, TCPv6, or UDPv6.  If used with the -s "
                     + "option to display per-protocol statistics, proto may be any of: "
                     + "IP, IPv6, ICMP, ICMPv6, TCP, TCPv6, UDP, or UDPv6.")
@@ -300,7 +301,8 @@ public class CommandLineHelpTest {
             @Option(names="-y", description="Displays the TCP connection template for all connections. "
                     + "Cannot be combined with the other options.")
             boolean displayTcpConnectionTemplate;
-            @CommandLine.Parameters(description = "Redisplays selected statistics, pausing interval seconds "
+            @CommandLine.Parameters(arity = "0..1", paramLabel = "interval", description = ""
+                    + "Redisplays selected statistics, pausing interval seconds "
                     + "between each display.  Press CTRL+C to stop redisplaying "
                     + "statistics.  If omitted, netstat will print the current "
                     + "configuration information once.")
@@ -308,23 +310,28 @@ public class CommandLineHelpTest {
         }
         StringBuilder sb = new StringBuilder();
         Help help = new Help(Netstat.class);
-        help.appendSummary(sb).appendDetailedUsage("", null, sb);
+        help.appendSummaryTo(sb).appendDetailedUsagePatternsTo("", null, sb);
         sb.append(System.getProperty("line.separator"));
 
         TextTable textTable = new TextTable(
                 new Column(15, 2, TRUNCATE),
                 new Column(65, 1, WRAP));
-        textTable.renderer = new Help.MinimalRenderer();
+        textTable.optionRenderer = Help.createMinimalOptionRenderer();
+        textTable.parameterRenderer = help.parameterRenderer;
         textTable.indentWrappedLines = 0;
         for (Option option : help.option2Field.keySet()) {
             textTable.addOption(option, help.option2Field.get(option));
         }
+        // FIXME needs Show positional parameters details in TextTable similar to option details #48
+        // textTable.addOption(help.positionalParametersField.getAnnotation(CommandLine.Parameters.class), help.positionalParametersField);
         textTable.toString(sb);
         String expected = String.format("" +
                 "Displays protocol statistics and current TCP/IP network connections.%n" +
                 "%n" +
-                "NETSTAT [-a] [-b] [-e] [-f] [-n] [-o] [-p proto] [-q] [-r] [-s] [-t] [-x] [interval]%n" +
-                "NETSTAT [-y] [interval]%n" +
+                "NETSTAT [-a] [-b] [-e] [-f] [-n] [-o] [-p proto] [-q] [-r] [-s] [-t] [-x] [-y] [interval]%n" +
+                // FIXME needs Show multiple detailed usage header lines for mutually exclusive options #46
+                // "NETSTAT [-a] [-b] [-e] [-f] [-n] [-o] [-p proto] [-q] [-r] [-s] [-t] [-x] [interval]%n" +
+                // "NETSTAT [-y] [interval]%n" +
                 "%n" +
                 "  -a            Displays all connections and listening ports.                   %n" +
                 "  -b            Displays the executable involved in creating each connection or %n" +
@@ -357,13 +364,13 @@ public class CommandLineHelpTest {
                 "  -x            Displays NetworkDirect connections, listeners, and shared       %n" +
                 "                endpoints.                                                      %n" +
                 "  -y            Displays the TCP connection template for all connections.       %n" +
-                "                Cannot be combined with the other options.                      %n" +
-                "  interval      Redisplays selected statistics, pausing interval seconds        %n" +
-                "                between each display.  Press CTRL+C to stop redisplaying        %n" +
-                "                statistics.  If omitted, netstat will print the current         %n" +
-                "                configuration information once.                                 %n"
+                "                Cannot be combined with the other options.                      %n"
+// FIXME needs Show positional parameters details in TextTable similar to option details #48
+//                "  interval      Redisplays selected statistics, pausing interval seconds        %n" +
+//                "                between each display.  Press CTRL+C to stop redisplaying        %n" +
+//                "                statistics.  If omitted, netstat will print the current         %n" +
+//                "                configuration information once.                                 %n"
         , "");
-        System.out.println(sb);
         assertEquals(expected, sb.toString());
     }
 }

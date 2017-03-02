@@ -185,17 +185,17 @@ public class CommandLine {
      * should be a generic {@code "Usage <main class> [OPTIONS] [PARAMETERS]"} message or a detailed message
      * that shows options and parameters.</p>
      * <p>To customize how option details are displayed, instantiate a {@link Help} object and install a custom
-     * option {@linkplain Help.IRenderer renderer} and/or a custom {@linkplain Help.ILayout layout} to control
+     * option {@linkplain Help.IOptionRenderer renderer} and/or a custom {@linkplain Help.ILayout layout} to control
      * which aspects of an Option or Field are displayed where in the {@link Help.TextTable}.</p>
      * @param annotatedClass the class annotated with {@link Usage}, {@link Option} and {@link Parameters}
      * @param out the {@code PrintStream} to print the usage help message to
      */
     public static void usage(Class<?> annotatedClass, PrintStream out) {
         StringBuilder sb = new StringBuilder();
-        new Help(annotatedClass).appendUsage(sb)
-                                .appendSummary(sb)
-                                .appendOptionDetails(sb)
-                                .appendFooter(sb);
+        new Help(annotatedClass).appendUsageTo(sb)
+                                .appendSummaryTo(sb)
+                                .appendOptionDetailsTo(sb)
+                                .appendFooterTo(sb);
         out.print(sb);
     }
 
@@ -356,26 +356,24 @@ public class CommandLine {
          * like arrays or Collections. See {@link #type()} for strongly-typed Collection fields.
          * </p><p>
          * For example, if an option has 2 required parameters and any number of optional parameters,
-         * specify {@code @Option(names="-name", arity=2, varargs=true)}.
+         * specify {@code @Option(names = "-example", arity = "2..*")}.
          * </p>
          * <b>A note on boolean options</b>
          * <p>
          * By default picoCLI does not expect boolean options (also called "flags" or "switches") to have a parameter.
-         * You can make a boolean option take a required parameter by defining your field with arity=1. For example:
-         * </p>
-         * <pre>&#064;Option(names="-v", arity=1) boolean verbose;</pre>
+         * You can make a boolean option take a required parameter by annotating your field with {@code arity="1"}.
+         * For example: </p>
+         * <pre>&#064;Option(names = "-v", arity = "1") boolean verbose;</pre>
          * <p>
          * Because this boolean field is defined with arity 1, the user must specify either {@code <program> -v false}
          * or {@code <program> -v true}
          * on the command line, or a {@link MissingParameterException} is thrown by the {@link #parse(String...)}
          * method.
          * </p><p>
-         * To make the boolean parameter possible but optional, define the field with varargs=true. For example:
-         * </p>
-         * <pre>&#064;Option(names="-v", varargs=true) boolean verbose;</pre>
-         * <p>
-         * This will accept any of the below without throwing an exception:
-         * </p>
+         * To make the boolean parameter possible but optional, define the field with {@code arity = "0..1"}.
+         * For example: </p>
+         * <pre>&#064;Option(names="-v", arity="0..1") boolean verbose;</pre>
+         * <p>This will accept any of the below without throwing an exception:</p>
          * <pre>
          * -v
          * -v true
@@ -386,15 +384,22 @@ public class CommandLine {
         String arity() default "";
 
         /**
-         * Set {@code varargs=true} when this option accepts a variable number of parameters.
-         * The default is {@code false}, so the number of parameters required by this option is fixed
-         * (and determined by the field type and the specified {@linkplain #arity() arity}).
-         * <p>
-         * For example, if an option has 2 required parameters and any number of optional parameters,
-         * specify {@code @Option(names="-name", arity=2, varargs=true)}.</p>
-         * @return whether this option accepts any optional arguments
+         * Specify a {@code paramLabel} for the option parameter to be used in the usage help message. If omitted,
+         * picoCLI uses the field name in fish brackets ({@code '<'} and {@code '>'}) by default. Example:
+         * <pre>class Example {
+         *     &#064;Option(names = {"-o", "--output"}, paramLabel="FILE", description="path of the output file")
+         *     private File out;
+         *     &#064;Option(names = {"-j", "--jobs"}, arity="0..1", description="Allow N jobs at once; infinite jobs with no arg.")
+         *     private int maxJobs = -1;
+         * }</pre>
+         * <p>By default, the above gives a usage help message like the following:</p><pre>
+         * Usage: &lt;main class&gt; [OPTIONS]
+         * -o, --output FILE       path of the output file
+         * -j, --jobs [&lt;maxJobs&gt;]  Allow N jobs at once; infinite jobs with no arg.
+         * </pre>
+         * @return name of the option parameter used in the usage help message
          */
-        boolean varargs() default false;
+        String paramLabel() default "";
 
         /**
          * <p>
@@ -479,25 +484,29 @@ public class CommandLine {
         String description() default "";
 
         /**
-         * Specifies how many parameters are required. If a positive arity is declared, and the user
-         * specifies an insufficient number of parameters on the command line,
+         * Specifies the minimum number of required parameters and the maximum number of accepted parameters. If a
+         * positive arity is declared, and the user specifies an insufficient number of parameters on the command line,
          * {@link MissingParameterException} is thrown by the {@link #parse(String...)} method.
-         * <p>
-         * The default is zero: all parameters are optional.
-         * </p>
-         * @return how many parameters this command requires
+         * <p>The default depends on the type of the parameter: booleans require no parameters, arrays and Collections
+         * accept zero to any number of parameters, and any other type accepts one parameter.</p>
+         * @return the range of minimum and maximum parameters accepted by this command
          */
-        String arity() default "0..*";
+        String arity() default "";
 
         /**
-         * Set {@code varargs=false} when a fixed number of parameters is required.
-         * The default is {@code true}, meaning any number of parameters can be specified.
-         * <p>
-         * For example, if a program has 2 required parameters and no optional parameters,
-         * specify {@code @Parameters(arity=2, varargs=false)}.</p>
-         * @return whether the program accepts a variable number of parameters
+         * Specify a {@code paramLabel} for the parameter to be used in the usage help message. If omitted,
+         * picoCLI uses the field name in fish brackets ({@code '<'} and {@code '>'}) by default. Example:
+         * <pre>class Example {
+         *     &#064;Parameters(paramLabel="FILE", description="path of the input FILE(s)")
+         *     private File[] inputFiles;
+         * }</pre>
+         * <p>By default, the above gives a usage help message like the following:</p><pre>
+         * Usage: &lt;main class&gt; [FILE...]
+         * [FILE...]       path of the input FILE(s)
+         * </pre>
+         * @return name of the]] parameter used in the usage help message
          */
-        boolean varargs() default true;
+        String paramLabel() default "";
 
         /**
          * <p>
@@ -526,7 +535,7 @@ public class CommandLine {
      *        summary     = "Encrypt FILE(s), or standard input, to standard output or to the output file.",
      *        footer      = "Copyright (c) 2017")
      * public class Encrypt {
-     *     &#064;Parameters(type = File.class, description = "Any number of input files")
+     *     &#064;Parameters(paramLabel = "FILE", type = File.class, description = "Any number of input files")
      *     private List<File> files = new ArrayList<File>();
      *
      *     &#064;Option(names = { "-o", "--out" }, description = "Output file (default: print to console)")
@@ -535,14 +544,14 @@ public class CommandLine {
      * <p>
      * The structure of a help message looks like this:
      * </p><ul>
-     *   <li>{@code Usage: <programName> [OPTIONS] [PARAMETERS}}</li>
+     *   <li>Usage header line: {@code Usage: <programName> [OPTIONS] [FILE...]}</li>
      *   <li>[summary]</li>
-     *   <li>a list of options with their usage message</li>
+     *   <li>a table of options with their usage message</li>
      *   <li>[footer]</li>
      * </ul>
      * <p>
-     * If the {@code detailedUsage} attribute is {@code true}, the "Usage" line will have a detailed list of options
-     * and parameters.
+     * If the {@link #detailedUsageHeader()} attribute is {@code true}, the "Usage" header line will have
+     * a detailed list of options and parameters.
      * </p>
      */
     @Retention(RetentionPolicy.RUNTIME)
@@ -550,8 +559,10 @@ public class CommandLine {
     public @interface Usage {
         /** Program name to show in the "Usage" message. If omitted, the annotated class name is used. */
         String programName() default "<main class>";
-        /** If {@code true}, the "Usage" line will have a detailed list of options and parameters. */
-        boolean detailedUsage() default false;
+        /** If {@code true}, the "Usage" header line will have a detailed list of options and parameters. */
+        boolean detailedUsageHeader() default false;
+        /** String that separates options from option parameters. Default {@value}, a popular alternative is {@code "="}. */
+        String separator() default " ";
         /** Optional text to display between the first "Usage" line and the list of options. */
         String[] summary() default {};
          /** Optional text to display after the list of options. */
@@ -604,26 +615,37 @@ public class CommandLine {
          */
         K convert(String value) throws Exception;
     }
-
+    /** Describes the number of parameters required and accepted by an option or a positional parameter. */
     public static class Arity {
+        /** Required number of parameters for an option or positional parameter. */
         public int min;
+        /** Maximum accepted number of parameters for an option or positional parameter. */
         public int max;
-        private final boolean isVariable;
-        private final boolean isRange;
+        private boolean isVariable;
         private final boolean isUnspecified;
         private final String originalValue;
 
-        public Arity(int min, int max, boolean variable, boolean range, boolean unspecified, String originalValue) {
+        /** Constructs a new Arity object with the specified parameters.
+         * @param min minimum number of required parameters
+         * @param max maximum number of allowed parameters (or Integer.MAX_VALUE if variable)
+         * @param variable {@code true} if any number or parameters is allowed, {@code false} otherwise
+         * @param unspecified {@code true} if no arity was specified on the option or parameter
+         * @param originalValue the original value that was specified on the option or parameter
+         */
+        public Arity(int min, int max, boolean variable, boolean unspecified, String originalValue) {
             this.min = min;
             this.max = max;
-            this.isRange = range;
             this.isVariable = variable;
             this.isUnspecified = unspecified;
             this.originalValue = originalValue;
         }
+        /** Returns a new {@code Arity} based on the Option annotation on the specified field, or the field type if no
+         * arity was specified. */
         public static Arity forOption(Field field) {
             return adjustForType(Arity.valueOf(field.getAnnotation(Option.class).arity()), field);
         }
+        /** Returns a new {@code Arity} based on the Parameters annotation on the specified field, or the field type
+         * if no arity was specified. */
         public static Arity forParameters(Field field) {
             return adjustForType(Arity.valueOf(field.getAnnotation(Parameters.class).arity()), field);
         }
@@ -632,9 +654,12 @@ public class CommandLine {
                 Arity def = forType(field.getType());
                 result.min = def.min;
                 result.max = def.max;
+                result.isVariable = def.isVariable;
             }
             return result;
         }
+        /** Returns a new {@code Arity} based on the specified type: booleans have arity 0, arrays or Collections have
+         * arity "0..*", and other types have arity 1. */
         public static Arity forType(Class<?> type) {
             if (type == Boolean.class || type == Boolean.TYPE) {
                 return Arity.valueOf("0");
@@ -643,14 +668,17 @@ public class CommandLine {
             }
             return Arity.valueOf("1");// for single-valued fields
         }
+        /** Leniently parses the specified String as an {@code Arity} value and return the result. An arity string can
+         * be a fixed integer value or a range of the form {@code MIN_VALUE + ".." + MAX_VALUE}. If the
+         * {@code MIN_VALUE} string is not numeric, the minimum is zero. If the {@code MAX_VALUE} is not numeric, the
+         * arity is taken to be variable and the maximum is {@code Integer.MAX_VALUE}.*/
         public static Arity valueOf(String arity) {
             arity = arity.trim();
             boolean unspecified = arity.length() == 0 || arity.startsWith(".."); // || arity.endsWith("..");
             int min = -1, max = -1;
-            boolean variable = false, range = false;
+            boolean variable = false;
             int dots = -1;
             if ((dots = arity.indexOf("..")) >= 0) {
-                range = true;
                 min = parseInt(arity.substring(0, dots), 0);
                 max = parseInt(arity.substring(dots + 2), Integer.MAX_VALUE);
                 variable = max == Integer.MAX_VALUE;
@@ -659,7 +687,7 @@ public class CommandLine {
                 variable = max == Integer.MAX_VALUE;
                 min = variable ? 0 : max;
             }
-            Arity result = new Arity(min, max, variable, range, unspecified, arity);
+            Arity result = new Arity(min, max, variable, unspecified, arity);
             return result;
         }
         private static int parseInt(String str, int defaultValue) {
@@ -1256,7 +1284,7 @@ public class CommandLine {
      */
     public static class Help {
         /** Constant String holding the default program name: {@value} */
-        public static final String DEFAULT_PROGRAM_NAME = "<main class>";
+        protected static final String DEFAULT_PROGRAM_NAME = "<main class>";
 
         /** LinkedHashMap mapping {@link Option} instances to the {@code Field} they annotate, in declaration order. */
         public final Map<Option, Field> option2Field = new LinkedHashMap<Option, Field>();
@@ -1264,11 +1292,16 @@ public class CommandLine {
         /** The {@code Field} annotated with {@link Parameters}, or {@code null} if no such field exists. */
         public Field positionalParametersField;
 
-        /** The String to use as the program name in the Usage line of the help message. {@value} by default. */
+        /** The String to use as the separator between options and option parameters. {@value} by default,
+         * initialized from {@link Usage#separator()} if defined. */
+        private String separator;
+
+        /** The String to use as the program name in the Usage line of the help message. {@value} by default,
+         * initialized from {@link Usage#programName()} if defined. */
         public String programName = DEFAULT_PROGRAM_NAME;
 
         /** If {@code true}, the "Usage" line will have a detailed list of options and parameters. */
-        public Boolean detailedUsage;
+        public Boolean detailedOptionHeader;
 
         /** The text lines to use as the summary of the help message. Initialized from {@link Usage#summary()}
          *  if the {@code Usage} annotation is present, otherwise this is an empty array and the help message has no
@@ -1279,6 +1312,8 @@ public class CommandLine {
          *  if the {@code Usage} annotation is present, otherwise this is an empty array and the help message has no
          *  footer. Applications may programmatically set this field to create a custom help message. */
         public String[] footer = {};
+        /** Parameter renderer used for the Usage header line and the option details table. */
+        public IParameterRenderer parameterRenderer;
 
         /** Constructs a new {@code Help} instance, initialized from annotatations on the specified class and super classes. */
         public Help(Class<?> cls) {
@@ -1302,8 +1337,11 @@ public class CommandLine {
                     if (DEFAULT_PROGRAM_NAME.equals(programName)) {
                         programName = usage.programName();
                     }
-                    if (detailedUsage == null) {
-                        detailedUsage = usage.detailedUsage();
+                    if (separator == null) {
+                        separator = usage.separator();
+                    }
+                    if (detailedOptionHeader == null) {
+                        detailedOptionHeader = usage.detailedUsageHeader();
                     }
                     if (summary == null || summary.length == 0) {
                         summary = usage.summary();
@@ -1314,6 +1352,7 @@ public class CommandLine {
                 }
                 cls = cls.getSuperclass();
             }
+            parameterRenderer = new DefaultParameterRenderer(separator == null ? " " : separator);
         }
         /**
          * Appends a "Usage" help message to the specified StringBuilder. By default, this generates a generic
@@ -1323,13 +1362,16 @@ public class CommandLine {
          * @param sb the StringBuilder to append the "Usage" help message line to
          * @return this {@code Help} object, to allow method chaining for a more fluent API
          */
-        public Help appendUsage(StringBuilder sb) {
-            if (detailedUsage) {
-                return appendDetailedUsage("Usage: ", new AlphabeticOrder(), sb);
+        public Help appendUsageTo(StringBuilder sb) {
+            if (detailedOptionHeader) {
+                return appendDetailedUsagePatternsTo("Usage: ", new AlphabeticOrder(), sb);
             }
-            return appendGenericUsage("Usage: ", sb);
+            return appendGenericUsageTo("Usage: ", sb);
         }
-        public Help appendDetailedUsage(String prefix, Comparator<Option> optionSort, StringBuilder sb) {
+
+        public Help appendDetailedUsagePatternsTo(String prefix,
+                                                  Comparator<Option> optionSort,
+                                                  StringBuilder sb) {
             sb.append(prefix).append(programName);
             Map<Option, Field> map = option2Field; // iterate in declaration order
             if (optionSort != null) {
@@ -1339,21 +1381,25 @@ public class CommandLine {
             for (Option option : map.keySet()) {
                 sb.append(" ");
                 String pattern = option.required() ? "%s" : "[%s]";
-                Arity arity = Arity.forOption(map.get(option));
-                String optionNames = join(option.names(), 0, option.names().length, "|");
-                optionNames += DefaultRenderer.renderParameter(map.get(option));
+                String optionNames = option.names()[0]; //join(option.names(), 0, option.names().length, "|");
+                optionNames += parameterRenderer.renderParameter(map.get(option));
                 sb.append(String.format(pattern, optionNames));
+            }
+            if (this.positionalParametersField != null) {
+                sb.append(" ");
+                sb.append(parameterRenderer.renderParameter(positionalParametersField));
             }
             sb.append(System.getProperty("line.separator"));
             return this;
         }
-        public Help appendGenericUsage(String prefix, StringBuilder sb) {
+        public Help appendGenericUsageTo(String prefix, StringBuilder sb) {
             sb.append(prefix).append(programName);
             if (!this.option2Field.isEmpty()) { // only show if annotated object actually has options
                 sb.append(" [OPTIONS]");
             }
             if (this.positionalParametersField != null) {
-                sb.append(" [PARAMETERS]"); // TODO configurable show parameter type or alias (#44)
+                // sb.append(" [--] "); // implied
+                sb.append(' ').append(parameterRenderer.renderParameter(positionalParametersField));
             }
             sb.append(System.getProperty("line.separator"));
             return this;
@@ -1362,14 +1408,14 @@ public class CommandLine {
          * <p>Appends a description of the {@linkplain Option options} supported by the application to the specified
          * StringBuilder. This implementation {@linkplain AlphabeticOrder sorts options alphabetically}, and shows
          * only the {@linkplain Option#hidden() non-hidden} options in a {@linkplain TextTable tabular format}
-         * using the {@linkplain DefaultRenderer default renderer} and {@linkplain DefaultLayout default layout}.</p>
+         * using the {@linkplain DefaultOptionRenderer default renderer} and {@linkplain DefaultLayout default layout}.</p>
          * <p>To customize how option details are displayed, instantiate a {@link TextTable} object and install a
-         * custom option {@linkplain Help.IRenderer renderer} and/or a custom {@linkplain Help.ILayout layout} to
+         * custom option {@linkplain IOptionRenderer renderer} and/or a custom {@linkplain Help.ILayout layout} to
          * control which aspects of an Option or Field are displayed where.</p>
          * @param sb the StringBuilder to append the "Usage" help message line to
          * @return this {@code Help} object, to allow method chaining for a more fluent API
          */
-        public Help appendOptionDetails(StringBuilder sb) {
+        public Help appendOptionDetailsTo(StringBuilder sb) {
             TextTable textTable = new TextTable();
             Map<Option, Field> map = new TreeMap<Option, Field>(new AlphabeticOrder()); // default: sort options ABC
             map.putAll(option2Field); // options are stored in order of declaration for custom layouts
@@ -1378,6 +1424,11 @@ public class CommandLine {
                     textTable.addOption(option, map.get(option));
                 }
             }
+            //FIXME should this be a separate method?
+//            if (positionalParametersField != null) {
+//                Parameters parameters = positionalParametersField.getAnnotation(Parameters.class);
+//                textTable.addOption(parameters, positionalParametersField);
+//            }
             textTable.toString(sb);
             return this;
         }
@@ -1388,7 +1439,7 @@ public class CommandLine {
          * @param sb the StringBuilder to append the program summary text lines to
          * @return this {@code Help} object, to allow method chaining for a more fluent API
          */
-        public Help appendSummary(StringBuilder sb) {
+        public Help appendSummaryTo(StringBuilder sb) {
             if (summary != null) {
                 for (String summaryLine : summary) {
                     sb.append(summaryLine).append(System.getProperty("line.separator"));
@@ -1403,7 +1454,7 @@ public class CommandLine {
          * @param sb the StringBuilder to append the usage help footer text lines to
          * @return this {@code Help} object, to allow method chaining for a more fluent API
          */
-        public Help appendFooter(StringBuilder sb) {
+        public Help appendFooterTo(StringBuilder sb) {
             if (footer != null) {
                 for (String line : footer) {
                     sb.append(line).append(System.getProperty("line.separator"));
@@ -1418,20 +1469,62 @@ public class CommandLine {
             }
             return result.toString();
         }
-        /** When showing online help for {@link Option Option} details, the Renderer is responsible for creating a
-         * textual representation of an Option in a tabular format: one or more rows, each containing one or more columns.
-         * The {@link ILayout ILayout} is responsible for placing these text values in the {@link TextTable TextTable}.
+        /** Returns a new default OptionRenderer which converts {@link Option Options} to four columns of text to match
+         *  the default {@linkplain TextTable TextTable} column layout. The first row of values looks like this:
+         * <ol>
+         * <li>2-character short option name (or empty string if no short option exists)</li>
+         * <li>comma separator (only if both short option and long option exist, empty string otherwise)</li>
+         * <li>comma-separated string with long option name(s)</li>
+         * <li>first element of the {@link Option#description()} array</li>
+         * </ol>
+         * <p>Following this, there will be one row for each of the remaining elements of the {@link
+         *   Option#description()} array, and these rows look like {@code {"", "", "", option.description()[i]}}.</p>
          */
-        public interface IRenderer {
+        public static IOptionRenderer createDefaultOptionRenderer() {
+            return new DefaultOptionRenderer();
+        }
+        /** Returns a new minimal OptionRenderer which converts {@link Option Options} to a single row with two columns
+         * of text: an option name and a description. If multiple names or descriptions exist, the first value is used. */
+        public static IOptionRenderer createMinimalOptionRenderer() {
+            return new MinimalOptionRenderer();
+        }
+        /** Returns a new default parameter renderer that separates option parameters from their {@linkplain Option
+         * options} with the specified separator string, surrounds optional parameters with {@code '['} and {@code ']'}
+         * characters and uses ellipses ("...") to indicate that any number of a parameter are allowed.
+         * @param separator string that separates options from option parameters
+         */
+        public static IParameterRenderer createDefaultParameterRenderer(String separator) {
+            return new DefaultParameterRenderer(separator);
+        }
+        /** Returns a new default Layout which displays each array of text values representing an Option on a separate
+         * row in the {@linkplain TextTable TextTable}. */
+        public static ILayout createDefaultLayout() {
+            return new DefaultLayout();
+        }
+        /** Sorts {@code Option} instances by their name in case-insensitive alphabetic order. If an Option has
+         * multiple names, the shortest name is used for the sorting. Help options follow non-help options. */
+        public static Comparator<Option> alphabeticOrder() {
+            return new AlphabeticOrder();
+        }
+        /** Sorts short strings before longer strings. */
+        public static Comparator<String> shortestFirst() {
+            return new ShortestFirst();
+        }
+        /** When customizing online help for {@link Option Option} details, a custom {@code IOptionRenderer} can be
+         * used to create textual representation of an Option in a tabular format: one or more rows, each containing
+         * one or more columns. The {@link ILayout ILayout} is responsible for placing these text values in the
+         * {@link TextTable TextTable}. */
+        public interface IOptionRenderer {
             /**
              * Returns a text representation of the specified Option and the Field that captures the option value.
              * @param option the command line option to show online usage help for
              * @param field the field that will hold the value for the command line option
+             * @param parameterRenderer responsible for rendering option parameters to text
              * @return a 2-dimensional array of text values: one or more rows, each containing one or more columns
              */
-            String[][] render(Option option, Field field);
+            String[][] render(Option option, Field field, IParameterRenderer parameterRenderer);
         }
-        /** The default Renderer converts {@link Option Options} to four columns of text to match the default
+        /** The DefaultOptionRenderer converts {@link Option Options} to four columns of text to match the default
          * {@linkplain TextTable TextTable} column layout. The first row of values looks like this:
          * <ol>
          * <li>2-character short option name (or empty string if no short option exists)</li>
@@ -1442,14 +1535,14 @@ public class CommandLine {
          * <p>Following this, there will be one row for each of the remaining elements of the {@link
          *   Option#description()} array, and these rows look like {@code {"", "", "", option.description()[i]}}.</p>
          */
-        public static class DefaultRenderer implements IRenderer {
-            public String[][] render(Option option, Field field) {
+        static class DefaultOptionRenderer implements IOptionRenderer {
+            public String[][] render(Option option, Field field, IParameterRenderer parameterRenderer) {
                 String[] names = new ShortestFirst().sort(option.names());
                 int shortOptionCount = names[0].length() == 2 ? 1 : 0;
                 String shortOption = shortOptionCount > 0 ? names[0] : "";
                 String sep = shortOptionCount > 0 && names.length > 1 ? "," : "";
                 String longOption = join(names, shortOptionCount, names.length - shortOptionCount, ", ");
-                longOption += renderParameter(field);
+                longOption += parameterRenderer.renderParameter(field);
 
                 String[][] result = new String[option.description().length][4];
                 result[0] = new String[] { shortOption, sep, longOption, option.description()[0] };
@@ -1458,22 +1551,52 @@ public class CommandLine {
                 }
                 return result;
             }
-
-            public static String renderParameter(Field field) {
-                Arity arity = Arity.forOption(field);
+        }
+        /** The MinimalOptionRenderer converts {@link Option Options} to a single row with two columns of text: an
+         * option name and a description. If multiple names or description lines exist, the first value is used. */
+        static class MinimalOptionRenderer implements IOptionRenderer {
+            public String[][] render(Option option, Field field, IParameterRenderer parameterRenderer) {
+                return new String[][] {{ option.names()[0] + parameterRenderer.renderParameter(field),
+                                           option.description().length == 0 ? "" : option.description()[0] }};
+            }
+        }
+        /** When customizing online usage help for an option parameter or a positional parameter, a custom
+         * {@code IParameterRenderer} can be used to render the parameter name to a String. */
+        public interface IParameterRenderer {
+            /** Returns a text rendering of the Option parameter or positional parameter; returns an empty string
+             * {@code ""} if the option is a boolean and does not take a parameter. */
+            String renderParameter(Field field);
+        }
+        /**
+         * DefaultParameterRenderer separates option parameters from their {@linkplain Option options} with a
+         * {@linkplain Help.DefaultParameterRenderer#separator separator} string, surrounds optional parameters
+         * with {@code '['} and {@code ']'} characters and uses ellipses ("...") to indicate that any number of
+         * a parameter are allowed.
+         */
+        static class DefaultParameterRenderer implements IParameterRenderer {
+            /** The string to use to separate option parameters from their options. */
+            public final String separator;
+            /** Sets the separator string and returns this parameter renderer to allow method chaining. */
+            public DefaultParameterRenderer(String separator) {
+                this.separator = Assert.notNull(separator, "separator");
+            }
+            public String renderParameter(Field field) {
+                boolean isOptionParameter = field.isAnnotationPresent(Option.class);
+                Arity arity = isOptionParameter ? Arity.forOption(field) : Arity.forParameters(field);
                 String result = "";
-                String sep = "=";
+                String sep = isOptionParameter ? separator : "";
                 if (arity.min > 0) {
                     for (int i = 0; i < arity.min; i++) {
-                        result += sep + "<" + field.getType().getSimpleName() + ">";
+                        result += sep + renderParameterName(field);
                         sep = " ";
                     }
                 }
                 if (arity.max > arity.min) {
-                    sep = result.length() == 0 ? "=" : " ";
-                    int max = arity.isVariable ? 2 : arity.max - arity.min;
+                    sep = result.length() == 0 ? (isOptionParameter ? separator : "") : " ";
+                    int max = arity.isVariable ? 1 : arity.max - arity.min;
                     for (int i = 0; i < max; i++) {
-                        result += sep + "[<" + field.getType().getSimpleName() + ">";
+                        result += sep + "[" + renderParameterName(field);
+                        sep  = " ";
                     }
                     if (arity.isVariable) {
                         result += "...";
@@ -1482,18 +1605,22 @@ public class CommandLine {
                 }
                 return result;
             }
-        }
-        /** The minimal Renderer converts {@link Option Options} to a single row with two columns of text: an option
-         * name and a description. If multiple names or description lines exist, the first value is used. */
-        public static class MinimalRenderer implements IRenderer {
-            public String[][] render(Option option, Field field) {
-                return new String[][] {{ option.names()[0] + DefaultRenderer.renderParameter(field),
-                                           option.description().length == 0 ? "" : option.description()[0] }};
+            private String renderParameterName(Field field) {
+                String result = null;
+                if (field.isAnnotationPresent(Option.class)) {
+                    result = field.getAnnotation(Option.class).paramLabel();
+                } else if (field.isAnnotationPresent(Parameters.class)) {
+                    result = field.getAnnotation(Parameters.class).paramLabel();
+                }
+                if (result != null && result.trim().length() > 0) {
+                    return result.trim();
+                }
+                return "<" + field.getName() + ">";
             }
         }
-        /** When showing online usage help for {@link Option Option} details, Layout is responsible for placing the text
-         * values produced by the {@linkplain IRenderer renderer} in the correct location in the
-         * {@link TextTable TextTable}. */
+        /** When customizing online usage help for {@link Option Option} details, a custom {@code ILayout} can be used
+         * to control placing the text values produced by the {@linkplain IOptionRenderer option renderer} in the
+         * desired location in the {@link TextTable TextTable}. */
         public interface ILayout {
             /**
              * Copies the specified text values into the correct cells in the {@link TextTable}. Implementations are
@@ -1512,9 +1639,9 @@ public class CommandLine {
         }
         /** The default Layout displays each array of text values representing an Option on a separate row in the
          * {@linkplain TextTable TextTable}. */
-        public static class DefaultLayout implements ILayout {
+        static class DefaultLayout implements ILayout {
             /**
-             * The DefaultLayout relies on the {@link IRenderer} having created exactly as many {@link Column Columns}
+             * The DefaultLayout relies on the {@link IOptionRenderer} having created exactly as many {@link Column Columns}
              * as the {@link TextTable} was constructed with, so it can simply call {@link TextTable#addRow(String...)}
              * for each row.
              */
@@ -1525,7 +1652,7 @@ public class CommandLine {
             }
         }
         /** Sorts short strings before longer strings. */
-        public static class ShortestFirst implements Comparator<String> {
+        static class ShortestFirst implements Comparator<String> {
             public int compare(String o1, String o2) {
                 return o1.length() - o2.length();
             }
@@ -1537,7 +1664,7 @@ public class CommandLine {
         }
         /** Sorts {@code Option} instances by their name in case-insensitive alphabetic order. If an Option has
          * multiple names, the shortest name is used for the sorting. Help options follow non-help options. */
-        public static class AlphabeticOrder implements Comparator<Option> {
+        static class AlphabeticOrder implements Comparator<Option> {
             ShortestFirst shortestFirst = new ShortestFirst();
             public int compare(Option o1, Option o2) {
                 String[] names1 = shortestFirst.sort(o1.names());
@@ -1551,8 +1678,7 @@ public class CommandLine {
          * <p>Provides a table layout for text values, applicable for arranging option names and their description on
          * the console. A table has a fixed number of {@link Column Columns}, where each column has a fixed width,
          * indent and {@link Column.Overflow} policy. The Overflow policy determines what happens when a value is
-         * longer than the column width.
-         * </p>
+         * longer than the column width.</p>
          */
         public static class TextTable {
             /** The column definitions of this table. */
@@ -1561,8 +1687,10 @@ public class CommandLine {
             protected final List<char[]> columnValues = new ArrayList<char[]>();
             /** By default, indent wrapped lines by 2 spaces. */
             public int indentWrappedLines = 2;
-            /** The renderer used to create a text representation of an Option. */
-            public IRenderer renderer = new DefaultRenderer();
+            /** The option renderer used to create a text representation of an Option. */
+            public IOptionRenderer optionRenderer = new DefaultOptionRenderer();
+            /** The parameter renderer used to create a text representation of an Option parameter. */
+            public IParameterRenderer parameterRenderer = new DefaultParameterRenderer(" "); //FIXME out of sync with  Help paramRenderer...
             /** The layout used to select which columns and rows in the text table to populate for an Option. */
             public ILayout layout = new DefaultLayout();
             /** Constructs a default TextTable with 4 columns. Default TextTable column definitions are:
@@ -1599,14 +1727,14 @@ public class CommandLine {
                 }
             }
             /**
-             * Convenience method that delegates to the configured {@link TextTable#renderer renderer} to obtain text
+             * Convenience method that delegates to the configured {@link TextTable#optionRenderer renderer} to obtain text
              * values for the specified {@link Option}, and then delegates to the configured {@link TextTable#layout
              * layout} to write these text values into the correct cells in this TextTable.
              * @param option the Option whose details and description to print to the console
              * @param field the field annotated with the specified Option
              */
             public void addOption(Option option, Field field) {
-                String[][] values = renderer.render(option, field);
+                String[][] values = optionRenderer.render(option, field, parameterRenderer);
                 layout.layout(option, field, values, this);
             }
             /**
