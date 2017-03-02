@@ -76,6 +76,14 @@ public class CommandLineHelpTest {
     }
 
     @Test
+    public void testShortestFirstComparator_sortsShortestFirst() {
+        String[] values = {"12345", "12", "123", "123456", "1", "", "1234"};
+        Arrays.sort(values, new Help.ShortestFirst());
+        String[] expected = {"", "1", "12", "123", "1234", "12345", "123456"};
+        assertArrayEquals(expected, values);
+    }
+
+    @Test
     public void testTextTable() {
         TextTable table = new TextTable();
         table.addRow("-v", ",", "--verbose", "show what you're doing while you are doing it");
