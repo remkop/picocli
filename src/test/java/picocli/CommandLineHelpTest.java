@@ -32,7 +32,9 @@ import java.io.UnsupportedEncodingException;
 import java.lang.String;
 import java.lang.reflect.Field;
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import static java.lang.String.format;
 import static org.junit.Assert.*;
@@ -89,6 +91,32 @@ public class CommandLineHelpTest {
         Arrays.sort(values, new Help.ShortestFirst());
         String[] expected = {"-", "-d", "-a", "--b", "--a", "--beta", "--alpha"};
         assertArrayEquals(expected, values);
+    }
+
+    @Test
+    public void testCreateMinimalOptionRenderer_ReturnsMinimalOptionRenderer() {
+        assertEquals(Help.MinimalOptionRenderer.class, Help.createMinimalOptionRenderer().getClass());
+    }
+
+    @Test
+    public void testMinimalOptionRenderer_rendersFirstDeclaredOptionNameAndDescription() {
+        class Example {
+            @Option(names = {"---long", "-L"}, description = "long description") String longField;
+            @Option(names = {"-b", "-a", "--alpha"}, description = "other") String otherField;
+        }
+        Help.IOptionRenderer renderer = Help.createMinimalOptionRenderer();
+        Help.IParameterRenderer parameterRenderer = Help.createDefaultParameterRenderer(" ");
+        Help help = new Help(Example.class);
+        Iterator<Map.Entry<Option, Field>> iterator = help.option2Field.entrySet().iterator();
+        Map.Entry<Option, Field> entry = iterator.next();
+        String[][] row1 = renderer.render(entry.getKey(), entry.getValue(), parameterRenderer);
+        assertEquals(1, row1.length);
+        assertArrayEquals(new String[]{"---long <longField>", "long description"}, row1[0]);
+
+        entry = iterator.next();
+        String[][] row2 = renderer.render(entry.getKey(), entry.getValue(), parameterRenderer);
+        assertEquals(1, row2.length);
+        assertArrayEquals(new String[]{"-b <otherField>", "other"}, row2[0]);
     }
 
     @Test
