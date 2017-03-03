@@ -186,7 +186,6 @@ public class CommandLineHelpTest {
             @Option(names = "--without" ) String longField;
             @Option(names = "--with", paramLabel = "LABEL") String otherField;
         }
-        Help.IOptionRenderer renderer = Help.createDefaultOptionRenderer();
         Help.IParameterRenderer spaceSeparatedParameterRenderer = Help.createDefaultParameterRenderer(" ");
         Help.IParameterRenderer equalSeparatedParameterRenderer = Help.createDefaultParameterRenderer("=");
         Help help = new Help(Example.class);
@@ -203,6 +202,30 @@ public class CommandLineHelpTest {
             String withEquals = equalSeparatedParameterRenderer.renderParameter(entry.getValue());
             assertEquals(withEquals, "=" + expected[i], withEquals);
         }
+    }
+
+    @Test
+    public void testDefaultParameterRenderer_appliesToPositionalArgumentsIgnoresSeparator() {
+        class WithLabel {
+            @Parameters(paramLabel = "POSITIONAL_ARGS") String positional;
+        }
+        class WithoutLabel {
+            @Parameters() String positional;
+        }
+        Help.IParameterRenderer spaced = Help.createDefaultParameterRenderer(" ");
+        Help.IParameterRenderer equals = Help.createDefaultParameterRenderer("=");
+
+        Help withLabel = new Help(WithLabel.class);
+        String withSpace = spaced.renderParameter(withLabel.positionalParametersField);
+        assertEquals(withSpace, "POSITIONAL_ARGS", withSpace);
+        String withEquals = equals.renderParameter(withLabel.positionalParametersField);
+        assertEquals(withEquals, "POSITIONAL_ARGS", withEquals);
+
+        Help withoutLabel = new Help(WithoutLabel.class);
+        withSpace = spaced.renderParameter(withoutLabel.positionalParametersField);
+        assertEquals(withSpace, "<positional>", withSpace);
+        withEquals = equals.renderParameter(withoutLabel.positionalParametersField);
+        assertEquals(withEquals, "<positional>", withEquals);
     }
 
     @Test
