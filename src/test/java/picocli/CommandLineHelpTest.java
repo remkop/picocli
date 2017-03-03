@@ -206,12 +206,8 @@ public class CommandLineHelpTest {
 
     @Test
     public void testDefaultParameterRenderer_appliesToPositionalArgumentsIgnoresSeparator() {
-        class WithLabel {
-            @Parameters(paramLabel = "POSITIONAL_ARGS") String positional;
-        }
-        class WithoutLabel {
-            @Parameters() String positional;
-        }
+        class WithLabel    { @Parameters(paramLabel = "POSITIONAL_ARGS") String positional; }
+        class WithoutLabel { @Parameters()                               String positional; }
         Help.IParameterRenderer spaced = Help.createDefaultParameterRenderer(" ");
         Help.IParameterRenderer equals = Help.createDefaultParameterRenderer("=");
 
