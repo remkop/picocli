@@ -15,7 +15,7 @@
  */
 package picocli;
 
-import java.awt.*;
+import java.awt.Point;
 import java.io.File;
 import java.io.PrintStream;
 import java.lang.annotation.ElementType;
@@ -249,6 +249,7 @@ public class CommandLine {
     public void setSeparator(String separator) {
         interpreter.separator = Assert.notNull(separator, "separator");
     }
+    private static boolean empty(String str) { return str == null || str.trim().length() == 0; }
 
     /**
      * <p>
@@ -697,11 +698,19 @@ public class CommandLine {
                 return defaultValue;
             }
         }
+        public boolean equals(Object object) {
+            if (!(object instanceof Arity)) { return false; }
+            Arity other = (Arity) object;
+            return other.max == this.max && other.min == this.min && other.isVariable == this.isVariable;
+        }
+        public int hashCode() {
+            return ((17 * 37 + max) * 37 + min) * 37 + (isVariable ? 1 : 0);
+        }
         public String toString() {
-            return (min == max ? String.valueOf(min) : min + ".." + max) + " ('" + originalValue + "')";
+            String result = min == max ? String.valueOf(min) : min + ".." + max;
+            return result + (empty(originalValue) || result.equals(originalValue) ? "" : " ('" + originalValue + "')");
         }
     }
-
     private static Field init(Class<?> cls,
                               List<Field> requiredFields,
                               Map<String, Field> optionName2Field,

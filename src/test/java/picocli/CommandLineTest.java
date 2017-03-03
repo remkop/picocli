@@ -716,6 +716,54 @@ public class CommandLineTest {
     }
 
     @Test
+    public void testArityConstructor_fixedRange() {
+        Arity arity = new Arity(1, 23, false, false, null);
+        assertEquals("min", 1, arity.min);
+        assertEquals("max", 23, arity.max);
+        assertEquals("1..23", arity.toString());
+        assertEquals(Arity.valueOf("1..23"), arity);
+    }
+    @Test
+    public void testArityConstructor_variableRange() {
+        Arity arity = new Arity(1, Integer.MAX_VALUE, true, false, null);
+        assertEquals("min", 1, arity.min);
+        assertEquals("max", Integer.MAX_VALUE, arity.max);
+        assertEquals("1..2147483647", arity.toString());
+        assertEquals(Arity.valueOf("1..*"), arity);
+    }
+    @Test
+    public void testArityForOption_booleanFieldImplicitArity0() throws Exception {
+        Arity arity = Arity.forOption(SupportedTypes.class.getDeclaredField("booleanField"));
+        assertEquals(Arity.valueOf("0"), arity);
+        assertEquals("0", arity.toString());
+    }
+    @Test
+    public void testArityForOption_intFieldImplicitArity1() throws Exception {
+        Arity arity = Arity.forOption(SupportedTypes.class.getDeclaredField("intField"));
+        assertEquals(Arity.valueOf("1"), arity);
+        assertEquals("1", arity.toString());
+    }
+    @Test
+    public void testArityForOption_isExplicitlyDeclaredValue() throws Exception {
+        Arity arity = Arity.forOption(EnumParams.class.getDeclaredField("timeUnitList"));
+        assertEquals(Arity.valueOf("3"), arity);
+        assertEquals("3", arity.toString());
+    }
+    @Test
+    public void testArityForOption_listFieldImplicitArity0_n() throws Exception {
+        class ImplicitList { @Option(names = "-a") List<Integer> listIntegers; }
+        Arity arity = Arity.forOption(ImplicitList.class.getDeclaredField("listIntegers"));
+        assertEquals(Arity.valueOf("0..*"), arity);
+        assertEquals("0..2147483647", arity.toString());
+    }
+    @Test
+    public void testArityForOption_arrayFieldImplicitArity0_n() throws Exception {
+        class ImplicitList { @Option(names = "-a") int[] intArray; }
+        Arity arity = Arity.forOption(ImplicitList.class.getDeclaredField("intArray"));
+        assertEquals(Arity.valueOf("0..*"), arity);
+        assertEquals("0..2147483647", arity.toString());
+    }
+    @Test
     public void testArrayOptionsWithArity0_nConsumeAllArguments() {
         final double[] DEFAULT_PARAMS = new double[] {1, 2};
         class ArrayOptionsArity0_nAndParameters {
