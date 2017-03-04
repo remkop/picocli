@@ -764,6 +764,32 @@ public class CommandLineTest {
         assertEquals("0..2147483647", arity.toString());
     }
     @Test
+    public void testArityForParameters_booleanFieldImplicitArity0() throws Exception {
+        class ImplicitBoolField { @Parameters boolean boolSingleValue; }
+        Arity arity = Arity.forParameters(ImplicitBoolField.class.getDeclaredField("boolSingleValue"));
+        assertEquals(Arity.valueOf("0"), arity);
+        assertEquals("0", arity.toString());
+    }
+    @Test
+    public void testArityForParameters_intFieldImplicitArity1() throws Exception {
+        class ImplicitSingleField { @Parameters int intSingleValue; }
+        Arity arity = Arity.forParameters(ImplicitSingleField.class.getDeclaredField("intSingleValue"));
+        assertEquals(Arity.valueOf("1"), arity);
+        assertEquals("1", arity.toString());
+    }
+    @Test
+    public void testArityForParameters_listFieldImplicitArity0_n() throws Exception {
+        Arity arity = Arity.forParameters(ListPositionalParams.class.getDeclaredField("list"));
+        assertEquals(Arity.valueOf("0..*"), arity);
+        assertEquals("0..2147483647", arity.toString());
+    }
+    @Test
+    public void testArityForParameters_arrayFieldImplicitArity0_n() throws Exception {
+        Arity arity = Arity.forParameters(CompactFields.class.getDeclaredField("inputFiles"));
+        assertEquals(Arity.valueOf("0..*"), arity);
+        assertEquals("0..2147483647", arity.toString());
+    }
+    @Test
     public void testArrayOptionsWithArity0_nConsumeAllArguments() {
         final double[] DEFAULT_PARAMS = new double[] {1, 2};
         class ArrayOptionsArity0_nAndParameters {
