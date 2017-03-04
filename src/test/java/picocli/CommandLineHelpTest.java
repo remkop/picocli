@@ -225,6 +225,24 @@ public class CommandLineHelpTest {
     }
 
     @Test
+    public void testCreateDefaultLayout_returnsDefaultLayout() {
+        assertEquals(Help.DefaultLayout.class, Help.createDefaultLayout().getClass());
+    }
+
+    @Test
+    public void testDefaultLayout_addsEachRowToTable() {
+        Help.ILayout layout = Help.createDefaultLayout();
+        final String[][] values = { {"a", "b", "c", "d" }, {"1", "2", "3", "4"} };
+        layout.layout(null, null, values, new TextTable() {
+            int count = 0;
+            @Override public void addRow(String[] columnValues) {
+                assertArrayEquals(values[count], columnValues);
+                count++;
+            }
+        });
+    }
+
+    @Test
     public void testTextTable() {
         TextTable table = new TextTable();
         table.addRow("-v", ",", "--verbose", "show what you're doing while you are doing it");
