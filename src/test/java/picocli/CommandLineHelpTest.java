@@ -15,7 +15,6 @@
  */
 package picocli;
 
-import org.junit.Ignore;
 import org.junit.Test;
 import picocli.CommandLine.Help;
 import picocli.CommandLine.Help.Column;
@@ -32,9 +31,7 @@ import java.io.UnsupportedEncodingException;
 import java.lang.String;
 import java.lang.reflect.Field;
 import java.util.Arrays;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 
 import static java.lang.String.format;
 import static org.junit.Assert.*;
@@ -44,6 +41,7 @@ import static picocli.CommandLine.Help.Column.Overflow.*;
  * Tests for picoCLI's "Usage" help functionality.
  */
 public class CommandLineHelpTest {
+    private static final String LINESEP = System.getProperty("line.separator");
     private static String usageString(Class<?> annotatedClass) throws UnsupportedEncodingException {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         CommandLine.usage(annotatedClass, new PrintStream(baos, true, "UTF8"));
@@ -107,14 +105,13 @@ public class CommandLineHelpTest {
         Help.IOptionRenderer renderer = Help.createMinimalOptionRenderer();
         Help.IParameterRenderer parameterRenderer = Help.createDefaultParameterRenderer(" ");
         Help help = new Help(Example.class);
-        Iterator<Map.Entry<Option, Field>> iterator = help.option2Field.entrySet().iterator();
-        Map.Entry<Option, Field> entry = iterator.next();
-        String[][] row1 = renderer.render(entry.getKey(), entry.getValue(), parameterRenderer);
+        Field field = help.optionFields.get(0);
+        String[][] row1 = renderer.render(field.getAnnotation(Option.class), field, parameterRenderer);
         assertEquals(1, row1.length);
         assertArrayEquals(new String[]{"---long <longField>", "long description"}, row1[0]);
 
-        entry = iterator.next();
-        String[][] row2 = renderer.render(entry.getKey(), entry.getValue(), parameterRenderer);
+        field = help.optionFields.get(1);
+        String[][] row2 = renderer.render(field.getAnnotation(Option.class), field, parameterRenderer);
         assertEquals(1, row2.length);
         assertArrayEquals(new String[]{"-b <otherField>", "other"}, row2[0]);
     }
@@ -133,14 +130,13 @@ public class CommandLineHelpTest {
         Help.IOptionRenderer renderer = Help.createDefaultOptionRenderer();
         Help.IParameterRenderer parameterRenderer = Help.createDefaultParameterRenderer(" ");
         Help help = new Help(Example.class);
-        Iterator<Map.Entry<Option, Field>> iterator = help.option2Field.entrySet().iterator();
-        Map.Entry<Option, Field> entry = iterator.next();
-        String[][] row1 = renderer.render(entry.getKey(), entry.getValue(), parameterRenderer);
+        Field field = help.optionFields.get(0);
+        String[][] row1 = renderer.render(field.getAnnotation(Option.class), field, parameterRenderer);
         assertEquals(1, row1.length);
         assertArrayEquals(Arrays.toString(row1[0]), new String[]{"-L", ",", "---long <longField>", "long description"}, row1[0]);
 
-        entry = iterator.next();
-        String[][] row2 = renderer.render(entry.getKey(), entry.getValue(), parameterRenderer);
+        field = help.optionFields.get(1);
+        String[][] row2 = renderer.render(field.getAnnotation(Option.class), field, parameterRenderer);
         assertEquals(1, row2.length);
         assertArrayEquals(Arrays.toString(row2[0]), new String[]{"-b", ",", "-a, --alpha <otherField>", "other"}, row2[0]);
     }
@@ -168,8 +164,8 @@ public class CommandLineHelpTest {
                 {"-b", ",", "--beta <combiField>", "combi"},
         };
         int i = -1;
-        for (Map.Entry<Option, Field> entry : help.option2Field.entrySet()) {
-            String[][] row = renderer.render(entry.getKey(), entry.getValue(), parameterRenderer);
+        for (Field field : help.optionFields) {
+            String[][] row = renderer.render(field.getAnnotation(Option.class), field, parameterRenderer);
             assertEquals(1, row.length);
             assertArrayEquals(Arrays.toString(row[0]), expected[++i], row[0]);
         }
@@ -195,11 +191,11 @@ public class CommandLineHelpTest {
                 "LABEL",
         };
         int i = -1;
-        for (Map.Entry<Option, Field> entry : help.option2Field.entrySet()) {
+        for (Field field : help.optionFields) {
             i++;
-            String withSpace = spaceSeparatedParameterRenderer.renderParameter(entry.getValue());
+            String withSpace = spaceSeparatedParameterRenderer.renderParameter(field);
             assertEquals(withSpace, " " + expected[i], withSpace);
-            String withEquals = equalSeparatedParameterRenderer.renderParameter(entry.getValue());
+            String withEquals = equalSeparatedParameterRenderer.renderParameter(field);
             assertEquals(withEquals, "=" + expected[i], withEquals);
         }
     }
@@ -240,6 +236,154 @@ public class CommandLineHelpTest {
                 count++;
             }
         });
+    }
+
+    @Test
+    public void testAppendUsageTo_DefaultOptionSummary_withoutParameters() {
+        @Usage class App {
+            @Option(names = {"--verbose", "-v"}) boolean verbose;
+            @Option(names = {"--count", "-c"}) int count;
+            @Option(names = {"--help", "-h"}, hidden = true) boolean helpRequested;
+        }
+        StringBuilder sb = new StringBuilder();
+        new Help(App.class).appendUsageTo(sb);
+        assertEquals("Usage: <main class> [OPTIONS]" + LINESEP, sb.toString());
+    }
+
+    @Test
+    public void testAppendUsageTo_DefaultOptionSummary_withParameters() {
+        @Usage class App {
+            @Option(names = {"--verbose", "-v"}) boolean verbose;
+            @Option(names = {"--count", "-c"}) int count;
+            @Option(names = {"--help", "-h"}, hidden = true) boolean helpRequested;
+            @Parameters File[] files;
+        }
+        StringBuilder sb = new StringBuilder();
+        new Help(App.class).appendUsageTo(sb);
+        assertEquals("Usage: <main class> [OPTIONS] [<files>...]" + LINESEP, sb.toString());
+    }
+
+    @Test
+    public void testAppendUsageTo_DetailedOptionSummary_optionalOptionArity1_n_withoutSeparator() {
+        @Usage(detailedUsageHeader = true) class App {
+            @Option(names = {"--verbose", "-v"}) boolean verbose;
+            @Option(names = {"--count", "-c"}, arity = "1..*") int count;
+            @Option(names = {"--help", "-h"}, hidden = true) boolean helpRequested;
+        }
+        StringBuilder sb = new StringBuilder();
+        new Help(App.class).appendUsageTo(sb);
+        assertEquals("Usage: <main class> [-v] [-c <count> [<count>...]]" + LINESEP, sb.toString());
+    }
+
+    @Test
+    public void testAppendUsageTo_DetailedOptionSummary_optionalOptionArity0_1_withoutSeparator() {
+        @Usage(detailedUsageHeader = true) class App {
+            @Option(names = {"--verbose", "-v"}) boolean verbose;
+            @Option(names = {"--count", "-c"}, arity = "0..1") int count;
+            @Option(names = {"--help", "-h"}, hidden = true) boolean helpRequested;
+        }
+        StringBuilder sb = new StringBuilder();
+        new Help(App.class).appendUsageTo(sb);
+        assertEquals("Usage: <main class> [-v] [-c [<count>]]" + LINESEP, sb.toString());
+    }
+
+    @Test
+    public void testAppendUsageTo_DetailedOptionSummary_requiredOptionWithoutSeparator() {
+        @Usage(detailedUsageHeader = true) class App {
+            @Option(names = {"--verbose", "-v"}) boolean verbose;
+            @Option(names = {"--count", "-c"}, required = true) int count;
+            @Option(names = {"--help", "-h"}, hidden = true) boolean helpRequested;
+        }
+        StringBuilder sb = new StringBuilder();
+        new Help(App.class).appendUsageTo(sb);
+        assertEquals("Usage: <main class> [-v] -c <count>" + LINESEP, sb.toString());
+    }
+
+    @Test
+    public void testAppendUsageTo_DetailedOptionSummary_optionalOption_withSeparator() {
+        @Usage(separator = "=", detailedUsageHeader = true) class App {
+            @Option(names = {"--verbose", "-v"}) boolean verbose;
+            @Option(names = {"--count", "-c"}) int count;
+            @Option(names = {"--help", "-h"}, hidden = true) boolean helpRequested;
+        }
+        StringBuilder sb = new StringBuilder();
+        new Help(App.class).appendUsageTo(sb);
+        assertEquals("Usage: <main class> [-v] [-c=<count>]" + LINESEP, sb.toString());
+    }
+
+    @Test
+    public void testAppendUsageTo_DetailedOptionSummary_optionalOptionArity0_1__withSeparator() {
+        @Usage(separator = "=", detailedUsageHeader = true) class App {
+            @Option(names = {"--verbose", "-v"}) boolean verbose;
+            @Option(names = {"--count", "-c"}, arity = "0..1") int count;
+            @Option(names = {"--help", "-h"}, hidden = true) boolean helpRequested;
+        }
+        StringBuilder sb = new StringBuilder();
+        new Help(App.class).appendUsageTo(sb);
+        assertEquals("Usage: <main class> [-v] [-c[=<count>]]" + LINESEP, sb.toString());
+    }
+
+    @Test
+    public void testAppendUsageTo_DetailedOptionSummary_optionalOptionArity0_n__withSeparator() {
+        @Usage(separator = "=", detailedUsageHeader = true) class App {
+            @Option(names = {"--verbose", "-v"}) boolean verbose;
+            @Option(names = {"--count", "-c"}, arity = "0..*") int count;
+            @Option(names = {"--help", "-h"}, hidden = true) boolean helpRequested;
+        }
+        StringBuilder sb = new StringBuilder();
+        new Help(App.class).appendUsageTo(sb);
+        assertEquals("Usage: <main class> [-v] [-c[=<count>...]]" + LINESEP, sb.toString());
+    }
+
+    @Test
+    public void testAppendUsageTo_DetailedOptionSummary_optionalOptionArity1_n__withSeparator() {
+        @Usage(separator = "=", detailedUsageHeader = true) class App {
+            @Option(names = {"--verbose", "-v"}) boolean verbose;
+            @Option(names = {"--count", "-c"}, arity = "1..*") int count;
+            @Option(names = {"--help", "-h"}, hidden = true) boolean helpRequested;
+        }
+        StringBuilder sb = new StringBuilder();
+        new Help(App.class).appendUsageTo(sb);
+        assertEquals("Usage: <main class> [-v] [-c=<count> [<count>...]]" + LINESEP, sb.toString());
+    }
+
+    @Test
+    public void testAppendUsageTo_DetailedOptionSummary_withSeparator_withParameters() {
+        @Usage(separator = "=", detailedUsageHeader = true) class App {
+            @Option(names = {"--verbose", "-v"}) boolean verbose;
+            @Option(names = {"--count", "-c"}) int count;
+            @Option(names = {"--help", "-h"}, hidden = true) boolean helpRequested;
+            @Parameters File[] files;
+        }
+        StringBuilder sb = new StringBuilder();
+        new Help(App.class).appendUsageTo(sb);
+        assertEquals("Usage: <main class> [-v] [-c=<count>] [<files>...]" + LINESEP, sb.toString());
+    }
+
+    @Test
+    public void testAppendUsageTo_DetailedOptionSummary_withSeparator_withLabeledParameters() {
+        @Usage(separator = "=", detailedUsageHeader = true) class App {
+            @Option(names = {"--verbose", "-v"}) boolean verbose;
+            @Option(names = {"--count", "-c"}) int count;
+            @Option(names = {"--help", "-h"}, hidden = true) boolean helpRequested;
+            @Parameters(paramLabel = "FILE") File[] files;
+        }
+        StringBuilder sb = new StringBuilder();
+        new Help(App.class).appendUsageTo(sb);
+        assertEquals("Usage: <main class> [-v] [-c=<count>] [FILE...]" + LINESEP, sb.toString());
+    }
+
+    @Test
+    public void testAppendUsageTo_DetailedOptionSummary_withSeparator_withLabeledRequiredParameters() {
+        @Usage(separator = "=", detailedUsageHeader = true) class App {
+            @Option(names = {"--verbose", "-v"}) boolean verbose;
+            @Option(names = {"--count", "-c"}) int count;
+            @Option(names = {"--help", "-h"}, hidden = true) boolean helpRequested;
+            @Parameters(paramLabel = "FILE", arity = "1..*") File[] files;
+        }
+        StringBuilder sb = new StringBuilder();
+        new Help(App.class).appendUsageTo(sb);
+        assertEquals("Usage: <main class> [-v] [-c=<count>] FILE [FILE...]" + LINESEP, sb.toString());
     }
 
     @Test
@@ -424,9 +568,10 @@ public class CommandLineHelpTest {
         // Now that the textTable has a renderer and layout installed,
         // we add Options to the textTable to build up the option details help text.
         // Note that we don't sort the options, so they appear in the order the fields are declared in the Zip class.
-        for (Option option : help.option2Field.keySet()) {
+        for (Field field : help.optionFields) {
+            Option option = field.getAnnotation(Option.class);
             if (!option.hidden()) {
-                textTable.addOption(option, help.option2Field.get(option));
+                textTable.addOption(option, field);
             }
         }
         textTable.toString(sb); // finally, copy the options details help text into the StringBuilder
@@ -494,7 +639,7 @@ public class CommandLineHelpTest {
         }
         StringBuilder sb = new StringBuilder();
         Help help = new Help(Netstat.class);
-        help.appendSummaryTo(sb).appendDetailedUsagePatternsTo("", null, sb);
+        help.appendSummaryTo(sb).appendDetailedUsagePatternsTo(sb, "", null, false);
         sb.append(System.getProperty("line.separator"));
 
         TextTable textTable = new TextTable(
@@ -503,8 +648,8 @@ public class CommandLineHelpTest {
         textTable.optionRenderer = Help.createMinimalOptionRenderer();
         textTable.parameterRenderer = help.parameterRenderer;
         textTable.indentWrappedLines = 0;
-        for (Option option : help.option2Field.keySet()) {
-            textTable.addOption(option, help.option2Field.get(option));
+        for (Field field : help.optionFields) {
+            textTable.addOption(field.getAnnotation(Option.class), field);
         }
         // FIXME needs Show positional parameters details in TextTable similar to option details #48
         // textTable.addOption(help.positionalParametersField.getAnnotation(CommandLine.Parameters.class), help.positionalParametersField);

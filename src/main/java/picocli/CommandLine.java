@@ -39,11 +39,11 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -51,7 +51,6 @@ import java.util.Queue;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.Stack;
-import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.UUID;
 import java.util.regex.Pattern;
@@ -1296,7 +1295,8 @@ public class CommandLine {
         protected static final String DEFAULT_PROGRAM_NAME = "<main class>";
 
         /** LinkedHashMap mapping {@link Option} instances to the {@code Field} they annotate, in declaration order. */
-        public final Map<Option, Field> option2Field = new LinkedHashMap<Option, Field>();
+        //public final Map<Option, Field> option2Field = new LinkedHashMap<Option, Field>();
+        public List<Field> optionFields = new ArrayList<Field>();
 
         /** The {@code Field} annotated with {@link Parameters}, or {@code null} if no such field exists. */
         public Field positionalParametersField;
@@ -1331,9 +1331,9 @@ public class CommandLine {
                     field.setAccessible(true);
                     if (field.isAnnotationPresent(Option.class)) {
                         Option option = field.getAnnotation(Option.class);
-                        if (!option.hidden()) {
+                        if (!option.hidden()) { // hidden options should not appear in usage help
                             // TODO remember longest concatenated option string length (issue #45)
-                            option2Field.put(option, field);
+                            optionFields.add(field);
                         }
                     }
                     if (field.isAnnotationPresent(Parameters.class)) {
@@ -1373,25 +1373,50 @@ public class CommandLine {
          */
         public Help appendUsageTo(StringBuilder sb) {
             if (detailedOptionHeader) {
-                return appendDetailedUsagePatternsTo("Usage: ", new AlphabeticOrder(), sb);
+                return appendDetailedUsagePatternsTo(sb, "Usage: ", new OptionArityAndName(), true);
             }
             return appendGenericUsageTo("Usage: ", sb);
         }
 
-        public Help appendDetailedUsagePatternsTo(String prefix,
-                                                  Comparator<Option> optionSort,
-                                                  StringBuilder sb) {
+        public Help appendDetailedUsagePatternsTo(StringBuilder sb, String prefix,
+                                                  Comparator<Field> optionSort, final boolean clusterBooleanOptions) {
             sb.append(prefix).append(programName);
-            Map<Option, Field> map = option2Field; // iterate in declaration order
+            List<Field> fields = new ArrayList<Field>(optionFields); // iterate in declaration order
             if (optionSort != null) {
-                map = new TreeMap<Option, Field>(optionSort); // iterate in specified sort order
-                map.putAll(option2Field);
+                Collections.sort(fields, optionSort);// iterate in specified sort order
             }
-            for (Option option : map.keySet()) {
+            if (clusterBooleanOptions) { // cluster all short boolean options into a single string
+                List<Field> booleanOptions = new ArrayList<Field>();
+                StringBuilder clusteredRequired = new StringBuilder();
+                StringBuilder clusteredOptional = new StringBuilder();
+                for (Field field : fields) {
+                    if (field.getType() == boolean.class || field.getType() == Boolean.class) {
+                        Option option = field.getAnnotation(Option.class);
+                        String shortestName = ShortestFirst.sort(option.names())[0];
+                        if (shortestName.length() == 2 && shortestName.startsWith("-")) {
+                            booleanOptions.add(field);
+                            if (option.required()) {
+                                clusteredRequired.append(shortestName.substring(1));
+                            } else {
+                                clusteredOptional.append(shortestName.substring(1));
+                            }
+                        }
+                    }
+                }
+                fields.removeAll(booleanOptions);
+                if (clusteredRequired.length() > 0) {
+                    sb.append(" -").append(clusteredRequired);
+                }
+                if (clusteredOptional.length() > 0) {
+                    sb.append(" [-").append(clusteredOptional).append("]");
+                }
+            }
+            for (Field field : fields) {
+                Option option = field.getAnnotation(Option.class);
                 sb.append(" ");
                 String pattern = option.required() ? "%s" : "[%s]";
-                String optionNames = option.names()[0]; //join(option.names(), 0, option.names().length, "|");
-                optionNames += parameterRenderer.renderParameter(map.get(option));
+                String optionNames = ShortestFirst.sort(option.names())[0];
+                optionNames += parameterRenderer.renderParameter(field);
                 sb.append(String.format(pattern, optionNames));
             }
             if (this.positionalParametersField != null) {
@@ -1403,7 +1428,7 @@ public class CommandLine {
         }
         public Help appendGenericUsageTo(String prefix, StringBuilder sb) {
             sb.append(prefix).append(programName);
-            if (!this.option2Field.isEmpty()) { // only show if annotated object actually has options
+            if (!this.optionFields.isEmpty()) { // only show if annotated object actually has options
                 sb.append(" [OPTIONS]");
             }
             if (this.positionalParametersField != null) {
@@ -1415,7 +1440,7 @@ public class CommandLine {
         }
         /**
          * <p>Appends a description of the {@linkplain Option options} supported by the application to the specified
-         * StringBuilder. This implementation {@linkplain AlphabeticOrder sorts options alphabetically}, and shows
+         * StringBuilder. This implementation {@linkplain OptionNameAlphabetic sorts options alphabetically}, and shows
          * only the {@linkplain Option#hidden() non-hidden} options in a {@linkplain TextTable tabular format}
          * using the {@linkplain DefaultOptionRenderer default renderer} and {@linkplain DefaultLayout default layout}.</p>
          * <p>To customize how option details are displayed, instantiate a {@link TextTable} object and install a
@@ -1427,11 +1452,12 @@ public class CommandLine {
         public Help appendOptionDetailsTo(StringBuilder sb) {
             TextTable textTable = new TextTable();
             textTable.parameterRenderer = this.parameterRenderer;
-            Map<Option, Field> map = new TreeMap<Option, Field>(new AlphabeticOrder()); // default: sort options ABC
-            map.putAll(option2Field); // options are stored in order of declaration for custom layouts
-            for (Option option : map.keySet()) {
+            List<Field> fields = new ArrayList<Field>(optionFields); // options are stored in order of declaration
+            Collections.sort(fields, new OptionNameAlphabetic()); // default: sort options ABC
+            for (Field field : fields) {
+                Option option = field.getAnnotation(Option.class);
                 if (!option.hidden()) {
-                    textTable.addOption(option, map.get(option));
+                    textTable.addOption(option, field);
                 }
             }
             //FIXME should this be a separate method?
@@ -1511,10 +1537,15 @@ public class CommandLine {
         public static ILayout createDefaultLayout() {
             return new DefaultLayout();
         }
-        /** Sorts {@code Option} instances by their name in case-insensitive alphabetic order. If an Option has
+        /** Sorts Fields annotated with {@code Option} by their option name in case-insensitive alphabetic order. If an
+         * Option has multiple names, the shortest name is used for the sorting. Help options follow non-help options. */
+        public static Comparator<Field> optionName() {
+            return new OptionNameAlphabetic();
+        }
+        /** Sorts Fields annotated with {@code Option} by their option {@linkplain Arity arity} and instances by their name in case-insensitive alphabetic order. If an Option has
          * multiple names, the shortest name is used for the sorting. Help options follow non-help options. */
-        public static Comparator<Option> alphabeticOrder() {
-            return new AlphabeticOrder();
+        public static Comparator<Field> optionArityAndName() {
+            return new OptionArityAndName();
         }
         /** Sorts short strings before longer strings. */
         public static Comparator<String> shortestFirst() {
@@ -1605,7 +1636,11 @@ public class CommandLine {
                     sep = result.length() == 0 ? (isOptionParameter ? separator : "") : " ";
                     int max = arity.isVariable ? 1 : arity.max - arity.min;
                     for (int i = 0; i < max; i++) {
-                        result += sep + "[" + renderParameterName(field);
+                        if (sep.trim().length() == 0) {
+                            result += sep + "[" + renderParameterName(field);
+                        } else {
+                            result += "[" + sep + renderParameterName(field);
+                        }
                         sep  = " ";
                     }
                     if (arity.isVariable) {
@@ -1674,14 +1709,29 @@ public class CommandLine {
         }
         /** Sorts {@code Option} instances by their name in case-insensitive alphabetic order. If an Option has
          * multiple names, the shortest name is used for the sorting. Help options follow non-help options. */
-        static class AlphabeticOrder implements Comparator<Option> {
+        static class OptionNameAlphabetic implements Comparator<Field> {
             ShortestFirst shortestFirst = new ShortestFirst();
-            public int compare(Option o1, Option o2) {
+            public int compare(Field f1, Field f2) {
+                Option o1 = f1.getAnnotation(Option.class);
+                Option o2 = f2.getAnnotation(Option.class);
                 String[] names1 = shortestFirst.sort(o1.names());
                 String[] names2 = shortestFirst.sort(o2.names());
                 int result = names1[0].toUpperCase().compareTo(names2[0].toUpperCase()); // case insensitive sort
                 result = result == 0 ? -names1[0].compareTo(names2[0]) : result; // lower case before upper case
                 return o1.help() == o2.help() ? result : o2.help() ? -1 : 1; // help options come last
+            }
+        }
+        static class OptionArityAndName extends OptionNameAlphabetic {
+            public int compare(Field f1, Field f2) {
+                Option o1 = f1.getAnnotation(Option.class);
+                Option o2 = f2.getAnnotation(Option.class);
+                Arity arity1 = Arity.forOption(f1);
+                Arity arity2 = Arity.forOption(f2);
+                int result = arity1.min - arity2.min;
+                if (result == 0) {
+                    result = arity1.max - arity2.max;
+                }
+                return result == 0 ? super.compare(f1, f2) : result;
             }
         }
         /**
