@@ -1737,9 +1737,9 @@ public class CommandLine {
                 Option o2 = f2.getAnnotation(Option.class);
                 Arity arity1 = Arity.forOption(f1);
                 Arity arity2 = Arity.forOption(f2);
-                int result = arity1.min - arity2.min;
+                int result = arity1.max - arity2.max;
                 if (result == 0) {
-                    result = arity1.max - arity2.max;
+                    result = arity1.min - arity2.min;
                 }
                 return result == 0 ? super.compare(f1, f2) : result;
             }
