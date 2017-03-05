@@ -1551,9 +1551,8 @@ public class CommandLine {
         public static Comparator<Field> createShortOptionNameComparator() {
             return new SortByShortestOptionName();
         }
-        /** Sorts Fields annotated with {@code Option} by their option {@linkplain Arity arity} first, by their option
-         * name next.
-         * @see #createShortOptionNameComparator() */
+        /** Sorts Fields annotated with {@code Option} by their option {@linkplain Arity#max max arity} first, by
+         * {@linkplain Arity#min min arity} next, and by {@linkplain #createShortOptionNameComparator() option name} last. */
         public static Comparator<Field> createShortOptionArityAndNameComparator() {
             return new SortByOptionArityAndName();
         }
@@ -1731,6 +1730,7 @@ public class CommandLine {
                 return o1.help() == o2.help() ? result : o2.help() ? -1 : 1; // help options come last
             }
         }
+        /** Sorts {@code Option} instances by their max arity first, then their min arity, then delegates to super class. */
         static class SortByOptionArityAndName extends SortByShortestOptionName {
             public int compare(Field f1, Field f2) {
                 Option o1 = f1.getAnnotation(Option.class);
