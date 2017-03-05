@@ -151,7 +151,7 @@ public class CommandLineHelpTest {
             @Option(names = {"-b", "-a", "--alpha"}, description = "other") String otherField;
         }
         Help.IOptionRenderer renderer = Help.createMinimalOptionRenderer();
-        Help.IParameterRenderer parameterRenderer = Help.createDefaultParameterRenderer(" ");
+        Help.IParameterLabelRenderer parameterRenderer = Help.createDefaultParameterRenderer(" ");
         Help help = new Help(Example.class);
         Field field = help.optionFields.get(0);
         String[][] row1 = renderer.render(field.getAnnotation(Option.class), field, parameterRenderer);
@@ -176,7 +176,7 @@ public class CommandLineHelpTest {
             @Option(names = {"-b", "-a", "--alpha"}, description = "other") String otherField;
         }
         Help.IOptionRenderer renderer = Help.createDefaultOptionRenderer();
-        Help.IParameterRenderer parameterRenderer = Help.createDefaultParameterRenderer(" ");
+        Help.IParameterLabelRenderer parameterRenderer = Help.createDefaultParameterRenderer(" ");
         Help help = new Help(Example.class);
         Field field = help.optionFields.get(0);
         String[][] row1 = renderer.render(field.getAnnotation(Option.class), field, parameterRenderer);
@@ -200,7 +200,7 @@ public class CommandLineHelpTest {
             @Option(names = {"-b", "--beta"}, description = "combi") String combiField;
         }
         Help.IOptionRenderer renderer = Help.createDefaultOptionRenderer();
-        Help.IParameterRenderer parameterRenderer = Help.createDefaultParameterRenderer(" ");
+        Help.IParameterLabelRenderer parameterRenderer = Help.createDefaultParameterRenderer(" ");
         Help help = new Help(Example.class);
 
         String[][] expected = new String[][] {
@@ -221,7 +221,7 @@ public class CommandLineHelpTest {
 
     @Test
     public void testCreateDefaultParameterRenderer_ReturnsDefaultParameterRenderer() {
-        assertEquals(Help.DefaultParameterRenderer.class, Help.createDefaultParameterRenderer("=").getClass());
+        assertEquals(Help.DefaultParameterLabelRenderer.class, Help.createDefaultParameterRenderer("=").getClass());
     }
 
     @Test
@@ -230,8 +230,8 @@ public class CommandLineHelpTest {
             @Option(names = "--without" ) String longField;
             @Option(names = "--with", paramLabel = "LABEL") String otherField;
         }
-        Help.IParameterRenderer spaceSeparatedParameterRenderer = Help.createDefaultParameterRenderer(" ");
-        Help.IParameterRenderer equalSeparatedParameterRenderer = Help.createDefaultParameterRenderer("=");
+        Help.IParameterLabelRenderer spaceSeparatedParameterRenderer = Help.createDefaultParameterRenderer(" ");
+        Help.IParameterLabelRenderer equalSeparatedParameterRenderer = Help.createDefaultParameterRenderer("=");
         Help help = new Help(Example.class);
 
         String[] expected = new String[] {
@@ -241,9 +241,9 @@ public class CommandLineHelpTest {
         int i = -1;
         for (Field field : help.optionFields) {
             i++;
-            String withSpace = spaceSeparatedParameterRenderer.renderParameter(field);
+            String withSpace = spaceSeparatedParameterRenderer.renderParameterLabel(field);
             assertEquals(withSpace, " " + expected[i], withSpace);
-            String withEquals = equalSeparatedParameterRenderer.renderParameter(field);
+            String withEquals = equalSeparatedParameterRenderer.renderParameterLabel(field);
             assertEquals(withEquals, "=" + expected[i], withEquals);
         }
     }
@@ -252,19 +252,19 @@ public class CommandLineHelpTest {
     public void testDefaultParameterRenderer_appliesToPositionalArgumentsIgnoresSeparator() {
         class WithLabel    { @Parameters(paramLabel = "POSITIONAL_ARGS") String positional; }
         class WithoutLabel { @Parameters()                               String positional; }
-        Help.IParameterRenderer spaced = Help.createDefaultParameterRenderer(" ");
-        Help.IParameterRenderer equals = Help.createDefaultParameterRenderer("=");
+        Help.IParameterLabelRenderer spaced = Help.createDefaultParameterRenderer(" ");
+        Help.IParameterLabelRenderer equals = Help.createDefaultParameterRenderer("=");
 
         Help withLabel = new Help(WithLabel.class);
-        String withSpace = spaced.renderParameter(withLabel.positionalParametersField);
+        String withSpace = spaced.renderParameterLabel(withLabel.positionalParametersField);
         assertEquals(withSpace, "POSITIONAL_ARGS", withSpace);
-        String withEquals = equals.renderParameter(withLabel.positionalParametersField);
+        String withEquals = equals.renderParameterLabel(withLabel.positionalParametersField);
         assertEquals(withEquals, "POSITIONAL_ARGS", withEquals);
 
         Help withoutLabel = new Help(WithoutLabel.class);
-        withSpace = spaced.renderParameter(withoutLabel.positionalParametersField);
+        withSpace = spaced.renderParameterLabel(withoutLabel.positionalParametersField);
         assertEquals(withSpace, "<positional>", withSpace);
-        withEquals = equals.renderParameter(withoutLabel.positionalParametersField);
+        withEquals = equals.renderParameterLabel(withoutLabel.positionalParametersField);
         assertEquals(withEquals, "<positional>", withEquals);
     }
 
@@ -736,11 +736,14 @@ public class CommandLineHelpTest {
                 new Column(15, 2, TRUNCATE),
                 new Column(65, 1, WRAP));
         textTable.optionRenderer = Help.createMinimalOptionRenderer();
-        textTable.parameterRenderer = help.parameterRenderer;
+        textTable.parameterRenderer = Help.createMinimalParameterRenderer();
+        textTable.parameterLabelRenderer = help.parameterLabelRenderer;
         textTable.indentWrappedLines = 0;
         for (Field field : help.optionFields) {
             textTable.addOption(field.getAnnotation(Option.class), field);
         }
+        textTable.addPositionalParameter(help.positionalParametersField.getAnnotation(Parameters.class),
+                help.positionalParametersField);
         // FIXME needs Show positional parameters details in TextTable similar to option details #48
         // textTable.addOption(help.positionalParametersField.getAnnotation(CommandLine.Parameters.class), help.positionalParametersField);
         textTable.toString(sb);
@@ -783,12 +786,12 @@ public class CommandLineHelpTest {
                 "  -x            Displays NetworkDirect connections, listeners, and shared       %n" +
                 "                endpoints.                                                      %n" +
                 "  -y            Displays the TCP connection template for all connections.       %n" +
-                "                Cannot be combined with the other options.                      %n"
+                "                Cannot be combined with the other options.                      %n" +
 // FIXME needs Show positional parameters details in TextTable similar to option details #48
-//                "  interval      Redisplays selected statistics, pausing interval seconds        %n" +
-//                "                between each display.  Press CTRL+C to stop redisplaying        %n" +
-//                "                statistics.  If omitted, netstat will print the current         %n" +
-//                "                configuration information once.                                 %n"
+                "  interval      Redisplays selected statistics, pausing interval seconds        %n" +
+                "                between each display.  Press CTRL+C to stop redisplaying        %n" +
+                "                statistics.  If omitted, netstat will print the current         %n" +
+                "                configuration information once.                                 %n"
         , "");
         assertEquals(expected, sb.toString());
     }

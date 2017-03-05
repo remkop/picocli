@@ -194,6 +194,7 @@ public class CommandLine {
         new Help(annotatedClass).appendUsageTo(sb)
                                 .appendSummaryTo(sb)
                                 .appendOptionDetailsTo(sb)
+                                .appendParameterDetailsTo(sb)
                                 .appendFooterTo(sb);
         out.print(sb);
     }
@@ -481,7 +482,7 @@ public class CommandLine {
          * Description of the parameter(s), used when generating the usage documentation.
          * @return the description of the parameter(s)
          */
-        String description() default "";
+        String[] description() default {};
 
         /**
          * Specifies the minimum number of required parameters and the maximum number of accepted parameters. If a
@@ -524,6 +525,8 @@ public class CommandLine {
          * @return the type to convert the raw String values to before adding them to the Collection
          */
         Class<?> type() default String.class;
+
+        boolean hidden() default true;
     }
 
     /**
@@ -1330,8 +1333,8 @@ public class CommandLine {
          *  if the {@code Usage} annotation is present, otherwise this is an empty array and the help message has no
          *  footer. Applications may programmatically set this field to create a custom help message. */
         public String[] footer = {};
-        /** Parameter renderer used for the Usage header line and the option details table. */
-        public IParameterRenderer parameterRenderer;
+        /** Parameter label renderer used for the Usage header line and the option details table. */
+        public IParameterLabelRenderer parameterLabelRenderer;
 
         /** Constructs a new {@code Help} instance, initialized from annotatations on the specified class and super classes. */
         public Help(Class<?> cls) {
@@ -1370,7 +1373,7 @@ public class CommandLine {
                 }
                 cls = cls.getSuperclass();
             }
-            parameterRenderer = new DefaultParameterRenderer(separator == null ? " " : separator);
+            parameterLabelRenderer = new DefaultParameterLabelRenderer(separator == null ? " " : separator);
         }
         /**
          * Appends a "Usage" help message to the specified StringBuilder. By default, this generates a generic
@@ -1425,12 +1428,12 @@ public class CommandLine {
                 sb.append(" ");
                 String pattern = option.required() ? "%s" : "[%s]";
                 String optionNames = ShortestFirst.sort(option.names())[0];
-                optionNames += parameterRenderer.renderParameter(field);
+                optionNames += parameterLabelRenderer.renderParameterLabel(field);
                 sb.append(String.format(pattern, optionNames));
             }
             if (this.positionalParametersField != null) {
                 sb.append(" ");
-                sb.append(parameterRenderer.renderParameter(positionalParametersField));
+                sb.append(parameterLabelRenderer.renderParameterLabel(positionalParametersField));
             }
             sb.append(System.getProperty("line.separator"));
             return this;
@@ -1442,7 +1445,7 @@ public class CommandLine {
             }
             if (this.positionalParametersField != null) {
                 // sb.append(" [--] "); // implied
-                sb.append(' ').append(parameterRenderer.renderParameter(positionalParametersField));
+                sb.append(' ').append(parameterLabelRenderer.renderParameterLabel(positionalParametersField));
             }
             sb.append(System.getProperty("line.separator"));
             return this;
@@ -1460,7 +1463,7 @@ public class CommandLine {
          */
         public Help appendOptionDetailsTo(StringBuilder sb) {
             TextTable textTable = new TextTable();
-            textTable.parameterRenderer = this.parameterRenderer;
+            textTable.parameterLabelRenderer = this.parameterLabelRenderer;
             List<Field> fields = new ArrayList<Field>(optionFields); // options are stored in order of declaration
             Collections.sort(fields, new SortByShortestOptionName()); // default: sort options ABC
             for (Field field : fields) {
@@ -1475,6 +1478,17 @@ public class CommandLine {
 //                textTable.addOption(parameters, positionalParametersField);
 //            }
             textTable.toString(sb);
+            return this;
+        }
+        public Help appendParameterDetailsTo(StringBuilder sb) {
+            if (positionalParametersField != null) {
+                Parameters parameters = positionalParametersField.getAnnotation(Parameters.class);
+                if (!parameters.hidden()) {
+                    TextTable textTable = new TextTable();
+                    textTable.parameterLabelRenderer = this.parameterLabelRenderer;
+                    textTable.addPositionalParameter(parameters, positionalParametersField);
+                }
+            }
             return this;
         }
         /** Appends program summary text to the specified StringBuilder. Summary text can be zero or more lines, and
@@ -1533,13 +1547,16 @@ public class CommandLine {
         public static IOptionRenderer createMinimalOptionRenderer() {
             return new MinimalOptionRenderer();
         }
+        public static IParameterRenderer createMinimalParameterRenderer() {
+            return new MinimalParameterRenderer();
+        }
         /** Returns a new default parameter renderer that separates option parameters from their {@linkplain Option
          * options} with the specified separator string, surrounds optional parameters with {@code '['} and {@code ']'}
          * characters and uses ellipses ("...") to indicate that any number of a parameter are allowed.
          * @param separator string that separates options from option parameters
          */
-        public static IParameterRenderer createDefaultParameterRenderer(String separator) {
-            return new DefaultParameterRenderer(separator);
+        public static IParameterLabelRenderer createDefaultParameterRenderer(String separator) {
+            return new DefaultParameterLabelRenderer(separator);
         }
         /** Returns a new default Layout which displays each array of text values representing an Option on a separate
          * row in the {@linkplain TextTable TextTable}. */
@@ -1569,10 +1586,10 @@ public class CommandLine {
              * Returns a text representation of the specified Option and the Field that captures the option value.
              * @param option the command line option to show online usage help for
              * @param field the field that will hold the value for the command line option
-             * @param parameterRenderer responsible for rendering option parameters to text
+             * @param parameterLabelRenderer responsible for rendering option parameters to text
              * @return a 2-dimensional array of text values: one or more rows, each containing one or more columns
              */
-            String[][] render(Option option, Field field, IParameterRenderer parameterRenderer);
+            String[][] render(Option option, Field field, IParameterLabelRenderer parameterLabelRenderer);
         }
         /** The DefaultOptionRenderer converts {@link Option Options} to four columns of text to match the default
          * {@linkplain TextTable TextTable} column layout. The first row of values looks like this:
@@ -1586,13 +1603,13 @@ public class CommandLine {
          *   Option#description()} array, and these rows look like {@code {"", "", "", option.description()[i]}}.</p>
          */
         static class DefaultOptionRenderer implements IOptionRenderer {
-            public String[][] render(Option option, Field field, IParameterRenderer parameterRenderer) {
+            public String[][] render(Option option, Field field, IParameterLabelRenderer parameterLabelRenderer) {
                 String[] names = new ShortestFirst().sort(option.names());
                 int shortOptionCount = names[0].length() == 2 ? 1 : 0;
                 String shortOption = shortOptionCount > 0 ? names[0] : "";
                 String sep = shortOptionCount > 0 && names.length > 1 ? "," : "";
                 String longOption = join(names, shortOptionCount, names.length - shortOptionCount, ", ");
-                longOption += parameterRenderer.renderParameter(field);
+                longOption += parameterLabelRenderer.renderParameterLabel(field);
 
                 String[][] result = new String[option.description().length][4];
                 result[0] = new String[] { shortOption, sep, longOption, option.description()[0] };
@@ -1605,32 +1622,64 @@ public class CommandLine {
         /** The MinimalOptionRenderer converts {@link Option Options} to a single row with two columns of text: an
          * option name and a description. If multiple names or description lines exist, the first value is used. */
         static class MinimalOptionRenderer implements IOptionRenderer {
-            public String[][] render(Option option, Field field, IParameterRenderer parameterRenderer) {
-                return new String[][] {{ option.names()[0] + parameterRenderer.renderParameter(field),
+            public String[][] render(Option option, Field field, IParameterLabelRenderer parameterLabelRenderer) {
+                return new String[][] {{ option.names()[0] + parameterLabelRenderer.renderParameterLabel(field),
                                            option.description().length == 0 ? "" : option.description()[0] }};
             }
         }
-        /** When customizing online usage help for an option parameter or a positional parameter, a custom
-         * {@code IParameterRenderer} can be used to render the parameter name to a String. */
+        static class MinimalParameterRenderer implements IParameterRenderer {
+            public String[][] render(Parameters param, Field field, IParameterLabelRenderer parameterLabelRenderer) {
+                return new String[][] {{ parameterLabelRenderer.renderParameterLabel(field),
+                        param.description().length == 0 ? "" : param.description()[0] }};
+            }
+        }
+        /** When customizing online help for {@link Parameters Parameters} details, a custom {@code IParameterRenderer}
+         * can be used to create textual representation of a Parameters field in a tabular format: one or more rows,
+         * each containing one or more columns. The {@link ILayout ILayout} is responsible for placing these text
+         * values in the {@link TextTable TextTable}. */
         public interface IParameterRenderer {
+            /**
+             * Returns a text representation of the specified Parameters and the Field that captures the parameter values.
+             * @param parameters the command line parameters to show online usage help for
+             * @param field the field that will hold the value for the command line parameters
+             * @param parameterLabelRenderer responsible for rendering parameter labels to text
+             * @return a 2-dimensional array of text values: one or more rows, each containing one or more columns
+             */
+            String[][] render(Parameters parameters, Field field, IParameterLabelRenderer parameterLabelRenderer);
+        }
+        static class DefaultParameterRenderer implements IParameterRenderer {
+            public String[][] render(Parameters params, Field field, IParameterLabelRenderer parameterLabelRenderer) {
+                String label = parameterLabelRenderer.renderParameterLabel(field);
+
+                String[][] result = new String[params.description().length][4];
+                result[0] = new String[] { "", "", label, params.description()[0] };
+                for (int i = 1; i < params.description().length; i++) {
+                    result[i] = new String[] { "", "", "", params.description()[i] };
+                }
+                return result;
+            }
+        }
+        /** When customizing online usage help for an option parameter or a positional parameter, a custom
+         * {@code IParameterLabelRenderer} can be used to render the parameter name or label to a String. */
+        public interface IParameterLabelRenderer {
             /** Returns a text rendering of the Option parameter or positional parameter; returns an empty string
              * {@code ""} if the option is a boolean and does not take a parameter. */
-            String renderParameter(Field field);
+            String renderParameterLabel(Field field);
         }
         /**
-         * DefaultParameterRenderer separates option parameters from their {@linkplain Option options} with a
-         * {@linkplain Help.DefaultParameterRenderer#separator separator} string, surrounds optional parameters
+         * DefaultParameterLabelRenderer separates option parameters from their {@linkplain Option options} with a
+         * {@linkplain DefaultParameterLabelRenderer#separator separator} string, surrounds optional parameters
          * with {@code '['} and {@code ']'} characters and uses ellipses ("...") to indicate that any number of
          * parameters is allowed for options with variable arity.
          */
-        static class DefaultParameterRenderer implements IParameterRenderer {
+        static class DefaultParameterLabelRenderer implements IParameterLabelRenderer {
             /** The string to use to separate option parameters from their options. */
             public final String separator;
-            /** Sets the separator string and returns this parameter renderer to allow method chaining. */
-            public DefaultParameterRenderer(String separator) {
+            /** Constructs a new DefaultParameterLabelRenderer with the specified separator string. */
+            public DefaultParameterLabelRenderer(String separator) {
                 this.separator = Assert.notNull(separator, "separator");
             }
-            public String renderParameter(Field field) {
+            public String renderParameterLabel(Field field) {
                 boolean isOptionParameter = field.isAnnotationPresent(Option.class);
                 Arity arity = isOptionParameter ? Arity.forOption(field) : Arity.forParameters(field);
                 String result = "";
@@ -1759,8 +1808,9 @@ public class CommandLine {
             public int indentWrappedLines = 2;
             /** The option renderer used to create a text representation of an Option. */
             public IOptionRenderer optionRenderer = new DefaultOptionRenderer();
+            public IParameterRenderer parameterRenderer = new DefaultParameterRenderer();
             /** The parameter renderer used to create a text representation of an Option parameter. */
-            public IParameterRenderer parameterRenderer = new DefaultParameterRenderer(" "); //FIXME out of sync with  Help paramRenderer...
+            public IParameterLabelRenderer parameterLabelRenderer = new DefaultParameterLabelRenderer(" "); //FIXME out of sync with  Help paramRenderer...
             /** The layout used to select which columns and rows in the text table to populate for an Option. */
             public ILayout layout = new DefaultLayout();
             /** Constructs a default TextTable with 4 columns. Default TextTable column definitions are:
@@ -1804,8 +1854,12 @@ public class CommandLine {
              * @param field the field annotated with the specified Option
              */
             public void addOption(Option option, Field field) {
-                String[][] values = optionRenderer.render(option, field, parameterRenderer);
+                String[][] values = optionRenderer.render(option, field, parameterLabelRenderer);
                 layout.layout(option, field, values, this);
+            }
+            public void addPositionalParameter(Parameters option, Field field) {
+                String[][] values = parameterRenderer.render(option, field, parameterLabelRenderer);
+                layout.layout(null, field, values, this);
             }
             /**
              * Adds a new {@linkplain TextTable#addEmptyRow() empty row}, then calls {@link
