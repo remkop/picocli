@@ -1193,9 +1193,11 @@ public class CommandLine {
         static class CharSequenceConverter implements ITypeConverter<CharSequence> {
             public String convert(String value) { return value; }
         }
+        /** Converts text to a {@code Byte} by delegating to {@link Byte#decode(String)}.*/
         static class ByteConverter implements ITypeConverter<Byte> {
             public Byte convert(String value) { return Byte.decode(value); }
         }
+        /** Converts {@code "true"} or {@code "false"} to a {@code Boolean}. Other values result in a ParameterException.*/
         static class BooleanConverter implements ITypeConverter<Boolean> {
             public Boolean convert(String value) {
                 if ("true".equalsIgnoreCase(value) || "false".equalsIgnoreCase(value)) {
@@ -1213,12 +1215,15 @@ public class CommandLine {
                 return value.charAt(0);
             }
         }
+        /** Converts text to a {@code Short} by delegating to {@link Short#decode(String)}.*/
         static class ShortConverter implements ITypeConverter<Short> {
             public Short convert(String value) { return Short.decode(value); }
         }
+        /** Converts text to an {@code Integer} by delegating to {@link Integer#decode(String)}.*/
         static class IntegerConverter implements ITypeConverter<Integer> {
             public Integer convert(String value) { return Integer.decode(value); }
         }
+        /** Converts text to a {@code Long} by delegating to {@link Long#decode(String)}.*/
         static class LongConverter implements ITypeConverter<Long> {
             public Long convert(String value) { return Long.decode(value); }
         }
@@ -1237,6 +1242,7 @@ public class CommandLine {
         static class URIConverter implements ITypeConverter<URI> {
             public URI convert(String value) throws URISyntaxException { return new URI(value); }
         }
+        /** Converts text in {@code yyyy-mm-dd} format to a {@code java.util.Date}. ParameterException on failure. */
         static class ISO8601DateConverter implements ITypeConverter<Date> {
             public Date convert(String value) {
                 try {
@@ -1246,6 +1252,8 @@ public class CommandLine {
                 }
             }
         }
+        /** Converts text in any of the following formats to a {@code java.sql.Time}: {@code HH:mm}, {@code HH:mm:ss},
+         * {@code HH:mm:ss.SSS}, {@code HH:mm:ss,SSS}. Other formats result in a ParameterException. */
         static class ISO8601TimeConverter implements ITypeConverter<Time> {
             public Time convert(String value) {
                 try {
@@ -1275,6 +1283,7 @@ public class CommandLine {
         static class CharsetConverter implements ITypeConverter<Charset> {
             public Charset convert(String s) { return Charset.forName(s); }
         }
+        /** Converts text to a {@code InetAddress} by delegating to {@link InetAddress#getByName(String)}. */
         static class InetAddressConverter implements ITypeConverter<InetAddress> {
             public InetAddress convert(String s) throws Exception { return InetAddress.getByName(s); }
         }
@@ -1373,7 +1382,7 @@ public class CommandLine {
          */
         public Help appendUsageTo(StringBuilder sb) {
             if (detailedOptionHeader) {
-                return appendDetailedUsagePatternsTo(sb, "Usage: ", new OptionArityAndName(), true);
+                return appendDetailedUsagePatternsTo(sb, "Usage: ", new SortByOptionArityAndName(), true);
             }
             return appendGenericUsageTo("Usage: ", sb);
         }
@@ -1440,7 +1449,7 @@ public class CommandLine {
         }
         /**
          * <p>Appends a description of the {@linkplain Option options} supported by the application to the specified
-         * StringBuilder. This implementation {@linkplain OptionNameAlphabetic sorts options alphabetically}, and shows
+         * StringBuilder. This implementation {@linkplain SortByShortestOptionName sorts options alphabetically}, and shows
          * only the {@linkplain Option#hidden() non-hidden} options in a {@linkplain TextTable tabular format}
          * using the {@linkplain DefaultOptionRenderer default renderer} and {@linkplain DefaultLayout default layout}.</p>
          * <p>To customize how option details are displayed, instantiate a {@link TextTable} object and install a
@@ -1453,7 +1462,7 @@ public class CommandLine {
             TextTable textTable = new TextTable();
             textTable.parameterRenderer = this.parameterRenderer;
             List<Field> fields = new ArrayList<Field>(optionFields); // options are stored in order of declaration
-            Collections.sort(fields, new OptionNameAlphabetic()); // default: sort options ABC
+            Collections.sort(fields, new SortByShortestOptionName()); // default: sort options ABC
             for (Field field : fields) {
                 Option option = field.getAnnotation(Option.class);
                 if (!option.hidden()) {
@@ -1539,13 +1548,14 @@ public class CommandLine {
         }
         /** Sorts Fields annotated with {@code Option} by their option name in case-insensitive alphabetic order. If an
          * Option has multiple names, the shortest name is used for the sorting. Help options follow non-help options. */
-        public static Comparator<Field> optionName() {
-            return new OptionNameAlphabetic();
+        public static Comparator<Field> createShortOptionNameComparator() {
+            return new SortByShortestOptionName();
         }
-        /** Sorts Fields annotated with {@code Option} by their option {@linkplain Arity arity} and instances by their name in case-insensitive alphabetic order. If an Option has
-         * multiple names, the shortest name is used for the sorting. Help options follow non-help options. */
-        public static Comparator<Field> optionArityAndName() {
-            return new OptionArityAndName();
+        /** Sorts Fields annotated with {@code Option} by their option {@linkplain Arity arity} first, by their option
+         * name next.
+         * @see #createShortOptionNameComparator() */
+        public static Comparator<Field> createShortOptionArityAndNameComparator() {
+            return new SortByOptionArityAndName();
         }
         /** Sorts short strings before longer strings. */
         public static Comparator<String> shortestFirst() {
@@ -1709,7 +1719,7 @@ public class CommandLine {
         }
         /** Sorts {@code Option} instances by their name in case-insensitive alphabetic order. If an Option has
          * multiple names, the shortest name is used for the sorting. Help options follow non-help options. */
-        static class OptionNameAlphabetic implements Comparator<Field> {
+        static class SortByShortestOptionName implements Comparator<Field> {
             ShortestFirst shortestFirst = new ShortestFirst();
             public int compare(Field f1, Field f2) {
                 Option o1 = f1.getAnnotation(Option.class);
@@ -1721,7 +1731,7 @@ public class CommandLine {
                 return o1.help() == o2.help() ? result : o2.help() ? -1 : 1; // help options come last
             }
         }
-        static class OptionArityAndName extends OptionNameAlphabetic {
+        static class SortByOptionArityAndName extends SortByShortestOptionName {
             public int compare(Field f1, Field f2) {
                 Option o1 = f1.getAnnotation(Option.class);
                 Option o2 = f2.getAnnotation(Option.class);
