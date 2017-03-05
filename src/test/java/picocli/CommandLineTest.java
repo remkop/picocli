@@ -728,7 +728,7 @@ public class CommandLineTest {
         Arity arity = new Arity(1, Integer.MAX_VALUE, true, false, null);
         assertEquals("min", 1, arity.min);
         assertEquals("max", Integer.MAX_VALUE, arity.max);
-        assertEquals("1..2147483647", arity.toString());
+        assertEquals("1..*", arity.toString());
         assertEquals(Arity.valueOf("1..*"), arity);
     }
     @Test
@@ -754,14 +754,14 @@ public class CommandLineTest {
         class ImplicitList { @Option(names = "-a") List<Integer> listIntegers; }
         Arity arity = Arity.forOption(ImplicitList.class.getDeclaredField("listIntegers"));
         assertEquals(Arity.valueOf("0..*"), arity);
-        assertEquals("0..2147483647", arity.toString());
+        assertEquals("0..*", arity.toString());
     }
     @Test
     public void testArityForOption_arrayFieldImplicitArity0_n() throws Exception {
         class ImplicitList { @Option(names = "-a") int[] intArray; }
         Arity arity = Arity.forOption(ImplicitList.class.getDeclaredField("intArray"));
         assertEquals(Arity.valueOf("0..*"), arity);
-        assertEquals("0..2147483647", arity.toString());
+        assertEquals("0..*", arity.toString());
     }
     @Test
     public void testArityForParameters_booleanFieldImplicitArity0() throws Exception {
@@ -781,13 +781,13 @@ public class CommandLineTest {
     public void testArityForParameters_listFieldImplicitArity0_n() throws Exception {
         Arity arity = Arity.forParameters(ListPositionalParams.class.getDeclaredField("list"));
         assertEquals(Arity.valueOf("0..*"), arity);
-        assertEquals("0..2147483647", arity.toString());
+        assertEquals("0..*", arity.toString());
     }
     @Test
     public void testArityForParameters_arrayFieldImplicitArity0_n() throws Exception {
         Arity arity = Arity.forParameters(CompactFields.class.getDeclaredField("inputFiles"));
         assertEquals(Arity.valueOf("0..*"), arity);
-        assertEquals("0..2147483647", arity.toString());
+        assertEquals("0..*", arity.toString());
     }
     @Test
     public void testArrayOptionsWithArity0_nConsumeAllArguments() {

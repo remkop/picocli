@@ -621,7 +621,7 @@ public class CommandLine {
         public int min;
         /** Maximum accepted number of parameters for an option or positional parameter. */
         public int max;
-        private boolean isVariable;
+        public boolean isVariable;
         private final boolean isUnspecified;
         private final String originalValue;
 
@@ -706,7 +706,7 @@ public class CommandLine {
             return ((17 * 37 + max) * 37 + min) * 37 + (isVariable ? 1 : 0);
         }
         public String toString() {
-            String result = min == max ? String.valueOf(min) : min + ".." + max;
+            String result = min == max ? String.valueOf(min) : min + ".." + (isVariable ? "*" : max);
             return result + (empty(originalValue) || result.equals(originalValue) ? "" : " ('" + originalValue + "')");
         }
     }
@@ -1621,7 +1621,7 @@ public class CommandLine {
          * DefaultParameterRenderer separates option parameters from their {@linkplain Option options} with a
          * {@linkplain Help.DefaultParameterRenderer#separator separator} string, surrounds optional parameters
          * with {@code '['} and {@code ']'} characters and uses ellipses ("...") to indicate that any number of
-         * a parameter are allowed.
+         * parameters is allowed for options with variable arity.
          */
         static class DefaultParameterRenderer implements IParameterRenderer {
             /** The string to use to separate option parameters from their options. */
