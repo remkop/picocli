@@ -2,15 +2,16 @@
 Remko Popma <rpopma@apache.org>
 v0.2.0, 2017-02-11
 :toc: left
+:toclevels: 1
 :toc-title: Features
 
 A CLI framework in a single file, designed to be easy to include in your application _in source form_:
 allowing you to parse command line arguments without dragging in an external dependency.
 
 How it works: annotate your class and picoCLI initializes it from the command line arguments,
-converting the input to strongly typed data. Any option prefix style works,
-with special support for POSIX-style short groupable options.
-Generates online "usage" help. Can be configured to make option matching case-insensitive,
+converting the input to strongly typed values in the fields of your class. Any option prefix style works,
+with special support for POSIX-style clustered short options.
+Easily customizable online "usage" help. Can be configured to make option matching case-insensitive,
 and supports abbreviated options when unambiguous. Works with Java 5 or higher.
 
 == Example
@@ -18,20 +19,21 @@ and supports abbreviated options when unambiguous. Works with Java 5 or higher.
 [source,java]
 ----
 import picocli.CommandLine.Option;
+import picocli.CommandLine.Parameters;
 import java.io.File;
 
-public class MyApplication {
-    @Option(names = { "--failfast", "-f" }, description = "Stop on the first failure.")
-    private boolean failFast = true;
-
-    @Option(names = { "--in", "-i" }, description = "Specifies the input file.", required = true)
-    private File inputFile;
+public class Example {
+    @Parameters(description = "Specifies the input file(s).")
+    private File[] inputFiles;
 
     @Option(names = { "--out", "-o" }, description = "Specifies the output file.", required = true)
     private File outputFile;
 
     @Option(names = { "--verbose", "-v" }, description = "Be verbose.")
     private boolean verbose = false;
+
+    @Option(names = { "--help", "-h" }, help = true, description = "Displays this help message and quits.")
+    private boolean helpRequested = false;
     ...
 }
 ----
@@ -40,26 +42,26 @@ Then invoke `CommandLine.parse` with the command line parameters and an object y
 
 [source,java]
 ----
-MyApplication app = new MyApplication();
-CommandLine.parse(app, "--in", "path/to/inputFile", "--out", "path/to/outputFile");
-assert app.inputFile != null;
+Example app = new Example();
+CommandLine.parse(app, "--out", "path/to/outputFile", "inputFile1", "inputFile2");
+assert app.inputFiles != null;
 ----
 
-== Options and Parameters
+== Named Options and Positional Parameters
 Imagine an application that takes some input files and compresses them to an output file.
 ----
 Compress -o outputFile file1 file2 file3
 ----
-The program takes one option (`-o`, the output file) and any number of input files. One way to accomplish this with picoCLI looks like this:
+The program takes one option (`-o`, the output file) and one or more input files. One way to accomplish this with picoCLI looks like this:
 
 [source, java]
 ----
 import picocli.CommandLine.*;
 import java.io.File;
 
-@Usage(program = "Compress", header = "takes some input files and compresses them to an output file")
+@Usage(programName = "Compress", header = "Compresses the specified input files to an output file")
 public class Compress {
-    @Parameters(arity = 1, usage = "one or more files to compress")
+    @Parameters(arity = "1..*", usage = "one or more files to compress")
     File[] inputFiles;
 
     @Option(names = {"-o", "--outfile"}, usage = "optional output file name. If omitted directory name is used.")
@@ -86,35 +88,136 @@ public class Compress {
 }
 ----
 
-== Standalone Options are Booleans
+== Command Line Flags and Switches
+Boolean options don't need a parameter. If the option name is specified on the command line, the corresponding field is set to `true`:
+
+[source, java]
+----
+class MyProgram {
+    @Option(names = { "-v", "--verbose" }, description = "Verbose mode")
+    boolean verbose;
+}
+----
+
+The boolean field `verbose` will have value `true` when the program is invoked with the "-v" option:
+----
+CommandLine.parse(new MyProgram(), { "-v", "arg1", "arg2" });
+----
+
+==== Explicit Boolean Parameters
+It is possible to explicitly specify "true" or "false" as a parameter for a boolean option by defining an explicit <<Arity: Minimum and Maximum Number of Parameters,`arity`>> attribute. A boolean option with `arity = "0..1"` accepts zero to one parameters, `arity = "1"` means the option _must_ have one parameter. For example:
+
+[source, java]
+----
+class MyProgram {
+    @Option(names = "-x", arity = "1", description = "boolean option with 1 mandatory parameter")
+    boolean x;
+
+    @Option(names = "-y", arity = "0..1", description = "boolean option with minimum 0 and maximum 1 parameter")
+    boolean y;
+}
+----
+
+The following ways to invoke the program will be accepted (values are not case sensitive):
+----
+<main> -x true
+<main> -x FALSE
+<main> -x TRUE -y
+<main> -x True -y False
+----
+
+But trying to specify the `-x` option without a parameter, or with a value other than "true" or "false" (case insensitive) will result in a `ParameterException`.
+
+== Arity: Minimum and Maximum Number of Parameters
+Option fields of type array or `List` (or any class extending `Collection`) will be able to hold multiple values. The `arity` attribute can be used to specify the exact number of required parameters, or a range with a minimum and a maximum number of parameters. The maximum can be a fixed number, or can be `"*"` to denote "any number" of parameters. For example:
+[source, java]
+----
+class MyProgram {
+    @Parameters(arity = "3", descriptions = "exactly three Files")
+    File[] files;
+
+    @Option(names = "-f", arity = "2..4", description = "two to four floating point numbers")
+    double[] doubles;
+
+    @Option(names = "-s", arity = "1..*", description = "at least one string")
+    String[] strings;
+}
+----
+A `MissingParameterException` is thrown when fewer than the miminum number of required parameters is specified as command line arguments. Options with an exact number or an exact range will consume up to the maximum number of parameters.
+
+==== Auto-detect New Options
+Once the minimum number of parameters is consumed, picoCLI will check for each subsequent command line argument whether it is another parameter, or a new option. For example:
+
+----
+<main> -s A B C -f 1.0 2.0 3.0
+----
+The above command line arguments will be parsed as three parameters for the `-s` option, followed by three parameters for the `-f` option.
+
+==== Ambiguous Input
+Positional parameters do not have an option name, and the below example command line arguments will be parsed as six parameters for the `-s` option, not as three strings and three files:
+----
+<main> -s A B C file1 file2 file3
+----
+
+Users can disambiguate the input by specifying a double dash (`--`) after the option parameters.
+The argument `--` is interpreted as a delimiter indicating the end of options. Any following arguments are treated as positional parameters. For example, the following command line arguments will be parsed as three strings and three files:
+----
+<main> -s A B C -- file1 file2 file3
+----
+
+== Default Arity: Number of Parameters Depends on Option Type
+Most of the time options don't need to define their arity explicitly. When the arity is not specified, the implicit arity of the option depends on the field's type:
+
+* Boolean fields: `"0"`. By default no parameters are required or expected.
+* Single-valued types (primitive fields, Number fields, String, File etc): `"1"`. By default option fields with these types expect a single value.
+* Multi-valued types (arrays or classes extending `Collection`): `"0..*"`. By default option fields with this type have no mandatory parameters but accept any number of parameters.
+
+== Required Options
+Options can be marked `required` to make it mandatory for the user to specify them on the command line. When a required option is not specified, a `MissingParameterException` is thrown from the `parse` method. For example:
+[source, java]
+----
+class MyProgram {
+    @Parameters(arity = "3", descriptions = "exactly three Files")
+    File[] files;
+
+    @Option(names = "-x", description = "optional switch")
+    boolean x;
+
+    @Option(names = "-y", required = true, description = "mandatory switch")
+    boolean y;
+
+    @Option(names = "-n", required = true, description = "mandatory number")
+    int number;
+}
+----
+The following command line arguments would result in an exception complaining that `y` and `number` are missing:
+----
+CommandLine.parse(new MyProgram(), "-x file1 file2 file3")
+----
+The following command line arguments would be accepted:
+----
+CommandLine.parse(new MyProgram(), "-x -y -n 123 file1 file2 file3")
+----
+
+
+// TODO document that if arity>1 and args="-opt=val1 val2", arity overrules the "=": both values are assigned
+
+
 == Options with Parameters
 == parameters are strongly typed
 == built-in type converters
 
-Converters for byte, short, int and long (and their wrapper classes) use the https://docs.oracle.com/javase/7/docs/api/java/lang/Integer.html#decode(java.lang.String)[`decode`] method to convert String values, so you can specify hexadecimal and even octal values in additional to the normal decimal values.
+Converters for byte, short, int and long (and their wrapper classes) use the https://docs.oracle.com/javase/7/docs/api/java/lang/Integer.html#decode(java.lang.String)[`decode`] method to convert String values, so you can specify hexadecimal and even octal values in additional to the normal decimal values. (Be aware that values starting with `0` are interpreted to be octal values!)
 
 == registering custom type converters
 == option short form
 
-== Short options can be grouped
+== Clustered Short Options
 Single-character options preceded with a '-', like `-v` or `-r`, can be grouped, so `-vxr` is equivalent to `-v -x -r`.
 
 // TODO ambiguous short options: ambiguity with the -f FILE and -fFILE notation.
 // TODO ambiguous options: writing --input ARG (as opposed to --input=ARG) is ambiguous,
-// TODO document that if arity>1 and args="-opt=val1 val2", arity overrules the "=": both values are assigned
 
-== Ambiguity
-[source,java]
-----
-class TextOption {
-    @CommandLine.Option(names = "-t") int[] number;
-    @CommandLine.Option(names = "-f") File file;
-}
-TextOption opt = CommandLine.parse(new TextOption(), "-t", "123", "-f", "path/to/file");
-----
-Above example with throw a `ParameterException: Could not convert '-f' to int[] for option '-t' parameter[1]`. PicoCLI finds that the number field is an array, and since no `arity` is specified, it assumes you want to assign all arguments that follow the `-f` option to this field.
-
-TODO: How can users work around this? Do they need to rely on their users specifying -f last? Can we use varargs? What if varargs=false is also specified?
 
 == Download
 
