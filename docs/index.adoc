@@ -104,7 +104,7 @@ The boolean field `verbose` will have value `true` when the program is invoked w
 CommandLine.parse(new MyProgram(), { "-v", "arg1", "arg2" });
 ----
 
-==== Explicit Boolean Parameters
+=== Explicit Boolean Parameters
 It is possible to explicitly specify "true" or "false" as a parameter for a boolean option by defining an explicit <<Arity: Minimum and Maximum Number of Parameters,`arity`>> attribute. A boolean option with `arity = "0..1"` accepts zero to one parameters, `arity = "1"` means the option _must_ have one parameter. For example:
 
 [source, java]
@@ -145,7 +145,7 @@ class MyProgram {
 ----
 A `MissingParameterException` is thrown when fewer than the miminum number of required parameters is specified as command line arguments. Options with an exact number or an exact range will consume up to the maximum number of parameters.
 
-==== Auto-detect New Options
+=== Auto-detect New Options
 Once the minimum number of parameters is consumed, picoCLI will check for each subsequent command line argument whether it is another parameter, or a new option. For example:
 
 ----
@@ -153,7 +153,7 @@ Once the minimum number of parameters is consumed, picoCLI will check for each s
 ----
 The above command line arguments will be parsed as three parameters for the `-s` option, followed by three parameters for the `-f` option.
 
-==== Ambiguous Input
+=== Ambiguous Input
 Positional parameters do not have an option name, and the below example command line arguments will be parsed as six parameters for the `-s` option, not as three strings and three files:
 ----
 <main> -s A B C file1 file2 file3
