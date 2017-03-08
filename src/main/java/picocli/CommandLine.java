@@ -330,18 +330,35 @@ public class CommandLine {
         String[] names();
 
         /**
-         * Description of this option, used when generating the usage documentation.
-         * @return the description of this option
-         */
-        String[] description() default {};
-
-        /**
          * Indicates whether this option is required. By default this is false.
          * If an option is required, but a user invokes the program without specifying the required option,
          * a {@link MissingParameterException} is thrown from the {@link #parse(String...)} method.
          * @return whether this option is required
          */
         boolean required() default false;
+
+        /**
+         * Set {@code help=true} if this option should disable validation of the remaining arguments:
+         * If the {@code help} option is specified, no error message is generated for missing required options.
+         * <p>
+         * This attribute is useful for special options like help ({@code -h} and {@code --help} on unix,
+         * {@code -?} and {@code -Help} on Windows) or version ({@code -V} and {@code --version} on unix,
+         * {@code -Version} on Windows).
+         * </p>
+         * <p>
+         * Note that the {@link #parse(String...)} method will not print help documentation. It will only set
+         * the value of the annotated field. It is the responsibility of the caller to inspect the annotated fields
+         * and take the appropriate action.
+         * </p>
+         * @return whether this option disables validation of the other arguments
+         */
+        boolean help() default false;
+
+        /**
+         * Description of this option, used when generating the usage documentation.
+         * @return the description of this option
+         */
+        String[] description() default {};
 
         /**
          * Specifies the minimum number of required parameters and the maximum number of accepted parameters.
@@ -424,23 +441,6 @@ public class CommandLine {
          * @return whether this option should be excluded from the usage message
          */
         boolean hidden() default false;
-
-        /**
-         * Set {@code help=true} if this option should disable validation of the remaining arguments:
-         * If the {@code help} option is specified, no error message is generated for missing required options.
-         * <p>
-         * This attribute is useful for special options like help ({@code -h} and {@code --help} on unix,
-         * {@code -?} and {@code -Help} on Windows) or version ({@code -V} and {@code --version} on unix,
-         * {@code -Version} on Windows).
-         * </p>
-         * <p>
-         * Note that the {@link #parse(String...)} method will not print help documentation. It will only set
-         * the value of the annotated field. It is the responsibility of the caller to inspect the annotated fields
-         * and take the appropriate action.
-         * </p>
-         * @return whether this option disables validation of the other arguments
-         */
-        boolean help() default false;
     }
 
     /**
