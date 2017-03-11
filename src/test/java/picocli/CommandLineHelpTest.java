@@ -109,7 +109,7 @@ public class CommandLineHelpTest {
             @Option(names = {"-c", "--cccc"}) boolean cccc;
         }
         Field[] fields = fields(App.class, "aaaa", "bbbb", "cccc"); // -tkc
-        Arrays.sort(fields, new Help.SortByShortestOptionName());
+        Arrays.sort(fields, new Help.SortByShortestOptionNameAlphabetically());
         Field[] expected = fields(App.class, "cccc", "bbbb", "aaaa"); // -ckt
         assertArrayEquals(expected, fields);
     }
@@ -127,7 +127,7 @@ public class CommandLineHelpTest {
         }
         Field[] fields = fields(App.class, "tImplicitArity0", "explicitArity1", "kImplicitArity0",
                 "aImplicitArity1", "bImplicitArity0_n", "zExplicitArity1_3", "fImplicitArity0");
-        Arrays.sort(fields, new Help.SortByOptionArityAndName());
+        Arrays.sort(fields, new Help.SortByOptionArityAndNameAlphabetically());
         Field[] expected = fields(App.class,
                 "fImplicitArity0",
                 "kImplicitArity0",
@@ -661,7 +661,7 @@ public class CommandLineHelpTest {
         for (Field field : help.optionFields) {
             Option option = field.getAnnotation(Option.class);
             if (!option.hidden()) {
-                textTable.addOption(option, field);
+                textTable.addOption(field, help.parameterLabelRenderer);
             }
         }
         textTable.toString(sb); // finally, copy the options details help text into the StringBuilder
@@ -737,13 +737,11 @@ public class CommandLineHelpTest {
                 new Column(65, 1, WRAP));
         textTable.optionRenderer = Help.createMinimalOptionRenderer();
         textTable.parameterRenderer = Help.createMinimalParameterRenderer();
-        textTable.parameterLabelRenderer = help.parameterLabelRenderer;
         textTable.indentWrappedLines = 0;
         for (Field field : help.optionFields) {
-            textTable.addOption(field.getAnnotation(Option.class), field);
+            textTable.addOption(field, help.parameterLabelRenderer);
         }
-        textTable.addPositionalParameter(help.positionalParametersField.getAnnotation(Parameters.class),
-                help.positionalParametersField);
+        textTable.addPositionalParameter(help.positionalParametersField, Help.createMinimalParameterLabelRenderer());
         // FIXME needs Show positional parameters details in TextTable similar to option details #48
         // textTable.addOption(help.positionalParametersField.getAnnotation(CommandLine.Parameters.class), help.positionalParametersField);
         textTable.toString(sb);

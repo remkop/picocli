@@ -1385,7 +1385,7 @@ public class CommandLine {
          */
         public Help appendUsageTo(StringBuilder sb) {
             if (detailedOptionHeader) {
-                return appendDetailedUsagePatternsTo(sb, "Usage: ", new SortByOptionArityAndName(), true);
+                return appendDetailedUsagePatternsTo(sb, "Usage: ", new SortByOptionArityAndNameAlphabetically(), true);
             }
             return appendGenericUsageTo("Usage: ", sb);
         }
@@ -1452,7 +1452,7 @@ public class CommandLine {
         }
         /**
          * <p>Appends a description of the {@linkplain Option options} supported by the application to the specified
-         * StringBuilder. This implementation {@linkplain SortByShortestOptionName sorts options alphabetically}, and shows
+         * StringBuilder. This implementation {@linkplain SortByShortestOptionNameAlphabetically sorts options alphabetically}, and shows
          * only the {@linkplain Option#hidden() non-hidden} options in a {@linkplain TextTable tabular format}
          * using the {@linkplain DefaultOptionRenderer default renderer} and {@linkplain DefaultLayout default layout}.</p>
          * <p>To customize how option details are displayed, instantiate a {@link TextTable} object and install a
@@ -1463,20 +1463,14 @@ public class CommandLine {
          */
         public Help appendOptionDetailsTo(StringBuilder sb) {
             TextTable textTable = new TextTable();
-            textTable.parameterLabelRenderer = this.parameterLabelRenderer;
             List<Field> fields = new ArrayList<Field>(optionFields); // options are stored in order of declaration
-            Collections.sort(fields, new SortByShortestOptionName()); // default: sort options ABC
+            Collections.sort(fields, new SortByShortestOptionNameAlphabetically()); // default: sort options ABC
             for (Field field : fields) {
                 Option option = field.getAnnotation(Option.class);
                 if (!option.hidden()) {
-                    textTable.addOption(option, field);
+                    textTable.addOption(field, parameterLabelRenderer);
                 }
             }
-            //FIXME should this be a separate method?
-//            if (positionalParametersField != null) {
-//                Parameters parameters = positionalParametersField.getAnnotation(Parameters.class);
-//                textTable.addOption(parameters, positionalParametersField);
-//            }
             textTable.toString(sb);
             return this;
         }
@@ -1485,8 +1479,7 @@ public class CommandLine {
                 Parameters parameters = positionalParametersField.getAnnotation(Parameters.class);
                 if (!parameters.hidden()) {
                     TextTable textTable = new TextTable();
-                    textTable.parameterLabelRenderer = this.parameterLabelRenderer;
-                    textTable.addPositionalParameter(parameters, positionalParametersField);
+                    textTable.addPositionalParameter(positionalParametersField, createMinimalParameterLabelRenderer());
                 }
             }
             return this;
@@ -1550,6 +1543,14 @@ public class CommandLine {
         public static IParameterRenderer createMinimalParameterRenderer() {
             return new MinimalParameterRenderer();
         }
+        public static IParameterLabelRenderer createMinimalParameterLabelRenderer() {
+            return new IParameterLabelRenderer() {
+                public String renderParameterLabel(Field field) {
+                    Parameters parameters = field.getAnnotation(Parameters.class);
+                    return parameters == null || parameters.paramLabel().length() == 0 ? field.getName() : parameters.paramLabel();
+                }
+            };
+        }
         /** Returns a new default parameter renderer that separates option parameters from their {@linkplain Option
          * options} with the specified separator string, surrounds optional parameters with {@code '['} and {@code ']'}
          * characters and uses ellipses ("...") to indicate that any number of a parameter are allowed.
@@ -1566,12 +1567,12 @@ public class CommandLine {
         /** Sorts Fields annotated with {@code Option} by their option name in case-insensitive alphabetic order. If an
          * Option has multiple names, the shortest name is used for the sorting. Help options follow non-help options. */
         public static Comparator<Field> createShortOptionNameComparator() {
-            return new SortByShortestOptionName();
+            return new SortByShortestOptionNameAlphabetically();
         }
         /** Sorts Fields annotated with {@code Option} by their option {@linkplain Arity#max max arity} first, by
          * {@linkplain Arity#min min arity} next, and by {@linkplain #createShortOptionNameComparator() option name} last. */
         public static Comparator<Field> createShortOptionArityAndNameComparator() {
-            return new SortByOptionArityAndName();
+            return new SortByOptionArityAndNameAlphabetically();
         }
         /** Sorts short strings before longer strings. */
         public static Comparator<String> shortestFirst() {
@@ -1767,7 +1768,7 @@ public class CommandLine {
         }
         /** Sorts {@code Option} instances by their name in case-insensitive alphabetic order. If an Option has
          * multiple names, the shortest name is used for the sorting. Help options follow non-help options. */
-        static class SortByShortestOptionName implements Comparator<Field> {
+        static class SortByShortestOptionNameAlphabetically implements Comparator<Field> {
             ShortestFirst shortestFirst = new ShortestFirst();
             public int compare(Field f1, Field f2) {
                 Option o1 = f1.getAnnotation(Option.class);
@@ -1780,7 +1781,7 @@ public class CommandLine {
             }
         }
         /** Sorts {@code Option} instances by their max arity first, then their min arity, then delegates to super class. */
-        static class SortByOptionArityAndName extends SortByShortestOptionName {
+        static class SortByOptionArityAndNameAlphabetically extends SortByShortestOptionNameAlphabetically {
             public int compare(Field f1, Field f2) {
                 Option o1 = f1.getAnnotation(Option.class);
                 Option o2 = f2.getAnnotation(Option.class);
@@ -1809,8 +1810,6 @@ public class CommandLine {
             /** The option renderer used to create a text representation of an Option. */
             public IOptionRenderer optionRenderer = new DefaultOptionRenderer();
             public IParameterRenderer parameterRenderer = new DefaultParameterRenderer();
-            /** The parameter renderer used to create a text representation of an Option parameter. */
-            public IParameterLabelRenderer parameterLabelRenderer = new DefaultParameterLabelRenderer(" "); //FIXME out of sync with  Help paramRenderer...
             /** The layout used to select which columns and rows in the text table to populate for an Option. */
             public ILayout layout = new DefaultLayout();
             /** Constructs a default TextTable with 4 columns. Default TextTable column definitions are:
@@ -1850,14 +1849,16 @@ public class CommandLine {
              * Convenience method that delegates to the configured {@link TextTable#optionRenderer renderer} to obtain text
              * values for the specified {@link Option}, and then delegates to the configured {@link TextTable#layout
              * layout} to write these text values into the correct cells in this TextTable.
-             * @param option the Option whose details and description to print to the console
              * @param field the field annotated with the specified Option
+             * @param parameterLabelRenderer knows how to render option parameters
              */
-            public void addOption(Option option, Field field) {
+            public void addOption(Field field, IParameterLabelRenderer parameterLabelRenderer) {
+                Option option = field.getAnnotation(Option.class);
                 String[][] values = optionRenderer.render(option, field, parameterLabelRenderer);
                 layout.layout(option, field, values, this);
             }
-            public void addPositionalParameter(Parameters option, Field field) {
+            public void addPositionalParameter(Field field, IParameterLabelRenderer parameterLabelRenderer) {
+                Parameters option = field.getAnnotation(Parameters.class);
                 String[][] values = parameterRenderer.render(option, field, parameterLabelRenderer);
                 layout.layout(null, field, values, this);
             }
