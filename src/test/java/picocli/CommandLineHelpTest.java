@@ -526,7 +526,7 @@ public class CommandLineHelpTest {
 
     @Test
     public void testCatUsageFormat() {
-        @Command(programName = "cat",
+        @Command(name = "cat",
                 summary = "Concatenate FILE(s), or standard input, to standard output.",
                 footer = "Copyright(c) 2017")
         class Cat {
@@ -674,7 +674,7 @@ public class CommandLineHelpTest {
     private enum Protocol {IP, IPv6, ICMP, ICMPv6, TCP, TCPv6, UDP, UDPv6}
     @Test
     public void testNetstatUsageFormat() {
-        @CommandLine.Command(programName = "NETSTAT",
+        @CommandLine.Command(name = "NETSTAT",
                 separator = " ",
                 detailedSynopsis = true,
                 summary = {"Displays protocol statistics and current TCP/IP network connections.", ""})

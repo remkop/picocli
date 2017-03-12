@@ -540,11 +540,11 @@ public class CommandLine {
     /**
      * <p>
      * Annotate your class with {@code @Command} when you want more control over the format of the generated help message
-     * or when you want to add a summary description of what the program does or a footer following the option details.
+     * or when you want to add detailed synopsis of how to use the program or a footer following the option list.
      * </p><pre>
-     * &#064;Command(programName = "Encrypt",
-     *        summary     = "Encrypt FILE(s), or standard input, to standard output or to the output file.",
-     *        footer      = "Copyright (c) 2017")
+     * &#064;Command(name  = "Encrypt",
+     *        summary = "Encrypt FILE(s), or standard input, to standard output or to the output file.",
+     *        footer  = "Copyright (c) 2017")
      * public class Encrypt {
      *     &#064;Parameters(valueLabel = "FILE", type = File.class, description = "Any number of input files")
      *     private List<File> files = new ArrayList<File>();
@@ -556,35 +556,37 @@ public class CommandLine {
      * The structure of a help message looks like this:
      * </p><ul>
      *   <li>[description]</li>
-     *   <li>[synopsis]: {@code Usage: <programName> [OPTIONS] [FILE...]}</li>
+     *   <li>[synopsis]: {@code Usage: <commandName> [OPTIONS] [FILE...]}</li>
      *   <li>[summary]</li>
      *   <li>[option list]: {@code   -h, --help   prints this help message and exits}</li>
      *   <li>[footer]</li>
      * </ul>
      * <p>
-     * If the {@link #detailedSynopsis()} attribute is {@code true}, the "Usage" synopsis will show exact option names
+     * If the {@link #detailedSynopsis()} attribute is {@code true}, the synopsis will show exact option names
      * and parameter names.
      * </p>
      */
     @Retention(RetentionPolicy.RUNTIME)
     @Target(ElementType.TYPE)
     public @interface Command {
-        /** Program name to show in the synopsis. If omitted, the annotated class name is used. */
-        String programName() default "<main class>";
-        /** If {@code true}, a detailed "Usage" synopsis is shown with exact options and parameters. */
+        /** Optional short description of the command, shown before the synopsis. */
+        String[] description() default {};
+        /** Optional text to display between the synopsis line(s) and the list of options. */
+        String[] summary() default {};
+        /** Optional text to display after the list of options. */
+        String[] footer() default {};
+        /** Command name to show in the synopsis. If omitted, the annotated class name is used. */
+        String name() default "<main class>";
+        /** If {@code true}, a detailed synopsis is shown with explicit option names and parameters. */
         boolean detailedSynopsis() default false;
-        /** String that separates options from option parameters. Default {@value}, a popular alternative is {@code "="}. */
-        String separator() default " ";
         /** Comparator to use to sort Options and Parameters in the option list section of the help message. Specify
          * {@code null} to list in declaration order. The default is to sort alphabetically. */
         Class<? extends Comparator<Field>> optionListSortBy() default Help.SortByShortestOptionNameAlphabetically.class;
         /** Comparator to use to sort Options and Parameters in the detailed synopsis.
          * The default is to sort boolean options first, then options in increasing arity, alphabetically. */
         Class<? extends Comparator<Field>> detailedSynopsisSortBy() default Help.SortByOptionArityAndNameAlphabetically.class;
-        /** Optional text to display between the synopsis line(s) and the list of options. */
-        String[] summary() default {};
-         /** Optional text to display after the list of options. */
-        String[] footer() default {};
+        /** String that separates options from option parameters. Default {@value}, a popular alternative is {@code "="}. */
+        String separator() default " ";
     }
     /**
      * <p>
@@ -1333,7 +1335,7 @@ public class CommandLine {
         private String separator;
 
         /** The String to use as the program name in the synopsis line of the help message. {@value} by default,
-         * initialized from {@link Command#programName()} if defined. */
+         * initialized from {@link Command#name()} if defined. */
         public String programName = DEFAULT_PROGRAM_NAME;
 
         /** If {@code true}, the synopsis line(s) will show detailed option names and parameter names. */
@@ -1371,7 +1373,7 @@ public class CommandLine {
                 if (cls.isAnnotationPresent(Command.class)) {
                     Command command = cls.getAnnotation(Command.class);
                     if (DEFAULT_PROGRAM_NAME.equals(programName)) {
-                        programName = command.programName();
+                        programName = command.name();
                     }
                     if (separator == null) {
                         separator = command.separator();
