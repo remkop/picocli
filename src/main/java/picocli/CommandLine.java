@@ -66,7 +66,7 @@ import static picocli.CommandLine.Help.Column.Overflow.*;
  * </p>
  * <pre>import static picocli.CommandLine.*;
  *
- * &#064;Usage(summary = "Encrypt FILE(s), or standard input, to standard output or to the output file.")
+ * &#064;Command(summary = "Encrypt FILE(s), or standard input, to standard output or to the output file.")
  * public class Encrypt {
  *
  *     &#064;Parameters(type = File.class, description = "Any number of input files")
@@ -176,17 +176,17 @@ public class CommandLine {
      * <pre>
      * StringBuilder sb = new StringBuilder();
      * new Help(annotatedClass).appendUsage(sb)         // Usage &lt;main class&gt; [OPTIONS] [PARAMETERS]
-     *                         .appendSummary(sb)       // from @Usage.summary() - may be omitted
+     *                         .appendSummary(sb)       // from @Command.summary() - may be omitted
      *                         .appendOptionDetails(sb) // from @Option names and descriptions
-     *                         .appendFooter(sb);       // from @Usage.footer() - may be omitted
+     *                         .appendFooter(sb);       // from @Command.footer() - may be omitted
      * out.print(sb);</pre>
-     * <p>Annotate your class with {@link Usage} to control the program name, or whether the "usage" message
+     * <p>Annotate your class with {@link Command} to control the program name, or whether the "usage" message
      * should be a generic {@code "Usage <main class> [OPTIONS] [PARAMETERS]"} message or a detailed message
      * that shows options and parameters.</p>
      * <p>To customize how option details are displayed, instantiate a {@link Help} object and install a custom
      * option {@linkplain Help.IOptionRenderer renderer} and/or a custom {@linkplain Help.ILayout layout} to control
      * which aspects of an Option or Field are displayed where in the {@link Help.TextTable}.</p>
-     * @param annotatedClass the class annotated with {@link Usage}, {@link Option} and {@link Parameters}
+     * @param annotatedClass the class annotated with {@link Command}, {@link Option} and {@link Parameters}
      * @param out the {@code PrintStream} to print the usage help message to
      */
     public static void usage(Class<?> annotatedClass, PrintStream out) {
@@ -402,10 +402,10 @@ public class CommandLine {
         String arity() default "";
 
         /**
-         * Specify a {@code paramLabel} for the option parameter to be used in the usage help message. If omitted,
+         * Specify a {@code valueLabel} for the option parameter to be used in the usage help message. If omitted,
          * picoCLI uses the field name in fish brackets ({@code '<'} and {@code '>'}) by default. Example:
          * <pre>class Example {
-         *     &#064;Option(names = {"-o", "--output"}, paramLabel="FILE", description="path of the output file")
+         *     &#064;Option(names = {"-o", "--output"}, valueLabel="FILE", description="path of the output file")
          *     private File out;
          *     &#064;Option(names = {"-j", "--jobs"}, arity="0..1", description="Allow N jobs at once; infinite jobs with no arg.")
          *     private int maxJobs = -1;
@@ -417,7 +417,7 @@ public class CommandLine {
          * </pre>
          * @return name of the option parameter used in the usage help message
          */
-        String paramLabel() default "";
+        String valueLabel() default "";
 
         /**
          * <p>
@@ -442,7 +442,6 @@ public class CommandLine {
          */
         boolean hidden() default false;
     }
-
     /**
      * <p>
      * Annotate at most one field in your class with {@code @Parameters} and picoCLI will initialize this field
@@ -470,16 +469,21 @@ public class CommandLine {
      * or a class that implements {@code Collection}.
      * See {@link #type()} for strongly-typed Collection fields.
      * </p><p>
-     * There can be only one field annotated with {@code @Parameters}, and a field cannot be annotated with
-     * both {@code @Parameters} and {@code @Option} or a {@code ParameterException} is thrown.
+     * A field cannot be annotated with both {@code @Parameters} and {@code @Option} or a {@code ParameterException}
+     * is thrown.
      * </p>
      */
     @Retention(RetentionPolicy.RUNTIME)
     @Target(ElementType.FIELD)
-    public @interface Parameters {
+    @interface Parameters {
+        /** Specify an index ("0", or "1", etc.) to pick which of the command line arguments should be assigned to this
+         * field. For array or Collection fields, you can also specify an index range ("0..3", or "2..*", etc.) to assign
+         * a subset of the command line arguments to this field. The default is "*", meaning all command line arguments.
+         * @return an index or range specifying which of the command line arguments should be assigned to this field
+         */
+        String index() default "*";
 
-        /**
-         * Description of the parameter(s), used when generating the usage documentation.
+        /** Description of the parameter(s), used when generating the usage documentation.
          * @return the description of the parameter(s)
          */
         String[] description() default {};
@@ -495,19 +499,19 @@ public class CommandLine {
         String arity() default "";
 
         /**
-         * Specify a {@code paramLabel} for the parameter to be used in the usage help message. If omitted,
+         * Specify a {@code valueLabel} for the parameter to be used in the usage help message. If omitted,
          * picoCLI uses the field name in fish brackets ({@code '<'} and {@code '>'}) by default. Example:
          * <pre>class Example {
-         *     &#064;Parameters(paramLabel="FILE", description="path of the input FILE(s)")
+         *     &#064;Parameters(valueLabel="FILE", description="path of the input FILE(s)")
          *     private File[] inputFiles;
          * }</pre>
          * <p>By default, the above gives a usage help message like the following:</p><pre>
          * Usage: &lt;main class&gt; [FILE...]
          * [FILE...]       path of the input FILE(s)
          * </pre>
-         * @return name of the]] parameter used in the usage help message
+         * @return name of the positional parameter used in the usage help message
          */
-        String paramLabel() default "";
+        String valueLabel() default "";
 
         /**
          * <p>
@@ -526,19 +530,23 @@ public class CommandLine {
          */
         Class<?> type() default String.class;
 
+        /**
+         * Set {@code hidden=true} if this parameter should not be included in the usage documentation.
+         * @return whether this parameter should be excluded from the usage message
+         */
         boolean hidden() default true;
     }
 
     /**
      * <p>
-     * Annotate your class with {@code @Usage} when you want more control over the format of the generated help message
+     * Annotate your class with {@code @Command} when you want more control over the format of the generated help message
      * or when you want to add a summary description of what the program does or a footer following the option details.
      * </p><pre>
-     * &#064;Usage(programName = "Encrypt",
+     * &#064;Command(programName = "Encrypt",
      *        summary     = "Encrypt FILE(s), or standard input, to standard output or to the output file.",
      *        footer      = "Copyright (c) 2017")
      * public class Encrypt {
-     *     &#064;Parameters(paramLabel = "FILE", type = File.class, description = "Any number of input files")
+     *     &#064;Parameters(valueLabel = "FILE", type = File.class, description = "Any number of input files")
      *     private List<File> files = new ArrayList<File>();
      *
      *     &#064;Option(names = { "-o", "--out" }, description = "Output file (default: print to console)")
@@ -547,26 +555,33 @@ public class CommandLine {
      * <p>
      * The structure of a help message looks like this:
      * </p><ul>
-     *   <li>Usage header line: {@code Usage: <programName> [OPTIONS] [FILE...]}</li>
+     *   <li>[description]</li>
+     *   <li>[synopsis]: {@code Usage: <programName> [OPTIONS] [FILE...]}</li>
      *   <li>[summary]</li>
-     *   <li>a table of options with their usage message</li>
+     *   <li>[option list]: {@code   -h, --help   prints this help message and exits}</li>
      *   <li>[footer]</li>
      * </ul>
      * <p>
-     * If the {@link #detailedUsageHeader()} attribute is {@code true}, the "Usage" header line will have
-     * a detailed list of options and parameters.
+     * If the {@link #detailedSynopsis()} attribute is {@code true}, the "Usage" synopsis will show exact option names
+     * and parameter names.
      * </p>
      */
     @Retention(RetentionPolicy.RUNTIME)
     @Target(ElementType.TYPE)
-    public @interface Usage {
-        /** Program name to show in the "Usage" message. If omitted, the annotated class name is used. */
+    public @interface Command {
+        /** Program name to show in the synopsis. If omitted, the annotated class name is used. */
         String programName() default "<main class>";
-        /** If {@code true}, the "Usage" header line will have a detailed list of options and parameters. */
-        boolean detailedUsageHeader() default false;
+        /** If {@code true}, a detailed "Usage" synopsis is shown with exact options and parameters. */
+        boolean detailedSynopsis() default false;
         /** String that separates options from option parameters. Default {@value}, a popular alternative is {@code "="}. */
         String separator() default " ";
-        /** Optional text to display between the first "Usage" line and the list of options. */
+        /** Comparator to use to sort Options and Parameters in the option list section of the help message. Specify
+         * {@code null} to list in declaration order. The default is to sort alphabetically. */
+        Class<? extends Comparator<Field>> optionListSortBy() default Help.SortByShortestOptionNameAlphabetically.class;
+        /** Comparator to use to sort Options and Parameters in the detailed synopsis.
+         * The default is to sort boolean options first, then options in increasing arity, alphabetically. */
+        Class<? extends Comparator<Field>> detailedSynopsisSortBy() default Help.SortByOptionArityAndNameAlphabetically.class;
+        /** Optional text to display between the synopsis line(s) and the list of options. */
         String[] summary() default {};
          /** Optional text to display after the list of options. */
         String[] footer() default {};
@@ -1314,27 +1329,27 @@ public class CommandLine {
         public Field positionalParametersField;
 
         /** The String to use as the separator between options and option parameters. {@value} by default,
-         * initialized from {@link Usage#separator()} if defined. */
+         * initialized from {@link Command#separator()} if defined. */
         private String separator;
 
-        /** The String to use as the program name in the Usage line of the help message. {@value} by default,
-         * initialized from {@link Usage#programName()} if defined. */
+        /** The String to use as the program name in the synopsis line of the help message. {@value} by default,
+         * initialized from {@link Command#programName()} if defined. */
         public String programName = DEFAULT_PROGRAM_NAME;
 
-        /** If {@code true}, the "Usage" line will have a detailed list of options and parameters. */
+        /** If {@code true}, the synopsis line(s) will show detailed option names and parameter names. */
         public Boolean detailedOptionHeader;
 
-        /** The text lines to use as the summary of the help message. Initialized from {@link Usage#summary()}
-         *  if the {@code Usage} annotation is present, otherwise this is an empty array and the help message has no
+        /** The text lines to use as the summary of the help message. Initialized from {@link Command#summary()}
+         *  if the {@code Command} annotation is present, otherwise this is an empty array and the help message has no
          *  summary. Applications may programmatically set this field to create a custom help message. */
         public String[] summary = {};
 
-        /** The text lines to use as the summary of the help message. Initialized from {@link Usage#footer()}
-         *  if the {@code Usage} annotation is present, otherwise this is an empty array and the help message has no
+        /** The text lines to use as the summary of the help message. Initialized from {@link Command#footer()}
+         *  if the {@code Command} annotation is present, otherwise this is an empty array and the help message has no
          *  footer. Applications may programmatically set this field to create a custom help message. */
         public String[] footer = {};
-        /** Parameter label renderer used for the Usage header line and the option details table. */
-        public IParameterLabelRenderer parameterLabelRenderer;
+        /** Option and positional parameter value label renderer used for the synopsis line(s) and the option list. */
+        public IValueLabelRenderer parameterLabelRenderer;
 
         /** Constructs a new {@code Help} instance, initialized from annotatations on the specified class and super classes. */
         public Help(Class<?> cls) {
@@ -1352,34 +1367,34 @@ public class CommandLine {
                         positionalParametersField = positionalParametersField == null ? field : positionalParametersField;
                     }
                 }
-                // superclass values should not overwrite values if both class and superclass have a @Usage annotation
-                if (cls.isAnnotationPresent(Usage.class)) {
-                    Usage usage = cls.getAnnotation(Usage.class);
+                // superclass values should not overwrite values if both class and superclass have a @Command annotation
+                if (cls.isAnnotationPresent(Command.class)) {
+                    Command command = cls.getAnnotation(Command.class);
                     if (DEFAULT_PROGRAM_NAME.equals(programName)) {
-                        programName = usage.programName();
+                        programName = command.programName();
                     }
                     if (separator == null) {
-                        separator = usage.separator();
+                        separator = command.separator();
                     }
                     if (detailedOptionHeader == null) {
-                        detailedOptionHeader = usage.detailedUsageHeader();
+                        detailedOptionHeader = command.detailedSynopsis();
                     }
                     if (summary == null || summary.length == 0) {
-                        summary = usage.summary();
+                        summary = command.summary();
                     }
                     if (footer == null || footer.length == 0) {
-                        footer = usage.footer();
+                        footer = command.footer();
                     }
                 }
                 cls = cls.getSuperclass();
             }
-            parameterLabelRenderer = new DefaultParameterLabelRenderer(separator == null ? " " : separator);
+            parameterLabelRenderer = new DefaultValueLabelRenderer(separator == null ? " " : separator);
         }
         /**
          * Appends a "Usage" help message to the specified StringBuilder. By default, this generates a generic
-         * {@code "Usage <main class> [OPTIONS] [PARAMETERS]"} message. Annotate your class with {@link Usage} to
-         * control the program name, or whether the generic "Usage" message should be replaced by a detailed message
-         * that shows options and parameters.
+         * {@code "Usage <main class> [OPTIONS] [PARAMETERS]"} message. Annotate your class with {@link Command} to
+         * control the program name, or whether the generic synopsis should be replaced with a detailed one
+         * that shows option and parameter names.
          * @param sb the StringBuilder to append the "Usage" help message line to
          * @return this {@code Help} object, to allow method chaining for a more fluent API
          */
@@ -1485,7 +1500,7 @@ public class CommandLine {
             return this;
         }
         /** Appends program summary text to the specified StringBuilder. Summary text can be zero or more lines, and
-         * can be specified declaratively with the {@link Usage#summary()} annotation attribute. Text values are
+         * can be specified declaratively with the {@link Command#summary()} annotation attribute. Text values are
          * appended as is and are not reformatted. Applications can programmatically specify a custom summary by
          * instantiating a {@link Help} instance and setting its {@link Help#summary} field.
          * @param sb the StringBuilder to append the program summary text lines to
@@ -1500,7 +1515,7 @@ public class CommandLine {
             return this;
         }
         /** Appends usage help footer text to the specified StringBuilder. Footer text can be zero or more lines, and
-         * can be specified declaratively with the {@link Usage#footer()} annotation attribute. Text values are
+         * can be specified declaratively with the {@link Command#footer()} annotation attribute. Text values are
          * appended as is and are not reformatted. Applications can programmatically specify a custom footer by
          * instantiating a {@link Help} instance and setting its {@link Help#footer} field.
          * @param sb the StringBuilder to append the usage help footer text lines to
@@ -1543,11 +1558,11 @@ public class CommandLine {
         public static IParameterRenderer createMinimalParameterRenderer() {
             return new MinimalParameterRenderer();
         }
-        public static IParameterLabelRenderer createMinimalParameterLabelRenderer() {
-            return new IParameterLabelRenderer() {
+        public static IValueLabelRenderer createMinimalParameterLabelRenderer() {
+            return new IValueLabelRenderer() {
                 public String renderParameterLabel(Field field) {
                     Parameters parameters = field.getAnnotation(Parameters.class);
-                    return parameters == null || parameters.paramLabel().length() == 0 ? field.getName() : parameters.paramLabel();
+                    return parameters == null || parameters.valueLabel().length() == 0 ? field.getName() : parameters.valueLabel();
                 }
             };
         }
@@ -1556,8 +1571,8 @@ public class CommandLine {
          * characters and uses ellipses ("...") to indicate that any number of a parameter are allowed.
          * @param separator string that separates options from option parameters
          */
-        public static IParameterLabelRenderer createDefaultParameterRenderer(String separator) {
-            return new DefaultParameterLabelRenderer(separator);
+        public static IValueLabelRenderer createDefaultParameterRenderer(String separator) {
+            return new DefaultValueLabelRenderer(separator);
         }
         /** Returns a new default Layout which displays each array of text values representing an Option on a separate
          * row in the {@linkplain TextTable TextTable}. */
@@ -1590,7 +1605,7 @@ public class CommandLine {
              * @param parameterLabelRenderer responsible for rendering option parameters to text
              * @return a 2-dimensional array of text values: one or more rows, each containing one or more columns
              */
-            String[][] render(Option option, Field field, IParameterLabelRenderer parameterLabelRenderer);
+            String[][] render(Option option, Field field, IValueLabelRenderer parameterLabelRenderer);
         }
         /** The DefaultOptionRenderer converts {@link Option Options} to four columns of text to match the default
          * {@linkplain TextTable TextTable} column layout. The first row of values looks like this:
@@ -1604,7 +1619,7 @@ public class CommandLine {
          *   Option#description()} array, and these rows look like {@code {"", "", "", option.description()[i]}}.</p>
          */
         static class DefaultOptionRenderer implements IOptionRenderer {
-            public String[][] render(Option option, Field field, IParameterLabelRenderer parameterLabelRenderer) {
+            public String[][] render(Option option, Field field, IValueLabelRenderer parameterLabelRenderer) {
                 String[] names = new ShortestFirst().sort(option.names());
                 int shortOptionCount = names[0].length() == 2 ? 1 : 0;
                 String shortOption = shortOptionCount > 0 ? names[0] : "";
@@ -1623,13 +1638,13 @@ public class CommandLine {
         /** The MinimalOptionRenderer converts {@link Option Options} to a single row with two columns of text: an
          * option name and a description. If multiple names or description lines exist, the first value is used. */
         static class MinimalOptionRenderer implements IOptionRenderer {
-            public String[][] render(Option option, Field field, IParameterLabelRenderer parameterLabelRenderer) {
+            public String[][] render(Option option, Field field, IValueLabelRenderer parameterLabelRenderer) {
                 return new String[][] {{ option.names()[0] + parameterLabelRenderer.renderParameterLabel(field),
                                            option.description().length == 0 ? "" : option.description()[0] }};
             }
         }
         static class MinimalParameterRenderer implements IParameterRenderer {
-            public String[][] render(Parameters param, Field field, IParameterLabelRenderer parameterLabelRenderer) {
+            public String[][] render(Parameters param, Field field, IValueLabelRenderer parameterLabelRenderer) {
                 return new String[][] {{ parameterLabelRenderer.renderParameterLabel(field),
                         param.description().length == 0 ? "" : param.description()[0] }};
             }
@@ -1646,10 +1661,10 @@ public class CommandLine {
              * @param parameterLabelRenderer responsible for rendering parameter labels to text
              * @return a 2-dimensional array of text values: one or more rows, each containing one or more columns
              */
-            String[][] render(Parameters parameters, Field field, IParameterLabelRenderer parameterLabelRenderer);
+            String[][] render(Parameters parameters, Field field, IValueLabelRenderer parameterLabelRenderer);
         }
         static class DefaultParameterRenderer implements IParameterRenderer {
-            public String[][] render(Parameters params, Field field, IParameterLabelRenderer parameterLabelRenderer) {
+            public String[][] render(Parameters params, Field field, IValueLabelRenderer parameterLabelRenderer) {
                 String label = parameterLabelRenderer.renderParameterLabel(field);
 
                 String[][] result = new String[params.description().length][4];
@@ -1661,23 +1676,23 @@ public class CommandLine {
             }
         }
         /** When customizing online usage help for an option parameter or a positional parameter, a custom
-         * {@code IParameterLabelRenderer} can be used to render the parameter name or label to a String. */
-        public interface IParameterLabelRenderer {
+         * {@code IValueLabelRenderer} can be used to render the parameter name or label to a String. */
+        public interface IValueLabelRenderer {
             /** Returns a text rendering of the Option parameter or positional parameter; returns an empty string
              * {@code ""} if the option is a boolean and does not take a parameter. */
             String renderParameterLabel(Field field);
         }
         /**
-         * DefaultParameterLabelRenderer separates option parameters from their {@linkplain Option options} with a
-         * {@linkplain DefaultParameterLabelRenderer#separator separator} string, surrounds optional parameters
+         * DefaultValueLabelRenderer separates option parameters from their {@linkplain Option options} with a
+         * {@linkplain DefaultValueLabelRenderer#separator separator} string, surrounds optional values
          * with {@code '['} and {@code ']'} characters and uses ellipses ("...") to indicate that any number of
-         * parameters is allowed for options with variable arity.
+         * values is allowed for options or parameters with variable arity.
          */
-        static class DefaultParameterLabelRenderer implements IParameterLabelRenderer {
+        static class DefaultValueLabelRenderer implements IValueLabelRenderer {
             /** The string to use to separate option parameters from their options. */
             public final String separator;
-            /** Constructs a new DefaultParameterLabelRenderer with the specified separator string. */
-            public DefaultParameterLabelRenderer(String separator) {
+            /** Constructs a new DefaultValueLabelRenderer with the specified separator string. */
+            public DefaultValueLabelRenderer(String separator) {
                 this.separator = Assert.notNull(separator, "separator");
             }
             public String renderParameterLabel(Field field) {
@@ -1712,9 +1727,9 @@ public class CommandLine {
             private String renderParameterName(Field field) {
                 String result = null;
                 if (field.isAnnotationPresent(Option.class)) {
-                    result = field.getAnnotation(Option.class).paramLabel();
+                    result = field.getAnnotation(Option.class).valueLabel();
                 } else if (field.isAnnotationPresent(Parameters.class)) {
-                    result = field.getAnnotation(Parameters.class).paramLabel();
+                    result = field.getAnnotation(Parameters.class).valueLabel();
                 }
                 if (result != null && result.trim().length() > 0) {
                     return result.trim();
@@ -1771,6 +1786,7 @@ public class CommandLine {
         static class SortByShortestOptionNameAlphabetically implements Comparator<Field> {
             ShortestFirst shortestFirst = new ShortestFirst();
             public int compare(Field f1, Field f2) {
+                // TODO handle parameters
                 Option o1 = f1.getAnnotation(Option.class);
                 Option o2 = f2.getAnnotation(Option.class);
                 String[] names1 = shortestFirst.sort(o1.names());
@@ -1852,12 +1868,12 @@ public class CommandLine {
              * @param field the field annotated with the specified Option
              * @param parameterLabelRenderer knows how to render option parameters
              */
-            public void addOption(Field field, IParameterLabelRenderer parameterLabelRenderer) {
+            public void addOption(Field field, IValueLabelRenderer parameterLabelRenderer) {
                 Option option = field.getAnnotation(Option.class);
                 String[][] values = optionRenderer.render(option, field, parameterLabelRenderer);
                 layout.layout(option, field, values, this);
             }
-            public void addPositionalParameter(Field field, IParameterLabelRenderer parameterLabelRenderer) {
+            public void addPositionalParameter(Field field, IValueLabelRenderer parameterLabelRenderer) {
                 Parameters option = field.getAnnotation(Parameters.class);
                 String[][] values = parameterRenderer.render(option, field, parameterLabelRenderer);
                 layout.layout(null, field, values, this);

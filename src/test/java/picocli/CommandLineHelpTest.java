@@ -21,7 +21,7 @@ import picocli.CommandLine.Help.Column;
 import picocli.CommandLine.Help.TextTable;
 import picocli.CommandLine.Option;
 import picocli.CommandLine.Parameters;
-import picocli.CommandLine.Usage;
+import picocli.CommandLine.Command;
 
 import java.awt.Point;
 import java.io.ByteArrayOutputStream;
@@ -61,7 +61,7 @@ public class CommandLineHelpTest {
 
     @Test
     public void testUsageAnnotationDetailedUsage() throws Exception {
-        @Usage(detailedUsageHeader = true)
+        @CommandLine.Command(detailedSynopsis = true)
         class Params {
             @Option(names = {"-f", "--file"}, required = true, description = "the file to use") File file;
         }
@@ -74,7 +74,7 @@ public class CommandLineHelpTest {
 
     @Test
     public void testUsageSeparator() throws Exception {
-        @Usage(separator = "=", detailedUsageHeader = true)
+        @CommandLine.Command(separator = "=", detailedSynopsis = true)
         class Params {
             @Option(names = {"-f", "--file"}, required = true, description = "the file to use") File file;
         }
@@ -151,7 +151,7 @@ public class CommandLineHelpTest {
             @Option(names = {"-b", "-a", "--alpha"}, description = "other") String otherField;
         }
         Help.IOptionRenderer renderer = Help.createMinimalOptionRenderer();
-        Help.IParameterLabelRenderer parameterRenderer = Help.createDefaultParameterRenderer(" ");
+        Help.IValueLabelRenderer parameterRenderer = Help.createDefaultParameterRenderer(" ");
         Help help = new Help(Example.class);
         Field field = help.optionFields.get(0);
         String[][] row1 = renderer.render(field.getAnnotation(Option.class), field, parameterRenderer);
@@ -176,7 +176,7 @@ public class CommandLineHelpTest {
             @Option(names = {"-b", "-a", "--alpha"}, description = "other") String otherField;
         }
         Help.IOptionRenderer renderer = Help.createDefaultOptionRenderer();
-        Help.IParameterLabelRenderer parameterRenderer = Help.createDefaultParameterRenderer(" ");
+        Help.IValueLabelRenderer parameterRenderer = Help.createDefaultParameterRenderer(" ");
         Help help = new Help(Example.class);
         Field field = help.optionFields.get(0);
         String[][] row1 = renderer.render(field.getAnnotation(Option.class), field, parameterRenderer);
@@ -200,7 +200,7 @@ public class CommandLineHelpTest {
             @Option(names = {"-b", "--beta"}, description = "combi") String combiField;
         }
         Help.IOptionRenderer renderer = Help.createDefaultOptionRenderer();
-        Help.IParameterLabelRenderer parameterRenderer = Help.createDefaultParameterRenderer(" ");
+        Help.IValueLabelRenderer parameterRenderer = Help.createDefaultParameterRenderer(" ");
         Help help = new Help(Example.class);
 
         String[][] expected = new String[][] {
@@ -221,17 +221,17 @@ public class CommandLineHelpTest {
 
     @Test
     public void testCreateDefaultParameterRenderer_ReturnsDefaultParameterRenderer() {
-        assertEquals(Help.DefaultParameterLabelRenderer.class, Help.createDefaultParameterRenderer("=").getClass());
+        assertEquals(Help.DefaultValueLabelRenderer.class, Help.createDefaultParameterRenderer("=").getClass());
     }
 
     @Test
     public void testDefaultParameterRenderer_showsParamLabelIfPresentOrFieldNameOtherwise() {
         class Example {
             @Option(names = "--without" ) String longField;
-            @Option(names = "--with", paramLabel = "LABEL") String otherField;
+            @Option(names = "--with", valueLabel = "LABEL") String otherField;
         }
-        Help.IParameterLabelRenderer spaceSeparatedParameterRenderer = Help.createDefaultParameterRenderer(" ");
-        Help.IParameterLabelRenderer equalSeparatedParameterRenderer = Help.createDefaultParameterRenderer("=");
+        Help.IValueLabelRenderer spaceSeparatedParameterRenderer = Help.createDefaultParameterRenderer(" ");
+        Help.IValueLabelRenderer equalSeparatedParameterRenderer = Help.createDefaultParameterRenderer("=");
         Help help = new Help(Example.class);
 
         String[] expected = new String[] {
@@ -250,10 +250,10 @@ public class CommandLineHelpTest {
 
     @Test
     public void testDefaultParameterRenderer_appliesToPositionalArgumentsIgnoresSeparator() {
-        class WithLabel    { @Parameters(paramLabel = "POSITIONAL_ARGS") String positional; }
+        class WithLabel    { @Parameters(valueLabel = "POSITIONAL_ARGS") String positional; }
         class WithoutLabel { @Parameters()                               String positional; }
-        Help.IParameterLabelRenderer spaced = Help.createDefaultParameterRenderer(" ");
-        Help.IParameterLabelRenderer equals = Help.createDefaultParameterRenderer("=");
+        Help.IValueLabelRenderer spaced = Help.createDefaultParameterRenderer(" ");
+        Help.IValueLabelRenderer equals = Help.createDefaultParameterRenderer("=");
 
         Help withLabel = new Help(WithLabel.class);
         String withSpace = spaced.renderParameterLabel(withLabel.positionalParametersField);
@@ -288,7 +288,8 @@ public class CommandLineHelpTest {
 
     @Test
     public void testAppendUsageTo_DefaultOptionSummary_withoutParameters() {
-        @Usage class App {
+        @CommandLine.Command
+        class App {
             @Option(names = {"--verbose", "-v"}) boolean verbose;
             @Option(names = {"--count", "-c"}) int count;
             @Option(names = {"--help", "-h"}, hidden = true) boolean helpRequested;
@@ -300,7 +301,8 @@ public class CommandLineHelpTest {
 
     @Test
     public void testAppendUsageTo_DefaultOptionSummary_withParameters() {
-        @Usage class App {
+        @CommandLine.Command
+        class App {
             @Option(names = {"--verbose", "-v"}) boolean verbose;
             @Option(names = {"--count", "-c"}) int count;
             @Option(names = {"--help", "-h"}, hidden = true) boolean helpRequested;
@@ -313,7 +315,7 @@ public class CommandLineHelpTest {
 
     @Test
     public void testAppendUsageTo_DetailedOptionSummary_optionalOptionArity1_n_withoutSeparator() {
-        @Usage(detailedUsageHeader = true) class App {
+        @Command(detailedSynopsis = true) class App {
             @Option(names = {"--verbose", "-v"}) boolean verbose;
             @Option(names = {"--count", "-c"}, arity = "1..*") int count;
             @Option(names = {"--help", "-h"}, hidden = true) boolean helpRequested;
@@ -325,7 +327,7 @@ public class CommandLineHelpTest {
 
     @Test
     public void testAppendUsageTo_DetailedOptionSummary_optionalOptionArity0_1_withoutSeparator() {
-        @Usage(detailedUsageHeader = true) class App {
+        @CommandLine.Command(detailedSynopsis = true) class App {
             @Option(names = {"--verbose", "-v"}) boolean verbose;
             @Option(names = {"--count", "-c"}, arity = "0..1") int count;
             @Option(names = {"--help", "-h"}, hidden = true) boolean helpRequested;
@@ -337,7 +339,7 @@ public class CommandLineHelpTest {
 
     @Test
     public void testAppendUsageTo_DetailedOptionSummary_requiredOptionWithoutSeparator() {
-        @Usage(detailedUsageHeader = true) class App {
+        @Command(detailedSynopsis = true) class App {
             @Option(names = {"--verbose", "-v"}) boolean verbose;
             @Option(names = {"--count", "-c"}, required = true) int count;
             @Option(names = {"--help", "-h"}, hidden = true) boolean helpRequested;
@@ -349,7 +351,7 @@ public class CommandLineHelpTest {
 
     @Test
     public void testAppendUsageTo_DetailedOptionSummary_optionalOption_withSeparator() {
-        @Usage(separator = "=", detailedUsageHeader = true) class App {
+        @CommandLine.Command(separator = "=", detailedSynopsis = true) class App {
             @Option(names = {"--verbose", "-v"}) boolean verbose;
             @Option(names = {"--count", "-c"}) int count;
             @Option(names = {"--help", "-h"}, hidden = true) boolean helpRequested;
@@ -361,7 +363,7 @@ public class CommandLineHelpTest {
 
     @Test
     public void testAppendUsageTo_DetailedOptionSummary_optionalOptionArity0_1__withSeparator() {
-        @Usage(separator = "=", detailedUsageHeader = true) class App {
+        @CommandLine.Command(separator = "=", detailedSynopsis = true) class App {
             @Option(names = {"--verbose", "-v"}) boolean verbose;
             @Option(names = {"--count", "-c"}, arity = "0..1") int count;
             @Option(names = {"--help", "-h"}, hidden = true) boolean helpRequested;
@@ -373,7 +375,7 @@ public class CommandLineHelpTest {
 
     @Test
     public void testAppendUsageTo_DetailedOptionSummary_optionalOptionArity0_n__withSeparator() {
-        @Usage(separator = "=", detailedUsageHeader = true) class App {
+        @CommandLine.Command(separator = "=", detailedSynopsis = true) class App {
             @Option(names = {"--verbose", "-v"}) boolean verbose;
             @Option(names = {"--count", "-c"}, arity = "0..*") int count;
             @Option(names = {"--help", "-h"}, hidden = true) boolean helpRequested;
@@ -385,7 +387,7 @@ public class CommandLineHelpTest {
 
     @Test
     public void testAppendUsageTo_DetailedOptionSummary_optionalOptionArity1_n__withSeparator() {
-        @Usage(separator = "=", detailedUsageHeader = true) class App {
+        @CommandLine.Command(separator = "=", detailedSynopsis = true) class App {
             @Option(names = {"--verbose", "-v"}) boolean verbose;
             @Option(names = {"--count", "-c"}, arity = "1..*") int count;
             @Option(names = {"--help", "-h"}, hidden = true) boolean helpRequested;
@@ -397,7 +399,7 @@ public class CommandLineHelpTest {
 
     @Test
     public void testAppendUsageTo_DetailedOptionSummary_withSeparator_withParameters() {
-        @Usage(separator = "=", detailedUsageHeader = true) class App {
+        @CommandLine.Command(separator = "=", detailedSynopsis = true) class App {
             @Option(names = {"--verbose", "-v"}) boolean verbose;
             @Option(names = {"--count", "-c"}) int count;
             @Option(names = {"--help", "-h"}, hidden = true) boolean helpRequested;
@@ -410,11 +412,11 @@ public class CommandLineHelpTest {
 
     @Test
     public void testAppendUsageTo_DetailedOptionSummary_withSeparator_withLabeledParameters() {
-        @Usage(separator = "=", detailedUsageHeader = true) class App {
+        @Command(separator = "=", detailedSynopsis = true) class App {
             @Option(names = {"--verbose", "-v"}) boolean verbose;
             @Option(names = {"--count", "-c"}) int count;
             @Option(names = {"--help", "-h"}, hidden = true) boolean helpRequested;
-            @Parameters(paramLabel = "FILE") File[] files;
+            @Parameters(valueLabel = "FILE") File[] files;
         }
         StringBuilder sb = new StringBuilder();
         new Help(App.class).appendUsageTo(sb);
@@ -423,11 +425,11 @@ public class CommandLineHelpTest {
 
     @Test
     public void testAppendUsageTo_DetailedOptionSummary_withSeparator_withLabeledRequiredParameters() {
-        @Usage(separator = "=", detailedUsageHeader = true) class App {
+        @CommandLine.Command(separator = "=", detailedSynopsis = true) class App {
             @Option(names = {"--verbose", "-v"}) boolean verbose;
             @Option(names = {"--count", "-c"}) int count;
             @Option(names = {"--help", "-h"}, hidden = true) boolean helpRequested;
-            @Parameters(paramLabel = "FILE", arity = "1..*") File[] files;
+            @Parameters(valueLabel = "FILE", arity = "1..*") File[] files;
         }
         StringBuilder sb = new StringBuilder();
         new Help(App.class).appendUsageTo(sb);
@@ -436,11 +438,11 @@ public class CommandLineHelpTest {
 
     @Test
     public void testAppendUsageTo_DetailedOptionSummary_clustersBooleanOptions() {
-        @Usage(separator = "=", detailedUsageHeader = true) class App {
+        @Command(separator = "=", detailedSynopsis = true) class App {
             @Option(names = {"--verbose", "-v"}) boolean verbose;
             @Option(names = {"--aaaa", "-a"}) boolean aBoolean;
             @Option(names = {"--xxxx", "-x"}) Boolean xBoolean;
-            @Option(names = {"--count", "-c"}, paramLabel = "COUNT") int count;
+            @Option(names = {"--count", "-c"}, valueLabel = "COUNT") int count;
         }
         StringBuilder sb = new StringBuilder();
         new Help(App.class).appendUsageTo(sb);
@@ -449,11 +451,11 @@ public class CommandLineHelpTest {
 
     @Test
     public void testAppendUsageTo_DetailedOptionSummary_clustersRequiredBooleanOptions() {
-        @Usage(separator = "=", detailedUsageHeader = true) class App {
+        @CommandLine.Command(separator = "=", detailedSynopsis = true) class App {
             @Option(names = {"--verbose", "-v"}, required = true) boolean verbose;
             @Option(names = {"--aaaa", "-a"}, required = true) boolean aBoolean;
             @Option(names = {"--xxxx", "-x"}, required = true) Boolean xBoolean;
-            @Option(names = {"--count", "-c"}, paramLabel = "COUNT") int count;
+            @Option(names = {"--count", "-c"}, valueLabel = "COUNT") int count;
         }
         StringBuilder sb = new StringBuilder();
         new Help(App.class).appendUsageTo(sb);
@@ -462,14 +464,14 @@ public class CommandLineHelpTest {
 
     @Test
     public void testAppendUsageTo_DetailedOptionSummary_clustersRequiredBooleanOptionsSeparately() {
-        @Usage(separator = "=", detailedUsageHeader = true) class App {
+        @CommandLine.Command(separator = "=", detailedSynopsis = true) class App {
             @Option(names = {"--verbose", "-v"}) boolean verbose;
             @Option(names = {"--aaaa", "-a"}) boolean aBoolean;
             @Option(names = {"--xxxx", "-x"}) Boolean xBoolean;
             @Option(names = {"--Verbose", "-V"}, required = true) boolean requiredVerbose;
             @Option(names = {"--Aaaa", "-A"}, required = true) boolean requiredABoolean;
             @Option(names = {"--Xxxx", "-X"}, required = true) Boolean requiredXBoolean;
-            @Option(names = {"--count", "-c"}, paramLabel = "COUNT") int count;
+            @Option(names = {"--count", "-c"}, valueLabel = "COUNT") int count;
         }
         StringBuilder sb = new StringBuilder();
         new Help(App.class).appendUsageTo(sb);
@@ -524,11 +526,11 @@ public class CommandLineHelpTest {
 
     @Test
     public void testCatUsageFormat() {
-        @Usage(programName = "cat",
+        @Command(programName = "cat",
                 summary = "Concatenate FILE(s), or standard input, to standard output.",
                 footer = "Copyright(c) 2017")
         class Cat {
-            @Parameters(paramLabel = "FILE",              description = "Files whose contents to display") List<File> files;
+            @Parameters(valueLabel = "FILE",              description = "Files whose contents to display") List<File> files;
             @Option(names = "--help",    help = true,     description = "display this help and exit") boolean help;
             @Option(names = "--version", help = true,     description = "output version information and exit") boolean version;
             @Option(names = "-u",                         description = "(ignored)") boolean u;
@@ -565,9 +567,9 @@ public class CommandLineHelpTest {
 
     @Test
     public void testZipUsageFormat() {
-        @Usage(summary = {
+        @CommandLine.Command(summary = {
                 "Copyright (c) 1990-2008 Info-ZIP - Type 'zip \"-L\"' for software license.",
-                "Zip 3.0 (July 5th 2008). Usage:",
+                "Zip 3.0 (July 5th 2008). Command:",
                 "zip [-options] [-b path] [-t mmddyyyy] [-n suffixes] [zipfile list] [-xi list]",
                 "  The default action is to add or replace zipfile entries from list, which",
                 "  can include the special name - to compress standard input.",
@@ -605,7 +607,7 @@ public class CommandLineHelpTest {
         }
         String expected  = String.format("" +
                 "Copyright (c) 1990-2008 Info-ZIP - Type 'zip \"-L\"' for software license.%n" +
-                "Zip 3.0 (July 5th 2008). Usage:%n" +
+                "Zip 3.0 (July 5th 2008). Command:%n" +
                 "zip [-options] [-b path] [-t mmddyyyy] [-n suffixes] [zipfile list] [-xi list]%n" +
                 "  The default action is to add or replace zipfile entries from list, which%n" +
                 "  can include the special name - to compress standard input.%n" +
@@ -672,9 +674,9 @@ public class CommandLineHelpTest {
     private enum Protocol {IP, IPv6, ICMP, ICMPv6, TCP, TCPv6, UDP, UDPv6}
     @Test
     public void testNetstatUsageFormat() {
-        @Usage(programName = "NETSTAT",
+        @CommandLine.Command(programName = "NETSTAT",
                 separator = " ",
-                detailedUsageHeader = true,
+                detailedSynopsis = true,
                 summary = {"Displays protocol statistics and current TCP/IP network connections.", ""})
         class Netstat {
             @Option(names="-a", description="Displays all connections and listening ports.")
@@ -697,7 +699,7 @@ public class CommandLineHelpTest {
             boolean displayNumerical;
             @Option(names="-o", description="Displays the owning process ID associated with each connection.")
             boolean displayOwningProcess;
-            @Option(names="-p", paramLabel = "proto",
+            @Option(names="-p", valueLabel = "proto",
                     description="Shows connections for the protocol specified by proto; proto "
                     + "may be any of: TCP, UDP, TCPv6, or UDPv6.  If used with the -s "
                     + "option to display per-protocol statistics, proto may be any of: "
@@ -720,7 +722,7 @@ public class CommandLineHelpTest {
             @Option(names="-y", description="Displays the TCP connection template for all connections. "
                     + "Cannot be combined with the other options.")
             boolean displayTcpConnectionTemplate;
-            @Parameters(arity = "0..1", paramLabel = "interval", description = ""
+            @Parameters(arity = "0..1", valueLabel = "interval", description = ""
                     + "Redisplays selected statistics, pausing interval seconds "
                     + "between each display.  Press CTRL+C to stop redisplaying "
                     + "statistics.  If omitted, netstat will print the current "
