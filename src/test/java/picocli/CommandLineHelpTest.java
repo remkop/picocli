@@ -151,7 +151,7 @@ public class CommandLineHelpTest {
             @Option(names = {"-b", "-a", "--alpha"}, description = "other") String otherField;
         }
         Help.IOptionRenderer renderer = Help.createMinimalOptionRenderer();
-        Help.IValueLabelRenderer parameterRenderer = Help.createDefaultParameterRenderer(" ");
+        Help.IValueLabelRenderer parameterRenderer = Help.createDefaultValueLabelRenderer(" ");
         Help help = new Help(Example.class);
         Field field = help.optionFields.get(0);
         String[][] row1 = renderer.render(field.getAnnotation(Option.class), field, parameterRenderer);
@@ -176,7 +176,7 @@ public class CommandLineHelpTest {
             @Option(names = {"-b", "-a", "--alpha"}, description = "other") String otherField;
         }
         Help.IOptionRenderer renderer = Help.createDefaultOptionRenderer();
-        Help.IValueLabelRenderer parameterRenderer = Help.createDefaultParameterRenderer(" ");
+        Help.IValueLabelRenderer parameterRenderer = Help.createDefaultValueLabelRenderer(" ");
         Help help = new Help(Example.class);
         Field field = help.optionFields.get(0);
         String[][] row1 = renderer.render(field.getAnnotation(Option.class), field, parameterRenderer);
@@ -200,7 +200,7 @@ public class CommandLineHelpTest {
             @Option(names = {"-b", "--beta"}, description = "combi") String combiField;
         }
         Help.IOptionRenderer renderer = Help.createDefaultOptionRenderer();
-        Help.IValueLabelRenderer parameterRenderer = Help.createDefaultParameterRenderer(" ");
+        Help.IValueLabelRenderer parameterRenderer = Help.createDefaultValueLabelRenderer(" ");
         Help help = new Help(Example.class);
 
         String[][] expected = new String[][] {
@@ -221,7 +221,7 @@ public class CommandLineHelpTest {
 
     @Test
     public void testCreateDefaultParameterRenderer_ReturnsDefaultParameterRenderer() {
-        assertEquals(Help.DefaultValueLabelRenderer.class, Help.createDefaultParameterRenderer("=").getClass());
+        assertEquals(Help.DefaultValueLabelRenderer.class, Help.createDefaultValueLabelRenderer("=").getClass());
     }
 
     @Test
@@ -230,8 +230,8 @@ public class CommandLineHelpTest {
             @Option(names = "--without" ) String longField;
             @Option(names = "--with", valueLabel = "LABEL") String otherField;
         }
-        Help.IValueLabelRenderer spaceSeparatedParameterRenderer = Help.createDefaultParameterRenderer(" ");
-        Help.IValueLabelRenderer equalSeparatedParameterRenderer = Help.createDefaultParameterRenderer("=");
+        Help.IValueLabelRenderer spaceSeparatedParameterRenderer = Help.createDefaultValueLabelRenderer(" ");
+        Help.IValueLabelRenderer equalSeparatedParameterRenderer = Help.createDefaultValueLabelRenderer("=");
         Help help = new Help(Example.class);
 
         String[] expected = new String[] {
@@ -252,8 +252,8 @@ public class CommandLineHelpTest {
     public void testDefaultParameterRenderer_appliesToPositionalArgumentsIgnoresSeparator() {
         class WithLabel    { @Parameters(valueLabel = "POSITIONAL_ARGS") String positional; }
         class WithoutLabel { @Parameters()                               String positional; }
-        Help.IValueLabelRenderer spaced = Help.createDefaultParameterRenderer(" ");
-        Help.IValueLabelRenderer equals = Help.createDefaultParameterRenderer("=");
+        Help.IValueLabelRenderer spaced = Help.createDefaultValueLabelRenderer(" ");
+        Help.IValueLabelRenderer equals = Help.createDefaultValueLabelRenderer("=");
 
         Help withLabel = new Help(WithLabel.class);
         String withSpace = spaced.renderParameterLabel(withLabel.positionalParametersField);
@@ -270,37 +270,36 @@ public class CommandLineHelpTest {
 
     @Test
     public void testCreateDefaultLayout_returnsDefaultLayout() {
-        assertEquals(Help.DefaultLayout.class, Help.createDefaultLayout().getClass());
+        assertEquals(Help.OneOptionPerRowLayout.class, Help.createDefaultLayout().getClass());
     }
 
     @Test
     public void testDefaultLayout_addsEachRowToTable() {
-        Help.ILayout layout = Help.createDefaultLayout();
         final String[][] values = { {"a", "b", "c", "d" }, {"1", "2", "3", "4"} };
-        layout.layout(null, null, values, new TextTable() {
-            int count = 0;
-            @Override public void addRow(String[] columnValues) {
-                assertArrayEquals(values[count], columnValues);
-                count++;
+        final int[] count = {0};
+        Help.ILayout layout = new Help.OneOptionPerRowLayout() {
+            @Override public void addRow(TextTable table, String[] columnValues) {
+                assertArrayEquals(values[count[0]], columnValues);
+                count[0]++;
             }
-        });
+        };
+        layout.layout(null, values, null);
+        assertEquals(2, count[0]);
     }
 
     @Test
-    public void testAppendUsageTo_DefaultOptionSummary_withoutParameters() {
+    public void testAppendUsageTo_DefaultSynopsis_withoutParameters() {
         @CommandLine.Command
         class App {
             @Option(names = {"--verbose", "-v"}) boolean verbose;
             @Option(names = {"--count", "-c"}) int count;
             @Option(names = {"--help", "-h"}, hidden = true) boolean helpRequested;
         }
-        StringBuilder sb = new StringBuilder();
-        new Help(App.class).appendUsageTo(sb);
-        assertEquals("Usage: <main class> [OPTIONS]" + LINESEP, sb.toString());
+        assertEquals("<main class> [OPTIONS]" + LINESEP, new Help(App.class).synopsis());
     }
 
     @Test
-    public void testAppendUsageTo_DefaultOptionSummary_withParameters() {
+    public void testAppendUsageTo_DefaultSynopsis_withParameters() {
         @CommandLine.Command
         class App {
             @Option(names = {"--verbose", "-v"}) boolean verbose;
@@ -308,162 +307,136 @@ public class CommandLineHelpTest {
             @Option(names = {"--help", "-h"}, hidden = true) boolean helpRequested;
             @Parameters File[] files;
         }
-        StringBuilder sb = new StringBuilder();
-        new Help(App.class).appendUsageTo(sb);
-        assertEquals("Usage: <main class> [OPTIONS] [<files>...]" + LINESEP, sb.toString());
+        assertEquals("<main class> [OPTIONS] [<files>...]" + LINESEP, new Help(App.class).synopsis());
     }
 
     @Test
-    public void testAppendUsageTo_DetailedOptionSummary_optionalOptionArity1_n_withoutSeparator() {
+    public void testAppendUsageTo_DetailedSynopsis_optionalOptionArity1_n_withoutSeparator() {
         @Command(detailedSynopsis = true) class App {
             @Option(names = {"--verbose", "-v"}) boolean verbose;
             @Option(names = {"--count", "-c"}, arity = "1..*") int count;
             @Option(names = {"--help", "-h"}, hidden = true) boolean helpRequested;
         }
-        StringBuilder sb = new StringBuilder();
-        new Help(App.class).appendUsageTo(sb);
-        assertEquals("Usage: <main class> [-v] [-c <count> [<count>...]]" + LINESEP, sb.toString());
+        assertEquals("<main class> [-v] [-c <count> [<count>...]]" + LINESEP, new Help(App.class).synopsis());
     }
 
     @Test
-    public void testAppendUsageTo_DetailedOptionSummary_optionalOptionArity0_1_withoutSeparator() {
+    public void testAppendUsageTo_DetailedSynopsis_optionalOptionArity0_1_withoutSeparator() {
         @CommandLine.Command(detailedSynopsis = true) class App {
             @Option(names = {"--verbose", "-v"}) boolean verbose;
             @Option(names = {"--count", "-c"}, arity = "0..1") int count;
             @Option(names = {"--help", "-h"}, hidden = true) boolean helpRequested;
         }
-        StringBuilder sb = new StringBuilder();
-        new Help(App.class).appendUsageTo(sb);
-        assertEquals("Usage: <main class> [-v] [-c [<count>]]" + LINESEP, sb.toString());
+        assertEquals("<main class> [-v] [-c [<count>]]" + LINESEP, new Help(App.class).synopsis());
     }
 
     @Test
-    public void testAppendUsageTo_DetailedOptionSummary_requiredOptionWithoutSeparator() {
+    public void testAppendUsageTo_DetailedSynopsis_requiredOptionWithoutSeparator() {
         @Command(detailedSynopsis = true) class App {
             @Option(names = {"--verbose", "-v"}) boolean verbose;
             @Option(names = {"--count", "-c"}, required = true) int count;
             @Option(names = {"--help", "-h"}, hidden = true) boolean helpRequested;
         }
-        StringBuilder sb = new StringBuilder();
-        new Help(App.class).appendUsageTo(sb);
-        assertEquals("Usage: <main class> [-v] -c <count>" + LINESEP, sb.toString());
+        assertEquals("<main class> [-v] -c <count>" + LINESEP, new Help(App.class).synopsis());
     }
 
     @Test
-    public void testAppendUsageTo_DetailedOptionSummary_optionalOption_withSeparator() {
+    public void testAppendUsageTo_DetailedSynopsis_optionalOption_withSeparator() {
         @CommandLine.Command(separator = "=", detailedSynopsis = true) class App {
             @Option(names = {"--verbose", "-v"}) boolean verbose;
             @Option(names = {"--count", "-c"}) int count;
             @Option(names = {"--help", "-h"}, hidden = true) boolean helpRequested;
         }
-        StringBuilder sb = new StringBuilder();
-        new Help(App.class).appendUsageTo(sb);
-        assertEquals("Usage: <main class> [-v] [-c=<count>]" + LINESEP, sb.toString());
+        assertEquals("<main class> [-v] [-c=<count>]" + LINESEP, new Help(App.class).synopsis());
     }
 
     @Test
-    public void testAppendUsageTo_DetailedOptionSummary_optionalOptionArity0_1__withSeparator() {
+    public void testAppendUsageTo_DetailedSynopsis_optionalOptionArity0_1__withSeparator() {
         @CommandLine.Command(separator = "=", detailedSynopsis = true) class App {
             @Option(names = {"--verbose", "-v"}) boolean verbose;
             @Option(names = {"--count", "-c"}, arity = "0..1") int count;
             @Option(names = {"--help", "-h"}, hidden = true) boolean helpRequested;
         }
-        StringBuilder sb = new StringBuilder();
-        new Help(App.class).appendUsageTo(sb);
-        assertEquals("Usage: <main class> [-v] [-c[=<count>]]" + LINESEP, sb.toString());
+        assertEquals("<main class> [-v] [-c[=<count>]]" + LINESEP, new Help(App.class).synopsis());
     }
 
     @Test
-    public void testAppendUsageTo_DetailedOptionSummary_optionalOptionArity0_n__withSeparator() {
+    public void testAppendUsageTo_DetailedSynopsis_optionalOptionArity0_n__withSeparator() {
         @CommandLine.Command(separator = "=", detailedSynopsis = true) class App {
             @Option(names = {"--verbose", "-v"}) boolean verbose;
             @Option(names = {"--count", "-c"}, arity = "0..*") int count;
             @Option(names = {"--help", "-h"}, hidden = true) boolean helpRequested;
         }
-        StringBuilder sb = new StringBuilder();
-        new Help(App.class).appendUsageTo(sb);
-        assertEquals("Usage: <main class> [-v] [-c[=<count>...]]" + LINESEP, sb.toString());
+        assertEquals("<main class> [-v] [-c[=<count>...]]" + LINESEP, new Help(App.class).synopsis());
     }
 
     @Test
-    public void testAppendUsageTo_DetailedOptionSummary_optionalOptionArity1_n__withSeparator() {
+    public void testAppendUsageTo_DetailedSynopsis_optionalOptionArity1_n__withSeparator() {
         @CommandLine.Command(separator = "=", detailedSynopsis = true) class App {
             @Option(names = {"--verbose", "-v"}) boolean verbose;
             @Option(names = {"--count", "-c"}, arity = "1..*") int count;
             @Option(names = {"--help", "-h"}, hidden = true) boolean helpRequested;
         }
-        StringBuilder sb = new StringBuilder();
-        new Help(App.class).appendUsageTo(sb);
-        assertEquals("Usage: <main class> [-v] [-c=<count> [<count>...]]" + LINESEP, sb.toString());
+        assertEquals("<main class> [-v] [-c=<count> [<count>...]]" + LINESEP, new Help(App.class).synopsis());
     }
 
     @Test
-    public void testAppendUsageTo_DetailedOptionSummary_withSeparator_withParameters() {
+    public void testAppendUsageTo_DetailedSynopsis_withSeparator_withParameters() {
         @CommandLine.Command(separator = "=", detailedSynopsis = true) class App {
             @Option(names = {"--verbose", "-v"}) boolean verbose;
             @Option(names = {"--count", "-c"}) int count;
             @Option(names = {"--help", "-h"}, hidden = true) boolean helpRequested;
             @Parameters File[] files;
         }
-        StringBuilder sb = new StringBuilder();
-        new Help(App.class).appendUsageTo(sb);
-        assertEquals("Usage: <main class> [-v] [-c=<count>] [<files>...]" + LINESEP, sb.toString());
+        assertEquals("<main class> [-v] [-c=<count>] [<files>...]" + LINESEP, new Help(App.class).synopsis());
     }
 
     @Test
-    public void testAppendUsageTo_DetailedOptionSummary_withSeparator_withLabeledParameters() {
+    public void testAppendUsageTo_DetailedSynopsis_withSeparator_withLabeledParameters() {
         @Command(separator = "=", detailedSynopsis = true) class App {
             @Option(names = {"--verbose", "-v"}) boolean verbose;
             @Option(names = {"--count", "-c"}) int count;
             @Option(names = {"--help", "-h"}, hidden = true) boolean helpRequested;
             @Parameters(valueLabel = "FILE") File[] files;
         }
-        StringBuilder sb = new StringBuilder();
-        new Help(App.class).appendUsageTo(sb);
-        assertEquals("Usage: <main class> [-v] [-c=<count>] [FILE...]" + LINESEP, sb.toString());
+        assertEquals("<main class> [-v] [-c=<count>] [FILE...]" + LINESEP, new Help(App.class).synopsis());
     }
 
     @Test
-    public void testAppendUsageTo_DetailedOptionSummary_withSeparator_withLabeledRequiredParameters() {
+    public void testAppendUsageTo_DetailedSynopsis_withSeparator_withLabeledRequiredParameters() {
         @CommandLine.Command(separator = "=", detailedSynopsis = true) class App {
             @Option(names = {"--verbose", "-v"}) boolean verbose;
             @Option(names = {"--count", "-c"}) int count;
             @Option(names = {"--help", "-h"}, hidden = true) boolean helpRequested;
             @Parameters(valueLabel = "FILE", arity = "1..*") File[] files;
         }
-        StringBuilder sb = new StringBuilder();
-        new Help(App.class).appendUsageTo(sb);
-        assertEquals("Usage: <main class> [-v] [-c=<count>] FILE [FILE...]" + LINESEP, sb.toString());
+        assertEquals("<main class> [-v] [-c=<count>] FILE [FILE...]" + LINESEP, new Help(App.class).synopsis());
     }
 
     @Test
-    public void testAppendUsageTo_DetailedOptionSummary_clustersBooleanOptions() {
+    public void testAppendUsageTo_DetailedSynopsis_clustersBooleanOptions() {
         @Command(separator = "=", detailedSynopsis = true) class App {
             @Option(names = {"--verbose", "-v"}) boolean verbose;
             @Option(names = {"--aaaa", "-a"}) boolean aBoolean;
             @Option(names = {"--xxxx", "-x"}) Boolean xBoolean;
             @Option(names = {"--count", "-c"}, valueLabel = "COUNT") int count;
         }
-        StringBuilder sb = new StringBuilder();
-        new Help(App.class).appendUsageTo(sb);
-        assertEquals("Usage: <main class> [-avx] [-c=COUNT]" + LINESEP, sb.toString());
+        assertEquals("<main class> [-avx] [-c=COUNT]" + LINESEP, new Help(App.class).synopsis());
     }
 
     @Test
-    public void testAppendUsageTo_DetailedOptionSummary_clustersRequiredBooleanOptions() {
+    public void testAppendUsageTo_DetailedSynopsis_clustersRequiredBooleanOptions() {
         @CommandLine.Command(separator = "=", detailedSynopsis = true) class App {
             @Option(names = {"--verbose", "-v"}, required = true) boolean verbose;
             @Option(names = {"--aaaa", "-a"}, required = true) boolean aBoolean;
             @Option(names = {"--xxxx", "-x"}, required = true) Boolean xBoolean;
             @Option(names = {"--count", "-c"}, valueLabel = "COUNT") int count;
         }
-        StringBuilder sb = new StringBuilder();
-        new Help(App.class).appendUsageTo(sb);
-        assertEquals("Usage: <main class> -avx [-c=COUNT]" + LINESEP, sb.toString());
+        assertEquals("<main class> -avx [-c=COUNT]" + LINESEP, new Help(App.class).synopsis());
     }
 
     @Test
-    public void testAppendUsageTo_DetailedOptionSummary_clustersRequiredBooleanOptionsSeparately() {
+    public void testAppendUsageTo_DetailedSynopsis_clustersRequiredBooleanOptionsSeparately() {
         @CommandLine.Command(separator = "=", detailedSynopsis = true) class App {
             @Option(names = {"--verbose", "-v"}) boolean verbose;
             @Option(names = {"--aaaa", "-a"}) boolean aBoolean;
@@ -473,16 +446,14 @@ public class CommandLineHelpTest {
             @Option(names = {"--Xxxx", "-X"}, required = true) Boolean requiredXBoolean;
             @Option(names = {"--count", "-c"}, valueLabel = "COUNT") int count;
         }
-        StringBuilder sb = new StringBuilder();
-        new Help(App.class).appendUsageTo(sb);
-        assertEquals("Usage: <main class> -AVX [-avx] [-c=COUNT]" + LINESEP, sb.toString());
+        assertEquals("<main class> -AVX [-avx] [-c=COUNT]" + LINESEP, new Help(App.class).synopsis());
     }
 
     @Test
     public void testTextTable() {
         TextTable table = new TextTable();
-        table.addRow("-v", ",", "--verbose", "show what you're doing while you are doing it");
-        table.addRow("-p", null, null, "the quick brown fox jumped over the lazy dog. The quick brown fox jumped over the lazy dog.");
+        ((Help.OneOptionPerRowLayout) table.layout).addRow(table, "-v", ",", "--verbose", "show what you're doing while you are doing it");
+        ((Help.OneOptionPerRowLayout) table.layout).addRow(table, "-p", null, null, "the quick brown fox jumped over the lazy dog. The quick brown fox jumped over the lazy dog.");
         assertEquals(String.format(
                 "  -v, --verbose               show what you're doing while you are doing it     %n" +
                         "  -p                          the quick brown fox jumped over the lazy dog. The %n" +
@@ -492,8 +463,9 @@ public class CommandLineHelpTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void testTextTableAddsNewRowWhenTooManyValuesSpecified() {
-        TextTable table = new TextTable();
-        table.addRow("-c", ",", "--create", "description", "INVALID", "Row 3");
+        Help.OneOptionPerRowLayout layout = new Help.OneOptionPerRowLayout();
+        TextTable table = new TextTable(layout);
+        layout.addRow(table, "-c", ",", "--create", "description", "INVALID", "Row 3");
 //        assertEquals(String.format("" +
 //                        "  -c, --create                description                                       %n" +
 //                        "                                INVALID                                         %n" +
@@ -504,7 +476,7 @@ public class CommandLineHelpTest {
     @Test
     public void testTextTableAddsNewRowWhenAnyColumnTooLong() {
         TextTable table = new TextTable();
-        table.addRow("-c", ",",
+        ((Help.OneOptionPerRowLayout) table.layout).addRow(table, "-c", ",",
                 "--create, --create2, --create3, --create4, --create5, --create6, --create7, --create8",
                 "description");
         assertEquals(String.format("" +
@@ -514,7 +486,7 @@ public class CommandLineHelpTest {
                 ,""), table.toString(new StringBuilder()).toString());
 
         table = new TextTable();
-        table.addRow("-c", ",",
+        ((Help.OneOptionPerRowLayout) table.layout).addRow(table, "-c", ",",
                 "--create, --create2, --create3, --create4, --create5, --create6, --createAA7, --create8",
                 "description");
         assertEquals(String.format("" +
@@ -527,7 +499,7 @@ public class CommandLineHelpTest {
     @Test
     public void testCatUsageFormat() {
         @Command(name = "cat",
-                summary = "Concatenate FILE(s), or standard input, to standard output.",
+                description = "Concatenate FILE(s), or standard input, to standard output.",
                 footer = "Copyright(c) 2017")
         class Cat {
             @Parameters(valueLabel = "FILE",              description = "Files whose contents to display") List<File> files;
@@ -567,7 +539,7 @@ public class CommandLineHelpTest {
 
     @Test
     public void testZipUsageFormat() {
-        @CommandLine.Command(summary = {
+        @CommandLine.Command(description = {
                 "Copyright (c) 1990-2008 Info-ZIP - Type 'zip \"-L\"' for software license.",
                 "Zip 3.0 (July 5th 2008). Command:",
                 "zip [-options] [-b path] [-t mmddyyyy] [-n suffixes] [zipfile list] [-xi list]",
@@ -605,6 +577,55 @@ public class CommandLineHelpTest {
             @Option(names = "-n", description = "don't compress these suffixes") boolean dontCompress;
             @Option(names = "-h2", description = "show more help") boolean moreHelp;
         }
+
+        class TwoOptionsPerRowLayout implements Help.ILayout { // define a custom layout
+            Point previous = new Point(0, 0);
+
+            public Column[] createColumns() {
+                return new Column[] {
+                        new Column(5, 2, TRUNCATE), // values should fit
+                        new Column(30, 2, SPAN), // overflow into adjacent columns
+                        new Column(4,  1, TRUNCATE), // values should fit again
+                        new Column(39, 2, WRAP)
+                };
+            }
+            public void layout(Field field, String[][] values, TextTable table) {
+                String[] columnValues = values[0]; // we know renderer creates a single row with two values
+
+                // We want to show two options on one row, next to each other,
+                // unless the first option spanned multiple columns (in which case there are not enough columns left)
+                int col = previous.x + 1;
+                if (col == 1 || col + columnValues.length > table.columns.length) { // if true, write into next row
+
+                    // table also adds an empty row if a text value spanned multiple columns
+                    if (table.rowCount() == 0 || table.rowCount() == previous.y + 1) { // avoid adding 2 empty rows
+                        table.addEmptyRow(); // create the slots to write the text values into
+                    }
+                    col = 0; // we are starting a new row, reset the column to write into
+                }
+                for (int i = 0; i < columnValues.length; i++) {
+                    // always write to the last row, column depends on what happened previously
+                    previous = table.putValue(table.rowCount() - 1, col + i, columnValues[i]);
+                }
+            }
+        }
+        Help help = new Help(Zip.class);
+        StringBuilder sb = new StringBuilder();
+        sb.append(help.description()); // show the first 6 lines, including copyright, description and usage
+        TextTable textTable = new TextTable(new TwoOptionsPerRowLayout(), new TwoOptionsPerRowLayout().createColumns());
+        textTable.optionRenderer = Help.createMinimalOptionRenderer(); // define and install a custom renderer
+
+        // Now that the textTable has a renderer and layout installed,
+        // we add Options to the textTable to build up the option details help text.
+        // Note that we don't sort the options, so they appear in the order the fields are declared in the Zip class.
+        for (Field field : help.optionFields) {
+            Option option = field.getAnnotation(Option.class);
+            if (!option.hidden()) {
+                textTable.addOption(field, help.parameterLabelRenderer);
+            }
+        }
+        textTable.toString(sb); // finally, copy the options details help text into the StringBuilder
+
         String expected  = String.format("" +
                 "Copyright (c) 1990-2008 Info-ZIP - Type 'zip \"-L\"' for software license.%n" +
                 "Zip 3.0 (July 5th 2008). Command:%n" +
@@ -627,46 +648,6 @@ public class CommandLineHelpTest {
                 "  -y   store symbolic links as the link instead of the referenced file        %n" +
                 "  -e   encrypt                      -n   don't compress these suffixes        %n" +
                 "  -h2  show more help                                                         %n", "");
-        Help help = new Help(Zip.class);
-        StringBuilder sb = new StringBuilder();
-        help.appendSummaryTo(sb); // show the first 6 lines, including copyright, description and usage
-        TextTable textTable = new TextTable(new Column(5, 2, TRUNCATE), // values should fit
-                                            new Column(30, 2, SPAN), // overflow into adjacent columns
-                                            new Column(4,  1, TRUNCATE), // values should fit again
-                                            new Column(39, 2, WRAP)); // overflow into next row (same column)
-        textTable.optionRenderer = Help.createMinimalOptionRenderer(); // define and install a custom renderer
-        textTable.layout = new Help.ILayout() { // define and install a custom layout
-            Point previous = new Point(0, 0);
-            public void layout(Option option, Field field, String[][] values, TextTable table) {
-                String[] columnValues = values[0]; // we know renderer creates a single row with two values
-
-                // We want to show two options on one row, next to each other,
-                // unless the first option spanned multiple columns (in which case there are not enough columns left)
-                int col = previous.x + 1;
-                if (col == 1 || col + columnValues.length > table.columns.length) { // if true, write into next row
-
-                    // table also adds an empty row if a text value spanned multiple columns
-                    if (table.rowCount() == 0 || table.rowCount() == previous.y + 1) { // avoid adding 2 empty rows
-                        table.addEmptyRow(); // create the slots to write the text values into
-                    }
-                    col = 0; // we are starting a new row, reset the column to write into
-                }
-                for (int i = 0; i < columnValues.length; i++) {
-                    // always write to the last row, column depends on what happened previously
-                    previous = table.putValue(table.rowCount() - 1, col + i, columnValues[i]);
-                }
-            }
-        };
-        // Now that the textTable has a renderer and layout installed,
-        // we add Options to the textTable to build up the option details help text.
-        // Note that we don't sort the options, so they appear in the order the fields are declared in the Zip class.
-        for (Field field : help.optionFields) {
-            Option option = field.getAnnotation(Option.class);
-            if (!option.hidden()) {
-                textTable.addOption(field, help.parameterLabelRenderer);
-            }
-        }
-        textTable.toString(sb); // finally, copy the options details help text into the StringBuilder
         assertEquals(expected, sb.toString());
     }
 
@@ -677,7 +658,7 @@ public class CommandLineHelpTest {
         @CommandLine.Command(name = "NETSTAT",
                 separator = " ",
                 detailedSynopsis = true,
-                summary = {"Displays protocol statistics and current TCP/IP network connections.", ""})
+                title = "Displays protocol statistics and current TCP/IP network connections.\n")
         class Netstat {
             @Option(names="-a", description="Displays all connections and listening ports.")
             boolean displayAll;
@@ -731,10 +712,10 @@ public class CommandLineHelpTest {
         }
         StringBuilder sb = new StringBuilder();
         Help help = new Help(Netstat.class);
-        help.appendSummaryTo(sb).appendDetailedUsagePatternsTo(sb, "", null, false);
+        sb.append(help.title()).append(help.detailedSynopsis(null, false));
         sb.append(System.getProperty("line.separator"));
 
-        TextTable textTable = new TextTable(
+        TextTable textTable = new TextTable(help.createDefaultLayout(),
                 new Column(15, 2, TRUNCATE),
                 new Column(65, 1, WRAP));
         textTable.optionRenderer = Help.createMinimalOptionRenderer();
@@ -743,12 +724,12 @@ public class CommandLineHelpTest {
         for (Field field : help.optionFields) {
             textTable.addOption(field, help.parameterLabelRenderer);
         }
-        textTable.addPositionalParameter(help.positionalParametersField, Help.createMinimalParameterLabelRenderer());
+        textTable.addPositionalParameter(help.positionalParametersField, Help.createMinimalValueLabelRenderer());
         // FIXME needs Show positional parameters details in TextTable similar to option details #48
         // textTable.addOption(help.positionalParametersField.getAnnotation(CommandLine.Parameters.class), help.positionalParametersField);
         textTable.toString(sb);
         String expected = String.format("" +
-                "Displays protocol statistics and current TCP/IP network connections.%n" +
+                "Displays protocol statistics and current TCP/IP network connections.\n" +
                 "%n" +
                 "NETSTAT [-a] [-b] [-e] [-f] [-n] [-o] [-p proto] [-q] [-r] [-s] [-t] [-x] [-y] [interval]%n" +
                 // FIXME needs Show multiple detailed usage header lines for mutually exclusive options #46
@@ -794,5 +775,40 @@ public class CommandLineHelpTest {
                 "                configuration information once.                                 %n"
         , "");
         assertEquals(expected, sb.toString());
+    }
+
+    static class UsageDemo {
+        @Option(names = "-a", description = "boolean option with short name only")
+        boolean a;
+
+        @Option(names = "-b", valueLabel = "INT", description = "short option with a parameter")
+        int b;
+
+        @Option(names = {"-c", "--c-option"}, description = "boolean option with short and long name")
+        boolean c;
+
+        @Option(names = {"-d", "--d-option"}, valueLabel = "FILE", description = "option with parameter and short and long name")
+        File d;
+
+        @Option(names = "--e-option", description = "boolean option with only a long name")
+        boolean e;
+
+        @Option(names = "--f-option", valueLabel = "STRING", description = "option with parameter and only a long name")
+        String f;
+
+        @Option(names = {"-g", "--g-option-with-a-name-so-long-that-it-runs-into-the-descriptions-column"}, description = "boolean option with short and long name")
+        boolean g;
+
+        @Parameters(index = "0", valueLabel = "0BLAH", description = "first parameter")
+        String param0;
+
+        @Parameters(index = "1", valueLabel = "1PARAMETER-with-a-name-so-long-that-it-runs-into-the-descriptions-column", description = "2nd parameter")
+        String param1;
+
+        @Parameters(index = "2..*", valueLabel = "remaining", description = "remaining parameters")
+        String param2_n;
+
+        @Parameters(index = "*", valueLabel = "all", description = "all parameters")
+        String param_n;
     }
 }

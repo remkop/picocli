@@ -190,12 +190,17 @@ public class CommandLine {
      * @param out the {@code PrintStream} to print the usage help message to
      */
     public static void usage(Class<?> annotatedClass, PrintStream out) {
-        StringBuilder sb = new StringBuilder();
-        new Help(annotatedClass).appendUsageTo(sb)
-                                .appendSummaryTo(sb)
-                                .appendOptionDetailsTo(sb)
-                                .appendParameterDetailsTo(sb)
-                                .appendFooterTo(sb);
+        Help help = new Help(annotatedClass);
+        StringBuilder sb = new StringBuilder()
+                .append(help.title())
+                .append("Usage: ").append(help.synopsis())
+                .append(help.description())
+                .append(help.parameterList(help.createDefaultParameterRenderer(),
+                                        help.createMinimalValueLabelRenderer()))
+                .append(help.optionList(help.createShortOptionNameComparator(),
+                                        help.createDefaultOptionRenderer(),
+                                        help.createDefaultValueLabelRenderer(help.separator)))
+                .append(help.footer());
         out.print(sb);
     }
 
@@ -569,22 +574,23 @@ public class CommandLine {
     @Retention(RetentionPolicy.RUNTIME)
     @Target(ElementType.TYPE)
     public @interface Command {
-        /** Optional short description of the command, shown before the synopsis. */
-        String[] description() default {};
+        /** Optional very brief description of the command, shown before the synopsis. */
+        String title() default "";
+
         /** Optional text to display between the synopsis line(s) and the list of options. */
-        String[] summary() default {};
+        String[] description() default {};
+
         /** Optional text to display after the list of options. */
         String[] footer() default {};
-        /** Command name to show in the synopsis. If omitted, the annotated class name is used. */
+
+        /** Command name to show in the synopsis. If omitted, {@value} is used. */
         String name() default "<main class>";
         /** If {@code true}, a detailed synopsis is shown with explicit option names and parameters. */
         boolean detailedSynopsis() default false;
-        /** Comparator to use to sort Options and Parameters in the option list section of the help message. Specify
-         * {@code null} to list in declaration order. The default is to sort alphabetically. */
-        Class<? extends Comparator<Field>> optionListSortBy() default Help.SortByShortestOptionNameAlphabetically.class;
-        /** Comparator to use to sort Options and Parameters in the detailed synopsis.
-         * The default is to sort boolean options first, then options in increasing arity, alphabetically. */
-        Class<? extends Comparator<Field>> detailedSynopsisSortBy() default Help.SortByOptionArityAndNameAlphabetically.class;
+
+        /** Specify {@code false} to show Options in declaration order. The default is to sort alphabetically. */
+        boolean sortOptionList() default true;
+
         /** String that separates options from option parameters. Default {@value}, a popular alternative is {@code "="}. */
         String separator() default " ";
     }
@@ -1321,7 +1327,7 @@ public class CommandLine {
      */
     public static class Help {
         /** Constant String holding the default program name: {@value} */
-        protected static final String DEFAULT_PROGRAM_NAME = "<main class>";
+        protected static final String DEFAULT_COMMAND_NAME = "<main class>";
 
         /** LinkedHashMap mapping {@link Option} instances to the {@code Field} they annotate, in declaration order. */
         //public final Map<Option, Field> option2Field = new LinkedHashMap<Option, Field>();
@@ -1336,15 +1342,17 @@ public class CommandLine {
 
         /** The String to use as the program name in the synopsis line of the help message. {@value} by default,
          * initialized from {@link Command#name()} if defined. */
-        public String programName = DEFAULT_PROGRAM_NAME;
+        public String commandName = DEFAULT_COMMAND_NAME;
 
-        /** If {@code true}, the synopsis line(s) will show detailed option names and parameter names. */
-        public Boolean detailedOptionHeader;
-
-        /** The text lines to use as the summary of the help message. Initialized from {@link Command#summary()}
+        /** The text lines to use as the description of the help message. Initialized from {@link Command#description()}
          *  if the {@code Command} annotation is present, otherwise this is an empty array and the help message has no
-         *  summary. Applications may programmatically set this field to create a custom help message. */
-        public String[] summary = {};
+         *  description. Applications may programmatically set this field to create a custom help message. */
+        public String[] description = {};
+
+        /** A single text line to use as a brief tiels of the help message. Initialized from {@link Command#title()}
+         *  if the {@code Command} annotation is present, otherwise this is null and the help message has no
+         *  title. Applications may programmatically set this field to create a custom help message. */
+        public String title = null;
 
         /** The text lines to use as the summary of the help message. Initialized from {@link Command#footer()}
          *  if the {@code Command} annotation is present, otherwise this is an empty array and the help message has no
@@ -1352,6 +1360,12 @@ public class CommandLine {
         public String[] footer = {};
         /** Option and positional parameter value label renderer used for the synopsis line(s) and the option list. */
         public IValueLabelRenderer parameterLabelRenderer;
+
+        /** If {@code true}, the synopsis line(s) will show detailed option names and parameter names. */
+        public Boolean detailedSynopsis;
+
+        /** If {@code true}, the options list is sorted alphabetically. */
+        public Boolean sortOptions;
 
         /** Constructs a new {@code Help} instance, initialized from annotatations on the specified class and super classes. */
         public Help(Class<?> cls) {
@@ -1372,17 +1386,23 @@ public class CommandLine {
                 // superclass values should not overwrite values if both class and superclass have a @Command annotation
                 if (cls.isAnnotationPresent(Command.class)) {
                     Command command = cls.getAnnotation(Command.class);
-                    if (DEFAULT_PROGRAM_NAME.equals(programName)) {
-                        programName = command.name();
+                    if (DEFAULT_COMMAND_NAME.equals(commandName)) {
+                        commandName = command.name();
                     }
                     if (separator == null) {
                         separator = command.separator();
                     }
-                    if (detailedOptionHeader == null) {
-                        detailedOptionHeader = command.detailedSynopsis();
+                    if (detailedSynopsis == null) {
+                        detailedSynopsis = command.detailedSynopsis();
                     }
-                    if (summary == null || summary.length == 0) {
-                        summary = command.summary();
+                    if (sortOptions == null) {
+                        sortOptions = command.sortOptionList();
+                    }
+                    if (description == null || description.length == 0) {
+                        description = command.description();
+                    }
+                    if (title == null) {
+                        title = command.title();
                     }
                     if (footer == null || footer.length == 0) {
                         footer = command.footer();
@@ -1392,24 +1412,35 @@ public class CommandLine {
             }
             parameterLabelRenderer = new DefaultValueLabelRenderer(separator == null ? " " : separator);
         }
-        /**
-         * Appends a "Usage" help message to the specified StringBuilder. By default, this generates a generic
-         * {@code "Usage <main class> [OPTIONS] [PARAMETERS]"} message. Annotate your class with {@link Command} to
-         * control the program name, or whether the generic synopsis should be replaced with a detailed one
-         * that shows option and parameter names.
-         * @param sb the StringBuilder to append the "Usage" help message line to
-         * @return this {@code Help} object, to allow method chaining for a more fluent API
-         */
-        public Help appendUsageTo(StringBuilder sb) {
-            if (detailedOptionHeader) {
-                return appendDetailedUsagePatternsTo(sb, "Usage: ", new SortByOptionArityAndNameAlphabetically(), true);
-            }
-            return appendGenericUsageTo("Usage: ", sb);
+
+        public String synopsis() {
+            return detailedSynopsis == null || !detailedSynopsis.booleanValue() ? genericSynopsis()
+                    : detailedSynopsis(createShortOptionArityAndNameComparator(), true);
         }
 
-        public Help appendDetailedUsagePatternsTo(StringBuilder sb, String prefix,
-                                                  Comparator<Field> optionSort, final boolean clusterBooleanOptions) {
-            sb.append(prefix).append(programName);
+        /** Generates a generic synopsis like {@code <command name> [OPTIONS] [PARAM1 [PARAM2]...]}, omitting parts
+         * that don't apply to the command (e.g., does not show [OPTIONS] if the command has no options). */
+        public String genericSynopsis() {
+            StringBuilder sb = new StringBuilder();
+            sb.append(commandName);
+            if (!optionFields.isEmpty()) { // only show if annotated object actually has options
+                sb.append(" [OPTIONS]");
+            }
+            if (positionalParametersField != null) {
+                // sb.append(" [--] "); // implied
+                sb.append(' ').append(
+                        parameterLabelRenderer.renderParameterLabel(
+                                positionalParametersField));
+            }
+            sb.append(System.getProperty("line.separator"));
+            return sb.toString();
+        }
+
+        /** Generates a detailed synopsis message showing all options and parameters. Follows the unix convention of
+         * showing optional options and parameters in square brackets ({@code [ ]}). */
+        public String detailedSynopsis(Comparator<Field> optionSort, boolean clusterBooleanOptions) {
+            StringBuilder sb = new StringBuilder();
+            sb.append(commandName);
             List<Field> fields = new ArrayList<Field>(optionFields); // iterate in declaration order
             if (optionSort != null) {
                 Collections.sort(fields, optionSort);// iterate in specified sort order
@@ -1448,90 +1479,87 @@ public class CommandLine {
                 optionNames += parameterLabelRenderer.renderParameterLabel(field);
                 sb.append(String.format(pattern, optionNames));
             }
-            if (this.positionalParametersField != null) {
+            if (positionalParametersField != null) {
                 sb.append(" ");
                 sb.append(parameterLabelRenderer.renderParameterLabel(positionalParametersField));
             }
             sb.append(System.getProperty("line.separator"));
-            return this;
-        }
-        public Help appendGenericUsageTo(String prefix, StringBuilder sb) {
-            sb.append(prefix).append(programName);
-            if (!this.optionFields.isEmpty()) { // only show if annotated object actually has options
-                sb.append(" [OPTIONS]");
-            }
-            if (this.positionalParametersField != null) {
-                // sb.append(" [--] "); // implied
-                sb.append(' ').append(parameterLabelRenderer.renderParameterLabel(positionalParametersField));
-            }
-            sb.append(System.getProperty("line.separator"));
-            return this;
+            return sb.toString();
         }
         /**
          * <p>Appends a description of the {@linkplain Option options} supported by the application to the specified
          * StringBuilder. This implementation {@linkplain SortByShortestOptionNameAlphabetically sorts options alphabetically}, and shows
          * only the {@linkplain Option#hidden() non-hidden} options in a {@linkplain TextTable tabular format}
-         * using the {@linkplain DefaultOptionRenderer default renderer} and {@linkplain DefaultLayout default layout}.</p>
+         * using the {@linkplain DefaultOptionRenderer default renderer} and {@linkplain OneOptionPerRowLayout default layout}.</p>
          * <p>To customize how option details are displayed, instantiate a {@link TextTable} object and install a
          * custom option {@linkplain IOptionRenderer renderer} and/or a custom {@linkplain Help.ILayout layout} to
          * control which aspects of an Option or Field are displayed where.</p>
          * @param sb the StringBuilder to append the "Usage" help message line to
          * @return this {@code Help} object, to allow method chaining for a more fluent API
          */
-        public Help appendOptionDetailsTo(StringBuilder sb) {
+        public String optionList(Comparator<Field> optionSort, IOptionRenderer optionRenderer, IValueLabelRenderer valueLabelRenderer) {
             TextTable textTable = new TextTable();
+            textTable.optionRenderer = optionRenderer;
             List<Field> fields = new ArrayList<Field>(optionFields); // options are stored in order of declaration
-            Collections.sort(fields, new SortByShortestOptionNameAlphabetically()); // default: sort options ABC
+            if (optionSort != null) {
+                Collections.sort(fields, optionSort); // default: sort options ABC
+            }
             for (Field field : fields) {
                 Option option = field.getAnnotation(Option.class);
                 if (!option.hidden()) {
-                    textTable.addOption(field, parameterLabelRenderer);
+                    textTable.addOption(field, valueLabelRenderer);
                 }
             }
-            textTable.toString(sb);
-            return this;
+            return textTable.toString();
         }
-        public Help appendParameterDetailsTo(StringBuilder sb) {
+        public String parameterList(IParameterRenderer parameterRenderer, IValueLabelRenderer valueLabelRenderer) {
             if (positionalParametersField != null) {
                 Parameters parameters = positionalParametersField.getAnnotation(Parameters.class);
                 if (!parameters.hidden()) {
                     TextTable textTable = new TextTable();
-                    textTable.addPositionalParameter(positionalParametersField, createMinimalParameterLabelRenderer());
+                    textTable.parameterRenderer = parameterRenderer;
+                    textTable.addPositionalParameter(positionalParametersField, valueLabelRenderer);
+                    return textTable.toString();
                 }
             }
-            return this;
+            return "";
         }
-        /** Appends program summary text to the specified StringBuilder. Summary text can be zero or more lines, and
-         * can be specified declaratively with the {@link Command#summary()} annotation attribute. Text values are
-         * appended as is and are not reformatted. Applications can programmatically specify a custom summary by
-         * instantiating a {@link Help} instance and setting its {@link Help#summary} field.
-         * @param sb the StringBuilder to append the program summary text lines to
-         * @return this {@code Help} object, to allow method chaining for a more fluent API
-         */
-        public Help appendSummaryTo(StringBuilder sb) {
-            if (summary != null) {
-                for (String summaryLine : summary) {
-                    sb.append(summaryLine).append(System.getProperty("line.separator"));
+
+        /** Appends each of the specified values plus the specified separator to the specified StringBuilder and returns it. */
+        public static StringBuilder join(String[] values, String separator, StringBuilder sb) {
+            if (values != null) {
+                for (String summaryLine : values) {
+                    sb.append(summaryLine).append(separator);
                 }
             }
-            return this;
+            return sb;
         }
-        /** Appends usage help footer text to the specified StringBuilder. Footer text can be zero or more lines, and
-         * can be specified declaratively with the {@link Command#footer()} annotation attribute. Text values are
-         * appended as is and are not reformatted. Applications can programmatically specify a custom footer by
-         * instantiating a {@link Help} instance and setting its {@link Help#footer} field.
-         * @param sb the StringBuilder to append the usage help footer text lines to
-         * @return this {@code Help} object, to allow method chaining for a more fluent API
+        /** Returns command description text as a string. Description text can be zero or more lines, and can be specified
+         * declaratively with the {@link Command#description()} annotation attribute or programmatically by
+         * setting the Help instance's {@link Help#description} field.
+         * @return the description lines combined into a single String (which may be empty)
          */
-        public Help appendFooterTo(StringBuilder sb) {
-            if (footer != null) {
-                for (String line : footer) {
-                    sb.append(line).append(System.getProperty("line.separator"));
-                }
-            }
-            return this;
+        public String description() {
+            return join(description, System.getProperty("line.separator"), new StringBuilder()).toString();
+        }
+        /** Returns the command title description. The title is at most one line, and can be specified
+         * declaratively with the {@link Command#title()} annotation attribute or programmatically by
+         * setting the Help instance's {@link Help#title} field.
+         * @return the title line or an empty string
+         */
+        public String title() {
+            return empty(title) ? "" : title + System.getProperty("line.separator");
+        }
+        /** Returns command footer text as a string. Footer text can be zero or more lines, and can be specified
+         * declaratively with the {@link Command#footer()} annotation attribute or programmatically by
+         * setting the Help instance's {@link Help#footer} field.
+         * @return the footer lines combined into a single String (which may be empty)
+         */
+        public String footer() {
+            return join(footer, System.getProperty("line.separator"), new StringBuilder()).toString();
         }
         private static String join(String[] names, int offset, int length, String separator) {
+            if (names == null) { return ""; }
             StringBuilder result = new StringBuilder();
             for (int i = offset; i < offset + length; i++) {
                 result.append((i > offset) ? separator : "").append(names[i]);
@@ -1557,10 +1585,13 @@ public class CommandLine {
         public static IOptionRenderer createMinimalOptionRenderer() {
             return new MinimalOptionRenderer();
         }
+        public static IParameterRenderer createDefaultParameterRenderer() {
+            return new DefaultParameterRenderer();
+        }
         public static IParameterRenderer createMinimalParameterRenderer() {
             return new MinimalParameterRenderer();
         }
-        public static IValueLabelRenderer createMinimalParameterLabelRenderer() {
+        public static IValueLabelRenderer createMinimalValueLabelRenderer() {
             return new IValueLabelRenderer() {
                 public String renderParameterLabel(Field field) {
                     Parameters parameters = field.getAnnotation(Parameters.class);
@@ -1573,13 +1604,13 @@ public class CommandLine {
          * characters and uses ellipses ("...") to indicate that any number of a parameter are allowed.
          * @param separator string that separates options from option parameters
          */
-        public static IValueLabelRenderer createDefaultParameterRenderer(String separator) {
+        public static IValueLabelRenderer createDefaultValueLabelRenderer(String separator) {
             return new DefaultValueLabelRenderer(separator);
         }
         /** Returns a new default Layout which displays each array of text values representing an Option on a separate
          * row in the {@linkplain TextTable TextTable}. */
         public static ILayout createDefaultLayout() {
-            return new DefaultLayout();
+            return new OneOptionPerRowLayout();
         }
         /** Sorts Fields annotated with {@code Option} by their option name in case-insensitive alphabetic order. If an
          * Option has multiple names, the shortest name is used for the sorting. Help options follow non-help options. */
@@ -1751,24 +1782,42 @@ public class CommandLine {
              * width, depending on the Column's {@link Column.Overflow} setting.
              * It is the responsibility of the Layout to detect that this happened by inspecting the return value
              * and to adjust the location of subsequent values accordingly.
-             * @param option the Option that the text values are generated from
              * @param field the field annotated with the specified Option
              * @param values the text values representing the Option, which are to be displayed in tabular form
              * @param textTable the data structure holding {@code char[]} objects for each cell in the table
              */
-            void layout(Option option, Field field, String[][] values, TextTable textTable);
+            void layout(Field field, String[][] values, TextTable textTable);
         }
         /** The default Layout displays each array of text values representing an Option on a separate row in the
          * {@linkplain TextTable TextTable}. */
-        static class DefaultLayout implements ILayout {
-            /**
-             * The DefaultLayout relies on the {@link IOptionRenderer} having created exactly as many {@link Column Columns}
-             * as the {@link TextTable} was constructed with, so it can simply call {@link TextTable#addRow(String...)}
-             * for each row.
-             */
-            public void layout(Option option, Field field, String[][] cellValues, TextTable table) {
+        static class OneOptionPerRowLayout implements ILayout {
+            /** Delegates to {@link #addRow(TextTable, String...)} for each row of values. */
+            public void layout(Field field, String[][] cellValues, TextTable table) {
                 for (String[] oneRow : cellValues) {
-                    table.addRow(oneRow);
+                    addRow(table, oneRow);
+                }
+            }
+            /**
+             * Adds a new {@linkplain TextTable#addEmptyRow() empty row}, then calls {@link
+             * TextTable#putValue(int, int, String) putValue} for each of the specified values, adding more empty rows
+             * if the return value indicates that the value spanned multiple columns or was wrapped to multiple rows.
+             * @param values the values to write into a new row in this TextTable
+             * @throws IllegalArgumentException if the number of values exceeds the number of Columns in this table
+             */
+            public void addRow(TextTable table, String... values) {
+                if (values.length > table.columns.length) {
+                    throw new IllegalArgumentException(values.length + " values don't fit in " +
+                            table.columns.length + " columns");
+                }
+                table.addEmptyRow();
+                for (int col = 0; col < values.length; col++) {
+                    int row = table.rowCount() - 1;// write to last row: previous value may have wrapped to next row
+                    Point cell = table.putValue(row, col, values[col]);
+
+                    // add row if a value spanned/wrapped and there are still remaining values
+                    if ((cell.y != row || cell.x != col) && col != values.length - 1) {
+                        table.addEmptyRow();
+                    }
                 }
             }
         }
@@ -1819,8 +1868,10 @@ public class CommandLine {
          * longer than the column width.</p>
          */
         public static class TextTable {
+            /** The layout knows which columns and rows in the text table to populate for an Option. */
+            public final ILayout layout;
             /** The column definitions of this table. */
-            protected final Column[] columns;
+            public final Column[] columns;
             /** The {@code char[]} slots of the {@code TextTable} to copy text values into. */
             protected final List<char[]> columnValues = new ArrayList<char[]>();
             /** By default, indent wrapped lines by 2 spaces. */
@@ -1828,9 +1879,7 @@ public class CommandLine {
             /** The option renderer used to create a text representation of an Option. */
             public IOptionRenderer optionRenderer = new DefaultOptionRenderer();
             public IParameterRenderer parameterRenderer = new DefaultParameterRenderer();
-            /** The layout used to select which columns and rows in the text table to populate for an Option. */
-            public ILayout layout = new DefaultLayout();
-            /** Constructs a default TextTable with 4 columns. Default TextTable column definitions are:
+            /** Constructs a TextTable with a {@link OneOptionPerRowLayout} and four columns as follows:
              * <ol>
              * <li>short option name (width: 4, indent: 2, TRUNCATE on overflow)</li>
              * <li>comma separator (width: 1, indent: 0, TRUNCATE on overflow)</li>
@@ -1840,14 +1889,18 @@ public class CommandLine {
              */
             public TextTable() {
                 // "  -c, --create                Creates a ...."
-                this(  new Column(4,  2, TRUNCATE),   // "  -c"
-                        new Column(1,  0, TRUNCATE),   // ","
-                        new Column(24, 1, SPAN),  // " --create"
-                        new Column(51, 1, WRAP)); // " Creates a ..."
+                this(new OneOptionPerRowLayout(), new Column[] {
+                            new Column(4,  2, TRUNCATE),   // "  -c"
+                            new Column(1,  0, TRUNCATE),   // ","
+                            new Column(24, 1, SPAN),  // " --create"
+                            new Column(51, 1, WRAP) // " Creates a ..."
+                    });
             }
-            /** Constructs a {@code TextTable} with the specified column definitions. */
-            public TextTable(Column... columns) {
+            /** Constructs a {@code TextTable} with the specified layout and columns. */
+            public TextTable(ILayout layout, Column... columns) {
+                this.layout = Assert.notNull(layout, "layout");
                 this.columns = Assert.notNull(columns, "columns");
+                if (columns.length == 0) { throw new IllegalArgumentException("At least one column is required"); }
             }
             /** Returns the {@code char[]} slot at the specified row and column to write a text value into. */
             public char[] cellAt(int row, int col) { return columnValues.get(col + (row * columns.length)); }
@@ -1873,35 +1926,12 @@ public class CommandLine {
             public void addOption(Field field, IValueLabelRenderer parameterLabelRenderer) {
                 Option option = field.getAnnotation(Option.class);
                 String[][] values = optionRenderer.render(option, field, parameterLabelRenderer);
-                layout.layout(option, field, values, this);
+                layout.layout(field, values, this);
             }
             public void addPositionalParameter(Field field, IValueLabelRenderer parameterLabelRenderer) {
                 Parameters option = field.getAnnotation(Parameters.class);
                 String[][] values = parameterRenderer.render(option, field, parameterLabelRenderer);
-                layout.layout(null, field, values, this);
-            }
-            /**
-             * Adds a new {@linkplain TextTable#addEmptyRow() empty row}, then calls {@link
-             * TextTable#putValue(int, int, String) putValue} for each of the specified values, adding more empty rows
-             * if the return value indicates that the value spanned multiple columns or was wrapped to multiple rows.
-             * @param values the values to write into a new row in this TextTable
-             * @throws IllegalArgumentException if the number of values exceeds the number of Columns in this table
-             */
-            public void addRow(String... values) {
-                if (values.length > columns.length) {
-                    throw new IllegalArgumentException(values.length + " values don't fit in " +
-                            columns.length + " columns");
-                }
-                addEmptyRow();
-                for (int col = 0; col < values.length; col++) {
-                    int row = rowCount() - 1;// write to last row: previous value may have wrapped to next row
-                    Point cell = putValue(row, col, values[col]);
-
-                    // add row if a value spanned/wrapped and there are still remaining values
-                    if ((cell.y != row || cell.x != col) && col != values.length - 1) {
-                        addEmptyRow();
-                    }
-                }
+                layout.layout(field, values, this);
             }
             /**
              * Writes the specified value into the cell at the specified row and column and returns the last row and
