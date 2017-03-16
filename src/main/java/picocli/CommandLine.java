@@ -1585,21 +1585,41 @@ public class CommandLine {
         public static IOptionRenderer createMinimalOptionRenderer() {
             return new MinimalOptionRenderer();
         }
+        /** Returns a new default ParameterRenderer which converts {@link Parameters Parameters} to four columns of
+         * text to match the default {@linkplain TextTable TextTable} column layout. The first row of values looks like this:
+         * <ol>
+         * <li>empty string </li>
+         * <li>empty string </li>
+         * <li>parameter(s) label as rendered by the {@link IValueLabelRenderer}</li>
+         * <li>first element of the {@link Parameters#description()} array</li>
+         * </ol>
+         * <p>Following this, there will be one row for each of the remaining elements of the {@link
+         *   Parameters#description()} array, and these rows look like {@code {"", "", "", param.description()[i]}}.</p>
+         */
         public static IParameterRenderer createDefaultParameterRenderer() {
             return new DefaultParameterRenderer();
         }
+        /** Returns a new minimal ParameterRenderer which converts {@link Parameters Parameters} to a single row with
+         * two columns of text: an option name and a description. If multiple descriptions exist, the first value is used. */
         public static IParameterRenderer createMinimalParameterRenderer() {
             return new MinimalParameterRenderer();
         }
+        /** Returns a value renderer that returns the {@code valueLabel} if defined or the field name otherwise. */
         public static IValueLabelRenderer createMinimalValueLabelRenderer() {
             return new IValueLabelRenderer() {
                 public String renderParameterLabel(Field field) {
+                    String valueLabel = null;
                     Parameters parameters = field.getAnnotation(Parameters.class);
-                    return parameters == null || parameters.valueLabel().length() == 0 ? field.getName() : parameters.valueLabel();
+                    if (parameters != null) {
+                        valueLabel = parameters.valueLabel();
+                    } else {
+                        valueLabel = field.isAnnotationPresent(Option.class) ? field.getAnnotation(Option.class).valueLabel() : null;
+                    }
+                    return valueLabel == null || valueLabel.length() == 0 ? field.getName() : valueLabel;
                 }
             };
         }
-        /** Returns a new default parameter renderer that separates option parameters from their {@linkplain Option
+        /** Returns a new default value renderer that separates option parameters from their {@linkplain Option
          * options} with the specified separator string, surrounds optional parameters with {@code '['} and {@code ']'}
          * characters and uses ellipses ("...") to indicate that any number of a parameter are allowed.
          * @param separator string that separates options from option parameters
@@ -1676,6 +1696,8 @@ public class CommandLine {
                                            option.description().length == 0 ? "" : option.description()[0] }};
             }
         }
+        /** The MinimalParameterRenderer converts {@link Parameters Parameters} to a single row with two columns of
+         * text: the parameters label and a description. If multiple description lines exist, the first value is used. */
         static class MinimalParameterRenderer implements IParameterRenderer {
             public String[][] render(Parameters param, Field field, IValueLabelRenderer parameterLabelRenderer) {
                 return new String[][] {{ parameterLabelRenderer.renderParameterLabel(field),
@@ -1696,9 +1718,20 @@ public class CommandLine {
              */
             String[][] render(Parameters parameters, Field field, IValueLabelRenderer parameterLabelRenderer);
         }
+        /** The DefaultParameterRenderer converts {@link Parameters Parameters} to four columns of text to match the
+         * default {@linkplain TextTable TextTable} column layout. The first row of values looks like this:
+         * <ol>
+         * <li>empty string </li>
+         * <li>empty string </li>
+         * <li>parameter(s) label as rendered by the {@link IValueLabelRenderer}</li>
+         * <li>first element of the {@link Parameters#description()} array</li>
+         * </ol>
+         * <p>Following this, there will be one row for each of the remaining elements of the {@link
+         *   Parameters#description()} array, and these rows look like {@code {"", "", "", param.description()[i]}}.</p>
+         */
         static class DefaultParameterRenderer implements IParameterRenderer {
-            public String[][] render(Parameters params, Field field, IValueLabelRenderer parameterLabelRenderer) {
-                String label = parameterLabelRenderer.renderParameterLabel(field);
+            public String[][] render(Parameters params, Field field, IValueLabelRenderer valueLabelRenderer) {
+                String label = valueLabelRenderer.renderParameterLabel(field);
 
                 String[][] result = new String[params.description().length][4];
                 result[0] = new String[] { "", "", label, params.description()[0] };
@@ -1917,20 +1950,27 @@ public class CommandLine {
                 }
             }
             /**
-             * Convenience method that delegates to the configured {@link TextTable#optionRenderer renderer} to obtain text
-             * values for the specified {@link Option}, and then delegates to the configured {@link TextTable#layout
-             * layout} to write these text values into the correct cells in this TextTable.
+             * Convenience method that delegates to the configured {@link TextTable#optionRenderer option renderer} to
+             * obtain text values for the specified {@link Option}, and then delegates to the configured
+             * {@link TextTable#layout layout} to write these text values into the correct cells in this TextTable.
              * @param field the field annotated with the specified Option
-             * @param parameterLabelRenderer knows how to render option parameters
+             * @param valueLabelRenderer knows how to render option parameters
              */
-            public void addOption(Field field, IValueLabelRenderer parameterLabelRenderer) {
+            public void addOption(Field field, IValueLabelRenderer valueLabelRenderer) {
                 Option option = field.getAnnotation(Option.class);
-                String[][] values = optionRenderer.render(option, field, parameterLabelRenderer);
+                String[][] values = optionRenderer.render(option, field, valueLabelRenderer);
                 layout.layout(field, values, this);
             }
-            public void addPositionalParameter(Field field, IValueLabelRenderer parameterLabelRenderer) {
+            /**
+             * Convenience method that delegates to the configured {@link TextTable#parameterRenderer parameter renderer}
+             * to obtain text values for the specified {@link Parameters}, and then delegates to the configured
+             * {@link TextTable#layout layout} to write these text values into the correct cells in this TextTable.
+             * @param field the field annotated with the specified Parameters
+             * @param valueLabelRenderer knows how to render option parameters
+             */
+            public void addPositionalParameter(Field field, IValueLabelRenderer valueLabelRenderer) {
                 Parameters option = field.getAnnotation(Parameters.class);
-                String[][] values = parameterRenderer.render(option, field, parameterLabelRenderer);
+                String[][] values = parameterRenderer.render(option, field, valueLabelRenderer);
                 layout.layout(field, values, this);
             }
             /**
