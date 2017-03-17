@@ -195,11 +195,8 @@ public class CommandLine {
                 .append(help.title())
                 .append("Usage: ").append(help.synopsis())
                 .append(help.description())
-                .append(help.parameterList(help.createDefaultParameterRenderer(),
-                                        help.createMinimalValueLabelRenderer()))
-                .append(help.optionList(help.createShortOptionNameComparator(),
-                                        help.createDefaultOptionRenderer(),
-                                        help.createDefaultValueLabelRenderer(help.separator)))
+                .append(help.parameterList())
+                .append(help.optionList())
                 .append(help.footer());
         out.print(sb);
     }
@@ -1494,12 +1491,25 @@ public class CommandLine {
          * <p>To customize how option details are displayed, instantiate a {@link TextTable} object and install a
          * custom option {@linkplain IOptionRenderer renderer} and/or a custom {@linkplain Help.ILayout layout} to
          * control which aspects of an Option or Field are displayed where.</p>
-         * @param sb the StringBuilder to append the "Usage" help message line to
-         * @return this {@code Help} object, to allow method chaining for a more fluent API
+         * @return the fully formatted option list
          */
-        public String optionList(Comparator<Field> optionSort, IOptionRenderer optionRenderer, IValueLabelRenderer valueLabelRenderer) {
-            TextTable textTable = new TextTable();
-            textTable.optionRenderer = optionRenderer;
+        public String optionList() {
+            TextTable textTable = new TextTable(); // default columns, default layout
+            textTable.optionRenderer = createDefaultOptionRenderer();
+            return optionList(createShortOptionNameComparator(), textTable, createDefaultValueLabelRenderer(separator));
+        }
+
+        /** Sorts all {@code Options} with the specified {@code comparator} (if the comparator is non-{@code null}),
+         * then {@linkplain TextTable#addOption(Field, IValueLabelRenderer) adds} all non-hidden options to the
+         * specified TextTable and returns the result of TextTable.toString().
+         * @param optionSort determines in what order {@code Options} should be listed. Declared order if {@code null}
+         * @param textTable must be properly initialized with Columns, a Layout and an OptionRenderer
+         * @param valueLabelRenderer used for options with a parameter
+         * @return the fully formatted option list
+         */
+        public String optionList(Comparator<Field> optionSort,
+                                 TextTable textTable,
+                                 IValueLabelRenderer valueLabelRenderer) {
             List<Field> fields = new ArrayList<Field>(optionFields); // options are stored in order of declaration
             if (optionSort != null) {
                 Collections.sort(fields, optionSort); // default: sort options ABC
@@ -1512,12 +1522,15 @@ public class CommandLine {
             }
             return textTable.toString();
         }
-        public String parameterList(IParameterRenderer parameterRenderer, IValueLabelRenderer valueLabelRenderer) {
+        public String parameterList() {
+            TextTable textTable = new TextTable(); // default columns, default layout
+            textTable.parameterRenderer = createDefaultParameterRenderer();
+            return parameterList(textTable, createMinimalValueLabelRenderer());
+        }
+        public String parameterList(TextTable textTable, IValueLabelRenderer valueLabelRenderer) {
             if (positionalParametersField != null) {
                 Parameters parameters = positionalParametersField.getAnnotation(Parameters.class);
                 if (!parameters.hidden()) {
-                    TextTable textTable = new TextTable();
-                    textTable.parameterRenderer = parameterRenderer;
                     textTable.addPositionalParameter(positionalParametersField, valueLabelRenderer);
                     return textTable.toString();
                 }
