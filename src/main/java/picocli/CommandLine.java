@@ -1450,7 +1450,6 @@ public class CommandLine {
          * showing optional options and parameters in square brackets ({@code [ ]}). */
         public String detailedSynopsis(Comparator<Field> optionSort, boolean clusterBooleanOptions) {
             StringBuilder sb = new StringBuilder();
-            sb.append(commandName);
             List<Field> fields = new ArrayList<Field>(optionFields); // iterate in declaration order
             if (optionSort != null) {
                 Collections.sort(fields, optionSort);// iterate in specified sort order
@@ -1475,26 +1474,33 @@ public class CommandLine {
                 }
                 fields.removeAll(booleanOptions);
                 if (clusteredRequired.length() > 0) {
-                    sb.append(" -").append(clusteredRequired);
+                    sb.append("-").append(clusteredRequired);
                 }
                 if (clusteredOptional.length() > 0) {
-                    sb.append(" [-").append(clusteredOptional).append("]");
+                    sb.append("[-").append(clusteredOptional).append("]");
                 }
             }
             for (Field field : fields) {
                 Option option = field.getAnnotation(Option.class);
-                sb.append(" ");
+                if (sb.length() > 0) { sb.append(" "); }
                 String pattern = option.required() ? "%s" : "[%s]";
                 String optionNames = ShortestFirst.sort(option.names())[0];
                 optionNames += parameterLabelRenderer.renderParameterLabel(field);
                 sb.append(String.format(pattern, optionNames));
             }
             if (positionalParametersField != null) {
-                sb.append(" ");
+                if (sb.length() > 0) { sb.append(" "); }
                 sb.append(parameterLabelRenderer.renderParameterLabel(positionalParametersField));
             }
-            sb.append(System.getProperty("line.separator"));
-            return sb.toString();
+
+            TextTable textTable = new TextTable(createDefaultLayout(),
+                    new Column(commandName.length() + 1, 0, Column.Overflow.TRUNCATE),
+                    new Column(80 - (commandName.length() + 1), 0, Column.Overflow.WRAP));
+            textTable.indentWrappedLines = 0;
+            textTable.addEmptyRow();
+            textTable.putValue(0, 0, commandName);
+            textTable.putValue(0, 1, sb.toString());
+            return textTable.toString();
         }
         /**
          * <p>Appends a description of the {@linkplain Option options} supported by the application to the specified
@@ -2083,10 +2089,10 @@ public class CommandLine {
                 return str.length(); // TODO count some characters as double length
             }
             private int copy(BreakIterator line, String text, char[] columnValue, int offset) {
-                line.setText(text);
+                line.setText(text.replace("-", "\u0027")); // ensure no line breaks after '-' character
                 int done = 0;
                 for (int start = line.first(), end = line.next(); end != BreakIterator.DONE; start = end, end = line.next()) {
-                    String word = text.substring(start, end);
+                    String word = text.substring(start, end).replace("\u0027", "-");
                     if (columnValue.length >= offset + done + length(word)) {
                         done += copy(word, columnValue, offset + done); // TODO localized length
                     } else {

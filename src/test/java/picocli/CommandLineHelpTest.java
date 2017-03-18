@@ -363,7 +363,7 @@ public class CommandLineHelpTest {
     }
 
     @Test
-    public void testAppendUsageTo_AbbreviateSynopsis_withoutParameters() {
+    public void testAbreviatedSynopsis_withoutParameters() {
         @CommandLine.Command(abbreviateSynopsis = true)
         class App {
             @Option(names = {"--verbose", "-v"}) boolean verbose;
@@ -374,7 +374,7 @@ public class CommandLineHelpTest {
     }
 
     @Test
-    public void testAppendUsageTo_AbbreviateSynopsis_withParameters() {
+    public void testAbreviatedSynopsis_withParameters() {
         @CommandLine.Command(abbreviateSynopsis = true)
         class App {
             @Option(names = {"--verbose", "-v"}) boolean verbose;
@@ -386,7 +386,7 @@ public class CommandLineHelpTest {
     }
 
     @Test
-    public void testAppendUsageTo_DetailedSynopsis_optionalOptionArity1_n_withDefaultSeparator() {
+    public void testSynopsis_optionalOptionArity1_n_withDefaultSeparator() {
         @Command() class App {
             @Option(names = {"--verbose", "-v"}) boolean verbose;
             @Option(names = {"--count", "-c"}, arity = "1..*") int count;
@@ -396,7 +396,7 @@ public class CommandLineHelpTest {
     }
 
     @Test
-    public void testAppendUsageTo_DetailedSynopsis_optionalOptionArity0_1_withSpaceSeparator() {
+    public void testSynopsis_optionalOptionArity0_1_withSpaceSeparator() {
         @CommandLine.Command(separator = " ") class App {
             @Option(names = {"--verbose", "-v"}) boolean verbose;
             @Option(names = {"--count", "-c"}, arity = "0..1") int count;
@@ -406,7 +406,7 @@ public class CommandLineHelpTest {
     }
 
     @Test
-    public void testAppendUsageTo_DetailedSynopsis_requiredOptionWithSeparator() {
+    public void testSynopsis_requiredOptionWithSeparator() {
         @Command() class App {
             @Option(names = {"--verbose", "-v"}) boolean verbose;
             @Option(names = {"--count", "-c"}, required = true) int count;
@@ -416,7 +416,7 @@ public class CommandLineHelpTest {
     }
 
     @Test
-    public void testAppendUsageTo_DetailedSynopsis_optionalOption_withSpaceSeparator() {
+    public void testSynopsis_optionalOption_withSpaceSeparator() {
         @CommandLine.Command(separator = " ") class App {
             @Option(names = {"--verbose", "-v"}) boolean verbose;
             @Option(names = {"--count", "-c"}) int count;
@@ -426,7 +426,7 @@ public class CommandLineHelpTest {
     }
 
     @Test
-    public void testAppendUsageTo_DetailedSynopsis_optionalOptionArity0_1__withSeparator() {
+    public void testSynopsis_optionalOptionArity0_1__withSeparator() {
         class App {
             @Option(names = {"--verbose", "-v"}) boolean verbose;
             @Option(names = {"--count", "-c"}, arity = "0..1") int count;
@@ -436,7 +436,7 @@ public class CommandLineHelpTest {
     }
 
     @Test
-    public void testAppendUsageTo_DetailedSynopsis_optionalOptionArity0_n__withSeparator() {
+    public void testSynopsis_optionalOptionArity0_n__withSeparator() {
         @CommandLine.Command(separator = "=") class App {
             @Option(names = {"--verbose", "-v"}) boolean verbose;
             @Option(names = {"--count", "-c"}, arity = "0..*") int count;
@@ -446,7 +446,7 @@ public class CommandLineHelpTest {
     }
 
     @Test
-    public void testAppendUsageTo_DetailedSynopsis_optionalOptionArity1_n__withSeparator() {
+    public void testSynopsis_optionalOptionArity1_n__withSeparator() {
         @CommandLine.Command(separator = "=") class App {
             @Option(names = {"--verbose", "-v"}) boolean verbose;
             @Option(names = {"--count", "-c"}, arity = "1..*") int count;
@@ -456,18 +456,18 @@ public class CommandLineHelpTest {
     }
 
     @Test
-    public void testAppendUsageTo_DetailedSynopsis_withSeparator_withParameters() {
-        @CommandLine.Command(separator = "=") class App {
+    public void testSynopsis_withSeparator_withParameters() {
+        @CommandLine.Command(separator = ":") class App {
             @Option(names = {"--verbose", "-v"}) boolean verbose;
             @Option(names = {"--count", "-c"}) int count;
             @Option(names = {"--help", "-h"}, hidden = true) boolean helpRequested;
             @Parameters File[] files;
         }
-        assertEquals("<main class> [-v] [-c=<count>] [<files>...]" + LINESEP, new Help(App.class).synopsis());
+        assertEquals("<main class> [-v] [-c:<count>] [<files>...]" + LINESEP, new Help(App.class).synopsis());
     }
 
     @Test
-    public void testAppendUsageTo_DetailedSynopsis_withSeparator_withLabeledParameters() {
+    public void testSynopsis_withSeparator_withLabeledParameters() {
         @Command(separator = "=") class App {
             @Option(names = {"--verbose", "-v"}) boolean verbose;
             @Option(names = {"--count", "-c"}) int count;
@@ -478,7 +478,7 @@ public class CommandLineHelpTest {
     }
 
     @Test
-    public void testAppendUsageTo_DetailedSynopsis_withSeparator_withLabeledRequiredParameters() {
+    public void testSynopsis_withSeparator_withLabeledRequiredParameters() {
         @CommandLine.Command(separator = "=") class App {
             @Option(names = {"--verbose", "-v"}) boolean verbose;
             @Option(names = {"--count", "-c"}) int count;
@@ -489,7 +489,7 @@ public class CommandLineHelpTest {
     }
 
     @Test
-    public void testAppendUsageTo_DetailedSynopsis_clustersBooleanOptions() {
+    public void testSynopsis_clustersBooleanOptions() {
         @Command(separator = "=") class App {
             @Option(names = {"--verbose", "-v"}) boolean verbose;
             @Option(names = {"--aaaa", "-a"}) boolean aBoolean;
@@ -500,7 +500,7 @@ public class CommandLineHelpTest {
     }
 
     @Test
-    public void testAppendUsageTo_DetailedSynopsis_clustersRequiredBooleanOptions() {
+    public void testSynopsis_clustersRequiredBooleanOptions() {
         @CommandLine.Command(separator = "=") class App {
             @Option(names = {"--verbose", "-v"}, required = true) boolean verbose;
             @Option(names = {"--aaaa", "-a"}, required = true) boolean aBoolean;
@@ -511,7 +511,7 @@ public class CommandLineHelpTest {
     }
 
     @Test
-    public void testAppendUsageTo_DetailedSynopsis_clustersRequiredBooleanOptionsSeparately() {
+    public void testSynopsis_clustersRequiredBooleanOptionsSeparately() {
         @CommandLine.Command(separator = "=") class App {
             @Option(names = {"--verbose", "-v"}) boolean verbose;
             @Option(names = {"--aaaa", "-a"}) boolean aBoolean;
@@ -524,6 +524,54 @@ public class CommandLineHelpTest {
         assertEquals("<main class> -AVX [-avx] [-c=COUNT]" + LINESEP, new Help(App.class).synopsis());
     }
 
+    @Test
+    public void testLongMultiLineSynopsisIndented() {
+        @Command(name = "<best-app-ever>")
+        class App {
+            @Option(names = "--long-option-name", valueLabel = "<long-option-value>") int a;
+            @Option(names = "--another-long-option-name", valueLabel = "<another-long-option-value>") int b;
+            @Option(names = "--third-long-option-name", valueLabel = "<third-long-option-value>") int c;
+            @Option(names = "--fourth-long-option-name", valueLabel = "<fourth-long-option-value>") int d;
+        }
+        assertEquals(String.format(
+                "<best-app-ever> [--another-long-option-name=<another-long-option-value>]        %n" +
+                "                [--fourth-long-option-name=<fourth-long-option-value>]          %n" +
+                "                [--long-option-name=<long-option-value>]                        %n" +
+                "                [--third-long-option-name=<third-long-option-value>]            %n"),
+                new Help(App.class).synopsis());
+    }
+
+    @Test
+    public void testLongMultiLineSynopsisWithAtMarkIndented() {
+        @Command(name = "<best-app-ever>")
+        class App {
+            @Option(names = "--long-option@-name", valueLabel = "<long-option-valu@@e>") int a;
+            @Option(names = "--another-long-option-name", valueLabel = "^[<another-long-option-value>]") int b;
+            @Option(names = "--third-long-option-name", valueLabel = "<third-long-option-value>") int c;
+            @Option(names = "--fourth-long-option-name", valueLabel = "<fourth-long-option-value>") int d;
+        }
+        assertEquals(String.format(
+                "<best-app-ever> [--another-long-option-name=^[<another-long-option-value>]]     %n" +
+                "                [--fourth-long-option-name=<fourth-long-option-value>]          %n" +
+                "                [--long-option@-name=<long-option-valu@@e>]                     %n" +
+                "                [--third-long-option-name=<third-long-option-value>]            %n"),
+                new Help(App.class).synopsis());
+    }
+
+    @Test
+    public void testCustomSynopsis() {
+        @Command(customSynopsis = {
+                "<the-app> --number=NUMBER --other-option=<aargh>",
+                "          --more=OTHER --and-other-option=<aargh>",
+                "<the-app> --number=NUMBER --and-other-option=<aargh>",
+        })
+        class App {@Option(names = "--ignored") boolean ignored;}
+        assertEquals(String.format(
+                "<the-app> --number=NUMBER --other-option=<aargh>%n" +
+                "          --more=OTHER --and-other-option=<aargh>%n" +
+                "<the-app> --number=NUMBER --and-other-option=<aargh>%n"),
+                new Help(App.class).synopsis());
+    }
     @Test
     public void testTextTable() {
         TextTable table = new TextTable();
