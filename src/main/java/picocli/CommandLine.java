@@ -192,7 +192,7 @@ public class CommandLine {
     public static void usage(Class<?> annotatedClass, PrintStream out) {
         Help help = new Help(annotatedClass);
         StringBuilder sb = new StringBuilder()
-                .append(help.title())
+                .append(help.header())
                 .append("Usage: ").append(help.synopsis())
                 .append(help.description())
                 .append(help.parameterList())
@@ -252,6 +252,7 @@ public class CommandLine {
         interpreter.separator = Assert.notNull(separator, "separator");
     }
     private static boolean empty(String str) { return str == null || str.trim().length() == 0; }
+    private static boolean empty(Object[] array) { return array == null || array.length == 0; }
 
     /**
      * <p>
@@ -540,16 +541,15 @@ public class CommandLine {
     }
 
     /**
-     * <p>
-     * Annotate your class with {@code @Command} when you want more control over the format of the generated help message
-     * or when you want to add detailed synopsis of how to use the program or a footer following the option list.
+     * <p>Annotate your class with {@code @Command} when you want more control over the format of the generated help
+     * message.
      * </p><pre>
-     * &#064;Command(name  = "Encrypt",
-     *        summary = "Encrypt FILE(s), or standard input, to standard output or to the output file.",
-     *        footer  = "Copyright (c) 2017")
+     * &#064;Command(name      = "Encrypt",
+     *        description = "Encrypt FILE(s), or standard input, to standard output or to the output file.",
+     *        footer      = "Copyright (c) 2017")
      * public class Encrypt {
      *     &#064;Parameters(valueLabel = "FILE", type = File.class, description = "Any number of input files")
-     *     private List<File> files = new ArrayList<File>();
+     *     private List<File> files     = new ArrayList<File>();
      *
      *     &#064;Option(names = { "-o", "--out" }, description = "Output file (default: print to console)")
      *     private File outputFile;
@@ -557,22 +557,21 @@ public class CommandLine {
      * <p>
      * The structure of a help message looks like this:
      * </p><ul>
-     *   <li>[description]</li>
+     *   <li>[header]</li>
      *   <li>[synopsis]: {@code Usage: <commandName> [OPTIONS] [FILE...]}</li>
-     *   <li>[summary]</li>
+     *   <li>[description]</li>
+     *   <li>[parameter list]: {@code      [FILE...]   Any number of input files}</li>
      *   <li>[option list]: {@code   -h, --help   prints this help message and exits}</li>
      *   <li>[footer]</li>
-     * </ul>
-     * <p>
-     * If the {@link #detailedSynopsis()} attribute is {@code true}, the synopsis will show exact option names
-     * and parameter names.
-     * </p>
-     */
+     * </ul> */
     @Retention(RetentionPolicy.RUNTIME)
     @Target(ElementType.TYPE)
     public @interface Command {
-        /** Optional very brief description of the command, shown before the synopsis. */
-        String title() default "";
+        /** Optional summary description of the command, shown before the synopsis. */
+        String[] header() default {};
+
+        /** Specify one or more custom synopsis lines to display instead of an auto-generated synopsis. */
+        String[] customSynopsis() default {};
 
         /** Optional text to display between the synopsis line(s) and the list of options. */
         String[] description() default {};
@@ -580,16 +579,22 @@ public class CommandLine {
         /** Optional text to display after the list of options. */
         String[] footer() default {};
 
-        /** Command name to show in the synopsis. If omitted, {@value} is used. */
+        /** Program name to show in the synopsis. If omitted, {@code "<main class>"} is used. */
         String name() default "<main class>";
-        /** If {@code true}, a detailed synopsis is shown with explicit option names and parameters. */
-        boolean detailedSynopsis() default false;
+
+        /** Specify {@code true} to generate an abbreviated synopsis like {@code "<main> [OPTIONS] [PARAMETERS...]"}.
+         * By default, a detailed synopsis with individual option names and parameters is generated.*/
+        boolean abbreviateSynopsis() default false;
 
         /** Specify {@code false} to show Options in declaration order. The default is to sort alphabetically. */
-        boolean sortOptionList() default true;
+        boolean sortOptions() default true;
 
-        /** String that separates options from option parameters. Default {@value}, a popular alternative is {@code "="}. */
-        String separator() default " ";
+        /** Prefix required options with this character in the options list. The default is no marker: the synopsis
+         * indicates which options and parameters are required. */
+        char requiredOptionMarker() default ' ';
+
+        /** String that separates options from option parameters. Default is {@code "="}. */
+        String separator() default "=";
     }
     /**
      * <p>
@@ -1333,36 +1338,49 @@ public class CommandLine {
         /** The {@code Field} annotated with {@link Parameters}, or {@code null} if no such field exists. */
         public Field positionalParametersField;
 
-        /** The String to use as the separator between options and option parameters. {@value} by default,
+        /** The String to use as the separator between options and option parameters. {@code "="} by default,
          * initialized from {@link Command#separator()} if defined. */
-        private String separator;
+        public String separator;
 
         /** The String to use as the program name in the synopsis line of the help message. {@value} by default,
          * initialized from {@link Command#name()} if defined. */
         public String commandName = DEFAULT_COMMAND_NAME;
 
-        /** The text lines to use as the description of the help message. Initialized from {@link Command#description()}
-         *  if the {@code Command} annotation is present, otherwise this is an empty array and the help message has no
-         *  description. Applications may programmatically set this field to create a custom help message. */
+        /** Optional text lines to use as the description of the help message, displayed between the synopsis and the
+         * options list. Initialized from {@link Command#description()} if the {@code Command} annotation is present,
+         * otherwise this is an empty array and the help message has no description.
+         * Applications may programmatically set this field to create a custom help message. */
         public String[] description = {};
 
-        /** A single text line to use as a brief tiels of the help message. Initialized from {@link Command#title()}
-         *  if the {@code Command} annotation is present, otherwise this is null and the help message has no
-         *  title. Applications may programmatically set this field to create a custom help message. */
-        public String title = null;
+        /** Optional custom synopsis lines to use instead of the auto-generated synopsis.
+         * Initialized from {@link Command#customSynopsis()} if the {@code Command} annotation is present,
+         * otherwise this is an empty array and the synopsis is generated.
+         * Applications may programmatically set this field to create a custom help message. */
+        public String[] customSynopsis = {};
 
-        /** The text lines to use as the summary of the help message. Initialized from {@link Command#footer()}
-         *  if the {@code Command} annotation is present, otherwise this is an empty array and the help message has no
-         *  footer. Applications may programmatically set this field to create a custom help message. */
+        /** Optional header lines displayed at the top of the help message. For sub-commands, the first header line is
+         * displayed in the list of commands. Values are initialized from {@link Command#header()}
+         * if the {@code Command} annotation is present, otherwise this is an empty array and the help message has no
+         * header. Applications may programmatically set this field to create a custom help message. */
+        public String[] header = {};
+
+        /** Optional footer text lines displayed at the bottom of the help message. Initialized from
+         * {@link Command#footer()} if the {@code Command} annotation is present, otherwise this is an empty array and
+         * the help message has no footer.
+         * Applications may programmatically set this field to create a custom help message. */
         public String[] footer = {};
+
         /** Option and positional parameter value label renderer used for the synopsis line(s) and the option list. */
         public IValueLabelRenderer parameterLabelRenderer;
 
-        /** If {@code true}, the synopsis line(s) will show detailed option names and parameter names. */
-        public Boolean detailedSynopsis;
+        /** If {@code true}, the synopsis line(s) will show an abbreviated synopsis without detailed option names. */
+        public Boolean abbreviateSynopsis;
 
         /** If {@code true}, the options list is sorted alphabetically. */
         public Boolean sortOptions;
+
+        /** Character used to prefix required options in the options list. */
+        public Character requiredOptionMarker;
 
         /** Constructs a new {@code Help} instance, initialized from annotatations on the specified class and super classes. */
         public Help(Class<?> cls) {
@@ -1386,38 +1404,33 @@ public class CommandLine {
                     if (DEFAULT_COMMAND_NAME.equals(commandName)) {
                         commandName = command.name();
                     }
-                    if (separator == null) {
-                        separator = command.separator();
-                    }
-                    if (detailedSynopsis == null) {
-                        detailedSynopsis = command.detailedSynopsis();
-                    }
-                    if (sortOptions == null) {
-                        sortOptions = command.sortOptionList();
-                    }
-                    if (description == null || description.length == 0) {
-                        description = command.description();
-                    }
-                    if (title == null) {
-                        title = command.title();
-                    }
-                    if (footer == null || footer.length == 0) {
-                        footer = command.footer();
-                    }
+                    separator = (separator == null) ? command.separator() : separator;
+                    abbreviateSynopsis = (abbreviateSynopsis == null) ? command.abbreviateSynopsis() : abbreviateSynopsis;
+                    sortOptions = (sortOptions == null) ? command.sortOptions() : sortOptions;
+                    requiredOptionMarker = (requiredOptionMarker == null) ? command.requiredOptionMarker() : requiredOptionMarker;
+                    customSynopsis = empty(customSynopsis) ? command.customSynopsis() : customSynopsis;
+                    description = empty(description) ? command.description() : description;
+                    header = empty(header) ? command.header() : header;
+                    footer = empty(footer) ? command.footer() : footer;
                 }
                 cls = cls.getSuperclass();
             }
-            parameterLabelRenderer = new DefaultValueLabelRenderer(separator == null ? " " : separator);
+            sortOptions =          (sortOptions == null) ? true : sortOptions;
+            abbreviateSynopsis =   (abbreviateSynopsis == null) ? false : abbreviateSynopsis;
+            requiredOptionMarker = (requiredOptionMarker == null) ? ' ' : requiredOptionMarker;
+            separator =            (separator == null) ? "=" : separator;
+            parameterLabelRenderer = new DefaultValueLabelRenderer(separator);
         }
 
         public String synopsis() {
-            return detailedSynopsis == null || !detailedSynopsis.booleanValue() ? genericSynopsis()
+            if (!empty(customSynopsis)) { return customSynopsis(); }
+            return abbreviateSynopsis ? abbreviatedSynopsis()
                     : detailedSynopsis(createShortOptionArityAndNameComparator(), true);
         }
 
         /** Generates a generic synopsis like {@code <command name> [OPTIONS] [PARAM1 [PARAM2]...]}, omitting parts
          * that don't apply to the command (e.g., does not show [OPTIONS] if the command has no options). */
-        public String genericSynopsis() {
+        public String abbreviatedSynopsis() {
             StringBuilder sb = new StringBuilder();
             sb.append(commandName);
             if (!optionFields.isEmpty()) { // only show if annotated object actually has options
@@ -1496,7 +1509,7 @@ public class CommandLine {
         public String optionList() {
             TextTable textTable = new TextTable(); // default columns, default layout
             textTable.optionRenderer = createDefaultOptionRenderer();
-            return optionList(createShortOptionNameComparator(), textTable, createDefaultValueLabelRenderer(separator));
+            return optionList(createShortOptionNameComparator(), textTable, createDefaultValueLabelRenderer());
         }
 
         /** Sorts all {@code Options} with the specified {@code comparator} (if the comparator is non-{@code null}),
@@ -1547,6 +1560,14 @@ public class CommandLine {
             }
             return sb;
         }
+        /** Returns command custom synopsis as a string. A custom synopsis can be zero or more lines, and can be
+         * specified declaratively with the {@link Command#customSynopsis()} annotation attribute or programmatically
+         * by setting the Help instance's {@link Help#customSynopsis} field.
+         * @return the custom synopsis lines combined into a single String (which may be empty)
+         */
+        public String customSynopsis() {
+            return join(customSynopsis, System.getProperty("line.separator"), new StringBuilder()).toString();
+        }
         /** Returns command description text as a string. Description text can be zero or more lines, and can be specified
          * declaratively with the {@link Command#description()} annotation attribute or programmatically by
          * setting the Help instance's {@link Help#description} field.
@@ -1555,13 +1576,13 @@ public class CommandLine {
         public String description() {
             return join(description, System.getProperty("line.separator"), new StringBuilder()).toString();
         }
-        /** Returns the command title description. The title is at most one line, and can be specified
-         * declaratively with the {@link Command#title()} annotation attribute or programmatically by
-         * setting the Help instance's {@link Help#title} field.
-         * @return the title line or an empty string
+        /** Returns the command header text as a string. Header text can be zero or more lines, and can be specified
+         * declaratively with the {@link Command#header()} annotation attribute or programmatically by
+         * setting the Help instance's {@link Help#header} field.
+         * @return the header lines combined into a single String (which may be empty)
          */
-        public String title() {
-            return empty(title) ? "" : title + System.getProperty("line.separator");
+        public String header() {
+            return join(header, System.getProperty("line.separator"), new StringBuilder()).toString();
         }
         /** Returns command footer text as a string. Footer text can be zero or more lines, and can be specified
          * declaratively with the {@link Command#footer()} annotation attribute or programmatically by
@@ -1579,19 +1600,22 @@ public class CommandLine {
             }
             return result.toString();
         }
-        /** Returns a new default OptionRenderer which converts {@link Option Options} to four columns of text to match
+        /** Returns a new default OptionRenderer which converts {@link Option Options} to five columns of text to match
          *  the default {@linkplain TextTable TextTable} column layout. The first row of values looks like this:
          * <ol>
+         * <li>the required option marker</li>
          * <li>2-character short option name (or empty string if no short option exists)</li>
          * <li>comma separator (only if both short option and long option exist, empty string otherwise)</li>
          * <li>comma-separated string with long option name(s)</li>
          * <li>first element of the {@link Option#description()} array</li>
          * </ol>
          * <p>Following this, there will be one row for each of the remaining elements of the {@link
-         *   Option#description()} array, and these rows look like {@code {"", "", "", option.description()[i]}}.</p>
+         *   Option#description()} array, and these rows look like {@code {"", "", "", "", option.description()[i]}}.</p>
          */
-        public static IOptionRenderer createDefaultOptionRenderer() {
-            return new DefaultOptionRenderer();
+        public IOptionRenderer createDefaultOptionRenderer() {
+            DefaultOptionRenderer result = new DefaultOptionRenderer();
+            result.requiredMarker = String.valueOf(requiredOptionMarker);
+            return result;
         }
         /** Returns a new minimal OptionRenderer which converts {@link Option Options} to a single row with two columns
          * of text: an option name and a description. If multiple names or descriptions exist, the first value is used. */
@@ -1609,8 +1633,10 @@ public class CommandLine {
          * <p>Following this, there will be one row for each of the remaining elements of the {@link
          *   Parameters#description()} array, and these rows look like {@code {"", "", "", param.description()[i]}}.</p>
          */
-        public static IParameterRenderer createDefaultParameterRenderer() {
-            return new DefaultParameterRenderer();
+        public IParameterRenderer createDefaultParameterRenderer() {
+            DefaultParameterRenderer result = new DefaultParameterRenderer();
+            result.requiredMarker = String.valueOf(requiredOptionMarker);
+            return result;
         }
         /** Returns a new minimal ParameterRenderer which converts {@link Parameters Parameters} to a single row with
          * two columns of text: an option name and a description. If multiple descriptions exist, the first value is used. */
@@ -1635,9 +1661,8 @@ public class CommandLine {
         /** Returns a new default value renderer that separates option parameters from their {@linkplain Option
          * options} with the specified separator string, surrounds optional parameters with {@code '['} and {@code ']'}
          * characters and uses ellipses ("...") to indicate that any number of a parameter are allowed.
-         * @param separator string that separates options from option parameters
          */
-        public static IValueLabelRenderer createDefaultValueLabelRenderer(String separator) {
+        public IValueLabelRenderer createDefaultValueLabelRenderer() {
             return new DefaultValueLabelRenderer(separator);
         }
         /** Returns a new default Layout which displays each array of text values representing an Option on a separate
@@ -1673,9 +1698,10 @@ public class CommandLine {
              */
             String[][] render(Option option, Field field, IValueLabelRenderer parameterLabelRenderer);
         }
-        /** The DefaultOptionRenderer converts {@link Option Options} to four columns of text to match the default
+        /** The DefaultOptionRenderer converts {@link Option Options} to five columns of text to match the default
          * {@linkplain TextTable TextTable} column layout. The first row of values looks like this:
          * <ol>
+         * <li>the required option marker (if the option is required)</li>
          * <li>2-character short option name (or empty string if no short option exists)</li>
          * <li>comma separator (only if both short option and long option exist, empty string otherwise)</li>
          * <li>comma-separated string with long option name(s)</li>
@@ -1685,6 +1711,7 @@ public class CommandLine {
          *   Option#description()} array, and these rows look like {@code {"", "", "", option.description()[i]}}.</p>
          */
         static class DefaultOptionRenderer implements IOptionRenderer {
+            public String requiredMarker = " ";
             public String[][] render(Option option, Field field, IValueLabelRenderer parameterLabelRenderer) {
                 String[] names = new ShortestFirst().sort(option.names());
                 int shortOptionCount = names[0].length() == 2 ? 1 : 0;
@@ -1692,11 +1719,13 @@ public class CommandLine {
                 String sep = shortOptionCount > 0 && names.length > 1 ? "," : "";
                 String longOption = join(names, shortOptionCount, names.length - shortOptionCount, ", ");
                 longOption += parameterLabelRenderer.renderParameterLabel(field);
+                String requiredOption = option.required() ? requiredMarker : "";
 
-                String[][] result = new String[option.description().length][4];
-                result[0] = new String[] { shortOption, sep, longOption, option.description()[0] };
+                final int COLUMN_COUNT = 5;
+                String[][] result = new String[option.description().length][COLUMN_COUNT];
+                result[0] = new String[] { requiredOption, shortOption, sep, longOption, option.description()[0] };
                 for (int i = 1; i < option.description().length; i++) {
-                    result[i] = new String[] { "", "", "", option.description()[i] };
+                    result[i] = new String[] { "", "", "", "", option.description()[i] };
                 }
                 return result;
             }
@@ -1731,9 +1760,10 @@ public class CommandLine {
              */
             String[][] render(Parameters parameters, Field field, IValueLabelRenderer parameterLabelRenderer);
         }
-        /** The DefaultParameterRenderer converts {@link Parameters Parameters} to four columns of text to match the
+        /** The DefaultParameterRenderer converts {@link Parameters Parameters} to five columns of text to match the
          * default {@linkplain TextTable TextTable} column layout. The first row of values looks like this:
          * <ol>
+         * <li>the required option marker (if the parameter's arity is to have at least one value)</li>
          * <li>empty string </li>
          * <li>empty string </li>
          * <li>parameter(s) label as rendered by the {@link IValueLabelRenderer}</li>
@@ -1743,13 +1773,16 @@ public class CommandLine {
          *   Parameters#description()} array, and these rows look like {@code {"", "", "", param.description()[i]}}.</p>
          */
         static class DefaultParameterRenderer implements IParameterRenderer {
+            public String requiredMarker = " ";
             public String[][] render(Parameters params, Field field, IValueLabelRenderer valueLabelRenderer) {
                 String label = valueLabelRenderer.renderParameterLabel(field);
+                String requiredParameter = Arity.forParameters(field).min > 0 ? requiredMarker : "";
 
-                String[][] result = new String[params.description().length][4];
-                result[0] = new String[] { "", "", label, params.description()[0] };
+                final int COLUMN_COUNT = 5;
+                String[][] result = new String[params.description().length][COLUMN_COUNT];
+                result[0] = new String[] { requiredParameter, "", "", label, params.description()[0] };
                 for (int i = 1; i < params.description().length; i++) {
-                    result[i] = new String[] { "", "", "", params.description()[i] };
+                    result[i] = new String[] { "", "", "", "", params.description()[i] };
                 }
                 return result;
             }
@@ -1925,18 +1958,20 @@ public class CommandLine {
             /** The option renderer used to create a text representation of an Option. */
             public IOptionRenderer optionRenderer = new DefaultOptionRenderer();
             public IParameterRenderer parameterRenderer = new DefaultParameterRenderer();
-            /** Constructs a TextTable with a {@link OneOptionPerRowLayout} and four columns as follows:
+            /** Constructs a TextTable with a {@link OneOptionPerRowLayout} and five columns as follows:
              * <ol>
-             * <li>short option name (width: 4, indent: 2, TRUNCATE on overflow)</li>
+             * <li>required option/parameter marker (width: 2, indent: 0, TRUNCATE on overflow)</li>
+             * <li>short option name (width: 2, indent: 0, TRUNCATE on overflow)</li>
              * <li>comma separator (width: 1, indent: 0, TRUNCATE on overflow)</li>
              * <li>long option name(s) (width: 24, indent: 1, SPAN multiple columns on overflow)</li>
              * <li>description line(s) (width: 51, indent: 1, WRAP to next row on overflow)</li>
              * </ol>
              */
             public TextTable() {
-                // "  -c, --create                Creates a ...."
+                // "* -c, --create                Creates a ...."
                 this(new OneOptionPerRowLayout(), new Column[] {
-                            new Column(4,  2, TRUNCATE),   // "  -c"
+                            new Column(2,  0, TRUNCATE),   // "*"
+                            new Column(2,  0, TRUNCATE),   // "-c"
                             new Column(1,  0, TRUNCATE),   // ","
                             new Column(24, 1, SPAN),  // " --create"
                             new Column(51, 1, WRAP) // " Creates a ..."

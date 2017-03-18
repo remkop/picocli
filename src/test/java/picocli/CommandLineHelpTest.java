@@ -61,20 +61,19 @@ public class CommandLineHelpTest {
 
     @Test
     public void testUsageAnnotationDetailedUsage() throws Exception {
-        @CommandLine.Command(detailedSynopsis = true)
+        @CommandLine.Command()
         class Params {
             @Option(names = {"-f", "--file"}, required = true, description = "the file to use") File file;
         }
         String result = usageString(Params.class);
         assertEquals(format("" +
-                        "Usage: <main class> -f <file>%n" +
-                        "  -f, --file <file>           the file to use                                   %n",
+                        "Usage: <main class> -f=<file>%n" +
+                        "  -f, --file=<file>           the file to use                                   %n",
                 ""), result);
     }
 
     @Test
     public void testUsageSeparator() throws Exception {
-        @CommandLine.Command(separator = "=", detailedSynopsis = true)
         class Params {
             @Option(names = {"-f", "--file"}, required = true, description = "the file to use") File file;
         }
@@ -151,22 +150,22 @@ public class CommandLineHelpTest {
             @Option(names = {"-b", "-a", "--alpha"}, description = "other") String otherField;
         }
         Help.IOptionRenderer renderer = Help.createMinimalOptionRenderer();
-        Help.IValueLabelRenderer parameterRenderer = Help.createDefaultValueLabelRenderer(" ");
         Help help = new Help(Example.class);
+        Help.IValueLabelRenderer parameterRenderer = help.createDefaultValueLabelRenderer();
         Field field = help.optionFields.get(0);
         String[][] row1 = renderer.render(field.getAnnotation(Option.class), field, parameterRenderer);
         assertEquals(1, row1.length);
-        assertArrayEquals(new String[]{"---long <longField>", "long description"}, row1[0]);
+        assertArrayEquals(new String[]{"---long=<longField>", "long description"}, row1[0]);
 
         field = help.optionFields.get(1);
         String[][] row2 = renderer.render(field.getAnnotation(Option.class), field, parameterRenderer);
         assertEquals(1, row2.length);
-        assertArrayEquals(new String[]{"-b <otherField>", "other"}, row2[0]);
+        assertArrayEquals(new String[]{"-b=<otherField>", "other"}, row2[0]);
     }
 
     @Test
     public void testCreateDefaultOptionRenderer_ReturnsDefaultOptionRenderer() {
-        assertEquals(Help.DefaultOptionRenderer.class, Help.createDefaultOptionRenderer().getClass());
+        assertEquals(Help.DefaultOptionRenderer.class, new Help(UsageDemo.class).createDefaultOptionRenderer().getClass());
     }
 
     @Test
@@ -175,18 +174,91 @@ public class CommandLineHelpTest {
             @Option(names = {"---long", "-L"}, description = "long description") String longField;
             @Option(names = {"-b", "-a", "--alpha"}, description = "other") String otherField;
         }
-        Help.IOptionRenderer renderer = Help.createDefaultOptionRenderer();
-        Help.IValueLabelRenderer parameterRenderer = Help.createDefaultValueLabelRenderer(" ");
         Help help = new Help(Example.class);
+        Help.IOptionRenderer renderer = help.createDefaultOptionRenderer();
+        Help.IValueLabelRenderer parameterRenderer = help.createDefaultValueLabelRenderer();
         Field field = help.optionFields.get(0);
         String[][] row1 = renderer.render(field.getAnnotation(Option.class), field, parameterRenderer);
         assertEquals(1, row1.length);
-        assertArrayEquals(Arrays.toString(row1[0]), new String[]{"-L", ",", "---long <longField>", "long description"}, row1[0]);
+        assertArrayEquals(Arrays.toString(row1[0]), new String[]{"", "-L", ",", "---long=<longField>", "long description"}, row1[0]);
 
         field = help.optionFields.get(1);
         String[][] row2 = renderer.render(field.getAnnotation(Option.class), field, parameterRenderer);
         assertEquals(1, row2.length);
-        assertArrayEquals(Arrays.toString(row2[0]), new String[]{"-b", ",", "-a, --alpha <otherField>", "other"}, row2[0]);
+        assertArrayEquals(Arrays.toString(row2[0]), new String[]{"", "-b", ",", "-a, --alpha=<otherField>", "other"}, row2[0]);
+    }
+
+    @Test
+    public void testDefaultOptionRenderer_rendersSpecifiedMarkerForRequiredOptions() {
+        @Command(requiredOptionMarker = '*')
+        class Example {
+            @Option(names = {"-b", "-a", "--alpha"}, required = true, description = "other") String otherField;
+        }
+        Help help = new Help(Example.class);
+        Help.IOptionRenderer renderer = help.createDefaultOptionRenderer();
+        Help.IValueLabelRenderer parameterRenderer = help.createDefaultValueLabelRenderer();
+        Field field = help.optionFields.get(0);
+        String[][] row1 = renderer.render(field.getAnnotation(Option.class), field, parameterRenderer);
+        assertEquals(1, row1.length);
+        assertArrayEquals(Arrays.toString(row1[0]), new String[]{"*", "-b", ",", "-a, --alpha=<otherField>", "other"}, row1[0]);
+    }
+
+    @Test
+    public void testDefaultOptionRenderer_rendersSpacePrefixByDefaultForRequiredOptions() {
+        class Example {
+            @Option(names = {"-b", "-a", "--alpha"}, required = true, description = "other") String otherField;
+        }
+        Help help = new Help(Example.class);
+        Help.IOptionRenderer renderer = help.createDefaultOptionRenderer();
+        Help.IValueLabelRenderer parameterRenderer = help.createDefaultValueLabelRenderer();
+        Field field = help.optionFields.get(0);
+        String[][] row1 = renderer.render(field.getAnnotation(Option.class), field, parameterRenderer);
+        assertEquals(1, row1.length);
+        assertArrayEquals(Arrays.toString(row1[0]), new String[]{" ", "-b", ",", "-a, --alpha=<otherField>", "other"}, row1[0]);
+    }
+
+    @Test
+    public void testDefaultParameterRenderer_rendersSpacePrefixByDefaultForParametersWithPositiveArity() {
+        class Required {
+            @Parameters(description = "required") String required;
+        }
+        Help help = new Help(Required.class);
+        Help.IParameterRenderer renderer = help.createDefaultParameterRenderer();
+        Help.IValueLabelRenderer parameterRenderer = Help.createMinimalValueLabelRenderer();
+        Field field = help.positionalParametersField;
+        String[][] row1 = renderer.render(field.getAnnotation(Parameters.class), field, parameterRenderer);
+        assertEquals(1, row1.length);
+        assertArrayEquals(Arrays.toString(row1[0]), new String[]{" ", "", "", "required", "required"}, row1[0]);
+    }
+
+    @Test
+    public void testDefaultParameterRenderer_rendersSpecifiedMarkerForParametersWithPositiveArity() {
+        @Command(requiredOptionMarker = '*')
+        class Required {
+            @Parameters(description = "required") String required;
+        }
+        Help help = new Help(Required.class);
+        Help.IParameterRenderer renderer = help.createDefaultParameterRenderer();
+        Help.IValueLabelRenderer parameterRenderer = Help.createMinimalValueLabelRenderer();
+        Field field = help.positionalParametersField;
+        String[][] row1 = renderer.render(field.getAnnotation(Parameters.class), field, parameterRenderer);
+        assertEquals(1, row1.length);
+        assertArrayEquals(Arrays.toString(row1[0]), new String[]{"*", "", "", "required", "required"}, row1[0]);
+    }
+
+    @Test
+    public void testDefaultParameterRenderer_rendersSpacePrefixForParametersWithZeroArity() {
+        @Command(requiredOptionMarker = '*')
+        class Optional {
+            @Parameters(arity = "0..1", description = "optional") String optional;
+        }
+        Help help = new Help(Optional.class);
+        Help.IParameterRenderer renderer = help.createDefaultParameterRenderer();
+        Help.IValueLabelRenderer parameterRenderer = Help.createMinimalValueLabelRenderer();
+        Field field = help.positionalParametersField;
+        String[][] row1 = renderer.render(field.getAnnotation(Parameters.class), field, parameterRenderer);
+        assertEquals(1, row1.length);
+        assertArrayEquals(Arrays.toString(row1[0]), new String[]{"", "", "", "optional", "optional"}, row1[0]);
     }
 
     @Test
@@ -199,17 +271,17 @@ public class CommandLineHelpTest {
             @Option(names = {"--long"}, description = "longOnly") String longOnlyField;
             @Option(names = {"-b", "--beta"}, description = "combi") String combiField;
         }
-        Help.IOptionRenderer renderer = Help.createDefaultOptionRenderer();
-        Help.IValueLabelRenderer parameterRenderer = Help.createDefaultValueLabelRenderer(" ");
         Help help = new Help(Example.class);
+        Help.IOptionRenderer renderer = help.createDefaultOptionRenderer();
+        Help.IValueLabelRenderer parameterRenderer = help.createDefaultValueLabelRenderer();
 
         String[][] expected = new String[][] {
-                {"-v", "",  "", "shortBool"},
-                {"",   "",  "--verbose", "longBool"},
-                {"-x", ",", "--xeno", "combiBool"},
-                {"-s", "",  " <shortOnlyField>", "shortOnly"},
-                {"",   "",  "--long <longOnlyField>", "longOnly"},
-                {"-b", ",", "--beta <combiField>", "combi"},
+                {"", "-v", "",  "", "shortBool"},
+                {"", "",   "",  "--verbose", "longBool"},
+                {"", "-x", ",", "--xeno", "combiBool"},
+                {"", "-s", "",  "=<shortOnlyField>", "shortOnly"},
+                {"", "",   "",  "--long=<longOnlyField>", "longOnly"},
+                {"", "-b", ",", "--beta=<combiField>", "combi"},
         };
         int i = -1;
         for (Field field : help.optionFields) {
@@ -221,7 +293,7 @@ public class CommandLineHelpTest {
 
     @Test
     public void testCreateDefaultParameterRenderer_ReturnsDefaultParameterRenderer() {
-        assertEquals(Help.DefaultValueLabelRenderer.class, Help.createDefaultValueLabelRenderer("=").getClass());
+        assertEquals(Help.DefaultValueLabelRenderer.class, new Help(UsageDemo.class).createDefaultValueLabelRenderer().getClass());
     }
 
     @Test
@@ -230,9 +302,10 @@ public class CommandLineHelpTest {
             @Option(names = "--without" ) String longField;
             @Option(names = "--with", valueLabel = "LABEL") String otherField;
         }
-        Help.IValueLabelRenderer spaceSeparatedParameterRenderer = Help.createDefaultValueLabelRenderer(" ");
-        Help.IValueLabelRenderer equalSeparatedParameterRenderer = Help.createDefaultValueLabelRenderer("=");
         Help help = new Help(Example.class);
+        Help.IValueLabelRenderer equalSeparatedParameterRenderer = help.createDefaultValueLabelRenderer();
+        help.separator = " ";
+        Help.IValueLabelRenderer spaceSeparatedParameterRenderer = help.createDefaultValueLabelRenderer();
 
         String[] expected = new String[] {
                 "<longField>",
@@ -252,10 +325,12 @@ public class CommandLineHelpTest {
     public void testDefaultParameterRenderer_appliesToPositionalArgumentsIgnoresSeparator() {
         class WithLabel    { @Parameters(valueLabel = "POSITIONAL_ARGS") String positional; }
         class WithoutLabel { @Parameters()                               String positional; }
-        Help.IValueLabelRenderer spaced = Help.createDefaultValueLabelRenderer(" ");
-        Help.IValueLabelRenderer equals = Help.createDefaultValueLabelRenderer("=");
 
         Help withLabel = new Help(WithLabel.class);
+        Help.IValueLabelRenderer equals = withLabel.createDefaultValueLabelRenderer();
+        withLabel.separator = "=";
+        Help.IValueLabelRenderer spaced = withLabel.createDefaultValueLabelRenderer();
+
         String withSpace = spaced.renderParameterLabel(withLabel.positionalParametersField);
         assertEquals(withSpace, "POSITIONAL_ARGS", withSpace);
         String withEquals = equals.renderParameterLabel(withLabel.positionalParametersField);
@@ -288,8 +363,8 @@ public class CommandLineHelpTest {
     }
 
     @Test
-    public void testAppendUsageTo_DefaultSynopsis_withoutParameters() {
-        @CommandLine.Command
+    public void testAppendUsageTo_AbbreviateSynopsis_withoutParameters() {
+        @CommandLine.Command(abbreviateSynopsis = true)
         class App {
             @Option(names = {"--verbose", "-v"}) boolean verbose;
             @Option(names = {"--count", "-c"}) int count;
@@ -299,8 +374,8 @@ public class CommandLineHelpTest {
     }
 
     @Test
-    public void testAppendUsageTo_DefaultSynopsis_withParameters() {
-        @CommandLine.Command
+    public void testAppendUsageTo_AbbreviateSynopsis_withParameters() {
+        @CommandLine.Command(abbreviateSynopsis = true)
         class App {
             @Option(names = {"--verbose", "-v"}) boolean verbose;
             @Option(names = {"--count", "-c"}) int count;
@@ -311,18 +386,18 @@ public class CommandLineHelpTest {
     }
 
     @Test
-    public void testAppendUsageTo_DetailedSynopsis_optionalOptionArity1_n_withoutSeparator() {
-        @Command(detailedSynopsis = true) class App {
+    public void testAppendUsageTo_DetailedSynopsis_optionalOptionArity1_n_withDefaultSeparator() {
+        @Command() class App {
             @Option(names = {"--verbose", "-v"}) boolean verbose;
             @Option(names = {"--count", "-c"}, arity = "1..*") int count;
             @Option(names = {"--help", "-h"}, hidden = true) boolean helpRequested;
         }
-        assertEquals("<main class> [-v] [-c <count> [<count>...]]" + LINESEP, new Help(App.class).synopsis());
+        assertEquals("<main class> [-v] [-c=<count> [<count>...]]" + LINESEP, new Help(App.class).synopsis());
     }
 
     @Test
-    public void testAppendUsageTo_DetailedSynopsis_optionalOptionArity0_1_withoutSeparator() {
-        @CommandLine.Command(detailedSynopsis = true) class App {
+    public void testAppendUsageTo_DetailedSynopsis_optionalOptionArity0_1_withSpaceSeparator() {
+        @CommandLine.Command(separator = " ") class App {
             @Option(names = {"--verbose", "-v"}) boolean verbose;
             @Option(names = {"--count", "-c"}, arity = "0..1") int count;
             @Option(names = {"--help", "-h"}, hidden = true) boolean helpRequested;
@@ -331,28 +406,28 @@ public class CommandLineHelpTest {
     }
 
     @Test
-    public void testAppendUsageTo_DetailedSynopsis_requiredOptionWithoutSeparator() {
-        @Command(detailedSynopsis = true) class App {
+    public void testAppendUsageTo_DetailedSynopsis_requiredOptionWithSeparator() {
+        @Command() class App {
             @Option(names = {"--verbose", "-v"}) boolean verbose;
             @Option(names = {"--count", "-c"}, required = true) int count;
             @Option(names = {"--help", "-h"}, hidden = true) boolean helpRequested;
         }
-        assertEquals("<main class> [-v] -c <count>" + LINESEP, new Help(App.class).synopsis());
+        assertEquals("<main class> [-v] -c=<count>" + LINESEP, new Help(App.class).synopsis());
     }
 
     @Test
-    public void testAppendUsageTo_DetailedSynopsis_optionalOption_withSeparator() {
-        @CommandLine.Command(separator = "=", detailedSynopsis = true) class App {
+    public void testAppendUsageTo_DetailedSynopsis_optionalOption_withSpaceSeparator() {
+        @CommandLine.Command(separator = " ") class App {
             @Option(names = {"--verbose", "-v"}) boolean verbose;
             @Option(names = {"--count", "-c"}) int count;
             @Option(names = {"--help", "-h"}, hidden = true) boolean helpRequested;
         }
-        assertEquals("<main class> [-v] [-c=<count>]" + LINESEP, new Help(App.class).synopsis());
+        assertEquals("<main class> [-v] [-c <count>]" + LINESEP, new Help(App.class).synopsis());
     }
 
     @Test
     public void testAppendUsageTo_DetailedSynopsis_optionalOptionArity0_1__withSeparator() {
-        @CommandLine.Command(separator = "=", detailedSynopsis = true) class App {
+        class App {
             @Option(names = {"--verbose", "-v"}) boolean verbose;
             @Option(names = {"--count", "-c"}, arity = "0..1") int count;
             @Option(names = {"--help", "-h"}, hidden = true) boolean helpRequested;
@@ -362,7 +437,7 @@ public class CommandLineHelpTest {
 
     @Test
     public void testAppendUsageTo_DetailedSynopsis_optionalOptionArity0_n__withSeparator() {
-        @CommandLine.Command(separator = "=", detailedSynopsis = true) class App {
+        @CommandLine.Command(separator = "=") class App {
             @Option(names = {"--verbose", "-v"}) boolean verbose;
             @Option(names = {"--count", "-c"}, arity = "0..*") int count;
             @Option(names = {"--help", "-h"}, hidden = true) boolean helpRequested;
@@ -372,7 +447,7 @@ public class CommandLineHelpTest {
 
     @Test
     public void testAppendUsageTo_DetailedSynopsis_optionalOptionArity1_n__withSeparator() {
-        @CommandLine.Command(separator = "=", detailedSynopsis = true) class App {
+        @CommandLine.Command(separator = "=") class App {
             @Option(names = {"--verbose", "-v"}) boolean verbose;
             @Option(names = {"--count", "-c"}, arity = "1..*") int count;
             @Option(names = {"--help", "-h"}, hidden = true) boolean helpRequested;
@@ -382,7 +457,7 @@ public class CommandLineHelpTest {
 
     @Test
     public void testAppendUsageTo_DetailedSynopsis_withSeparator_withParameters() {
-        @CommandLine.Command(separator = "=", detailedSynopsis = true) class App {
+        @CommandLine.Command(separator = "=") class App {
             @Option(names = {"--verbose", "-v"}) boolean verbose;
             @Option(names = {"--count", "-c"}) int count;
             @Option(names = {"--help", "-h"}, hidden = true) boolean helpRequested;
@@ -393,7 +468,7 @@ public class CommandLineHelpTest {
 
     @Test
     public void testAppendUsageTo_DetailedSynopsis_withSeparator_withLabeledParameters() {
-        @Command(separator = "=", detailedSynopsis = true) class App {
+        @Command(separator = "=") class App {
             @Option(names = {"--verbose", "-v"}) boolean verbose;
             @Option(names = {"--count", "-c"}) int count;
             @Option(names = {"--help", "-h"}, hidden = true) boolean helpRequested;
@@ -404,7 +479,7 @@ public class CommandLineHelpTest {
 
     @Test
     public void testAppendUsageTo_DetailedSynopsis_withSeparator_withLabeledRequiredParameters() {
-        @CommandLine.Command(separator = "=", detailedSynopsis = true) class App {
+        @CommandLine.Command(separator = "=") class App {
             @Option(names = {"--verbose", "-v"}) boolean verbose;
             @Option(names = {"--count", "-c"}) int count;
             @Option(names = {"--help", "-h"}, hidden = true) boolean helpRequested;
@@ -415,7 +490,7 @@ public class CommandLineHelpTest {
 
     @Test
     public void testAppendUsageTo_DetailedSynopsis_clustersBooleanOptions() {
-        @Command(separator = "=", detailedSynopsis = true) class App {
+        @Command(separator = "=") class App {
             @Option(names = {"--verbose", "-v"}) boolean verbose;
             @Option(names = {"--aaaa", "-a"}) boolean aBoolean;
             @Option(names = {"--xxxx", "-x"}) Boolean xBoolean;
@@ -426,7 +501,7 @@ public class CommandLineHelpTest {
 
     @Test
     public void testAppendUsageTo_DetailedSynopsis_clustersRequiredBooleanOptions() {
-        @CommandLine.Command(separator = "=", detailedSynopsis = true) class App {
+        @CommandLine.Command(separator = "=") class App {
             @Option(names = {"--verbose", "-v"}, required = true) boolean verbose;
             @Option(names = {"--aaaa", "-a"}, required = true) boolean aBoolean;
             @Option(names = {"--xxxx", "-x"}, required = true) Boolean xBoolean;
@@ -437,7 +512,7 @@ public class CommandLineHelpTest {
 
     @Test
     public void testAppendUsageTo_DetailedSynopsis_clustersRequiredBooleanOptionsSeparately() {
-        @CommandLine.Command(separator = "=", detailedSynopsis = true) class App {
+        @CommandLine.Command(separator = "=") class App {
             @Option(names = {"--verbose", "-v"}) boolean verbose;
             @Option(names = {"--aaaa", "-a"}) boolean aBoolean;
             @Option(names = {"--xxxx", "-x"}) Boolean xBoolean;
@@ -452,8 +527,8 @@ public class CommandLineHelpTest {
     @Test
     public void testTextTable() {
         TextTable table = new TextTable();
-        ((Help.OneOptionPerRowLayout) table.layout).addRow(table, "-v", ",", "--verbose", "show what you're doing while you are doing it");
-        ((Help.OneOptionPerRowLayout) table.layout).addRow(table, "-p", null, null, "the quick brown fox jumped over the lazy dog. The quick brown fox jumped over the lazy dog.");
+        ((Help.OneOptionPerRowLayout) table.layout).addRow(table, "", "-v", ",", "--verbose", "show what you're doing while you are doing it");
+        ((Help.OneOptionPerRowLayout) table.layout).addRow(table, "", "-p", null, null, "the quick brown fox jumped over the lazy dog. The quick brown fox jumped over the lazy dog.");
         assertEquals(String.format(
                 "  -v, --verbose               show what you're doing while you are doing it     %n" +
                         "  -p                          the quick brown fox jumped over the lazy dog. The %n" +
@@ -465,7 +540,7 @@ public class CommandLineHelpTest {
     public void testTextTableAddsNewRowWhenTooManyValuesSpecified() {
         Help.OneOptionPerRowLayout layout = new Help.OneOptionPerRowLayout();
         TextTable table = new TextTable(layout);
-        layout.addRow(table, "-c", ",", "--create", "description", "INVALID", "Row 3");
+        layout.addRow(table, "", "-c", ",", "--create", "description", "INVALID", "Row 3");
 //        assertEquals(String.format("" +
 //                        "  -c, --create                description                                       %n" +
 //                        "                                INVALID                                         %n" +
@@ -476,17 +551,17 @@ public class CommandLineHelpTest {
     @Test
     public void testTextTableAddsNewRowWhenAnyColumnTooLong() {
         TextTable table = new TextTable();
-        ((Help.OneOptionPerRowLayout) table.layout).addRow(table, "-c", ",",
+        ((Help.OneOptionPerRowLayout) table.layout).addRow(table, "*", "-c", ",",
                 "--create, --create2, --create3, --create4, --create5, --create6, --create7, --create8",
                 "description");
         assertEquals(String.format("" +
-                        "  -c, --create, --create2, --create3, --create4, --create5, --create6, --       %n" +
+                        "* -c, --create, --create2, --create3, --create4, --create5, --create6, --       %n" +
                         "        create7, --create8                                                      %n" +
                         "                              description                                       %n"
                 ,""), table.toString(new StringBuilder()).toString());
 
         table = new TextTable();
-        ((Help.OneOptionPerRowLayout) table.layout).addRow(table, "-c", ",",
+        ((Help.OneOptionPerRowLayout) table.layout).addRow(table, "", "-c", ",",
                 "--create, --create2, --create3, --create4, --create5, --create6, --createAA7, --create8",
                 "description");
         assertEquals(String.format("" +
@@ -499,6 +574,7 @@ public class CommandLineHelpTest {
     @Test
     public void testCatUsageFormat() {
         @Command(name = "cat",
+                abbreviateSynopsis = true,
                 description = "Concatenate FILE(s), or standard input, to standard output.",
                 footer = "Copyright(c) 2017")
         class Cat {
@@ -657,8 +733,8 @@ public class CommandLineHelpTest {
     public void testNetstatUsageFormat() {
         @CommandLine.Command(name = "NETSTAT",
                 separator = " ",
-                detailedSynopsis = true,
-                title = "Displays protocol statistics and current TCP/IP network connections.\n")
+                abbreviateSynopsis = true,
+                header = "Displays protocol statistics and current TCP/IP network connections.\n")
         class Netstat {
             @Option(names="-a", description="Displays all connections and listening ports.")
             boolean displayAll;
@@ -712,7 +788,7 @@ public class CommandLineHelpTest {
         }
         StringBuilder sb = new StringBuilder();
         Help help = new Help(Netstat.class);
-        sb.append(help.title()).append(help.detailedSynopsis(null, false));
+        sb.append(help.header()).append(help.detailedSynopsis(null, false));
         sb.append(System.getProperty("line.separator"));
 
         TextTable textTable = new TextTable(help.createDefaultLayout(),
