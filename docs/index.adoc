@@ -11,7 +11,7 @@ allowing you to parse command line arguments without dragging in an external dep
 How it works: annotate your class and picoCLI initializes it from the command line arguments,
 converting the input to strongly typed values in the fields of your class. Any option prefix style works,
 with special support for POSIX-style clustered short options.
-Easily customizable online "command" help. Can be configured to make option matching case-insensitive,
+Easily customizable online "usage" help. Can be configured to make option matching case-insensitive,
 and supports abbreviated options when unambiguous. Works with Java 5 or higher.
 
 == Example
@@ -61,26 +61,26 @@ import java.io.File;
 
 @Usage(programName = "Compress", header = "Compresses the specified input files to an output file")
 public class Compress {
-    @Parameters(arity = "1..*", command = "one or more files to compress")
+    @Parameters(arity = "1..*", description = "one or more files to compress")
     File[] inputFiles;
 
-    @Option(names = {"-o", "--outfile"}, command = "optional output file name. If omitted directory name is used.")
+    @Option(names = {"-o", "--outfile"}, description = "optional output file name. If omitted directory name is used.")
     File outputFile;
 
-    @Option(names = {"-h", "--help"}, help = true, command = "display this help message")
+    @Option(names = {"-h", "--help"}, help = true, description = "display this help message")
     boolean helpRequested;
 
     public static void main(String... args) {
         try {
             Compress compress = CommandLine.parse(new Compress(), args);
             if (compress.helpRequested) {
-                CommandLine.command(compress, System.err);
+                CommandLine.usage(new Compress(), System.err);
                 return;
             }
             doCompress();
         } catch (ParseException ex) {
             System.err.println(ex.getMessage());
-            CommandLine.command(compress, System.err);
+            CommandLine.usage(new Compress(), System.err);
         }
     }
 
