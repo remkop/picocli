@@ -253,6 +253,7 @@ public class CommandLine {
     }
     private static boolean empty(String str) { return str == null || str.trim().length() == 0; }
     private static boolean empty(Object[] array) { return array == null || array.length == 0; }
+    private static boolean isBoolean(Class<?> type) { return type == Boolean.class || type == Boolean.TYPE; }
 
     /**
      * <p>
@@ -689,7 +690,7 @@ public class CommandLine {
         /** Returns a new {@code Arity} based on the specified type: booleans have arity 0, arrays or Collections have
          * arity "0..*", and other types have arity 1. */
         public static Arity forType(Class<?> type) {
-            if (type == Boolean.class || type == Boolean.TYPE) {
+            if (isBoolean(type)) {
                 return Arity.valueOf("0");
             } else if (type.isArray() || Collection.class.isAssignableFrom(type)) {
                 return Arity.valueOf("0..*");
@@ -1474,29 +1475,29 @@ public class CommandLine {
                 }
                 fields.removeAll(booleanOptions);
                 if (clusteredRequired.length() > 0) {
-                    sb.append("-").append(clusteredRequired);
+                    sb.append(" -").append(clusteredRequired);
                 }
                 if (clusteredOptional.length() > 0) {
-                    sb.append("[-").append(clusteredOptional).append("]");
+                    sb.append(" [-").append(clusteredOptional).append("]");
                 }
             }
             for (Field field : fields) {
                 Option option = field.getAnnotation(Option.class);
-                if (sb.length() > 0) { sb.append(" "); }
+                sb.append(" ");
                 String pattern = option.required() ? "%s" : "[%s]";
                 String optionNames = ShortestFirst.sort(option.names())[0];
                 optionNames += parameterLabelRenderer.renderParameterLabel(field);
                 sb.append(String.format(pattern, optionNames));
             }
             if (positionalParametersField != null) {
-                if (sb.length() > 0) { sb.append(" "); }
+                sb.append(" ");
                 sb.append(parameterLabelRenderer.renderParameterLabel(positionalParametersField));
             }
 
             TextTable textTable = new TextTable(createDefaultLayout(),
-                    new Column(commandName.length() + 1, 0, Column.Overflow.TRUNCATE),
-                    new Column(80 - (commandName.length() + 1), 0, Column.Overflow.WRAP));
-            textTable.indentWrappedLines = 0;
+                    new Column(commandName.length(), 0, Column.Overflow.TRUNCATE),
+                    new Column(80 - commandName.length(), 0, Column.Overflow.WRAP));
+            textTable.indentWrappedLines = 1; // first line: options always start with a space
             textTable.addEmptyRow();
             textTable.putValue(0, 0, commandName);
             textTable.putValue(0, 1, sb.toString());
@@ -1718,6 +1719,7 @@ public class CommandLine {
          */
         static class DefaultOptionRenderer implements IOptionRenderer {
             public String requiredMarker = " ";
+            public boolean showDefaultValue = false; // FIXME
             public String[][] render(Option option, Field field, IValueLabelRenderer parameterLabelRenderer) {
                 String[] names = new ShortestFirst().sort(option.names());
                 int shortOptionCount = names[0].length() == 2 ? 1 : 0;
@@ -1727,11 +1729,18 @@ public class CommandLine {
                 longOption += parameterLabelRenderer.renderParameterLabel(field);
                 String requiredOption = option.required() ? requiredMarker : "";
 
+                boolean showDefault = showDefaultValue && !option.help() && !isBoolean(field.getType());
+                final int ROW_COUNT = showDefault ? option.description().length + 1 : option.description().length;
                 final int COLUMN_COUNT = 5;
-                String[][] result = new String[option.description().length][COLUMN_COUNT];
+                String[][] result = new String[ROW_COUNT][COLUMN_COUNT];
                 result[0] = new String[] { requiredOption, shortOption, sep, longOption, option.description()[0] };
                 for (int i = 1; i < option.description().length; i++) {
                     result[i] = new String[] { "", "", "", "", option.description()[i] };
+                }
+                if (showDefault) {
+                    Arrays.fill(result[result.length - 1], "");
+                    int row = empty(result[ROW_COUNT - 1][COLUMN_COUNT - 1]) ? ROW_COUNT - 2 : ROW_COUNT - 1;
+                    // FIXME result[row][COLUMN_COUNT - 1] = "Default: " + field.get(annotatedObject);
                 }
                 return result;
             }
@@ -2089,10 +2098,10 @@ public class CommandLine {
                 return str.length(); // TODO count some characters as double length
             }
             private int copy(BreakIterator line, String text, char[] columnValue, int offset) {
-                line.setText(text.replace("-", "\u0027")); // ensure no line breaks after '-' character
+                line.setText(text.replace("-", "\u00ff")); // ensure no line breaks after '-' character
                 int done = 0;
                 for (int start = line.first(), end = line.next(); end != BreakIterator.DONE; start = end, end = line.next()) {
-                    String word = text.substring(start, end).replace("\u0027", "-");
+                    String word = text.substring(start, end).replace("\u00ff", "-");
                     if (columnValue.length >= offset + done + length(word)) {
                         done += copy(word, columnValue, offset + done); // TODO localized length
                     } else {
@@ -2110,11 +2119,17 @@ public class CommandLine {
             /** Copies the text representation that we built up from the options into the specified StringBuilder. */
             public StringBuilder toString(StringBuilder text) {
                 int columnCount = this.columns.length;
+                StringBuilder row = new StringBuilder(80);
                 for (int i = 0; i < columnValues.size(); i++) {
                     char[] column = columnValues.get(i);
-                    text.append(column);
+                    row.append(column);
                     if (i % columnCount == columnCount - 1) {
+                        int lastChar = row.length() - 1;
+                        while (lastChar >= 0 && Character.isWhitespace(row.charAt(lastChar))) {lastChar--;}
+                        row.setLength(lastChar + 1);
+                        text.append(row.toString());
                         text.append(System.getProperty("line.separator"));
+                        row.setLength(0);
                     }
                 }
                 return text;
