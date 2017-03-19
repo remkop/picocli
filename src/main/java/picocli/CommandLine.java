@@ -541,7 +541,7 @@ public class CommandLine {
          * Set {@code hidden=true} if this parameter should not be included in the usage documentation.
          * @return whether this parameter should be excluded from the usage message
          */
-        boolean hidden() default true;
+        boolean hidden() default false;
     }
 
     /**
@@ -762,11 +762,11 @@ public class CommandLine {
             return result + (empty(originalValue) || result.equals(originalValue) ? "" : " ('" + originalValue + "')");
         }
     }
-    private static Field init(Class<?> cls,
+    private static void init(Class<?> cls,
                               List<Field> requiredFields,
                               Map<String, Field> optionName2Field,
                               Map<Character, Field> singleCharOption2Field,
-                              Field positionalParametersField) {
+                              List<Field> positionalParametersFields) {
         Field[] declaredFields = cls.getDeclaredFields();
         for (Field field : declaredFields) {
             if (field.isAnnotationPresent(Option.class)) {
@@ -790,17 +790,13 @@ public class CommandLine {
                 }
             }
             if (field.isAnnotationPresent(Parameters.class)) {
-                if (positionalParametersField != null) {
-                    throw new ParameterException("Only one @Parameters field allowed, but found on '"
-                            + positionalParametersField.getName() + "' and '" + field.getName() + "'.");
-                } else if (field.isAnnotationPresent(Option.class)) {
+                if (field.isAnnotationPresent(Option.class)) {
                     throw new ParameterException("A field can be either @Option or @Parameters, but '"
                             + field.getName() + "' is both.");
                 }
-                positionalParametersField = field;
+                positionalParametersFields.add(field);
             }
         }
-        return positionalParametersField;
     }
 
     /**
@@ -811,8 +807,8 @@ public class CommandLine {
         private final Map<String, Field> optionName2Field                = new HashMap<String, Field>();
         private final Map<Character, Field> singleCharOption2Field       = new HashMap<Character, Field>();
         private final List<Field> requiredFields                         = new ArrayList<Field>();
+        private final List<Field> positionalParametersFields             = new ArrayList<Field>();
         private final Object annotatedObject;
-        private Field positionalParametersField;
         private boolean isHelpRequested;
         private String separator = "=";
 
@@ -851,7 +847,7 @@ public class CommandLine {
             this.annotatedObject    = Assert.notNull(annotatedObject, "annotatedObject");
             Class<?> cls = annotatedObject.getClass();
             while (cls != null) {
-                positionalParametersField = init(cls, requiredFields, optionName2Field, singleCharOption2Field, positionalParametersField);
+                init(cls, requiredFields, optionName2Field, singleCharOption2Field, positionalParametersFields);
                 cls = cls.getSuperclass();
             }
         }
@@ -863,10 +859,6 @@ public class CommandLine {
          */
         Object parse(String... args) {
             Assert.notNull(args, "argument array");
-            if (positionalParametersField != null) {
-                Arity arity = Arity.forParameters(positionalParametersField);
-                assertNoMissingParameters(positionalParametersField, arity.min, args.length);
-            }
             // first reset any state in case this CommandLine instance is being reused
             isHelpRequested = false;
             Set<Field> required = new HashSet<Field>(requiredFields);
@@ -875,6 +867,7 @@ public class CommandLine {
                 arguments.push(args[i]);
             }
             try {
+                processPositionalParameters0(true, arguments);
                 processArguments(arguments, required);
             } catch (ParameterException ex) {
                 throw ex;
@@ -943,12 +936,30 @@ public class CommandLine {
         }
 
         private void processPositionalParameters(Stack<String> args) throws Exception {
-            if (positionalParametersField == null || args.isEmpty()) {
-                return;
+//            if (positionalParametersFields.isEmpty() && !args.isEmpty()) {
+//                throw new SuperfluousParameterException("Superfluous arguments: " + args); // FIXME
+//            }
+            processPositionalParameters0(false, args);
+        }
+
+        private void processPositionalParameters0(boolean validateOnly, Stack<String> args) throws Exception {
+            for (Field positionalParam : positionalParametersFields) {
+                Arity indexRange = Arity.valueOf(positionalParam.getAnnotation(Parameters.class).index());
+                Stack<String> argsCopy = (Stack<String>) args.clone();
+                Collections.reverse(argsCopy);
+                if (!indexRange.isVariable) {
+                    for (int i = argsCopy.size() - 1; i > indexRange.max; i--) {
+                        argsCopy.removeElementAt(i);
+                    }
+                }
+                Collections.reverse(argsCopy);
+                for (int i = 0; i < indexRange.min; i++) { argsCopy.pop(); }
+                Arity arity = Arity.forParameters(positionalParam);
+                assertNoMissingParameters(positionalParam, arity.min, argsCopy.size());
+                if (!validateOnly) {
+                    applyOption(positionalParam, Parameters.class, arity, false, argsCopy);
+                }
             }
-            Arity arity = Arity.forParameters(positionalParametersField);
-            assertNoMissingParameters(positionalParametersField, arity.min, args.size());
-            applyOption(positionalParametersField, Parameters.class, arity, false, args);
         }
 
         private void processStandaloneOption(Set<Field> required,
@@ -1028,6 +1039,7 @@ public class CommandLine {
         }
 
         private int applyValueToSingleValuedField(Field field, Arity arity, Stack<String> args, Class<?> cls) throws Exception {
+            boolean noMoreValues = args.isEmpty();
             String value = args.isEmpty() ? null : trim(args.pop()); // unquote the value
             int result = arity.min; // the number or args we need to consume
 
@@ -1043,6 +1055,9 @@ public class CommandLine {
                     }
                     value = "true";      // just specifying the option name sets the boolean to true
                 }
+            }
+            if (noMoreValues && value == null) {
+                return 0;
             }
             ITypeConverter<?> converter = getTypeConverter(cls);
             Object objValue = tryConvert(field, -1, converter, value, cls);
@@ -1142,7 +1157,7 @@ public class CommandLine {
                 throw new ParameterException(ex.getMessage() + optionDescription(field, index));
             } catch (Exception other) {
                 String desc = optionDescription(field, index);
-                throw new ParameterException("Could not convert '" + value + "' to " + type.getSimpleName() + desc);
+                throw new ParameterException("Could not convert '" + value + "' to " + type.getSimpleName() + desc, other);
             }
         }
 
@@ -1361,8 +1376,8 @@ public class CommandLine {
         //public final Map<Option, Field> option2Field = new LinkedHashMap<Option, Field>();
         public List<Field> optionFields = new ArrayList<Field>();
 
-        /** The {@code Field} annotated with {@link Parameters}, or {@code null} if no such field exists. */
-        public Field positionalParametersField;
+        /** The {@code Fields} annotated with {@link Parameters}, or an empty list if no such field exists. */
+        public List<Field> positionalParametersFields = new ArrayList<Field>();
 
         /** The String to use as the separator between options and option parameters. {@code "="} by default,
          * initialized from {@link Command#separator()} if defined. */
@@ -1426,7 +1441,7 @@ public class CommandLine {
                         }
                     }
                     if (field.isAnnotationPresent(Parameters.class)) {
-                        positionalParametersField = positionalParametersField == null ? field : positionalParametersField;
+                        positionalParametersFields.add(field);
                     }
                 }
                 // superclass values should not overwrite values if both class and superclass have a @Command annotation
@@ -1469,11 +1484,11 @@ public class CommandLine {
             if (!optionFields.isEmpty()) { // only show if annotated object actually has options
                 sb.append(" [OPTIONS]");
             }
-            if (positionalParametersField != null) {
-                // sb.append(" [--] "); // implied
-                sb.append(' ').append(
-                        parameterLabelRenderer.renderParameterLabel(
-                                positionalParametersField));
+            // sb.append(" [--] "); // implied
+            for (Field positionalParam : positionalParametersFields) {
+                if (!positionalParam.getAnnotation(Parameters.class).hidden()) {
+                    sb.append(' ').append(parameterLabelRenderer.renderParameterLabel(positionalParam));
+                }
             }
             sb.append(System.getProperty("line.separator"));
             return sb.toString();
@@ -1521,9 +1536,10 @@ public class CommandLine {
                 optionNames += parameterLabelRenderer.renderParameterLabel(field);
                 sb.append(String.format(pattern, optionNames));
             }
-            if (positionalParametersField != null) {
-                sb.append(" ");
-                sb.append(parameterLabelRenderer.renderParameterLabel(positionalParametersField));
+            for (Field positionalParam : positionalParametersFields) {
+                if (!positionalParam.getAnnotation(Parameters.class).hidden()) {
+                    sb.append(' ').append(parameterLabelRenderer.renderParameterLabel(positionalParam));
+                }
             }
 
             TextTable textTable = new TextTable(createDefaultLayout(),
@@ -1580,14 +1596,13 @@ public class CommandLine {
             return parameterList(textTable, createMinimalValueLabelRenderer());
         }
         public String parameterList(TextTable textTable, IValueLabelRenderer valueLabelRenderer) {
-            if (positionalParametersField != null) {
-                Parameters parameters = positionalParametersField.getAnnotation(Parameters.class);
+            for (Field positionalParam : positionalParametersFields) {
+                Parameters parameters = positionalParam.getAnnotation(Parameters.class);
                 if (!parameters.hidden()) {
-                    textTable.addPositionalParameter(positionalParametersField, valueLabelRenderer);
-                    return textTable.toString();
+                    textTable.addPositionalParameter(positionalParam, valueLabelRenderer);
                 }
             }
-            return "";
+            return textTable.toString();
         }
 
         /** Appends each of the specified values plus the specified separator to the specified StringBuilder and returns it. */
@@ -2236,13 +2251,21 @@ public class CommandLine {
         }
 
         private static ParameterException create(Exception ex, String arg, int i, String[] args) {
-            String next = args.length < i + 1 ? " " + args[i + 1] : "";
+            String next = args.length < i + 1 ? "" : " " + args[i + 1];
             String msg = ex.getClass().getSimpleName() + ": " + ex.getLocalizedMessage()
                     + " while processing option[" + i + "] '" + arg + next + "'.";
             return new ParameterException(msg, ex);
         }
     }
 
+    /**
+     * Exception indicating that one or more command line arguments could not be assigned to any options or parameters.
+     */
+    public static class SuperfluousParameterException extends ParameterException {
+        public SuperfluousParameterException(String msg) {
+            super(msg);
+        }
+    }
     /**
      * Exception indicating that a required parameter was not specified.
      */

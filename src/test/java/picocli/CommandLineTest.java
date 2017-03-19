@@ -1535,4 +1535,111 @@ public class CommandLineTest {
         opt = CommandLine.parse(new ChildOption(), "-parentPath", "somePath");
         assertNull(opt.path);
     }
+
+    @Test
+    public void testPositionalParamWithAbsoluteIndex() {
+        class App {
+            @Parameters(index = "0") File file0;
+            @Parameters(index = "1") File file1;
+            @Parameters(index = "2", arity = "0..1") File file2;
+            @Parameters List<String> all;
+        }
+        App app1 = CommandLine.parse(new App(), "000", "111", "222", "333");
+        assertEquals("arg[0]", new File("000"), app1.file0);
+        assertEquals("arg[1]", new File("111"), app1.file1);
+        assertEquals("arg[2]", new File("222"), app1.file2);
+        assertEquals("args", Arrays.asList("000", "111", "222", "333"), app1.all);
+
+        App app2 = CommandLine.parse(new App(), "000", "111");
+        assertEquals("arg[0]", new File("000"), app2.file0);
+        assertEquals("arg[1]", new File("111"), app2.file1);
+        assertEquals("arg[2]", null, app2.file2);
+        assertEquals("args", Arrays.asList("000", "111"), app2.all);
+
+        try {
+            CommandLine.parse(new App(), "000");
+            fail("Should fail with missingParamException");
+        } catch (MissingParameterException ex) {
+            assertEquals("Missing required parameter for field 'file1'", ex.getMessage());
+        }
+    }
+
+    @Test
+    public void testPositionalParamWithFixedIndexRange() {
+        class App {
+            @Parameters(index = "0..1") File file0_1;
+            @Parameters(index = "1..2", type = File.class) List<File> fileList1_2;
+            @Parameters(index = "0..3") File[] fileArray0_3 = new File[4];
+            @Parameters List<String> all;
+        }
+        App app1 = CommandLine.parse(new App(), "000", "111", "222", "333");
+        assertEquals("field initialized with arg[0]", new File("000"), app1.file0_1);
+        assertEquals("arg[1] and arg[2]", Arrays.asList(
+                new File("111"),
+                new File("222")), app1.fileList1_2);
+        assertArrayEquals("arg[0-3]", new File[]{
+                new File("000"),
+                new File("111"),
+                new File("222"),
+                new File("333")}, app1.fileArray0_3);
+        assertEquals("args", Arrays.asList("000", "111", "222", "333"), app1.all);
+
+        App app2 = CommandLine.parse(new App(), "000", "111");
+        assertEquals("field initialized with arg[0]", new File("000"), app2.file0_1);
+        assertEquals("arg[1]", Arrays.asList(new File("111")), app2.fileList1_2);
+        assertArrayEquals("arg[0-3]", new File[]{
+                new File("000"),
+                new File("111"),}, app2.fileArray0_3);
+        assertEquals("args", Arrays.asList("000", "111"), app2.all);
+
+        App app3 = CommandLine.parse(new App(), "000");
+        assertEquals("field initialized with arg[0]", new File("000"), app3.file0_1);
+        assertEquals("arg[1]", new ArrayList<File>(), app3.fileList1_2);
+        assertArrayEquals("arg[0-3]", new File[]{
+                new File("000")}, app3.fileArray0_3);
+        assertEquals("args", Arrays.asList("000"), app3.all);
+
+        try {
+            CommandLine.parse(new App());
+            fail("Should fail with missingParamException");
+        } catch (MissingParameterException ex) {
+            assertEquals("Missing required parameter for field 'file0_1'", ex.getMessage());
+        }
+    }
+
+    @Test
+    public void testPositionalParamWithFixedAndVariableIndexRanges() throws Exception {
+        class App {
+            @Parameters(index = "0") InetAddress host1;
+            @Parameters(index = "1") int port1;
+            @Parameters(index = "2") InetAddress host2;
+            @Parameters(index = "3..4", arity = "1..2") int[] port2range;
+            @Parameters(index = "4..*") String[] files;
+        }
+        App app1 = CommandLine.parse(new App(), "localhost", "1111", "localhost", "2222", "3333", "file1", "file2");
+        assertEquals(InetAddress.getByName("localhost"), app1.host1);
+        assertEquals(1111, app1.port1);
+        assertEquals(InetAddress.getByName("localhost"), app1.host2);
+        assertArrayEquals(new int[]{2222, 3333}, app1.port2range);
+        assertArrayEquals(new String[]{"3333", "file1", "file2"}, app1.files);
+    }
+
+    @Ignore("Requires #70 support for variable arity in positional parameters")
+    @Test
+    public void testPositionalParamWithFixedIndexRangeAndVariableArity() throws Exception {
+        class App {
+            @Parameters(index = "0") InetAddress host1;
+            @Parameters(index = "1") int port1;
+            @Parameters(index = "2") InetAddress host2;
+            @Parameters(index = "3..4", arity = "1..2") int[] port2range;
+            @Parameters(index = "4..*") String[] files;
+        }
+        // now with only one arg in port2range
+        App app2 = CommandLine.parse(new App(), "localhost", "1111", "localhost", "2222", "file1", "file2");
+        assertEquals(InetAddress.getByName("localhost"), app2.host1);
+        assertEquals(1111, app2.port1);
+        assertEquals(InetAddress.getByName("localhost"), app2.host2);
+        assertArrayEquals(new int[]{2222}, app2.port2range);
+        assertArrayEquals(new String[]{"file1", "file2"}, app2.files);
+    }
 }

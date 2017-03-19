@@ -30,6 +30,7 @@ import java.io.PrintStream;
 import java.io.UnsupportedEncodingException;
 import java.lang.String;
 import java.lang.reflect.Field;
+import java.net.InetAddress;
 import java.util.Arrays;
 import java.util.List;
 
@@ -287,7 +288,7 @@ public class CommandLineHelpTest {
         Help help = new Help(new Required());
         Help.IParameterRenderer renderer = help.createDefaultParameterRenderer();
         Help.IValueLabelRenderer parameterRenderer = Help.createMinimalValueLabelRenderer();
-        Field field = help.positionalParametersField;
+        Field field = help.positionalParametersFields.get(0);
         String[][] row1 = renderer.render(field.getAnnotation(Parameters.class), field, parameterRenderer);
         assertEquals(1, row1.length);
         assertArrayEquals(Arrays.toString(row1[0]), new String[]{" ", "", "", "required", "required"}, row1[0]);
@@ -302,7 +303,7 @@ public class CommandLineHelpTest {
         Help help = new Help(new Required());
         Help.IParameterRenderer renderer = help.createDefaultParameterRenderer();
         Help.IValueLabelRenderer parameterRenderer = Help.createMinimalValueLabelRenderer();
-        Field field = help.positionalParametersField;
+        Field field = help.positionalParametersFields.get(0);
         String[][] row1 = renderer.render(field.getAnnotation(Parameters.class), field, parameterRenderer);
         assertEquals(1, row1.length);
         assertArrayEquals(Arrays.toString(row1[0]), new String[]{"*", "", "", "required", "required"}, row1[0]);
@@ -317,7 +318,7 @@ public class CommandLineHelpTest {
         Help help = new Help(new Optional());
         Help.IParameterRenderer renderer = help.createDefaultParameterRenderer();
         Help.IValueLabelRenderer parameterRenderer = Help.createMinimalValueLabelRenderer();
-        Field field = help.positionalParametersField;
+        Field field = help.positionalParametersFields.get(0);
         String[][] row1 = renderer.render(field.getAnnotation(Parameters.class), field, parameterRenderer);
         assertEquals(1, row1.length);
         assertArrayEquals(Arrays.toString(row1[0]), new String[]{"", "", "", "optional", "optional"}, row1[0]);
@@ -428,15 +429,15 @@ public class CommandLineHelpTest {
         withLabel.separator = "=";
         Help.IValueLabelRenderer spaced = withLabel.createDefaultValueLabelRenderer();
 
-        String withSpace = spaced.renderParameterLabel(withLabel.positionalParametersField);
+        String withSpace = spaced.renderParameterLabel(withLabel.positionalParametersFields.get(0));
         assertEquals(withSpace, "POSITIONAL_ARGS", withSpace);
-        String withEquals = equals.renderParameterLabel(withLabel.positionalParametersField);
+        String withEquals = equals.renderParameterLabel(withLabel.positionalParametersFields.get(0));
         assertEquals(withEquals, "POSITIONAL_ARGS", withEquals);
 
         Help withoutLabel = new Help(new WithoutLabel());
-        withSpace = spaced.renderParameterLabel(withoutLabel.positionalParametersField);
+        withSpace = spaced.renderParameterLabel(withoutLabel.positionalParametersFields.get(0));
         assertEquals(withSpace, "<positional>", withSpace);
-        withEquals = equals.renderParameterLabel(withoutLabel.positionalParametersField);
+        withEquals = equals.renderParameterLabel(withoutLabel.positionalParametersFields.get(0));
         assertEquals(withEquals, "<positional>", withEquals);
     }
 
@@ -945,7 +946,9 @@ public class CommandLineHelpTest {
         for (Field field : help.optionFields) {
             textTable.addOption(field, help.parameterLabelRenderer);
         }
-        textTable.addPositionalParameter(help.positionalParametersField, Help.createMinimalValueLabelRenderer());
+        for (Field field : help.positionalParametersFields) {
+            textTable.addPositionalParameter(field, Help.createMinimalValueLabelRenderer());
+        }
         textTable.toString(sb);
         String expected = String.format("" +
                 "Displays protocol statistics and current TCP/IP network connections.\n" +
@@ -994,6 +997,29 @@ public class CommandLineHelpTest {
                 "                configuration information once.%n"
         , "");
         assertEquals(expected, sb.toString());
+    }
+
+    @Test
+    public void testUsageIndexedPositionalParameters() throws UnsupportedEncodingException {
+        @Command(showDefaultValues = false)
+        class App {
+            @Parameters(index = "0", description = "source host") InetAddress host1;
+            @Parameters(index = "1", description = "source port") int port1;
+            @Parameters(index = "2", description = "destination host") InetAddress host2;
+            @Parameters(index = "3..4", arity = "1..2", description = "destination port range") int[] port2range;
+            @Parameters(index = "4..*", description = "files to transfer") String[] files;
+            @Parameters(hidden = true) String[] all;
+        }
+        String actual = usageString(new App());
+        String expected = String.format(
+                "Usage: <main class> <host1> <port1> <host2> <port2range> [<port2range>] [<files>...]%n" +
+                "      host1                   source host%n" +
+                "      port1                   source port%n" +
+                "      host2                   destination host%n" +
+                "      port2range              destination port range%n" +
+                "      files                   files to transfer%n"
+        );
+        assertEquals(expected, actual);
     }
 
     static class UsageDemo {
