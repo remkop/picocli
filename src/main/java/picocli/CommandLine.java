@@ -174,23 +174,26 @@ public class CommandLine {
      * Prints a usage help message for the specified annotated class to the specified {@code PrintStream}.
      * Delegates construction of the usage help message to the {@link Help} inner class and is equivalent to:
      * <pre>
-     * StringBuilder sb = new StringBuilder();
-     * new Help(annotatedClass).appendUsage(sb)         // Usage &lt;main class&gt; [OPTIONS] [PARAMETERS]
-     *                         .appendSummary(sb)       // from @Command.summary() - may be omitted
-     *                         .appendOptionDetails(sb) // from @Option names and descriptions
-     *                         .appendFooter(sb);       // from @Command.footer() - may be omitted
-     * out.print(sb);</pre>
+     *        Help help = new Help(annotatedObject);
+     *        StringBuilder sb = new StringBuilder()
+     *                .append(help.header())
+     *                .append("Usage: ").append(help.synopsis())
+     *                .append(help.description())
+     *                .append(help.parameterList())
+     *                .append(help.optionList())
+     *                .append(help.footer());
+     *        out.print(sb);
      * <p>Annotate your class with {@link Command} to control the program name, or whether the "usage" message
      * should be a generic {@code "Usage <main class> [OPTIONS] [PARAMETERS]"} message or a detailed message
      * that shows options and parameters.</p>
      * <p>To customize how option details are displayed, instantiate a {@link Help} object and install a custom
      * option {@linkplain Help.IOptionRenderer renderer} and/or a custom {@linkplain Help.ILayout layout} to control
      * which aspects of an Option or Field are displayed where in the {@link Help.TextTable}.</p>
-     * @param annotatedClass the class annotated with {@link Command}, {@link Option} and {@link Parameters}
+     * @param annotatedObject the object annotated with {@link Command}, {@link Option} and {@link Parameters}
      * @param out the {@code PrintStream} to print the usage help message to
      */
-    public static void usage(Class<?> annotatedClass, PrintStream out) {
-        Help help = new Help(annotatedClass);
+    public static void usage(Object annotatedObject, PrintStream out) {
+        Help help = new Help(annotatedObject);
         StringBuilder sb = new StringBuilder()
                 .append(help.header())
                 .append("Usage: ").append(help.synopsis())
@@ -568,33 +571,53 @@ public class CommandLine {
     @Retention(RetentionPolicy.RUNTIME)
     @Target(ElementType.TYPE)
     public @interface Command {
-        /** Optional summary description of the command, shown before the synopsis. */
+        /** Optional summary description of the command, shown before the synopsis.
+         * @see Help#header
+         * @see Help#header() */
         String[] header() default {};
 
-        /** Specify one or more custom synopsis lines to display instead of an auto-generated synopsis. */
+        /** Specify one or more custom synopsis lines to display instead of an auto-generated synopsis.
+         * @see Help#customSynopsis
+         * @see Help#customSynopsis() */
         String[] customSynopsis() default {};
 
-        /** Optional text to display between the synopsis line(s) and the list of options. */
+        /** Optional text to display between the synopsis line(s) and the list of options.
+         * @see Help#description
+         * @see Help#description() */
         String[] description() default {};
 
-        /** Optional text to display after the list of options. */
+        /** Optional text to display after the list of options.
+         * @see Help#footer
+         * @see Help#footer() */
         String[] footer() default {};
 
-        /** Program name to show in the synopsis. If omitted, {@code "<main class>"} is used. */
+        /** Program name to show in the synopsis. If omitted, {@code "<main class>"} is used.
+         * @see Help#commandName */
         String name() default "<main class>";
 
         /** Specify {@code true} to generate an abbreviated synopsis like {@code "<main> [OPTIONS] [PARAMETERS...]"}.
-         * By default, a detailed synopsis with individual option names and parameters is generated.*/
+         * By default, a detailed synopsis with individual option names and parameters is generated.
+         * @see Help#abbreviateSynopsis
+         * @see Help#abbreviatedSynopsis()
+         * @see Help#detailedSynopsis(Comparator, boolean) */
         boolean abbreviateSynopsis() default false;
 
-        /** Specify {@code false} to show Options in declaration order. The default is to sort alphabetically. */
-        boolean sortOptions() default true;
-
         /** Prefix required options with this character in the options list. The default is no marker: the synopsis
-         * indicates which options and parameters are required. */
+         * indicates which options and parameters are required.
+         * @see Help#requiredOptionMarker */
         char requiredOptionMarker() default ' ';
 
-        /** String that separates options from option parameters. Default is {@code "="}. */
+        /** Specify {@code false} to show Options in declaration order. The default is to sort alphabetically.
+         * @see Help#sortOptions */
+        boolean sortOptions() default true;
+
+        /** Specify {@code false} to omit default values from the description column of the options list. The default
+         * is to display default values except for boolean options.
+         * @see Help#showDefaultValues */
+        boolean showDefaultValues() default true;
+
+        /** String that separates options from option parameters. Default is {@code "="}.
+         * @see Help#separator */
         String separator() default "=";
     }
     /**
@@ -1332,6 +1355,8 @@ public class CommandLine {
         /** Constant String holding the default program name: {@value} */
         protected static final String DEFAULT_COMMAND_NAME = "<main class>";
 
+        private final Object annotatedObject;
+
         /** LinkedHashMap mapping {@link Option} instances to the {@code Field} they annotate, in declaration order. */
         //public final Map<Option, Field> option2Field = new LinkedHashMap<Option, Field>();
         public List<Field> optionFields = new ArrayList<Field>();
@@ -1380,11 +1405,16 @@ public class CommandLine {
         /** If {@code true}, the options list is sorted alphabetically. */
         public Boolean sortOptions;
 
+        /** If {@code true}, the options list will show default values for all options except booleans. */
+        public Boolean showDefaultValues;
+
         /** Character used to prefix required options in the options list. */
         public Character requiredOptionMarker;
 
         /** Constructs a new {@code Help} instance, initialized from annotatations on the specified class and super classes. */
-        public Help(Class<?> cls) {
+        public Help(Object annotatedObject) {
+            this.annotatedObject = Assert.notNull(annotatedObject, "annotatedObject");
+            Class<?> cls = annotatedObject.getClass();
             while (cls != null) {
                 for (Field field : cls.getDeclaredFields()) {
                     field.setAccessible(true);
@@ -1409,6 +1439,7 @@ public class CommandLine {
                     abbreviateSynopsis = (abbreviateSynopsis == null) ? command.abbreviateSynopsis() : abbreviateSynopsis;
                     sortOptions = (sortOptions == null) ? command.sortOptions() : sortOptions;
                     requiredOptionMarker = (requiredOptionMarker == null) ? command.requiredOptionMarker() : requiredOptionMarker;
+                    showDefaultValues = (showDefaultValues == null) ? command.showDefaultValues() : showDefaultValues;
                     customSynopsis = empty(customSynopsis) ? command.customSynopsis() : customSynopsis;
                     description = empty(description) ? command.description() : description;
                     header = empty(header) ? command.header() : header;
@@ -1419,6 +1450,7 @@ public class CommandLine {
             sortOptions =          (sortOptions == null) ? true : sortOptions;
             abbreviateSynopsis =   (abbreviateSynopsis == null) ? false : abbreviateSynopsis;
             requiredOptionMarker = (requiredOptionMarker == null) ? ' ' : requiredOptionMarker;
+            showDefaultValues =    (showDefaultValues == null) ? true : showDefaultValues;
             separator =            (separator == null) ? "=" : separator;
             parameterLabelRenderer = new DefaultValueLabelRenderer(separator);
         }
@@ -1622,6 +1654,9 @@ public class CommandLine {
         public IOptionRenderer createDefaultOptionRenderer() {
             DefaultOptionRenderer result = new DefaultOptionRenderer();
             result.requiredMarker = String.valueOf(requiredOptionMarker);
+            if (showDefaultValues != null && showDefaultValues.booleanValue()) {
+                result.annotatedObject = this.annotatedObject;
+            }
             return result;
         }
         /** Returns a new minimal OptionRenderer which converts {@link Option Options} to a single row with two columns
@@ -1719,7 +1754,7 @@ public class CommandLine {
          */
         static class DefaultOptionRenderer implements IOptionRenderer {
             public String requiredMarker = " ";
-            public boolean showDefaultValue = false; // FIXME
+            public Object annotatedObject;
             public String[][] render(Option option, Field field, IValueLabelRenderer parameterLabelRenderer) {
                 String[] names = new ShortestFirst().sort(option.names());
                 int shortOptionCount = names[0].length() == 2 ? 1 : 0;
@@ -1729,7 +1764,20 @@ public class CommandLine {
                 longOption += parameterLabelRenderer.renderParameterLabel(field);
                 String requiredOption = option.required() ? requiredMarker : "";
 
-                boolean showDefault = showDefaultValue && !option.help() && !isBoolean(field.getType());
+                boolean showDefault = annotatedObject != null && !option.help() && !isBoolean(field.getType());
+                Object defaultValue = null;
+                try {
+                    defaultValue = field.get(annotatedObject);
+                    if (defaultValue != null && field.getType().isArray()) {
+                        StringBuilder sb = new StringBuilder();
+                        for (int i = 0; i < Array.getLength(defaultValue); i++) {
+                            sb.append(i > 0 ? ", " : "").append(Array.get(defaultValue, i));
+                        }
+                        defaultValue = sb.insert(0, "[").append("]").toString();
+                    }
+                } catch (Exception ex) {
+                    showDefault = false;
+                }
                 final int ROW_COUNT = showDefault ? option.description().length + 1 : option.description().length;
                 final int COLUMN_COUNT = 5;
                 String[][] result = new String[ROW_COUNT][COLUMN_COUNT];
@@ -1739,8 +1787,8 @@ public class CommandLine {
                 }
                 if (showDefault) {
                     Arrays.fill(result[result.length - 1], "");
-                    int row = empty(result[ROW_COUNT - 1][COLUMN_COUNT - 1]) ? ROW_COUNT - 2 : ROW_COUNT - 1;
-                    // FIXME result[row][COLUMN_COUNT - 1] = "Default: " + field.get(annotatedObject);
+                    int row = empty(result[ROW_COUNT - 2][COLUMN_COUNT - 1]) ? ROW_COUNT - 2 : ROW_COUNT - 1;
+                    result[row][COLUMN_COUNT - 1] = "Default: " + defaultValue;
                 }
                 return result;
             }
