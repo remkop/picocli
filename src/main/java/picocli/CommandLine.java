@@ -622,7 +622,7 @@ public class CommandLine {
          * @see Help#showDefaultValues */
         boolean showDefaultValues() default true;
 
-        /** String that separates options from option parameters. Default is {@code "="}.
+        /** String that separates options from option parameters. Default is {@code "="}. Spaces are also accepted.
          * @see Help#separator */
         String separator() default "=";
     }
@@ -852,10 +852,16 @@ public class CommandLine {
 
             this.annotatedObject    = Assert.notNull(annotatedObject, "annotatedObject");
             Class<?> cls = annotatedObject.getClass();
+            String declaredSeparator = null;
             while (cls != null) {
                 init(cls, requiredFields, optionName2Field, singleCharOption2Field, positionalParametersFields);
+                if (cls.isAnnotationPresent(Command.class)) {
+                    Command command = cls.getAnnotation(Command.class);
+                    declaredSeparator = (declaredSeparator == null) ? command.separator() : declaredSeparator;
+                }
                 cls = cls.getSuperclass();
             }
+            separator = declaredSeparator != null ? declaredSeparator : separator;
         }
 
         /**

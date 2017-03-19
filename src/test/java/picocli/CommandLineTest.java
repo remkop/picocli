@@ -1319,6 +1319,21 @@ public class CommandLineTest {
         assertEquals("--owner:y", "y", params.owner);
     }
     @Test
+    public void testSeparatorCanBeSetDeclaratively() {
+        @Command(separator = ":")
+        class App {
+            @Option(names = "--opt", required = true) String opt;
+        }
+        App app = CommandLine.parse(new App(), "--opt:abc");
+        assertEquals("--opt:abc", "abc", app.opt);
+        try {
+            CommandLine.parse(new App(), "--opt=abc");
+            fail("Expected failure with unknown separator");
+        } catch (MissingParameterException ok) {
+            assertEquals("Missing required option 'opt'", ok.getMessage());
+        }
+    }
+    @Test
     public void testGnuLongOptionsWithVariousSeparatorsOnlyAndNoValue() {
         VariousPrefixCharacters params;
         try {
