@@ -538,10 +538,16 @@ public class CommandLine {
         Class<?> type() default String.class;
 
         /**
-         * Set {@code hidden=true} if this parameter should not be included in the usage documentation.
-         * @return whether this parameter should be excluded from the usage message
+         * Set {@code hidden=true} if this parameter should not be included in the parameter list in the usage message.
+         * @return whether this parameter should be excluded from the parameter list in the usage message
          */
         boolean hidden() default false;
+
+        /**
+         * Set {@code synopsis=false} if this parameter should not be included in the synopsis in the usage message.
+         * @return whether this parameter should be included in the synopsis in the usage message
+         */
+        boolean synopsis() default true;
     }
 
     /**
@@ -1486,7 +1492,7 @@ public class CommandLine {
             }
             // sb.append(" [--] "); // implied
             for (Field positionalParam : positionalParametersFields) {
-                if (!positionalParam.getAnnotation(Parameters.class).hidden()) {
+                if (positionalParam.getAnnotation(Parameters.class).synopsis()) {
                     sb.append(' ').append(parameterLabelRenderer.renderParameterLabel(positionalParam));
                 }
             }
@@ -1537,7 +1543,7 @@ public class CommandLine {
                 sb.append(String.format(pattern, optionNames));
             }
             for (Field positionalParam : positionalParametersFields) {
-                if (!positionalParam.getAnnotation(Parameters.class).hidden()) {
+                if (positionalParam.getAnnotation(Parameters.class).synopsis()) {
                     sb.append(' ').append(parameterLabelRenderer.renderParameterLabel(positionalParam));
                 }
             }

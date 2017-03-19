@@ -724,7 +724,7 @@ public class CommandLineHelpTest {
                 description = "Concatenate FILE(s), or standard input, to standard output.",
                 footer = "Copyright(c) 2017")
         class Cat {
-            @Parameters(valueLabel = "FILE",              description = "Files whose contents to display") List<File> files;
+            @Parameters(valueLabel = "FILE", hidden = true, description = "Files whose contents to display") List<File> files;
             @Option(names = "--help",    help = true,     description = "display this help and exit") boolean help;
             @Option(names = "--version", help = true,     description = "output version information and exit") boolean version;
             @Option(names = "-u",                         description = "(ignored)") boolean u;
@@ -1008,7 +1008,7 @@ public class CommandLineHelpTest {
             @Parameters(index = "2", description = "destination host") InetAddress host2;
             @Parameters(index = "3..4", arity = "1..2", description = "destination port range") int[] port2range;
             @Parameters(index = "4..*", description = "files to transfer") String[] files;
-            @Parameters(hidden = true) String[] all;
+            @Parameters(hidden = true, synopsis = false) String[] all;
         }
         String actual = usageString(new App());
         String expected = String.format(
