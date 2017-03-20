@@ -18,6 +18,7 @@ package picocli;
 import java.awt.Point;
 import java.io.File;
 import java.io.PrintStream;
+import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -44,6 +45,7 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -123,6 +125,7 @@ public class CommandLine {
     public static final String VERSION = "0.2.0";
 
     private final Interpreter interpreter;
+    private final List<Object> parsedCommands = new ArrayList<Object>();
 
     /**
      * Constructs a new {@code CommandLine} interpreter with the specified annotated object.
@@ -132,6 +135,11 @@ public class CommandLine {
      */
     public CommandLine(Object annotatedObject) {
         interpreter = new Interpreter(annotatedObject);
+    }
+
+    public CommandLine addCommand(String name, Object annotatedObject) {
+        interpreter.commands.put(name, new Interpreter(annotatedObject));
+        return this;
     }
 
     /**
@@ -166,8 +174,9 @@ public class CommandLine {
      * @param args the command line arguments to parse
      * @return the annotated object that this {@code CommandLine} was constructed with
      */
-    public Object parse(String... args) {
-        return interpreter.parse(args);
+    public List<Object> parse(String... args) {
+        interpreter.parse(args);
+        return new ArrayList<Object>(parsedCommands);
     }
 
     /**
@@ -186,21 +195,39 @@ public class CommandLine {
      * <p>Annotate your class with {@link Command} to control the program name, or whether the "usage" message
      * should be a generic {@code "Usage <main class> [OPTIONS] [PARAMETERS]"} message or a detailed message
      * that shows options and parameters.</p>
-     * <p>To customize how option details are displayed, instantiate a {@link Help} object and install a custom
-     * option {@linkplain Help.IOptionRenderer renderer} and/or a custom {@linkplain Help.ILayout layout} to control
+     * <p>To customize how option details are displayed, instantiate a {@link Help} object and use a custom
+     * option {@linkplain Help.IOptionRenderer renderer} and/or a custom {@linkplain Help.Layout layout} to control
      * which aspects of an Option or Field are displayed where in the {@link Help.TextTable}.</p>
      * @param annotatedObject the object annotated with {@link Command}, {@link Option} and {@link Parameters}
      * @param out the {@code PrintStream} to print the usage help message to
      */
     public static void usage(Object annotatedObject, PrintStream out) {
-        Help help = new Help(annotatedObject);
+        new CommandLine(annotatedObject).usage(out);
+    }
+
+    public void usage(PrintStream out) {
+        Help help = new Help(interpreter.annotatedObject);
+        for (Map.Entry<String, Interpreter> entry : interpreter.commands.entrySet()) {
+            help.addCommand(entry.getKey(), entry.getValue().annotatedObject);
+        }
         StringBuilder sb = new StringBuilder()
                 .append(help.header())
-                .append("Usage: ").append(help.synopsis())
+                //.append(String.format("Usage:%n"))
+                .append(String.format("Usage: ")).append(help.synopsis())
                 .append(help.description())
                 .append(help.parameterList())
                 .append(help.optionList())
-                .append(help.footer());
+                ;
+        if (!help.commands.isEmpty()) {
+            sb.append(String.format("Commands:%n"));
+//                    .append(help.commandList());
+            Help.TextTable textTable = new Help.TextTable();
+            for (Map.Entry<String, Help> entry : help.commands.entrySet()) {
+                Help commandHelp = entry.getValue();
+//                textTable.
+            }
+        }
+        sb.append(help.footer());
         out.print(sb);
     }
 
@@ -482,6 +509,7 @@ public class CommandLine {
      */
     @Retention(RetentionPolicy.RUNTIME)
     @Target(ElementType.FIELD)
+    @Documented
     @interface Parameters {
         /** Specify an index ("0", or "1", etc.) to pick which of the command line arguments should be assigned to this
          * field. For array or Collection fields, you can also specify an index range ("0..3", or "2..*", etc.) to assign
@@ -809,6 +837,7 @@ public class CommandLine {
      * Helper class responsible for processing command line arguments.
      */
     private class Interpreter {
+        private final Map<String, Interpreter> commands = new LinkedHashMap<String, Interpreter>();
         private final Map<Class<?>, ITypeConverter<?>> converterRegistry = new HashMap<Class<?>, ITypeConverter<?>>();
         private final Map<String, Field> optionName2Field                = new HashMap<String, Field>();
         private final Map<Character, Field> singleCharOption2Field       = new HashMap<Character, Field>();
@@ -871,29 +900,35 @@ public class CommandLine {
          */
         Object parse(String... args) {
             Assert.notNull(args, "argument array");
-            // first reset any state in case this CommandLine instance is being reused
-            isHelpRequested = false;
-            Set<Field> required = new HashSet<Field>(requiredFields);
             Stack<String> arguments = new Stack<String>();
             for (int i = args.length - 1; i >= 0; i--) {
                 arguments.push(args[i]);
             }
+            // first reset any state in case this CommandLine instance is being reused
+            isHelpRequested = false;
+            parse(arguments, args);
+            return annotatedObject;
+        }
+
+        private void parse(Stack<String> argumentStack, String[] originalArgs) {
+            parsedCommands.add(annotatedObject);
+            Set<Field> required = new HashSet<Field>(requiredFields);
             try {
-                processPositionalParameters0(true, arguments);
-                processArguments(arguments, required);
+                processPositionalParameters0(true, argumentStack);
+                processArguments(argumentStack, required, originalArgs);
             } catch (ParameterException ex) {
                 throw ex;
             } catch (Exception ex) {
-                //throw ParameterException.create(ex, arg, i, args);
-                throw ParameterException.create(ex, "???", arguments.size(), args);
+                int offendingArgIndex = originalArgs.length - argumentStack.size();
+                String arg = offendingArgIndex >= 0 && offendingArgIndex < originalArgs.length ? originalArgs[offendingArgIndex] : "?";
+                throw ParameterException.create(ex, arg, argumentStack.size(), originalArgs);
             }
             if (!isHelpRequested && !required.isEmpty()) {
                 throw MissingParameterException.create(required);
             }
-            return annotatedObject;
         }
 
-        private void processArguments(Stack<String> args, Set<Field> required) throws Exception {
+        private void processArguments(Stack<String> args, Set<Field> required, final String[] originalArgs) throws Exception {
             // arg must be one of:
             // 1. the "--" double dash separating options from positional arguments
             // 1. a stand-alone flag, like "-v" or "--verbose": no value required, must map to boolean or Boolean field
@@ -911,6 +946,15 @@ public class CommandLine {
                 if ("--".equals(arg)) {
                     processPositionalParameters(args);
                     return; // we are done
+                }
+
+                // if we find another command, we are done with the current command
+                if (commands.containsKey(arg)) {
+                    if (!isHelpRequested && !required.isEmpty()) { // ensure current command portion is valid
+                        throw MissingParameterException.create(required);
+                    }
+                    commands.get(arg).parse(args, originalArgs);
+                    return; // remainder done by the command
                 }
 
                 // First try to interpret the argument as a single option (as opposed to a compact group of options).
@@ -1130,11 +1174,12 @@ public class CommandLine {
             int remain = arity.max - arity.min;
             while (remain > 0 && !args.isEmpty()) {// now process the varargs if any
                 remain--;
-                if (annotation == Parameters.class || !isOption(args.peek())) { // don't trim: quoted strings are not options
-                    result.add(tryConvert(field, result.size(), converter, trim(args.pop()), type));
-                } else {
-                    return result;
+                if (annotation != Parameters.class) {
+                    if (commands.containsKey(args.peek()) || isOption(args.peek())) {
+                        return result;
+                    }
                 }
+                result.add(tryConvert(field, result.size(), converter, trim(args.pop()), type));
             }
             return result;
         }
@@ -1383,6 +1428,7 @@ public class CommandLine {
         protected static final String DEFAULT_COMMAND_NAME = "<main class>";
 
         private final Object annotatedObject;
+        private final Map<String, Help> commands = new LinkedHashMap<String, Help>();
 
         /** LinkedHashMap mapping {@link Option} instances to the {@code Field} they annotate, in declaration order. */
         //public final Map<Option, Field> option2Field = new LinkedHashMap<Option, Field>();
@@ -1482,6 +1528,11 @@ public class CommandLine {
             parameterLabelRenderer = new DefaultValueLabelRenderer(separator);
         }
 
+        public Help addCommand(String command, Object annotatedObject) {
+            commands.put(command, new Help(annotatedObject));
+            return this;
+        }
+
         public String synopsis() {
             if (!empty(customSynopsis)) { return customSynopsis(); }
             return abbreviateSynopsis ? abbreviatedSynopsis()
@@ -1554,67 +1605,51 @@ public class CommandLine {
                 }
             }
 
-            TextTable textTable = new TextTable(createDefaultLayout(),
-                    new Column(commandName.length(), 0, Column.Overflow.TRUNCATE),
-                    new Column(80 - commandName.length(), 0, Column.Overflow.WRAP));
-            textTable.indentWrappedLines = 1; // first line: options always start with a space
-            textTable.addEmptyRow();
-            textTable.putValue(0, 0, commandName);
-            textTable.putValue(0, 1, sb.toString());
+            TextTable textTable = new TextTable(commandName.length(), 80 - commandName.length());
+            textTable.indentWrappedLines = 1; // don't worry about first line: options (2nd column) always start with a space
+            textTable.addRowValues(new String[] {commandName, sb.toString()});
+//            textTable.addEmptyRow();
+//            textTable.putValue(0, 0, commandName);
+//            textTable.putValue(0, 1, sb.toString());
             return textTable.toString();
         }
         /**
-         * <p>Appends a description of the {@linkplain Option options} supported by the application to the specified
-         * StringBuilder. This implementation {@linkplain SortByShortestOptionNameAlphabetically sorts options alphabetically}, and shows
+         * <p>Returns a description of the {@linkplain Option options} supported by the application.
+         * This implementation {@linkplain SortByShortestOptionNameAlphabetically sorts options alphabetically}, and shows
          * only the {@linkplain Option#hidden() non-hidden} options in a {@linkplain TextTable tabular format}
-         * using the {@linkplain DefaultOptionRenderer default renderer} and {@linkplain OneOptionPerRowLayout default layout}.</p>
-         * <p>To customize how option details are displayed, instantiate a {@link TextTable} object and install a
-         * custom option {@linkplain IOptionRenderer renderer} and/or a custom {@linkplain Help.ILayout layout} to
-         * control which aspects of an Option or Field are displayed where.</p>
+         * using the {@linkplain DefaultOptionRenderer default renderer} and {@linkplain Layout default layout}.</p>
          * @return the fully formatted option list
+         * @see #optionList(Layout, Comparator, IValueLabelRenderer)
          */
         public String optionList() {
-            TextTable textTable = new TextTable(); // default columns, default layout
-            textTable.optionRenderer = createDefaultOptionRenderer();
-            return optionList(createShortOptionNameComparator(), textTable, createDefaultValueLabelRenderer());
+            Comparator<Field> sortOrder = sortOptions == null || sortOptions.booleanValue()
+                    ? createShortOptionNameComparator()
+                    : null;
+            return optionList(createDefaultLayout(), sortOrder, createDefaultValueLabelRenderer());
         }
 
         /** Sorts all {@code Options} with the specified {@code comparator} (if the comparator is non-{@code null}),
-         * then {@linkplain TextTable#addOption(Field, IValueLabelRenderer) adds} all non-hidden options to the
+         * then {@linkplain Layout#addOption(Field, IValueLabelRenderer) adds} all non-hidden options to the
          * specified TextTable and returns the result of TextTable.toString().
+         * @param layout responsible for rendering the option list
          * @param optionSort determines in what order {@code Options} should be listed. Declared order if {@code null}
-         * @param textTable must be properly initialized with Columns, a Layout and an OptionRenderer
          * @param valueLabelRenderer used for options with a parameter
          * @return the fully formatted option list
          */
-        public String optionList(Comparator<Field> optionSort,
-                                 TextTable textTable,
-                                 IValueLabelRenderer valueLabelRenderer) {
+        public String optionList(Layout layout, Comparator<Field> optionSort, IValueLabelRenderer valueLabelRenderer) {
             List<Field> fields = new ArrayList<Field>(optionFields); // options are stored in order of declaration
             if (optionSort != null) {
                 Collections.sort(fields, optionSort); // default: sort options ABC
             }
-            for (Field field : fields) {
-                Option option = field.getAnnotation(Option.class);
-                if (!option.hidden()) {
-                    textTable.addOption(field, valueLabelRenderer);
-                }
-            }
-            return textTable.toString();
+            layout.addOptions(fields, valueLabelRenderer);
+            return layout.toString();
         }
         public String parameterList() {
-            TextTable textTable = new TextTable(); // default columns, default layout
-            textTable.parameterRenderer = createDefaultParameterRenderer();
-            return parameterList(textTable, createMinimalValueLabelRenderer());
+            return parameterList(createDefaultLayout(), createMinimalValueLabelRenderer());
         }
-        public String parameterList(TextTable textTable, IValueLabelRenderer valueLabelRenderer) {
-            for (Field positionalParam : positionalParametersFields) {
-                Parameters parameters = positionalParam.getAnnotation(Parameters.class);
-                if (!parameters.hidden()) {
-                    textTable.addPositionalParameter(positionalParam, valueLabelRenderer);
-                }
-            }
-            return textTable.toString();
+        public String parameterList(Layout layout, IValueLabelRenderer valueLabelRenderer) {
+            layout.addPositionalParameters(positionalParametersFields, valueLabelRenderer);
+            return layout.toString();
         }
 
         /** Appends each of the specified values plus the specified separator to the specified StringBuilder and returns it. */
@@ -1666,6 +1701,11 @@ public class CommandLine {
             }
             return result.toString();
         }
+
+        /** Returns a {@code Layout} instance configured with the user preferences captured in this Help instance. */
+        public Layout createDefaultLayout() {
+            return new Layout(new TextTable(), createDefaultOptionRenderer(), createDefaultParameterRenderer());
+        }
         /** Returns a new default OptionRenderer which converts {@link Option Options} to five columns of text to match
          *  the default {@linkplain TextTable TextTable} column layout. The first row of values looks like this:
          * <ol>
@@ -1677,6 +1717,7 @@ public class CommandLine {
          * </ol>
          * <p>Following this, there will be one row for each of the remaining elements of the {@link
          *   Option#description()} array, and these rows look like {@code {"", "", "", "", option.description()[i]}}.</p>
+         * <p>If configured, this option renderer adds an additional row to display the default field value.</p>
          */
         public IOptionRenderer createDefaultOptionRenderer() {
             DefaultOptionRenderer result = new DefaultOptionRenderer();
@@ -1701,6 +1742,7 @@ public class CommandLine {
          * </ol>
          * <p>Following this, there will be one row for each of the remaining elements of the {@link
          *   Parameters#description()} array, and these rows look like {@code {"", "", "", param.description()[i]}}.</p>
+         * <p>If configured, this parameter renderer adds an additional row to display the default field value.</p>
          */
         public IParameterRenderer createDefaultParameterRenderer() {
             DefaultParameterRenderer result = new DefaultParameterRenderer();
@@ -1734,11 +1776,6 @@ public class CommandLine {
         public IValueLabelRenderer createDefaultValueLabelRenderer() {
             return new DefaultValueLabelRenderer(separator);
         }
-        /** Returns a new default Layout which displays each array of text values representing an Option on a separate
-         * row in the {@linkplain TextTable TextTable}. */
-        public static ILayout createDefaultLayout() {
-            return new OneOptionPerRowLayout();
-        }
         /** Sorts Fields annotated with {@code Option} by their option name in case-insensitive alphabetic order. If an
          * Option has multiple names, the shortest name is used for the sorting. Help options follow non-help options. */
         public static Comparator<Field> createShortOptionNameComparator() {
@@ -1753,9 +1790,10 @@ public class CommandLine {
         public static Comparator<String> shortestFirst() {
             return new ShortestFirst();
         }
+
         /** When customizing online help for {@link Option Option} details, a custom {@code IOptionRenderer} can be
          * used to create textual representation of an Option in a tabular format: one or more rows, each containing
-         * one or more columns. The {@link ILayout ILayout} is responsible for placing these text values in the
+         * one or more columns. The {@link Layout Layout} is responsible for placing these text values in the
          * {@link TextTable TextTable}. */
         public interface IOptionRenderer {
             /**
@@ -1838,7 +1876,7 @@ public class CommandLine {
         }
         /** When customizing online help for {@link Parameters Parameters} details, a custom {@code IParameterRenderer}
          * can be used to create textual representation of a Parameters field in a tabular format: one or more rows,
-         * each containing one or more columns. The {@link ILayout ILayout} is responsible for placing these text
+         * each containing one or more columns. The {@link Layout Layout} is responsible for placing these text
          * values in the {@link TextTable TextTable}. */
         public interface IParameterRenderer {
             /**
@@ -1939,55 +1977,85 @@ public class CommandLine {
                 return "<" + field.getName() + ">";
             }
         }
-        /** When customizing online usage help for {@link Option Option} details, a custom {@code ILayout} can be used
-         * to control placing the text values produced by the {@linkplain IOptionRenderer option renderer} in the
-         * desired location in the {@link TextTable TextTable}. */
-        public interface ILayout {
+        /** Layout is responsible for creating a fully formatted list of options/parameters.
+         * By default this Layout displays each array of text values representing on a separate row in the table.
+         * Customize by overriding the {@link #layout(Field, String[][])} method.
+         * @see IOptionRenderer rendering options to text
+         * @see IParameterRenderer rendering parameters to text
+         * @see TextTable showing values in a tabular format
+         */
+        public static class Layout {
+            protected final TextTable table;
+            protected IOptionRenderer optionRenderer;
+            protected IParameterRenderer parameterRenderer;
+
+            public Layout() { this(new TextTable()); }
+            public Layout(TextTable textTable) {
+                this(textTable, new DefaultOptionRenderer(), new DefaultParameterRenderer());
+            }
+            public Layout(TextTable textTable, IOptionRenderer optionRenderer, IParameterRenderer parameterRenderer) {
+                this.table             = Assert.notNull(textTable, "textTable");
+                this.optionRenderer    = Assert.notNull(optionRenderer, "optionRenderer");
+                this.parameterRenderer = Assert.notNull(parameterRenderer, "parameterRenderer");
+            }
             /**
-             * Copies the specified text values into the correct cells in the {@link TextTable}. Implementations are
-             * responsible for ensuring the row exists by {@linkplain TextTable#addEmptyRow() adding an empty row}
-             * before populating cells in the table. The {@link TextTable#putValue(int, int, String) putValue} method
-             * may write into multiple columns or even multiple rows if the value is larger than the {@link Column}
-             * width, depending on the Column's {@link Column.Overflow} setting.
-             * It is the responsibility of the Layout to detect that this happened by inspecting the return value
-             * and to adjust the location of subsequent values accordingly.
-             * @param field the field annotated with the specified Option
-             * @param values the text values representing the Option, which are to be displayed in tabular form
+             * Copies the specified text values into the correct cells in the {@link TextTable}. This implementation
+             * delegates to {@link TextTable#addRowValues(String...)} for each row of values.
+             * <p>Subclasses may override.</p>
+             * @param field the field annotated with the specified Option or Parameters
+             * @param values the text values representing the Option/Parameters, to be displayed in tabular form
              * @param textTable the data structure holding {@code char[]} objects for each cell in the table
              */
-            void layout(Field field, String[][] values, TextTable textTable);
-        }
-        /** The default Layout displays each array of text values representing an Option on a separate row in the
-         * {@linkplain TextTable TextTable}. */
-        static class OneOptionPerRowLayout implements ILayout {
-            /** Delegates to {@link #addRow(TextTable, String...)} for each row of values. */
-            public void layout(Field field, String[][] cellValues, TextTable table) {
+            /** Delegates to {@link TextTable#addRowValues(String...)} for each row of values. */
+            public void layout(Field field, String[][] cellValues) {
                 for (String[] oneRow : cellValues) {
-                    addRow(table, oneRow);
+                    table.addRowValues(oneRow);
+                }
+            }
+            /** Calls {@link #addOption(Field, IValueLabelRenderer)} for all non-hidden Options in the list. */
+            public void addOptions(List<Field> fields, IValueLabelRenderer valueLabelRenderer) {
+                for (Field field : fields) {
+                    Option option = field.getAnnotation(Option.class);
+                    if (!option.hidden()) {
+                        addOption(field, valueLabelRenderer);
+                    }
                 }
             }
             /**
-             * Adds a new {@linkplain TextTable#addEmptyRow() empty row}, then calls {@link
-             * TextTable#putValue(int, int, String) putValue} for each of the specified values, adding more empty rows
-             * if the return value indicates that the value spanned multiple columns or was wrapped to multiple rows.
-             * @param values the values to write into a new row in this TextTable
-             * @throws IllegalArgumentException if the number of values exceeds the number of Columns in this table
+             * Convenience method that delegates to the configured {@link #optionRenderer option renderer} to obtain
+             * text values for the specified {@link Option}, and then delegates to the {@link #layout(Field, String[][]) layout}
+             * method to write these text values into the correct cells in this TextTable.
+             * @param field the field annotated with the specified Option
+             * @param valueLabelRenderer knows how to render option parameters
              */
-            public void addRow(TextTable table, String... values) {
-                if (values.length > table.columns.length) {
-                    throw new IllegalArgumentException(values.length + " values don't fit in " +
-                            table.columns.length + " columns");
-                }
-                table.addEmptyRow();
-                for (int col = 0; col < values.length; col++) {
-                    int row = table.rowCount() - 1;// write to last row: previous value may have wrapped to next row
-                    Point cell = table.putValue(row, col, values[col]);
-
-                    // add row if a value spanned/wrapped and there are still remaining values
-                    if ((cell.y != row || cell.x != col) && col != values.length - 1) {
-                        table.addEmptyRow();
+            public void addOption(Field field, IValueLabelRenderer valueLabelRenderer) {
+                Option option = field.getAnnotation(Option.class);
+                String[][] values = optionRenderer.render(option, field, valueLabelRenderer);
+                layout(field, values);
+            }
+            /** Calls {@link #addPositionalParameter(Field, IValueLabelRenderer)} for all non-hidden Parameters in the list. */
+            public void addPositionalParameters(List<Field> fields, IValueLabelRenderer valueLabelRenderer) {
+                for (Field field : fields) {
+                    Parameters parameters = field.getAnnotation(Parameters.class);
+                    if (!parameters.hidden()) {
+                        addPositionalParameter(field, valueLabelRenderer);
                     }
                 }
+            }
+            /**
+             * Convenience method that delegates to the configured {@link #parameterRenderer parameter renderer}
+             * to obtain text values for the specified {@link Parameters}, and then delegates to
+             * {@link #layout(Field, String[][]) layout} to write these text values into the correct cells in this TextTable.
+             * @param field the field annotated with the specified Parameters
+             * @param valueLabelRenderer knows how to render option parameters
+             */
+            public void addPositionalParameter(Field field, IValueLabelRenderer valueLabelRenderer) {
+                Parameters option = field.getAnnotation(Parameters.class);
+                String[][] values = parameterRenderer.render(option, field, valueLabelRenderer);
+                layout(field, values);
+            }
+            @Override public String toString() {
+                return table.toString();
             }
         }
         /** Sorts short strings before longer strings. */
@@ -2037,18 +2105,13 @@ public class CommandLine {
          * longer than the column width.</p>
          */
         public static class TextTable {
-            /** The layout knows which columns and rows in the text table to populate for an Option. */
-            public final ILayout layout;
             /** The column definitions of this table. */
             public final Column[] columns;
             /** The {@code char[]} slots of the {@code TextTable} to copy text values into. */
             protected final List<char[]> columnValues = new ArrayList<char[]>();
             /** By default, indent wrapped lines by 2 spaces. */
             public int indentWrappedLines = 2;
-            /** The option renderer used to create a text representation of an Option. */
-            public IOptionRenderer optionRenderer = new DefaultOptionRenderer();
-            public IParameterRenderer parameterRenderer = new DefaultParameterRenderer();
-            /** Constructs a TextTable with a {@link OneOptionPerRowLayout} and five columns as follows:
+            /** Constructs a TextTable with five columns as follows:
              * <ol>
              * <li>required option/parameter marker (width: 2, indent: 0, TRUNCATE on overflow)</li>
              * <li>short option name (width: 2, indent: 0, TRUNCATE on overflow)</li>
@@ -2059,7 +2122,7 @@ public class CommandLine {
              */
             public TextTable() {
                 // "* -c, --create                Creates a ...."
-                this(new OneOptionPerRowLayout(), new Column[] {
+                this(new Column[] {
                             new Column(2,  0, TRUNCATE),   // "*"
                             new Column(2,  0, TRUNCATE),   // "-c"
                             new Column(1,  0, TRUNCATE),   // ","
@@ -2067,9 +2130,19 @@ public class CommandLine {
                             new Column(51, 1, WRAP) // " Creates a ..."
                     });
             }
-            /** Constructs a {@code TextTable} with the specified layout and columns. */
-            public TextTable(ILayout layout, Column... columns) {
-                this.layout = Assert.notNull(layout, "layout");
+
+            /** Constructs a new TextTable with columns with the specified width, all SPANning  multiple columns on
+             * overflow except the last column which WRAPS to the next row.
+             * @param columnWidths the width of the table columns (all columns have zero indent)
+             */
+            public TextTable(int... columnWidths) {
+                columns = new Column[columnWidths.length];
+                for (int i = 0; i < columnWidths.length; i++) {
+                    columns[i] = new Column(columnWidths[i], 0, i == columnWidths.length - 1 ? SPAN: WRAP);
+                }
+            }
+            /** Constructs a {@code TextTable} with the specified columns. */
+            public TextTable(Column... columns) {
                 this.columns = Assert.notNull(columns, "columns");
                 if (columns.length == 0) { throw new IllegalArgumentException("At least one column is required"); }
             }
@@ -2088,28 +2161,27 @@ public class CommandLine {
                 }
             }
             /**
-             * Convenience method that delegates to the configured {@link TextTable#optionRenderer option renderer} to
-             * obtain text values for the specified {@link Option}, and then delegates to the configured
-             * {@link TextTable#layout layout} to write these text values into the correct cells in this TextTable.
-             * @param field the field annotated with the specified Option
-             * @param valueLabelRenderer knows how to render option parameters
+             * Adds a new {@linkplain TextTable#addEmptyRow() empty row}, then calls {@link
+             * TextTable#putValue(int, int, String) putValue} for each of the specified values, adding more empty rows
+             * if the return value indicates that the value spanned multiple columns or was wrapped to multiple rows.
+             * @param values the values to write into a new row in this TextTable
+             * @throws IllegalArgumentException if the number of values exceeds the number of Columns in this table
              */
-            public void addOption(Field field, IValueLabelRenderer valueLabelRenderer) {
-                Option option = field.getAnnotation(Option.class);
-                String[][] values = optionRenderer.render(option, field, valueLabelRenderer);
-                layout.layout(field, values, this);
-            }
-            /**
-             * Convenience method that delegates to the configured {@link TextTable#parameterRenderer parameter renderer}
-             * to obtain text values for the specified {@link Parameters}, and then delegates to the configured
-             * {@link TextTable#layout layout} to write these text values into the correct cells in this TextTable.
-             * @param field the field annotated with the specified Parameters
-             * @param valueLabelRenderer knows how to render option parameters
-             */
-            public void addPositionalParameter(Field field, IValueLabelRenderer valueLabelRenderer) {
-                Parameters option = field.getAnnotation(Parameters.class);
-                String[][] values = parameterRenderer.render(option, field, valueLabelRenderer);
-                layout.layout(field, values, this);
+            public void addRowValues(String... values) {
+                if (values.length > columns.length) {
+                    throw new IllegalArgumentException(values.length + " values don't fit in " +
+                            columns.length + " columns");
+                }
+                addEmptyRow();
+                for (int col = 0; col < values.length; col++) {
+                    int row = rowCount() - 1;// write to last row: previous value may have wrapped to next row
+                    Point cell = putValue(row, col, values[col]);
+
+                    // add row if a value spanned/wrapped and there are still remaining values
+                    if ((cell.y != row || cell.x != col) && col != values.length - 1) {
+                        addEmptyRow();
+                    }
+                }
             }
             /**
              * Writes the specified value into the cell at the specified row and column and returns the last row and
@@ -2161,7 +2233,7 @@ public class CommandLine {
                             value = value.substring(charsWritten);
                             indent = column.indent + indentWrappedLines;
                             if (value.length() > 0) {  // value did not fit in column
-                                ++row;         // write remainder of value in next row
+                                ++row;                 // write remainder of value in next row
                                 addEmptyRow();
                             }
                         } while (value.length() > 0);
@@ -2200,10 +2272,9 @@ public class CommandLine {
                     row.append(column);
                     if (i % columnCount == columnCount - 1) {
                         int lastChar = row.length() - 1;
-                        while (lastChar >= 0 && Character.isWhitespace(row.charAt(lastChar))) {lastChar--;}
+                        while (lastChar >= 0 && Character.isWhitespace(row.charAt(lastChar))) {lastChar--;} // rtrim
                         row.setLength(lastChar + 1);
-                        text.append(row.toString());
-                        text.append(System.getProperty("line.separator"));
+                        text.append(row.toString()).append(System.getProperty("line.separator"));
                         row.setLength(0);
                     }
                 }

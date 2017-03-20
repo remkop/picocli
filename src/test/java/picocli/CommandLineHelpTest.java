@@ -442,21 +442,17 @@ public class CommandLineHelpTest {
     }
 
     @Test
-    public void testCreateDefaultLayout_returnsDefaultLayout() {
-        assertEquals(Help.OneOptionPerRowLayout.class, Help.createDefaultLayout().getClass());
-    }
-
-    @Test
     public void testDefaultLayout_addsEachRowToTable() {
         final String[][] values = { {"a", "b", "c", "d" }, {"1", "2", "3", "4"} };
         final int[] count = {0};
-        Help.ILayout layout = new Help.OneOptionPerRowLayout() {
-            @Override public void addRow(TextTable table, String[] columnValues) {
+        TextTable tt = new TextTable() {
+            @Override public void addRowValues(String[] columnValues) {
                 assertArrayEquals(values[count[0]], columnValues);
                 count[0]++;
             }
         };
-        layout.layout(null, values, null);
+        Help.Layout layout = new Help.Layout(tt);
+        layout.layout(null, values);
         assertEquals(2, count[0]);
     }
 
@@ -673,20 +669,19 @@ public class CommandLineHelpTest {
     @Test
     public void testTextTable() {
         TextTable table = new TextTable();
-        ((Help.OneOptionPerRowLayout) table.layout).addRow(table, "", "-v", ",", "--verbose", "show what you're doing while you are doing it");
-        ((Help.OneOptionPerRowLayout) table.layout).addRow(table, "", "-p", null, null, "the quick brown fox jumped over the lazy dog. The quick brown fox jumped over the lazy dog.");
+        table.addRowValues("", "-v", ",", "--verbose", "show what you're doing while you are doing it");
+        table.addRowValues("", "-p", null, null, "the quick brown fox jumped over the lazy dog. The quick brown fox jumped over the lazy dog.");
         assertEquals(String.format(
                 "  -v, --verbose               show what you're doing while you are doing it%n" +
-                        "  -p                          the quick brown fox jumped over the lazy dog. The%n" +
-                        "                                quick brown fox jumped over the lazy dog.%n"
+                "  -p                          the quick brown fox jumped over the lazy dog. The%n" +
+                "                                quick brown fox jumped over the lazy dog.%n"
                 ,""), table.toString(new StringBuilder()).toString());
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void testTextTableAddsNewRowWhenTooManyValuesSpecified() {
-        Help.OneOptionPerRowLayout layout = new Help.OneOptionPerRowLayout();
-        TextTable table = new TextTable(layout);
-        layout.addRow(table, "", "-c", ",", "--create", "description", "INVALID", "Row 3");
+        TextTable table = new TextTable();
+        table.addRowValues("", "-c", ",", "--create", "description", "INVALID", "Row 3");
 //        assertEquals(String.format("" +
 //                        "  -c, --create                description                                       %n" +
 //                        "                                INVALID                                         %n" +
@@ -697,7 +692,7 @@ public class CommandLineHelpTest {
     @Test
     public void testTextTableAddsNewRowWhenAnyColumnTooLong() {
         TextTable table = new TextTable();
-        ((Help.OneOptionPerRowLayout) table.layout).addRow(table, "*", "-c", ",",
+        table.addRowValues("*", "-c", ",",
                 "--create, --create2, --create3, --create4, --create5, --create6, --create7, --create8",
                 "description");
         assertEquals(String.format("" +
@@ -707,7 +702,7 @@ public class CommandLineHelpTest {
                 ,""), table.toString(new StringBuilder()).toString());
 
         table = new TextTable();
-        ((Help.OneOptionPerRowLayout) table.layout).addRow(table, "", "-c", ",",
+        table.addRowValues("", "-c", ",",
                 "--create, --create2, --create3, --create4, --create5, --create6, --createAA7, --create8",
                 "description");
         assertEquals(String.format("" +
@@ -800,18 +795,16 @@ public class CommandLineHelpTest {
             @Option(names = "-h2", description = "show more help") boolean moreHelp;
         }
 
-        class TwoOptionsPerRowLayout implements Help.ILayout { // define a custom layout
+        class TwoOptionsPerRowLayout extends Help.Layout { // define a custom layout
             Point previous = new Point(0, 0);
 
-            public Column[] createColumns() {
-                return new Column[] {
-                        new Column(5, 2, TRUNCATE), // values should fit
-                        new Column(30, 2, SPAN), // overflow into adjacent columns
-                        new Column(4,  1, TRUNCATE), // values should fit again
-                        new Column(39, 2, WRAP)
-                };
+            public TwoOptionsPerRowLayout(TextTable textTable,
+                                          Help.IOptionRenderer optionRenderer,
+                                          Help.IParameterRenderer parameterRenderer) {
+                super(textTable, optionRenderer, parameterRenderer);
             }
-            public void layout(Field field, String[][] values, TextTable table) {
+
+            @Override public void layout(Field field, String[][] values) {
                 String[] columnValues = values[0]; // we know renderer creates a single row with two values
 
                 // We want to show two options on one row, next to each other,
@@ -831,22 +824,22 @@ public class CommandLineHelpTest {
                 }
             }
         }
+        TextTable textTable = new TextTable(new Column[] {
+                new Column(5, 2, TRUNCATE), // values should fit
+                new Column(30, 2, SPAN), // overflow into adjacent columns
+                new Column(4,  1, TRUNCATE), // values should fit again
+                new Column(39, 2, WRAP)
+        });
+        TwoOptionsPerRowLayout layout = new TwoOptionsPerRowLayout(textTable, Help.createMinimalOptionRenderer(),
+                Help.createMinimalParameterRenderer());
+
         Help help = new Help(new Zip());
         StringBuilder sb = new StringBuilder();
         sb.append(help.description()); // show the first 6 lines, including copyright, description and usage
-        TextTable textTable = new TextTable(new TwoOptionsPerRowLayout(), new TwoOptionsPerRowLayout().createColumns());
-        textTable.optionRenderer = Help.createMinimalOptionRenderer(); // define and install a custom renderer
 
-        // Now that the textTable has a renderer and layout installed,
-        // we add Options to the textTable to build up the option details help text.
         // Note that we don't sort the options, so they appear in the order the fields are declared in the Zip class.
-        for (Field field : help.optionFields) {
-            Option option = field.getAnnotation(Option.class);
-            if (!option.hidden()) {
-                textTable.addOption(field, help.parameterLabelRenderer);
-            }
-        }
-        textTable.toString(sb); // finally, copy the options details help text into the StringBuilder
+        layout.addOptions(help.optionFields, help.parameterLabelRenderer);
+        sb.append(layout); // finally, copy the options details help text into the StringBuilder
 
         String expected  = String.format("" +
                 "Copyright (c) 1990-2008 Info-ZIP - Type 'zip \"-L\"' for software license.%n" +
@@ -937,19 +930,15 @@ public class CommandLineHelpTest {
         sb.append(help.header()).append(help.detailedSynopsis(null, false));
         sb.append(System.getProperty("line.separator"));
 
-        TextTable textTable = new TextTable(help.createDefaultLayout(),
+        TextTable textTable = new TextTable(
                 new Column(15, 2, TRUNCATE),
                 new Column(65, 1, WRAP));
-        textTable.optionRenderer = Help.createMinimalOptionRenderer();
-        textTable.parameterRenderer = Help.createMinimalParameterRenderer();
         textTable.indentWrappedLines = 0;
-        for (Field field : help.optionFields) {
-            textTable.addOption(field, help.parameterLabelRenderer);
-        }
-        for (Field field : help.positionalParametersFields) {
-            textTable.addPositionalParameter(field, Help.createMinimalValueLabelRenderer());
-        }
-        textTable.toString(sb);
+        Help.Layout layout = new Help.Layout(textTable, Help.createMinimalOptionRenderer(), Help.createMinimalParameterRenderer());
+        layout.addOptions(help.optionFields, help.parameterLabelRenderer);
+        layout.addPositionalParameters(help.positionalParametersFields, Help.createMinimalValueLabelRenderer());
+        sb.append(layout);
+
         String expected = String.format("" +
                 "Displays protocol statistics and current TCP/IP network connections.\n" +
                 "%n" +
