@@ -18,7 +18,6 @@ package picocli;
 import java.awt.Point;
 import java.io.File;
 import java.io.PrintStream;
-import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -58,6 +57,7 @@ import java.util.UUID;
 import java.util.regex.Pattern;
 
 import static picocli.CommandLine.Help.Column.Overflow.*;
+import static picocli.CommandLine.Help.IValueLabelRenderer;
 
 /**
  * <p>
@@ -68,7 +68,8 @@ import static picocli.CommandLine.Help.Column.Overflow.*;
  * </p>
  * <pre>import static picocli.CommandLine.*;
  *
- * &#064;Command(summary = "Encrypt FILE(s), or standard input, to standard output or to the output file.")
+ * &#064;Command(header = "Encrypt FILE(s), or standard input, to standard output or to the output file.",
+ *          showDefaultValues = false)
  * public class Encrypt {
  *
  *     &#064;Parameters(type = File.class, description = "Any number of input files")
@@ -509,8 +510,7 @@ public class CommandLine {
      */
     @Retention(RetentionPolicy.RUNTIME)
     @Target(ElementType.FIELD)
-    @Documented
-    @interface Parameters {
+    public @interface Parameters {
         /** Specify an index ("0", or "1", etc.) to pick which of the command line arguments should be assigned to this
          * field. For array or Collection fields, you can also specify an index range ("0..3", or "2..*", etc.) to assign
          * a subset of the command line arguments to this field. The default is "*", meaning all command line arguments.
@@ -571,8 +571,9 @@ public class CommandLine {
          */
         boolean hidden() default false;
 
-        /**
-         * Set {@code synopsis=false} if this parameter should not be included in the synopsis in the usage message.
+        /** Set {@code synopsis=false} if this parameter should not be included in the synopsis in the usage message.
+         *  This is useful when multiple fields should be populated from a parameter at a certain index,
+         *  while avoiding this parameter being shown multiple times in the synopsis.
          * @return whether this parameter should be included in the synopsis in the usage message
          */
         boolean synopsis() default true;
@@ -605,10 +606,25 @@ public class CommandLine {
     @Retention(RetentionPolicy.RUNTIME)
     @Target(ElementType.TYPE)
     public @interface Command {
+        /** Program name to show in the synopsis. If omitted, {@code "<main class>"} is used.
+         * @see Help#commandName */
+        String name() default "<main class>";
+
+        /** String that separates options from option parameters. Default is {@code "="}. Spaces are also accepted.
+         * @see Help#separator */
+        String separator() default "=";
+
         /** Optional summary description of the command, shown before the synopsis.
          * @see Help#header
          * @see Help#header() */
         String[] header() default {};
+
+        /** Specify {@code true} to generate an abbreviated synopsis like {@code "<main> [OPTIONS] [PARAMETERS...]"}.
+         * By default, a detailed synopsis with individual option names and parameters is generated.
+         * @see Help#abbreviateSynopsis
+         * @see Help#abbreviatedSynopsis()
+         * @see Help#detailedSynopsis(Comparator, boolean) */
+        boolean abbreviateSynopsis() default false;
 
         /** Specify one or more custom synopsis lines to display instead of an auto-generated synopsis.
          * @see Help#customSynopsis
@@ -620,39 +636,24 @@ public class CommandLine {
          * @see Help#description() */
         String[] description() default {};
 
-        /** Optional text to display after the list of options.
-         * @see Help#footer
-         * @see Help#footer() */
-        String[] footer() default {};
-
-        /** Program name to show in the synopsis. If omitted, {@code "<main class>"} is used.
-         * @see Help#commandName */
-        String name() default "<main class>";
-
-        /** Specify {@code true} to generate an abbreviated synopsis like {@code "<main> [OPTIONS] [PARAMETERS...]"}.
-         * By default, a detailed synopsis with individual option names and parameters is generated.
-         * @see Help#abbreviateSynopsis
-         * @see Help#abbreviatedSynopsis()
-         * @see Help#detailedSynopsis(Comparator, boolean) */
-        boolean abbreviateSynopsis() default false;
+        /** Specify {@code false} to show Options in declaration order. The default is to sort alphabetically.
+         * @see Help#sortOptions */
+        boolean sortOptions() default true;
 
         /** Prefix required options with this character in the options list. The default is no marker: the synopsis
          * indicates which options and parameters are required.
          * @see Help#requiredOptionMarker */
         char requiredOptionMarker() default ' ';
 
-        /** Specify {@code false} to show Options in declaration order. The default is to sort alphabetically.
-         * @see Help#sortOptions */
-        boolean sortOptions() default true;
-
         /** Specify {@code false} to omit default values from the description column of the options list. The default
          * is to display default values except for boolean options.
          * @see Help#showDefaultValues */
         boolean showDefaultValues() default true;
 
-        /** String that separates options from option parameters. Default is {@code "="}. Spaces are also accepted.
-         * @see Help#separator */
-        String separator() default "=";
+        /** Optional text to display after the list of options.
+         * @see Help#footer
+         * @see Help#footer() */
+        String[] footer() default {};
     }
     /**
      * <p>
@@ -715,7 +716,7 @@ public class CommandLine {
          * @param min minimum number of required parameters
          * @param max maximum number of allowed parameters (or Integer.MAX_VALUE if variable)
          * @param variable {@code true} if any number or parameters is allowed, {@code false} otherwise
-         * @param unspecified {@code true} if no arity was specified on the option or parameter
+         * @param unspecified {@code true} if no arity was specified on the option/parameter (value is based on type)
          * @param originalValue the original value that was specified on the option or parameter
          */
         public Arity(int min, int max, boolean variable, boolean unspecified, String originalValue) {
@@ -1441,8 +1442,8 @@ public class CommandLine {
          * initialized from {@link Command#separator()} if defined. */
         public String separator;
 
-        /** The String to use as the program name in the synopsis line of the help message. {@value} by default,
-         * initialized from {@link Command#name()} if defined. */
+        /** The String to use as the program name in the synopsis line of the help message.
+         * {@link #DEFAULT_COMMAND_NAME} by default, initialized from {@link Command#name()} if defined. */
         public String commandName = DEFAULT_COMMAND_NAME;
 
         /** Optional text lines to use as the description of the help message, displayed between the synopsis and the
@@ -1615,9 +1616,9 @@ public class CommandLine {
         }
         /**
          * <p>Returns a description of the {@linkplain Option options} supported by the application.
-         * This implementation {@linkplain SortByShortestOptionNameAlphabetically sorts options alphabetically}, and shows
+         * This implementation {@linkplain #createShortOptionNameComparator() sorts options alphabetically}, and shows
          * only the {@linkplain Option#hidden() non-hidden} options in a {@linkplain TextTable tabular format}
-         * using the {@linkplain DefaultOptionRenderer default renderer} and {@linkplain Layout default layout}.</p>
+         * using the {@linkplain #createDefaultOptionRenderer() default renderer} and {@linkplain Layout default layout}.</p>
          * @return the fully formatted option list
          * @see #optionList(Layout, Comparator, IValueLabelRenderer)
          */
@@ -1629,7 +1630,7 @@ public class CommandLine {
         }
 
         /** Sorts all {@code Options} with the specified {@code comparator} (if the comparator is non-{@code null}),
-         * then {@linkplain Layout#addOption(Field, IValueLabelRenderer) adds} all non-hidden options to the
+         * then {@linkplain Layout#addOption(Field, CommandLine.Help.IValueLabelRenderer) adds} all non-hidden options to the
          * specified TextTable and returns the result of TextTable.toString().
          * @param layout responsible for rendering the option list
          * @param optionSort determines in what order {@code Options} should be listed. Declared order if {@code null}
@@ -2012,7 +2013,7 @@ public class CommandLine {
                     table.addRowValues(oneRow);
                 }
             }
-            /** Calls {@link #addOption(Field, IValueLabelRenderer)} for all non-hidden Options in the list. */
+            /** Calls {@link #addOption(Field, CommandLine.Help.IValueLabelRenderer)} for all non-hidden Options in the list. */
             public void addOptions(List<Field> fields, IValueLabelRenderer valueLabelRenderer) {
                 for (Field field : fields) {
                     Option option = field.getAnnotation(Option.class);
@@ -2033,7 +2034,7 @@ public class CommandLine {
                 String[][] values = optionRenderer.render(option, field, valueLabelRenderer);
                 layout(field, values);
             }
-            /** Calls {@link #addPositionalParameter(Field, IValueLabelRenderer)} for all non-hidden Parameters in the list. */
+            /** Calls {@link #addPositionalParameter(Field, CommandLine.Help.IValueLabelRenderer)} for all non-hidden Parameters in the list. */
             public void addPositionalParameters(List<Field> fields, IValueLabelRenderer valueLabelRenderer) {
                 for (Field field : fields) {
                     Parameters parameters = field.getAnnotation(Parameters.class);
