@@ -57,7 +57,6 @@ import java.util.UUID;
 import java.util.regex.Pattern;
 
 import static picocli.CommandLine.Help.Column.Overflow.*;
-import static picocli.CommandLine.Help.IValueLabelRenderer;
 
 /**
  * <p>
@@ -212,22 +211,41 @@ public class CommandLine {
             help.addCommand(entry.getKey(), entry.getValue().annotatedObject);
         }
         StringBuilder sb = new StringBuilder()
+//                .append(help.headerHeading()) // TODO
                 .append(help.header())
                 //.append(String.format("Usage:%n"))
+//                .append(help.synopsisHeading()) //e.g. Usage:  // TODO
                 .append(String.format("Usage: ")).append(help.synopsis())
+//                .append(help.descriptionHeading()) // TODO
                 .append(help.description())
+//                .append(help.parameterListHeading()) // TODO
                 .append(help.parameterList())
+//                .append(help.optionListHeading()) // TODO
                 .append(help.optionList())
                 ;
         if (!help.commands.isEmpty()) {
-            sb.append(String.format("Commands:%n"));
-//                    .append(help.commandList());
-            Help.TextTable textTable = new Help.TextTable();
+//            sb.append(help.commandListHeading()); // e.g. %nCommands%n // TODO
+            sb.append(String.format("%nCommands:%n%nThe most commonly used git commands are:%n"));
+            List<String> commands = new ArrayList<String>(help.commands.keySet());
+            Collections.sort(commands, Collections.reverseOrder(Help.shortestFirst()));
+            int commandLength = commands.get(0).length();
+            Help.TextTable textTable = new Help.TextTable(
+                     new Help.Column(commandLength + 2, 2, Help.Column.Overflow.SPAN),
+                     new Help.Column(80 - (commandLength + 2), 2, Help.Column.Overflow.WRAP));
             for (Map.Entry<String, Help> entry : help.commands.entrySet()) {
-                Help commandHelp = entry.getValue();
-//                textTable.
+                Help command = entry.getValue();
+                String header = command.header != null && command.header.length > 0 ? command.header[0]
+                        : (command.description != null && command.description.length > 0 ? command.description[0] : "");
+                textTable.addRowValues(entry.getKey(), header);
+//                sb.append("  ").append(entry.getKey()).append(" ").append(header);
+//                sb.append(String.format("%n  ")).append(command.synopsis());
+//                sb.append(command.description())
+//                        .append(command.parameterList())
+//                        .append(command.optionList());
             }
+            textTable.toString(sb);
         }
+//        sb.append(help.footerHeading()); // TODO
         sb.append(help.footer());
         out.print(sb);
     }
@@ -616,7 +634,7 @@ public class CommandLine {
 
         /** Optional summary description of the command, shown before the synopsis.
          * @see Help#header
-         * @see Help#header() */
+         * @see Help#header(Object...)  */
         String[] header() default {};
 
         /** Specify {@code true} to generate an abbreviated synopsis like {@code "<main> [OPTIONS] [PARAMETERS...]"}.
@@ -628,12 +646,12 @@ public class CommandLine {
 
         /** Specify one or more custom synopsis lines to display instead of an auto-generated synopsis.
          * @see Help#customSynopsis
-         * @see Help#customSynopsis() */
+         * @see Help#customSynopsis(Object...) */
         String[] customSynopsis() default {};
 
         /** Optional text to display between the synopsis line(s) and the list of options.
          * @see Help#description
-         * @see Help#description() */
+         * @see Help#description(Object...) */
         String[] description() default {};
 
         /** Specify {@code false} to show Options in declaration order. The default is to sort alphabetically.
@@ -652,7 +670,7 @@ public class CommandLine {
 
         /** Optional text to display after the list of options.
          * @see Help#footer
-         * @see Help#footer() */
+         * @see Help#footer(Object...) */
         String[] footer() default {};
     }
     /**
@@ -1654,45 +1672,52 @@ public class CommandLine {
         }
 
         /** Appends each of the specified values plus the specified separator to the specified StringBuilder and returns it. */
-        public static StringBuilder join(String[] values, String separator, StringBuilder sb) {
+        public static StringBuilder join(String[] values, StringBuilder sb, Object... params) {
             if (values != null) {
+                TextTable table = new TextTable(80);
+                table.indentWrappedLines = 0;
                 for (String summaryLine : values) {
-                    sb.append(summaryLine).append(separator);
+                    table.addRowValues(String.format(summaryLine, params));
                 }
+                table.toString(sb);
             }
             return sb;
         }
         /** Returns command custom synopsis as a string. A custom synopsis can be zero or more lines, and can be
          * specified declaratively with the {@link Command#customSynopsis()} annotation attribute or programmatically
          * by setting the Help instance's {@link Help#customSynopsis} field.
+         * @param params Arguments referenced by the format specifiers in the synopsis strings
          * @return the custom synopsis lines combined into a single String (which may be empty)
          */
-        public String customSynopsis() {
-            return join(customSynopsis, System.getProperty("line.separator"), new StringBuilder()).toString();
+        public String customSynopsis(Object... params) {
+            return join(customSynopsis, new StringBuilder(), params).toString();
         }
         /** Returns command description text as a string. Description text can be zero or more lines, and can be specified
          * declaratively with the {@link Command#description()} annotation attribute or programmatically by
          * setting the Help instance's {@link Help#description} field.
+         * @param params Arguments referenced by the format specifiers in the description strings
          * @return the description lines combined into a single String (which may be empty)
          */
-        public String description() {
-            return join(description, System.getProperty("line.separator"), new StringBuilder()).toString();
+        public String description(Object... params) {
+            return join(description, new StringBuilder(), params).toString();
         }
         /** Returns the command header text as a string. Header text can be zero or more lines, and can be specified
          * declaratively with the {@link Command#header()} annotation attribute or programmatically by
          * setting the Help instance's {@link Help#header} field.
+         * @param params Arguments referenced by the format specifiers in the header strings
          * @return the header lines combined into a single String (which may be empty)
          */
-        public String header() {
-            return join(header, System.getProperty("line.separator"), new StringBuilder()).toString();
+        public String header(Object... params) {
+            return join(header, new StringBuilder(), params).toString();
         }
         /** Returns command footer text as a string. Footer text can be zero or more lines, and can be specified
          * declaratively with the {@link Command#footer()} annotation attribute or programmatically by
          * setting the Help instance's {@link Help#footer} field.
+         * @param params Arguments referenced by the format specifiers in the footer strings
          * @return the footer lines combined into a single String (which may be empty)
          */
-        public String footer() {
-            return join(footer, System.getProperty("line.separator"), new StringBuilder()).toString();
+        public String footer(Object... params) {
+            return join(footer, new StringBuilder(), params).toString();
         }
         private static String join(String[] names, int offset, int length, String separator) {
             if (names == null) { return ""; }
@@ -2004,10 +2029,8 @@ public class CommandLine {
              * delegates to {@link TextTable#addRowValues(String...)} for each row of values.
              * <p>Subclasses may override.</p>
              * @param field the field annotated with the specified Option or Parameters
-             * @param values the text values representing the Option/Parameters, to be displayed in tabular form
-             * @param textTable the data structure holding {@code char[]} objects for each cell in the table
+             * @param cellValues the text values representing the Option/Parameters, to be displayed in tabular form
              */
-            /** Delegates to {@link TextTable#addRowValues(String...)} for each row of values. */
             public void layout(Field field, String[][] cellValues) {
                 for (String[] oneRow : cellValues) {
                     table.addRowValues(oneRow);
@@ -2075,9 +2098,9 @@ public class CommandLine {
         static class SortByShortestOptionNameAlphabetically implements Comparator<Field> {
             ShortestFirst shortestFirst = new ShortestFirst();
             public int compare(Field f1, Field f2) {
-                // TODO handle parameters
                 Option o1 = f1.getAnnotation(Option.class);
                 Option o2 = f2.getAnnotation(Option.class);
+                if (o1 == null) { return 1; } else if (o2 == null) { return -1; } // options before params
                 String[] names1 = shortestFirst.sort(o1.names());
                 String[] names2 = shortestFirst.sort(o2.names());
                 int result = names1[0].toUpperCase().compareTo(names2[0].toUpperCase()); // case insensitive sort
@@ -2200,7 +2223,7 @@ public class CommandLine {
                 if (row > rowCount() - 1) {
                     throw new IllegalArgumentException("Cannot write to row " + row + ": rowCount=" + rowCount());
                 }
-                if (value == null || value.length() == 0) {return new Point(col, row);}
+                if (value == null || value.length() == 0) { return new Point(col, row); }
                 Column column = columns[col];
                 int indent = column.indent;
                 switch (column.overflow) {
@@ -2273,7 +2296,7 @@ public class CommandLine {
                     row.append(column);
                     if (i % columnCount == columnCount - 1) {
                         int lastChar = row.length() - 1;
-                        while (lastChar >= 0 && Character.isWhitespace(row.charAt(lastChar))) {lastChar--;} // rtrim
+                        while (lastChar >= 0 && row.charAt(lastChar) == ' ') {lastChar--;} // rtrim
                         row.setLength(lastChar + 1);
                         text.append(row.toString()).append(System.getProperty("line.separator"));
                         row.setLength(0);

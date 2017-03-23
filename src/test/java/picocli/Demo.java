@@ -49,9 +49,9 @@ public class Demo {
     // the "status" subcommand's has an option "mode" with a fixed number of values, modeled by this enum
     enum GitStatusMode {all, no, normal};
 
-    @CommandLine.Command(name = "status",
+    @CommandLine.Command(name = "git-status",
             header = "Show the working tree status",
-            customSynopsis = "[<options>...] [--] [<pathspec>...]",
+            customSynopsis = "status [<options>...] [--] [<pathspec>...]",
             description = "Displays paths that have differences between the index file and the current HEAD commit," +
                     "paths that have differences between the working tree and the index file, and paths in the" +
                     "working tree that are not tracked by Git (and are not ignored by gitignore(5)). The first" +
@@ -76,7 +76,7 @@ public class Demo {
         })
         GitStatusMode mode = GitStatusMode.all;
     }
-    @CommandLine.Command(name = "commit", sortOptions = false, header = "Record changes to the repository",
+    @CommandLine.Command(name = "git-commit", sortOptions = false, header = "Record changes to the repository",
             description = "Stores the current contents of the index in a new commit along with a " +
                     "log message from the user describing the changes.")
     class GitCommit {
@@ -116,18 +116,21 @@ public class Demo {
                 description = " Use the given <msg> as the commit message. If multiple -m options" +
                         " are given, their values are concatenated as separate paragraphs.")
         List<String> message = new ArrayList<String>();
+
+        @CommandLine.Parameters(valueLabel = "<files>", description = "the files to commit")
+        List<File> files = new ArrayList<File>();
     }
 
     // defines some commands to show in the list (option/parameters fields omitted for this demo)
-    @CommandLine.Command(name = "add", header = "Add file contents to the index") class GitAdd {}
-    @CommandLine.Command(name = "branch", header = "List, create, or delete branches") class GitBranch {}
-    @CommandLine.Command(name = "checkout", header = "Checkout a branch or paths to the working tree") class GitCheckout{}
-    @CommandLine.Command(name = "clone", header = "Clone a repository into a new directory") class GitClone{}
-    @CommandLine.Command(name = "diff", header = "Show changes between commits, commit and working tree, etc") class GitDiff{}
-    @CommandLine.Command(name = "merge", header = "Join two or more development histories together") class GitMerge{}
-    @CommandLine.Command(name = "push", header = "Update remote refs along with associated objects") class GitPush{}
-    @CommandLine.Command(name = "rebase", header = "Forward-port local commits to the updated upstream head") class GitRebase{}
-    @CommandLine.Command(name = "tag", header = "Create, list, delete or verify a tag object signed with GPG") class GitTag{}
+    @CommandLine.Command(name = "git-add", header = "Add file contents to the index") class GitAdd {}
+    @CommandLine.Command(name = "git-branch", header = "List, create, or delete branches") class GitBranch {}
+    @CommandLine.Command(name = "git-checkout", header = "Checkout a branch or paths to the working tree") class GitCheckout{}
+    @CommandLine.Command(name = "git-clone", header = "Clone a repository into a new directory") class GitClone{}
+    @CommandLine.Command(name = "git-diff", header = "Show changes between commits, commit and working tree, etc") class GitDiff{}
+    @CommandLine.Command(name = "git-merge", header = "Join two or more development histories together") class GitMerge{}
+    @CommandLine.Command(name = "git-push", header = "Update remote refs along with associated objects") class GitPush{}
+    @CommandLine.Command(name = "git-rebase", header = "Forward-port local commits to the updated upstream head") class GitRebase{}
+    @CommandLine.Command(name = "git-tag", header = "Create, list, delete or verify a tag object signed with GPG") class GitTag{}
 
     @Test
     public void testParseSubCommands() {
@@ -174,11 +177,32 @@ public class Demo {
         commandLine.addCommand("rebase", new GitRebase());
         commandLine.addCommand("tag", new GitTag());
 
-        String expected = "";
+        String expected = "Usage: git [-hV] [--git-dir=<gitDir>]%n" +
+                "Git is a fast, scalable, distributed revision control system with an unusually%n" +
+                "rich command set that provides both high-level operations and full access to%n" +
+                "internals.%n" +
+                "  -V, --version               Prints version information and exits%n" +
+                "  -h, --help                  Prints this help message and exits%n" +
+                "      --git-dir=<gitDir>      Set the path to the repository%n" +
+                "%n" +
+                "Commands:%n" +
+                "%n" +
+                "The most commonly used git commands are:%n" +
+                "  status    Show the working tree status%n" +
+                "  commit    Record changes to the repository%n" +
+                "  add       Add file contents to the index%n" +
+                "  branch    List, create, or delete branches%n" +
+                "  checkout  Checkout a branch or paths to the working tree%n" +
+                "  clone     Clone a repository into a new directory%n" +
+                "  diff      Show changes between commits, commit and working tree, etc%n" +
+                "  merge     Join two or more development histories together%n" +
+                "  push      Update remote refs along with associated objects%n" +
+                "  rebase    Forward-port local commits to the updated upstream head%n" +
+                "  tag       Create, list, delete or verify a tag object signed with GPG%n";
 
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         commandLine.usage(new PrintStream(baos, true, "UTF8"));
         String result = baos.toString("UTF8");
-        assertEquals(expected, result);
+        assertEquals(String.format(expected), result);
     }
 }

@@ -873,7 +873,7 @@ public class CommandLineHelpTest {
         @CommandLine.Command(name = "NETSTAT",
                 separator = " ",
                 abbreviateSynopsis = true,
-                header = "Displays protocol statistics and current TCP/IP network connections.\n")
+                header = "Displays protocol statistics and current TCP/IP network connections.%n")
         class Netstat {
             @Option(names="-a", description="Displays all connections and listening ports.")
             boolean displayAll;
@@ -940,7 +940,7 @@ public class CommandLineHelpTest {
         sb.append(layout);
 
         String expected = String.format("" +
-                "Displays protocol statistics and current TCP/IP network connections.\n" +
+                "Displays protocol statistics and current TCP/IP network connections.%n" +
                 "%n" +
                 "NETSTAT [-a] [-b] [-e] [-f] [-n] [-o] [-p proto] [-q] [-r] [-s] [-t] [-x] [-y]%n" +
                 "        [interval]%n" +
