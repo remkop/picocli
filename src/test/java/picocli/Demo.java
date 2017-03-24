@@ -33,8 +33,9 @@ public class Demo {
 
     @CommandLine.Command(name = "git", sortOptions = false, showDefaultValues = false,
             description = "Git is a fast, scalable, distributed revision control " +
-            "system with an unusually rich command set that provides both high-level operations " +
-            "and full access to internals.")
+                          "system with an unusually rich command set that provides both " +
+                          "high-level operations and full access to internals.",
+            commandListHeading = "%nCommands:%n%nThe most commonly used git commands are:%n")
     class Git {
         @CommandLine.Option(names = {"-V", "--version"}, help = true, description = "Prints version information and exits")
         boolean isVersionRequested;
@@ -51,11 +52,11 @@ public class Demo {
 
     @CommandLine.Command(name = "git-status",
             header = "Show the working tree status",
-            customSynopsis = "status [<options>...] [--] [<pathspec>...]",
-            description = "Displays paths that have differences between the index file and the current HEAD commit," +
-                    "paths that have differences between the working tree and the index file, and paths in the" +
-                    "working tree that are not tracked by Git (and are not ignored by gitignore(5)). The first" +
-                    "are what you would commit by running git commit; the second and third are what you could" +
+            customSynopsis = "git-status [<options>...] [--] [<pathspec>...]",
+            description = "Displays paths that have differences between the index file and the current HEAD commit, " +
+                    "paths that have differences between the working tree and the index file, and paths in the " +
+                    "working tree that are not tracked by Git (and are not ignored by gitignore(5)). The first " +
+                    "are what you would commit by running git commit; the second and third are what you could " +
                     "commit by running git add before running git commit.")
     class GitStatus {
         @CommandLine.Option(names = {"-s", "--short"}, description = "Give the output in the short-format")
@@ -152,10 +153,11 @@ public class Demo {
 
         assertEquals(Git.class, parsed.get(0).getClass());
         assertEquals(GitStatus.class, parsed.get(1).getClass());
-        Git git = (Git) parsed.get(0);
-        GitStatus status = (GitStatus) parsed.get(1);
 
+        Git git = (Git) parsed.get(0);
         assertEquals(new File("/home/rpopma/picocli"), git.gitDir);
+
+        GitStatus status = (GitStatus) parsed.get(1);
         assertTrue("status -s", status.shortFormat);
         assertTrue("status -b", status.branchInfo);
         assertFalse("NOT status --showIgnored", status.showIgnored);
@@ -163,7 +165,7 @@ public class Demo {
     }
 
     @Test
-    public void testUsageSubCommands() throws Exception {
+    public void testUsageMainCommand() throws Exception {
         CommandLine commandLine = new CommandLine(new Git());
         commandLine.addCommand("status", new GitStatus());
         commandLine.addCommand("commit", new GitCommit());
@@ -202,6 +204,36 @@ public class Demo {
 
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         commandLine.usage(new PrintStream(baos, true, "UTF8"));
+        String result = baos.toString("UTF8");
+        assertEquals(String.format(expected), result);
+    }
+
+    @Test
+    public void testUsageSubCommand() throws Exception {
+        String expected = "Show the working tree status%n" +
+                "Usage: git-status [<options>...] [--] [<pathspec>...]%n" +
+                "Displays paths that have differences between the index file and the current%n" +
+                "HEAD commit, paths that have differences between the working tree and the index%n" +
+                "file, and paths in the working tree that are not tracked by Git (and are not%n" +
+                "ignored by gitignore(5)). The first are what you would commit by running git%n" +
+                "commit; the second and third are what you could commit by running git add%n" +
+                "before running git commit.%n" +
+                "      --ignored               Show ignored files as well%n" +
+                "  -b, --branch                Show the branch and tracking info even in%n" +
+                "                                short-format%n" +
+                "  -s, --short                 Give the output in the short-format%n" +
+                "  -u, --untracked=<mode>      Show untracked files.%n" +
+                "                              The mode parameter is optional (defaults to%n" +
+                "                                `all`), and is used to specify the handling of%n" +
+                "                                untracked files.%n" +
+                "                              The possible options are:%n" +
+                "                               · no - Show no untracked files.%n" +
+                "                               · normal - Shows untracked files and directories.%n" +
+                "                               · all - Also shows individual files in untracked%n" +
+                "                                directories.%n" +
+                "                              Default: all%n";
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        CommandLine.usage(new GitStatus(), new PrintStream(baos, true, "UTF8"));
         String result = baos.toString("UTF8");
         assertEquals(String.format(expected), result);
     }
