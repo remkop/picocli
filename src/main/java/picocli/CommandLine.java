@@ -126,6 +126,7 @@ public class CommandLine {
 
     private final Interpreter interpreter;
     private final List<Object> parsedCommands = new ArrayList<Object>();
+    private final Map<String, Object> commandMap = new LinkedHashMap<String, Object>();
 
     /**
      * Constructs a new {@code CommandLine} interpreter with the specified annotated object.
@@ -137,9 +138,19 @@ public class CommandLine {
         interpreter = new Interpreter(annotatedObject);
     }
 
+    /** Registers a sub-command with the specified name.
+     * @param name the string to recognize on the command line as a sub-command
+     * @param annotatedObject the object to initialize with command line arguments following the sub-command name
+     * @return this CommandLine object, to allow method chaining
+     */
     public CommandLine addCommand(String name, Object annotatedObject) {
         interpreter.commands.put(name, new Interpreter(annotatedObject));
+        commandMap.put(name, annotatedObject);
         return this;
+    }
+    /** Returns a map with the registered sub-commands. */
+    public Map<String, Object> getCommands() {
+        return new LinkedHashMap<String, Object>(commandMap);
     }
 
     /**
@@ -180,73 +191,62 @@ public class CommandLine {
     }
 
     /**
-     * Prints a usage help message for the specified annotated class to the specified {@code PrintStream}.
-     * Delegates construction of the usage help message to the {@link Help} inner class and is equivalent to:
-     * <pre>
-     *        Help help = new Help(annotatedObject);
-     *        StringBuilder sb = new StringBuilder()
-     *                .append(help.header())
-     *                .append("Usage: ").append(help.synopsis())
-     *                .append(help.description())
-     *                .append(help.parameterList())
-     *                .append(help.optionList())
-     *                .append(help.footer());
-     *        out.print(sb);
-     * <p>Annotate your class with {@link Command} to control the program name, or whether the "usage" message
-     * should be a generic {@code "Usage <main class> [OPTIONS] [PARAMETERS]"} message or a detailed message
-     * that shows options and parameters.</p>
-     * <p>To customize how option details are displayed, instantiate a {@link Help} object and use a custom
-     * option {@linkplain Help.IOptionRenderer renderer} and/or a custom {@linkplain Help.Layout layout} to control
-     * which aspects of an Option or Field are displayed where in the {@link Help.TextTable}.</p>
+     * Equivalent to {@code new CommandLine(annotatedObject).usage(out);}. See {@link #usage(PrintStream)} for details.
      * @param annotatedObject the object annotated with {@link Command}, {@link Option} and {@link Parameters}
-     * @param out the {@code PrintStream} to print the usage help message to
+     * @param out the print stream to print the help message to
      */
     public static void usage(Object annotatedObject, PrintStream out) {
         new CommandLine(annotatedObject).usage(out);
     }
 
+    /**
+     * Prints a usage help message for the specified annotated class to the specified {@code PrintStream}.
+     * Delegates construction of the usage help message to the {@link Help} inner class and is equivalent to:
+     * <pre>
+     * Help help = new Help(annotatedObject).addAllCommands(getCommands());
+     * StringBuilder sb = new StringBuilder()
+     *         .append(help.headerHeading())
+     *         .append(help.header())
+     *         .append(help.synopsisHeading())      //e.g. Usage:
+     *         .append(help.synopsis())             //e.g. &lt;main class&gt; [OPTIONS] &lt;command&gt; [COMMAND-OPTIONS] [ARGUMENTS]
+     *         .append(help.descriptionHeading())   //e.g. %nDescription:%n%n
+     *         .append(help.description())          //e.g. {"Converts foos to bars.", "Use options to control conversion mode."}
+     *         .append(help.parameterListHeading()) //e.g. %nPositional parameters:%n%n
+     *         .append(help.parameterList())        //e.g. [FILE...] the files to convert
+     *         .append(help.optionListHeading())    //e.g. %nOptions:%n%n
+     *         .append(help.optionList())           //e.g. -h, --help   displays this help and exits
+     *         .append(help.commandListHeading())   //e.g. %nCommands:%n%n
+     *         .append(help.commandList())          //e.g.    add       adds the frup to the frooble
+     *         .append(help.footerHeading())
+     *         .append(help.footer());
+     * out.print(sb);
+     * </pre>
+     * <p>Annotate your class with {@link Command} to control many aspects of the usage help message, including
+     * the program name, text of section headings and section contents, and some aspects of the auto-generated sections
+     * of the usage help message.
+     * <p>To customize the auto-generated sections of the usage help message, like how option details are displayed,
+     * instantiate a {@link Help} object and use a {@link Help.TextTable} with more of fewer columns, a custom
+     * {@linkplain Help.Layout layout}, and/or a custom option {@linkplain Help.IOptionRenderer renderer}
+     * for ultimate control over which aspects of an Option or Field are displayed where.</p>
+     * @param out the {@code PrintStream} to print the usage help message to
+     */
     public void usage(PrintStream out) {
-        Help help = new Help(interpreter.annotatedObject);
-        for (Map.Entry<String, Interpreter> entry : interpreter.commands.entrySet()) {
-            help.addCommand(entry.getKey(), entry.getValue().annotatedObject);
-        }
+        Help help = new Help(interpreter.annotatedObject).addAllCommands(commandMap);
         StringBuilder sb = new StringBuilder()
-//                .append(help.headerHeading()) // TODO
+                .append(help.headerHeading())
                 .append(help.header())
-                //.append(String.format("Usage:%n"))
-//                .append(help.synopsisHeading()) //e.g. Usage:  // TODO
-                .append(String.format("Usage: ")).append(help.synopsis())
-//                .append(help.descriptionHeading()) // TODO
-                .append(help.description())
-//                .append(help.parameterListHeading()) // TODO
-                .append(help.parameterList())
-//                .append(help.optionListHeading()) // TODO
-                .append(help.optionList())
-                ;
-        if (!help.commands.isEmpty()) {
-//            sb.append(help.commandListHeading()); // e.g. %nCommands%n // TODO
-            sb.append(String.format("%nCommands:%n%nThe most commonly used git commands are:%n"));
-            List<String> commands = new ArrayList<String>(help.commands.keySet());
-            Collections.sort(commands, Collections.reverseOrder(Help.shortestFirst()));
-            int commandLength = commands.get(0).length();
-            Help.TextTable textTable = new Help.TextTable(
-                     new Help.Column(commandLength + 2, 2, Help.Column.Overflow.SPAN),
-                     new Help.Column(80 - (commandLength + 2), 2, Help.Column.Overflow.WRAP));
-            for (Map.Entry<String, Help> entry : help.commands.entrySet()) {
-                Help command = entry.getValue();
-                String header = command.header != null && command.header.length > 0 ? command.header[0]
-                        : (command.description != null && command.description.length > 0 ? command.description[0] : "");
-                textTable.addRowValues(entry.getKey(), header);
-//                sb.append("  ").append(entry.getKey()).append(" ").append(header);
-//                sb.append(String.format("%n  ")).append(command.synopsis());
-//                sb.append(command.description())
-//                        .append(command.parameterList())
-//                        .append(command.optionList());
-            }
-            textTable.toString(sb);
-        }
-//        sb.append(help.footerHeading()); // TODO
-        sb.append(help.footer());
+                .append(help.synopsisHeading())      //e.g. Usage:
+                .append(help.synopsis())             //e.g. &lt;main class&gt; [OPTIONS] &lt;command&gt; [COMMAND-OPTIONS] [ARGUMENTS]
+                .append(help.descriptionHeading())   //e.g. %nDescription:%n%n
+                .append(help.description())          //e.g. {"Converts foos to bars.", "Use options to control conversion mode."}
+                .append(help.parameterListHeading()) //e.g. %nPositional parameters:%n%n
+                .append(help.parameterList())        //e.g. [FILE...] the files to convert
+                .append(help.optionListHeading())    //e.g. %nOptions:%n%n
+                .append(help.optionList())           //e.g. -h, --help   displays this help and exits
+                .append(help.commandListHeading())   //e.g. %nCommands:%n%n
+                .append(help.commandList())          //e.g.    add       adds the frup to the frooble
+                .append(help.footerHeading())
+                .append(help.footer());
         out.print(sb);
     }
 
@@ -632,10 +632,20 @@ public class CommandLine {
          * @see Help#separator */
         String separator() default "=";
 
+        /** Set the heading preceding the header section. May contain embedded {@linkplain java.util.Formatter format specifiers}.
+         * @see Help#headerHeading(Object...)  */
+        String headerHeading() default "";
+
         /** Optional summary description of the command, shown before the synopsis.
          * @see Help#header
          * @see Help#header(Object...)  */
         String[] header() default {};
+
+        /** Set the heading preceding the synopsis text. May contain embedded
+         * {@linkplain java.util.Formatter format specifiers}. The default heading is {@code "Usage: "} (without a line
+         * break between the heading and the synopsis text).
+         * @see Help#synopsisHeading(Object...)  */
+        String synopsisHeading() default "Usage: ";
 
         /** Specify {@code true} to generate an abbreviated synopsis like {@code "<main> [OPTIONS] [PARAMETERS...]"}.
          * By default, a detailed synopsis with individual option names and parameters is generated.
@@ -649,10 +659,22 @@ public class CommandLine {
          * @see Help#customSynopsis(Object...) */
         String[] customSynopsis() default {};
 
+        /** Set the heading preceding the description section. May contain embedded {@linkplain java.util.Formatter format specifiers}.
+         * @see Help#descriptionHeading(Object...)  */
+        String descriptionHeading() default "";
+
         /** Optional text to display between the synopsis line(s) and the list of options.
          * @see Help#description
          * @see Help#description(Object...) */
         String[] description() default {};
+
+        /** Set the heading preceding the parameters list. May contain embedded {@linkplain java.util.Formatter format specifiers}.
+         * @see Help#parameterListHeading(Object...)  */
+        String parameterListHeading() default "";
+
+        /** Set the heading preceding the options list. May contain embedded {@linkplain java.util.Formatter format specifiers}.
+         * @see Help#optionListHeading(Object...)  */
+        String optionListHeading() default "";
 
         /** Specify {@code false} to show Options in declaration order. The default is to sort alphabetically.
          * @see Help#sortOptions */
@@ -667,6 +689,15 @@ public class CommandLine {
          * is to display default values except for boolean options.
          * @see Help#showDefaultValues */
         boolean showDefaultValues() default true;
+
+        /** Set the heading preceding the sub-commands list. May contain embedded {@linkplain java.util.Formatter format specifiers}.
+         * The default heading is {@code "Commands:%n"} (with a line break at the end).
+         * @see Help#commandListHeading(Object...)  */
+        String commandListHeading() default "Commands:%n";
+
+        /** Set the heading preceding the footer section. May contain embedded {@linkplain java.util.Formatter format specifiers}.
+         * @see Help#footerHeading(Object...)  */
+        String footerHeading() default "";
 
         /** Optional text to display after the list of options.
          * @see Help#footer
@@ -1503,7 +1534,22 @@ public class CommandLine {
         /** Character used to prefix required options in the options list. */
         public Character requiredOptionMarker;
 
-        /** Constructs a new {@code Help} instance, initialized from annotatations on the specified class and super classes. */
+        /** Optional heading preceding the header section. Initialized from {@link Command#headerHeading()}, or null. */
+        public String headerHeading;
+        /** Optional heading preceding the synopsis. Initialized from {@link Command#synopsisHeading()}, {@code "Usage: "} by default. */
+        public String synopsisHeading;
+        /** Optional heading preceding the description section. Initialized from {@link Command#descriptionHeading()}, or null. */
+        public String descriptionHeading;
+        /** Optional heading preceding the parameter list. Initialized from {@link Command#parameterListHeading()}, or null. */
+        public String parameterListHeading;
+        /** Optional heading preceding the options list. Initialized from {@link Command#optionListHeading()}, or null. */
+        public String optionListHeading;
+        /** Optional heading preceding the command list. Initialized from {@link Command#commandListHeading()}. {@code "Commands:%n"} by default. */
+        public String commandListHeading;
+        /** Optional heading preceding the footer section. Initialized from {@link Command#footerHeading()}, or null. */
+        public String footerHeading;
+
+        /** Constructs a new {@code Help} instance, initialized from annotatations on the specified class and superclasses. */
         public Help(Object annotatedObject) {
             this.annotatedObject = Assert.notNull(annotatedObject, "annotatedObject");
             Class<?> cls = annotatedObject.getClass();
@@ -1536,15 +1582,33 @@ public class CommandLine {
                     description = empty(description) ? command.description() : description;
                     header = empty(header) ? command.header() : header;
                     footer = empty(footer) ? command.footer() : footer;
+                    headerHeading = headerHeading == null ? command.headerHeading() : headerHeading;
+                    synopsisHeading = synopsisHeading == null ? command.synopsisHeading() : synopsisHeading;
+                    descriptionHeading = descriptionHeading == null ? command.descriptionHeading() : descriptionHeading;
+                    parameterListHeading = parameterListHeading == null ? command.parameterListHeading() : parameterListHeading;
+                    optionListHeading = optionListHeading == null ? command.optionListHeading() : optionListHeading;
+                    commandListHeading = commandListHeading == null ? command.commandListHeading() : commandListHeading;
+                    footerHeading = footerHeading == null ? command.footerHeading() : footerHeading;
                 }
                 cls = cls.getSuperclass();
             }
-            sortOptions =          (sortOptions == null) ? true : sortOptions;
-            abbreviateSynopsis =   (abbreviateSynopsis == null) ? false : abbreviateSynopsis;
+            sortOptions =          (sortOptions == null)          ? true : sortOptions;
+            abbreviateSynopsis =   (abbreviateSynopsis == null)   ? false : abbreviateSynopsis;
             requiredOptionMarker = (requiredOptionMarker == null) ? ' ' : requiredOptionMarker;
-            showDefaultValues =    (showDefaultValues == null) ? true : showDefaultValues;
-            separator =            (separator == null) ? "=" : separator;
+            showDefaultValues =    (showDefaultValues == null)    ? true : showDefaultValues;
+            separator =            (separator == null)            ? "=" : separator;
             parameterLabelRenderer = new DefaultValueLabelRenderer(separator);
+            synopsisHeading =      (synopsisHeading == null)      ? "Usage: " : synopsisHeading;
+            commandListHeading =   (commandListHeading == null)   ? "Commands:%n" : commandListHeading;
+        }
+
+        public Help addAllCommands(Map<String, Object> commands) {
+            if (commands != null) {
+                for (Map.Entry<String, Object> entry : commands.entrySet()) {
+                    addCommand(entry.getKey(), entry.getValue());
+                }
+            }
+            return this;
         }
 
         public Help addCommand(String command, Object annotatedObject) {
@@ -1627,9 +1691,6 @@ public class CommandLine {
             TextTable textTable = new TextTable(commandName.length(), 80 - commandName.length());
             textTable.indentWrappedLines = 1; // don't worry about first line: options (2nd column) always start with a space
             textTable.addRowValues(new String[] {commandName, sb.toString()});
-//            textTable.addEmptyRow();
-//            textTable.putValue(0, 0, commandName);
-//            textTable.putValue(0, 1, sb.toString());
             return textTable.toString();
         }
         /**
@@ -1718,6 +1779,68 @@ public class CommandLine {
          */
         public String footer(Object... params) {
             return join(footer, new StringBuilder(), params).toString();
+        }
+
+        /** Returns the text displayed before the header text; the result of {@code String.format(headerHeading, params)}. */
+        public String headerHeading(Object... params) {
+            return format(headerHeading, params);
+        }
+        /** Returns the text displayed before the synopsis text; the result of {@code String.format(synopsisHeading, params)}. */
+        public String synopsisHeading(Object... params) {
+            return format(synopsisHeading, params);
+        }
+
+        /** Returns the text displayed before the description text; an empty string if there is no description,
+         * otherwise the result of {@code String.format(descriptionHeading, params)}. */
+        public String descriptionHeading(Object... params) {
+            return empty(description) ? "" : format(descriptionHeading, params);
+        }
+
+        /** Returns the text displayed before the positional parameter list; an empty string if there are no positional
+         * parameters, otherwise the result of {@code String.format(parameterListHeading, params)}. */
+        public String parameterListHeading(Object... params) {
+            return positionalParametersFields.isEmpty() ? "" : format(parameterListHeading, params);
+        }
+
+        /** Returns the text displayed before the option list; an empty string if there are no options,
+         * otherwise the result of {@code String.format(optionListHeading, params)}. */
+        public String optionListHeading(Object... params) {
+            return optionFields.isEmpty() ? "" : format(optionListHeading, params);
+        }
+
+        /** Returns the text displayed before the command list; an empty string if there are no commands,
+         * otherwise the result of {@code String.format(commandListHeading, params)}. */
+        public String commandListHeading(Object... params) {
+            return commands.isEmpty() ? "" : format(commandListHeading, params);
+        }
+
+        /** Returns the text displayed before the footer text; the result of {@code String.format(footerHeading, params)}. */
+        public String footerHeading(Object... params) {
+            return format(footerHeading, params);
+        }
+        private String format(String formatString,  Object[] params) {
+            return formatString == null ? "" : String.format(formatString, params);
+        }
+        /** Returns a 2-column list with command names and the first line of their header or (if absent) description. */
+        public String commandList() {
+            if (commands.isEmpty()) { return ""; }
+            int commandLength = maxLength(commands.keySet());
+            Help.TextTable textTable = new Help.TextTable(
+                    new Help.Column(commandLength + 2, 2, Help.Column.Overflow.SPAN),
+                    new Help.Column(80 - (commandLength + 2), 2, Help.Column.Overflow.WRAP));
+
+            for (Map.Entry<String, Help> entry : commands.entrySet()) {
+                Help command = entry.getValue();
+                String header = command.header != null && command.header.length > 0 ? command.header[0]
+                        : (command.description != null && command.description.length > 0 ? command.description[0] : "");
+                textTable.addRowValues(entry.getKey(), header);
+            }
+            return textTable.toString();
+        }
+        private static int maxLength(Collection<String> any) {
+            List<String> strings = new ArrayList<String>(any);
+            Collections.sort(strings, Collections.reverseOrder(Help.shortestFirst()));
+            return strings.get(0).length();
         }
         private static String join(String[] names, int offset, int length, String separator) {
             if (names == null) { return ""; }
