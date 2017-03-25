@@ -1,18 +1,17 @@
-= picoCLI - a mighty tiny Command Line Interface
+= picocli - a mighty tiny Command Line Interface
 Remko Popma <rpopma@apache.org>
-v0.2.0, 2017-02-11
+v0.3.0, 2017-03-25
 :toc: left
-:toclevels: 1
+:numbered:
+:toclevels: 2
 :toc-title: Features
 
-A CLI framework in a single file, designed to be easy to include in your application _in source form_:
-allowing you to parse command line arguments without dragging in an external dependency.
+A Java command line parsing framework in a single file, so you can include it _in source form_
+and your users can run your application without an external dependency.
+Produces beautiful and easily tailored usage help messages.
 
-How it works: annotate your class and picoCLI initializes it from the command line arguments,
-converting the input to strongly typed values in the fields of your class. Any option prefix style works,
-with special support for POSIX-style clustered short options.
-Easily customizable online "usage" help. Can be configured to make option matching case-insensitive,
-and supports abbreviated options when unambiguous. Works with Java 5 or higher.
+How it works: annotate your class and picocli initializes it from the command line arguments,
+converting the input to strongly typed values in the fields of your class.
 
 == Example
 
@@ -26,13 +25,11 @@ public class Example {
     @Parameters(description = "Specifies the input file(s).")
     private File[] inputFiles;
 
-    @Option(names = { "--out", "-o" }, description = "Specifies the output file.", required = true)
-    private File outputFile;
-
-    @Option(names = { "--verbose", "-v" }, description = "Be verbose.")
+    @Option(names = { "-v", "--verbose" }, description = "Be verbose.")
     private boolean verbose = false;
 
-    @Option(names = { "--help", "-h" }, help = true, description = "Displays this help message and quits.")
+    @Option(names = { "-h", "--help" }, help = true,
+            description = "Displays this help message and quits.")
     private boolean helpRequested = false;
     ...
 }
@@ -42,12 +39,70 @@ Then invoke `CommandLine.parse` with the command line parameters and an object y
 
 [source,java]
 ----
-Example app = new Example();
-CommandLine.parse(app, "--out", "path/to/outputFile", "inputFile1", "inputFile2");
-assert app.inputFiles != null;
+Example app = CommandLine.parse(new Example(), "-v", "inputFile1", "inputFile2");
+assert !app.helpRequested;
+assert  app.verbose;
+assert  app.inputFiles != null && app.inputFiles.length == 2;
 ----
 
-== Named Options and Positional Parameters
+== Type Conversion
+When command line options and parameters are mapped to the annotated fields,
+the text value is converted to the type of the annotated field.
+
+=== Built-in Type Converters
+Out of the box, picocli can convert strings to:
+
+* any Java primitive type (boolean, int, etc.) #<1>
+* the standard Java primitive wrapper types (Boolean, Integer, etc.) #<1>
+* java.io.File
+* java.math.BigDecimal
+* java.math.BigInteger
+* java.net.InetAddress
+* java.net.URI
+* java.net.URL
+* java.nio.charset.Charset
+* java.sql.Time - value must be in any of the `"HH:mm"`, `"HH:mm:ss"`, `"HH:mm:ss.SSS"`, or `"HH:mm:ss,SSS"` formats
+* java.util.Date - value must be in `"yyyy-MM-dd"` format
+* java.util.UUID
+* java.util.regex.Pattern
+* java.lang.String, java.lang.StringBuilder, java.lang.CharSequence
+
+<1> Byte, short, int and long conversion (for both primitives and wrappers) uses the
+https://docs.oracle.com/javase/8/docs/api/java/lang/Integer.html#decode-java.lang.String-[decode] method, so numbers
+starting with `0x`, `0X` or `#` are interpreted as hexadecimal numbers, numbers starting with `0` are interpreted
+as octal numbers, and otherwise the number is interpreted as a decimal number.
+
+=== Custom Type Converters
+Apart from the above, you can register custom converters to handle data types other than the above built-in ones.
+
+Custom converters need to implement the `picocli.CommandLine.ITypeConverter` interface:
+
+[source,java]
+----
+public interface ITypeConverter<K> {
+    /**
+     * Converts the specified command line option value to some domain object.
+     * @param value the command line option String value
+     * @return the resulting domain object
+     * @throws Exception an exception detailing what went wrong during the conversion
+     */
+    K convert(String value) throws Exception;
+}
+----
+
+Custom type converters can be registered with the `CommandLine.registerConverter(Class<K> cls, ITypeConverter<K> converter)`
+method.
+
+Picocli works with Java 5 and higher, but if you can use Java 8, lambdas make it easy to register custom type converters:
+
+[source,java]
+----
+ commandLine.registerConverter(java.nio.file.Path.class, s -> java.nio.file.Paths.get(s));
+ commandLine.registerConverter(java.time.Duration.class, s -> java.time.Duration.parse(s));
+----
+
+
+== Named Options and Positional Parameters ==
 Imagine an application that takes some input files and compresses them to an output file.
 ----
 Compress -o outputFile file1 file2 file3
@@ -206,9 +261,6 @@ CommandLine.parse(new MyProgram(), "-x -y -n 123 file1 file2 file3")
 == Options with Parameters
 == parameters are strongly typed
 == built-in type converters
-
-Converters for byte, short, int and long (and their wrapper classes) use the https://docs.oracle.com/javase/7/docs/api/java/lang/Integer.html#decode(java.lang.String)[`decode`] method to convert String values, so you can specify hexadecimal and even octal values in additional to the normal decimal values. (Be aware that values starting with `0` are interpreted to be octal values!)
-
 == registering custom type converters
 == option short form
 
