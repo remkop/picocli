@@ -45,35 +45,24 @@ assert  app.verbose;
 assert  app.inputFiles != null && app.inputFiles.length == 2;
 ----
 
+== Options and Parameters
+Options have a name, parameters come after the named options.
+There are no hard and fast rules for when to use options or parameters,
+but a common theme seems to be that options are optional and parameters are used for mandatory values.
+Picocli lets you make options required (<<Required Options>>), so you can go either way.
+
 == Type Conversion
 When command line options and parameters are mapped to the annotated fields,
 the text value is converted to the type of the annotated field.
 
 === Built-in Type Converters
-Out of the box, picocli can convert strings to:
-
-* any Java primitive type (boolean, int, etc.) #<1>
-* the standard Java primitive wrapper types (Boolean, Integer, etc.) #<1>
-* java.io.File
-* java.math.BigDecimal
-* java.math.BigInteger
-* java.net.InetAddress
-* java.net.URI
-* java.net.URL
-* java.nio.charset.Charset
-* java.sql.Time - value must be in any of the `"HH:mm"`, `"HH:mm:ss"`, `"HH:mm:ss.SSS"`, or `"HH:mm:ss,SSS"` formats
-* java.util.Date - value must be in `"yyyy-MM-dd"` format
-* java.util.UUID
-* java.util.regex.Pattern
-* java.lang.String, java.lang.StringBuilder, java.lang.CharSequence
-
-<1> Byte, short, int and long conversion (for both primitives and wrappers) uses the
-https://docs.oracle.com/javase/8/docs/api/java/lang/Integer.html#decode-java.lang.String-[decode] method, so numbers
-starting with `0x`, `0X` or `#` are interpreted as hexadecimal numbers, numbers starting with `0` are interpreted
-as octal numbers, and otherwise the number is interpreted as a decimal number.
+Out of the box, picocli can convert command line argument strings to any Java primitive type or their wrapper,
+File, BigDecimal, BigInteger, InetAddress, URL, URI, Charset, UUID, regex Pattern, String, StringBuilder, CharSequence,
+`java.sql.Time` (for values in any of the `"HH:mm"`, `"HH:mm:ss"`, `"HH:mm:ss.SSS"`, or `"HH:mm:ss,SSS"` formats), and
+`java.util.Date` (for values in `"yyyy-MM-dd"` format).
 
 === Custom Type Converters
-Apart from the above, you can register custom converters to handle data types other than the above built-in ones.
+Register a custom converter to handle data types other than the above built-in ones.
 
 Custom converters need to implement the `picocli.CommandLine.ITypeConverter` interface:
 
@@ -93,7 +82,9 @@ public interface ITypeConverter<K> {
 Custom type converters can be registered with the `CommandLine.registerConverter(Class<K> cls, ITypeConverter<K> converter)`
 method.
 
-Picocli works with Java 5 and higher, but if you can use Java 8, lambdas make it easy to register custom type converters:
+
+NOTE: Picocli works with Java 5 and higher, so it does not have default converters for Java 8 types like `Path` or
+`Duration`. Lambdas make it easy to register custom converters for these types:
 
 [source,java]
 ----
@@ -101,20 +92,35 @@ Picocli works with Java 5 and higher, but if you can use Java 8, lambdas make it
  commandLine.registerConverter(java.time.Duration.class, s -> java.time.Duration.parse(s));
 ----
 
+NOTE: Numeric values are interpreted as decimal numbers by default. If you want picocli to be more flexible, you can
+use the https://docs.oracle.com/javase/8/docs/api/java/lang/Integer.html#decode-java.lang.String-[decode] method
+to convert strings to numbers. The `decode` method looks at the prefix to determine the radix, so numbers
+starting with `0x`, `0X` or `#` are interpreted as hexadecimal numbers, numbers starting with `0` are interpreted
+as octal numbers, and otherwise the number is interpreted as a decimal number.
 
-== Named Options and Positional Parameters ==
+[source,java]
+----
+ commandLine.registerConverter(Byte.class,    s -> Byte::decode);
+ commandLine.registerConverter(Short.class,   s -> Short::decode);
+ commandLine.registerConverter(Integer.class, s -> Integer::decode);
+ commandLine.registerConverter(Long.class,    s -> Long::decode);
+----
+
+
+== Another Example
 Imagine an application that takes some input files and compresses them to an output file.
 ----
 Compress -o outputFile file1 file2 file3
 ----
-The program takes one option (`-o`, the output file) and one or more input files. One way to accomplish this with picoCLI looks like this:
+The program takes one option (`-o`, the output file) and one or more input files.
+One way to accomplish this with picoCLI looks like this:
 
 [source, java]
 ----
 import picocli.CommandLine.*;
 import java.io.File;
 
-@Usage(programName = "Compress", header = "Compresses the specified input files to an output file")
+@Command(name = "Compress", header = "Compresses the specified input files to an output file")
 public class Compress {
     @Parameters(arity = "1..*", description = "one or more files to compress")
     File[] inputFiles;
