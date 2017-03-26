@@ -46,10 +46,105 @@ assert  app.inputFiles != null && app.inputFiles.length == 2;
 ----
 
 == Options and Parameters
-Options have a name, parameters come after the named options.
+Options have a name, positional parameters (sometimes called operands) come after the named options.
 There are no hard and fast rules for when to use options or parameters,
 but a common theme seems to be that options are optional and parameters are used for mandatory values.
-Picocli lets you make options required (<<Required Options>>), so you can go either way.
+Picocli lets you make options required if you want to, see <<Required Options>>.
+
+TIP: The https://www.gnu.org/prep/standards/html_node/Command_002dLine-Interfaces.html#Command_002dLine-Interfaces[GNU recommendations] for command line interfaces and http://pubs.opengroup.org/onlinepubs/9699919799/basedefs/V1_chap12.html#tag_12_02[POSIX Utility Guidelines] may be useful.
+
+=== Options
+An option can have multiple names. Options usually have a prefix to distinguish them from parameters. There are many different prefixes and different option naming https://en.wikipedia.org/wiki/Command-line_interface#Command-line_option[styles]. Picocli lets you use any style you want.
+
+TIP: You may be interested in this http://catb.org/~esr/writings/taoup/html/ch10s05.html#id2948149[list of common option names]. Following these conventions may make your application more intuitive to use.
+
+The below uses the popular utility `tar` as an example to show how one could use picocli to code options with one or more names, options that take an option parameter, positional parameters, and "help" options.
+[source,java]
+----
+class Tar {
+    @Option(names = { "-c", "--create" }, description = "create a new archive")
+    boolean create;
+
+    @Option(names = "-x", description = "extract files from an archive")
+    boolean extract;
+
+    @Option(names = { "-f", "--file" }, valueLabel = "ARCHIVE",
+            description = "use archive file or device ARCHIVE")
+    File archive;
+
+    @Option(names = { "-v", "--verbose" }, description = "verbosely list files processed")
+    boolean verbose;
+
+    @Option(names = { "-h", "-?", "--help" }, help = true,
+            description = "give this help list")
+    boolean helpRequested;
+
+    @Option(names = { "-V", "--version" }, help = true,
+            description = "print program version")
+    boolean versionRequested;
+
+    @Parameters(valueLabel = "FILE", description = "one ore more files to archive")
+    File[] files;
+}
+----
+
+=== Positional Parameters
+Positional parameters (also called operands) are the command line arguments following the options.
+Positional parameters can be captured together as an array or a List, or you can capture individual parameters in separate fields. The advantage of capturing individual parameters in separate fields is that you can enforce strong typing. For example:
+
+[source,java]
+----
+class PositionalParameters {
+    @Parameters(hidden = true) // don't show this parameter in usage help message
+    List<String> allParameters;
+
+    @Parameters(index = 0, valueLabel = "<host>",
+                description = "Host name or IP address to connect to")
+    InetAddress host;
+
+    @Parameters(index = 1, valueLabel = "<port>",
+                description = "Port number to connect to")
+    int port;
+}
+----
+
+If all parameters are the same type, you can capture them together in a single array or `Collection` field.  For example:
+
+[source,java]
+----
+class Convert {
+    @Parameters(type = File.class, valueLabel = "FILES",
+                description = "The files to convert.")
+    List<File> files;
+}
+----
+
+IMPORTANT: With array fields picocli uses reflection to discover the array element type, but with collections, Java type erasure means picocli cannot find out the generic type of the collection. The above example uses the `type` attribute to explicitly tell picocli what type to convert the command line arguments to.
+
+=== Double dash (`--`)
+When one of the command line arguments is two dashes without any characters attached (`--`), picocli interprets all following arguments as positional parameters, even arguments that match an option name.
+
+[source,java]
+----
+class DoubleDash {
+    @Parameters
+    List<String> params;
+
+    @Option(names = "--files")
+    List<String> files;
+
+    @Option(names = { "-v", "--verbose" })
+    boolean verbose;
+}
+
+String[] args = {"-v", "--", "--files", "inputFile1", "inputFile2"};
+DoubleDash doubleDash = CommandLine.parse(new DoubleDash(), args);
+
+assert doubleDash.verbose;
+assert doubleDash.files == null;
+assert doubleDash.params != null && doubleDash.params.length == 3;
+assert doubleDash.params.equals(Arrays.asList("--files", "inputFile1", "inputFile2"));
+----
 
 == Type Conversion
 When command line options and parameters are mapped to the annotated fields,
@@ -107,7 +202,7 @@ as octal numbers, and otherwise the number is interpreted as a decimal number.
 ----
 
 
-== Another Example
+== Putting it all Together
 Imagine an application that takes some input files and compresses them to an output file.
 ----
 Compress -o outputFile file1 file2 file3
@@ -276,6 +371,40 @@ Single-character options preceded with a '-', like `-v` or `-r`, can be grouped,
 // TODO ambiguous short options: ambiguity with the -f FILE and -fFILE notation.
 // TODO ambiguous options: writing --input ARG (as opposed to --input=ARG) is ambiguous,
 
+== Reusing Options and Command Attributes
+Picocli will walk the class hierarchy to check for annotations, so you can declare common @Options and @Command attributes on a superclass and override these fields or attributes on a subclass.
+
+The below example shows how common options like `help` and `version` can be declared as fields in a superclass so they are available in all subclasses. Similarly, annotating the superclass with default `@Command` attributes means subclasses won't need to set these attributes.
+
+[source,java]
+----
+@Command(synopsisHeading      = "%nUsage:%n%n,       descriptionHeading = "%nDescription:%n%n,
+         parameterListHeading = "%nParameters:%n%n", optionListHeading  = "%nOptions:%n%n",
+         commandListHeading   = "%nCommands:%n%n",   showDefaultValues  = false)
+public abstract class AbstractCommand {
+
+    @Option(names = { "-h", "-?", "--help" }, help = true,
+            description = "give this help list")
+    protected boolean helpRequested;
+
+    @Option(names = { "-V", "--version" }, help = true,
+            description = "print program version")
+    protected boolean versionRequested;
+}
+
+@Command(name        = "zip",
+         header      = "Compresses the specified FILE(s).",
+         description = "The default action is to add or replace zipfile entries from list, " +
+                       "which can include the special name - to compress standard input.",
+         footer      = "Copyright (c) 1990-2008 Info-ZIP - Type 'zip "-L"' for software license.")
+public class ZipCommand extends AbstractCommand {
+    @Option(names = { "-o", "--output" }, description = "output file to write to")
+    private File output;
+
+    @Parameter(valueLabel = "FILE", description = "FILEs to compress")
+    private File[] files;
+}
+----
 
 == Download
 
