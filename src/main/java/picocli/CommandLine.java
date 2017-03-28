@@ -744,8 +744,8 @@ public class CommandLine {
      */
     public interface ITypeConverter<K> {
         /**
-         * Converts the specified command line option value to some domain object.
-         * @param value the command line option String value
+         * Converts the specified command line argument value to some domain object.
+         * @param value the command line argument String value
          * @return the resulting domain object
          * @throws Exception an exception detailing what went wrong during the conversion
          */
