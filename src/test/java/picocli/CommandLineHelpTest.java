@@ -715,7 +715,7 @@ public class CommandLineHelpTest {
     @Test
     public void testCatUsageFormat() {
         @Command(name = "cat",
-                abbreviateSynopsis = true,
+                customSynopsis = "cat [OPTIONS] [FILE...]",
                 description = "Concatenate FILE(s), or standard input, to standard output.",
                 footer = "Copyright(c) 2017")
         class Cat {
@@ -997,7 +997,7 @@ public class CommandLineHelpTest {
             @Parameters(index = "2", description = "destination host") InetAddress host2;
             @Parameters(index = "3..4", arity = "1..2", description = "destination port range") int[] port2range;
             @Parameters(index = "4..*", description = "files to transfer") String[] files;
-            @Parameters(hidden = true, synopsis = false) String[] all;
+            @Parameters(hidden = true) String[] all;
         }
         String actual = usageString(new App());
         String expected = String.format(

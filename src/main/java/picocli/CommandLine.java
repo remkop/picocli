@@ -584,17 +584,10 @@ public class CommandLine {
         Class<?> type() default String.class;
 
         /**
-         * Set {@code hidden=true} if this parameter should not be included in the parameter list in the usage message.
-         * @return whether this parameter should be excluded from the parameter list in the usage message
+         * Set {@code hidden=true} if this parameter should not be included in the usage message.
+         * @return whether this parameter should be excluded from the usage message
          */
         boolean hidden() default false;
-
-        /** Set {@code synopsis=false} if this parameter should not be included in the synopsis in the usage message.
-         *  This is useful when multiple fields should be populated from a parameter at a certain index,
-         *  while avoiding this parameter being shown multiple times in the synopsis.
-         * @return whether this parameter should be included in the synopsis in the usage message
-         */
-        boolean synopsis() default true;
     }
 
     /**
@@ -1632,7 +1625,7 @@ public class CommandLine {
             }
             // sb.append(" [--] "); // implied
             for (Field positionalParam : positionalParametersFields) {
-                if (positionalParam.getAnnotation(Parameters.class).synopsis()) {
+                if (!positionalParam.getAnnotation(Parameters.class).hidden()) {
                     sb.append(' ').append(parameterLabelRenderer.renderParameterLabel(positionalParam));
                 }
             }
@@ -1676,14 +1669,16 @@ public class CommandLine {
             }
             for (Field field : fields) {
                 Option option = field.getAnnotation(Option.class);
-                sb.append(" ");
-                String pattern = option.required() ? "%s" : "[%s]";
-                String optionNames = ShortestFirst.sort(option.names())[0];
-                optionNames += parameterLabelRenderer.renderParameterLabel(field);
-                sb.append(String.format(pattern, optionNames));
+                if (!option.hidden()) {
+                    sb.append(" ");
+                    String pattern = option.required() ? "%s" : "[%s]";
+                    String optionNames = ShortestFirst.sort(option.names())[0];
+                    optionNames += parameterLabelRenderer.renderParameterLabel(field);
+                    sb.append(String.format(pattern, optionNames));
+                }
             }
             for (Field positionalParam : positionalParametersFields) {
-                if (positionalParam.getAnnotation(Parameters.class).synopsis()) {
+                if (!positionalParam.getAnnotation(Parameters.class).hidden()) {
                     sb.append(' ').append(parameterLabelRenderer.renderParameterLabel(positionalParam));
                 }
             }
