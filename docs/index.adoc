@@ -8,7 +8,7 @@ v0.3.0, 2017-03-25
 
 A Java command line parsing framework in a single file, so you can include it _in source form_
 and let users run your application without an external dependency.
-Produces beautiful and easily tailored usage help messages.
+Produces clean and easily tailored usage help messages.
 
 How it works: annotate your class and picocli initializes it from the command line arguments,
 converting the input to strongly typed values in the fields of your class.
@@ -22,15 +22,15 @@ import picocli.CommandLine.Parameters;
 import java.io.File;
 
 public class Example {
-    @Parameters(description = "Specifies the input file(s).")
-    private File[] inputFiles;
-
     @Option(names = { "-v", "--verbose" }, description = "Be verbose.")
     private boolean verbose = false;
 
     @Option(names = { "-h", "--help" }, help = true,
             description = "Displays this help message and quits.")
     private boolean helpRequested = false;
+
+    @Parameters(arity = "1..*", valueLabel = "FILE", description = "File(s) to process.")
+    private File[] inputFiles;
     ...
 }
 ----
@@ -58,22 +58,21 @@ Options have a name, parameters are the values that follow the options.
             |      |        |       |
             |      |        |       +--- option-parameter for "--out"
             |      |        |
-            |      |        +--- "--out" long option (separated from its parameter)
+            |      |        +--- option
             |      |
-            |      +--- option-parameter for the "-f" option (attached with '=')
+            |      +--- option-parameter for "-f"
             |
-            +--- three short options ("-c", "-v", "-f") clustered together
+            +--- clustered options "-c", "-v", and "-f"
 ----
 Picocli has separate annotations for options and positional parameters because they work slightly differently.
 
 .Best Practices
 [TIP]
-When designing your command line application you may wonder which arguments to capture in options and which arguments to capture as parameters. While there are no hard and fast rules, a common theme seems to be that options are optional and parameters are used for mandatory values.
-Picocli lets you make options required if you want to, see <<Required Options>>.
-The https://www.gnu.org/prep/standards/html_node/Command_002dLine-Interfaces.html#Command_002dLine-Interfaces[GNU recommendations] for command line interfaces and http://pubs.opengroup.org/onlinepubs/9699919799/basedefs/V1_chap12.html#tag_12_02[POSIX Utility Guidelines] may be useful.
+The https://www.gnu.org/prep/standards/html_node/Command_002dLine-Interfaces.html#Command_002dLine-Interfaces[GNU recommendations] for command line interfaces and http://pubs.opengroup.org/onlinepubs/9699919799/basedefs/V1_chap12.html#tag_12_02[POSIX Utility Guidelines] may be useful. Generally, many applications use options for optional values and parameters for mandatory values.
+However, picocli lets you make options required if you want to, see <<Required Options>>.
 
 === Options
-An option must have one or more `names`. Option names usually have a prefix to distinguish them from parameters. Different operating systems and applications use https://en.wikipedia.org/wiki/Command-line_interface#Command-line_option[different prefixing] styles. Picocli lets you use any style you want.
+An option must have one or more `names`. Option names usually have a prefix to distinguish them from parameters. Different operating systems and applications use https://en.wikipedia.org/wiki/Command-line_interface#Command-line_option[different prefixing] styles. Picocli lets you use any option name you want.
 
 TIP: You may be interested in this http://catb.org/~esr/writings/taoup/html/ch10s05.html#id2948149[list of common option names]. Following these conventions may make your application more intuitive to use.
 
@@ -94,7 +93,10 @@ class Tar {
     @Parameters(valueLabel = "FILE", description = "one ore more files to archive")
     File[] files;
 }
-
+----
+Picocli matches the option names to set the field values.
+[source,java]
+----
 String[] args = { "-cf", "result.tar", "file1.txt", "file2.txt" };
 Tar tar = CommandLine.parse(new Tar(), args);
 assert  tar.create;
@@ -125,6 +127,7 @@ The following command line arguments are all equivalent and parsing them will gi
 <command> -a -b -c -fInputFile.txt
 <command> -a -b -c -f InputFile.txt
 <command> -a -b -c -f=InputFile.txt
+<command> -abc -f=InputFile.txt
 <command> -ab -cf=InputFile.txt
 ...
 ----
@@ -134,6 +137,7 @@ The following command line arguments are all equivalent and parsing them will gi
 Positional parameters (also called operands) are the command line arguments following the options.
 
 Use the (zero-based) `index` attribute to specify exactly which parameters to capture. Omitting the `index` attribute means the field is initialized with all positional parameters (so the field should be an array or a collection).
+
 The `index` attribute accepts "range" values, so an annotation like `@Parameters(index="2..4")` captures arguments at index 2, 3 and 4. Range values can be open-ended. For example, `@Parameters(index="3..*")` captures all arguments from index 3 and up.
 
 The advantage of capturing individual parameters in separate fields is that you can enforce strong typing. For example:
@@ -155,7 +159,11 @@ class PositionalParameters {
     @Parameters(index = "2..*", valueLabel = "<files>", description = "the files to process")
     File[] files;
 }
+----
 
+Picocli initializes fields with the values at the specified index in the arguments array.
+[source,java]
+----
 String[] args = { "localhost", "12345", "file1.txt", "file2.txt" };
 PositionalParameters params = CommandLine.parse(new PositionalParameters(), args);
 assert params.host.getHostName().equals("localhost");
@@ -181,7 +189,11 @@ class DoubleDash {
     @Option(names = { "-v", "--verbose" })
     boolean verbose;
 }
+----
 
+The `--` clarifies which of the arguments are positional parameters:
+[source,java]
+----
 String[] args = { "-v", "--", "--files", "file1", "file2" };
 DoubleDash doubleDash = CommandLine.parse(new DoubleDash(), args);
 
@@ -192,6 +204,7 @@ assert doubleDash.params.equals(Arrays.asList("--files", "file1", "file2"));
 ----
 
 === Option-Parameter Separators
+==== Default Separators
 Options may take an _option parameter_ (also called _option-argument_).
 For POSIX-style short options (like `-f` or `-c`), the option parameter may be attached to the option,
 or it may be separated by a space or the _separator string_ (`=` by default).
@@ -215,15 +228,24 @@ _separator string_ (`=` by default). That is, the first two below examples are v
 <command> --fileoutput.txt
 ----
 
+==== Custom Separators
 The separator string can be customized programmatically or declaratively.
 
-The separator string can be changed programmatically with the `CommandLine.setSeparator(String separator)` method.
-For example:
+Use the `separator` attribute of the `@Command` annotation to declaratively set a separator string:
 [source,java]
 ----
+@Command(separator = ":")  // declaratively set a separator
 class OptionArg {
     @Option(names = { "-f", "--file" }) String file;
 }
+OptionArg optionArg = CommandLine.parse(new OptionArg(), "-f:output.txt");
+assert optionArg.file.equals("output.txt");
+----
+
+Alternatively, the separator string can be changed programmatically with the `CommandLine.setSeparator(String separator)` method.
+For example:
+[source,java]
+----
 OptionArg optionArg     = new OptionArg();
 CommandLine commandLine = new CommandLine(optionArg);
 
@@ -231,100 +253,6 @@ commandLine.setSeparator(":"); // programmatically set a separator
 commandLine.parse("-f:output.txt");
 assert optionArg.file.equals("output.txt");
 ----
-
-Alternatively, use the `separator` attribute of the `@Command` annotation to declaratively set a separator string:
-[source,java]
-----
-@Command(separator = ":")  // declaratively set a separator
-class OptionArg {
-    @Option(names = { "-f", "--file" }) String file;
-}
-OptionArg optionArg     = new OptionArg();
-CommandLine commandLine = new CommandLine(optionArg);
-
-commandLine.parse("-f:output.txt");
-assert optionArg.file.equals("output.txt");
-----
-
-== Arity
-Arity is the number of parameters that will be consumed by an option.
-Most of the time picocli will consume the right number of parameters automatically and you don't need to worry about this.
-
-When an option or parameters field has a type that can hold multiple values (an array or a collection),
-the `arity` attribute lets you control exactly how many parameters are captured by this field.
-
-=== Default Arity
-The default arity value of a field annotated with `@Option` or `@Parameters` depends on the field's type.
-
-* Boolean fields: arity is zero (no parameter is consumed - the field is set to `true` when the option name is recognized).
-* Single-valued types like `int`, `String`, `File`: arity is one (consume one parameter). Omitting the option parameter results in a ParameterException: "Missing required parameter for field '<field-name>'".
-* Multi-valued types like arrays or collections: consume from zero up to all available parameters.
-
-
-=== Boolean Options with Explicit Parameters
-It is possible to explicitly specify "true" or "false" as a parameter for a boolean option by defining an explicit <<Arity: Minimum and Maximum Number of Parameters,`arity`>> attribute. A boolean option with `arity = "0..1"` accepts zero to one parameters, `arity = "1"` means the option _must_ have one parameter. For example:
-
-[source, java]
-----
-class MyProgram {
-    @Option(names = "-x", arity = "1", description = "boolean option with 1 mandatory parameter")
-    boolean x;
-
-    @Option(names = "-y", arity = "0..1", description = "boolean option with minimum 0 and maximum 1 parameter")
-    boolean y;
-}
-----
-
-The following ways to invoke the program will be accepted (values are not case sensitive):
-----
-<main> -x true
-<main> -x FALSE
-<main> -x TRUE -y
-<main> -x True -y False
-----
-
-But trying to specify the `-x` option without a parameter, or with a value other than "true" or "false" (case insensitive) will result in a `ParameterException`.
-
-=== Controlling the Arity of Arrays and Lists
-Option fields of type array or `List` (or any class extending `Collection`) will be able to hold multiple values.
-By default, picocli will capture arguments into these fields until it encounters a command line argument that is
-an option name or a registered command name.
-
-The `arity` attribute can be used to specify the exact number of required parameters, or a range with a minimum and a maximum number of parameters. The maximum can be a fixed number, or can be `"*"` to denote "any number" of parameters. For example:
-[source, java]
-----
-class MyProgram {
-    @Parameters(arity = "3", descriptions = "exactly three Files")
-    File[] files;
-
-    @Option(names = "-f", arity = "2..4", description = "two to four floating point numbers")
-    double[] doubles;
-
-    @Option(names = "-s", arity = "1..*", description = "at least one string")
-    String[] strings;
-}
-----
-A `MissingParameterException` is thrown when fewer than the miminum number of required parameters is specified as command line arguments. Options with an exact number or an exact range will consume up to the maximum number of parameters.
-
-Once the minimum number of parameters is consumed, picocli will check for each subsequent command line argument whether it is another parameter, or a new option. For example:
-
-----
-<main> -s A B C -f 1.0 2.0 3.0
-----
-The above command line arguments will be parsed as three parameters for the `-s` option, followed by three parameters for the `-f` option.
-
-=== Ambiguous Input
-Positional parameters do not have an option name, and the below example command line arguments will be parsed as six parameters for the `-s` option, not as three strings and three files:
-----
-<main> -s A B C file1 file2 file3
-----
-
-Users can disambiguate the input by specifying a double dash (`--`) after the option parameters.
-The argument `--` is interpreted as a delimiter indicating the end of options. Any following arguments are treated as positional parameters. For example, the following command line arguments will be parsed as three strings and three files:
-----
-<main> -s A B C -- file1 file2 file3
-----
-
 
 
 == Type Conversion
@@ -346,8 +274,8 @@ Custom converters need to implement the `picocli.CommandLine.ITypeConverter` int
 ----
 public interface ITypeConverter<K> {
     /**
-     * Converts the specified command line option value to some domain object.
-     * @param value the command line option String value
+     * Converts the specified command line argument value to some domain object.
+     * @param value the command line argument String value
      * @return the resulting domain object
      * @throws Exception an exception detailing what went wrong during the conversion
      */
@@ -376,96 +304,269 @@ class App {
     @Parameters Path path;
     @Option(names = "-d") Duration duration;
 }
-CommandLine commandLine = new CommandLine(new App());
+----
+
+[source,java]
+----
+App app = new App();
+CommandLine commandLine = new CommandLine(app);
 commandLine.registerConverter(java.nio.file.Path.class, s -> java.nio.file.Paths.get(s));
 commandLine.registerConverter(java.time.Duration.class, s -> java.time.Duration.parse(s));
 
-String[] args = { "-d", "PT15M", "file1.txt" };
-List<Object> parsed = commandLine.parse(args); // returns parsed commands and subcommands
-
-App app = parsed.get(0);
+commandLine.parse("-d", "PT15M", "file1.txt");
 assert app.path.equals(Paths.get("file1.txt"));
 assert app.duration.equals(Duration.parse("PT15M"));
 ----
 
-Numeric values are interpreted as decimal numbers by default. If you want picocli to be more flexible, you can
-use the https://docs.oracle.com/javase/8/docs/api/java/lang/Integer.html#decode-java.lang.String-[decode] method
-to convert strings to numbers.
+=== Arrays and Collections
 
-NOTE: The `decode` method looks at the prefix to determine the radix, so numbers
-starting with `0x`, `0X` or `#` are interpreted as hexadecimal numbers, numbers starting with `0` are interpreted
-as octal numbers, and otherwise the number is interpreted as a decimal number.
+IMPORTANT: With array fields picocli uses reflection to discover the array element type, but with collections, Java type erasure means picocli cannot find out the generic type of the collection. For non-String collections, use the `type` attribute to explicitly tell picocli what type to convert the command line arguments to.
 
-[source,java]
-----
- commandLine.registerConverter(Byte.class,    s -> Byte::decode);
- commandLine.registerConverter(Short.class,   s -> Short::decode);
- commandLine.registerConverter(Integer.class, s -> Integer::decode);
- commandLine.registerConverter(Long.class,    s -> Long::decode);
-----
-
-=== Converting to Collection Elements
 Multiple parameters can be captured together in a single array or `Collection` field. When using a collection, use the `type` attribute to specify the collection element type. For example:
 
 [source,java]
 ----
 class Convert {
-    @Option(names = "-patterns", type = java.util.regex.Pattern.class, valueLabel = "PATTERN",
+    @Option(type = java.util.regex.Pattern.class, // List elements are Pattern objects
+            names = "-patterns", valueLabel = "PATTERN",
             description = "the regular expressions to use for the conversion");
     List<Pattern> patterns;
 
-    @Parameters(type = File.class, valueLabel = "FILE", description = "files to convert")
+    @Parameters(type = File.class, // convert arguments to File before adding to the List
+                valueLabel = "FILE", description = "files to convert")
     List<File> files;
 }
+----
 
+[source,java]
+----
 String[] args = { "-patterns", "a*b", "[a-e][i-u]", "--", "file1.txt", "file2.txt" };
 Convert convert = CommandLine.parse(new Convert(), args);
-assert convert.patterns.equals(Arrays.asList(Pattern.compile("a*b"), Pattern.compile("[a-e][i-u]")));
+assert convert.patterns.equals(Arrays.asList(Pattern.compile("a*b"),
+                                             Pattern.compile("[a-e][i-u]")));
 assert convert.files.equals(Arrays.asList(new File("file1.txt"), new File("file2.txt")));
 ----
 
-IMPORTANT: With array fields picocli uses reflection to discover the array element type, but with collections, Java type erasure means picocli cannot find out the generic type of the collection. The above example uses the `type` attribute to explicitly tell picocli what type to convert the command line arguments to.
 
-== Required Options
-Options can be marked `required` to make it mandatory for the user to specify them on the command line. When a required option is not specified, a `MissingParameterException` is thrown from the `parse` method. For example:
+=== Numeric Arguments
+Numeric values are interpreted as decimal numbers by default. If you want picocli to be more flexible, you can
+register a custom type converter that delegates to the https://docs.oracle.com/javase/8/docs/api/java/lang/Integer.html#decode-java.lang.String-[decode] method to convert strings to numbers.
+
+NOTE: The `decode` method looks at the prefix to determine the radix, so numbers
+starting with `0x`, `0X` or `#` are interpreted as hexadecimal numbers, numbers starting with `0` are interpreted
+as octal numbers, and otherwise the number is interpreted as a decimal number.
+
+Java 8-style lambdas:
+[source,java]
+----
+commandLine.registerConverter(Byte.class,    s -> Byte::decode);
+commandLine.registerConverter(Short.class,   s -> Short::decode);
+commandLine.registerConverter(Integer.class, s -> Integer::decode);
+commandLine.registerConverter(Long.class,    s -> Long::decode);
+----
+
+In Java 5 this becomes a bit more verbose:
+[source,java]
+----
+commandLine.registerConverter(Byte.class,    new ITypeConverter<Byte>()   { public Byte    convert(String s) {return Byte.decode(s);}});
+commandLine.registerConverter(Short.class,   new ITypeConverter<Short>()  { public Short   convert(String s) {return Short.decode(s);}});
+commandLine.registerConverter(Integer.class, new ITypeConverter<Integer>(){ public Integer convert(String s) {return Integer.decode(s);}});
+commandLine.registerConverter(Long.class,    new ITypeConverter<Long>()   { public Long    convert(String s) {return Long.decode(s);}});
+----
+
+
+== Arity
+Arity is the number of parameters that will be consumed by an option.
+Most of the time picocli will consume the right number of parameters automatically and you don't need to worry about this.
+
+When an option or parameters field has a type that can hold multiple values (an array or a collection),
+the `arity` attribute lets you control exactly how many parameters are captured by this field.
+
+=== Default Arity
+The default arity value of a field annotated with `@Option` or `@Parameters` depends on the field's type.
+
+* Boolean fields: arity is zero (no parameter is consumed - the field is set to `true` when the option name is recognized).
+* Single-valued types like `int`, `String`, `File`: arity is one (consume one parameter). Omitting the option parameter results in a ParameterException: "Missing required parameter for field '<field-name>'".
+* Multi-valued types like arrays or collections: consume from zero up to all available parameters.
+
+
+=== Boolean Options with Explicit Parameters
+It is possible to explicitly specify "true" or "false" as a parameter for a boolean option by defining an explicit <<Arity: Minimum and Maximum Number of Parameters,`arity`>> attribute. A boolean option with `arity = "0..1"` accepts zero to one parameters, `arity = "1"` means the option _must_ have one parameter. For example:
+
+[source, java]
+----
+class BooleanOptionWithParameters {
+    @Option(names = "-x", arity = "1", description = "1 mandatory parameter")
+    boolean x;
+
+    @Option(names = "-y", arity = "0..1", description = "min 0 and max 1 parameter")
+    boolean y;
+}
+----
+
+The following ways to invoke the program will be accepted (values are not case sensitive):
+----
+<command> -x true
+<command> -x FALSE
+<command> -x TRUE -y
+<command> -x True -y False
+----
+
+But trying to specify the `-x` option without a parameter, or with a value other than "true" or "false" (case insensitive) will result in a `ParameterException`.
+
+=== Arrays and Collections
+Option fields of type array or `List` (or any class extending `Collection`) will be able to hold multiple values.
+By default, picocli will capture arguments into these fields until it encounters a command line argument that is
+an option name or a registered command name.
+
+The `arity` attribute can be used to specify the exact number of required parameters, or a range with a minimum and a maximum number of parameters. The maximum can be a fixed number, or can be `"*"` to denote "any number" of parameters. For example:
 [source, java]
 ----
 class MyProgram {
     @Parameters(arity = "3", descriptions = "exactly three Files")
     File[] files;
 
-    @Option(names = "-x", description = "optional switch")
-    boolean x;
+    @Option(names = "-f", arity = "2..4", description = "two to four floating point numbers")
+    double[] doubles;
 
-    @Option(names = "-y", required = true, description = "mandatory switch")
-    boolean y;
+    @Option(names = "-s", arity = "1..*", description = "at least one string")
+    String[] strings;
+}
+----
+A `MissingParameterException` is thrown when fewer than the miminum number of required parameters is specified as command line arguments. Options with an exact number or an exact range will consume up to the maximum number of parameters.
+
+Once the minimum number of parameters is consumed, picocli will check for each subsequent command line argument whether it is another parameter, or a new option. For example:
+
+----
+<command> -s A B C -f 1.0 2.0 3.0
+----
+The above command line arguments will be parsed as three parameters for the `-s` option, followed by three parameters for the `-f` option.
+
+=== Ambiguous Input
+Positional parameters do not have an option name, so it is not always easy to decide where they start. The below example command line arguments will be parsed as six parameters for the `-s` option, not as three strings and three files:
+----
+<command> -s A B C file1 file2 file3
+----
+
+Users can disambiguate the input by specifying a double dash (`--`) after the option parameters.
+The argument `--` is interpreted as a delimiter indicating the end of options. Any following arguments are treated as positional parameters. For example, the following command line arguments will be parsed as three strings and three files:
+----
+<command> -s A B C -- file1 file2 file3
+----
+
+=== Option-Parameter Separators and Arity
+
+IMPORTANT: A separator clarifies that a parameter belongs to an option, but does not prevent subsequent parameters from also being assigned to the same option. For example:
+
+[source,java]
+----
+@Option(names = "-opt", arity = "2") List<String> values;
+@Parameters                          List<String> remainder;
+----
+Because arity is 2, both parameters in the below example are assigned to the `-opt` option:
+----
+<command> -opt=val1 val2
+----
+
+
+
+== Required Options
+=== Options
+Options can be marked `required` to make it mandatory for the user to specify them on the command line. When a required option is not specified, a `MissingParameterException` is thrown from the `parse` method. For example:
+[source, java]
+----
+class MandatoryOption {
+    @Option(names = "-n", required = true, description = "mandatory number")
+    int number;
+
+    @Parameters
+    File[] files;
+}
+----
+The following command line arguments would result in an exception complaining that `number` is missing:
+----
+// invalid: missing option -n
+<command> file1 file2 file3
+----
+The following command line arguments would be accepted:
+----
+// valid: required option -n has a value
+<command> -n 123 file1 file2 file3
+----
+
+=== Parameters
+Use the `arity` attribute to make `@Parameters` mandatory:
+[source, java]
+----
+class BothOptionAndParametersMandatory {
+    @Parameters(arity = "1..*", descriptions = "at least one File")
+    File[] files;
 
     @Option(names = "-n", required = true, description = "mandatory number")
     int number;
 }
 ----
-The following command line arguments would result in an exception complaining that `y` and `number` are missing:
+The following command line arguments would result in an exception complaining that `files` are missing:
 ----
-String[] args = { "-x", "file1", "file2", "file3" };
-CommandLine.parse(new MyProgram(), args);
+// invalid: missing file parameters
+<command> -n 123
 ----
 The following command line arguments would be accepted:
 ----
-String[] args = { "-x", "-y", "-n", "123", "file1", "file2", "file3" };
-CommandLine.parse(new MyProgram(), args);
+// valid: both required fields have a value
+<command> -n 123 file1
 ----
 
-
-IMPORTANT: if arity>1 and args="-opt=val1 val2", arity overrules the "=": both values are assigned
 
 
 == Help Options
 Options with the `help` attribute set to `true` are special: if one of the command line arguments is a "help" option, picocli will stop parsing the remaining arguments and will not check for required options.
 
+[source,java]
+----
+@Option(names = {"-h", "--help"}, help = true, description = "display this help message")
+boolean helpRequested;
+----
 This is suitable for options that should trigger the usage help message or application version information being shown on the console.
 
-== Hidden Options and Parameters
+It is the responsibility of the application to check the field and show the usage help message:
+[source,java]
+----
+Compress app = CommandLine.parse(new App(), args);
+if (app.helpRequested) {
+   CommandLine.usage(new App(), System.err);
+   return;
+}
+----
+
+== Usage Help
+=== Example
+=== Command Name
+=== Parameter Labels
+
+=== Hidden Options and Parameters
 Options and Parameters with the `hidden` attribute set to `true` will not be shown in the usage help message.
+
+
+== Customizing Usage Help
+=== Abbreviated Synopsis
+=== Custom Synopsis
+=== Command Header and Description
+=== Footer
+=== Section Headings
+=== Option-Parameter Separators
+
+
+== Advanced Usage Help Customization
+=== Option List with Custom Layout
+
+
+
+== Subcommands
+=== Registering Subcommands
+=== Usage Help for Subcommands
+
+
 
 == Subclassing to Reuse Options and Command Attributes
 Picocli will walk the class hierarchy to check for annotations, so you can declare common @Options and @Command attributes on a superclass and override these fields or attributes on a subclass.
