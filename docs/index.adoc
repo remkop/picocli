@@ -360,18 +360,26 @@ Java 8-style lambdas:
 [source,java]
 ----
 commandLine.registerConverter(Byte.class,    s -> Byte::decode);
+commandLine.registerConverter(Byte.TYPE,     s -> Byte::decode);
 commandLine.registerConverter(Short.class,   s -> Short::decode);
+commandLine.registerConverter(Short.TYPE,    s -> Short::decode);
 commandLine.registerConverter(Integer.class, s -> Integer::decode);
+commandLine.registerConverter(Integer.TYPE,  s -> Integer::decode);
 commandLine.registerConverter(Long.class,    s -> Long::decode);
+commandLine.registerConverter(Long.TYPE,     s -> Long::decode);
 ----
 
 In Java 5 this becomes a bit more verbose:
 [source,java]
 ----
-commandLine.registerConverter(Byte.class,    new ITypeConverter<Byte>()   { public Byte    convert(String s) {return Byte.decode(s);}});
-commandLine.registerConverter(Short.class,   new ITypeConverter<Short>()  { public Short   convert(String s) {return Short.decode(s);}});
-commandLine.registerConverter(Integer.class, new ITypeConverter<Integer>(){ public Integer convert(String s) {return Integer.decode(s);}});
-commandLine.registerConverter(Long.class,    new ITypeConverter<Long>()   { public Long    convert(String s) {return Long.decode(s);}});
+ITypeConverter<Integer> intConverter = new ITypeConverter<Integer>() {
+    public Integer convert(String s) {
+        return Integer.decode(s);
+    }
+};
+commandLine.registerConverter(Integer.class, intConverter);
+commandLine.registerConverter(Integer.TYPE,  intConverter);
+...
 ----
 
 

@@ -206,52 +206,132 @@ public class CommandLineTest {
         assertEquals("UUID", UUID.fromString("c7d51423-bf9d-45dd-a30d-5b16fafe42e2"), bean.anUUIDField);
     }
     @Test
-    public void testByteFieldsCanBeSpecifiedInHexadecimal() {
-        SupportedTypes bean = CommandLine.parse(new SupportedTypes(), "-byte", "0x1F", "-Byte", "0x0F");
+    public void testByteFieldsAreDecimal() {
+        try {
+            CommandLine.parse(new SupportedTypes(), "-byte", "0x1F", "-Byte", "0x0F");
+            fail("Should fail on hex input");
+        } catch (ParameterException expected) {
+            assertEquals("Could not convert '0x1F' to byte for option '-byte'", expected.getMessage());
+        }
+    }
+    @Test
+    public void testCustomByteConverterAcceptsHexadecimalDecimalAndOctal() {
+        SupportedTypes bean = new SupportedTypes();
+        CommandLine commandLine = new CommandLine(bean);
+        ITypeConverter<Byte> converter = new ITypeConverter<Byte>() {
+            public Byte convert(String s) {
+                return Byte.decode(s);
+            }
+        };
+        commandLine.registerConverter(Byte.class, converter);
+        commandLine.registerConverter(Byte.TYPE, converter);
+        commandLine.parse("-byte", "0x1F", "-Byte", "0x0F");
         assertEquals(0x1F, bean.byteField);
         assertEquals(Byte.valueOf((byte) 0x0F), bean.aByteField);
-    }
-    @Test
-    public void testShortFieldsCanBeSpecifiedInHexadecimal() {
-        SupportedTypes bean = CommandLine.parse(new SupportedTypes(), "-short", "0xFF", "-Short", "0x6FFE");
-        assertEquals(255, bean.shortField);
-        assertEquals(Short.valueOf((short) 0x6FFE), bean.aShortField);
-    }
-    @Test
-    public void testIntFieldsCanBeSpecifiedInHexadecimal() {
-        SupportedTypes bean = CommandLine.parse(new SupportedTypes(), "-int", "0xFF", "-Integer", "0xFFFF");
-        assertEquals(255, bean.intField);
-        assertEquals(Integer.valueOf(0xFFFF), bean.anIntegerField);
-    }
-    @Test
-    public void testLongFieldsCanBeSpecifiedInHexadecimal() {
-        SupportedTypes bean = CommandLine.parse(new SupportedTypes(), "-long", "0xAABBCC", "-Long", "0xAABBCCDD");
-        assertEquals(0xAABBCC, bean.longField);
-        assertEquals(Long.valueOf(0xAABBCCDDL), bean.aLongField);
-    }
-    @Test
-    public void testByteFieldsCanBeSpecifiedInOctal() {
-        SupportedTypes bean = CommandLine.parse(new SupportedTypes(), "-byte", "010", "-Byte", "010");
+
+        commandLine.parse("-byte", "010", "-Byte", "010");
         assertEquals(8, bean.byteField);
         assertEquals(Byte.valueOf((byte) 8), bean.aByteField);
+
+        commandLine.parse("-byte", "34", "-Byte", "34");
+        assertEquals(34, bean.byteField);
+        assertEquals(Byte.valueOf((byte) 34), bean.aByteField);
     }
     @Test
-    public void testShortFieldsCanBeSpecifiedInOctal() {
-        SupportedTypes bean = CommandLine.parse(new SupportedTypes(), "-short", "010", "-Short", "010");
+    public void testShortFieldsAreDecimal() {
+        try {
+            CommandLine.parse(new SupportedTypes(), "-short", "0xFF", "-Short", "0x6FFE");
+            fail("Should fail on hex input");
+        } catch (ParameterException expected) {
+            assertEquals("Could not convert '0xFF' to short for option '-short'", expected.getMessage());
+        }
+    }
+    @Test
+    public void testCustomShortConverterAcceptsHexadecimalDecimalAndOctal() {
+        SupportedTypes bean = new SupportedTypes();
+        CommandLine commandLine = new CommandLine(bean);
+        ITypeConverter<Short> shortConverter = new ITypeConverter<Short>() {
+            public Short convert(String s) {
+                return Short.decode(s);
+            }
+        };
+        commandLine.registerConverter(Short.class, shortConverter);
+        commandLine.registerConverter(Short.TYPE, shortConverter);
+        commandLine.parse("-short", "0xFF", "-Short", "0x6FFE");
+        assertEquals(0xFF, bean.shortField);
+        assertEquals(Short.valueOf((short) 0x6FFE), bean.aShortField);
+
+        commandLine.parse("-short", "010", "-Short", "010");
         assertEquals(8, bean.shortField);
         assertEquals(Short.valueOf((short) 8), bean.aShortField);
+
+        commandLine.parse("-short", "34", "-Short", "34");
+        assertEquals(34, bean.shortField);
+        assertEquals(Short.valueOf((short) 34), bean.aShortField);
     }
     @Test
-    public void testIntFieldsCanBeSpecifiedInOctal() {
-        SupportedTypes bean = CommandLine.parse(new SupportedTypes(), "-int", "010", "-Integer", "010");
+    public void testIntFieldsAreDecimal() {
+        try {
+            CommandLine.parse(new SupportedTypes(), "-int", "0xFF", "-Integer", "0xFFFF");
+            fail("Should fail on hex input");
+        } catch (ParameterException expected) {
+            assertEquals("Could not convert '0xFF' to int for option '-int'", expected.getMessage());
+        }
+    }
+    @Test
+    public void testCustomIntConverterAcceptsHexadecimalDecimalAndOctal() {
+        SupportedTypes bean = new SupportedTypes();
+        CommandLine commandLine = new CommandLine(bean);
+        ITypeConverter<Integer> intConverter = new ITypeConverter<Integer>() {
+            public Integer convert(String s) {
+                return Integer.decode(s);
+            }
+        };
+        commandLine.registerConverter(Integer.class, intConverter);
+        commandLine.registerConverter(Integer.TYPE, intConverter);
+        commandLine.parse("-int", "0xFF", "-Integer", "0xFFFF");
+        assertEquals(255, bean.intField);
+        assertEquals(Integer.valueOf(0xFFFF), bean.anIntegerField);
+
+        commandLine.parse("-int", "010", "-Integer", "010");
         assertEquals(8, bean.intField);
         assertEquals(Integer.valueOf(8), bean.anIntegerField);
+
+        commandLine.parse("-int", "34", "-Integer", "34");
+        assertEquals(34, bean.intField);
+        assertEquals(Integer.valueOf(34), bean.anIntegerField);
     }
     @Test
-    public void testLongFieldsCanBeSpecifiedInOctal() {
-        SupportedTypes bean = CommandLine.parse(new SupportedTypes(), "-long", "010", "-Long", "010");
+    public void testLongFieldsAreDecimal() {
+        try {
+            CommandLine.parse(new SupportedTypes(), "-long", "0xAABBCC", "-Long", "0xAABBCCDD");
+            fail("Should fail on hex input");
+        } catch (ParameterException expected) {
+            assertEquals("Could not convert '0xAABBCC' to long for option '-long'", expected.getMessage());
+        }
+    }
+    @Test
+    public void testCustomLongConverterAcceptsHexadecimalDecimalAndOctal() {
+        SupportedTypes bean = new SupportedTypes();
+        CommandLine commandLine = new CommandLine(bean);
+        ITypeConverter<Long> longConverter = new ITypeConverter<Long>() {
+            public Long convert(String s) {
+                return Long.decode(s);
+            }
+        };
+        commandLine.registerConverter(Long.class, longConverter);
+        commandLine.registerConverter(Long.TYPE, longConverter);
+        commandLine.parse("-long", "0xAABBCC", "-Long", "0xAABBCCDD");
+        assertEquals(0xAABBCC, bean.longField);
+        assertEquals(Long.valueOf(0xAABBCCDDL), bean.aLongField);
+
+        commandLine.parse("-long", "010", "-Long", "010");
         assertEquals(8, bean.longField);
         assertEquals(Long.valueOf(8), bean.aLongField);
+
+        commandLine.parse("-long", "34", "-Long", "34");
+        assertEquals(34, bean.longField);
+        assertEquals(Long.valueOf(34), bean.aLongField);
     }
     @Test(expected = MissingParameterException.class)
     public void testSingleValueFieldDefaultMinArityIs1() {

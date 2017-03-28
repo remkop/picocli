@@ -121,8 +121,8 @@ import static picocli.CommandLine.Help.Column.Overflow.*;
  *        Standards for Command Line Interfaces</a>
  */
 public class CommandLine {
-    /** This is PicoCLI version {@value}. */
-    public static final String VERSION = "0.2.0";
+    /** This is picocli version {@value}. */
+    public static final String VERSION = "0.3.0";
 
     private final Interpreter interpreter;
     private final List<Object> parsedCommands = new ArrayList<Object>();
@@ -1360,9 +1360,9 @@ public class CommandLine {
         static class CharSequenceConverter implements ITypeConverter<CharSequence> {
             public String convert(String value) { return value; }
         }
-        /** Converts text to a {@code Byte} by delegating to {@link Byte#decode(String)}.*/
+        /** Converts text to a {@code Byte} by delegating to {@link Byte#valueOf(String)}.*/
         static class ByteConverter implements ITypeConverter<Byte> {
-            public Byte convert(String value) { return Byte.decode(value); }
+            public Byte convert(String value) { return Byte.valueOf(value); }
         }
         /** Converts {@code "true"} or {@code "false"} to a {@code Boolean}. Other values result in a ParameterException.*/
         static class BooleanConverter implements ITypeConverter<Boolean> {
@@ -1382,17 +1382,17 @@ public class CommandLine {
                 return value.charAt(0);
             }
         }
-        /** Converts text to a {@code Short} by delegating to {@link Short#decode(String)}.*/
+        /** Converts text to a {@code Short} by delegating to {@link Short#valueOf(String)}.*/
         static class ShortConverter implements ITypeConverter<Short> {
-            public Short convert(String value) { return Short.decode(value); }
+            public Short convert(String value) { return Short.valueOf(value); }
         }
-        /** Converts text to an {@code Integer} by delegating to {@link Integer#decode(String)}.*/
+        /** Converts text to an {@code Integer} by delegating to {@link Integer#valueOf(String)}.*/
         static class IntegerConverter implements ITypeConverter<Integer> {
-            public Integer convert(String value) { return Integer.decode(value); }
+            public Integer convert(String value) { return Integer.valueOf(value); }
         }
-        /** Converts text to a {@code Long} by delegating to {@link Long#decode(String)}.*/
+        /** Converts text to a {@code Long} by delegating to {@link Long#valueOf(String)}.*/
         static class LongConverter implements ITypeConverter<Long> {
-            public Long convert(String value) { return Long.decode(value); }
+            public Long convert(String value) { return Long.valueOf(value); }
         }
         static class FloatConverter implements ITypeConverter<Float> {
             public Float convert(String value) { return Float.valueOf(value); }
