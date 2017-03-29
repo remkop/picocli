@@ -624,6 +624,7 @@ Usage: <main class> [-f=FILE] [-n=<number>] NUM <host>
 Some annotated fields in the below example class have a `paramLabel` attribute and others don't:
 [source,java]
 ----
+@Command(showDefaultValues = false)
 class ParamLabels {
     @Option(names = "-f",    paramLabel = "FILE", description = "a file")      File f;
     @Option(names = "-n",    description = "a number option")                  int number;
@@ -633,7 +634,12 @@ class ParamLabels {
 ----
 NOTE: For demonstration purposes the above example mixes the all-uppercase (e.g., `NUM`) style label and the fish bracket (e.g., `<number>`) style labels. For real applications, mixing these label styles should be avoided. An application should consistently use only one style.
 
-=== Positional Parameters
+=== Hidden Options and Parameters
+Options and Parameters with the `hidden` attribute set to `true` will not be shown in the usage help message.
+This is useful for example when a parameter at some index is captured into multiple fields:
+by default each of these fields would be shown in the usage message, which would be confusing for users.
+
+For example, the `all` field below is annotated as `hidden = true`:
 [source,java]
 ----
 @Command(showDefaultValues = false)
@@ -647,7 +653,7 @@ class App {
     @Parameters(hidden = true) String[] all;
 }
 ----
-The above will generate the following usage help message:
+The above will generate the following usage help message, where the `all` field is not shown:
 ----
 Usage: <main class> <host1> <port1> <host2> <port2range> [<port2range>] [<files>...]
       host1                   source host
@@ -656,12 +662,11 @@ Usage: <main class> <host1> <port1> <host2> <port2range> [<port2range>] [<files>
       port2range              destination port range
       files                   files to transfer
 ----
-=== Hidden Options and Parameters
-Options and Parameters with the `hidden` attribute set to `true` will not be shown in the usage help message.
-This is useful for example when a parameter at some index is captured into multiple fields: by default each of these fields would be shown in the usage message, which would be confusing for users.
 
 
 == Customizing Usage Help
+=== Unsorted Option List
+=== Show Default Values
 === Abbreviated Synopsis
 === Custom Synopsis
 === Command Header and Description
@@ -719,8 +724,11 @@ assert "\nDescription (May 23, 2017)\n\n".equals(formatted);
 
 
 == Advanced Usage Help Customization
-=== Option List with Custom Layout
-
+=== Custom Layout
+=== Table and Columns
+=== Option Renderer
+=== Parameter Renderer
+=== Param Label Renderer
 
 
 == Subcommands
