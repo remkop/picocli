@@ -113,6 +113,25 @@ public class CommandLineHelpTest {
     }
 
     @Test
+    public void testUsageParamLabels() throws Exception {
+        @Command(showDefaultValues = false)
+        class ParamLabels {
+            @Option(names = "-f", paramLabel = "FILE", description = "a file") File f;
+            @Option(names = "-n", description = "a number") int number;
+            @Parameters(index = "0", paramLabel = "NUM", description = "number param") int n;
+            @Parameters(index = "1", description = "the host") InetAddress host;
+        }
+        String result = usageString(new ParamLabels());
+        assertEquals(format("" +
+                        "Usage: <main class> [-f=FILE] [-n=<number>] NUM <host>%n" +
+                        "      NUM                     number param%n" +
+                        "      host                    the host%n" +
+                        "  -f= FILE                    a file%n" +
+                        "  -n= <number>                a number%n",
+                ""), result);
+    }
+
+    @Test
     public void testShortestFirstComparator_sortsShortestFirst() {
         String[] values = {"12345", "12", "123", "123456", "1", "", "1234"};
         Arrays.sort(values, new Help.ShortestFirst());
@@ -343,7 +362,7 @@ public class CommandLineHelpTest {
                 {"", "-v", "",  "", "shortBool"},
                 {"", "",   "",  "--verbose", "longBool"},
                 {"", "-x", ",", "--xeno", "combiBool"},
-                {"", "-s", "",  "=<shortOnlyField>", "shortOnly"},
+                {"", "-s", "=",  "<shortOnlyField>", "shortOnly"},
                 {"", "",   "",  "--long=<longOnlyField>", "longOnly"},
                 {"", "-b", ",", "--beta=<combiField>", "combi"},
         };
@@ -371,7 +390,7 @@ public class CommandLineHelpTest {
         String[][] expected = new String[][] {
                 {"", "-v", "",  "", "shortBool"},
                 {"", "",   "",  "--verbose", "longBool"},
-                {"", "-s", "",  "=<shortOnlyField>", "shortOnly"},
+                {"", "-s", "=",  "<shortOnlyField>", "shortOnly"},
                 {"",   "", "",  "", "Default: short"},
                 {"", "",   "",  "--long=<longOnlyField>", "longOnly"},
                 {"", "",   "",  "", "Default: long"},

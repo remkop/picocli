@@ -611,15 +611,27 @@ Without a `name` attribute, picocli will show a generic `<main class>` in the sy
 Usage: <main class> [-AbeEnstTuv] [--help] [--version] [FILE...]
 ----
 === Parameter Labels
-Option parameters and positional parameters are shown in the synopsis and the options list by the name of the annotated field in `<` and `>` fish brackets.
+Non-boolean options require a value. The usage help should explain this, and picocli shows the option parameter
+in the synopsis and in the option list. By default, the field name is shown in `<` and `>` fish brackets.
 Use the `paramLabel` attribute to display a different name. For example:
+----
+Usage: <main class> [-f=FILE] [-n=<number>] NUM <host>
+      NUM                     number param
+      host                    the host parameter
+  -f= FILE                    a file
+  -n= <number>                a number option
+----
+Some annotated fields in the below example class have a `paramLabel` attribute and others don't:
 [source,java]
 ----
-@Option(names = "-f", paramLabel = "FILE") File f;
-@Option(names = "-n") int number;
-@Parameters(index = "0", paramLabel = "NUM") int n;
-@Parameters(index = "1") InetAddress host;
+class ParamLabels {
+    @Option(names = "-f",    paramLabel = "FILE", description = "a file")      File f;
+    @Option(names = "-n",    description = "a number option")                  int number;
+    @Parameters(index = "0", paramLabel = "NUM", description = "number param") int n;
+    @Parameters(index = "1", description = "the host parameter")               InetAddress host;
+}
 ----
+NOTE: For demonstration purposes the above example mixes the all-uppercase (e.g., `NUM`) style label and the fish bracket (e.g., `<number>`) style labels. For real applications, mixing these label styles should be avoided. An application should consistently use only one style.
 
 === Positional Parameters
 [source,java]

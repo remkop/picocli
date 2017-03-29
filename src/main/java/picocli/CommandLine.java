@@ -302,6 +302,7 @@ public class CommandLine {
     }
     private static boolean empty(String str) { return str == null || str.trim().length() == 0; }
     private static boolean empty(Object[] array) { return array == null || array.length == 0; }
+    private static String str(String[] arr, int i) { return (arr == null || arr.length == 0) ? "" : arr[i]; }
     private static boolean isBoolean(Class<?> type) { return type == Boolean.class || type == Boolean.TYPE; }
 
     /**
@@ -1911,6 +1912,7 @@ public class CommandLine {
                     }
                     return paramLabel == null || paramLabel.length() == 0 ? field.getName() : paramLabel;
                 }
+                public String separator() { return ""; }
             };
         }
         /** Returns a new default value renderer that separates option parameters from their {@linkplain Option
@@ -1964,13 +1966,20 @@ public class CommandLine {
         static class DefaultOptionRenderer implements IOptionRenderer {
             public String requiredMarker = " ";
             public Object annotatedObject;
-            public String[][] render(Option option, Field field, IParamLabelRenderer parameterLabelRenderer) {
+            public String[][] render(Option option, Field field, IParamLabelRenderer paramLabelRenderer) {
                 String[] names = new ShortestFirst().sort(option.names());
                 int shortOptionCount = names[0].length() == 2 ? 1 : 0;
                 String shortOption = shortOptionCount > 0 ? names[0] : "";
-                String sep = shortOptionCount > 0 && names.length > 1 ? "," : "";
+                String paramLabel = paramLabelRenderer.renderParameterLabel(field);
                 String longOption = join(names, shortOptionCount, names.length - shortOptionCount, ", ");
-                longOption += parameterLabelRenderer.renderParameterLabel(field);
+                String sep = shortOptionCount > 0 && names.length > 1 ? "," : "";
+
+                // if no long option, fill in the space between the short option name and the param label value
+                if (paramLabel.length() > 0 && longOption.length() == 0) {
+                    sep = paramLabelRenderer.separator();
+                    paramLabel = paramLabel.substring(sep.length());
+                }
+                longOption += paramLabel;
                 String requiredOption = option.required() ? requiredMarker : "";
 
                 boolean showDefault = annotatedObject != null && !option.help() && !isBoolean(field.getType());
@@ -1987,10 +1996,11 @@ public class CommandLine {
                 } catch (Exception ex) {
                     showDefault = false;
                 }
-                final int ROW_COUNT = showDefault ? option.description().length + 1 : option.description().length;
+                final int descriptionCount = Math.max(1, option.description().length);
+                final int ROW_COUNT = showDefault ? descriptionCount + 1 : descriptionCount;
                 final int COLUMN_COUNT = 5;
                 String[][] result = new String[ROW_COUNT][COLUMN_COUNT];
-                result[0] = new String[] { requiredOption, shortOption, sep, longOption, option.description()[0] };
+                result[0] = new String[] { requiredOption, shortOption, sep, longOption, str(option.description(), 0) };
                 for (int i = 1; i < option.description().length; i++) {
                     result[i] = new String[] { "", "", "", "", option.description()[i] };
                 }
@@ -2051,8 +2061,8 @@ public class CommandLine {
                 String requiredParameter = Arity.forParameters(field).min > 0 ? requiredMarker : "";
 
                 final int COLUMN_COUNT = 5;
-                String[][] result = new String[params.description().length][COLUMN_COUNT];
-                result[0] = new String[] { requiredParameter, "", "", label, params.description()[0] };
+                String[][] result = new String[Math.max(1, params.description().length)][COLUMN_COUNT];
+                result[0] = new String[] { requiredParameter, "", "", label, str(params.description(), 0) };
                 for (int i = 1; i < params.description().length; i++) {
                     result[i] = new String[] { "", "", "", "", params.description()[i] };
                 }
@@ -2065,6 +2075,8 @@ public class CommandLine {
             /** Returns a text rendering of the Option parameter or positional parameter; returns an empty string
              * {@code ""} if the option is a boolean and does not take a parameter. */
             String renderParameterLabel(Field field);
+            /** Returns the separator between option name and param label */
+            String separator();
         }
         /**
          * DefaultParamLabelRenderer separates option parameters from their {@linkplain Option options} with a
@@ -2079,6 +2091,7 @@ public class CommandLine {
             public DefaultParamLabelRenderer(String separator) {
                 this.separator = Assert.notNull(separator, "separator");
             }
+            public String separator() { return separator; }
             public String renderParameterLabel(Field field) {
                 boolean isOptionParameter = field.isAnnotationPresent(Option.class);
                 Arity arity = isOptionParameter ? Arity.forOption(field) : Arity.forParameters(field);
