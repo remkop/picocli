@@ -455,10 +455,10 @@ public class CommandLine {
         String arity() default "";
 
         /**
-         * Specify a {@code valueLabel} for the option parameter to be used in the usage help message. If omitted,
+         * Specify a {@code paramLabel} for the option parameter to be used in the usage help message. If omitted,
          * picoCLI uses the field name in fish brackets ({@code '<'} and {@code '>'}) by default. Example:
          * <pre>class Example {
-         *     &#064;Option(names = {"-o", "--output"}, valueLabel="FILE", description="path of the output file")
+         *     &#064;Option(names = {"-o", "--output"}, paramLabel="FILE", description="path of the output file")
          *     private File out;
          *     &#064;Option(names = {"-j", "--jobs"}, arity="0..1", description="Allow N jobs at once; infinite jobs with no arg.")
          *     private int maxJobs = -1;
@@ -470,7 +470,7 @@ public class CommandLine {
          * </pre>
          * @return name of the option parameter used in the usage help message
          */
-        String valueLabel() default "";
+        String paramLabel() default "";
 
         /**
          * <p>
@@ -552,10 +552,10 @@ public class CommandLine {
         String arity() default "";
 
         /**
-         * Specify a {@code valueLabel} for the parameter to be used in the usage help message. If omitted,
+         * Specify a {@code paramLabel} for the parameter to be used in the usage help message. If omitted,
          * picoCLI uses the field name in fish brackets ({@code '<'} and {@code '>'}) by default. Example:
          * <pre>class Example {
-         *     &#064;Parameters(valueLabel="FILE", description="path of the input FILE(s)")
+         *     &#064;Parameters(paramLabel="FILE", description="path of the input FILE(s)")
          *     private File[] inputFiles;
          * }</pre>
          * <p>By default, the above gives a usage help message like the following:</p><pre>
@@ -564,7 +564,7 @@ public class CommandLine {
          * </pre>
          * @return name of the positional parameter used in the usage help message
          */
-        String valueLabel() default "";
+        String paramLabel() default "";
 
         /**
          * <p>
@@ -598,7 +598,7 @@ public class CommandLine {
      *        description = "Encrypt FILE(s), or standard input, to standard output or to the output file.",
      *        footer      = "Copyright (c) 2017")
      * public class Encrypt {
-     *     &#064;Parameters(valueLabel = "FILE", type = File.class, description = "Any number of input files")
+     *     &#064;Parameters(paramLabel = "FILE", type = File.class, description = "Any number of input files")
      *     private List<File> files     = new ArrayList<File>();
      *
      *     &#064;Option(names = { "-o", "--out" }, description = "Output file (default: print to console)")
@@ -1513,7 +1513,7 @@ public class CommandLine {
         public String[] footer = {};
 
         /** Option and positional parameter value label renderer used for the synopsis line(s) and the option list. */
-        public IValueLabelRenderer parameterLabelRenderer;
+        public IParamLabelRenderer parameterLabelRenderer;
 
         /** If {@code true}, the synopsis line(s) will show an abbreviated synopsis without detailed option names. */
         public Boolean abbreviateSynopsis;
@@ -1590,7 +1590,7 @@ public class CommandLine {
             requiredOptionMarker = (requiredOptionMarker == null) ? ' ' : requiredOptionMarker;
             showDefaultValues =    (showDefaultValues == null)    ? true : showDefaultValues;
             separator =            (separator == null)            ? "=" : separator;
-            parameterLabelRenderer = new DefaultValueLabelRenderer(separator);
+            parameterLabelRenderer = new DefaultParamLabelRenderer(separator);
             synopsisHeading =      (synopsisHeading == null)      ? "Usage: " : synopsisHeading;
             commandListHeading =   (commandListHeading == null)   ? "Commands:%n" : commandListHeading;
         }
@@ -1694,7 +1694,7 @@ public class CommandLine {
          * only the {@linkplain Option#hidden() non-hidden} options in a {@linkplain TextTable tabular format}
          * using the {@linkplain #createDefaultOptionRenderer() default renderer} and {@linkplain Layout default layout}.</p>
          * @return the fully formatted option list
-         * @see #optionList(Layout, Comparator, IValueLabelRenderer)
+         * @see #optionList(Layout, Comparator, IParamLabelRenderer)
          */
         public String optionList() {
             Comparator<Field> sortOrder = sortOptions == null || sortOptions.booleanValue()
@@ -1704,14 +1704,14 @@ public class CommandLine {
         }
 
         /** Sorts all {@code Options} with the specified {@code comparator} (if the comparator is non-{@code null}),
-         * then {@linkplain Layout#addOption(Field, CommandLine.Help.IValueLabelRenderer) adds} all non-hidden options to the
+         * then {@linkplain Layout#addOption(Field, IParamLabelRenderer) adds} all non-hidden options to the
          * specified TextTable and returns the result of TextTable.toString().
          * @param layout responsible for rendering the option list
          * @param optionSort determines in what order {@code Options} should be listed. Declared order if {@code null}
          * @param valueLabelRenderer used for options with a parameter
          * @return the fully formatted option list
          */
-        public String optionList(Layout layout, Comparator<Field> optionSort, IValueLabelRenderer valueLabelRenderer) {
+        public String optionList(Layout layout, Comparator<Field> optionSort, IParamLabelRenderer valueLabelRenderer) {
             List<Field> fields = new ArrayList<Field>(optionFields); // options are stored in order of declaration
             if (optionSort != null) {
                 Collections.sort(fields, optionSort); // default: sort options ABC
@@ -1722,7 +1722,7 @@ public class CommandLine {
         public String parameterList() {
             return parameterList(createDefaultLayout(), createMinimalValueLabelRenderer());
         }
-        public String parameterList(Layout layout, IValueLabelRenderer valueLabelRenderer) {
+        public String parameterList(Layout layout, IParamLabelRenderer valueLabelRenderer) {
             layout.addPositionalParameters(positionalParametersFields, valueLabelRenderer);
             return layout.toString();
         }
@@ -1881,7 +1881,7 @@ public class CommandLine {
          * <ol>
          * <li>empty string </li>
          * <li>empty string </li>
-         * <li>parameter(s) label as rendered by the {@link IValueLabelRenderer}</li>
+         * <li>parameter(s) label as rendered by the {@link IParamLabelRenderer}</li>
          * <li>first element of the {@link Parameters#description()} array</li>
          * </ol>
          * <p>Following this, there will be one row for each of the remaining elements of the {@link
@@ -1898,16 +1898,16 @@ public class CommandLine {
         public static IParameterRenderer createMinimalParameterRenderer() {
             return new MinimalParameterRenderer();
         }
-        /** Returns a value renderer that returns the {@code valueLabel} if defined or the field name otherwise. */
-        public static IValueLabelRenderer createMinimalValueLabelRenderer() {
-            return new IValueLabelRenderer() {
+        /** Returns a value renderer that returns the {@code paramLabel} if defined or the field name otherwise. */
+        public static IParamLabelRenderer createMinimalValueLabelRenderer() {
+            return new IParamLabelRenderer() {
                 public String renderParameterLabel(Field field) {
                     String valueLabel = null;
                     Parameters parameters = field.getAnnotation(Parameters.class);
                     if (parameters != null) {
-                        valueLabel = parameters.valueLabel();
+                        valueLabel = parameters.paramLabel();
                     } else {
-                        valueLabel = field.isAnnotationPresent(Option.class) ? field.getAnnotation(Option.class).valueLabel() : null;
+                        valueLabel = field.isAnnotationPresent(Option.class) ? field.getAnnotation(Option.class).paramLabel() : null;
                     }
                     return valueLabel == null || valueLabel.length() == 0 ? field.getName() : valueLabel;
                 }
@@ -1917,8 +1917,8 @@ public class CommandLine {
          * options} with the specified separator string, surrounds optional parameters with {@code '['} and {@code ']'}
          * characters and uses ellipses ("...") to indicate that any number of a parameter are allowed.
          */
-        public IValueLabelRenderer createDefaultValueLabelRenderer() {
-            return new DefaultValueLabelRenderer(separator);
+        public IParamLabelRenderer createDefaultValueLabelRenderer() {
+            return new DefaultParamLabelRenderer(separator);
         }
         /** Sorts Fields annotated with {@code Option} by their option name in case-insensitive alphabetic order. If an
          * Option has multiple names, the shortest name is used for the sorting. Help options follow non-help options. */
@@ -1947,7 +1947,7 @@ public class CommandLine {
              * @param parameterLabelRenderer responsible for rendering option parameters to text
              * @return a 2-dimensional array of text values: one or more rows, each containing one or more columns
              */
-            String[][] render(Option option, Field field, IValueLabelRenderer parameterLabelRenderer);
+            String[][] render(Option option, Field field, IParamLabelRenderer parameterLabelRenderer);
         }
         /** The DefaultOptionRenderer converts {@link Option Options} to five columns of text to match the default
          * {@linkplain TextTable TextTable} column layout. The first row of values looks like this:
@@ -1964,7 +1964,7 @@ public class CommandLine {
         static class DefaultOptionRenderer implements IOptionRenderer {
             public String requiredMarker = " ";
             public Object annotatedObject;
-            public String[][] render(Option option, Field field, IValueLabelRenderer parameterLabelRenderer) {
+            public String[][] render(Option option, Field field, IParamLabelRenderer parameterLabelRenderer) {
                 String[] names = new ShortestFirst().sort(option.names());
                 int shortOptionCount = names[0].length() == 2 ? 1 : 0;
                 String shortOption = shortOptionCount > 0 ? names[0] : "";
@@ -2005,7 +2005,7 @@ public class CommandLine {
         /** The MinimalOptionRenderer converts {@link Option Options} to a single row with two columns of text: an
          * option name and a description. If multiple names or description lines exist, the first value is used. */
         static class MinimalOptionRenderer implements IOptionRenderer {
-            public String[][] render(Option option, Field field, IValueLabelRenderer parameterLabelRenderer) {
+            public String[][] render(Option option, Field field, IParamLabelRenderer parameterLabelRenderer) {
                 return new String[][] {{ option.names()[0] + parameterLabelRenderer.renderParameterLabel(field),
                                            option.description().length == 0 ? "" : option.description()[0] }};
             }
@@ -2013,7 +2013,7 @@ public class CommandLine {
         /** The MinimalParameterRenderer converts {@link Parameters Parameters} to a single row with two columns of
          * text: the parameters label and a description. If multiple description lines exist, the first value is used. */
         static class MinimalParameterRenderer implements IParameterRenderer {
-            public String[][] render(Parameters param, Field field, IValueLabelRenderer parameterLabelRenderer) {
+            public String[][] render(Parameters param, Field field, IParamLabelRenderer parameterLabelRenderer) {
                 return new String[][] {{ parameterLabelRenderer.renderParameterLabel(field),
                         param.description().length == 0 ? "" : param.description()[0] }};
             }
@@ -2030,7 +2030,7 @@ public class CommandLine {
              * @param parameterLabelRenderer responsible for rendering parameter labels to text
              * @return a 2-dimensional array of text values: one or more rows, each containing one or more columns
              */
-            String[][] render(Parameters parameters, Field field, IValueLabelRenderer parameterLabelRenderer);
+            String[][] render(Parameters parameters, Field field, IParamLabelRenderer parameterLabelRenderer);
         }
         /** The DefaultParameterRenderer converts {@link Parameters Parameters} to five columns of text to match the
          * default {@linkplain TextTable TextTable} column layout. The first row of values looks like this:
@@ -2038,7 +2038,7 @@ public class CommandLine {
          * <li>the required option marker (if the parameter's arity is to have at least one value)</li>
          * <li>empty string </li>
          * <li>empty string </li>
-         * <li>parameter(s) label as rendered by the {@link IValueLabelRenderer}</li>
+         * <li>parameter(s) label as rendered by the {@link IParamLabelRenderer}</li>
          * <li>first element of the {@link Parameters#description()} array</li>
          * </ol>
          * <p>Following this, there will be one row for each of the remaining elements of the {@link
@@ -2046,7 +2046,7 @@ public class CommandLine {
          */
         static class DefaultParameterRenderer implements IParameterRenderer {
             public String requiredMarker = " ";
-            public String[][] render(Parameters params, Field field, IValueLabelRenderer valueLabelRenderer) {
+            public String[][] render(Parameters params, Field field, IParamLabelRenderer valueLabelRenderer) {
                 String label = valueLabelRenderer.renderParameterLabel(field);
                 String requiredParameter = Arity.forParameters(field).min > 0 ? requiredMarker : "";
 
@@ -2060,23 +2060,23 @@ public class CommandLine {
             }
         }
         /** When customizing online usage help for an option parameter or a positional parameter, a custom
-         * {@code IValueLabelRenderer} can be used to render the parameter name or label to a String. */
-        public interface IValueLabelRenderer {
+         * {@code IParamLabelRenderer} can be used to render the parameter name or label to a String. */
+        public interface IParamLabelRenderer {
             /** Returns a text rendering of the Option parameter or positional parameter; returns an empty string
              * {@code ""} if the option is a boolean and does not take a parameter. */
             String renderParameterLabel(Field field);
         }
         /**
-         * DefaultValueLabelRenderer separates option parameters from their {@linkplain Option options} with a
-         * {@linkplain DefaultValueLabelRenderer#separator separator} string, surrounds optional values
+         * DefaultParamLabelRenderer separates option parameters from their {@linkplain Option options} with a
+         * {@linkplain DefaultParamLabelRenderer#separator separator} string, surrounds optional values
          * with {@code '['} and {@code ']'} characters and uses ellipses ("...") to indicate that any number of
          * values is allowed for options or parameters with variable arity.
          */
-        static class DefaultValueLabelRenderer implements IValueLabelRenderer {
+        static class DefaultParamLabelRenderer implements IParamLabelRenderer {
             /** The string to use to separate option parameters from their options. */
             public final String separator;
-            /** Constructs a new DefaultValueLabelRenderer with the specified separator string. */
-            public DefaultValueLabelRenderer(String separator) {
+            /** Constructs a new DefaultParamLabelRenderer with the specified separator string. */
+            public DefaultParamLabelRenderer(String separator) {
                 this.separator = Assert.notNull(separator, "separator");
             }
             public String renderParameterLabel(Field field) {
@@ -2111,9 +2111,9 @@ public class CommandLine {
             private String renderParameterName(Field field) {
                 String result = null;
                 if (field.isAnnotationPresent(Option.class)) {
-                    result = field.getAnnotation(Option.class).valueLabel();
+                    result = field.getAnnotation(Option.class).paramLabel();
                 } else if (field.isAnnotationPresent(Parameters.class)) {
-                    result = field.getAnnotation(Parameters.class).valueLabel();
+                    result = field.getAnnotation(Parameters.class).paramLabel();
                 }
                 if (result != null && result.trim().length() > 0) {
                     return result.trim();
@@ -2154,8 +2154,8 @@ public class CommandLine {
                     table.addRowValues(oneRow);
                 }
             }
-            /** Calls {@link #addOption(Field, CommandLine.Help.IValueLabelRenderer)} for all non-hidden Options in the list. */
-            public void addOptions(List<Field> fields, IValueLabelRenderer valueLabelRenderer) {
+            /** Calls {@link #addOption(Field, IParamLabelRenderer)} for all non-hidden Options in the list. */
+            public void addOptions(List<Field> fields, IParamLabelRenderer valueLabelRenderer) {
                 for (Field field : fields) {
                     Option option = field.getAnnotation(Option.class);
                     if (!option.hidden()) {
@@ -2170,13 +2170,13 @@ public class CommandLine {
              * @param field the field annotated with the specified Option
              * @param valueLabelRenderer knows how to render option parameters
              */
-            public void addOption(Field field, IValueLabelRenderer valueLabelRenderer) {
+            public void addOption(Field field, IParamLabelRenderer valueLabelRenderer) {
                 Option option = field.getAnnotation(Option.class);
                 String[][] values = optionRenderer.render(option, field, valueLabelRenderer);
                 layout(field, values);
             }
-            /** Calls {@link #addPositionalParameter(Field, CommandLine.Help.IValueLabelRenderer)} for all non-hidden Parameters in the list. */
-            public void addPositionalParameters(List<Field> fields, IValueLabelRenderer valueLabelRenderer) {
+            /** Calls {@link #addPositionalParameter(Field, IParamLabelRenderer)} for all non-hidden Parameters in the list. */
+            public void addPositionalParameters(List<Field> fields, IParamLabelRenderer valueLabelRenderer) {
                 for (Field field : fields) {
                     Parameters parameters = field.getAnnotation(Parameters.class);
                     if (!parameters.hidden()) {
@@ -2191,7 +2191,7 @@ public class CommandLine {
              * @param field the field annotated with the specified Parameters
              * @param valueLabelRenderer knows how to render option parameters
              */
-            public void addPositionalParameter(Field field, IValueLabelRenderer valueLabelRenderer) {
+            public void addPositionalParameter(Field field, IParamLabelRenderer valueLabelRenderer) {
                 Parameters option = field.getAnnotation(Parameters.class);
                 String[][] values = parameterRenderer.render(option, field, valueLabelRenderer);
                 layout(field, values);

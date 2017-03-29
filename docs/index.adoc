@@ -29,7 +29,7 @@ public class Example {
             description = "Displays this help message and quits.")
     private boolean helpRequested = false;
 
-    @Parameters(arity = "1..*", valueLabel = "FILE", description = "File(s) to process.")
+    @Parameters(arity = "1..*", paramLabel = "FILE", description = "File(s) to process.")
     private File[] inputFiles;
     ...
 }
@@ -86,11 +86,11 @@ class Tar {
     @Option(names = "-x", description = "extract files from an archive")
     boolean extract;
 
-    @Option(names = { "-f", "--file" }, valueLabel = "ARCHIVE",
+    @Option(names = { "-f", "--file" }, paramLabel = "ARCHIVE",
             description = "use archive file or device ARCHIVE")
     File archive;
 
-    @Parameters(valueLabel = "FILE", description = "one ore more files to archive")
+    @Parameters(paramLabel = "FILE", description = "one ore more files to archive")
     File[] files;
 }
 ----
@@ -148,15 +148,15 @@ class PositionalParameters {
     @Parameters(hidden = true)  // "hidden": don't show this parameter in usage help message
     List<String> allParameters; // no "index" attribute: captures _all_ arguments (as Strings)
 
-    @Parameters(index = "0", valueLabel = "<host>", // index=0: the first positional parameter
+    @Parameters(index = "0", paramLabel = "<host>", // index=0: the first positional parameter
                 description = "Host name or IP address to connect to")
     InetAddress host;
 
-    @Parameters(index = "1", valueLabel = "<port>", // index=1: the second positional parameter
+    @Parameters(index = "1", paramLabel = "<port>", // index=1: the second positional parameter
                 description = "Port number to connect to")
     int port;
 
-    @Parameters(index = "2..*", valueLabel = "<files>", description = "the files to process")
+    @Parameters(index = "2..*", paramLabel = "<files>", description = "the files to process")
     File[] files;
 }
 ----
@@ -328,12 +328,12 @@ Multiple parameters can be captured together in a single array or `Collection` f
 ----
 class Convert {
     @Option(type = java.util.regex.Pattern.class, // List elements are Pattern objects
-            names = "-patterns", valueLabel = "PATTERN",
+            names = "-patterns", paramLabel = "PATTERN",
             description = "the regular expressions to use for the conversion");
     List<Pattern> patterns;
 
     @Parameters(type = File.class, // convert arguments to File before adding to the List
-                valueLabel = "FILE", description = "files to convert")
+                paramLabel = "FILE", description = "files to convert")
     List<File> files;
 }
 ----
@@ -528,7 +528,7 @@ The following command line arguments would be accepted:
 
 
 == Help Options
-Options with the `help` attribute set to `true` are special: if one of the command line arguments is a "help" option, picocli will stop parsing the remaining arguments and will not check for required options.
+Options with the attribute `help = true` are special: if one of the command line arguments is a "help" option, picocli will stop parsing the remaining arguments and will not check for required options.
 
 [source,java]
 ----
@@ -549,11 +549,104 @@ if (app.helpRequested) {
 
 == Usage Help
 === Example
-=== Command Name
-=== Parameter Labels
+A default picocli usage help message looks like this:
+----
+Usage: cat [-AbeEnstTuv] [--help] [--version] [FILE...]
+Concatenate FILE(s), or standard input, to standard output.
+      FILE                    Files whose contents to display
+  -A, --show-all              equivalent to -vET
+  -b, --number-nonblank       number nonempty output lines, overrides -n
+  -e                          equivalent to -vET
+  -E, --show-ends             display $ at end of each line
+  -n, --number                number all output lines
+  -s, --squeeze-blank         suppress repeated empty output lines
+  -t                          equivalent to -vT
+  -T, --show-tabs             display TAB characters as ^I
+  -u                          (ignored)
+  -v, --show-nonprinting      use ^ and M- notation, except for LDF and TAB
+      --help                  display this help and exit
+      --version               output version information and exit
+Copyright(c) 2017
+----
 
+The usage help message is generated from annotation attributes, like below:
+[source,java]
+----
+@Command(name = "cat", footer = "Copyright(c) 2017",
+         description = "Concatenate FILE(s), or standard input, to standard output.")
+class Cat {
+  @Parameters(paramLabel = "FILE", description = "Files whose contents to display")
+  List<File> files;
+  @Option(names = "--help", help = true, description = "display this help and exit")
+  boolean help;
+  @Option(description = "output version information and exit",
+          names = "--version", help = true)                 boolean version;
+  @Option(names = "-u", description = "(ignored)")          boolean u;
+  @Option(names = "-t", description = "equivalent to -vT")  boolean t;
+  @Option(names = "-e", description = "equivalent to -vET") boolean e;
+  @Option(names = {"-A", "--show-all"}, description = "equivalent to -vET") boolean all;
+  @Option(description = "suppress repeated empty output lines",
+          names       = {"-s", "--squeeze-blank"})    boolean squeeze;
+  @Option(description = "use ^ and M- notation, except for LDF and TAB",
+          names       = {"-v", "--show-nonprinting"}) boolean v;
+  @Option(description = "number nonempty output lines, overrides -n",
+          names       = {"-b", "--number-nonblank"})  boolean b;
+  @Option(names = {"-T", "--show-tabs"}, description = "display TAB characters as ^I")
+  boolean T;
+  @Option(names = {"-E", "--show-ends"}, description = "display $ at end of each line")
+  boolean E;
+  @Option(names = {"-n", "--number"},    description = "number all output lines")
+  boolean n;
+}
+----
+
+=== Command Name
+In the above example, the program name is taken from the `name` attribute of the `Command` annotation:
+[source,java]
+----
+@Command(name = "cat")
+----
+Without a `name` attribute, picocli will show a generic `<main class>` in the synopsis:
+----
+Usage: <main class> [-AbeEnstTuv] [--help] [--version] [FILE...]
+----
+=== Parameter Labels
+Option parameters and positional parameters are shown in the synopsis and the options list by the name of the annotated field in `<` and `>` fish brackets.
+Use the `paramLabel` attribute to display a different name. For example:
+[source,java]
+----
+@Option(names = "-f", paramLabel = "FILE") File f;
+@Option(names = "-n") int number;
+@Parameters(index = "0", paramLabel = "NUM") int n;
+@Parameters(index = "1") InetAddress host;
+----
+
+=== Positional Parameters
+[source,java]
+----
+@Command(showDefaultValues = false)
+class App {
+    @Parameters(index = "0", description = "source host") InetAddress host1;
+    @Parameters(index = "1", description = "source port") int port1;
+    @Parameters(index = "2", description = "destination host") InetAddress host2;
+    @Parameters(index = "3..4", arity = "1..2", description = "destination port range")
+    int[] port2range;
+    @Parameters(index = "4..*", description = "files to transfer") String[] files;
+    @Parameters(hidden = true) String[] all;
+}
+----
+The above will generate the following usage help message:
+----
+Usage: <main class> <host1> <port1> <host2> <port2range> [<port2range>] [<files>...]
+      host1                   source host
+      port1                   source port
+      host2                   destination host
+      port2range              destination port range
+      files                   files to transfer
+----
 === Hidden Options and Parameters
 Options and Parameters with the `hidden` attribute set to `true` will not be shown in the usage help message.
+This is useful for example when a parameter at some index is captured into multiple fields: by default each of these fields would be shown in the usage message, which would be confusing for users.
 
 
 == Customizing Usage Help
@@ -563,6 +656,54 @@ Options and Parameters with the `hidden` attribute set to `true` will not be sho
 === Footer
 === Section Headings
 === Option-Parameter Separators
+
+=== Reordering Sections
+To reorder sections of the usage message, you need to use the `CommandLine.Help` class directly. The `CommandLine::usage` method implementation looks like this:
+
+[source,java]
+----
+Map<String, Object> subcommandMap = new HashMap<String, Object>();
+subcommandMap.put("add", new AddCommand());
+...
+Help help = new Help(new MainClass()).addAllCommands(subcommandMap);
+StringBuilder sb = new StringBuilder()
+        .append(help.headerHeading())
+        .append(help.header())
+        .append(help.synopsisHeading())      //e.g. Usage:
+        .append(help.synopsis())             //e.g. <main> [OPTIONS] [ARGUMENTS]
+        .append(help.descriptionHeading())   //e.g. %nDescription:%n%n
+        .append(help.description())          //e.g. "application description"
+        .append(help.parameterListHeading()) //e.g. %nPositional parameters:%n%n
+        .append(help.parameterList())        //e.g. [FILE...] the files to convert
+        .append(help.optionListHeading())    //e.g. %nOptions:%n%n
+        .append(help.optionList())           //e.g. -h, --help   displays this help
+        .append(help.commandListHeading())   //e.g. %nCommands:%n%n
+        .append(help.commandList())          //e.g.    add       adds a to b
+        .append(help.footerHeading())
+        .append(help.footer());
+----
+In your application, instead of calling `CommandLine.usage(new MainClass(), System.err)`, you can alter the above code to, for example, list subcommands first, then global options and finally the parameters.
+
+=== Formatted Headings
+By using the `Help` class directly as explained in the previous section,
+the `xxxHeading()` methods can be passed arguments.
+These arguments can be referenced by the format specifiers in the heading https://docs.oracle.com/javase/8/docs/api/java/util/Formatter.html[format strings]. For example:
+
+[source,java]
+----
+@Command(descriptionHeading = "%nDescription (%1$tb %1$te, %1$tY)%n%n")
+class MainClass {}
+----
+The `descriptionHeading` attribute is a format string with some date/time conversion format specifiers and some line separators. Picocli will format this string with any arguments that are passed to the `Help::descriptionHeading(Object...)` method. For example:
+[source,java]
+----
+Help help = new Help(new MainClass());
+Calendar c = new GregorianCalendar(2017, MAY, 23);
+String formatted = help.descriptionHeading(c);
+
+assert "\nDescription (May 23, 2017)\n\n".equals(formatted);
+----
+
 
 
 == Advanced Usage Help Customization
@@ -611,7 +752,7 @@ public class ZipCommand extends AbstractCommand {
     @Option(names = { "-o", "--output" }, description = "output file to write to")
     private File output;
 
-    @Parameter(valueLabel = "FILE", description = "FILEs to compress")
+    @Parameter(paramLabel = "FILE", description = "FILEs to compress")
     private File[] files;
 }
 ----

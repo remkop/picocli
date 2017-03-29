@@ -179,7 +179,7 @@ public class CommandLineHelpTest {
         }
         Help.IOptionRenderer renderer = Help.createMinimalOptionRenderer();
         Help help = new Help(new Example());
-        Help.IValueLabelRenderer parameterRenderer = help.createDefaultValueLabelRenderer();
+        Help.IParamLabelRenderer parameterRenderer = help.createDefaultValueLabelRenderer();
         Field field = help.optionFields.get(0);
         String[][] row1 = renderer.render(field.getAnnotation(Option.class), field, parameterRenderer);
         assertEquals(1, row1.length);
@@ -204,7 +204,7 @@ public class CommandLineHelpTest {
         }
         Help help = new Help(new Example());
         Help.IOptionRenderer renderer = help.createDefaultOptionRenderer();
-        Help.IValueLabelRenderer parameterRenderer = help.createDefaultValueLabelRenderer();
+        Help.IParamLabelRenderer parameterRenderer = help.createDefaultValueLabelRenderer();
         Field field = help.optionFields.get(0);
         String[][] row1 = renderer.render(field.getAnnotation(Option.class), field, parameterRenderer);
         assertEquals(2, row1.length);
@@ -226,7 +226,7 @@ public class CommandLineHelpTest {
         }
         Help help = new Help(new Example());
         Help.IOptionRenderer renderer = help.createDefaultOptionRenderer();
-        Help.IValueLabelRenderer parameterRenderer = help.createDefaultValueLabelRenderer();
+        Help.IParamLabelRenderer parameterRenderer = help.createDefaultValueLabelRenderer();
         Field field = help.optionFields.get(0);
         String[][] row = renderer.render(field.getAnnotation(Option.class), field, parameterRenderer);
         assertEquals(2, row.length);
@@ -242,7 +242,7 @@ public class CommandLineHelpTest {
         }
         Help help = new Help(new Example());
         Help.IOptionRenderer renderer = help.createDefaultOptionRenderer();
-        Help.IValueLabelRenderer parameterRenderer = help.createDefaultValueLabelRenderer();
+        Help.IParamLabelRenderer parameterRenderer = help.createDefaultValueLabelRenderer();
         Field field = help.optionFields.get(0);
         String[][] row = renderer.render(field.getAnnotation(Option.class), field, parameterRenderer);
         assertEquals(1, row.length);
@@ -258,7 +258,7 @@ public class CommandLineHelpTest {
         Help help = new Help(new Example());
         help.showDefaultValues = false;
         Help.IOptionRenderer renderer = help.createDefaultOptionRenderer();
-        Help.IValueLabelRenderer parameterRenderer = help.createDefaultValueLabelRenderer();
+        Help.IParamLabelRenderer parameterRenderer = help.createDefaultValueLabelRenderer();
         Field field = help.optionFields.get(0);
         String[][] row = renderer.render(field.getAnnotation(Option.class), field, parameterRenderer);
         assertEquals(1, row.length);
@@ -272,7 +272,7 @@ public class CommandLineHelpTest {
         }
         Help help = new Help(new Example());
         Help.IOptionRenderer renderer = help.createDefaultOptionRenderer();
-        Help.IValueLabelRenderer parameterRenderer = help.createDefaultValueLabelRenderer();
+        Help.IParamLabelRenderer parameterRenderer = help.createDefaultValueLabelRenderer();
         Field field = help.optionFields.get(0);
         String[][] row = renderer.render(field.getAnnotation(Option.class), field, parameterRenderer);
         assertEquals(2, row.length);
@@ -287,7 +287,7 @@ public class CommandLineHelpTest {
         }
         Help help = new Help(new Required());
         Help.IParameterRenderer renderer = help.createDefaultParameterRenderer();
-        Help.IValueLabelRenderer parameterRenderer = Help.createMinimalValueLabelRenderer();
+        Help.IParamLabelRenderer parameterRenderer = Help.createMinimalValueLabelRenderer();
         Field field = help.positionalParametersFields.get(0);
         String[][] row1 = renderer.render(field.getAnnotation(Parameters.class), field, parameterRenderer);
         assertEquals(1, row1.length);
@@ -302,7 +302,7 @@ public class CommandLineHelpTest {
         }
         Help help = new Help(new Required());
         Help.IParameterRenderer renderer = help.createDefaultParameterRenderer();
-        Help.IValueLabelRenderer parameterRenderer = Help.createMinimalValueLabelRenderer();
+        Help.IParamLabelRenderer parameterRenderer = Help.createMinimalValueLabelRenderer();
         Field field = help.positionalParametersFields.get(0);
         String[][] row1 = renderer.render(field.getAnnotation(Parameters.class), field, parameterRenderer);
         assertEquals(1, row1.length);
@@ -317,7 +317,7 @@ public class CommandLineHelpTest {
         }
         Help help = new Help(new Optional());
         Help.IParameterRenderer renderer = help.createDefaultParameterRenderer();
-        Help.IValueLabelRenderer parameterRenderer = Help.createMinimalValueLabelRenderer();
+        Help.IParamLabelRenderer parameterRenderer = Help.createMinimalValueLabelRenderer();
         Field field = help.positionalParametersFields.get(0);
         String[][] row1 = renderer.render(field.getAnnotation(Parameters.class), field, parameterRenderer);
         assertEquals(1, row1.length);
@@ -337,7 +337,7 @@ public class CommandLineHelpTest {
         Help help = new Help(new Example());
         help.showDefaultValues = false; // omit default values from description column
         Help.IOptionRenderer renderer = help.createDefaultOptionRenderer();
-        Help.IValueLabelRenderer parameterRenderer = help.createDefaultValueLabelRenderer();
+        Help.IParamLabelRenderer parameterRenderer = help.createDefaultValueLabelRenderer();
 
         String[][] expected = new String[][] {
                 {"", "-v", "",  "", "shortBool"},
@@ -366,7 +366,7 @@ public class CommandLineHelpTest {
         }
         Help help = new Help(new Example());
         Help.IOptionRenderer renderer = help.createDefaultOptionRenderer();
-        Help.IValueLabelRenderer parameterRenderer = help.createDefaultValueLabelRenderer();
+        Help.IParamLabelRenderer parameterRenderer = help.createDefaultValueLabelRenderer();
 
         String[][] expected = new String[][] {
                 {"", "-v", "",  "", "shortBool"},
@@ -391,19 +391,19 @@ public class CommandLineHelpTest {
 
     @Test
     public void testCreateDefaultParameterRenderer_ReturnsDefaultParameterRenderer() {
-        assertEquals(Help.DefaultValueLabelRenderer.class, new Help(new UsageDemo()).createDefaultValueLabelRenderer().getClass());
+        assertEquals(Help.DefaultParamLabelRenderer.class, new Help(new UsageDemo()).createDefaultValueLabelRenderer().getClass());
     }
 
     @Test
     public void testDefaultParameterRenderer_showsParamLabelIfPresentOrFieldNameOtherwise() {
         class Example {
             @Option(names = "--without" ) String longField;
-            @Option(names = "--with", valueLabel = "LABEL") String otherField;
+            @Option(names = "--with", paramLabel = "LABEL") String otherField;
         }
         Help help = new Help(new Example());
-        Help.IValueLabelRenderer equalSeparatedParameterRenderer = help.createDefaultValueLabelRenderer();
+        Help.IParamLabelRenderer equalSeparatedParameterRenderer = help.createDefaultValueLabelRenderer();
         help.separator = " ";
-        Help.IValueLabelRenderer spaceSeparatedParameterRenderer = help.createDefaultValueLabelRenderer();
+        Help.IParamLabelRenderer spaceSeparatedParameterRenderer = help.createDefaultValueLabelRenderer();
 
         String[] expected = new String[] {
                 "<longField>",
@@ -421,13 +421,13 @@ public class CommandLineHelpTest {
 
     @Test
     public void testDefaultParameterRenderer_appliesToPositionalArgumentsIgnoresSeparator() {
-        class WithLabel    { @Parameters(valueLabel = "POSITIONAL_ARGS") String positional; }
+        class WithLabel    { @Parameters(paramLabel = "POSITIONAL_ARGS") String positional; }
         class WithoutLabel { @Parameters()                               String positional; }
 
         Help withLabel = new Help(new WithLabel());
-        Help.IValueLabelRenderer equals = withLabel.createDefaultValueLabelRenderer();
+        Help.IParamLabelRenderer equals = withLabel.createDefaultValueLabelRenderer();
         withLabel.separator = "=";
-        Help.IValueLabelRenderer spaced = withLabel.createDefaultValueLabelRenderer();
+        Help.IParamLabelRenderer spaced = withLabel.createDefaultValueLabelRenderer();
 
         String withSpace = spaced.renderParameterLabel(withLabel.positionalParametersFields.get(0));
         assertEquals(withSpace, "POSITIONAL_ARGS", withSpace);
@@ -566,7 +566,7 @@ public class CommandLineHelpTest {
             @Option(names = {"--verbose", "-v"}) boolean verbose;
             @Option(names = {"--count", "-c"}) int count;
             @Option(names = {"--help", "-h"}, hidden = true) boolean helpRequested;
-            @Parameters(valueLabel = "FILE") File[] files;
+            @Parameters(paramLabel = "FILE") File[] files;
         }
         assertEquals("<main class> [-v] [-c=<count>] [FILE...]" + LINESEP, new Help(new App()).synopsis());
     }
@@ -577,7 +577,7 @@ public class CommandLineHelpTest {
             @Option(names = {"--verbose", "-v"}) boolean verbose;
             @Option(names = {"--count", "-c"}) int count;
             @Option(names = {"--help", "-h"}, hidden = true) boolean helpRequested;
-            @Parameters(valueLabel = "FILE", arity = "1..*") File[] files;
+            @Parameters(paramLabel = "FILE", arity = "1..*") File[] files;
         }
         assertEquals("<main class> [-v] [-c=<count>] FILE [FILE...]" + LINESEP, new Help(new App()).synopsis());
     }
@@ -588,7 +588,7 @@ public class CommandLineHelpTest {
             @Option(names = {"--verbose", "-v"}) boolean verbose;
             @Option(names = {"--aaaa", "-a"}) boolean aBoolean;
             @Option(names = {"--xxxx", "-x"}) Boolean xBoolean;
-            @Option(names = {"--count", "-c"}, valueLabel = "COUNT") int count;
+            @Option(names = {"--count", "-c"}, paramLabel = "COUNT") int count;
         }
         assertEquals("<main class> [-avx] [-c=COUNT]" + LINESEP, new Help(new App()).synopsis());
     }
@@ -599,7 +599,7 @@ public class CommandLineHelpTest {
             @Option(names = {"--verbose", "-v"}, required = true) boolean verbose;
             @Option(names = {"--aaaa", "-a"}, required = true) boolean aBoolean;
             @Option(names = {"--xxxx", "-x"}, required = true) Boolean xBoolean;
-            @Option(names = {"--count", "-c"}, valueLabel = "COUNT") int count;
+            @Option(names = {"--count", "-c"}, paramLabel = "COUNT") int count;
         }
         assertEquals("<main class> -avx [-c=COUNT]" + LINESEP, new Help(new App()).synopsis());
     }
@@ -613,7 +613,7 @@ public class CommandLineHelpTest {
             @Option(names = {"--Verbose", "-V"}, required = true) boolean requiredVerbose;
             @Option(names = {"--Aaaa", "-A"}, required = true) boolean requiredABoolean;
             @Option(names = {"--Xxxx", "-X"}, required = true) Boolean requiredXBoolean;
-            @Option(names = {"--count", "-c"}, valueLabel = "COUNT") int count;
+            @Option(names = {"--count", "-c"}, paramLabel = "COUNT") int count;
         }
         assertEquals("<main class> -AVX [-avx] [-c=COUNT]" + LINESEP, new Help(new App()).synopsis());
     }
@@ -622,10 +622,10 @@ public class CommandLineHelpTest {
     public void testLongMultiLineSynopsisIndented() {
         @Command(name = "<best-app-ever>")
         class App {
-            @Option(names = "--long-option-name", valueLabel = "<long-option-value>") int a;
-            @Option(names = "--another-long-option-name", valueLabel = "<another-long-option-value>") int b;
-            @Option(names = "--third-long-option-name", valueLabel = "<third-long-option-value>") int c;
-            @Option(names = "--fourth-long-option-name", valueLabel = "<fourth-long-option-value>") int d;
+            @Option(names = "--long-option-name", paramLabel = "<long-option-value>") int a;
+            @Option(names = "--another-long-option-name", paramLabel = "<another-long-option-value>") int b;
+            @Option(names = "--third-long-option-name", paramLabel = "<third-long-option-value>") int c;
+            @Option(names = "--fourth-long-option-name", paramLabel = "<fourth-long-option-value>") int d;
         }
         assertEquals(String.format(
                 "<best-app-ever> [--another-long-option-name=<another-long-option-value>]%n" +
@@ -639,10 +639,10 @@ public class CommandLineHelpTest {
     public void testLongMultiLineSynopsisWithAtMarkIndented() {
         @Command(name = "<best-app-ever>")
         class App {
-            @Option(names = "--long-option@-name", valueLabel = "<long-option-valu@@e>") int a;
-            @Option(names = "--another-long-option-name", valueLabel = "^[<another-long-option-value>]") int b;
-            @Option(names = "--third-long-option-name", valueLabel = "<third-long-option-value>") int c;
-            @Option(names = "--fourth-long-option-name", valueLabel = "<fourth-long-option-value>") int d;
+            @Option(names = "--long-option@-name", paramLabel = "<long-option-valu@@e>") int a;
+            @Option(names = "--another-long-option-name", paramLabel = "^[<another-long-option-value>]") int b;
+            @Option(names = "--third-long-option-name", paramLabel = "<third-long-option-value>") int c;
+            @Option(names = "--fourth-long-option-name", paramLabel = "<fourth-long-option-value>") int d;
         }
         assertEquals(String.format(
                 "<best-app-ever> [--another-long-option-name=^[<another-long-option-value>]]%n" +
@@ -719,7 +719,7 @@ public class CommandLineHelpTest {
                 description = "Concatenate FILE(s), or standard input, to standard output.",
                 footer = "Copyright(c) 2017")
         class Cat {
-            @Parameters(valueLabel = "FILE", hidden = true, description = "Files whose contents to display") List<File> files;
+            @Parameters(paramLabel = "FILE", hidden = true, description = "Files whose contents to display") List<File> files;
             @Option(names = "--help",    help = true,     description = "display this help and exit") boolean help;
             @Option(names = "--version", help = true,     description = "output version information and exit") boolean version;
             @Option(names = "-u",                         description = "(ignored)") boolean u;
@@ -895,7 +895,7 @@ public class CommandLineHelpTest {
             boolean displayNumerical;
             @Option(names="-o", description="Displays the owning process ID associated with each connection.")
             boolean displayOwningProcess;
-            @Option(names="-p", valueLabel = "proto",
+            @Option(names="-p", paramLabel = "proto",
                     description="Shows connections for the protocol specified by proto; proto "
                     + "may be any of: TCP, UDP, TCPv6, or UDPv6.  If used with the -s "
                     + "option to display per-protocol statistics, proto may be any of: "
@@ -918,7 +918,7 @@ public class CommandLineHelpTest {
             @Option(names="-y", description="Displays the TCP connection template for all connections. "
                     + "Cannot be combined with the other options.")
             boolean displayTcpConnectionTemplate;
-            @Parameters(arity = "0..1", valueLabel = "interval", description = ""
+            @Parameters(arity = "0..1", paramLabel = "interval", description = ""
                     + "Redisplays selected statistics, pausing interval seconds "
                     + "between each display.  Press CTRL+C to stop redisplaying "
                     + "statistics.  If omitted, netstat will print the current "
@@ -1015,34 +1015,34 @@ public class CommandLineHelpTest {
         @Option(names = "-a", description = "boolean option with short name only")
         boolean a;
 
-        @Option(names = "-b", valueLabel = "INT", description = "short option with a parameter")
+        @Option(names = "-b", paramLabel = "INT", description = "short option with a parameter")
         int b;
 
         @Option(names = {"-c", "--c-option"}, description = "boolean option with short and long name")
         boolean c;
 
-        @Option(names = {"-d", "--d-option"}, valueLabel = "FILE", description = "option with parameter and short and long name")
+        @Option(names = {"-d", "--d-option"}, paramLabel = "FILE", description = "option with parameter and short and long name")
         File d;
 
         @Option(names = "--e-option", description = "boolean option with only a long name")
         boolean e;
 
-        @Option(names = "--f-option", valueLabel = "STRING", description = "option with parameter and only a long name")
+        @Option(names = "--f-option", paramLabel = "STRING", description = "option with parameter and only a long name")
         String f;
 
         @Option(names = {"-g", "--g-option-with-a-name-so-long-that-it-runs-into-the-descriptions-column"}, description = "boolean option with short and long name")
         boolean g;
 
-        @Parameters(index = "0", valueLabel = "0BLAH", description = "first parameter")
+        @Parameters(index = "0", paramLabel = "0BLAH", description = "first parameter")
         String param0;
 
-        @Parameters(index = "1", valueLabel = "1PARAMETER-with-a-name-so-long-that-it-runs-into-the-descriptions-column", description = "2nd parameter")
+        @Parameters(index = "1", paramLabel = "1PARAMETER-with-a-name-so-long-that-it-runs-into-the-descriptions-column", description = "2nd parameter")
         String param1;
 
-        @Parameters(index = "2..*", valueLabel = "remaining", description = "remaining parameters")
+        @Parameters(index = "2..*", paramLabel = "remaining", description = "remaining parameters")
         String param2_n;
 
-        @Parameters(index = "*", valueLabel = "all", description = "all parameters")
+        @Parameters(index = "*", paramLabel = "all", description = "all parameters")
         String param_n;
     }
 }
