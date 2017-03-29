@@ -179,7 +179,7 @@ public class CommandLineHelpTest {
         }
         Help.IOptionRenderer renderer = Help.createMinimalOptionRenderer();
         Help help = new Help(new Example());
-        Help.IParamLabelRenderer parameterRenderer = help.createDefaultValueLabelRenderer();
+        Help.IParamLabelRenderer parameterRenderer = help.createDefaultParamLabelRenderer();
         Field field = help.optionFields.get(0);
         String[][] row1 = renderer.render(field.getAnnotation(Option.class), field, parameterRenderer);
         assertEquals(1, row1.length);
@@ -204,7 +204,7 @@ public class CommandLineHelpTest {
         }
         Help help = new Help(new Example());
         Help.IOptionRenderer renderer = help.createDefaultOptionRenderer();
-        Help.IParamLabelRenderer parameterRenderer = help.createDefaultValueLabelRenderer();
+        Help.IParamLabelRenderer parameterRenderer = help.createDefaultParamLabelRenderer();
         Field field = help.optionFields.get(0);
         String[][] row1 = renderer.render(field.getAnnotation(Option.class), field, parameterRenderer);
         assertEquals(2, row1.length);
@@ -226,7 +226,7 @@ public class CommandLineHelpTest {
         }
         Help help = new Help(new Example());
         Help.IOptionRenderer renderer = help.createDefaultOptionRenderer();
-        Help.IParamLabelRenderer parameterRenderer = help.createDefaultValueLabelRenderer();
+        Help.IParamLabelRenderer parameterRenderer = help.createDefaultParamLabelRenderer();
         Field field = help.optionFields.get(0);
         String[][] row = renderer.render(field.getAnnotation(Option.class), field, parameterRenderer);
         assertEquals(2, row.length);
@@ -242,7 +242,7 @@ public class CommandLineHelpTest {
         }
         Help help = new Help(new Example());
         Help.IOptionRenderer renderer = help.createDefaultOptionRenderer();
-        Help.IParamLabelRenderer parameterRenderer = help.createDefaultValueLabelRenderer();
+        Help.IParamLabelRenderer parameterRenderer = help.createDefaultParamLabelRenderer();
         Field field = help.optionFields.get(0);
         String[][] row = renderer.render(field.getAnnotation(Option.class), field, parameterRenderer);
         assertEquals(1, row.length);
@@ -258,7 +258,7 @@ public class CommandLineHelpTest {
         Help help = new Help(new Example());
         help.showDefaultValues = false;
         Help.IOptionRenderer renderer = help.createDefaultOptionRenderer();
-        Help.IParamLabelRenderer parameterRenderer = help.createDefaultValueLabelRenderer();
+        Help.IParamLabelRenderer parameterRenderer = help.createDefaultParamLabelRenderer();
         Field field = help.optionFields.get(0);
         String[][] row = renderer.render(field.getAnnotation(Option.class), field, parameterRenderer);
         assertEquals(1, row.length);
@@ -272,7 +272,7 @@ public class CommandLineHelpTest {
         }
         Help help = new Help(new Example());
         Help.IOptionRenderer renderer = help.createDefaultOptionRenderer();
-        Help.IParamLabelRenderer parameterRenderer = help.createDefaultValueLabelRenderer();
+        Help.IParamLabelRenderer parameterRenderer = help.createDefaultParamLabelRenderer();
         Field field = help.optionFields.get(0);
         String[][] row = renderer.render(field.getAnnotation(Option.class), field, parameterRenderer);
         assertEquals(2, row.length);
@@ -287,7 +287,7 @@ public class CommandLineHelpTest {
         }
         Help help = new Help(new Required());
         Help.IParameterRenderer renderer = help.createDefaultParameterRenderer();
-        Help.IParamLabelRenderer parameterRenderer = Help.createMinimalValueLabelRenderer();
+        Help.IParamLabelRenderer parameterRenderer = Help.createMinimalParamLabelRenderer();
         Field field = help.positionalParametersFields.get(0);
         String[][] row1 = renderer.render(field.getAnnotation(Parameters.class), field, parameterRenderer);
         assertEquals(1, row1.length);
@@ -302,7 +302,7 @@ public class CommandLineHelpTest {
         }
         Help help = new Help(new Required());
         Help.IParameterRenderer renderer = help.createDefaultParameterRenderer();
-        Help.IParamLabelRenderer parameterRenderer = Help.createMinimalValueLabelRenderer();
+        Help.IParamLabelRenderer parameterRenderer = Help.createMinimalParamLabelRenderer();
         Field field = help.positionalParametersFields.get(0);
         String[][] row1 = renderer.render(field.getAnnotation(Parameters.class), field, parameterRenderer);
         assertEquals(1, row1.length);
@@ -317,7 +317,7 @@ public class CommandLineHelpTest {
         }
         Help help = new Help(new Optional());
         Help.IParameterRenderer renderer = help.createDefaultParameterRenderer();
-        Help.IParamLabelRenderer parameterRenderer = Help.createMinimalValueLabelRenderer();
+        Help.IParamLabelRenderer parameterRenderer = Help.createMinimalParamLabelRenderer();
         Field field = help.positionalParametersFields.get(0);
         String[][] row1 = renderer.render(field.getAnnotation(Parameters.class), field, parameterRenderer);
         assertEquals(1, row1.length);
@@ -337,7 +337,7 @@ public class CommandLineHelpTest {
         Help help = new Help(new Example());
         help.showDefaultValues = false; // omit default values from description column
         Help.IOptionRenderer renderer = help.createDefaultOptionRenderer();
-        Help.IParamLabelRenderer parameterRenderer = help.createDefaultValueLabelRenderer();
+        Help.IParamLabelRenderer parameterRenderer = help.createDefaultParamLabelRenderer();
 
         String[][] expected = new String[][] {
                 {"", "-v", "",  "", "shortBool"},
@@ -366,7 +366,7 @@ public class CommandLineHelpTest {
         }
         Help help = new Help(new Example());
         Help.IOptionRenderer renderer = help.createDefaultOptionRenderer();
-        Help.IParamLabelRenderer parameterRenderer = help.createDefaultValueLabelRenderer();
+        Help.IParamLabelRenderer parameterRenderer = help.createDefaultParamLabelRenderer();
 
         String[][] expected = new String[][] {
                 {"", "-v", "",  "", "shortBool"},
@@ -391,7 +391,7 @@ public class CommandLineHelpTest {
 
     @Test
     public void testCreateDefaultParameterRenderer_ReturnsDefaultParameterRenderer() {
-        assertEquals(Help.DefaultParamLabelRenderer.class, new Help(new UsageDemo()).createDefaultValueLabelRenderer().getClass());
+        assertEquals(Help.DefaultParamLabelRenderer.class, new Help(new UsageDemo()).createDefaultParamLabelRenderer().getClass());
     }
 
     @Test
@@ -401,9 +401,9 @@ public class CommandLineHelpTest {
             @Option(names = "--with", paramLabel = "LABEL") String otherField;
         }
         Help help = new Help(new Example());
-        Help.IParamLabelRenderer equalSeparatedParameterRenderer = help.createDefaultValueLabelRenderer();
+        Help.IParamLabelRenderer equalSeparatedParameterRenderer = help.createDefaultParamLabelRenderer();
         help.separator = " ";
-        Help.IParamLabelRenderer spaceSeparatedParameterRenderer = help.createDefaultValueLabelRenderer();
+        Help.IParamLabelRenderer spaceSeparatedParameterRenderer = help.createDefaultParamLabelRenderer();
 
         String[] expected = new String[] {
                 "<longField>",
@@ -425,9 +425,9 @@ public class CommandLineHelpTest {
         class WithoutLabel { @Parameters()                               String positional; }
 
         Help withLabel = new Help(new WithLabel());
-        Help.IParamLabelRenderer equals = withLabel.createDefaultValueLabelRenderer();
+        Help.IParamLabelRenderer equals = withLabel.createDefaultParamLabelRenderer();
         withLabel.separator = "=";
-        Help.IParamLabelRenderer spaced = withLabel.createDefaultValueLabelRenderer();
+        Help.IParamLabelRenderer spaced = withLabel.createDefaultParamLabelRenderer();
 
         String withSpace = spaced.renderParameterLabel(withLabel.positionalParametersFields.get(0));
         assertEquals(withSpace, "POSITIONAL_ARGS", withSpace);
@@ -936,7 +936,7 @@ public class CommandLineHelpTest {
         textTable.indentWrappedLines = 0;
         Help.Layout layout = new Help.Layout(textTable, Help.createMinimalOptionRenderer(), Help.createMinimalParameterRenderer());
         layout.addOptions(help.optionFields, help.parameterLabelRenderer);
-        layout.addPositionalParameters(help.positionalParametersFields, Help.createMinimalValueLabelRenderer());
+        layout.addPositionalParameters(help.positionalParametersFields, Help.createMinimalParamLabelRenderer());
         sb.append(layout);
 
         String expected = String.format("" +

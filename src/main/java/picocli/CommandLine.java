@@ -1700,7 +1700,7 @@ public class CommandLine {
             Comparator<Field> sortOrder = sortOptions == null || sortOptions.booleanValue()
                     ? createShortOptionNameComparator()
                     : null;
-            return optionList(createDefaultLayout(), sortOrder, createDefaultValueLabelRenderer());
+            return optionList(createDefaultLayout(), sortOrder, createDefaultParamLabelRenderer());
         }
 
         /** Sorts all {@code Options} with the specified {@code comparator} (if the comparator is non-{@code null}),
@@ -1720,10 +1720,10 @@ public class CommandLine {
             return layout.toString();
         }
         public String parameterList() {
-            return parameterList(createDefaultLayout(), createMinimalValueLabelRenderer());
+            return parameterList(createDefaultLayout(), createMinimalParamLabelRenderer());
         }
-        public String parameterList(Layout layout, IParamLabelRenderer valueLabelRenderer) {
-            layout.addPositionalParameters(positionalParametersFields, valueLabelRenderer);
+        public String parameterList(Layout layout, IParamLabelRenderer paramLabelRenderer) {
+            layout.addPositionalParameters(positionalParametersFields, paramLabelRenderer);
             return layout.toString();
         }
 
@@ -1899,17 +1899,17 @@ public class CommandLine {
             return new MinimalParameterRenderer();
         }
         /** Returns a value renderer that returns the {@code paramLabel} if defined or the field name otherwise. */
-        public static IParamLabelRenderer createMinimalValueLabelRenderer() {
+        public static IParamLabelRenderer createMinimalParamLabelRenderer() {
             return new IParamLabelRenderer() {
                 public String renderParameterLabel(Field field) {
-                    String valueLabel = null;
+                    String paramLabel = null;
                     Parameters parameters = field.getAnnotation(Parameters.class);
                     if (parameters != null) {
-                        valueLabel = parameters.paramLabel();
+                        paramLabel = parameters.paramLabel();
                     } else {
-                        valueLabel = field.isAnnotationPresent(Option.class) ? field.getAnnotation(Option.class).paramLabel() : null;
+                        paramLabel = field.isAnnotationPresent(Option.class) ? field.getAnnotation(Option.class).paramLabel() : null;
                     }
-                    return valueLabel == null || valueLabel.length() == 0 ? field.getName() : valueLabel;
+                    return paramLabel == null || paramLabel.length() == 0 ? field.getName() : paramLabel;
                 }
             };
         }
@@ -1917,7 +1917,7 @@ public class CommandLine {
          * options} with the specified separator string, surrounds optional parameters with {@code '['} and {@code ']'}
          * characters and uses ellipses ("...") to indicate that any number of a parameter are allowed.
          */
-        public IParamLabelRenderer createDefaultValueLabelRenderer() {
+        public IParamLabelRenderer createDefaultParamLabelRenderer() {
             return new DefaultParamLabelRenderer(separator);
         }
         /** Sorts Fields annotated with {@code Option} by their option name in case-insensitive alphabetic order. If an
@@ -2046,8 +2046,8 @@ public class CommandLine {
          */
         static class DefaultParameterRenderer implements IParameterRenderer {
             public String requiredMarker = " ";
-            public String[][] render(Parameters params, Field field, IParamLabelRenderer valueLabelRenderer) {
-                String label = valueLabelRenderer.renderParameterLabel(field);
+            public String[][] render(Parameters params, Field field, IParamLabelRenderer paramLabelRenderer) {
+                String label = paramLabelRenderer.renderParameterLabel(field);
                 String requiredParameter = Arity.forParameters(field).min > 0 ? requiredMarker : "";
 
                 final int COLUMN_COUNT = 5;
@@ -2155,11 +2155,11 @@ public class CommandLine {
                 }
             }
             /** Calls {@link #addOption(Field, IParamLabelRenderer)} for all non-hidden Options in the list. */
-            public void addOptions(List<Field> fields, IParamLabelRenderer valueLabelRenderer) {
+            public void addOptions(List<Field> fields, IParamLabelRenderer paramLabelRenderer) {
                 for (Field field : fields) {
                     Option option = field.getAnnotation(Option.class);
                     if (!option.hidden()) {
-                        addOption(field, valueLabelRenderer);
+                        addOption(field, paramLabelRenderer);
                     }
                 }
             }
@@ -2168,19 +2168,19 @@ public class CommandLine {
              * text values for the specified {@link Option}, and then delegates to the {@link #layout(Field, String[][]) layout}
              * method to write these text values into the correct cells in this TextTable.
              * @param field the field annotated with the specified Option
-             * @param valueLabelRenderer knows how to render option parameters
+             * @param paramLabelRenderer knows how to render option parameters
              */
-            public void addOption(Field field, IParamLabelRenderer valueLabelRenderer) {
+            public void addOption(Field field, IParamLabelRenderer paramLabelRenderer) {
                 Option option = field.getAnnotation(Option.class);
-                String[][] values = optionRenderer.render(option, field, valueLabelRenderer);
+                String[][] values = optionRenderer.render(option, field, paramLabelRenderer);
                 layout(field, values);
             }
             /** Calls {@link #addPositionalParameter(Field, IParamLabelRenderer)} for all non-hidden Parameters in the list. */
-            public void addPositionalParameters(List<Field> fields, IParamLabelRenderer valueLabelRenderer) {
+            public void addPositionalParameters(List<Field> fields, IParamLabelRenderer paramLabelRenderer) {
                 for (Field field : fields) {
                     Parameters parameters = field.getAnnotation(Parameters.class);
                     if (!parameters.hidden()) {
-                        addPositionalParameter(field, valueLabelRenderer);
+                        addPositionalParameter(field, paramLabelRenderer);
                     }
                 }
             }
@@ -2189,11 +2189,11 @@ public class CommandLine {
              * to obtain text values for the specified {@link Parameters}, and then delegates to
              * {@link #layout(Field, String[][]) layout} to write these text values into the correct cells in this TextTable.
              * @param field the field annotated with the specified Parameters
-             * @param valueLabelRenderer knows how to render option parameters
+             * @param paramLabelRenderer knows how to render option parameters
              */
-            public void addPositionalParameter(Field field, IParamLabelRenderer valueLabelRenderer) {
+            public void addPositionalParameter(Field field, IParamLabelRenderer paramLabelRenderer) {
                 Parameters option = field.getAnnotation(Parameters.class);
-                String[][] values = parameterRenderer.render(option, field, valueLabelRenderer);
+                String[][] values = parameterRenderer.render(option, field, paramLabelRenderer);
                 layout(field, values);
             }
             @Override public String toString() {
