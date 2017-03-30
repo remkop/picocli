@@ -498,8 +498,9 @@ public class CommandLine {
     }
     /**
      * <p>
-     * Annotate at most one field in your class with {@code @Parameters} and picocli will initialize this field
-     * with the positional parameters.
+     * Fields annotated with {@code @Parameters} will be initialized with positional parameters. By specifying the
+     * {@link #index()} attribute you can pick which (or what range) of the positional parameters to apply. If no index
+     * is specified, the field will get all positional parameters (so it should be an array or a collection).
      * </p><p>
      * When parsing the command line arguments, picocli first tries to match arguments to {@link Option Options}.
      * Positional parameters are the arguments that follow the options, or the arguments that follow a "--" (double
@@ -516,16 +517,9 @@ public class CommandLine {
      *     &#064;Option(names = { "-h", "--help", "-?", "-help"}, help = true, description = "Display this help and exit")
      *     private boolean help;
      * }
-     * </pre>
-     * <p>
-     * By default a variable number of parameters can be specified,
-     * so the field with this annotation must either be an array (and the value will be replaced by a new array),
-     * or a class that implements {@code Collection}.
-     * See {@link #type()} for strongly-typed Collection fields.
-     * </p><p>
+     * </pre><p>
      * A field cannot be annotated with both {@code @Parameters} and {@code @Option} or a {@code ParameterException}
-     * is thrown.
-     * </p>
+     * is thrown.</p>
      */
     @Retention(RetentionPolicy.RUNTIME)
     @Target(ElementType.FIELD)
