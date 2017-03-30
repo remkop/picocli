@@ -673,10 +673,10 @@ public class CommandLine {
          * @see Help#requiredOptionMarker */
         char requiredOptionMarker() default ' ';
 
-        /** Specify {@code false} to omit default values from the description column of the options list. The default
-         * is to display default values except for boolean options.
+        /** Specify {@code true} to show default values in the description column of the options list (except for
+         * boolean options). False by default.
          * @see Help#showDefaultValues */
-        boolean showDefaultValues() default true;
+        boolean showDefaultValues() default false;
 
         /** Set the heading preceding the sub-commands list. May contain embedded {@linkplain java.util.Formatter format specifiers}.
          * The default heading is {@code "Commands:%n"} (with a line break at the end).
@@ -1583,7 +1583,7 @@ public class CommandLine {
             sortOptions =          (sortOptions == null)          ? true : sortOptions;
             abbreviateSynopsis =   (abbreviateSynopsis == null)   ? false : abbreviateSynopsis;
             requiredOptionMarker = (requiredOptionMarker == null) ? ' ' : requiredOptionMarker;
-            showDefaultValues =    (showDefaultValues == null)    ? true : showDefaultValues;
+            showDefaultValues =    (showDefaultValues == null)    ? false : showDefaultValues;
             separator =            (separator == null)            ? "=" : separator;
             parameterLabelRenderer = new DefaultParamLabelRenderer(separator);
             synopsisHeading =      (synopsisHeading == null)      ? "Usage: " : synopsisHeading;

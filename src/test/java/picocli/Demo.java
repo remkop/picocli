@@ -52,6 +52,7 @@ public class Demo {
 
     @CommandLine.Command(name = "git-status",
             header = "Show the working tree status",
+            showDefaultValues = true,
             customSynopsis = "git-status [<options>...] [--] [<pathspec>...]",
             description = "Displays paths that have differences between the index file and the current HEAD commit, " +
                     "paths that have differences between the working tree and the index file, and paths in the " +

@@ -62,7 +62,7 @@ public class CommandLineHelpTest {
 
     @Test
     public void testUsageAnnotationDetailedUsageWithoutDefaultValue() throws Exception {
-        @CommandLine.Command(showDefaultValues = false)
+        @CommandLine.Command()
         class Params {
             @Option(names = {"-f", "--file"}, required = true, description = "the file to use") File file;
         }
@@ -75,9 +75,10 @@ public class CommandLineHelpTest {
 
     @Test
     public void testUsageAnnotationDetailedUsageWithDefaultValue() throws Exception {
-        @CommandLine.Command()
+        @CommandLine.Command(showDefaultValues = true)
         class Params {
-            @Option(names = {"-f", "--file"}, required = true, description = "the file to use") File file = new File("theDefault.txt");
+            @Option(names = {"-f", "--file"}, required = true, description = "the file to use")
+            File file = new File("theDefault.txt");
         }
         String result = usageString(new Params());
         assertEquals(format("" +
@@ -88,7 +89,7 @@ public class CommandLineHelpTest {
 
     @Test
     public void testUsageSeparatorWithoutDefault() throws Exception {
-        @Command(showDefaultValues = false)
+        @Command()
         class Params {
             @Option(names = {"-f", "--file"}, required = true, description = "the file to use") File file = new File("def.txt");
         }
@@ -101,6 +102,7 @@ public class CommandLineHelpTest {
 
     @Test
     public void testUsageSeparator() throws Exception {
+        @Command(showDefaultValues = true)
         class Params {
             @Option(names = {"-f", "--file"}, required = true, description = "the file to use") File file = new File("def.txt");
         }
@@ -114,7 +116,7 @@ public class CommandLineHelpTest {
 
     @Test
     public void testUsageParamLabels() throws Exception {
-        @Command(showDefaultValues = false)
+        @Command()
         class ParamLabels {
             @Option(names = "-f", paramLabel = "FILE", description = "a file") File f;
             @Option(names = "-n", description = "a number") int number;
@@ -217,6 +219,7 @@ public class CommandLineHelpTest {
 
     @Test
     public void testDefaultOptionRenderer_rendersShortestOptionNameThenOtherOptionNamesAndDescription() {
+        @Command(showDefaultValues = true)
         class Example {
             @Option(names = {"---long", "-L"}, description = "long description") String longField;
             @Option(names = {"-b", "-a", "--alpha"}, description = "other") String otherField = "abc";
@@ -239,7 +242,7 @@ public class CommandLineHelpTest {
 
     @Test
     public void testDefaultOptionRenderer_rendersSpecifiedMarkerForRequiredOptionsWithDefault() {
-        @Command(requiredOptionMarker = '*')
+        @Command(requiredOptionMarker = '*', showDefaultValues = true)
         class Example {
             @Option(names = {"-b", "-a", "--alpha"}, required = true, description = "other") String otherField ="abc";
         }
@@ -255,7 +258,7 @@ public class CommandLineHelpTest {
 
     @Test
     public void testDefaultOptionRenderer_rendersSpecifiedMarkerForRequiredOptionsWithoutDefault() {
-        @Command(requiredOptionMarker = '*', showDefaultValues = false)
+        @Command(requiredOptionMarker = '*')
         class Example {
             @Option(names = {"-b", "-a", "--alpha"}, required = true, description = "other") String otherField ="abc";
         }
@@ -270,12 +273,10 @@ public class CommandLineHelpTest {
 
     @Test
     public void testDefaultOptionRenderer_rendersSpacePrefixByDefaultForRequiredOptionsWithoutDefaultValue() {
-        //@Command(showDefaultValues = false) set programmatically
         class Example {
             @Option(names = {"-b", "-a", "--alpha"}, required = true, description = "other") String otherField;
         }
         Help help = new Help(new Example());
-        help.showDefaultValues = false;
         Help.IOptionRenderer renderer = help.createDefaultOptionRenderer();
         Help.IParamLabelRenderer parameterRenderer = help.createDefaultParamLabelRenderer();
         Field field = help.optionFields.get(0);
@@ -286,10 +287,12 @@ public class CommandLineHelpTest {
 
     @Test
     public void testDefaultOptionRenderer_rendersSpacePrefixByDefaultForRequiredOptionsWithDefaultValue() {
+        //@Command(showDefaultValues = true) // set programmatically
         class Example {
             @Option(names = {"-b", "-a", "--alpha"}, required = true, description = "other") String otherField;
         }
         Help help = new Help(new Example());
+        help.showDefaultValues = true;
         Help.IOptionRenderer renderer = help.createDefaultOptionRenderer();
         Help.IParamLabelRenderer parameterRenderer = help.createDefaultParamLabelRenderer();
         Field field = help.optionFields.get(0);
@@ -376,6 +379,7 @@ public class CommandLineHelpTest {
 
     @Test
     public void testDefaultOptionRenderer_omitsDefaultValuesForBooleanFields() {
+        @Command(showDefaultValues = true)
         class Example {
             @Option(names = {"-v"}, description = "shortBool") boolean shortBoolean;
             @Option(names = {"--verbose"}, description = "longBool") Boolean longBoolean;
@@ -1009,7 +1013,7 @@ public class CommandLineHelpTest {
 
     @Test
     public void testUsageIndexedPositionalParameters() throws UnsupportedEncodingException {
-        @Command(showDefaultValues = false)
+        @Command()
         class App {
             @Parameters(index = "0", description = "source host") InetAddress host1;
             @Parameters(index = "1", description = "source port") int port1;
