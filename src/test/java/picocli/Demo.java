@@ -51,14 +51,15 @@ public class Demo {
     enum GitStatusMode {all, no, normal};
 
     @CommandLine.Command(name = "git-status",
-            header = "Show the working tree status",
+            header = "Show the working tree status.",
             showDefaultValues = true,
             customSynopsis = "git-status [<options>...] [--] [<pathspec>...]",
             description = "Displays paths that have differences between the index file and the current HEAD commit, " +
                     "paths that have differences between the working tree and the index file, and paths in the " +
                     "working tree that are not tracked by Git (and are not ignored by gitignore(5)). The first " +
                     "are what you would commit by running git commit; the second and third are what you could " +
-                    "commit by running git add before running git commit.")
+                    "commit by running git add before running git commit."
+    )
     class GitStatus {
         @CommandLine.Option(names = {"-s", "--short"}, description = "Give the output in the short-format")
         boolean shortFormat;
@@ -78,9 +79,16 @@ public class Demo {
         })
         GitStatusMode mode = GitStatusMode.all;
     }
-    @CommandLine.Command(name = "git-commit", sortOptions = false, header = "Record changes to the repository",
-            description = "Stores the current contents of the index in a new commit along with a " +
-                    "log message from the user describing the changes.")
+@CommandLine.Command(name = "git-commit",
+        sortOptions = false,
+        headerHeading = "Usage:%n%n",
+        synopsisHeading = "%n",
+        descriptionHeading = "%nDescription:%n%n",
+        parameterListHeading = "%nParameters:%n",
+        optionListHeading = "%nOptions:%n",
+        header = "Record changes to the repository.",
+        description = "Stores the current contents of the index in a new commit " +
+                "along with a log message from the user describing the changes.")
     class GitCommit {
         @CommandLine.Option(names = {"-a", "--all"},
                 description = "Tell the command to automatically stage files that have been modified " +
@@ -97,7 +105,7 @@ public class Demo {
 
         @CommandLine.Option(names = {"-c", "--reedit-message"}, paramLabel = "<commit>",
                 description = "Like -C, but with -c the editor is invoked, so that the user can" +
-                        "further edit the commit message.\n")
+                        "further edit the commit message.")
         String reEditMessageCommit;
 
         @CommandLine.Option(names = "--fixup", paramLabel = "<commit>",
@@ -124,15 +132,15 @@ public class Demo {
     }
 
     // defines some commands to show in the list (option/parameters fields omitted for this demo)
-    @CommandLine.Command(name = "git-add", header = "Add file contents to the index") class GitAdd {}
-    @CommandLine.Command(name = "git-branch", header = "List, create, or delete branches") class GitBranch {}
-    @CommandLine.Command(name = "git-checkout", header = "Checkout a branch or paths to the working tree") class GitCheckout{}
-    @CommandLine.Command(name = "git-clone", header = "Clone a repository into a new directory") class GitClone{}
-    @CommandLine.Command(name = "git-diff", header = "Show changes between commits, commit and working tree, etc") class GitDiff{}
-    @CommandLine.Command(name = "git-merge", header = "Join two or more development histories together") class GitMerge{}
-    @CommandLine.Command(name = "git-push", header = "Update remote refs along with associated objects") class GitPush{}
-    @CommandLine.Command(name = "git-rebase", header = "Forward-port local commits to the updated upstream head") class GitRebase{}
-    @CommandLine.Command(name = "git-tag", header = "Create, list, delete or verify a tag object signed with GPG") class GitTag{}
+    @CommandLine.Command(name = "git-add", header = "Add file contents to the index.") class GitAdd {}
+    @CommandLine.Command(name = "git-branch", header = "List, create, or delete branches.") class GitBranch {}
+    @CommandLine.Command(name = "git-checkout", header = "Checkout a branch or paths to the working tree.") class GitCheckout{}
+    @CommandLine.Command(name = "git-clone", header = "Clone a repository into a new directory.") class GitClone{}
+    @CommandLine.Command(name = "git-diff", header = "Show changes between commits, commit and working tree, etc.") class GitDiff{}
+    @CommandLine.Command(name = "git-merge", header = "Join two or more development histories together.") class GitMerge{}
+    @CommandLine.Command(name = "git-push", header = "Update remote refs along with associated objects.") class GitPush{}
+    @CommandLine.Command(name = "git-rebase", header = "Forward-port local commits to the updated upstream head.") class GitRebase{}
+    @CommandLine.Command(name = "git-tag", header = "Create, list, delete or verify a tag object signed with GPG.") class GitTag{}
 
     @Test
     public void testParseSubCommands() {
@@ -191,17 +199,17 @@ public class Demo {
                 "Commands:%n" +
                 "%n" +
                 "The most commonly used git commands are:%n" +
-                "  status    Show the working tree status%n" +
-                "  commit    Record changes to the repository%n" +
-                "  add       Add file contents to the index%n" +
-                "  branch    List, create, or delete branches%n" +
-                "  checkout  Checkout a branch or paths to the working tree%n" +
-                "  clone     Clone a repository into a new directory%n" +
-                "  diff      Show changes between commits, commit and working tree, etc%n" +
-                "  merge     Join two or more development histories together%n" +
-                "  push      Update remote refs along with associated objects%n" +
-                "  rebase    Forward-port local commits to the updated upstream head%n" +
-                "  tag       Create, list, delete or verify a tag object signed with GPG%n";
+                "  status    Show the working tree status.%n" +
+                "  commit    Record changes to the repository.%n" +
+                "  add       Add file contents to the index.%n" +
+                "  branch    List, create, or delete branches.%n" +
+                "  checkout  Checkout a branch or paths to the working tree.%n" +
+                "  clone     Clone a repository into a new directory.%n" +
+                "  diff      Show changes between commits, commit and working tree, etc.%n" +
+                "  merge     Join two or more development histories together.%n" +
+                "  push      Update remote refs along with associated objects.%n" +
+                "  rebase    Forward-port local commits to the updated upstream head.%n" +
+                "  tag       Create, list, delete or verify a tag object signed with GPG.%n";
 
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         commandLine.usage(new PrintStream(baos, true, "UTF8"));
@@ -210,8 +218,8 @@ public class Demo {
     }
 
     @Test
-    public void testUsageSubCommand() throws Exception {
-        String expected = "Show the working tree status%n" +
+    public void testUsageSubCommandStatus() throws Exception {
+        String expected = "Show the working tree status.%n" +
                 "Usage: git-status [<options>...] [--] [<pathspec>...]%n" +
                 "Displays paths that have differences between the index file and the current%n" +
                 "HEAD commit, paths that have differences between the working tree and the index%n" +
@@ -236,6 +244,58 @@ public class Demo {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         CommandLine.usage(new GitStatus(), new PrintStream(baos, true, "UTF8"));
         String result = baos.toString("UTF8");
+        assertEquals(String.format(expected), result);
+    }
+
+    @Test
+    public void testUsageSubCommandCommit() throws Exception {
+        String expected = "Usage:%n" +
+                "%n" +
+                "Record changes to the repository.%n" +
+                "%n" +
+                "git-commit [-ap] [--fixup=<commit>] [--squash=<commit>] [-c=<commit>]%n" +
+                "           [-C=<commit>] [-F=<file>] [-m[=<msg>...]] [<files>...]%n" +
+                "%n" +
+                "Description:%n" +
+                "%n" +
+                "Stores the current contents of the index in a new commit along with a log%n" +
+                "message from the user describing the changes.%n" +
+                "%n" +
+                "Parameters:%n" +
+                "      <files>                 the files to commit%n" +
+                "%n" +
+                "Options:%n" +
+                "  -a, --all                   Tell the command to automatically stage files%n" +
+                "                                that have been modified and deleted, but new%n" +
+                "                                files you have not told Git about are not%n" +
+                "                                affected.%n" +
+                "  -p, --patch                 Use the interactive patch selection interface to%n" +
+                "                                chose which changes to commit%n" +
+                "  -C, --reuse-message=<commit>%n" +
+                "                              Take an existing commit object, and reuse the log%n" +
+                "                                message and the authorship information%n" +
+                "                                (including the timestamp) when creating the%n" +
+                "                                commit.%n" +
+                "  -c, --reedit-message=<commit>%n" +
+                "                              Like -C, but with -c the editor is invoked, so%n" +
+                "                                that the user canfurther edit the commit%n" +
+                "                                message.%n" +
+                "      --fixup=<commit>        Construct a commit message for use with rebase%n" +
+                "                                --autosquash.%n" +
+                "      --squash=<commit>        Construct a commit message for use with rebase%n" +
+                "                                --autosquash. The commitmessage subject line is%n" +
+                "                                taken from the specified commit with a prefix%n" +
+                "                                of \"squash! \". Can be used with additional%n" +
+                "                                commit message options (-m/-c/-C/-F).%n" +
+                "  -F, --file=<file>           Take the commit message from the given file. Use%n" +
+                "                                - to read the message from the standard input.%n" +
+                "  -m, --message[=<msg>...]     Use the given <msg> as the commit message. If%n" +
+                "                                multiple -m options are given, their values are%n" +
+                "                                concatenated as separate paragraphs.%n";
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        CommandLine.usage(new GitCommit(), new PrintStream(baos, true, "UTF8"));
+        String result = baos.toString("UTF8");
+        //System.out.println(result);
         assertEquals(String.format(expected), result);
     }
 }

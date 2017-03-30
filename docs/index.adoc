@@ -136,7 +136,7 @@ The following command line arguments are all equivalent and parsing them will gi
 === Positional Parameters
 Positional parameters (also called operands) are the command line arguments following the options.
 
-Use the (zero-based) `index` attribute to specify exactly which parameters to capture. Omitting the `index` attribute means the field is initialized with all positional parameters (so the field should be an array or a collection).
+Use the (zero-based) `index` attribute to specify exactly which parameters to capture. Omitting the `index` attribute means the field is initialized with all positional parameters (so the field should be a multi-value type like an array or a collection).
 
 The `index` attribute accepts "range" values, so an annotation like `@Parameters(index="2..4")` captures arguments at index 2, 3 and 4. Range values can be open-ended. For example, `@Parameters(index="3..*")` captures all arguments from index 3 and up.
 
@@ -148,15 +148,15 @@ class PositionalParameters {
     @Parameters(hidden = true)  // "hidden": don't show this parameter in usage help message
     List<String> allParameters; // no "index" attribute: captures _all_ arguments (as Strings)
 
-    @Parameters(index = "0", paramLabel = "<host>", // index=0: the first positional parameter
+    @Parameters(index = "0",    // index=0: the first positional parameter
                 description = "Host name or IP address to connect to")
     InetAddress host;
 
-    @Parameters(index = "1", paramLabel = "<port>", // index=1: the second positional parameter
+    @Parameters(index = "1",    // index=1: the second positional parameter
                 description = "Port number to connect to")
     int port;
 
-    @Parameters(index = "2..*", paramLabel = "<files>", description = "the files to process")
+    @Parameters(index = "2..*", description = "the files to process")
     File[] files;
 }
 ----
@@ -238,6 +238,9 @@ Use the `separator` attribute of the `@Command` annotation to declaratively set 
 class OptionArg {
     @Option(names = { "-f", "--file" }) String file;
 }
+----
+[source,java]
+----
 OptionArg optionArg = CommandLine.parse(new OptionArg(), "-f:output.txt");
 assert optionArg.file.equals("output.txt");
 ----
@@ -310,8 +313,8 @@ class App {
 ----
 App app = new App();
 CommandLine commandLine = new CommandLine(app);
-commandLine.registerConverter(java.nio.file.Path.class, s -> java.nio.file.Paths.get(s));
-commandLine.registerConverter(java.time.Duration.class, s -> java.time.Duration.parse(s));
+commandLine.registerConverter(Path.class,     s -> Paths.get(s));
+commandLine.registerConverter(Duration.class, s -> Duration.parse(s));
 
 commandLine.parse("-d", "PT15M", "file1.txt");
 assert app.path.equals(Paths.get("file1.txt"));
@@ -328,12 +331,12 @@ Multiple parameters can be captured together in a single array or `Collection` f
 ----
 class Convert {
     @Option(type = java.util.regex.Pattern.class, // List elements are Pattern objects
-            names = "-patterns", paramLabel = "PATTERN",
+            names = "-patterns",
             description = "the regular expressions to use for the conversion");
     List<Pattern> patterns;
 
     @Parameters(type = File.class, // convert arguments to File before adding to the List
-                paramLabel = "FILE", description = "files to convert")
+                description = "files to convert")
     List<File> files;
 }
 ----
@@ -342,11 +345,12 @@ class Convert {
 ----
 String[] args = { "-patterns", "a*b", "[a-e][i-u]", "--", "file1.txt", "file2.txt" };
 Convert convert = CommandLine.parse(new Convert(), args);
-assert convert.patterns.equals(Arrays.asList(Pattern.compile("a*b"),
-                                             Pattern.compile("[a-e][i-u]")));
-assert convert.files.equals(Arrays.asList(new File("file1.txt"), new File("file2.txt")));
+
+// convert.patterns now has two Pattern objects
+// convert.files now has two File objects
 ----
 
+NOTE: If a collection is returned from a type converter, picocli will add the values to the field, not the collection itself.
 
 === Numeric Arguments
 Numeric values are interpreted as decimal numbers by default. If you want picocli to be more flexible, you can
@@ -575,28 +579,18 @@ The usage help message is generated from annotation attributes, like below:
 @Command(name = "cat", footer = "Copyright(c) 2017",
          description = "Concatenate FILE(s), or standard input, to standard output.")
 class Cat {
+
   @Parameters(paramLabel = "FILE", description = "Files whose contents to display")
   List<File> files;
+
   @Option(names = "--help", help = true, description = "display this help and exit")
   boolean help;
-  @Option(description = "output version information and exit",
-          names = "--version", help = true)                 boolean version;
-  @Option(names = "-u", description = "(ignored)")          boolean u;
-  @Option(names = "-t", description = "equivalent to -vT")  boolean t;
-  @Option(names = "-e", description = "equivalent to -vET") boolean e;
+
+  @Option(names = "-t",                 description = "equivalent to -vT")  boolean t;
+  @Option(names = "-e",                 description = "equivalent to -vET") boolean e;
   @Option(names = {"-A", "--show-all"}, description = "equivalent to -vET") boolean all;
-  @Option(description = "suppress repeated empty output lines",
-          names       = {"-s", "--squeeze-blank"})    boolean squeeze;
-  @Option(description = "use ^ and M- notation, except for LDF and TAB",
-          names       = {"-v", "--show-nonprinting"}) boolean v;
-  @Option(description = "number nonempty output lines, overrides -n",
-          names       = {"-b", "--number-nonblank"})  boolean b;
-  @Option(names = {"-T", "--show-tabs"}, description = "display TAB characters as ^I")
-  boolean T;
-  @Option(names = {"-E", "--show-ends"}, description = "display $ at end of each line")
-  boolean E;
-  @Option(names = {"-n", "--number"},    description = "number all output lines")
-  boolean n;
+
+  // ...
 }
 ----
 
@@ -644,34 +638,101 @@ For example, the `all` field below is annotated as `hidden = true`:
 ----
 @Command(showDefaultValues = false)
 class App {
-    @Parameters(index = "0", description = "source host") InetAddress host1;
-    @Parameters(index = "1", description = "source port") int port1;
-    @Parameters(index = "2", description = "destination host") InetAddress host2;
-    @Parameters(index = "3..4", arity = "1..2", description = "destination port range")
-    int[] port2range;
-    @Parameters(index = "4..*", description = "files to transfer") String[] files;
+    @Parameters(index = "0",    description = "destination host")  InetAddress host;
+    @Parameters(index = "1",    description = "destination port")  int port;
+    @Parameters(index = "2..*", description = "files to transfer") String[] files;
+
     @Parameters(hidden = true) String[] all;
 }
 ----
 The above will generate the following usage help message, where the `all` field is not shown:
 ----
-Usage: <main class> <host1> <port1> <host2> <port2range> [<port2range>] [<files>...]
-      host1                   source host
-      port1                   source port
-      host2                   destination host
-      port2range              destination port range
+Usage: <main class> <host> <port> [<files>...]
+      host                    destination host
+      port                    destination port
       files                   files to transfer
 ----
 
 
 == Customizing Usage Help
+=== Example
+The below example demonstrates what a customized usage message can look like.
+Note how section headings with line separators can create a more spacious usage message,
+and also that options are listed in declaration order (instead of in alphabetic order).
+----
+Usage:
+
+Record changes to the repository.
+
+git-commit [-ap] [--fixup=<commit>] [--squash=<commit>] [-c=<commit>]
+           [-C=<commit>] [-F=<file>] [-m[=<msg>...]] [<files>...]
+
+Description:
+
+Stores the current contents of the index in a new commit along with a log
+message from the user describing the changes.
+
+Parameters:
+      <files>                 the files to commit
+
+Options:
+  -a, --all                   Tell the command to automatically stage files
+                                that have been modified and deleted, but new
+                                files you have not told Git about are not
+                                affected.
+  -p, --patch                 Use the interactive patch selection interface to
+                                chose which changes to commit
+  -C, --reuse-message=<commit>
+                              Take an existing commit object, and reuse the log
+                                message and the authorship information
+                                (including the timestamp) when creating the
+                                commit.
+  -c, --reedit-message=<commit>
+                              Like -C, but with -c the editor is invoked, so
+                                that the user canfurther edit the commit
+                                message.
+      --fixup=<commit>        Construct a commit message for use with rebase
+                                --autosquash.
+      --squash=<commit>        Construct a commit message for use with rebase
+                                --autosquash. The commitmessage subject line is
+                                taken from the specified commit with a prefix
+                                of "squash! ". Can be used with additional
+                                commit message options (-m/-c/-C/-F).
+  -F, --file=<file>           Take the commit message from the given file. Use
+                                - to read the message from the standard input.
+  -m, --message[=<msg>...]     Use the given <msg> as the commit message. If
+                                multiple -m options are given, their values are
+                                concatenated as separate paragraphs.
+----
+
+=== Section Headings
+The above spacious layout is mainly due to the section headings:
+[code,java]
+----
+@CommandLine.Command(name = "git-commit",
+        sortOptions = false,
+        headerHeading = "Usage:%n%n",
+        synopsisHeading = "%n",
+        descriptionHeading = "%nDescription:%n%n",
+        parameterListHeading = "%nParameters:%n",
+        optionListHeading = "%nOptions:%n",
+        header = "Record changes to the repository.",
+        description = "Stores the current contents of the index in a new commit " +
+                "along with a log message from the user describing the changes.")
+class GitCommit { ... }
+----
+
 === Unsorted Option List
+By default the options list displays options in alphabetical order. Use the `sortOptions = false` attribute to display options in the order they are declared in your class.
+
+
 === Show Default Values
+Use the `showDefaultValues = true` attribute to append the default value of the options and positional parameters to the description column.
+
 === Abbreviated Synopsis
 === Custom Synopsis
 === Command Header and Description
 === Footer
-=== Section Headings
 === Option-Parameter Separators
 
 === Reordering Sections
