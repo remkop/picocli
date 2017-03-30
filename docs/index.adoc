@@ -740,10 +740,7 @@ To reorder sections of the usage message, you need to use the `CommandLine.Help`
 
 [source,java]
 ----
-Map<String, Object> subcommandMap = new HashMap<String, Object>();
-subcommandMap.put("add", new AddCommand());
-...
-Help help = new Help(new MainClass()).addAllCommands(subcommandMap);
+Help help = new Help(new MainClass());
 StringBuilder sb = new StringBuilder()
         .append(help.headerHeading())
         .append(help.header())
