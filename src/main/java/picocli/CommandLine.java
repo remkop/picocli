@@ -307,7 +307,7 @@ public class CommandLine {
 
     /**
      * <p>
-     * Annotate fields in your class with {@code @Option} and picoCLI will initialize these fields when matching
+     * Annotate fields in your class with {@code @Option} and picocli will initialize these fields when matching
      * arguments are specified on the command line.
      * </p><p>
      * For example:
@@ -344,7 +344,7 @@ public class CommandLine {
          * <p>
          * Different environments have different conventions for naming options, but usually options have a prefix
          * that sets them apart from parameters.
-         * PicoCLI supports all of the below styles. The default separator is {@code '='}, but this can be configured.
+         * Picocli supports all of the below styles. The default separator is {@code '='}, but this can be configured.
          * </p><p>
          * <b>*nix</b>
          * </p><p>
@@ -354,7 +354,7 @@ public class CommandLine {
          * style</a> are single-character and are preceded by the {@code '-'} character, e.g., {@code `-v'}.
          * <a href="https://www.gnu.org/software/tar/manual/html_node/Long-Options.html">GNU-style</a> long
          * (or <em>mnemonic</em>) options start with two dashes in a row, e.g., {@code `--file'}.
-         * </p><p>PicoCLI supports the POSIX convention that short options can be grouped, with the last option
+         * </p><p>Picocli supports the POSIX convention that short options can be grouped, with the last option
          * optionally taking a parameter, which may be attached to the option name or separated by a space or
          * a {@code '='} character. The below examples are all equivalent:
          * </p><pre>
@@ -419,7 +419,7 @@ public class CommandLine {
          * If an option declares a positive arity, and the user specifies an insufficient number of parameters on the
          * command line, a {@link MissingParameterException} is thrown by the {@link #parse(String...)} method.
          * <p>
-         * In many cases picoCLI can deduce the number of required parameters from the field's type.
+         * In many cases picocli can deduce the number of required parameters from the field's type.
          * By default, flags (boolean options) have arity zero,
          * and single-valued type fields (String, int, Integer, double, Double, File, Date, etc) have arity one.
          * Generally, fields with types that cannot hold multiple values can omit the {@code arity} attribute.
@@ -432,7 +432,7 @@ public class CommandLine {
          * </p>
          * <b>A note on boolean options</b>
          * <p>
-         * By default picoCLI does not expect boolean options (also called "flags" or "switches") to have a parameter.
+         * By default picocli does not expect boolean options (also called "flags" or "switches") to have a parameter.
          * You can make a boolean option take a required parameter by annotating your field with {@code arity="1"}.
          * For example: </p>
          * <pre>&#064;Option(names = "-v", arity = "1") boolean verbose;</pre>
@@ -457,7 +457,7 @@ public class CommandLine {
 
         /**
          * Specify a {@code paramLabel} for the option parameter to be used in the usage help message. If omitted,
-         * picoCLI uses the field name in fish brackets ({@code '<'} and {@code '>'}) by default. Example:
+         * picocli uses the field name in fish brackets ({@code '<'} and {@code '>'}) by default. Example:
          * <pre>class Example {
          *     &#064;Option(names = {"-o", "--output"}, paramLabel="FILE", description="path of the output file")
          *     private File out;
@@ -479,7 +479,7 @@ public class CommandLine {
          * </p><p>
          * If the field's type is a {@code Collection}, the generic type parameter of the collection is erased and
          * cannot be determined at runtime. Specify a {@code type} attribute to store values other than String in
-         * the Collection. PicoCLI will use the {@link ITypeConverter}
+         * the Collection. Picocli will use the {@link ITypeConverter}
          * that is {@linkplain #registerConverter(Class, ITypeConverter) registered} for that type to convert
          * the raw String values before they are added to the collection.
          * </p><p>
@@ -498,10 +498,10 @@ public class CommandLine {
     }
     /**
      * <p>
-     * Annotate at most one field in your class with {@code @Parameters} and picoCLI will initialize this field
+     * Annotate at most one field in your class with {@code @Parameters} and picocli will initialize this field
      * with the positional parameters.
      * </p><p>
-     * When parsing the command line arguments, picoCLI first tries to match arguments to {@link Option Options}.
+     * When parsing the command line arguments, picocli first tries to match arguments to {@link Option Options}.
      * Positional parameters are the arguments that follow the options, or the arguments that follow a "--" (double
      * dash) argument on the command line.
      * </p><p>
@@ -554,7 +554,7 @@ public class CommandLine {
 
         /**
          * Specify a {@code paramLabel} for the parameter to be used in the usage help message. If omitted,
-         * picoCLI uses the field name in fish brackets ({@code '<'} and {@code '>'}) by default. Example:
+         * picocli uses the field name in fish brackets ({@code '<'} and {@code '>'}) by default. Example:
          * <pre>class Example {
          *     &#064;Parameters(paramLabel="FILE", description="path of the input FILE(s)")
          *     private File[] inputFiles;
@@ -573,7 +573,7 @@ public class CommandLine {
          * </p><p>
          * If the field's type is a {@code Collection}, the generic type parameter of the collection is erased and
          * cannot be determined at runtime. Specify a {@code type} attribute to store values other than String in
-         * the Collection. PicoCLI will use the {@link ITypeConverter}
+         * the Collection. Picocli will use the {@link ITypeConverter}
          * that is {@linkplain #registerConverter(Class, ITypeConverter) registered} for that type to convert
          * the raw String values before they are added to the collection.
          * </p><p>
