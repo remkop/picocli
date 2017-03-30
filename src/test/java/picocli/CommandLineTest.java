@@ -1131,6 +1131,15 @@ public class CommandLineTest {
             assertEquals("'abc' is not a boolean for option '-bool'", expected.getMessage());
         }
     }
+    @Test
+    public void testBooleanOptionsArity1_nErrorIfValueMissing() {
+        try {
+            CommandLine.parse(new BooleanOptionsArity1_nAndParameters(), "-bool".split(" "));
+            fail("Missing param was accepted for boolean with arity=1");
+        } catch (ParameterException expected) {
+            assertEquals("Missing required parameter for option '-bool' parameter[0]", expected.getMessage());
+        }
+    }
 
     @Test
     public void testBooleanOptionArity0Consumes0Arguments() {
@@ -1272,7 +1281,7 @@ public class CommandLineTest {
             params = CommandLine.parse(new ArrayParamsArity1_n());
             fail("Should not accept input with missing parameter");
         } catch (MissingParameterException ex) {
-            assertEquals("Missing required parameter for field 'params'", ex.getMessage());
+            assertEquals("Missing required parameter for positional parameters[1..*]", ex.getMessage());
         }
     }
 
@@ -1289,14 +1298,14 @@ public class CommandLineTest {
             params = CommandLine.parse(new ArrayParamsArity2_n(), "a");
             fail("Should not accept input with missing parameter");
         } catch (MissingParameterException ex) {
-            assertEquals("Field 'params' requires at least 2 parameters, but only 1 were specified.", ex.getMessage());
+            assertEquals("positional parameters[2..*] requires at least 2 parameters, but only 1 were specified.", ex.getMessage());
         }
 
         try {
             params = CommandLine.parse(new ArrayParamsArity2_n());
             fail("Should not accept input with missing parameter");
         } catch (MissingParameterException ex) {
-            assertEquals("Field 'params' requires at least 2 parameters, but only 0 were specified.", ex.getMessage());
+            assertEquals("positional parameters[2..*] requires at least 2 parameters, but only 0 were specified.", ex.getMessage());
         }
     }
 
@@ -1348,7 +1357,7 @@ public class CommandLineTest {
             params = CommandLine.parse(new NonVarArgArrayParamsArity1());
             fail("Should not accept input with missing parameter");
         } catch (MissingParameterException ex) {
-            assertEquals("Missing required parameter for field 'params'", ex.getMessage());
+            assertEquals("Missing required parameter for positional parameters[1]", ex.getMessage());
         }
     }
 
@@ -1365,14 +1374,14 @@ public class CommandLineTest {
             params = CommandLine.parse(new NonVarArgArrayParamsArity2(), "a");
             fail("Should not accept input with missing parameter");
         } catch (MissingParameterException ex) {
-            assertEquals("Field 'params' requires at least 2 parameters, but only 1 were specified.", ex.getMessage());
+            assertEquals("positional parameters[2] requires at least 2 parameters, but only 1 were specified.", ex.getMessage());
         }
 
         try {
             params = CommandLine.parse(new NonVarArgArrayParamsArity2());
             fail("Should not accept input with missing parameter");
         } catch (MissingParameterException ex) {
-            assertEquals("Field 'params' requires at least 2 parameters, but only 0 were specified.", ex.getMessage());
+            assertEquals("positional parameters[2] requires at least 2 parameters, but only 0 were specified.", ex.getMessage());
         }
     }
 
@@ -1443,13 +1452,13 @@ public class CommandLineTest {
             params = CommandLine.parse(new VariousPrefixCharacters(), "--dash".split(" "));
             fail("int option needs arg");
         } catch (ParameterException ex) {
-            assertEquals("Missing required parameter for field 'dash'", ex.getMessage());
+            assertEquals("Missing required parameter for option '-d' parameter[0]", ex.getMessage());
         }
 
         try {
             params = CommandLine.parse(new VariousPrefixCharacters(), "--owner".split(" "));
         } catch (ParameterException ex) {
-            assertEquals("Missing required parameter for field 'owner'", ex.getMessage());
+            assertEquals("Missing required parameter for option '/Owner' parameter[0]", ex.getMessage());
         }
 
         params = CommandLine.parse(new VariousPrefixCharacters(), "--owner=".split(" "));
@@ -1678,7 +1687,7 @@ public class CommandLineTest {
             CommandLine.parse(new App(), "000");
             fail("Should fail with missingParamException");
         } catch (MissingParameterException ex) {
-            assertEquals("Missing required parameter for field 'file1'", ex.getMessage());
+            assertEquals("Missing required parameter for positional parameters[1]", ex.getMessage());
         }
     }
 
@@ -1721,7 +1730,7 @@ public class CommandLineTest {
             CommandLine.parse(new App());
             fail("Should fail with missingParamException");
         } catch (MissingParameterException ex) {
-            assertEquals("Missing required parameter for field 'file0_1'", ex.getMessage());
+            assertEquals("Missing required parameter for positional parameters[1]", ex.getMessage());
         }
     }
 

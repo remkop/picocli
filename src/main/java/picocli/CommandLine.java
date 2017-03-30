@@ -15,7 +15,7 @@
  */
 package picocli;
 
-import java.awt.Point;
+import java.awt.*;
 import java.io.File;
 import java.io.PrintStream;
 import java.lang.annotation.ElementType;
@@ -1249,22 +1249,23 @@ public class CommandLine {
             try {
                 return converter.convert(value);
             } catch (ParameterException ex) {
-                throw new ParameterException(ex.getMessage() + optionDescription(field, index));
+                throw new ParameterException(ex.getMessage() + optionDescription(" for ", field, index));
             } catch (Exception other) {
-                String desc = optionDescription(field, index);
+                String desc = optionDescription(" for ", field, index);
                 throw new ParameterException("Could not convert '" + value + "' to " + type.getSimpleName() + desc, other);
             }
         }
 
-        private String optionDescription(Field field, int index) {
+        private String optionDescription(String prefix, Field field, int index) {
             String desc = "";
             if (field.isAnnotationPresent(Option.class)) {
-                desc = " for option '" + field.getAnnotation(Option.class).names()[0] + "'";
+                desc = prefix + "option '" + field.getAnnotation(Option.class).names()[0] + "'";
                 if (index >= 0) {
                     desc += " parameter[" + index + "]";
                 }
             } else if (field.isAnnotationPresent(Parameters.class)) {
-                desc = " for parameter[" + index + "]";
+                Arity indexRange = Arity.forParameters(field);
+                desc = prefix + "positional parameters[" + indexRange + "]";
             }
             return desc;
         }
@@ -1321,11 +1322,11 @@ public class CommandLine {
         private void assertNoMissingParameters(Field field, int arity, int length) {
             if (arity > length) {
                 if (arity == 1) {
-                    throw new MissingParameterException("Missing required parameter for field '"
-                            + field.getName() + "'");
+                    throw new MissingParameterException("Missing required parameter for " +
+                            optionDescription("", field, 0));
                 }
-                throw new MissingParameterException("Field '" + field.getName() + "' requires at least " + arity
-                        + " parameters, but only " + length + " were specified.");
+                throw new MissingParameterException(optionDescription("", field, 0) +
+                        " requires at least " + arity + " parameters, but only " + length + " were specified.");
             }
         }
 
