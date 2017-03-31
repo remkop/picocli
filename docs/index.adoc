@@ -68,7 +68,8 @@ Picocli has separate annotations for options and positional parameters because t
 
 .Best Practices
 [TIP]
-The https://www.gnu.org/prep/standards/html_node/Command_002dLine-Interfaces.html#Command_002dLine-Interfaces[GNU recommendations] for command line interfaces and http://pubs.opengroup.org/onlinepubs/9699919799/basedefs/V1_chap12.html#tag_12_02[POSIX Utility Guidelines] may be useful. Generally, many applications use options for optional values and parameters for mandatory values.
+When designing your command line application,
+the https://www.gnu.org/prep/standards/html_node/Command_002dLine-Interfaces.html#Command_002dLine-Interfaces[GNU recommendations] for command line interfaces and http://pubs.opengroup.org/onlinepubs/9699919799/basedefs/V1_chap12.html#tag_12_02[POSIX Utility Guidelines] may be useful. Generally, many applications use options for optional values and parameters for mandatory values.
 However, picocli lets you make options required if you want to, see <<Required Options>>.
 
 === Options
@@ -466,9 +467,9 @@ The argument `--` is interpreted as a delimiter indicating the end of options. A
 <command> -s A B C -- file1 file2 file3
 ----
 
-=== Option-Parameter Separators and Arity
+==== Unambiguous
 
-IMPORTANT: A separator clarifies that a parameter belongs to an option, but does not prevent subsequent parameters from also being assigned to the same option. For example:
+NOTE: A separator clarifies that a parameter belongs to an option, but does not prevent subsequent parameters from also being assigned to the same option. For example:
 
 [source,java]
 ----
@@ -536,6 +537,9 @@ Options with the attribute `help = true` are special: if one of the command line
 
 [source,java]
 ----
+@Option(names = {"-V", "--version"}, help = true, description = "display version info")
+boolean versionRequested;
+
 @Option(names = {"-h", "--help"}, help = true, description = "display this help message")
 boolean helpRequested;
 ----
@@ -552,7 +556,7 @@ if (app.helpRequested) {
 ----
 
 == Usage Help
-=== Example
+=== Compact Example
 A default picocli usage help message looks like this:
 ----
 Usage: cat [-AbeEnstTuv] [--help] [--version] [FILE...]
@@ -618,7 +622,7 @@ Usage: <main class> [-f=FILE] [-n=<number>] NUM <host>
 Some annotated fields in the below example class have a `paramLabel` attribute and others don't:
 [source,java]
 ----
-@Command(showDefaultValues = false)
+@Command()
 class ParamLabels {
     @Option(names = "-f",    paramLabel = "FILE", description = "a file")      File f;
     @Option(names = "-n",    description = "a number option")                  int number;
@@ -628,6 +632,16 @@ class ParamLabels {
 ----
 NOTE: For demonstration purposes the above example mixes the all-uppercase (e.g., `NUM`) style label and the fish bracket (e.g., `<number>`) style labels. For real applications, mixing these label styles should be avoided. An application should consistently use only one style.
 
+=== Option-Parameter Separators
+The separator displayed between options and option parameters (`=` by default)
+in the synopsis and the option list can be configured with the `separator` attribute.
+[source,java]
+----
+@Command(separator = " ")
+----
+
+NOTE: the `@Command(separator = " ")` annotation also affects how picocli parses the command line. If you want the command parser to recognize one separator (`=` for example), but display a different separator (a space for example) in the usage help message, you need to programmatically configure the parser with the `CommandLine.setSeparator` method. See <<option-parameter-separators>>.
+
 === Hidden Options and Parameters
 Options and Parameters with the `hidden` attribute set to `true` will not be shown in the usage help message.
 This is useful for example when a parameter at some index is captured into multiple fields:
@@ -636,7 +650,7 @@ by default each of these fields would be shown in the usage message, which would
 For example, the `all` field below is annotated as `hidden = true`:
 [source,java]
 ----
-@Command(showDefaultValues = false)
+@Command()
 class App {
     @Parameters(index = "0",    description = "destination host")  InetAddress host;
     @Parameters(index = "1",    description = "destination port")  int port;
@@ -653,9 +667,115 @@ Usage: <main class> <host> <port> [<files>...]
       files                   files to transfer
 ----
 
+=== Show Default Values
+Use the `showDefaultValues = true` attribute to append the default value of the options and positional parameters to the description column. Picocli uses reflection to get the default values from the annotated fields. For example:
+[source,java]
+----
+@Command(showDefaultValues = true)
+class DefaultValues {
+    @Option(names = {"-f", "--file"}, description = "the file to use")
+    File file = new File("config.xml");
+}
 
-== Customizing Usage Help
-=== Example
+CommandLine.usage(new DefaultValues(), System.out);
+----
+This produces the following usage help:
+----
+Usage: <main class> -f=<file>
+  -f, --file=<file>           the file to use
+                              Default: config.xml
+----
+
+=== Required-Option Marker
+Required options can be marked in the option list by the character specified with the `requiredOptionMarker` attribute. By default options are not marked because the synopsis shows users which options are required and which are optional. This feature may be useful in combination with `abbreviatedSynopsis`. For example:
+[source,java]
+----
+@Command(requiredOptionMarker = '*', abbreviateSynopsis = true)
+class Example {
+    @Option(names = {"-a", "--alpha"}, description = "optional alpha") String alpha;
+    @Option(names = {"-b", "--beta"}, required = true, description = "mandatory beta") String beta;
+}
+----
+Produces the following usage help message:
+----
+Usage: <main class> [OPTIONS]
+  -a, --alpha=<alpha>         optional alpha
+* -b, --beta=<beta>           mandatory beta
+----
+
+=== Header and Footer
+The `header` will be shown at the top of the usage help message (before the synopsis). The first header line is also the line shown in the subcommand list if your command has subcommands (see <<usage-help-for-subcommands>>).
+
+Use the `footer` attribute to specify one or more lines to show below the generated usage help message.
+Each element of the attribute String array is displayed on a separate line.
+
+The `headerHeading` and `footerHeading` may contain format specifiers. See <<compact-example>>.
+
+
+=== Abbreviated Synopsis
+If a command is very complex and has many options, it is sometimes desirable to suppress details from the synopsis with the `abbreviateSynopsis` attribute. For example:
+----
+Usage: <main class> [OPTIONS] [<files>...]
+----
+Note that the positional parameters are not abbreviated.
+[source,java]
+----
+@CommandLine.Command(abbreviateSynopsis = true)
+class App {
+    @Parameters File[] files;
+    @Option(names = {"--count", "-c"}) int count;
+    ....
+}
+----
+
+
+=== Custom Synopsis
+For even more control of the synopsis, use the `customSynopsis` attribute to specify one ore more synopsis lines. For example:
+----
+Usage: ln [OPTION]... [-T] TARGET LINK_NAME   (1st form)
+  or:  ln [OPTION]... TARGET                  (2nd form)
+  or:  ln [OPTION]... TARGET... DIRECTORY     (3rd form)
+  or:  ln [OPTION]... -t DIRECTORY TARGET...  (4th form)
+----
+To produce a synopsis like the above, specify the literal text in the `customSynopsis` attribute:
+[source,java]
+----
+@Command(synopsisHeading = "", customSynopsis = {
+        "Usage: ln [OPTION]... [-T] TARGET LINK_NAME   (1st form)",
+        "  or:  ln [OPTION]... TARGET                  (2nd form)",
+        "  or:  ln [OPTION]... TARGET... DIRECTORY     (3rd form)",
+        "  or:  ln [OPTION]... -t DIRECTORY TARGET...  (4th form)",
+})
+class Ln { ... }
+----
+
+=== Section Headings
+Section headers can be used to make usage message layout appear more spacious. Section headings may contain embedded line separator (`%n`) format specifiers:
+[code,java]
+----
+@CommandLine.Command(name = "git-commit",
+        sortOptions = false,
+        headerHeading = "Usage:%n%n",
+        synopsisHeading = "%n",
+        descriptionHeading = "%nDescription:%n%n",
+        parameterListHeading = "%nParameters:%n",
+        optionListHeading = "%nOptions:%n",
+        header = "Record changes to the repository.",
+        description = "Stores the current contents of the index in a new commit " +
+                "along with a log message from the user describing the changes.")
+class GitCommit { ... }
+----
+The usage help message generated from this class is shown below in <<expanded-example>>.
+
+=== Unsorted Option List
+By default the options list displays options in alphabetical order. Use the `sortOptions = false` attribute to display options in the order they are declared in your class.
+[source,java]
+----
+@Command(sortOptions = false)
+----
+
+
+=== Expanded Example
 The below example demonstrates what a customized usage message can look like.
 Note how section headings with line separators can create a more spacious usage message,
 and also that options are listed in declaration order (instead of in alphabetic order).
@@ -704,43 +824,21 @@ Options:
                                 multiple -m options are given, their values are
                                 concatenated as separate paragraphs.
 ----
+The annotated class that this usage help message is generated from is shown in <<section-headings>>.
 
-=== Section Headings
-The above spacious layout is mainly due to the section headings:
-[code,java]
-----
-@CommandLine.Command(name = "git-commit",
-        sortOptions = false,
-        headerHeading = "Usage:%n%n",
-        synopsisHeading = "%n",
-        descriptionHeading = "%nDescription:%n%n",
-        parameterListHeading = "%nParameters:%n",
-        optionListHeading = "%nOptions:%n",
-        header = "Record changes to the repository.",
-        description = "Stores the current contents of the index in a new commit " +
-                "along with a log message from the user describing the changes.")
-class GitCommit { ... }
-----
-
-=== Unsorted Option List
-By default the options list displays options in alphabetical order. Use the `sortOptions = false` attribute to display options in the order they are declared in your class.
-
-
-=== Show Default Values
-Use the `showDefaultValues = true` attribute to append the default value of the options and positional parameters to the description column.
-
-=== Abbreviated Synopsis
-=== Custom Synopsis
-=== Command Header and Description
-=== Footer
-=== Option-Parameter Separators
+== Help API
+For further customization, picocli has a Help API.
+The `Help` class provides a number of high-level operations, and a set of components like `Layout`, `TextTable`, `IOptionRenderer`, etc., that can be used to build custom help messages.
+Details of the Help API are out of scope for this document, but the following sections show some of the highlights.
 
 === Reordering Sections
-To reorder sections of the usage message, you need to use the `CommandLine.Help` class directly. The `CommandLine::usage` method implementation looks like this:
+One thing you may want to do is reorder sections of the usage message or add custom sections.
+
+To reorder sections, you need to use the `CommandLine.Help` class directly. The `CommandLine.usage` method implementation looks like this:
 
 [source,java]
 ----
-Help help = new Help(new MainClass());
+Help help = new Help(annotatedObject);
 StringBuilder sb = new StringBuilder()
         .append(help.headerHeading())
         .append(help.header())
@@ -759,52 +857,166 @@ StringBuilder sb = new StringBuilder()
 ----
 In your application, instead of calling `CommandLine.usage(new MainClass(), System.err)`, you can alter the above code to, for example, list subcommands first, then global options and finally the parameters.
 
-=== Formatted Headings
-By using the `Help` class directly as explained in the previous section,
-the `xxxHeading()` methods can be passed arguments.
-These arguments can be referenced by the format specifiers in the heading https://docs.oracle.com/javase/8/docs/api/java/util/Formatter.html[format strings]. For example:
-
-[source,java]
-----
-@Command(descriptionHeading = "%nDescription (%1$tb %1$te, %1$tY)%n%n")
-class MainClass {}
-----
-The `descriptionHeading` attribute is a format string with some date/time conversion format specifiers and some line separators. Picocli will format this string with any arguments that are passed to the `Help::descriptionHeading(Object...)` method. For example:
-[source,java]
-----
-Help help = new Help(new MainClass());
-Calendar c = new GregorianCalendar(2017, MAY, 23);
-String formatted = help.descriptionHeading(c);
-
-assert "\nDescription (May 23, 2017)\n\n".equals(formatted);
-----
 
 
-
-== Advanced Usage Help Customization
 === Custom Layout
-=== Table and Columns
-=== Option Renderer
-=== Parameter Renderer
-=== Param Label Renderer
+Picocli also supports unconventional option list layouts. An example of an unconventional layout is the `zip` application, which shows multiple options per row:
+[source,java]
+----
+CommandLine.usage(new ZipHelpDemo(), System.out);
+----
+----
+Copyright (c) 1990-2008 Info-ZIP - Type 'zip "-L"' for software license.
+Zip 3.0 (July 5th 2008). Command:
+zip [-options] [-b path] [-t mmddyyyy] [-n suffixes] [zipfile list] [-xi list]
+  The default action is to add or replace zipfile entries from list, which
+  can include the special name - to compress standard input.
+  If zipfile and list are omitted, zip compresses stdin to stdout.
+  -f   freshen: only changed files  -u   update: only changed or new files
+  -d   delete entries in zipfile    -m   move into zipfile (delete OS files)
+  -r   recurse into directories     -j   junk (don't record) directory names
+  -0   store only                   -l   convert LF to CR LF (-ll CR LF to LF)
+  -1   compress faster              -9   compress better
+  -q   quiet operation              -v   verbose operation/print version info
+  -c   add one-line comments        -z   add zipfile comment
+  -@   read names from stdin        -o   make zipfile as old as latest entry
+  -x   exclude the following names  -i   include only the following names
+  -F   fix zipfile (-FF try harder) -D   do not add directory entries
+  -A   adjust self-extracting exe   -J   junk zipfile prefix (unzipsfx)
+  -T   test zipfile integrity       -X   eXclude eXtra file attributes
+  -y   store symbolic links as the link instead of the referenced file
+  -e   encrypt                      -n   don't compress these suffixes
+  -h2  show more help
+----
+
+This can be achieved in picocli by subclassing the Help.Layout class.
+See the picocli tests for how to achieve this.
 
 
 == Subcommands
 === Registering Subcommands
+Subcommands can be registered with the `CommandLine.addCommand` method. You pass in the name of the command (used by the parser to recognize subcommands in the command line arguments) and the annotated object to populate with the subcommand options.
+
+[source,java]
+----
+CommandLine commandLine = new CommandLine(new Git());
+commandLine.addCommand("status",   new GitStatus());
+commandLine.addCommand("commit",   new GitCommit());
+commandLine.addCommand("add",      new GitAdd());
+commandLine.addCommand("branch",   new GitBranch());
+commandLine.addCommand("checkout", new GitCheckout());
+commandLine.addCommand("clone",    new GitClone());
+commandLine.addCommand("diff",     new GitDiff());
+commandLine.addCommand("merge",    new GitMerge());
+commandLine.addCommand("push",     new GitPush());
+commandLine.addCommand("rebase",   new GitRebase());
+commandLine.addCommand("tag",      new GitTag());
+----
+
+=== Parsing Subcommands
+The `CommandLine.parse` method returns a List with the recognized commands. The main command (`git` in this example) is always the first element in the returned list.
+
+[source,java]
+----
+CommandLine commandLine = new CommandLine(new Git());
+commandLine.addCommand("status",   new GitStatus());
+...
+
+String[] args = { "--git-dir=/home/rpopma/picocli", "status", "-sbuno"};
+List<Object> parsed = commandLine.parse(args);
+assert parsed.size() == 2 : "1 command and 1 subcommand found"
+
+assert parsed.get(0).getClass() == Git.class       : "main command"
+assert parsed.get(1).getClass() == GitStatus.class : "subcommand"
+----
+
+Your application needs to inspect this list to see what subcommand was invoked and take appropriate action. For example:
+[source,java]
+----
+Git git = (Git) parsed.get(0);
+assert git.gitDir.equals(new File("/home/rpopma/picocli"));
+
+GitStatus gitstatus = (GitStatus) parsed.get(1);
+assert  gitstatus.shortFormat              : "git status -s"
+assert  gitstatus.branchInfo               : "git status -b"
+assert !gitstatus.showIgnored              : "git status --showIgnored not specified"
+assert  gitstatus.mode == GitStatusMode.no : "git status -u=no"
+----
+
 === Usage Help for Subcommands
+After registering subcommands, calling the `commandLine.usage` method will show a usage help message that includes all registered commands. For example:
 
+[source,java]
+----
+CommandLine commandLine = new CommandLine(new Git());
+commandLine.addCommand("status",   new GitStatus());
+...
+commandLine.usage(System.out);
+----
+The usage help message shows the commands in the order they were registered:
+----
+Usage: git [-hV] [--git-dir=<gitDir>]
+Git is a fast, scalable, distributed revision control system with an unusually
+rich command set that provides both high-level operations and full access to
+internals.
+  -V, --version               Prints version information and exits
+  -h, --help                  Prints this help message and exits
+      --git-dir=<gitDir>      Set the path to the repository
 
+Commands:
 
-== Subclassing to Reuse Options and Command Attributes
+The most commonly used git commands are:
+  status    Show the working tree status.
+  commit    Record changes to the repository.
+  add       Add file contents to the index.
+  branch    List, create, or delete branches.
+  checkout  Checkout a branch or paths to the working tree.
+  clone     Clone a repository into a new directory.
+  diff      Show changes between commits, commit and working tree, etc.
+  merge     Join two or more development histories together.
+  push      Update remote refs along with associated objects.
+  rebase    Forward-port local commits to the updated upstream head.
+  tag       Create, list, delete or verify a tag object signed with GPG.
+----
+
+The above usage help message is produced from the annotations on the class below:
+[source,java]
+----
+@Command(name = "git", sortOptions = false,
+        description = "Git is a fast, scalable, distributed revision control " +
+                      "system with an unusually rich command set that provides both " +
+                      "high-level operations and full access to internals.",
+        commandListHeading = "%nCommands:%n%nThe most commonly used git commands are:%n")
+class Git {
+  @Option(names = {"-V", "--version"}, help = true,
+          description = "Prints version information and exits")
+  private boolean versionRequested;
+
+  @Option(names = {"-h", "--help"}, help = true,
+          description = "Prints this help message and exits")
+  private boolean helpRequested;
+
+  @Option(names = "--git-dir", description = "Set the path to the repository")
+  private File gitDir;
+}
+----
+
+The usage help message for each subcommand is produced by calling `CommandLine.usage(new SubCommand(), out)`.
+For example, see <<section-headings>> for an example subcommand (`git-commit`), which produces the help message shown
+in <<expanded-example>>.
+
+== Subclassing for Reuse
 Picocli will walk the class hierarchy to check for annotations, so you can declare common @Options and @Command attributes on a superclass and override these fields or attributes on a subclass.
 
 The below example shows how common options like `help` and `version` can be declared as fields in a superclass so they are available in all subclasses. Similarly, annotating the superclass with default `@Command` attributes means subclasses won't need to set these attributes.
 
 [source,java]
 ----
-@Command(synopsisHeading      = "%nUsage:%n%n",      descriptionHeading = "%nDescription:%n%n",
-         parameterListHeading = "%nParameters:%n%n", optionListHeading  = "%nOptions:%n%n",
-         commandListHeading   = "%nCommands:%n%n",   showDefaultValues  = false)
+@Command(synopsisHeading      = "%nUsage:%n%n",
+         descriptionHeading   = "%nDescription:%n%n",
+         parameterListHeading = "%nParameters:%n%n",
+         optionListHeading    = "%nOptions:%n%n",
+         commandListHeading   = "%nCommands:%n%n")
 public abstract class AbstractCommand {
 
     @Option(names = { "-h", "-?", "--help" }, help = true,
