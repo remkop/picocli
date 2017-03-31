@@ -1054,6 +1054,9 @@ public class CommandLine {
                     applyOption(positionalParam, Parameters.class, arity, false, argsCopy);
                 }
             }
+            if (!validateOnly) {
+                args.clear(); // clear the stack to prevent processing the elements twice
+            }
         }
 
         private void processStandaloneOption(Set<Field> required,
@@ -1167,12 +1170,25 @@ public class CommandLine {
             Class<?> type = cls.getComponentType();
             ITypeConverter converter = getTypeConverter(type);
             List<Object> converted = consumeArguments(field, annotation, arity, args, converter, cls);
-            Object array = Array.newInstance(type, converted.size());
-            field.set(annotatedObject, array);
-            for (int i = 0; i < converted.size(); i++) { // get remaining values from the args array
-                Array.set(array, i, converted.get(i));
+            Object existing = field.get(annotatedObject);
+            int length = existing == null ? 0 : Array.getLength(existing);
+            List<Object> newValues = new ArrayList<Object>();
+            for (int i = 0; i < length; i++) {
+                newValues.add(Array.get(existing, i));
             }
-            return converted.size();
+            for (Object obj : converted) {
+                if (obj instanceof Collection<?>) {
+                    newValues.addAll((Collection<?>) obj);
+                } else {
+                    newValues.add(obj);
+                }
+            }
+            Object array = Array.newInstance(type, newValues.size());
+            field.set(annotatedObject, array);
+            for (int i = 0; i < newValues.size(); i++) {
+                Array.set(array, i, newValues.get(i));
+            }
+            return converted.size(); // return how many args were consumed
         }
 
         @SuppressWarnings("unchecked")
@@ -1190,8 +1206,8 @@ public class CommandLine {
                 field.set(annotatedObject, collection);
             }
             for (Object element : converted) {
-                if (element instanceof Collection) {
-                    collection.addAll((Collection) element);
+                if (element instanceof Collection<?>) {
+                    collection.addAll((Collection<?>) element);
                 } else {
                     collection.add(element);
                 }

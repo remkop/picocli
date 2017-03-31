@@ -563,7 +563,7 @@ public class CommandLineTest {
         assertSame(list, params.timeUnitList);
     }
     @Test
-    public void testArrayPositionalParametersAreAlwaysInstantiated() {
+    public void testArrayPositionalParametersAreAppendedNotReplaced() {
         class ArrayPositionalParams {
             @Parameters() int[] array;
         }
@@ -572,7 +572,7 @@ public class CommandLineTest {
         int[] array = params.array;
         new CommandLine(params).parse("3", "2", "1");
         assertNotSame(array, params.array);
-        assertArrayEquals(new int[]{3, 2, 1}, params.array);
+        assertArrayEquals(new int[]{0, 0, 0, 3, 2, 1}, params.array);
     }
     class ListPositionalParams {
         @Parameters(type = Integer.class) List<Integer> list;
@@ -1705,6 +1705,7 @@ public class CommandLineTest {
                 new File("111"),
                 new File("222")), app1.fileList1_2);
         assertArrayEquals("arg[0-3]", new File[]{
+                null, null, null, null, // existing values
                 new File("000"),
                 new File("111"),
                 new File("222"),
@@ -1715,6 +1716,7 @@ public class CommandLineTest {
         assertEquals("field initialized with arg[0]", new File("000"), app2.file0_1);
         assertEquals("arg[1]", Arrays.asList(new File("111")), app2.fileList1_2);
         assertArrayEquals("arg[0-3]", new File[]{
+                null, null, null, null, // existing values
                 new File("000"),
                 new File("111"),}, app2.fileArray0_3);
         assertEquals("args", Arrays.asList("000", "111"), app2.all);
@@ -1723,6 +1725,7 @@ public class CommandLineTest {
         assertEquals("field initialized with arg[0]", new File("000"), app3.file0_1);
         assertEquals("arg[1]", new ArrayList<File>(), app3.fileList1_2);
         assertArrayEquals("arg[0-3]", new File[]{
+                null, null, null, null, // existing values
                 new File("000")}, app3.fileArray0_3);
         assertEquals("args", Arrays.asList("000"), app3.all);
 
