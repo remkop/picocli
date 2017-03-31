@@ -640,7 +640,7 @@ in the synopsis and the option list can be configured with the `separator` attri
 @Command(separator = " ")
 ----
 
-NOTE: the `@Command(separator = " ")` annotation also affects how picocli parses the command line. If you want the command parser to recognize one separator (`=` for example), but display a different separator (a space for example) in the usage help message, you need to programmatically configure the parser with the `CommandLine.setSeparator` method. See <<option-parameter-separators>>.
+NOTE: the `@Command(separator = " ")` annotation also affects how picocli parses the command line. If you want the command parser to recognize one separator (`=` for example), but display a different separator (a space for example) in the usage help message, you need to programmatically configure the parser with the `CommandLine.setSeparator` method. See <<Option-Parameter Separators>>.
 
 === Hidden Options and Parameters
 Options and Parameters with the `hidden` attribute set to `true` will not be shown in the usage help message.
@@ -704,12 +704,12 @@ Usage: <main class> [OPTIONS]
 ----
 
 === Header and Footer
-The `header` will be shown at the top of the usage help message (before the synopsis). The first header line is also the line shown in the subcommand list if your command has subcommands (see <<usage-help-for-subcommands>>).
+The `header` will be shown at the top of the usage help message (before the synopsis). The first header line is also the line shown in the subcommand list if your command has subcommands (see <<Usage Help for Subcommands>>).
 
 Use the `footer` attribute to specify one or more lines to show below the generated usage help message.
 Each element of the attribute String array is displayed on a separate line.
 
-The `headerHeading` and `footerHeading` may contain format specifiers. See <<compact-example>>.
+The `headerHeading` and `footerHeading` may contain format specifiers. See <<Compact Example>>.
 
 
 === Abbreviated Synopsis
@@ -765,7 +765,7 @@ Section headers can be used to make usage message layout appear more spacious. S
                 "along with a log message from the user describing the changes.")
 class GitCommit { ... }
 ----
-The usage help message generated from this class is shown below in <<expanded-example>>.
+The usage help message generated from this class is shown below in <<Expanded Example>>.
 
 === Unsorted Option List
 By default the options list displays options in alphabetical order. Use the `sortOptions = false` attribute to display options in the order they are declared in your class.
@@ -824,7 +824,7 @@ Options:
                                 multiple -m options are given, their values are
                                 concatenated as separate paragraphs.
 ----
-The annotated class that this usage help message is generated from is shown in <<section-headings>>.
+The annotated class that this usage help message is generated from is shown in <<Section Headings>>.
 
 == Help API
 For further customization, picocli has a Help API.
@@ -1002,8 +1002,8 @@ class Git {
 ----
 
 The usage help message for each subcommand is produced by calling `CommandLine.usage(new SubCommand(), out)`.
-For example, see <<section-headings>> for an example subcommand (`git-commit`), which produces the help message shown
-in <<expanded-example>>.
+For example, see <<Section Headings>> for an example subcommand (`git-commit`), which produces the help message shown
+in <<Expanded Example>>.
 
 == Subclassing for Reuse
 Picocli will walk the class hierarchy to check for annotations, so you can declare common @Options and @Command attributes on a superclass and override these fields or attributes on a subclass.
