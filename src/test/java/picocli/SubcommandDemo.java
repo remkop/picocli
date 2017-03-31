@@ -29,7 +29,7 @@ import static org.junit.Assert.*;
 /**
  * Demonstrates some of picoCLI's capabilities.
  */
-public class Demo {
+public class SubcommandDemo {
 
     @CommandLine.Command(name = "git", sortOptions = false, showDefaultValues = false,
             description = "Git is a fast, scalable, distributed revision control " +
