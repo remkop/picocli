@@ -31,7 +31,7 @@ import static picocli.CommandLine.*;
 import static picocli.CommandLine.Help.Column.Overflow.*;
 
 /**
- * Demonstrates how the CommandLine.Help API can be used to create custom layouts.
+ * Demonstrates how the CommandLine.Help API can be used to create custom layouts for usage help messages.
  */
 public class HelpCustomLayoutDemo {
 
@@ -79,9 +79,9 @@ public class HelpCustomLayoutDemo {
         class TwoOptionsPerRowLayout extends Layout { // define a custom layout
             Point previous = new Point(0, 0);
 
-            public TwoOptionsPerRowLayout(TextTable textTable,
-                                          IOptionRenderer optionRenderer,
-                                          IParameterRenderer parameterRenderer) {
+            private TwoOptionsPerRowLayout(TextTable textTable,
+                                           IOptionRenderer optionRenderer,
+                                           IParameterRenderer parameterRenderer) {
                 super(textTable, optionRenderer, parameterRenderer);
             }
 
@@ -105,12 +105,11 @@ public class HelpCustomLayoutDemo {
                 }
             }
         }
-        TextTable textTable = new TextTable(new Column[] {
-                new Column(5, 2, TRUNCATE), // values should fit
+        TextTable textTable = new TextTable(
+                new Column( 5, 2, TRUNCATE), // values should fit
                 new Column(30, 2, SPAN), // overflow into adjacent columns
-                new Column(4,  1, TRUNCATE), // values should fit again
-                new Column(39, 2, WRAP)
-        });
+                new Column( 4, 1, TRUNCATE), // values should fit again
+                new Column(39, 2, WRAP));
         TwoOptionsPerRowLayout layout = new TwoOptionsPerRowLayout(textTable, Help.createMinimalOptionRenderer(),
                 Help.createMinimalParameterRenderer());
 
