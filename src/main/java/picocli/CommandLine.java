@@ -484,11 +484,19 @@ public class CommandLine {
          * the raw String values before they are added to the collection.
          * </p><p>
          * When the field's type is an array, the {@code type} attribute is ignored: the values will be converted
-         * to the array component type and the array will be replaced with a new instance.
-         * </p>
+         * to the array component type and the array will be replaced with a new instance containing both the old and
+         * the new values. </p>
          * @return the type to convert the raw String values to before adding them to the Collection
          */
         Class<?> type() default String.class;
+
+        /**
+         * Specify a regular expression to use to split option parameter values before applying them to the field.
+         * All elements resulting from the split are added to the array or Collection. Ignored for single-value fields.
+         * @return a regular expression to split option parameter values or {@code ""} if the value should not be split
+         * @see String#split(String)
+         */
+        String split() default "";
 
         /**
          * Set {@code hidden=true} if this option should not be included in the usage documentation.
@@ -572,11 +580,19 @@ public class CommandLine {
          * the raw String values before they are added to the collection.
          * </p><p>
          * When the field's type is an array, the {@code type} attribute is ignored: the values will be converted
-         * to the array component type and the array will be replaced with a new instance.
-         * </p>
+         * to the array component type and the array will be replaced with a new instance containing both the old and
+         * the new values. </p>
          * @return the type to convert the raw String values to before adding them to the Collection
          */
         Class<?> type() default String.class;
+
+        /**
+         * Specify a regular expression to use to split positional parameter values before applying them to the field.
+         * All elements resulting from the split are added to the array or Collection. Ignored for single-value fields.
+         * @return a regular expression to split operand values or {@code ""} if the value should not be split
+         * @see String#split(String)
+         */
+        String split() default "";
 
         /**
          * Set {@code hidden=true} if this parameter should not be included in the usage message.
@@ -1049,7 +1065,7 @@ public class CommandLine {
                 Collections.reverse(argsCopy);
                 for (int i = 0; i < indexRange.min; i++) { argsCopy.pop(); }
                 Arity arity = Arity.forParameters(positionalParam);
-                assertNoMissingParameters(positionalParam, arity.min, argsCopy.size());
+                assertNoMissingParameters(positionalParam, arity.min, argsCopy);
                 if (!validateOnly) {
                     applyOption(positionalParam, Parameters.class, arity, false, argsCopy);
                 }
@@ -1120,10 +1136,7 @@ public class CommandLine {
                 args.pop(); // throw out empty string we get at the end of a group of clustered short options
             }
             int length = args.size();
-            if (arity.max == Integer.MAX_VALUE) {
-                arity.max = length; // consume all available args
-            }
-            assertNoMissingParameters(field, arity.min, length);
+            assertNoMissingParameters(field, arity.min, args);
 
             Class<?> cls = field.getType();
             if (cls.isArray()) {
@@ -1222,20 +1235,56 @@ public class CommandLine {
                                               ITypeConverter converter,
                                               Class<?> type) throws Exception {
             List<Object> result = new ArrayList<Object>();
-            for (int i = 0; i < arity.min; i++) { // first do the arity.min mandatory parameters
-                result.add(tryConvert(field, i, converter, trim(args.pop()), type));
+            int index = 0;
+
+            // first do the arity.min mandatory parameters
+            for (int i = 0; result.size() < arity.min; i++) {
+                index = consumeOneArgument(field, arity, args, converter, type, result, index);
             }
-            int remain = arity.max - arity.min;
-            while (remain > 0 && !args.isEmpty()) {// now process the varargs if any
-                remain--;
+            // now process the varargs if any
+            while (result.size() < arity.max && !args.isEmpty()) {
                 if (annotation != Parameters.class) {
                     if (commands.containsKey(args.peek()) || isOption(args.peek())) {
                         return result;
                     }
                 }
-                result.add(tryConvert(field, result.size(), converter, trim(args.pop()), type));
+                index = consumeOneArgument(field, arity, args, converter, type, result, index);
             }
             return result;
+        }
+
+        private int consumeOneArgument(Field field,
+                                       Arity arity,
+                                       Stack<String> args,
+                                       ITypeConverter converter,
+                                       Class<?> type,
+                                       List<Object> result, int index) throws Exception {
+            String[] values = split(trim(args.pop()), field);
+
+            // ensure we don't process more than arity.max (as result of splitting args)
+            int max = Math.min(arity.max - result.size(), values.length);
+            for (int j = 0; j < max; j++) {
+                result.add(tryConvert(field, index, converter, values[j], type));
+            }
+            // if this option cannot consume values because of its arity.max,
+            // then push them back on the stack (they are likely processed as positional parameters)
+            for (int j = values.length - 1; j >= max; j--) {
+                args.push(values[j]);
+            }
+            index++;
+            return index;
+        }
+
+        private String[] split(String value, Field field) {
+            if (field.isAnnotationPresent(Option.class)) {
+                String regex = field.getAnnotation(Option.class).split();
+                return regex.length() == 0 ? new String[] {value} : value.split(regex);
+            }
+            if (field.isAnnotationPresent(Parameters.class)) {
+                String regex = field.getAnnotation(Parameters.class).split();
+                return regex.length() == 0 ? new String[] {value} : value.split(regex);
+            }
+            return new String[] {value};
         }
 
         /**
@@ -1335,14 +1384,20 @@ public class CommandLine {
             throw new MissingTypeConverterException("No TypeConverter registered for " + type.getName());
         }
 
-        private void assertNoMissingParameters(Field field, int arity, int length) {
-            if (arity > length) {
+        private void assertNoMissingParameters(Field field, int arity, Stack<String> args) {
+            if (arity > args.size()) {
+                int actualSize = 0;
+                Stack<String> copy = (Stack<String>) args.clone();
+                while (!copy.isEmpty()) {
+                    actualSize += split(copy.pop(), field).length;
+                    if (actualSize >= arity) { return; }
+                }
                 if (arity == 1) {
                     throw new MissingParameterException("Missing required parameter for " +
                             optionDescription("", field, 0));
                 }
                 throw new MissingParameterException(optionDescription("", field, 0) +
-                        " requires at least " + arity + " parameters, but only " + length + " were specified.");
+                        " requires at least " + arity + " parameters, but only " + args.size() + " were specified.");
             }
         }
 
@@ -1541,16 +1596,22 @@ public class CommandLine {
 
         /** Optional heading preceding the header section. Initialized from {@link Command#headerHeading()}, or null. */
         public String headerHeading;
+
         /** Optional heading preceding the synopsis. Initialized from {@link Command#synopsisHeading()}, {@code "Usage: "} by default. */
         public String synopsisHeading;
+
         /** Optional heading preceding the description section. Initialized from {@link Command#descriptionHeading()}, or null. */
         public String descriptionHeading;
+
         /** Optional heading preceding the parameter list. Initialized from {@link Command#parameterListHeading()}, or null. */
         public String parameterListHeading;
+
         /** Optional heading preceding the options list. Initialized from {@link Command#optionListHeading()}, or null. */
         public String optionListHeading;
+
         /** Optional heading preceding the command list. Initialized from {@link Command#commandListHeading()}. {@code "Commands:%n"} by default. */
         public String commandListHeading;
+
         /** Optional heading preceding the footer section. Initialized from {@link Command#footerHeading()}, or null. */
         public String footerHeading;
 

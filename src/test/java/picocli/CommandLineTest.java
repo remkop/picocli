@@ -1772,4 +1772,156 @@ public class CommandLineTest {
         assertArrayEquals(new int[]{2222}, app2.port2range);
         assertArrayEquals(new String[]{"file1", "file2"}, app2.files);
     }
+
+    @Test
+    public void testSplitInOptionArray() {
+        class Args {
+            @Option(names = "-a", split = ",") String[] values;
+        }
+        Args args = CommandLine.parse(new Args(), "-a=a,b,c");
+        assertArrayEquals(new String[] {"a", "b", "c"}, args.values);
+
+        args = CommandLine.parse(new Args(), "-a=a,b,c", "B", "C");
+        assertArrayEquals(new String[] {"a", "b", "c", "B", "C"}, args.values);
+
+        args = CommandLine.parse(new Args(), "-a", "a,b,c", "B", "C");
+        assertArrayEquals(new String[] {"a", "b", "c", "B", "C"}, args.values);
+
+        args = CommandLine.parse(new Args(), "-a=a,b,c", "B", "C", "D,E,F");
+        assertArrayEquals(new String[] {"a", "b", "c", "B", "C", "D", "E", "F"}, args.values);
+    }
+
+    @Test
+    public void testSplitInOptionArrayWithSpaces() {
+        class Args {
+            @Option(names = "-a", split = " ") String[] values;
+        }
+        Args args = CommandLine.parse(new Args(), "-a=\"a b c\"");
+        assertArrayEquals(new String[] {"a", "b", "c"}, args.values);
+
+        args = CommandLine.parse(new Args(), "-a=a b c", "B", "C");
+        assertArrayEquals(new String[] {"a", "b", "c", "B", "C"}, args.values);
+
+        args = CommandLine.parse(new Args(), "-a", "\"a b c\"", "B", "C");
+        assertArrayEquals(new String[] {"a", "b", "c", "B", "C"}, args.values);
+
+        args = CommandLine.parse(new Args(), "-a=\"a b c\"", "B", "C", "D E F");
+        assertArrayEquals(new String[] {"a", "b", "c", "B", "C", "D", "E", "F"}, args.values);
+    }
+
+    @Test
+    public void testSplitInOptionArrayWithArity() {
+        class Args {
+            @Option(names = "-a", split = ",", arity = "0..4") String[] values;
+            @Parameters() String[] params;
+        }
+        Args args = CommandLine.parse(new Args(), "-a=a,b,c");
+        assertArrayEquals(new String[] {"a", "b", "c"}, args.values);
+
+        args = CommandLine.parse(new Args(), "-a=a,b,c", "B", "C");
+        assertArrayEquals(new String[] {"a", "b", "c", "B"}, args.values);
+        assertArrayEquals(new String[] {"C"}, args.params);
+
+        args = CommandLine.parse(new Args(), "-a", "a,b,c", "B", "C");
+        assertArrayEquals(new String[] {"a", "b", "c", "B"}, args.values);
+        assertArrayEquals(new String[] {"C"}, args.params);
+
+        args = CommandLine.parse(new Args(), "-a=a,b,c", "B", "C", "D,E,F");
+        assertArrayEquals(new String[] {"a", "b", "c", "B"}, args.values);
+        assertArrayEquals(new String[] {"C", "D,E,F"}, args.params);
+
+        args = CommandLine.parse(new Args(), "-a=a,b,c,d,e", "B", "C", "D,E,F");
+        assertArrayEquals(new String[] {"a", "b", "c", "d"}, args.values);
+        assertArrayEquals(new String[] {"e", "B", "C", "D,E,F"}, args.params);
+    }
+
+    @Test
+    public void testSplitInOptionCollection() {
+        class Args {
+            @Option(names = "-a", split = ",") List<String> values;
+        }
+        Args args = CommandLine.parse(new Args(), "-a=a,b,c");
+        assertEquals(Arrays.asList("a", "b", "c"), args.values);
+
+        args = CommandLine.parse(new Args(), "-a=a,b,c", "B", "C");
+        assertEquals(Arrays.asList("a", "b", "c", "B", "C"), args.values);
+
+        args = CommandLine.parse(new Args(), "-a", "a,b,c", "B", "C");
+        assertEquals(Arrays.asList("a", "b", "c", "B", "C"), args.values);
+
+        args = CommandLine.parse(new Args(), "-a=a,b,c", "B", "C", "D,E,F");
+        assertEquals(Arrays.asList("a", "b", "c", "B", "C", "D", "E", "F"), args.values);
+    }
+
+    @Test
+    public void testSplitInParametersArray() {
+        class Args {
+            @Parameters(split = ",") String[] values;
+        }
+        Args args = CommandLine.parse(new Args(), "a,b,c");
+        assertArrayEquals(new String[] {"a", "b", "c"}, args.values);
+
+        args = CommandLine.parse(new Args(), "a,b,c", "B", "C");
+        assertArrayEquals(new String[] {"a", "b", "c", "B", "C"}, args.values);
+
+        args = CommandLine.parse(new Args(), "a,b,c", "B", "C");
+        assertArrayEquals(new String[] {"a", "b", "c", "B", "C"}, args.values);
+
+        args = CommandLine.parse(new Args(), "a,b,c", "B", "C", "D,E,F");
+        assertArrayEquals(new String[] {"a", "b", "c", "B", "C", "D", "E", "F"}, args.values);
+    }
+
+    @Test
+    public void testSplitInParametersArrayWithArity() {
+        class Args {
+            @Parameters(arity = "2..4", split = ",") String[] values;
+        }
+        Args args = CommandLine.parse(new Args(), "a,b,c");
+        assertArrayEquals(new String[] {"a", "b", "c"}, args.values);
+
+        args = CommandLine.parse(new Args(), "a,b,c", "B", "C");
+        assertArrayEquals(new String[] {"a", "b", "c", "B"}, args.values);
+
+        args = CommandLine.parse(new Args(), "a,b,c", "B,C");
+        assertArrayEquals(new String[] {"a", "b", "c", "B"}, args.values);
+
+        args = CommandLine.parse(new Args(), "a,b", "A,B,C");
+        assertArrayEquals(new String[] {"a", "b", "A", "B"}, args.values);
+    }
+
+    @Test
+    public void testSplitInParametersCollection() {
+        class Args {
+            @Parameters(split = ",") List<String> values;
+        }
+        Args args = CommandLine.parse(new Args(), "a,b,c");
+        assertEquals(Arrays.asList("a", "b", "c"), args.values);
+
+        args = CommandLine.parse(new Args(), "a,b,c", "B", "C");
+        assertEquals(Arrays.asList("a", "b", "c", "B", "C"), args.values);
+
+        args = CommandLine.parse(new Args(), "a,b,c", "B", "C");
+        assertEquals(Arrays.asList("a", "b", "c", "B", "C"), args.values);
+
+        args = CommandLine.parse(new Args(), "a,b,c", "B", "C", "D,E,F");
+        assertEquals(Arrays.asList("a", "b", "c", "B", "C", "D", "E", "F"), args.values);
+    }
+
+    @Test
+    public void testSplitIgnoredInOptionSingleValueField() {
+        class Args {
+            @Option(names = "-a", split = ",") String value;
+        }
+        Args args = CommandLine.parse(new Args(), "-a=a,b,c");
+        assertEquals("a,b,c", args.value);
+    }
+
+    @Test
+    public void testSplitIgnoredInParameterSingleValueField() {
+        class Args {
+            @Parameters(split = ",") String value;
+        }
+        Args args = CommandLine.parse(new Args(), "a,b,c");
+        assertEquals("a,b,c", args.value);
+    }
 }
