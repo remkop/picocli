@@ -427,7 +427,7 @@ The following ways to invoke the program will be accepted (values are not case s
 
 But trying to specify the `-x` option without a parameter, or with a value other than "true" or "false" (case insensitive) will result in a `ParameterException`.
 
-=== Arrays and Collections
+=== Arity of Arrays and Collections
 Option fields of type array or `List` (or any class extending `Collection`) will be able to hold multiple values.
 By default, picocli will capture arguments into these fields until it encounters a command line argument that is
 an option name or a registered command name.
@@ -482,6 +482,38 @@ Because arity is 2, both parameters in the below example are assigned to the `-o
 ----
 
 
+
+== Multiple Values
+=== Arity
+An Option or Parameter field may consume multiple command line arguments if it has a multi-value type like array or Collection. For example:
+[source,java]
+----
+@Option(names = "-option")
+int[] values;
+----
+----
+-option 111 222 333
+----
+The number of arguments consumed depends on the option's arity. (See <<Arity of Arrays and Collections>>.)
+
+=== Multiple Occurrences
+Users may also specify the same option multiple times. For example:
+----
+-option 111 -option 222 -option 333
+----
+Each value is appended to the array or collection.
+
+=== Split Regex
+Options and parameters may also specify a `split` regular expression used to split each option parameter into smaller substrings. Each of these strings is converted to the type of the collection or array. See <<Arrays and Collections>>.
+[source,java]
+----
+@Option(names = "-option", split = ",")
+int[] values;
+----
+Command line arguments like the following are interpreted as three `int` values instead of a single string:
+----
+-option 111,222,333
+----
 
 == Required Options
 === Options
