@@ -858,8 +858,40 @@ Options:
 ----
 The annotated class that this usage help message is generated from is shown in <<Section Headings>>.
 
-== Help API
-For further customization, picocli has a Help API.
+
+
+== Usage Help with Style
+=== Expanded Example with Ansi Colors
+
+Below shows the same usage help message as shown in <<Expanded Example>>, with Ansi Colors and Style escape codes enabled.
+
+image:../raw/master/docs/UsageHelpWithStyle.png[Screenshot of usage help with Ansi codes enabled]
+
+=== Supported Platforms
+Picocli will only try to use Ansi codes on supported platforms.
+
+Most Unix and Linux platforms support Ansi colors natively.
+On Windows, when picocli detects it is running under a Unix variant like Cygwin or MSYS(2) on Windows it will display Ansi colors and styles, otherwise it will not emit Ansi codes.
+
+Setting system property `picocli.ansi` to `true` forces picocli to use Ansi codes; setting `picocli.ansi` to `true` forces picocli to *not* use Ansi codes. This may be a useful facility to document for users of your command line application.
+
+You can decide to force disable or force enable Ansi codes with the `CommandLine.ansi` static field. For example:
+[source,java]
+----
+CommandLine.ansi = false; // force Ansi OFF
+App app = CommandLine.usage(new App(), args);
+...
+----
+Setting `CommandLine.ansi = true` in your application forces picocli to use Ansi colors regardless of the platform,
+and regardless of the value of system property `picocli.ansi`.
+
+=== Configuration
+
+
+
+
+== Usage Help API
+For further customization of the usage help message, picocli has a Help API.
 The `Help` class provides a number of high-level operations, and a set of components like `Layout`, `TextTable`, `IOptionRenderer`, etc., that can be used to build custom help messages.
 Details of the Help API are out of scope for this document, but the following sections show some of the highlights.
 
@@ -1081,6 +1113,7 @@ public class ZipCommand extends AbstractCommand {
 
 
 == Putting it all Together
+=== An Application Recipe
 Imagine an application that takes some input files and compresses them to an output file.
 ----
 Compress -o outputFile file1 file2 file3
@@ -1121,7 +1154,25 @@ public class Compress {
     private void doCompress() { ... } // business logic of the application
 }
 ----
+=== Convenience API
+You can omit some of the boilerplate code from your application by letting the annotated object implement `Runnable`.
+This allows you to invoke `CommandLine.run(new Compress(), args)`, which is the equivalent of:
 
+[source,java
+----
+public static <R extends Runnable> void run(R annotatedObject, String... args) {
+    Runnable runnable = null;
+    try {
+        runnable = parse(annotatedObject, args);
+    } catch (Exception ex) {
+        System.err.println(ex);
+        usage(annotatedObject, System.err);
+        return;
+    }
+    runnable.run();
+}
+----
+Note that the `CommandLine.run` convenience method cannot be used with subcommands.
 
 == Download
 
