@@ -2628,15 +2628,6 @@ public class CommandLine {
             return new ParameterException(msg, ex);
         }
     }
-
-    /**
-     * Exception indicating that one or more command line arguments could not be assigned to any options or parameters.
-     */
-    public static class SuperfluousParameterException extends ParameterException {
-        public SuperfluousParameterException(String msg) {
-            super(msg);
-        }
-    }
     /**
      * Exception indicating that a required parameter was not specified.
      */
