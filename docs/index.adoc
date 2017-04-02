@@ -1160,17 +1160,15 @@ This allows you to invoke `CommandLine.run(new Compress(), args)`, which is the 
 
 [source,java
 ----
-public static <R extends Runnable> void run(R annotatedObject, String... args) {
-    Runnable runnable = null;
-    try {
-        runnable = parse(annotatedObject, args);
-    } catch (Exception ex) {
-        System.err.println(ex);
-        usage(annotatedObject, System.err);
-        return;
-    }
-    runnable.run();
+Runnable runnable = null;
+try {
+    runnable = parse(annotatedObject, args);
+} catch (Exception ex) {
+    System.err.println(ex.getMessage());
+    usage(annotatedObject, System.err);
+    return;
 }
+runnable.run();
 ----
 Note that the `CommandLine.run` convenience method cannot be used with subcommands.
 

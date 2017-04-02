@@ -253,6 +253,37 @@ public class CommandLine {
     }
 
     /**
+     * Convenience method to allow command line application authors to avoid some boilerplate code in their application.
+     * The annotated object needs to implement {@link Runnable}. Calling this method is equivalent to:
+     * <pre>
+     * Runnable runnable = null;
+     * try {
+     *     runnable = parse(annotatedObject, args);
+     * } catch (Exception ex) {
+     *     System.err.println(ex.getMessage());
+     *     usage(annotatedObject, System.err);
+     *     return;
+     * }
+     * runnable.run();
+     * </pre>
+     * Note that this method is not suitable for commands with subcommands.
+     * @param annotatedObject the command to run when {@linkplain #parse(Object, String...) parsing} succeeds.
+     * @param args the command line arguments to parse
+     * @param <R> the annotated object to initialize and run
+     */
+    public static <R extends Runnable> void run(R annotatedObject, String... args) {
+        Runnable runnable = null;
+        try {
+            runnable = parse(annotatedObject, args);
+        } catch (Exception ex) {
+            System.err.println(ex.getMessage());
+            usage(annotatedObject, System.err);
+            return;
+        }
+        runnable.run();
+    }
+
+    /**
      * Registers the specified type converter for the specified class. When initializing fields annotated with
      * {@link Option}, the field's type is used as a lookup key to find the associated type converter, and this
      * type converter converts the original command line argument string value to the correct type.

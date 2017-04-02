@@ -18,7 +18,10 @@ package picocli;
 import org.junit.Ignore;
 import org.junit.Test;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.PrintStream;
+import java.io.UnsupportedEncodingException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.net.InetAddress;
@@ -1943,5 +1946,40 @@ public class CommandLineTest {
         assertTrue("status -b", status.branchInfo);
         assertFalse("NOT status --showIgnored", status.showIgnored);
         assertEquals("status -u=no", SubcommandDemo.GitStatusMode.no, status.mode);
+    }
+
+    @Test
+    public void testRunCallsRunnableIfParseSucceeds() {
+        final boolean[] runWasCalled = {false};
+        class App implements Runnable {
+            public void run() {
+                runWasCalled[0] = true;
+            }
+        }
+        CommandLine.run(new App());
+        assertTrue(runWasCalled[0]);
+    }
+
+    @Test
+    public void testRunPrintsErrorIfParseFails() throws UnsupportedEncodingException {
+        final boolean[] runWasCalled = {false};
+        class App implements Runnable {
+            @Option(names = "-number") int number;
+            public void run() {
+                runWasCalled[0] = true;
+            }
+        }
+        PrintStream oldErr = System.err;
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        System.setErr(new PrintStream(baos, true, "UTF8"));
+        CommandLine.run(new App(), "-number", "not a number");
+        System.setErr(oldErr);
+
+        String result = baos.toString("UTF8");
+        assertFalse(runWasCalled[0]);
+        assertEquals(String.format(
+                "Could not convert 'not a number' to int for option '-number'%n" +
+                "Usage: <main class> [-number=<number>]%n" +
+                "      -number=<number>%n"), result);
     }
 }
