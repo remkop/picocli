@@ -112,9 +112,9 @@ public class SubcommandDemo implements Runnable {
                 "Show untracked files.",
                 "The mode parameter is optional (defaults to `all`), and is used to specify the handling of untracked files.",
                 "The possible options are:",
-                " · no - Show no untracked files.",
-                " · normal - Shows untracked files and directories.",
-                " · all - Also shows individual files in untracked directories."
+                " * no - Show no untracked files.",
+                " * normal - Shows untracked files and directories.",
+                " * all - Also shows individual files in untracked directories."
         })
         GitStatusMode mode = GitStatusMode.all;
     }
@@ -286,9 +286,9 @@ public class SubcommandDemo implements Runnable {
             "                                `all`), and is used to specify the handling of%n" +
             "                                untracked files.%n" +
             "                              The possible options are:%n" +
-            "                               · no - Show no untracked files.%n" +
-            "                               · normal - Shows untracked files and directories.%n" +
-            "                               · all - Also shows individual files in untracked%n" +
+            "                               * no - Show no untracked files.%n" +
+            "                               * normal - Shows untracked files and directories.%n" +
+            "                               * all - Also shows individual files in untracked%n" +
             "                                directories.%n" +
             "                              Default: all%n";
 
