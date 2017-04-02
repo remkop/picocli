@@ -747,7 +747,7 @@ public class CommandLineTest {
         verifyCompact(compact, true, true, "out", fileArray("p1", "p2"));
     }
 
-    /** @see {@link #testGnuLongOptionsWithVariousSeparators()} */
+    /** See {@link #testGnuLongOptionsWithVariousSeparators()}  */
     @Test
     public void testDefaultSeparatorIsEquals() {
         assertEquals("=", new CommandLine(new CompactFields()).getSeparator());

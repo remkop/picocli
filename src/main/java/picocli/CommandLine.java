@@ -1812,7 +1812,7 @@ public class CommandLine {
         }
 
         /** Sorts all {@code Options} with the specified {@code comparator} (if the comparator is non-{@code null}),
-         * then {@linkplain Layout#addOption(Field, IParamLabelRenderer) adds} all non-hidden options to the
+         * then {@linkplain Layout#addOption(Field, CommandLine.Help.IParamLabelRenderer) adds} all non-hidden options to the
          * specified TextTable and returns the result of TextTable.toString().
          * @param layout responsible for rendering the option list
          * @param optionSort determines in what order {@code Options} should be listed. Declared order if {@code null}
@@ -2274,7 +2274,7 @@ public class CommandLine {
                     table.addRowValues(oneRow);
                 }
             }
-            /** Calls {@link #addOption(Field, IParamLabelRenderer)} for all non-hidden Options in the list. */
+            /** Calls {@link #addOption(Field, CommandLine.Help.IParamLabelRenderer)} for all non-hidden Options in the list. */
             public void addOptions(List<Field> fields, IParamLabelRenderer paramLabelRenderer) {
                 for (Field field : fields) {
                     Option option = field.getAnnotation(Option.class);
@@ -2295,7 +2295,7 @@ public class CommandLine {
                 String[][] values = optionRenderer.render(option, field, paramLabelRenderer);
                 layout(field, values);
             }
-            /** Calls {@link #addPositionalParameter(Field, IParamLabelRenderer)} for all non-hidden Parameters in the list. */
+            /** Calls {@link #addPositionalParameter(Field, CommandLine.Help.IParamLabelRenderer)} for all non-hidden Parameters in the list. */
             public void addPositionalParameters(List<Field> fields, IParamLabelRenderer paramLabelRenderer) {
                 for (Field field : fields) {
                     Parameters parameters = field.getAnnotation(Parameters.class);
@@ -2567,6 +2567,7 @@ public class CommandLine {
             static final String BOLD        = "\u001B[1m";
             static final String FAINT       = "\u001B[2m";
             static final String UNDERLINE   = "\u001B[4m";
+            static final String REVERSE     = "\u001B[7m";
             static final String BLACK       = "\u001B[30m";
             static final String RED         = "\u001B[31m";
             static final String GREEN       = "\u001B[32m";
