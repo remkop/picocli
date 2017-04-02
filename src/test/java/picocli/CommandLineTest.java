@@ -1924,4 +1924,24 @@ public class CommandLineTest {
         Args args = CommandLine.parse(new Args(), "a,b,c");
         assertEquals("a,b,c", args.value);
     }
+
+    @Test
+    public void testParseSubCommands() {
+        CommandLine commandLine = SubcommandDemo.mainCommand();
+
+        List<Object> parsed = commandLine.parse("--git-dir=/home/rpopma/picocli status -sbuno".split(" "));
+        assertEquals("command count", 2, parsed.size());
+
+        assertEquals(SubcommandDemo.Git.class, parsed.get(0).getClass());
+        assertEquals(SubcommandDemo.GitStatus.class, parsed.get(1).getClass());
+
+        SubcommandDemo.Git git = (SubcommandDemo.Git) parsed.get(0);
+        assertEquals(new File("/home/rpopma/picocli"), git.gitDir);
+
+        SubcommandDemo.GitStatus status = (SubcommandDemo.GitStatus) parsed.get(1);
+        assertTrue("status -s", status.shortFormat);
+        assertTrue("status -b", status.branchInfo);
+        assertFalse("NOT status --showIgnored", status.showIgnored);
+        assertEquals("status -u=no", SubcommandDemo.GitStatusMode.no, status.mode);
+    }
 }
