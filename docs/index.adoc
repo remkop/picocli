@@ -1112,51 +1112,9 @@ public class ZipCommand extends AbstractCommand {
 ----
 
 
-== Putting it all Together
-=== An Application Recipe
-Imagine an application that takes some input files and compresses them to an output file.
-----
-Compress -o outputFile file1 file2 file3
-----
-The program takes one option (`-o`, the output file) and one or more input files.
-One way to accomplish this with picocli looks like this:
-
-[source, java]
-----
-import picocli.CommandLine.*;
-import java.io.File;
-
-@Command(name = "Compress", header = "Compresses the specified input files to an output file")
-public class Compress {
-    @Parameters(arity = "1..*", description = "one or more files to compress")
-    File[] inputFiles;
-
-    @Option(names = {"-o", "--outfile"}, description = "optional output file name. If omitted directory name is used.")
-    File outputFile;
-
-    @Option(names = {"-h", "--help"}, help = true, description = "display this help message")
-    boolean helpRequested;
-
-    public static void main(String... args) {
-        try {
-            Compress compress = CommandLine.parse(new Compress(), args);
-            if (compress.helpRequested) {
-                CommandLine.usage(new Compress(), System.err);
-                return;
-            }
-            doCompress();
-        } catch (ParseException ex) {
-            System.err.println(ex.getMessage());
-            CommandLine.usage(new Compress(), System.err);
-        }
-    }
-
-    private void doCompress() { ... } // business logic of the application
-}
-----
-=== Convenience API
+== Convenience API for Runnables
 You can omit some of the boilerplate code from your application by letting the annotated object implement `Runnable`.
-This allows you to invoke `CommandLine.run(new Compress(), args)`, which is the equivalent of:
+This allows you to invoke `CommandLine.run(new MyApp(), args)`, which is the equivalent of:
 
 [source,java
 ----
