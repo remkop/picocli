@@ -17,13 +17,11 @@ package picocli;
 
 import org.junit.Test;
 import picocli.CommandLine.Help;
-import picocli.CommandLine.Help.Column;
 import picocli.CommandLine.Help.TextTable;
 import picocli.CommandLine.Option;
 import picocli.CommandLine.Parameters;
 import picocli.CommandLine.Command;
 
-import java.awt.Point;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.PrintStream;
@@ -36,7 +34,6 @@ import java.util.List;
 
 import static java.lang.String.format;
 import static org.junit.Assert.*;
-import static picocli.CommandLine.Help.Column.Overflow.*;
 
 /**
  * Tests for picoCLI's "Usage" help functionality.
@@ -44,8 +41,11 @@ import static picocli.CommandLine.Help.Column.Overflow.*;
 public class CommandLineHelpTest {
     private static final String LINESEP = System.getProperty("line.separator");
     private static String usageString(Object annotatedObject) throws UnsupportedEncodingException {
+        return usageString(new CommandLine(annotatedObject));
+    }
+    private static String usageString(CommandLine commandLine) throws UnsupportedEncodingException {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        CommandLine.usage(annotatedObject, new PrintStream(baos, true, "UTF8"));
+        commandLine.usage(new PrintStream(baos, true, "UTF8"));
         String result = baos.toString("UTF8");
         return result;
     }
@@ -833,5 +833,43 @@ public class CommandLineHelpTest {
 
         @Parameters(index = "*", paramLabel = "all", description = "all parameters")
         String param_n;
+    }
+
+    @Test
+    public void testSubclassedCommandHelp() throws Exception {
+        @Command(name = "parent", description = "parent description")
+        class ParentOption {
+        }
+        @Command(name = "child", description = "child description")
+        class ChildOption extends ParentOption {
+        }
+        String actual = usageString(new ChildOption());
+        assertEquals(String.format(
+                "Usage: child%n" +
+                "child description%n"), actual);
+    }
+
+    @Test
+    public void testUsageMainCommand_NoAnsi() throws Exception {
+        CommandLine.ansi = false; // force ansi off
+        String actual = usageString(SubcommandDemo.mainCommand());
+        CommandLine.ansi = null; // back to platform-dependent ansi
+        assertEquals(String.format(SubcommandDemo.EXPECTED_USAGE_MAIN), actual);
+    }
+
+    @Test
+    public void testUsageSubcommandGitStatus_NoAnsi() throws Exception {
+        CommandLine.ansi = false; // force ansi off
+        String actual = usageString(new SubcommandDemo.GitStatus());
+        CommandLine.ansi = null; // back to platform-dependent ansi
+        assertEquals(String.format(SubcommandDemo.EXPECTED_USAGE_GITSTATUS), actual);
+    }
+
+    @Test
+    public void testUsageSubcommandGitCommit_NoAnsi() throws Exception {
+        CommandLine.ansi = false; // force ansi off
+        String actual = usageString(new SubcommandDemo.GitCommit());
+        CommandLine.ansi = null; // back to platform-dependent ansi
+        assertEquals(String.format(SubcommandDemo.EXPECTED_USAGE_GITCOMMIT), actual);
     }
 }

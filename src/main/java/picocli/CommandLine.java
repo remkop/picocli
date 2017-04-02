@@ -56,6 +56,7 @@ import java.util.TreeSet;
 import java.util.UUID;
 import java.util.regex.Pattern;
 
+import static picocli.CommandLine.Help.Ansi.*;
 import static picocli.CommandLine.Help.Column.Overflow.*;
 
 /**
@@ -123,6 +124,7 @@ import static picocli.CommandLine.Help.Column.Overflow.*;
 public class CommandLine {
     /** This is picocli version {@value}. */
     public static final String VERSION = "0.3.0";
+    public static Boolean ansi = (System.getProperty("picocli.ansi") == null ? null : Boolean.getBoolean("picocli.ansi"));
 
     private final Interpreter interpreter;
     private final List<Object> parsedCommands = new ArrayList<Object>();
@@ -286,9 +288,11 @@ public class CommandLine {
      * @param cls the target class to convert parameter string values to
      * @param converter the class capable of converting string values to the specified target type
      * @param <K> the target type
+     * @return this CommandLine object, to allow method chaining
      */
-    public <K> void registerConverter(Class<K> cls, ITypeConverter<K> converter) {
+    public <K> CommandLine registerConverter(Class<K> cls, ITypeConverter<K> converter) {
         interpreter.converterRegistry.put(Assert.notNull(cls, "class"), Assert.notNull(converter, "converter"));
+        return this;
     }
 
     /** Returns the String that separates option names from option values. {@code '='} by default. */
@@ -1692,7 +1696,6 @@ public class CommandLine {
          * that don't apply to the command (e.g., does not show [OPTIONS] if the command has no options). */
         public String abbreviatedSynopsis() {
             StringBuilder sb = new StringBuilder();
-            sb.append(commandName);
             if (!optionFields.isEmpty()) { // only show if annotated object actually has options
                 sb.append(" [OPTIONS]");
             }
@@ -1702,8 +1705,7 @@ public class CommandLine {
                     sb.append(' ').append(parameterLabelRenderer.renderParameterLabel(positionalParam));
                 }
             }
-            sb.append(System.getProperty("line.separator"));
-            return sb.toString();
+            return underline(commandName) + yellow(sb.toString()) + System.getProperty("line.separator");
         }
 
         /** Generates a detailed synopsis message showing all options and parameters. Follows the unix convention of
@@ -1755,11 +1757,13 @@ public class CommandLine {
                     sb.append(' ').append(parameterLabelRenderer.renderParameterLabel(positionalParam));
                 }
             }
-
             TextTable textTable = new TextTable(commandName.length(), 80 - commandName.length());
             textTable.indentWrappedLines = 1; // don't worry about first line: options (2nd column) always start with a space
             textTable.addRowValues(new String[] {commandName, sb.toString()});
-            return textTable.toString();
+
+            String formatted = textTable.toString();
+            return underline(formatted.substring(0, commandName.length())) +
+                    yellow(formatted.substring(commandName.length()));
         }
         /**
          * <p>Returns a description of the {@linkplain Option options} supported by the application.
@@ -1851,40 +1855,40 @@ public class CommandLine {
 
         /** Returns the text displayed before the header text; the result of {@code String.format(headerHeading, params)}. */
         public String headerHeading(Object... params) {
-            return format(headerHeading, params);
+            return bold(format(headerHeading, params));
         }
         /** Returns the text displayed before the synopsis text; the result of {@code String.format(synopsisHeading, params)}. */
         public String synopsisHeading(Object... params) {
-            return format(synopsisHeading, params);
+            return bold(format(synopsisHeading, params));
         }
 
         /** Returns the text displayed before the description text; an empty string if there is no description,
          * otherwise the result of {@code String.format(descriptionHeading, params)}. */
         public String descriptionHeading(Object... params) {
-            return empty(description) ? "" : format(descriptionHeading, params);
+            return empty(descriptionHeading) ? "" : bold(format(descriptionHeading, params));
         }
 
         /** Returns the text displayed before the positional parameter list; an empty string if there are no positional
          * parameters, otherwise the result of {@code String.format(parameterListHeading, params)}. */
         public String parameterListHeading(Object... params) {
-            return positionalParametersFields.isEmpty() ? "" : format(parameterListHeading, params);
+            return positionalParametersFields.isEmpty() ? "" : bold(format(parameterListHeading, params));
         }
 
         /** Returns the text displayed before the option list; an empty string if there are no options,
          * otherwise the result of {@code String.format(optionListHeading, params)}. */
         public String optionListHeading(Object... params) {
-            return optionFields.isEmpty() ? "" : format(optionListHeading, params);
+            return optionFields.isEmpty() ? "" : bold(format(optionListHeading, params));
         }
 
         /** Returns the text displayed before the command list; an empty string if there are no commands,
          * otherwise the result of {@code String.format(commandListHeading, params)}. */
         public String commandListHeading(Object... params) {
-            return commands.isEmpty() ? "" : format(commandListHeading, params);
+            return commands.isEmpty() ? "" : bold(format(commandListHeading, params));
         }
 
         /** Returns the text displayed before the footer text; the result of {@code String.format(footerHeading, params)}. */
         public String footerHeading(Object... params) {
-            return format(footerHeading, params);
+            return bold(format(footerHeading, params));
         }
         private String format(String formatString,  Object[] params) {
             return formatString == null ? "" : String.format(formatString, params);
@@ -1901,7 +1905,7 @@ public class CommandLine {
                 Help command = entry.getValue();
                 String header = command.header != null && command.header.length > 0 ? command.header[0]
                         : (command.description != null && command.description.length > 0 ? command.description[0] : "");
-                textTable.addRowValues(entry.getKey(), header);
+                textTable.addRowValues(underline(entry.getKey()), header);
             }
             return textTable.toString();
         }
@@ -2526,6 +2530,32 @@ public class CommandLine {
                 this.indent = indent;
                 this.overflow = Assert.notNull(overflow, "overflow");
             }
+        }
+        public static class Ansi {
+            static final String RESET       = "\u001B[0m";
+            static final String BOLD        = "\u001B[1m";
+            static final String FAINT       = "\u001B[2m";
+            static final String UNDERLINE   = "\u001B[4m";
+            static final String BLACK       = "\u001B[30m";
+            static final String RED         = "\u001B[31m";
+            static final String GREEN       = "\u001B[32m";
+            static final String YELLOW      = "\u001B[33m";
+            static final String BLUE        = "\u001B[34m";
+            static final String MAGENTA     = "\u001B[35m";
+            static final String CYAN        = "\u001B[36m";
+            static final String WHITE       = "\u001B[37m";
+            static final boolean isWindows  = System.getProperty("os.name").startsWith("Windows");
+            static final boolean isXterm    = System.getenv("TERM") != null && System.getenv("TERM").startsWith("xterm");
+
+            private static boolean forceAnsiOn() { return ansi != null && ansi; }
+            private static boolean forceAnsiOff() { return ansi != null && !ansi; }
+            private static boolean ansiPossible() { return !isWindows || isXterm; }
+            private static boolean enabled(String t) { return t.length() == 0 ? false
+                    : forceAnsiOn() || (ansiPossible() && !forceAnsiOff()); }
+
+            public static String bold(String text)      { return enabled(text) ? BOLD      + text + RESET : text; }
+            public static String underline(String text) { return enabled(text) ? UNDERLINE + text + RESET : text; }
+            public static String yellow(String text)    { return enabled(text) ? YELLOW    + text + RESET : text; }
         }
     }
 
