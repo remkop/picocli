@@ -2578,10 +2578,15 @@ public class CommandLine {
             static final String WHITE       = "\u001B[37m";
             static final boolean isWindows  = System.getProperty("os.name").startsWith("Windows");
             static final boolean isXterm    = System.getenv("TERM") != null && System.getenv("TERM").startsWith("xterm");
-
-            private static boolean forceAnsiOn() { return ansi != null && ansi; }
+            static final boolean ISATTY = calcTTY();
+            // http://stackoverflow.com/questions/1403772/how-can-i-check-if-a-java-programs-input-output-streams-are-connected-to-a-term
+            static final boolean calcTTY() {
+                try { return System.class.getDeclaredMethod("console").invoke(null) != null; }
+                catch (Throwable reflectionFailed) { return true; }
+            }
+            private static boolean ansiPossible() { return ISATTY && (!isWindows || isXterm); }
+            private static boolean forceAnsiOn()  { return ansi != null && ansi; }
             private static boolean forceAnsiOff() { return ansi != null && !ansi; }
-            private static boolean ansiPossible() { return !isWindows || isXterm; }
             private static boolean enabled(String t) { return t.length() == 0 ? false
                     : forceAnsiOn() || (ansiPossible() && !forceAnsiOff()); }
 
