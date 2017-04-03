@@ -47,6 +47,7 @@ import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
@@ -2593,6 +2594,89 @@ public class CommandLine {
             public static String bold(String text)      { return enabled(text) ? BOLD      + text + RESET : text; }
             public static String underline(String text) { return enabled(text) ? UNDERLINE + text + RESET : text; }
             public static String yellow(String text)    { return enabled(text) ? YELLOW    + text + RESET : text; }
+            enum Style {
+                reset(0, 0), bold(1, 21), faint(2, 22), italic(3, 23), underline(4, 24), reverse(7, 27),
+                fg_black(30, 39), fg_red(31, 39), fg_green(32, 39), fg_yellow(33, 39), fg_blue(34, 39), fg_magenta(35, 39), fg_cyan(36, 39), fg_white(37, 39),
+                bg_black(40, 49), bg_red(41, 49), bg_green(42, 49), bg_yellow(43, 49), bg_blue(44, 49), bg_magenta(45, 49), bg_cyan(46, 49), bg_white(47, 49),
+                ;
+                private static final String CSI = "\u001B[";
+                private final int startCode;
+                private final int endCode;
+                private Style(int startCode, int endCode) {this.startCode = startCode; this.endCode = endCode; }
+                public String apply(String txt) {
+                    if (!enabled(txt)) { return txt; }
+                    return new StringBuilder(txt.length() + 10)
+                            .append(CSI).append(startCode).append('m').append(txt).append(CSI).append(endCode).append('m').toString();
+                }
+                public static String apply(String txt, Style... styles) {
+                    if (!enabled(txt)) { return txt; }
+                    StringBuilder sb = new StringBuilder(txt.length() + 5 * styles.length);
+                    sb.append(CSI);
+                    for (int i = 0; i < styles.length; i++) {
+                        sb.append(i == 0 ? "" : ";").append(styles[i].startCode);
+                    }
+                    sb.append('m').append(txt).append(CSI);
+                    for (int i = styles.length - 1; i >= 0; i--) {
+                        sb.append(i == 0 ? "" : ";").append(styles[i].endCode);
+                    }
+                    return sb.append('m').append(CSI).append(reset.endCode).append('m').toString();
+                }
+            }
+            public static class Text {
+                String markup;
+                StringBuilder rendered = new StringBuilder();
+                StringBuilder plain = new StringBuilder();
+                public void setMarkup(String input) {
+                    markup = input;
+                    rendered.setLength(0);
+                    plain.setLength(0);
+                    int i = 0;
+
+                    while(true) {
+                        int j = input.indexOf("@|", i);
+                        if(j == -1) {
+                            if(i == 0) {
+                                append(input);
+                                return;
+                            }
+                            append(input.substring(i, input.length()));
+                            return;
+                        }
+                        append(input.substring(i, j));
+                        int k = input.indexOf("|@", j);
+                        if(k == -1) {
+                            append(input);
+                            return;
+                        }
+
+                        j += 2;
+                        String spec = input.substring(j, k);
+                        String[] items = spec.split(" ", 2);
+                        if(items.length == 1) {
+                            append(input);
+                            return;
+                        }
+
+                        String replacement = render(items[1], items[0].split(","));
+                        rendered.append(replacement);
+                        plain.append(items[1]);
+                        i = k + 2;
+                    }
+                }
+
+                private void append(String remainder) {
+                    rendered.append(remainder);
+                    plain.append(remainder);
+                }
+
+                public static String render(String text, String... codes) {
+                    Style[] styles = new Style[codes.length];
+                    for(int i = 0; i < codes.length; ++i) {
+                        styles[i] = Style.valueOf(codes[i].toLowerCase(Locale.ENGLISH));
+                    }
+                    return Style.apply(text, styles);
+                }
+            }
         }
     }
 
