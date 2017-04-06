@@ -57,6 +57,7 @@ import java.util.TreeSet;
 import java.util.UUID;
 import java.util.regex.Pattern;
 
+import static java.util.Locale.ENGLISH;
 import static picocli.CommandLine.Help.Ansi.*;
 import static picocli.CommandLine.Help.Column.Overflow.*;
 
@@ -2563,6 +2564,26 @@ public class CommandLine {
                 this.overflow = Assert.notNull(overflow, "overflow");
             }
         }
+        public static class ColorScheme {
+            public final List<IStyle> headings     = new ArrayList<IStyle>();
+            public final List<IStyle> commands     = new ArrayList<IStyle>();
+            public final List<IStyle> options      = new ArrayList<IStyle>();
+            public final List<IStyle> parameters   = new ArrayList<IStyle>();
+            public final List<IStyle> optionParams = new ArrayList<IStyle>();
+            public ColorScheme headings(IStyle... styles)     { for (int i = 0; i < styles.length; i++) { headings.add(styles[i]);     } return this;}
+            public ColorScheme commands(IStyle... styles)     { for (int i = 0; i < styles.length; i++) { commands.add(styles[i]);     } return this;}
+            public ColorScheme options(IStyle... styles)      { for (int i = 0; i < styles.length; i++) { options.add(styles[i]);      } return this;}
+            public ColorScheme parameters(IStyle... styles)   { for (int i = 0; i < styles.length; i++) { parameters.add(styles[i]);   } return this;}
+            public ColorScheme optionParams(IStyle... styles) { for (int i = 0; i < styles.length; i++) { optionParams.add(styles[i]); } return this;}
+        }
+        public static ColorScheme defaultColorScheme() {
+            return new ColorScheme()
+                    .headings(Style.bold, Style.underline)
+                    .commands(Style.bold)
+                    .options(Style.fg_yellow)
+                    .parameters(Style.fg_yellow)
+                    .optionParams(Style.fg_yellow, Style.italic);
+        }
         public static class Ansi {
             static final String RESET       = "\u001B[0m";
             static final String BOLD        = "\u001B[1m";
@@ -2594,38 +2615,63 @@ public class CommandLine {
             public static String bold(String text)      { return enabled(text) ? BOLD      + text + RESET : text; }
             public static String underline(String text) { return enabled(text) ? UNDERLINE + text + RESET : text; }
             public static String yellow(String text)    { return enabled(text) ? YELLOW    + text + RESET : text; }
-            enum Style {
-                reset(0, 0), bold(1, 21), faint(2, 22), italic(3, 23), underline(4, 24), reverse(7, 27),
+            interface IStyle {
+                /** The Control Sequence Introducer (CSI) escape sequence {@code "ESC["}. */
+                String CSI = "\u001B[";
+                String on();
+                String off();
+            }
+            enum Style implements IStyle {
+                reset(0, 0), bold(1, 21), faint(2, 22), italic(3, 23), underline(4, 24), blink(5, 25), reverse(7, 27),
                 fg_black(30, 39), fg_red(31, 39), fg_green(32, 39), fg_yellow(33, 39), fg_blue(34, 39), fg_magenta(35, 39), fg_cyan(36, 39), fg_white(37, 39),
                 bg_black(40, 49), bg_red(41, 49), bg_green(42, 49), bg_yellow(43, 49), bg_blue(44, 49), bg_magenta(45, 49), bg_cyan(46, 49), bg_white(47, 49),
                 ;
-                private static final String CSI = "\u001B[";
                 private final int startCode;
                 private final int endCode;
                 private Style(int startCode, int endCode) {this.startCode = startCode; this.endCode = endCode; }
-                public String apply(String txt) {
-                    if (!enabled(txt)) { return txt; }
-                    return new StringBuilder(txt.length() + 10)
-                            .append(CSI).append(startCode).append('m').append(txt).append(CSI).append(endCode).append('m').toString();
-                }
-                public static String apply(String txt, Style... styles) {
-                    if (!enabled(txt)) { return txt; }
-                    StringBuilder sb = new StringBuilder(txt.length() + 5 * styles.length);
-                    sb.append(CSI);
-                    for (int i = 0; i < styles.length; i++) {
-                        sb.append(i == 0 ? "" : ";").append(styles[i].startCode);
+                public String on() { return CSI + startCode + "m"; }
+                public String off() { return CSI + endCode + "m"; }
+                public static String on(IStyle... styles) {
+                    StringBuilder result = new StringBuilder();
+                    for (IStyle style : styles) {
+                        result.append(style.on());
                     }
-                    sb.append('m').append(txt).append(CSI);
-                    for (int i = styles.length - 1; i >= 0; i--) {
-                        sb.append(i == 0 ? "" : ";").append(styles[i].endCode);
-                    }
-                    return sb.append('m').append(CSI).append(reset.endCode).append('m').toString();
+                    return result.toString();
                 }
+                public static String off(IStyle... styles) {
+                    StringBuilder result = new StringBuilder();
+                    for (IStyle style : styles) {
+                        result.append(style.off());
+                    }
+                    return result.toString();
+                }
+                public static IStyle fg(String str) {
+                    try { return Style.valueOf("fg_" + str.toLowerCase(ENGLISH)); } catch (Exception ignored) {}
+                    return new ISO86133RGBColor(true, Color.decode(str));
+                }
+                public static IStyle bg(String str) {
+                    try { return Style.valueOf("bg_" + str.toLowerCase(ENGLISH)); } catch (Exception ignored) {}
+                    return new ISO86133RGBColor(false, Color.decode(str));
+                }
+            }
+            /** ISO-8613-3 24-bit RGB color ansi escape codes. */
+            static class ISO86133RGBColor implements IStyle {
+                private final int fgbg;
+                private final Color color;
+
+                ISO86133RGBColor(boolean foreground, Color color) {
+                    this.fgbg = foreground ? 38 : 48;
+                    this.color = color;
+                }
+                public String on() { return String.format(CSI + "%d;2;%d;%d;%dm", fgbg, color.getRed(), color.getGreen(), color.getBlue()); }
+                public String off() { return CSI + (fgbg + 1) + "m"; }
             }
             public static class Text {
                 String markup;
                 StringBuilder rendered = new StringBuilder();
                 StringBuilder plain = new StringBuilder();
+                List<Integer> indices = new ArrayList<Integer>();
+                List<String> styles = new ArrayList<String>();
                 public void setMarkup(String input) {
                     markup = input;
                     rendered.setLength(0);
@@ -2657,9 +2703,13 @@ public class CommandLine {
                             return;
                         }
 
-                        String replacement = render(items[1], items[0].split(","));
-                        rendered.append(replacement);
+                        IStyle[] styles = parse(items[0].split(","));
+                        rendered.append(Style.on(styles)).append(items[1]).append(Style.off(styles));
+                        indices.add(plain.length());
+                        this.styles.add(Style.on(styles));
                         plain.append(items[1]);
+                        indices.add(plain.length());
+                        this.styles.add(Style.off(styles));
                         i = k + 2;
                     }
                 }
@@ -2669,12 +2719,20 @@ public class CommandLine {
                     plain.append(remainder);
                 }
 
-                public static String render(String text, String... codes) {
-                    Style[] styles = new Style[codes.length];
+                private IStyle[] parse(String... codes) {
+                    IStyle[] styles = new IStyle[codes.length];
                     for(int i = 0; i < codes.length; ++i) {
-                        styles[i] = Style.valueOf(codes[i].toLowerCase(Locale.ENGLISH));
+                        if (codes[i].toLowerCase(ENGLISH).startsWith("fg(")) {
+                            int end = codes[i].indexOf(')');
+                            styles[i] = Style.fg(codes[i].substring(3, end < 0 ? codes[i].length() : end));
+                        } else if (codes[i].toLowerCase(ENGLISH).startsWith("bg(")) {
+                            int end = codes[i].indexOf(')');
+                            styles[i] = Style.bg(codes[i].substring(3, end < 0 ? codes[i].length() : end));
+                        } else {
+                            styles[i] = Style.fg(codes[i]);
+                        }
                     }
-                    return Style.apply(text, styles);
+                    return styles;
                 }
             }
         }
