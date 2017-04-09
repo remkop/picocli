@@ -36,11 +36,7 @@ Then invoke `CommandLine.parse` with the command line parameters and an object y
 ```java
 String[] args = { "-v", "inputFile1", "inputFile2" };
 Example app = CommandLine.parse(new Example(), args);
-```
 
-The command line arguments have been converted to strongly typed values, and
-your application can now work with these values.
-```java
 assert !app.helpRequested;
 assert  app.verbose;
 assert  app.inputFiles != null && app.inputFiles.length == 2;
