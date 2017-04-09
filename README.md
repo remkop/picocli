@@ -41,11 +41,20 @@ assert !app.helpRequested;
 assert  app.verbose;
 assert  app.inputFiles != null && app.inputFiles.length == 2;
 ```
-If invalid input resulted in a `ParameterException` or if the user requested help, invoke `CommandLine.usage`. For example:
+
+## Usage Help
+
+If the user requested help or if invalid input resulted in a `ParameterException`,
+picocli can generate a usage help message. For example:
 ```java
 CommandLine.usage(new Example(), System.out);
 ```
 
-The generated help message looks like this:
+The generated help message looks like this (colors only rendered when ANSI codes are enabled):
 
 ![Usage help message with ANSI colors](docs/ExampleUsageANSI.png?raw=true)
+
+Usage help is highly customizable.
+A more elaborate usage help example is shown below:
+
+![Longer help message with ANSI colors](docs/UsageHelpWithStyle.png?raw=true)
