@@ -24,7 +24,7 @@ import picocli.CommandLine.Command;
  * Requires Jansi on the classpath.
  */
 @Command(name = "picocli.WindowsJansiDemo")
-public class WindowsJansiDemo extends SubcommandDemo {
+public class WindowsJansiDemo extends Demo {
 public static void main(String[] args) {
     AnsiConsole.systemInstall();                      // Jansi magic
     if (System.getProperty("picocli.ansi") == null) { // no user preference

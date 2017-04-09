@@ -173,6 +173,7 @@ public class CommandLine {
      * @param args the command line arguments to parse
      * @param <T> the type of the annotated object
      * @return the specified annotated object
+     * @throws ParameterException if the specified command line arguments are invalid
      */
     public static <T> T parse(T annotatedObject, String... args) {
         CommandLine cli = new CommandLine(annotatedObject);
@@ -188,6 +189,7 @@ public class CommandLine {
      *
      * @param args the command line arguments to parse
      * @return the annotated object that this {@code CommandLine} was constructed with
+     * @throws ParameterException if the specified command line arguments are invalid
      */
     public List<Object> parse(String... args) {
         interpreter.parse(args);
@@ -989,6 +991,7 @@ public class CommandLine {
          * Entry point into parsing command line arguments.
          * @param args the command line arguments
          * @return the annotated object, initialized with the command line arguments
+         * @throws ParameterException if the specified command line arguments are invalid
          */
         Object parse(String... args) {
             Assert.notNull(args, "argument array");
@@ -1577,7 +1580,7 @@ public class CommandLine {
 
         private final Object annotatedObject;
         private final Map<String, Help> commands = new LinkedHashMap<String, Help>();
-        private ColorScheme colorScheme;
+        final ColorScheme colorScheme;
 
         /** LinkedHashMap mapping {@link Option} instances to the {@code Field} they annotate, in declaration order. */
         //public final Map<Option, Field> option2Field = new LinkedHashMap<Option, Field>();
@@ -1745,7 +1748,7 @@ public class CommandLine {
             // sb.append(" [--] "); // implied
             for (Field positionalParam : positionalParametersFields) {
                 if (!positionalParam.getAnnotation(Parameters.class).hidden()) {
-                    sb.append(' ').append(parameterLabelRenderer.renderParameterLabel(positionalParam));
+                    sb.append(' ').append(parameterLabelRenderer.renderParameterLabel(positionalParam, colorScheme.parameterStyles));
                 }
             }
             return colorScheme.commandText(commandName).toString()
@@ -1797,7 +1800,7 @@ public class CommandLine {
                     optionNames = (option.required() ? "" : "[") + optionNames;
                     optionText = optionText.append(colorScheme.optionText(optionNames));
 
-                    Text optionParamText = colorScheme.optionParamText(parameterLabelRenderer.renderParameterLabel(field));
+                    Text optionParamText = parameterLabelRenderer.renderParameterLabel(field, colorScheme.parameterStyles);
                     optionText = optionText.append(optionParamText);
                     if (!option.required()) {
                         optionText = optionText.append(new Text("]"));
@@ -1807,8 +1810,8 @@ public class CommandLine {
             for (Field positionalParam : positionalParametersFields) {
                 if (!positionalParam.getAnnotation(Parameters.class).hidden()) {
                     optionText = optionText.append(new Text(" "));
-                    String label = parameterLabelRenderer.renderParameterLabel(positionalParam);
-                    optionText = optionText.append(colorScheme.parameterText(label));
+                    Text label = parameterLabelRenderer.renderParameterLabel(positionalParam, colorScheme.parameterStyles);
+                    optionText = optionText.append(label);
                 }
             }
             TextTable textTable = new TextTable(commandName.length(), 80 - commandName.length());
@@ -1906,40 +1909,40 @@ public class CommandLine {
 
         /** Returns the text displayed before the header text; the result of {@code String.format(headerHeading, params)}. */
         public String headerHeading(Object... params) {
-            return colorScheme.headingText(format(headerHeading, params)).toString();
+            return new Text(format(headerHeading, params)).toString();
         }
         /** Returns the text displayed before the synopsis text; the result of {@code String.format(synopsisHeading, params)}. */
         public String synopsisHeading(Object... params) {
-            return colorScheme.headingText(format(synopsisHeading, params)).toString();
+            return new Text(format(synopsisHeading, params)).toString();
         }
 
         /** Returns the text displayed before the description text; an empty string if there is no description,
          * otherwise the result of {@code String.format(descriptionHeading, params)}. */
         public String descriptionHeading(Object... params) {
-            return empty(descriptionHeading) ? "" : colorScheme.headingText(format(descriptionHeading, params)).toString();
+            return empty(descriptionHeading) ? "" : new Text(format(descriptionHeading, params)).toString();
         }
 
         /** Returns the text displayed before the positional parameter list; an empty string if there are no positional
          * parameters, otherwise the result of {@code String.format(parameterListHeading, params)}. */
         public String parameterListHeading(Object... params) {
-            return positionalParametersFields.isEmpty() ? "" : colorScheme.headingText(format(parameterListHeading, params)).toString();
+            return positionalParametersFields.isEmpty() ? "" : new Text(format(parameterListHeading, params)).toString();
         }
 
         /** Returns the text displayed before the option list; an empty string if there are no options,
          * otherwise the result of {@code String.format(optionListHeading, params)}. */
         public String optionListHeading(Object... params) {
-            return optionFields.isEmpty() ? "" : colorScheme.headingText(format(optionListHeading, params)).toString();
+            return optionFields.isEmpty() ? "" : new Text(format(optionListHeading, params)).toString();
         }
 
         /** Returns the text displayed before the command list; an empty string if there are no commands,
          * otherwise the result of {@code String.format(commandListHeading, params)}. */
         public String commandListHeading(Object... params) {
-            return commands.isEmpty() ? "" : colorScheme.headingText(format(commandListHeading, params)).toString();
+            return commands.isEmpty() ? "" : new Text(format(commandListHeading, params)).toString();
         }
 
         /** Returns the text displayed before the footer text; the result of {@code String.format(footerHeading, params)}. */
         public String footerHeading(Object... params) {
-            return colorScheme.headingText(format(footerHeading, params)).toString();
+            return new Text(format(footerHeading, params)).toString();
         }
         private String format(String formatString,  Object[] params) {
             return formatString == null ? "" : String.format(formatString, params);
@@ -2029,7 +2032,7 @@ public class CommandLine {
         /** Returns a value renderer that returns the {@code paramLabel} if defined or the field name otherwise. */
         public static IParamLabelRenderer createMinimalParamLabelRenderer() {
             return new IParamLabelRenderer() {
-                public String renderParameterLabel(Field field) {
+                public Text renderParameterLabel(Field field, List<IStyle> styles) {
                     String paramLabel = null;
                     Parameters parameters = field.getAnnotation(Parameters.class);
                     if (parameters != null) {
@@ -2037,7 +2040,8 @@ public class CommandLine {
                     } else {
                         paramLabel = field.isAnnotationPresent(Option.class) ? field.getAnnotation(Option.class).paramLabel() : null;
                     }
-                    return paramLabel == null || paramLabel.length() == 0 ? field.getName() : paramLabel;
+                    String text = paramLabel == null || paramLabel.length() == 0 ? field.getName() : paramLabel;
+                    return Text.apply(text, styles);
                 }
                 public String separator() { return ""; }
             };
@@ -2098,17 +2102,16 @@ public class CommandLine {
                 String[] names = new ShortestFirst().sort(option.names());
                 int shortOptionCount = names[0].length() == 2 ? 1 : 0;
                 String shortOption = shortOptionCount > 0 ? names[0] : "";
-                String paramLabel = paramLabelRenderer.renderParameterLabel(field);
+                Text paramLabelText = paramLabelRenderer.renderParameterLabel(field, scheme.optionParamStyles);
                 String longOption = join(names, shortOptionCount, names.length - shortOptionCount, ", ");
                 String sep = shortOptionCount > 0 && names.length > 1 ? "," : "";
 
                 // if no long option, fill in the space between the short option name and the param label value
-                if (paramLabel.length() > 0 && longOption.length() == 0) {
+                if (paramLabelText.length > 0 && longOption.length() == 0) {
                     sep = paramLabelRenderer.separator();
-                    paramLabel = paramLabel.substring(sep.length());
+                    paramLabelText = paramLabelText.substring(sep.length());
                 }
                 Text longOptionText = scheme.optionText(longOption);
-                Text paramLabelText = scheme.optionParamText(paramLabel);
                 longOptionText = longOptionText.append(paramLabelText);
                 String requiredOption = option.required() ? requiredMarker : "";
 
@@ -2148,7 +2151,7 @@ public class CommandLine {
         static class MinimalOptionRenderer implements IOptionRenderer {
             public Text[][] render(Option option, Field field, IParamLabelRenderer parameterLabelRenderer, ColorScheme scheme) {
                 Text optionText = scheme.optionText(option.names()[0]);
-                Text paramLabelText = scheme.optionParamText(parameterLabelRenderer.renderParameterLabel(field));
+                Text paramLabelText = parameterLabelRenderer.renderParameterLabel(field, scheme.optionParamStyles);
                 optionText = optionText.append(paramLabelText);
                 return new Text[][] {{ optionText,
                                         new Text(option.description().length == 0 ? "" : option.description()[0]) }};
@@ -2158,7 +2161,7 @@ public class CommandLine {
          * text: the parameters label and a description. If multiple description lines exist, the first value is used. */
         static class MinimalParameterRenderer implements IParameterRenderer {
             public Text[][] render(Parameters param, Field field, IParamLabelRenderer parameterLabelRenderer, ColorScheme scheme) {
-                return new Text[][] {{ scheme.parameterText(parameterLabelRenderer.renderParameterLabel(field)),
+                return new Text[][] {{ parameterLabelRenderer.renderParameterLabel(field, scheme.parameterStyles),
                         new Text(param.description().length == 0 ? "" : param.description()[0]) }};
             }
         }
@@ -2192,7 +2195,7 @@ public class CommandLine {
         static class DefaultParameterRenderer implements IParameterRenderer {
             public String requiredMarker = " ";
             public Text[][] render(Parameters params, Field field, IParamLabelRenderer paramLabelRenderer, ColorScheme scheme) {
-                Text label = scheme.parameterText(paramLabelRenderer.renderParameterLabel(field));
+                Text label = paramLabelRenderer.renderParameterLabel(field, scheme.parameterStyles);
                 Text requiredParameter = scheme.parameterText(Arity.forParameters(field).min > 0 ? requiredMarker : "");
 
                 final int COLUMN_COUNT = 5;
@@ -2207,9 +2210,11 @@ public class CommandLine {
         /** When customizing online usage help for an option parameter or a positional parameter, a custom
          * {@code IParamLabelRenderer} can be used to render the parameter name or label to a String. */
         public interface IParamLabelRenderer {
+
             /** Returns a text rendering of the Option parameter or positional parameter; returns an empty string
              * {@code ""} if the option is a boolean and does not take a parameter. */
-            String renderParameterLabel(Field field);
+            Text renderParameterLabel(Field field, List<IStyle> styles);
+
             /** Returns the separator between option name and param label */
             String separator();
         }
@@ -2227,32 +2232,32 @@ public class CommandLine {
                 this.separator = Assert.notNull(separator, "separator");
             }
             public String separator() { return separator; }
-            public String renderParameterLabel(Field field) {
+            public Text renderParameterLabel(Field field, List<IStyle> styles) {
                 boolean isOptionParameter = field.isAnnotationPresent(Option.class);
                 Arity arity = isOptionParameter ? Arity.forOption(field) : Arity.forParameters(field);
-                String result = "";
+                Text result = new Text("");
                 String sep = isOptionParameter ? separator : "";
                 if (arity.min > 0) {
                     for (int i = 0; i < arity.min; i++) {
-                        result += sep + renderParameterName(field);
+                        result = result.append(sep).append(Text.apply(renderParameterName(field), styles));
                         sep = " ";
                     }
                 }
                 if (arity.max > arity.min) {
-                    sep = result.length() == 0 ? (isOptionParameter ? separator : "") : " ";
+                    sep = result.length == 0 ? (isOptionParameter ? separator : "") : " ";
                     int max = arity.isVariable ? 1 : arity.max - arity.min;
                     for (int i = 0; i < max; i++) {
                         if (sep.trim().length() == 0) {
-                            result += sep + "[" + renderParameterName(field);
+                            result = result.append(sep + "[").append(Text.apply(renderParameterName(field), styles));
                         } else {
-                            result += "[" + sep + renderParameterName(field);
+                            result = result.append("[" + sep).append(Text.apply(renderParameterName(field), styles));
                         }
                         sep  = " ";
                     }
                     if (arity.isVariable) {
-                        result += "...";
+                        result = result.append("...");
                     }
-                    for (int i = 0; i < max; i++) { result += "]"; }
+                    for (int i = 0; i < max; i++) { result = result.append("]"); }
                 }
                 return result;
             }
@@ -2282,6 +2287,7 @@ public class CommandLine {
             protected IOptionRenderer optionRenderer;
             protected IParameterRenderer parameterRenderer;
 
+            /** @see Help#defaultColorScheme() */
             public Layout(ColorScheme colorScheme) { this(colorScheme, new TextTable()); }
             public Layout(ColorScheme colorScheme, TextTable textTable) {
                 this(colorScheme, textTable, new DefaultOptionRenderer(), new DefaultParameterRenderer());
@@ -2450,6 +2456,15 @@ public class CommandLine {
                     columnValues.add(new Text(columns[i].width));
                 }
             }
+
+            /** Delegates to {@link #addRowValues(Text...)}. */
+            public void addRowValues(String... values) {
+                Text[] array = new Text[values.length];
+                for (int i = 0; i < array.length; i++) {
+                    array[i] = values[i] == null ? Text.EMPTY : new Text(values[i]);
+                }
+                addRowValues(array);
+            }
             /**
              * Adds a new {@linkplain TextTable#addEmptyRow() empty row}, then calls {@link
              * TextTable#putValue(int, int, Text) putValue} for each of the specified values, adding more empty rows
@@ -2572,6 +2587,7 @@ public class CommandLine {
                         row.setLength(0);
                     }
                 }
+                //if (Ansi.enabled()) { text.append(Style.reset.off()); }
                 return text;
             }
             public String toString() { return toString(new StringBuilder()).toString(); }
@@ -2579,13 +2595,17 @@ public class CommandLine {
         /** Columns define the width, indent (leading number of spaces in a column before the value) and
          * {@linkplain Overflow Overflow} policy of a column in a {@linkplain TextTable TextTable}. */
         public static class Column {
+
             /** Policy for handling text that is longer than the column width:
              *  span multiple columns, wrap to the next row, or simply truncate the portion that doesn't fit. */
             public enum Overflow { TRUNCATE, SPAN, WRAP }
+
             /** Column width in characters */
             public final int width;
+
             /** Indent (number of empty spaces at the start of the column preceding the text value) */
             public final int indent;
+
             /** Policy that determines how to handle values larger than the column width. */
             public final Overflow overflow;
             public Column(int width, int indent, Overflow overflow) {
@@ -2594,31 +2614,46 @@ public class CommandLine {
                 this.overflow = Assert.notNull(overflow, "overflow");
             }
         }
+
+        /** All usage help message are generated with a color scheme that assigns certain styles and colors to common
+         * parts of a usage message: the command name, options, positional parameters and option parameters.
+         * Users may customize these styles by creating Help with a custom color scheme.
+         * <p>Note that these options and styles may not be rendered if ASCII escape codes are not
+         * {@linkplain CommandLine.Help.Ansi#enabled() enabled}.</p>
+         * @see Help#defaultColorScheme()
+         */
         public static class ColorScheme {
-            public final List<IStyle> headingStyles = new ArrayList<IStyle>();
             public final List<IStyle> commandStyles = new ArrayList<IStyle>();
             public final List<IStyle> optionStyles = new ArrayList<IStyle>();
             public final List<IStyle> parameterStyles = new ArrayList<IStyle>();
             public final List<IStyle> optionParamStyles = new ArrayList<IStyle>();
-            public ColorScheme headings(IStyle... styles)     { for (int i = 0; i < styles.length; i++) { headingStyles.add(styles[i]);     } return this;}
+            /** Adds the specified styles to the styles for commands in this color scheme and returns this color scheme. */
             public ColorScheme commands(IStyle... styles)     { for (int i = 0; i < styles.length; i++) { commandStyles.add(styles[i]);     } return this;}
+            /** Adds the specified styles to the styles for options in this color scheme and returns this color scheme. */
             public ColorScheme options(IStyle... styles)      { for (int i = 0; i < styles.length; i++) { optionStyles.add(styles[i]);      } return this;}
+            /** Adds the specified styles to the styles for positional parameters in this color scheme and returns this color scheme. */
             public ColorScheme parameters(IStyle... styles)   { for (int i = 0; i < styles.length; i++) { parameterStyles.add(styles[i]);   } return this;}
+            /** Adds the specified styles to the styles for option parameters in this color scheme and returns this color scheme. */
             public ColorScheme optionParams(IStyle... styles) { for (int i = 0; i < styles.length; i++) { optionParamStyles.add(styles[i]); } return this;}
             public Ansi.Text commandText(String command)         { return Text.apply(command,     commandStyles); }
-            public Ansi.Text headingText(String heading)         { return Text.apply(heading,     headingStyles); }
             public Ansi.Text optionText(String option)           { return Text.apply(option,      optionStyles); }
             public Ansi.Text parameterText(String parameter)     { return Text.apply(parameter,   parameterStyles); }
             public Ansi.Text optionParamText(String optionParam) { return Text.apply(optionParam, optionParamStyles); }
         }
+
+        /** Creates and returns a new {@link ColorScheme} initialized with picocli default values: commands are bold,
+         *  options and parameters use a yellow foreground, and option parameters use italic.
+         * @return a new default color scheme
+         */
         public static ColorScheme defaultColorScheme() {
-return new ColorScheme()
-        .headings(Style.bold, Style.underline)
-        .commands(Style.bold)
-        .options(Style.fg_yellow)
-        .parameters(Style.fg_yellow)
-        .optionParams(Style.fg_yellow, Style.italic);
+            return new ColorScheme()
+                    .commands(Style.bold)
+                    .options(Style.fg_yellow)
+                    .parameters(Style.fg_yellow)
+                    .optionParams(Style.italic);
         }
+
+        /** Provides methods and inner classes to support using ANSI escape codes in usage help messages. */
         public static class Ansi {
             static final boolean isWindows  = System.getProperty("os.name").startsWith("Windows");
             static final boolean isXterm    = System.getenv("TERM") != null && System.getenv("TERM").startsWith("xterm");
@@ -2631,8 +2666,10 @@ return new ColorScheme()
             private static boolean ansiPossible() { return ISATTY && (!isWindows || isXterm); }
             private static boolean forceAnsiOn()  { return ansi != null && ansi; }
             private static boolean forceAnsiOff() { return ansi != null && !ansi; }
+            /** Enabled if it is forced ON or if the platform supports ANSI escape codes and it is not forced OFF. */
             public  static boolean enabled() { return forceAnsiOn() || (ansiPossible() && !forceAnsiOff()); }
 
+            /** Defines the interface for an ANSI escape sequence. */
             interface IStyle {
                 /** The Control Sequence Introducer (CSI) escape sequence {@code "ESC["}. */
                 String CSI = "\u001B[";
@@ -2766,6 +2803,9 @@ return new ColorScheme()
                     result.length = end - start;
                     return result;
                 }
+                public Text append(String string) {
+                    return append(new Text(string));
+                }
                 public Text append(Text other) {
                     Text result = (Text) clone();
                     result.plain = new StringBuilder(plain.toString().substring(from, from + length));
@@ -2775,8 +2815,12 @@ return new ColorScheme()
                         result.indexToStyle.put(index - from, indexToStyle.get(index));
                     }
                     result.plain.append(other.plain.toString().substring(other.from, other.from + other.length));
-                    for (Integer index : other.indexToStyle.keySet()) {
-                        result.indexToStyle.put(result.length + index - other.from, other.indexToStyle.get(index));
+                    for (Integer otherIndex : other.indexToStyle.keySet()) {
+                        int index = result.length + otherIndex - other.from;
+                        String replaced = result.indexToStyle.put(index, other.indexToStyle.get(otherIndex));
+                        if (replaced != null) {
+                            result.indexToStyle.put(index, replaced + other.indexToStyle.get(otherIndex));
+                        }
                     }
                     result.length = result.plain.length();
                     return result;
@@ -2823,6 +2867,7 @@ return new ColorScheme()
                 }
 
                 public static Text apply(String plainText, List<IStyle> styles) {
+                    if (plainText.length() == 0) { return new Text(0); }
                     Text result = new Text(plainText.length());
                     IStyle[] all = styles.toArray(new IStyle[styles.size()]);
                     result.indexToStyle.put(result.plain.length(), Style.on(all));

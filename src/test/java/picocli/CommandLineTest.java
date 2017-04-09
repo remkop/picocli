@@ -1930,22 +1930,22 @@ public class CommandLineTest {
 
     @Test
     public void testParseSubCommands() {
-        CommandLine commandLine = SubcommandDemo.mainCommand();
+        CommandLine commandLine = Demo.mainCommand();
 
         List<Object> parsed = commandLine.parse("--git-dir=/home/rpopma/picocli status -sbuno".split(" "));
         assertEquals("command count", 2, parsed.size());
 
-        assertEquals(SubcommandDemo.Git.class, parsed.get(0).getClass());
-        assertEquals(SubcommandDemo.GitStatus.class, parsed.get(1).getClass());
+        assertEquals(Demo.Git.class, parsed.get(0).getClass());
+        assertEquals(Demo.GitStatus.class, parsed.get(1).getClass());
 
-        SubcommandDemo.Git git = (SubcommandDemo.Git) parsed.get(0);
+        Demo.Git git = (Demo.Git) parsed.get(0);
         assertEquals(new File("/home/rpopma/picocli"), git.gitDir);
 
-        SubcommandDemo.GitStatus status = (SubcommandDemo.GitStatus) parsed.get(1);
+        Demo.GitStatus status = (Demo.GitStatus) parsed.get(1);
         assertTrue("status -s", status.shortFormat);
         assertTrue("status -b", status.branchInfo);
         assertFalse("NOT status --showIgnored", status.showIgnored);
-        assertEquals("status -u=no", SubcommandDemo.GitStatusMode.no, status.mode);
+        assertEquals("status -u=no", Demo.GitStatusMode.no, status.mode);
     }
 
     @Test

@@ -30,16 +30,16 @@ import java.util.List;
 /**
  * Demonstrates picocli subcommands.
  */
-@Command(name = "picocli.SubcommandDemo", sortOptions = false, description = {
+@Command(name = "picocli.Demo", sortOptions = false, description = {
         "Demonstrates picocli subcommands parsing and usage help.",
         "Run with -ea to enable assertions used in the tests.",
         "Run with -Dpicocli.ansi=true to force picocli to use ansi codes,",
         " or with -Dpicocli.ansi=false to force picocli to NOT use ansi codes.",
         "(By default picocli will use ansi codes if the platform supports it.)"
 })
-public class SubcommandDemo implements Runnable {
+public class Demo implements Runnable {
     public static void main(String[] args) {
-        CommandLine.run(new SubcommandDemo(), args);
+        CommandLine.run(new Demo(), args);
     }
     @Option(names = {"-t", "--tests"}, description = "Runs all tests in this class")
     private boolean runTests;
@@ -53,15 +53,38 @@ public class SubcommandDemo implements Runnable {
     @Option(names = {"-c", "--showUsageForSubcommandGitCommit"}, description = "Shows usage help for the git-commit subcommand")
     private boolean showUsageForSubcommandGitCommit;
 
+    @Option(names = "--simple", description = "Show help for the first simple Example in the manual")
+    private boolean showSimpleExample;
+
     public void run() {
-        if (!runTests && !showUsageForMainCommand && !showUsageForSubcommandGitCommit && !showUsageForSubcommandGitStatus) {
+        if (!runTests &&
+                !showSimpleExample &&
+                !showUsageForMainCommand &&
+                !showUsageForSubcommandGitCommit &&
+                !showUsageForSubcommandGitStatus) {
             CommandLine.usage(this, System.err);
             return;
         }
         if (runTests)                        { testParseSubCommands(); }
+        if (showSimpleExample)               { showSimpleExampleUsage(); }
         if (showUsageForMainCommand)         { testUsageMainCommand(); }
         if (showUsageForSubcommandGitStatus) { testUsageSubCommandStatus(); }
         if (showUsageForSubcommandGitCommit) { testUsageSubCommandCommit(); }
+    }
+
+    private void showSimpleExampleUsage() {
+        class Example {
+            @Option(names = { "-v", "--verbose" }, description = "Be verbose.")
+            private boolean verbose = false;
+
+            @Option(names = { "-h", "--help" }, help = true,
+                    description = "Displays this help message and quits.")
+            private boolean helpRequested = false;
+
+            @Parameters(arity = "1..*", paramLabel = "FILE", description = "File(s) to process.")
+            private File[] inputFiles;
+        }
+        CommandLine.usage(new Example(), System.out);
     }
 
     //------------------------------------------
