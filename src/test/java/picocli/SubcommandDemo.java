@@ -336,7 +336,7 @@ public class SubcommandDemo implements Runnable {
             "                                message.%n" +
             "      --fixup=<commit>        Construct a commit message for use with rebase%n" +
             "                                --autosquash.%n" +
-            "      --squash=<commit>        Construct a commit message for use with rebase%n" +
+            "      --squash=<commit>       Construct a commit message for use with rebase%n" +
             "                                --autosquash. The commitmessage subject line is%n" +
             "                                taken from the specified commit with a prefix%n" +
             "                                of \"squash! \". Can be used with additional%n" +
