@@ -4,9 +4,10 @@ A Java command line parsing framework in a single file, so you can include it _i
 This lets users run your application without requiring picocli as an external dependency.
 
 How it works: annotate your class and picocli initializes it from the command line arguments,
-converting the input to strongly typed data. Supports any option prefix style,
-sub-commands, POSIX-style short groupable options, multi-valued options 
-with an exact range of parameters (e.g., `0..*`, `1..2`), and more.
+converting the input to strongly typed data. 
+Supports sub-commands, any option prefix style,
+POSIX-style short groupable options, multi-valued options 
+with a precise range of parameters (e.g., `0..*`, `1..2`), and more.
 
 Generates beautiful and easily tailored usage help, using ANSI colors where possible.
 Works with Java 5 or higher.
@@ -64,7 +65,9 @@ A more elaborate usage help example is shown below:
 
 ![Longer help message with ANSI colors](docs/UsageHelpWithStyle.png?raw=true)
 
-With a custom layout, your application can even generate help like this:
+Customizing your usage help message is easily done with annotations.
+If this is not sufficient, you can use picocli's Help API to customize even further.
+For example, your application can generate help like this with a custom layout:
 ```
 Copyright (c) 1990-2008 Info-ZIP - Type 'zip "-L"' for software license.
 Zip 3.0 (July 5th 2008). Command:
