@@ -870,9 +870,33 @@ image:../raw/master/docs/UsageHelpWithStyle.png[Screenshot of usage help with An
 === Supported Platforms
 Picocli will only emit ANSI escape codes on supported platforms.
 
+==== Unix and Linux
 Most Unix and Linux platforms support ANSI colors natively.
 On Windows, when picocli detects it is running under a Unix variant like Cygwin or MSYS(2) on Windows it will display ANSI colors and styles, otherwise it will not emit ANSI codes.
 
+==== Windows
+Starting from Windows 10 the Windows console https://msdn.microsoft.com/en-us/library/windows/desktop/mt638032(v=vs.85).aspx[supports ANSI escape sequences], but http://www.nivot.org/blog/post/2016/02/04/Windows-10-TH2-(v1511)-Console-Host-Enhancements[they may need to be enabled].
+
+For Windows version below 10, the Windows command console doesn't support output coloring by default. One option is to install either http://cmder.net/[Cmder], http://sourceforge.net/projects/conemu/[ConEmu], https://github.com/adoxa/ansicon/[ANSICON] or https://mintty.github.io/[Mintty] (used by default in GitBash and Cygwin) to add coloring support to their Windows command console.
+
+An alternative is to use http://fusesource.github.io/jansi/[Jansi] in your application. For example:
+
+[source,java]
+----
+import org.fusesource.jansi.AnsiConsole;
+...
+public static void main(String[] args) {
+    AnsiConsole.systemInstall();                      // Jansi magic
+    if (System.getProperty("picocli.ansi") == null) { // no user preference
+        CommandLine.ansi = true;                      // force ANSI
+    }
+    CommandLine.run(new WindowsJansiDemo(), args);
+    CommandLine.ansi = null;                          // back to platform default
+    AnsiConsole.systemUninstall();
+}
+----
+
+==== Override
 You can force picocli to either always use ANSI codes or never use ANSI codes regardless of the platform:
 
 * Setting system property `picocli.ansi` to `true` forces picocli to use ANSI codes; setting `picocli.ansi` to `false` forces picocli to *not* use ANSI codes. This may be a useful facility to document for users of your command line application.
