@@ -34,7 +34,7 @@ import static picocli.CommandLine.Help.Column.Overflow.*;
 /**
  * Demonstrates how the CommandLine.Help API can be used to create custom layouts for usage help messages.
  */
-public class HelpCustomLayoutDemo {
+public class CustomLayoutDemo {
 
     @Test
     public void testZipUsageFormat() {
