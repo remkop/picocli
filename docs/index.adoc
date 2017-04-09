@@ -860,53 +860,112 @@ The annotated class that this usage help message is generated from is shown in <
 
 
 
-== Usage Help with Style
-=== Expanded Example with Ansi Colors
+== ANSI Colors and Styles
+=== Usage Help with ANSI Colors
 
-Below shows the same usage help message as shown in <<Expanded Example>>, with Ansi Colors and Style escape codes enabled.
+Below shows the same usage help message as shown in <<Expanded Example>>, with ANSI escape codes enabled.
 
 image:../raw/master/docs/UsageHelpWithStyle.png[Screenshot of usage help with Ansi codes enabled]
 
 === Supported Platforms
-Picocli will only try to use Ansi codes on supported platforms.
+Picocli will only emit ANSI escape codes on supported platforms.
 
-Most Unix and Linux platforms support Ansi colors natively.
-On Windows, when picocli detects it is running under a Unix variant like Cygwin or MSYS(2) on Windows it will display Ansi colors and styles, otherwise it will not emit Ansi codes.
+Most Unix and Linux platforms support ANSI colors natively.
+On Windows, when picocli detects it is running under a Unix variant like Cygwin or MSYS(2) on Windows it will display ANSI colors and styles, otherwise it will not emit ANSI codes.
 
-Setting system property `picocli.ansi` to `true` forces picocli to use Ansi codes; setting `picocli.ansi` to `true` forces picocli to *not* use Ansi codes. This may be a useful facility to document for users of your command line application.
+You can force picocli to either always use ANSI codes or never use ANSI codes regardless of the platform:
 
-You can decide to force disable or force enable Ansi codes with the `CommandLine.ansi` static field. For example:
+* Setting system property `picocli.ansi` to `true` forces picocli to use ANSI codes; setting `picocli.ansi` to `false` forces picocli to *not* use ANSI codes. This may be a useful facility to document for users of your command line application.
+* You can decide to force disable or force enable ANSI codes with the `CommandLine.ansi` static field. This overrides the value of system property `picocli.ansi`. For example:
 [source,java]
 ----
 CommandLine.ansi = false; // force Ansi OFF
 App app = CommandLine.usage(new App(), args);
 ...
 ----
-Setting `CommandLine.ansi = true` in your application forces picocli to use Ansi colors regardless of the platform,
-and regardless of the value of system property `picocli.ansi`.
+
 
 === Configuration
-====Color Scheme
+==== Color Scheme
+Picocli defines a color scheme where the colors and styles for common elements can be configured.
+The color scheme instance can be passed to the `CommandLine.usage` method.
+
+The below code snippet shows how a color scheme can be used to configure the usage help message style:
+
 [source,java]
 ----
-ColorScheme scheme = new ColorScheme()
-        .headings(Style.bold, Style.underline)
-        .commands(Style.bold)
-        .options(Style.fg_yellow)
+// see also CommandLine.Help.defaultColorScheme()
+ColorScheme colorScheme = new ColorScheme()
+        .commands(Style.bold, Style.underline)        // combine multiple styles
+        .options(Style.fg_yellow)                     // yellow foreground color
         .parameters(Style.fg_yellow)
-        .optionParams(Style.fg_yellow, Style.italic);
+        .optionParams(Style.fg_yellow, Style.italic); // combine color and style
 
-CommandLine.usage(annotatedObject, System.out, scheme);
+CommandLine.usage(annotatedObject, System.out, colorScheme);
 ...
 ----
 
-====Custom Styles and Colors
+==== Custom Styles and Colors
+You may also want to use colors and styles for specific parts of the description
+of some elements or the usage help message header or footer.
+
+Picocli supports a custom notation for mixing colors and styles in text,
+following a convention introduced by http://fusesource.github.io/jansi/[Jansi], where
+`@|` starts a styled section, and `|@` ends it.
+Immediately following the `@|` is a comma-separated list of colors and styles.
+For example:
+
 [source,java]
 ----
-CommandLine.ansi = false; // force Ansi OFF
-App app = CommandLine.usage(new App(), args);
-...
+@Command(description = "Custom @|bold,underline styles|@ and @|fg(red) colors|@.")
 ----
+
+Supported styles are:
+
+* bold
+* faint
+* underline
+* italic
+* blink
+* reverse
+* reset
+
+Pre-defined colors are:
+
+* black
+* red
+* green
+* yellow
+* blue
+* magenta
+* cyan
+* white
+
+Colors are applied as _foreground_ colors by default.
+You can set _background_ colors by specifying `bg(<color>)`.
+For example, `@|bg(red) text with red background|@`.
+Similarly, `fg(<color>)` explicitly sets the foreground color.
+
+Custom RGB https://en.wikipedia.org/wiki/ANSI_escape_code#Colors[colors] (ISO-8613-3 24-bit foreground and background colors) can be specified in any format supported by the `Color.decode()` method.
+For example, `fg(0x9933EE)` renders a color equivalent to `java.awt.Color.decode(Ox9933EE)`.
+
+The example below shows how this can be used to add colors and styles to the headings and descriptions of a usage help message:
+[source,java]
+----
+@CommandLine.Command(name = "git-commit",
+        sortOptions = false,
+        headerHeading = "@|bold,underline Usage|@:%n%n",
+        synopsisHeading = "%n",
+        descriptionHeading = "%n@|bold,underline Description|@:%n%n",
+        parameterListHeading = "%n@|bold,underline Parameters|@:%n",
+        optionListHeading = "%n@|Options|@:%n",
+        header = "Record changes to the repository.",
+        description = "Stores the current contents of the index in a new commit " +
+                "along with a log message from the user describing the changes.")
+class GitCommit { ... }
+----
+
+CAUTION: Styles cannot be nested, for example: `@|bold this @|underline will not work|@|@`. This will not work. You can achieve the same by combining styles, for example: `@|bold this|@ @|bold,underline will work fine|@`.
 
 
 
