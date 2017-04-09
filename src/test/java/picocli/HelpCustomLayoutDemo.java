@@ -17,6 +17,7 @@
 package picocli;
 
 import org.junit.Test;
+import picocli.CommandLine.Help.Ansi.Text;
 import picocli.CommandLine.Help.Column;
 import picocli.CommandLine.Help.IOptionRenderer;
 import picocli.CommandLine.Help.IParameterRenderer;
@@ -79,14 +80,14 @@ public class HelpCustomLayoutDemo {
         class TwoOptionsPerRowLayout extends Layout { // define a custom layout
             Point previous = new Point(0, 0);
 
-            private TwoOptionsPerRowLayout(TextTable textTable,
+            private TwoOptionsPerRowLayout(Help.ColorScheme colorScheme, TextTable textTable,
                                            IOptionRenderer optionRenderer,
                                            IParameterRenderer parameterRenderer) {
-                super(textTable, optionRenderer, parameterRenderer);
+                super(colorScheme, textTable, optionRenderer, parameterRenderer);
             }
 
-            @Override public void layout(Field field, String[][] values) {
-                String[] columnValues = values[0]; // we know renderer creates a single row with two values
+            @Override public void layout(Field field, Text[][] values) {
+                Text[] columnValues = values[0]; // we know renderer creates a single row with two values
 
                 // We want to show two options on one row, next to each other,
                 // unless the first option spanned multiple columns (in which case there are not enough columns left)
@@ -110,7 +111,10 @@ public class HelpCustomLayoutDemo {
                 new Column(30, 2, SPAN), // overflow into adjacent columns
                 new Column( 4, 1, TRUNCATE), // values should fit again
                 new Column(39, 2, WRAP));
-        TwoOptionsPerRowLayout layout = new TwoOptionsPerRowLayout(textTable, Help.createMinimalOptionRenderer(),
+        TwoOptionsPerRowLayout layout = new TwoOptionsPerRowLayout(
+                Help.defaultColorScheme(),
+                textTable,
+                Help.createMinimalOptionRenderer(),
                 Help.createMinimalParameterRenderer());
 
         Help help = new Help(new Zip());
@@ -214,8 +218,11 @@ public class HelpCustomLayoutDemo {
                 new Column(15, 2, TRUNCATE),
                 new Column(65, 1, WRAP));
         textTable.indentWrappedLines = 0;
-        Layout layout = new Layout(textTable, Help.createMinimalOptionRenderer(), Help
-                .createMinimalParameterRenderer());
+        Layout layout = new Layout(
+                Help.defaultColorScheme(),
+                textTable,
+                Help.createMinimalOptionRenderer(),
+                Help.createMinimalParameterRenderer());
         layout.addOptions(help.optionFields, help.parameterLabelRenderer);
         layout.addPositionalParameters(help.positionalParametersFields, Help.createMinimalParamLabelRenderer());
         sb.append(layout);

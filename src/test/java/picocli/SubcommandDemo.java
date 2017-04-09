@@ -156,7 +156,7 @@ public class SubcommandDemo implements Runnable {
         String fixupCommit;
 
         @Option(names = "--squash", paramLabel = "<commit>",
-                description = " Construct a commit message for use with rebase --autosquash. The commit" +
+                description = "Construct a commit message for use with rebase --autosquash. The commit" +
                         "message subject line is taken from the specified commit with a prefix of " +
                         "\"squash! \". Can be used with additional commit message options (-m/-c/-C/-F).")
         String squashCommit;

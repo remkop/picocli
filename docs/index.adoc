@@ -783,7 +783,7 @@ class Ln { ... }
 
 === Section Headings
 Section headers can be used to make usage message layout appear more spacious. Section headings may contain embedded line separator (`%n`) format specifiers:
-[code,java]
+[source,java]
 ----
 @CommandLine.Command(name = "git-commit",
         sortOptions = false,
@@ -886,7 +886,27 @@ Setting `CommandLine.ansi = true` in your application forces picocli to use Ansi
 and regardless of the value of system property `picocli.ansi`.
 
 === Configuration
+====Color Scheme
+[source,java]
+----
+ColorScheme scheme = new ColorScheme()
+        .headings(Style.bold, Style.underline)
+        .commands(Style.bold)
+        .options(Style.fg_yellow)
+        .parameters(Style.fg_yellow)
+        .optionParams(Style.fg_yellow, Style.italic);
 
+CommandLine.usage(annotatedObject, System.out, scheme);
+...
+----
+
+====Custom Styles and Colors
+[source,java]
+----
+CommandLine.ansi = false; // force Ansi OFF
+App app = CommandLine.usage(new App(), args);
+...
+----
 
 
 
