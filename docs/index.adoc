@@ -7,7 +7,7 @@ v0.3.0, 2017-03-25
 :toc-title: Features
 
 A Java command line parsing framework in a single file, so you can include it _in source form_
-and let users run your application without an external dependency.
+and let users run your application without requiring picocli as an external dependency.
 Produces clean and easily tailored usage help messages.
 
 How it works: annotate your class and picocli initializes it from the command line arguments,
