@@ -10,7 +10,8 @@ POSIX-style short groupable options, multi-valued options
 with a precise range of parameters (e.g., `0..*`, `1..2`), and more.
 
 Generates beautiful and easily tailored usage help, using ANSI colors where possible.
-Works with Java 5 or higher.
+Works with Java 5 or higher
+(but registering custom type converters becomes a one-liner with Java 8 lambdas).
 
 See the [manual](docs/index.adoc) for details.
 
