@@ -47,29 +47,9 @@ assert  app.inputFiles != null && app.inputFiles.length == 2;
 ```
 If invalid input resulted in a `ParameterException` or if the user requested help, invoke `CommandLine.usage`. For example:
 ```java
-String[] args = ...;
-Example app = new Example();
-try {
-    CommandLine.parse(app, args);
-    if (app.helpRequested) {
-        CommandLine.usage(app, System.out);
-        return;
-    }    
-} catch (Exception ex) {
-    System.err.println(ex.getMessage());
-    CommandLine.usage(app, System.err);
-    return;
-}
-... // do something
+CommandLine.usage(new Example(), System.out);
 ```
 
 The generated help message looks like this:
-```
-Usage: <main class> [-vh] FILE [FILE...]
-      FILE                    File(s) to process.
-  -v, --verbose               Be verbose.
-  -h, --help                  Displays this help message and quits.
-```
-or a bit prettier when ANSI escape codes are enabled:
 
 ![Usage help message with ANSI colors](docs/ExampleUsageANSI.png?raw=true)
