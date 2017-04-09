@@ -11,7 +11,7 @@ with a precise range of parameters (e.g., `0..*`, `1..2`), and more.
 
 Generates beautiful and easily tailored usage help, using ANSI colors where possible.
 Works with Java 5 or higher
-(but registering custom type converters becomes a one-liner with Java 8 lambdas).
+(adding custom type converters becomes a one-liner with Java 8 lambdas).
 
 See the [manual](docs/index.adoc) for details.
 
@@ -61,10 +61,14 @@ The generated help message looks like this (colors only rendered when ANSI codes
 
 ![Usage help message with ANSI colors](docs/ExampleUsageANSI.png?raw=true)
 
+## Customized Usage Help
+
 Usage help is highly customizable.
 A more elaborate usage help example is shown below:
 
 ![Longer help message with ANSI colors](docs/UsageHelpWithStyle.png?raw=true)
+
+## More Customized Usage Help
 
 Customizing your usage help message is easily done with annotations.
 If this is not sufficient, you can use picocli's Help API to customize even further.
