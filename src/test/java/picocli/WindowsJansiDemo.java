@@ -25,13 +25,13 @@ import picocli.CommandLine.Command;
  */
 @Command(name = "picocli.WindowsJansiDemo")
 public class WindowsJansiDemo extends SubcommandDemo {
-    public static void main(String[] args) {
-        AnsiConsole.systemInstall(); // Jansi magic
-        if (System.getProperty("picocli.ansi") == null) { // user did not set preference
-            CommandLine.ansi = true; // force picocli to use ansi colors
-        }
-        CommandLine.run(new WindowsJansiDemo(), args);
-        CommandLine.ansi = null; // back to platform default
-        AnsiConsole.systemUninstall();
+public static void main(String[] args) {
+    AnsiConsole.systemInstall();                      // Jansi magic
+    if (System.getProperty("picocli.ansi") == null) { // no user preference
+        CommandLine.ansi = true;                      // force ANSI
     }
+    CommandLine.run(new WindowsJansiDemo(), args);
+    CommandLine.ansi = null;                          // back to platform default
+    AnsiConsole.systemUninstall();
+}
 }
