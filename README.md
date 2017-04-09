@@ -11,7 +11,7 @@ with a precise range of parameters (e.g., `0..*`, `1..2`), and more.
 
 Generates beautiful and easily tailored usage help, using ANSI colors where possible.
 Works with Java 5 or higher
-(adding custom type converters becomes a one-liner with Java 8 lambdas).
+(Java 8 lambdas make adding custom type converters a one-liner).
 
 See the [manual](docs/index.adoc) for details.
 
