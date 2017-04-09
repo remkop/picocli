@@ -1,12 +1,17 @@
 # picocli - a mighty tiny Command Line Interpreter
 
-A CLI framework in a single file, designed to be easy to include in your application _in source form_:
-allowing you to parse command line arguments without dragging in an external dependency.
+A Java command line parsing framework in a single file, so you can include it _in source form_.
+This lets users run your application without requiring picocli as an external dependency.
 
 How it works: annotate your class and picocli initializes it from the command line arguments,
-converting the input to strongly typed data. Any option prefix style works,
-with special support for POSIX-style short groupable options.
-Generates beautiful and easily tailored usage help. Works with Java 5 or higher.
+converting the input to strongly typed data. Supports any option prefix style,
+sub-commands, POSIX-style short groupable options, multi-valued options 
+with an exact range of parameters (e.g., `0..*`, `1..2`), and more.
+
+Generates beautiful and easily tailored usage help, using ANSI colors where possible.
+Works with Java 5 or higher.
+
+See the [manual](docs/index.adoc) for details.
 
 ## Example
 
