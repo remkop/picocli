@@ -4,14 +4,15 @@ A Java command line parsing framework in a single file, so you can include it _i
 This lets users run your application without requiring picocli as an external dependency.
 
 How it works: annotate your class and picocli initializes it from the command line arguments,
-converting the input to strongly typed data. 
-Supports sub-commands, any option prefix style,
-POSIX-style short groupable options, multi-valued options 
-with a precise range of parameters (e.g., `0..*`, `1..2`), and more.
+converting the input to strongly typed data. Supports sub-commands, any option prefix style,
+POSIX-style short groupable options, custom type converters and more.
+
+Distinguishes between named options and positional parameters and allows both to be strongly typed.
+Multi-valued fields can specify either an open or a precise range of parameters (e.g., `0..*`, `1..2`).
 
 Generates beautiful and easily tailored usage help, using ANSI colors where possible.
-Works with Java 5 or higher
-(Java 8 lambdas make adding custom type converters a one-liner).
+Works with Java 5 or higher (but is designed to facilitate the use of Java 8 lambdas).
+
 
 See the [manual](docs/index.adoc) for details.
 
