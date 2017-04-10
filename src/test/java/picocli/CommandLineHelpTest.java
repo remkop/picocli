@@ -964,6 +964,7 @@ public class CommandLineHelpTest {
 
     @Test
     public void testZipUsageFormat() {
+        CommandLine.ansi = false;
         String expected  = String.format("" +
                 "Copyright (c) 1990-2008 Info-ZIP - Type 'zip \"-L\"' for software license.%n" +
                 "Zip 3.0 (July 5th 2008). Command:%n" +
@@ -990,6 +991,7 @@ public class CommandLineHelpTest {
     }
     @Test
     public void testNetstatUsageFormat() {
+        CommandLine.ansi = false;
         String expected = String.format("" +
                         "Displays protocol statistics and current TCP/IP network connections.%n" +
                         "%n" +
