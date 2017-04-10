@@ -1798,7 +1798,7 @@ public class CommandLine {
                     String optionNames = ShortestFirst.sort(option.names())[0];
                     optionText = optionText.append(colorScheme.optionText(optionNames));
 
-                    Text optionParamText = parameterLabelRenderer.renderParameterLabel(field, colorScheme.parameterStyles);
+                    Text optionParamText = parameterLabelRenderer.renderParameterLabel(field, colorScheme.optionParamStyles);
                     optionText = optionText.append(optionParamText);
                     if (!option.required()) {
                         optionText = optionText.append("]");
