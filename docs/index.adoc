@@ -741,7 +741,7 @@ The `header` will be shown at the top of the usage help message (before the syno
 Use the `footer` attribute to specify one or more lines to show below the generated usage help message.
 Each element of the attribute String array is displayed on a separate line.
 
-The `headerHeading` and `footerHeading` may contain format specifiers. See <<Compact Example>>.
+The `headerHeading` and `footerHeading` may contain format specifiers. See <<Section Headings>>.
 
 
 === Abbreviated Synopsis
@@ -934,7 +934,7 @@ You may also want to use colors and styles for specific parts of the description
 of some elements or the usage help message header or footer.
 
 Picocli supports a custom notation for mixing colors and styles in text,
-following a convention introduced by http://fusesource.github.io/jansi/[Jansi], where
+following a convention introduced by https://github.com/fusesource/jansi[Jansi], where
 `@|` starts a styled section, and `|@` ends it.
 Immediately following the `@|` is a comma-separated list of colors and styles.
 For example:
@@ -944,26 +944,20 @@ For example:
 @Command(description = "Custom @|bold,underline styles|@ and @|fg(red) colors|@.")
 ----
 
-Supported styles are:
+.Pre-defined styles and colors that can be used in descriptions and headers using the `@|` notation
+[grid=cols,cols=2*,options="header"]
+|===
+|Pre-defined Styles | Pre-defined Colors
+| bold         | black
+| faint        | red
+| underline    | green
+| italic       | yellow
+| blink        | blue
+| reverse      | magenta
+| reset        | cyan
+|              | white
+|===
 
-* bold
-* faint
-* underline
-* italic
-* blink
-* reverse
-* reset
-
-Pre-defined colors are:
-
-* black
-* red
-* green
-* yellow
-* blue
-* magenta
-* cyan
-* white
 
 Colors are applied as _foreground_ colors by default.
 You can set _background_ colors by specifying `bg(<color>)`.
@@ -989,7 +983,7 @@ The example below shows how this can be used to add colors and styles to the hea
 class GitCommit { ... }
 ----
 
-CAUTION: Styles cannot be nested, for example: `@|bold this @|underline will not work|@|@`. This will not work. You can achieve the same by combining styles, for example: `@|bold this|@ @|bold,underline will work fine|@`.
+CAUTION: Styles cannot be nested, for example: `@|bold this @|underline that|@|@` will not work. You can achieve the same by combining styles, for example: `@|bold this|@ @|bold,underline that|@` will work fine.
 
 
 
@@ -1219,7 +1213,7 @@ public class ZipCommand extends AbstractCommand {
 You can omit some of the boilerplate code from your application by letting the annotated object implement `Runnable`.
 This allows you to invoke `CommandLine.run(new MyApp(), args)`, which is the equivalent of:
 
-[source,java
+[source,java]
 ----
 Runnable runnable = null;
 try {
