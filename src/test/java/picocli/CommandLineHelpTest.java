@@ -15,6 +15,7 @@
  */
 package picocli;
 
+import org.junit.After;
 import org.junit.Ignore;
 import org.junit.Test;
 import picocli.CommandLine.Help;
@@ -44,6 +45,11 @@ import static org.junit.Assert.*;
  */
 public class CommandLineHelpTest {
     private static final String LINESEP = System.getProperty("line.separator");
+
+    @After
+    public void after() {
+        CommandLine.ansi = null; // restore to platform default
+    }
     private static String usageString(Object annotatedObject) throws UnsupportedEncodingException {
         return usageString(new CommandLine(annotatedObject));
     }
@@ -120,6 +126,7 @@ public class CommandLineHelpTest {
 
     @Test
     public void testUsageParamLabels() throws Exception {
+        CommandLine.ansi = false;
         @Command()
         class ParamLabels {
             @Option(names = "-f", paramLabel = "FILE", description = "a file") File f;
@@ -293,6 +300,7 @@ public class CommandLineHelpTest {
 
     @Test
     public void testDefaultOptionRenderer_rendersSpacePrefixByDefaultForRequiredOptionsWithoutDefaultValue() {
+        CommandLine.ansi = false;
         class Example {
             @Option(names = {"-b", "-a", "--alpha"}, required = true, description = "other") String otherField;
         }
@@ -399,6 +407,7 @@ public class CommandLineHelpTest {
 
     @Test
     public void testDefaultOptionRenderer_omitsDefaultValuesForBooleanFields() {
+        CommandLine.ansi = false;
         @Command(showDefaultValues = true)
         class Example {
             @Option(names = {"-v"}, description = "shortBool") boolean shortBoolean;
@@ -501,6 +510,7 @@ public class CommandLineHelpTest {
 
     @Test
     public void testAbreviatedSynopsis_withoutParameters() {
+        CommandLine.ansi = false;
         @CommandLine.Command(abbreviateSynopsis = true)
         class App {
             @Option(names = {"--verbose", "-v"}) boolean verbose;
@@ -508,10 +518,25 @@ public class CommandLineHelpTest {
             @Option(names = {"--help", "-h"}, hidden = true) boolean helpRequested;
         }
         assertEquals("<main class> [OPTIONS]" + LINESEP, new Help(new App()).synopsis());
+        CommandLine.ansi = null;
+    }
+
+    @Test
+    public void testAbreviatedSynopsis_withoutParameters_ANSI() {
+        CommandLine.ansi = true;
+        @CommandLine.Command(abbreviateSynopsis = true)
+        class App {
+            @Option(names = {"--verbose", "-v"}) boolean verbose;
+            @Option(names = {"--count", "-c"}) int count;
+            @Option(names = {"--help", "-h"}, hidden = true) boolean helpRequested;
+        }
+        assertEquals(new Text("@|bold <main class>|@ [OPTIONS]" + LINESEP).toString(), new Help(new App()).synopsis());
+        CommandLine.ansi = null;
     }
 
     @Test
     public void testAbreviatedSynopsis_withParameters() {
+        CommandLine.ansi = false;
         @CommandLine.Command(abbreviateSynopsis = true)
         class App {
             @Option(names = {"--verbose", "-v"}) boolean verbose;
@@ -523,7 +548,21 @@ public class CommandLineHelpTest {
     }
 
     @Test
+    public void testAbreviatedSynopsis_withParameters_ANSI() {
+        CommandLine.ansi = true;
+        @CommandLine.Command(abbreviateSynopsis = true)
+        class App {
+            @Option(names = {"--verbose", "-v"}) boolean verbose;
+            @Option(names = {"--count", "-c"}) int count;
+            @Option(names = {"--help", "-h"}, hidden = true) boolean helpRequested;
+            @Parameters File[] files;
+        }
+        assertEquals(new Text("@|bold <main class>|@ [OPTIONS] [@|yellow <files>|@...]" + LINESEP).toString(), new Help(new App()).synopsis());
+    }
+
+    @Test
     public void testSynopsis_optionalOptionArity1_n_withDefaultSeparator() {
+        CommandLine.ansi = false;
         @Command() class App {
             @Option(names = {"--verbose", "-v"}) boolean verbose;
             @Option(names = {"--count", "-c"}, arity = "1..*") int count;
@@ -533,7 +572,20 @@ public class CommandLineHelpTest {
     }
 
     @Test
+    public void testSynopsis_optionalOptionArity1_n_withDefaultSeparator_ANSI() {
+        CommandLine.ansi = true;
+        @Command() class App {
+            @Option(names = {"--verbose", "-v"}) boolean verbose;
+            @Option(names = {"--count", "-c"}, arity = "1..*") int count;
+            @Option(names = {"--help", "-h"}, hidden = true) boolean helpRequested;
+        }
+        assertEquals(new Text("@|bold <main class>|@ [@|yellow -v|@] [@|yellow -c|@=@|italic <count>|@ [@|italic <count>|@...]]" + LINESEP),
+                new Help(new App()).synopsis());
+    }
+
+    @Test
     public void testSynopsis_optionalOptionArity0_1_withSpaceSeparator() {
+        CommandLine.ansi = false;
         @CommandLine.Command(separator = " ") class App {
             @Option(names = {"--verbose", "-v"}) boolean verbose;
             @Option(names = {"--count", "-c"}, arity = "0..1") int count;
@@ -543,7 +595,19 @@ public class CommandLineHelpTest {
     }
 
     @Test
+    public void testSynopsis_optionalOptionArity0_1_withSpaceSeparator_ANSI() {
+        CommandLine.ansi = true;
+        @CommandLine.Command(separator = " ") class App {
+            @Option(names = {"--verbose", "-v"}) boolean verbose;
+            @Option(names = {"--count", "-c"}, arity = "0..1") int count;
+            @Option(names = {"--help", "-h"}, hidden = true) boolean helpRequested;
+        }
+        assertEquals(new Text("@|bold <main class>|@ [@|yellow -v|@] [@|yellow -c|@ [@|italic <count>|@]]" + LINESEP), new Help(new App()).synopsis());
+    }
+
+    @Test
     public void testSynopsis_requiredOptionWithSeparator() {
+        CommandLine.ansi = false;
         @Command() class App {
             @Option(names = {"--verbose", "-v"}) boolean verbose;
             @Option(names = {"--count", "-c"}, required = true) int count;
@@ -553,7 +617,19 @@ public class CommandLineHelpTest {
     }
 
     @Test
+    public void testSynopsis_requiredOptionWithSeparator_ANSI() {
+        CommandLine.ansi = true;
+        @Command() class App {
+            @Option(names = {"--verbose", "-v"}) boolean verbose;
+            @Option(names = {"--count", "-c"}, required = true) int count;
+            @Option(names = {"--help", "-h"}, hidden = true) boolean helpRequested;
+        }
+        assertEquals(new Text("@|bold <main class>|@ [@|yellow -v|@] @|yellow -c|@=@|italic <count>|@" + LINESEP), new Help(new App()).synopsis());
+    }
+
+    @Test
     public void testSynopsis_optionalOption_withSpaceSeparator() {
+        CommandLine.ansi = false;
         @CommandLine.Command(separator = " ") class App {
             @Option(names = {"--verbose", "-v"}) boolean verbose;
             @Option(names = {"--count", "-c"}) int count;
@@ -564,6 +640,7 @@ public class CommandLineHelpTest {
 
     @Test
     public void testSynopsis_optionalOptionArity0_1__withSeparator() {
+        CommandLine.ansi = false;
         class App {
             @Option(names = {"--verbose", "-v"}) boolean verbose;
             @Option(names = {"--count", "-c"}, arity = "0..1") int count;
@@ -574,6 +651,7 @@ public class CommandLineHelpTest {
 
     @Test
     public void testSynopsis_optionalOptionArity0_n__withSeparator() {
+        CommandLine.ansi = false;
         @CommandLine.Command(separator = "=") class App {
             @Option(names = {"--verbose", "-v"}) boolean verbose;
             @Option(names = {"--count", "-c"}, arity = "0..*") int count;
@@ -584,6 +662,7 @@ public class CommandLineHelpTest {
 
     @Test
     public void testSynopsis_optionalOptionArity1_n__withSeparator() {
+        CommandLine.ansi = false;
         @CommandLine.Command(separator = "=") class App {
             @Option(names = {"--verbose", "-v"}) boolean verbose;
             @Option(names = {"--count", "-c"}, arity = "1..*") int count;
@@ -594,6 +673,7 @@ public class CommandLineHelpTest {
 
     @Test
     public void testSynopsis_withSeparator_withParameters() {
+        CommandLine.ansi = false;
         @CommandLine.Command(separator = ":") class App {
             @Option(names = {"--verbose", "-v"}) boolean verbose;
             @Option(names = {"--count", "-c"}) int count;
@@ -605,6 +685,7 @@ public class CommandLineHelpTest {
 
     @Test
     public void testSynopsis_withSeparator_withLabeledParameters() {
+        CommandLine.ansi = false;
         @Command(separator = "=") class App {
             @Option(names = {"--verbose", "-v"}) boolean verbose;
             @Option(names = {"--count", "-c"}) int count;
@@ -616,6 +697,7 @@ public class CommandLineHelpTest {
 
     @Test
     public void testSynopsis_withSeparator_withLabeledRequiredParameters() {
+        CommandLine.ansi = false;
         @CommandLine.Command(separator = "=") class App {
             @Option(names = {"--verbose", "-v"}) boolean verbose;
             @Option(names = {"--count", "-c"}) int count;
@@ -627,6 +709,7 @@ public class CommandLineHelpTest {
 
     @Test
     public void testSynopsis_clustersBooleanOptions() {
+        CommandLine.ansi = false;
         @Command(separator = "=") class App {
             @Option(names = {"--verbose", "-v"}) boolean verbose;
             @Option(names = {"--aaaa", "-a"}) boolean aBoolean;
@@ -638,6 +721,7 @@ public class CommandLineHelpTest {
 
     @Test
     public void testSynopsis_clustersRequiredBooleanOptions() {
+        CommandLine.ansi = false;
         @CommandLine.Command(separator = "=") class App {
             @Option(names = {"--verbose", "-v"}, required = true) boolean verbose;
             @Option(names = {"--aaaa", "-a"}, required = true) boolean aBoolean;
@@ -649,6 +733,7 @@ public class CommandLineHelpTest {
 
     @Test
     public void testSynopsis_clustersRequiredBooleanOptionsSeparately() {
+        CommandLine.ansi = false;
         @CommandLine.Command(separator = "=") class App {
             @Option(names = {"--verbose", "-v"}) boolean verbose;
             @Option(names = {"--aaaa", "-a"}) boolean aBoolean;
@@ -663,6 +748,7 @@ public class CommandLineHelpTest {
 
     @Test
     public void testLongMultiLineSynopsisIndented() {
+        CommandLine.ansi = false;
         @Command(name = "<best-app-ever>")
         class App {
             @Option(names = "--long-option-name", paramLabel = "<long-option-value>") int a;
@@ -680,6 +766,7 @@ public class CommandLineHelpTest {
 
     @Test
     public void testLongMultiLineSynopsisWithAtMarkIndented() {
+        CommandLine.ansi = false;
         @Command(name = "<best-app-ever>")
         class App {
             @Option(names = "--long-option@-name", paramLabel = "<long-option-valu@@e>") int a;
@@ -697,6 +784,7 @@ public class CommandLineHelpTest {
 
     @Test
     public void testCustomSynopsis() {
+        CommandLine.ansi = false;
         @Command(customSynopsis = {
                 "<the-app> --number=NUMBER --other-option=<aargh>",
                 "          --more=OTHER --and-other-option=<aargh>",
@@ -711,6 +799,7 @@ public class CommandLineHelpTest {
     }
     @Test
     public void testTextTable() {
+        CommandLine.ansi = false;
         TextTable table = new TextTable();
         table.addRowValues(textArray("", "-v", ",", "--verbose", "show what you're doing while you are doing it"));
         table.addRowValues(textArray("", "-p", null, null, "the quick brown fox jumped over the lazy dog. The quick brown fox jumped over the lazy dog."));
@@ -723,6 +812,7 @@ public class CommandLineHelpTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void testTextTableAddsNewRowWhenTooManyValuesSpecified() {
+        CommandLine.ansi = false;
         TextTable table = new TextTable();
         table.addRowValues(textArray("", "-c", ",", "--create", "description", "INVALID", "Row 3"));
 //        assertEquals(String.format("" +
@@ -734,6 +824,7 @@ public class CommandLineHelpTest {
 
     @Test
     public void testTextTableAddsNewRowWhenAnyColumnTooLong() {
+        CommandLine.ansi = false;
         TextTable table = new TextTable();
         table.addRowValues("*", "-c", ",",
                 "--create, --create2, --create3, --create4, --create5, --create6, --create7, --create8",
@@ -757,6 +848,7 @@ public class CommandLineHelpTest {
 
     @Test
     public void testCatUsageFormat() {
+        CommandLine.ansi = false;
         @Command(name = "cat",
                 customSynopsis = "cat [OPTIONS] [FILE...]",
                 description = "Concatenate FILE(s), or standard input, to standard output.",
@@ -799,6 +891,7 @@ public class CommandLineHelpTest {
 
     @Test
     public void testUsageIndexedPositionalParameters() throws UnsupportedEncodingException {
+        CommandLine.ansi = false;
         @Command()
         class App {
             @Parameters(index = "0", description = "source host") InetAddress host1;
@@ -857,6 +950,7 @@ public class CommandLineHelpTest {
 
     @Test
     public void testSubclassedCommandHelp() throws Exception {
+        CommandLine.ansi = false;
         @Command(name = "parent", description = "parent description")
         class ParentOption {
         }
