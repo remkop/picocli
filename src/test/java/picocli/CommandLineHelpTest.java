@@ -503,7 +503,7 @@ public class CommandLineHelpTest {
                 count[0]++;
             }
         };
-        Help.Layout layout = new Help.Layout(Help.defaultColorScheme());
+        Help.Layout layout = new Help.Layout(Help.defaultColorScheme(), tt);
         layout.layout(null, values);
         assertEquals(2, count[0]);
     }
@@ -684,6 +684,19 @@ public class CommandLineHelpTest {
     }
 
     @Test
+    public void testSynopsis_withSeparator_withParameters_ANSI() {
+        CommandLine.ansi = true;
+        @CommandLine.Command(separator = ":") class App {
+            @Option(names = {"--verbose", "-v"}) boolean verbose;
+            @Option(names = {"--count", "-c"}) int count;
+            @Option(names = {"--help", "-h"}, hidden = true) boolean helpRequested;
+            @Parameters File[] files;
+        }
+        assertEquals(new Text("@|bold <main class>|@ [@|yellow -v|@] [@|yellow -c|@:@|italic <count>|@] [@|yellow <files>|@...]" + LINESEP),
+                new Help(new App()).synopsis());
+    }
+
+    @Test
     public void testSynopsis_withSeparator_withLabeledParameters() {
         CommandLine.ansi = false;
         @Command(separator = "=") class App {
@@ -696,6 +709,19 @@ public class CommandLineHelpTest {
     }
 
     @Test
+    public void testSynopsis_withSeparator_withLabeledParameters_ANSI() {
+        CommandLine.ansi = true;
+        @Command(separator = "=") class App {
+            @Option(names = {"--verbose", "-v"}) boolean verbose;
+            @Option(names = {"--count", "-c"}) int count;
+            @Option(names = {"--help", "-h"}, hidden = true) boolean helpRequested;
+            @Parameters(paramLabel = "FILE") File[] files;
+        }
+        assertEquals(new Text("@|bold <main class>|@ [@|yellow -v|@] [@|yellow -c|@=@|italic <count>|@] [@|yellow FILE|@...]" + LINESEP),
+                new Help(new App()).synopsis());
+    }
+
+    @Test
     public void testSynopsis_withSeparator_withLabeledRequiredParameters() {
         CommandLine.ansi = false;
         @CommandLine.Command(separator = "=") class App {
@@ -705,6 +731,19 @@ public class CommandLineHelpTest {
             @Parameters(paramLabel = "FILE", arity = "1..*") File[] files;
         }
         assertEquals("<main class> [-v] [-c=<count>] FILE [FILE...]" + LINESEP, new Help(new App()).synopsis());
+    }
+
+    @Test
+    public void testSynopsis_withSeparator_withLabeledRequiredParameters_ANSI() {
+        CommandLine.ansi = true;
+        @CommandLine.Command(separator = "=") class App {
+            @Option(names = {"--verbose", "-v"}) boolean verbose;
+            @Option(names = {"--count", "-c"}) int count;
+            @Option(names = {"--help", "-h"}, hidden = true) boolean helpRequested;
+            @Parameters(paramLabel = "FILE", arity = "1..*") File[] files;
+        }
+        assertEquals(new Text("@|bold <main class>|@ [@|yellow -v|@] [@|yellow -c|@=@|italic <count>|@] @|yellow FILE|@ [@|yellow FILE|@...]" + LINESEP),
+                new Help(new App()).synopsis());
     }
 
     @Test
@@ -747,6 +786,22 @@ public class CommandLineHelpTest {
     }
 
     @Test
+    public void testSynopsis_clustersRequiredBooleanOptionsSeparately_ANSI() {
+        CommandLine.ansi = true;
+        @CommandLine.Command(separator = "=") class App {
+            @Option(names = {"--verbose", "-v"}) boolean verbose;
+            @Option(names = {"--aaaa", "-a"}) boolean aBoolean;
+            @Option(names = {"--xxxx", "-x"}) Boolean xBoolean;
+            @Option(names = {"--Verbose", "-V"}, required = true) boolean requiredVerbose;
+            @Option(names = {"--Aaaa", "-A"}, required = true) boolean requiredABoolean;
+            @Option(names = {"--Xxxx", "-X"}, required = true) Boolean requiredXBoolean;
+            @Option(names = {"--count", "-c"}, paramLabel = "COUNT") int count;
+        }
+        assertEquals(new Text("@|bold <main class>|@ @|yellow -AVX|@ [@|yellow -avx|@] [@|yellow -c|@=@|italic COUNT|@]" + LINESEP),
+                new Help(new App()).synopsis());
+    }
+
+    @Test
     public void testLongMultiLineSynopsisIndented() {
         CommandLine.ansi = false;
         @Command(name = "<best-app-ever>")
@@ -779,6 +834,24 @@ public class CommandLineHelpTest {
                 "                [--fourth-long-option-name=<fourth-long-option-value>]%n" +
                 "                [--long-option@-name=<long-option-valu@@e>]%n" +
                 "                [--third-long-option-name=<third-long-option-value>]%n"),
+                new Help(new App()).synopsis());
+    }
+
+    @Test
+    public void testLongMultiLineSynopsisWithAtMarkIndented_ANSI() {
+        CommandLine.ansi = true;
+        @Command(name = "<best-app-ever>")
+        class App {
+            @Option(names = "--long-option@-name", paramLabel = "<long-option-valu@@e>") int a;
+            @Option(names = "--another-long-option-name", paramLabel = "^[<another-long-option-value>]") int b;
+            @Option(names = "--third-long-option-name", paramLabel = "<third-long-option-value>") int c;
+            @Option(names = "--fourth-long-option-name", paramLabel = "<fourth-long-option-value>") int d;
+        }
+        assertEquals(new Text(String.format(
+                "@|bold <best-app-ever>|@ [@|yellow --another-long-option-name|@=@|italic ^[<another-long-option-value>]|@]%n" +
+                        "                [@|yellow --fourth-long-option-name|@=@|italic <fourth-long-option-value>|@]%n" +
+                        "                [@|yellow --long-option@-name|@=@|italic <long-option-valu@@e>|@]%n" +
+                        "                [@|yellow --third-long-option-name|@=@|italic <third-long-option-value>|@]%n")),
                 new Help(new App()).synopsis());
     }
 
@@ -965,40 +1038,56 @@ public class CommandLineHelpTest {
 
     @Test
     public void testUsageMainCommand_NoAnsi() throws Exception {
-        CommandLine.ansi = true; // force ansi off
+        CommandLine.ansi = false; // force ansi off
         String actual = usageString(Demo.mainCommand());
-        CommandLine.ansi = null; // back to platform-dependent ansi
         assertEquals(String.format(Demo.EXPECTED_USAGE_MAIN), actual);
     }
 
     @Test
+    public void testUsageMainCommand_ANSI() throws Exception {
+        CommandLine.ansi = true; // force ansi off
+        String actual = usageString(Demo.mainCommand());
+        assertEquals(new Text(String.format(Demo.EXPECTED_USAGE_MAIN_ANSI)), actual);
+    }
+
+    @Test
     public void testUsageSubcommandGitStatus_NoAnsi() throws Exception {
+        CommandLine.ansi = false; // force ansi off
+        String actual = usageString(new Demo.GitStatus());
+        assertEquals(String.format(Demo.EXPECTED_USAGE_GITSTATUS), actual);
+    }
+
+    @Test
+    public void testUsageSubcommandGitStatus_ANSI() throws Exception {
         CommandLine.ansi = true; // force ansi off
         String actual = usageString(new Demo.GitStatus());
-        CommandLine.ansi = null; // back to platform-dependent ansi
-        assertEquals(String.format(Demo.EXPECTED_USAGE_GITSTATUS), actual);
+        assertEquals(String.format(Demo.EXPECTED_USAGE_GITSTATUS_ANSI), actual);
     }
 
     @Test
     public void testUsageSubcommandGitCommit_NoAnsi() throws Exception {
         CommandLine.ansi = false; // force ansi off
         String actual = usageString(new Demo.GitCommit());
-        CommandLine.ansi = null; // back to platform-dependent ansi
         assertEquals(String.format(Demo.EXPECTED_USAGE_GITCOMMIT), actual);
+    }
+
+    @Test
+    public void testUsageSubcommandGitCommit_ANSI() throws Exception {
+        CommandLine.ansi = true; // force ansi off
+        String actual = usageString(new Demo.GitCommit());
+        assertEquals(new Text(String.format(Demo.EXPECTED_USAGE_GITCOMMIT_ANSI)), actual);
     }
 
     @Test
     public void testTextConstructorPlain() {
         CommandLine.ansi = true;
         assertEquals("--NoAnsiFormat", new Text("--NoAnsiFormat").toString());
-        CommandLine.ansi = null;
     }
 
     @Test
     public void testTextConstructorWithStyle() {
         CommandLine.ansi = true;
         assertEquals("\u001B[1m--NoAnsiFormat\uu001B[21m", new Text("@|bold --NoAnsiFormat|@").toString());
-        CommandLine.ansi = null;
     }
 
     @Ignore("Until nested styles are supported")
@@ -1007,7 +1096,6 @@ public class CommandLineHelpTest {
         CommandLine.ansi = true;
         assertEquals("\u001B[1mfirst \u001B[2msecond\u001B[22m\u001B[21m", new Text("@|bold first @|underline second|@|@").toString());
         assertEquals("\u001B[1mfirst \u001B[4msecond\u001B[24m third\u001B[21m", new Text("@|bold first @|underline second|@ third|@").toString());
-        CommandLine.ansi = null;
     }
 
     @Test
@@ -1015,7 +1103,6 @@ public class CommandLineHelpTest {
         CommandLine.ansi = true;
         Text txt = Text.apply("--p", Arrays.<IStyle>asList(Help.Ansi.Style.fg_red, Help.Ansi.Style.bold));
         assertEquals(new Text("@|fg(red),bold --p|@"), txt);
-        CommandLine.ansi = null;
     }
 
     @Test
@@ -1026,7 +1113,6 @@ public class CommandLineHelpTest {
         assertEquals(new Text("@|bold command|@"),  scheme.commandText("command"));
         assertEquals(new Text("@|yellow FILE|@"),   scheme.parameterText("FILE"));
         assertEquals(new Text("@|italic NUMBER|@"), scheme.optionParamText("NUMBER"));
-        CommandLine.ansi = null;
     }
 
 }

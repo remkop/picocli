@@ -114,7 +114,7 @@ public class Demo implements Runnable {
     @Command(name = "git-status",
             header = "Show the working tree status.",
             showDefaultValues = true,
-            customSynopsis = "git-status [<options>...] [--] [<pathspec>...]",
+            customSynopsis = "@|bold git-status|@ [@|yellow <options>|@...] [--] [@|yellow <pathspec>|@...]",
             description = "Displays paths that have differences between the index file and the current HEAD commit, " +
                     "paths that have differences between the working tree and the index file, and paths in the " +
                     "working tree that are not tracked by Git (and are not ignored by gitignore(5)). The first " +
@@ -134,9 +134,9 @@ public class Demo implements Runnable {
                 "Show untracked files.",
                 "The mode parameter is optional (defaults to `all`), and is used to specify the handling of untracked files.",
                 "The possible options are:",
-                " * no - Show no untracked files.",
-                " * normal - Shows untracked files and directories.",
-                " * all - Also shows individual files in untracked directories."
+                " * @|yellow no|@ - Show no untracked files.",
+                " * @|yellow normal|@ - Shows untracked files and directories.",
+                " * @|yellow all|@ - Also shows individual files in untracked directories."
         })
         GitStatusMode mode = GitStatusMode.all;
     }
@@ -146,11 +146,11 @@ public class Demo implements Runnable {
     // tag::GitCommit-declaration[]
     @Command(name = "git-commit",
             sortOptions = false,
-            headerHeading = "Usage:%n%n",
+            headerHeading = "@|bold,underline Usage:|@%n%n",
             synopsisHeading = "%n",
-            descriptionHeading = "%nDescription:%n%n",
-            parameterListHeading = "%nParameters:%n",
-            optionListHeading = "%nOptions:%n",
+            descriptionHeading = "%n@|bold,underline Description:|@%n%n",
+            parameterListHeading = "%n@|bold,underline Parameters:|@%n",
+            optionListHeading = "%n@|bold,underline Options:|@%n",
             header = "Record changes to the repository.",
             description = "Stores the current contents of the index in a new commit " +
                     "along with a log message from the user describing the changes.")
@@ -280,6 +280,29 @@ public class Demo implements Runnable {
             "  rebase    Forward-port local commits to the updated upstream head.%n" +
             "  tag       Create, list, delete or verify a tag object signed with GPG.%n";
 
+    static final String EXPECTED_USAGE_MAIN_ANSI = "Usage: @|bold git|@ [@|yellow -hV|@] [@|yellow --git-dir|@=@|italic <gitDir>|@]%n" +
+            "Git is a fast, scalable, distributed revision control system with an unusually%n" +
+            "rich command set that provides both high-level operations and full access to%n" +
+            "internals.%n" +
+            "  @|yellow -V|@, @|yellow --version|@               Prints version information and exits%n" +
+            "  @|yellow -h|@, @|yellow --help|@                  Prints this help message and exits%n" +
+            "      @|yellow --git-dir|@=@|italic <gitDir>|@      Set the path to the repository%n" +
+            "%n" +
+            "Commands:%n" +
+            "%n" +
+            "The most commonly used git commands are:%n" +
+            "  @|bold status|@    Show the working tree status.%n" +
+            "  @|bold commit|@    Record changes to the repository.%n" +
+            "  @|bold add|@       Add file contents to the index.%n" +
+            "  @|bold branch|@    List, create, or delete branches.%n" +
+            "  @|bold checkout|@  Checkout a branch or paths to the working tree.%n" +
+            "  @|bold clone|@     Clone a repository into a new directory.%n" +
+            "  @|bold diff|@      Show changes between commits, commit and working tree, etc.%n" +
+            "  @|bold merge|@     Join two or more development histories together.%n" +
+            "  @|bold push|@      Update remote refs along with associated objects.%n" +
+            "  @|bold rebase|@    Forward-port local commits to the updated upstream head.%n" +
+            "  @|bold tag|@       Create, list, delete or verify a tag object signed with GPG.%n";
+
     public void testUsageSubCommandStatus() {
         try {
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -311,6 +334,29 @@ public class Demo implements Runnable {
             "                               * no - Show no untracked files.%n" +
             "                               * normal - Shows untracked files and directories.%n" +
             "                               * all - Also shows individual files in untracked%n" +
+            "                                directories.%n" +
+            "                              Default: all%n";
+
+    static final String EXPECTED_USAGE_GITSTATUS_ANSI = "Show the working tree status.%n" +
+            "Usage: @|bold git-status|@ [@|yellow <options>|@...] [--] [@|yellow <pathspec>|@...]%n" +
+            "Displays paths that have differences between the index file and the current%n" +
+            "HEAD commit, paths that have differences between the working tree and the index%n" +
+            "file, and paths in the working tree that are not tracked by Git (and are not%n" +
+            "ignored by gitignore(5)). The first are what you would commit by running git%n" +
+            "commit; the second and third are what you could commit by running git add%n" +
+            "before running git commit.%n" +
+            "      @|yellow --ignored|@               Show ignored files as well%n" +
+            "  @|yellow -b|@, @|yellow --branch|@                Show the branch and tracking info even in%n" +
+            "                                short-format%n" +
+            "  @|yellow -s|@, @|yellow --short|@                 Give the output in the short-format%n" +
+            "  @|yellow -u|@, @|yellow --untracked|@=@|italic <mode>|@      Show untracked files.%n" +
+            "                              The mode parameter is optional (defaults to%n" +
+            "                                `all`), and is used to specify the handling of%n" +
+            "                                untracked files.%n" +
+            "                              The possible options are:%n" +
+            "                               * @|yellow no|@ - Show no untracked files.%n" +
+            "                               * @|yellow normal|@ - Shows untracked files and directories.%n" +
+            "                               * @|yellow all|@ - Also shows individual files in untracked%n" +
             "                                directories.%n" +
             "                              Default: all%n";
 
@@ -366,6 +412,50 @@ public class Demo implements Runnable {
             "  -F, --file=<file>           Take the commit message from the given file. Use%n" +
             "                                - to read the message from the standard input.%n" +
             "  -m, --message[=<msg>...]     Use the given <msg> as the commit message. If%n" +
+            "                                multiple -m options are given, their values are%n" +
+            "                                concatenated as separate paragraphs.%n";
+
+    static final String EXPECTED_USAGE_GITCOMMIT_ANSI = "@|bold,underline Usage:|@%n" +
+            "%n" +
+            "Record changes to the repository.%n" +
+            "%n" +
+            "@|bold git-commit|@ [@|yellow -ap|@] [@|yellow --fixup|@=@|italic <commit>|@] [@|yellow --squash|@=@|italic <commit>@|yellow ] [@|yellow -c|@=@|italic <commit>|@]%n" +
+            "           [@|yellow -C|@=@|italic <commit>|@] [@|yellow -F|@=@|italic <file>|@] [@|yellow -m|@[=@|italic <msg>|@...]] [@|yellow <files>|@...]%n" +
+            "%n" +
+            "@|bold,underline Description:|@%n" +
+            "%n" +
+            "Stores the current contents of the index in a new commit along with a log%n" +
+            "message from the user describing the changes.%n" +
+            "%n" +
+            "@|bold,underline Parameters:|@%n" +
+            "      @|yellow <files>|@                 the files to commit%n" +
+            "%n" +
+            "@|bold,underline Options:|@%n" +
+            "  @|yellow -a|@, @|yellow --all|@                   Tell the command to automatically stage files%n" +
+            "                                that have been modified and deleted, but new%n" +
+            "                                files you have not told Git about are not%n" +
+            "                                affected.%n" +
+            "  @|yellow -p|@, @|yellow --patch|@                 Use the interactive patch selection interface to%n" +
+            "                                chose which changes to commit%n" +
+            "  @|yellow -C|@, @|yellow --reuse-message|@=@|italic <commit>|@%n" +
+            "                              Take an existing commit object, and reuse the log%n" +
+            "                                message and the authorship information%n" +
+            "                                (including the timestamp) when creating the%n" +
+            "                                commit.%n" +
+            "  @|yellow -c|@, @|yellow --reedit-message|@=@|italic <commit>|@%n" +
+            "                              Like -C, but with -c the editor is invoked, so%n" +
+            "                                that the user canfurther edit the commit%n" +
+            "                                message.%n" +
+            "      @|yellow --fixup|@=@|italic <commit>|@        Construct a commit message for use with rebase%n" +
+            "                                --autosquash.%n" +
+            "      @|yellow --squash|@=@|italic <commit>|@       Construct a commit message for use with rebase%n" +
+            "                                --autosquash. The commitmessage subject line is%n" +
+            "                                taken from the specified commit with a prefix%n" +
+            "                                of \"squash! \". Can be used with additional%n" +
+            "                                commit message options (-m/-c/-C/-F).%n" +
+            "  @|yellow -F|@, @|yellow --file|@=@|italic <file>|@           Take the commit message from the given file. Use%n" +
+            "                                - to read the message from the standard input.%n" +
+            "  @|yellow -m|@, @|yellow --message|@[=@|italic <msg>|@...]     Use the given <msg> as the commit message. If%n" +
             "                                multiple -m options are given, their values are%n" +
             "                                concatenated as separate paragraphs.%n";
 }
