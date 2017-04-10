@@ -1758,15 +1758,15 @@ public class CommandLine {
         /** Generates a detailed synopsis message showing all options and parameters. Follows the unix convention of
          * showing optional options and parameters in square brackets ({@code [ ]}). */
         public String detailedSynopsis(Comparator<Field> optionSort, boolean clusterBooleanOptions) {
-            StringBuilder sb = new StringBuilder();
+            Text optionText = new Text(0);
             List<Field> fields = new ArrayList<Field>(optionFields); // iterate in declaration order
             if (optionSort != null) {
                 Collections.sort(fields, optionSort);// iterate in specified sort order
             }
             if (clusterBooleanOptions) { // cluster all short boolean options into a single string
                 List<Field> booleanOptions = new ArrayList<Field>();
-                StringBuilder clusteredRequired = new StringBuilder();
-                StringBuilder clusteredOptional = new StringBuilder();
+                StringBuilder clusteredRequired = new StringBuilder("-");
+                StringBuilder clusteredOptional = new StringBuilder("-");
                 for (Field field : fields) {
                     if (field.getType() == boolean.class || field.getType() == Boolean.class) {
                         Option option = field.getAnnotation(Option.class);
@@ -1782,34 +1782,32 @@ public class CommandLine {
                     }
                 }
                 fields.removeAll(booleanOptions);
-                if (clusteredRequired.length() > 0) {
-                    sb.append(" -").append(clusteredRequired);
+                if (clusteredRequired.length() > 1) { // initial length was 1
+                    optionText = optionText.append(" ").append(colorScheme.optionText(clusteredRequired.toString()));
                 }
-                if (clusteredOptional.length() > 0) {
-                    sb.append(" [-").append(clusteredOptional).append("]");
+                if (clusteredOptional.length() > 1) { // initial length was 1
+                    optionText = optionText.append(" [").append(colorScheme.optionText(clusteredOptional.toString())).append("]");
                 }
             }
-            Text optionText = colorScheme.optionText(sb.toString());
             for (Field field : fields) {
                 Option option = field.getAnnotation(Option.class);
                 if (!option.hidden()) {
                     //sb.append(" ");
-                    optionText = optionText.append(new Text(" "));
+                    optionText = optionText.append(option.required() ? " " : " [");
 
                     String optionNames = ShortestFirst.sort(option.names())[0];
-                    optionNames = (option.required() ? "" : "[") + optionNames;
                     optionText = optionText.append(colorScheme.optionText(optionNames));
 
                     Text optionParamText = parameterLabelRenderer.renderParameterLabel(field, colorScheme.parameterStyles);
                     optionText = optionText.append(optionParamText);
                     if (!option.required()) {
-                        optionText = optionText.append(new Text("]"));
+                        optionText = optionText.append("]");
                     }
                 }
             }
             for (Field positionalParam : positionalParametersFields) {
                 if (!positionalParam.getAnnotation(Parameters.class).hidden()) {
-                    optionText = optionText.append(new Text(" "));
+                    optionText = optionText.append(" ");
                     Text label = parameterLabelRenderer.renderParameterLabel(positionalParam, colorScheme.parameterStyles);
                     optionText = optionText.append(label);
                 }
@@ -2803,9 +2801,11 @@ public class CommandLine {
                     result.length = end - start;
                     return result;
                 }
+                /** Returns a new {@code Text} instance with the specified text appended. Does not modify this instance! */
                 public Text append(String string) {
                     return append(new Text(string));
                 }
+                /** Returns a new {@code Text} instance with the specified text appended. Does not modify this instance! */
                 public Text append(Text other) {
                     Text result = (Text) clone();
                     result.plain = new StringBuilder(plain.toString().substring(from, from + length));
