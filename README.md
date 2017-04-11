@@ -68,14 +68,16 @@ Usage help is highly customizable.
 A more elaborate usage help example is shown below:
 
 ![Longer help message with ANSI colors](docs/UsageHelpWithStyle.png?raw=true)
+
 See the [source code](https://github.com/remkop/picocli/blob/master/src/test/java/picocli/Demo.java#L147).
 
 ## More Customized Usage Help
 
 Picocli annotations offer many ways to customize the usage help message.
 
-If this is not sufficient, you can use picocli's Help API to customize even further.
+If annotations are not sufficient, you can use picocli's Help API to customize even further.
 For example, your application can generate help like this with a custom layout:
 
 ![Usage help message with two options per row](docs/UsageHelpWithCustomLayout.png?raw=true)
+
 See the [source code](https://github.com/remkop/picocli/blob/master/src/test/java/picocli/CustomLayoutDemo.java#L61).
