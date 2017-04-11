@@ -1135,9 +1135,9 @@ public class CommandLineHelpTest {
 
     @Test
     public void testUsageSubcommandGitStatus_ANSI() throws Exception {
-        CommandLine.ansi = true; // force ansi off
+        CommandLine.ansi = true;
         String actual = usageString(new Demo.GitStatus());
-        assertEquals(String.format(Demo.EXPECTED_USAGE_GITSTATUS_ANSI), actual);
+        assertEquals(new Text(String.format(Demo.EXPECTED_USAGE_GITSTATUS_ANSI)), actual);
     }
 
     @Test
@@ -1149,7 +1149,7 @@ public class CommandLineHelpTest {
 
     @Test
     public void testUsageSubcommandGitCommit_ANSI() throws Exception {
-        CommandLine.ansi = true; // force ansi off
+        CommandLine.ansi = true;
         String actual = usageString(new Demo.GitCommit());
         assertEquals(new Text(String.format(Demo.EXPECTED_USAGE_GITCOMMIT_ANSI)), actual);
     }
@@ -1189,6 +1189,63 @@ public class CommandLineHelpTest {
         assertEquals(new Text("@|bold command|@"),  scheme.commandText("command"));
         assertEquals(new Text("@|yellow FILE|@"),   scheme.parameterText("FILE"));
         assertEquals(new Text("@|italic NUMBER|@"), scheme.optionParamText("NUMBER"));
+    }
+
+    @Test
+    public void testTextSubString() {
+        CommandLine.ansi = true;
+        Text txt = new Text("@|bold 01234|@").append("56").append("@|underline 7890|@");
+        assertEquals(new Text("@|bold 01234|@56@|underline 7890|@"), txt.substring(0));
+        assertEquals(new Text("@|bold 1234|@56@|underline 7890|@"), txt.substring(1));
+        assertEquals(new Text("@|bold 234|@56@|underline 7890|@"), txt.substring(2));
+        assertEquals(new Text("@|bold 34|@56@|underline 7890|@"), txt.substring(3));
+        assertEquals(new Text("@|bold 4|@56@|underline 7890|@"), txt.substring(4));
+        assertEquals(new Text("56@|underline 7890|@"), txt.substring(5));
+        assertEquals(new Text("6@|underline 7890|@"), txt.substring(6));
+        assertEquals(new Text("@|underline 7890|@"), txt.substring(7));
+        assertEquals(new Text("@|underline 890|@"), txt.substring(8));
+        assertEquals(new Text("@|underline 90|@"), txt.substring(9));
+        assertEquals(new Text("@|underline 0|@"), txt.substring(10));
+        assertEquals(new Text(""), txt.substring(11));
+        assertEquals(new Text("@|bold 01234|@56@|underline 7890|@"), txt.substring(0, 11));
+        assertEquals(new Text("@|bold 01234|@56@|underline 789|@"), txt.substring(0, 10));
+        assertEquals(new Text("@|bold 01234|@56@|underline 78|@"), txt.substring(0, 9));
+        assertEquals(new Text("@|bold 01234|@56@|underline 7|@"), txt.substring(0, 8));
+        assertEquals(new Text("@|bold 01234|@56"), txt.substring(0, 7));
+        assertEquals(new Text("@|bold 01234|@5"), txt.substring(0, 6));
+        assertEquals(new Text("@|bold 01234|@"), txt.substring(0, 5));
+        assertEquals(new Text("@|bold 0123|@"), txt.substring(0, 4));
+        assertEquals(new Text("@|bold 012|@"), txt.substring(0, 3));
+        assertEquals(new Text("@|bold 01|@"), txt.substring(0, 2));
+        assertEquals(new Text("@|bold 0|@"), txt.substring(0, 1));
+        assertEquals(new Text(""), txt.substring(0, 0));
+        assertEquals(new Text("@|bold 1234|@56@|underline 789|@"), txt.substring(1, 10));
+        assertEquals(new Text("@|bold 234|@56@|underline 78|@"), txt.substring(2, 9));
+        assertEquals(new Text("@|bold 34|@56@|underline 7|@"), txt.substring(3, 8));
+        assertEquals(new Text("@|bold 4|@56"), txt.substring(4, 7));
+        assertEquals(new Text("5"), txt.substring(5, 6));
+        assertEquals(new Text("@|bold 2|@"), txt.substring(2, 3));
+        assertEquals(new Text("@|underline 8|@"), txt.substring(8, 9));
+
+        Text txt2 = new Text("@|bold abc|@@|underline DEF|@");
+        assertEquals(new Text("@|bold abc|@@|underline DEF|@"), txt2.substring(0));
+        assertEquals(new Text("@|bold bc|@@|underline DEF|@"), txt2.substring(1));
+        assertEquals(new Text("@|bold abc|@@|underline DE|@"), txt2.substring(0,5));
+        assertEquals(new Text("@|bold bc|@@|underline DE|@"), txt2.substring(1,5));
+    }
+
+    @Test
+    public void testTextWithMultipleStyledSections() {
+        CommandLine.ansi = true;
+        assertEquals("\u001B[1m<main class>\u001B[21m [\u001B[33m-v\u001B[39m] [\u001B[33m-c\u001B[39m [\u001B[3m<count>\u001B[23m]]",
+                new Text("@|bold <main class>|@ [@|yellow -v|@] [@|yellow -c|@ [@|italic <count>|@]]").toString());
+    }
+
+    @Test
+    public void testAdjacentStyles() {
+        CommandLine.ansi = true;
+        assertEquals("\u001B[3m<commit\u001B[23m\u001B[3m>\u001B[23m%n\u001B[0m",
+                new Text("@|italic <commit|@@|italic >|@%n").toString());
     }
 
 }

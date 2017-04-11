@@ -437,12 +437,12 @@ public class Demo implements Runnable {
             "                                affected.%n" +
             "  @|yellow -p|@, @|yellow --patch|@                 Use the interactive patch selection interface to%n" +
             "                                chose which changes to commit%n" +
-            "  @|yellow -C|@, @|yellow --reuse-message|@=@|italic <commit>|@%n" +
+            "  @|yellow -C|@, @|yellow --reuse-message|@=@|italic <commit|@@|italic >|@%n" +
             "                              Take an existing commit object, and reuse the log%n" +
             "                                message and the authorship information%n" +
             "                                (including the timestamp) when creating the%n" +
             "                                commit.%n" +
-            "  @|yellow -c|@, @|yellow --reedit-message|@=@|italic <commit>|@%n" +
+            "  @|yellow -c|@, @|yellow --reedit-message|@=@|italic <commi|@@|italic t>|@%n" +
             "                              Like -C, but with -c the editor is invoked, so%n" +
             "                                that the user canfurther edit the commit%n" +
             "                                message.%n" +

@@ -50,6 +50,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
+import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.Stack;
 import java.util.TreeMap;
@@ -2132,7 +2133,7 @@ public class CommandLine {
                 final int COLUMN_COUNT = 5;
                 Text[][] result = new Text[ROW_COUNT][COLUMN_COUNT];
                 result[0] = new Text[] { scheme.optionText(requiredOption), scheme.optionText(shortOption),
-                        scheme.optionText(sep), longOptionText, new Text(str(option.description(), 0)) };
+                        new Text(sep), longOptionText, new Text(str(option.description(), 0)) };
                 for (int i = 1; i < option.description().length; i++) {
                     result[i] = new Text[] { Text.EMPTY, Text.EMPTY, Text.EMPTY, Text.EMPTY, new Text(option.description()[i]) };
                 }
@@ -2728,7 +2729,7 @@ public class CommandLine {
                 private int from;
                 private int length;
                 private StringBuilder plain = new StringBuilder();
-                private Map<Integer, String> indexToStyle = new TreeMap<Integer, String>();
+                private SortedMap<Integer, String> indexToStyle = new TreeMap<Integer, String>();
 
                 public Text(int maxLength) { this.maxLength = maxLength; }
                 public Text(String input) {
@@ -2766,12 +2767,16 @@ public class CommandLine {
                         }
 
                         IStyle[] styles = parse(items[0].split(","));
-                        indexToStyle.put(plain.length(), Style.on(styles));
+                        putStyle(plain.length(), Style.on(styles));
                         plain.append(items[1]);
                         reverse(styles);
-                        indexToStyle.put(plain.length(), Style.off(styles));
+                        putStyle(plain.length(), Style.off(styles));
                         i = k + 2;
                     }
+                }
+                private void putStyle(int index, String style) {
+                    String existing = indexToStyle.put(index, style);
+                    if (existing != null) { indexToStyle.put(index, existing + style); }
                 }
 
                 private IStyle[] parse(String... codes) {
@@ -2846,22 +2851,40 @@ public class CommandLine {
                     if (!Ansi.enabled()) {
                         return plain.toString().substring(from, from + length);
                     }
+                    if (length == 0) { return ""; }
                     StringBuilder sb = new StringBuilder(plain.length() + 20 * indexToStyle.size());
+                    Integer startStyle = null;
+                    Integer endStyle = -1;
                     for (Integer index : indexToStyle.keySet()) {
-                        if (from <= index) { break; }
-                        sb.append(indexToStyle.get(index));
+                        if (index <= from) {
+                            startStyle = startStyle == null ? index : null;
+                            endStyle   = endStyle   == null ? index : null;
+                        }
+                        if (index >= from) {break;}
+                    }
+                    if (startStyle != null) {
+                        sb.append(indexToStyle.get(startStyle));
+                        endStyle = startStyle;
                     }
                     int end = Math.min(from + length, plain.length());
                     for (int i = from; i < end; i++) {
                         String style = indexToStyle.get(i);
-                        if (style != null) { sb.append(style); }
+                        if (style != null) {
+                            if (endStyle != null && endStyle != i) {
+                                sb.append(style);
+                                startStyle = startStyle == null ? i : null;
+                            }
+                            endStyle = i;
+                        }
                         sb.append(plain.charAt(i));
                     }
-                    List<Integer> indices = new ArrayList<Integer>(indexToStyle.keySet());
-                    Collections.reverse(indices);
-                    for (Integer index : indices) {
-                        if (index < end) { continue; }
-                        sb.append(indexToStyle.get(index));
+                    if (startStyle != null) { // find closing style
+                        SortedMap<Integer, String> tailMap = indexToStyle.tailMap(startStyle + 1);
+                        if (!tailMap.isEmpty()) {
+                            sb.append(indexToStyle.get(tailMap.firstKey()));
+                        } else {
+                            sb.append(Style.reset.off());
+                        }
                     }
                     return sb.toString();
                 }
