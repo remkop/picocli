@@ -1668,7 +1668,7 @@ public class CommandLine {
          * on the specified class and superclasses. */
         public Help(Object annotatedObject, ColorScheme colorScheme) {
             this.annotatedObject = Assert.notNull(annotatedObject, "annotatedObject");
-            this.colorScheme = Assert.notNull(colorScheme, "colorScheme");
+            this.colorScheme = Assert.notNull(colorScheme, "colorScheme").applySystemProperties();
             Class<?> cls = annotatedObject.getClass();
             while (cls != null) {
                 for (Field field : cls.getDeclaredFields()) {
@@ -2638,6 +2638,20 @@ public class CommandLine {
             public Ansi.Text optionText(String option)           { return Text.apply(option,      optionStyles); }
             public Ansi.Text parameterText(String parameter)     { return Text.apply(parameter,   parameterStyles); }
             public Ansi.Text optionParamText(String optionParam) { return Text.apply(optionParam, optionParamStyles); }
+
+            public ColorScheme applySystemProperties() {
+                replace(commandStyles,     System.getProperty("picocli.ansi.commands"));
+                replace(optionStyles,      System.getProperty("picocli.ansi.options"));
+                replace(parameterStyles,   System.getProperty("picocli.ansi.parameters"));
+                replace(optionParamStyles, System.getProperty("picocli.ansi.optionParams"));
+                return this;
+            }
+            private void replace(List<IStyle> styles, String property) {
+                if (property != null) {
+                    styles.clear();
+                    styles.addAll(Arrays.asList(Style.parse(property.split(","))));
+                }
+            }
         }
 
         /** Creates and returns a new {@link ColorScheme} initialized with picocli default values: commands are bold,
@@ -2710,6 +2724,21 @@ public class CommandLine {
                     try { return Style.valueOf("bg_" + str.toLowerCase(ENGLISH)); } catch (Exception ignored) {}
                     return new ISO86133RGBColor(false, Color.decode(str));
                 }
+                public static IStyle[] parse(String... codes) {
+                    IStyle[] styles = new IStyle[codes.length];
+                    for(int i = 0; i < codes.length; ++i) {
+                        if (codes[i].toLowerCase(ENGLISH).startsWith("fg(")) {
+                            int end = codes[i].indexOf(')');
+                            styles[i] = Style.fg(codes[i].substring(3, end < 0 ? codes[i].length() : end));
+                        } else if (codes[i].toLowerCase(ENGLISH).startsWith("bg(")) {
+                            int end = codes[i].indexOf(')');
+                            styles[i] = Style.bg(codes[i].substring(3, end < 0 ? codes[i].length() : end));
+                        } else {
+                            styles[i] = Style.fg(codes[i]);
+                        }
+                    }
+                    return styles;
+                }
             }
             /** ISO-8613-3 24-bit RGB color ansi escape codes. */
             static class ISO86133RGBColor implements IStyle {
@@ -2766,7 +2795,7 @@ public class CommandLine {
                             return;
                         }
 
-                        IStyle[] styles = parse(items[0].split(","));
+                        IStyle[] styles = Style.parse(items[0].split(","));
                         putStyle(plain.length(), Style.on(styles));
                         plain.append(items[1]);
                         reverse(styles);
@@ -2777,22 +2806,6 @@ public class CommandLine {
                 private void putStyle(int index, String style) {
                     String existing = indexToStyle.put(index, style);
                     if (existing != null) { indexToStyle.put(index, existing + style); }
-                }
-
-                private IStyle[] parse(String... codes) {
-                    IStyle[] styles = new IStyle[codes.length];
-                    for(int i = 0; i < codes.length; ++i) {
-                        if (codes[i].toLowerCase(ENGLISH).startsWith("fg(")) {
-                            int end = codes[i].indexOf(')');
-                            styles[i] = Style.fg(codes[i].substring(3, end < 0 ? codes[i].length() : end));
-                        } else if (codes[i].toLowerCase(ENGLISH).startsWith("bg(")) {
-                            int end = codes[i].indexOf(')');
-                            styles[i] = Style.bg(codes[i].substring(3, end < 0 ? codes[i].length() : end));
-                        } else {
-                            styles[i] = Style.fg(codes[i]);
-                        }
-                    }
-                    return styles;
                 }
                 public Object clone() {
                     try { return super.clone(); } catch (CloneNotSupportedException e) { throw new IllegalStateException(e); }
