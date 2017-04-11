@@ -419,7 +419,7 @@ public class Demo implements Runnable {
             "%n" +
             "Record changes to the repository.%n" +
             "%n" +
-            "@|bold git-commit|@ [@|yellow -ap|@] [@|yellow --fixup|@=@|italic <commit>|@] [@|yellow --squash|@=@|italic <commit>@|yellow ] [@|yellow -c|@=@|italic <commit>|@]%n" +
+            "@|bold git-commit|@ [@|yellow -ap|@] [@|yellow --fixup|@=@|italic <commit>|@] [@|yellow --squash|@=@|italic <commit>|@] [@|yellow -c|@=@|italic <commit>|@]%n" +
             "           [@|yellow -C|@=@|italic <commit>|@] [@|yellow -F|@=@|italic <file>|@] [@|yellow -m|@[=@|italic <msg>|@...]] [@|yellow <files>|@...]%n" +
             "%n" +
             "@|bold,underline Description:|@%n" +
