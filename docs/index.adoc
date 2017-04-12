@@ -1,16 +1,17 @@
 = picocli - a mighty tiny Command Line Interface
 Remko Popma <rpopma@apache.org>
-v0.3.0, 2017-03-25
+v0.4.0, 2017-04-13
 :toc: left
 :numbered:
 :toclevels: 2
 :toc-title: Features
 
 Picocli is a one-file Java framework for parsing command line arguments
-and generating rich usage help message.
+and generating polished and easily tailored usage help messages.
 
-To let users run your application without requiring picocli as an external dependency,
-picocli is only a single source file, so you can include it _in source form_ in your application.
+A distinguishing feature of picocli is how it aims
+to let users run your application without requiring picocli as an external dependency:
+all the source code lives in a single file, to encourage application authors to include it _in source form_.
 
 How it works: annotate your class and picocli initializes it from the command line arguments,
 converting the input to strongly typed values in the fields of your class.
@@ -77,7 +78,7 @@ However, picocli lets you make options required if you want to, see <<Required O
 === Options
 An option must have one or more `names`. Option names usually have a prefix to distinguish them from parameters. Different operating systems and applications use https://en.wikipedia.org/wiki/Command-line_interface#Command-line_option[different prefixing] styles. Picocli lets you use any option name you want.
 
-TIP: You may be interested in this http://catb.org/~esr/writings/taoup/html/ch10s05.html#id2948149[list of common option names]. Following these conventions may make your application more intuitive to use.
+TIP: You may be interested in this http://catb.org/~esr/writings/taoup/html/ch10s05.html#id2948149[list of common option names]. Following these conventions may make your application more intuitive to use for experienced users.
 
 The below example shows options with one or more names, options that take an option parameter, and "help" options.
 [source,java]
@@ -102,6 +103,7 @@ Picocli matches the option names to set the field values.
 ----
 String[] args = { "-cf", "result.tar", "file1.txt", "file2.txt" };
 Tar tar = CommandLine.parse(new Tar(), args);
+
 assert  tar.create;
 assert !tar.extract;
 assert  tar.archive.equals(new File("result.tar"));
@@ -169,6 +171,7 @@ Picocli initializes fields with the values at the specified index in the argumen
 ----
 String[] args = { "localhost", "12345", "file1.txt", "file2.txt" };
 PositionalParameters params = CommandLine.parse(new PositionalParameters(), args);
+
 assert params.host.getHostName().equals("localhost");
 assert params.port == 12345;
 assert Arrays.equals(params.files, new File[] {new File("file1.txt"), new File("file2.txt")});
@@ -881,7 +884,7 @@ Starting from Windows 10 the Windows console https://msdn.microsoft.com/en-us/li
 
 For Windows version below 10, the Windows command console doesn't support output coloring by default. One option is to install either http://cmder.net/[Cmder], http://sourceforge.net/projects/conemu/[ConEmu], https://github.com/adoxa/ansicon/[ANSICON] or https://mintty.github.io/[Mintty] (used by default in GitBash and Cygwin) to add coloring support to their Windows command console.
 
-An alternative is to use http://fusesource.github.io/jansi/[Jansi] in your application. For example:
+Another option is to use http://fusesource.github.io/jansi/[Jansi] in your application. For example:
 
 [source,java]
 ----
@@ -897,8 +900,9 @@ public static void main(String[] args) {
     AnsiConsole.systemUninstall();
 }
 ----
+NOTE: None of the above is mandatory. If not supported, picocli will simply not emit ANSI escape codes, and everything will work without colors.
 
-==== Override
+==== Forcing ANSI On/Off
 You can force picocli to either always use ANSI codes or never use ANSI codes regardless of the platform:
 
 * Setting system property `picocli.ansi` to `true` forces picocli to use ANSI codes; setting `picocli.ansi` to `false` forces picocli to *not* use ANSI codes. This may be a useful facility to document for users of your command line application.
@@ -922,14 +926,35 @@ The below code snippet shows how a color scheme can be used to configure the usa
 ----
 // see also CommandLine.Help.defaultColorScheme()
 ColorScheme colorScheme = new ColorScheme()
-        .commands(Style.bold, Style.underline)        // combine multiple styles
-        .options(Style.fg_yellow)                     // yellow foreground color
-        .parameters(Style.fg_yellow)
-        .optionParams(Style.fg_yellow, Style.italic); // combine color and style
+        .commands    (Style.bold, Style.underline)    // combine multiple styles
+        .options     (Style.fg_yellow)                // yellow foreground color
+        .parameters  (Style.fg_yellow)
+        .optionParams(Style.italic);
 
 CommandLine.usage(annotatedObject, System.out, colorScheme);
 ...
 ----
+
+==== End User Overrides
+
+The following system properties override the color scheme styles. This allows end users to adjust for their individual terminal color setup.
+
+.System Properties to Override the Color Scheme
+----
+picocli.color.commands
+picocli.color.options
+picocli.color.parameters
+picocli.color.optionParams
+----
+
+For example:
+
+```
+java -Dpicocli.color.options=blink,blue -Dpicocli.color.parameters=reverse com.app.Main
+```
+
+System property values may specify multiple comma separated styles.
+
 
 ==== Custom Styles and Colors
 You may also want to use colors and styles for specific parts of the description
@@ -938,7 +963,7 @@ of some elements or the usage help message header or footer.
 Picocli supports a custom notation for mixing colors and styles in text,
 following a convention introduced by https://github.com/fusesource/jansi[Jansi], where
 `@|` starts a styled section, and `|@` ends it.
-Immediately following the `@|` is a comma-separated list of colors and styles.
+Immediately following the `@|` is a comma-separated list of colors and styles, so `@|STYLE1[,STYLE2]... text|@`.
 For example:
 
 [source,java]
@@ -946,7 +971,7 @@ For example:
 @Command(description = "Custom @|bold,underline styles|@ and @|fg(red) colors|@.")
 ----
 
-.Pre-defined styles and colors that can be used in descriptions and headers using the `@|` notation
+.Pre-defined styles and colors that can be used in descriptions and headers using the `@|STYLE1[,STYLE2]... text|@` notation
 [grid=cols,cols=2*,options="header"]
 |===
 |Pre-defined Styles | Pre-defined Colors
@@ -968,6 +993,8 @@ Similarly, `fg(<color>)` explicitly sets the foreground color.
 
 Custom RGB https://en.wikipedia.org/wiki/ANSI_escape_code#Colors[colors] (ISO-8613-3 24-bit foreground and background colors) can be specified in any format supported by the `Color.decode()` method.
 For example, `fg(0x9933EE)` renders a color equivalent to `java.awt.Color.decode(Ox9933EE)`.
+
+CAUTION: Not all terminals support ISO-8613-3.
 
 The example below shows how this can be used to add colors and styles to the headings and descriptions of a usage help message:
 [source,java]
@@ -992,7 +1019,7 @@ CAUTION: Styles cannot be nested, for example: `@|bold this @|underline that|@|@
 == Usage Help API
 For further customization of the usage help message, picocli has a Help API.
 The `Help` class provides a number of high-level operations, and a set of components like `Layout`, `TextTable`, `IOptionRenderer`, etc., that can be used to build custom help messages.
-Details of the Help API are out of scope for this document, but the following sections show some of the highlights.
+Details of the Help API are out of scope for this document, but the following sections give some idea of what is possible.
 
 === Reordering Sections
 One thing you may want to do is reorder sections of the usage message or add custom sections.
@@ -1228,6 +1255,18 @@ try {
 runnable.run();
 ----
 Note that the `CommandLine.run` convenience method cannot be used with subcommands.
+
+== API Javadoc
+Picocli API Javadoc can be found https://github.com/remkop/picocli/docs/javadoc[here].
+
+== GitHub Project
+The https://github.com/remkop/picocli[GitHub project] has the source code, tests, build scripts, etc.
+
+== Issue Tracker
+Please use the https://github.com/remkop/picocli/issues[Issue Tracker] to report bugs or request features.
+
+== License
+Picocli is licensed under the https://github.com/remkop/picocli/blob/master/LICENSE[Apache License 2.0].
 
 == Download
 

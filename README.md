@@ -10,7 +10,7 @@ POSIX-style short groupable options, custom type converters and more.
 Distinguishes between named options and positional parameters and allows both to be strongly typed.
 Multi-valued fields can specify either an open or a precise range of parameters (e.g., `0..*`, `1..2`).
 
-Generates beautiful and easily tailored usage help, using ANSI colors where possible.
+Generates polished and easily tailored usage help, using ANSI colors where possible.
 Works with Java 5 or higher (but is designed to facilitate the use of Java 8 lambdas).
 
 
