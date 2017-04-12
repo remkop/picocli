@@ -20,7 +20,9 @@ import org.junit.Ignore;
 import org.junit.Test;
 import picocli.CommandLine.Help;
 import picocli.CommandLine.Help.Ansi.IStyle;
+import picocli.CommandLine.Help.Ansi.Style;
 import picocli.CommandLine.Help.Ansi.Text;
+import picocli.CommandLine.Help.ColorScheme;
 import picocli.CommandLine.Help.TextTable;
 import picocli.CommandLine.Option;
 import picocli.CommandLine.Parameters;
@@ -49,6 +51,11 @@ public class CommandLineHelpTest {
     @After
     public void after() {
         CommandLine.ansi = null; // restore to platform default
+
+        System.getProperties().remove("picocli.color.commands");
+        System.getProperties().remove("picocli.color.options");
+        System.getProperties().remove("picocli.color.parameters");
+        System.getProperties().remove("picocli.color.optionParams");
     }
     private static String usageString(Object annotatedObject) throws UnsupportedEncodingException {
         return usageString(new CommandLine(annotatedObject));
@@ -1163,7 +1170,7 @@ public class CommandLineHelpTest {
     @Test
     public void testTextConstructorWithStyle() {
         CommandLine.ansi = true;
-        assertEquals("\u001B[1m--NoAnsiFormat\uu001B[21m", new Text("@|bold --NoAnsiFormat|@").toString());
+        assertEquals("\u001B[1m--NoAnsiFormat\u001B[21m\u001B[0m", new Text("@|bold --NoAnsiFormat|@").toString());
     }
 
     @Ignore("Until nested styles are supported")
@@ -1177,14 +1184,14 @@ public class CommandLineHelpTest {
     @Test
     public void testTextApply() {
         CommandLine.ansi = true;
-        Text txt = Text.apply("--p", Arrays.<IStyle>asList(Help.Ansi.Style.fg_red, Help.Ansi.Style.bold));
+        Text txt = Text.apply("--p", Arrays.<IStyle>asList(Style.fg_red, Style.bold));
         assertEquals(new Text("@|fg(red),bold --p|@"), txt);
     }
 
     @Test
     public void testTextDefaultColorScheme() {
         CommandLine.ansi = true;
-        Help.ColorScheme scheme = Help.defaultColorScheme();
+        ColorScheme scheme = Help.defaultColorScheme();
         assertEquals(new Text("@|yellow -p|@"),      scheme.optionText("-p"));
         assertEquals(new Text("@|bold command|@"),  scheme.commandText("command"));
         assertEquals(new Text("@|yellow FILE|@"),   scheme.parameterText("FILE"));
@@ -1237,15 +1244,62 @@ public class CommandLineHelpTest {
     @Test
     public void testTextWithMultipleStyledSections() {
         CommandLine.ansi = true;
-        assertEquals("\u001B[1m<main class>\u001B[21m [\u001B[33m-v\u001B[39m] [\u001B[33m-c\u001B[39m [\u001B[3m<count>\u001B[23m]]",
+        assertEquals("\u001B[1m<main class>\u001B[21m\u001B[0m [\u001B[33m-v\u001B[39m\u001B[0m] [\u001B[33m-c\u001B[39m\u001B[0m [\u001B[3m<count>\u001B[23m\u001B[0m]]",
                 new Text("@|bold <main class>|@ [@|yellow -v|@] [@|yellow -c|@ [@|italic <count>|@]]").toString());
     }
 
     @Test
     public void testAdjacentStyles() {
         CommandLine.ansi = true;
-        assertEquals("\u001B[3m<commit\u001B[23m\u001B[3m>\u001B[23m%n\u001B[0m",
+        assertEquals("\u001B[3m<commit\u001B[23m\u001B[0m\u001B[3m>\u001B[23m\u001B[0m%n\u001B[0m",
                 new Text("@|italic <commit|@@|italic >|@%n").toString());
+    }
+
+    @Test
+    public void testSystemPropertiesOverrideDefaultColorScheme() {
+        CommandLine.ansi = true;
+        @CommandLine.Command(separator = "=") class App {
+            @Option(names = {"--verbose", "-v"}) boolean verbose;
+            @Option(names = {"--count", "-c"}) int count;
+            @Option(names = {"--help", "-h"}, hidden = true) boolean helpRequested;
+            @Parameters(paramLabel = "FILE", arity = "1..*") File[] files;
+        }
+        // default color scheme
+        assertEquals(new Text("@|bold <main class>|@ [@|yellow -v|@] [@|yellow -c|@=@|italic <count>|@] @|yellow FILE|@ [@|yellow FILE|@...]" + LINESEP),
+                new Help(new App()).synopsis());
+
+        System.setProperty("picocli.color.commands", "blue");
+        System.setProperty("picocli.color.options", "green");
+        System.setProperty("picocli.color.parameters", "cyan");
+        System.setProperty("picocli.color.optionParams", "magenta");
+        assertEquals(new Text("@|blue <main class>|@ [@|green -v|@] [@|green -c|@=@|magenta <count>|@] @|cyan FILE|@ [@|cyan FILE|@...]" + LINESEP),
+                new Help(new App()).synopsis());
+    }
+
+    @Test
+    public void testSystemPropertiesOverrideExplicitColorScheme() {
+        CommandLine.ansi = true;
+        @CommandLine.Command(separator = "=") class App {
+            @Option(names = {"--verbose", "-v"}) boolean verbose;
+            @Option(names = {"--count", "-c"}) int count;
+            @Option(names = {"--help", "-h"}, hidden = true) boolean helpRequested;
+            @Parameters(paramLabel = "FILE", arity = "1..*") File[] files;
+        }
+        ColorScheme explicit = new ColorScheme()
+                .commands(Style.faint, Style.bg_magenta)
+                .options(Style.bg_red)
+                .parameters(Style.reverse)
+                .optionParams(Style.bg_green);
+        // default color scheme
+        assertEquals(new Text("@|faint,bg(magenta) <main class>|@ [@|bg(red) -v|@] [@|bg(red) -c|@=@|bg(green) <count>|@] @|reverse FILE|@ [@|reverse FILE|@...]" + LINESEP),
+                new Help(new App(), explicit).synopsis());
+
+        System.setProperty("picocli.color.commands", "blue");
+        System.setProperty("picocli.color.options", "blink");
+        System.setProperty("picocli.color.parameters", "red");
+        System.setProperty("picocli.color.optionParams", "magenta");
+        assertEquals(new Text("@|blue <main class>|@ [@|blink -v|@] [@|blink -c|@=@|magenta <count>|@] @|red FILE|@ [@|red FILE|@...]" + LINESEP),
+                new Help(new App()).synopsis());
     }
 
 }

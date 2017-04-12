@@ -126,7 +126,7 @@ import static picocli.CommandLine.Help.Column.Overflow.*;
  */
 public class CommandLine {
     /** This is picocli version {@value}. */
-    public static final String VERSION = "0.3.0";
+    public static final String VERSION = "0.4.0";
     public static Boolean ansi = (System.getProperty("picocli.ansi") == null ? null : Boolean.getBoolean("picocli.ansi"));
 
     private final Interpreter interpreter;
@@ -2627,30 +2627,34 @@ public class CommandLine {
             public final List<IStyle> parameterStyles = new ArrayList<IStyle>();
             public final List<IStyle> optionParamStyles = new ArrayList<IStyle>();
             /** Adds the specified styles to the styles for commands in this color scheme and returns this color scheme. */
-            public ColorScheme commands(IStyle... styles)     { for (int i = 0; i < styles.length; i++) { commandStyles.add(styles[i]);     } return this;}
+            public ColorScheme commands(IStyle... styles)     { return addAll(commandStyles, styles); }
             /** Adds the specified styles to the styles for options in this color scheme and returns this color scheme. */
-            public ColorScheme options(IStyle... styles)      { for (int i = 0; i < styles.length; i++) { optionStyles.add(styles[i]);      } return this;}
+            public ColorScheme options(IStyle... styles)      { return addAll(optionStyles, styles);}
             /** Adds the specified styles to the styles for positional parameters in this color scheme and returns this color scheme. */
-            public ColorScheme parameters(IStyle... styles)   { for (int i = 0; i < styles.length; i++) { parameterStyles.add(styles[i]);   } return this;}
+            public ColorScheme parameters(IStyle... styles)   { return addAll(parameterStyles, styles);}
             /** Adds the specified styles to the styles for option parameters in this color scheme and returns this color scheme. */
-            public ColorScheme optionParams(IStyle... styles) { for (int i = 0; i < styles.length; i++) { optionParamStyles.add(styles[i]); } return this;}
+            public ColorScheme optionParams(IStyle... styles) { return addAll(optionParamStyles, styles);}
             public Ansi.Text commandText(String command)         { return Text.apply(command,     commandStyles); }
             public Ansi.Text optionText(String option)           { return Text.apply(option,      optionStyles); }
             public Ansi.Text parameterText(String parameter)     { return Text.apply(parameter,   parameterStyles); }
             public Ansi.Text optionParamText(String optionParam) { return Text.apply(optionParam, optionParamStyles); }
 
             public ColorScheme applySystemProperties() {
-                replace(commandStyles,     System.getProperty("picocli.ansi.commands"));
-                replace(optionStyles,      System.getProperty("picocli.ansi.options"));
-                replace(parameterStyles,   System.getProperty("picocli.ansi.parameters"));
-                replace(optionParamStyles, System.getProperty("picocli.ansi.optionParams"));
+                replace(commandStyles,     System.getProperty("picocli.color.commands"));
+                replace(optionStyles,      System.getProperty("picocli.color.options"));
+                replace(parameterStyles,   System.getProperty("picocli.color.parameters"));
+                replace(optionParamStyles, System.getProperty("picocli.color.optionParams"));
                 return this;
             }
             private void replace(List<IStyle> styles, String property) {
                 if (property != null) {
                     styles.clear();
-                    styles.addAll(Arrays.asList(Style.parse(property.split(","))));
+                    addAll(styles, Style.parse(property.split(",")));
                 }
+            }
+            private ColorScheme addAll(List<IStyle> styles, IStyle... add) {
+                styles.addAll(Arrays.asList(add));
+                return this;
             }
         }
 
@@ -2740,6 +2744,7 @@ public class CommandLine {
                     return styles;
                 }
             }
+
             /** ISO-8613-3 24-bit RGB color ansi escape codes. */
             static class ISO86133RGBColor implements IStyle {
                 private final int fgbg;
@@ -2800,6 +2805,7 @@ public class CommandLine {
                         plain.append(items[1]);
                         reverse(styles);
                         putStyle(plain.length(), Style.off(styles));
+                        putStyle(plain.length(), Style.reset.off());
                         i = k + 2;
                     }
                 }
@@ -2910,7 +2916,7 @@ public class CommandLine {
                     result.plain.append(plainText);
                     result.length = result.plain.length();
                     reverse(all);
-                    result.indexToStyle.put(result.plain.length(), Style.off(all));
+                    result.indexToStyle.put(result.plain.length(), Style.off(all) + Style.reset.off());
                     return result;
                 }
 
