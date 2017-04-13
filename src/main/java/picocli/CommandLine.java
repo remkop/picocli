@@ -2634,11 +2634,24 @@ public class CommandLine {
             public ColorScheme parameters(IStyle... styles)   { return addAll(parameterStyles, styles);}
             /** Adds the specified styles to the styles for option parameters in this color scheme and returns this color scheme. */
             public ColorScheme optionParams(IStyle... styles) { return addAll(optionParamStyles, styles);}
+            /** Returns a Text with all command styles applied to the specified command string. */
             public Ansi.Text commandText(String command)         { return Text.apply(command,     commandStyles); }
+            /** Returns a Text with all option styles applied to the specified option string. */
             public Ansi.Text optionText(String option)           { return Text.apply(option,      optionStyles); }
+            /** Returns a Text with all parameter styles applied to the specified parameter string. */
             public Ansi.Text parameterText(String parameter)     { return Text.apply(parameter,   parameterStyles); }
+            /** Returns a Text with all optionParam styles applied to the specified optionParam string. */
             public Ansi.Text optionParamText(String optionParam) { return Text.apply(optionParam, optionParamStyles); }
 
+            /** Replaces colors and styles in this scheme with ones specified in system properties, and returns this scheme.
+             * Supported property names:<ul>
+             *     <li>{@code picocli.color.commands}</li>
+             *     <li>{@code picocli.color.options}</li>
+             *     <li>{@code picocli.color.parameters}</li>
+             *     <li>{@code picocli.color.optionParams}</li>
+             * </ul><p>Property values can be anything that {@link Help.Ansi.Style#parse(String)} can handle.</p>
+             * @return this ColorScheme
+             */
             public ColorScheme applySystemProperties() {
                 replace(commandStyles,     System.getProperty("picocli.color.commands"));
                 replace(optionStyles,      System.getProperty("picocli.color.options"));
@@ -2649,7 +2662,7 @@ public class CommandLine {
             private void replace(List<IStyle> styles, String property) {
                 if (property != null) {
                     styles.clear();
-                    addAll(styles, Style.parse(property.split(",")));
+                    addAll(styles, Style.parse(property));
                 }
             }
             private ColorScheme addAll(List<IStyle> styles, IStyle... add) {
@@ -2693,6 +2706,12 @@ public class CommandLine {
                 String on();
                 String off();
             }
+
+            /**
+             * A set of pre-defined ANSI escape code styles and colors, and a set of convenience methods for parsing
+             * text with embedded style descriptors, as well as convenience methods for converting
+             * styles to strings with embedded escape codes.
+             */
             enum Style implements IStyle {
                 reset(0, 0), bold(1, 21), faint(2, 22), italic(3, 23), underline(4, 24), blink(5, 25), reverse(7, 27),
                 fg_black(30, 39), fg_red(31, 39), fg_green(32, 39), fg_yellow(33, 39), fg_blue(34, 39), fg_magenta(35, 39), fg_cyan(36, 39), fg_white(37, 39),
@@ -2728,7 +2747,8 @@ public class CommandLine {
                     try { return Style.valueOf("bg_" + str.toLowerCase(ENGLISH)); } catch (Exception ignored) {}
                     return new ISO86133RGBColor(false, Color.decode(str));
                 }
-                public static IStyle[] parse(String... codes) {
+                public static IStyle[] parse(String commaSeparatedCodes) {
+                    String[] codes = commaSeparatedCodes.split(",");
                     IStyle[] styles = new IStyle[codes.length];
                     for(int i = 0; i < codes.length; ++i) {
                         if (codes[i].toLowerCase(ENGLISH).startsWith("fg(")) {
@@ -2800,7 +2820,7 @@ public class CommandLine {
                             return;
                         }
 
-                        IStyle[] styles = Style.parse(items[0].split(","));
+                        IStyle[] styles = Style.parse(items[0]);
                         putStyle(plain.length(), Style.on(styles));
                         plain.append(items[1]);
                         reverse(styles);
