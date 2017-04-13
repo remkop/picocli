@@ -2797,6 +2797,10 @@ public class CommandLine {
                 public String on() { return String.format(CSI + "%d;2;%d;%d;%dm", fgbg, color.getRed(), color.getGreen(), color.getBlue()); }
                 public String off() { return CSI + (fgbg + 1) + "m"; }
             }
+
+            /** This class can parse style converters and store plain text with a set of styles with the position where
+             * these styles should be applied.
+             */
             public static class Text implements Cloneable {
                 public static Text EMPTY = new Text(0);
                 private final int maxLength;
