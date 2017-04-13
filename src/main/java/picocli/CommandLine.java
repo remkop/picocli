@@ -66,9 +66,7 @@ import static picocli.CommandLine.Help.Column.Overflow.*;
  * <p>
  * CommandLine interpreter that uses reflection to initialize an annotated domain object with values obtained from the
  * command line arguments.
- * </p><p>
- * <h2>Example</h2>
- * </p>
+ * </p><h2>Example</h2>
  * <pre>import static picocli.CommandLine.*;
  *
  * &#064;Command(header = "Encrypt FILE(s), or standard input, to standard output or to the output file.",
@@ -76,7 +74,7 @@ import static picocli.CommandLine.Help.Column.Overflow.*;
  * public class Encrypt {
  *
  *     &#064;Parameters(type = File.class, description = "Any number of input files")
- *     private List<File> files = new ArrayList<File>();
+ *     private List&lt;File&gt; files = new ArrayList&lt;File&gt;();
  *
  *     &#064;Option(names = { "-o", "--out" }, description = "Output file (default: print to console)")
  *     private File outputFile;
@@ -296,8 +294,8 @@ public class CommandLine {
      * Java 8 lambdas make it easy to register custom type converters:
      * </p>
      * <pre>
-     * commandLine.registerConverter(java.nio.file.Path.class, s -> java.nio.file.Paths.get(s));
-     * commandLine.registerConverter(java.time.Duration.class, s -> java.time.Duration.parse(s));</pre>
+     * commandLine.registerConverter(java.nio.file.Path.class, s -&gt; java.nio.file.Paths.get(s));
+     * commandLine.registerConverter(java.time.Duration.class, s -&gt; java.time.Duration.parse(s));</pre>
      * <p>
      * Built-in type converters are pre-registered for the following java 1.5 types:
      * </p>
@@ -357,7 +355,7 @@ public class CommandLine {
      *
      * public class MyClass {
      *     &#064;Parameters(type = File.class, description = "Any number of input files")
-     *     private List<File> files = new ArrayList<File>();
+     *     private List&lt;File&gt; files = new ArrayList&lt;File&gt;();
      *
      *     &#064;Option(names = { "-o", "--out" }, description = "Output file (default: print to console)")
      *     private File outputFile;
@@ -561,7 +559,7 @@ public class CommandLine {
      *
      * public class MyCalcParameters {
      *     &#064;Parameters(type = BigDecimal.class, description = "Any number of input numbers")
-     *     private List<BigDecimal> files = new ArrayList<BigDecimal>();
+     *     private List&lt;BigDecimal&gt; files = new ArrayList&lt;BigDecimal&gt;();
      *
      *     &#064;Option(names = { "-h", "--help", "-?", "-help"}, help = true, description = "Display this help and exit")
      *     private boolean help;
@@ -651,7 +649,7 @@ public class CommandLine {
      *        footer      = "Copyright (c) 2017")
      * public class Encrypt {
      *     &#064;Parameters(paramLabel = "FILE", type = File.class, description = "Any number of input files")
-     *     private List<File> files     = new ArrayList<File>();
+     *     private List&lt;File&gt; files     = new ArrayList&lt;File&gt;();
      *
      *     &#064;Option(names = { "-o", "--out" }, description = "Output file (default: print to console)")
      *     private File outputFile;
@@ -761,8 +759,8 @@ public class CommandLine {
      * Java 8 lambdas make it easy to register custom type converters:
      * </p>
      * <pre>
-     * commandLine.registerConverter(java.nio.file.Path.class, s -> java.nio.file.Paths.get(s));
-     * commandLine.registerConverter(java.time.Duration.class, s -> java.time.Duration.parse(s));</pre>
+     * commandLine.registerConverter(java.nio.file.Path.class, s -&gt; java.nio.file.Paths.get(s));
+     * commandLine.registerConverter(java.time.Duration.class, s -&gt; java.time.Duration.parse(s));</pre>
      * <p>
      * Built-in type converters are pre-registered for the following java 1.5 types:
      * </p>
@@ -2700,10 +2698,12 @@ public class CommandLine {
             public  static boolean enabled() { return forceAnsiOn() || (ansiPossible() && !forceAnsiOff()); }
 
             /** Defines the interface for an ANSI escape sequence. */
-            interface IStyle {
+            public interface IStyle {
                 /** The Control Sequence Introducer (CSI) escape sequence {@code "ESC["}. */
                 String CSI = "\u001B[";
+				/** Returns the ANSI escape code for turning this style on. */
                 String on();
+				/** Returns the ANSI escape code for turning this style off. */
                 String off();
             }
 
@@ -2723,6 +2723,7 @@ public class CommandLine {
                 Style(int startCode, int endCode) {this.startCode = startCode; this.endCode = endCode; }
                 public String on() { return CSI + startCode + "m"; }
                 public String off() { return CSI + endCode + "m"; }
+				/** Returns the concatenated ANSI escape codes for turning all specified styles on. */
                 public static String on(IStyle... styles) {
                     StringBuilder result = new StringBuilder();
                     for (IStyle style : styles) {
@@ -2730,6 +2731,7 @@ public class CommandLine {
                     }
                     return result.toString();
                 }
+				/** Returns the concatenated ANSI escape codes for turning all specified styles off. */
                 public static String off(IStyle... styles) {
                     StringBuilder result = new StringBuilder();
                     for (IStyle style : styles) {
@@ -2737,16 +2739,34 @@ public class CommandLine {
                     }
                     return result.toString();
                 }
+				/** Parses the specified style descriptor and returns the associated style.
+				 *  The descriptor may be one of the Style enum value names, or it may be one of the Style enum value
+				 *  names when {@code "fg_"} is prepended, or it may be an {@link java.awt.Color#decode(String) RGB Color int}.
+				 * @param str the case-insensitive style descriptor to convert, e.g. {@code "blue"} or {@code "fg_blue"}
+				 * @return the IStyle for the specified converter
+				 */
                 public static IStyle fg(String str) {
                     try { return Style.valueOf(str.toLowerCase(ENGLISH)); } catch (Exception ignored) {}
                     try { return Style.valueOf("fg_" + str.toLowerCase(ENGLISH)); } catch (Exception ignored) {}
                     return new ISO86133RGBColor(true, Color.decode(str));
                 }
+				/** Parses the specified style descriptor and returns the associated style.
+				 *  The descriptor may be one of the Style enum value names, or it may be one of the Style enum value
+				 *  names when {@code "bg_"} is prepended, or it may be an {@link java.awt.Color#decode(String) RGB Color int}.
+				 * @param str the case-insensitive style descriptor to convert, e.g. {@code "blue"} or {@code "bg_blue"}
+				 * @return the IStyle for the specified converter
+				 */
                 public static IStyle bg(String str) {
                     try { return Style.valueOf(str.toLowerCase(ENGLISH)); } catch (Exception ignored) {}
                     try { return Style.valueOf("bg_" + str.toLowerCase(ENGLISH)); } catch (Exception ignored) {}
                     return new ISO86133RGBColor(false, Color.decode(str));
                 }
+                /** Parses the specified comma-separated sequence of style descriptors and returns the associated
+                 *  styles. For each descriptor, strings starting with {@code "bg("} are delegated to
+                 *  {@link #bg(String)}, others are delegated to {@link #bg(String)}.
+                 * @param commaSeparatedCodes one or more descriptors, e.g. {@code "bg(blue),underline,red"}
+                 * @return an array with all styles for the specified descriptors
+                 */
                 public static IStyle[] parse(String commaSeparatedCodes) {
                     String[] codes = commaSeparatedCodes.split(",");
                     IStyle[] styles = new IStyle[codes.length];
