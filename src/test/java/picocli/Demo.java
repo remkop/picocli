@@ -34,7 +34,15 @@ import java.util.List;
         "Run with -ea to enable assertions used in the tests.",
         "Run with -Dpicocli.ansi=true to force picocli to use ansi codes,",
         " or with -Dpicocli.ansi=false to force picocli to NOT use ansi codes.",
-        "(By default picocli will use ansi codes if the platform supports it.)"
+        "(By default picocli will use ansi codes if the platform supports it.)"},
+header = {
+        "     _____   __                          __   __",
+        "    / __  / /_/                         / /  /_/",
+        "   / /_/ / _   _____  _______   _____  / /  _   ",
+        "  / ____/ / / / ___/ / __   /  / ___/ / /  / / ",
+        " / /     / / / /_   / /__/ /  / /_   / /  / / ",
+        "/_/     /_/ /____/ /______/  /____/ /_/  /_/ ",
+        ""
 })
 public class Demo implements Runnable {
     public static void main(String[] args) {
