@@ -69,8 +69,7 @@ import static picocli.CommandLine.Help.Column.Overflow.*;
  * </p><h2>Example</h2>
  * <pre>import static picocli.CommandLine.*;
  *
- * &#064;Command(header = "Encrypt FILE(s), or standard input, to standard output or to the output file.",
- *          showDefaultValues = false)
+ * &#064;Command(header = "Encrypt FILE(s), or standard input, to standard output or to the output file.")
  * public class Encrypt {
  *
  *     &#064;Parameters(type = File.class, description = "Any number of input files")
@@ -93,13 +92,13 @@ import static picocli.CommandLine.Help.Column.Overflow.*;
  *     try {
  *         Encrypt encrypt = CommandLine.parse(new Encrypt(), args);
  *         if (encrypt.help) {
- *             CommandLine.usage(Encrypt.class, System.out);
+ *             CommandLine.usage(encrypt, System.out);
  *         } else {
  *             runProgram(encrypt);
  *         }
  *     } catch (ParameterException ex) { // command line arguments could not be parsed
  *         System.err.println(ex.getMessage());
- *         CommandLine.usage(Encrypt.class, System.err);
+ *         CommandLine.usage(new Encrypt(), System.err);
  *     }
  * }
  * </pre><p>
@@ -125,6 +124,9 @@ import static picocli.CommandLine.Help.Column.Overflow.*;
 public class CommandLine {
     /** This is picocli version {@value}. */
     public static final String VERSION = "0.4.0";
+
+    /** Set this field to {@code true} to force ANSI escape sequences on, or to {@code false} to force ANSI escape
+     * sequences off. The default ({@code null}) is to enable ANSI escape sequences on supported platforms.  */
     public static Boolean ansi = (System.getProperty("picocli.ansi") == null ? null : Boolean.getBoolean("picocli.ansi"));
 
     private final Interpreter interpreter;
@@ -2716,16 +2718,20 @@ public class CommandLine {
             private static boolean ansiPossible() { return ISATTY && (!isWindows || isXterm); }
             private static boolean forceAnsiOn()  { return ansi != null && ansi; }
             private static boolean forceAnsiOff() { return ansi != null && !ansi; }
+
             /** Enabled if it is forced ON or if the platform supports ANSI escape codes and it is not forced OFF. */
             public  static boolean enabled() { return forceAnsiOn() || (ansiPossible() && !forceAnsiOff()); }
 
             /** Defines the interface for an ANSI escape sequence. */
             public interface IStyle {
-                /** The Control Sequence Introducer (CSI) escape sequence {@code "ESC["}. */
+
+                /** The Control Sequence Introducer (CSI) escape sequence {@value}. */
                 String CSI = "\u001B[";
-				/** Returns the ANSI escape code for turning this style on. */
+
+                /** Returns the ANSI escape code for turning this style on. */
                 String on();
-				/** Returns the ANSI escape code for turning this style off. */
+
+                /** Returns the ANSI escape code for turning this style off. */
                 String off();
             }
 
@@ -2820,9 +2826,7 @@ public class CommandLine {
                 public String off() { return CSI + (fgbg + 1) + "m"; }
             }
 
-            /** This class can parse style converters and store plain text with a set of styles with the position where
-             * these styles should be applied.
-             */
+            /** Ansi.Text can render a styled text with or without embedded ANSI escape codes. */
             public static class Text implements Cloneable {
                 public static Text EMPTY = new Text(0);
                 private final int maxLength;
@@ -2831,7 +2835,14 @@ public class CommandLine {
                 private StringBuilder plain = new StringBuilder();
                 private SortedMap<Integer, String> indexToStyle = new TreeMap<Integer, String>();
 
+                /** Constructs a Text with the specified max length (for use in a TextTable Column). */
                 public Text(int maxLength) { this.maxLength = maxLength; }
+
+                /**
+                 * Constructs a Text with the specified String, which may contain markup like
+                 * {@code @|bg(red),white, underline some text|@}.
+                 * @param input the string with markup to parse
+                 */
                 public Text(String input) {
                     maxLength = -1;
                     plain.setLength(0);
@@ -2882,9 +2893,12 @@ public class CommandLine {
                 public Object clone() {
                     try { return super.clone(); } catch (CloneNotSupportedException e) { throw new IllegalStateException(e); }
                 }
+
+                /** Returns a new {@code Text} instance that is a substring of this Text. Does not modify this instance! */
                 public Text substring(int start) {
                     return substring(start, length);
                 }
+                /** Returns a new {@code Text} instance that is a substring of this Text. Does not modify this instance! */
                 public Text substring(int start, int end) {
                     Text result = (Text) clone();
                     result.from = from + start;
@@ -2916,6 +2930,13 @@ public class CommandLine {
                     return result;
                 }
 
+                /**
+                 * Copies the specified substring of this Text into the specified destination, preserving the markup.
+                 * @param from start of the substring
+                 * @param length length of the substring
+                 * @param destination destination Text to modify
+                 * @param offset indentation (padding)
+                 */
                 public void getStyledChars(int from, int length, Text destination, int offset) {
                     if (destination.length < offset) {
                         for (int i = destination.length; i < offset; i++) {
@@ -2929,9 +2950,14 @@ public class CommandLine {
                     destination.plain.append(plain.toString().substring(from, from + length));
                     destination.length = destination.plain.length();
                 }
+                /** Returns the plain text without any formatting */
                 public String plainString() {  return plain.toString().substring(from, from + length); }
+
                 public boolean equals(Object obj) { return toString().equals(String.valueOf(obj)); }
                 public int hashCode() { return toString().hashCode(); }
+
+                /** Returns a String representation of the text with ANSI escape codes embedded, unless ANSI is
+                 * not {@linkplain CommandLine.Help.Ansi#enabled() enabled}, in which case the plain text is returned. */
                 public String toString() {
                     if (!Ansi.enabled()) {
                         return plain.toString().substring(from, from + length);
@@ -2974,6 +3000,13 @@ public class CommandLine {
                     return sb.toString();
                 }
 
+                /**
+                 * Returns a new Text object where all the specified styles are applied to the full length of the
+                 * specified plain text.
+                 * @param plainText the string to apply all styles to. Must not contain markup!
+                 * @param styles the styles to apply to the full plain text
+                 * @return a new Text object
+                 */
                 public static Text apply(String plainText, List<IStyle> styles) {
                     if (plainText.length() == 0) { return new Text(0); }
                     Text result = new Text(plainText.length());
@@ -2986,7 +3019,7 @@ public class CommandLine {
                     return result;
                 }
 
-                static void reverse(Object[] all) {
+                private static void reverse(Object[] all) {
                     for (int i = 0; i < all.length / 2; i++) {
                         Object temp = all[i];
                         all[i] = all[all.length - i - 1];
