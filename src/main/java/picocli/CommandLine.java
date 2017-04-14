@@ -1738,6 +1738,10 @@ public class CommandLine {
             parameterLabelRenderer = new DefaultParamLabelRenderer(separator);
         }
 
+        /** Registers all specified commands with this Help.
+         * @param commands maps the command names to the associated annotated object
+         * @return this Help instance (for method chaining)
+         */
         public Help addAllCommands(Map<String, Object> commands) {
             if (commands != null) {
                 for (Map.Entry<String, Object> entry : commands.entrySet()) {
@@ -1747,11 +1751,22 @@ public class CommandLine {
             return this;
         }
 
+        /** Registers the specified command with this Help.
+         * @param command the name of the command to display in the usage message
+         * @param annotatedObject the annotated object to get more information from
+         * @return this Help instance (for method chaining)
+         */
         public Help addCommand(String command, Object annotatedObject) {
             commands.put(command, new Help(annotatedObject));
             return this;
         }
 
+        /**
+         * Returns a synopsis for the command.
+         * @return a synopsis
+         * @see #abbreviatedSynopsis()
+         * @see #detailedSynopsis(Comparator, boolean)
+         */
         public String synopsis() {
             if (!empty(customSynopsis)) { return customSynopsis(); }
             return abbreviateSynopsis ? abbreviatedSynopsis()
@@ -1868,9 +1883,20 @@ public class CommandLine {
             layout.addOptions(fields, valueLabelRenderer);
             return layout.toString();
         }
+
+        /**
+         * Returns the section of the usage help message that lists the parameters with their descriptions.
+         * @return the section of the usage help message that lists the parameters
+         */
         public String parameterList() {
             return parameterList(createDefaultLayout(), createMinimalParamLabelRenderer());
         }
+        /**
+         * Returns the section of the usage help message that lists the parameters with their descriptions.
+         * @param layout the layout to use
+         * @param paramLabelRenderer for rendering parameter names
+         * @return the section of the usage help message that lists the parameters
+         */
         public String parameterList(Layout layout, IParamLabelRenderer paramLabelRenderer) {
             layout.addPositionalParameters(positionalParametersFields, paramLabelRenderer);
             return layout.toString();
