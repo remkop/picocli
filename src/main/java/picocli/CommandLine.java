@@ -1087,9 +1087,6 @@ public class CommandLine {
         }
 
         private void processPositionalParameters(Stack<String> args) throws Exception {
-//            if (positionalParametersFields.isEmpty() && !args.isEmpty()) {
-//                throw new SuperfluousParameterException("Superfluous arguments: " + args); // FIXME
-//            }
             processPositionalParameters0(false, args);
         }
 
@@ -1735,10 +1732,10 @@ public class CommandLine {
             abbreviateSynopsis =   (abbreviateSynopsis == null)   ? false : abbreviateSynopsis;
             requiredOptionMarker = (requiredOptionMarker == null) ? ' ' : requiredOptionMarker;
             showDefaultValues =    (showDefaultValues == null)    ? false : showDefaultValues;
-            separator =            (separator == null)            ? "=" : separator;
-            parameterLabelRenderer = new DefaultParamLabelRenderer(separator);
             synopsisHeading =      (synopsisHeading == null)      ? "Usage: " : synopsisHeading;
             commandListHeading =   (commandListHeading == null)   ? "Commands:%n" : commandListHeading;
+            separator =            (separator == null)            ? "=" : separator;
+            parameterLabelRenderer = new DefaultParamLabelRenderer(separator);
         }
 
         public Help addAllCommands(Map<String, Object> commands) {
@@ -2710,17 +2707,18 @@ public class CommandLine {
             static final boolean isWindows  = System.getProperty("os.name").startsWith("Windows");
             static final boolean isXterm    = System.getenv("TERM") != null && System.getenv("TERM").startsWith("xterm");
             static final boolean ISATTY = calcTTY();
+            private Ansi() {}
             // http://stackoverflow.com/questions/1403772/how-can-i-check-if-a-java-programs-input-output-streams-are-connected-to-a-term
             static final boolean calcTTY() {
                 try { return System.class.getDeclaredMethod("console").invoke(null) != null; }
                 catch (Throwable reflectionFailed) { return true; }
             }
             private static boolean ansiPossible() { return ISATTY && (!isWindows || isXterm); }
-            private static boolean forceAnsiOn()  { return ansi != null && ansi; }
-            private static boolean forceAnsiOff() { return ansi != null && !ansi; }
+            private static boolean ansiForcedOn()  { return ansi != null && ansi; }
+            private static boolean ansiForcedOff() { return ansi != null && !ansi; }
 
             /** Enabled if it is forced ON or if the platform supports ANSI escape codes and it is not forced OFF. */
-            public  static boolean enabled() { return forceAnsiOn() || (ansiPossible() && !forceAnsiOff()); }
+            public  static boolean enabled() { return ansiForcedOn() || (ansiPossible() && !ansiForcedOff()); }
 
             /** Defines the interface for an ANSI escape sequence. */
             public interface IStyle {
@@ -2737,10 +2735,10 @@ public class CommandLine {
 
             /**
              * A set of pre-defined ANSI escape code styles and colors, and a set of convenience methods for parsing
-             * text with embedded style descriptors, as well as convenience methods for converting
+             * text with embedded markup style names, as well as convenience methods for converting
              * styles to strings with embedded escape codes.
              */
-            enum Style implements IStyle {
+            public enum Style implements IStyle {
                 reset(0, 0), bold(1, 21), faint(2, 22), italic(3, 23), underline(4, 24), blink(5, 25), reverse(7, 27),
                 fg_black(30, 39), fg_red(31, 39), fg_green(32, 39), fg_yellow(33, 39), fg_blue(34, 39), fg_magenta(35, 39), fg_cyan(36, 39), fg_white(37, 39),
                 bg_black(40, 49), bg_red(41, 49), bg_green(42, 49), bg_yellow(43, 49), bg_blue(44, 49), bg_magenta(45, 49), bg_cyan(46, 49), bg_white(47, 49),
@@ -2767,10 +2765,10 @@ public class CommandLine {
                     }
                     return result.toString();
                 }
-				/** Parses the specified style descriptor and returns the associated style.
-				 *  The descriptor may be one of the Style enum value names, or it may be one of the Style enum value
+				/** Parses the specified style markup and returns the associated style.
+				 *  The markup may be one of the Style enum value names, or it may be one of the Style enum value
 				 *  names when {@code "fg_"} is prepended, or it may be an {@link java.awt.Color#decode(String) RGB Color int}.
-				 * @param str the case-insensitive style descriptor to convert, e.g. {@code "blue"} or {@code "fg_blue"}
+				 * @param str the case-insensitive style markup to convert, e.g. {@code "blue"} or {@code "fg_blue"}
 				 * @return the IStyle for the specified converter
 				 */
                 public static IStyle fg(String str) {
@@ -2778,10 +2776,10 @@ public class CommandLine {
                     try { return Style.valueOf("fg_" + str.toLowerCase(ENGLISH)); } catch (Exception ignored) {}
                     return new ISO86133RGBColor(true, Color.decode(str));
                 }
-				/** Parses the specified style descriptor and returns the associated style.
-				 *  The descriptor may be one of the Style enum value names, or it may be one of the Style enum value
+				/** Parses the specified style markup and returns the associated style.
+				 *  The markup may be one of the Style enum value names, or it may be one of the Style enum value
 				 *  names when {@code "bg_"} is prepended, or it may be an {@link java.awt.Color#decode(String) RGB Color int}.
-				 * @param str the case-insensitive style descriptor to convert, e.g. {@code "blue"} or {@code "bg_blue"}
+				 * @param str the case-insensitive style markup to convert, e.g. {@code "blue"} or {@code "bg_blue"}
 				 * @return the IStyle for the specified converter
 				 */
                 public static IStyle bg(String str) {
@@ -2790,7 +2788,7 @@ public class CommandLine {
                     return new ISO86133RGBColor(false, Color.decode(str));
                 }
                 /** Parses the specified comma-separated sequence of style descriptors and returns the associated
-                 *  styles. For each descriptor, strings starting with {@code "bg("} are delegated to
+                 *  styles. For each markup, strings starting with {@code "bg("} are delegated to
                  *  {@link #bg(String)}, others are delegated to {@link #bg(String)}.
                  * @param commaSeparatedCodes one or more descriptors, e.g. {@code "bg(blue),underline,red"}
                  * @return an array with all styles for the specified descriptors
@@ -2840,7 +2838,7 @@ public class CommandLine {
 
                 /**
                  * Constructs a Text with the specified String, which may contain markup like
-                 * {@code @|bg(red),white, underline some text|@}.
+                 * {@code @|bg(red),white,underline some text|@}.
                  * @param input the string with markup to parse
                  */
                 public Text(String input) {
