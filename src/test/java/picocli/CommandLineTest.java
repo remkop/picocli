@@ -529,7 +529,7 @@ public class CommandLineTest {
             CommandLine.parse(new EnumParams(), "-timeUnitArray", "a", "b");
             fail("Accepted invalid timeunit");
         } catch (Exception ex) {
-            assertEquals("Could not convert 'a' to TimeUnit[] for option '-timeUnitArray' parameter[0]", ex.getMessage());
+            assertEquals("Could not convert 'a' to TimeUnit[] for option '-timeUnitArray' at index 0 (timeUnitArray)", ex.getMessage());
         }
     }
     @Test
@@ -538,7 +538,7 @@ public class CommandLineTest {
             CommandLine.parse(new EnumParams(), "-timeUnitList", "DAYS", "b", "c");
             fail("Accepted invalid timeunit");
         } catch (Exception ex) {
-            assertEquals("Could not convert 'b' to TimeUnit for option '-timeUnitList' parameter[1]", ex.getMessage());
+            assertEquals("Could not convert 'b' to TimeUnit for option '-timeUnitList' at index 1 (timeUnitList)", ex.getMessage());
         }
     }
 
@@ -1140,7 +1140,7 @@ public class CommandLineTest {
             CommandLine.parse(new BooleanOptionsArity1_nAndParameters(), "-bool".split(" "));
             fail("Missing param was accepted for boolean with arity=1");
         } catch (ParameterException expected) {
-            assertEquals("Missing required parameter for option '-bool' parameter[0]", expected.getMessage());
+            assertEquals("Missing required parameter for option '-bool' at index 0 (aBoolean)", expected.getMessage());
         }
     }
 
@@ -1284,7 +1284,7 @@ public class CommandLineTest {
             params = CommandLine.parse(new ArrayParamsArity1_n());
             fail("Should not accept input with missing parameter");
         } catch (MissingParameterException ex) {
-            assertEquals("Missing required parameter for positional parameters[1..*]", ex.getMessage());
+            assertEquals("Missing required parameters at positions 1..*: params", ex.getMessage());
         }
     }
 
@@ -1301,14 +1301,14 @@ public class CommandLineTest {
             params = CommandLine.parse(new ArrayParamsArity2_n(), "a");
             fail("Should not accept input with missing parameter");
         } catch (MissingParameterException ex) {
-            assertEquals("positional parameters[2..*] requires at least 2 parameters, but only 1 were specified.", ex.getMessage());
+            assertEquals("positional parameter at index 0..* (params) requires at least 2 values, but only 1 were specified.", ex.getMessage());
         }
 
         try {
             params = CommandLine.parse(new ArrayParamsArity2_n());
             fail("Should not accept input with missing parameter");
         } catch (MissingParameterException ex) {
-            assertEquals("positional parameters[2..*] requires at least 2 parameters, but only 0 were specified.", ex.getMessage());
+            assertEquals("positional parameter at index 0..* (params) requires at least 2 values, but only 0 were specified.", ex.getMessage());
         }
     }
 
@@ -1360,7 +1360,7 @@ public class CommandLineTest {
             params = CommandLine.parse(new NonVarArgArrayParamsArity1());
             fail("Should not accept input with missing parameter");
         } catch (MissingParameterException ex) {
-            assertEquals("Missing required parameter for positional parameters[1]", ex.getMessage());
+            assertEquals("Missing required parameter: params", ex.getMessage());
         }
     }
 
@@ -1377,14 +1377,14 @@ public class CommandLineTest {
             params = CommandLine.parse(new NonVarArgArrayParamsArity2(), "a");
             fail("Should not accept input with missing parameter");
         } catch (MissingParameterException ex) {
-            assertEquals("positional parameters[2] requires at least 2 parameters, but only 1 were specified.", ex.getMessage());
+            assertEquals("positional parameter at index 0..* (params) requires at least 2 values, but only 1 were specified.", ex.getMessage());
         }
 
         try {
             params = CommandLine.parse(new NonVarArgArrayParamsArity2());
             fail("Should not accept input with missing parameter");
         } catch (MissingParameterException ex) {
-            assertEquals("positional parameters[2] requires at least 2 parameters, but only 0 were specified.", ex.getMessage());
+            assertEquals("positional parameter at index 0..* (params) requires at least 2 values, but only 0 were specified.", ex.getMessage());
         }
     }
 
@@ -1455,13 +1455,13 @@ public class CommandLineTest {
             params = CommandLine.parse(new VariousPrefixCharacters(), "--dash".split(" "));
             fail("int option needs arg");
         } catch (ParameterException ex) {
-            assertEquals("Missing required parameter for option '-d' parameter[0]", ex.getMessage());
+            assertEquals("Missing required parameter for option '-d' (dash)", ex.getMessage());
         }
 
         try {
             params = CommandLine.parse(new VariousPrefixCharacters(), "--owner".split(" "));
         } catch (ParameterException ex) {
-            assertEquals("Missing required parameter for option '/Owner' parameter[0]", ex.getMessage());
+            assertEquals("Missing required parameter for option '/Owner' (owner)", ex.getMessage());
         }
 
         params = CommandLine.parse(new VariousPrefixCharacters(), "--owner=".split(" "));
@@ -1690,7 +1690,7 @@ public class CommandLineTest {
             CommandLine.parse(new App(), "000");
             fail("Should fail with missingParamException");
         } catch (MissingParameterException ex) {
-            assertEquals("Missing required parameter for positional parameters[1]", ex.getMessage());
+            assertEquals("Missing required parameters: file1, file2, all", ex.getMessage());
         }
     }
 
@@ -1736,7 +1736,7 @@ public class CommandLineTest {
             CommandLine.parse(new App());
             fail("Should fail with missingParamException");
         } catch (MissingParameterException ex) {
-            assertEquals("Missing required parameter for positional parameters[1]", ex.getMessage());
+            assertEquals("Missing required parameters: file0_1, fileList1_2, fileArray0_3, all", ex.getMessage());
         }
     }
 

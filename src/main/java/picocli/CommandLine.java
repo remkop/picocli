@@ -885,8 +885,7 @@ public class CommandLine {
             return ((17 * 37 + max) * 37 + min) * 37 + (isVariable ? 1 : 0);
         }
         public String toString() {
-            String result = min == max ? String.valueOf(min) : min + ".." + (isVariable ? "*" : max);
-            return result + (empty(originalValue) || result.equals(originalValue) ? "" : " ('" + originalValue + "')");
+            return min == max ? String.valueOf(min) : min + ".." + (isVariable ? "*" : max);
         }
     }
     private static void init(Class<?> cls,
@@ -1362,15 +1361,21 @@ public class CommandLine {
         }
 
         private String optionDescription(String prefix, Field field, int index) {
+            Help.IParamLabelRenderer labelRenderer = Help.createMinimalParamLabelRenderer();
             String desc = "";
             if (field.isAnnotationPresent(Option.class)) {
                 desc = prefix + "option '" + field.getAnnotation(Option.class).names()[0] + "'";
                 if (index >= 0) {
-                    desc += " parameter[" + index + "]";
+                    Arity arity = Arity.forOption(field);
+                    if (arity.max > 1) {
+                        desc += " at index " + index;
+                    }
+                    desc += " (" + labelRenderer.renderParameterLabel(field, Collections.<IStyle>emptyList()) + ")";
                 }
             } else if (field.isAnnotationPresent(Parameters.class)) {
-                Arity indexRange = Arity.forParameters(field);
-                desc = prefix + "positional parameters[" + indexRange + "]";
+                Arity indexRange = Arity.valueOf(field.getAnnotation(Parameters.class).index());
+                Text label = labelRenderer.renderParameterLabel(field, Collections.<IStyle>emptyList());
+                desc = prefix + "positional parameter at index " + indexRange + " (" + label + ")";
             }
             return desc;
         }
@@ -1433,11 +1438,28 @@ public class CommandLine {
                     if (actualSize >= arity) { return; }
                 }
                 if (arity == 1) {
-                    throw new MissingParameterException("Missing required parameter for " +
-                            optionDescription("", field, 0));
+                    if (field.isAnnotationPresent(Option.class)) {
+                        throw new MissingParameterException("Missing required parameter for " +
+                                optionDescription("", field, 0));
+                    }
+                    Arity indexRange = Arity.valueOf(field.getAnnotation(Parameters.class).index());
+                    Help.IParamLabelRenderer labelRenderer = Help.createMinimalParamLabelRenderer();
+                    String msg = "Missing required parameter";
+                    Arity paramArity = Arity.forParameters(field);
+                    if (paramArity.isVariable) {
+                        msg += "s at positions " + paramArity + ": ";
+                    } else {
+                        msg += (positionalParametersFields.size() - indexRange.min > 1 ? "s: " : ": ");
+                    }
+                    String sep = "";
+                    for (int i = indexRange.min; i < positionalParametersFields.size(); i++) {
+                        msg += sep + labelRenderer.renderParameterLabel(positionalParametersFields.get(i), Collections.<IStyle>emptyList());
+                        sep = ", ";
+                    }
+                    throw new MissingParameterException(msg);
                 }
                 throw new MissingParameterException(optionDescription("", field, 0) +
-                        " requires at least " + arity + " parameters, but only " + args.size() + " were specified.");
+                        " requires at least " + arity + " values, but only " + args.size() + " were specified.");
             }
         }
 
