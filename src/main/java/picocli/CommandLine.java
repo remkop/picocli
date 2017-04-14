@@ -198,7 +198,7 @@ public class CommandLine {
     }
 
     /**
-     * Equivalent to {@code new CommandLine(annotatedObject).usage(out);}. See {@link #usage(PrintStream)} for details.
+     * Equivalent to {@code new CommandLine(annotatedObject).usage(out)}. See {@link #usage(PrintStream)} for details.
      * @param annotatedObject the object annotated with {@link Command}, {@link Option} and {@link Parameters}
      * @param out the print stream to print the help message to
      */
@@ -206,6 +206,25 @@ public class CommandLine {
         new CommandLine(annotatedObject).usage(out);
     }
 
+    /**
+     * Equivalent to {@code new CommandLine(annotatedObject).usage(out, colorScheme)}.
+     * See {@link #usage(PrintStream, Help.ColorScheme)} for details.
+     * @param annotatedObject the object annotated with {@link Command}, {@link Option} and {@link Parameters}
+     * @param out the print stream to print the help message to
+     * @param colorScheme the {@code ColorScheme} defining the styles for options, parameters and commands when ANSI is enabled
+     */
+    public static void usage(Object annotatedObject, PrintStream out, Help.ColorScheme colorScheme) {
+        new CommandLine(annotatedObject).usage(out, colorScheme);
+    }
+
+    /**
+     * Delegates to {@link #usage(PrintStream, Help.ColorScheme)} with the {@linkplain Help#defaultColorScheme() default color scheme}.
+     * @param out the printStream to print to
+     * @see #usage(PrintStream, Help.ColorScheme)
+     */
+    public void usage(PrintStream out) {
+        usage(out, Help.defaultColorScheme());
+    }
     /**
      * Prints a usage help message for the specified annotated class to the specified {@code PrintStream}.
      * Delegates construction of the usage help message to the {@link Help} inner class and is equivalent to:
@@ -236,9 +255,10 @@ public class CommandLine {
      * {@linkplain Help.Layout layout}, and/or a custom option {@linkplain Help.IOptionRenderer renderer}
      * for ultimate control over which aspects of an Option or Field are displayed where.</p>
      * @param out the {@code PrintStream} to print the usage help message to
+     * @param colorScheme the {@code ColorScheme} defining the styles for options, parameters and commands when ANSI is enabled
      */
-    public void usage(PrintStream out) {
-        Help help = new Help(interpreter.annotatedObject).addAllCommands(commandMap);
+    public void usage(PrintStream out, Help.ColorScheme colorScheme) {
+        Help help = new Help(interpreter.annotatedObject, colorScheme).addAllCommands(commandMap);
         StringBuilder sb = new StringBuilder()
                 .append(help.headerHeading())
                 .append(help.header())
