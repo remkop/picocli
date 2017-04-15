@@ -1257,7 +1257,7 @@ runnable.run();
 Note that the `CommandLine.run` convenience method cannot be used with subcommands.
 
 == API Javadoc
-Picocli API Javadoc can be found https://remkop.github.io/picocli/docs/apidocs[here].
+Picocli API Javadoc can be found https://remkop.github.io/picocli/apidocs[here].
 
 == GitHub Project
 The https://github.com/remkop/picocli[GitHub project] has the source code, tests, build scripts, etc.
