@@ -60,14 +60,14 @@ CommandLine.usage(new Example(), System.out);
 
 The generated help message looks like this (colors only rendered when ANSI codes are enabled):
 
-![Usage help message with ANSI colors](docs/ExampleUsageANSI.png?raw=true)
+![Usage help message with ANSI colors](docs/images/ExampleUsageANSI.png?raw=true)
 
 ## Customized Usage Help
 
 Usage help is highly customizable.
 A more elaborate usage help example is shown below:
 
-![Longer help message with ANSI colors](docs/UsageHelpWithStyle.png?raw=true)
+![Longer help message with ANSI colors](docs/images/UsageHelpWithStyle.png?raw=true)
 
 See the [source code](https://github.com/remkop/picocli/blob/master/src/test/java/picocli/Demo.java#L155).
 
@@ -78,6 +78,6 @@ Picocli annotations offer many ways to customize the usage help message.
 If annotations are not sufficient, you can use picocli's Help API to customize even further.
 For example, your application can generate help like this with a custom layout:
 
-![Usage help message with two options per row](docs/UsageHelpWithCustomLayout.png?raw=true)
+![Usage help message with two options per row](docs/images/UsageHelpWithCustomLayout.png?raw=true)
 
 See the [source code](https://github.com/remkop/picocli/blob/master/src/test/java/picocli/CustomLayoutDemo.java#L61).
