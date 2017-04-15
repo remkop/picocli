@@ -1615,12 +1615,17 @@ public class CommandLine {
      * for these sections. Instead of calling the {@link CommandLine#usage(PrintStream, ColorScheme)} method,
      * application authors may want to create a custom usage help message by reorganizing sections in a different order
      * and/or adding custom sections.</p>
-     * <p>Finally, the Help class contains inner classes and interfaces that can be used to create custom help messages.
-     * A brief introduction follows.</p>
-     * <h4>IOptionRenderer</h4>
-     * <p>Renders a field annotated with {@link Option} to {@link Text} values. </p>
-     * <h4>IParameterRenderer</h4>
-     * <p>Renders a field annotated with {@link Parameters} to {@link Text} values. </p>
+     * <p>Finally, the Help class contains inner classes and interfaces that can be used to create custom help messages.</p>
+     * <h4>IOptionRenderer and IParameterRenderer</h4>
+     * <p>Renders a field annotated with {@link Option} or {@link Parameters} to an array of {@link Text} values.
+     * By default, these values are<ul>
+     * <li>mandatory marker character (if the option/parameter is {@link Option#required() required})</li>
+     * <li>short option name (empty for parameters)</li>
+     * <li>comma or empty (empty for parameters)</li>
+     * <li>long option names (the parameter {@link IParamLabelRenderer label} for parameters)</li>
+     * <li>description</li>
+     * </ul>
+     * Other components rely on this ordering.</p>
      * <h4>Layout</h4>
      * <p>Delegates to the renderers to create {@link Text} values for the annotated fields, and uses a
      * {@link TextTable} to display these values in tabular format. Layout is responsible for deciding which values
