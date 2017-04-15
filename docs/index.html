@@ -442,8 +442,8 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 </li>
 <li><a href="#_type_conversion">3. Type Conversion</a>
 <ul class="sectlevel2">
-<li><a href="#_built_in_type_converters">3.1. Built-in Type Converters</a></li>
-<li><a href="#_custom_type_converters">3.2. Custom Type Converters</a></li>
+<li><a href="#_built_in_types">3.1. Built-in Types</a></li>
+<li><a href="#_custom_converters">3.2. Custom Converters</a></li>
 <li><a href="#_arrays_and_collections">3.3. Arrays and Collections</a></li>
 <li><a href="#_numeric_arguments">3.4. Numeric Arguments</a></li>
 </ul>
@@ -451,7 +451,7 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <li><a href="#_arity">4. Arity</a>
 <ul class="sectlevel2">
 <li><a href="#_default_arity">4.1. Default Arity</a></li>
-<li><a href="#_boolean_options_with_explicit_parameters">4.2. Boolean Options with Explicit Parameters</a></li>
+<li><a href="#_booleans">4.2. Booleans</a></li>
 <li><a href="#_arity_of_arrays_and_collections">4.3. Arity of Arrays and Collections</a></li>
 <li><a href="#_ambiguous_input">4.4. Ambiguous Input</a></li>
 </ul>
@@ -522,11 +522,14 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <div class="sectionbody">
 <div class="paragraph">
 <p>Picocli is a one-file Java framework for parsing command line arguments
-and generating polished and easily tailored usage help messages.</p>
+and generating polished, easily tailored usage help messages. With colors.</p>
+</div>
+<div class="paragraph">
+<p><span class="image"><img src="images/ExampleUsageANSI.png" alt="Screenshot of usage help with Ansi codes enabled"></span></p>
 </div>
 <div class="paragraph">
 <p>A distinguishing feature of picocli is how it aims
-to let users run your application without requiring picocli as an external dependency:
+to let users run command line applications without requiring picocli as an external dependency:
 all the source code lives in a single file, to encourage application authors to include it <em>in source form</em>.</p>
 </div>
 <div class="paragraph">
@@ -861,7 +864,7 @@ assert optionArg.file.equals("output.txt");</code></pre>
 the text value is converted to the type of the annotated field.</p>
 </div>
 <div class="sect2">
-<h3 id="_built_in_type_converters">3.1. Built-in Type Converters</h3>
+<h3 id="_built_in_types">3.1. Built-in Types</h3>
 <div class="paragraph">
 <p>Out of the box, picocli can convert command line argument strings to any Java primitive type or their wrapper,
 File, BigDecimal, BigInteger, InetAddress, URL, URI, Charset, UUID, regex Pattern, String, StringBuilder, CharSequence,
@@ -870,7 +873,7 @@ File, BigDecimal, BigInteger, InetAddress, URL, URI, Charset, UUID, regex Patter
 </div>
 </div>
 <div class="sect2">
-<h3 id="_custom_type_converters">3.2. Custom Type Converters</h3>
+<h3 id="_custom_converters">3.2. Custom Converters</h3>
 <div class="paragraph">
 <p>Register a custom converter to handle data types other than the above built-in ones.</p>
 </div>
@@ -1074,9 +1077,9 @@ the <code>arity</code> attribute lets you control exactly how many parameters ar
 </div>
 </div>
 <div class="sect2">
-<h3 id="_boolean_options_with_explicit_parameters">4.2. Boolean Options with Explicit Parameters</h3>
+<h3 id="_booleans">4.2. Booleans</h3>
 <div class="paragraph">
-<p>It is possible to explicitly specify "true" or "false" as a parameter for a boolean option by defining an explicit <a href="#Arity: Minimum and Maximum Number of Parameters"><code>arity</code></a> attribute. A boolean option with <code>arity = "0..1"</code> accepts zero to one parameters, <code>arity = "1"</code> means the option <em>must</em> have one parameter. For example:</p>
+<p>It is possible to let end users explicitly specify "true" or "false" as a parameter for a boolean option by defining an explicit <a href="#_arity">Arity</a> attribute. A boolean option with <code>arity = "0..1"</code> accepts zero to one parameters, <code>arity = "1"</code> means the option <em>must</em> have one parameter. For example:</p>
 </div>
 <div class="listingblock">
 <div class="content">
@@ -1753,7 +1756,7 @@ Options:
 <p>Below shows the same usage help message as shown in <a href="#_expanded_example">Expanded Example</a>, with ANSI escape codes enabled.</p>
 </div>
 <div class="paragraph">
-<p><span class="image"><img src="raw/master/docs/UsageHelpWithStyle.png" alt="Screenshot of usage help with Ansi codes enabled"></span></p>
+<p><span class="image"><img src="images/UsageHelpWithStyle.png" alt="Screenshot of usage help with Ansi codes enabled"></span></p>
 </div>
 </div>
 <div class="sect2">
@@ -2462,11 +2465,6 @@ import static picocli.CommandLine.Help.Column.Overflow.*;
  * -v -ooutfile in1 in2
  * -vooutfile in1 in2
  * &lt;/pre&gt;
- *
- * @see &lt;a href="http://catb.org/~esr/writings/taoup/html/ch10s05.html#id2948149"&gt;TAOUP's hints for designing good
- *        command line user interfaces&lt;/a&gt;
- * @see &lt;a href="https://www.gnu.org/prep/standards/html_node/Command_002dLine-Interfaces.html#Command_002dLine-Interfaces"&gt;GNU
- *        Standards for Command Line Interfaces&lt;/a&gt;
  */
 public class CommandLine {
     /** This is picocli version {@value}. */
@@ -3960,6 +3958,17 @@ public class CommandLine {
     /**
      * A collection of methods and inner classes that provide fine-grained control over the contents and layout of
      * the usage help message to display to end users when help is requested or invalid input values were specified.
+     * &lt;h2&gt;Layered API&lt;/h2&gt;
+     * &lt;p&gt;The {@link Command} annotation provides the easiest way to customize usage help messages. See
+     * the &lt;a href="https://remkop.github.io/picocli/index.html#_usage_help"&gt;Manual&lt;/a&gt; for details.&lt;/p&gt;
+     * &lt;p&gt;This Help class provides high-level functions to create sections of the usage help message and headings
+     * for these sections. Instead of calling the {@link CommandLine#usage(PrintStream, ColorScheme)} method,
+     * application authors may want to create a custom usage help message by reorganizing sections in a different order
+     * and/or adding custom sections.&lt;/p&gt;
+     * &lt;p&gt;Finally, the Help class contains inner classes and interfaces that can be used to create custom help messages.
+     * A brief introduction follows.&lt;/p&gt;
+     * &lt;h4&gt;IOptionRenderer&lt;/h4&gt;
+     * &lt;p&gt;Renders a field annotated with {@link Option} to {@link Text} values. &lt;/p&gt;
      */
     public static class Help {
         /** Constant String holding the default program name: {@value} */
@@ -4685,8 +4694,8 @@ public class CommandLine {
                 return "&lt;" + field.getName() + "&gt;";
             }
         }
-        /** Layout is responsible for creating a fully formatted list of options/parameters.
-         * By default this Layout displays each array of text values representing on a separate row in the table.
+        /** Use a Layout to format usage help text for options and parameters in tabular format.
+         * By default this class displays each option and parameter on a separate row in the table.
          * Customize by overriding the {@link #layout(Field, Text[][])} method.
          * @see IOptionRenderer rendering options to text
          * @see IParameterRenderer rendering parameters to text
@@ -4698,11 +4707,19 @@ public class CommandLine {
             protected IOptionRenderer optionRenderer;
             protected IParameterRenderer parameterRenderer;
 
-            /** @see Help#defaultColorScheme() */
+            /** Constructs a Layout with the specified color scheme, a new default TextTable, the
+             * {@linkplain Help#createDefaultOptionRenderer() default option renderer}, and the
+             * {@linkplain Help#createDefaultParameterRenderer() default parameter renderer}. */
             public Layout(ColorScheme colorScheme) { this(colorScheme, new TextTable()); }
+
+            /** Constructs a Layout with the specified color scheme, the specified TextTable, the
+             * {@linkplain Help#createDefaultOptionRenderer() default option renderer}, and the
+             * {@linkplain Help#createDefaultParameterRenderer() default parameter renderer}. */
             public Layout(ColorScheme colorScheme, TextTable textTable) {
                 this(colorScheme, textTable, new DefaultOptionRenderer(), new DefaultParameterRenderer());
             }
+            /** Constructs a Layout with the specified color scheme, the specified TextTable, the
+             * specified option renderer and the specified parameter renderer. */
             public Layout(ColorScheme colorScheme, TextTable textTable, IOptionRenderer optionRenderer, IParameterRenderer parameterRenderer) {
                 this.colorScheme       = Assert.notNull(colorScheme, "colorScheme");
                 this.table             = Assert.notNull(textTable, "textTable");
@@ -4731,9 +4748,9 @@ public class CommandLine {
                 }
             }
             /**
-             * Convenience method that delegates to the configured {@link #optionRenderer option renderer} to obtain
-             * text values for the specified {@link Option}, and then delegates to the {@link #layout(Field, Text[][]) layout}
-             * method to write these text values into the correct cells in this TextTable.
+             * Delegates to the {@link #optionRenderer option renderer} of this layout to obtain
+             * text values for the specified {@link Option}, and then calls the {@link #layout(Field, Text[][])}
+             * method to write these text values into the correct cells in the TextTable.
              * @param field the field annotated with the specified Option
              * @param paramLabelRenderer knows how to render option parameters
              */
@@ -4752,9 +4769,9 @@ public class CommandLine {
                 }
             }
             /**
-             * Convenience method that delegates to the configured {@link #parameterRenderer parameter renderer}
-             * to obtain text values for the specified {@link Parameters}, and then delegates to
-             * {@link #layout(Field, Text[][]) layout} to write these text values into the correct cells in this TextTable.
+             * Delegates to the {@link #parameterRenderer parameter renderer} of this layout
+             * to obtain text values for the specified {@link Parameters}, and then calls
+             * {@link #layout(Field, Text[][])} to write these text values into the correct cells in the TextTable.
              * @param field the field annotated with the specified Parameters
              * @param paramLabelRenderer knows how to render option parameters
              */
@@ -4763,6 +4780,7 @@ public class CommandLine {
                 Text[][] values = parameterRenderer.render(option, field, paramLabelRenderer, colorScheme);
                 layout(field, values);
             }
+            /** Returns the section of the usage help message accumulated in the TextTable owned by this layout. */
             @Override public String toString() {
                 return table.toString();
             }
@@ -5512,7 +5530,7 @@ public class CommandLine {
 <div id="footer">
 <div id="footer-text">
 Version 0.9.0<br>
-Last updated 2017-04-15 08:22:51 JST
+Last updated 2017-04-15 10:27:02 JST
 </div>
 </div>
 </body>

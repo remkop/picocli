@@ -7,10 +7,12 @@ v0.9.0, 2017-04-15
 :toc-title: Features
 
 Picocli is a one-file Java framework for parsing command line arguments
-and generating polished and easily tailored usage help messages.
+and generating polished, easily tailored usage help messages. With colors.
+
+image:ExampleUsageANSI.png[Screenshot of usage help with Ansi codes enabled]
 
 A distinguishing feature of picocli is how it aims
-to let users run your application without requiring picocli as an external dependency:
+to let users run command line applications without requiring picocli as an external dependency:
 all the source code lives in a single file, to encourage application authors to include it _in source form_.
 
 How it works: annotate your class and picocli initializes it from the command line arguments,
@@ -268,13 +270,13 @@ assert optionArg.file.equals("output.txt");
 When command line options and parameters are mapped to the annotated fields,
 the text value is converted to the type of the annotated field.
 
-=== Built-in Type Converters
+=== Built-in Types
 Out of the box, picocli can convert command line argument strings to any Java primitive type or their wrapper,
 File, BigDecimal, BigInteger, InetAddress, URL, URI, Charset, UUID, regex Pattern, String, StringBuilder, CharSequence,
 `java.sql.Time` (for values in any of the `"HH:mm"`, `"HH:mm:ss"`, `"HH:mm:ss.SSS"`, or `"HH:mm:ss,SSS"` formats), and
 `java.util.Date` (for values in `"yyyy-MM-dd"` format).
 
-=== Custom Type Converters
+=== Custom Converters
 Register a custom converter to handle data types other than the above built-in ones.
 
 Custom converters need to implement the `picocli.CommandLine.ITypeConverter` interface:
@@ -408,8 +410,8 @@ The default arity value of a field annotated with `@Option` or `@Parameters` dep
 * Multi-valued types like arrays or collections: consume from zero up to all available parameters.
 
 
-=== Boolean Options with Explicit Parameters
-It is possible to explicitly specify "true" or "false" as a parameter for a boolean option by defining an explicit <<Arity: Minimum and Maximum Number of Parameters,`arity`>> attribute. A boolean option with `arity = "0..1"` accepts zero to one parameters, `arity = "1"` means the option _must_ have one parameter. For example:
+=== Booleans
+It is possible to let end users explicitly specify "true" or "false" as a parameter for a boolean option by defining an explicit <<Arity>> attribute. A boolean option with `arity = "0..1"` accepts zero to one parameters, `arity = "1"` means the option _must_ have one parameter. For example:
 
 [source, java]
 ----
@@ -870,7 +872,7 @@ The annotated class that this usage help message is generated from is shown in <
 
 Below shows the same usage help message as shown in <<Expanded Example>>, with ANSI escape codes enabled.
 
-image:../raw/master/docs/UsageHelpWithStyle.png[Screenshot of usage help with Ansi codes enabled]
+image:UsageHelpWithStyle.png[Screenshot of usage help with Ansi codes enabled]
 
 === Supported Platforms
 Picocli will only emit ANSI escape codes on supported platforms.
