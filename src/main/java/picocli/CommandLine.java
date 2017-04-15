@@ -115,11 +115,6 @@ import static picocli.CommandLine.Help.Column.Overflow.*;
  * -v -ooutfile in1 in2
  * -vooutfile in1 in2
  * </pre>
- *
- * @see <a href="http://catb.org/~esr/writings/taoup/html/ch10s05.html#id2948149">TAOUP's hints for designing good
- *        command line user interfaces</a>
- * @see <a href="https://www.gnu.org/prep/standards/html_node/Command_002dLine-Interfaces.html#Command_002dLine-Interfaces">GNU
- *        Standards for Command Line Interfaces</a>
  */
 public class CommandLine {
     /** This is picocli version {@value}. */
@@ -1613,6 +1608,30 @@ public class CommandLine {
     /**
      * A collection of methods and inner classes that provide fine-grained control over the contents and layout of
      * the usage help message to display to end users when help is requested or invalid input values were specified.
+     * <h3>Layered API</h3>
+     * <p>The {@link Command} annotation provides the easiest way to customize usage help messages. See
+     * the <a href="https://remkop.github.io/picocli/index.html#_usage_help">Manual</a> for details.</p>
+     * <p>This Help class provides high-level functions to create sections of the usage help message and headings
+     * for these sections. Instead of calling the {@link CommandLine#usage(PrintStream, ColorScheme)} method,
+     * application authors may want to create a custom usage help message by reorganizing sections in a different order
+     * and/or adding custom sections.</p>
+     * <p>Finally, the Help class contains inner classes and interfaces that can be used to create custom help messages.
+     * A brief introduction follows.</p>
+     * <h4>IOptionRenderer</h4>
+     * <p>Renders a field annotated with {@link Option} to {@link Text} values. </p>
+     * <h4>IParameterRenderer</h4>
+     * <p>Renders a field annotated with {@link Parameters} to {@link Text} values. </p>
+     * <h4>Layout</h4>
+     * <p>Delegates to the renderers to create {@link Text} values for the annotated fields, and uses a
+     * {@link TextTable} to display these values in tabular format. Layout is responsible for deciding which values
+     * to display where in the table. By default, Layout shows one option or parameter per table row.</p>
+     * <h4>TextTable</h4>
+     * <p>Responsible for spacing out {@link Text} values according to the {@link Column} definitions the table was
+     * created with. Columns have a width, indentation, and an overflow policy that decides what to do if a value is
+     * longer than the column's width.</p>
+     * <h4>Text</h4>
+     * <p>Encapsulates rich text with styles and colors in a way that other components like {@link TextTable} are
+     * unaware of the embedded ANSI escape codes.</p>
      */
     public static class Help {
         /** Constant String holding the default program name: {@value} */
@@ -2338,9 +2357,11 @@ public class CommandLine {
                 return "<" + field.getName() + ">";
             }
         }
-        /** Layout is responsible for creating a fully formatted list of options/parameters.
-         * By default this Layout displays each array of text values representing on a separate row in the table.
-         * Customize by overriding the {@link #layout(Field, Text[][])} method.
+        /** Use a Layout to format usage help text for options and parameters in tabular format.
+         * <p>Delegates to the renderers to create {@link Text} values for the annotated fields, and uses a
+         * {@link TextTable} to display these values in tabular format. Layout is responsible for deciding which values
+         * to display where in the table. By default, Layout shows one option or parameter per table row.</p>
+         * <p>Customize by overriding the {@link #layout(Field, Text[][])} method.</p>
          * @see IOptionRenderer rendering options to text
          * @see IParameterRenderer rendering parameters to text
          * @see TextTable showing values in a tabular format
@@ -2351,11 +2372,19 @@ public class CommandLine {
             protected IOptionRenderer optionRenderer;
             protected IParameterRenderer parameterRenderer;
 
-            /** @see Help#defaultColorScheme() */
+            /** Constructs a Layout with the specified color scheme, a new default TextTable, the
+             * {@linkplain Help#createDefaultOptionRenderer() default option renderer}, and the
+             * {@linkplain Help#createDefaultParameterRenderer() default parameter renderer}. */
             public Layout(ColorScheme colorScheme) { this(colorScheme, new TextTable()); }
+
+            /** Constructs a Layout with the specified color scheme, the specified TextTable, the
+             * {@linkplain Help#createDefaultOptionRenderer() default option renderer}, and the
+             * {@linkplain Help#createDefaultParameterRenderer() default parameter renderer}. */
             public Layout(ColorScheme colorScheme, TextTable textTable) {
                 this(colorScheme, textTable, new DefaultOptionRenderer(), new DefaultParameterRenderer());
             }
+            /** Constructs a Layout with the specified color scheme, the specified TextTable, the
+             * specified option renderer and the specified parameter renderer. */
             public Layout(ColorScheme colorScheme, TextTable textTable, IOptionRenderer optionRenderer, IParameterRenderer parameterRenderer) {
                 this.colorScheme       = Assert.notNull(colorScheme, "colorScheme");
                 this.table             = Assert.notNull(textTable, "textTable");
@@ -2384,9 +2413,9 @@ public class CommandLine {
                 }
             }
             /**
-             * Convenience method that delegates to the configured {@link #optionRenderer option renderer} to obtain
-             * text values for the specified {@link Option}, and then delegates to the {@link #layout(Field, Text[][]) layout}
-             * method to write these text values into the correct cells in this TextTable.
+             * Delegates to the {@link #optionRenderer option renderer} of this layout to obtain
+             * text values for the specified {@link Option}, and then calls the {@link #layout(Field, Text[][])}
+             * method to write these text values into the correct cells in the TextTable.
              * @param field the field annotated with the specified Option
              * @param paramLabelRenderer knows how to render option parameters
              */
@@ -2405,9 +2434,9 @@ public class CommandLine {
                 }
             }
             /**
-             * Convenience method that delegates to the configured {@link #parameterRenderer parameter renderer}
-             * to obtain text values for the specified {@link Parameters}, and then delegates to
-             * {@link #layout(Field, Text[][]) layout} to write these text values into the correct cells in this TextTable.
+             * Delegates to the {@link #parameterRenderer parameter renderer} of this layout
+             * to obtain text values for the specified {@link Parameters}, and then calls
+             * {@link #layout(Field, Text[][])} to write these text values into the correct cells in the TextTable.
              * @param field the field annotated with the specified Parameters
              * @param paramLabelRenderer knows how to render option parameters
              */
@@ -2416,6 +2445,7 @@ public class CommandLine {
                 Text[][] values = parameterRenderer.render(option, field, paramLabelRenderer, colorScheme);
                 layout(field, values);
             }
+            /** Returns the section of the usage help message accumulated in the TextTable owned by this layout. */
             @Override public String toString() {
                 return table.toString();
             }
@@ -2461,10 +2491,9 @@ public class CommandLine {
             }
         }
         /**
-         * <p>Provides a table layout for text values, applicable for arranging option names and their description on
-         * the console. A table has a fixed number of {@link Column Columns}, where each column has a fixed width,
-         * indent and {@link Column.Overflow} policy. The Overflow policy determines what happens when a value is
-         * longer than the column width.</p>
+         * <p>Responsible for spacing out {@link Text} values according to the {@link Column} definitions the table was
+         * created with. Columns have a width, indentation, and an overflow policy that decides what to do if a value is
+         * longer than the column's width.</p>
          */
         public static class TextTable {
             /** The column definitions of this table. */
@@ -2870,7 +2899,8 @@ public class CommandLine {
                 public String off() { return CSI + (fgbg + 1) + "m"; }
             }
 
-            /** Ansi.Text can render a styled text with or without embedded ANSI escape codes. */
+            /** <p>Encapsulates rich text with styles and colors in a way that other components like {@link TextTable}
+             * are unaware of the embedded ANSI escape codes.</p> */
             public static class Text implements Cloneable {
                 public static Text EMPTY = new Text(0);
                 private final int maxLength;
