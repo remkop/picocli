@@ -1,6 +1,6 @@
 = picocli - a mighty tiny Command Line Interface
 Remko Popma <rpopma@apache.org>
-v0.4.0, 2017-04-13
+v0.9.0, 2017-04-15
 :toc: left
 :numbered:
 :toclevels: 2
@@ -1257,7 +1257,7 @@ runnable.run();
 Note that the `CommandLine.run` convenience method cannot be used with subcommands.
 
 == API Javadoc
-Picocli API Javadoc can be found https://github.com/remkop/picocli/docs/javadoc[here].
+Picocli API Javadoc can be found https://github.com/remkop/picocli/docs/apidocs[here].
 
 == GitHub Project
 The https://github.com/remkop/picocli[GitHub project] has the source code, tests, build scripts, etc.
