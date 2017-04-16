@@ -7,7 +7,7 @@
 :numbered:
 :toclevels: 2
 :toc-title: Features
-:source-highlighter: prettify
+:source-highlighter: coderay
 
 Picocli is a one-file Java framework for parsing command line arguments
 and generating polished, easily tailored usage help messages. With colors.

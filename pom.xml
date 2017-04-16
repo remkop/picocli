@@ -32,7 +32,7 @@
       <plugin>
         <groupId>org.asciidoctor</groupId>
         <artifactId>asciidoctor-maven-plugin</artifactId>
-        <version>1.5.3</version>
+        <version>1.5.5</version>
         <executions>
           <execution>
             <id>output-html</id>
@@ -44,6 +44,7 @@
               <sourceDirectory>${basedir}/docs</sourceDirectory>
               <backend>html</backend>
               <attributes>
+                <source-highlighter>coderay</source-highlighter>
                 <linkcss>false</linkcss>
                 <icons>font</icons>
               </attributes>
