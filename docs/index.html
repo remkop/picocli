@@ -3958,17 +3958,35 @@ public class CommandLine {
     /**
      * A collection of methods and inner classes that provide fine-grained control over the contents and layout of
      * the usage help message to display to end users when help is requested or invalid input values were specified.
-     * &lt;h2&gt;Layered API&lt;/h2&gt;
+     * &lt;h3&gt;Layered API&lt;/h3&gt;
      * &lt;p&gt;The {@link Command} annotation provides the easiest way to customize usage help messages. See
      * the &lt;a href="https://remkop.github.io/picocli/index.html#_usage_help"&gt;Manual&lt;/a&gt; for details.&lt;/p&gt;
      * &lt;p&gt;This Help class provides high-level functions to create sections of the usage help message and headings
      * for these sections. Instead of calling the {@link CommandLine#usage(PrintStream, ColorScheme)} method,
      * application authors may want to create a custom usage help message by reorganizing sections in a different order
      * and/or adding custom sections.&lt;/p&gt;
-     * &lt;p&gt;Finally, the Help class contains inner classes and interfaces that can be used to create custom help messages.
-     * A brief introduction follows.&lt;/p&gt;
-     * &lt;h4&gt;IOptionRenderer&lt;/h4&gt;
-     * &lt;p&gt;Renders a field annotated with {@link Option} to {@link Text} values. &lt;/p&gt;
+     * &lt;p&gt;Finally, the Help class contains inner classes and interfaces that can be used to create custom help messages.&lt;/p&gt;
+     * &lt;h4&gt;IOptionRenderer and IParameterRenderer&lt;/h4&gt;
+     * &lt;p&gt;Renders a field annotated with {@link Option} or {@link Parameters} to an array of {@link Text} values.
+     * By default, these values are&lt;ul&gt;
+     * &lt;li&gt;mandatory marker character (if the option/parameter is {@link Option#required() required})&lt;/li&gt;
+     * &lt;li&gt;short option name (empty for parameters)&lt;/li&gt;
+     * &lt;li&gt;comma or empty (empty for parameters)&lt;/li&gt;
+     * &lt;li&gt;long option names (the parameter {@link IParamLabelRenderer label} for parameters)&lt;/li&gt;
+     * &lt;li&gt;description&lt;/li&gt;
+     * &lt;/ul&gt;
+     * Other components rely on this ordering.&lt;/p&gt;
+     * &lt;h4&gt;Layout&lt;/h4&gt;
+     * &lt;p&gt;Delegates to the renderers to create {@link Text} values for the annotated fields, and uses a
+     * {@link TextTable} to display these values in tabular format. Layout is responsible for deciding which values
+     * to display where in the table. By default, Layout shows one option or parameter per table row.&lt;/p&gt;
+     * &lt;h4&gt;TextTable&lt;/h4&gt;
+     * &lt;p&gt;Responsible for spacing out {@link Text} values according to the {@link Column} definitions the table was
+     * created with. Columns have a width, indentation, and an overflow policy that decides what to do if a value is
+     * longer than the column's width.&lt;/p&gt;
+     * &lt;h4&gt;Text&lt;/h4&gt;
+     * &lt;p&gt;Encapsulates rich text with styles and colors in a way that other components like {@link TextTable} are
+     * unaware of the embedded ANSI escape codes.&lt;/p&gt;
      */
     public static class Help {
         /** Constant String holding the default program name: {@value} */
@@ -4695,8 +4713,10 @@ public class CommandLine {
             }
         }
         /** Use a Layout to format usage help text for options and parameters in tabular format.
-         * By default this class displays each option and parameter on a separate row in the table.
-         * Customize by overriding the {@link #layout(Field, Text[][])} method.
+         * &lt;p&gt;Delegates to the renderers to create {@link Text} values for the annotated fields, and uses a
+         * {@link TextTable} to display these values in tabular format. Layout is responsible for deciding which values
+         * to display where in the table. By default, Layout shows one option or parameter per table row.&lt;/p&gt;
+         * &lt;p&gt;Customize by overriding the {@link #layout(Field, Text[][])} method.&lt;/p&gt;
          * @see IOptionRenderer rendering options to text
          * @see IParameterRenderer rendering parameters to text
          * @see TextTable showing values in a tabular format
@@ -4826,10 +4846,9 @@ public class CommandLine {
             }
         }
         /**
-         * &lt;p&gt;Provides a table layout for text values, applicable for arranging option names and their description on
-         * the console. A table has a fixed number of {@link Column Columns}, where each column has a fixed width,
-         * indent and {@link Column.Overflow} policy. The Overflow policy determines what happens when a value is
-         * longer than the column width.&lt;/p&gt;
+         * &lt;p&gt;Responsible for spacing out {@link Text} values according to the {@link Column} definitions the table was
+         * created with. Columns have a width, indentation, and an overflow policy that decides what to do if a value is
+         * longer than the column's width.&lt;/p&gt;
          */
         public static class TextTable {
             /** The column definitions of this table. */
@@ -5235,7 +5254,8 @@ public class CommandLine {
                 public String off() { return CSI + (fgbg + 1) + "m"; }
             }
 
-            /** Ansi.Text can render a styled text with or without embedded ANSI escape codes. */
+            /** &lt;p&gt;Encapsulates rich text with styles and colors in a way that other components like {@link TextTable}
+             * are unaware of the embedded ANSI escape codes.&lt;/p&gt; */
             public static class Text implements Cloneable {
                 public static Text EMPTY = new Text(0);
                 private final int maxLength;
@@ -5530,7 +5550,7 @@ public class CommandLine {
 <div id="footer">
 <div id="footer-text">
 Version 0.9.0<br>
-Last updated 2017-04-15 10:27:02 JST
+Last updated 2017-04-16 06:36:49 JST
 </div>
 </div>
 </body>
