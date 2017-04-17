@@ -1793,6 +1793,7 @@ public class CommandLine {
             commandListHeading =   (commandListHeading == null)   ? "Commands:%n" : commandListHeading;
             separator =            (separator == null)            ? "=" : separator;
             parameterLabelRenderer = new DefaultParamLabelRenderer(separator);
+            Collections.sort(positionalParametersFields, new PositionalParametersSorter());
         }
 
         /** Registers all specified commands with this Help.
