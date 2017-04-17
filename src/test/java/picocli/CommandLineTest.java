@@ -620,11 +620,18 @@ public class CommandLineTest {
 
     private static class FinalFields {
         @Option(names = "-f") private final String field = null;
+        @Option(names = "-p") private final int primitive = 43;
     }
     @Test
     public void testCanInitializeFinalFields() {
-        FinalFields ff = CommandLine.parse(new FinalFields(), "-f", "some value");
-        assertEquals("some value", ff.field);
+        FinalFields ff = CommandLine.parse(new FinalFields(), "-f", "reference value");
+        assertEquals("reference value", ff.field);
+    }
+    @Ignore("Needs Reject final primitive fields annotated with @Option or @Parameters #68")
+    @Test
+    public void testCanInitializeFinalPrimitiveFields() {
+        FinalFields ff = CommandLine.parse(new FinalFields(), "-p", "12");
+        assertEquals("primitive value", 12, ff.primitive);
     }
     @Test
     public void testLastValueSelectedIfOptionSpecifiedMultipleTimes() {
