@@ -618,25 +618,42 @@ public class CommandLineTest {
         new CommandLine(new ClashingAnnotation());
     }
 
-    private static class FinalFields {
+    private static class PrivateFinalOptionFields {
         @Option(names = "-f") private final String field = null;
         @Option(names = "-p") private final int primitive = 43;
     }
     @Test
-    public void testCanInitializeFinalFields() {
-        FinalFields ff = CommandLine.parse(new FinalFields(), "-f", "reference value");
+    public void testCanInitializePrivateFinalFields() {
+        PrivateFinalOptionFields ff = CommandLine.parse(new PrivateFinalOptionFields(), "-f", "reference value");
         assertEquals("reference value", ff.field);
     }
     @Ignore("Needs Reject final primitive fields annotated with @Option or @Parameters #68")
     @Test
     public void testCanInitializeFinalPrimitiveFields() {
-        FinalFields ff = CommandLine.parse(new FinalFields(), "-p", "12");
+        PrivateFinalOptionFields ff = CommandLine.parse(new PrivateFinalOptionFields(), "-p", "12");
         assertEquals("primitive value", 12, ff.primitive);
     }
     @Test
     public void testLastValueSelectedIfOptionSpecifiedMultipleTimes() {
-        FinalFields ff = CommandLine.parse(new FinalFields(), "-f", "111", "-f", "222");
+        PrivateFinalOptionFields ff = CommandLine.parse(new PrivateFinalOptionFields(), "-f", "111", "-f", "222");
         assertEquals("222", ff.field);
+    }
+
+    private static class PrivateFinalParameterFields {
+        @Parameters(index = "0") private final String field = null;
+        @Parameters(index = "1", arity = "0..1") private final int primitive = 43;
+    }
+    @Test
+    public void testCanInitializePrivateFinalParameterFields() {
+        PrivateFinalParameterFields ff = CommandLine.parse(new PrivateFinalParameterFields(), "ref value");
+        assertEquals("ref value", ff.field);
+    }
+    @Ignore("Needs Reject final primitive fields annotated with @Option or @Parameters #68")
+    @Test
+    public void testCannotInitializePrivateFinalPrimitiveParameterFields() {
+        PrivateFinalParameterFields ff = CommandLine.parse(new PrivateFinalParameterFields(), "ref value", "12");
+        assertEquals("ref value", ff.field);
+        assertEquals("primitive value", 12, ff.primitive);
     }
 
     private static class RequiredField {

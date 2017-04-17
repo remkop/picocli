@@ -912,8 +912,8 @@ public class CommandLine {
                               List<Field> positionalParametersFields) {
         Field[] declaredFields = cls.getDeclaredFields();
         for (Field field : declaredFields) {
+            field.setAccessible(true);
             if (field.isAnnotationPresent(Option.class)) {
-                field.setAccessible(true);
                 Option option = field.getAnnotation(Option.class);
                 if (option.required()) {
                     requiredFields.add(field);
