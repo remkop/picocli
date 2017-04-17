@@ -118,7 +118,7 @@ import static picocli.CommandLine.Help.Column.Overflow.*;
  */
 public class CommandLine {
     /** This is picocli version {@value}. */
-    public static final String VERSION = "0.9.0";
+    public static final String VERSION = "0.9.1-SNAPSHOT";
 
     /** Set this field to {@code true} to force ANSI escape sequences on, or to {@code false} to force ANSI escape
      * sequences off. The default ({@code null}) is to enable ANSI escape sequences on supported platforms.  */
