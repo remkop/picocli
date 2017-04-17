@@ -1068,7 +1068,119 @@ public class CommandLineHelpTest {
         );
         assertEquals(expected, actual);
     }
+    @Command(name = "base", abbreviateSynopsis = true, commandListHeading = "c o m m a n d s",
+            customSynopsis = "cust", description = "base description", descriptionHeading = "base descr heading",
+            footer = "base footer", footerHeading = "base footer heading",
+            header = "base header", headerHeading = "base header heading",
+            optionListHeading = "base option heading", parameterListHeading = "base param heading",
+            requiredOptionMarker = '&', separator = ";", showDefaultValues = true,
+            sortOptions = false, synopsisHeading = "abcd")
+    class Base { }
 
+    @Test
+    public void testAttributesInheritedWhenSubclassingForReuse() throws UnsupportedEncodingException {
+        @Command
+        class EmptySub extends Base {}
+        Help help = new Help(new EmptySub());
+        assertEquals("base", help.commandName);
+        assertEquals(String.format("cust%n"), help.synopsis());
+        assertEquals(String.format("cust%n"), help.customSynopsis());
+        assertEquals(String.format("base%n"), help.abbreviatedSynopsis());
+        assertEquals(String.format("base%n"), help.detailedSynopsis(null, true));
+        assertEquals("abcd", help.synopsisHeading);
+        assertEquals("", help.commandList());
+        assertEquals("c o m m a n d s", help.commandListHeading);
+        assertEquals(String.format("base description%n"), help.description());
+        assertEquals("base descr heading", help.descriptionHeading);
+        assertEquals(String.format("base footer%n"), help.footer());
+        assertEquals("base footer heading", help.footerHeading);
+        assertEquals(String.format("base header%n"), help.header());
+        assertEquals("base header heading", help.headerHeading);
+        assertEquals("", help.optionList());
+        assertEquals("base option heading", help.optionListHeading);
+        assertEquals("", help.parameterList());
+        assertEquals("base param heading", help.parameterListHeading);
+
+        // these values NOT inherited!!
+        assertEquals("=", help.separator);
+        assertEquals(' ', help.requiredOptionMarker.charValue());
+        assertFalse(help.abbreviateSynopsis);
+        assertFalse(help.showDefaultValues);
+        assertTrue(help.sortOptions);
+    }
+
+    @Test
+    public void testSubclassAttributesOverrideEmptySuper() {
+        @Command
+        class EmptyBase {}
+        @Command(name = "base", abbreviateSynopsis = true, commandListHeading = "c o m m a n d s",
+                customSynopsis = "cust", description = "base description", descriptionHeading = "base descr heading",
+                footer = "base footer", footerHeading = "base footer heading",
+                header = "base header", headerHeading = "base header heading",
+                optionListHeading = "base option heading", parameterListHeading = "base param heading",
+                requiredOptionMarker = '&', separator = ";", showDefaultValues = true,
+                sortOptions = false, synopsisHeading = "abcd")
+        class FullBase extends EmptyBase{ }
+        Help help = new Help(new FullBase());
+        assertEquals("base", help.commandName);
+        assertEquals(String.format("cust%n"), help.synopsis());
+        assertEquals(String.format("cust%n"), help.customSynopsis());
+        assertEquals(String.format("base%n"), help.abbreviatedSynopsis());
+        assertEquals(String.format("base%n"), help.detailedSynopsis(null, true));
+        assertEquals("abcd", help.synopsisHeading);
+        assertEquals("", help.commandList());
+        assertEquals("c o m m a n d s", help.commandListHeading);
+        assertEquals(String.format("base description%n"), help.description());
+        assertEquals("base descr heading", help.descriptionHeading);
+        assertEquals(String.format("base footer%n"), help.footer());
+        assertEquals("base footer heading", help.footerHeading);
+        assertEquals(String.format("base header%n"), help.header());
+        assertEquals("base header heading", help.headerHeading);
+        assertEquals("", help.optionList());
+        assertEquals("base option heading", help.optionListHeading);
+        assertEquals("", help.parameterList());
+        assertEquals("base param heading", help.parameterListHeading);
+        assertTrue(help.abbreviateSynopsis);
+        assertTrue(help.showDefaultValues);
+        assertFalse(help.sortOptions);
+        assertEquals(";", help.separator);
+        assertEquals('&', help.requiredOptionMarker.charValue());
+    }
+    @Test
+    public void testSubclassAttributesOverrideSuperValues() {
+        @Command(name = "sub", abbreviateSynopsis = false, commandListHeading = "subc o m m a n d s",
+                customSynopsis = "subcust", description = "sub description", descriptionHeading = "sub descr heading",
+                footer = "sub footer", footerHeading = "sub footer heading",
+                header = "sub header", headerHeading = "sub header heading",
+                optionListHeading = "sub option heading", parameterListHeading = "sub param heading",
+                requiredOptionMarker = '%', separator = ":", showDefaultValues = false,
+                sortOptions = true, synopsisHeading = "xyz")
+        class FullSub extends Base{ }
+        Help help = new Help(new FullSub());
+        assertEquals("sub", help.commandName);
+        assertEquals(String.format("subcust%n"), help.synopsis());
+        assertEquals(String.format("subcust%n"), help.customSynopsis());
+        assertEquals(String.format("sub%n"), help.abbreviatedSynopsis());
+        assertEquals(String.format("sub%n"), help.detailedSynopsis(null, true));
+        assertEquals("xyz", help.synopsisHeading);
+        assertEquals("", help.commandList());
+        assertEquals("subc o m m a n d s", help.commandListHeading);
+        assertEquals(String.format("sub description%n"), help.description());
+        assertEquals("sub descr heading", help.descriptionHeading);
+        assertEquals(String.format("sub footer%n"), help.footer());
+        assertEquals("sub footer heading", help.footerHeading);
+        assertEquals(String.format("sub header%n"), help.header());
+        assertEquals("sub header heading", help.headerHeading);
+        assertEquals("", help.optionList());
+        assertEquals("sub option heading", help.optionListHeading);
+        assertEquals("", help.parameterList());
+        assertEquals("sub param heading", help.parameterListHeading);
+        assertFalse(help.abbreviateSynopsis);
+        assertFalse(help.showDefaultValues);
+        assertTrue(help.sortOptions);
+        assertEquals(":", help.separator);
+        assertEquals('%', help.requiredOptionMarker.charValue());
+    }
     static class UsageDemo {
         @Option(names = "-a", description = "boolean option with short name only")
         boolean a;

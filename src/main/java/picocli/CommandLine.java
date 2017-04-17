@@ -1762,13 +1762,13 @@ public class CommandLine {
                     description = empty(description) ? command.description() : description;
                     header = empty(header) ? command.header() : header;
                     footer = empty(footer) ? command.footer() : footer;
-                    headerHeading = headerHeading == null ? command.headerHeading() : headerHeading;
-                    synopsisHeading = synopsisHeading == null ? command.synopsisHeading() : synopsisHeading;
-                    descriptionHeading = descriptionHeading == null ? command.descriptionHeading() : descriptionHeading;
-                    parameterListHeading = parameterListHeading == null ? command.parameterListHeading() : parameterListHeading;
-                    optionListHeading = optionListHeading == null ? command.optionListHeading() : optionListHeading;
-                    commandListHeading = commandListHeading == null ? command.commandListHeading() : commandListHeading;
-                    footerHeading = footerHeading == null ? command.footerHeading() : footerHeading;
+                    headerHeading = empty(headerHeading) ? command.headerHeading() : headerHeading;
+                    synopsisHeading = empty(synopsisHeading) || "Usage: ".equals(synopsisHeading) ? command.synopsisHeading() : synopsisHeading;
+                    descriptionHeading = empty(descriptionHeading) ? command.descriptionHeading() : descriptionHeading;
+                    parameterListHeading = empty(parameterListHeading) ? command.parameterListHeading() : parameterListHeading;
+                    optionListHeading = empty(optionListHeading) ? command.optionListHeading() : optionListHeading;
+                    commandListHeading = empty(commandListHeading) || "Commands:%n".equals(commandListHeading) ? command.commandListHeading() : commandListHeading;
+                    footerHeading = empty(footerHeading) ? command.footerHeading() : footerHeading;
                 }
                 cls = cls.getSuperclass();
             }
