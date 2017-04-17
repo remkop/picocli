@@ -1000,6 +1000,7 @@ public class CommandLine {
                 cls = cls.getSuperclass();
             }
             separator = declaredSeparator != null ? declaredSeparator : separator;
+            Collections.sort(positionalParametersFields, new PositionalParametersSorter());
         }
 
         /**
@@ -1116,7 +1117,7 @@ public class CommandLine {
                     }
                 }
                 Collections.reverse(argsCopy);
-                for (int i = 0; i < indexRange.min; i++) { argsCopy.pop(); }
+                for (int i = 0; i < indexRange.min && !argsCopy.isEmpty(); i++) { argsCopy.pop(); }
                 Arity arity = Arity.forParameters(positionalParam);
                 assertNoMissingParameters(positionalParam, arity.min, argsCopy);
                 if (!validateOnly) {
@@ -1489,7 +1490,17 @@ public class CommandLine {
                         : value;
         }
     }
-
+    private static class PositionalParametersSorter implements Comparator<Field> {
+        public int compare(Field o1, Field o2) {
+            Arity indexRange1 = Arity.valueOf(o1.getAnnotation(Parameters.class).index());
+            Arity indexRange2 = Arity.valueOf(o2.getAnnotation(Parameters.class).index());
+            int result = indexRange1.min - indexRange2.min;
+            if (result == 0) {
+                result = indexRange1.max - indexRange2.max;
+            }
+            return result;
+        }
+    }
     /**
      * Inner class to group the built-in {@link ITypeConverter} implementations.
      */

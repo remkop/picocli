@@ -1412,6 +1412,19 @@ public class CommandLineTest {
         }
     }
 
+    @Test
+    public void testParametersDeclaredOutOfOrderWithNoArgs() {
+        class WithParams {
+            @Parameters(index = "1") String param1;
+            @Parameters(index = "0") String param0;
+        }
+        try {
+            CommandLine.parse(new WithParams(), new String[0]);
+        } catch (MissingParameterException ex) {
+            assertEquals("Missing required parameters: param0, param1", ex.getMessage());
+        }
+    }
+
     class VariousPrefixCharacters {
         @Option(names = {"-d", "--dash"}) int dash;
         @Option(names = {"/S"}) int slashS;
@@ -1714,7 +1727,7 @@ public class CommandLineTest {
             CommandLine.parse(new App(), "000");
             fail("Should fail with missingParamException");
         } catch (MissingParameterException ex) {
-            assertEquals("Missing required parameters: file1, file2, all", ex.getMessage());
+            assertEquals("Missing required parameters: all, file1, file2", ex.getMessage());
         }
     }
 
@@ -1760,7 +1773,7 @@ public class CommandLineTest {
             CommandLine.parse(new App());
             fail("Should fail with missingParamException");
         } catch (MissingParameterException ex) {
-            assertEquals("Missing required parameters: file0_1, fileList1_2, fileArray0_3, all", ex.getMessage());
+            assertEquals("Missing required parameters: file0_1, fileArray0_3, all, fileList1_2", ex.getMessage());
         }
     }
 
