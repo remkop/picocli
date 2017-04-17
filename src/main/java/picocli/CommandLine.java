@@ -1109,6 +1109,7 @@ public class CommandLine {
         private void processPositionalParameters0(boolean validateOnly, Stack<String> args) throws Exception {
             for (Field positionalParam : positionalParametersFields) {
                 Arity indexRange = Arity.valueOf(positionalParam.getAnnotation(Parameters.class).index());
+                @SuppressWarnings("unchecked")
                 Stack<String> argsCopy = (Stack<String>) args.clone();
                 Collections.reverse(argsCopy);
                 if (!indexRange.isVariable) {
@@ -1235,7 +1236,7 @@ public class CommandLine {
                                             Stack<String> args,
                                             Class<?> cls) throws Exception {
             Class<?> type = cls.getComponentType();
-            ITypeConverter converter = getTypeConverter(type);
+            ITypeConverter<?> converter = getTypeConverter(type);
             List<Object> converted = consumeArguments(field, annotation, arity, args, converter, cls);
             Object existing = field.get(annotatedObject);
             int length = existing == null ? 0 : Array.getLength(existing);
@@ -1266,7 +1267,7 @@ public class CommandLine {
                                                  Class<?> cls) throws Exception {
             Collection<Object> collection = (Collection<Object>) field.get(annotatedObject);
             Class<?> type = getTypeAttribute(field);
-            ITypeConverter converter = getTypeConverter(type);
+            ITypeConverter<?> converter = getTypeConverter(type);
             List<Object> converted = consumeArguments(field, annotation, arity, args, converter, type);
             if (collection == null) {
                 collection = createCollection(cls);
@@ -1447,6 +1448,7 @@ public class CommandLine {
         private void assertNoMissingParameters(Field field, int arity, Stack<String> args) {
             if (arity > args.size()) {
                 int actualSize = 0;
+                @SuppressWarnings("unchecked")
                 Stack<String> copy = (Stack<String>) args.clone();
                 while (!copy.isEmpty()) {
                     actualSize += split(copy.pop(), field).length;
@@ -2198,7 +2200,7 @@ public class CommandLine {
             public String requiredMarker = " ";
             public Object annotatedObject;
             public Text[][] render(Option option, Field field, IParamLabelRenderer paramLabelRenderer, ColorScheme scheme) {
-                String[] names = new ShortestFirst().sort(option.names());
+                String[] names = ShortestFirst.sort(option.names());
                 int shortOptionCount = names[0].length() == 2 ? 1 : 0;
                 String shortOption = shortOptionCount > 0 ? names[0] : "";
                 Text paramLabelText = paramLabelRenderer.renderParameterLabel(field, scheme.optionParamStyles);
@@ -2480,13 +2482,12 @@ public class CommandLine {
         /** Sorts {@code Option} instances by their name in case-insensitive alphabetic order. If an Option has
          * multiple names, the shortest name is used for the sorting. Help options follow non-help options. */
         static class SortByShortestOptionNameAlphabetically implements Comparator<Field> {
-            ShortestFirst shortestFirst = new ShortestFirst();
             public int compare(Field f1, Field f2) {
                 Option o1 = f1.getAnnotation(Option.class);
                 Option o2 = f2.getAnnotation(Option.class);
                 if (o1 == null) { return 1; } else if (o2 == null) { return -1; } // options before params
-                String[] names1 = shortestFirst.sort(o1.names());
-                String[] names2 = shortestFirst.sort(o2.names());
+                String[] names1 = ShortestFirst.sort(o1.names());
+                String[] names2 = ShortestFirst.sort(o2.names());
                 int result = names1[0].toUpperCase().compareTo(names2[0].toUpperCase()); // case insensitive sort
                 result = result == 0 ? -names1[0].compareTo(names2[0]) : result; // lower case before upper case
                 return o1.help() == o2.help() ? result : o2.help() ? -1 : 1; // help options come last
@@ -3143,6 +3144,7 @@ public class CommandLine {
      * Exception indicating something went wrong while parsing command line options.
      */
     public static class ParameterException extends RuntimeException {
+        private static final long serialVersionUID = 1477112829129763139L;
         public ParameterException(String msg) {
             super(msg);
         }
@@ -3162,6 +3164,7 @@ public class CommandLine {
      * Exception indicating that a required parameter was not specified.
      */
     public static class MissingParameterException extends ParameterException {
+        private static final long serialVersionUID = 5075678535706338753L;
         public MissingParameterException(String msg) {
             super(msg);
         }
@@ -3183,6 +3186,7 @@ public class CommandLine {
      * Exception indicating that multiple fields have been annotated with the same Option name.
      */
     public static class DuplicateOptionAnnotationsException extends ParameterException {
+        private static final long serialVersionUID = -3355128012575075641L;
         public DuplicateOptionAnnotationsException(String msg) {
             super(msg);
         }
@@ -3198,6 +3202,7 @@ public class CommandLine {
      * {@linkplain #registerConverter(Class, ITypeConverter) registered}.
      */
     public static class MissingTypeConverterException extends ParameterException {
+        private static final long serialVersionUID = -6050931703233083760L;
         public MissingTypeConverterException(String msg) {
             super(msg);
         }
