@@ -1461,19 +1461,25 @@ public class CommandLine {
                     }
                     Arity indexRange = Arity.valueOf(field.getAnnotation(Parameters.class).index());
                     Help.IParamLabelRenderer labelRenderer = Help.createMinimalParamLabelRenderer();
+                    String sep = "";
+                    String names = "";
+                    int count = 0;
+                    for (int i = indexRange.min; i < positionalParametersFields.size(); i++) {
+                        if (Arity.forParameters(positionalParametersFields.get(i)).min > 0) {
+                            names += sep + labelRenderer.renderParameterLabel(positionalParametersFields.get(i),
+                                    Collections.<IStyle>emptyList());
+                            sep = ", ";
+                            count++;
+                        }
+                    }
                     String msg = "Missing required parameter";
                     Arity paramArity = Arity.forParameters(field);
                     if (paramArity.isVariable) {
                         msg += "s at positions " + paramArity + ": ";
                     } else {
-                        msg += (positionalParametersFields.size() - indexRange.min > 1 ? "s: " : ": ");
+                        msg += (count > 1 ? "s: " : ": ");
                     }
-                    String sep = "";
-                    for (int i = indexRange.min; i < positionalParametersFields.size(); i++) {
-                        msg += sep + labelRenderer.renderParameterLabel(positionalParametersFields.get(i), Collections.<IStyle>emptyList());
-                        sep = ", ";
-                    }
-                    throw new MissingParameterException(msg);
+                    throw new MissingParameterException(msg + names);
                 }
                 throw new MissingParameterException(optionDescription("", field, 0) +
                         " requires at least " + arity + " values, but only " + args.size() + " were specified.");
