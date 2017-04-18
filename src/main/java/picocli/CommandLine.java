@@ -1287,7 +1287,7 @@ public class CommandLine {
                                               Class<?> annotation,
                                               Arity arity,
                                               Stack<String> args,
-                                              ITypeConverter converter,
+                                              ITypeConverter<?> converter,
                                               Class<?> type) throws Exception {
             List<Object> result = new ArrayList<Object>();
             int index = 0;
@@ -1311,7 +1311,7 @@ public class CommandLine {
         private int consumeOneArgument(Field field,
                                        Arity arity,
                                        Stack<String> args,
-                                       ITypeConverter converter,
+                                       ITypeConverter<?> converter,
                                        Class<?> type,
                                        List<Object> result, int index) throws Exception {
             String[] values = split(trim(args.pop()), field);
