@@ -36,12 +36,12 @@ import java.util.List;
         " or with -Dpicocli.ansi=false to force picocli to NOT use ansi codes.",
         "(By default picocli will use ansi codes if the platform supports it.)"},
 header = {
-        "     _____   __                          __   __",
-        "    / __  / /_/                         / /  /_/",
-        "   / /_/ / _   _____  _______   _____  / /  _   ",
-        "  / ____/ / / / ___/ / __   /  / ___/ / /  / / ",
-        " / /     / / / /_   / /__/ /  / /_   / /  / / ",
-        "/_/     /_/ /____/ /______/  /____/ /_/  /_/ ",
+        "@|green        .__                    .__  .__ |@",
+        "@|green ______ |__| ____  ____   ____ |  | |__||@",
+        "@|green \\____ \\|  |/ ___\\/  _ \\_/ ___\\|  | |  ||@",
+        "@|green |  |_> >  \\  \\__(  <_> )  \\___|  |_|  ||@",
+        "@|green |   __/|__|\\___  >____/ \\___  >____/__||@",
+        "@|green |__|           \\/           \\/         |@",
         ""
 })
 public class Demo implements Runnable {
