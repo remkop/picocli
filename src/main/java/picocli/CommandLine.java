@@ -2920,7 +2920,7 @@ public class CommandLine {
             /** <p>Encapsulates rich text with styles and colors in a way that other components like {@link TextTable}
              * are unaware of the embedded ANSI escape codes.</p> */
             public static class Text implements Cloneable {
-                public static Text EMPTY = new Text(0);
+                private static Text EMPTY = new Text(0);
                 private final int maxLength;
                 private int from;
                 private int length;
