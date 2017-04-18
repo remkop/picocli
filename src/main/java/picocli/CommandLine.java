@@ -1631,14 +1631,14 @@ public class CommandLine {
      * <p>Finally, the Help class contains inner classes and interfaces that can be used to create custom help messages.</p>
      * <h4>IOptionRenderer and IParameterRenderer</h4>
      * <p>Renders a field annotated with {@link Option} or {@link Parameters} to an array of {@link Text} values.
-     * By default, these values are<ul>
+     * By default, these values are</p><ul>
      * <li>mandatory marker character (if the option/parameter is {@link Option#required() required})</li>
      * <li>short option name (empty for parameters)</li>
      * <li>comma or empty (empty for parameters)</li>
      * <li>long option names (the parameter {@link IParamLabelRenderer label} for parameters)</li>
      * <li>description</li>
      * </ul>
-     * Other components rely on this ordering.</p>
+     * <p>Other components rely on this ordering.</p>
      * <h4>Layout</h4>
      * <p>Delegates to the renderers to create {@link Text} values for the annotated fields, and uses a
      * {@link TextTable} to display these values in tabular format. Layout is responsible for deciding which values
