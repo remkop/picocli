@@ -343,7 +343,7 @@ public class Demo implements Runnable {
             "                               * normal - Shows untracked files and directories.%n" +
             "                               * all - Also shows individual files in untracked%n" +
             "                                directories.%n" +
-            "                              Default: all%n";
+            "                                Default: all%n";
 
     static final String EXPECTED_USAGE_GITSTATUS_ANSI = "Show the working tree status.%n" +
             "Usage: @|bold git-status|@ [@|yellow <options>|@...] [--] [@|yellow <pathspec>|@...]%n" +
@@ -366,7 +366,7 @@ public class Demo implements Runnable {
             "                               * @|yellow normal|@ - Shows untracked files and directories.%n" +
             "                               * @|yellow all|@ - Also shows individual files in untracked%n" +
             "                                directories.%n" +
-            "                              Default: all%n";
+            "                                Default: all%n";
 
     public void testUsageSubCommandCommit() {
         try {

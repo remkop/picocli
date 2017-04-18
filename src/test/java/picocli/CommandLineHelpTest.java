@@ -101,7 +101,7 @@ public class CommandLineHelpTest {
         assertEquals(format("" +
                         "Usage: <main class> -f=<file>%n" +
                         "  -f, --file=<file>           the file to use%n" +
-                        "                              Default: theDefault.txt%n"), result);
+                        "                                Default: theDefault.txt%n"), result);
     }
 
     @Test
@@ -127,7 +127,7 @@ public class CommandLineHelpTest {
         assertEquals(format("" +
                         "Usage: <main class> -f=<file>%n" +
                         "  -f, --file=<file>           the file to use%n" +
-                        "                              Default: def.txt%n",
+                        "                                Default: def.txt%n",
                 ""), result);
     }
 
@@ -265,13 +265,13 @@ public class CommandLineHelpTest {
         Text[][] row1 = renderer.render(field.getAnnotation(Option.class), field, parameterRenderer, help.colorScheme);
         assertEquals(2, row1.length);
         assertArrayEquals(Arrays.toString(row1[0]), textArray("", "-L", ",", "---long=<longField>", "long description"), row1[0]);
-        assertArrayEquals(Arrays.toString(row1[1]), textArray("", "", "", "", "Default: null"), row1[1]);
+        assertArrayEquals(Arrays.toString(row1[1]), textArray("", "", "", "", "  Default: null"), row1[1]);
 
         field = help.optionFields.get(1);
         Text[][] row2 = renderer.render(field.getAnnotation(Option.class), field, parameterRenderer, help.colorScheme);
         assertEquals(2, row2.length);
         assertArrayEquals(Arrays.toString(row2[0]), textArray("", "-b", ",", "-a, --alpha=<otherField>", "other"), row2[0]);
-        assertArrayEquals(Arrays.toString(row2[1]), textArray("", "", "", "", "Default: abc"), row2[1]);
+        assertArrayEquals(Arrays.toString(row2[1]), textArray("", "", "", "", "  Default: abc"), row2[1]);
     }
 
     @Test
@@ -287,7 +287,7 @@ public class CommandLineHelpTest {
         Text[][] row = renderer.render(field.getAnnotation(Option.class), field, parameterRenderer, help.colorScheme);
         assertEquals(2, row.length);
         assertArrayEquals(Arrays.toString(row[0]), textArray("*", "-b", ",", "-a, --alpha=<otherField>", "other"), row[0]);
-        assertArrayEquals(Arrays.toString(row[1]), textArray("", "", "", "", "Default: abc"), row[1]);
+        assertArrayEquals(Arrays.toString(row[1]), textArray("", "", "", "", "  Default: abc"), row[1]);
     }
 
     @Test
@@ -334,7 +334,7 @@ public class CommandLineHelpTest {
         Text[][] row = renderer.render(field.getAnnotation(Option.class), field, parameterRenderer, help.colorScheme);
         assertEquals(2, row.length);
         assertArrayEquals(Arrays.toString(row[0]), textArray(" ", "-b", ",", "-a, --alpha=<otherField>", "other"), row[0]);
-        assertArrayEquals(Arrays.toString(row[1]), textArray("",    "", "",  "", "Default: null"), row[1]);
+        assertArrayEquals(Arrays.toString(row[1]), textArray("",    "", "",  "", "  Default: null"), row[1]);
     }
 
     @Test

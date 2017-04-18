@@ -2243,7 +2243,7 @@ public class CommandLine {
                 if (showDefault) {
                     Arrays.fill(result[result.length - 1], Text.EMPTY);
                     int row = empty(result[ROW_COUNT - 2][COLUMN_COUNT - 1]) ? ROW_COUNT - 2 : ROW_COUNT - 1;
-                    result[row][COLUMN_COUNT - 1] = new Text("Default: " + defaultValue);
+                    result[row][COLUMN_COUNT - 1] = new Text("  Default: " + defaultValue);
                 }
                 return result;
             }
