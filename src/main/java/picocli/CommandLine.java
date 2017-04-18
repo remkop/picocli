@@ -817,7 +817,7 @@ public class CommandLine {
         public int min;
         /** Maximum accepted number of parameters for an option or positional parameter. */
         public int max;
-        public boolean isVariable;
+        public final boolean isVariable;
         private final boolean isUnspecified;
         private final String originalValue;
 
@@ -846,13 +846,7 @@ public class CommandLine {
             return adjustForType(Arity.valueOf(field.getAnnotation(Parameters.class).arity()), field);
         }
         static Arity adjustForType(Arity result, Field field) {
-            if (result.isUnspecified) {
-                Arity def = forType(field.getType());
-                result.min = def.min;
-                result.max = def.max;
-                result.isVariable = def.isVariable;
-            }
-            return result;
+            return result.isUnspecified ? forType(field.getType()) : result;
         }
         /** Returns a new {@code Arity} based on the specified type: booleans have arity 0, arrays or Collections have
          * arity "0..*", and other types have arity 1. */
