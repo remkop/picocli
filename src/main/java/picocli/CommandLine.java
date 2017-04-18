@@ -3193,8 +3193,9 @@ public class CommandLine {
         }
 
         private static DuplicateOptionAnnotationsException create(String name, Field field1, Field field2) {
-            return new DuplicateOptionAnnotationsException("Option name '" + name + "' is used in both "
-                    + field1.getName() + " and " + field2.getName());
+            return new DuplicateOptionAnnotationsException("Option name '" + name + "' is used by both " +
+                    field1.getDeclaringClass().getName() + "." + field1.getName() + " and " +
+                    field2.getDeclaringClass().getName() + "." + field2.getName());
         }
     }
 

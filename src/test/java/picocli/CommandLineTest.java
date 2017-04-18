@@ -1684,7 +1684,7 @@ public class CommandLineTest {
             CommandLine.parse(new ChildOption(), "");
             fail("expected CommandLine$DuplicateOptionAnnotationsException");
         } catch (DuplicateOptionAnnotationsException ex) {
-            assertEquals("Option name '-p' is used in both path and text", ex.getMessage());
+            assertEquals("Option name '-p' is used by both picocli.CommandLineTest$2ParentOption.path and picocli.CommandLineTest$2ChildOption.text", ex.getMessage());
         }
     }
 
