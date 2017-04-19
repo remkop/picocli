@@ -48,20 +48,21 @@ public class Demo implements Runnable {
     public static void main(String[] args) {
         CommandLine.run(new Demo(), args);
     }
-    @Option(names = {"-t", "--tests"}, description = "Runs all tests in this class")
-    private boolean runTests;
 
-    @Option(names = {"-m", "--showUsageForMainCommand"}, description = "Shows usage help for a command with subcommands")
+    @Option(names = {"-1", "--showUsageForSubcommandGitCommit"}, description = "Shows usage help for the git-commit subcommand")
+    private boolean showUsageForSubcommandGitCommit;
+
+    @Option(names = {"-2", "--showUsageForMainCommand"}, description = "Shows usage help for a command with subcommands")
     private boolean showUsageForMainCommand;
 
-    @Option(names = {"-s", "--showUsageForSubcommandGitStatus"}, description = "Shows usage help for the git-status subcommand")
+    @Option(names = {"-3", "--showUsageForSubcommandGitStatus"}, description = "Shows usage help for the git-status subcommand")
     private boolean showUsageForSubcommandGitStatus;
-
-    @Option(names = {"-c", "--showUsageForSubcommandGitCommit"}, description = "Shows usage help for the git-commit subcommand")
-    private boolean showUsageForSubcommandGitCommit;
 
     @Option(names = "--simple", description = "Show help for the first simple Example in the manual")
     private boolean showSimpleExample;
+
+    @Option(names = {"-t", "--tests"}, description = "Runs all tests in this class")
+    private boolean runTests;
 
     public void run() {
         if (!runTests &&
