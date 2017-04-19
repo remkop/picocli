@@ -2803,6 +2803,7 @@ public class CommandLine {
             private Ansi() {}
             // http://stackoverflow.com/questions/1403772/how-can-i-check-if-a-java-programs-input-output-streams-are-connected-to-a-term
             static final boolean calcTTY() {
+                if (isWindows && isXterm) { return true; } // Cygwin uses pseudo-tty and console is always null...
                 try { return System.class.getDeclaredMethod("console").invoke(null) != null; }
                 catch (Throwable reflectionFailed) { return true; }
             }
