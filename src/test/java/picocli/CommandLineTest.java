@@ -732,6 +732,42 @@ public class CommandLineTest {
         }
     }
     @Test
+    public void testMissingRequiredParamsWithOptions() {
+        class Tricky3 {
+            @Option(names="-v") boolean more;
+            @Option(names="-t") boolean any;
+            @Parameters(index = "1") String alsoMandatory;
+            @Parameters(index = "0") String mandatory;
+        }
+        try {
+            CommandLine.parse(new Tricky3(), new String[] {"-t", "-v", "mandatory"});
+            fail("Should not accept missing mandatory parameter");
+        } catch(MissingParameterException ex) {
+            assertEquals("Missing required parameter: alsoMandatory", ex.getMessage());
+        }
+
+        try {
+            CommandLine.parse(new Tricky3(), new String[] { "-t", "-v"});
+            fail("Should not accept missing two mandatory parameters");
+        } catch(MissingParameterException ex) {
+            assertEquals("Missing required parameters: mandatory, alsoMandatory", ex.getMessage());
+        }
+    }
+    @Test
+    public void testMissingRequiredParamWithOption() {
+        class Tricky3 {
+            @Option(names="-t") boolean any;
+            @Parameters(index = "0") String mandatory;
+        }
+        try {
+            CommandLine.parse(new Tricky3(), new String[] {"-t"});
+            fail("Should not accept missing mandatory parameter");
+        } catch(MissingParameterException ex) {
+
+            assertEquals("Missing required parameter: mandatory", ex.getMessage());
+        }
+    }
+    @Test
     public void testHelpRequestedFlagResetWhenParsing_staticMethod() {
         RequiredField requiredField = CommandLine.parse(new RequiredField(), "--help");
         assertTrue("help requested", requiredField.isHelpRequested);

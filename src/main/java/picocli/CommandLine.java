@@ -932,6 +932,10 @@ public class CommandLine {
                             + field.getName() + "' is both.");
                 }
                 positionalParametersFields.add(field);
+                Arity arity = Arity.forParameters(field);
+                if (arity.min > 0) {
+                    requiredFields.add(field);
+                }
             }
         }
     }
@@ -1017,9 +1021,10 @@ public class CommandLine {
 
         private void parse(Stack<String> argumentStack, String[] originalArgs) {
             parsedCommands.add(annotatedObject);
-            Set<Field> required = new HashSet<Field>(requiredFields);
+            List<Field> required = new ArrayList<Field>(requiredFields);
+            Collections.sort(required, new PositionalParametersSorter());
             try {
-                processPositionalParameters0(true, argumentStack);
+                processPositionalParameters0(required, true, argumentStack);
                 processArguments(argumentStack, required, originalArgs);
             } catch (ParameterException ex) {
                 throw ex;
@@ -1029,11 +1034,15 @@ public class CommandLine {
                 throw ParameterException.create(ex, arg, argumentStack.size(), originalArgs);
             }
             if (!isHelpRequested && !required.isEmpty()) {
-                throw MissingParameterException.create(required);
+                if (required.get(0).isAnnotationPresent(Option.class)) {
+                    throw MissingParameterException.create(required);
+                } else {
+                    assertNoMissingParameters(required.get(0), 1, new Stack<String>());
+                }
             }
         }
 
-        private void processArguments(Stack<String> args, Set<Field> required, final String[] originalArgs) throws Exception {
+        private void processArguments(Stack<String> args, Collection<Field> required, String[] originalArgs) throws Exception {
             // arg must be one of:
             // 1. the "--" double dash separating options from positional arguments
             // 1. a stand-alone flag, like "-v" or "--verbose": no value required, must map to boolean or Boolean field
@@ -1049,7 +1058,7 @@ public class CommandLine {
                 // Double-dash separates options from positional arguments.
                 // If found, then interpret the remaining args as positional parameters.
                 if ("--".equals(arg)) {
-                    processPositionalParameters(args);
+                    processPositionalParameters(required, args);
                     return; // we are done
                 }
 
@@ -1090,17 +1099,17 @@ public class CommandLine {
                 // We take this to mean that the remainder are positional arguments
                 else {
                     args.push(arg);
-                    processPositionalParameters(args);
+                    processPositionalParameters(required, args);
                     return;
                 }
             }
         }
 
-        private void processPositionalParameters(Stack<String> args) throws Exception {
-            processPositionalParameters0(false, args);
+        private void processPositionalParameters(Collection<Field> required, Stack<String> args) throws Exception {
+            processPositionalParameters0(required, false, args);
         }
 
-        private void processPositionalParameters0(boolean validateOnly, Stack<String> args) throws Exception {
+        private void processPositionalParameters0(Collection<Field> required, boolean validateOnly, Stack<String> args) throws Exception {
             for (Field positionalParam : positionalParametersFields) {
                 Arity indexRange = Arity.valueOf(positionalParam.getAnnotation(Parameters.class).index());
                 @SuppressWarnings("unchecked")
@@ -1117,6 +1126,7 @@ public class CommandLine {
                 assertNoMissingParameters(positionalParam, arity.min, argsCopy);
                 if (!validateOnly) {
                     applyOption(positionalParam, Parameters.class, arity, false, argsCopy);
+                    required.remove(positionalParam);
                 }
             }
             if (!validateOnly) {
@@ -1124,7 +1134,7 @@ public class CommandLine {
             }
         }
 
-        private void processStandaloneOption(Set<Field> required,
+        private void processStandaloneOption(Collection<Field> required,
                                              String arg,
                                              Stack<String> args,
                                              boolean paramAttachedToKey) throws Exception {
@@ -1137,7 +1147,7 @@ public class CommandLine {
             applyOption(field, Option.class, arity, paramAttachedToKey, args);
         }
 
-        private void processClusteredShortOptions(Set<Field> required, String arg, Stack<String> args)
+        private void processClusteredShortOptions(Collection<Field> required, String arg, Stack<String> args)
                 throws Exception {
             String cluster = arg.substring(1);
             do {
@@ -1169,7 +1179,7 @@ public class CommandLine {
                     // nor a parameter that the last option could consume.
                     // Consume it and any other remaining parameters as positional parameters.
                     args.push(cluster);
-                    processPositionalParameters(args);
+                    processPositionalParameters(required, args);
                     return;
                 }
             } while (true);
@@ -3171,7 +3181,7 @@ public class CommandLine {
             super(msg);
         }
 
-        private static MissingParameterException create(Set<Field> missing) {
+        private static MissingParameterException create(Collection<Field> missing) {
             if (missing.size() == 1) {
                 return new MissingParameterException("Missing required option '"
                         + missing.iterator().next().getName() + "'");
