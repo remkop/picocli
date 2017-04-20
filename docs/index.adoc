@@ -1,7 +1,7 @@
 = picocli - a mighty tiny Command Line Interface
 :author: Remko Popma
 :email: rpopma@apache.org
-:revnumber: 0.9.1
+:revnumber: 0.9.2
 :revdate: 2017-04-19
 :toc: left
 :numbered:
@@ -882,7 +882,8 @@ Picocli will only emit ANSI escape codes on supported platforms.
 
 ==== Unix and Linux
 Most Unix and Linux platforms support ANSI colors natively.
-On Windows, when picocli detects it is running under a Unix variant like Cygwin or MSYS(2) on Windows it will display ANSI colors and styles, otherwise it will not emit ANSI codes.
+On Windows, when picocli detects it is running under a Unix variant like Cygwin or MSYS(2) on Windows
+ it will display ANSI colors and styles, otherwise it will not emit ANSI codes.
 
 ==== Windows
 Starting from Windows 10 the Windows console https://msdn.microsoft.com/en-us/library/windows/desktop/mt638032(v=vs.85).aspx[supports ANSI escape sequences], but http://www.nivot.org/blog/post/2016/02/04/Windows-10-TH2-(v1511)-Console-Host-Enhancements[they may need to be enabled].
