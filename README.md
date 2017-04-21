@@ -14,7 +14,8 @@ Generates polished and easily tailored usage help, using ANSI colors where possi
 Works with Java 5 or higher (but is designed to facilitate the use of Java 8 lambdas).
 
 
-See the [manual](https://github.com/remkop/picocli/wiki/Manual) for details.
+See the full user manual here: [http://picocli.info](http://picocli.info)
+
 
 ## Example
 
