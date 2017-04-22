@@ -1,7 +1,7 @@
 # picocli - a mighty tiny Command Line Interpreter
 
 A Java command line parsing framework in a single file, so you can include it _in source form_.
-This lets users run your application without requiring picocli as an external dependency.
+This lets users run picocli-based applications without requiring picocli as an external dependency.
 
 How it works: annotate your class and picocli initializes it from the command line arguments,
 converting the input to strongly typed data. Supports sub-commands, any option prefix style,

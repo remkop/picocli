@@ -1,27 +1,32 @@
 = picocli - a mighty tiny Command Line Interface
 :author: Remko Popma
 :email: rpopma@apache.org
-:revnumber: 0.9.2
-:revdate: 2017-04-19
+:revnumber: 0.9.3
+:revdate: 2017-04-22
 :toc: left
 :numbered:
 :toclevels: 2
 :toc-title: Features
 :source-highlighter: coderay
 
+[quote]
+Every main method deserves picocli!
+
+//[quote,Uill Yates,Ancient Chinese Proverb (surely)]
+//Picocli in every main method!
+
+== Introduction
 Picocli is a one-file Java framework for parsing command line arguments
-and generating polished, easily tailored usage help messages. With colors.
+and generating polished, easily tailored usage help messages. With <<ANSI Colors and Styles,colors>>.
 
 image:ExampleUsageANSI.png[Screenshot of usage help with Ansi codes enabled]
 
 A distinguishing feature of picocli is how it aims
-to let users run command line applications without requiring picocli as an external dependency:
+to let users run picocli-based applications without requiring picocli as an external dependency:
 all the source code lives in a single file, to encourage application authors to include it _in source form_.
 
 How it works: annotate your class and picocli initializes it from the command line arguments,
 converting the input to strongly typed values in the fields of your class.
-
-== Example
 
 [source,java]
 ----
@@ -183,7 +188,7 @@ assert Arrays.equals(params.files, new File[] {new File("file1.txt"), new File("
 assert params.allParameters.equals(Arrays.asList("localhost", "12345", "file1.txt", "file2.txt"));
 ----
 
-See <<Type Conversion>> for which types are supported out of the box and how to add custom types.
+See <<Strongly Typed Everything>> for which types are supported out of the box and how to add custom types.
 
 === Double dash (`--`)
 When one of the command line arguments is two dashes without any characters attached (`--`), picocli interprets all following arguments as positional parameters, even arguments that match an option name.
@@ -231,11 +236,11 @@ Long option names (like `--file`) must be separated from their option parameter 
 _separator string_ (`=` by default). That is, the first two below examples are valid but the last example is invalid:
 [source,java]
 ----
-// valid
+// valid (separator between --file and its parameter)
 <command> --file output.txt
 <command> --file=output.txt
 
-// invalid (picocli will not recognize the --file option)
+// invalid (picocli will not recognize the --file option when attached to its parameter)
 <command> --fileoutput.txt
 ----
 
@@ -269,18 +274,28 @@ assert optionArg.file.equals("output.txt");
 ----
 
 
-== Type Conversion
-When command line options and parameters are mapped to the annotated fields,
+== Strongly Typed Everything
+When command line options and positional parameters are mapped to the annotated fields,
 the text value is converted to the type of the annotated field.
 
 === Built-in Types
-Out of the box, picocli can convert command line argument strings to any Java primitive type or their wrapper,
-File, BigDecimal, BigInteger, InetAddress, URL, URI, Charset, UUID, regex Pattern, String, StringBuilder, CharSequence,
-`java.sql.Time` (for values in any of the `"HH:mm"`, `"HH:mm:ss"`, `"HH:mm:ss.SSS"`, or `"HH:mm:ss,SSS"` formats), and
-`java.util.Date` (for values in `"yyyy-MM-dd"` format).
+Out of the box, picocli can convert command line argument strings to:
 
-=== Custom Converters
-Register a custom converter to handle data types other than the above built-in ones.
+* any Java primitive type or their wrapper
+* any `enum`
+* `BigDecimal`, `BigInteger`
+* `Charset`
+* `File`
+* `InetAddress`
+* regex `Pattern`
+* `String`, `StringBuilder`, `CharSequence`
+* `java.sql.Time` (for values in any of the `"HH:mm"`, `"HH:mm:ss"`, `"HH:mm:ss.SSS"`, or `"HH:mm:ss,SSS"` formats)
+* `java.util.Date` (for values in `"yyyy-MM-dd"` format)
+* `URL`, `URI`
+* `UUID`
+
+=== Custom Type Converters
+Register a custom type converter to handle data types other than the above built-in ones.
 
 Custom converters need to implement the `picocli.CommandLine.ITypeConverter` interface:
 
@@ -323,9 +338,9 @@ class App {
 [source,java]
 ----
 App app = new App();
-CommandLine commandLine = new CommandLine(app);
-commandLine.registerConverter(Path.class,     s -> Paths.get(s));
-commandLine.registerConverter(Duration.class, s -> Duration.parse(s));
+CommandLine commandLine = new CommandLine(app)
+        .registerConverter(Path.class,     s -> Paths.get(s))
+        .registerConverter(Duration.class, s -> Duration.parse(s));
 
 commandLine.parse("-d", "PT15M", "file1.txt");
 assert app.path.equals(Paths.get("file1.txt"));
@@ -334,7 +349,9 @@ assert app.duration.equals(Duration.parse("PT15M"));
 
 === Arrays and Collections
 
-IMPORTANT: With array fields picocli uses reflection to discover the array element type, but with collections, Java type erasure means picocli cannot find out the generic type of the collection. For non-String collections, use the `type` attribute to explicitly tell picocli what type to convert the command line arguments to.
+IMPORTANT: With array fields picocli uses reflection to discover the array element type, but with collections,
+Java type erasure means picocli cannot find out the generic type of the collection.
+For non-String collections, use the `type` attribute to specify what type to convert the command line arguments to.
 
 Multiple parameters can be captured together in a single array or `Collection` field. When using a collection, use the `type` attribute to specify the collection element type. For example:
 
@@ -361,7 +378,7 @@ Convert convert = CommandLine.parse(new Convert(), args);
 // convert.files now has two File objects
 ----
 
-NOTE: If a collection is returned from a type converter, picocli will add the values to the field, not the collection itself.
+NOTE: If a collection is returned from a type converter, the _contents_ of the collection are added to the field, not the collection itself.
 
 === Numeric Arguments
 Numeric values are interpreted as decimal numbers by default. If you want picocli to be more flexible, you can
@@ -374,17 +391,18 @@ as octal numbers, and otherwise the number is interpreted as a decimal number.
 Java 8-style lambdas:
 [source,java]
 ----
-commandLine.registerConverter(Byte.class,    s -> Byte::decode);
-commandLine.registerConverter(Byte.TYPE,     s -> Byte::decode);
-commandLine.registerConverter(Short.class,   s -> Short::decode);
-commandLine.registerConverter(Short.TYPE,    s -> Short::decode);
-commandLine.registerConverter(Integer.class, s -> Integer::decode);
-commandLine.registerConverter(Integer.TYPE,  s -> Integer::decode);
-commandLine.registerConverter(Long.class,    s -> Long::decode);
-commandLine.registerConverter(Long.TYPE,     s -> Long::decode);
+new CommandLine(obj)
+        .registerConverter(Byte.class,    s -> Byte::decode)
+        .registerConverter(Byte.TYPE,     s -> Byte::decode)
+        .registerConverter(Short.class,   s -> Short::decode)
+        .registerConverter(Short.TYPE,    s -> Short::decode)
+        .registerConverter(Integer.class, s -> Integer::decode)
+        .registerConverter(Integer.TYPE,  s -> Integer::decode)
+        .registerConverter(Long.class,    s -> Long::decode)
+        .registerConverter(Long.TYPE,     s -> Long::decode);
 ----
 
-In Java 5 this becomes a bit more verbose:
+In Java 5:
 [source,java]
 ----
 ITypeConverter<Integer> intConverter = new ITypeConverter<Integer>() {
@@ -464,33 +482,6 @@ Once the minimum number of parameters is consumed, picocli will check for each s
 <command> -s A B C -f 1.0 2.0 3.0
 ----
 The above command line arguments will be parsed as three parameters for the `-s` option, followed by three parameters for the `-f` option.
-
-=== Ambiguous Input
-Positional parameters do not have an option name, so it is not always easy to decide where they start. The below example command line arguments will be parsed as six parameters for the `-s` option, not as three strings and three files:
-----
-<command> -s A B C file1 file2 file3
-----
-
-Users can disambiguate the input by specifying a double dash (`--`) after the option parameters.
-The argument `--` is interpreted as a delimiter indicating the end of options. Any following arguments are treated as positional parameters. For example, the following command line arguments will be parsed as three strings and three files:
-----
-<command> -s A B C -- file1 file2 file3
-----
-
-==== Unambiguous
-
-NOTE: A separator clarifies that a parameter belongs to an option, but does not prevent subsequent parameters from also being assigned to the same option. For example:
-
-[source,java]
-----
-@Option(names = "-opt", arity = "2") List<String> values;
-@Parameters                          List<String> remainder;
-----
-Because arity is 2, both parameters in the below example are assigned to the `-opt` option:
-----
-<command> -opt=val1 val2
-----
-
 
 
 == Multiple Values
@@ -1095,18 +1086,18 @@ Subcommands can be registered with the `CommandLine.addCommand` method. You pass
 
 [source,java]
 ----
-CommandLine commandLine = new CommandLine(new Git());
-commandLine.addCommand("status",   new GitStatus());
-commandLine.addCommand("commit",   new GitCommit());
-commandLine.addCommand("add",      new GitAdd());
-commandLine.addCommand("branch",   new GitBranch());
-commandLine.addCommand("checkout", new GitCheckout());
-commandLine.addCommand("clone",    new GitClone());
-commandLine.addCommand("diff",     new GitDiff());
-commandLine.addCommand("merge",    new GitMerge());
-commandLine.addCommand("push",     new GitPush());
-commandLine.addCommand("rebase",   new GitRebase());
-commandLine.addCommand("tag",      new GitTag());
+CommandLine commandLine = new CommandLine(new Git())
+        .addCommand("status",   new GitStatus())
+        .addCommand("commit",   new GitCommit();
+        .addCommand("add",      new GitAdd())
+        .addCommand("branch",   new GitBranch())
+        .addCommand("checkout", new GitCheckout())
+        .addCommand("clone",    new GitClone())
+        .addCommand("diff",     new GitDiff())
+        .addCommand("merge",    new GitMerge())
+        .addCommand("push",     new GitPush())
+        .addCommand("rebase",   new GitRebase())
+        .addCommand("tag",      new GitTag());
 ----
 
 === Parsing Subcommands
@@ -1244,23 +1235,34 @@ public class ZipCommand extends AbstractCommand {
 ----
 
 
-== Convenience API for Runnables
-You can omit some of the boilerplate code from your application by letting the annotated object implement `Runnable`.
-This allows you to invoke `CommandLine.run(new MyApp(), args)`, which is the equivalent of:
+== Less Boilerplate
+You can omit some of the boilerplate code from your application when the annotated object implements `Runnable`:
+
+
+.Before
 
 [source,java]
 ----
 Runnable runnable = null;
 try {
-    runnable = parse(annotatedObject, args);
+    runnable = CommandLine.parse(annotatedObject, args);
 } catch (Exception ex) {
     System.err.println(ex.getMessage());
-    usage(annotatedObject, System.err);
+    CommandLine.usage(annotatedObject, System.err);
     return;
 }
 runnable.run();
 ----
+
+.After
+
+[source,java]
+----
+CommandLine.run(new MyApp(), System.err, args);
+----
+
 Note that the `CommandLine.run` convenience method cannot be used with subcommands.
+
 
 == API Javadoc
 Picocli API Javadoc can be found https://remkop.github.io/picocli/apidocs[here].
@@ -1274,9 +1276,10 @@ Please use the https://github.com/remkop/picocli/issues[Issue Tracker] to report
 == License
 Picocli is licensed under the https://github.com/remkop/picocli/blob/master/LICENSE[Apache License 2.0].
 
-== Download
-Binaries are available from the GitHub project https://github.com/remkop/picocli/releases[Releases].
+== Releases
+Previous versions are available from the GitHub project https://github.com/remkop/picocli/releases[Releases].
 
+== Download
 NOTE: Here is the source. Copy and paste it into a file called `CommandLine.java`, add it to your project, and enjoy!
 
 [source,java]
