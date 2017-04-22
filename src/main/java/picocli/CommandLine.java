@@ -179,12 +179,13 @@ public class CommandLine {
 
     /**
      * <p>
-     * Initializes the annotated object that this {@code CommandLine} was constructed with, based on
-     * the specified command line arguments.
+     * Initializes the annotated object that this {@code CommandLine} was constructed with as well as possibly any
+     * registered commands, based on the specified command line arguments,
+     * and returns a list of all commands that were initialized by this method.
      * </p>
      *
      * @param args the command line arguments to parse
-     * @return the annotated object that this {@code CommandLine} was constructed with
+     * @return a list with all annotated objects initialized by this method
      * @throws ParameterException if the specified command line arguments are invalid
      */
     public List<Object> parse(String... args) {
