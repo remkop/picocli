@@ -29,7 +29,7 @@ public class WindowsJansiDemo extends Demo {
         if (System.getProperty("picocli.ansi") == null) { // no user preference
             CommandLine.ansi = true;                      // force ANSI
         }
-        CommandLine.run(new WindowsJansiDemo(), args);
+        CommandLine.run(new WindowsJansiDemo(), System.err, args);
         CommandLine.ansi = null;                          // back to platform default
         AnsiConsole.systemUninstall();
     }

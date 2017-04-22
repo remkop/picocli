@@ -2082,7 +2082,7 @@ public class CommandLineTest {
                 runWasCalled[0] = true;
             }
         }
-        CommandLine.run(new App());
+        CommandLine.run(new App(), System.err);
         assertTrue(runWasCalled[0]);
     }
 
@@ -2098,7 +2098,7 @@ public class CommandLineTest {
         PrintStream oldErr = System.err;
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         System.setErr(new PrintStream(baos, true, "UTF8"));
-        CommandLine.run(new App(), "-number", "not a number");
+        CommandLine.run(new App(), System.err, "-number", "not a number");
         System.setErr(oldErr);
 
         String result = baos.toString("UTF8");

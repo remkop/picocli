@@ -288,16 +288,17 @@ public class CommandLine {
      * </pre>
      * Note that this method is not suitable for commands with subcommands.
      * @param annotatedObject the command to run when {@linkplain #parse(Object, String...) parsing} succeeds.
+     * @param out the printStream to print to
      * @param args the command line arguments to parse
      * @param <R> the annotated object to initialize and run
      */
-    public static <R extends Runnable> void run(R annotatedObject, String... args) {
+    public static <R extends Runnable> void run(R annotatedObject, PrintStream out, String... args) {
         Runnable runnable = null;
         try {
             runnable = parse(annotatedObject, args);
         } catch (Exception ex) {
-            System.err.println(ex.getMessage());
-            usage(annotatedObject, System.err);
+            out.println(ex.getMessage());
+            usage(annotatedObject, out);
             return;
         }
         runnable.run();

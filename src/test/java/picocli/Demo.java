@@ -46,7 +46,7 @@ header = {
 })
 public class Demo implements Runnable {
     public static void main(String[] args) {
-        CommandLine.run(new Demo(), args);
+        CommandLine.run(new Demo(), System.err, args);
     }
 
     @Option(names = {"-1", "--showUsageForSubcommandGitCommit"}, description = "Shows usage help for the git-commit subcommand")
