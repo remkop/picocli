@@ -29,21 +29,34 @@ import java.util.List;
 /**
  * Demonstrates picocli subcommands.
  */
-@Command(name = "picocli.Demo", sortOptions = false, description = {
-        "Demonstrates picocli subcommands parsing and usage help.",
-        "Run with -ea to enable assertions used in the tests.",
-        "Run with -Dpicocli.ansi=true to force picocli to use ansi codes,",
-        " or with -Dpicocli.ansi=false to force picocli to NOT use ansi codes.",
-        "(By default picocli will use ansi codes if the platform supports it.)"},
-header = {
-        "@|green        .__                    .__  .__ |@",
-        "@|green ______ |__| ____  ____   ____ |  | |__||@",
-        "@|green \\____ \\|  |/ ___\\/  _ \\_/ ___\\|  | |  ||@",
-        "@|green |  |_> >  \\  \\__(  <_> )  \\___|  |_|  ||@",
-        "@|green |   __/|__|\\___  >____/ \\___  >____/__||@",
-        "@|green |__|           \\/           \\/         |@",
-        ""
-})
+@Command(name = "picocli.Demo", sortOptions = false,
+        header = {
+                "@|green        .__                    .__  .__ |@",
+                "@|green ______ |__| ____  ____   ____ |  | |__||@",
+                "@|green \\____ \\|  |/ ___\\/  _ \\_/ ___\\|  | |  ||@",
+                "@|green |  |_> >  \\  \\__(  <_> )  \\___|  |_|  ||@",
+                "@|green |   __/|__|\\___  >____/ \\___  >____/__||@",
+                "@|green |__|           \\/           \\/         |@",
+                ""},
+        //descriptionHeading = "@|bold %nDescription|@:%n",
+        description = {
+                "",
+                "Demonstrates picocli subcommands parsing and usage help.", },
+        optionListHeading = "@|bold %nOptions|@:%n",
+        footer = {
+                "",
+                "@|bold VM Options|@:",
+                "Run with @|yellow -ea|@ to enable assertions used in the tests.",
+                "Run with @|yellow -Dpicocli.ansi|@=@|italic true|@ to force picocli to use ansi codes,",
+                " or with @|yellow -Dpicocli.ansi|@=@|italic false|@ to force picocli to NOT use ansi codes.",
+                "(By default picocli will use ansi codes if the platform supports it.)",
+                "",
+                "@|cyan If you would like to contribute or report an issue|@",
+                "@|cyan go to github: https://github.com/remkop/picocli|@",
+                "",
+                "@|cyan If you like the project star it on github and follow me on twitter!|@",
+                "@|cyan This project is created and maintained by Remko Popma (@remkopopma)|@",
+                ""})
 public class Demo implements Runnable {
     public static void main(String[] args) {
         CommandLine.run(new Demo(), System.err, args);
@@ -73,7 +86,7 @@ public class Demo implements Runnable {
             CommandLine.usage(this, System.err);
             return;
         }
-        if (runTests)                        { testParseSubCommands(); }
+        if (runTests)                        { testParseSubCommands(); System.out.println("Ran tests OK.");}
         if (showSimpleExample)               { showSimpleExampleUsage(); }
         if (showUsageForMainCommand)         { testUsageMainCommand(); }
         if (showUsageForSubcommandGitStatus) { testUsageSubCommandStatus(); }
