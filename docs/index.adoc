@@ -8,12 +8,11 @@
 :toclevels: 2
 :toc-title: Features
 :source-highlighter: coderay
+:icons: font
+:imagesdir: images
 
 [quote]
 Every main method deserves picocli!
-
-//[quote,Uill Yates,Ancient Chinese Proverb (surely)]
-//Picocli in every main method!
 
 == Introduction
 Picocli is a one-file Java framework for parsing command line arguments
