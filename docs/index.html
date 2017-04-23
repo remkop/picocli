@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <!--[if IE]><meta http-equiv="X-UA-Compatible" content="IE=edge"><![endif]-->
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="generator" content="Asciidoctor 1.5.5">
+<meta name="generator" content="Asciidoctor 1.5.3">
 <meta name="author" content="Remko Popma">
 <title>picocli - a mighty tiny Command Line Interface</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Open+Sans:300,300italic,400,400italic,600,600italic%7CNoto+Serif:400,400italic,700,700italic%7CDroid+Sans+Mono:400,700">
@@ -18,6 +18,7 @@ audio:not([controls]){display:none;height:0}
 [hidden],template{display:none}
 script{display:none!important}
 html{font-family:sans-serif;-ms-text-size-adjust:100%;-webkit-text-size-adjust:100%}
+body{margin:0}
 a{background:transparent}
 a:focus{outline:thin dotted}
 a:active,a:hover{outline:0}
@@ -52,7 +53,7 @@ textarea{overflow:auto;vertical-align:top}
 table{border-collapse:collapse;border-spacing:0}
 *,*:before,*:after{-moz-box-sizing:border-box;-webkit-box-sizing:border-box;box-sizing:border-box}
 html,body{font-size:100%}
-body{background:#fff;color:rgba(0,0,0,.8);padding:0;margin:0;font-family:"Noto Serif","DejaVu Serif",serif;font-weight:400;font-style:normal;line-height:1;position:relative;cursor:auto;tab-size:4;-moz-osx-font-smoothing:grayscale;-webkit-font-smoothing:antialiased}
+body{background:#fff;color:rgba(0,0,0,.8);padding:0;margin:0;font-family:"Noto Serif","DejaVu Serif",serif;font-weight:400;font-style:normal;line-height:1;position:relative;cursor:auto}
 a:hover{cursor:pointer}
 img,object,embed{max-width:100%;height:auto}
 object,embed{height:100%}
@@ -64,6 +65,7 @@ img{-ms-interpolation-mode:bicubic}
 .text-center{text-align:center!important}
 .text-justify{text-align:justify!important}
 .hide{display:none}
+body{-webkit-font-smoothing:antialiased}
 img,object,svg{display:inline-block;vertical-align:middle}
 textarea{height:auto;min-height:50px}
 select{width:100%}
@@ -118,16 +120,13 @@ table thead tr th,table thead tr td,table tfoot tr th,table tfoot tr td{padding:
 table tr th,table tr td{padding:.5625em .625em;font-size:inherit;color:rgba(0,0,0,.8)}
 table tr.even,table tr.alt,table tr:nth-of-type(even){background:#f8f8f7}
 table thead tr th,table tfoot tr th,table tbody tr td,table tr td,table tfoot tr td{display:table-cell;line-height:1.6}
+body{tab-size:4}
 h1,h2,h3,#toctitle,.sidebarblock>.content>.title,h4,h5,h6{line-height:1.2;word-spacing:-.05em}
 h1 strong,h2 strong,h3 strong,#toctitle strong,.sidebarblock>.content>.title strong,h4 strong,h5 strong,h6 strong{font-weight:400}
 .clearfix:before,.clearfix:after,.float-group:before,.float-group:after{content:" ";display:table}
 .clearfix:after,.float-group:after{clear:both}
-*:not(pre)>code{font-size:.9375em;font-style:normal!important;letter-spacing:0;padding:.1em .5ex;word-spacing:-.15em;background-color:#f7f7f8;-webkit-border-radius:4px;border-radius:4px;line-height:1.45;text-rendering:optimizeSpeed;word-wrap:break-word}
-*:not(pre)>code.nobreak{word-wrap:normal}
-*:not(pre)>code.nowrap{white-space:nowrap}
+*:not(pre)>code{font-size:.9375em;font-style:normal!important;letter-spacing:0;padding:.1em .5ex;word-spacing:-.15em;background-color:#f7f7f8;-webkit-border-radius:4px;border-radius:4px;line-height:1.45;text-rendering:optimizeSpeed}
 pre,pre>code{line-height:1.45;color:rgba(0,0,0,.9);font-family:"Droid Sans Mono","DejaVu Sans Mono",monospace;font-weight:400;text-rendering:optimizeSpeed}
-em em{font-style:normal}
-strong strong{font-weight:400}
 .keyseq{color:rgba(51,51,51,.8)}
 kbd{font-family:"Droid Sans Mono","DejaVu Sans Mono",monospace;display:inline-block;color:rgba(0,0,0,.8);font-size:.65em;line-height:1.45;background-color:#f7f7f7;border:1px solid #ccc;-webkit-border-radius:3px;border-radius:3px;-webkit-box-shadow:0 1px 0 rgba(0,0,0,.2),0 0 0 .1em white inset;box-shadow:0 1px 0 rgba(0,0,0,.2),0 0 0 .1em #fff inset;margin:0 .15em;padding:.2em .5em;vertical-align:middle;position:relative;top:-.1em;white-space:nowrap}
 .keyseq kbd:first-child{margin-left:0}
@@ -418,7 +417,7 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 .hide-for-print{display:none!important}
 .show-for-print{display:inherit!important}}
 </style>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.6.3/css/font-awesome.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.4.0/css/font-awesome.min.css">
 <style>
 /* Stylesheet for CodeRay to match GitHub theme | MIT License | http://foundation.zurb.com */
 /*pre.CodeRay {background-color:#f7f7f8;}*/
@@ -517,13 +516,13 @@ table.CodeRay td.code>pre{padding:0}
 <div class="details">
 <span id="author" class="author">Remko Popma</span><br>
 <span id="email" class="email"><a href="mailto:rpopma@apache.org">rpopma@apache.org</a></span><br>
-<span id="revnumber">version 0.9.1,</span>
-<span id="revdate">2017-04-19</span>
+<span id="revnumber">version 0.9.3,</span>
+<span id="revdate">2017-04-23</span>
 </div>
 <div id="toc" class="toc2">
 <div id="toctitle">Features</div>
 <ul class="sectlevel1">
-<li><a href="#_example">1. Example</a></li>
+<li><a href="#_introduction">1. Introduction</a></li>
 <li><a href="#_options_and_parameters">2. Options and Parameters</a>
 <ul class="sectlevel2">
 <li><a href="#_options">2.1. Options</a></li>
@@ -532,10 +531,10 @@ table.CodeRay td.code>pre{padding:0}
 <li><a href="#_option_parameter_separators">2.4. Option-Parameter Separators</a></li>
 </ul>
 </li>
-<li><a href="#_type_conversion">3. Type Conversion</a>
+<li><a href="#_strongly_typed_everything">3. Strongly Typed Everything</a>
 <ul class="sectlevel2">
 <li><a href="#_built_in_types">3.1. Built-in Types</a></li>
-<li><a href="#_custom_converters">3.2. Custom Converters</a></li>
+<li><a href="#_custom_type_converters">3.2. Custom Type Converters</a></li>
 <li><a href="#_arrays_and_collections">3.3. Arrays and Collections</a></li>
 <li><a href="#_numeric_arguments">3.4. Numeric Arguments</a></li>
 </ul>
@@ -545,7 +544,6 @@ table.CodeRay td.code>pre{padding:0}
 <li><a href="#_default_arity">4.1. Default Arity</a></li>
 <li><a href="#_booleans">4.2. Booleans</a></li>
 <li><a href="#_arity_of_arrays_and_collections">4.3. Arity of Arrays and Collections</a></li>
-<li><a href="#_ambiguous_input">4.4. Ambiguous Input</a></li>
 </ul>
 </li>
 <li><a href="#_multiple_values">5. Multiple Values</a>
@@ -600,39 +598,45 @@ table.CodeRay td.code>pre{padding:0}
 </ul>
 </li>
 <li><a href="#_subclassing_for_reuse">12. Subclassing for Reuse</a></li>
-<li><a href="#_convenience_api_for_runnables">13. Convenience API for Runnables</a></li>
+<li><a href="#_less_boilerplate">13. Less Boilerplate</a></li>
 <li><a href="#_api_javadoc">14. API Javadoc</a></li>
 <li><a href="#_github_project">15. GitHub Project</a></li>
 <li><a href="#_issue_tracker">16. Issue Tracker</a></li>
 <li><a href="#_license">17. License</a></li>
-<li><a href="#_download">18. Download</a></li>
+<li><a href="#_releases">18. Releases</a></li>
+<li><a href="#_download">19. Download</a></li>
 </ul>
 </div>
 </div>
 <div id="content">
 <div id="preamble">
 <div class="sectionbody">
+<div class="quoteblock">
+<blockquote>
+Every main method deserves picocli!
+</blockquote>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_introduction">1. Introduction</h2>
+<div class="sectionbody">
 <div class="paragraph">
 <p>Picocli is a one-file Java framework for parsing command line arguments
-and generating polished, easily tailored usage help messages. With colors.</p>
+and generating polished, easily tailored usage help messages. With <a href="#_ansi_colors_and_styles">colors</a>.</p>
 </div>
 <div class="paragraph">
 <p><span class="image"><img src="images/ExampleUsageANSI.png" alt="Screenshot of usage help with Ansi codes enabled"></span></p>
 </div>
 <div class="paragraph">
 <p>A distinguishing feature of picocli is how it aims
-to let users run command line applications without requiring picocli as an external dependency:
+to let users run picocli-based applications without requiring picocli as an external dependency:
 all the source code lives in a single file, to encourage application authors to include it <em>in source form</em>.</p>
 </div>
 <div class="paragraph">
 <p>How it works: annotate your class and picocli initializes it from the command line arguments,
 converting the input to strongly typed values in the fields of your class.</p>
 </div>
-</div>
-</div>
-<div class="sect1">
-<h2 id="_example">1. Example</h2>
-<div class="sectionbody">
 <div class="listingblock">
 <div class="content">
 <pre class="CodeRay highlight"><code data-lang="java"><span class="keyword">import</span> <span class="include">picocli.CommandLine.Option</span>;
@@ -839,7 +843,7 @@ PositionalParameters params = CommandLine.parse(<span class="keyword">new</span>
 </div>
 </div>
 <div class="paragraph">
-<p>See <a href="#_type_conversion">Type Conversion</a> for which types are supported out of the box and how to add custom types.</p>
+<p>See <a href="#_strongly_typed_everything">Strongly Typed Everything</a> for which types are supported out of the box and how to add custom types.</p>
 </div>
 </div>
 <div class="sect2">
@@ -899,11 +903,11 @@ That is, all of the below are equivalent:</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="CodeRay highlight"><code data-lang="java"><span class="comment">// valid</span>
+<pre class="CodeRay highlight"><code data-lang="java"><span class="comment">// valid (separator between --file and its parameter)</span>
 &lt;command&gt; --file output.txt
 &lt;command&gt; --file=output.txt
 
-<span class="comment">// invalid (picocli will not recognize the --file option)</span>
+<span class="comment">// invalid (picocli will not recognize the --file option when attached to its parameter)</span>
 &lt;command&gt; --fileoutput.txt</code></pre>
 </div>
 </div>
@@ -949,25 +953,62 @@ commandLine.parse(<span class="string"><span class="delimiter">&quot;</span><spa
 </div>
 </div>
 <div class="sect1">
-<h2 id="_type_conversion">3. Type Conversion</h2>
+<h2 id="_strongly_typed_everything">3. Strongly Typed Everything</h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>When command line options and parameters are mapped to the annotated fields,
+<p>When command line options and positional parameters are mapped to the annotated fields,
 the text value is converted to the type of the annotated field.</p>
 </div>
 <div class="sect2">
 <h3 id="_built_in_types">3.1. Built-in Types</h3>
 <div class="paragraph">
-<p>Out of the box, picocli can convert command line argument strings to any Java primitive type or their wrapper,
-File, BigDecimal, BigInteger, InetAddress, URL, URI, Charset, UUID, regex Pattern, String, StringBuilder, CharSequence,
-<code>java.sql.Time</code> (for values in any of the <code>"HH:mm"</code>, <code>"HH:mm:ss"</code>, <code>"HH:mm:ss.SSS"</code>, or <code>"HH:mm:ss,SSS"</code> formats), and
-<code>java.util.Date</code> (for values in <code>"yyyy-MM-dd"</code> format).</p>
+<p>Out of the box, picocli can convert command line argument strings to:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>any Java primitive type or their wrapper</p>
+</li>
+<li>
+<p>any <code>enum</code></p>
+</li>
+<li>
+<p><code>BigDecimal</code>, <code>BigInteger</code></p>
+</li>
+<li>
+<p><code>Charset</code></p>
+</li>
+<li>
+<p><code>File</code></p>
+</li>
+<li>
+<p><code>InetAddress</code></p>
+</li>
+<li>
+<p>regex <code>Pattern</code></p>
+</li>
+<li>
+<p><code>String</code>, <code>StringBuilder</code>, <code>CharSequence</code></p>
+</li>
+<li>
+<p><code>java.sql.Time</code> (for values in any of the <code>"HH:mm"</code>, <code>"HH:mm:ss"</code>, <code>"HH:mm:ss.SSS"</code>, or <code>"HH:mm:ss,SSS"</code> formats)</p>
+</li>
+<li>
+<p><code>java.util.Date</code> (for values in <code>"yyyy-MM-dd"</code> format)</p>
+</li>
+<li>
+<p><code>URL</code>, <code>URI</code></p>
+</li>
+<li>
+<p><code>UUID</code></p>
+</li>
+</ul>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_custom_converters">3.2. Custom Converters</h3>
+<h3 id="_custom_type_converters">3.2. Custom Type Converters</h3>
 <div class="paragraph">
-<p>Register a custom converter to handle data types other than the above built-in ones.</p>
+<p>Register a custom type converter to handle data types other than the above built-in ones.</p>
 </div>
 <div class="paragraph">
 <p>Custom converters need to implement the <code>picocli.CommandLine.ITypeConverter</code> interface:</p>
@@ -1022,9 +1063,9 @@ commandLine.registerConverter(java.time.Duration.class, s -&gt; java.time.Durati
 <div class="listingblock">
 <div class="content">
 <pre class="CodeRay highlight"><code data-lang="java">App app = <span class="keyword">new</span> App();
-CommandLine commandLine = <span class="keyword">new</span> CommandLine(app);
-commandLine.registerConverter(Path.class,     s -&gt; Paths.get(s));
-commandLine.registerConverter(<span class="predefined-type">Duration</span>.class, s -&gt; <span class="predefined-type">Duration</span>.parse(s));
+CommandLine commandLine = <span class="keyword">new</span> CommandLine(app)
+        .registerConverter(Path.class,     s -&gt; Paths.get(s))
+        .registerConverter(<span class="predefined-type">Duration</span>.class, s -&gt; <span class="predefined-type">Duration</span>.parse(s));
 
 commandLine.parse(<span class="string"><span class="delimiter">&quot;</span><span class="content">-d</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">PT15M</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">file1.txt</span><span class="delimiter">&quot;</span></span>);
 <span class="keyword">assert</span> app.path.equals(Paths.get(<span class="string"><span class="delimiter">&quot;</span><span class="content">file1.txt</span><span class="delimiter">&quot;</span></span>));
@@ -1041,7 +1082,9 @@ commandLine.parse(<span class="string"><span class="delimiter">&quot;</span><spa
 <i class="fa icon-important" title="Important"></i>
 </td>
 <td class="content">
-With array fields picocli uses reflection to discover the array element type, but with collections, Java type erasure means picocli cannot find out the generic type of the collection. For non-String collections, use the <code>type</code> attribute to explicitly tell picocli what type to convert the command line arguments to.
+With array fields picocli uses reflection to discover the array element type, but with collections,
+Java type erasure means picocli cannot find out the generic type of the collection.
+For non-String collections, use the <code>type</code> attribute to specify what type to convert the command line arguments to.
 </td>
 </tr>
 </table>
@@ -1079,7 +1122,7 @@ Convert convert = CommandLine.parse(<span class="keyword">new</span> Convert(), 
 <i class="fa icon-note" title="Note"></i>
 </td>
 <td class="content">
-If a collection is returned from a type converter, picocli will add the values to the field, not the collection itself.
+If a collection is returned from a type converter, the <em>contents</em> of the collection are added to the field, not the collection itself.
 </td>
 </tr>
 </table>
@@ -1110,18 +1153,19 @@ as octal numbers, and otherwise the number is interpreted as a decimal number.
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="CodeRay highlight"><code data-lang="java">commandLine.registerConverter(<span class="predefined-type">Byte</span>.class,    s -&gt; <span class="predefined-type">Byte</span>::decode);
-commandLine.registerConverter(<span class="predefined-type">Byte</span>.TYPE,     s -&gt; <span class="predefined-type">Byte</span>::decode);
-commandLine.registerConverter(<span class="predefined-type">Short</span>.class,   s -&gt; <span class="predefined-type">Short</span>::decode);
-commandLine.registerConverter(<span class="predefined-type">Short</span>.TYPE,    s -&gt; <span class="predefined-type">Short</span>::decode);
-commandLine.registerConverter(<span class="predefined-type">Integer</span>.class, s -&gt; <span class="predefined-type">Integer</span>::decode);
-commandLine.registerConverter(<span class="predefined-type">Integer</span>.TYPE,  s -&gt; <span class="predefined-type">Integer</span>::decode);
-commandLine.registerConverter(<span class="predefined-type">Long</span>.class,    s -&gt; <span class="predefined-type">Long</span>::decode);
-commandLine.registerConverter(<span class="predefined-type">Long</span>.TYPE,     s -&gt; <span class="predefined-type">Long</span>::decode);</code></pre>
+<pre class="CodeRay highlight"><code data-lang="java"><span class="keyword">new</span> CommandLine(obj)
+        .registerConverter(<span class="predefined-type">Byte</span>.class,    s -&gt; <span class="predefined-type">Byte</span>::decode)
+        .registerConverter(<span class="predefined-type">Byte</span>.TYPE,     s -&gt; <span class="predefined-type">Byte</span>::decode)
+        .registerConverter(<span class="predefined-type">Short</span>.class,   s -&gt; <span class="predefined-type">Short</span>::decode)
+        .registerConverter(<span class="predefined-type">Short</span>.TYPE,    s -&gt; <span class="predefined-type">Short</span>::decode)
+        .registerConverter(<span class="predefined-type">Integer</span>.class, s -&gt; <span class="predefined-type">Integer</span>::decode)
+        .registerConverter(<span class="predefined-type">Integer</span>.TYPE,  s -&gt; <span class="predefined-type">Integer</span>::decode)
+        .registerConverter(<span class="predefined-type">Long</span>.class,    s -&gt; <span class="predefined-type">Long</span>::decode)
+        .registerConverter(<span class="predefined-type">Long</span>.TYPE,     s -&gt; <span class="predefined-type">Long</span>::decode);</code></pre>
 </div>
 </div>
 <div class="paragraph">
-<p>In Java 5 this becomes a bit more verbose:</p>
+<p>In Java 5:</p>
 </div>
 <div class="listingblock">
 <div class="content">
@@ -1236,55 +1280,6 @@ an option name or a registered command name.</p>
 </div>
 <div class="paragraph">
 <p>The above command line arguments will be parsed as three parameters for the <code>-s</code> option, followed by three parameters for the <code>-f</code> option.</p>
-</div>
-</div>
-<div class="sect2">
-<h3 id="_ambiguous_input">4.4. Ambiguous Input</h3>
-<div class="paragraph">
-<p>Positional parameters do not have an option name, so it is not always easy to decide where they start. The below example command line arguments will be parsed as six parameters for the <code>-s</code> option, not as three strings and three files:</p>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre>&lt;command&gt; -s A B C file1 file2 file3</pre>
-</div>
-</div>
-<div class="paragraph">
-<p>Users can disambiguate the input by specifying a double dash (<code>--</code>) after the option parameters.
-The argument <code>--</code> is interpreted as a delimiter indicating the end of options. Any following arguments are treated as positional parameters. For example, the following command line arguments will be parsed as three strings and three files:</p>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre>&lt;command&gt; -s A B C -- file1 file2 file3</pre>
-</div>
-</div>
-<div class="sect3">
-<h4 id="_unambiguous">4.4.1. Unambiguous</h4>
-<div class="admonitionblock note">
-<table>
-<tr>
-<td class="icon">
-<i class="fa icon-note" title="Note"></i>
-</td>
-<td class="content">
-A separator clarifies that a parameter belongs to an option, but does not prevent subsequent parameters from also being assigned to the same option. For example:
-</td>
-</tr>
-</table>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre class="CodeRay highlight"><code data-lang="java"><span class="annotation">@Option</span>(names = <span class="string"><span class="delimiter">&quot;</span><span class="content">-opt</span><span class="delimiter">&quot;</span></span>, arity = <span class="string"><span class="delimiter">&quot;</span><span class="content">2</span><span class="delimiter">&quot;</span></span>) <span class="predefined-type">List</span>&lt;<span class="predefined-type">String</span>&gt; values;
-<span class="annotation">@Parameters</span>                          <span class="predefined-type">List</span>&lt;<span class="predefined-type">String</span>&gt; remainder;</code></pre>
-</div>
-</div>
-<div class="paragraph">
-<p>Because arity is 2, both parameters in the below example are assigned to the <code>-opt</code> option:</p>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre>&lt;command&gt; -opt=val1 val2</pre>
-</div>
-</div>
 </div>
 </div>
 </div>
@@ -1860,7 +1855,8 @@ Options:
 <h4 id="_unix_and_linux">9.2.1. Unix and Linux</h4>
 <div class="paragraph">
 <p>Most Unix and Linux platforms support ANSI colors natively.
-On Windows, when picocli detects it is running under a Unix variant like Cygwin or MSYS(2) on Windows it will display ANSI colors and styles, otherwise it will not emit ANSI codes.</p>
+On Windows, when picocli detects it is running under a Unix variant like Cygwin or MSYS(2) on Windows
+ it will display ANSI colors and styles, otherwise it will not emit ANSI codes.</p>
 </div>
 </div>
 <div class="sect3">
@@ -2050,7 +2046,7 @@ Similarly, <code>fg(&lt;color&gt;)</code> explicitly sets the foreground color.<
 </div>
 <div class="paragraph">
 <p>Custom RGB <a href="https://en.wikipedia.org/wiki/ANSI_escape_code#Colors">colors</a> (ISO-8613-3 24-bit foreground and background colors) can be specified in any format supported by the <code>Color.decode()</code> method.
-For example, <code>fg(0x9933EE)</code> renders a color equivalent to <code>java.awt.Color.decode(Ox9933EE)</code>.</p>
+For example, <code>fg(0.9.33EE)</code> renders a color equivalent to <code>java.awt.Color.decode(Ox9933EE)</code>.</p>
 </div>
 <div class="admonitionblock caution">
 <table>
@@ -2190,18 +2186,18 @@ See the picocli tests for how to achieve this.</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="CodeRay highlight"><code data-lang="java">CommandLine commandLine = <span class="keyword">new</span> CommandLine(<span class="keyword">new</span> Git());
-commandLine.addCommand(<span class="string"><span class="delimiter">&quot;</span><span class="content">status</span><span class="delimiter">&quot;</span></span>,   <span class="keyword">new</span> GitStatus());
-commandLine.addCommand(<span class="string"><span class="delimiter">&quot;</span><span class="content">commit</span><span class="delimiter">&quot;</span></span>,   <span class="keyword">new</span> GitCommit());
-commandLine.addCommand(<span class="string"><span class="delimiter">&quot;</span><span class="content">add</span><span class="delimiter">&quot;</span></span>,      <span class="keyword">new</span> GitAdd());
-commandLine.addCommand(<span class="string"><span class="delimiter">&quot;</span><span class="content">branch</span><span class="delimiter">&quot;</span></span>,   <span class="keyword">new</span> GitBranch());
-commandLine.addCommand(<span class="string"><span class="delimiter">&quot;</span><span class="content">checkout</span><span class="delimiter">&quot;</span></span>, <span class="keyword">new</span> GitCheckout());
-commandLine.addCommand(<span class="string"><span class="delimiter">&quot;</span><span class="content">clone</span><span class="delimiter">&quot;</span></span>,    <span class="keyword">new</span> GitClone());
-commandLine.addCommand(<span class="string"><span class="delimiter">&quot;</span><span class="content">diff</span><span class="delimiter">&quot;</span></span>,     <span class="keyword">new</span> GitDiff());
-commandLine.addCommand(<span class="string"><span class="delimiter">&quot;</span><span class="content">merge</span><span class="delimiter">&quot;</span></span>,    <span class="keyword">new</span> GitMerge());
-commandLine.addCommand(<span class="string"><span class="delimiter">&quot;</span><span class="content">push</span><span class="delimiter">&quot;</span></span>,     <span class="keyword">new</span> GitPush());
-commandLine.addCommand(<span class="string"><span class="delimiter">&quot;</span><span class="content">rebase</span><span class="delimiter">&quot;</span></span>,   <span class="keyword">new</span> GitRebase());
-commandLine.addCommand(<span class="string"><span class="delimiter">&quot;</span><span class="content">tag</span><span class="delimiter">&quot;</span></span>,      <span class="keyword">new</span> GitTag());</code></pre>
+<pre class="CodeRay highlight"><code data-lang="java">CommandLine commandLine = <span class="keyword">new</span> CommandLine(<span class="keyword">new</span> Git())
+        .addCommand(<span class="string"><span class="delimiter">&quot;</span><span class="content">status</span><span class="delimiter">&quot;</span></span>,   <span class="keyword">new</span> GitStatus())
+        .addCommand(<span class="string"><span class="delimiter">&quot;</span><span class="content">commit</span><span class="delimiter">&quot;</span></span>,   <span class="keyword">new</span> GitCommit();
+        .addCommand(<span class="string"><span class="delimiter">&quot;</span><span class="content">add</span><span class="delimiter">&quot;</span></span>,      <span class="keyword">new</span> GitAdd())
+        .addCommand(<span class="string"><span class="delimiter">&quot;</span><span class="content">branch</span><span class="delimiter">&quot;</span></span>,   <span class="keyword">new</span> GitBranch())
+        .addCommand(<span class="string"><span class="delimiter">&quot;</span><span class="content">checkout</span><span class="delimiter">&quot;</span></span>, <span class="keyword">new</span> GitCheckout())
+        .addCommand(<span class="string"><span class="delimiter">&quot;</span><span class="content">clone</span><span class="delimiter">&quot;</span></span>,    <span class="keyword">new</span> GitClone())
+        .addCommand(<span class="string"><span class="delimiter">&quot;</span><span class="content">diff</span><span class="delimiter">&quot;</span></span>,     <span class="keyword">new</span> GitDiff())
+        .addCommand(<span class="string"><span class="delimiter">&quot;</span><span class="content">merge</span><span class="delimiter">&quot;</span></span>,    <span class="keyword">new</span> GitMerge())
+        .addCommand(<span class="string"><span class="delimiter">&quot;</span><span class="content">push</span><span class="delimiter">&quot;</span></span>,     <span class="keyword">new</span> GitPush())
+        .addCommand(<span class="string"><span class="delimiter">&quot;</span><span class="content">rebase</span><span class="delimiter">&quot;</span></span>,   <span class="keyword">new</span> GitRebase())
+        .addCommand(<span class="string"><span class="delimiter">&quot;</span><span class="content">tag</span><span class="delimiter">&quot;</span></span>,      <span class="keyword">new</span> GitTag());</code></pre>
 </div>
 </div>
 </div>
@@ -2364,23 +2360,29 @@ in <a href="#_expanded_example">Expanded Example</a>.</p>
 </div>
 </div>
 <div class="sect1">
-<h2 id="_convenience_api_for_runnables">13. Convenience API for Runnables</h2>
+<h2 id="_less_boilerplate">13. Less Boilerplate</h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>You can omit some of the boilerplate code from your application by letting the annotated object implement <code>Runnable</code>.
-This allows you to invoke <code>CommandLine.run(new MyApp(), args)</code>, which is the equivalent of:</p>
+<p>You can omit some of the boilerplate code from your application when the annotated object implements <code>Runnable</code>:</p>
 </div>
 <div class="listingblock">
+<div class="title">Before</div>
 <div class="content">
 <pre class="CodeRay highlight"><code data-lang="java"><span class="predefined-type">Runnable</span> runnable = <span class="predefined-constant">null</span>;
 <span class="keyword">try</span> {
-    runnable = parse(annotatedObject, args);
+    runnable = CommandLine.parse(annotatedObject, args);
 } <span class="keyword">catch</span> (<span class="exception">Exception</span> ex) {
     <span class="predefined-type">System</span>.err.println(ex.getMessage());
-    usage(annotatedObject, <span class="predefined-type">System</span>.err);
+    CommandLine.usage(annotatedObject, <span class="predefined-type">System</span>.err);
     <span class="keyword">return</span>;
 }
 runnable.run();</code></pre>
+</div>
+</div>
+<div class="listingblock">
+<div class="title">After</div>
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="java">CommandLine.run(<span class="keyword">new</span> MyApp(), <span class="predefined-type">System</span>.err, args);</code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -2421,11 +2423,16 @@ runnable.run();</code></pre>
 </div>
 </div>
 <div class="sect1">
-<h2 id="_download">18. Download</h2>
+<h2 id="_releases">18. Releases</h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>Binaries are available from the GitHub project <a href="https://github.com/remkop/picocli/releases">Releases</a>.</p>
+<p>Previous versions are available from the GitHub project <a href="https://github.com/remkop/picocli/releases">Releases</a>.</p>
 </div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_download">19. Download</h2>
+<div class="sectionbody">
 <div class="admonitionblock note">
 <table>
 <tr>
@@ -2560,7 +2567,7 @@ Here is the source. Copy and paste it into a file called <code>CommandLine.java<
  */</span>
 <span class="directive">public</span> <span class="type">class</span> <span class="class">CommandLine</span> {
     <span class="comment">/** This is picocli version {@value}. */</span>
-    <span class="directive">public</span> <span class="directive">static</span> <span class="directive">final</span> <span class="predefined-type">String</span> VERSION = <span class="string"><span class="delimiter">&quot;</span><span class="content">0.9.1</span><span class="delimiter">&quot;</span></span>;
+    <span class="directive">public</span> <span class="directive">static</span> <span class="directive">final</span> <span class="predefined-type">String</span> VERSION = <span class="string"><span class="delimiter">&quot;</span><span class="content">0.9.3</span><span class="delimiter">&quot;</span></span>;
 
     <span class="comment">/** Set this field to {@code true} to force ANSI escape sequences on, or to {@code false} to force ANSI escape
      * sequences off. The default ({@code null}) is to enable ANSI escape sequences on supported platforms.  */</span>
@@ -2621,12 +2628,13 @@ Here is the source. Copy and paste it into a file called <code>CommandLine.java<
 
     <span class="comment">/**
      * &lt;p&gt;
-     * Initializes the annotated object that this {@code CommandLine} was constructed with, based on
-     * the specified command line arguments.
+     * Initializes the annotated object that this {@code CommandLine} was constructed with as well as possibly any
+     * registered commands, based on the specified command line arguments,
+     * and returns a list of all commands that were initialized by this method.
      * &lt;/p&gt;
      *
      * @param args the command line arguments to parse
-     * @return the annotated object that this {@code CommandLine} was constructed with
+     * @return a list with all annotated objects initialized by this method
      * @throws ParameterException if the specified command line arguments are invalid
      */</span>
     <span class="directive">public</span> <span class="predefined-type">List</span>&lt;<span class="predefined-type">Object</span>&gt; parse(<span class="predefined-type">String</span>... args) {
@@ -2730,16 +2738,17 @@ Here is the source. Copy and paste it into a file called <code>CommandLine.java<
      * &lt;/pre&gt;
      * Note that this method is not suitable for commands with subcommands.
      * @param annotatedObject the command to run when {@linkplain #parse(Object, String...) parsing} succeeds.
+     * @param out the printStream to print to
      * @param args the command line arguments to parse
      * @param &lt;R&gt; the annotated object to initialize and run
      */</span>
-    <span class="directive">public</span> <span class="directive">static</span> &lt;R <span class="directive">extends</span> <span class="predefined-type">Runnable</span>&gt; <span class="type">void</span> run(R annotatedObject, <span class="predefined-type">String</span>... args) {
+    <span class="directive">public</span> <span class="directive">static</span> &lt;R <span class="directive">extends</span> <span class="predefined-type">Runnable</span>&gt; <span class="type">void</span> run(R annotatedObject, <span class="predefined-type">PrintStream</span> out, <span class="predefined-type">String</span>... args) {
         <span class="predefined-type">Runnable</span> runnable = <span class="predefined-constant">null</span>;
         <span class="keyword">try</span> {
             runnable = parse(annotatedObject, args);
         } <span class="keyword">catch</span> (<span class="exception">Exception</span> ex) {
-            <span class="predefined-type">System</span>.err.println(ex.getMessage());
-            usage(annotatedObject, <span class="predefined-type">System</span>.err);
+            out.println(ex.getMessage());
+            usage(annotatedObject, out);
             <span class="keyword">return</span>;
         }
         runnable.run();
@@ -3374,6 +3383,10 @@ Here is the source. Copy and paste it into a file called <code>CommandLine.java<
                             + field.getName() + <span class="string"><span class="delimiter">&quot;</span><span class="content">' is both.</span><span class="delimiter">&quot;</span></span>);
                 }
                 positionalParametersFields.add(field);
+                Arity arity = Arity.forParameters(field);
+                <span class="keyword">if</span> (arity.min &gt; <span class="integer">0</span>) {
+                    requiredFields.add(field);
+                }
             }
         }
     }
@@ -3459,9 +3472,10 @@ Here is the source. Copy and paste it into a file called <code>CommandLine.java<
 
         <span class="directive">private</span> <span class="type">void</span> parse(<span class="predefined-type">Stack</span>&lt;<span class="predefined-type">String</span>&gt; argumentStack, <span class="predefined-type">String</span><span class="type">[]</span> originalArgs) {
             parsedCommands.add(annotatedObject);
-            <span class="predefined-type">Set</span>&lt;<span class="predefined-type">Field</span>&gt; required = <span class="keyword">new</span> <span class="predefined-type">HashSet</span>&lt;<span class="predefined-type">Field</span>&gt;(requiredFields);
+            <span class="predefined-type">List</span>&lt;<span class="predefined-type">Field</span>&gt; required = <span class="keyword">new</span> <span class="predefined-type">ArrayList</span>&lt;<span class="predefined-type">Field</span>&gt;(requiredFields);
+            <span class="predefined-type">Collections</span>.sort(required, <span class="keyword">new</span> PositionalParametersSorter());
             <span class="keyword">try</span> {
-                processPositionalParameters0(<span class="predefined-constant">true</span>, argumentStack);
+                processPositionalParameters0(required, <span class="predefined-constant">true</span>, argumentStack);
                 processArguments(argumentStack, required, originalArgs);
             } <span class="keyword">catch</span> (ParameterException ex) {
                 <span class="keyword">throw</span> ex;
@@ -3471,11 +3485,15 @@ Here is the source. Copy and paste it into a file called <code>CommandLine.java<
                 <span class="keyword">throw</span> ParameterException.create(ex, arg, argumentStack.size(), originalArgs);
             }
             <span class="keyword">if</span> (!isHelpRequested &amp;&amp; !required.isEmpty()) {
-                <span class="keyword">throw</span> MissingParameterException.create(required);
+                <span class="keyword">if</span> (required.get(<span class="integer">0</span>).isAnnotationPresent(<span class="predefined-type">Option</span>.class)) {
+                    <span class="keyword">throw</span> MissingParameterException.create(required);
+                } <span class="keyword">else</span> {
+                    assertNoMissingParameters(required.get(<span class="integer">0</span>), <span class="integer">1</span>, <span class="keyword">new</span> <span class="predefined-type">Stack</span>&lt;<span class="predefined-type">String</span>&gt;());
+                }
             }
         }
 
-        <span class="directive">private</span> <span class="type">void</span> processArguments(<span class="predefined-type">Stack</span>&lt;<span class="predefined-type">String</span>&gt; args, <span class="predefined-type">Set</span>&lt;<span class="predefined-type">Field</span>&gt; required, <span class="directive">final</span> <span class="predefined-type">String</span><span class="type">[]</span> originalArgs) <span class="directive">throws</span> <span class="exception">Exception</span> {
+        <span class="directive">private</span> <span class="type">void</span> processArguments(<span class="predefined-type">Stack</span>&lt;<span class="predefined-type">String</span>&gt; args, <span class="predefined-type">Collection</span>&lt;<span class="predefined-type">Field</span>&gt; required, <span class="predefined-type">String</span><span class="type">[]</span> originalArgs) <span class="directive">throws</span> <span class="exception">Exception</span> {
             <span class="comment">// arg must be one of:</span>
             <span class="comment">// 1. the &quot;--&quot; double dash separating options from positional arguments</span>
             <span class="comment">// 1. a stand-alone flag, like &quot;-v&quot; or &quot;--verbose&quot;: no value required, must map to boolean or Boolean field</span>
@@ -3491,7 +3509,7 @@ Here is the source. Copy and paste it into a file called <code>CommandLine.java<
                 <span class="comment">// Double-dash separates options from positional arguments.</span>
                 <span class="comment">// If found, then interpret the remaining args as positional parameters.</span>
                 <span class="keyword">if</span> (<span class="string"><span class="delimiter">&quot;</span><span class="content">--</span><span class="delimiter">&quot;</span></span>.equals(arg)) {
-                    processPositionalParameters(args);
+                    processPositionalParameters(required, args);
                     <span class="keyword">return</span>; <span class="comment">// we are done</span>
                 }
 
@@ -3532,17 +3550,17 @@ Here is the source. Copy and paste it into a file called <code>CommandLine.java<
                 <span class="comment">// We take this to mean that the remainder are positional arguments</span>
                 <span class="keyword">else</span> {
                     args.push(arg);
-                    processPositionalParameters(args);
+                    processPositionalParameters(required, args);
                     <span class="keyword">return</span>;
                 }
             }
         }
 
-        <span class="directive">private</span> <span class="type">void</span> processPositionalParameters(<span class="predefined-type">Stack</span>&lt;<span class="predefined-type">String</span>&gt; args) <span class="directive">throws</span> <span class="exception">Exception</span> {
-            processPositionalParameters0(<span class="predefined-constant">false</span>, args);
+        <span class="directive">private</span> <span class="type">void</span> processPositionalParameters(<span class="predefined-type">Collection</span>&lt;<span class="predefined-type">Field</span>&gt; required, <span class="predefined-type">Stack</span>&lt;<span class="predefined-type">String</span>&gt; args) <span class="directive">throws</span> <span class="exception">Exception</span> {
+            processPositionalParameters0(required, <span class="predefined-constant">false</span>, args);
         }
 
-        <span class="directive">private</span> <span class="type">void</span> processPositionalParameters0(<span class="type">boolean</span> validateOnly, <span class="predefined-type">Stack</span>&lt;<span class="predefined-type">String</span>&gt; args) <span class="directive">throws</span> <span class="exception">Exception</span> {
+        <span class="directive">private</span> <span class="type">void</span> processPositionalParameters0(<span class="predefined-type">Collection</span>&lt;<span class="predefined-type">Field</span>&gt; required, <span class="type">boolean</span> validateOnly, <span class="predefined-type">Stack</span>&lt;<span class="predefined-type">String</span>&gt; args) <span class="directive">throws</span> <span class="exception">Exception</span> {
             <span class="keyword">for</span> (<span class="predefined-type">Field</span> positionalParam : positionalParametersFields) {
                 Arity indexRange = Arity.valueOf(positionalParam.getAnnotation(Parameters.class).index());
                 <span class="annotation">@SuppressWarnings</span>(<span class="string"><span class="delimiter">&quot;</span><span class="content">unchecked</span><span class="delimiter">&quot;</span></span>)
@@ -3559,6 +3577,7 @@ Here is the source. Copy and paste it into a file called <code>CommandLine.java<
                 assertNoMissingParameters(positionalParam, arity.min, argsCopy);
                 <span class="keyword">if</span> (!validateOnly) {
                     applyOption(positionalParam, Parameters.class, arity, <span class="predefined-constant">false</span>, argsCopy);
+                    required.remove(positionalParam);
                 }
             }
             <span class="keyword">if</span> (!validateOnly) {
@@ -3566,7 +3585,7 @@ Here is the source. Copy and paste it into a file called <code>CommandLine.java<
             }
         }
 
-        <span class="directive">private</span> <span class="type">void</span> processStandaloneOption(<span class="predefined-type">Set</span>&lt;<span class="predefined-type">Field</span>&gt; required,
+        <span class="directive">private</span> <span class="type">void</span> processStandaloneOption(<span class="predefined-type">Collection</span>&lt;<span class="predefined-type">Field</span>&gt; required,
                                              <span class="predefined-type">String</span> arg,
                                              <span class="predefined-type">Stack</span>&lt;<span class="predefined-type">String</span>&gt; args,
                                              <span class="type">boolean</span> paramAttachedToKey) <span class="directive">throws</span> <span class="exception">Exception</span> {
@@ -3579,7 +3598,7 @@ Here is the source. Copy and paste it into a file called <code>CommandLine.java<
             applyOption(field, <span class="predefined-type">Option</span>.class, arity, paramAttachedToKey, args);
         }
 
-        <span class="directive">private</span> <span class="type">void</span> processClusteredShortOptions(<span class="predefined-type">Set</span>&lt;<span class="predefined-type">Field</span>&gt; required, <span class="predefined-type">String</span> arg, <span class="predefined-type">Stack</span>&lt;<span class="predefined-type">String</span>&gt; args)
+        <span class="directive">private</span> <span class="type">void</span> processClusteredShortOptions(<span class="predefined-type">Collection</span>&lt;<span class="predefined-type">Field</span>&gt; required, <span class="predefined-type">String</span> arg, <span class="predefined-type">Stack</span>&lt;<span class="predefined-type">String</span>&gt; args)
                 <span class="directive">throws</span> <span class="exception">Exception</span> {
             <span class="predefined-type">String</span> cluster = arg.substring(<span class="integer">1</span>);
             <span class="keyword">do</span> {
@@ -3611,7 +3630,7 @@ Here is the source. Copy and paste it into a file called <code>CommandLine.java<
                     <span class="comment">// nor a parameter that the last option could consume.</span>
                     <span class="comment">// Consume it and any other remaining parameters as positional parameters.</span>
                     args.push(cluster);
-                    processPositionalParameters(args);
+                    processPositionalParameters(required, args);
                     <span class="keyword">return</span>;
                 }
             } <span class="keyword">while</span> (<span class="predefined-constant">true</span>);
@@ -4073,14 +4092,14 @@ Here is the source. Copy and paste it into a file called <code>CommandLine.java<
      * &lt;p&gt;Finally, the Help class contains inner classes and interfaces that can be used to create custom help messages.&lt;/p&gt;
      * &lt;h4&gt;IOptionRenderer and IParameterRenderer&lt;/h4&gt;
      * &lt;p&gt;Renders a field annotated with {@link Option} or {@link Parameters} to an array of {@link Text} values.
-     * By default, these values are&lt;ul&gt;
+     * By default, these values are&lt;/p&gt;&lt;ul&gt;
      * &lt;li&gt;mandatory marker character (if the option/parameter is {@link Option#required() required})&lt;/li&gt;
      * &lt;li&gt;short option name (empty for parameters)&lt;/li&gt;
      * &lt;li&gt;comma or empty (empty for parameters)&lt;/li&gt;
      * &lt;li&gt;long option names (the parameter {@link IParamLabelRenderer label} for parameters)&lt;/li&gt;
      * &lt;li&gt;description&lt;/li&gt;
      * &lt;/ul&gt;
-     * Other components rely on this ordering.&lt;/p&gt;
+     * &lt;p&gt;Other components rely on this ordering.&lt;/p&gt;
      * &lt;h4&gt;Layout&lt;/h4&gt;
      * &lt;p&gt;Delegates to the renderers to create {@link Text} values for the annotated fields, and uses a
      * {@link TextTable} to display these values in tabular format. Layout is responsible for deciding which values
@@ -5245,6 +5264,7 @@ Here is the source. Copy and paste it into a file called <code>CommandLine.java<
             <span class="directive">private</span> Ansi() {}
             <span class="comment">// http://stackoverflow.com/questions/1403772/how-can-i-check-if-a-java-programs-input-output-streams-are-connected-to-a-term</span>
             <span class="directive">static</span> <span class="directive">final</span> <span class="type">boolean</span> calcTTY() {
+                <span class="keyword">if</span> (isWindows &amp;&amp; isXterm) { <span class="keyword">return</span> <span class="predefined-constant">true</span>; } <span class="comment">// Cygwin uses pseudo-tty and console is always null...</span>
                 <span class="keyword">try</span> { <span class="keyword">return</span> <span class="predefined-type">System</span>.class.getDeclaredMethod(<span class="string"><span class="delimiter">&quot;</span><span class="content">console</span><span class="delimiter">&quot;</span></span>).invoke(<span class="predefined-constant">null</span>) != <span class="predefined-constant">null</span>; }
                 <span class="keyword">catch</span> (<span class="predefined-type">Throwable</span> reflectionFailed) { <span class="keyword">return</span> <span class="predefined-constant">true</span>; }
             }
@@ -5612,7 +5632,7 @@ Here is the source. Copy and paste it into a file called <code>CommandLine.java<
             <span class="local-variable">super</span>(msg);
         }
 
-        <span class="directive">private</span> <span class="directive">static</span> MissingParameterException create(<span class="predefined-type">Set</span>&lt;<span class="predefined-type">Field</span>&gt; missing) {
+        <span class="directive">private</span> <span class="directive">static</span> MissingParameterException create(<span class="predefined-type">Collection</span>&lt;<span class="predefined-type">Field</span>&gt; missing) {
             <span class="keyword">if</span> (missing.size() == <span class="integer">1</span>) {
                 <span class="keyword">return</span> <span class="keyword">new</span> MissingParameterException(<span class="string"><span class="delimiter">&quot;</span><span class="content">Missing required option '</span><span class="delimiter">&quot;</span></span>
                         + missing.iterator().next().getName() + <span class="string"><span class="delimiter">&quot;</span><span class="content">'</span><span class="delimiter">&quot;</span></span>);
@@ -5659,8 +5679,8 @@ Here is the source. Copy and paste it into a file called <code>CommandLine.java<
 </div>
 <div id="footer">
 <div id="footer-text">
-Version 0.9.1<br>
-Last updated 2017-04-19 00:12:23 JST
+Version 0.9.3<br>
+Last updated 2017-04-23 14:40:11 +09:00
 </div>
 </div>
 </body>
