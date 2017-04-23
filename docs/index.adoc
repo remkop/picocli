@@ -1,7 +1,7 @@
 = picocli - a mighty tiny Command Line Interface
 :author: Remko Popma
 :email: rpopma@apache.org
-:revnumber: 0.9.4-SNAPSHOT
+:revnumber: 0.9.3
 :revdate: 2017-04-23
 :toc: left
 :numbered:
@@ -988,7 +988,7 @@ For example, `@|bg(red) text with red background|@`.
 Similarly, `fg(<color>)` explicitly sets the foreground color.
 
 Custom RGB https://en.wikipedia.org/wiki/ANSI_escape_code#Colors[colors] (ISO-8613-3 24-bit foreground and background colors) can be specified in any format supported by the `Color.decode()` method.
-For example, `fg(0.9.4-SNAPSHOT3EE)` renders a color equivalent to `java.awt.Color.decode(Ox9933EE)`.
+For example, `fg(Ox9933EE)` renders a color equivalent to `java.awt.Color.decode(Ox9933EE)`.
 
 CAUTION: Not all terminals support ISO-8613-3.
 
@@ -1268,6 +1268,8 @@ Picocli API Javadoc can be found https://remkop.github.io/picocli/apidocs[here].
 
 == GitHub Project
 The https://github.com/remkop/picocli[GitHub project] has the source code, tests, build scripts, etc.
+
+(Star this project on GitHub if you like it!)
 
 == Issue Tracker
 Please use the https://github.com/remkop/picocli/issues[Issue Tracker] to report bugs or request features.
