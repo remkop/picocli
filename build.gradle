@@ -1,5 +1,11 @@
 group 'info.picocli'
-version '0.9.3-SNAPSHOT'
+version '0.9.3'
+
+// for bumpVersion task
+def oldVersion    = '0.9.3-SNAPSHOT'
+def oldRevNumber  = '0.9.3'
+def oldDocRevdate = '2017-04-22'
+def revDate       = '2017-04-23'
 
 buildscript {
     repositories {
@@ -33,6 +39,11 @@ jar {
                 'Implementation-Version': version
     }
 }
+javadoc {
+    destinationDir = file("build/docs/apidocs")
+}
+javadoc.dependsOn('asciidoctor')
+
 task testJar(type: Jar, dependsOn: compileTestJava) {
     from sourceSets.test.output
     classifier = 'tests'
@@ -61,3 +72,41 @@ artifacts {
     archives testJar
     archives jar
 }
+task bumpVersion << {
+    ant.replaceregexp(match:oldVersion, replace:version, flags:'g', byline:true) {
+        fileset(dir: 'src/main/java/picocli', includes: 'CommandLine.java')
+        fileset(dir: 'src/test/java/picocli', includes: 'CommandLineTest.java')
+    }
+    ant.replaceregexp(match:oldRevNumber, replace:version, flags:'g', byline:true) {
+        fileset(dir: 'docs', includes: 'index.adoc')
+    }
+    ant.replaceregexp(match:oldDocRevdate, replace:revDate, flags:'g', byline:true) {
+        fileset(dir: 'docs', includes: 'index.adoc')
+    }
+}
+task copyDocs(type: Copy) {
+    from 'build/docs/html5/index.html'
+    from('build/docs/') { exclude 'html5'}
+    into 'docs'
+}
+//distributions {
+//    main {
+//        contents {
+//            from ( resourceOutputDir )
+//        }
+//    }
+//}
+//distZip.dependsOn('jar')
+/*
+Github release:
+1. edit version numbers: remove -SNAPSHOT classifier
+2. gradlew bumpVersion
+3. gradlew clean build
+4. gradlew copyDocs
+7. commit -m "Release picocli version ..."
+8. tag v$version
+9. edit version numbers: increase minor version and add -SNAPSHOT classifier
+10. gradlew bumpVersion
+11. commit -m "Prepare for next development cycle"
+12. push
+ */
