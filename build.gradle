@@ -1,11 +1,10 @@
 group 'info.picocli'
-version '0.9.3'
+version '0.9.4-SNAPSHOT'
 
 // for bumpVersion task
-def oldVersion    = '0.9.3-SNAPSHOT'
-def oldRevNumber  = '0.9.3'
-def oldDocRevdate = '2017-04-22'
-def revDate       = '2017-04-23'
+def oldVersion = '0.9.3'
+def oldRevdate = '2017-04-23'
+def revDate    = '2017-04-23'
 
 buildscript {
     repositories {
@@ -76,11 +75,9 @@ task bumpVersion << {
     ant.replaceregexp(match:oldVersion, replace:version, flags:'g', byline:true) {
         fileset(dir: 'src/main/java/picocli', includes: 'CommandLine.java')
         fileset(dir: 'src/test/java/picocli', includes: 'CommandLineTest.java')
-    }
-    ant.replaceregexp(match:oldRevNumber, replace:version, flags:'g', byline:true) {
         fileset(dir: 'docs', includes: 'index.adoc')
     }
-    ant.replaceregexp(match:oldDocRevdate, replace:revDate, flags:'g', byline:true) {
+    ant.replaceregexp(match:oldRevdate, replace:revDate, flags:'g', byline:true) {
         fileset(dir: 'docs', includes: 'index.adoc')
     }
 }
