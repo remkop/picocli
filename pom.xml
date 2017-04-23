@@ -7,6 +7,7 @@
   <groupId>info.picocli</groupId>
   <artifactId>picocli</artifactId>
   <version>0.9.3-SNAPSHOT</version>
+  <description>Picocli is a one-file Java framework for parsing command line arguments and generating polished, easily tailored usage help messages. With colors.</description>
 
   <dependencies>
     <dependency>
