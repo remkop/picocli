@@ -1,0 +1,63 @@
+group 'info.picocli'
+version '0.9.3-SNAPSHOT'
+
+buildscript {
+    repositories {
+        jcenter()
+    }
+
+    dependencies {
+        classpath 'org.asciidoctor:asciidoctor-gradle-plugin:1.5.3'
+    }
+}
+
+apply plugin: 'org.asciidoctor.convert'
+apply plugin: 'distribution'
+apply plugin: 'java'
+
+sourceCompatibility = 1.5
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    testCompile "junit:junit:4.12",
+                "org.hamcrest:hamcrest-core:1.3",
+                "org.fusesource.jansi:jansi:1.15"
+}
+jar {
+    manifest {
+        attributes 'Implementation-Title': 'picocli',
+                'Implementation-Vendor': 'Remko Popma',
+                'Implementation-Version': version
+    }
+}
+task testJar(type: Jar, dependsOn: compileTestJava) {
+    from sourceSets.test.output
+    classifier = 'tests'
+}
+task sourcesJar(type: Jar) {
+    from sourceSets.main.java.srcDirs
+    classifier = 'source'
+}
+task testSourcesJar(type: Jar) {
+    from sourceSets.test.java.srcDirs
+    classifier = 'test-source'
+}
+task javadocJar(type: Jar, dependsOn: javadoc) {
+    classifier = 'javadoc'
+    from javadoc.destinationDir
+}
+asciidoctor {
+    sourceDir = file('docs')
+    outputDir = file('build/docs')
+    logDocuments = true
+}
+artifacts {
+    archives javadocJar
+    archives sourcesJar
+    archives testSourcesJar
+    archives testJar
+    archives jar
+}
