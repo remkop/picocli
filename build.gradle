@@ -93,7 +93,7 @@ task copyDocs(type: Copy) {
 
 distributions {
     main {
-        baseName = archivesBaseName
+        baseName = "$archivesBaseName-all"
         contents {
             from jar
             from sourcesJar
