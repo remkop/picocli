@@ -1,4 +1,5 @@
 group 'info.picocli'
+description 'Java command line parser and colorized usage help generator. In a single file, to be included in source form, so users can run picocli-based applications without requiring picocli as an external dependency. Generates easily customizable usage help messages with ANSI styles and colors.'
 version '0.9.4-SNAPSHOT'
 
 // for bumpVersion task
@@ -17,8 +18,9 @@ buildscript {
 }
 
 apply plugin: 'org.asciidoctor.convert'
-apply plugin: 'distribution'
 apply plugin: 'java'
+apply plugin: 'distribution'
+apply plugin: 'maven-publish'
 
 sourceCompatibility = 1.5
 
@@ -49,11 +51,11 @@ task testJar(type: Jar, dependsOn: compileTestJava) {
 }
 task sourcesJar(type: Jar) {
     from sourceSets.main.java.srcDirs
-    classifier = 'source'
+    classifier = 'sources'
 }
 task testSourcesJar(type: Jar) {
     from sourceSets.test.java.srcDirs
-    classifier = 'test-source'
+    classifier = 'test-sources'
 }
 task javadocJar(type: Jar, dependsOn: javadoc) {
     classifier = 'javadoc'
@@ -71,14 +73,16 @@ artifacts {
     archives testJar
     archives jar
 }
-task bumpVersion << {
-    ant.replaceregexp(match:oldVersion, replace:version, flags:'g', byline:true) {
-        fileset(dir: 'src/main/java/picocli', includes: 'CommandLine.java')
-        fileset(dir: 'src/test/java/picocli', includes: 'CommandLineTest.java')
-        fileset(dir: 'docs', includes: 'index.adoc')
-    }
-    ant.replaceregexp(match:oldRevdate, replace:revDate, flags:'g', byline:true) {
-        fileset(dir: 'docs', includes: 'index.adoc')
+task bumpVersion {
+    doLast {
+        ant.replaceregexp(match: oldVersion, replace: version, flags: 'g', byline: true) {
+            fileset(dir: 'src/main/java/picocli', includes: 'CommandLine.java')
+            fileset(dir: 'src/test/java/picocli', includes: 'CommandLineTest.java')
+            fileset(dir: 'docs', includes: 'index.adoc')
+        }
+        ant.replaceregexp(match: oldRevdate, replace: revDate, flags: 'g', byline: true) {
+            fileset(dir: 'docs', includes: 'index.adoc')
+        }
     }
 }
 task copyDocs(type: Copy) {
@@ -86,24 +90,76 @@ task copyDocs(type: Copy) {
     from('build/docs/') { exclude 'html5'}
     into 'docs'
 }
-//distributions {
-//    main {
-//        contents {
-//            from ( resourceOutputDir )
-//        }
-//    }
-//}
-//distZip.dependsOn('jar')
+
+distributions {
+    main {
+        baseName = archivesBaseName
+        contents {
+            from jar
+            from sourcesJar
+            from testJar
+            from testSourcesJar
+            from javadocJar
+            from ('LICENSE')
+            from ('RELEASE-NOTES.adoc')
+        }
+    }
+}
+ext {
+    bintrayBaseUrl    = 'https://api.bintray.com/maven'
+    bintrayRepository = 'picocli'
+    bintrayPackage    = 'picocli'
+}
+publishing {
+    publications {
+        plugin(MavenPublication) {
+            from components.java
+            artifact sourcesJar
+            artifact testJar
+            artifact testSourcesJar
+            artifact javadocJar
+            pom.withXml {
+                def root = asNode()
+                root.appendNode('name', 'picocli - a mighty tiny Command Line Interface')
+                root.appendNode('description', description)
+                root.appendNode('url', 'http://picocli.info')
+                root.appendNode('inceptionYear', '2017')
+
+                def license = root.appendNode('licenses').appendNode('license')
+                license.appendNode('name', 'The Apache Software License, version 2.0')
+                license.appendNode('url', 'http://www.apache.org/licenses/LICENSE-2.0.txt')
+                license.appendNode('distribution', 'repo')
+
+                def developer = root.appendNode('developers').appendNode('developer')
+                developer.appendNode('id', 'rpopma')
+                developer.appendNode('name', 'Remko Popma')
+                developer.appendNode('email', 'rpopma@apache.org')
+            }
+        }
+    }
+    repositories {
+        maven {
+//            name 'myLocal'
+//            url "file://$projectDir/../repo/$bintrayUsername"
+            name 'Bintray'
+            url "$bintrayBaseUrl/$bintrayUsername/$bintrayRepository/$bintrayPackage"
+            credentials {
+                username = bintrayUsername
+                password = bintrayApiKey
+            }
+        }
+    }
+}
 /*
 Github release:
 1. edit version numbers: remove -SNAPSHOT classifier
 2. gradlew bumpVersion
 3. gradlew clean build
 4. gradlew copyDocs
-7. commit -m "Release picocli version ..."
-8. tag v$version
-9. edit version numbers: increase minor version and add -SNAPSHOT classifier
-10. gradlew bumpVersion
-11. commit -m "Prepare for next development cycle"
-12. push
+5. commit -m "Release picocli version ..."
+6. tag v$version
+7. edit version numbers: increase minor version and add -SNAPSHOT classifier
+8. gradlew bumpVersion
+9. commit -m "Prepare for next development cycle"
+10. push
  */
