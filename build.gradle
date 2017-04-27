@@ -120,20 +120,26 @@ publishing {
             artifact javadocJar
             pom.withXml {
                 def root = asNode()
-                root.appendNode('name', 'picocli - a mighty tiny Command Line Interface')
-                root.appendNode('description', description)
-                root.appendNode('url', 'http://picocli.info')
+                root.appendNode('packaging',     'jar')
+                root.appendNode('name',          'picocli - a mighty tiny Command Line Interface')
+                root.appendNode('description',   description)
+                root.appendNode('url',           'http://picocli.info')
                 root.appendNode('inceptionYear', '2017')
 
                 def license = root.appendNode('licenses').appendNode('license')
-                license.appendNode('name', 'The Apache Software License, version 2.0')
-                license.appendNode('url', 'http://www.apache.org/licenses/LICENSE-2.0.txt')
+                license.appendNode('name',         'The Apache Software License, version 2.0')
+                license.appendNode('url',          'http://www.apache.org/licenses/LICENSE-2.0.txt')
                 license.appendNode('distribution', 'repo')
 
                 def developer = root.appendNode('developers').appendNode('developer')
-                developer.appendNode('id', 'rpopma')
-                developer.appendNode('name', 'Remko Popma')
+                developer.appendNode('id',    'rpopma')
+                developer.appendNode('name',  'Remko Popma')
                 developer.appendNode('email', 'rpopma@apache.org')
+
+                def scm = root.appendNode('scm')
+                scm.appendNode('connection',          'scm:git:https://github.com/remkop/picocli.git')
+                scm.appendNode('developerConnection', 'scm:git:ssh://github.com:remkop/picocli.git')
+                scm.appendNode('url',                 'https://github.com/remkop/picocli/tree/master')
             }
         }
     }
