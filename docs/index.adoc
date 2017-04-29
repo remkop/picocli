@@ -781,6 +781,13 @@ To produce a synopsis like the above, specify the literal text in the `customSyn
 class Ln { ... }
 ----
 
+=== Unsorted Option List
+By default the options list displays options in alphabetical order. Use the `sortOptions = false` attribute to display options in the order they are declared in your class.
+[source,java]
+----
+@Command(sortOptions = false)
+----
+
 === Section Headings
 Section headers can be used to make usage message layout appear more spacious. Section headings may contain embedded line separator (`%n`) format specifiers:
 [source,java]
@@ -798,13 +805,6 @@ Section headers can be used to make usage message layout appear more spacious. S
 class GitCommit { ... }
 ----
 The usage help message generated from this class is shown below in <<Expanded Example>>.
-
-=== Unsorted Option List
-By default the options list displays options in alphabetical order. Use the `sortOptions = false` attribute to display options in the order they are declared in your class.
-[source,java]
-----
-@Command(sortOptions = false)
-----
 
 
 === Expanded Example
