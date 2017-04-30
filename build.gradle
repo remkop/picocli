@@ -4,7 +4,7 @@ version '0.9.4-SNAPSHOT'
 
 // for bumpVersion task
 def oldVersion = '0\\.9\\.3'
-def oldRevdate = '2017\\-04\\-23'
+def oldRevdate = '2017\\-04\\-30'
 def revDate    = '2017-04-23'
 
 buildscript {

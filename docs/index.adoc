@@ -2,7 +2,7 @@
 :author: Remko Popma
 :email: rpopma@apache.org
 :revnumber: 0.9.4-SNAPSHOT
-:revdate: 2017-04-23
+:revdate: 2017-04-30
 :toc: left
 :numbered:
 :toclevels: 2
@@ -62,27 +62,9 @@ assert  app.inputFiles != null && app.inputFiles.length == 2;
 Command line arguments can be separated into _options_ (sometimes called _flags_ or _switches_), and _parameters_ (sometimes called _positional parameters_ or _operands_).
 Options have a name, parameters are the values that follow the options.
 
-[source]
-----
-<command> -cvf=file1.txt --out result.txt abc def 123 45.6
-            |      |        |       |      |   |   |   |
-            |      |        |       |      +---+---+---+--- positional parameters
-            |      |        |       |
-            |      |        |       +--- option-parameter for "--out"
-            |      |        |
-            |      |        +--- option
-            |      |
-            |      +--- option-parameter for "-f"
-            |
-            +--- clustered options "-c", "-v", and "-f"
-----
-Picocli has separate annotations for options and positional parameters because they work slightly differently.
+image:OptionsAndParameters2.png[Example command with annotated @Option and @Parameters]
 
-.Best Practices
-[TIP]
-When designing your command line application,
-the https://www.gnu.org/prep/standards/html_node/Command_002dLine-Interfaces.html#Command_002dLine-Interfaces[GNU recommendations] for command line interfaces and http://pubs.opengroup.org/onlinepubs/9699919799/basedefs/V1_chap12.html#tag_12_02[POSIX Utility Guidelines] may be useful. Generally, many applications use options for optional values and parameters for mandatory values.
-However, picocli lets you make options required if you want to, see <<Required Options>>.
+Picocli has separate annotations for options and positional parameters.
 
 === Options
 An option must have one or more `names`. Option names usually have a prefix to distinguish them from parameters. Different operating systems and applications use https://en.wikipedia.org/wiki/Command-line_interface#Command-line_option[different prefixing] styles. Picocli lets you use any option name you want.
@@ -152,7 +134,7 @@ Positional parameters (also called operands) are the command line arguments foll
 
 Use the (zero-based) `index` attribute to specify exactly which parameters to capture. Omitting the `index` attribute means the field is initialized with all positional parameters (so the field should be a multi-value type like an array or a collection).
 
-The `index` attribute accepts "range" values, so an annotation like `@Parameters(index="2..4")` captures arguments at index 2, 3 and 4. Range values can be open-ended. For example, `@Parameters(index="3..*")` captures all arguments from index 3 and up.
+The `index` attribute accepts _range_ values, so an annotation like `@Parameters(index="2..4")` captures arguments at index 2, 3 and 4. Range values can be _open-ended_. For example, `@Parameters(index="3..*")` captures all arguments from index 3 and up.
 
 The advantage of capturing individual parameters in separate fields is that you can enforce strong typing. For example:
 
@@ -194,7 +176,7 @@ When one of the command line arguments is two dashes without any characters atta
 
 [source,java]
 ----
-class DoubleDash {
+class DoubleDashDemo {
     @Parameters
     List<String> params;
 
@@ -210,66 +192,12 @@ The `--` clarifies which of the arguments are positional parameters:
 [source,java]
 ----
 String[] args = { "-v", "--", "--files", "file1", "file2" };
-DoubleDash doubleDash = CommandLine.parse(new DoubleDash(), args);
+DoubleDashDemo demo = CommandLine.parse(new DoubleDashDemo(), args);
 
-assert doubleDash.verbose;
-assert doubleDash.files == null;
-assert doubleDash.params != null && doubleDash.params.length == 3;
-assert doubleDash.params.equals(Arrays.asList("--files", "file1", "file2"));
-----
-
-=== Option-Parameter Separators
-==== Default Separators
-Options may take an _option parameter_ (also called _option-argument_).
-For POSIX-style short options (like `-f` or `-c`), the option parameter may be attached to the option,
-or it may be separated by a space or the _separator string_ (`=` by default).
-That is, all of the below are equivalent:
-[source,java]
-----
-<command> -foutput.txt
-<command> -f output.txt
-<command> -f=output.txt
-----
-
-Long option names (like `--file`) must be separated from their option parameter by a space or the
-_separator string_ (`=` by default). That is, the first two below examples are valid but the last example is invalid:
-[source,java]
-----
-// valid (separator between --file and its parameter)
-<command> --file output.txt
-<command> --file=output.txt
-
-// invalid (picocli will not recognize the --file option when attached to its parameter)
-<command> --fileoutput.txt
-----
-
-==== Custom Separators
-The separator string can be customized programmatically or declaratively.
-
-Use the `separator` attribute of the `@Command` annotation to declaratively set a separator string:
-[source,java]
-----
-@Command(separator = ":")  // declaratively set a separator
-class OptionArg {
-    @Option(names = { "-f", "--file" }) String file;
-}
-----
-[source,java]
-----
-OptionArg optionArg = CommandLine.parse(new OptionArg(), "-f:output.txt");
-assert optionArg.file.equals("output.txt");
-----
-
-Alternatively, the separator string can be changed programmatically with the `CommandLine.setSeparator(String separator)` method.
-For example:
-[source,java]
-----
-OptionArg optionArg     = new OptionArg();
-CommandLine commandLine = new CommandLine(optionArg);
-
-commandLine.setSeparator(":"); // programmatically set a separator
-commandLine.parse("-f:output.txt");
-assert optionArg.file.equals("output.txt");
+assert demo.verbose;
+assert demo.files == null;
+assert demo.params != null && demo.params.length == 3;
+assert demo.params.equals(Arrays.asList("--files", "file1", "file2"));
 ----
 
 
@@ -324,7 +252,7 @@ commandLine.registerConverter(java.nio.file.Path.class, s -> java.nio.file.Paths
 commandLine.registerConverter(java.time.Duration.class, s -> java.time.Duration.parse(s));
 ----
 
-After registering custom converters, call the `parse(String...)` method on the `CommandLine` instance where the converters are registered. The static `parse` method cannot be used. For example:
+After registering custom converters, call the `parse(String...)` method on the `CommandLine` instance where the converters are registered. (The static `parse` method cannot be used.) For example:
 
 [source,java]
 ----
@@ -379,90 +307,27 @@ Convert convert = CommandLine.parse(new Convert(), args);
 
 NOTE: If a collection is returned from a type converter, the _contents_ of the collection are added to the field, not the collection itself.
 
-=== Numeric Arguments
-Numeric values are interpreted as decimal numbers by default. If you want picocli to be more flexible, you can
-register a custom type converter that delegates to the https://docs.oracle.com/javase/8/docs/api/java/lang/Integer.html#decode-java.lang.String-[decode] method to convert strings to numbers.
 
-NOTE: The `decode` method looks at the prefix to determine the radix, so numbers
-starting with `0x`, `0X` or `#` are interpreted as hexadecimal numbers, numbers starting with `0` are interpreted
-as octal numbers, and otherwise the number is interpreted as a decimal number.
-
-Java 8-style lambdas:
-[source,java]
-----
-new CommandLine(obj)
-        .registerConverter(Byte.class,    s -> Byte::decode)
-        .registerConverter(Byte.TYPE,     s -> Byte::decode)
-        .registerConverter(Short.class,   s -> Short::decode)
-        .registerConverter(Short.TYPE,    s -> Short::decode)
-        .registerConverter(Integer.class, s -> Integer::decode)
-        .registerConverter(Integer.TYPE,  s -> Integer::decode)
-        .registerConverter(Long.class,    s -> Long::decode)
-        .registerConverter(Long.TYPE,     s -> Long::decode);
-----
-
-In Java 5:
-[source,java]
-----
-ITypeConverter<Integer> intConverter = new ITypeConverter<Integer>() {
-    public Integer convert(String s) {
-        return Integer.decode(s);
-    }
-};
-commandLine.registerConverter(Integer.class, intConverter);
-commandLine.registerConverter(Integer.TYPE,  intConverter);
-...
-----
-
-
-== Arity
+== Multiple Values
 Arity is the number of parameters that will be consumed by an option.
-Most of the time picocli will consume the right number of parameters automatically and you don't need to worry about this.
+
+=== Default
+The default arity value of an `@Option` or `@Parameters` field depends on its type.
+
+* Boolean fields: the default arity is 0 (consume zero parameters) the field is set to `true` when the option name is recognized. (You can <<Boolean Parameters,change this>>.)
+* Single-valued types like `int`, `String`, `File`: arity is 1 (consume one parameter). Omitting the option parameter results in a ParameterException: "Missing required parameter for field '<field-name>'".
+* Multi-valued types like arrays or collections: consume from zero up to all available parameters (until encountering another option or <<Subcommands,subcommand>>).
+
+=== Arity
 
 When an option or parameters field has a type that can hold multiple values (an array or a collection),
-the `arity` attribute lets you control exactly how many parameters are captured by this field.
+the `arity` attribute lets you control exactly how many parameters to capture.
 
-=== Default Arity
-The default arity value of a field annotated with `@Option` or `@Parameters` depends on the field's type.
-
-* Boolean fields: arity is zero (no parameter is consumed - the field is set to `true` when the option name is recognized).
-* Single-valued types like `int`, `String`, `File`: arity is one (consume one parameter). Omitting the option parameter results in a ParameterException: "Missing required parameter for field '<field-name>'".
-* Multi-valued types like arrays or collections: consume from zero up to all available parameters.
-
-
-=== Booleans
-It is possible to let end users explicitly specify "true" or "false" as a parameter for a boolean option by defining an explicit <<Arity>> attribute. A boolean option with `arity = "0..1"` accepts zero to one parameters, `arity = "1"` means the option _must_ have one parameter. For example:
-
+The `arity` attribute can specify an exact number of required parameters, or a _range_ with a minimum and a maximum number of parameters.
+The maximum can be an exact upper bound, or it can be `"*"` to denote _any number_ of parameters. For example:
 [source, java]
 ----
-class BooleanOptionWithParameters {
-    @Option(names = "-x", arity = "1", description = "1 mandatory parameter")
-    boolean x;
-
-    @Option(names = "-y", arity = "0..1", description = "min 0 and max 1 parameter")
-    boolean y;
-}
-----
-
-The following ways to invoke the program will be accepted (values are not case sensitive):
-----
-<command> -x true
-<command> -x FALSE
-<command> -x TRUE -y
-<command> -x True -y False
-----
-
-But trying to specify the `-x` option without a parameter, or with a value other than "true" or "false" (case insensitive) will result in a `ParameterException`.
-
-=== Arity of Arrays and Collections
-Option fields of type array or `List` (or any class extending `Collection`) will be able to hold multiple values.
-By default, picocli will capture arguments into these fields until it encounters a command line argument that is
-an option name or a registered command name.
-
-The `arity` attribute can be used to specify the exact number of required parameters, or a range with a minimum and a maximum number of parameters. The maximum can be a fixed number, or can be `"*"` to denote "any number" of parameters. For example:
-[source, java]
-----
-class MyProgram {
+class ArityDemo {
     @Parameters(arity = "3", descriptions = "exactly three Files")
     File[] files;
 
@@ -473,35 +338,15 @@ class MyProgram {
     String[] strings;
 }
 ----
-A `MissingParameterException` is thrown when fewer than the miminum number of required parameters is specified as command line arguments. Options with an exact number or an exact range will consume up to the maximum number of parameters.
+A `MissingParameterException` is thrown when fewer than the miminum number of parameters is specified on the command line.
 
-Once the minimum number of parameters is consumed, picocli will check for each subsequent command line argument whether it is another parameter, or a new option. For example:
+Once the minimum number of parameters is consumed, picocli will check each subsequent command line argument to see whether it is an additional parameter, or a new option. For example:
 
 ----
-<command> -s A B C -f 1.0 2.0 3.0
+ArityDemo -s A B C -f 1.0 2.0 3.0
 ----
-The above command line arguments will be parsed as three parameters for the `-s` option, followed by three parameters for the `-f` option.
-
-
-== Multiple Values
-=== Arity
-An Option or Parameter field may consume multiple command line arguments if it has a multi-value type like array or Collection. For example:
-[source,java]
-----
-@Option(names = "-option")
-int[] values;
-----
-----
--option 111 222 333
-----
-The number of arguments consumed depends on the option's arity. (See <<Arity of Arrays and Collections>>.)
-
-=== Multiple Occurrences
-Users may also specify the same option multiple times. For example:
-----
--option 111 -option 222 -option 333
-----
-Each value is appended to the array or collection.
+Option `-s` has arity `"1..*"` but instead of consuming all parameters,
+the last three parameters will be recognized as belonging to the `-f` option.
 
 === Split Regex
 Options and parameters may also specify a `split` regular expression used to split each option parameter into smaller substrings. Each of these strings is converted to the type of the collection or array. See <<Arrays and Collections>>.
@@ -515,7 +360,16 @@ Command line arguments like the following are interpreted as three `int` values 
 -option 111,222,333
 ----
 
-== Required Options
+
+=== Multiple Occurrences
+Users may also specify the same option multiple times. For example:
+----
+-option 111 -option 222 -option 333
+----
+Each value is appended to the array or collection.
+
+
+== Required Arguments
 === Options
 Options can be marked `required` to make it mandatory for the user to specify them on the command line. When a required option is not specified, a `MissingParameterException` is thrown from the `parse` method. For example:
 [source, java]
@@ -664,84 +518,13 @@ class ParamLabels {
 ----
 NOTE: For demonstration purposes the above example mixes the all-uppercase (e.g., `NUM`) style label and the fish bracket (e.g., `<number>`) style labels. For real applications, mixing these label styles should be avoided. An application should consistently use only one style.
 
-=== Option-Parameter Separators
-The separator displayed between options and option parameters (`=` by default)
-in the synopsis and the option list can be configured with the `separator` attribute.
+
+=== Unsorted Option List
+By default the options list displays options in alphabetical order. Use the `sortOptions = false` attribute to display options in the order they are declared in your class.
 [source,java]
 ----
-@Command(separator = " ")
+@Command(sortOptions = false)
 ----
-
-NOTE: the `@Command(separator = " ")` annotation also affects how picocli parses the command line. If you want the command parser to recognize one separator (`=` for example), but display a different separator (a space for example) in the usage help message, you need to programmatically configure the parser with the `CommandLine.setSeparator` method. See <<Option-Parameter Separators>>.
-
-=== Hidden Options and Parameters
-Options and Parameters with the `hidden` attribute set to `true` will not be shown in the usage help message.
-This is useful for example when a parameter at some index is captured into multiple fields:
-by default each of these fields would be shown in the usage message, which would be confusing for users.
-
-For example, the `all` field below is annotated as `hidden = true`:
-[source,java]
-----
-@Command()
-class App {
-    @Parameters(index = "0",    description = "destination host")  InetAddress host;
-    @Parameters(index = "1",    description = "destination port")  int port;
-    @Parameters(index = "2..*", description = "files to transfer") String[] files;
-
-    @Parameters(hidden = true) String[] all;
-}
-----
-The above will generate the following usage help message, where the `all` field is not shown:
-----
-Usage: <main class> <host> <port> [<files>...]
-      host                    destination host
-      port                    destination port
-      files                   files to transfer
-----
-
-=== Show Default Values
-Use the `showDefaultValues = true` attribute to append the default value of the options and positional parameters to the description column. Picocli uses reflection to get the default values from the annotated fields. For example:
-[source,java]
-----
-@Command(showDefaultValues = true)
-class DefaultValues {
-    @Option(names = {"-f", "--file"}, description = "the file to use")
-    File file = new File("config.xml");
-}
-
-CommandLine.usage(new DefaultValues(), System.out);
-----
-This produces the following usage help:
-----
-Usage: <main class> -f=<file>
-  -f, --file=<file>           the file to use
-                              Default: config.xml
-----
-
-=== Required-Option Marker
-Required options can be marked in the option list by the character specified with the `requiredOptionMarker` attribute. By default options are not marked because the synopsis shows users which options are required and which are optional. This feature may be useful in combination with `abbreviatedSynopsis`. For example:
-[source,java]
-----
-@Command(requiredOptionMarker = '*', abbreviateSynopsis = true)
-class Example {
-    @Option(names = {"-a", "--alpha"}, description = "optional alpha") String alpha;
-    @Option(names = {"-b", "--beta"}, required = true, description = "mandatory beta") String beta;
-}
-----
-Produces the following usage help message:
-----
-Usage: <main class> [OPTIONS]
-  -a, --alpha=<alpha>         optional alpha
-* -b, --beta=<beta>           mandatory beta
-----
-
-=== Header and Footer
-The `header` will be shown at the top of the usage help message (before the synopsis). The first header line is also the line shown in the subcommand list if your command has subcommands (see <<Usage Help for Subcommands>>).
-
-Use the `footer` attribute to specify one or more lines to show below the generated usage help message.
-Each element of the attribute String array is displayed on a separate line.
-
-The `headerHeading` and `footerHeading` may contain format specifiers. See <<Section Headings>>.
 
 
 === Abbreviated Synopsis
@@ -781,12 +564,13 @@ To produce a synopsis like the above, specify the literal text in the `customSyn
 class Ln { ... }
 ----
 
-=== Unsorted Option List
-By default the options list displays options in alphabetical order. Use the `sortOptions = false` attribute to display options in the order they are declared in your class.
-[source,java]
-----
-@Command(sortOptions = false)
-----
+=== Header and Footer
+The `header` will be shown at the top of the usage help message (before the synopsis). The first header line is also the line shown in the subcommand list if your command has subcommands (see <<Usage Help for Subcommands>>).
+
+Use the `footer` attribute to specify one or more lines to show below the generated usage help message.
+Each element of the attribute String array is displayed on a separate line.
+
+The `headerHeading` and `footerHeading` may contain format specifiers. See <<Section Headings>>.
 
 === Section Headings
 Section headers can be used to make usage message layout appear more spacious. Section headings may contain embedded line separator (`%n`) format specifiers:
@@ -859,102 +643,88 @@ Options:
 The annotated class that this usage help message is generated from is shown in <<Section Headings>>.
 
 
+=== Option-Parameter Separators
+The separator displayed between options and option parameters (`=` by default)
+in the synopsis and the option list can be configured with the `separator` attribute.
+[source,java]
+----
+@Command(separator = " ")
+----
+
+NOTE: the `@Command(separator = " ")` annotation also affects how picocli parses the command line. If you want the command parser to recognize one separator (`=` for example), but display a different separator (a space for example) in the usage help message, you need to programmatically configure the parser with the `CommandLine.setSeparator` method. See <<Custom Separators>>.
+
+=== Hidden Options and Parameters
+Options and Parameters with the `hidden` attribute set to `true` will not be shown in the usage help message.
+This is useful for example when a parameter at some index is captured into multiple fields:
+by default each of these fields would be shown in the usage message, which would be confusing for users.
+
+For example, the `all` field below is annotated as `hidden = true`:
+[source,java]
+----
+@Command()
+class App {
+    @Parameters(index = "0",    description = "destination host")  InetAddress host;
+    @Parameters(index = "1",    description = "destination port")  int port;
+    @Parameters(index = "2..*", description = "files to transfer") String[] files;
+
+    @Parameters(hidden = true) String[] all;
+}
+----
+The above will generate the following usage help message, where the `all` field is not shown:
+----
+Usage: <main class> <host> <port> [<files>...]
+      host                    destination host
+      port                    destination port
+      files                   files to transfer
+----
+
+=== Show Default Values
+Use the `showDefaultValues = true` attribute to append the default value of the options and positional parameters to the description column. Picocli uses reflection to get the default values from the annotated fields. For example:
+[source,java]
+----
+@Command(showDefaultValues = true)
+class DefaultValues {
+    @Option(names = {"-f", "--file"}, description = "the file to use")
+    File file = new File("config.xml");
+}
+
+CommandLine.usage(new DefaultValues(), System.out);
+----
+This produces the following usage help:
+----
+Usage: <main class> -f=<file>
+  -f, --file=<file>           the file to use
+                              Default: config.xml
+----
+
+=== Required-Option Marker
+Required options can be marked in the option list by the character specified with the `requiredOptionMarker` attribute. By default options are not marked because the synopsis shows users which options are required and which are optional. This feature may be useful in combination with `abbreviatedSynopsis`. For example:
+[source,java]
+----
+@Command(requiredOptionMarker = '*', abbreviateSynopsis = true)
+class Example {
+    @Option(names = {"-a", "--alpha"}, description = "optional alpha") String alpha;
+    @Option(names = {"-b", "--beta"}, required = true, description = "mandatory beta") String beta;
+}
+----
+Produces the following usage help message:
+----
+Usage: <main class> [OPTIONS]
+  -a, --alpha=<alpha>         optional alpha
+* -b, --beta=<beta>           mandatory beta
+----
+
 
 == ANSI Colors and Styles
-=== Usage Help with ANSI Colors
+=== Colorized Example
 
 Below shows the same usage help message as shown in <<Expanded Example>>, with ANSI escape codes enabled.
 
 image:UsageHelpWithStyle.png[Screenshot of usage help with Ansi codes enabled]
 
-=== Supported Platforms
-Picocli will only emit ANSI escape codes on supported platforms.
-
-==== Unix and Linux
-Most Unix and Linux platforms support ANSI colors natively.
-On Windows, when picocli detects it is running under a Unix variant like Cygwin or MSYS(2) on Windows
- it will display ANSI colors and styles, otherwise it will not emit ANSI codes.
-
-==== Windows
-Starting from Windows 10 the Windows console https://msdn.microsoft.com/en-us/library/windows/desktop/mt638032(v=vs.85).aspx[supports ANSI escape sequences], but http://www.nivot.org/blog/post/2016/02/04/Windows-10-TH2-(v1511)-Console-Host-Enhancements[they may need to be enabled].
-
-For Windows version below 10, the Windows command console doesn't support output coloring by default. One option is to install either http://cmder.net/[Cmder], http://sourceforge.net/projects/conemu/[ConEmu], https://github.com/adoxa/ansicon/[ANSICON] or https://mintty.github.io/[Mintty] (used by default in GitBash and Cygwin) to add coloring support to their Windows command console.
-
-Another option is to use http://fusesource.github.io/jansi/[Jansi] in your application. For example:
-
-[source,java]
-----
-import org.fusesource.jansi.AnsiConsole;
-...
-public static void main(String[] args) {
-    AnsiConsole.systemInstall();                      // Jansi magic
-    if (System.getProperty("picocli.ansi") == null) { // no user preference
-        CommandLine.ansi = true;                      // force ANSI
-    }
-    CommandLine.run(new WindowsJansiDemo(), args);
-    CommandLine.ansi = null;                          // back to platform default
-    AnsiConsole.systemUninstall();
-}
-----
-NOTE: None of the above is mandatory. If not supported, picocli will simply not emit ANSI escape codes, and everything will work without colors.
-
-==== Forcing ANSI On/Off
-You can force picocli to either always use ANSI codes or never use ANSI codes regardless of the platform:
-
-* Setting system property `picocli.ansi` to `true` forces picocli to use ANSI codes; setting `picocli.ansi` to `false` forces picocli to *not* use ANSI codes. This may be a useful facility to document for users of your command line application.
-* You can decide to force disable or force enable ANSI codes with the `CommandLine.ansi` static field. This overrides the value of system property `picocli.ansi`. For example:
-[source,java]
-----
-CommandLine.ansi = false; // force Ansi OFF
-App app = CommandLine.usage(new App(), args);
-...
-----
-
-
-=== Configuration
-==== Color Scheme
-Picocli defines a color scheme where the colors and styles for common elements can be configured.
-The color scheme instance can be passed to the `CommandLine.usage` method.
-
-The below code snippet shows how a color scheme can be used to configure the usage help message style:
-
-[source,java]
-----
-// see also CommandLine.Help.defaultColorScheme()
-ColorScheme colorScheme = new ColorScheme()
-        .commands    (Style.bold, Style.underline)    // combine multiple styles
-        .options     (Style.fg_yellow)                // yellow foreground color
-        .parameters  (Style.fg_yellow)
-        .optionParams(Style.italic);
-
-CommandLine.usage(annotatedObject, System.out, colorScheme);
-...
-----
-
-==== End User Overrides
-
-The following system properties override the color scheme styles. This allows end users to adjust for their individual terminal color setup.
-
-.System Properties to Override the Color Scheme
-----
-picocli.color.commands
-picocli.color.options
-picocli.color.parameters
-picocli.color.optionParams
-----
-
-For example:
-
-```
-java -Dpicocli.color.options=blink,blue -Dpicocli.color.parameters=reverse com.app.Main
-```
-
-System property values may specify multiple comma separated styles.
-
-
-==== Custom Styles and Colors
-You may also want to use colors and styles for specific parts of the description
-of some elements or the usage help message header or footer.
+=== Usage Help with Styles and Colors
+You can use colors and styles in the descriptions, header and footer
+of the usage help message.
 
 Picocli supports a custom notation for mixing colors and styles in text,
 following a convention introduced by https://github.com/fusesource/jansi[Jansi], where
@@ -966,6 +736,8 @@ For example:
 ----
 @Command(description = "Custom @|bold,underline styles|@ and @|fg(red) colors|@.")
 ----
+image:DescriptionWithColors.png[Description with Ansi styles and colors]
+
 
 .Pre-defined styles and colors that can be used in descriptions and headers using the `@|STYLE1[,STYLE2]... text|@` notation
 [grid=cols,cols=2*,options="header"]
@@ -1009,6 +781,91 @@ class GitCommit { ... }
 ----
 
 CAUTION: Styles cannot be nested, for example: `@|bold this @|underline that|@|@` will not work. You can achieve the same by combining styles, for example: `@|bold this|@ @|bold,underline that|@` will work fine.
+
+
+=== Configuring Fixed Elements
+==== Color Scheme
+Picocli uses a default color scheme for options, parameters and commands.
+There are no annotations to modify this color scheme, but it can be changed programmatically.
+
+The below code snippet shows how a custom color scheme can be specified to configure the usage help message style:
+
+[source,java]
+----
+// see also CommandLine.Help.defaultColorScheme()
+ColorScheme colorScheme = new ColorScheme()
+        .commands    (Style.bold, Style.underline)    // combine multiple styles
+        .options     (Style.fg_yellow)                // yellow foreground color
+        .parameters  (Style.fg_yellow)
+        .optionParams(Style.italic);
+
+CommandLine.usage(annotatedObject, System.out, colorScheme);
+...
+----
+
+==== Color Scheme Overrides
+
+The following system properties override the color scheme styles. This allows end users to adjust for their individual terminal color setup.
+
+.System Properties to Override the Color Scheme
+----
+picocli.color.commands
+picocli.color.options
+picocli.color.parameters
+picocli.color.optionParams
+----
+
+For example:
+
+```
+java -Dpicocli.color.options=blink,blue -Dpicocli.color.parameters=reverse com.app.Main
+```
+
+System property values may specify multiple comma separated styles.
+
+
+=== Supported Platforms
+Picocli will only emit ANSI escape codes on supported platforms.
+
+==== Unix and Linux
+Most Unix and Linux platforms support ANSI colors natively.
+On Windows, when picocli detects it is running under a Unix variant like Cygwin or MSYS(2) on Windows
+ it will display ANSI colors and styles, otherwise it will not emit ANSI codes.
+
+==== Windows
+Starting from Windows 10 the Windows console https://msdn.microsoft.com/en-us/library/windows/desktop/mt638032(v=vs.85).aspx[supports ANSI escape sequences], but http://www.nivot.org/blog/post/2016/02/04/Windows-10-TH2-(v1511)-Console-Host-Enhancements[they may need to be enabled].
+
+For Windows version below 10, the Windows command console doesn't support output coloring by default. One option is to install either http://cmder.net/[Cmder], http://sourceforge.net/projects/conemu/[ConEmu], https://github.com/adoxa/ansicon/[ANSICON] or https://mintty.github.io/[Mintty] (used by default in GitBash and Cygwin) to add coloring support to their Windows command console.
+
+Another option is to use http://fusesource.github.io/jansi/[Jansi] in your application. For example:
+
+[source,java]
+----
+import org.fusesource.jansi.AnsiConsole;
+...
+public static void main(String[] args) {
+    AnsiConsole.systemInstall();                      // Jansi magic
+    if (System.getProperty("picocli.ansi") == null) { // no user preference
+        CommandLine.ansi = true;                      // force ANSI
+    }
+    CommandLine.run(new WindowsJansiDemo(), args);
+    CommandLine.ansi = null;                          // back to platform default
+    AnsiConsole.systemUninstall();
+}
+----
+NOTE: None of the above is mandatory. If not supported, picocli will simply not emit ANSI escape codes, and everything will work without colors.
+
+=== Forcing ANSI On/Off
+You can force picocli to either always use ANSI codes or never use ANSI codes regardless of the platform:
+
+* Setting system property `picocli.ansi` to `true` forces picocli to use ANSI codes; setting `picocli.ansi` to `false` forces picocli to *not* use ANSI codes. This may be a useful facility to document for users of your command line application.
+* You can decide to force disable or force enable ANSI escape codes programmatically with the `CommandLine.ansi` static field. This overrides the value of system property `picocli.ansi`. For example:
+[source,java]
+----
+CommandLine.ansi = false; // force Ansi OFF
+App app = CommandLine.usage(new App(), args);
+...
+----
 
 
 
@@ -1191,7 +1048,154 @@ The usage help message for each subcommand is produced by calling `CommandLine.u
 For example, see <<Section Headings>> for an example subcommand (`git-commit`), which produces the help message shown
 in <<Expanded Example>>.
 
-== Subclassing for Reuse
+
+== Less Boilerplate
+You can omit some of the boilerplate code from your application when the annotated object implements `Runnable`:
+
+
+.Before
+
+[source,java]
+----
+Runnable runnable = null;
+try {
+    runnable = CommandLine.parse(annotatedObject, args);
+} catch (Exception ex) {
+    System.err.println(ex.getMessage());
+    CommandLine.usage(annotatedObject, System.err);
+    return;
+}
+runnable.run();
+----
+
+.After
+
+[source,java]
+----
+CommandLine.run(new MyApp(), System.err, args);
+----
+
+Note that the `CommandLine.run` convenience method cannot be used with subcommands.
+
+== Tips & Tricks
+
+
+=== Boolean Parameters
+It is possible to let end users explicitly specify "true" or "false" as a parameter for a boolean option by defining an explicit <<Arity>> attribute. A boolean option with `arity = "0..1"` accepts zero to one parameters, `arity = "1"` means the option _must_ have one parameter. For example:
+
+[source, java]
+----
+class BooleanOptionWithParameters {
+    @Option(names = "-x", arity = "1", description = "1 mandatory parameter")
+    boolean x;
+
+    @Option(names = "-y", arity = "0..1", description = "min 0 and max 1 parameter")
+    boolean y;
+}
+----
+
+The following ways to invoke the program will be accepted (values are not case sensitive):
+----
+<command> -x true
+<command> -x FALSE
+<command> -x TRUE -y
+<command> -x True -y False
+----
+
+But trying to specify the `-x` option without a parameter, or with a value other than "true" or "false" (case insensitive) will result in a `ParameterException`.
+
+
+=== Hexadecimal Values
+Numeric values are interpreted as decimal numbers by default. If you want picocli to be more flexible, you can
+register a custom type converter that delegates to the https://docs.oracle.com/javase/8/docs/api/java/lang/Integer.html#decode-java.lang.String-[decode] method to convert strings to numbers.
+
+NOTE: The `decode` method looks at the prefix to determine the radix, so numbers
+starting with `0x`, `0X` or `#` are interpreted as hexadecimal numbers, numbers starting with `0` are interpreted
+as octal numbers, and otherwise the number is interpreted as a decimal number.
+
+Java 8-style lambdas:
+[source,java]
+----
+new CommandLine(obj)
+        .registerConverter(Byte.class,    s -> Byte::decode)
+        .registerConverter(Byte.TYPE,     s -> Byte::decode)
+        .registerConverter(Short.class,   s -> Short::decode)
+        .registerConverter(Short.TYPE,    s -> Short::decode)
+        .registerConverter(Integer.class, s -> Integer::decode)
+        .registerConverter(Integer.TYPE,  s -> Integer::decode)
+        .registerConverter(Long.class,    s -> Long::decode)
+        .registerConverter(Long.TYPE,     s -> Long::decode);
+----
+
+In Java 5:
+[source,java]
+----
+ITypeConverter<Integer> intConverter = new ITypeConverter<Integer>() {
+    public Integer convert(String s) {
+        return Integer.decode(s);
+    }
+};
+commandLine.registerConverter(Integer.class, intConverter);
+commandLine.registerConverter(Integer.TYPE,  intConverter);
+...
+----
+
+=== Option-Parameter Separators
+==== Default Separators
+Options may take an _option parameter_ (also called _option-argument_).
+For POSIX-style short options (like `-f` or `-c`), the option parameter may be attached to the option,
+or it may be separated by a space or the _separator string_ (`=` by default).
+That is, all of the below are equivalent:
+[source,java]
+----
+<command> -foutput.txt
+<command> -f output.txt
+<command> -f=output.txt
+----
+
+Long option names (like `--file`) must be separated from their option parameter by a space or the
+_separator string_ (`=` by default). That is, the first two below examples are valid but the last example is invalid:
+[source,java]
+----
+// valid (separator between --file and its parameter)
+<command> --file output.txt
+<command> --file=output.txt
+
+// invalid (picocli will not recognize the --file option when attached to its parameter)
+<command> --fileoutput.txt
+----
+
+==== Custom Separators
+The separator string can be customized programmatically or declaratively.
+
+Use the `separator` attribute of the `@Command` annotation to declaratively set a separator string:
+[source,java]
+----
+@Command(separator = ":")  // declaratively set a separator
+class OptionArg {
+    @Option(names = { "-f", "--file" }) String file;
+}
+----
+[source,java]
+----
+OptionArg optionArg = CommandLine.parse(new OptionArg(), "-f:output.txt");
+assert optionArg.file.equals("output.txt");
+----
+
+Alternatively, the separator string can be changed programmatically with the `CommandLine.setSeparator(String separator)` method.
+For example:
+[source,java]
+----
+OptionArg optionArg     = new OptionArg();
+CommandLine commandLine = new CommandLine(optionArg);
+
+commandLine.setSeparator(":"); // programmatically set a separator
+commandLine.parse("-f:output.txt");
+assert optionArg.file.equals("output.txt");
+----
+
+
+=== Subclassing for Reuse
 Picocli will walk the class hierarchy to check for annotations, so you can declare common @Options and @Command attributes on a superclass and override these fields or attributes on a subclass.
 
 The below example shows how common options like `help` and `version` can be declared as fields in a superclass so they are available in all subclasses. Similarly, annotating the superclass with default `@Command` attributes means subclasses won't need to set these attributes.
@@ -1234,33 +1238,12 @@ public class ZipCommand extends AbstractCommand {
 ----
 
 
-== Less Boilerplate
-You can omit some of the boilerplate code from your application when the annotated object implements `Runnable`:
+=== Best Practices for Command Line Interfaces
 
+When designing your command line application,
+the https://www.gnu.org/prep/standards/html_node/Command_002dLine-Interfaces.html#Command_002dLine-Interfaces[GNU recommendations] for command line interfaces and http://pubs.opengroup.org/onlinepubs/9699919799/basedefs/V1_chap12.html#tag_12_02[POSIX Utility Guidelines] may be useful. Generally, many applications use options for optional values and parameters for mandatory values.
+However, picocli lets you make options required if you want to, see <<Required Arguments>>.
 
-.Before
-
-[source,java]
-----
-Runnable runnable = null;
-try {
-    runnable = CommandLine.parse(annotatedObject, args);
-} catch (Exception ex) {
-    System.err.println(ex.getMessage());
-    CommandLine.usage(annotatedObject, System.err);
-    return;
-}
-runnable.run();
-----
-
-.After
-
-[source,java]
-----
-CommandLine.run(new MyApp(), System.err, args);
-----
-
-Note that the `CommandLine.run` convenience method cannot be used with subcommands.
 
 
 == API Javadoc

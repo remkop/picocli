@@ -74,12 +74,16 @@ public class Demo implements Runnable {
     @Option(names = "--simple", description = "Show help for the first simple Example in the manual")
     private boolean showSimpleExample;
 
+    @Option(names = "--mixed", hidden = true, description = "Show help with mixed Ansi colors and styles in description")
+    private boolean showAnsiInDescription;
+
     @Option(names = {"-t", "--tests"}, description = "Runs all tests in this class")
     private boolean runTests;
 
     public void run() {
         if (!runTests &&
                 !showSimpleExample &&
+                !showAnsiInDescription &&
                 !showUsageForMainCommand &&
                 !showUsageForSubcommandGitCommit &&
                 !showUsageForSubcommandGitStatus) {
@@ -88,6 +92,7 @@ public class Demo implements Runnable {
         }
         if (runTests)                        { testParseSubCommands(); System.out.println("Ran tests OK.");}
         if (showSimpleExample)               { showSimpleExampleUsage(); }
+        if (showAnsiInDescription)           { showAnsiInDescription(); }
         if (showUsageForMainCommand)         { testUsageMainCommand(); }
         if (showUsageForSubcommandGitStatus) { testUsageSubCommandStatus(); }
         if (showUsageForSubcommandGitCommit) { testUsageSubCommandCommit(); }
@@ -106,6 +111,12 @@ public class Demo implements Runnable {
             private File[] inputFiles;
         }
         CommandLine.usage(new Example(), System.out);
+    }
+
+    private void showAnsiInDescription() {
+        @Command(description = "Custom @|bold,underline styles|@ and @|fg(red) colors|@.")
+        class AnsiDescription { }
+        CommandLine.usage(new AnsiDescription(), System.out);
     }
 
     //------------------------------------------

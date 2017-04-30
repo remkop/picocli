@@ -516,8 +516,8 @@ table.CodeRay td.code>pre{padding:0}
 <div class="details">
 <span id="author" class="author">Remko Popma</span><br>
 <span id="email" class="email"><a href="mailto:rpopma@apache.org">rpopma@apache.org</a></span><br>
-<span id="revnumber">version 0.9.3,</span>
-<span id="revdate">2017-04-23</span>
+<span id="revnumber">version 0.9.4-SNAPSHOT,</span>
+<span id="revdate">2017-04-30</span>
 </div>
 <div id="toc" class="toc2">
 <div id="toctitle">Features</div>
@@ -528,7 +528,6 @@ table.CodeRay td.code>pre{padding:0}
 <li><a href="#_options">2.1. Options</a></li>
 <li><a href="#_positional_parameters">2.2. Positional Parameters</a></li>
 <li><a href="#_double_dash_code_code">2.3. Double dash (<code>--</code>)</a></li>
-<li><a href="#_option_parameter_separators">2.4. Option-Parameter Separators</a></li>
 </ul>
 </li>
 <li><a href="#_strongly_typed_everything">3. Strongly Typed Everything</a>
@@ -536,75 +535,78 @@ table.CodeRay td.code>pre{padding:0}
 <li><a href="#_built_in_types">3.1. Built-in Types</a></li>
 <li><a href="#_custom_type_converters">3.2. Custom Type Converters</a></li>
 <li><a href="#_arrays_and_collections">3.3. Arrays and Collections</a></li>
-<li><a href="#_numeric_arguments">3.4. Numeric Arguments</a></li>
 </ul>
 </li>
-<li><a href="#_arity">4. Arity</a>
+<li><a href="#_multiple_values">4. Multiple Values</a>
 <ul class="sectlevel2">
-<li><a href="#_default_arity">4.1. Default Arity</a></li>
-<li><a href="#_booleans">4.2. Booleans</a></li>
-<li><a href="#_arity_of_arrays_and_collections">4.3. Arity of Arrays and Collections</a></li>
+<li><a href="#_default">4.1. Default</a></li>
+<li><a href="#_arity">4.2. Arity</a></li>
+<li><a href="#_split_regex">4.3. Split Regex</a></li>
+<li><a href="#_multiple_occurrences">4.4. Multiple Occurrences</a></li>
 </ul>
 </li>
-<li><a href="#_multiple_values">5. Multiple Values</a>
+<li><a href="#_required_arguments">5. Required Arguments</a>
 <ul class="sectlevel2">
-<li><a href="#_arity_2">5.1. Arity</a></li>
-<li><a href="#_multiple_occurrences">5.2. Multiple Occurrences</a></li>
-<li><a href="#_split_regex">5.3. Split Regex</a></li>
+<li><a href="#_options_2">5.1. Options</a></li>
+<li><a href="#_parameters">5.2. Parameters</a></li>
 </ul>
 </li>
-<li><a href="#_required_options">6. Required Options</a>
+<li><a href="#_help_options">6. Help Options</a></li>
+<li><a href="#_usage_help">7. Usage Help</a>
 <ul class="sectlevel2">
-<li><a href="#_options_2">6.1. Options</a></li>
-<li><a href="#_parameters">6.2. Parameters</a></li>
+<li><a href="#_compact_example">7.1. Compact Example</a></li>
+<li><a href="#_command_name">7.2. Command Name</a></li>
+<li><a href="#_parameter_labels">7.3. Parameter Labels</a></li>
+<li><a href="#_unsorted_option_list">7.4. Unsorted Option List</a></li>
+<li><a href="#_abbreviated_synopsis">7.5. Abbreviated Synopsis</a></li>
+<li><a href="#_custom_synopsis">7.6. Custom Synopsis</a></li>
+<li><a href="#_header_and_footer">7.7. Header and Footer</a></li>
+<li><a href="#_section_headings">7.8. Section Headings</a></li>
+<li><a href="#_expanded_example">7.9. Expanded Example</a></li>
+<li><a href="#_option_parameter_separators">7.10. Option-Parameter Separators</a></li>
+<li><a href="#_hidden_options_and_parameters">7.11. Hidden Options and Parameters</a></li>
+<li><a href="#_show_default_values">7.12. Show Default Values</a></li>
+<li><a href="#_required_option_marker">7.13. Required-Option Marker</a></li>
 </ul>
 </li>
-<li><a href="#_help_options">7. Help Options</a></li>
-<li><a href="#_usage_help">8. Usage Help</a>
+<li><a href="#_ansi_colors_and_styles">8. ANSI Colors and Styles</a>
 <ul class="sectlevel2">
-<li><a href="#_compact_example">8.1. Compact Example</a></li>
-<li><a href="#_command_name">8.2. Command Name</a></li>
-<li><a href="#_parameter_labels">8.3. Parameter Labels</a></li>
-<li><a href="#_option_parameter_separators_2">8.4. Option-Parameter Separators</a></li>
-<li><a href="#_hidden_options_and_parameters">8.5. Hidden Options and Parameters</a></li>
-<li><a href="#_show_default_values">8.6. Show Default Values</a></li>
-<li><a href="#_required_option_marker">8.7. Required-Option Marker</a></li>
-<li><a href="#_header_and_footer">8.8. Header and Footer</a></li>
-<li><a href="#_abbreviated_synopsis">8.9. Abbreviated Synopsis</a></li>
-<li><a href="#_custom_synopsis">8.10. Custom Synopsis</a></li>
-<li><a href="#_section_headings">8.11. Section Headings</a></li>
-<li><a href="#_unsorted_option_list">8.12. Unsorted Option List</a></li>
-<li><a href="#_expanded_example">8.13. Expanded Example</a></li>
+<li><a href="#_colorized_example">8.1. Colorized Example</a></li>
+<li><a href="#_usage_help_with_styles_and_colors">8.2. Usage Help with Styles and Colors</a></li>
+<li><a href="#_configuring_fixed_elements">8.3. Configuring Fixed Elements</a></li>
+<li><a href="#_supported_platforms">8.4. Supported Platforms</a></li>
+<li><a href="#_forcing_ansi_on_off">8.5. Forcing ANSI On/Off</a></li>
 </ul>
 </li>
-<li><a href="#_ansi_colors_and_styles">9. ANSI Colors and Styles</a>
+<li><a href="#_usage_help_api">9. Usage Help API</a>
 <ul class="sectlevel2">
-<li><a href="#_usage_help_with_ansi_colors">9.1. Usage Help with ANSI Colors</a></li>
-<li><a href="#_supported_platforms">9.2. Supported Platforms</a></li>
-<li><a href="#_configuration">9.3. Configuration</a></li>
+<li><a href="#_reordering_sections">9.1. Reordering Sections</a></li>
+<li><a href="#_custom_layout">9.2. Custom Layout</a></li>
 </ul>
 </li>
-<li><a href="#_usage_help_api">10. Usage Help API</a>
+<li><a href="#_subcommands">10. Subcommands</a>
 <ul class="sectlevel2">
-<li><a href="#_reordering_sections">10.1. Reordering Sections</a></li>
-<li><a href="#_custom_layout">10.2. Custom Layout</a></li>
+<li><a href="#_registering_subcommands">10.1. Registering Subcommands</a></li>
+<li><a href="#_parsing_subcommands">10.2. Parsing Subcommands</a></li>
+<li><a href="#_usage_help_for_subcommands">10.3. Usage Help for Subcommands</a></li>
 </ul>
 </li>
-<li><a href="#_subcommands">11. Subcommands</a>
+<li><a href="#_less_boilerplate">11. Less Boilerplate</a></li>
+<li><a href="#_tips_tricks">12. Tips &amp; Tricks</a>
 <ul class="sectlevel2">
-<li><a href="#_registering_subcommands">11.1. Registering Subcommands</a></li>
-<li><a href="#_parsing_subcommands">11.2. Parsing Subcommands</a></li>
-<li><a href="#_usage_help_for_subcommands">11.3. Usage Help for Subcommands</a></li>
+<li><a href="#_boolean_parameters">12.1. Boolean Parameters</a></li>
+<li><a href="#_hexadecimal_values">12.2. Hexadecimal Values</a></li>
+<li><a href="#_option_parameter_separators_2">12.3. Option-Parameter Separators</a></li>
+<li><a href="#_subclassing_for_reuse">12.4. Subclassing for Reuse</a></li>
+<li><a href="#_best_practices_for_command_line_interfaces">12.5. Best Practices for Command Line Interfaces</a></li>
 </ul>
 </li>
-<li><a href="#_subclassing_for_reuse">12. Subclassing for Reuse</a></li>
-<li><a href="#_less_boilerplate">13. Less Boilerplate</a></li>
-<li><a href="#_api_javadoc">14. API Javadoc</a></li>
-<li><a href="#_github_project">15. GitHub Project</a></li>
-<li><a href="#_issue_tracker">16. Issue Tracker</a></li>
-<li><a href="#_license">17. License</a></li>
-<li><a href="#_releases">18. Releases</a></li>
-<li><a href="#_download">19. Download</a></li>
+<li><a href="#_api_javadoc">13. API Javadoc</a></li>
+<li><a href="#_github_project">14. GitHub Project</a></li>
+<li><a href="#_issue_tracker">15. Issue Tracker</a></li>
+<li><a href="#_license">16. License</a></li>
+<li><a href="#_releases">17. Releases</a></li>
+<li><a href="#_download">18. Download</a></li>
 </ul>
 </div>
 </div>
@@ -678,38 +680,11 @@ Example app = CommandLine.parse(<span class="keyword">new</span> Example(), args
 <p>Command line arguments can be separated into <em>options</em> (sometimes called <em>flags</em> or <em>switches</em>), and <em>parameters</em> (sometimes called <em>positional parameters</em> or <em>operands</em>).
 Options have a name, parameters are the values that follow the options.</p>
 </div>
-<div class="listingblock">
-<div class="content">
-<pre class="CodeRay highlight"><code>&lt;command&gt; -cvf=file1.txt --out result.txt abc def 123 45.6
-            |      |        |       |      |   |   |   |
-            |      |        |       |      +---+---+---+--- positional parameters
-            |      |        |       |
-            |      |        |       +--- option-parameter for "--out"
-            |      |        |
-            |      |        +--- option
-            |      |
-            |      +--- option-parameter for "-f"
-            |
-            +--- clustered options "-c", "-v", and "-f"</code></pre>
-</div>
+<div class="paragraph">
+<p><span class="image"><img src="images/OptionsAndParameters2.png" alt="Example command with annotated @Option and @Parameters"></span></p>
 </div>
 <div class="paragraph">
-<p>Picocli has separate annotations for options and positional parameters because they work slightly differently.</p>
-</div>
-<div class="admonitionblock tip">
-<table>
-<tr>
-<td class="icon">
-<i class="fa icon-tip" title="Tip"></i>
-</td>
-<td class="content">
-<div class="title">Best Practices</div>
-When designing your command line application,
-the <a href="https://www.gnu.org/prep/standards/html_node/Command_002dLine-Interfaces.html#Command_002dLine-Interfaces">GNU recommendations</a> for command line interfaces and <a href="http://pubs.opengroup.org/onlinepubs/9699919799/basedefs/V1_chap12.html#tag_12_02">POSIX Utility Guidelines</a> may be useful. Generally, many applications use options for optional values and parameters for mandatory values.
-However, picocli lets you make options required if you want to, see <a href="#_required_options">Required Options</a>.
-</td>
-</tr>
-</table>
+<p>Picocli has separate annotations for options and positional parameters.</p>
 </div>
 <div class="sect2">
 <h3 id="_options">2.1. Options</h3>
@@ -804,7 +779,7 @@ One or more options without option-arguments, followed by at most one option tha
 <p>Use the (zero-based) <code>index</code> attribute to specify exactly which parameters to capture. Omitting the <code>index</code> attribute means the field is initialized with all positional parameters (so the field should be a multi-value type like an array or a collection).</p>
 </div>
 <div class="paragraph">
-<p>The <code>index</code> attribute accepts "range" values, so an annotation like <code>@Parameters(index="2..4")</code> captures arguments at index 2, 3 and 4. Range values can be open-ended. For example, <code>@Parameters(index="3..*")</code> captures all arguments from index 3 and up.</p>
+<p>The <code>index</code> attribute accepts <em>range</em> values, so an annotation like <code>@Parameters(index="2..4")</code> captures arguments at index 2, 3 and 4. Range values can be <em>open-ended</em>. For example, <code>@Parameters(index="3..*")</code> captures all arguments from index 3 and up.</p>
 </div>
 <div class="paragraph">
 <p>The advantage of capturing individual parameters in separate fields is that you can enforce strong typing. For example:</p>
@@ -853,7 +828,7 @@ PositionalParameters params = CommandLine.parse(<span class="keyword">new</span>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="CodeRay highlight"><code data-lang="java"><span class="type">class</span> <span class="class">DoubleDash</span> {
+<pre class="CodeRay highlight"><code data-lang="java"><span class="type">class</span> <span class="class">DoubleDashDemo</span> {
     <span class="annotation">@Parameters</span>
     <span class="predefined-type">List</span>&lt;<span class="predefined-type">String</span>&gt; params;
 
@@ -871,82 +846,12 @@ PositionalParameters params = CommandLine.parse(<span class="keyword">new</span>
 <div class="listingblock">
 <div class="content">
 <pre class="CodeRay highlight"><code data-lang="java"><span class="predefined-type">String</span><span class="type">[]</span> args = { <span class="string"><span class="delimiter">&quot;</span><span class="content">-v</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">--</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">--files</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">file1</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">file2</span><span class="delimiter">&quot;</span></span> };
-DoubleDash doubleDash = CommandLine.parse(<span class="keyword">new</span> DoubleDash(), args);
+DoubleDashDemo demo = CommandLine.parse(<span class="keyword">new</span> DoubleDashDemo(), args);
 
-<span class="keyword">assert</span> doubleDash.verbose;
-<span class="keyword">assert</span> doubleDash.files == <span class="predefined-constant">null</span>;
-<span class="keyword">assert</span> doubleDash.params != <span class="predefined-constant">null</span> &amp;&amp; doubleDash.params.length == <span class="integer">3</span>;
-<span class="keyword">assert</span> doubleDash.params.equals(<span class="predefined-type">Arrays</span>.asList(<span class="string"><span class="delimiter">&quot;</span><span class="content">--files</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">file1</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">file2</span><span class="delimiter">&quot;</span></span>));</code></pre>
-</div>
-</div>
-</div>
-<div class="sect2">
-<h3 id="_option_parameter_separators">2.4. Option-Parameter Separators</h3>
-<div class="sect3">
-<h4 id="_default_separators">2.4.1. Default Separators</h4>
-<div class="paragraph">
-<p>Options may take an <em>option parameter</em> (also called <em>option-argument</em>).
-For POSIX-style short options (like <code>-f</code> or <code>-c</code>), the option parameter may be attached to the option,
-or it may be separated by a space or the <em>separator string</em> (<code>=</code> by default).
-That is, all of the below are equivalent:</p>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre class="CodeRay highlight"><code data-lang="java">&lt;command&gt; -foutput.txt
-&lt;command&gt; -f output.txt
-&lt;command&gt; -f=output.txt</code></pre>
-</div>
-</div>
-<div class="paragraph">
-<p>Long option names (like <code>--file</code>) must be separated from their option parameter by a space or the
-<em>separator string</em> (<code>=</code> by default). That is, the first two below examples are valid but the last example is invalid:</p>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre class="CodeRay highlight"><code data-lang="java"><span class="comment">// valid (separator between --file and its parameter)</span>
-&lt;command&gt; --file output.txt
-&lt;command&gt; --file=output.txt
-
-<span class="comment">// invalid (picocli will not recognize the --file option when attached to its parameter)</span>
-&lt;command&gt; --fileoutput.txt</code></pre>
-</div>
-</div>
-</div>
-<div class="sect3">
-<h4 id="_custom_separators">2.4.2. Custom Separators</h4>
-<div class="paragraph">
-<p>The separator string can be customized programmatically or declaratively.</p>
-</div>
-<div class="paragraph">
-<p>Use the <code>separator</code> attribute of the <code>@Command</code> annotation to declaratively set a separator string:</p>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre class="CodeRay highlight"><code data-lang="java"><span class="annotation">@Command</span>(separator = <span class="string"><span class="delimiter">&quot;</span><span class="content">:</span><span class="delimiter">&quot;</span></span>)  <span class="comment">// declaratively set a separator</span>
-<span class="type">class</span> <span class="class">OptionArg</span> {
-    <span class="annotation">@Option</span>(names = { <span class="string"><span class="delimiter">&quot;</span><span class="content">-f</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">--file</span><span class="delimiter">&quot;</span></span> }) <span class="predefined-type">String</span> file;
-}</code></pre>
-</div>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre class="CodeRay highlight"><code data-lang="java">OptionArg optionArg = CommandLine.parse(<span class="keyword">new</span> OptionArg(), <span class="string"><span class="delimiter">&quot;</span><span class="content">-f:output.txt</span><span class="delimiter">&quot;</span></span>);
-<span class="keyword">assert</span> optionArg.file.equals(<span class="string"><span class="delimiter">&quot;</span><span class="content">output.txt</span><span class="delimiter">&quot;</span></span>);</code></pre>
-</div>
-</div>
-<div class="paragraph">
-<p>Alternatively, the separator string can be changed programmatically with the <code>CommandLine.setSeparator(String separator)</code> method.
-For example:</p>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre class="CodeRay highlight"><code data-lang="java">OptionArg optionArg     = <span class="keyword">new</span> OptionArg();
-CommandLine commandLine = <span class="keyword">new</span> CommandLine(optionArg);
-
-commandLine.setSeparator(<span class="string"><span class="delimiter">&quot;</span><span class="content">:</span><span class="delimiter">&quot;</span></span>); <span class="comment">// programmatically set a separator</span>
-commandLine.parse(<span class="string"><span class="delimiter">&quot;</span><span class="content">-f:output.txt</span><span class="delimiter">&quot;</span></span>);
-<span class="keyword">assert</span> optionArg.file.equals(<span class="string"><span class="delimiter">&quot;</span><span class="content">output.txt</span><span class="delimiter">&quot;</span></span>);</code></pre>
-</div>
+<span class="keyword">assert</span> demo.verbose;
+<span class="keyword">assert</span> demo.files == <span class="predefined-constant">null</span>;
+<span class="keyword">assert</span> demo.params != <span class="predefined-constant">null</span> &amp;&amp; demo.params.length == <span class="integer">3</span>;
+<span class="keyword">assert</span> demo.params.equals(<span class="predefined-type">Arrays</span>.asList(<span class="string"><span class="delimiter">&quot;</span><span class="content">--files</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">file1</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">file2</span><span class="delimiter">&quot;</span></span>));</code></pre>
 </div>
 </div>
 </div>
@@ -1050,7 +955,7 @@ commandLine.registerConverter(java.time.Duration.class, s -&gt; java.time.Durati
 </div>
 </div>
 <div class="paragraph">
-<p>After registering custom converters, call the <code>parse(String&#8230;&#8203;)</code> method on the <code>CommandLine</code> instance where the converters are registered. The static <code>parse</code> method cannot be used. For example:</p>
+<p>After registering custom converters, call the <code>parse(String&#8230;&#8203;)</code> method on the <code>CommandLine</code> instance where the converters are registered. (The static <code>parse</code> method cannot be used.) For example:</p>
 </div>
 <div class="listingblock">
 <div class="content">
@@ -1128,134 +1033,46 @@ If a collection is returned from a type converter, the <em>contents</em> of the 
 </table>
 </div>
 </div>
-<div class="sect2">
-<h3 id="_numeric_arguments">3.4. Numeric Arguments</h3>
-<div class="paragraph">
-<p>Numeric values are interpreted as decimal numbers by default. If you want picocli to be more flexible, you can
-register a custom type converter that delegates to the <a href="https://docs.oracle.com/javase/8/docs/api/java/lang/Integer.html#decode-java.lang.String-">decode</a> method to convert strings to numbers.</p>
-</div>
-<div class="admonitionblock note">
-<table>
-<tr>
-<td class="icon">
-<i class="fa icon-note" title="Note"></i>
-</td>
-<td class="content">
-The <code>decode</code> method looks at the prefix to determine the radix, so numbers
-starting with <code>0x</code>, <code>0X</code> or <code>#</code> are interpreted as hexadecimal numbers, numbers starting with <code>0</code> are interpreted
-as octal numbers, and otherwise the number is interpreted as a decimal number.
-</td>
-</tr>
-</table>
-</div>
-<div class="paragraph">
-<p>Java 8-style lambdas:</p>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre class="CodeRay highlight"><code data-lang="java"><span class="keyword">new</span> CommandLine(obj)
-        .registerConverter(<span class="predefined-type">Byte</span>.class,    s -&gt; <span class="predefined-type">Byte</span>::decode)
-        .registerConverter(<span class="predefined-type">Byte</span>.TYPE,     s -&gt; <span class="predefined-type">Byte</span>::decode)
-        .registerConverter(<span class="predefined-type">Short</span>.class,   s -&gt; <span class="predefined-type">Short</span>::decode)
-        .registerConverter(<span class="predefined-type">Short</span>.TYPE,    s -&gt; <span class="predefined-type">Short</span>::decode)
-        .registerConverter(<span class="predefined-type">Integer</span>.class, s -&gt; <span class="predefined-type">Integer</span>::decode)
-        .registerConverter(<span class="predefined-type">Integer</span>.TYPE,  s -&gt; <span class="predefined-type">Integer</span>::decode)
-        .registerConverter(<span class="predefined-type">Long</span>.class,    s -&gt; <span class="predefined-type">Long</span>::decode)
-        .registerConverter(<span class="predefined-type">Long</span>.TYPE,     s -&gt; <span class="predefined-type">Long</span>::decode);</code></pre>
-</div>
-</div>
-<div class="paragraph">
-<p>In Java 5:</p>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre class="CodeRay highlight"><code data-lang="java">ITypeConverter&lt;<span class="predefined-type">Integer</span>&gt; intConverter = <span class="keyword">new</span> ITypeConverter&lt;<span class="predefined-type">Integer</span>&gt;() {
-    <span class="directive">public</span> <span class="predefined-type">Integer</span> convert(<span class="predefined-type">String</span> s) {
-        <span class="keyword">return</span> <span class="predefined-type">Integer</span>.decode(s);
-    }
-};
-commandLine.registerConverter(<span class="predefined-type">Integer</span>.class, intConverter);
-commandLine.registerConverter(<span class="predefined-type">Integer</span>.TYPE,  intConverter);
-...</code></pre>
-</div>
-</div>
-</div>
 </div>
 </div>
 <div class="sect1">
-<h2 id="_arity">4. Arity</h2>
+<h2 id="_multiple_values">4. Multiple Values</h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>Arity is the number of parameters that will be consumed by an option.
-Most of the time picocli will consume the right number of parameters automatically and you don&#8217;t need to worry about this.</p>
-</div>
-<div class="paragraph">
-<p>When an option or parameters field has a type that can hold multiple values (an array or a collection),
-the <code>arity</code> attribute lets you control exactly how many parameters are captured by this field.</p>
+<p>Arity is the number of parameters that will be consumed by an option.</p>
 </div>
 <div class="sect2">
-<h3 id="_default_arity">4.1. Default Arity</h3>
+<h3 id="_default">4.1. Default</h3>
 <div class="paragraph">
-<p>The default arity value of a field annotated with <code>@Option</code> or <code>@Parameters</code> depends on the field&#8217;s type.</p>
+<p>The default arity value of an <code>@Option</code> or <code>@Parameters</code> field depends on its type.</p>
 </div>
 <div class="ulist">
 <ul>
 <li>
-<p>Boolean fields: arity is zero (no parameter is consumed - the field is set to <code>true</code> when the option name is recognized).</p>
+<p>Boolean fields: the default arity is 0 (consume zero parameters) the field is set to <code>true</code> when the option name is recognized. (You can <a href="#_boolean_parameters">change this</a>.)</p>
 </li>
 <li>
-<p>Single-valued types like <code>int</code>, <code>String</code>, <code>File</code>: arity is one (consume one parameter). Omitting the option parameter results in a ParameterException: "Missing required parameter for field '&lt;field-name&gt;'".</p>
+<p>Single-valued types like <code>int</code>, <code>String</code>, <code>File</code>: arity is 1 (consume one parameter). Omitting the option parameter results in a ParameterException: "Missing required parameter for field '&lt;field-name&gt;'".</p>
 </li>
 <li>
-<p>Multi-valued types like arrays or collections: consume from zero up to all available parameters.</p>
+<p>Multi-valued types like arrays or collections: consume from zero up to all available parameters (until encountering another option or <a href="#_subcommands">subcommand</a>).</p>
 </li>
 </ul>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_booleans">4.2. Booleans</h3>
+<h3 id="_arity">4.2. Arity</h3>
 <div class="paragraph">
-<p>It is possible to let end users explicitly specify "true" or "false" as a parameter for a boolean option by defining an explicit <a href="#_arity">Arity</a> attribute. A boolean option with <code>arity = "0..1"</code> accepts zero to one parameters, <code>arity = "1"</code> means the option <em>must</em> have one parameter. For example:</p>
+<p>When an option or parameters field has a type that can hold multiple values (an array or a collection),
+the <code>arity</code> attribute lets you control exactly how many parameters to capture.</p>
+</div>
+<div class="paragraph">
+<p>The <code>arity</code> attribute can specify an exact number of required parameters, or a <em>range</em> with a minimum and a maximum number of parameters.
+The maximum can be an exact upper bound, or it can be <code>"*"</code> to denote <em>any number</em> of parameters. For example:</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="CodeRay highlight"><code data-lang="java"><span class="type">class</span> <span class="class">BooleanOptionWithParameters</span> {
-    <span class="annotation">@Option</span>(names = <span class="string"><span class="delimiter">&quot;</span><span class="content">-x</span><span class="delimiter">&quot;</span></span>, arity = <span class="string"><span class="delimiter">&quot;</span><span class="content">1</span><span class="delimiter">&quot;</span></span>, description = <span class="string"><span class="delimiter">&quot;</span><span class="content">1 mandatory parameter</span><span class="delimiter">&quot;</span></span>)
-    <span class="type">boolean</span> x;
-
-    <span class="annotation">@Option</span>(names = <span class="string"><span class="delimiter">&quot;</span><span class="content">-y</span><span class="delimiter">&quot;</span></span>, arity = <span class="string"><span class="delimiter">&quot;</span><span class="content">0..1</span><span class="delimiter">&quot;</span></span>, description = <span class="string"><span class="delimiter">&quot;</span><span class="content">min 0 and max 1 parameter</span><span class="delimiter">&quot;</span></span>)
-    <span class="type">boolean</span> y;
-}</code></pre>
-</div>
-</div>
-<div class="paragraph">
-<p>The following ways to invoke the program will be accepted (values are not case sensitive):</p>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre>&lt;command&gt; -x true
-&lt;command&gt; -x FALSE
-&lt;command&gt; -x TRUE -y
-&lt;command&gt; -x True -y False</pre>
-</div>
-</div>
-<div class="paragraph">
-<p>But trying to specify the <code>-x</code> option without a parameter, or with a value other than "true" or "false" (case insensitive) will result in a <code>ParameterException</code>.</p>
-</div>
-</div>
-<div class="sect2">
-<h3 id="_arity_of_arrays_and_collections">4.3. Arity of Arrays and Collections</h3>
-<div class="paragraph">
-<p>Option fields of type array or <code>List</code> (or any class extending <code>Collection</code>) will be able to hold multiple values.
-By default, picocli will capture arguments into these fields until it encounters a command line argument that is
-an option name or a registered command name.</p>
-</div>
-<div class="paragraph">
-<p>The <code>arity</code> attribute can be used to specify the exact number of required parameters, or a range with a minimum and a maximum number of parameters. The maximum can be a fixed number, or can be <code>"*"</code> to denote "any number" of parameters. For example:</p>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre class="CodeRay highlight"><code data-lang="java"><span class="type">class</span> <span class="class">MyProgram</span> {
+<pre class="CodeRay highlight"><code data-lang="java"><span class="type">class</span> <span class="class">ArityDemo</span> {
     <span class="annotation">@Parameters</span>(arity = <span class="string"><span class="delimiter">&quot;</span><span class="content">3</span><span class="delimiter">&quot;</span></span>, descriptions = <span class="string"><span class="delimiter">&quot;</span><span class="content">exactly three Files</span><span class="delimiter">&quot;</span></span>)
     <span class="predefined-type">File</span><span class="type">[]</span> files;
 
@@ -1268,61 +1085,23 @@ an option name or a registered command name.</p>
 </div>
 </div>
 <div class="paragraph">
-<p>A <code>MissingParameterException</code> is thrown when fewer than the miminum number of required parameters is specified as command line arguments. Options with an exact number or an exact range will consume up to the maximum number of parameters.</p>
+<p>A <code>MissingParameterException</code> is thrown when fewer than the miminum number of parameters is specified on the command line.</p>
 </div>
 <div class="paragraph">
-<p>Once the minimum number of parameters is consumed, picocli will check for each subsequent command line argument whether it is another parameter, or a new option. For example:</p>
+<p>Once the minimum number of parameters is consumed, picocli will check each subsequent command line argument to see whether it is an additional parameter, or a new option. For example:</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre>&lt;command&gt; -s A B C -f 1.0 2.0 3.0</pre>
+<pre>ArityDemo -s A B C -f 1.0 2.0 3.0</pre>
 </div>
 </div>
 <div class="paragraph">
-<p>The above command line arguments will be parsed as three parameters for the <code>-s</code> option, followed by three parameters for the <code>-f</code> option.</p>
-</div>
-</div>
-</div>
-</div>
-<div class="sect1">
-<h2 id="_multiple_values">5. Multiple Values</h2>
-<div class="sectionbody">
-<div class="sect2">
-<h3 id="_arity_2">5.1. Arity</h3>
-<div class="paragraph">
-<p>An Option or Parameter field may consume multiple command line arguments if it has a multi-value type like array or Collection. For example:</p>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre class="CodeRay highlight"><code data-lang="java"><span class="annotation">@Option</span>(names = <span class="string"><span class="delimiter">&quot;</span><span class="content">-option</span><span class="delimiter">&quot;</span></span>)
-<span class="type">int</span><span class="type">[]</span> values;</code></pre>
-</div>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre>-option 111 222 333</pre>
-</div>
-</div>
-<div class="paragraph">
-<p>The number of arguments consumed depends on the option&#8217;s arity. (See <a href="#_arity_of_arrays_and_collections">Arity of Arrays and Collections</a>.)</p>
+<p>Option <code>-s</code> has arity <code>"1..*"</code> but instead of consuming all parameters,
+the last three parameters will be recognized as belonging to the <code>-f</code> option.</p>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_multiple_occurrences">5.2. Multiple Occurrences</h3>
-<div class="paragraph">
-<p>Users may also specify the same option multiple times. For example:</p>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre>-option 111 -option 222 -option 333</pre>
-</div>
-</div>
-<div class="paragraph">
-<p>Each value is appended to the array or collection.</p>
-</div>
-</div>
-<div class="sect2">
-<h3 id="_split_regex">5.3. Split Regex</h3>
+<h3 id="_split_regex">4.3. Split Regex</h3>
 <div class="paragraph">
 <p>Options and parameters may also specify a <code>split</code> regular expression used to split each option parameter into smaller substrings. Each of these strings is converted to the type of the collection or array. See <a href="#_arrays_and_collections">Arrays and Collections</a>.</p>
 </div>
@@ -1341,13 +1120,27 @@ an option name or a registered command name.</p>
 </div>
 </div>
 </div>
+<div class="sect2">
+<h3 id="_multiple_occurrences">4.4. Multiple Occurrences</h3>
+<div class="paragraph">
+<p>Users may also specify the same option multiple times. For example:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre>-option 111 -option 222 -option 333</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Each value is appended to the array or collection.</p>
+</div>
+</div>
 </div>
 </div>
 <div class="sect1">
-<h2 id="_required_options">6. Required Options</h2>
+<h2 id="_required_arguments">5. Required Arguments</h2>
 <div class="sectionbody">
 <div class="sect2">
-<h3 id="_options_2">6.1. Options</h3>
+<h3 id="_options_2">5.1. Options</h3>
 <div class="paragraph">
 <p>Options can be marked <code>required</code> to make it mandatory for the user to specify them on the command line. When a required option is not specified, a <code>MissingParameterException</code> is thrown from the <code>parse</code> method. For example:</p>
 </div>
@@ -1382,7 +1175,7 @@ an option name or a registered command name.</p>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_parameters">6.2. Parameters</h3>
+<h3 id="_parameters">5.2. Parameters</h3>
 <div class="paragraph">
 <p>Use the <code>arity</code> attribute to make <code>@Parameters</code> mandatory:</p>
 </div>
@@ -1419,7 +1212,7 @@ an option name or a registered command name.</p>
 </div>
 </div>
 <div class="sect1">
-<h2 id="_help_options">7. Help Options</h2>
+<h2 id="_help_options">6. Help Options</h2>
 <div class="sectionbody">
 <div class="paragraph">
 <p>Options with the attribute <code>help = true</code> are special: if one of the command line arguments is a "help" option, picocli will stop parsing the remaining arguments and will not check for required options.</p>
@@ -1451,10 +1244,10 @@ an option name or a registered command name.</p>
 </div>
 </div>
 <div class="sect1">
-<h2 id="_usage_help">8. Usage Help</h2>
+<h2 id="_usage_help">7. Usage Help</h2>
 <div class="sectionbody">
 <div class="sect2">
-<h3 id="_compact_example">8.1. Compact Example</h3>
+<h3 id="_compact_example">7.1. Compact Example</h3>
 <div class="paragraph">
 <p>A default picocli usage help message looks like this:</p>
 </div>
@@ -1503,7 +1296,7 @@ Copyright(c) 2017</pre>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_command_name">8.2. Command Name</h3>
+<h3 id="_command_name">7.2. Command Name</h3>
 <div class="paragraph">
 <p>In the above example, the program name is taken from the <code>name</code> attribute of the <code>Command</code> annotation:</p>
 </div>
@@ -1522,7 +1315,7 @@ Copyright(c) 2017</pre>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_parameter_labels">8.3. Parameter Labels</h3>
+<h3 id="_parameter_labels">7.3. Parameter Labels</h3>
 <div class="paragraph">
 <p>Non-boolean options require a value. The usage help should explain this, and picocli shows the option parameter
 in the synopsis and in the option list. By default, the field name is shown in <code>&lt;</code> and <code>&gt;</code> fish brackets.
@@ -1565,130 +1358,18 @@ For demonstration purposes the above example mixes the all-uppercase (e.g., <cod
 </div>
 </div>
 <div class="sect2">
-<h3 id="_option_parameter_separators_2">8.4. Option-Parameter Separators</h3>
+<h3 id="_unsorted_option_list">7.4. Unsorted Option List</h3>
 <div class="paragraph">
-<p>The separator displayed between options and option parameters (<code>=</code> by default)
-in the synopsis and the option list can be configured with the <code>separator</code> attribute.</p>
+<p>By default the options list displays options in alphabetical order. Use the <code>sortOptions = false</code> attribute to display options in the order they are declared in your class.</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="CodeRay highlight"><code data-lang="java"><span class="annotation">@Command</span>(separator = <span class="string"><span class="delimiter">&quot;</span><span class="content"> </span><span class="delimiter">&quot;</span></span>)</code></pre>
-</div>
-</div>
-<div class="admonitionblock note">
-<table>
-<tr>
-<td class="icon">
-<i class="fa icon-note" title="Note"></i>
-</td>
-<td class="content">
-the <code>@Command(separator = " ")</code> annotation also affects how picocli parses the command line. If you want the command parser to recognize one separator (<code>=</code> for example), but display a different separator (a space for example) in the usage help message, you need to programmatically configure the parser with the <code>CommandLine.setSeparator</code> method. See <a href="#_option_parameter_separators">Option-Parameter Separators</a>.
-</td>
-</tr>
-</table>
-</div>
-</div>
-<div class="sect2">
-<h3 id="_hidden_options_and_parameters">8.5. Hidden Options and Parameters</h3>
-<div class="paragraph">
-<p>Options and Parameters with the <code>hidden</code> attribute set to <code>true</code> will not be shown in the usage help message.
-This is useful for example when a parameter at some index is captured into multiple fields:
-by default each of these fields would be shown in the usage message, which would be confusing for users.</p>
-</div>
-<div class="paragraph">
-<p>For example, the <code>all</code> field below is annotated as <code>hidden = true</code>:</p>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre class="CodeRay highlight"><code data-lang="java"><span class="annotation">@Command</span>()
-<span class="type">class</span> <span class="class">App</span> {
-    <span class="annotation">@Parameters</span>(index = <span class="string"><span class="delimiter">&quot;</span><span class="content">0</span><span class="delimiter">&quot;</span></span>,    description = <span class="string"><span class="delimiter">&quot;</span><span class="content">destination host</span><span class="delimiter">&quot;</span></span>)  <span class="predefined-type">InetAddress</span> host;
-    <span class="annotation">@Parameters</span>(index = <span class="string"><span class="delimiter">&quot;</span><span class="content">1</span><span class="delimiter">&quot;</span></span>,    description = <span class="string"><span class="delimiter">&quot;</span><span class="content">destination port</span><span class="delimiter">&quot;</span></span>)  <span class="type">int</span> port;
-    <span class="annotation">@Parameters</span>(index = <span class="string"><span class="delimiter">&quot;</span><span class="content">2..*</span><span class="delimiter">&quot;</span></span>, description = <span class="string"><span class="delimiter">&quot;</span><span class="content">files to transfer</span><span class="delimiter">&quot;</span></span>) <span class="predefined-type">String</span><span class="type">[]</span> files;
-
-    <span class="annotation">@Parameters</span>(hidden = <span class="predefined-constant">true</span>) <span class="predefined-type">String</span><span class="type">[]</span> all;
-}</code></pre>
-</div>
-</div>
-<div class="paragraph">
-<p>The above will generate the following usage help message, where the <code>all</code> field is not shown:</p>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre>Usage: &lt;main class&gt; &lt;host&gt; &lt;port&gt; [&lt;files&gt;...]
-      host                    destination host
-      port                    destination port
-      files                   files to transfer</pre>
+<pre class="CodeRay highlight"><code data-lang="java"><span class="annotation">@Command</span>(sortOptions = <span class="predefined-constant">false</span>)</code></pre>
 </div>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_show_default_values">8.6. Show Default Values</h3>
-<div class="paragraph">
-<p>Use the <code>showDefaultValues = true</code> attribute to append the default value of the options and positional parameters to the description column. Picocli uses reflection to get the default values from the annotated fields. For example:</p>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre class="CodeRay highlight"><code data-lang="java"><span class="annotation">@Command</span>(showDefaultValues = <span class="predefined-constant">true</span>)
-<span class="type">class</span> <span class="class">DefaultValues</span> {
-    <span class="annotation">@Option</span>(names = {<span class="string"><span class="delimiter">&quot;</span><span class="content">-f</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">--file</span><span class="delimiter">&quot;</span></span>}, description = <span class="string"><span class="delimiter">&quot;</span><span class="content">the file to use</span><span class="delimiter">&quot;</span></span>)
-    <span class="predefined-type">File</span> file = <span class="keyword">new</span> <span class="predefined-type">File</span>(<span class="string"><span class="delimiter">&quot;</span><span class="content">config.xml</span><span class="delimiter">&quot;</span></span>);
-}
-
-CommandLine.usage(<span class="keyword">new</span> DefaultValues(), <span class="predefined-type">System</span>.out);</code></pre>
-</div>
-</div>
-<div class="paragraph">
-<p>This produces the following usage help:</p>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre>Usage: &lt;main class&gt; -f=&lt;file&gt;
-  -f, --file=&lt;file&gt;           the file to use
-                              Default: config.xml</pre>
-</div>
-</div>
-</div>
-<div class="sect2">
-<h3 id="_required_option_marker">8.7. Required-Option Marker</h3>
-<div class="paragraph">
-<p>Required options can be marked in the option list by the character specified with the <code>requiredOptionMarker</code> attribute. By default options are not marked because the synopsis shows users which options are required and which are optional. This feature may be useful in combination with <code>abbreviatedSynopsis</code>. For example:</p>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre class="CodeRay highlight"><code data-lang="java"><span class="annotation">@Command</span>(requiredOptionMarker = <span class="string"><span class="delimiter">'</span><span class="content">*</span><span class="delimiter">'</span></span>, abbreviateSynopsis = <span class="predefined-constant">true</span>)
-<span class="type">class</span> <span class="class">Example</span> {
-    <span class="annotation">@Option</span>(names = {<span class="string"><span class="delimiter">&quot;</span><span class="content">-a</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">--alpha</span><span class="delimiter">&quot;</span></span>}, description = <span class="string"><span class="delimiter">&quot;</span><span class="content">optional alpha</span><span class="delimiter">&quot;</span></span>) <span class="predefined-type">String</span> alpha;
-    <span class="annotation">@Option</span>(names = {<span class="string"><span class="delimiter">&quot;</span><span class="content">-b</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">--beta</span><span class="delimiter">&quot;</span></span>}, required = <span class="predefined-constant">true</span>, description = <span class="string"><span class="delimiter">&quot;</span><span class="content">mandatory beta</span><span class="delimiter">&quot;</span></span>) <span class="predefined-type">String</span> beta;
-}</code></pre>
-</div>
-</div>
-<div class="paragraph">
-<p>Produces the following usage help message:</p>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre>Usage: &lt;main class&gt; [OPTIONS]
-  -a, --alpha=&lt;alpha&gt;         optional alpha
-* -b, --beta=&lt;beta&gt;           mandatory beta</pre>
-</div>
-</div>
-</div>
-<div class="sect2">
-<h3 id="_header_and_footer">8.8. Header and Footer</h3>
-<div class="paragraph">
-<p>The <code>header</code> will be shown at the top of the usage help message (before the synopsis). The first header line is also the line shown in the subcommand list if your command has subcommands (see <a href="#_usage_help_for_subcommands">Usage Help for Subcommands</a>).</p>
-</div>
-<div class="paragraph">
-<p>Use the <code>footer</code> attribute to specify one or more lines to show below the generated usage help message.
-Each element of the attribute String array is displayed on a separate line.</p>
-</div>
-<div class="paragraph">
-<p>The <code>headerHeading</code> and <code>footerHeading</code> may contain format specifiers. See <a href="#_section_headings">Section Headings</a>.</p>
-</div>
-</div>
-<div class="sect2">
-<h3 id="_abbreviated_synopsis">8.9. Abbreviated Synopsis</h3>
+<h3 id="_abbreviated_synopsis">7.5. Abbreviated Synopsis</h3>
 <div class="paragraph">
 <p>If a command is very complex and has many options, it is sometimes desirable to suppress details from the synopsis with the <code>abbreviateSynopsis</code> attribute. For example:</p>
 </div>
@@ -1712,7 +1393,7 @@ Each element of the attribute String array is displayed on a separate line.</p>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_custom_synopsis">8.10. Custom Synopsis</h3>
+<h3 id="_custom_synopsis">7.6. Custom Synopsis</h3>
 <div class="paragraph">
 <p>For even more control of the synopsis, use the <code>customSynopsis</code> attribute to specify one ore more synopsis lines. For example:</p>
 </div>
@@ -1740,7 +1421,20 @@ Each element of the attribute String array is displayed on a separate line.</p>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_section_headings">8.11. Section Headings</h3>
+<h3 id="_header_and_footer">7.7. Header and Footer</h3>
+<div class="paragraph">
+<p>The <code>header</code> will be shown at the top of the usage help message (before the synopsis). The first header line is also the line shown in the subcommand list if your command has subcommands (see <a href="#_usage_help_for_subcommands">Usage Help for Subcommands</a>).</p>
+</div>
+<div class="paragraph">
+<p>Use the <code>footer</code> attribute to specify one or more lines to show below the generated usage help message.
+Each element of the attribute String array is displayed on a separate line.</p>
+</div>
+<div class="paragraph">
+<p>The <code>headerHeading</code> and <code>footerHeading</code> may contain format specifiers. See <a href="#_section_headings">Section Headings</a>.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_section_headings">7.8. Section Headings</h3>
 <div class="paragraph">
 <p>Section headers can be used to make usage message layout appear more spacious. Section headings may contain embedded line separator (<code>%n</code>) format specifiers:</p>
 </div>
@@ -1764,18 +1458,7 @@ Each element of the attribute String array is displayed on a separate line.</p>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_unsorted_option_list">8.12. Unsorted Option List</h3>
-<div class="paragraph">
-<p>By default the options list displays options in alphabetical order. Use the <code>sortOptions = false</code> attribute to display options in the order they are declared in your class.</p>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre class="CodeRay highlight"><code data-lang="java"><span class="annotation">@Command</span>(sortOptions = <span class="predefined-constant">false</span>)</code></pre>
-</div>
-</div>
-</div>
-<div class="sect2">
-<h3 id="_expanded_example">8.13. Expanded Example</h3>
+<h3 id="_expanded_example">7.9. Expanded Example</h3>
 <div class="paragraph">
 <p>The below example demonstrates what a customized usage message can look like.
 Note how section headings with line separators can create a more spacious usage message,
@@ -1832,57 +1515,15 @@ Options:
 <p>The annotated class that this usage help message is generated from is shown in <a href="#_section_headings">Section Headings</a>.</p>
 </div>
 </div>
-</div>
-</div>
-<div class="sect1">
-<h2 id="_ansi_colors_and_styles">9. ANSI Colors and Styles</h2>
-<div class="sectionbody">
 <div class="sect2">
-<h3 id="_usage_help_with_ansi_colors">9.1. Usage Help with ANSI Colors</h3>
+<h3 id="_option_parameter_separators">7.10. Option-Parameter Separators</h3>
 <div class="paragraph">
-<p>Below shows the same usage help message as shown in <a href="#_expanded_example">Expanded Example</a>, with ANSI escape codes enabled.</p>
-</div>
-<div class="paragraph">
-<p><span class="image"><img src="images/UsageHelpWithStyle.png" alt="Screenshot of usage help with Ansi codes enabled"></span></p>
-</div>
-</div>
-<div class="sect2">
-<h3 id="_supported_platforms">9.2. Supported Platforms</h3>
-<div class="paragraph">
-<p>Picocli will only emit ANSI escape codes on supported platforms.</p>
-</div>
-<div class="sect3">
-<h4 id="_unix_and_linux">9.2.1. Unix and Linux</h4>
-<div class="paragraph">
-<p>Most Unix and Linux platforms support ANSI colors natively.
-On Windows, when picocli detects it is running under a Unix variant like Cygwin or MSYS(2) on Windows
- it will display ANSI colors and styles, otherwise it will not emit ANSI codes.</p>
-</div>
-</div>
-<div class="sect3">
-<h4 id="_windows">9.2.2. Windows</h4>
-<div class="paragraph">
-<p>Starting from Windows 10 the Windows console <a href="https://msdn.microsoft.com/en-us/library/windows/desktop/mt638032(v=vs.85).aspx">supports ANSI escape sequences</a>, but <a href="http://www.nivot.org/blog/post/2016/02/04/Windows-10-TH2-(v1511)-Console-Host-Enhancements">they may need to be enabled</a>.</p>
-</div>
-<div class="paragraph">
-<p>For Windows version below 10, the Windows command console doesn&#8217;t support output coloring by default. One option is to install either <a href="http://cmder.net/">Cmder</a>, <a href="http://sourceforge.net/projects/conemu/">ConEmu</a>, <a href="https://github.com/adoxa/ansicon/">ANSICON</a> or <a href="https://mintty.github.io/">Mintty</a> (used by default in GitBash and Cygwin) to add coloring support to their Windows command console.</p>
-</div>
-<div class="paragraph">
-<p>Another option is to use <a href="http://fusesource.github.io/jansi/">Jansi</a> in your application. For example:</p>
+<p>The separator displayed between options and option parameters (<code>=</code> by default)
+in the synopsis and the option list can be configured with the <code>separator</code> attribute.</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="CodeRay highlight"><code data-lang="java"><span class="keyword">import</span> <span class="include">org.fusesource.jansi.AnsiConsole</span>;
-...
-public <span class="directive">static</span> <span class="type">void</span> main(<span class="predefined-type">String</span><span class="type">[]</span> args) {
-    AnsiConsole.systemInstall();                      <span class="comment">// Jansi magic</span>
-    <span class="keyword">if</span> (<span class="predefined-type">System</span>.getProperty(<span class="string"><span class="delimiter">&quot;</span><span class="content">picocli.ansi</span><span class="delimiter">&quot;</span></span>) == <span class="predefined-constant">null</span>) { <span class="comment">// no user preference</span>
-        CommandLine.ansi = <span class="predefined-constant">true</span>;                      <span class="comment">// force ANSI</span>
-    }
-    CommandLine.run(<span class="keyword">new</span> WindowsJansiDemo(), args);
-    CommandLine.ansi = <span class="predefined-constant">null</span>;                          <span class="comment">// back to platform default</span>
-    AnsiConsole.systemUninstall();
-}</code></pre>
+<pre class="CodeRay highlight"><code data-lang="java"><span class="annotation">@Command</span>(separator = <span class="string"><span class="delimiter">&quot;</span><span class="content"> </span><span class="delimiter">&quot;</span></span>)</code></pre>
 </div>
 </div>
 <div class="admonitionblock note">
@@ -1892,92 +1533,117 @@ public <span class="directive">static</span> <span class="type">void</span> main
 <i class="fa icon-note" title="Note"></i>
 </td>
 <td class="content">
-None of the above is mandatory. If not supported, picocli will simply not emit ANSI escape codes, and everything will work without colors.
+the <code>@Command(separator = " ")</code> annotation also affects how picocli parses the command line. If you want the command parser to recognize one separator (<code>=</code> for example), but display a different separator (a space for example) in the usage help message, you need to programmatically configure the parser with the <code>CommandLine.setSeparator</code> method. See <a href="#_custom_separators">Custom Separators</a>.
 </td>
 </tr>
 </table>
 </div>
 </div>
-<div class="sect3">
-<h4 id="_forcing_ansi_on_off">9.2.3. Forcing ANSI On/Off</h4>
+<div class="sect2">
+<h3 id="_hidden_options_and_parameters">7.11. Hidden Options and Parameters</h3>
 <div class="paragraph">
-<p>You can force picocli to either always use ANSI codes or never use ANSI codes regardless of the platform:</p>
+<p>Options and Parameters with the <code>hidden</code> attribute set to <code>true</code> will not be shown in the usage help message.
+This is useful for example when a parameter at some index is captured into multiple fields:
+by default each of these fields would be shown in the usage message, which would be confusing for users.</p>
 </div>
-<div class="ulist">
-<ul>
-<li>
-<p>Setting system property <code>picocli.ansi</code> to <code>true</code> forces picocli to use ANSI codes; setting <code>picocli.ansi</code> to <code>false</code> forces picocli to <strong>not</strong> use ANSI codes. This may be a useful facility to document for users of your command line application.</p>
-</li>
-<li>
-<p>You can decide to force disable or force enable ANSI codes with the <code>CommandLine.ansi</code> static field. This overrides the value of system property <code>picocli.ansi</code>. For example:</p>
-</li>
-</ul>
+<div class="paragraph">
+<p>For example, the <code>all</code> field below is annotated as <code>hidden = true</code>:</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre>CommandLine.ansi = false; // force Ansi OFF
-App app = CommandLine.usage(new App(), args);
-...</pre>
+<pre class="CodeRay highlight"><code data-lang="java"><span class="annotation">@Command</span>()
+<span class="type">class</span> <span class="class">App</span> {
+    <span class="annotation">@Parameters</span>(index = <span class="string"><span class="delimiter">&quot;</span><span class="content">0</span><span class="delimiter">&quot;</span></span>,    description = <span class="string"><span class="delimiter">&quot;</span><span class="content">destination host</span><span class="delimiter">&quot;</span></span>)  <span class="predefined-type">InetAddress</span> host;
+    <span class="annotation">@Parameters</span>(index = <span class="string"><span class="delimiter">&quot;</span><span class="content">1</span><span class="delimiter">&quot;</span></span>,    description = <span class="string"><span class="delimiter">&quot;</span><span class="content">destination port</span><span class="delimiter">&quot;</span></span>)  <span class="type">int</span> port;
+    <span class="annotation">@Parameters</span>(index = <span class="string"><span class="delimiter">&quot;</span><span class="content">2..*</span><span class="delimiter">&quot;</span></span>, description = <span class="string"><span class="delimiter">&quot;</span><span class="content">files to transfer</span><span class="delimiter">&quot;</span></span>) <span class="predefined-type">String</span><span class="type">[]</span> files;
+
+    <span class="annotation">@Parameters</span>(hidden = <span class="predefined-constant">true</span>) <span class="predefined-type">String</span><span class="type">[]</span> all;
+}</code></pre>
 </div>
+</div>
+<div class="paragraph">
+<p>The above will generate the following usage help message, where the <code>all</code> field is not shown:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre>Usage: &lt;main class&gt; &lt;host&gt; &lt;port&gt; [&lt;files&gt;...]
+      host                    destination host
+      port                    destination port
+      files                   files to transfer</pre>
 </div>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_configuration">9.3. Configuration</h3>
-<div class="sect3">
-<h4 id="_color_scheme">9.3.1. Color Scheme</h4>
+<h3 id="_show_default_values">7.12. Show Default Values</h3>
 <div class="paragraph">
-<p>Picocli defines a color scheme where the colors and styles for common elements can be configured.
-The color scheme instance can be passed to the <code>CommandLine.usage</code> method.</p>
-</div>
-<div class="paragraph">
-<p>The below code snippet shows how a color scheme can be used to configure the usage help message style:</p>
+<p>Use the <code>showDefaultValues = true</code> attribute to append the default value of the options and positional parameters to the description column. Picocli uses reflection to get the default values from the annotated fields. For example:</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="CodeRay highlight"><code data-lang="java"><span class="comment">// see also CommandLine.Help.defaultColorScheme()</span>
-ColorScheme colorScheme = <span class="keyword">new</span> ColorScheme()
-        .commands    (<span class="predefined-type">Style</span>.bold, <span class="predefined-type">Style</span>.underline)    <span class="comment">// combine multiple styles</span>
-        .options     (<span class="predefined-type">Style</span>.fg_yellow)                <span class="comment">// yellow foreground color</span>
-        .parameters  (<span class="predefined-type">Style</span>.fg_yellow)
-        .optionParams(<span class="predefined-type">Style</span>.italic);
+<pre class="CodeRay highlight"><code data-lang="java"><span class="annotation">@Command</span>(showDefaultValues = <span class="predefined-constant">true</span>)
+<span class="type">class</span> <span class="class">DefaultValues</span> {
+    <span class="annotation">@Option</span>(names = {<span class="string"><span class="delimiter">&quot;</span><span class="content">-f</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">--file</span><span class="delimiter">&quot;</span></span>}, description = <span class="string"><span class="delimiter">&quot;</span><span class="content">the file to use</span><span class="delimiter">&quot;</span></span>)
+    <span class="predefined-type">File</span> file = <span class="keyword">new</span> <span class="predefined-type">File</span>(<span class="string"><span class="delimiter">&quot;</span><span class="content">config.xml</span><span class="delimiter">&quot;</span></span>);
+}
 
-CommandLine.usage(annotatedObject, <span class="predefined-type">System</span>.out, colorScheme);
-...</code></pre>
-</div>
-</div>
-</div>
-<div class="sect3">
-<h4 id="_end_user_overrides">9.3.2. End User Overrides</h4>
-<div class="paragraph">
-<p>The following system properties override the color scheme styles. This allows end users to adjust for their individual terminal color setup.</p>
-</div>
-<div class="listingblock">
-<div class="title">System Properties to Override the Color Scheme</div>
-<div class="content">
-<pre>picocli.color.commands
-picocli.color.options
-picocli.color.parameters
-picocli.color.optionParams</pre>
+CommandLine.usage(<span class="keyword">new</span> DefaultValues(), <span class="predefined-type">System</span>.out);</code></pre>
 </div>
 </div>
 <div class="paragraph">
-<p>For example:</p>
+<p>This produces the following usage help:</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="CodeRay highlight"><code>java -Dpicocli.color.options=blink,blue -Dpicocli.color.parameters=reverse com.app.Main</code></pre>
+<pre>Usage: &lt;main class&gt; -f=&lt;file&gt;
+  -f, --file=&lt;file&gt;           the file to use
+                              Default: config.xml</pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_required_option_marker">7.13. Required-Option Marker</h3>
+<div class="paragraph">
+<p>Required options can be marked in the option list by the character specified with the <code>requiredOptionMarker</code> attribute. By default options are not marked because the synopsis shows users which options are required and which are optional. This feature may be useful in combination with <code>abbreviatedSynopsis</code>. For example:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="java"><span class="annotation">@Command</span>(requiredOptionMarker = <span class="string"><span class="delimiter">'</span><span class="content">*</span><span class="delimiter">'</span></span>, abbreviateSynopsis = <span class="predefined-constant">true</span>)
+<span class="type">class</span> <span class="class">Example</span> {
+    <span class="annotation">@Option</span>(names = {<span class="string"><span class="delimiter">&quot;</span><span class="content">-a</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">--alpha</span><span class="delimiter">&quot;</span></span>}, description = <span class="string"><span class="delimiter">&quot;</span><span class="content">optional alpha</span><span class="delimiter">&quot;</span></span>) <span class="predefined-type">String</span> alpha;
+    <span class="annotation">@Option</span>(names = {<span class="string"><span class="delimiter">&quot;</span><span class="content">-b</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">--beta</span><span class="delimiter">&quot;</span></span>}, required = <span class="predefined-constant">true</span>, description = <span class="string"><span class="delimiter">&quot;</span><span class="content">mandatory beta</span><span class="delimiter">&quot;</span></span>) <span class="predefined-type">String</span> beta;
+}</code></pre>
 </div>
 </div>
 <div class="paragraph">
-<p>System property values may specify multiple comma separated styles.</p>
+<p>Produces the following usage help message:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre>Usage: &lt;main class&gt; [OPTIONS]
+  -a, --alpha=&lt;alpha&gt;         optional alpha
+* -b, --beta=&lt;beta&gt;           mandatory beta</pre>
 </div>
 </div>
-<div class="sect3">
-<h4 id="_custom_styles_and_colors">9.3.3. Custom Styles and Colors</h4>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_ansi_colors_and_styles">8. ANSI Colors and Styles</h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_colorized_example">8.1. Colorized Example</h3>
 <div class="paragraph">
-<p>You may also want to use colors and styles for specific parts of the description
-of some elements or the usage help message header or footer.</p>
+<p>Below shows the same usage help message as shown in <a href="#_expanded_example">Expanded Example</a>, with ANSI escape codes enabled.</p>
+</div>
+<div class="paragraph">
+<p><span class="image"><img src="images/UsageHelpWithStyle.png" alt="Screenshot of usage help with Ansi codes enabled"></span></p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_usage_help_with_styles_and_colors">8.2. Usage Help with Styles and Colors</h3>
+<div class="paragraph">
+<p>You can use colors and styles in the descriptions, header and footer
+of the usage help message.</p>
 </div>
 <div class="paragraph">
 <p>Picocli supports a custom notation for mixing colors and styles in text,
@@ -1990,6 +1656,9 @@ For example:</p>
 <div class="content">
 <pre class="CodeRay highlight"><code data-lang="java"><span class="annotation">@Command</span>(description = <span class="string"><span class="delimiter">&quot;</span><span class="content">Custom @|bold,underline styles|@ and @|fg(red) colors|@.</span><span class="delimiter">&quot;</span></span>)</code></pre>
 </div>
+</div>
+<div class="paragraph">
+<p><span class="image"><img src="images/DescriptionWithColors.png" alt="Description with Ansi styles and colors"></span></p>
 </div>
 <table class="tableblock frame-all grid-cols spread">
 <caption class="title">Table 1. Pre-defined styles and colors that can be used in descriptions and headers using the <code>@|STYLE1[,STYLE2]&#8230;&#8203; text|@</code> notation</caption>
@@ -2091,11 +1760,138 @@ Styles cannot be nested, for example: <code>@|bold this @|underline that|@|@</co
 </table>
 </div>
 </div>
+<div class="sect2">
+<h3 id="_configuring_fixed_elements">8.3. Configuring Fixed Elements</h3>
+<div class="sect3">
+<h4 id="_color_scheme">8.3.1. Color Scheme</h4>
+<div class="paragraph">
+<p>Picocli uses a default color scheme for options, parameters and commands.
+There are no annotations to modify this color scheme, but it can be changed programmatically.</p>
+</div>
+<div class="paragraph">
+<p>The below code snippet shows how a custom color scheme can be specified to configure the usage help message style:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="java"><span class="comment">// see also CommandLine.Help.defaultColorScheme()</span>
+ColorScheme colorScheme = <span class="keyword">new</span> ColorScheme()
+        .commands    (<span class="predefined-type">Style</span>.bold, <span class="predefined-type">Style</span>.underline)    <span class="comment">// combine multiple styles</span>
+        .options     (<span class="predefined-type">Style</span>.fg_yellow)                <span class="comment">// yellow foreground color</span>
+        .parameters  (<span class="predefined-type">Style</span>.fg_yellow)
+        .optionParams(<span class="predefined-type">Style</span>.italic);
+
+CommandLine.usage(annotatedObject, <span class="predefined-type">System</span>.out, colorScheme);
+...</code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_color_scheme_overrides">8.3.2. Color Scheme Overrides</h4>
+<div class="paragraph">
+<p>The following system properties override the color scheme styles. This allows end users to adjust for their individual terminal color setup.</p>
+</div>
+<div class="listingblock">
+<div class="title">System Properties to Override the Color Scheme</div>
+<div class="content">
+<pre>picocli.color.commands
+picocli.color.options
+picocli.color.parameters
+picocli.color.optionParams</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>For example:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code>java -Dpicocli.color.options=blink,blue -Dpicocli.color.parameters=reverse com.app.Main</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>System property values may specify multiple comma separated styles.</p>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_supported_platforms">8.4. Supported Platforms</h3>
+<div class="paragraph">
+<p>Picocli will only emit ANSI escape codes on supported platforms.</p>
+</div>
+<div class="sect3">
+<h4 id="_unix_and_linux">8.4.1. Unix and Linux</h4>
+<div class="paragraph">
+<p>Most Unix and Linux platforms support ANSI colors natively.
+On Windows, when picocli detects it is running under a Unix variant like Cygwin or MSYS(2) on Windows
+ it will display ANSI colors and styles, otherwise it will not emit ANSI codes.</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_windows">8.4.2. Windows</h4>
+<div class="paragraph">
+<p>Starting from Windows 10 the Windows console <a href="https://msdn.microsoft.com/en-us/library/windows/desktop/mt638032(v=vs.85).aspx">supports ANSI escape sequences</a>, but <a href="http://www.nivot.org/blog/post/2016/02/04/Windows-10-TH2-(v1511)-Console-Host-Enhancements">they may need to be enabled</a>.</p>
+</div>
+<div class="paragraph">
+<p>For Windows version below 10, the Windows command console doesn&#8217;t support output coloring by default. One option is to install either <a href="http://cmder.net/">Cmder</a>, <a href="http://sourceforge.net/projects/conemu/">ConEmu</a>, <a href="https://github.com/adoxa/ansicon/">ANSICON</a> or <a href="https://mintty.github.io/">Mintty</a> (used by default in GitBash and Cygwin) to add coloring support to their Windows command console.</p>
+</div>
+<div class="paragraph">
+<p>Another option is to use <a href="http://fusesource.github.io/jansi/">Jansi</a> in your application. For example:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="java"><span class="keyword">import</span> <span class="include">org.fusesource.jansi.AnsiConsole</span>;
+...
+public <span class="directive">static</span> <span class="type">void</span> main(<span class="predefined-type">String</span><span class="type">[]</span> args) {
+    AnsiConsole.systemInstall();                      <span class="comment">// Jansi magic</span>
+    <span class="keyword">if</span> (<span class="predefined-type">System</span>.getProperty(<span class="string"><span class="delimiter">&quot;</span><span class="content">picocli.ansi</span><span class="delimiter">&quot;</span></span>) == <span class="predefined-constant">null</span>) { <span class="comment">// no user preference</span>
+        CommandLine.ansi = <span class="predefined-constant">true</span>;                      <span class="comment">// force ANSI</span>
+    }
+    CommandLine.run(<span class="keyword">new</span> WindowsJansiDemo(), args);
+    CommandLine.ansi = <span class="predefined-constant">null</span>;                          <span class="comment">// back to platform default</span>
+    AnsiConsole.systemUninstall();
+}</code></pre>
+</div>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+None of the above is mandatory. If not supported, picocli will simply not emit ANSI escape codes, and everything will work without colors.
+</td>
+</tr>
+</table>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_forcing_ansi_on_off">8.5. Forcing ANSI On/Off</h3>
+<div class="paragraph">
+<p>You can force picocli to either always use ANSI codes or never use ANSI codes regardless of the platform:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Setting system property <code>picocli.ansi</code> to <code>true</code> forces picocli to use ANSI codes; setting <code>picocli.ansi</code> to <code>false</code> forces picocli to <strong>not</strong> use ANSI codes. This may be a useful facility to document for users of your command line application.</p>
+</li>
+<li>
+<p>You can decide to force disable or force enable ANSI escape codes programmatically with the <code>CommandLine.ansi</code> static field. This overrides the value of system property <code>picocli.ansi</code>. For example:</p>
+</li>
+</ul>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre>CommandLine.ansi = false; // force Ansi OFF
+App app = CommandLine.usage(new App(), args);
+...</pre>
+</div>
+</div>
 </div>
 </div>
 </div>
 <div class="sect1">
-<h2 id="_usage_help_api">10. Usage Help API</h2>
+<h2 id="_usage_help_api">9. Usage Help API</h2>
 <div class="sectionbody">
 <div class="paragraph">
 <p>For further customization of the usage help message, picocli has a Help API.
@@ -2103,7 +1899,7 @@ The <code>Help</code> class provides a number of high-level operations, and a se
 Details of the Help API are out of scope for this document, but the following sections give some idea of what is possible.</p>
 </div>
 <div class="sect2">
-<h3 id="_reordering_sections">10.1. Reordering Sections</h3>
+<h3 id="_reordering_sections">9.1. Reordering Sections</h3>
 <div class="paragraph">
 <p>One thing you may want to do is reorder sections of the usage message or add custom sections.</p>
 </div>
@@ -2135,7 +1931,7 @@ Details of the Help API are out of scope for this document, but the following se
 </div>
 </div>
 <div class="sect2">
-<h3 id="_custom_layout">10.2. Custom Layout</h3>
+<h3 id="_custom_layout">9.2. Custom Layout</h3>
 <div class="paragraph">
 <p>Picocli also supports unconventional option list layouts. An example of an unconventional layout is the <code>zip</code> application, which shows multiple options per row:</p>
 </div>
@@ -2177,10 +1973,10 @@ See the picocli tests for how to achieve this.</p>
 </div>
 </div>
 <div class="sect1">
-<h2 id="_subcommands">11. Subcommands</h2>
+<h2 id="_subcommands">10. Subcommands</h2>
 <div class="sectionbody">
 <div class="sect2">
-<h3 id="_registering_subcommands">11.1. Registering Subcommands</h3>
+<h3 id="_registering_subcommands">10.1. Registering Subcommands</h3>
 <div class="paragraph">
 <p>Subcommands can be registered with the <code>CommandLine.addCommand</code> method. You pass in the name of the command (used by the parser to recognize subcommands in the command line arguments) and the annotated object to populate with the subcommand options.</p>
 </div>
@@ -2202,7 +1998,7 @@ See the picocli tests for how to achieve this.</p>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_parsing_subcommands">11.2. Parsing Subcommands</h3>
+<h3 id="_parsing_subcommands">10.2. Parsing Subcommands</h3>
 <div class="paragraph">
 <p>The <code>CommandLine.parse</code> method returns a List with the recognized commands. The main command (<code>git</code> in this example) is always the first element in the returned list.</p>
 </div>
@@ -2237,7 +2033,7 @@ GitStatus gitstatus = (GitStatus) parsed.get(<span class="integer">1</span>);
 </div>
 </div>
 <div class="sect2">
-<h3 id="_usage_help_for_subcommands">11.3. Usage Help for Subcommands</h3>
+<h3 id="_usage_help_for_subcommands">10.3. Usage Help for Subcommands</h3>
 <div class="paragraph">
 <p>After registering subcommands, calling the <code>commandLine.usage</code> method will show a usage help message that includes all registered commands. For example:</p>
 </div>
@@ -2311,8 +2107,194 @@ in <a href="#_expanded_example">Expanded Example</a>.</p>
 </div>
 </div>
 <div class="sect1">
-<h2 id="_subclassing_for_reuse">12. Subclassing for Reuse</h2>
+<h2 id="_less_boilerplate">11. Less Boilerplate</h2>
 <div class="sectionbody">
+<div class="paragraph">
+<p>You can omit some of the boilerplate code from your application when the annotated object implements <code>Runnable</code>:</p>
+</div>
+<div class="listingblock">
+<div class="title">Before</div>
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="java"><span class="predefined-type">Runnable</span> runnable = <span class="predefined-constant">null</span>;
+<span class="keyword">try</span> {
+    runnable = CommandLine.parse(annotatedObject, args);
+} <span class="keyword">catch</span> (<span class="exception">Exception</span> ex) {
+    <span class="predefined-type">System</span>.err.println(ex.getMessage());
+    CommandLine.usage(annotatedObject, <span class="predefined-type">System</span>.err);
+    <span class="keyword">return</span>;
+}
+runnable.run();</code></pre>
+</div>
+</div>
+<div class="listingblock">
+<div class="title">After</div>
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="java">CommandLine.run(<span class="keyword">new</span> MyApp(), <span class="predefined-type">System</span>.err, args);</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Note that the <code>CommandLine.run</code> convenience method cannot be used with subcommands.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_tips_tricks">12. Tips &amp; Tricks</h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_boolean_parameters">12.1. Boolean Parameters</h3>
+<div class="paragraph">
+<p>It is possible to let end users explicitly specify "true" or "false" as a parameter for a boolean option by defining an explicit <a href="#_arity">Arity</a> attribute. A boolean option with <code>arity = "0..1"</code> accepts zero to one parameters, <code>arity = "1"</code> means the option <em>must</em> have one parameter. For example:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="java"><span class="type">class</span> <span class="class">BooleanOptionWithParameters</span> {
+    <span class="annotation">@Option</span>(names = <span class="string"><span class="delimiter">&quot;</span><span class="content">-x</span><span class="delimiter">&quot;</span></span>, arity = <span class="string"><span class="delimiter">&quot;</span><span class="content">1</span><span class="delimiter">&quot;</span></span>, description = <span class="string"><span class="delimiter">&quot;</span><span class="content">1 mandatory parameter</span><span class="delimiter">&quot;</span></span>)
+    <span class="type">boolean</span> x;
+
+    <span class="annotation">@Option</span>(names = <span class="string"><span class="delimiter">&quot;</span><span class="content">-y</span><span class="delimiter">&quot;</span></span>, arity = <span class="string"><span class="delimiter">&quot;</span><span class="content">0..1</span><span class="delimiter">&quot;</span></span>, description = <span class="string"><span class="delimiter">&quot;</span><span class="content">min 0 and max 1 parameter</span><span class="delimiter">&quot;</span></span>)
+    <span class="type">boolean</span> y;
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The following ways to invoke the program will be accepted (values are not case sensitive):</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre>&lt;command&gt; -x true
+&lt;command&gt; -x FALSE
+&lt;command&gt; -x TRUE -y
+&lt;command&gt; -x True -y False</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>But trying to specify the <code>-x</code> option without a parameter, or with a value other than "true" or "false" (case insensitive) will result in a <code>ParameterException</code>.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_hexadecimal_values">12.2. Hexadecimal Values</h3>
+<div class="paragraph">
+<p>Numeric values are interpreted as decimal numbers by default. If you want picocli to be more flexible, you can
+register a custom type converter that delegates to the <a href="https://docs.oracle.com/javase/8/docs/api/java/lang/Integer.html#decode-java.lang.String-">decode</a> method to convert strings to numbers.</p>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+The <code>decode</code> method looks at the prefix to determine the radix, so numbers
+starting with <code>0x</code>, <code>0X</code> or <code>#</code> are interpreted as hexadecimal numbers, numbers starting with <code>0</code> are interpreted
+as octal numbers, and otherwise the number is interpreted as a decimal number.
+</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>Java 8-style lambdas:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="java"><span class="keyword">new</span> CommandLine(obj)
+        .registerConverter(<span class="predefined-type">Byte</span>.class,    s -&gt; <span class="predefined-type">Byte</span>::decode)
+        .registerConverter(<span class="predefined-type">Byte</span>.TYPE,     s -&gt; <span class="predefined-type">Byte</span>::decode)
+        .registerConverter(<span class="predefined-type">Short</span>.class,   s -&gt; <span class="predefined-type">Short</span>::decode)
+        .registerConverter(<span class="predefined-type">Short</span>.TYPE,    s -&gt; <span class="predefined-type">Short</span>::decode)
+        .registerConverter(<span class="predefined-type">Integer</span>.class, s -&gt; <span class="predefined-type">Integer</span>::decode)
+        .registerConverter(<span class="predefined-type">Integer</span>.TYPE,  s -&gt; <span class="predefined-type">Integer</span>::decode)
+        .registerConverter(<span class="predefined-type">Long</span>.class,    s -&gt; <span class="predefined-type">Long</span>::decode)
+        .registerConverter(<span class="predefined-type">Long</span>.TYPE,     s -&gt; <span class="predefined-type">Long</span>::decode);</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>In Java 5:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="java">ITypeConverter&lt;<span class="predefined-type">Integer</span>&gt; intConverter = <span class="keyword">new</span> ITypeConverter&lt;<span class="predefined-type">Integer</span>&gt;() {
+    <span class="directive">public</span> <span class="predefined-type">Integer</span> convert(<span class="predefined-type">String</span> s) {
+        <span class="keyword">return</span> <span class="predefined-type">Integer</span>.decode(s);
+    }
+};
+commandLine.registerConverter(<span class="predefined-type">Integer</span>.class, intConverter);
+commandLine.registerConverter(<span class="predefined-type">Integer</span>.TYPE,  intConverter);
+...</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_option_parameter_separators_2">12.3. Option-Parameter Separators</h3>
+<div class="sect3">
+<h4 id="_default_separators">12.3.1. Default Separators</h4>
+<div class="paragraph">
+<p>Options may take an <em>option parameter</em> (also called <em>option-argument</em>).
+For POSIX-style short options (like <code>-f</code> or <code>-c</code>), the option parameter may be attached to the option,
+or it may be separated by a space or the <em>separator string</em> (<code>=</code> by default).
+That is, all of the below are equivalent:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="java">&lt;command&gt; -foutput.txt
+&lt;command&gt; -f output.txt
+&lt;command&gt; -f=output.txt</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Long option names (like <code>--file</code>) must be separated from their option parameter by a space or the
+<em>separator string</em> (<code>=</code> by default). That is, the first two below examples are valid but the last example is invalid:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="java"><span class="comment">// valid (separator between --file and its parameter)</span>
+&lt;command&gt; --file output.txt
+&lt;command&gt; --file=output.txt
+
+<span class="comment">// invalid (picocli will not recognize the --file option when attached to its parameter)</span>
+&lt;command&gt; --fileoutput.txt</code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_custom_separators">12.3.2. Custom Separators</h4>
+<div class="paragraph">
+<p>The separator string can be customized programmatically or declaratively.</p>
+</div>
+<div class="paragraph">
+<p>Use the <code>separator</code> attribute of the <code>@Command</code> annotation to declaratively set a separator string:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="java"><span class="annotation">@Command</span>(separator = <span class="string"><span class="delimiter">&quot;</span><span class="content">:</span><span class="delimiter">&quot;</span></span>)  <span class="comment">// declaratively set a separator</span>
+<span class="type">class</span> <span class="class">OptionArg</span> {
+    <span class="annotation">@Option</span>(names = { <span class="string"><span class="delimiter">&quot;</span><span class="content">-f</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">--file</span><span class="delimiter">&quot;</span></span> }) <span class="predefined-type">String</span> file;
+}</code></pre>
+</div>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="java">OptionArg optionArg = CommandLine.parse(<span class="keyword">new</span> OptionArg(), <span class="string"><span class="delimiter">&quot;</span><span class="content">-f:output.txt</span><span class="delimiter">&quot;</span></span>);
+<span class="keyword">assert</span> optionArg.file.equals(<span class="string"><span class="delimiter">&quot;</span><span class="content">output.txt</span><span class="delimiter">&quot;</span></span>);</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Alternatively, the separator string can be changed programmatically with the <code>CommandLine.setSeparator(String separator)</code> method.
+For example:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="java">OptionArg optionArg     = <span class="keyword">new</span> OptionArg();
+CommandLine commandLine = <span class="keyword">new</span> CommandLine(optionArg);
+
+commandLine.setSeparator(<span class="string"><span class="delimiter">&quot;</span><span class="content">:</span><span class="delimiter">&quot;</span></span>); <span class="comment">// programmatically set a separator</span>
+commandLine.parse(<span class="string"><span class="delimiter">&quot;</span><span class="content">-f:output.txt</span><span class="delimiter">&quot;</span></span>);
+<span class="keyword">assert</span> optionArg.file.equals(<span class="string"><span class="delimiter">&quot;</span><span class="content">output.txt</span><span class="delimiter">&quot;</span></span>);</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_subclassing_for_reuse">12.4. Subclassing for Reuse</h3>
 <div class="paragraph">
 <p>Picocli will walk the class hierarchy to check for annotations, so you can declare common @Options and @Command attributes on a superclass and override these fields or attributes on a subclass.</p>
 </div>
@@ -2358,40 +2340,18 @@ in <a href="#_expanded_example">Expanded Example</a>.</p>
 </div>
 </div>
 </div>
-</div>
-<div class="sect1">
-<h2 id="_less_boilerplate">13. Less Boilerplate</h2>
-<div class="sectionbody">
+<div class="sect2">
+<h3 id="_best_practices_for_command_line_interfaces">12.5. Best Practices for Command Line Interfaces</h3>
 <div class="paragraph">
-<p>You can omit some of the boilerplate code from your application when the annotated object implements <code>Runnable</code>:</p>
+<p>When designing your command line application,
+the <a href="https://www.gnu.org/prep/standards/html_node/Command_002dLine-Interfaces.html#Command_002dLine-Interfaces">GNU recommendations</a> for command line interfaces and <a href="http://pubs.opengroup.org/onlinepubs/9699919799/basedefs/V1_chap12.html#tag_12_02">POSIX Utility Guidelines</a> may be useful. Generally, many applications use options for optional values and parameters for mandatory values.
+However, picocli lets you make options required if you want to, see <a href="#_required_arguments">Required Arguments</a>.</p>
 </div>
-<div class="listingblock">
-<div class="title">Before</div>
-<div class="content">
-<pre class="CodeRay highlight"><code data-lang="java"><span class="predefined-type">Runnable</span> runnable = <span class="predefined-constant">null</span>;
-<span class="keyword">try</span> {
-    runnable = CommandLine.parse(annotatedObject, args);
-} <span class="keyword">catch</span> (<span class="exception">Exception</span> ex) {
-    <span class="predefined-type">System</span>.err.println(ex.getMessage());
-    CommandLine.usage(annotatedObject, <span class="predefined-type">System</span>.err);
-    <span class="keyword">return</span>;
-}
-runnable.run();</code></pre>
-</div>
-</div>
-<div class="listingblock">
-<div class="title">After</div>
-<div class="content">
-<pre class="CodeRay highlight"><code data-lang="java">CommandLine.run(<span class="keyword">new</span> MyApp(), <span class="predefined-type">System</span>.err, args);</code></pre>
-</div>
-</div>
-<div class="paragraph">
-<p>Note that the <code>CommandLine.run</code> convenience method cannot be used with subcommands.</p>
 </div>
 </div>
 </div>
 <div class="sect1">
-<h2 id="_api_javadoc">14. API Javadoc</h2>
+<h2 id="_api_javadoc">13. API Javadoc</h2>
 <div class="sectionbody">
 <div class="paragraph">
 <p>Picocli API Javadoc can be found <a href="https://remkop.github.io/picocli/apidocs">here</a>.</p>
@@ -2399,7 +2359,7 @@ runnable.run();</code></pre>
 </div>
 </div>
 <div class="sect1">
-<h2 id="_github_project">15. GitHub Project</h2>
+<h2 id="_github_project">14. GitHub Project</h2>
 <div class="sectionbody">
 <div class="paragraph">
 <p>The <a href="https://github.com/remkop/picocli">GitHub project</a> has the source code, tests, build scripts, etc.</p>
@@ -2410,7 +2370,7 @@ runnable.run();</code></pre>
 </div>
 </div>
 <div class="sect1">
-<h2 id="_issue_tracker">16. Issue Tracker</h2>
+<h2 id="_issue_tracker">15. Issue Tracker</h2>
 <div class="sectionbody">
 <div class="paragraph">
 <p>Please use the <a href="https://github.com/remkop/picocli/issues">Issue Tracker</a> to report bugs or request features.</p>
@@ -2418,7 +2378,7 @@ runnable.run();</code></pre>
 </div>
 </div>
 <div class="sect1">
-<h2 id="_license">17. License</h2>
+<h2 id="_license">16. License</h2>
 <div class="sectionbody">
 <div class="paragraph">
 <p>Picocli is licensed under the <a href="https://github.com/remkop/picocli/blob/master/LICENSE">Apache License 2.0</a>.</p>
@@ -2426,7 +2386,7 @@ runnable.run();</code></pre>
 </div>
 </div>
 <div class="sect1">
-<h2 id="_releases">18. Releases</h2>
+<h2 id="_releases">17. Releases</h2>
 <div class="sectionbody">
 <div class="paragraph">
 <p>Previous versions are available from the GitHub project <a href="https://github.com/remkop/picocli/releases">Releases</a>.</p>
@@ -2434,7 +2394,7 @@ runnable.run();</code></pre>
 </div>
 </div>
 <div class="sect1">
-<h2 id="_download">19. Download</h2>
+<h2 id="_download">18. Download</h2>
 <div class="sectionbody">
 <div class="admonitionblock note">
 <table>
@@ -2570,7 +2530,7 @@ Here is the source. Copy and paste it into a file called <code>CommandLine.java<
  */</span>
 <span class="directive">public</span> <span class="type">class</span> <span class="class">CommandLine</span> {
     <span class="comment">/** This is picocli version {@value}. */</span>
-    <span class="directive">public</span> <span class="directive">static</span> <span class="directive">final</span> <span class="predefined-type">String</span> VERSION = <span class="string"><span class="delimiter">&quot;</span><span class="content">0.9.3</span><span class="delimiter">&quot;</span></span>;
+    <span class="directive">public</span> <span class="directive">static</span> <span class="directive">final</span> <span class="predefined-type">String</span> VERSION = <span class="string"><span class="delimiter">&quot;</span><span class="content">0.9.4-SNAPSHOT</span><span class="delimiter">&quot;</span></span>;
 
     <span class="comment">/** Set this field to {@code true} to force ANSI escape sequences on, or to {@code false} to force ANSI escape
      * sequences off. The default ({@code null}) is to enable ANSI escape sequences on supported platforms.  */</span>
@@ -5682,8 +5642,8 @@ Here is the source. Copy and paste it into a file called <code>CommandLine.java<
 </div>
 <div id="footer">
 <div id="footer-text">
-Version 0.9.3<br>
-Last updated 2017-04-23 16:19:31 +09:00
+Version 0.9.4-SNAPSHOT<br>
+Last updated 2017-04-30 23:39:59 +09:00
 </div>
 </div>
 </body>
