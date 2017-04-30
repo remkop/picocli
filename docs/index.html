@@ -790,15 +790,13 @@ One or more options without option-arguments, followed by at most one option tha
     <span class="annotation">@Parameters</span>(hidden = <span class="predefined-constant">true</span>)  <span class="comment">// &quot;hidden&quot;: don't show this parameter in usage help message</span>
     <span class="predefined-type">List</span>&lt;<span class="predefined-type">String</span>&gt; allParameters; <span class="comment">// no &quot;index&quot; attribute: captures _all_ arguments (as Strings)</span>
 
-    <span class="annotation">@Parameters</span>(index = <span class="string"><span class="delimiter">&quot;</span><span class="content">0</span><span class="delimiter">&quot;</span></span>,    <span class="comment">// index=0: the first positional parameter</span>
-                description = <span class="string"><span class="delimiter">&quot;</span><span class="content">Host name or IP address to connect to</span><span class="delimiter">&quot;</span></span>)
+    <span class="annotation">@Parameters</span>(index = <span class="string"><span class="delimiter">&quot;</span><span class="content">0</span><span class="delimiter">&quot;</span></span>)
     <span class="predefined-type">InetAddress</span> host;
 
-    <span class="annotation">@Parameters</span>(index = <span class="string"><span class="delimiter">&quot;</span><span class="content">1</span><span class="delimiter">&quot;</span></span>,    <span class="comment">// index=1: the second positional parameter</span>
-                description = <span class="string"><span class="delimiter">&quot;</span><span class="content">Port number to connect to</span><span class="delimiter">&quot;</span></span>)
+    <span class="annotation">@Parameters</span>(index = <span class="string"><span class="delimiter">&quot;</span><span class="content">1</span><span class="delimiter">&quot;</span></span>)
     <span class="type">int</span> port;
 
-    <span class="annotation">@Parameters</span>(index = <span class="string"><span class="delimiter">&quot;</span><span class="content">2..*</span><span class="delimiter">&quot;</span></span>, description = <span class="string"><span class="delimiter">&quot;</span><span class="content">the files to process</span><span class="delimiter">&quot;</span></span>)
+    <span class="annotation">@Parameters</span>(index = <span class="string"><span class="delimiter">&quot;</span><span class="content">2..*</span><span class="delimiter">&quot;</span></span>)
     <span class="predefined-type">File</span><span class="type">[]</span> files;
 }</code></pre>
 </div>
@@ -1000,13 +998,10 @@ For non-String collections, use the <code>type</code> attribute to specify what 
 <div class="listingblock">
 <div class="content">
 <pre class="CodeRay highlight"><code data-lang="java"><span class="type">class</span> <span class="class">Convert</span> {
-    <span class="annotation">@Option</span>(type = java.util.regex.Pattern.class, <span class="comment">// List elements are Pattern objects</span>
-            names = <span class="string"><span class="delimiter">&quot;</span><span class="content">-patterns</span><span class="delimiter">&quot;</span></span>,
-            description = <span class="string"><span class="delimiter">&quot;</span><span class="content">the regular expressions to use for the conversion</span><span class="delimiter">&quot;</span></span>);
+    <span class="annotation">@Option</span>(type = java.util.regex.Pattern.class, names = <span class="string"><span class="delimiter">&quot;</span><span class="content">-patterns</span><span class="delimiter">&quot;</span></span>);
     <span class="predefined-type">List</span>&lt;<span class="predefined-type">Pattern</span>&gt; patterns;
 
-    <span class="annotation">@Parameters</span>(type = <span class="predefined-type">File</span>.class, <span class="comment">// convert arguments to File before adding to the List</span>
-                description = <span class="string"><span class="delimiter">&quot;</span><span class="content">files to convert</span><span class="delimiter">&quot;</span></span>)
+    <span class="annotation">@Parameters</span>(type = <span class="predefined-type">File</span>.class)
     <span class="predefined-type">List</span>&lt;<span class="predefined-type">File</span>&gt; files;
 }</code></pre>
 </div>
@@ -5643,7 +5638,7 @@ Here is the source. Copy and paste it into a file called <code>CommandLine.java<
 <div id="footer">
 <div id="footer-text">
 Version 0.9.4-SNAPSHOT<br>
-Last updated 2017-04-30 23:39:59 +09:00
+Last updated 2017-04-30 23:53:21 +09:00
 </div>
 </div>
 </body>
