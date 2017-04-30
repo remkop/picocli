@@ -148,7 +148,8 @@ public class CommandLine {
         commandMap.put(name, annotatedObject);
         return this;
     }
-    /** Returns a map with the registered sub-commands. */
+    /** Returns a map with the {@linkplain #addCommand(String, Object) registered} sub-commands.
+     * @return a map with the registered sub-commands */
     public Map<String, Object> getCommands() {
         return new LinkedHashMap<String, Object>(commandMap);
     }
@@ -348,12 +349,14 @@ public class CommandLine {
         return this;
     }
 
-    /** Returns the String that separates option names from option values. {@code '='} by default. */
+    /** Returns the String that separates option names from option values when parsing command line options. {@code '='} by default.
+     * @return the String the parser uses to separate option names from option values */
     public String getSeparator() {
         return interpreter.separator;
     }
 
-    /** Sets the String that separates option names from option values to the specified value. */
+    /** Sets the String the parser uses to separate option names from option values to the specified value.
+     * @param separator the String that separates option names from option values */
     public void setSeparator(String separator) {
         interpreter.separator = Assert.notNull(separator, "separator");
     }
@@ -687,18 +690,23 @@ public class CommandLine {
     @Target(ElementType.TYPE)
     public @interface Command {
         /** Program name to show in the synopsis. If omitted, {@code "<main class>"} is used.
+         * @return the program name to show in the synopsis
          * @see Help#commandName */
         String name() default "<main class>";
 
         /** String that separates options from option parameters. Default is {@code "="}. Spaces are also accepted.
-         * @see Help#separator */
+         * @return the string that separates options from option parameters, used both when parsing and when generating usage help
+         * @see Help#separator
+         * @see CommandLine#setSeparator(String) */
         String separator() default "=";
 
         /** Set the heading preceding the header section. May contain embedded {@linkplain java.util.Formatter format specifiers}.
+         * @return the heading preceding the header section
          * @see Help#headerHeading(Object...)  */
         String headerHeading() default "";
 
         /** Optional summary description of the command, shown before the synopsis.
+         * @return summary description of the command
          * @see Help#header
          * @see Help#header(Object...)  */
         String[] header() default {};
@@ -706,62 +714,75 @@ public class CommandLine {
         /** Set the heading preceding the synopsis text. May contain embedded
          * {@linkplain java.util.Formatter format specifiers}. The default heading is {@code "Usage: "} (without a line
          * break between the heading and the synopsis text).
+         * @return the heading preceding the synopsis text
          * @see Help#synopsisHeading(Object...)  */
         String synopsisHeading() default "Usage: ";
 
         /** Specify {@code true} to generate an abbreviated synopsis like {@code "<main> [OPTIONS] [PARAMETERS...]"}.
          * By default, a detailed synopsis with individual option names and parameters is generated.
+         * @return whether the synopsis should be abbreviated
          * @see Help#abbreviateSynopsis
          * @see Help#abbreviatedSynopsis()
          * @see Help#detailedSynopsis(Comparator, boolean) */
         boolean abbreviateSynopsis() default false;
 
         /** Specify one or more custom synopsis lines to display instead of an auto-generated synopsis.
+         * @return custom synopsis text to replace the auto-generated synopsis
          * @see Help#customSynopsis
          * @see Help#customSynopsis(Object...) */
         String[] customSynopsis() default {};
 
         /** Set the heading preceding the description section. May contain embedded {@linkplain java.util.Formatter format specifiers}.
+         * @return the heading preceding the description section
          * @see Help#descriptionHeading(Object...)  */
         String descriptionHeading() default "";
 
         /** Optional text to display between the synopsis line(s) and the list of options.
+         * @return description of this command
          * @see Help#description
          * @see Help#description(Object...) */
         String[] description() default {};
 
         /** Set the heading preceding the parameters list. May contain embedded {@linkplain java.util.Formatter format specifiers}.
+         * @return the heading preceding the parameters list
          * @see Help#parameterListHeading(Object...)  */
         String parameterListHeading() default "";
 
         /** Set the heading preceding the options list. May contain embedded {@linkplain java.util.Formatter format specifiers}.
+         * @return the heading preceding the options list
          * @see Help#optionListHeading(Object...)  */
         String optionListHeading() default "";
 
         /** Specify {@code false} to show Options in declaration order. The default is to sort alphabetically.
+         * @return whether options should be shown in alphabetic order.
          * @see Help#sortOptions */
         boolean sortOptions() default true;
 
         /** Prefix required options with this character in the options list. The default is no marker: the synopsis
          * indicates which options and parameters are required.
+         * @return the character to show in the options list to mark required options
          * @see Help#requiredOptionMarker */
         char requiredOptionMarker() default ' ';
 
         /** Specify {@code true} to show default values in the description column of the options list (except for
          * boolean options). False by default.
+         * @return whether the default values for options and parameters should be shown in the description column
          * @see Help#showDefaultValues */
         boolean showDefaultValues() default false;
 
         /** Set the heading preceding the sub-commands list. May contain embedded {@linkplain java.util.Formatter format specifiers}.
          * The default heading is {@code "Commands:%n"} (with a line break at the end).
+         * @return the heading preceding the sub-commands list
          * @see Help#commandListHeading(Object...)  */
         String commandListHeading() default "Commands:%n";
 
         /** Set the heading preceding the footer section. May contain embedded {@linkplain java.util.Formatter format specifiers}.
+         * @return the heading preceding the footer section
          * @see Help#footerHeading(Object...)  */
         String footerHeading() default "";
 
         /** Optional text to display after the list of options.
+         * @return text to display after the list of options
          * @see Help#footer
          * @see Help#footer(Object...) */
         String[] footer() default {};
@@ -838,12 +859,16 @@ public class CommandLine {
             this.originalValue = originalValue;
         }
         /** Returns a new {@code Arity} based on the Option annotation on the specified field, or the field type if no
-         * arity was specified. */
+         * arity was specified.
+         * @param field the field whose Option annotation to inspect
+         * @return a new {@code Arity} based on the Option annotation on the specified field */
         public static Arity forOption(Field field) {
             return adjustForType(Arity.valueOf(field.getAnnotation(Option.class).arity()), field);
         }
         /** Returns a new {@code Arity} based on the Parameters annotation on the specified field, or the field type
-         * if no arity was specified. */
+         * if no arity was specified.
+         * @param field the field whose Parameters annotation to inspect
+         * @return a new {@code Arity} based on the Parameters annotation on the specified field */
         public static Arity forParameters(Field field) {
             return adjustForType(Arity.valueOf(field.getAnnotation(Parameters.class).arity()), field);
         }
@@ -851,7 +876,9 @@ public class CommandLine {
             return result.isUnspecified ? forType(field.getType()) : result;
         }
         /** Returns a new {@code Arity} based on the specified type: booleans have arity 0, arrays or Collections have
-         * arity "0..*", and other types have arity 1. */
+         * arity "0..*", and other types have arity 1.
+         * @param type the type whose default arity to return
+         * @return a new {@code Arity} based on the specified type */
         public static Arity forType(Class<?> type) {
             if (isBoolean(type)) {
                 return Arity.valueOf("0");
@@ -863,7 +890,9 @@ public class CommandLine {
         /** Leniently parses the specified String as an {@code Arity} value and return the result. An arity string can
          * be a fixed integer value or a range of the form {@code MIN_VALUE + ".." + MAX_VALUE}. If the
          * {@code MIN_VALUE} string is not numeric, the minimum is zero. If the {@code MAX_VALUE} is not numeric, the
-         * arity is taken to be variable and the maximum is {@code Integer.MAX_VALUE}.*/
+         * arity is taken to be variable and the maximum is {@code Integer.MAX_VALUE}.
+         * @param arity the arity string to parse
+         * @return a new {@code Arity} value */
         public static Arity valueOf(String arity) {
             arity = arity.trim();
             boolean unspecified = arity.length() == 0 || arity.startsWith(".."); // || arity.endsWith("..");
@@ -1637,9 +1666,9 @@ public class CommandLine {
      * <p>The {@link Command} annotation provides the easiest way to customize usage help messages. See
      * the <a href="https://remkop.github.io/picocli/index.html#_usage_help">Manual</a> for details.</p>
      * <p>This Help class provides high-level functions to create sections of the usage help message and headings
-     * for these sections. Instead of calling the {@link CommandLine#usage(PrintStream, ColorScheme)} method,
-     * application authors may want to create a custom usage help message by reorganizing sections in a different order
-     * and/or adding custom sections.</p>
+     * for these sections. Instead of calling the {@link CommandLine#usage(PrintStream, CommandLine.Help.ColorScheme)}
+     * method, application authors may want to create a custom usage help message by reorganizing sections in a
+     * different order and/or adding custom sections.</p>
      * <p>Finally, the Help class contains inner classes and interfaces that can be used to create custom help messages.</p>
      * <h4>IOptionRenderer and IParameterRenderer</h4>
      * <p>Renders a field annotated with {@link Option} or {@link Parameters} to an array of {@link Text} values.
