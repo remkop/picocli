@@ -70,7 +70,7 @@ A more elaborate usage help example is shown below:
 
 ![Longer help message with ANSI colors](docs/images/UsageHelpWithStyle.png?raw=true)
 
-See the [source code](https://github.com/remkop/picocli/blob/master/src/test/java/picocli/Demo.java#L155).
+See the [source code](https://github.com/remkop/picocli/blob/master/src/test/java/picocli/Demo.java#L180).
 
 ## More Customized Usage Help
 
