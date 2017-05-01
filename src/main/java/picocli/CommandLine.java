@@ -1776,13 +1776,16 @@ public class CommandLine {
         public String footerHeading;
 
         /** Constructs a new {@code Help} instance with a default color scheme, initialized from annotatations
-         * on the specified class and superclasses. */
+         * on the specified class and superclasses.
+         * @param annotatedObject the annotated object to create usage help for */
         public Help(Object annotatedObject) {
             this(annotatedObject, defaultColorScheme());
         }
 
         /** Constructs a new {@code Help} instance with the specified color scheme, initialized from annotatations
-         * on the specified class and superclasses. */
+         * on the specified class and superclasses.
+         * @param annotatedObject the annotated object to create usage help for
+         * @param colorScheme the color scheme to use */
         public Help(Object annotatedObject, ColorScheme colorScheme) {
             this.annotatedObject = Assert.notNull(annotatedObject, "annotatedObject");
             this.colorScheme = Assert.notNull(colorScheme, "colorScheme").applySystemProperties();
@@ -1873,7 +1876,8 @@ public class CommandLine {
         }
 
         /** Generates a generic synopsis like {@code <command name> [OPTIONS] [PARAM1 [PARAM2]...]}, omitting parts
-         * that don't apply to the command (e.g., does not show [OPTIONS] if the command has no options). */
+         * that don't apply to the command (e.g., does not show [OPTIONS] if the command has no options).
+         * @return a generic synopsis */
         public String abbreviatedSynopsis() {
             StringBuilder sb = new StringBuilder();
             if (!optionFields.isEmpty()) { // only show if annotated object actually has options
@@ -1890,7 +1894,10 @@ public class CommandLine {
         }
 
         /** Generates a detailed synopsis message showing all options and parameters. Follows the unix convention of
-         * showing optional options and parameters in square brackets ({@code [ ]}). */
+         * showing optional options and parameters in square brackets ({@code [ ]}).
+         * @param optionSort comparator to sort options or {@code null} if options should not be sorted
+         * @param clusterBooleanOptions {@code true} if boolean short options should be clustered into a single string
+         * @return a detailed synopsis */
         public String detailedSynopsis(Comparator<Field> optionSort, boolean clusterBooleanOptions) {
             Text optionText = new Text(0);
             List<Field> fields = new ArrayList<Field>(optionFields); // iterate in declaration order
@@ -2001,7 +2008,11 @@ public class CommandLine {
             return layout.toString();
         }
 
-        /** Appends each of the specified values plus the specified separator to the specified StringBuilder and returns it. */
+        /** Formats each of the specified values and appends it to the specified StringBuilder.
+         * @param values the values to format and append to the StringBuilder
+         * @param sb the StringBuilder to collect the formatted strings
+         * @param params the parameters to pass to the format method when formatting each value
+         * @return the specified StringBuilder */
         public static StringBuilder join(String[] values, StringBuilder sb, Object... params) {
             if (values != null) {
                 TextTable table = new TextTable(80);
@@ -2050,47 +2061,63 @@ public class CommandLine {
             return join(footer, new StringBuilder(), params).toString();
         }
 
-        /** Returns the text displayed before the header text; the result of {@code String.format(headerHeading, params)}. */
+        /** Returns the text displayed before the header text; the result of {@code String.format(headerHeading, params)}.
+         * @param params the parameters to use to format the header heading
+         * @return the formatted header heading */
         public String headerHeading(Object... params) {
             return new Text(format(headerHeading, params)).toString();
         }
-        /** Returns the text displayed before the synopsis text; the result of {@code String.format(synopsisHeading, params)}. */
+
+        /** Returns the text displayed before the synopsis text; the result of {@code String.format(synopsisHeading, params)}.
+         * @param params the parameters to use to format the synopsis heading
+         * @return the formatted synopsis heading */
         public String synopsisHeading(Object... params) {
             return new Text(format(synopsisHeading, params)).toString();
         }
 
         /** Returns the text displayed before the description text; an empty string if there is no description,
-         * otherwise the result of {@code String.format(descriptionHeading, params)}. */
+         * otherwise the result of {@code String.format(descriptionHeading, params)}.
+         * @param params the parameters to use to format the description heading
+         * @return the formatted description heading */
         public String descriptionHeading(Object... params) {
             return empty(descriptionHeading) ? "" : new Text(format(descriptionHeading, params)).toString();
         }
 
         /** Returns the text displayed before the positional parameter list; an empty string if there are no positional
-         * parameters, otherwise the result of {@code String.format(parameterListHeading, params)}. */
+         * parameters, otherwise the result of {@code String.format(parameterListHeading, params)}.
+         * @param params the parameters to use to format the parameter list heading
+         * @return the formatted parameter list heading */
         public String parameterListHeading(Object... params) {
             return positionalParametersFields.isEmpty() ? "" : new Text(format(parameterListHeading, params)).toString();
         }
 
         /** Returns the text displayed before the option list; an empty string if there are no options,
-         * otherwise the result of {@code String.format(optionListHeading, params)}. */
+         * otherwise the result of {@code String.format(optionListHeading, params)}.
+         * @param params the parameters to use to format the option list heading
+         * @return the formatted option list heading */
         public String optionListHeading(Object... params) {
             return optionFields.isEmpty() ? "" : new Text(format(optionListHeading, params)).toString();
         }
 
         /** Returns the text displayed before the command list; an empty string if there are no commands,
-         * otherwise the result of {@code String.format(commandListHeading, params)}. */
+         * otherwise the result of {@code String.format(commandListHeading, params)}.
+         * @param params the parameters to use to format the command list heading
+         * @return the formatted command list heading */
         public String commandListHeading(Object... params) {
             return commands.isEmpty() ? "" : new Text(format(commandListHeading, params)).toString();
         }
 
-        /** Returns the text displayed before the footer text; the result of {@code String.format(footerHeading, params)}. */
+        /** Returns the text displayed before the footer text; the result of {@code String.format(footerHeading, params)}.
+         * @param params the parameters to use to format the footer heading
+         * @return the formatted footer heading */
         public String footerHeading(Object... params) {
             return new Text(format(footerHeading, params)).toString();
         }
         private String format(String formatString,  Object[] params) {
             return formatString == null ? "" : String.format(formatString, params);
         }
-        /** Returns a 2-column list with command names and the first line of their header or (if absent) description. */
+        /** Returns a 2-column list with command names and the first line of their header or (if absent) description.
+         * @return a usage help section describing the added commands */
         public String commandList() {
             if (commands.isEmpty()) { return ""; }
             int commandLength = maxLength(commands.keySet());
@@ -2120,7 +2147,8 @@ public class CommandLine {
             return result.toString();
         }
 
-        /** Returns a {@code Layout} instance configured with the user preferences captured in this Help instance. */
+        /** Returns a {@code Layout} instance configured with the user preferences captured in this Help instance.
+         * @return a Layout */
         public Layout createDefaultLayout() {
             return new Layout(colorScheme, new TextTable(), createDefaultOptionRenderer(), createDefaultParameterRenderer());
         }
@@ -2136,6 +2164,7 @@ public class CommandLine {
          * <p>Following this, there will be one row for each of the remaining elements of the {@link
          *   Option#description()} array, and these rows look like {@code {"", "", "", "", option.description()[i]}}.</p>
          * <p>If configured, this option renderer adds an additional row to display the default field value.</p>
+         * @return a new default OptionRenderer
          */
         public IOptionRenderer createDefaultOptionRenderer() {
             DefaultOptionRenderer result = new DefaultOptionRenderer();
@@ -2146,10 +2175,12 @@ public class CommandLine {
             return result;
         }
         /** Returns a new minimal OptionRenderer which converts {@link Option Options} to a single row with two columns
-         * of text: an option name and a description. If multiple names or descriptions exist, the first value is used. */
+         * of text: an option name and a description. If multiple names or descriptions exist, the first value is used.
+         * @return a new minimal OptionRenderer */
         public static IOptionRenderer createMinimalOptionRenderer() {
             return new MinimalOptionRenderer();
         }
+
         /** Returns a new default ParameterRenderer which converts {@link Parameters Parameters} to four columns of
          * text to match the default {@linkplain TextTable TextTable} column layout. The first row of values looks like this:
          * <ol>
@@ -2161,6 +2192,7 @@ public class CommandLine {
          * <p>Following this, there will be one row for each of the remaining elements of the {@link
          *   Parameters#description()} array, and these rows look like {@code {"", "", "", param.description()[i]}}.</p>
          * <p>If configured, this parameter renderer adds an additional row to display the default field value.</p>
+         * @return a new default ParameterRenderer
          */
         public IParameterRenderer createDefaultParameterRenderer() {
             DefaultParameterRenderer result = new DefaultParameterRenderer();
@@ -2168,11 +2200,14 @@ public class CommandLine {
             return result;
         }
         /** Returns a new minimal ParameterRenderer which converts {@link Parameters Parameters} to a single row with
-         * two columns of text: an option name and a description. If multiple descriptions exist, the first value is used. */
+         * two columns of text: an option name and a description. If multiple descriptions exist, the first value is used.
+         * @return a new minimal ParameterRenderer */
         public static IParameterRenderer createMinimalParameterRenderer() {
             return new MinimalParameterRenderer();
         }
-        /** Returns a value renderer that returns the {@code paramLabel} if defined or the field name otherwise. */
+
+        /** Returns a value renderer that returns the {@code paramLabel} if defined or the field name otherwise.
+         * @return a new minimal ParamLabelRenderer */
         public static IParamLabelRenderer createMinimalParamLabelRenderer() {
             return new IParamLabelRenderer() {
                 public Text renderParameterLabel(Field field, List<IStyle> styles) {
@@ -2192,21 +2227,25 @@ public class CommandLine {
         /** Returns a new default value renderer that separates option parameters from their {@linkplain Option
          * options} with the specified separator string, surrounds optional parameters with {@code '['} and {@code ']'}
          * characters and uses ellipses ("...") to indicate that any number of a parameter are allowed.
+         * @return a new default ParamLabelRenderer
          */
         public IParamLabelRenderer createDefaultParamLabelRenderer() {
             return new DefaultParamLabelRenderer(separator);
         }
         /** Sorts Fields annotated with {@code Option} by their option name in case-insensitive alphabetic order. If an
-         * Option has multiple names, the shortest name is used for the sorting. Help options follow non-help options. */
+         * Option has multiple names, the shortest name is used for the sorting. Help options follow non-help options.
+         * @return a comparator that sorts fields by their option name in case-insensitive alphabetic order */
         public static Comparator<Field> createShortOptionNameComparator() {
             return new SortByShortestOptionNameAlphabetically();
         }
         /** Sorts Fields annotated with {@code Option} by their option {@linkplain Arity#max max arity} first, by
-         * {@linkplain Arity#min min arity} next, and by {@linkplain #createShortOptionNameComparator() option name} last. */
+         * {@linkplain Arity#min min arity} next, and by {@linkplain #createShortOptionNameComparator() option name} last.
+         * @return a comparator that sorts fields by arity first, then their option name */
         public static Comparator<Field> createShortOptionArityAndNameComparator() {
             return new SortByOptionArityAndNameAlphabetically();
         }
-        /** Sorts short strings before longer strings. */
+        /** Sorts short strings before longer strings.
+         * @return a comparators that sorts short strings before longer strings */
         public static Comparator<String> shortestFirst() {
             return new ShortestFirst();
         }
@@ -2421,7 +2460,7 @@ public class CommandLine {
          * <p>Delegates to the renderers to create {@link Text} values for the annotated fields, and uses a
          * {@link TextTable} to display these values in tabular format. Layout is responsible for deciding which values
          * to display where in the table. By default, Layout shows one option or parameter per table row.</p>
-         * <p>Customize by overriding the {@link #layout(Field, Text[][])} method.</p>
+         * <p>Customize by overriding the {@link #layout(Field, CommandLine.Help.Ansi.Text[][])} method.</p>
          * @see IOptionRenderer rendering options to text
          * @see IParameterRenderer rendering parameters to text
          * @see TextTable showing values in a tabular format
@@ -2453,7 +2492,7 @@ public class CommandLine {
             }
             /**
              * Copies the specified text values into the correct cells in the {@link TextTable}. This implementation
-             * delegates to {@link TextTable#addRowValues(Text...)} for each row of values.
+             * delegates to {@link TextTable#addRowValues(CommandLine.Help.Ansi.Text...)} for each row of values.
              * <p>Subclasses may override.</p>
              * @param field the field annotated with the specified Option or Parameters
              * @param cellValues the text values representing the Option/Parameters, to be displayed in tabular form
@@ -2474,7 +2513,7 @@ public class CommandLine {
             }
             /**
              * Delegates to the {@link #optionRenderer option renderer} of this layout to obtain
-             * text values for the specified {@link Option}, and then calls the {@link #layout(Field, Text[][])}
+             * text values for the specified {@link Option}, and then calls the {@link #layout(Field, CommandLine.Help.Ansi.Text[][])}
              * method to write these text values into the correct cells in the TextTable.
              * @param field the field annotated with the specified Option
              * @param paramLabelRenderer knows how to render option parameters
@@ -2496,7 +2535,7 @@ public class CommandLine {
             /**
              * Delegates to the {@link #parameterRenderer parameter renderer} of this layout
              * to obtain text values for the specified {@link Parameters}, and then calls
-             * {@link #layout(Field, Text[][])} to write these text values into the correct cells in the TextTable.
+             * {@link #layout(Field, CommandLine.Help.Ansi.Text[][])} to write these text values into the correct cells in the TextTable.
              * @param field the field annotated with the specified Parameters
              * @param paramLabelRenderer knows how to render option parameters
              */
@@ -2609,7 +2648,7 @@ public class CommandLine {
                 }
             }
 
-            /** Delegates to {@link #addRowValues(Text...)}. */
+            /** Delegates to {@link #addRowValues(CommandLine.Help.Ansi.Text...)}. */
             public void addRowValues(String... values) {
                 Text[] array = new Text[values.length];
                 for (int i = 0; i < array.length; i++) {
@@ -2619,7 +2658,7 @@ public class CommandLine {
             }
             /**
              * Adds a new {@linkplain TextTable#addEmptyRow() empty row}, then calls {@link
-             * TextTable#putValue(int, int, Text) putValue} for each of the specified values, adding more empty rows
+             * TextTable#putValue(int, int, CommandLine.Help.Ansi.Text) putValue} for each of the specified values, adding more empty rows
              * if the return value indicates that the value spanned multiple columns or was wrapped to multiple rows.
              * @param values the values to write into a new row in this TextTable
              * @throws IllegalArgumentException if the number of values exceeds the number of Columns in this table
@@ -2852,8 +2891,9 @@ public class CommandLine {
             private static boolean ansiForcedOn()  { return ansi != null && ansi; }
             private static boolean ansiForcedOff() { return ansi != null && !ansi; }
 
-            /** Enabled if it is forced ON or if the platform supports ANSI escape codes and it is not forced OFF. */
-            public  static boolean enabled() { return ansiForcedOn() || (ansiPossible() && !ansiForcedOff()); }
+            /** Enabled if it is forced ON or if the platform supports ANSI escape codes and it is not forced OFF.
+             * @return {@code true} if ANSI escape codes are enabled */
+            public static boolean enabled() { return ansiForcedOn() || (ansiPossible() && !ansiForcedOff()); }
 
             /** Defines the interface for an ANSI escape sequence. */
             public interface IStyle {
@@ -2861,10 +2901,12 @@ public class CommandLine {
                 /** The Control Sequence Introducer (CSI) escape sequence {@value}. */
                 String CSI = "\u001B[";
 
-                /** Returns the ANSI escape code for turning this style on. */
+                /** Returns the ANSI escape code for turning this style on.
+                 * @return the ANSI escape code for turning this style on */
                 String on();
 
-                /** Returns the ANSI escape code for turning this style off. */
+                /** Returns the ANSI escape code for turning this style off.
+                 * @return the ANSI escape code for turning this style off */
                 String off();
             }
 
@@ -2884,7 +2926,10 @@ public class CommandLine {
                 Style(int startCode, int endCode) {this.startCode = startCode; this.endCode = endCode; }
                 public String on() { return CSI + startCode + "m"; }
                 public String off() { return CSI + endCode + "m"; }
-				/** Returns the concatenated ANSI escape codes for turning all specified styles on. */
+
+				/** Returns the concatenated ANSI escape codes for turning all specified styles on.
+                 * @param styles the styles to generate ANSI escape codes for
+                 * @return the concatenated ANSI escape codes for turning all specified styles on */
                 public static String on(IStyle... styles) {
                     StringBuilder result = new StringBuilder();
                     for (IStyle style : styles) {
@@ -2892,7 +2937,9 @@ public class CommandLine {
                     }
                     return result.toString();
                 }
-				/** Returns the concatenated ANSI escape codes for turning all specified styles off. */
+				/** Returns the concatenated ANSI escape codes for turning all specified styles off.
+                 * @param styles the styles to generate ANSI escape codes for
+                 * @return the concatenated ANSI escape codes for turning all specified styles off */
                 public static String off(IStyle... styles) {
                     StringBuilder result = new StringBuilder();
                     for (IStyle style : styles) {
@@ -3028,22 +3075,33 @@ public class CommandLine {
                     try { return super.clone(); } catch (CloneNotSupportedException e) { throw new IllegalStateException(e); }
                 }
 
-                /** Returns a new {@code Text} instance that is a substring of this Text. Does not modify this instance! */
+                /** Returns a new {@code Text} instance that is a substring of this Text. Does not modify this instance!
+                 * @param start index in the plain text where to start the substring
+                 * @return a new Text instance that is a substring of this Text */
                 public Text substring(int start) {
                     return substring(start, length);
                 }
-                /** Returns a new {@code Text} instance that is a substring of this Text. Does not modify this instance! */
+
+                /** Returns a new {@code Text} instance that is a substring of this Text. Does not modify this instance!
+                 * @param start index in the plain text where to start the substring
+                 * @param end index in the plain text where to end the substring
+                 * @return a new Text instance that is a substring of this Text */
                 public Text substring(int start, int end) {
                     Text result = (Text) clone();
                     result.from = from + start;
                     result.length = end - start;
                     return result;
                 }
-                /** Returns a new {@code Text} instance with the specified text appended. Does not modify this instance! */
+                /** Returns a new {@code Text} instance with the specified text appended. Does not modify this instance!
+                 * @param string the text to append
+                 * @return a new Text instance */
                 public Text append(String string) {
                     return append(new Text(string));
                 }
-                /** Returns a new {@code Text} instance with the specified text appended. Does not modify this instance! */
+
+                /** Returns a new {@code Text} instance with the specified text appended. Does not modify this instance!
+                 * @param other the text to append
+                 * @return a new Text instance */
                 public Text append(Text other) {
                     Text result = (Text) clone();
                     result.plain = new StringBuilder(plain.toString().substring(from, from + length));
@@ -3084,14 +3142,16 @@ public class CommandLine {
                     destination.plain.append(plain.toString().substring(from, from + length));
                     destination.length = destination.plain.length();
                 }
-                /** Returns the plain text without any formatting */
+                /** Returns the plain text without any formatting.
+                 * @return the plain text without any formatting */
                 public String plainString() {  return plain.toString().substring(from, from + length); }
 
                 public boolean equals(Object obj) { return toString().equals(String.valueOf(obj)); }
                 public int hashCode() { return toString().hashCode(); }
 
                 /** Returns a String representation of the text with ANSI escape codes embedded, unless ANSI is
-                 * not {@linkplain CommandLine.Help.Ansi#enabled() enabled}, in which case the plain text is returned. */
+                 * not {@linkplain CommandLine.Help.Ansi#enabled() enabled}, in which case the plain text is returned.
+                 * @return a String representation of the text with ANSI escape codes embedded (if enabled) */
                 public String toString() {
                     if (!Ansi.enabled()) {
                         return plain.toString().substring(from, from + length);
