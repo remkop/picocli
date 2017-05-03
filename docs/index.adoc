@@ -754,10 +754,6 @@ You can set _background_ colors by specifying `bg(<color>)`.
 For example, `@|bg(red) text with red background|@`.
 Similarly, `fg(<color>)` explicitly sets the foreground color.
 
-Custom RGB https://en.wikipedia.org/wiki/ANSI_escape_code#Colors[colors] (ISO-8613-3 24-bit foreground and background colors) can be specified in any format supported by the `Color.decode()` method.
-For example, `fg(Ox9933EE)` renders a color equivalent to `java.awt.Color.decode(Ox9933EE)`.
-
-CAUTION: Not all terminals support ISO-8613-3.
 
 The example below shows how this can be used to add colors and styles to the headings and descriptions of a usage help message:
 [source,java]
@@ -776,6 +772,23 @@ class GitCommit { ... }
 ----
 
 CAUTION: Styles cannot be nested, for example: `@|bold this @|underline that|@|@` will not work. You can achieve the same by combining styles, for example: `@|bold this|@ @|bold,underline that|@` will work fine.
+
+=== More Colors
+Most terminals support a https://en.wikipedia.org/wiki/ANSI_escape_code#Colors[256 color indexed palette]:
+----
+0x00-0x07:  standard colors (the named colors)
+0x08-0x0F:  high intensity colors (often similar to named colors + bold style)
+0x10-0xE7:  6 × 6 × 6 cube (216 colors): 16 + 36 × r + 6 × g + b (0 ≤ r, g, b ≤ 5)
+0xE8-0xFF:  grayscale from black to white in 24 steps
+----
+
+Colors from the 256 color palette can be specified by their index values or by their RGB components.
+RGB components must be separated by a semicolon `;` and each component must be between `0` and `5`, inclusive.
+
+For example, `@|bg(0;5;0) text with red=0, green=5, blue=0 background|@`,
+or `@|fg(46) the same color by index, as foreground color|@`.
+
+image:256colors.png[256 color indexed palette]
 
 
 === Configuring Fixed Elements

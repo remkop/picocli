@@ -2988,25 +2988,27 @@ public class CommandLine {
                 }
 				/** Parses the specified style markup and returns the associated style.
 				 *  The markup may be one of the Style enum value names, or it may be one of the Style enum value
-				 *  names when {@code "fg_"} is prepended, or it may be an {@link java.awt.Color#decode(String) RGB Color int}.
-				 * @param str the case-insensitive style markup to convert, e.g. {@code "blue"} or {@code "fg_blue"}
+				 *  names when {@code "fg_"} is prepended, or it may be one of the indexed colors in the 256 color palette.
+                 * @param str the case-insensitive style markup to convert, e.g. {@code "blue"} or {@code "fg_blue"},
+                 *          or {@code "46"} (indexed color) or {@code "0;5;0"} (RGB components of an indexed color)
 				 * @return the IStyle for the specified converter
 				 */
                 public static IStyle fg(String str) {
                     try { return Style.valueOf(str.toLowerCase(ENGLISH)); } catch (Exception ignored) {}
                     try { return Style.valueOf("fg_" + str.toLowerCase(ENGLISH)); } catch (Exception ignored) {}
-                    return new ISO86133RGBColor(true, Color.decode(str));
+                    return new Palette256Color(true, str);
                 }
 				/** Parses the specified style markup and returns the associated style.
 				 *  The markup may be one of the Style enum value names, or it may be one of the Style enum value
-				 *  names when {@code "bg_"} is prepended, or it may be an {@link java.awt.Color#decode(String) RGB Color int}.
-				 * @param str the case-insensitive style markup to convert, e.g. {@code "blue"} or {@code "bg_blue"}
+				 *  names when {@code "bg_"} is prepended, or it may be one of the indexed colors in the 256 color palette.
+				 * @param str the case-insensitive style markup to convert, e.g. {@code "blue"} or {@code "bg_blue"},
+                 *          or {@code "46"} (indexed color) or {@code "0;5;0"} (RGB components of an indexed color)
 				 * @return the IStyle for the specified converter
 				 */
                 public static IStyle bg(String str) {
                     try { return Style.valueOf(str.toLowerCase(ENGLISH)); } catch (Exception ignored) {}
                     try { return Style.valueOf("bg_" + str.toLowerCase(ENGLISH)); } catch (Exception ignored) {}
-                    return new ISO86133RGBColor(false, Color.decode(str));
+                    return new Palette256Color(false, str);
                 }
                 /** Parses the specified comma-separated sequence of style descriptors and returns the associated
                  *  styles. For each markup, strings starting with {@code "bg("} are delegated to
@@ -3032,16 +3034,22 @@ public class CommandLine {
                 }
             }
 
-            /** ISO-8613-3 24-bit RGB color ansi escape codes. */
-            static class ISO86133RGBColor implements IStyle {
+            /** Defines a palette map of 216 colors: 6 * 6 * 6 cube (216 colors):
+             * 16 + 36 * r + 6 * g + b (0 &lt;= r, g, b &lt;= 5). */
+            static class Palette256Color implements IStyle {
                 private final int fgbg;
-                private final Color color;
+                private final int color;
 
-                ISO86133RGBColor(boolean foreground, Color color) {
+                Palette256Color(boolean foreground, String color) {
                     this.fgbg = foreground ? 38 : 48;
-                    this.color = color;
+                    String[] rgb = color.split(";");
+                    if (rgb.length == 3) {
+                        this.color = 16 + 36 * Integer.decode(rgb[0]) + 6 * Integer.decode(rgb[1]) + Integer.decode(rgb[2]);
+                    } else {
+                        this.color = Integer.decode(color);
+                    }
                 }
-                public String on() { return String.format(CSI + "%d;2;%d;%d;%dm", fgbg, color.getRed(), color.getGreen(), color.getBlue()); }
+                public String on() { return String.format(CSI + "%d;5;%dm", fgbg, color); }
                 public String off() { return CSI + (fgbg + 1) + "m"; }
             }
 

@@ -77,6 +77,91 @@ public class Demo implements Runnable {
     @Option(names = "--mixed", hidden = true, description = "Show help with mixed Ansi colors and styles in description")
     private boolean showAnsiInDescription;
 
+    @Option(names = {"-i", "--index"}, description = "" +
+            "@|fg(21) S|@" +
+            "@|fg(57) h|@" +
+            "@|fg(93) o|@" +
+            "@|fg(129) w|@" +
+            "@|fg(129)  |@" +
+            "@|fg(165) 2|@" +
+            "@|fg(201) 5|@" +
+            "@|fg(225) 6|@" +
+            "@|fg(123)  |@" +
+            "@|fg(122) c|@" +
+            "@|fg(120) o|@" +
+            "@|fg(118) l|@" +
+            "@|fg(148) o|@" +
+            "@|fg(142) r|@" +
+            "@|fg(136)  |@" +
+            "@|fg(136) p|@" +
+            "@|fg(130) a|@" +
+            "@|fg(124) l|@" +
+            "@|fg(160) e|@" +
+            "@|fg(196) t|@" +
+            "@|fg(198) t|@" +
+            "@|fg(199) e|@" +
+            "@|fg(200)  |@" +
+            "@|fg(201) i|@" +
+            "@|fg(213) n|@" +
+            "@|fg(219) d|@" +
+            "@|fg(225) e|@" +
+            "@|fg(231) x|@" +
+            "@|fg(230)  |@" +
+            "@|fg(229) v|@" +
+            "@|fg(228) a|@" +
+            "@|fg(227) l|@" +
+            "@|fg(226) u|@" +
+            "@|fg(190) e|@" +
+            "@|fg(154) s|@")
+    private boolean showIndexedColorPalette;
+
+    @Option(names = {"-r", "--rgb"}, description =  "" +
+            "@|fg(0;0;5) S|@" +
+            "@|fg(1;0;5) h|@" +
+            "@|fg(2;0;5) o|@" +
+            "@|fg(3;0;5) w|@" +
+            "@|fg(3;0;5)  |@" +
+            "@|fg(4;0;5) 2|@" +
+            "@|fg(5;0;5) 5|@" +
+            "@|fg(5;4;5) 6|@" +
+            "@|fg(2;5;5)  |@" +
+            "@|fg(2;5;4) c|@" +
+            "@|fg(2;5;2) o|@" +
+            "@|fg(2;5;0) l|@" +
+            "@|fg(3;4;0) o|@" +
+            "@|fg(3;3;0) r|@" +
+            "@|fg(3;2;0)  |@" +
+            "@|fg(3;2;0) p|@" +
+            "@|fg(3;1;0) a|@" +
+            "@|fg(3;0;0) l|@" +
+            "@|fg(4;0;0) e|@" +
+            "@|fg(5;0;0) t|@" +
+            "@|fg(5;0;2) t|@" +
+            "@|fg(5;0;3) e|@" +
+            "@|fg(5;0;4)  |@" +
+            "@|fg(5;0;5) R|@" +
+            "@|fg(5;2;5) G|@" +
+            "@|fg(5;3;5) B|@" +
+            "@|fg(5;4;5)  |@" +
+            "@|fg(5;5;5) c|@" +
+            "@|fg(5;5;4) o|@" +
+            "@|fg(5;5;3) m|@" +
+            "@|fg(5;5;2) p|@" +
+            "@|fg(5;5;1) o|@" +
+            "@|fg(5;5;0) n|@" +
+            "@|fg(4;5;0) e|@" +
+            "@|fg(3;5;0) n|@" +
+            "@|fg(2;5;0) t|@" +
+            "@|fg(1;5;0)  |@" +
+            "@|fg(1;5;0) v|@" +
+            "@|fg(0;5;0) a|@" +
+            "@|fg(0;4;0) l|@" +
+            "@|fg(0;3;0) u|@" +
+            "@|fg(0;2;0) e|@" +
+            "@|fg(0;1;0) s|@" +
+            "")
+    private boolean showRgbColorPalette;
+
     @Option(names = {"-t", "--tests"}, description = "Runs all tests in this class")
     private boolean runTests;
 
@@ -84,6 +169,8 @@ public class Demo implements Runnable {
         if (!runTests &&
                 !showSimpleExample &&
                 !showAnsiInDescription &&
+                !showIndexedColorPalette &&
+                !showRgbColorPalette &&
                 !showUsageForMainCommand &&
                 !showUsageForSubcommandGitCommit &&
                 !showUsageForSubcommandGitStatus) {
@@ -93,6 +180,8 @@ public class Demo implements Runnable {
         if (runTests)                        { testParseSubCommands(); System.out.println("Ran tests OK.");}
         if (showSimpleExample)               { showSimpleExampleUsage(); }
         if (showAnsiInDescription)           { showAnsiInDescription(); }
+        if (showIndexedColorPalette)         { showIndexedColorPalette(); }
+        if (showRgbColorPalette)             { showRgbColorPalette(); }
         if (showUsageForMainCommand)         { testUsageMainCommand(); }
         if (showUsageForSubcommandGitStatus) { testUsageSubCommandStatus(); }
         if (showUsageForSubcommandGitCommit) { testUsageSubCommandCommit(); }
@@ -117,6 +206,74 @@ public class Demo implements Runnable {
         @Command(description = "Custom @|bold,underline styles|@ and @|fg(red) colors|@.")
         class AnsiDescription { }
         CommandLine.usage(new AnsiDescription(), System.out);
+    }
+
+    private void showIndexedColorPalette() {
+        int[] foregroundBackground = {38, 48};
+        for (int fbg : foregroundBackground) {
+            for (int r = 0; r < 2; r++) {
+                for (int g = 0; g < 6; g++) {
+                    for (int b = 0; b < 6; b++) {
+                        int col = 16 + 36 * (0 + 3 * r) + 6 * g + b;
+                        System.out.printf("\u001B[%d;5;%dm%3d \u001B[0m", fbg, col, col);
+                    }
+                    for (int b = 0; b < 6; b++) {
+                        int col = 16 + 36 * (1 + 3 * r) + 6 * g + b;
+                        System.out.printf("\u001B[%d;5;%dm%3d \u001B[0m", fbg, col, col);
+                    }
+                    for (int b = 0; b < 6; b++) {
+                        int col = 16 + 36 * (2 + 3 * r) + 6 * g + b;
+                        System.out.printf("\u001B[%d;5;%dm%3d \u001B[0m", fbg, col, col);
+                    }
+                    System.out.println();
+                }
+                System.out.println();
+            }
+            int r = 6;
+            for (int g = 0; g < 4; g++) {
+                for (int b = 0; b < 6; b++) {
+                    int col = 16 + 36 * r + 6 * g + b;
+                    System.out.printf("\u001B[%d;5;%dm%3d \u001B[0m", fbg, col, col);
+                }
+                System.out.println();
+            }
+            System.out.println();
+        }
+    }
+
+    private void showRgbColorPalette() {
+        int[] foregroundBackground = {38, 48};
+        for (int fbg : foregroundBackground) {
+            for (int r = 0; r < 2; r++) {
+                System.out.println("RGB RGB RGB RGB RGB RGB RGB RGB RGB RGB RGB RGB RGB RGB RGB RGB RGB RGB ");
+                for (int g = 0; g < 6; g++) {
+                    for (int b = 0; b < 6; b++) {
+                        int col = 16 + 36 * (0 + 3 * r) + 6 * g + b;
+                        System.out.printf("\u001B[%d;5;%dm%d%d%d \u001B[0m", fbg, col, (0 + 3 * r),g,b);
+                    }
+                    for (int b = 0; b < 6; b++) {
+                        int col = 16 + 36 * (1 + 3 * r) + 6 * g + b;
+                        System.out.printf("\u001B[%d;5;%dm%d%d%d \u001B[0m", fbg, col, (1 + 3 * r),g,b);
+                    }
+                    for (int b = 0; b < 6; b++) {
+                        int col = 16 + 36 * (2 + 3 * r) + 6 * g + b;
+                        System.out.printf("\u001B[%d;5;%dm%d%d%d \u001B[0m", fbg, col, (2 + 3 * r),g,b);
+                    }
+                    System.out.println();
+                }
+                System.out.println();
+            }
+            System.out.println("RGB RGB RGB RGB RGB RGB");
+            int r = 6;
+            for (int g = 0; g < 4; g++) {
+                for (int b = 0; b < 6; b++) {
+                    int col = 16 + 36 * r + 6 * g + b;
+                    System.out.printf("\u001B[%d;5;%dm%d%d%d \u001B[0m", fbg, col, r,g,b);
+                }
+                System.out.println();
+            }
+            System.out.println();
+        }
     }
 
     //------------------------------------------
