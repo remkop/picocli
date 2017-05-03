@@ -4,4 +4,4 @@ build/
 local.properties
 target/
 tmp/
-gradle.properties
+
