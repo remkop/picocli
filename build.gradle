@@ -109,6 +109,8 @@ ext {
     bintrayBaseUrl    = 'https://api.bintray.com/maven'
     bintrayRepository = 'picocli'
     bintrayPackage    = 'picocli'
+    bintrayUsername   = System.getenv('BINTRAY_USER')
+    bintrayApiKey     = System.getenv('BINTRAY_KEY')
 }
 publishing {
     publications {
