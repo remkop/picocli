@@ -2394,10 +2394,14 @@ public class CommandLine {
         public interface IParamLabelRenderer {
 
             /** Returns a text rendering of the Option parameter or positional parameter; returns an empty string
-             * {@code ""} if the option is a boolean and does not take a parameter. */
+             * {@code ""} if the option is a boolean and does not take a parameter.
+             * @param field the annotated field with a parameter label
+             * @param styles the styles to apply to the parameter label
+             * @return a text rendering of the Option parameter or positional parameter */
             Text renderParameterLabel(Field field, List<IStyle> styles);
 
-            /** Returns the separator between option name and param label */
+            /** Returns the separator between option name and param label.
+             * @return the separator between option name and param label */
             String separator();
         }
         /**
@@ -2473,17 +2477,24 @@ public class CommandLine {
 
             /** Constructs a Layout with the specified color scheme, a new default TextTable, the
              * {@linkplain Help#createDefaultOptionRenderer() default option renderer}, and the
-             * {@linkplain Help#createDefaultParameterRenderer() default parameter renderer}. */
+             * {@linkplain Help#createDefaultParameterRenderer() default parameter renderer}.
+             * @param colorScheme the color scheme to use for common, auto-generated parts of the usage help message */
             public Layout(ColorScheme colorScheme) { this(colorScheme, new TextTable()); }
 
             /** Constructs a Layout with the specified color scheme, the specified TextTable, the
              * {@linkplain Help#createDefaultOptionRenderer() default option renderer}, and the
-             * {@linkplain Help#createDefaultParameterRenderer() default parameter renderer}. */
+             * {@linkplain Help#createDefaultParameterRenderer() default parameter renderer}.
+             * @param colorScheme the color scheme to use for common, auto-generated parts of the usage help message
+             * @param textTable the TextTable to lay out parts of the usage help message in tabular format */
             public Layout(ColorScheme colorScheme, TextTable textTable) {
                 this(colorScheme, textTable, new DefaultOptionRenderer(), new DefaultParameterRenderer());
             }
             /** Constructs a Layout with the specified color scheme, the specified TextTable, the
-             * specified option renderer and the specified parameter renderer. */
+             * specified option renderer and the specified parameter renderer.
+             * @param colorScheme the color scheme to use for common, auto-generated parts of the usage help message
+             * @param optionRenderer the object responsible for rendering Options to Text
+             * @param parameterRenderer the object responsible for rendering Parameters to Text
+             * @param textTable the TextTable to lay out parts of the usage help message in tabular format */
             public Layout(ColorScheme colorScheme, TextTable textTable, IOptionRenderer optionRenderer, IParameterRenderer parameterRenderer) {
                 this.colorScheme       = Assert.notNull(colorScheme, "colorScheme");
                 this.table             = Assert.notNull(textTable, "textTable");
@@ -2502,7 +2513,9 @@ public class CommandLine {
                     table.addRowValues(oneRow);
                 }
             }
-            /** Calls {@link #addOption(Field, CommandLine.Help.IParamLabelRenderer)} for all non-hidden Options in the list. */
+            /** Calls {@link #addOption(Field, CommandLine.Help.IParamLabelRenderer)} for all non-hidden Options in the list.
+             * @param fields fields annotated with {@link Option} to add usage descriptions for
+             * @param paramLabelRenderer object that knows how to render option parameters */
             public void addOptions(List<Field> fields, IParamLabelRenderer paramLabelRenderer) {
                 for (Field field : fields) {
                     Option option = field.getAnnotation(Option.class);
@@ -2523,7 +2536,9 @@ public class CommandLine {
                 Text[][] values = optionRenderer.render(option, field, paramLabelRenderer, colorScheme);
                 layout(field, values);
             }
-            /** Calls {@link #addPositionalParameter(Field, CommandLine.Help.IParamLabelRenderer)} for all non-hidden Parameters in the list. */
+            /** Calls {@link #addPositionalParameter(Field, CommandLine.Help.IParamLabelRenderer)} for all non-hidden Parameters in the list.
+             * @param fields fields annotated with {@link Parameters} to add usage descriptions for
+             * @param paramLabelRenderer knows how to render option parameters */
             public void addPositionalParameters(List<Field> fields, IParamLabelRenderer paramLabelRenderer) {
                 for (Field field : fields) {
                     Parameters parameters = field.getAnnotation(Parameters.class);
@@ -2630,15 +2645,20 @@ public class CommandLine {
                     columns[i] = new Column(columnWidths[i], 0, i == columnWidths.length - 1 ? SPAN: WRAP);
                 }
             }
-            /** Constructs a {@code TextTable} with the specified columns. */
+            /** Constructs a {@code TextTable} with the specified columns.
+             * @param columns columns to construct this TextTable with */
             public TextTable(Column... columns) {
                 this.columns = Assert.notNull(columns, "columns");
                 if (columns.length == 0) { throw new IllegalArgumentException("At least one column is required"); }
             }
-            /** Returns the {@code char[]} slot at the specified row and column to write a text value into. */
+            /** Returns the {@code Text} slot at the specified row and column to write a text value into.
+             * @param row the row of the cell whose Text to return
+             * @param col the column of the cell whose Text to return
+             * @return the Text object at the specified row and column */
             public Text cellAt(int row, int col) { return columnValues.get(col + (row * columns.length)); }
 
-            /** Returns the current number of rows of this {@code TextTable}. */
+            /** Returns the current number of rows of this {@code TextTable}.
+             * @return the current number of rows in this TextTable */
             public int rowCount() { return columnValues.size() / columns.length; }
 
             /** Adds the required {@code char[]} slots for a new row to the {@link #columnValues} field. */
@@ -2648,7 +2668,8 @@ public class CommandLine {
                 }
             }
 
-            /** Delegates to {@link #addRowValues(CommandLine.Help.Ansi.Text...)}. */
+            /** Delegates to {@link #addRowValues(CommandLine.Help.Ansi.Text...)}.
+             * @param values the text values to display in each column of the current row */
             public void addRowValues(String... values) {
                 Text[] array = new Text[values.length];
                 for (int i = 0; i < array.length; i++) {
@@ -2762,7 +2783,9 @@ public class CommandLine {
                 return length;
             }
 
-            /** Copies the text representation that we built up from the options into the specified StringBuilder. */
+            /** Copies the text representation that we built up from the options into the specified StringBuilder.
+             * @param text the StringBuilder to write into
+             * @return the specified StringBuilder object (to allow method chaining and a more fluid API) */
             public StringBuilder toString(StringBuilder text) {
                 int columnCount = this.columns.length;
                 StringBuilder row = new StringBuilder(80);
@@ -2818,21 +2841,37 @@ public class CommandLine {
             public final List<IStyle> optionStyles = new ArrayList<IStyle>();
             public final List<IStyle> parameterStyles = new ArrayList<IStyle>();
             public final List<IStyle> optionParamStyles = new ArrayList<IStyle>();
-            /** Adds the specified styles to the styles for commands in this color scheme and returns this color scheme. */
+            /** Adds the specified styles to the registered styles for commands in this color scheme and returns this color scheme.
+             * @param styles the styles to add to the registered styles for commands in this color scheme
+             * @return this color scheme to enable method chaining for a more fluent API */
             public ColorScheme commands(IStyle... styles)     { return addAll(commandStyles, styles); }
-            /** Adds the specified styles to the styles for options in this color scheme and returns this color scheme. */
+            /** Adds the specified styles to the registered styles for options in this color scheme and returns this color scheme.
+             * @param styles the styles to add to registered the styles for options in this color scheme
+             * @return this color scheme to enable method chaining for a more fluent API */
             public ColorScheme options(IStyle... styles)      { return addAll(optionStyles, styles);}
-            /** Adds the specified styles to the styles for positional parameters in this color scheme and returns this color scheme. */
+            /** Adds the specified styles to the registered styles for positional parameters in this color scheme and returns this color scheme.
+             * @param styles the styles to add to registered the styles for parameters in this color scheme
+             * @return this color scheme to enable method chaining for a more fluent API */
             public ColorScheme parameters(IStyle... styles)   { return addAll(parameterStyles, styles);}
-            /** Adds the specified styles to the styles for option parameters in this color scheme and returns this color scheme. */
+            /** Adds the specified styles to the registered styles for option parameters in this color scheme and returns this color scheme.
+             * @param styles the styles to add to the registered styles for option parameters in this color scheme
+             * @return this color scheme to enable method chaining for a more fluent API */
             public ColorScheme optionParams(IStyle... styles) { return addAll(optionParamStyles, styles);}
-            /** Returns a Text with all command styles applied to the specified command string. */
+            /** Returns a Text with all command styles applied to the specified command string.
+             * @param command the command string to apply the registered command styles to
+             * @return a Text with all command styles applied to the specified command string */
             public Ansi.Text commandText(String command)         { return Text.apply(command,     commandStyles); }
-            /** Returns a Text with all option styles applied to the specified option string. */
+            /** Returns a Text with all option styles applied to the specified option string.
+             * @param option the option string to apply the registered option styles to
+             * @return a Text with all option styles applied to the specified option string */
             public Ansi.Text optionText(String option)           { return Text.apply(option,      optionStyles); }
-            /** Returns a Text with all parameter styles applied to the specified parameter string. */
+            /** Returns a Text with all parameter styles applied to the specified parameter string.
+             * @param parameter the parameter string to apply the registered parameter styles to
+             * @return a Text with all parameter styles applied to the specified parameter string */
             public Ansi.Text parameterText(String parameter)     { return Text.apply(parameter,   parameterStyles); }
-            /** Returns a Text with all optionParam styles applied to the specified optionParam string. */
+            /** Returns a Text with all optionParam styles applied to the specified optionParam string.
+             * @param optionParam the option parameter string to apply the registered option parameter styles to
+             * @return a Text with all option parameter styles applied to the specified option parameter string */
             public Ansi.Text optionParamText(String optionParam) { return Text.apply(optionParam, optionParamStyles); }
 
             /** Replaces colors and styles in this scheme with ones specified in system properties, and returns this scheme.
@@ -3016,7 +3055,8 @@ public class CommandLine {
                 private StringBuilder plain = new StringBuilder();
                 private SortedMap<Integer, String> indexToStyle = new TreeMap<Integer, String>();
 
-                /** Constructs a Text with the specified max length (for use in a TextTable Column). */
+                /** Constructs a Text with the specified max length (for use in a TextTable Column).
+                 * @param maxLength max length of this text */
                 public Text(int maxLength) { this.maxLength = maxLength; }
 
                 /**
