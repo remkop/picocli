@@ -37,10 +37,6 @@ public class Example {
     @Option(names = { "-v", "--verbose" }, description = "Be verbose.")
     private boolean verbose = false;
 
-    @Option(names = { "-h", "--help" }, help = true,
-            description = "Displays this help message and quits.")
-    private boolean helpRequested = false;
-
     @Parameters(arity = "1..*", paramLabel = "FILE", description = "File(s) to process.")
     private File[] inputFiles;
     ...
@@ -53,40 +49,39 @@ Then invoke `CommandLine.parse` with the command line parameters and an object y
 ----
 String[] args = { "-v", "inputFile1", "inputFile2" };
 Example app = CommandLine.parse(new Example(), args);
-assert !app.helpRequested;
 assert  app.verbose;
 assert  app.inputFiles != null && app.inputFiles.length == 2;
 ----
 
 == Options and Parameters
-Command line arguments can be separated into _options_ (sometimes called _flags_ or _switches_), and _parameters_ (sometimes called _positional parameters_ or _operands_).
-Options have a name, parameters are the values that follow the options.
+Command line arguments can be separated into _options_  and _positional parameters_.
+Options have a name, positional parameters are the values that follow the options.
 
 image:OptionsAndParameters2.png[Example command with annotated @Option and @Parameters]
 
 Picocli has separate annotations for options and positional parameters.
 
 === Options
-An option must have one or more `names`. Option names usually have a prefix to distinguish them from parameters. Different operating systems and applications use https://en.wikipedia.org/wiki/Command-line_interface#Command-line_option[different prefixing] styles. Picocli lets you use any option name you want.
+An option must have one or more `names`.
+Picocli lets you use any option name you want.
 
 TIP: You may be interested in this http://catb.org/~esr/writings/taoup/html/ch10s05.html#id2948149[list of common option names]. Following these conventions may make your application more intuitive to use for experienced users.
 
-The below example shows options with one or more names, options that take an option parameter, and "help" options.
+The below example shows options with one or more names, options that take an option parameter, and a <<Help Options,help>> option.
 [source,java]
 ----
 class Tar {
-    @Option(names = { "-c", "--create" }, description = "create a new archive")
-    boolean create;
-
-    @Option(names = "-x", description = "extract files from an archive")
+    @Option(names = "-c", description = "create a new archive")
     boolean extract;
 
-    @Option(names = { "-f", "--file" }, paramLabel = "ARCHIVE",
-            description = "use archive file or device ARCHIVE")
+    @Option(names = { "-f", "--file" }, paramLabel = "ARCHIVE", description = "the archive file")
     File archive;
 
     @Parameters(paramLabel = "FILE", description = "one ore more files to archive")
     File[] files;
+
+    @Option(names = { "-h", "--help" }, help = true, description = "display a help message")
+    private boolean helpRequested = false;
 }
 ----
 Picocli matches the option names to set the field values.
@@ -95,14 +90,14 @@ Picocli matches the option names to set the field values.
 String[] args = { "-cf", "result.tar", "file1.txt", "file2.txt" };
 Tar tar = CommandLine.parse(new Tar(), args);
 
+assert !tar.helpRequested;
 assert  tar.create;
-assert !tar.extract;
 assert  tar.archive.equals(new File("result.tar"));
 assert  Arrays.equals(tar.files, new File[] {new File("file1.txt"), new File("file2.txt")});
 ----
 
 Picocli supports http://pubs.opengroup.org/onlinepubs/9699919799/basedefs/V1_chap12.html#tag_12_02[POSIX clustered short options]:
-One or more options without option-arguments, followed by at most one option that takes an option-argument, should be accepted when grouped behind one '-' delimiter.
+One or more options without option-arguments, followed by at most one option with an option-argument, can be grouped behind one '-' delimiter.
 
 
 For example, given this annotated class:
@@ -130,13 +125,15 @@ The following command line arguments are all equivalent and parsing them will gi
 
 
 === Positional Parameters
-Positional parameters (also called operands) are the command line arguments following the options.
+Positional parameters are the command line arguments following the options.
 
-Use the (zero-based) `index` attribute to specify exactly which parameters to capture. Omitting the `index` attribute means the field is initialized with all positional parameters (so the field should be a multi-value type like an array or a collection).
+Use the (zero-based) `index` attribute to specify exactly which parameters to capture.
+Omitting the `index` attribute means the field captures _all_ positional parameters.
+Array or collection fields can capture multiple values.
 
-The `index` attribute accepts _range_ values, so an annotation like `@Parameters(index="2..4")` captures arguments at index 2, 3 and 4. Range values can be _open-ended_. For example, `@Parameters(index="3..*")` captures all arguments from index 3 and up.
+The `index` attribute accepts _range_ values, so an annotation like `@Parameters(index="2..4")` captures the arguments at index 2, 3 and 4. Range values can be _open-ended_. For example, `@Parameters(index="3..*")` captures all arguments from index 3 and up.
 
-The advantage of capturing individual parameters in separate fields is that you can enforce strong typing. For example:
+For example:
 
 [source,java]
 ----
@@ -144,14 +141,9 @@ class PositionalParameters {
     @Parameters(hidden = true)  // "hidden": don't show this parameter in usage help message
     List<String> allParameters; // no "index" attribute: captures _all_ arguments (as Strings)
 
-    @Parameters(index = "0")
-    InetAddress host;
-
-    @Parameters(index = "1")
-    int port;
-
-    @Parameters(index = "2..*")
-    File[] files;
+    @Parameters(index = "0")    InetAddress host;
+    @Parameters(index = "1")    int port;
+    @Parameters(index = "2..*") File[] files;
 }
 ----
 
@@ -170,19 +162,14 @@ assert params.allParameters.equals(Arrays.asList("localhost", "12345", "file1.tx
 See <<Strongly Typed Everything>> for which types are supported out of the box and how to add custom types.
 
 === Double dash (`--`)
-When one of the command line arguments is two dashes without any characters attached (`--`), picocli interprets all following arguments as positional parameters, even arguments that match an option name.
+When one of the command line arguments is just two dashes without any characters attached (`--`), picocli interprets all following arguments as positional parameters, even arguments that match an option name.
 
 [source,java]
 ----
 class DoubleDashDemo {
-    @Parameters
-    List<String> params;
-
-    @Option(names = "--files")
-    List<String> files;
-
-    @Option(names = { "-v", "--verbose" })
-    boolean verbose;
+    @Option(names = "-v")      boolean verbose;
+    @Option(names = "--files") List<String> files;
+    @Parameters                List<String> params;
 }
 ----
 
@@ -194,7 +181,6 @@ DoubleDashDemo demo = CommandLine.parse(new DoubleDashDemo(), args);
 
 assert demo.verbose;
 assert demo.files == null;
-assert demo.params != null && demo.params.length == 3;
 assert demo.params.equals(Arrays.asList("--files", "file1", "file2"));
 ----
 
@@ -306,7 +292,7 @@ NOTE: If a collection is returned from a type converter, the _contents_ of the c
 == Multiple Values
 Arity is the number of parameters that will be consumed by an option.
 
-=== Default
+=== Default Arity
 The default arity value of an `@Option` or `@Parameters` field depends on its type.
 
 * Boolean fields: the default arity is 0 (consume zero parameters) the field is set to `true` when the option name is recognized. (You can <<Boolean Parameters,change this>>.)
@@ -365,7 +351,7 @@ Each value is appended to the array or collection.
 
 
 == Required Arguments
-=== Options
+=== Required Options
 Options can be marked `required` to make it mandatory for the user to specify them on the command line. When a required option is not specified, a `MissingParameterException` is thrown from the `parse` method. For example:
 [source, java]
 ----
@@ -388,7 +374,7 @@ The following command line arguments would be accepted:
 <command> -n 123 file1 file2 file3
 ----
 
-=== Parameters
+=== Required Parameters
 Use the `arity` attribute to make `@Parameters` mandatory:
 [source, java]
 ----
@@ -1057,7 +1043,9 @@ For example, see <<Section Headings>> for an example subcommand (`git-commit`), 
 in <<Expanded Example>>.
 
 
-== Less Boilerplate
+== Tips & Tricks
+
+=== Less Boilerplate
 You can omit some of the boilerplate code from your application when the annotated object implements `Runnable`:
 
 
@@ -1084,8 +1072,6 @@ CommandLine.run(new MyApp(), System.err, args);
 ----
 
 Note that the `CommandLine.run` convenience method cannot be used with subcommands.
-
-== Tips & Tricks
 
 
 === Boolean Parameters
