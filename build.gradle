@@ -1,11 +1,11 @@
 group 'info.picocli'
 description 'Java command line parser and colorized usage help generator. In a single file, to be included in source form, so users can run picocli-based applications without requiring picocli as an external dependency. Generates easily customizable usage help messages with ANSI styles and colors.'
-version '0.9.4-SNAPSHOT'
+version '0.9.4'
 
 // for bumpVersion task
-def oldVersion = '0\\.9\\.3'
+def oldVersion = '0\\.9\\.4-SNAPSHOT'
 def oldRevdate = '2017\\-04\\-30'
-def revDate    = '2017-04-23'
+def revDate    = '2017-05-04'
 
 buildscript {
     repositories {

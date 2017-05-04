@@ -516,8 +516,8 @@ table.CodeRay td.code>pre{padding:0}
 <div class="details">
 <span id="author" class="author">Remko Popma</span><br>
 <span id="email" class="email"><a href="mailto:rpopma@apache.org">rpopma@apache.org</a></span><br>
-<span id="revnumber">version 0.9.4-SNAPSHOT,</span>
-<span id="revdate">2017-04-30</span>
+<span id="revnumber">version 0.9.4,</span>
+<span id="revdate">2017-05-04</span>
 </div>
 <div id="toc" class="toc2">
 <div id="toctitle">Features</div>
@@ -539,7 +539,7 @@ table.CodeRay td.code>pre{padding:0}
 </li>
 <li><a href="#_multiple_values">4. Multiple Values</a>
 <ul class="sectlevel2">
-<li><a href="#_default">4.1. Default</a></li>
+<li><a href="#_default_arity">4.1. Default Arity</a></li>
 <li><a href="#_arity">4.2. Arity</a></li>
 <li><a href="#_split_regex">4.3. Split Regex</a></li>
 <li><a href="#_multiple_occurrences">4.4. Multiple Occurrences</a></li>
@@ -547,8 +547,8 @@ table.CodeRay td.code>pre{padding:0}
 </li>
 <li><a href="#_required_arguments">5. Required Arguments</a>
 <ul class="sectlevel2">
-<li><a href="#_options_2">5.1. Options</a></li>
-<li><a href="#_parameters">5.2. Parameters</a></li>
+<li><a href="#_required_options">5.1. Required Options</a></li>
+<li><a href="#_required_parameters">5.2. Required Parameters</a></li>
 </ul>
 </li>
 <li><a href="#_help_options">6. Help Options</a></li>
@@ -573,9 +573,10 @@ table.CodeRay td.code>pre{padding:0}
 <ul class="sectlevel2">
 <li><a href="#_colorized_example">8.1. Colorized Example</a></li>
 <li><a href="#_usage_help_with_styles_and_colors">8.2. Usage Help with Styles and Colors</a></li>
-<li><a href="#_configuring_fixed_elements">8.3. Configuring Fixed Elements</a></li>
-<li><a href="#_supported_platforms">8.4. Supported Platforms</a></li>
-<li><a href="#_forcing_ansi_on_off">8.5. Forcing ANSI On/Off</a></li>
+<li><a href="#_more_colors">8.3. More Colors</a></li>
+<li><a href="#_configuring_fixed_elements">8.4. Configuring Fixed Elements</a></li>
+<li><a href="#_supported_platforms">8.5. Supported Platforms</a></li>
+<li><a href="#_forcing_ansi_on_off">8.6. Forcing ANSI On/Off</a></li>
 </ul>
 </li>
 <li><a href="#_usage_help_api">9. Usage Help API</a>
@@ -591,22 +592,22 @@ table.CodeRay td.code>pre{padding:0}
 <li><a href="#_usage_help_for_subcommands">10.3. Usage Help for Subcommands</a></li>
 </ul>
 </li>
-<li><a href="#_less_boilerplate">11. Less Boilerplate</a></li>
-<li><a href="#_tips_tricks">12. Tips &amp; Tricks</a>
+<li><a href="#_tips_tricks">11. Tips &amp; Tricks</a>
 <ul class="sectlevel2">
-<li><a href="#_boolean_parameters">12.1. Boolean Parameters</a></li>
-<li><a href="#_hexadecimal_values">12.2. Hexadecimal Values</a></li>
-<li><a href="#_option_parameter_separators_2">12.3. Option-Parameter Separators</a></li>
-<li><a href="#_subclassing_for_reuse">12.4. Subclassing for Reuse</a></li>
-<li><a href="#_best_practices_for_command_line_interfaces">12.5. Best Practices for Command Line Interfaces</a></li>
+<li><a href="#_less_boilerplate">11.1. Less Boilerplate</a></li>
+<li><a href="#_boolean_parameters">11.2. Boolean Parameters</a></li>
+<li><a href="#_hexadecimal_values">11.3. Hexadecimal Values</a></li>
+<li><a href="#_option_parameter_separators_2">11.4. Option-Parameter Separators</a></li>
+<li><a href="#_subclassing_for_reuse">11.5. Subclassing for Reuse</a></li>
+<li><a href="#_best_practices_for_command_line_interfaces">11.6. Best Practices for Command Line Interfaces</a></li>
 </ul>
 </li>
-<li><a href="#_api_javadoc">13. API Javadoc</a></li>
-<li><a href="#_github_project">14. GitHub Project</a></li>
-<li><a href="#_issue_tracker">15. Issue Tracker</a></li>
-<li><a href="#_license">16. License</a></li>
-<li><a href="#_releases">17. Releases</a></li>
-<li><a href="#_download">18. Download</a></li>
+<li><a href="#_api_javadoc">12. API Javadoc</a></li>
+<li><a href="#_github_project">13. GitHub Project</a></li>
+<li><a href="#_issue_tracker">14. Issue Tracker</a></li>
+<li><a href="#_license">15. License</a></li>
+<li><a href="#_releases">16. Releases</a></li>
+<li><a href="#_download">17. Download</a></li>
 </ul>
 </div>
 </div>
@@ -649,10 +650,6 @@ converting the input to strongly typed values in the fields of your class.</p>
     <span class="annotation">@Option</span>(names = { <span class="string"><span class="delimiter">&quot;</span><span class="content">-v</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">--verbose</span><span class="delimiter">&quot;</span></span> }, description = <span class="string"><span class="delimiter">&quot;</span><span class="content">Be verbose.</span><span class="delimiter">&quot;</span></span>)
     <span class="directive">private</span> <span class="type">boolean</span> verbose = <span class="predefined-constant">false</span>;
 
-    <span class="annotation">@Option</span>(names = { <span class="string"><span class="delimiter">&quot;</span><span class="content">-h</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">--help</span><span class="delimiter">&quot;</span></span> }, help = <span class="predefined-constant">true</span>,
-            description = <span class="string"><span class="delimiter">&quot;</span><span class="content">Displays this help message and quits.</span><span class="delimiter">&quot;</span></span>)
-    <span class="directive">private</span> <span class="type">boolean</span> helpRequested = <span class="predefined-constant">false</span>;
-
     <span class="annotation">@Parameters</span>(arity = <span class="string"><span class="delimiter">&quot;</span><span class="content">1..*</span><span class="delimiter">&quot;</span></span>, paramLabel = <span class="string"><span class="delimiter">&quot;</span><span class="content">FILE</span><span class="delimiter">&quot;</span></span>, description = <span class="string"><span class="delimiter">&quot;</span><span class="content">File(s) to process.</span><span class="delimiter">&quot;</span></span>)
     <span class="directive">private</span> <span class="predefined-type">File</span><span class="type">[]</span> inputFiles;
     ...
@@ -666,7 +663,6 @@ converting the input to strongly typed values in the fields of your class.</p>
 <div class="content">
 <pre class="CodeRay highlight"><code data-lang="java"><span class="predefined-type">String</span><span class="type">[]</span> args = { <span class="string"><span class="delimiter">&quot;</span><span class="content">-v</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">inputFile1</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">inputFile2</span><span class="delimiter">&quot;</span></span> };
 Example app = CommandLine.parse(<span class="keyword">new</span> Example(), args);
-<span class="keyword">assert</span> !app.helpRequested;
 <span class="keyword">assert</span>  app.verbose;
 <span class="keyword">assert</span>  app.inputFiles != <span class="predefined-constant">null</span> &amp;&amp; app.inputFiles.length == <span class="integer">2</span>;</code></pre>
 </div>
@@ -677,8 +673,8 @@ Example app = CommandLine.parse(<span class="keyword">new</span> Example(), args
 <h2 id="_options_and_parameters">2. Options and Parameters</h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>Command line arguments can be separated into <em>options</em> (sometimes called <em>flags</em> or <em>switches</em>), and <em>parameters</em> (sometimes called <em>positional parameters</em> or <em>operands</em>).
-Options have a name, parameters are the values that follow the options.</p>
+<p>Command line arguments can be separated into <em>options</em>  and <em>positional parameters</em>.
+Options have a name, positional parameters are the values that follow the options.</p>
 </div>
 <div class="paragraph">
 <p><span class="image"><img src="images/OptionsAndParameters2.png" alt="Example command with annotated @Option and @Parameters"></span></p>
@@ -689,7 +685,8 @@ Options have a name, parameters are the values that follow the options.</p>
 <div class="sect2">
 <h3 id="_options">2.1. Options</h3>
 <div class="paragraph">
-<p>An option must have one or more <code>names</code>. Option names usually have a prefix to distinguish them from parameters. Different operating systems and applications use <a href="https://en.wikipedia.org/wiki/Command-line_interface#Command-line_option">different prefixing</a> styles. Picocli lets you use any option name you want.</p>
+<p>An option must have one or more <code>names</code>.
+Picocli lets you use any option name you want.</p>
 </div>
 <div class="admonitionblock tip">
 <table>
@@ -704,23 +701,22 @@ You may be interested in this <a href="http://catb.org/~esr/writings/taoup/html/
 </table>
 </div>
 <div class="paragraph">
-<p>The below example shows options with one or more names, options that take an option parameter, and "help" options.</p>
+<p>The below example shows options with one or more names, options that take an option parameter, and a <a href="#_help_options">help</a> option.</p>
 </div>
 <div class="listingblock">
 <div class="content">
 <pre class="CodeRay highlight"><code data-lang="java"><span class="type">class</span> <span class="class">Tar</span> {
-    <span class="annotation">@Option</span>(names = { <span class="string"><span class="delimiter">&quot;</span><span class="content">-c</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">--create</span><span class="delimiter">&quot;</span></span> }, description = <span class="string"><span class="delimiter">&quot;</span><span class="content">create a new archive</span><span class="delimiter">&quot;</span></span>)
-    <span class="type">boolean</span> create;
-
-    <span class="annotation">@Option</span>(names = <span class="string"><span class="delimiter">&quot;</span><span class="content">-x</span><span class="delimiter">&quot;</span></span>, description = <span class="string"><span class="delimiter">&quot;</span><span class="content">extract files from an archive</span><span class="delimiter">&quot;</span></span>)
+    <span class="annotation">@Option</span>(names = <span class="string"><span class="delimiter">&quot;</span><span class="content">-c</span><span class="delimiter">&quot;</span></span>, description = <span class="string"><span class="delimiter">&quot;</span><span class="content">create a new archive</span><span class="delimiter">&quot;</span></span>)
     <span class="type">boolean</span> extract;
 
-    <span class="annotation">@Option</span>(names = { <span class="string"><span class="delimiter">&quot;</span><span class="content">-f</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">--file</span><span class="delimiter">&quot;</span></span> }, paramLabel = <span class="string"><span class="delimiter">&quot;</span><span class="content">ARCHIVE</span><span class="delimiter">&quot;</span></span>,
-            description = <span class="string"><span class="delimiter">&quot;</span><span class="content">use archive file or device ARCHIVE</span><span class="delimiter">&quot;</span></span>)
+    <span class="annotation">@Option</span>(names = { <span class="string"><span class="delimiter">&quot;</span><span class="content">-f</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">--file</span><span class="delimiter">&quot;</span></span> }, paramLabel = <span class="string"><span class="delimiter">&quot;</span><span class="content">ARCHIVE</span><span class="delimiter">&quot;</span></span>, description = <span class="string"><span class="delimiter">&quot;</span><span class="content">the archive file</span><span class="delimiter">&quot;</span></span>)
     <span class="predefined-type">File</span> archive;
 
     <span class="annotation">@Parameters</span>(paramLabel = <span class="string"><span class="delimiter">&quot;</span><span class="content">FILE</span><span class="delimiter">&quot;</span></span>, description = <span class="string"><span class="delimiter">&quot;</span><span class="content">one ore more files to archive</span><span class="delimiter">&quot;</span></span>)
     <span class="predefined-type">File</span><span class="type">[]</span> files;
+
+    <span class="annotation">@Option</span>(names = { <span class="string"><span class="delimiter">&quot;</span><span class="content">-h</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">--help</span><span class="delimiter">&quot;</span></span> }, help = <span class="predefined-constant">true</span>, description = <span class="string"><span class="delimiter">&quot;</span><span class="content">display a help message</span><span class="delimiter">&quot;</span></span>)
+    <span class="directive">private</span> <span class="type">boolean</span> helpRequested = <span class="predefined-constant">false</span>;
 }</code></pre>
 </div>
 </div>
@@ -732,15 +728,15 @@ You may be interested in this <a href="http://catb.org/~esr/writings/taoup/html/
 <pre class="CodeRay highlight"><code data-lang="java"><span class="predefined-type">String</span><span class="type">[]</span> args = { <span class="string"><span class="delimiter">&quot;</span><span class="content">-cf</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">result.tar</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">file1.txt</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">file2.txt</span><span class="delimiter">&quot;</span></span> };
 Tar tar = CommandLine.parse(<span class="keyword">new</span> Tar(), args);
 
+<span class="keyword">assert</span> !tar.helpRequested;
 <span class="keyword">assert</span>  tar.create;
-<span class="keyword">assert</span> !tar.extract;
 <span class="keyword">assert</span>  tar.archive.equals(<span class="keyword">new</span> <span class="predefined-type">File</span>(<span class="string"><span class="delimiter">&quot;</span><span class="content">result.tar</span><span class="delimiter">&quot;</span></span>));
 <span class="keyword">assert</span>  <span class="predefined-type">Arrays</span>.equals(tar.files, <span class="keyword">new</span> <span class="predefined-type">File</span><span class="type">[]</span> {<span class="keyword">new</span> <span class="predefined-type">File</span>(<span class="string"><span class="delimiter">&quot;</span><span class="content">file1.txt</span><span class="delimiter">&quot;</span></span>), <span class="keyword">new</span> <span class="predefined-type">File</span>(<span class="string"><span class="delimiter">&quot;</span><span class="content">file2.txt</span><span class="delimiter">&quot;</span></span>)});</code></pre>
 </div>
 </div>
 <div class="paragraph">
 <p>Picocli supports <a href="http://pubs.opengroup.org/onlinepubs/9699919799/basedefs/V1_chap12.html#tag_12_02">POSIX clustered short options</a>:
-One or more options without option-arguments, followed by at most one option that takes an option-argument, should be accepted when grouped behind one '-' delimiter.</p>
+One or more options without option-arguments, followed by at most one option with an option-argument, can be grouped behind one '-' delimiter.</p>
 </div>
 <div class="paragraph">
 <p>For example, given this annotated class:</p>
@@ -773,16 +769,18 @@ One or more options without option-arguments, followed by at most one option tha
 <div class="sect2">
 <h3 id="_positional_parameters">2.2. Positional Parameters</h3>
 <div class="paragraph">
-<p>Positional parameters (also called operands) are the command line arguments following the options.</p>
+<p>Positional parameters are the command line arguments following the options.</p>
 </div>
 <div class="paragraph">
-<p>Use the (zero-based) <code>index</code> attribute to specify exactly which parameters to capture. Omitting the <code>index</code> attribute means the field is initialized with all positional parameters (so the field should be a multi-value type like an array or a collection).</p>
+<p>Use the (zero-based) <code>index</code> attribute to specify exactly which parameters to capture.
+Omitting the <code>index</code> attribute means the field captures <em>all</em> positional parameters.
+Array or collection fields can capture multiple values.</p>
 </div>
 <div class="paragraph">
-<p>The <code>index</code> attribute accepts <em>range</em> values, so an annotation like <code>@Parameters(index="2..4")</code> captures arguments at index 2, 3 and 4. Range values can be <em>open-ended</em>. For example, <code>@Parameters(index="3..*")</code> captures all arguments from index 3 and up.</p>
+<p>The <code>index</code> attribute accepts <em>range</em> values, so an annotation like <code>@Parameters(index="2..4")</code> captures the arguments at index 2, 3 and 4. Range values can be <em>open-ended</em>. For example, <code>@Parameters(index="3..*")</code> captures all arguments from index 3 and up.</p>
 </div>
 <div class="paragraph">
-<p>The advantage of capturing individual parameters in separate fields is that you can enforce strong typing. For example:</p>
+<p>For example:</p>
 </div>
 <div class="listingblock">
 <div class="content">
@@ -790,14 +788,9 @@ One or more options without option-arguments, followed by at most one option tha
     <span class="annotation">@Parameters</span>(hidden = <span class="predefined-constant">true</span>)  <span class="comment">// &quot;hidden&quot;: don't show this parameter in usage help message</span>
     <span class="predefined-type">List</span>&lt;<span class="predefined-type">String</span>&gt; allParameters; <span class="comment">// no &quot;index&quot; attribute: captures _all_ arguments (as Strings)</span>
 
-    <span class="annotation">@Parameters</span>(index = <span class="string"><span class="delimiter">&quot;</span><span class="content">0</span><span class="delimiter">&quot;</span></span>)
-    <span class="predefined-type">InetAddress</span> host;
-
-    <span class="annotation">@Parameters</span>(index = <span class="string"><span class="delimiter">&quot;</span><span class="content">1</span><span class="delimiter">&quot;</span></span>)
-    <span class="type">int</span> port;
-
-    <span class="annotation">@Parameters</span>(index = <span class="string"><span class="delimiter">&quot;</span><span class="content">2..*</span><span class="delimiter">&quot;</span></span>)
-    <span class="predefined-type">File</span><span class="type">[]</span> files;
+    <span class="annotation">@Parameters</span>(index = <span class="string"><span class="delimiter">&quot;</span><span class="content">0</span><span class="delimiter">&quot;</span></span>)    <span class="predefined-type">InetAddress</span> host;
+    <span class="annotation">@Parameters</span>(index = <span class="string"><span class="delimiter">&quot;</span><span class="content">1</span><span class="delimiter">&quot;</span></span>)    <span class="type">int</span> port;
+    <span class="annotation">@Parameters</span>(index = <span class="string"><span class="delimiter">&quot;</span><span class="content">2..*</span><span class="delimiter">&quot;</span></span>) <span class="predefined-type">File</span><span class="type">[]</span> files;
 }</code></pre>
 </div>
 </div>
@@ -822,19 +815,14 @@ PositionalParameters params = CommandLine.parse(<span class="keyword">new</span>
 <div class="sect2">
 <h3 id="_double_dash_code_code">2.3. Double dash (<code>--</code>)</h3>
 <div class="paragraph">
-<p>When one of the command line arguments is two dashes without any characters attached (<code>--</code>), picocli interprets all following arguments as positional parameters, even arguments that match an option name.</p>
+<p>When one of the command line arguments is just two dashes without any characters attached (<code>--</code>), picocli interprets all following arguments as positional parameters, even arguments that match an option name.</p>
 </div>
 <div class="listingblock">
 <div class="content">
 <pre class="CodeRay highlight"><code data-lang="java"><span class="type">class</span> <span class="class">DoubleDashDemo</span> {
-    <span class="annotation">@Parameters</span>
-    <span class="predefined-type">List</span>&lt;<span class="predefined-type">String</span>&gt; params;
-
-    <span class="annotation">@Option</span>(names = <span class="string"><span class="delimiter">&quot;</span><span class="content">--files</span><span class="delimiter">&quot;</span></span>)
-    <span class="predefined-type">List</span>&lt;<span class="predefined-type">String</span>&gt; files;
-
-    <span class="annotation">@Option</span>(names = { <span class="string"><span class="delimiter">&quot;</span><span class="content">-v</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">--verbose</span><span class="delimiter">&quot;</span></span> })
-    <span class="type">boolean</span> verbose;
+    <span class="annotation">@Option</span>(names = <span class="string"><span class="delimiter">&quot;</span><span class="content">-v</span><span class="delimiter">&quot;</span></span>)      <span class="type">boolean</span> verbose;
+    <span class="annotation">@Option</span>(names = <span class="string"><span class="delimiter">&quot;</span><span class="content">--files</span><span class="delimiter">&quot;</span></span>) <span class="predefined-type">List</span>&lt;<span class="predefined-type">String</span>&gt; files;
+    <span class="annotation">@Parameters</span>                <span class="predefined-type">List</span>&lt;<span class="predefined-type">String</span>&gt; params;
 }</code></pre>
 </div>
 </div>
@@ -848,7 +836,6 @@ DoubleDashDemo demo = CommandLine.parse(<span class="keyword">new</span> DoubleD
 
 <span class="keyword">assert</span> demo.verbose;
 <span class="keyword">assert</span> demo.files == <span class="predefined-constant">null</span>;
-<span class="keyword">assert</span> demo.params != <span class="predefined-constant">null</span> &amp;&amp; demo.params.length == <span class="integer">3</span>;
 <span class="keyword">assert</span> demo.params.equals(<span class="predefined-type">Arrays</span>.asList(<span class="string"><span class="delimiter">&quot;</span><span class="content">--files</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">file1</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">file2</span><span class="delimiter">&quot;</span></span>));</code></pre>
 </div>
 </div>
@@ -1037,7 +1024,7 @@ If a collection is returned from a type converter, the <em>contents</em> of the 
 <p>Arity is the number of parameters that will be consumed by an option.</p>
 </div>
 <div class="sect2">
-<h3 id="_default">4.1. Default</h3>
+<h3 id="_default_arity">4.1. Default Arity</h3>
 <div class="paragraph">
 <p>The default arity value of an <code>@Option</code> or <code>@Parameters</code> field depends on its type.</p>
 </div>
@@ -1135,7 +1122,7 @@ the last three parameters will be recognized as belonging to the <code>-f</code>
 <h2 id="_required_arguments">5. Required Arguments</h2>
 <div class="sectionbody">
 <div class="sect2">
-<h3 id="_options_2">5.1. Options</h3>
+<h3 id="_required_options">5.1. Required Options</h3>
 <div class="paragraph">
 <p>Options can be marked <code>required</code> to make it mandatory for the user to specify them on the command line. When a required option is not specified, a <code>MissingParameterException</code> is thrown from the <code>parse</code> method. For example:</p>
 </div>
@@ -1170,7 +1157,7 @@ the last three parameters will be recognized as belonging to the <code>-f</code>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_parameters">5.2. Parameters</h3>
+<h3 id="_required_parameters">5.2. Required Parameters</h3>
 <div class="paragraph">
 <p>Use the <code>arity</code> attribute to make <code>@Parameters</code> mandatory:</p>
 </div>
@@ -1709,22 +1696,6 @@ For example, <code>@|bg(red) text with red background|@</code>.
 Similarly, <code>fg(&lt;color&gt;)</code> explicitly sets the foreground color.</p>
 </div>
 <div class="paragraph">
-<p>Custom RGB <a href="https://en.wikipedia.org/wiki/ANSI_escape_code#Colors">colors</a> (ISO-8613-3 24-bit foreground and background colors) can be specified in any format supported by the <code>Color.decode()</code> method.
-For example, <code>fg(Ox9933EE)</code> renders a color equivalent to <code>java.awt.Color.decode(Ox9933EE)</code>.</p>
-</div>
-<div class="admonitionblock caution">
-<table>
-<tr>
-<td class="icon">
-<i class="fa icon-caution" title="Caution"></i>
-</td>
-<td class="content">
-Not all terminals support ISO-8613-3.
-</td>
-</tr>
-</table>
-</div>
-<div class="paragraph">
 <p>The example below shows how this can be used to add colors and styles to the headings and descriptions of a usage help message:</p>
 </div>
 <div class="listingblock">
@@ -1756,9 +1727,34 @@ Styles cannot be nested, for example: <code>@|bold this @|underline that|@|@</co
 </div>
 </div>
 <div class="sect2">
-<h3 id="_configuring_fixed_elements">8.3. Configuring Fixed Elements</h3>
+<h3 id="_more_colors">8.3. More Colors</h3>
+<div class="paragraph">
+<p>Most terminals support a <a href="https://en.wikipedia.org/wiki/ANSI_escape_code#Colors">256 color indexed palette</a>:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre>0x00-0x07:  standard colors (the named colors)
+0x08-0x0F:  high intensity colors (often similar to named colors + bold style)
+0x10-0xE7:  6 × 6 × 6 cube (216 colors): 16 + 36 × r + 6 × g + b (0 ≤ r, g, b ≤ 5)
+0xE8-0xFF:  grayscale from black to white in 24 steps</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Colors from the 256 color palette can be specified by their index values or by their RGB components.
+RGB components must be separated by a semicolon <code>;</code> and each component must be between <code>0</code> and <code>5</code>, inclusive.</p>
+</div>
+<div class="paragraph">
+<p>For example, <code>@|bg(0;5;0) text with red=0, green=5, blue=0 background|@</code>,
+or <code>@|fg(46) the same color by index, as foreground color|@</code>.</p>
+</div>
+<div class="paragraph">
+<p><span class="image"><img src="images/256colors.png" alt="256 color indexed palette"></span></p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_configuring_fixed_elements">8.4. Configuring Fixed Elements</h3>
 <div class="sect3">
-<h4 id="_color_scheme">8.3.1. Color Scheme</h4>
+<h4 id="_color_scheme">8.4.1. Color Scheme</h4>
 <div class="paragraph">
 <p>Picocli uses a default color scheme for options, parameters and commands.
 There are no annotations to modify this color scheme, but it can be changed programmatically.</p>
@@ -1781,7 +1777,7 @@ CommandLine.usage(annotatedObject, <span class="predefined-type">System</span>.o
 </div>
 </div>
 <div class="sect3">
-<h4 id="_color_scheme_overrides">8.3.2. Color Scheme Overrides</h4>
+<h4 id="_color_scheme_overrides">8.4.2. Color Scheme Overrides</h4>
 <div class="paragraph">
 <p>The following system properties override the color scheme styles. This allows end users to adjust for their individual terminal color setup.</p>
 </div>
@@ -1808,12 +1804,12 @@ picocli.color.optionParams</pre>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_supported_platforms">8.4. Supported Platforms</h3>
+<h3 id="_supported_platforms">8.5. Supported Platforms</h3>
 <div class="paragraph">
 <p>Picocli will only emit ANSI escape codes on supported platforms.</p>
 </div>
 <div class="sect3">
-<h4 id="_unix_and_linux">8.4.1. Unix and Linux</h4>
+<h4 id="_unix_and_linux">8.5.1. Unix and Linux</h4>
 <div class="paragraph">
 <p>Most Unix and Linux platforms support ANSI colors natively.
 On Windows, when picocli detects it is running under a Unix variant like Cygwin or MSYS(2) on Windows
@@ -1821,7 +1817,7 @@ On Windows, when picocli detects it is running under a Unix variant like Cygwin 
 </div>
 </div>
 <div class="sect3">
-<h4 id="_windows">8.4.2. Windows</h4>
+<h4 id="_windows">8.5.2. Windows</h4>
 <div class="paragraph">
 <p>Starting from Windows 10 the Windows console <a href="https://msdn.microsoft.com/en-us/library/windows/desktop/mt638032(v=vs.85).aspx">supports ANSI escape sequences</a>, but <a href="http://www.nivot.org/blog/post/2016/02/04/Windows-10-TH2-(v1511)-Console-Host-Enhancements">they may need to be enabled</a>.</p>
 </div>
@@ -1861,7 +1857,7 @@ None of the above is mandatory. If not supported, picocli will simply not emit A
 </div>
 </div>
 <div class="sect2">
-<h3 id="_forcing_ansi_on_off">8.5. Forcing ANSI On/Off</h3>
+<h3 id="_forcing_ansi_on_off">8.6. Forcing ANSI On/Off</h3>
 <div class="paragraph">
 <p>You can force picocli to either always use ANSI codes or never use ANSI codes regardless of the platform:</p>
 </div>
@@ -2102,8 +2098,10 @@ in <a href="#_expanded_example">Expanded Example</a>.</p>
 </div>
 </div>
 <div class="sect1">
-<h2 id="_less_boilerplate">11. Less Boilerplate</h2>
+<h2 id="_tips_tricks">11. Tips &amp; Tricks</h2>
 <div class="sectionbody">
+<div class="sect2">
+<h3 id="_less_boilerplate">11.1. Less Boilerplate</h3>
 <div class="paragraph">
 <p>You can omit some of the boilerplate code from your application when the annotated object implements <code>Runnable</code>:</p>
 </div>
@@ -2131,12 +2129,8 @@ runnable.run();</code></pre>
 <p>Note that the <code>CommandLine.run</code> convenience method cannot be used with subcommands.</p>
 </div>
 </div>
-</div>
-<div class="sect1">
-<h2 id="_tips_tricks">12. Tips &amp; Tricks</h2>
-<div class="sectionbody">
 <div class="sect2">
-<h3 id="_boolean_parameters">12.1. Boolean Parameters</h3>
+<h3 id="_boolean_parameters">11.2. Boolean Parameters</h3>
 <div class="paragraph">
 <p>It is possible to let end users explicitly specify "true" or "false" as a parameter for a boolean option by defining an explicit <a href="#_arity">Arity</a> attribute. A boolean option with <code>arity = "0..1"</code> accepts zero to one parameters, <code>arity = "1"</code> means the option <em>must</em> have one parameter. For example:</p>
 </div>
@@ -2167,7 +2161,7 @@ runnable.run();</code></pre>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_hexadecimal_values">12.2. Hexadecimal Values</h3>
+<h3 id="_hexadecimal_values">11.3. Hexadecimal Values</h3>
 <div class="paragraph">
 <p>Numeric values are interpreted as decimal numbers by default. If you want picocli to be more flexible, you can
 register a custom type converter that delegates to the <a href="https://docs.oracle.com/javase/8/docs/api/java/lang/Integer.html#decode-java.lang.String-">decode</a> method to convert strings to numbers.</p>
@@ -2219,9 +2213,9 @@ commandLine.registerConverter(<span class="predefined-type">Integer</span>.TYPE,
 </div>
 </div>
 <div class="sect2">
-<h3 id="_option_parameter_separators_2">12.3. Option-Parameter Separators</h3>
+<h3 id="_option_parameter_separators_2">11.4. Option-Parameter Separators</h3>
 <div class="sect3">
-<h4 id="_default_separators">12.3.1. Default Separators</h4>
+<h4 id="_default_separators">11.4.1. Default Separators</h4>
 <div class="paragraph">
 <p>Options may take an <em>option parameter</em> (also called <em>option-argument</em>).
 For POSIX-style short options (like <code>-f</code> or <code>-c</code>), the option parameter may be attached to the option,
@@ -2251,7 +2245,7 @@ That is, all of the below are equivalent:</p>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_custom_separators">12.3.2. Custom Separators</h4>
+<h4 id="_custom_separators">11.4.2. Custom Separators</h4>
 <div class="paragraph">
 <p>The separator string can be customized programmatically or declaratively.</p>
 </div>
@@ -2289,7 +2283,7 @@ commandLine.parse(<span class="string"><span class="delimiter">&quot;</span><spa
 </div>
 </div>
 <div class="sect2">
-<h3 id="_subclassing_for_reuse">12.4. Subclassing for Reuse</h3>
+<h3 id="_subclassing_for_reuse">11.5. Subclassing for Reuse</h3>
 <div class="paragraph">
 <p>Picocli will walk the class hierarchy to check for annotations, so you can declare common @Options and @Command attributes on a superclass and override these fields or attributes on a subclass.</p>
 </div>
@@ -2336,7 +2330,7 @@ commandLine.parse(<span class="string"><span class="delimiter">&quot;</span><spa
 </div>
 </div>
 <div class="sect2">
-<h3 id="_best_practices_for_command_line_interfaces">12.5. Best Practices for Command Line Interfaces</h3>
+<h3 id="_best_practices_for_command_line_interfaces">11.6. Best Practices for Command Line Interfaces</h3>
 <div class="paragraph">
 <p>When designing your command line application,
 the <a href="https://www.gnu.org/prep/standards/html_node/Command_002dLine-Interfaces.html#Command_002dLine-Interfaces">GNU recommendations</a> for command line interfaces and <a href="http://pubs.opengroup.org/onlinepubs/9699919799/basedefs/V1_chap12.html#tag_12_02">POSIX Utility Guidelines</a> may be useful. Generally, many applications use options for optional values and parameters for mandatory values.
@@ -2346,7 +2340,7 @@ However, picocli lets you make options required if you want to, see <a href="#_r
 </div>
 </div>
 <div class="sect1">
-<h2 id="_api_javadoc">13. API Javadoc</h2>
+<h2 id="_api_javadoc">12. API Javadoc</h2>
 <div class="sectionbody">
 <div class="paragraph">
 <p>Picocli API Javadoc can be found <a href="https://remkop.github.io/picocli/apidocs">here</a>.</p>
@@ -2354,7 +2348,7 @@ However, picocli lets you make options required if you want to, see <a href="#_r
 </div>
 </div>
 <div class="sect1">
-<h2 id="_github_project">14. GitHub Project</h2>
+<h2 id="_github_project">13. GitHub Project</h2>
 <div class="sectionbody">
 <div class="paragraph">
 <p>The <a href="https://github.com/remkop/picocli">GitHub project</a> has the source code, tests, build scripts, etc.</p>
@@ -2365,7 +2359,7 @@ However, picocli lets you make options required if you want to, see <a href="#_r
 </div>
 </div>
 <div class="sect1">
-<h2 id="_issue_tracker">15. Issue Tracker</h2>
+<h2 id="_issue_tracker">14. Issue Tracker</h2>
 <div class="sectionbody">
 <div class="paragraph">
 <p>Please use the <a href="https://github.com/remkop/picocli/issues">Issue Tracker</a> to report bugs or request features.</p>
@@ -2373,7 +2367,7 @@ However, picocli lets you make options required if you want to, see <a href="#_r
 </div>
 </div>
 <div class="sect1">
-<h2 id="_license">16. License</h2>
+<h2 id="_license">15. License</h2>
 <div class="sectionbody">
 <div class="paragraph">
 <p>Picocli is licensed under the <a href="https://github.com/remkop/picocli/blob/master/LICENSE">Apache License 2.0</a>.</p>
@@ -2381,7 +2375,7 @@ However, picocli lets you make options required if you want to, see <a href="#_r
 </div>
 </div>
 <div class="sect1">
-<h2 id="_releases">17. Releases</h2>
+<h2 id="_releases">16. Releases</h2>
 <div class="sectionbody">
 <div class="paragraph">
 <p>Previous versions are available from the GitHub project <a href="https://github.com/remkop/picocli/releases">Releases</a>.</p>
@@ -2389,7 +2383,7 @@ However, picocli lets you make options required if you want to, see <a href="#_r
 </div>
 </div>
 <div class="sect1">
-<h2 id="_download">18. Download</h2>
+<h2 id="_download">17. Download</h2>
 <div class="sectionbody">
 <div class="admonitionblock note">
 <table>
@@ -2525,7 +2519,7 @@ Here is the source. Copy and paste it into a file called <code>CommandLine.java<
  */</span>
 <span class="directive">public</span> <span class="type">class</span> <span class="class">CommandLine</span> {
     <span class="comment">/** This is picocli version {@value}. */</span>
-    <span class="directive">public</span> <span class="directive">static</span> <span class="directive">final</span> <span class="predefined-type">String</span> VERSION = <span class="string"><span class="delimiter">&quot;</span><span class="content">0.9.4-SNAPSHOT</span><span class="delimiter">&quot;</span></span>;
+    <span class="directive">public</span> <span class="directive">static</span> <span class="directive">final</span> <span class="predefined-type">String</span> VERSION = <span class="string"><span class="delimiter">&quot;</span><span class="content">0.9.4</span><span class="delimiter">&quot;</span></span>;
 
     <span class="comment">/** Set this field to {@code true} to force ANSI escape sequences on, or to {@code false} to force ANSI escape
      * sequences off. The default ({@code null}) is to enable ANSI escape sequences on supported platforms.  */</span>
@@ -2555,7 +2549,8 @@ Here is the source. Copy and paste it into a file called <code>CommandLine.java<
         commandMap.put(name, annotatedObject);
         <span class="keyword">return</span> <span class="local-variable">this</span>;
     }
-    <span class="comment">/** Returns a map with the registered sub-commands. */</span>
+    <span class="comment">/** Returns a map with the {@linkplain #addCommand(String, Object) registered} sub-commands.
+     * @return a map with the registered sub-commands */</span>
     <span class="directive">public</span> <span class="predefined-type">Map</span>&lt;<span class="predefined-type">String</span>, <span class="predefined-type">Object</span>&gt; getCommands() {
         <span class="keyword">return</span> <span class="keyword">new</span> <span class="predefined-type">LinkedHashMap</span>&lt;<span class="predefined-type">String</span>, <span class="predefined-type">Object</span>&gt;(commandMap);
     }
@@ -2755,12 +2750,14 @@ Here is the source. Copy and paste it into a file called <code>CommandLine.java<
         <span class="keyword">return</span> <span class="local-variable">this</span>;
     }
 
-    <span class="comment">/** Returns the String that separates option names from option values. {@code '='} by default. */</span>
+    <span class="comment">/** Returns the String that separates option names from option values when parsing command line options. {@code '='} by default.
+     * @return the String the parser uses to separate option names from option values */</span>
     <span class="directive">public</span> <span class="predefined-type">String</span> getSeparator() {
         <span class="keyword">return</span> interpreter.separator;
     }
 
-    <span class="comment">/** Sets the String that separates option names from option values to the specified value. */</span>
+    <span class="comment">/** Sets the String the parser uses to separate option names from option values to the specified value.
+     * @param separator the String that separates option names from option values */</span>
     <span class="directive">public</span> <span class="type">void</span> setSeparator(<span class="predefined-type">String</span> separator) {
         interpreter.separator = Assert.notNull(separator, <span class="string"><span class="delimiter">&quot;</span><span class="content">separator</span><span class="delimiter">&quot;</span></span>);
     }
@@ -3094,18 +3091,23 @@ Here is the source. Copy and paste it into a file called <code>CommandLine.java<
     <span class="annotation">@Target</span>(<span class="predefined-type">ElementType</span>.TYPE)
     <span class="directive">public</span> <span class="annotation">@interface</span> Command {
         <span class="comment">/** Program name to show in the synopsis. If omitted, {@code &quot;&lt;main class&gt;&quot;} is used.
+         * @return the program name to show in the synopsis
          * @see Help#commandName */</span>
         <span class="predefined-type">String</span> name() <span class="keyword">default</span> <span class="string"><span class="delimiter">&quot;</span><span class="content">&lt;main class&gt;</span><span class="delimiter">&quot;</span></span>;
 
         <span class="comment">/** String that separates options from option parameters. Default is {@code &quot;=&quot;}. Spaces are also accepted.
-         * @see Help#separator */</span>
+         * @return the string that separates options from option parameters, used both when parsing and when generating usage help
+         * @see Help#separator
+         * @see CommandLine#setSeparator(String) */</span>
         <span class="predefined-type">String</span> separator() <span class="keyword">default</span> <span class="string"><span class="delimiter">&quot;</span><span class="content">=</span><span class="delimiter">&quot;</span></span>;
 
         <span class="comment">/** Set the heading preceding the header section. May contain embedded {@linkplain java.util.Formatter format specifiers}.
+         * @return the heading preceding the header section
          * @see Help#headerHeading(Object...)  */</span>
         <span class="predefined-type">String</span> headerHeading() <span class="keyword">default</span> <span class="string"><span class="delimiter">&quot;</span><span class="delimiter">&quot;</span></span>;
 
         <span class="comment">/** Optional summary description of the command, shown before the synopsis.
+         * @return summary description of the command
          * @see Help#header
          * @see Help#header(Object...)  */</span>
         <span class="predefined-type">String</span><span class="type">[]</span> header() <span class="keyword">default</span> {};
@@ -3113,62 +3115,75 @@ Here is the source. Copy and paste it into a file called <code>CommandLine.java<
         <span class="comment">/** Set the heading preceding the synopsis text. May contain embedded
          * {@linkplain java.util.Formatter format specifiers}. The default heading is {@code &quot;Usage: &quot;} (without a line
          * break between the heading and the synopsis text).
+         * @return the heading preceding the synopsis text
          * @see Help#synopsisHeading(Object...)  */</span>
         <span class="predefined-type">String</span> synopsisHeading() <span class="keyword">default</span> <span class="string"><span class="delimiter">&quot;</span><span class="content">Usage: </span><span class="delimiter">&quot;</span></span>;
 
         <span class="comment">/** Specify {@code true} to generate an abbreviated synopsis like {@code &quot;&lt;main&gt; [OPTIONS] [PARAMETERS...]&quot;}.
          * By default, a detailed synopsis with individual option names and parameters is generated.
+         * @return whether the synopsis should be abbreviated
          * @see Help#abbreviateSynopsis
          * @see Help#abbreviatedSynopsis()
          * @see Help#detailedSynopsis(Comparator, boolean) */</span>
         <span class="type">boolean</span> abbreviateSynopsis() <span class="keyword">default</span> <span class="predefined-constant">false</span>;
 
         <span class="comment">/** Specify one or more custom synopsis lines to display instead of an auto-generated synopsis.
+         * @return custom synopsis text to replace the auto-generated synopsis
          * @see Help#customSynopsis
          * @see Help#customSynopsis(Object...) */</span>
         <span class="predefined-type">String</span><span class="type">[]</span> customSynopsis() <span class="keyword">default</span> {};
 
         <span class="comment">/** Set the heading preceding the description section. May contain embedded {@linkplain java.util.Formatter format specifiers}.
+         * @return the heading preceding the description section
          * @see Help#descriptionHeading(Object...)  */</span>
         <span class="predefined-type">String</span> descriptionHeading() <span class="keyword">default</span> <span class="string"><span class="delimiter">&quot;</span><span class="delimiter">&quot;</span></span>;
 
         <span class="comment">/** Optional text to display between the synopsis line(s) and the list of options.
+         * @return description of this command
          * @see Help#description
          * @see Help#description(Object...) */</span>
         <span class="predefined-type">String</span><span class="type">[]</span> description() <span class="keyword">default</span> {};
 
         <span class="comment">/** Set the heading preceding the parameters list. May contain embedded {@linkplain java.util.Formatter format specifiers}.
+         * @return the heading preceding the parameters list
          * @see Help#parameterListHeading(Object...)  */</span>
         <span class="predefined-type">String</span> parameterListHeading() <span class="keyword">default</span> <span class="string"><span class="delimiter">&quot;</span><span class="delimiter">&quot;</span></span>;
 
         <span class="comment">/** Set the heading preceding the options list. May contain embedded {@linkplain java.util.Formatter format specifiers}.
+         * @return the heading preceding the options list
          * @see Help#optionListHeading(Object...)  */</span>
         <span class="predefined-type">String</span> optionListHeading() <span class="keyword">default</span> <span class="string"><span class="delimiter">&quot;</span><span class="delimiter">&quot;</span></span>;
 
         <span class="comment">/** Specify {@code false} to show Options in declaration order. The default is to sort alphabetically.
+         * @return whether options should be shown in alphabetic order.
          * @see Help#sortOptions */</span>
         <span class="type">boolean</span> sortOptions() <span class="keyword">default</span> <span class="predefined-constant">true</span>;
 
         <span class="comment">/** Prefix required options with this character in the options list. The default is no marker: the synopsis
          * indicates which options and parameters are required.
+         * @return the character to show in the options list to mark required options
          * @see Help#requiredOptionMarker */</span>
         <span class="type">char</span> requiredOptionMarker() <span class="keyword">default</span> <span class="string"><span class="delimiter">'</span><span class="content"> </span><span class="delimiter">'</span></span>;
 
         <span class="comment">/** Specify {@code true} to show default values in the description column of the options list (except for
          * boolean options). False by default.
+         * @return whether the default values for options and parameters should be shown in the description column
          * @see Help#showDefaultValues */</span>
         <span class="type">boolean</span> showDefaultValues() <span class="keyword">default</span> <span class="predefined-constant">false</span>;
 
         <span class="comment">/** Set the heading preceding the sub-commands list. May contain embedded {@linkplain java.util.Formatter format specifiers}.
          * The default heading is {@code &quot;Commands:%n&quot;} (with a line break at the end).
+         * @return the heading preceding the sub-commands list
          * @see Help#commandListHeading(Object...)  */</span>
         <span class="predefined-type">String</span> commandListHeading() <span class="keyword">default</span> <span class="string"><span class="delimiter">&quot;</span><span class="content">Commands:%n</span><span class="delimiter">&quot;</span></span>;
 
         <span class="comment">/** Set the heading preceding the footer section. May contain embedded {@linkplain java.util.Formatter format specifiers}.
+         * @return the heading preceding the footer section
          * @see Help#footerHeading(Object...)  */</span>
         <span class="predefined-type">String</span> footerHeading() <span class="keyword">default</span> <span class="string"><span class="delimiter">&quot;</span><span class="delimiter">&quot;</span></span>;
 
         <span class="comment">/** Optional text to display after the list of options.
+         * @return text to display after the list of options
          * @see Help#footer
          * @see Help#footer(Object...) */</span>
         <span class="predefined-type">String</span><span class="type">[]</span> footer() <span class="keyword">default</span> {};
@@ -3245,12 +3260,16 @@ Here is the source. Copy and paste it into a file called <code>CommandLine.java<
             <span class="local-variable">this</span>.originalValue = originalValue;
         }
         <span class="comment">/** Returns a new {@code Arity} based on the Option annotation on the specified field, or the field type if no
-         * arity was specified. */</span>
+         * arity was specified.
+         * @param field the field whose Option annotation to inspect
+         * @return a new {@code Arity} based on the Option annotation on the specified field */</span>
         <span class="directive">public</span> <span class="directive">static</span> Arity forOption(<span class="predefined-type">Field</span> field) {
             <span class="keyword">return</span> adjustForType(Arity.valueOf(field.getAnnotation(<span class="predefined-type">Option</span>.class).arity()), field);
         }
         <span class="comment">/** Returns a new {@code Arity} based on the Parameters annotation on the specified field, or the field type
-         * if no arity was specified. */</span>
+         * if no arity was specified.
+         * @param field the field whose Parameters annotation to inspect
+         * @return a new {@code Arity} based on the Parameters annotation on the specified field */</span>
         <span class="directive">public</span> <span class="directive">static</span> Arity forParameters(<span class="predefined-type">Field</span> field) {
             <span class="keyword">return</span> adjustForType(Arity.valueOf(field.getAnnotation(Parameters.class).arity()), field);
         }
@@ -3258,7 +3277,9 @@ Here is the source. Copy and paste it into a file called <code>CommandLine.java<
             <span class="keyword">return</span> result.isUnspecified ? forType(field.getType()) : result;
         }
         <span class="comment">/** Returns a new {@code Arity} based on the specified type: booleans have arity 0, arrays or Collections have
-         * arity &quot;0..*&quot;, and other types have arity 1. */</span>
+         * arity &quot;0..*&quot;, and other types have arity 1.
+         * @param type the type whose default arity to return
+         * @return a new {@code Arity} based on the specified type */</span>
         <span class="directive">public</span> <span class="directive">static</span> Arity forType(<span class="predefined-type">Class</span>&lt;?&gt; type) {
             <span class="keyword">if</span> (isBoolean(type)) {
                 <span class="keyword">return</span> Arity.valueOf(<span class="string"><span class="delimiter">&quot;</span><span class="content">0</span><span class="delimiter">&quot;</span></span>);
@@ -3270,7 +3291,9 @@ Here is the source. Copy and paste it into a file called <code>CommandLine.java<
         <span class="comment">/** Leniently parses the specified String as an {@code Arity} value and return the result. An arity string can
          * be a fixed integer value or a range of the form {@code MIN_VALUE + &quot;..&quot; + MAX_VALUE}. If the
          * {@code MIN_VALUE} string is not numeric, the minimum is zero. If the {@code MAX_VALUE} is not numeric, the
-         * arity is taken to be variable and the maximum is {@code Integer.MAX_VALUE}.*/</span>
+         * arity is taken to be variable and the maximum is {@code Integer.MAX_VALUE}.
+         * @param arity the arity string to parse
+         * @return a new {@code Arity} value */</span>
         <span class="directive">public</span> <span class="directive">static</span> Arity valueOf(<span class="predefined-type">String</span> arity) {
             arity = arity.trim();
             <span class="type">boolean</span> unspecified = arity.length() == <span class="integer">0</span> || arity.startsWith(<span class="string"><span class="delimiter">&quot;</span><span class="content">..</span><span class="delimiter">&quot;</span></span>); <span class="comment">// || arity.endsWith(&quot;..&quot;);</span>
@@ -4044,9 +4067,9 @@ Here is the source. Copy and paste it into a file called <code>CommandLine.java<
      * &lt;p&gt;The {@link Command} annotation provides the easiest way to customize usage help messages. See
      * the &lt;a href=&quot;https://remkop.github.io/picocli/index.html#_usage_help&quot;&gt;Manual&lt;/a&gt; for details.&lt;/p&gt;
      * &lt;p&gt;This Help class provides high-level functions to create sections of the usage help message and headings
-     * for these sections. Instead of calling the {@link CommandLine#usage(PrintStream, ColorScheme)} method,
-     * application authors may want to create a custom usage help message by reorganizing sections in a different order
-     * and/or adding custom sections.&lt;/p&gt;
+     * for these sections. Instead of calling the {@link CommandLine#usage(PrintStream, CommandLine.Help.ColorScheme)}
+     * method, application authors may want to create a custom usage help message by reorganizing sections in a
+     * different order and/or adding custom sections.&lt;/p&gt;
      * &lt;p&gt;Finally, the Help class contains inner classes and interfaces that can be used to create custom help messages.&lt;/p&gt;
      * &lt;h4&gt;IOptionRenderer and IParameterRenderer&lt;/h4&gt;
      * &lt;p&gt;Renders a field annotated with {@link Option} or {@link Parameters} to an array of {@link Text} values.
@@ -4154,13 +4177,16 @@ Here is the source. Copy and paste it into a file called <code>CommandLine.java<
         <span class="directive">public</span> <span class="predefined-type">String</span> footerHeading;
 
         <span class="comment">/** Constructs a new {@code Help} instance with a default color scheme, initialized from annotatations
-         * on the specified class and superclasses. */</span>
+         * on the specified class and superclasses.
+         * @param annotatedObject the annotated object to create usage help for */</span>
         <span class="directive">public</span> Help(<span class="predefined-type">Object</span> annotatedObject) {
             <span class="local-variable">this</span>(annotatedObject, defaultColorScheme());
         }
 
         <span class="comment">/** Constructs a new {@code Help} instance with the specified color scheme, initialized from annotatations
-         * on the specified class and superclasses. */</span>
+         * on the specified class and superclasses.
+         * @param annotatedObject the annotated object to create usage help for
+         * @param colorScheme the color scheme to use */</span>
         <span class="directive">public</span> Help(<span class="predefined-type">Object</span> annotatedObject, ColorScheme colorScheme) {
             <span class="local-variable">this</span>.annotatedObject = Assert.notNull(annotatedObject, <span class="string"><span class="delimiter">&quot;</span><span class="content">annotatedObject</span><span class="delimiter">&quot;</span></span>);
             <span class="local-variable">this</span>.colorScheme = Assert.notNull(colorScheme, <span class="string"><span class="delimiter">&quot;</span><span class="content">colorScheme</span><span class="delimiter">&quot;</span></span>).applySystemProperties();
@@ -4251,7 +4277,8 @@ Here is the source. Copy and paste it into a file called <code>CommandLine.java<
         }
 
         <span class="comment">/** Generates a generic synopsis like {@code &lt;command name&gt; [OPTIONS] [PARAM1 [PARAM2]...]}, omitting parts
-         * that don't apply to the command (e.g., does not show [OPTIONS] if the command has no options). */</span>
+         * that don't apply to the command (e.g., does not show [OPTIONS] if the command has no options).
+         * @return a generic synopsis */</span>
         <span class="directive">public</span> <span class="predefined-type">String</span> abbreviatedSynopsis() {
             <span class="predefined-type">StringBuilder</span> sb = <span class="keyword">new</span> <span class="predefined-type">StringBuilder</span>();
             <span class="keyword">if</span> (!optionFields.isEmpty()) { <span class="comment">// only show if annotated object actually has options</span>
@@ -4268,7 +4295,10 @@ Here is the source. Copy and paste it into a file called <code>CommandLine.java<
         }
 
         <span class="comment">/** Generates a detailed synopsis message showing all options and parameters. Follows the unix convention of
-         * showing optional options and parameters in square brackets ({@code [ ]}). */</span>
+         * showing optional options and parameters in square brackets ({@code [ ]}).
+         * @param optionSort comparator to sort options or {@code null} if options should not be sorted
+         * @param clusterBooleanOptions {@code true} if boolean short options should be clustered into a single string
+         * @return a detailed synopsis */</span>
         <span class="directive">public</span> <span class="predefined-type">String</span> detailedSynopsis(<span class="predefined-type">Comparator</span>&lt;<span class="predefined-type">Field</span>&gt; optionSort, <span class="type">boolean</span> clusterBooleanOptions) {
             Text optionText = <span class="keyword">new</span> Text(<span class="integer">0</span>);
             <span class="predefined-type">List</span>&lt;<span class="predefined-type">Field</span>&gt; fields = <span class="keyword">new</span> <span class="predefined-type">ArrayList</span>&lt;<span class="predefined-type">Field</span>&gt;(optionFields); <span class="comment">// iterate in declaration order</span>
@@ -4379,7 +4409,11 @@ Here is the source. Copy and paste it into a file called <code>CommandLine.java<
             <span class="keyword">return</span> layout.toString();
         }
 
-        <span class="comment">/** Appends each of the specified values plus the specified separator to the specified StringBuilder and returns it. */</span>
+        <span class="comment">/** Formats each of the specified values and appends it to the specified StringBuilder.
+         * @param values the values to format and append to the StringBuilder
+         * @param sb the StringBuilder to collect the formatted strings
+         * @param params the parameters to pass to the format method when formatting each value
+         * @return the specified StringBuilder */</span>
         <span class="directive">public</span> <span class="directive">static</span> <span class="predefined-type">StringBuilder</span> join(<span class="predefined-type">String</span><span class="type">[]</span> values, <span class="predefined-type">StringBuilder</span> sb, <span class="predefined-type">Object</span>... params) {
             <span class="keyword">if</span> (values != <span class="predefined-constant">null</span>) {
                 TextTable table = <span class="keyword">new</span> TextTable(<span class="integer">80</span>);
@@ -4428,47 +4462,63 @@ Here is the source. Copy and paste it into a file called <code>CommandLine.java<
             <span class="keyword">return</span> join(footer, <span class="keyword">new</span> <span class="predefined-type">StringBuilder</span>(), params).toString();
         }
 
-        <span class="comment">/** Returns the text displayed before the header text; the result of {@code String.format(headerHeading, params)}. */</span>
+        <span class="comment">/** Returns the text displayed before the header text; the result of {@code String.format(headerHeading, params)}.
+         * @param params the parameters to use to format the header heading
+         * @return the formatted header heading */</span>
         <span class="directive">public</span> <span class="predefined-type">String</span> headerHeading(<span class="predefined-type">Object</span>... params) {
             <span class="keyword">return</span> <span class="keyword">new</span> Text(format(headerHeading, params)).toString();
         }
-        <span class="comment">/** Returns the text displayed before the synopsis text; the result of {@code String.format(synopsisHeading, params)}. */</span>
+
+        <span class="comment">/** Returns the text displayed before the synopsis text; the result of {@code String.format(synopsisHeading, params)}.
+         * @param params the parameters to use to format the synopsis heading
+         * @return the formatted synopsis heading */</span>
         <span class="directive">public</span> <span class="predefined-type">String</span> synopsisHeading(<span class="predefined-type">Object</span>... params) {
             <span class="keyword">return</span> <span class="keyword">new</span> Text(format(synopsisHeading, params)).toString();
         }
 
         <span class="comment">/** Returns the text displayed before the description text; an empty string if there is no description,
-         * otherwise the result of {@code String.format(descriptionHeading, params)}. */</span>
+         * otherwise the result of {@code String.format(descriptionHeading, params)}.
+         * @param params the parameters to use to format the description heading
+         * @return the formatted description heading */</span>
         <span class="directive">public</span> <span class="predefined-type">String</span> descriptionHeading(<span class="predefined-type">Object</span>... params) {
             <span class="keyword">return</span> empty(descriptionHeading) ? <span class="string"><span class="delimiter">&quot;</span><span class="delimiter">&quot;</span></span> : <span class="keyword">new</span> Text(format(descriptionHeading, params)).toString();
         }
 
         <span class="comment">/** Returns the text displayed before the positional parameter list; an empty string if there are no positional
-         * parameters, otherwise the result of {@code String.format(parameterListHeading, params)}. */</span>
+         * parameters, otherwise the result of {@code String.format(parameterListHeading, params)}.
+         * @param params the parameters to use to format the parameter list heading
+         * @return the formatted parameter list heading */</span>
         <span class="directive">public</span> <span class="predefined-type">String</span> parameterListHeading(<span class="predefined-type">Object</span>... params) {
             <span class="keyword">return</span> positionalParametersFields.isEmpty() ? <span class="string"><span class="delimiter">&quot;</span><span class="delimiter">&quot;</span></span> : <span class="keyword">new</span> Text(format(parameterListHeading, params)).toString();
         }
 
         <span class="comment">/** Returns the text displayed before the option list; an empty string if there are no options,
-         * otherwise the result of {@code String.format(optionListHeading, params)}. */</span>
+         * otherwise the result of {@code String.format(optionListHeading, params)}.
+         * @param params the parameters to use to format the option list heading
+         * @return the formatted option list heading */</span>
         <span class="directive">public</span> <span class="predefined-type">String</span> optionListHeading(<span class="predefined-type">Object</span>... params) {
             <span class="keyword">return</span> optionFields.isEmpty() ? <span class="string"><span class="delimiter">&quot;</span><span class="delimiter">&quot;</span></span> : <span class="keyword">new</span> Text(format(optionListHeading, params)).toString();
         }
 
         <span class="comment">/** Returns the text displayed before the command list; an empty string if there are no commands,
-         * otherwise the result of {@code String.format(commandListHeading, params)}. */</span>
+         * otherwise the result of {@code String.format(commandListHeading, params)}.
+         * @param params the parameters to use to format the command list heading
+         * @return the formatted command list heading */</span>
         <span class="directive">public</span> <span class="predefined-type">String</span> commandListHeading(<span class="predefined-type">Object</span>... params) {
             <span class="keyword">return</span> commands.isEmpty() ? <span class="string"><span class="delimiter">&quot;</span><span class="delimiter">&quot;</span></span> : <span class="keyword">new</span> Text(format(commandListHeading, params)).toString();
         }
 
-        <span class="comment">/** Returns the text displayed before the footer text; the result of {@code String.format(footerHeading, params)}. */</span>
+        <span class="comment">/** Returns the text displayed before the footer text; the result of {@code String.format(footerHeading, params)}.
+         * @param params the parameters to use to format the footer heading
+         * @return the formatted footer heading */</span>
         <span class="directive">public</span> <span class="predefined-type">String</span> footerHeading(<span class="predefined-type">Object</span>... params) {
             <span class="keyword">return</span> <span class="keyword">new</span> Text(format(footerHeading, params)).toString();
         }
         <span class="directive">private</span> <span class="predefined-type">String</span> format(<span class="predefined-type">String</span> formatString,  <span class="predefined-type">Object</span><span class="type">[]</span> params) {
             <span class="keyword">return</span> formatString == <span class="predefined-constant">null</span> ? <span class="string"><span class="delimiter">&quot;</span><span class="delimiter">&quot;</span></span> : <span class="predefined-type">String</span>.format(formatString, params);
         }
-        <span class="comment">/** Returns a 2-column list with command names and the first line of their header or (if absent) description. */</span>
+        <span class="comment">/** Returns a 2-column list with command names and the first line of their header or (if absent) description.
+         * @return a usage help section describing the added commands */</span>
         <span class="directive">public</span> <span class="predefined-type">String</span> commandList() {
             <span class="keyword">if</span> (commands.isEmpty()) { <span class="keyword">return</span> <span class="string"><span class="delimiter">&quot;</span><span class="delimiter">&quot;</span></span>; }
             <span class="type">int</span> commandLength = maxLength(commands.keySet());
@@ -4498,7 +4548,8 @@ Here is the source. Copy and paste it into a file called <code>CommandLine.java<
             <span class="keyword">return</span> result.toString();
         }
 
-        <span class="comment">/** Returns a {@code Layout} instance configured with the user preferences captured in this Help instance. */</span>
+        <span class="comment">/** Returns a {@code Layout} instance configured with the user preferences captured in this Help instance.
+         * @return a Layout */</span>
         <span class="directive">public</span> Layout createDefaultLayout() {
             <span class="keyword">return</span> <span class="keyword">new</span> Layout(colorScheme, <span class="keyword">new</span> TextTable(), createDefaultOptionRenderer(), createDefaultParameterRenderer());
         }
@@ -4514,6 +4565,7 @@ Here is the source. Copy and paste it into a file called <code>CommandLine.java<
          * &lt;p&gt;Following this, there will be one row for each of the remaining elements of the {@link
          *   Option#description()} array, and these rows look like {@code {&quot;&quot;, &quot;&quot;, &quot;&quot;, &quot;&quot;, option.description()[i]}}.&lt;/p&gt;
          * &lt;p&gt;If configured, this option renderer adds an additional row to display the default field value.&lt;/p&gt;
+         * @return a new default OptionRenderer
          */</span>
         <span class="directive">public</span> IOptionRenderer createDefaultOptionRenderer() {
             DefaultOptionRenderer result = <span class="keyword">new</span> DefaultOptionRenderer();
@@ -4524,10 +4576,12 @@ Here is the source. Copy and paste it into a file called <code>CommandLine.java<
             <span class="keyword">return</span> result;
         }
         <span class="comment">/** Returns a new minimal OptionRenderer which converts {@link Option Options} to a single row with two columns
-         * of text: an option name and a description. If multiple names or descriptions exist, the first value is used. */</span>
+         * of text: an option name and a description. If multiple names or descriptions exist, the first value is used.
+         * @return a new minimal OptionRenderer */</span>
         <span class="directive">public</span> <span class="directive">static</span> IOptionRenderer createMinimalOptionRenderer() {
             <span class="keyword">return</span> <span class="keyword">new</span> MinimalOptionRenderer();
         }
+
         <span class="comment">/** Returns a new default ParameterRenderer which converts {@link Parameters Parameters} to four columns of
          * text to match the default {@linkplain TextTable TextTable} column layout. The first row of values looks like this:
          * &lt;ol&gt;
@@ -4539,6 +4593,7 @@ Here is the source. Copy and paste it into a file called <code>CommandLine.java<
          * &lt;p&gt;Following this, there will be one row for each of the remaining elements of the {@link
          *   Parameters#description()} array, and these rows look like {@code {&quot;&quot;, &quot;&quot;, &quot;&quot;, param.description()[i]}}.&lt;/p&gt;
          * &lt;p&gt;If configured, this parameter renderer adds an additional row to display the default field value.&lt;/p&gt;
+         * @return a new default ParameterRenderer
          */</span>
         <span class="directive">public</span> IParameterRenderer createDefaultParameterRenderer() {
             DefaultParameterRenderer result = <span class="keyword">new</span> DefaultParameterRenderer();
@@ -4546,11 +4601,14 @@ Here is the source. Copy and paste it into a file called <code>CommandLine.java<
             <span class="keyword">return</span> result;
         }
         <span class="comment">/** Returns a new minimal ParameterRenderer which converts {@link Parameters Parameters} to a single row with
-         * two columns of text: an option name and a description. If multiple descriptions exist, the first value is used. */</span>
+         * two columns of text: an option name and a description. If multiple descriptions exist, the first value is used.
+         * @return a new minimal ParameterRenderer */</span>
         <span class="directive">public</span> <span class="directive">static</span> IParameterRenderer createMinimalParameterRenderer() {
             <span class="keyword">return</span> <span class="keyword">new</span> MinimalParameterRenderer();
         }
-        <span class="comment">/** Returns a value renderer that returns the {@code paramLabel} if defined or the field name otherwise. */</span>
+
+        <span class="comment">/** Returns a value renderer that returns the {@code paramLabel} if defined or the field name otherwise.
+         * @return a new minimal ParamLabelRenderer */</span>
         <span class="directive">public</span> <span class="directive">static</span> IParamLabelRenderer createMinimalParamLabelRenderer() {
             <span class="keyword">return</span> <span class="keyword">new</span> IParamLabelRenderer() {
                 <span class="directive">public</span> Text renderParameterLabel(<span class="predefined-type">Field</span> field, <span class="predefined-type">List</span>&lt;IStyle&gt; styles) {
@@ -4570,21 +4628,25 @@ Here is the source. Copy and paste it into a file called <code>CommandLine.java<
         <span class="comment">/** Returns a new default value renderer that separates option parameters from their {@linkplain Option
          * options} with the specified separator string, surrounds optional parameters with {@code '['} and {@code ']'}
          * characters and uses ellipses (&quot;...&quot;) to indicate that any number of a parameter are allowed.
+         * @return a new default ParamLabelRenderer
          */</span>
         <span class="directive">public</span> IParamLabelRenderer createDefaultParamLabelRenderer() {
             <span class="keyword">return</span> <span class="keyword">new</span> DefaultParamLabelRenderer(separator);
         }
         <span class="comment">/** Sorts Fields annotated with {@code Option} by their option name in case-insensitive alphabetic order. If an
-         * Option has multiple names, the shortest name is used for the sorting. Help options follow non-help options. */</span>
+         * Option has multiple names, the shortest name is used for the sorting. Help options follow non-help options.
+         * @return a comparator that sorts fields by their option name in case-insensitive alphabetic order */</span>
         <span class="directive">public</span> <span class="directive">static</span> <span class="predefined-type">Comparator</span>&lt;<span class="predefined-type">Field</span>&gt; createShortOptionNameComparator() {
             <span class="keyword">return</span> <span class="keyword">new</span> SortByShortestOptionNameAlphabetically();
         }
         <span class="comment">/** Sorts Fields annotated with {@code Option} by their option {@linkplain Arity#max max arity} first, by
-         * {@linkplain Arity#min min arity} next, and by {@linkplain #createShortOptionNameComparator() option name} last. */</span>
+         * {@linkplain Arity#min min arity} next, and by {@linkplain #createShortOptionNameComparator() option name} last.
+         * @return a comparator that sorts fields by arity first, then their option name */</span>
         <span class="directive">public</span> <span class="directive">static</span> <span class="predefined-type">Comparator</span>&lt;<span class="predefined-type">Field</span>&gt; createShortOptionArityAndNameComparator() {
             <span class="keyword">return</span> <span class="keyword">new</span> SortByOptionArityAndNameAlphabetically();
         }
-        <span class="comment">/** Sorts short strings before longer strings. */</span>
+        <span class="comment">/** Sorts short strings before longer strings.
+         * @return a comparators that sorts short strings before longer strings */</span>
         <span class="directive">public</span> <span class="directive">static</span> <span class="predefined-type">Comparator</span>&lt;<span class="predefined-type">String</span>&gt; shortestFirst() {
             <span class="keyword">return</span> <span class="keyword">new</span> ShortestFirst();
         }
@@ -4733,10 +4795,14 @@ Here is the source. Copy and paste it into a file called <code>CommandLine.java<
         <span class="directive">public</span> <span class="type">interface</span> <span class="class">IParamLabelRenderer</span> {
 
             <span class="comment">/** Returns a text rendering of the Option parameter or positional parameter; returns an empty string
-             * {@code &quot;&quot;} if the option is a boolean and does not take a parameter. */</span>
+             * {@code &quot;&quot;} if the option is a boolean and does not take a parameter.
+             * @param field the annotated field with a parameter label
+             * @param styles the styles to apply to the parameter label
+             * @return a text rendering of the Option parameter or positional parameter */</span>
             Text renderParameterLabel(<span class="predefined-type">Field</span> field, <span class="predefined-type">List</span>&lt;IStyle&gt; styles);
 
-            <span class="comment">/** Returns the separator between option name and param label */</span>
+            <span class="comment">/** Returns the separator between option name and param label.
+             * @return the separator between option name and param label */</span>
             <span class="predefined-type">String</span> separator();
         }
         <span class="comment">/**
@@ -4799,7 +4865,7 @@ Here is the source. Copy and paste it into a file called <code>CommandLine.java<
          * &lt;p&gt;Delegates to the renderers to create {@link Text} values for the annotated fields, and uses a
          * {@link TextTable} to display these values in tabular format. Layout is responsible for deciding which values
          * to display where in the table. By default, Layout shows one option or parameter per table row.&lt;/p&gt;
-         * &lt;p&gt;Customize by overriding the {@link #layout(Field, Text[][])} method.&lt;/p&gt;
+         * &lt;p&gt;Customize by overriding the {@link #layout(Field, CommandLine.Help.Ansi.Text[][])} method.&lt;/p&gt;
          * @see IOptionRenderer rendering options to text
          * @see IParameterRenderer rendering parameters to text
          * @see TextTable showing values in a tabular format
@@ -4812,17 +4878,24 @@ Here is the source. Copy and paste it into a file called <code>CommandLine.java<
 
             <span class="comment">/** Constructs a Layout with the specified color scheme, a new default TextTable, the
              * {@linkplain Help#createDefaultOptionRenderer() default option renderer}, and the
-             * {@linkplain Help#createDefaultParameterRenderer() default parameter renderer}. */</span>
+             * {@linkplain Help#createDefaultParameterRenderer() default parameter renderer}.
+             * @param colorScheme the color scheme to use for common, auto-generated parts of the usage help message */</span>
             <span class="directive">public</span> Layout(ColorScheme colorScheme) { <span class="local-variable">this</span>(colorScheme, <span class="keyword">new</span> TextTable()); }
 
             <span class="comment">/** Constructs a Layout with the specified color scheme, the specified TextTable, the
              * {@linkplain Help#createDefaultOptionRenderer() default option renderer}, and the
-             * {@linkplain Help#createDefaultParameterRenderer() default parameter renderer}. */</span>
+             * {@linkplain Help#createDefaultParameterRenderer() default parameter renderer}.
+             * @param colorScheme the color scheme to use for common, auto-generated parts of the usage help message
+             * @param textTable the TextTable to lay out parts of the usage help message in tabular format */</span>
             <span class="directive">public</span> Layout(ColorScheme colorScheme, TextTable textTable) {
                 <span class="local-variable">this</span>(colorScheme, textTable, <span class="keyword">new</span> DefaultOptionRenderer(), <span class="keyword">new</span> DefaultParameterRenderer());
             }
             <span class="comment">/** Constructs a Layout with the specified color scheme, the specified TextTable, the
-             * specified option renderer and the specified parameter renderer. */</span>
+             * specified option renderer and the specified parameter renderer.
+             * @param colorScheme the color scheme to use for common, auto-generated parts of the usage help message
+             * @param optionRenderer the object responsible for rendering Options to Text
+             * @param parameterRenderer the object responsible for rendering Parameters to Text
+             * @param textTable the TextTable to lay out parts of the usage help message in tabular format */</span>
             <span class="directive">public</span> Layout(ColorScheme colorScheme, TextTable textTable, IOptionRenderer optionRenderer, IParameterRenderer parameterRenderer) {
                 <span class="local-variable">this</span>.colorScheme       = Assert.notNull(colorScheme, <span class="string"><span class="delimiter">&quot;</span><span class="content">colorScheme</span><span class="delimiter">&quot;</span></span>);
                 <span class="local-variable">this</span>.table             = Assert.notNull(textTable, <span class="string"><span class="delimiter">&quot;</span><span class="content">textTable</span><span class="delimiter">&quot;</span></span>);
@@ -4831,7 +4904,7 @@ Here is the source. Copy and paste it into a file called <code>CommandLine.java<
             }
             <span class="comment">/**
              * Copies the specified text values into the correct cells in the {@link TextTable}. This implementation
-             * delegates to {@link TextTable#addRowValues(Text...)} for each row of values.
+             * delegates to {@link TextTable#addRowValues(CommandLine.Help.Ansi.Text...)} for each row of values.
              * &lt;p&gt;Subclasses may override.&lt;/p&gt;
              * @param field the field annotated with the specified Option or Parameters
              * @param cellValues the text values representing the Option/Parameters, to be displayed in tabular form
@@ -4841,7 +4914,9 @@ Here is the source. Copy and paste it into a file called <code>CommandLine.java<
                     table.addRowValues(oneRow);
                 }
             }
-            <span class="comment">/** Calls {@link #addOption(Field, CommandLine.Help.IParamLabelRenderer)} for all non-hidden Options in the list. */</span>
+            <span class="comment">/** Calls {@link #addOption(Field, CommandLine.Help.IParamLabelRenderer)} for all non-hidden Options in the list.
+             * @param fields fields annotated with {@link Option} to add usage descriptions for
+             * @param paramLabelRenderer object that knows how to render option parameters */</span>
             <span class="directive">public</span> <span class="type">void</span> addOptions(<span class="predefined-type">List</span>&lt;<span class="predefined-type">Field</span>&gt; fields, IParamLabelRenderer paramLabelRenderer) {
                 <span class="keyword">for</span> (<span class="predefined-type">Field</span> field : fields) {
                     <span class="predefined-type">Option</span> option = field.getAnnotation(<span class="predefined-type">Option</span>.class);
@@ -4852,7 +4927,7 @@ Here is the source. Copy and paste it into a file called <code>CommandLine.java<
             }
             <span class="comment">/**
              * Delegates to the {@link #optionRenderer option renderer} of this layout to obtain
-             * text values for the specified {@link Option}, and then calls the {@link #layout(Field, Text[][])}
+             * text values for the specified {@link Option}, and then calls the {@link #layout(Field, CommandLine.Help.Ansi.Text[][])}
              * method to write these text values into the correct cells in the TextTable.
              * @param field the field annotated with the specified Option
              * @param paramLabelRenderer knows how to render option parameters
@@ -4862,7 +4937,9 @@ Here is the source. Copy and paste it into a file called <code>CommandLine.java<
                 Text<span class="type">[]</span><span class="type">[]</span> values = optionRenderer.render(option, field, paramLabelRenderer, colorScheme);
                 layout(field, values);
             }
-            <span class="comment">/** Calls {@link #addPositionalParameter(Field, CommandLine.Help.IParamLabelRenderer)} for all non-hidden Parameters in the list. */</span>
+            <span class="comment">/** Calls {@link #addPositionalParameter(Field, CommandLine.Help.IParamLabelRenderer)} for all non-hidden Parameters in the list.
+             * @param fields fields annotated with {@link Parameters} to add usage descriptions for
+             * @param paramLabelRenderer knows how to render option parameters */</span>
             <span class="directive">public</span> <span class="type">void</span> addPositionalParameters(<span class="predefined-type">List</span>&lt;<span class="predefined-type">Field</span>&gt; fields, IParamLabelRenderer paramLabelRenderer) {
                 <span class="keyword">for</span> (<span class="predefined-type">Field</span> field : fields) {
                     Parameters parameters = field.getAnnotation(Parameters.class);
@@ -4874,7 +4951,7 @@ Here is the source. Copy and paste it into a file called <code>CommandLine.java<
             <span class="comment">/**
              * Delegates to the {@link #parameterRenderer parameter renderer} of this layout
              * to obtain text values for the specified {@link Parameters}, and then calls
-             * {@link #layout(Field, Text[][])} to write these text values into the correct cells in the TextTable.
+             * {@link #layout(Field, CommandLine.Help.Ansi.Text[][])} to write these text values into the correct cells in the TextTable.
              * @param field the field annotated with the specified Parameters
              * @param paramLabelRenderer knows how to render option parameters
              */</span>
@@ -4969,15 +5046,20 @@ Here is the source. Copy and paste it into a file called <code>CommandLine.java<
                     columns[i] = <span class="keyword">new</span> Column(columnWidths[i], <span class="integer">0</span>, i == columnWidths.length - <span class="integer">1</span> ? SPAN: WRAP);
                 }
             }
-            <span class="comment">/** Constructs a {@code TextTable} with the specified columns. */</span>
+            <span class="comment">/** Constructs a {@code TextTable} with the specified columns.
+             * @param columns columns to construct this TextTable with */</span>
             <span class="directive">public</span> TextTable(Column... columns) {
                 <span class="local-variable">this</span>.columns = Assert.notNull(columns, <span class="string"><span class="delimiter">&quot;</span><span class="content">columns</span><span class="delimiter">&quot;</span></span>);
                 <span class="keyword">if</span> (columns.length == <span class="integer">0</span>) { <span class="keyword">throw</span> <span class="keyword">new</span> <span class="exception">IllegalArgumentException</span>(<span class="string"><span class="delimiter">&quot;</span><span class="content">At least one column is required</span><span class="delimiter">&quot;</span></span>); }
             }
-            <span class="comment">/** Returns the {@code char[]} slot at the specified row and column to write a text value into. */</span>
+            <span class="comment">/** Returns the {@code Text} slot at the specified row and column to write a text value into.
+             * @param row the row of the cell whose Text to return
+             * @param col the column of the cell whose Text to return
+             * @return the Text object at the specified row and column */</span>
             <span class="directive">public</span> Text cellAt(<span class="type">int</span> row, <span class="type">int</span> col) { <span class="keyword">return</span> columnValues.get(col + (row * columns.length)); }
 
-            <span class="comment">/** Returns the current number of rows of this {@code TextTable}. */</span>
+            <span class="comment">/** Returns the current number of rows of this {@code TextTable}.
+             * @return the current number of rows in this TextTable */</span>
             <span class="directive">public</span> <span class="type">int</span> rowCount() { <span class="keyword">return</span> columnValues.size() / columns.length; }
 
             <span class="comment">/** Adds the required {@code char[]} slots for a new row to the {@link #columnValues} field. */</span>
@@ -4987,7 +5069,8 @@ Here is the source. Copy and paste it into a file called <code>CommandLine.java<
                 }
             }
 
-            <span class="comment">/** Delegates to {@link #addRowValues(Text...)}. */</span>
+            <span class="comment">/** Delegates to {@link #addRowValues(CommandLine.Help.Ansi.Text...)}.
+             * @param values the text values to display in each column of the current row */</span>
             <span class="directive">public</span> <span class="type">void</span> addRowValues(<span class="predefined-type">String</span>... values) {
                 Text<span class="type">[]</span> array = <span class="keyword">new</span> Text[values.length];
                 <span class="keyword">for</span> (<span class="type">int</span> i = <span class="integer">0</span>; i &lt; array.length; i++) {
@@ -4997,7 +5080,7 @@ Here is the source. Copy and paste it into a file called <code>CommandLine.java<
             }
             <span class="comment">/**
              * Adds a new {@linkplain TextTable#addEmptyRow() empty row}, then calls {@link
-             * TextTable#putValue(int, int, Text) putValue} for each of the specified values, adding more empty rows
+             * TextTable#putValue(int, int, CommandLine.Help.Ansi.Text) putValue} for each of the specified values, adding more empty rows
              * if the return value indicates that the value spanned multiple columns or was wrapped to multiple rows.
              * @param values the values to write into a new row in this TextTable
              * @throws IllegalArgumentException if the number of values exceeds the number of Columns in this table
@@ -5101,7 +5184,9 @@ Here is the source. Copy and paste it into a file called <code>CommandLine.java<
                 <span class="keyword">return</span> length;
             }
 
-            <span class="comment">/** Copies the text representation that we built up from the options into the specified StringBuilder. */</span>
+            <span class="comment">/** Copies the text representation that we built up from the options into the specified StringBuilder.
+             * @param text the StringBuilder to write into
+             * @return the specified StringBuilder object (to allow method chaining and a more fluid API) */</span>
             <span class="directive">public</span> <span class="predefined-type">StringBuilder</span> toString(<span class="predefined-type">StringBuilder</span> text) {
                 <span class="type">int</span> columnCount = <span class="local-variable">this</span>.columns.length;
                 <span class="predefined-type">StringBuilder</span> row = <span class="keyword">new</span> <span class="predefined-type">StringBuilder</span>(<span class="integer">80</span>);
@@ -5157,21 +5242,37 @@ Here is the source. Copy and paste it into a file called <code>CommandLine.java<
             <span class="directive">public</span> <span class="directive">final</span> <span class="predefined-type">List</span>&lt;IStyle&gt; optionStyles = <span class="keyword">new</span> <span class="predefined-type">ArrayList</span>&lt;IStyle&gt;();
             <span class="directive">public</span> <span class="directive">final</span> <span class="predefined-type">List</span>&lt;IStyle&gt; parameterStyles = <span class="keyword">new</span> <span class="predefined-type">ArrayList</span>&lt;IStyle&gt;();
             <span class="directive">public</span> <span class="directive">final</span> <span class="predefined-type">List</span>&lt;IStyle&gt; optionParamStyles = <span class="keyword">new</span> <span class="predefined-type">ArrayList</span>&lt;IStyle&gt;();
-            <span class="comment">/** Adds the specified styles to the styles for commands in this color scheme and returns this color scheme. */</span>
+            <span class="comment">/** Adds the specified styles to the registered styles for commands in this color scheme and returns this color scheme.
+             * @param styles the styles to add to the registered styles for commands in this color scheme
+             * @return this color scheme to enable method chaining for a more fluent API */</span>
             <span class="directive">public</span> ColorScheme commands(IStyle... styles)     { <span class="keyword">return</span> addAll(commandStyles, styles); }
-            <span class="comment">/** Adds the specified styles to the styles for options in this color scheme and returns this color scheme. */</span>
+            <span class="comment">/** Adds the specified styles to the registered styles for options in this color scheme and returns this color scheme.
+             * @param styles the styles to add to registered the styles for options in this color scheme
+             * @return this color scheme to enable method chaining for a more fluent API */</span>
             <span class="directive">public</span> ColorScheme options(IStyle... styles)      { <span class="keyword">return</span> addAll(optionStyles, styles);}
-            <span class="comment">/** Adds the specified styles to the styles for positional parameters in this color scheme and returns this color scheme. */</span>
+            <span class="comment">/** Adds the specified styles to the registered styles for positional parameters in this color scheme and returns this color scheme.
+             * @param styles the styles to add to registered the styles for parameters in this color scheme
+             * @return this color scheme to enable method chaining for a more fluent API */</span>
             <span class="directive">public</span> ColorScheme parameters(IStyle... styles)   { <span class="keyword">return</span> addAll(parameterStyles, styles);}
-            <span class="comment">/** Adds the specified styles to the styles for option parameters in this color scheme and returns this color scheme. */</span>
+            <span class="comment">/** Adds the specified styles to the registered styles for option parameters in this color scheme and returns this color scheme.
+             * @param styles the styles to add to the registered styles for option parameters in this color scheme
+             * @return this color scheme to enable method chaining for a more fluent API */</span>
             <span class="directive">public</span> ColorScheme optionParams(IStyle... styles) { <span class="keyword">return</span> addAll(optionParamStyles, styles);}
-            <span class="comment">/** Returns a Text with all command styles applied to the specified command string. */</span>
+            <span class="comment">/** Returns a Text with all command styles applied to the specified command string.
+             * @param command the command string to apply the registered command styles to
+             * @return a Text with all command styles applied to the specified command string */</span>
             <span class="directive">public</span> Ansi.Text commandText(<span class="predefined-type">String</span> command)         { <span class="keyword">return</span> Text.apply(command,     commandStyles); }
-            <span class="comment">/** Returns a Text with all option styles applied to the specified option string. */</span>
+            <span class="comment">/** Returns a Text with all option styles applied to the specified option string.
+             * @param option the option string to apply the registered option styles to
+             * @return a Text with all option styles applied to the specified option string */</span>
             <span class="directive">public</span> Ansi.Text optionText(<span class="predefined-type">String</span> option)           { <span class="keyword">return</span> Text.apply(option,      optionStyles); }
-            <span class="comment">/** Returns a Text with all parameter styles applied to the specified parameter string. */</span>
+            <span class="comment">/** Returns a Text with all parameter styles applied to the specified parameter string.
+             * @param parameter the parameter string to apply the registered parameter styles to
+             * @return a Text with all parameter styles applied to the specified parameter string */</span>
             <span class="directive">public</span> Ansi.Text parameterText(<span class="predefined-type">String</span> parameter)     { <span class="keyword">return</span> Text.apply(parameter,   parameterStyles); }
-            <span class="comment">/** Returns a Text with all optionParam styles applied to the specified optionParam string. */</span>
+            <span class="comment">/** Returns a Text with all optionParam styles applied to the specified optionParam string.
+             * @param optionParam the option parameter string to apply the registered option parameter styles to
+             * @return a Text with all option parameter styles applied to the specified option parameter string */</span>
             <span class="directive">public</span> Ansi.Text optionParamText(<span class="predefined-type">String</span> optionParam) { <span class="keyword">return</span> Text.apply(optionParam, optionParamStyles); }
 
             <span class="comment">/** Replaces colors and styles in this scheme with ones specified in system properties, and returns this scheme.
@@ -5230,8 +5331,9 @@ Here is the source. Copy and paste it into a file called <code>CommandLine.java<
             <span class="directive">private</span> <span class="directive">static</span> <span class="type">boolean</span> ansiForcedOn()  { <span class="keyword">return</span> ansi != <span class="predefined-constant">null</span> &amp;&amp; ansi; }
             <span class="directive">private</span> <span class="directive">static</span> <span class="type">boolean</span> ansiForcedOff() { <span class="keyword">return</span> ansi != <span class="predefined-constant">null</span> &amp;&amp; !ansi; }
 
-            <span class="comment">/** Enabled if it is forced ON or if the platform supports ANSI escape codes and it is not forced OFF. */</span>
-            <span class="directive">public</span>  <span class="directive">static</span> <span class="type">boolean</span> enabled() { <span class="keyword">return</span> ansiForcedOn() || (ansiPossible() &amp;&amp; !ansiForcedOff()); }
+            <span class="comment">/** Enabled if it is forced ON or if the platform supports ANSI escape codes and it is not forced OFF.
+             * @return {@code true} if ANSI escape codes are enabled */</span>
+            <span class="directive">public</span> <span class="directive">static</span> <span class="type">boolean</span> enabled() { <span class="keyword">return</span> ansiForcedOn() || (ansiPossible() &amp;&amp; !ansiForcedOff()); }
 
             <span class="comment">/** Defines the interface for an ANSI escape sequence. */</span>
             <span class="directive">public</span> <span class="type">interface</span> <span class="class">IStyle</span> {
@@ -5239,10 +5341,12 @@ Here is the source. Copy and paste it into a file called <code>CommandLine.java<
                 <span class="comment">/** The Control Sequence Introducer (CSI) escape sequence {@value}. */</span>
                 <span class="predefined-type">String</span> CSI = <span class="string"><span class="delimiter">&quot;</span><span class="char">\u001B</span><span class="content">[</span><span class="delimiter">&quot;</span></span>;
 
-                <span class="comment">/** Returns the ANSI escape code for turning this style on. */</span>
+                <span class="comment">/** Returns the ANSI escape code for turning this style on.
+                 * @return the ANSI escape code for turning this style on */</span>
                 <span class="predefined-type">String</span> on();
 
-                <span class="comment">/** Returns the ANSI escape code for turning this style off. */</span>
+                <span class="comment">/** Returns the ANSI escape code for turning this style off.
+                 * @return the ANSI escape code for turning this style off */</span>
                 <span class="predefined-type">String</span> off();
             }
 
@@ -5262,7 +5366,10 @@ Here is the source. Copy and paste it into a file called <code>CommandLine.java<
                 <span class="predefined-type">Style</span>(<span class="type">int</span> startCode, <span class="type">int</span> endCode) {<span class="local-variable">this</span>.startCode = startCode; <span class="local-variable">this</span>.endCode = endCode; }
                 <span class="directive">public</span> <span class="predefined-type">String</span> on() { <span class="keyword">return</span> CSI + startCode + <span class="string"><span class="delimiter">&quot;</span><span class="content">m</span><span class="delimiter">&quot;</span></span>; }
                 <span class="directive">public</span> <span class="predefined-type">String</span> off() { <span class="keyword">return</span> CSI + endCode + <span class="string"><span class="delimiter">&quot;</span><span class="content">m</span><span class="delimiter">&quot;</span></span>; }
-                                <span class="comment">/** Returns the concatenated ANSI escape codes for turning all specified styles on. */</span>
+
+                                <span class="comment">/** Returns the concatenated ANSI escape codes for turning all specified styles on.
+                 * @param styles the styles to generate ANSI escape codes for
+                 * @return the concatenated ANSI escape codes for turning all specified styles on */</span>
                 <span class="directive">public</span> <span class="directive">static</span> <span class="predefined-type">String</span> on(IStyle... styles) {
                     <span class="predefined-type">StringBuilder</span> result = <span class="keyword">new</span> <span class="predefined-type">StringBuilder</span>();
                     <span class="keyword">for</span> (IStyle style : styles) {
@@ -5270,7 +5377,9 @@ Here is the source. Copy and paste it into a file called <code>CommandLine.java<
                     }
                     <span class="keyword">return</span> result.toString();
                 }
-                                <span class="comment">/** Returns the concatenated ANSI escape codes for turning all specified styles off. */</span>
+                                <span class="comment">/** Returns the concatenated ANSI escape codes for turning all specified styles off.
+                 * @param styles the styles to generate ANSI escape codes for
+                 * @return the concatenated ANSI escape codes for turning all specified styles off */</span>
                 <span class="directive">public</span> <span class="directive">static</span> <span class="predefined-type">String</span> off(IStyle... styles) {
                     <span class="predefined-type">StringBuilder</span> result = <span class="keyword">new</span> <span class="predefined-type">StringBuilder</span>();
                     <span class="keyword">for</span> (IStyle style : styles) {
@@ -5280,25 +5389,27 @@ Here is the source. Copy and paste it into a file called <code>CommandLine.java<
                 }
                                 <span class="comment">/** Parses the specified style markup and returns the associated style.
                                  *  The markup may be one of the Style enum value names, or it may be one of the Style enum value
-                                 *  names when {@code &quot;fg_&quot;} is prepended, or it may be an {@link java.awt.Color#decode(String) RGB Color int}.
-                                 * @param str the case-insensitive style markup to convert, e.g. {@code &quot;blue&quot;} or {@code &quot;fg_blue&quot;}
+                                 *  names when {@code &quot;fg_&quot;} is prepended, or it may be one of the indexed colors in the 256 color palette.
+                 * @param str the case-insensitive style markup to convert, e.g. {@code &quot;blue&quot;} or {@code &quot;fg_blue&quot;},
+                 *          or {@code &quot;46&quot;} (indexed color) or {@code &quot;0;5;0&quot;} (RGB components of an indexed color)
                                  * @return the IStyle for the specified converter
                                  */</span>
                 <span class="directive">public</span> <span class="directive">static</span> IStyle fg(<span class="predefined-type">String</span> str) {
                     <span class="keyword">try</span> { <span class="keyword">return</span> <span class="predefined-type">Style</span>.valueOf(str.toLowerCase(ENGLISH)); } <span class="keyword">catch</span> (<span class="exception">Exception</span> ignored) {}
                     <span class="keyword">try</span> { <span class="keyword">return</span> <span class="predefined-type">Style</span>.valueOf(<span class="string"><span class="delimiter">&quot;</span><span class="content">fg_</span><span class="delimiter">&quot;</span></span> + str.toLowerCase(ENGLISH)); } <span class="keyword">catch</span> (<span class="exception">Exception</span> ignored) {}
-                    <span class="keyword">return</span> <span class="keyword">new</span> ISO86133RGBColor(<span class="predefined-constant">true</span>, <span class="predefined-type">Color</span>.decode(str));
+                    <span class="keyword">return</span> <span class="keyword">new</span> Palette256Color(<span class="predefined-constant">true</span>, str);
                 }
                                 <span class="comment">/** Parses the specified style markup and returns the associated style.
                                  *  The markup may be one of the Style enum value names, or it may be one of the Style enum value
-                                 *  names when {@code &quot;bg_&quot;} is prepended, or it may be an {@link java.awt.Color#decode(String) RGB Color int}.
-                                 * @param str the case-insensitive style markup to convert, e.g. {@code &quot;blue&quot;} or {@code &quot;bg_blue&quot;}
+                                 *  names when {@code &quot;bg_&quot;} is prepended, or it may be one of the indexed colors in the 256 color palette.
+                                 * @param str the case-insensitive style markup to convert, e.g. {@code &quot;blue&quot;} or {@code &quot;bg_blue&quot;},
+                 *          or {@code &quot;46&quot;} (indexed color) or {@code &quot;0;5;0&quot;} (RGB components of an indexed color)
                                  * @return the IStyle for the specified converter
                                  */</span>
                 <span class="directive">public</span> <span class="directive">static</span> IStyle bg(<span class="predefined-type">String</span> str) {
                     <span class="keyword">try</span> { <span class="keyword">return</span> <span class="predefined-type">Style</span>.valueOf(str.toLowerCase(ENGLISH)); } <span class="keyword">catch</span> (<span class="exception">Exception</span> ignored) {}
                     <span class="keyword">try</span> { <span class="keyword">return</span> <span class="predefined-type">Style</span>.valueOf(<span class="string"><span class="delimiter">&quot;</span><span class="content">bg_</span><span class="delimiter">&quot;</span></span> + str.toLowerCase(ENGLISH)); } <span class="keyword">catch</span> (<span class="exception">Exception</span> ignored) {}
-                    <span class="keyword">return</span> <span class="keyword">new</span> ISO86133RGBColor(<span class="predefined-constant">false</span>, <span class="predefined-type">Color</span>.decode(str));
+                    <span class="keyword">return</span> <span class="keyword">new</span> Palette256Color(<span class="predefined-constant">false</span>, str);
                 }
                 <span class="comment">/** Parses the specified comma-separated sequence of style descriptors and returns the associated
                  *  styles. For each markup, strings starting with {@code &quot;bg(&quot;} are delegated to
@@ -5324,16 +5435,22 @@ Here is the source. Copy and paste it into a file called <code>CommandLine.java<
                 }
             }
 
-            <span class="comment">/** ISO-8613-3 24-bit RGB color ansi escape codes. */</span>
-            <span class="directive">static</span> <span class="type">class</span> <span class="class">ISO86133RGBColor</span> <span class="directive">implements</span> IStyle {
+            <span class="comment">/** Defines a palette map of 216 colors: 6 * 6 * 6 cube (216 colors):
+             * 16 + 36 * r + 6 * g + b (0 &amp;lt;= r, g, b &amp;lt;= 5). */</span>
+            <span class="directive">static</span> <span class="type">class</span> <span class="class">Palette256Color</span> <span class="directive">implements</span> IStyle {
                 <span class="directive">private</span> <span class="directive">final</span> <span class="type">int</span> fgbg;
-                <span class="directive">private</span> <span class="directive">final</span> <span class="predefined-type">Color</span> color;
+                <span class="directive">private</span> <span class="directive">final</span> <span class="type">int</span> color;
 
-                ISO86133RGBColor(<span class="type">boolean</span> foreground, <span class="predefined-type">Color</span> color) {
+                Palette256Color(<span class="type">boolean</span> foreground, <span class="predefined-type">String</span> color) {
                     <span class="local-variable">this</span>.fgbg = foreground ? <span class="integer">38</span> : <span class="integer">48</span>;
-                    <span class="local-variable">this</span>.color = color;
+                    <span class="predefined-type">String</span><span class="type">[]</span> rgb = color.split(<span class="string"><span class="delimiter">&quot;</span><span class="content">;</span><span class="delimiter">&quot;</span></span>);
+                    <span class="keyword">if</span> (rgb.length == <span class="integer">3</span>) {
+                        <span class="local-variable">this</span>.color = <span class="integer">16</span> + <span class="integer">36</span> * <span class="predefined-type">Integer</span>.decode(rgb[<span class="integer">0</span>]) + <span class="integer">6</span> * <span class="predefined-type">Integer</span>.decode(rgb[<span class="integer">1</span>]) + <span class="predefined-type">Integer</span>.decode(rgb[<span class="integer">2</span>]);
+                    } <span class="keyword">else</span> {
+                        <span class="local-variable">this</span>.color = <span class="predefined-type">Integer</span>.decode(color);
+                    }
                 }
-                <span class="directive">public</span> <span class="predefined-type">String</span> on() { <span class="keyword">return</span> <span class="predefined-type">String</span>.format(CSI + <span class="string"><span class="delimiter">&quot;</span><span class="content">%d;2;%d;%d;%dm</span><span class="delimiter">&quot;</span></span>, fgbg, color.getRed(), color.getGreen(), color.getBlue()); }
+                <span class="directive">public</span> <span class="predefined-type">String</span> on() { <span class="keyword">return</span> <span class="predefined-type">String</span>.format(CSI + <span class="string"><span class="delimiter">&quot;</span><span class="content">%d;5;%dm</span><span class="delimiter">&quot;</span></span>, fgbg, color); }
                 <span class="directive">public</span> <span class="predefined-type">String</span> off() { <span class="keyword">return</span> CSI + (fgbg + <span class="integer">1</span>) + <span class="string"><span class="delimiter">&quot;</span><span class="content">m</span><span class="delimiter">&quot;</span></span>; }
             }
 
@@ -5347,7 +5464,8 @@ Here is the source. Copy and paste it into a file called <code>CommandLine.java<
                 <span class="directive">private</span> <span class="predefined-type">StringBuilder</span> plain = <span class="keyword">new</span> <span class="predefined-type">StringBuilder</span>();
                 <span class="directive">private</span> <span class="predefined-type">SortedMap</span>&lt;<span class="predefined-type">Integer</span>, <span class="predefined-type">String</span>&gt; indexToStyle = <span class="keyword">new</span> <span class="predefined-type">TreeMap</span>&lt;<span class="predefined-type">Integer</span>, <span class="predefined-type">String</span>&gt;();
 
-                <span class="comment">/** Constructs a Text with the specified max length (for use in a TextTable Column). */</span>
+                <span class="comment">/** Constructs a Text with the specified max length (for use in a TextTable Column).
+                 * @param maxLength max length of this text */</span>
                 <span class="directive">public</span> Text(<span class="type">int</span> maxLength) { <span class="local-variable">this</span>.maxLength = maxLength; }
 
                 <span class="comment">/**
@@ -5406,22 +5524,33 @@ Here is the source. Copy and paste it into a file called <code>CommandLine.java<
                     <span class="keyword">try</span> { <span class="keyword">return</span> <span class="local-variable">super</span>.clone(); } <span class="keyword">catch</span> (<span class="exception">CloneNotSupportedException</span> e) { <span class="keyword">throw</span> <span class="keyword">new</span> <span class="exception">IllegalStateException</span>(e); }
                 }
 
-                <span class="comment">/** Returns a new {@code Text} instance that is a substring of this Text. Does not modify this instance! */</span>
+                <span class="comment">/** Returns a new {@code Text} instance that is a substring of this Text. Does not modify this instance!
+                 * @param start index in the plain text where to start the substring
+                 * @return a new Text instance that is a substring of this Text */</span>
                 <span class="directive">public</span> Text substring(<span class="type">int</span> start) {
                     <span class="keyword">return</span> substring(start, length);
                 }
-                <span class="comment">/** Returns a new {@code Text} instance that is a substring of this Text. Does not modify this instance! */</span>
+
+                <span class="comment">/** Returns a new {@code Text} instance that is a substring of this Text. Does not modify this instance!
+                 * @param start index in the plain text where to start the substring
+                 * @param end index in the plain text where to end the substring
+                 * @return a new Text instance that is a substring of this Text */</span>
                 <span class="directive">public</span> Text substring(<span class="type">int</span> start, <span class="type">int</span> end) {
                     Text result = (Text) clone();
                     result.from = from + start;
                     result.length = end - start;
                     <span class="keyword">return</span> result;
                 }
-                <span class="comment">/** Returns a new {@code Text} instance with the specified text appended. Does not modify this instance! */</span>
+                <span class="comment">/** Returns a new {@code Text} instance with the specified text appended. Does not modify this instance!
+                 * @param string the text to append
+                 * @return a new Text instance */</span>
                 <span class="directive">public</span> Text append(<span class="predefined-type">String</span> string) {
                     <span class="keyword">return</span> append(<span class="keyword">new</span> Text(string));
                 }
-                <span class="comment">/** Returns a new {@code Text} instance with the specified text appended. Does not modify this instance! */</span>
+
+                <span class="comment">/** Returns a new {@code Text} instance with the specified text appended. Does not modify this instance!
+                 * @param other the text to append
+                 * @return a new Text instance */</span>
                 <span class="directive">public</span> Text append(Text other) {
                     Text result = (Text) clone();
                     result.plain = <span class="keyword">new</span> <span class="predefined-type">StringBuilder</span>(plain.toString().substring(from, from + length));
@@ -5462,14 +5591,16 @@ Here is the source. Copy and paste it into a file called <code>CommandLine.java<
                     destination.plain.append(plain.toString().substring(from, from + length));
                     destination.length = destination.plain.length();
                 }
-                <span class="comment">/** Returns the plain text without any formatting */</span>
+                <span class="comment">/** Returns the plain text without any formatting.
+                 * @return the plain text without any formatting */</span>
                 <span class="directive">public</span> <span class="predefined-type">String</span> plainString() {  <span class="keyword">return</span> plain.toString().substring(from, from + length); }
 
                 <span class="directive">public</span> <span class="type">boolean</span> equals(<span class="predefined-type">Object</span> obj) { <span class="keyword">return</span> toString().equals(<span class="predefined-type">String</span>.valueOf(obj)); }
                 <span class="directive">public</span> <span class="type">int</span> hashCode() { <span class="keyword">return</span> toString().hashCode(); }
 
                 <span class="comment">/** Returns a String representation of the text with ANSI escape codes embedded, unless ANSI is
-                 * not {@linkplain CommandLine.Help.Ansi#enabled() enabled}, in which case the plain text is returned. */</span>
+                 * not {@linkplain CommandLine.Help.Ansi#enabled() enabled}, in which case the plain text is returned.
+                 * @return a String representation of the text with ANSI escape codes embedded (if enabled) */</span>
                 <span class="directive">public</span> <span class="predefined-type">String</span> toString() {
                     <span class="keyword">if</span> (!Ansi.enabled()) {
                         <span class="keyword">return</span> plain.toString().substring(from, from + length);
@@ -5637,8 +5768,8 @@ Here is the source. Copy and paste it into a file called <code>CommandLine.java<
 </div>
 <div id="footer">
 <div id="footer-text">
-Version 0.9.4-SNAPSHOT<br>
-Last updated 2017-04-30 23:53:21 +09:00
+Version 0.9.4<br>
+Last updated 2017-05-04 10:49:05 +09:00
 </div>
 </div>
 </body>

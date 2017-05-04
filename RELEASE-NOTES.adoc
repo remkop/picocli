@@ -1,5 +1,13 @@
 = picocli Release Notes
 
+== 0.9.4 - Bugfix release for public review. API may change.
+
+* #114 Replace ISO-8613-3 "true colors" with more widely supported 256-color palette (enhancement)
+* #113 Fix javadoc warnings (doc enhancement)
+* #117 The build should work for anyone checking out the project (bug)
+* #112 Improve (shorten) user manual (doc enhancement)
+* #105 Automate publishing to JCentral & Maven Central
+
 == 0.9.3 - Bugfix release for public review. API may change.
 
 * #90 Automate release
