@@ -14,7 +14,10 @@ Generates polished and easily tailored usage help, using ANSI colors where possi
 Works with Java 5 or higher (but is designed to facilitate the use of Java 8 lambdas).
 
 
-See the full user manual here: [http://picocli.info](http://picocli.info)
+* user manual: [http://picocli.info](http://picocli.info)
+* [API Javadoc](http://picocli.info/apidocs/)
+* [FAQ](https://github.com/remkop/picocli/wiki/FAQ)
+* [Releases](https://github.com/remkop/picocli/releases)
 
 
 ## Example
@@ -70,7 +73,7 @@ A more elaborate usage help example is shown below:
 
 ![Longer help message with ANSI colors](docs/images/UsageHelpWithStyle.png?raw=true)
 
-See the [source code](https://github.com/remkop/picocli/blob/master/src/test/java/picocli/Demo.java#L180).
+See the [source code](https://github.com/remkop/picocli/blob/v0.9.4/src/test/java/picocli/Demo.java#L337).
 
 ## More Customized Usage Help
 
