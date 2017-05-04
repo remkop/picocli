@@ -764,7 +764,7 @@ Most terminals support a https://en.wikipedia.org/wiki/ANSI_escape_code#Colors[2
 ----
 0x00-0x07:  standard colors (the named colors)
 0x08-0x0F:  high intensity colors (often similar to named colors + bold style)
-0x10-0xE7:  6 �? 6 �? 6 cube (216 colors): 16 + 36 �? r + 6 �? g + b (0 ≤ r, g, b ≤ 5)
+0x10-0xE7:  6 × 6 × 6 cube (216 colors): 16 + 36 × r + 6 × g + b (0 ≤ r, g, b ≤ 5)
 0xE8-0xFF:  grayscale from black to white in 24 steps
 ----
 
