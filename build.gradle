@@ -3,7 +3,7 @@ description 'Java command line parser and colorized usage help generator. In a s
 version '0.9.5-SNAPSHOT'
 
 // for bumpVersion task
-def oldVersion = '0\\.9\\.4'
+def oldVersion = '0\\.9\\.5-SNAPSHOT'
 def oldRevdate = '2017\\-05\\-04'
 def revDate    = '2017-05-04'
 
@@ -75,7 +75,7 @@ artifacts {
 }
 task bumpVersion {
     doLast {
-        ant.replaceregexp(match: oldVersion, replace: version, flags: 'g', byline: true) {
+        ant.replaceregexp(match: oldVersion, replace: version, flags: 'g', byline: true, encoding: 'UTF8') {
             fileset(dir: 'src/main/java/picocli', includes: 'CommandLine.java')
             fileset(dir: 'src/test/java/picocli', includes: 'CommandLineTest.java')
             fileset(dir: 'docs', includes: 'index.adoc')
