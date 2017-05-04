@@ -162,12 +162,16 @@ publishing {
 Github release:
 1. edit version numbers: remove -SNAPSHOT classifier
 2. gradlew bumpVersion
+2a. check modified files (especially line 767 in index.adoc)
 3. gradlew clean build
 4. gradlew copyDocs
 5. commit -m "Release picocli version ..."
 6. tag v$version
-7. edit version numbers: increase minor version and add -SNAPSHOT classifier
-8. gradlew bumpVersion
-9. commit -m "Prepare for next development cycle"
-10. push
+7. gradlew publishPluginPublicationToBintrayRepository
+
+8. edit version numbers: increase minor version and add -SNAPSHOT classifier
+9. gradlew bumpVersion
+9a. check modified files (especially line 767 in index.adoc)
+10. commit -m "Prepare for next development cycle"
+11. push
  */
