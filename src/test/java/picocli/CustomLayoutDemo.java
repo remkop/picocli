@@ -53,12 +53,12 @@ public class CustomLayoutDemo implements Runnable {
             CommandLine.usage(this, System.err);
             return;
         }
-        if (showZip)     { System.out.println(createZipUsageFormat()); }
-        if (showNetstat) { System.out.println(createNetstatUsageFormat()); }
+        if (showZip)     { System.out.println(createZipUsageFormat(Help.Ansi.AUTO)); }
+        if (showNetstat) { System.out.println(createNetstatUsageFormat(Help.Ansi.AUTO)); }
     }
 
 
-    public static String createZipUsageFormat() {
+    public static String createZipUsageFormat(Help.Ansi ansi) {
         @Command(description = {
                 "Copyright (c) 1990-2008 Info-ZIP - Type 'zip \"-L\"' for software license.",
                 "Zip 3.0 (July 5th 2008). Command:",
@@ -156,18 +156,18 @@ public class CustomLayoutDemo implements Runnable {
                 }
             }
         }
-        TextTable textTable = new TextTable(
+        TextTable textTable = new TextTable(ansi,
                 new Column(5, 2, TRUNCATE), // values should fit
                 new Column(30, 2, SPAN), // overflow into adjacent columns
                 new Column(4, 1, TRUNCATE), // values should fit again
                 new Column(39, 2, WRAP));
         TwoOptionsPerRowLayout layout = new TwoOptionsPerRowLayout(
-                Help.defaultColorScheme(),
+                Help.defaultColorScheme(ansi),
                 textTable,
                 Help.createMinimalOptionRenderer(),
                 Help.createMinimalParameterRenderer());
 
-        Help help = new Help(new Zip());
+        Help help = new Help(new Zip(), ansi);
         StringBuilder sb = new StringBuilder();
         sb.append(help.description()); // show the first 6 lines, including copyright, description and usage
 
@@ -181,7 +181,7 @@ public class CustomLayoutDemo implements Runnable {
     /** for Netstat test */
     private enum Protocol {IP, IPv6, ICMP, ICMPv6, TCP, TCPv6, UDP, UDPv6}
 
-    public static String createNetstatUsageFormat() {
+    public static String createNetstatUsageFormat(Help.Ansi ansi) {
         @Command(name = "NETSTAT",
                 separator = " ",
                 abbreviateSynopsis = true,
@@ -238,16 +238,16 @@ public class CustomLayoutDemo implements Runnable {
             int interval;
         }
         StringBuilder sb = new StringBuilder();
-        Help help = new Help(new Netstat());
+        Help help = new Help(new Netstat(), ansi);
         sb.append(help.header()).append(help.detailedSynopsis(null, false));
         sb.append(System.getProperty("line.separator"));
 
-        TextTable textTable = new TextTable(
+        TextTable textTable = new TextTable(ansi,
                 new Column(15, 2, TRUNCATE),
                 new Column(65, 1, WRAP));
         textTable.indentWrappedLines = 0;
         Layout layout = new Layout(
-                Help.defaultColorScheme(),
+                Help.defaultColorScheme(ansi),
                 textTable,
                 Help.createMinimalOptionRenderer(),
                 Help.createMinimalParameterRenderer());

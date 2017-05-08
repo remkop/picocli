@@ -26,11 +26,7 @@ import picocli.CommandLine.Command;
 public class WindowsJansiDemo extends Demo {
     public static void main(String[] args) {
         AnsiConsole.systemInstall();                      // Jansi magic
-        if (System.getProperty("picocli.ansi") == null) { // no user preference
-            CommandLine.ansi = true;                      // force ANSI
-        }
         CommandLine.run(new WindowsJansiDemo(), System.err, args);
-        CommandLine.ansi = null;                          // back to platform default
         AnsiConsole.systemUninstall();
     }
 }

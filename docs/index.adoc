@@ -640,6 +640,7 @@ This is useful for example when a parameter at some index is captured into multi
 by default each of these fields would be shown in the usage message, which would be confusing for users.
 
 For example, the `all` field below is annotated as `hidden = true`:
+
 [source,java]
 ----
 @Command()
@@ -661,6 +662,7 @@ Usage: <main class> <host> <port> [<files>...]
 
 === Show Default Values
 Use the `showDefaultValues = true` attribute to append the default value of the options and positional parameters to the description column. Picocli uses reflection to get the default values from the annotated fields. For example:
+
 [source,java]
 ----
 @Command(showDefaultValues = true)
@@ -680,6 +682,7 @@ Usage: <main class> -f=<file>
 
 === Required-Option Marker
 Required options can be marked in the option list by the character specified with the `requiredOptionMarker` attribute. By default options are not marked because the synopsis shows users which options are required and which are optional. This feature may be useful in combination with `abbreviatedSynopsis`. For example:
+
 [source,java]
 ----
 @Command(requiredOptionMarker = '*', abbreviateSynopsis = true)
@@ -742,6 +745,7 @@ Similarly, `fg(<color>)` explicitly sets the foreground color.
 
 
 The example below shows how this can be used to add colors and styles to the headings and descriptions of a usage help message:
+
 [source,java]
 ----
 @CommandLine.Command(name = "git-commit",
@@ -838,12 +842,8 @@ Another option is to use http://fusesource.github.io/jansi/[Jansi] in your appli
 import org.fusesource.jansi.AnsiConsole;
 ...
 public static void main(String[] args) {
-    AnsiConsole.systemInstall();                      // Jansi magic
-    if (System.getProperty("picocli.ansi") == null) { // no user preference
-        CommandLine.ansi = true;                      // force ANSI
-    }
+    AnsiConsole.systemInstall(); // Jansi magic
     CommandLine.run(new WindowsJansiDemo(), args);
-    CommandLine.ansi = null;                          // back to platform default
     AnsiConsole.systemUninstall();
 }
 ----
@@ -852,13 +852,15 @@ NOTE: None of the above is mandatory. If not supported, picocli will simply not 
 === Forcing ANSI On/Off
 You can force picocli to either always use ANSI codes or never use ANSI codes regardless of the platform:
 
-* Setting system property `picocli.ansi` to `true` forces picocli to use ANSI codes; setting `picocli.ansi` to `false` forces picocli to *not* use ANSI codes. This may be a useful facility to document for users of your command line application.
-* You can decide to force disable or force enable ANSI escape codes programmatically with the `CommandLine.ansi` static field. This overrides the value of system property `picocli.ansi`. For example:
+* Setting system property `picocli.ansi` to `true` forces picocli to use ANSI codes; setting `picocli.ansi` to `false` forces picocli to *not* use ANSI codes. This may be a useful facility for users of your command line application.
+* You can decide to force disable or force enable ANSI escape codes programmatically by specifying `Ansi.ON` or `Ansi.OFF` when invoking `CommandLine.usage`.
+This overrides the value of system property `picocli.ansi`. For example:
+
 [source,java]
 ----
-CommandLine.ansi = false; // force Ansi OFF
-App app = CommandLine.usage(new App(), args);
-...
+import picocli.CommandLine.Help.Ansi;
+
+App app = CommandLine.usage(new App(), Ansi.OFF, args);
 ----
 
 
