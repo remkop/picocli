@@ -1729,12 +1729,11 @@ public class CommandLine {
         private final Map<String, Help> commands = new LinkedHashMap<String, Help>();
         final ColorScheme colorScheme;
 
-        /** LinkedHashMap mapping {@link Option} instances to the {@code Field} they annotate, in declaration order. */
-        //public final Map<Option, Field> option2Field = new LinkedHashMap<Option, Field>();
-        public List<Field> optionFields = new ArrayList<Field>();
+        /** Immutable list of fields annotated with {@link Option}, in declaration order. */
+        public final List<Field> optionFields;
 
-        /** The {@code Fields} annotated with {@link Parameters}, or an empty list if no such field exists. */
-        public List<Field> positionalParametersFields = new ArrayList<Field>();
+        /** Immutable list of fields annotated with {@link Parameters}, or an empty list if no such field exists. */
+        public final List<Field> positionalParametersFields;
 
         /** The String to use as the separator between options and option parameters. {@code "="} by default,
          * initialized from {@link Command#separator()} if defined. */
@@ -1826,6 +1825,8 @@ public class CommandLine {
         public Help(Object annotatedObject, ColorScheme colorScheme) {
             this.annotatedObject = Assert.notNull(annotatedObject, "annotatedObject");
             this.colorScheme = Assert.notNull(colorScheme, "colorScheme").applySystemProperties();
+            List<Field> options = new ArrayList<Field>();
+            List<Field> operands = new ArrayList<Field>();
             Class<?> cls = annotatedObject.getClass();
             while (cls != null) {
                 for (Field field : cls.getDeclaredFields()) {
@@ -1834,11 +1835,11 @@ public class CommandLine {
                         Option option = field.getAnnotation(Option.class);
                         if (!option.hidden()) { // hidden options should not appear in usage help
                             // TODO remember longest concatenated option string length (issue #45)
-                            optionFields.add(field);
+                            options.add(field);
                         }
                     }
                     if (field.isAnnotationPresent(Parameters.class)) {
-                        positionalParametersFields.add(field);
+                        operands.add(field);
                     }
                 }
                 // superclass values should not overwrite values if both class and superclass have a @Command annotation
@@ -1874,7 +1875,9 @@ public class CommandLine {
             commandListHeading =   (commandListHeading == null)   ? "Commands:%n" : commandListHeading;
             separator =            (separator == null)            ? "=" : separator;
             parameterLabelRenderer = new DefaultParamLabelRenderer(separator);
-            Collections.sort(positionalParametersFields, new PositionalParametersSorter());
+            Collections.sort(operands, new PositionalParametersSorter());
+            positionalParametersFields = Collections.unmodifiableList(operands);
+            optionFields                 = Collections.unmodifiableList(options);
         }
 
         /** Registers all specified commands with this Help.
