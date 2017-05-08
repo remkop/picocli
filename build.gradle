@@ -147,8 +147,10 @@ publishing {
     }
     repositories {
         maven {
-//            name 'myLocal'
-//            url "file://$projectDir/../repo/$bintrayUsername"
+            name 'myLocal'
+            url "file://$projectDir/../repo/$bintrayUsername"
+        }
+        maven {
             name 'Bintray'
             url "$bintrayBaseUrl/$bintrayUsername/$bintrayRepository/$bintrayPackage"
             credentials {
