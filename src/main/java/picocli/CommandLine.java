@@ -856,9 +856,9 @@ public class CommandLine {
     /** Describes the number of parameters required and accepted by an option or a positional parameter. */
     public static class Arity {
         /** Required number of parameters for an option or positional parameter. */
-        public int min;
+        public final int min;
         /** Maximum accepted number of parameters for an option or positional parameter. */
-        public int max;
+        public final int max;
         public final boolean isVariable;
         private final boolean isUnspecified;
         private final String originalValue;
@@ -937,6 +937,16 @@ public class CommandLine {
                 return defaultValue;
             }
         }
+        /** Returns a new Arity object with the {@code min} value replaced by the specified value.
+         * @param newMin the {@code min} value of the returned Arity object
+         * @return a new Arity object with the specified {@code min} value, all other values are kept */
+        public Arity min(int newMin) { return new Arity(newMin, max, isVariable, isUnspecified, originalValue); }
+
+        /** Returns a new Arity object with the {@code max} value replaced by the specified value.
+         * @param newMax the {@code max} value of the returned Arity object
+         * @return a new Arity object with the specified {@code max} value, all other values are kept */
+        public Arity max(int newMax) { return new Arity(min, newMax, isVariable, isUnspecified, originalValue); }
+
         public boolean equals(Object object) {
             if (!(object instanceof Arity)) { return false; }
             Arity other = (Arity) object;
@@ -1192,7 +1202,7 @@ public class CommandLine {
             required.remove(field);
             Arity arity = Arity.forOption(field);
             if (paramAttachedToKey) {
-                arity.min = Math.max(1, arity.min); // if key=value, minimum arity is at least 1
+                arity = arity.min(Math.max(1, arity.min)); // if key=value, minimum arity is at least 1
             }
             applyOption(field, Option.class, arity, paramAttachedToKey, args);
         }
@@ -1209,7 +1219,7 @@ public class CommandLine {
                     Arity arity = Arity.forOption(field);
                     if (cluster.startsWith(separator)) {// attached with separator, like -f=FILE or -v=true
                         cluster = cluster.substring(separator.length());
-                        arity.min = Math.max(1, arity.min); // if key=value, minimum arity is at least 1
+                        arity = arity.min(Math.max(1, arity.min)); // if key=value, minimum arity is at least 1
                     }
                     args.push(cluster); // interpret remainder as option parameter (CAUTION: may be empty string!)
                     // arity may be >= 1, or
