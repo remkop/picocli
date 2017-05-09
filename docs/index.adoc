@@ -1,8 +1,8 @@
 = picocli - a mighty tiny Command Line Interface
 :author: Remko Popma
 :email: rpopma@apache.org
-:revnumber: 0.9.5-SNAPSHOT
-:revdate: 2017-05-04
+:revnumber: 0.9.5
+:revdate: 2017-05-09
 :toc: left
 :numbered:
 :toclevels: 2
@@ -415,7 +415,7 @@ This is suitable for options that should trigger the usage help message or appli
 It is the responsibility of the application to check the field and show the usage help message:
 [source,java]
 ----
-Compress app = CommandLine.parse(new App(), args);
+App app = CommandLine.parse(new App(), args);
 if (app.helpRequested) {
    CommandLine.usage(new App(), System.err);
    return;
@@ -843,7 +843,7 @@ import org.fusesource.jansi.AnsiConsole;
 ...
 public static void main(String[] args) {
     AnsiConsole.systemInstall(); // Jansi magic
-    CommandLine.run(new WindowsJansiDemo(), args);
+    CommandLine.run(new WindowsJansiDemo(), System.err, Ansi.ON, args);
     AnsiConsole.systemUninstall();
 }
 ----
@@ -860,7 +860,7 @@ This overrides the value of system property `picocli.ansi`. For example:
 ----
 import picocli.CommandLine.Help.Ansi;
 
-App app = CommandLine.usage(new App(), Ansi.OFF, args);
+App app = CommandLine.usage(new App(), System.out, Ansi.OFF, args);
 ----
 
 
@@ -1237,7 +1237,9 @@ public class ZipCommand extends AbstractCommand {
 === Best Practices for Command Line Interfaces
 
 When designing your command line application,
-the https://www.gnu.org/prep/standards/html_node/Command_002dLine-Interfaces.html#Command_002dLine-Interfaces[GNU recommendations] for command line interfaces and http://pubs.opengroup.org/onlinepubs/9699919799/basedefs/V1_chap12.html#tag_12_02[POSIX Utility Guidelines] may be useful. Generally, many applications use options for optional values and parameters for mandatory values.
+the https://www.gnu.org/prep/standards/html_node/Command_002dLine-Interfaces.html#Command_002dLine-Interfaces[GNU recommendations] for command line interfaces and http://pubs.opengroup.org/onlinepubs/9699919799/basedefs/V1_chap12.html#tag_12_02[POSIX Utility Guidelines] may be useful.
+
+Generally, many applications use options for optional values and parameters for mandatory values.
 However, picocli lets you make options required if you want to, see <<Required Arguments>>.
 
 
