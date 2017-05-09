@@ -17,6 +17,7 @@ package picocli;
 
 import org.fusesource.jansi.AnsiConsole;
 import picocli.CommandLine.Command;
+import picocli.CommandLine.Help.Ansi;
 
 /**
  * Demonstrates usage help with ansi colors on Windows DOS (without Cygwin or MSYS(2)).
@@ -25,8 +26,13 @@ import picocli.CommandLine.Command;
 @Command(name = "picocli.WindowsJansiDemo")
 public class WindowsJansiDemo extends Demo {
     public static void main(String[] args) {
-        AnsiConsole.systemInstall();                      // Jansi magic
-        CommandLine.run(new WindowsJansiDemo(), System.err, args);
+
+        // On Windows without Cygwin or similar, picocli will not emit ANSI escape codes by default.
+        // Force ANSI ON if no user preference, otherwise let user decide.
+        Ansi ansi = System.getProperty("picocli.ansi") == null ? Ansi.ON : Ansi.AUTO;
+
+        AnsiConsole.systemInstall(); // Jansi magic
+        CommandLine.run(new WindowsJansiDemo(), System.err, ansi, args);
         AnsiConsole.systemUninstall();
     }
 }
