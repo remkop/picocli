@@ -19,6 +19,7 @@ buildscript {
 
 apply plugin: 'org.asciidoctor.convert'
 apply plugin: 'java'
+apply plugin: 'jacoco'
 apply plugin: 'distribution'
 apply plugin: 'maven-publish'
 
@@ -45,6 +46,12 @@ javadoc {
 }
 javadoc.dependsOn('asciidoctor')
 
+jacocoTestReport {
+    reports {
+        xml.enabled true
+        html.enabled false
+    }
+}
 task testJar(type: Jar, dependsOn: compileTestJava) {
     from sourceSets.test.output
     classifier = 'tests'
