@@ -1,7 +1,7 @@
 = picocli - a mighty tiny Command Line Interface
 :author: Remko Popma
 :email: rpopma@apache.org
-:revnumber: 0.9.5
+:revnumber: 0.9.6-SNAPSHOT
 :revdate: 2017-05-09
 :toc: left
 :numbered:
