@@ -18,6 +18,7 @@ Works with Java 5 or higher (but is designed to facilitate the use of Java 8 lam
 * [API Javadoc](http://picocli.info/apidocs/)
 * [FAQ](https://github.com/remkop/picocli/wiki/FAQ)
 * [Releases](https://github.com/remkop/picocli/releases)
+* [![Build Status](https://travis-ci.org/remkop/picocli.svg?branch=master)](https://travis-ci.org/remkop/picocli)
 
 
 ## Example
