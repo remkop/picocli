@@ -1,11 +1,11 @@
 group 'info.picocli'
 description 'Java command line parser and colorized usage help generator. In a single file, to be included in source form, so users can run picocli-based applications without requiring picocli as an external dependency. Generates easily customizable usage help messages with ANSI styles and colors.'
-version '0.9.5-SNAPSHOT'
+version '0.9.5'
 
 // for bumpVersion task
 def oldVersion = '0\\.9\\.5-SNAPSHOT'
 def oldRevdate = '2017\\-05\\-04'
-def revDate    = '2017-05-04'
+def revDate    = '2017-05-09'
 
 buildscript {
     repositories {
@@ -80,7 +80,7 @@ task bumpVersion {
             fileset(dir: 'src/test/java/picocli', includes: 'CommandLineTest.java')
             fileset(dir: 'docs', includes: 'index.adoc')
         }
-        ant.replaceregexp(match: oldRevdate, replace: revDate, flags: 'g', byline: true) {
+        ant.replaceregexp(match: oldRevdate, replace: revDate, flags: 'g', byline: true, encoding: 'UTF8') {
             fileset(dir: 'docs', includes: 'index.adoc')
         }
     }
@@ -161,19 +161,31 @@ publishing {
     }
 }
 /*
-Github release:
+Release procedure:
 1. edit version numbers: remove -SNAPSHOT classifier
 2. gradlew bumpVersion
-2a. check modified files (especially line 767 in index.adoc)
-3. gradlew clean build
-4. gradlew copyDocs
-5. commit -m "Release picocli version ..."
-6. tag v$version
-7. gradlew publishPluginPublicationToBintrayRepository
+3. check modified files (especially line 767 in index.adoc)
+4. gradlew clean build
+5. gradlew copyDocs
+6. update RELEASE-NOTES.adoc
+7. commit -m "Release picocli version ..."
+8. tag v$version
+9. gradlew publishPluginPublicationToBintrayRepository
 
-8. edit version numbers: increase minor version and add -SNAPSHOT classifier
-9. gradlew bumpVersion
-9a. check modified files (especially line 767 in index.adoc)
-10. commit -m "Prepare for next development cycle"
-11. push
+10. edit version numbers: increase minor version and add -SNAPSHOT classifier
+11. gradlew bumpVersion
+12. check modified files (especially line 767 in index.adoc)
+13. commit -m "Prepare for next development cycle"
+14. push
+
+15. Log in to Bintray
+16. Navigate to the page for the new version
+17. Edit version: Publication Date, Description, VCS tag, GitHub release notes file (RELEASE-NOTES.adoc)
+18. On the version page, Release Notes tab, select GitHub File
+19. Publish artifacts to JCenter
+20. On the version page, Maven Central tab, sync to Maven (takes several minutes)
+
+21. Log in to GitHub, go to https://github.com/remkop/picocli/releases
+22. Select Tags, create new release, update release notes
+22. Upload picocli-$version.jar and picocli-all$version.zip to GitHub
  */
