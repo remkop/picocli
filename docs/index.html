@@ -516,8 +516,8 @@ table.CodeRay td.code>pre{padding:0}
 <div class="details">
 <span id="author" class="author">Remko Popma</span><br>
 <span id="email" class="email"><a href="mailto:rpopma@apache.org">rpopma@apache.org</a></span><br>
-<span id="revnumber">version 0.9.4,</span>
-<span id="revdate">2017-05-04</span>
+<span id="revnumber">version 0.9.5,</span>
+<span id="revdate">2017-05-09</span>
 </div>
 <div id="toc" class="toc2">
 <div id="toctitle">Features</div>
@@ -1216,7 +1216,7 @@ the last three parameters will be recognized as belonging to the <code>-f</code>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="CodeRay highlight"><code data-lang="java">Compress app = CommandLine.parse(<span class="keyword">new</span> App(), args);
+<pre class="CodeRay highlight"><code data-lang="java">App app = CommandLine.parse(<span class="keyword">new</span> App(), args);
 <span class="keyword">if</span> (app.helpRequested) {
    CommandLine.usage(<span class="keyword">new</span> App(), <span class="predefined-type">System</span>.err);
    <span class="keyword">return</span>;
@@ -1832,12 +1832,8 @@ On Windows, when picocli detects it is running under a Unix variant like Cygwin 
 <pre class="CodeRay highlight"><code data-lang="java"><span class="keyword">import</span> <span class="include">org.fusesource.jansi.AnsiConsole</span>;
 ...
 public <span class="directive">static</span> <span class="type">void</span> main(<span class="predefined-type">String</span><span class="type">[]</span> args) {
-    AnsiConsole.systemInstall();                      <span class="comment">// Jansi magic</span>
-    <span class="keyword">if</span> (<span class="predefined-type">System</span>.getProperty(<span class="string"><span class="delimiter">&quot;</span><span class="content">picocli.ansi</span><span class="delimiter">&quot;</span></span>) == <span class="predefined-constant">null</span>) { <span class="comment">// no user preference</span>
-        CommandLine.ansi = <span class="predefined-constant">true</span>;                      <span class="comment">// force ANSI</span>
-    }
-    CommandLine.run(<span class="keyword">new</span> WindowsJansiDemo(), args);
-    CommandLine.ansi = <span class="predefined-constant">null</span>;                          <span class="comment">// back to platform default</span>
+    AnsiConsole.systemInstall(); <span class="comment">// Jansi magic</span>
+    CommandLine.run(<span class="keyword">new</span> WindowsJansiDemo(), <span class="predefined-type">System</span>.err, Ansi.ON, args);
     AnsiConsole.systemUninstall();
 }</code></pre>
 </div>
@@ -1864,18 +1860,19 @@ None of the above is mandatory. If not supported, picocli will simply not emit A
 <div class="ulist">
 <ul>
 <li>
-<p>Setting system property <code>picocli.ansi</code> to <code>true</code> forces picocli to use ANSI codes; setting <code>picocli.ansi</code> to <code>false</code> forces picocli to <strong>not</strong> use ANSI codes. This may be a useful facility to document for users of your command line application.</p>
+<p>Setting system property <code>picocli.ansi</code> to <code>true</code> forces picocli to use ANSI codes; setting <code>picocli.ansi</code> to <code>false</code> forces picocli to <strong>not</strong> use ANSI codes. This may be a useful facility for users of your command line application.</p>
 </li>
 <li>
-<p>You can decide to force disable or force enable ANSI escape codes programmatically with the <code>CommandLine.ansi</code> static field. This overrides the value of system property <code>picocli.ansi</code>. For example:</p>
+<p>You can decide to force disable or force enable ANSI escape codes programmatically by specifying <code>Ansi.ON</code> or <code>Ansi.OFF</code> when invoking <code>CommandLine.usage</code>.
+This overrides the value of system property <code>picocli.ansi</code>. For example:</p>
 </li>
 </ul>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre>CommandLine.ansi = false; // force Ansi OFF
-App app = CommandLine.usage(new App(), args);
-...</pre>
+<pre class="CodeRay highlight"><code data-lang="java"><span class="keyword">import</span> <span class="include">picocli.CommandLine.Help.Ansi</span>;
+
+App app = CommandLine.usage(<span class="keyword">new</span> App(), <span class="predefined-type">System</span>.out, Ansi.OFF, args);</code></pre>
 </div>
 </div>
 </div>
@@ -2333,7 +2330,10 @@ commandLine.parse(<span class="string"><span class="delimiter">&quot;</span><spa
 <h3 id="_best_practices_for_command_line_interfaces">11.6. Best Practices for Command Line Interfaces</h3>
 <div class="paragraph">
 <p>When designing your command line application,
-the <a href="https://www.gnu.org/prep/standards/html_node/Command_002dLine-Interfaces.html#Command_002dLine-Interfaces">GNU recommendations</a> for command line interfaces and <a href="http://pubs.opengroup.org/onlinepubs/9699919799/basedefs/V1_chap12.html#tag_12_02">POSIX Utility Guidelines</a> may be useful. Generally, many applications use options for optional values and parameters for mandatory values.
+the <a href="https://www.gnu.org/prep/standards/html_node/Command_002dLine-Interfaces.html#Command_002dLine-Interfaces">GNU recommendations</a> for command line interfaces and <a href="http://pubs.opengroup.org/onlinepubs/9699919799/basedefs/V1_chap12.html#tag_12_02">POSIX Utility Guidelines</a> may be useful.</p>
+</div>
+<div class="paragraph">
+<p>Generally, many applications use options for optional values and parameters for mandatory values.
 However, picocli lets you make options required if you want to, see <a href="#_required_arguments">Required Arguments</a>.</p>
 </div>
 </div>
@@ -2416,7 +2416,7 @@ Here is the source. Copy and paste it into a file called <code>CommandLine.java<
  */</span>
 <span class="keyword">package</span> <span class="namespace">picocli</span>;
 
-<span class="keyword">import</span> <span class="include">java.awt</span>.*;
+<span class="keyword">import</span> <span class="include">java.awt.Point</span>;
 <span class="keyword">import</span> <span class="include">java.io.File</span>;
 <span class="keyword">import</span> <span class="include">java.io.PrintStream</span>;
 <span class="keyword">import</span> <span class="include">java.lang.annotation.ElementType</span>;
@@ -2458,6 +2458,8 @@ Here is the source. Copy and paste it into a file called <code>CommandLine.java<
 <span class="keyword">import</span> <span class="include">java.util.TreeSet</span>;
 <span class="keyword">import</span> <span class="include">java.util.UUID</span>;
 <span class="keyword">import</span> <span class="include">java.util.regex.Pattern</span>;
+
+<span class="keyword">import</span> <span class="include">picocli.CommandLine.Help.Ansi.Text</span>;
 
 <span class="keyword">import</span> <span class="include">static</span> <span class="include">java.util.Locale.ENGLISH</span>;
 <span class="keyword">import</span> <span class="include">static</span> <span class="include">picocli.CommandLine.Help.Ansi</span>.*;
@@ -2519,11 +2521,7 @@ Here is the source. Copy and paste it into a file called <code>CommandLine.java<
  */</span>
 <span class="directive">public</span> <span class="type">class</span> <span class="class">CommandLine</span> {
     <span class="comment">/** This is picocli version {@value}. */</span>
-    <span class="directive">public</span> <span class="directive">static</span> <span class="directive">final</span> <span class="predefined-type">String</span> VERSION = <span class="string"><span class="delimiter">&quot;</span><span class="content">0.9.4</span><span class="delimiter">&quot;</span></span>;
-
-    <span class="comment">/** Set this field to {@code true} to force ANSI escape sequences on, or to {@code false} to force ANSI escape
-     * sequences off. The default ({@code null}) is to enable ANSI escape sequences on supported platforms.  */</span>
-    <span class="directive">public</span> <span class="directive">static</span> <span class="predefined-type">Boolean</span> ansi = (<span class="predefined-type">System</span>.getProperty(<span class="string"><span class="delimiter">&quot;</span><span class="content">picocli.ansi</span><span class="delimiter">&quot;</span></span>) == <span class="predefined-constant">null</span> ? <span class="predefined-constant">null</span> : <span class="predefined-type">Boolean</span>.getBoolean(<span class="string"><span class="delimiter">&quot;</span><span class="content">picocli.ansi</span><span class="delimiter">&quot;</span></span>));
+    <span class="directive">public</span> <span class="directive">static</span> <span class="directive">final</span> <span class="predefined-type">String</span> VERSION = <span class="string"><span class="delimiter">&quot;</span><span class="content">0.9.5</span><span class="delimiter">&quot;</span></span>;
 
     <span class="directive">private</span> <span class="directive">final</span> Interpreter interpreter;
     <span class="directive">private</span> <span class="directive">final</span> <span class="predefined-type">List</span>&lt;<span class="predefined-type">Object</span>&gt; parsedCommands = <span class="keyword">new</span> <span class="predefined-type">ArrayList</span>&lt;<span class="predefined-type">Object</span>&gt;();
@@ -2605,6 +2603,17 @@ Here is the source. Copy and paste it into a file called <code>CommandLine.java<
     }
 
     <span class="comment">/**
+     * Equivalent to {@code new CommandLine(annotatedObject).usage(out, ansi)}.
+     * See {@link #usage(PrintStream, Help.Ansi)} for details.
+     * @param annotatedObject the object annotated with {@link Command}, {@link Option} and {@link Parameters}
+     * @param out the print stream to print the help message to
+     * @param ansi whether the usage message should contain ANSI escape codes or not
+     */</span>
+    <span class="directive">public</span> <span class="directive">static</span> <span class="type">void</span> usage(<span class="predefined-type">Object</span> annotatedObject, <span class="predefined-type">PrintStream</span> out, Help.Ansi ansi) {
+        <span class="keyword">new</span> CommandLine(annotatedObject).usage(out, ansi);
+    }
+
+    <span class="comment">/**
      * Equivalent to {@code new CommandLine(annotatedObject).usage(out, colorScheme)}.
      * See {@link #usage(PrintStream, Help.ColorScheme)} for details.
      * @param annotatedObject the object annotated with {@link Command}, {@link Option} and {@link Parameters}
@@ -2616,12 +2625,22 @@ Here is the source. Copy and paste it into a file called <code>CommandLine.java<
     }
 
     <span class="comment">/**
-     * Delegates to {@link #usage(PrintStream, Help.ColorScheme)} with the {@linkplain Help#defaultColorScheme() default color scheme}.
+     * Delegates to {@link #usage(PrintStream, Help.Ansi)} with the {@linkplain Help.Ansi#AUTO platform default}.
      * @param out the printStream to print to
      * @see #usage(PrintStream, Help.ColorScheme)
      */</span>
     <span class="directive">public</span> <span class="type">void</span> usage(<span class="predefined-type">PrintStream</span> out) {
-        usage(out, Help.defaultColorScheme());
+        usage(out, Help.Ansi.AUTO);
+    }
+
+    <span class="comment">/**
+     * Delegates to {@link #usage(PrintStream, Help.ColorScheme)} with the {@linkplain Help#defaultColorScheme(CommandLine.Help.Ansi) default color scheme}.
+     * @param out the printStream to print to
+     * @param ansi whether the usage message should include ANSI escape codes or not
+     * @see #usage(PrintStream, Help.ColorScheme)
+     */</span>
+    <span class="directive">public</span> <span class="type">void</span> usage(<span class="predefined-type">PrintStream</span> out, Help.Ansi ansi) {
+        usage(out, Help.defaultColorScheme(ansi));
     }
     <span class="comment">/**
      * Prints a usage help message for the specified annotated class to the specified {@code PrintStream}.
@@ -2676,6 +2695,17 @@ Here is the source. Copy and paste it into a file called <code>CommandLine.java<
     }
 
     <span class="comment">/**
+     * Delegates to {@link #run(Runnable, PrintStream, Help.Ansi, String...)} with {@link Help.Ansi#AUTO}.
+     * @param annotatedObject the command to run when {@linkplain #parse(Object, String...) parsing} succeeds.
+     * @param out the printStream to print to
+     * @param args the command line arguments to parse
+     * @param &lt;R&gt; the annotated object must implement Runnable
+     * @see #run(Runnable, PrintStream, Help.Ansi, String...)
+     */</span>
+    <span class="directive">public</span> <span class="directive">static</span> &lt;R <span class="directive">extends</span> <span class="predefined-type">Runnable</span>&gt; <span class="type">void</span> run(R annotatedObject, <span class="predefined-type">PrintStream</span> out, <span class="predefined-type">String</span>... args) {
+        run(annotatedObject, out, AUTO, args);
+    }
+    <span class="comment">/**
      * Convenience method to allow command line application authors to avoid some boilerplate code in their application.
      * The annotated object needs to implement {@link Runnable}. Calling this method is equivalent to:
      * &lt;pre&gt;
@@ -2684,7 +2714,7 @@ Here is the source. Copy and paste it into a file called <code>CommandLine.java<
      *     runnable = parse(annotatedObject, args);
      * } catch (Exception ex) {
      *     System.err.println(ex.getMessage());
-     *     usage(annotatedObject, System.err);
+     *     usage(annotatedObject, out, ansi);
      *     return;
      * }
      * runnable.run();
@@ -2692,16 +2722,17 @@ Here is the source. Copy and paste it into a file called <code>CommandLine.java<
      * Note that this method is not suitable for commands with subcommands.
      * @param annotatedObject the command to run when {@linkplain #parse(Object, String...) parsing} succeeds.
      * @param out the printStream to print to
+     * @param ansi whether the usage message should include ANSI escape codes or not
      * @param args the command line arguments to parse
-     * @param &lt;R&gt; the annotated object to initialize and run
+     * @param &lt;R&gt; the annotated object must implement Runnable
      */</span>
-    <span class="directive">public</span> <span class="directive">static</span> &lt;R <span class="directive">extends</span> <span class="predefined-type">Runnable</span>&gt; <span class="type">void</span> run(R annotatedObject, <span class="predefined-type">PrintStream</span> out, <span class="predefined-type">String</span>... args) {
+    <span class="directive">public</span> <span class="directive">static</span> &lt;R <span class="directive">extends</span> <span class="predefined-type">Runnable</span>&gt; <span class="type">void</span> run(R annotatedObject, <span class="predefined-type">PrintStream</span> out, Help.Ansi ansi, <span class="predefined-type">String</span>... args) {
         <span class="predefined-type">Runnable</span> runnable = <span class="predefined-constant">null</span>;
         <span class="keyword">try</span> {
             runnable = parse(annotatedObject, args);
         } <span class="keyword">catch</span> (<span class="exception">Exception</span> ex) {
             out.println(ex.getMessage());
-            usage(annotatedObject, out);
+            usage(annotatedObject, out, ansi);
             <span class="keyword">return</span>;
         }
         runnable.run();
@@ -3238,9 +3269,9 @@ Here is the source. Copy and paste it into a file called <code>CommandLine.java<
     <span class="comment">/** Describes the number of parameters required and accepted by an option or a positional parameter. */</span>
     <span class="directive">public</span> <span class="directive">static</span> <span class="type">class</span> <span class="class">Arity</span> {
         <span class="comment">/** Required number of parameters for an option or positional parameter. */</span>
-        <span class="directive">public</span> <span class="type">int</span> min;
+        <span class="directive">public</span> <span class="directive">final</span> <span class="type">int</span> min;
         <span class="comment">/** Maximum accepted number of parameters for an option or positional parameter. */</span>
-        <span class="directive">public</span> <span class="type">int</span> max;
+        <span class="directive">public</span> <span class="directive">final</span> <span class="type">int</span> max;
         <span class="directive">public</span> <span class="directive">final</span> <span class="type">boolean</span> isVariable;
         <span class="directive">private</span> <span class="directive">final</span> <span class="type">boolean</span> isUnspecified;
         <span class="directive">private</span> <span class="directive">final</span> <span class="predefined-type">String</span> originalValue;
@@ -3319,6 +3350,16 @@ Here is the source. Copy and paste it into a file called <code>CommandLine.java<
                 <span class="keyword">return</span> defaultValue;
             }
         }
+        <span class="comment">/** Returns a new Arity object with the {@code min} value replaced by the specified value.
+         * @param newMin the {@code min} value of the returned Arity object
+         * @return a new Arity object with the specified {@code min} value, all other values are kept */</span>
+        <span class="directive">public</span> Arity min(<span class="type">int</span> newMin) { <span class="keyword">return</span> <span class="keyword">new</span> Arity(newMin, max, isVariable, isUnspecified, originalValue); }
+
+        <span class="comment">/** Returns a new Arity object with the {@code max} value replaced by the specified value.
+         * @param newMax the {@code max} value of the returned Arity object
+         * @return a new Arity object with the specified {@code max} value, all other values are kept */</span>
+        <span class="directive">public</span> Arity max(<span class="type">int</span> newMax) { <span class="keyword">return</span> <span class="keyword">new</span> Arity(min, newMax, isVariable, isUnspecified, originalValue); }
+
         <span class="directive">public</span> <span class="type">boolean</span> equals(<span class="predefined-type">Object</span> object) {
             <span class="keyword">if</span> (!(object <span class="keyword">instanceof</span> Arity)) { <span class="keyword">return</span> <span class="predefined-constant">false</span>; }
             Arity other = (Arity) object;
@@ -3574,7 +3615,7 @@ Here is the source. Copy and paste it into a file called <code>CommandLine.java<
             required.remove(field);
             Arity arity = Arity.forOption(field);
             <span class="keyword">if</span> (paramAttachedToKey) {
-                arity.min = <span class="predefined-type">Math</span>.max(<span class="integer">1</span>, arity.min); <span class="comment">// if key=value, minimum arity is at least 1</span>
+                arity = arity.min(<span class="predefined-type">Math</span>.max(<span class="integer">1</span>, arity.min)); <span class="comment">// if key=value, minimum arity is at least 1</span>
             }
             applyOption(field, <span class="predefined-type">Option</span>.class, arity, paramAttachedToKey, args);
         }
@@ -3591,7 +3632,7 @@ Here is the source. Copy and paste it into a file called <code>CommandLine.java<
                     Arity arity = Arity.forOption(field);
                     <span class="keyword">if</span> (cluster.startsWith(separator)) {<span class="comment">// attached with separator, like -f=FILE or -v=true</span>
                         cluster = cluster.substring(separator.length());
-                        arity.min = <span class="predefined-type">Math</span>.max(<span class="integer">1</span>, arity.min); <span class="comment">// if key=value, minimum arity is at least 1</span>
+                        arity = arity.min(<span class="predefined-type">Math</span>.max(<span class="integer">1</span>, arity.min)); <span class="comment">// if key=value, minimum arity is at least 1</span>
                     }
                     args.push(cluster); <span class="comment">// interpret remainder as option parameter (CAUTION: may be empty string!)</span>
                     <span class="comment">// arity may be &gt;= 1, or</span>
@@ -3822,11 +3863,11 @@ Here is the source. Copy and paste it into a file called <code>CommandLine.java<
                     <span class="keyword">if</span> (arity.max &gt; <span class="integer">1</span>) {
                         desc += <span class="string"><span class="delimiter">&quot;</span><span class="content"> at index </span><span class="delimiter">&quot;</span></span> + index;
                     }
-                    desc += <span class="string"><span class="delimiter">&quot;</span><span class="content"> (</span><span class="delimiter">&quot;</span></span> + labelRenderer.renderParameterLabel(field, <span class="predefined-type">Collections</span>.&lt;IStyle&gt;emptyList()) + <span class="string"><span class="delimiter">&quot;</span><span class="content">)</span><span class="delimiter">&quot;</span></span>;
+                    desc += <span class="string"><span class="delimiter">&quot;</span><span class="content"> (</span><span class="delimiter">&quot;</span></span> + labelRenderer.renderParameterLabel(field, Help.Ansi.OFF, <span class="predefined-type">Collections</span>.&lt;IStyle&gt;emptyList()) + <span class="string"><span class="delimiter">&quot;</span><span class="content">)</span><span class="delimiter">&quot;</span></span>;
                 }
             } <span class="keyword">else</span> <span class="keyword">if</span> (field.isAnnotationPresent(Parameters.class)) {
                 Arity indexRange = Arity.valueOf(field.getAnnotation(Parameters.class).index());
-                Text label = labelRenderer.renderParameterLabel(field, <span class="predefined-type">Collections</span>.&lt;IStyle&gt;emptyList());
+                Text label = labelRenderer.renderParameterLabel(field, Help.Ansi.OFF, <span class="predefined-type">Collections</span>.&lt;IStyle&gt;emptyList());
                 desc = prefix + <span class="string"><span class="delimiter">&quot;</span><span class="content">positional parameter at index </span><span class="delimiter">&quot;</span></span> + indexRange + <span class="string"><span class="delimiter">&quot;</span><span class="content"> (</span><span class="delimiter">&quot;</span></span> + label + <span class="string"><span class="delimiter">&quot;</span><span class="content">)</span><span class="delimiter">&quot;</span></span>;
             }
             <span class="keyword">return</span> desc;
@@ -3903,7 +3944,7 @@ Here is the source. Copy and paste it into a file called <code>CommandLine.java<
                     <span class="keyword">for</span> (<span class="type">int</span> i = indexRange.min; i &lt; positionalParametersFields.size(); i++) {
                         <span class="keyword">if</span> (Arity.forParameters(positionalParametersFields.get(i)).min &gt; <span class="integer">0</span>) {
                             names += sep + labelRenderer.renderParameterLabel(positionalParametersFields.get(i),
-                                    <span class="predefined-type">Collections</span>.&lt;IStyle&gt;emptyList());
+                                    Help.Ansi.OFF, <span class="predefined-type">Collections</span>.&lt;IStyle&gt;emptyList());
                             sep = <span class="string"><span class="delimiter">&quot;</span><span class="content">, </span><span class="delimiter">&quot;</span></span>;
                             count++;
                         }
@@ -4101,12 +4142,11 @@ Here is the source. Copy and paste it into a file called <code>CommandLine.java<
         <span class="directive">private</span> <span class="directive">final</span> <span class="predefined-type">Map</span>&lt;<span class="predefined-type">String</span>, Help&gt; commands = <span class="keyword">new</span> <span class="predefined-type">LinkedHashMap</span>&lt;<span class="predefined-type">String</span>, Help&gt;();
         <span class="directive">final</span> ColorScheme colorScheme;
 
-        <span class="comment">/** LinkedHashMap mapping {@link Option} instances to the {@code Field} they annotate, in declaration order. */</span>
-        <span class="comment">//public final Map&lt;Option, Field&gt; option2Field = new LinkedHashMap&lt;Option, Field&gt;();</span>
-        <span class="directive">public</span> <span class="predefined-type">List</span>&lt;<span class="predefined-type">Field</span>&gt; optionFields = <span class="keyword">new</span> <span class="predefined-type">ArrayList</span>&lt;<span class="predefined-type">Field</span>&gt;();
+        <span class="comment">/** Immutable list of fields annotated with {@link Option}, in declaration order. */</span>
+        <span class="directive">public</span> <span class="directive">final</span> <span class="predefined-type">List</span>&lt;<span class="predefined-type">Field</span>&gt; optionFields;
 
-        <span class="comment">/** The {@code Fields} annotated with {@link Parameters}, or an empty list if no such field exists. */</span>
-        <span class="directive">public</span> <span class="predefined-type">List</span>&lt;<span class="predefined-type">Field</span>&gt; positionalParametersFields = <span class="keyword">new</span> <span class="predefined-type">ArrayList</span>&lt;<span class="predefined-type">Field</span>&gt;();
+        <span class="comment">/** Immutable list of fields annotated with {@link Parameters}, or an empty list if no such field exists. */</span>
+        <span class="directive">public</span> <span class="directive">final</span> <span class="predefined-type">List</span>&lt;<span class="predefined-type">Field</span>&gt; positionalParametersFields;
 
         <span class="comment">/** The String to use as the separator between options and option parameters. {@code &quot;=&quot;} by default,
          * initialized from {@link Command#separator()} if defined. */</span>
@@ -4180,7 +4220,15 @@ Here is the source. Copy and paste it into a file called <code>CommandLine.java<
          * on the specified class and superclasses.
          * @param annotatedObject the annotated object to create usage help for */</span>
         <span class="directive">public</span> Help(<span class="predefined-type">Object</span> annotatedObject) {
-            <span class="local-variable">this</span>(annotatedObject, defaultColorScheme());
+            <span class="local-variable">this</span>(annotatedObject, Ansi.AUTO);
+        }
+
+        <span class="comment">/** Constructs a new {@code Help} instance with a default color scheme, initialized from annotatations
+         * on the specified class and superclasses.
+         * @param annotatedObject the annotated object to create usage help for
+         * @param ansi whether to emit ANSI escape codes or not */</span>
+        <span class="directive">public</span> Help(<span class="predefined-type">Object</span> annotatedObject, Ansi ansi) {
+            <span class="local-variable">this</span>(annotatedObject, defaultColorScheme(ansi));
         }
 
         <span class="comment">/** Constructs a new {@code Help} instance with the specified color scheme, initialized from annotatations
@@ -4190,6 +4238,8 @@ Here is the source. Copy and paste it into a file called <code>CommandLine.java<
         <span class="directive">public</span> Help(<span class="predefined-type">Object</span> annotatedObject, ColorScheme colorScheme) {
             <span class="local-variable">this</span>.annotatedObject = Assert.notNull(annotatedObject, <span class="string"><span class="delimiter">&quot;</span><span class="content">annotatedObject</span><span class="delimiter">&quot;</span></span>);
             <span class="local-variable">this</span>.colorScheme = Assert.notNull(colorScheme, <span class="string"><span class="delimiter">&quot;</span><span class="content">colorScheme</span><span class="delimiter">&quot;</span></span>).applySystemProperties();
+            <span class="predefined-type">List</span>&lt;<span class="predefined-type">Field</span>&gt; options = <span class="keyword">new</span> <span class="predefined-type">ArrayList</span>&lt;<span class="predefined-type">Field</span>&gt;();
+            <span class="predefined-type">List</span>&lt;<span class="predefined-type">Field</span>&gt; operands = <span class="keyword">new</span> <span class="predefined-type">ArrayList</span>&lt;<span class="predefined-type">Field</span>&gt;();
             <span class="predefined-type">Class</span>&lt;?&gt; cls = annotatedObject.getClass();
             <span class="keyword">while</span> (cls != <span class="predefined-constant">null</span>) {
                 <span class="keyword">for</span> (<span class="predefined-type">Field</span> field : cls.getDeclaredFields()) {
@@ -4198,11 +4248,11 @@ Here is the source. Copy and paste it into a file called <code>CommandLine.java<
                         <span class="predefined-type">Option</span> option = field.getAnnotation(<span class="predefined-type">Option</span>.class);
                         <span class="keyword">if</span> (!option.hidden()) { <span class="comment">// hidden options should not appear in usage help</span>
                             <span class="comment">// TODO remember longest concatenated option string length (issue #45)</span>
-                            optionFields.add(field);
+                            options.add(field);
                         }
                     }
                     <span class="keyword">if</span> (field.isAnnotationPresent(Parameters.class)) {
-                        positionalParametersFields.add(field);
+                        operands.add(field);
                     }
                 }
                 <span class="comment">// superclass values should not overwrite values if both class and superclass have a @Command annotation</span>
@@ -4238,7 +4288,9 @@ Here is the source. Copy and paste it into a file called <code>CommandLine.java<
             commandListHeading =   (commandListHeading == <span class="predefined-constant">null</span>)   ? <span class="string"><span class="delimiter">&quot;</span><span class="content">Commands:%n</span><span class="delimiter">&quot;</span></span> : commandListHeading;
             separator =            (separator == <span class="predefined-constant">null</span>)            ? <span class="string"><span class="delimiter">&quot;</span><span class="content">=</span><span class="delimiter">&quot;</span></span> : separator;
             parameterLabelRenderer = <span class="keyword">new</span> DefaultParamLabelRenderer(separator);
-            <span class="predefined-type">Collections</span>.sort(positionalParametersFields, <span class="keyword">new</span> PositionalParametersSorter());
+            <span class="predefined-type">Collections</span>.sort(operands, <span class="keyword">new</span> PositionalParametersSorter());
+            positionalParametersFields = <span class="predefined-type">Collections</span>.unmodifiableList(operands);
+            optionFields                 = <span class="predefined-type">Collections</span>.unmodifiableList(options);
         }
 
         <span class="comment">/** Registers all specified commands with this Help.
@@ -4287,7 +4339,7 @@ Here is the source. Copy and paste it into a file called <code>CommandLine.java<
             <span class="comment">// sb.append(&quot; [--] &quot;); // implied</span>
             <span class="keyword">for</span> (<span class="predefined-type">Field</span> positionalParam : positionalParametersFields) {
                 <span class="keyword">if</span> (!positionalParam.getAnnotation(Parameters.class).hidden()) {
-                    sb.append(<span class="string"><span class="delimiter">'</span><span class="content"> </span><span class="delimiter">'</span></span>).append(parameterLabelRenderer.renderParameterLabel(positionalParam, colorScheme.parameterStyles));
+                    sb.append(<span class="string"><span class="delimiter">'</span><span class="content"> </span><span class="delimiter">'</span></span>).append(parameterLabelRenderer.renderParameterLabel(positionalParam, ansi(), colorScheme.parameterStyles));
                 }
             }
             <span class="keyword">return</span> colorScheme.commandText(commandName).toString()
@@ -4300,7 +4352,7 @@ Here is the source. Copy and paste it into a file called <code>CommandLine.java<
          * @param clusterBooleanOptions {@code true} if boolean short options should be clustered into a single string
          * @return a detailed synopsis */</span>
         <span class="directive">public</span> <span class="predefined-type">String</span> detailedSynopsis(<span class="predefined-type">Comparator</span>&lt;<span class="predefined-type">Field</span>&gt; optionSort, <span class="type">boolean</span> clusterBooleanOptions) {
-            Text optionText = <span class="keyword">new</span> Text(<span class="integer">0</span>);
+            Text optionText = ansi().new Text(<span class="integer">0</span>);
             <span class="predefined-type">List</span>&lt;<span class="predefined-type">Field</span>&gt; fields = <span class="keyword">new</span> <span class="predefined-type">ArrayList</span>&lt;<span class="predefined-type">Field</span>&gt;(optionFields); <span class="comment">// iterate in declaration order</span>
             <span class="keyword">if</span> (optionSort != <span class="predefined-constant">null</span>) {
                 <span class="predefined-type">Collections</span>.sort(fields, optionSort);<span class="comment">// iterate in specified sort order</span>
@@ -4340,7 +4392,7 @@ Here is the source. Copy and paste it into a file called <code>CommandLine.java<
                     <span class="predefined-type">String</span> optionNames = ShortestFirst.sort(option.names())[<span class="integer">0</span>];
                     optionText = optionText.append(colorScheme.optionText(optionNames));
 
-                    Text optionParamText = parameterLabelRenderer.renderParameterLabel(field, colorScheme.optionParamStyles);
+                    Text optionParamText = parameterLabelRenderer.renderParameterLabel(field, colorScheme.ansi(), colorScheme.optionParamStyles);
                     optionText = optionText.append(optionParamText);
                     <span class="keyword">if</span> (!option.required()) {
                         optionText = optionText.append(<span class="string"><span class="delimiter">&quot;</span><span class="content">]</span><span class="delimiter">&quot;</span></span>);
@@ -4350,11 +4402,11 @@ Here is the source. Copy and paste it into a file called <code>CommandLine.java<
             <span class="keyword">for</span> (<span class="predefined-type">Field</span> positionalParam : positionalParametersFields) {
                 <span class="keyword">if</span> (!positionalParam.getAnnotation(Parameters.class).hidden()) {
                     optionText = optionText.append(<span class="string"><span class="delimiter">&quot;</span><span class="content"> </span><span class="delimiter">&quot;</span></span>);
-                    Text label = parameterLabelRenderer.renderParameterLabel(positionalParam, colorScheme.parameterStyles);
+                    Text label = parameterLabelRenderer.renderParameterLabel(positionalParam, colorScheme.ansi(), colorScheme.parameterStyles);
                     optionText = optionText.append(label);
                 }
             }
-            TextTable textTable = <span class="keyword">new</span> TextTable(commandName.length(), <span class="integer">80</span> - commandName.length());
+            TextTable textTable = <span class="keyword">new</span> TextTable(ansi(), commandName.length(), <span class="integer">80</span> - commandName.length());
             textTable.indentWrappedLines = <span class="integer">1</span>; <span class="comment">// don't worry about first line: options (2nd column) always start with a space</span>
             textTable.addRowValues(<span class="keyword">new</span> Text<span class="type">[]</span> {colorScheme.commandText(commandName), optionText});
             <span class="keyword">return</span> textTable.toString();
@@ -4410,16 +4462,17 @@ Here is the source. Copy and paste it into a file called <code>CommandLine.java<
         }
 
         <span class="comment">/** Formats each of the specified values and appends it to the specified StringBuilder.
+         * @param ansi whether the result should contain ANSI escape codes or not
          * @param values the values to format and append to the StringBuilder
          * @param sb the StringBuilder to collect the formatted strings
          * @param params the parameters to pass to the format method when formatting each value
          * @return the specified StringBuilder */</span>
-        <span class="directive">public</span> <span class="directive">static</span> <span class="predefined-type">StringBuilder</span> join(<span class="predefined-type">String</span><span class="type">[]</span> values, <span class="predefined-type">StringBuilder</span> sb, <span class="predefined-type">Object</span>... params) {
+        <span class="directive">public</span> <span class="directive">static</span> <span class="predefined-type">StringBuilder</span> join(Ansi ansi, <span class="predefined-type">String</span><span class="type">[]</span> values, <span class="predefined-type">StringBuilder</span> sb, <span class="predefined-type">Object</span>... params) {
             <span class="keyword">if</span> (values != <span class="predefined-constant">null</span>) {
-                TextTable table = <span class="keyword">new</span> TextTable(<span class="integer">80</span>);
+                TextTable table = <span class="keyword">new</span> TextTable(ansi, <span class="integer">80</span>);
                 table.indentWrappedLines = <span class="integer">0</span>;
                 <span class="keyword">for</span> (<span class="predefined-type">String</span> summaryLine : values) {
-                    table.addRowValues(<span class="keyword">new</span> Text(<span class="predefined-type">String</span>.format(summaryLine, params)));
+                    table.addRowValues(ansi.new Text(<span class="predefined-type">String</span>.format(summaryLine, params)));
                 }
                 table.toString(sb);
             }
@@ -4432,7 +4485,7 @@ Here is the source. Copy and paste it into a file called <code>CommandLine.java<
          * @return the custom synopsis lines combined into a single String (which may be empty)
          */</span>
         <span class="directive">public</span> <span class="predefined-type">String</span> customSynopsis(<span class="predefined-type">Object</span>... params) {
-            <span class="keyword">return</span> join(customSynopsis, <span class="keyword">new</span> <span class="predefined-type">StringBuilder</span>(), params).toString();
+            <span class="keyword">return</span> join(ansi(), customSynopsis, <span class="keyword">new</span> <span class="predefined-type">StringBuilder</span>(), params).toString();
         }
         <span class="comment">/** Returns command description text as a string. Description text can be zero or more lines, and can be specified
          * declaratively with the {@link Command#description()} annotation attribute or programmatically by
@@ -4441,7 +4494,7 @@ Here is the source. Copy and paste it into a file called <code>CommandLine.java<
          * @return the description lines combined into a single String (which may be empty)
          */</span>
         <span class="directive">public</span> <span class="predefined-type">String</span> description(<span class="predefined-type">Object</span>... params) {
-            <span class="keyword">return</span> join(description, <span class="keyword">new</span> <span class="predefined-type">StringBuilder</span>(), params).toString();
+            <span class="keyword">return</span> join(ansi(), description, <span class="keyword">new</span> <span class="predefined-type">StringBuilder</span>(), params).toString();
         }
         <span class="comment">/** Returns the command header text as a string. Header text can be zero or more lines, and can be specified
          * declaratively with the {@link Command#header()} annotation attribute or programmatically by
@@ -4450,7 +4503,7 @@ Here is the source. Copy and paste it into a file called <code>CommandLine.java<
          * @return the header lines combined into a single String (which may be empty)
          */</span>
         <span class="directive">public</span> <span class="predefined-type">String</span> header(<span class="predefined-type">Object</span>... params) {
-            <span class="keyword">return</span> join(header, <span class="keyword">new</span> <span class="predefined-type">StringBuilder</span>(), params).toString();
+            <span class="keyword">return</span> join(ansi(), header, <span class="keyword">new</span> <span class="predefined-type">StringBuilder</span>(), params).toString();
         }
         <span class="comment">/** Returns command footer text as a string. Footer text can be zero or more lines, and can be specified
          * declaratively with the {@link Command#footer()} annotation attribute or programmatically by
@@ -4459,21 +4512,21 @@ Here is the source. Copy and paste it into a file called <code>CommandLine.java<
          * @return the footer lines combined into a single String (which may be empty)
          */</span>
         <span class="directive">public</span> <span class="predefined-type">String</span> footer(<span class="predefined-type">Object</span>... params) {
-            <span class="keyword">return</span> join(footer, <span class="keyword">new</span> <span class="predefined-type">StringBuilder</span>(), params).toString();
+            <span class="keyword">return</span> join(ansi(), footer, <span class="keyword">new</span> <span class="predefined-type">StringBuilder</span>(), params).toString();
         }
 
         <span class="comment">/** Returns the text displayed before the header text; the result of {@code String.format(headerHeading, params)}.
          * @param params the parameters to use to format the header heading
          * @return the formatted header heading */</span>
         <span class="directive">public</span> <span class="predefined-type">String</span> headerHeading(<span class="predefined-type">Object</span>... params) {
-            <span class="keyword">return</span> <span class="keyword">new</span> Text(format(headerHeading, params)).toString();
+            <span class="keyword">return</span> ansi().new Text(format(headerHeading, params)).toString();
         }
 
         <span class="comment">/** Returns the text displayed before the synopsis text; the result of {@code String.format(synopsisHeading, params)}.
          * @param params the parameters to use to format the synopsis heading
          * @return the formatted synopsis heading */</span>
         <span class="directive">public</span> <span class="predefined-type">String</span> synopsisHeading(<span class="predefined-type">Object</span>... params) {
-            <span class="keyword">return</span> <span class="keyword">new</span> Text(format(synopsisHeading, params)).toString();
+            <span class="keyword">return</span> ansi().new Text(format(synopsisHeading, params)).toString();
         }
 
         <span class="comment">/** Returns the text displayed before the description text; an empty string if there is no description,
@@ -4481,7 +4534,7 @@ Here is the source. Copy and paste it into a file called <code>CommandLine.java<
          * @param params the parameters to use to format the description heading
          * @return the formatted description heading */</span>
         <span class="directive">public</span> <span class="predefined-type">String</span> descriptionHeading(<span class="predefined-type">Object</span>... params) {
-            <span class="keyword">return</span> empty(descriptionHeading) ? <span class="string"><span class="delimiter">&quot;</span><span class="delimiter">&quot;</span></span> : <span class="keyword">new</span> Text(format(descriptionHeading, params)).toString();
+            <span class="keyword">return</span> empty(descriptionHeading) ? <span class="string"><span class="delimiter">&quot;</span><span class="delimiter">&quot;</span></span> : ansi().new Text(format(descriptionHeading, params)).toString();
         }
 
         <span class="comment">/** Returns the text displayed before the positional parameter list; an empty string if there are no positional
@@ -4489,7 +4542,7 @@ Here is the source. Copy and paste it into a file called <code>CommandLine.java<
          * @param params the parameters to use to format the parameter list heading
          * @return the formatted parameter list heading */</span>
         <span class="directive">public</span> <span class="predefined-type">String</span> parameterListHeading(<span class="predefined-type">Object</span>... params) {
-            <span class="keyword">return</span> positionalParametersFields.isEmpty() ? <span class="string"><span class="delimiter">&quot;</span><span class="delimiter">&quot;</span></span> : <span class="keyword">new</span> Text(format(parameterListHeading, params)).toString();
+            <span class="keyword">return</span> positionalParametersFields.isEmpty() ? <span class="string"><span class="delimiter">&quot;</span><span class="delimiter">&quot;</span></span> : ansi().new Text(format(parameterListHeading, params)).toString();
         }
 
         <span class="comment">/** Returns the text displayed before the option list; an empty string if there are no options,
@@ -4497,7 +4550,7 @@ Here is the source. Copy and paste it into a file called <code>CommandLine.java<
          * @param params the parameters to use to format the option list heading
          * @return the formatted option list heading */</span>
         <span class="directive">public</span> <span class="predefined-type">String</span> optionListHeading(<span class="predefined-type">Object</span>... params) {
-            <span class="keyword">return</span> optionFields.isEmpty() ? <span class="string"><span class="delimiter">&quot;</span><span class="delimiter">&quot;</span></span> : <span class="keyword">new</span> Text(format(optionListHeading, params)).toString();
+            <span class="keyword">return</span> optionFields.isEmpty() ? <span class="string"><span class="delimiter">&quot;</span><span class="delimiter">&quot;</span></span> : ansi().new Text(format(optionListHeading, params)).toString();
         }
 
         <span class="comment">/** Returns the text displayed before the command list; an empty string if there are no commands,
@@ -4505,14 +4558,14 @@ Here is the source. Copy and paste it into a file called <code>CommandLine.java<
          * @param params the parameters to use to format the command list heading
          * @return the formatted command list heading */</span>
         <span class="directive">public</span> <span class="predefined-type">String</span> commandListHeading(<span class="predefined-type">Object</span>... params) {
-            <span class="keyword">return</span> commands.isEmpty() ? <span class="string"><span class="delimiter">&quot;</span><span class="delimiter">&quot;</span></span> : <span class="keyword">new</span> Text(format(commandListHeading, params)).toString();
+            <span class="keyword">return</span> commands.isEmpty() ? <span class="string"><span class="delimiter">&quot;</span><span class="delimiter">&quot;</span></span> : ansi().new Text(format(commandListHeading, params)).toString();
         }
 
         <span class="comment">/** Returns the text displayed before the footer text; the result of {@code String.format(footerHeading, params)}.
          * @param params the parameters to use to format the footer heading
          * @return the formatted footer heading */</span>
         <span class="directive">public</span> <span class="predefined-type">String</span> footerHeading(<span class="predefined-type">Object</span>... params) {
-            <span class="keyword">return</span> <span class="keyword">new</span> Text(format(footerHeading, params)).toString();
+            <span class="keyword">return</span> ansi().new Text(format(footerHeading, params)).toString();
         }
         <span class="directive">private</span> <span class="predefined-type">String</span> format(<span class="predefined-type">String</span> formatString,  <span class="predefined-type">Object</span><span class="type">[]</span> params) {
             <span class="keyword">return</span> formatString == <span class="predefined-constant">null</span> ? <span class="string"><span class="delimiter">&quot;</span><span class="delimiter">&quot;</span></span> : <span class="predefined-type">String</span>.format(formatString, params);
@@ -4522,7 +4575,7 @@ Here is the source. Copy and paste it into a file called <code>CommandLine.java<
         <span class="directive">public</span> <span class="predefined-type">String</span> commandList() {
             <span class="keyword">if</span> (commands.isEmpty()) { <span class="keyword">return</span> <span class="string"><span class="delimiter">&quot;</span><span class="delimiter">&quot;</span></span>; }
             <span class="type">int</span> commandLength = maxLength(commands.keySet());
-            Help.TextTable textTable = <span class="keyword">new</span> Help.TextTable(
+            Help.TextTable textTable = <span class="keyword">new</span> Help.TextTable(ansi(),
                     <span class="keyword">new</span> Help.Column(commandLength + <span class="integer">2</span>, <span class="integer">2</span>, Help.Column.Overflow.SPAN),
                     <span class="keyword">new</span> Help.Column(<span class="integer">80</span> - (commandLength + <span class="integer">2</span>), <span class="integer">2</span>, Help.Column.Overflow.WRAP));
 
@@ -4530,7 +4583,7 @@ Here is the source. Copy and paste it into a file called <code>CommandLine.java<
                 Help command = entry.getValue();
                 <span class="predefined-type">String</span> header = command.header != <span class="predefined-constant">null</span> &amp;&amp; command.header.length &gt; <span class="integer">0</span> ? command.header[<span class="integer">0</span>]
                         : (command.description != <span class="predefined-constant">null</span> &amp;&amp; command.description.length &gt; <span class="integer">0</span> ? command.description[<span class="integer">0</span>] : <span class="string"><span class="delimiter">&quot;</span><span class="delimiter">&quot;</span></span>);
-                textTable.addRowValues(colorScheme.commandText(entry.getKey()), <span class="keyword">new</span> Text(header));
+                textTable.addRowValues(colorScheme.commandText(entry.getKey()), ansi().new Text(header));
             }
             <span class="keyword">return</span> textTable.toString();
         }
@@ -4551,7 +4604,7 @@ Here is the source. Copy and paste it into a file called <code>CommandLine.java<
         <span class="comment">/** Returns a {@code Layout} instance configured with the user preferences captured in this Help instance.
          * @return a Layout */</span>
         <span class="directive">public</span> Layout createDefaultLayout() {
-            <span class="keyword">return</span> <span class="keyword">new</span> Layout(colorScheme, <span class="keyword">new</span> TextTable(), createDefaultOptionRenderer(), createDefaultParameterRenderer());
+            <span class="keyword">return</span> <span class="keyword">new</span> Layout(colorScheme, <span class="keyword">new</span> TextTable(colorScheme.ansi()), createDefaultOptionRenderer(), createDefaultParameterRenderer());
         }
         <span class="comment">/** Returns a new default OptionRenderer which converts {@link Option Options} to five columns of text to match
          *  the default {@linkplain TextTable TextTable} column layout. The first row of values looks like this:
@@ -4611,7 +4664,7 @@ Here is the source. Copy and paste it into a file called <code>CommandLine.java<
          * @return a new minimal ParamLabelRenderer */</span>
         <span class="directive">public</span> <span class="directive">static</span> IParamLabelRenderer createMinimalParamLabelRenderer() {
             <span class="keyword">return</span> <span class="keyword">new</span> IParamLabelRenderer() {
-                <span class="directive">public</span> Text renderParameterLabel(<span class="predefined-type">Field</span> field, <span class="predefined-type">List</span>&lt;IStyle&gt; styles) {
+                <span class="directive">public</span> Text renderParameterLabel(<span class="predefined-type">Field</span> field, Ansi ansi, <span class="predefined-type">List</span>&lt;IStyle&gt; styles) {
                     <span class="predefined-type">String</span> paramLabel = <span class="predefined-constant">null</span>;
                     Parameters parameters = field.getAnnotation(Parameters.class);
                     <span class="keyword">if</span> (parameters != <span class="predefined-constant">null</span>) {
@@ -4620,7 +4673,7 @@ Here is the source. Copy and paste it into a file called <code>CommandLine.java<
                         paramLabel = field.isAnnotationPresent(<span class="predefined-type">Option</span>.class) ? field.getAnnotation(<span class="predefined-type">Option</span>.class).paramLabel() : <span class="predefined-constant">null</span>;
                     }
                     <span class="predefined-type">String</span> text = paramLabel == <span class="predefined-constant">null</span> || paramLabel.length() == <span class="integer">0</span> ? field.getName() : paramLabel;
-                    <span class="keyword">return</span> Text.apply(text, styles);
+                    <span class="keyword">return</span> ansi.apply(text, styles);
                 }
                 <span class="directive">public</span> <span class="predefined-type">String</span> separator() { <span class="keyword">return</span> <span class="string"><span class="delimiter">&quot;</span><span class="delimiter">&quot;</span></span>; }
             };
@@ -4649,6 +4702,13 @@ Here is the source. Copy and paste it into a file called <code>CommandLine.java<
          * @return a comparators that sorts short strings before longer strings */</span>
         <span class="directive">public</span> <span class="directive">static</span> <span class="predefined-type">Comparator</span>&lt;<span class="predefined-type">String</span>&gt; shortestFirst() {
             <span class="keyword">return</span> <span class="keyword">new</span> ShortestFirst();
+        }
+
+        <span class="comment">/** Returns whether ANSI escape codes are enabled or not.
+         * @return whether ANSI escape codes are enabled or not
+         */</span>
+        <span class="directive">public</span> Ansi ansi() {
+            <span class="keyword">return</span> colorScheme.ansi;
         }
 
         <span class="comment">/** When customizing online help for {@link Option Option} details, a custom {@code IOptionRenderer} can be
@@ -4685,7 +4745,7 @@ Here is the source. Copy and paste it into a file called <code>CommandLine.java<
                 <span class="predefined-type">String</span><span class="type">[]</span> names = ShortestFirst.sort(option.names());
                 <span class="type">int</span> shortOptionCount = names[<span class="integer">0</span>].length() == <span class="integer">2</span> ? <span class="integer">1</span> : <span class="integer">0</span>;
                 <span class="predefined-type">String</span> shortOption = shortOptionCount &gt; <span class="integer">0</span> ? names[<span class="integer">0</span>] : <span class="string"><span class="delimiter">&quot;</span><span class="delimiter">&quot;</span></span>;
-                Text paramLabelText = paramLabelRenderer.renderParameterLabel(field, scheme.optionParamStyles);
+                Text paramLabelText = paramLabelRenderer.renderParameterLabel(field, scheme.ansi(), scheme.optionParamStyles);
                 <span class="predefined-type">String</span> longOption = join(names, shortOptionCount, names.length - shortOptionCount, <span class="string"><span class="delimiter">&quot;</span><span class="content">, </span><span class="delimiter">&quot;</span></span>);
                 <span class="predefined-type">String</span> sep = shortOptionCount &gt; <span class="integer">0</span> &amp;&amp; names.length &gt; <span class="integer">1</span> ? <span class="string"><span class="delimiter">&quot;</span><span class="content">,</span><span class="delimiter">&quot;</span></span> : <span class="string"><span class="delimiter">&quot;</span><span class="delimiter">&quot;</span></span>;
 
@@ -4715,16 +4775,17 @@ Here is the source. Copy and paste it into a file called <code>CommandLine.java<
                 <span class="directive">final</span> <span class="type">int</span> descriptionCount = <span class="predefined-type">Math</span>.max(<span class="integer">1</span>, option.description().length);
                 <span class="directive">final</span> <span class="type">int</span> ROW_COUNT = showDefault ? descriptionCount + <span class="integer">1</span> : descriptionCount;
                 <span class="directive">final</span> <span class="type">int</span> COLUMN_COUNT = <span class="integer">5</span>;
+                Text EMPTY = Ansi.EMPTY_TEXT;
                 Text<span class="type">[]</span><span class="type">[]</span> result = <span class="keyword">new</span> Text[ROW_COUNT][COLUMN_COUNT];
                 result[<span class="integer">0</span>] = <span class="keyword">new</span> Text<span class="type">[]</span> { scheme.optionText(requiredOption), scheme.optionText(shortOption),
-                        <span class="keyword">new</span> Text(sep), longOptionText, <span class="keyword">new</span> Text(str(option.description(), <span class="integer">0</span>)) };
+                        scheme.ansi().new Text(sep), longOptionText, scheme.ansi().new Text(str(option.description(), <span class="integer">0</span>)) };
                 <span class="keyword">for</span> (<span class="type">int</span> i = <span class="integer">1</span>; i &lt; option.description().length; i++) {
-                    result[i] = <span class="keyword">new</span> Text<span class="type">[]</span> { Text.EMPTY, Text.EMPTY, Text.EMPTY, Text.EMPTY, <span class="keyword">new</span> Text(option.description()[i]) };
+                    result[i] = <span class="keyword">new</span> Text<span class="type">[]</span> { EMPTY, EMPTY, EMPTY, EMPTY, scheme.ansi().new Text(option.description()[i]) };
                 }
                 <span class="keyword">if</span> (showDefault) {
-                    <span class="predefined-type">Arrays</span>.fill(result[result.length - <span class="integer">1</span>], Text.EMPTY);
+                    <span class="predefined-type">Arrays</span>.fill(result[result.length - <span class="integer">1</span>], EMPTY);
                     <span class="type">int</span> row = empty(result[ROW_COUNT - <span class="integer">2</span>][COLUMN_COUNT - <span class="integer">1</span>]) ? ROW_COUNT - <span class="integer">2</span> : ROW_COUNT - <span class="integer">1</span>;
-                    result[row][COLUMN_COUNT - <span class="integer">1</span>] = <span class="keyword">new</span> Text(<span class="string"><span class="delimiter">&quot;</span><span class="content">  Default: </span><span class="delimiter">&quot;</span></span> + defaultValue);
+                    result[row][COLUMN_COUNT - <span class="integer">1</span>] = scheme.ansi().new Text(<span class="string"><span class="delimiter">&quot;</span><span class="content">  Default: </span><span class="delimiter">&quot;</span></span> + defaultValue);
                 }
                 <span class="keyword">return</span> result;
             }
@@ -4734,18 +4795,18 @@ Here is the source. Copy and paste it into a file called <code>CommandLine.java<
         <span class="directive">static</span> <span class="type">class</span> <span class="class">MinimalOptionRenderer</span> <span class="directive">implements</span> IOptionRenderer {
             <span class="directive">public</span> Text<span class="type">[]</span><span class="type">[]</span> render(<span class="predefined-type">Option</span> option, <span class="predefined-type">Field</span> field, IParamLabelRenderer parameterLabelRenderer, ColorScheme scheme) {
                 Text optionText = scheme.optionText(option.names()[<span class="integer">0</span>]);
-                Text paramLabelText = parameterLabelRenderer.renderParameterLabel(field, scheme.optionParamStyles);
+                Text paramLabelText = parameterLabelRenderer.renderParameterLabel(field, scheme.ansi(), scheme.optionParamStyles);
                 optionText = optionText.append(paramLabelText);
                 <span class="keyword">return</span> <span class="keyword">new</span> Text<span class="type">[]</span><span class="type">[]</span> {{ optionText,
-                                        <span class="keyword">new</span> Text(option.description().length == <span class="integer">0</span> ? <span class="string"><span class="delimiter">&quot;</span><span class="delimiter">&quot;</span></span> : option.description()[<span class="integer">0</span>]) }};
+                                        scheme.ansi().new Text(option.description().length == <span class="integer">0</span> ? <span class="string"><span class="delimiter">&quot;</span><span class="delimiter">&quot;</span></span> : option.description()[<span class="integer">0</span>]) }};
             }
         }
         <span class="comment">/** The MinimalParameterRenderer converts {@link Parameters Parameters} to a single row with two columns of
          * text: the parameters label and a description. If multiple description lines exist, the first value is used. */</span>
         <span class="directive">static</span> <span class="type">class</span> <span class="class">MinimalParameterRenderer</span> <span class="directive">implements</span> IParameterRenderer {
             <span class="directive">public</span> Text<span class="type">[]</span><span class="type">[]</span> render(Parameters param, <span class="predefined-type">Field</span> field, IParamLabelRenderer parameterLabelRenderer, ColorScheme scheme) {
-                <span class="keyword">return</span> <span class="keyword">new</span> Text<span class="type">[]</span><span class="type">[]</span> {{ parameterLabelRenderer.renderParameterLabel(field, scheme.parameterStyles),
-                        <span class="keyword">new</span> Text(param.description().length == <span class="integer">0</span> ? <span class="string"><span class="delimiter">&quot;</span><span class="delimiter">&quot;</span></span> : param.description()[<span class="integer">0</span>]) }};
+                <span class="keyword">return</span> <span class="keyword">new</span> Text<span class="type">[]</span><span class="type">[]</span> {{ parameterLabelRenderer.renderParameterLabel(field, scheme.ansi(), scheme.parameterStyles),
+                        scheme.ansi().new Text(param.description().length == <span class="integer">0</span> ? <span class="string"><span class="delimiter">&quot;</span><span class="delimiter">&quot;</span></span> : param.description()[<span class="integer">0</span>]) }};
             }
         }
         <span class="comment">/** When customizing online help for {@link Parameters Parameters} details, a custom {@code IParameterRenderer}
@@ -4778,14 +4839,15 @@ Here is the source. Copy and paste it into a file called <code>CommandLine.java<
         <span class="directive">static</span> <span class="type">class</span> <span class="class">DefaultParameterRenderer</span> <span class="directive">implements</span> IParameterRenderer {
             <span class="directive">public</span> <span class="predefined-type">String</span> requiredMarker = <span class="string"><span class="delimiter">&quot;</span><span class="content"> </span><span class="delimiter">&quot;</span></span>;
             <span class="directive">public</span> Text<span class="type">[]</span><span class="type">[]</span> render(Parameters params, <span class="predefined-type">Field</span> field, IParamLabelRenderer paramLabelRenderer, ColorScheme scheme) {
-                Text label = paramLabelRenderer.renderParameterLabel(field, scheme.parameterStyles);
+                Text label = paramLabelRenderer.renderParameterLabel(field, scheme.ansi(), scheme.parameterStyles);
                 Text requiredParameter = scheme.parameterText(Arity.forParameters(field).min &gt; <span class="integer">0</span> ? requiredMarker : <span class="string"><span class="delimiter">&quot;</span><span class="delimiter">&quot;</span></span>);
 
                 <span class="directive">final</span> <span class="type">int</span> COLUMN_COUNT = <span class="integer">5</span>;
+                <span class="directive">final</span> Text EMPTY = Ansi.EMPTY_TEXT;
                 Text<span class="type">[]</span><span class="type">[]</span> result = <span class="keyword">new</span> Text[<span class="predefined-type">Math</span>.max(<span class="integer">1</span>, params.description().length)][COLUMN_COUNT];
-                result[<span class="integer">0</span>] = <span class="keyword">new</span> Text<span class="type">[]</span> { requiredParameter, Text.EMPTY, Text.EMPTY, label, <span class="keyword">new</span> Text(str(params.description(), <span class="integer">0</span>)) };
+                result[<span class="integer">0</span>] = <span class="keyword">new</span> Text<span class="type">[]</span> { requiredParameter, EMPTY, EMPTY, label, scheme.ansi().new Text(str(params.description(), <span class="integer">0</span>)) };
                 <span class="keyword">for</span> (<span class="type">int</span> i = <span class="integer">1</span>; i &lt; params.description().length; i++) {
-                    result[i] = <span class="keyword">new</span> Text<span class="type">[]</span> { Text.EMPTY, Text.EMPTY, Text.EMPTY, Text.EMPTY, <span class="keyword">new</span> Text(params.description()[i]) };
+                    result[i] = <span class="keyword">new</span> Text<span class="type">[]</span> { EMPTY, EMPTY, EMPTY, EMPTY, scheme.ansi().new Text(params.description()[i]) };
                 }
                 <span class="keyword">return</span> result;
             }
@@ -4797,9 +4859,10 @@ Here is the source. Copy and paste it into a file called <code>CommandLine.java<
             <span class="comment">/** Returns a text rendering of the Option parameter or positional parameter; returns an empty string
              * {@code &quot;&quot;} if the option is a boolean and does not take a parameter.
              * @param field the annotated field with a parameter label
+             * @param ansi determines whether ANSI escape codes should be emitted or not
              * @param styles the styles to apply to the parameter label
              * @return a text rendering of the Option parameter or positional parameter */</span>
-            Text renderParameterLabel(<span class="predefined-type">Field</span> field, <span class="predefined-type">List</span>&lt;IStyle&gt; styles);
+            Text renderParameterLabel(<span class="predefined-type">Field</span> field, Ansi ansi, <span class="predefined-type">List</span>&lt;IStyle&gt; styles);
 
             <span class="comment">/** Returns the separator between option name and param label.
              * @return the separator between option name and param label */</span>
@@ -4819,14 +4882,14 @@ Here is the source. Copy and paste it into a file called <code>CommandLine.java<
                 <span class="local-variable">this</span>.separator = Assert.notNull(separator, <span class="string"><span class="delimiter">&quot;</span><span class="content">separator</span><span class="delimiter">&quot;</span></span>);
             }
             <span class="directive">public</span> <span class="predefined-type">String</span> separator() { <span class="keyword">return</span> separator; }
-            <span class="directive">public</span> Text renderParameterLabel(<span class="predefined-type">Field</span> field, <span class="predefined-type">List</span>&lt;IStyle&gt; styles) {
+            <span class="directive">public</span> Text renderParameterLabel(<span class="predefined-type">Field</span> field, Ansi ansi, <span class="predefined-type">List</span>&lt;IStyle&gt; styles) {
                 <span class="type">boolean</span> isOptionParameter = field.isAnnotationPresent(<span class="predefined-type">Option</span>.class);
                 Arity arity = isOptionParameter ? Arity.forOption(field) : Arity.forParameters(field);
-                Text result = <span class="keyword">new</span> Text(<span class="string"><span class="delimiter">&quot;</span><span class="delimiter">&quot;</span></span>);
+                Text result = ansi.new Text(<span class="string"><span class="delimiter">&quot;</span><span class="delimiter">&quot;</span></span>);
                 <span class="predefined-type">String</span> sep = isOptionParameter ? separator : <span class="string"><span class="delimiter">&quot;</span><span class="delimiter">&quot;</span></span>;
                 <span class="keyword">if</span> (arity.min &gt; <span class="integer">0</span>) {
                     <span class="keyword">for</span> (<span class="type">int</span> i = <span class="integer">0</span>; i &lt; arity.min; i++) {
-                        result = result.append(sep).append(Text.apply(renderParameterName(field), styles));
+                        result = result.append(sep).append(ansi.apply(renderParameterName(field), styles));
                         sep = <span class="string"><span class="delimiter">&quot;</span><span class="content"> </span><span class="delimiter">&quot;</span></span>;
                     }
                 }
@@ -4835,9 +4898,9 @@ Here is the source. Copy and paste it into a file called <code>CommandLine.java<
                     <span class="type">int</span> max = arity.isVariable ? <span class="integer">1</span> : arity.max - arity.min;
                     <span class="keyword">for</span> (<span class="type">int</span> i = <span class="integer">0</span>; i &lt; max; i++) {
                         <span class="keyword">if</span> (sep.trim().length() == <span class="integer">0</span>) {
-                            result = result.append(sep + <span class="string"><span class="delimiter">&quot;</span><span class="content">[</span><span class="delimiter">&quot;</span></span>).append(Text.apply(renderParameterName(field), styles));
+                            result = result.append(sep + <span class="string"><span class="delimiter">&quot;</span><span class="content">[</span><span class="delimiter">&quot;</span></span>).append(ansi.apply(renderParameterName(field), styles));
                         } <span class="keyword">else</span> {
-                            result = result.append(<span class="string"><span class="delimiter">&quot;</span><span class="content">[</span><span class="delimiter">&quot;</span></span> + sep).append(Text.apply(renderParameterName(field), styles));
+                            result = result.append(<span class="string"><span class="delimiter">&quot;</span><span class="content">[</span><span class="delimiter">&quot;</span></span> + sep).append(ansi.apply(renderParameterName(field), styles));
                         }
                         sep  = <span class="string"><span class="delimiter">&quot;</span><span class="content"> </span><span class="delimiter">&quot;</span></span>;
                     }
@@ -4880,7 +4943,7 @@ Here is the source. Copy and paste it into a file called <code>CommandLine.java<
              * {@linkplain Help#createDefaultOptionRenderer() default option renderer}, and the
              * {@linkplain Help#createDefaultParameterRenderer() default parameter renderer}.
              * @param colorScheme the color scheme to use for common, auto-generated parts of the usage help message */</span>
-            <span class="directive">public</span> Layout(ColorScheme colorScheme) { <span class="local-variable">this</span>(colorScheme, <span class="keyword">new</span> TextTable()); }
+            <span class="directive">public</span> Layout(ColorScheme colorScheme) { <span class="local-variable">this</span>(colorScheme, <span class="keyword">new</span> TextTable(colorScheme.ansi())); }
 
             <span class="comment">/** Constructs a Layout with the specified color scheme, the specified TextTable, the
              * {@linkplain Help#createDefaultOptionRenderer() default option renderer}, and the
@@ -5012,10 +5075,15 @@ Here is the source. Copy and paste it into a file called <code>CommandLine.java<
         <span class="directive">public</span> <span class="directive">static</span> <span class="type">class</span> <span class="class">TextTable</span> {
             <span class="comment">/** The column definitions of this table. */</span>
             <span class="directive">public</span> <span class="directive">final</span> Column<span class="type">[]</span> columns;
+
             <span class="comment">/** The {@code char[]} slots of the {@code TextTable} to copy text values into. */</span>
             <span class="directive">protected</span> <span class="directive">final</span> <span class="predefined-type">List</span>&lt;Text&gt; columnValues = <span class="keyword">new</span> <span class="predefined-type">ArrayList</span>&lt;Text&gt;();
+
             <span class="comment">/** By default, indent wrapped lines by 2 spaces. */</span>
             <span class="directive">public</span> <span class="type">int</span> indentWrappedLines = <span class="integer">2</span>;
+
+            <span class="directive">private</span> <span class="directive">final</span> Ansi ansi;
+
             <span class="comment">/** Constructs a TextTable with five columns as follows:
              * &lt;ol&gt;
              * &lt;li&gt;required option/parameter marker (width: 2, indent: 0, TRUNCATE on overflow)&lt;/li&gt;
@@ -5024,10 +5092,11 @@ Here is the source. Copy and paste it into a file called <code>CommandLine.java<
              * &lt;li&gt;long option name(s) (width: 24, indent: 1, SPAN multiple columns on overflow)&lt;/li&gt;
              * &lt;li&gt;description line(s) (width: 51, indent: 1, WRAP to next row on overflow)&lt;/li&gt;
              * &lt;/ol&gt;
+             * @param ansi whether to emit ANSI escape codes or not
              */</span>
-            <span class="directive">public</span> TextTable() {
+            <span class="directive">public</span> TextTable(Ansi ansi) {
                 <span class="comment">// &quot;* -c, --create                Creates a ....&quot;</span>
-                <span class="local-variable">this</span>(<span class="keyword">new</span> Column<span class="type">[]</span> {
+                <span class="local-variable">this</span>(ansi, <span class="keyword">new</span> Column<span class="type">[]</span> {
                             <span class="keyword">new</span> Column(<span class="integer">2</span>,  <span class="integer">0</span>, TRUNCATE),   <span class="comment">// &quot;*&quot;</span>
                             <span class="keyword">new</span> Column(<span class="integer">2</span>,  <span class="integer">0</span>, TRUNCATE),   <span class="comment">// &quot;-c&quot;</span>
                             <span class="keyword">new</span> Column(<span class="integer">1</span>,  <span class="integer">0</span>, TRUNCATE),   <span class="comment">// &quot;,&quot;</span>
@@ -5038,17 +5107,21 @@ Here is the source. Copy and paste it into a file called <code>CommandLine.java<
 
             <span class="comment">/** Constructs a new TextTable with columns with the specified width, all SPANning  multiple columns on
              * overflow except the last column which WRAPS to the next row.
+             * @param ansi whether to emit ANSI escape codes or not
              * @param columnWidths the width of the table columns (all columns have zero indent)
              */</span>
-            <span class="directive">public</span> TextTable(<span class="type">int</span>... columnWidths) {
+            <span class="directive">public</span> TextTable(Ansi ansi, <span class="type">int</span>... columnWidths) {
+                <span class="local-variable">this</span>.ansi = Assert.notNull(ansi, <span class="string"><span class="delimiter">&quot;</span><span class="content">ansi</span><span class="delimiter">&quot;</span></span>);
                 columns = <span class="keyword">new</span> Column[columnWidths.length];
                 <span class="keyword">for</span> (<span class="type">int</span> i = <span class="integer">0</span>; i &lt; columnWidths.length; i++) {
                     columns[i] = <span class="keyword">new</span> Column(columnWidths[i], <span class="integer">0</span>, i == columnWidths.length - <span class="integer">1</span> ? SPAN: WRAP);
                 }
             }
             <span class="comment">/** Constructs a {@code TextTable} with the specified columns.
+             * @param ansi whether to emit ANSI escape codes or not
              * @param columns columns to construct this TextTable with */</span>
-            <span class="directive">public</span> TextTable(Column... columns) {
+            <span class="directive">public</span> TextTable(Ansi ansi, Column... columns) {
+                <span class="local-variable">this</span>.ansi = Assert.notNull(ansi, <span class="string"><span class="delimiter">&quot;</span><span class="content">ansi</span><span class="delimiter">&quot;</span></span>);
                 <span class="local-variable">this</span>.columns = Assert.notNull(columns, <span class="string"><span class="delimiter">&quot;</span><span class="content">columns</span><span class="delimiter">&quot;</span></span>);
                 <span class="keyword">if</span> (columns.length == <span class="integer">0</span>) { <span class="keyword">throw</span> <span class="keyword">new</span> <span class="exception">IllegalArgumentException</span>(<span class="string"><span class="delimiter">&quot;</span><span class="content">At least one column is required</span><span class="delimiter">&quot;</span></span>); }
             }
@@ -5065,7 +5138,7 @@ Here is the source. Copy and paste it into a file called <code>CommandLine.java<
             <span class="comment">/** Adds the required {@code char[]} slots for a new row to the {@link #columnValues} field. */</span>
             <span class="directive">public</span> <span class="type">void</span> addEmptyRow() {
                 <span class="keyword">for</span> (<span class="type">int</span> i = <span class="integer">0</span>; i &lt; columns.length; i++) {
-                    columnValues.add(<span class="keyword">new</span> Text(columns[i].width));
+                    columnValues.add(ansi.new Text(columns[i].width));
                 }
             }
 
@@ -5074,7 +5147,7 @@ Here is the source. Copy and paste it into a file called <code>CommandLine.java<
             <span class="directive">public</span> <span class="type">void</span> addRowValues(<span class="predefined-type">String</span>... values) {
                 Text<span class="type">[]</span> array = <span class="keyword">new</span> Text[values.length];
                 <span class="keyword">for</span> (<span class="type">int</span> i = <span class="integer">0</span>; i &lt; array.length; i++) {
-                    array[i] = values[i] == <span class="predefined-constant">null</span> ? Text.EMPTY : <span class="keyword">new</span> Text(values[i]);
+                    array[i] = values[i] == <span class="predefined-constant">null</span> ? Ansi.EMPTY_TEXT : ansi.new Text(values[i]);
                 }
                 addRowValues(array);
             }
@@ -5234,14 +5307,24 @@ Here is the source. Copy and paste it into a file called <code>CommandLine.java<
          * parts of a usage message: the command name, options, positional parameters and option parameters.
          * Users may customize these styles by creating Help with a custom color scheme.
          * &lt;p&gt;Note that these options and styles may not be rendered if ANSI escape codes are not
-         * {@linkplain CommandLine.Help.Ansi#enabled() enabled}.&lt;/p&gt;
-         * @see Help#defaultColorScheme()
+         * {@linkplain Ansi#enabled() enabled}.&lt;/p&gt;
+         * @see Help#defaultColorScheme(Ansi)
          */</span>
         <span class="directive">public</span> <span class="directive">static</span> <span class="type">class</span> <span class="class">ColorScheme</span> {
             <span class="directive">public</span> <span class="directive">final</span> <span class="predefined-type">List</span>&lt;IStyle&gt; commandStyles = <span class="keyword">new</span> <span class="predefined-type">ArrayList</span>&lt;IStyle&gt;();
             <span class="directive">public</span> <span class="directive">final</span> <span class="predefined-type">List</span>&lt;IStyle&gt; optionStyles = <span class="keyword">new</span> <span class="predefined-type">ArrayList</span>&lt;IStyle&gt;();
             <span class="directive">public</span> <span class="directive">final</span> <span class="predefined-type">List</span>&lt;IStyle&gt; parameterStyles = <span class="keyword">new</span> <span class="predefined-type">ArrayList</span>&lt;IStyle&gt;();
             <span class="directive">public</span> <span class="directive">final</span> <span class="predefined-type">List</span>&lt;IStyle&gt; optionParamStyles = <span class="keyword">new</span> <span class="predefined-type">ArrayList</span>&lt;IStyle&gt;();
+            <span class="directive">private</span> <span class="directive">final</span> Ansi ansi;
+
+            <span class="comment">/** Constructs a new ColorScheme with {@link Help.Ansi#AUTO}. */</span>
+            <span class="directive">public</span> ColorScheme() { <span class="local-variable">this</span>(Ansi.AUTO); }
+
+            <span class="comment">/** Constructs a new ColorScheme with the specified Ansi enabled mode.
+             * @param ansi whether to emit ANSI escape codes or not
+             */</span>
+            <span class="directive">public</span> ColorScheme(Ansi ansi) {<span class="local-variable">this</span>.ansi = Assert.notNull(ansi, <span class="string"><span class="delimiter">&quot;</span><span class="content">ansi</span><span class="delimiter">&quot;</span></span>); }
+
             <span class="comment">/** Adds the specified styles to the registered styles for commands in this color scheme and returns this color scheme.
              * @param styles the styles to add to the registered styles for commands in this color scheme
              * @return this color scheme to enable method chaining for a more fluent API */</span>
@@ -5261,19 +5344,19 @@ Here is the source. Copy and paste it into a file called <code>CommandLine.java<
             <span class="comment">/** Returns a Text with all command styles applied to the specified command string.
              * @param command the command string to apply the registered command styles to
              * @return a Text with all command styles applied to the specified command string */</span>
-            <span class="directive">public</span> Ansi.Text commandText(<span class="predefined-type">String</span> command)         { <span class="keyword">return</span> Text.apply(command,     commandStyles); }
+            <span class="directive">public</span> Ansi.Text commandText(<span class="predefined-type">String</span> command)         { <span class="keyword">return</span> ansi().apply(command,     commandStyles); }
             <span class="comment">/** Returns a Text with all option styles applied to the specified option string.
              * @param option the option string to apply the registered option styles to
              * @return a Text with all option styles applied to the specified option string */</span>
-            <span class="directive">public</span> Ansi.Text optionText(<span class="predefined-type">String</span> option)           { <span class="keyword">return</span> Text.apply(option,      optionStyles); }
+            <span class="directive">public</span> Ansi.Text optionText(<span class="predefined-type">String</span> option)           { <span class="keyword">return</span> ansi().apply(option,      optionStyles); }
             <span class="comment">/** Returns a Text with all parameter styles applied to the specified parameter string.
              * @param parameter the parameter string to apply the registered parameter styles to
              * @return a Text with all parameter styles applied to the specified parameter string */</span>
-            <span class="directive">public</span> Ansi.Text parameterText(<span class="predefined-type">String</span> parameter)     { <span class="keyword">return</span> Text.apply(parameter,   parameterStyles); }
+            <span class="directive">public</span> Ansi.Text parameterText(<span class="predefined-type">String</span> parameter)     { <span class="keyword">return</span> ansi().apply(parameter,   parameterStyles); }
             <span class="comment">/** Returns a Text with all optionParam styles applied to the specified optionParam string.
              * @param optionParam the option parameter string to apply the registered option parameter styles to
              * @return a Text with all option parameter styles applied to the specified option parameter string */</span>
-            <span class="directive">public</span> Ansi.Text optionParamText(<span class="predefined-type">String</span> optionParam) { <span class="keyword">return</span> Text.apply(optionParam, optionParamStyles); }
+            <span class="directive">public</span> Ansi.Text optionParamText(<span class="predefined-type">String</span> optionParam) { <span class="keyword">return</span> ansi().apply(optionParam, optionParamStyles); }
 
             <span class="comment">/** Replaces colors and styles in this scheme with ones specified in system properties, and returns this scheme.
              * Supported property names:&lt;ul&gt;
@@ -5301,14 +5384,19 @@ Here is the source. Copy and paste it into a file called <code>CommandLine.java<
                 styles.addAll(<span class="predefined-type">Arrays</span>.asList(add));
                 <span class="keyword">return</span> <span class="local-variable">this</span>;
             }
+
+            <span class="directive">public</span> Ansi ansi() {
+                <span class="keyword">return</span> ansi;
+            }
         }
 
         <span class="comment">/** Creates and returns a new {@link ColorScheme} initialized with picocli default values: commands are bold,
          *  options and parameters use a yellow foreground, and option parameters use italic.
+         * @param ansi whether the usage help message should contain ANSI escape codes or not
          * @return a new default color scheme
          */</span>
-        <span class="directive">public</span> <span class="directive">static</span> ColorScheme defaultColorScheme() {
-            <span class="keyword">return</span> <span class="keyword">new</span> ColorScheme()
+        <span class="directive">public</span> <span class="directive">static</span> ColorScheme defaultColorScheme(Ansi ansi) {
+            <span class="keyword">return</span> <span class="keyword">new</span> ColorScheme(ansi)
                     .commands(<span class="predefined-type">Style</span>.bold)
                     .options(<span class="predefined-type">Style</span>.fg_yellow)
                     .parameters(<span class="predefined-type">Style</span>.fg_yellow)
@@ -5316,11 +5404,19 @@ Here is the source. Copy and paste it into a file called <code>CommandLine.java<
         }
 
         <span class="comment">/** Provides methods and inner classes to support using ANSI escape codes in usage help messages. */</span>
-        <span class="directive">public</span> <span class="directive">static</span> <span class="type">class</span> <span class="class">Ansi</span> {
+        <span class="directive">public</span> <span class="type">enum</span> Ansi {
+            <span class="comment">/** Only emit ANSI escape codes if the platform supports it and system property {@code &quot;picocli.ansi&quot;}
+             * is not set to any value other than {@code &quot;true&quot;} (case insensitive). */</span>
+            AUTO,
+            <span class="comment">/** Forced ON: always emit ANSI escape code regardless of the platform. */</span>
+            ON,
+            <span class="comment">/** Forced OFF: never emit ANSI escape code regardless of the platform. */</span>
+            OFF;
+            <span class="directive">static</span> Text EMPTY_TEXT = OFF.new Text(<span class="integer">0</span>);
             <span class="directive">static</span> <span class="directive">final</span> <span class="type">boolean</span> isWindows  = <span class="predefined-type">System</span>.getProperty(<span class="string"><span class="delimiter">&quot;</span><span class="content">os.name</span><span class="delimiter">&quot;</span></span>).startsWith(<span class="string"><span class="delimiter">&quot;</span><span class="content">Windows</span><span class="delimiter">&quot;</span></span>);
             <span class="directive">static</span> <span class="directive">final</span> <span class="type">boolean</span> isXterm    = <span class="predefined-type">System</span>.getenv(<span class="string"><span class="delimiter">&quot;</span><span class="content">TERM</span><span class="delimiter">&quot;</span></span>) != <span class="predefined-constant">null</span> &amp;&amp; <span class="predefined-type">System</span>.getenv(<span class="string"><span class="delimiter">&quot;</span><span class="content">TERM</span><span class="delimiter">&quot;</span></span>).startsWith(<span class="string"><span class="delimiter">&quot;</span><span class="content">xterm</span><span class="delimiter">&quot;</span></span>);
             <span class="directive">static</span> <span class="directive">final</span> <span class="type">boolean</span> ISATTY = calcTTY();
-            <span class="directive">private</span> Ansi() {}
+
             <span class="comment">// http://stackoverflow.com/questions/1403772/how-can-i-check-if-a-java-programs-input-output-streams-are-connected-to-a-term</span>
             <span class="directive">static</span> <span class="directive">final</span> <span class="type">boolean</span> calcTTY() {
                 <span class="keyword">if</span> (isWindows &amp;&amp; isXterm) { <span class="keyword">return</span> <span class="predefined-constant">true</span>; } <span class="comment">// Cygwin uses pseudo-tty and console is always null...</span>
@@ -5328,12 +5424,15 @@ Here is the source. Copy and paste it into a file called <code>CommandLine.java<
                 <span class="keyword">catch</span> (<span class="predefined-type">Throwable</span> reflectionFailed) { <span class="keyword">return</span> <span class="predefined-constant">true</span>; }
             }
             <span class="directive">private</span> <span class="directive">static</span> <span class="type">boolean</span> ansiPossible() { <span class="keyword">return</span> ISATTY &amp;&amp; (!isWindows || isXterm); }
-            <span class="directive">private</span> <span class="directive">static</span> <span class="type">boolean</span> ansiForcedOn()  { <span class="keyword">return</span> ansi != <span class="predefined-constant">null</span> &amp;&amp; ansi; }
-            <span class="directive">private</span> <span class="directive">static</span> <span class="type">boolean</span> ansiForcedOff() { <span class="keyword">return</span> ansi != <span class="predefined-constant">null</span> &amp;&amp; !ansi; }
 
-            <span class="comment">/** Enabled if it is forced ON or if the platform supports ANSI escape codes and it is not forced OFF.
-             * @return {@code true} if ANSI escape codes are enabled */</span>
-            <span class="directive">public</span> <span class="directive">static</span> <span class="type">boolean</span> enabled() { <span class="keyword">return</span> ansiForcedOn() || (ansiPossible() &amp;&amp; !ansiForcedOff()); }
+            <span class="comment">/** Returns {@code true} if ANSI escape codes should be emitted, {@code false} otherwise.
+             * @return ON: {@code true}, OFF: {@code false}, AUTO: if system property {@code &quot;picocli.ansi&quot;} is
+             *      defined then return its boolean value, otherwise return whether the platform supports ANSI escape codes */</span>
+            <span class="directive">public</span> <span class="type">boolean</span> enabled() {
+                <span class="keyword">if</span> (<span class="local-variable">this</span> == ON)  { <span class="keyword">return</span> <span class="predefined-constant">true</span>; }
+                <span class="keyword">if</span> (<span class="local-variable">this</span> == OFF) { <span class="keyword">return</span> <span class="predefined-constant">false</span>; }
+                <span class="keyword">return</span> (<span class="predefined-type">System</span>.getProperty(<span class="string"><span class="delimiter">&quot;</span><span class="content">picocli.ansi</span><span class="delimiter">&quot;</span></span>) == <span class="predefined-constant">null</span> ? ansiPossible() : <span class="predefined-type">Boolean</span>.getBoolean(<span class="string"><span class="delimiter">&quot;</span><span class="content">picocli.ansi</span><span class="delimiter">&quot;</span></span>));
+            }
 
             <span class="comment">/** Defines the interface for an ANSI escape sequence. */</span>
             <span class="directive">public</span> <span class="type">interface</span> <span class="class">IStyle</span> {
@@ -5454,10 +5553,36 @@ Here is the source. Copy and paste it into a file called <code>CommandLine.java<
                 <span class="directive">public</span> <span class="predefined-type">String</span> off() { <span class="keyword">return</span> CSI + (fgbg + <span class="integer">1</span>) + <span class="string"><span class="delimiter">&quot;</span><span class="content">m</span><span class="delimiter">&quot;</span></span>; }
             }
 
+
+            <span class="comment">/**
+             * Returns a new Text object where all the specified styles are applied to the full length of the
+             * specified plain text.
+             * @param plainText the string to apply all styles to. Must not contain markup!
+             * @param styles the styles to apply to the full plain text
+             * @return a new Text object
+             */</span>
+            <span class="directive">public</span> Text apply(<span class="predefined-type">String</span> plainText, <span class="predefined-type">List</span>&lt;IStyle&gt; styles) {
+                <span class="keyword">if</span> (plainText.length() == <span class="integer">0</span>) { <span class="keyword">return</span> <span class="keyword">new</span> Text(<span class="integer">0</span>); }
+                Text result = <span class="keyword">new</span> Text(plainText.length());
+                IStyle<span class="type">[]</span> all = styles.toArray(<span class="keyword">new</span> IStyle[styles.size()]);
+                result.indexToStyle.put(result.plain.length(), <span class="predefined-type">Style</span>.on(all));
+                result.plain.append(plainText);
+                result.length = result.plain.length();
+                reverse(all);
+                result.indexToStyle.put(result.plain.length(), <span class="predefined-type">Style</span>.off(all) + <span class="predefined-type">Style</span>.reset.off());
+                <span class="keyword">return</span> result;
+            }
+
+            <span class="directive">private</span> <span class="directive">static</span> <span class="type">void</span> reverse(<span class="predefined-type">Object</span><span class="type">[]</span> all) {
+                <span class="keyword">for</span> (<span class="type">int</span> i = <span class="integer">0</span>; i &lt; all.length / <span class="integer">2</span>; i++) {
+                    <span class="predefined-type">Object</span> temp = all[i];
+                    all[i] = all[all.length - i - <span class="integer">1</span>];
+                    all[all.length - i - <span class="integer">1</span>] = temp;
+                }
+            }
             <span class="comment">/** &lt;p&gt;Encapsulates rich text with styles and colors in a way that other components like {@link TextTable}
              * are unaware of the embedded ANSI escape codes.&lt;/p&gt; */</span>
-            <span class="directive">public</span> <span class="directive">static</span> <span class="type">class</span> <span class="class">Text</span> <span class="directive">implements</span> <span class="predefined-type">Cloneable</span> {
-                <span class="directive">static</span> Text EMPTY = <span class="keyword">new</span> Text(<span class="integer">0</span>);
+            <span class="directive">public</span> <span class="type">class</span> <span class="class">Text</span> <span class="directive">implements</span> <span class="predefined-type">Cloneable</span> {
                 <span class="directive">private</span> <span class="directive">final</span> <span class="type">int</span> maxLength;
                 <span class="directive">private</span> <span class="type">int</span> from;
                 <span class="directive">private</span> <span class="type">int</span> length;
@@ -5599,10 +5724,10 @@ Here is the source. Copy and paste it into a file called <code>CommandLine.java<
                 <span class="directive">public</span> <span class="type">int</span> hashCode() { <span class="keyword">return</span> toString().hashCode(); }
 
                 <span class="comment">/** Returns a String representation of the text with ANSI escape codes embedded, unless ANSI is
-                 * not {@linkplain CommandLine.Help.Ansi#enabled() enabled}, in which case the plain text is returned.
+                 * {@linkplain Ansi#enabled()} not enabled}, in which case the plain text is returned.
                  * @return a String representation of the text with ANSI escape codes embedded (if enabled) */</span>
                 <span class="directive">public</span> <span class="predefined-type">String</span> toString() {
-                    <span class="keyword">if</span> (!Ansi.enabled()) {
+                    <span class="keyword">if</span> (!Ansi.this.enabled()) {
                         <span class="keyword">return</span> plain.toString().substring(from, from + length);
                     }
                     <span class="keyword">if</span> (length == <span class="integer">0</span>) { <span class="keyword">return</span> <span class="string"><span class="delimiter">&quot;</span><span class="delimiter">&quot;</span></span>; }
@@ -5641,33 +5766,6 @@ Here is the source. Copy and paste it into a file called <code>CommandLine.java<
                         }
                     }
                     <span class="keyword">return</span> sb.toString();
-                }
-
-                <span class="comment">/**
-                 * Returns a new Text object where all the specified styles are applied to the full length of the
-                 * specified plain text.
-                 * @param plainText the string to apply all styles to. Must not contain markup!
-                 * @param styles the styles to apply to the full plain text
-                 * @return a new Text object
-                 */</span>
-                <span class="directive">public</span> <span class="directive">static</span> Text apply(<span class="predefined-type">String</span> plainText, <span class="predefined-type">List</span>&lt;IStyle&gt; styles) {
-                    <span class="keyword">if</span> (plainText.length() == <span class="integer">0</span>) { <span class="keyword">return</span> <span class="keyword">new</span> Text(<span class="integer">0</span>); }
-                    Text result = <span class="keyword">new</span> Text(plainText.length());
-                    IStyle<span class="type">[]</span> all = styles.toArray(<span class="keyword">new</span> IStyle[styles.size()]);
-                    result.indexToStyle.put(result.plain.length(), <span class="predefined-type">Style</span>.on(all));
-                    result.plain.append(plainText);
-                    result.length = result.plain.length();
-                    reverse(all);
-                    result.indexToStyle.put(result.plain.length(), <span class="predefined-type">Style</span>.off(all) + <span class="predefined-type">Style</span>.reset.off());
-                    <span class="keyword">return</span> result;
-                }
-
-                <span class="directive">private</span> <span class="directive">static</span> <span class="type">void</span> reverse(<span class="predefined-type">Object</span><span class="type">[]</span> all) {
-                    <span class="keyword">for</span> (<span class="type">int</span> i = <span class="integer">0</span>; i &lt; all.length / <span class="integer">2</span>; i++) {
-                        <span class="predefined-type">Object</span> temp = all[i];
-                        all[i] = all[all.length - i - <span class="integer">1</span>];
-                        all[all.length - i - <span class="integer">1</span>] = temp;
-                    }
                 }
             }
         }
@@ -5768,8 +5866,8 @@ Here is the source. Copy and paste it into a file called <code>CommandLine.java<
 </div>
 <div id="footer">
 <div id="footer-text">
-Version 0.9.4<br>
-Last updated 2017-05-04 10:49:05 +09:00
+Version 0.9.5<br>
+Last updated 2017-05-09 21:39:43 +09:00
 </div>
 </div>
 </body>

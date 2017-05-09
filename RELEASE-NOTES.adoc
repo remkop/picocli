@@ -1,5 +1,13 @@
 = picocli Release Notes
 
+== 0.9.5 - Bugfix and enhancements release for public review. API may change.
+
+* #122 API change: remove field CommandLine.ansi (enhancement)
+* #123 API change: make public Arity fields final (enhancement)
+* #124 API change: make Help fields optionFields and positionalParameterFields final and unmodifiable (enhancement)
+* #118 BumpVersion gradle task scrambles chars in manual (bug)
+* #119 Add gradle task to publish to local folder (enhancement)
+
 == 0.9.4 - Bugfix release for public review. API may change.
 
 * #114 Replace ISO-8613-3 "true colors" with more widely supported 256-color palette (enhancement)
