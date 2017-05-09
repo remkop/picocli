@@ -176,16 +176,16 @@ Release procedure:
 11. gradlew bumpVersion
 12. check modified files (especially line 767 in index.adoc)
 13. commit -m "Prepare for next development cycle"
-14. push
+14. push (make sure that Push Tags is checked)
 
-15. Log in to Bintray
-16. Navigate to the page for the new version
-17. Edit version: Publication Date, Description, VCS tag, GitHub release notes file (RELEASE-NOTES.adoc)
-18. On the version page, Release Notes tab, select GitHub File
-19. Publish artifacts to JCenter
-20. On the version page, Maven Central tab, sync to Maven (takes several minutes)
+15. Log in to GitHub, go to https://github.com/remkop/picocli/releases
+16. Click the new tag, click Edit button, update title and release notes (copy from RELEASE-NOTES.adoc)
+17. Upload picocli-$version.jar and picocli-all$version.zip to GitHub
 
-21. Log in to GitHub, go to https://github.com/remkop/picocli/releases
-22. Select Tags, create new release, update release notes
-22. Upload picocli-$version.jar and picocli-all$version.zip to GitHub
+18. Log in to Bintray
+19. Navigate to the page for the new version
+20. Edit version: Publication Date, Description, VCS tag, GitHub release notes file (RELEASE-NOTES.adoc)
+21. On the version page, Release Notes tab, select GitHub File
+22. Publish artifacts to JCenter
+22. On the version page, Maven Central tab, sync to Maven (takes several minutes)
  */
