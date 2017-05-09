@@ -15,7 +15,7 @@
  */
 package picocli;
 
-import java.awt.*;
+import java.awt.Point;
 import java.io.File;
 import java.io.PrintStream;
 import java.lang.annotation.ElementType;
@@ -120,7 +120,7 @@ import static picocli.CommandLine.Help.Column.Overflow.*;
  */
 public class CommandLine {
     /** This is picocli version {@value}. */
-    public static final String VERSION = "0.9.5-SNAPSHOT";
+    public static final String VERSION = "0.9.5";
 
     private final Interpreter interpreter;
     private final List<Object> parsedCommands = new ArrayList<Object>();
@@ -294,6 +294,17 @@ public class CommandLine {
     }
 
     /**
+     * Delegates to {@link #run(Runnable, PrintStream, Help.Ansi, String...)} with {@link Help.Ansi#AUTO}.
+     * @param annotatedObject the command to run when {@linkplain #parse(Object, String...) parsing} succeeds.
+     * @param out the printStream to print to
+     * @param args the command line arguments to parse
+     * @param <R> the annotated object must implement Runnable
+     * @see #run(Runnable, PrintStream, Help.Ansi, String...)
+     */
+    public static <R extends Runnable> void run(R annotatedObject, PrintStream out, String... args) {
+        run(annotatedObject, out, AUTO, args);
+    }
+    /**
      * Convenience method to allow command line application authors to avoid some boilerplate code in their application.
      * The annotated object needs to implement {@link Runnable}. Calling this method is equivalent to:
      * <pre>
@@ -302,7 +313,7 @@ public class CommandLine {
      *     runnable = parse(annotatedObject, args);
      * } catch (Exception ex) {
      *     System.err.println(ex.getMessage());
-     *     usage(annotatedObject, System.err);
+     *     usage(annotatedObject, out, ansi);
      *     return;
      * }
      * runnable.run();
@@ -310,16 +321,17 @@ public class CommandLine {
      * Note that this method is not suitable for commands with subcommands.
      * @param annotatedObject the command to run when {@linkplain #parse(Object, String...) parsing} succeeds.
      * @param out the printStream to print to
+     * @param ansi whether the usage message should include ANSI escape codes or not
      * @param args the command line arguments to parse
-     * @param <R> the annotated object to initialize and run
+     * @param <R> the annotated object must implement Runnable
      */
-    public static <R extends Runnable> void run(R annotatedObject, PrintStream out, String... args) {
+    public static <R extends Runnable> void run(R annotatedObject, PrintStream out, Help.Ansi ansi, String... args) {
         Runnable runnable = null;
         try {
             runnable = parse(annotatedObject, args);
         } catch (Exception ex) {
             out.println(ex.getMessage());
-            usage(annotatedObject, out);
+            usage(annotatedObject, out, ansi);
             return;
         }
         runnable.run();
