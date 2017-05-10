@@ -37,8 +37,16 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Date;
+import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
+import java.util.Queue;
+import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
@@ -596,6 +604,136 @@ public class CommandLineTest {
         new CommandLine(params).parse("3", "2", "1");
         assertSame(list, params.list);
         assertEquals(Arrays.asList(3, 2, 1), params.list);
+    }
+    @Test
+    public void testListPositionalParametersAreAppendedToIfNonNull() {
+        ListPositionalParams params = new ListPositionalParams();
+        params.list = new ArrayList<Integer>();
+        params.list.add(234);
+        List<Integer> list = params.list;
+        new CommandLine(params).parse("3", "2", "1");
+        assertSame(list, params.list);
+        assertEquals(Arrays.asList(234, 3, 2, 1), params.list);
+    }
+    class SortedSetPositionalParams {
+        @Parameters(type = Integer.class) SortedSet<Integer> sortedSet;
+    }
+    @Test
+    public void testSortedSetPositionalParametersAreInstantiatedIfNull() {
+        SortedSetPositionalParams params = new SortedSetPositionalParams();
+        assertNull(params.sortedSet);
+        new CommandLine(params).parse("3", "2", "1");
+        assertNotNull(params.sortedSet);
+        assertEquals(Arrays.asList(1, 2, 3), new ArrayList<Integer>(params.sortedSet));
+    }
+    @Test
+    public void testSortedSetPositionalParametersAreReusedIfNonNull() {
+        SortedSetPositionalParams params = new SortedSetPositionalParams();
+        params.sortedSet = new TreeSet<Integer>();
+        SortedSet<Integer> list = params.sortedSet;
+        new CommandLine(params).parse("3", "2", "1");
+        assertSame(list, params.sortedSet);
+        assertEquals(Arrays.asList(1, 2, 3), new ArrayList<Integer>(params.sortedSet));
+    }
+    @Test
+    public void testSortedSetPositionalParametersAreAppendedToIfNonNull() {
+        SortedSetPositionalParams params = new SortedSetPositionalParams();
+        params.sortedSet = new TreeSet<Integer>();
+        params.sortedSet.add(234);
+        SortedSet<Integer> list = params.sortedSet;
+        new CommandLine(params).parse("3", "2", "1");
+        assertSame(list, params.sortedSet);
+        assertEquals(Arrays.asList(1, 2, 3, 234), new ArrayList<Integer>(params.sortedSet));
+    }
+    class SetPositionalParams {
+        @Parameters(type = Integer.class) Set<Integer> set;
+    }
+    @Test
+    public void testSetPositionalParametersAreInstantiatedIfNull() {
+        SetPositionalParams params = new SetPositionalParams();
+        assertNull(params.set);
+        new CommandLine(params).parse("3", "2", "1");
+        assertNotNull(params.set);
+        assertEquals(new HashSet(Arrays.asList(1, 2, 3)), params.set);
+    }
+    @Test
+    public void testSetPositionalParametersAreReusedIfNonNull() {
+        SetPositionalParams params = new SetPositionalParams();
+        params.set = new TreeSet<Integer>();
+        Set<Integer> list = params.set;
+        new CommandLine(params).parse("3", "2", "1");
+        assertSame(list, params.set);
+        assertEquals(new HashSet(Arrays.asList(1, 2, 3)), params.set);
+    }
+    @Test
+    public void testSetPositionalParametersAreAppendedToIfNonNull() {
+        SetPositionalParams params = new SetPositionalParams();
+        params.set = new TreeSet<Integer>();
+        params.set.add(234);
+        Set<Integer> list = params.set;
+        new CommandLine(params).parse("3", "2", "1");
+        assertSame(list, params.set);
+        assertEquals(new HashSet(Arrays.asList(1, 2, 3, 234)), params.set);
+    }
+    class QueuePositionalParams {
+        @Parameters(type = Integer.class) Queue<Integer> queue;
+    }
+    @Test
+    public void testQueuePositionalParametersAreInstantiatedIfNull() {
+        QueuePositionalParams params = new QueuePositionalParams();
+        assertNull(params.queue);
+        new CommandLine(params).parse("3", "2", "1");
+        assertNotNull(params.queue);
+        assertEquals(new LinkedList(Arrays.asList(3, 2, 1)), params.queue);
+    }
+    @Test
+    public void testQueuePositionalParametersAreReusedIfNonNull() {
+        QueuePositionalParams params = new QueuePositionalParams();
+        params.queue = new LinkedList<Integer>();
+        Queue<Integer> list = params.queue;
+        new CommandLine(params).parse("3", "2", "1");
+        assertSame(list, params.queue);
+        assertEquals(new LinkedList(Arrays.asList(3, 2, 1)), params.queue);
+    }
+    @Test
+    public void testQueuePositionalParametersAreAppendedToIfNonNull() {
+        QueuePositionalParams params = new QueuePositionalParams();
+        params.queue = new LinkedList<Integer>();
+        params.queue.add(234);
+        Queue<Integer> list = params.queue;
+        new CommandLine(params).parse("3", "2", "1");
+        assertSame(list, params.queue);
+        assertEquals(new LinkedList(Arrays.asList(234, 3, 2, 1)), params.queue);
+    }
+    class CollectionPositionalParams {
+        @Parameters(type = Integer.class) Collection<Integer> collection;
+    }
+    @Test
+    public void testCollectionPositionalParametersAreInstantiatedIfNull() {
+        CollectionPositionalParams params = new CollectionPositionalParams();
+        assertNull(params.collection);
+        new CommandLine(params).parse("3", "2", "1");
+        assertNotNull(params.collection);
+        assertEquals(Arrays.asList(3, 2, 1), params.collection);
+    }
+    @Test
+    public void testCollectionPositionalParametersAreReusedIfNonNull() {
+        CollectionPositionalParams params = new CollectionPositionalParams();
+        params.collection = new ArrayList<Integer>();
+        Collection<Integer> list = params.collection;
+        new CommandLine(params).parse("3", "2", "1");
+        assertSame(list, params.collection);
+        assertEquals(Arrays.asList(3, 2, 1), params.collection);
+    }
+    @Test
+    public void testCollectionPositionalParametersAreAppendedToIfNonNull() {
+        CollectionPositionalParams params = new CollectionPositionalParams();
+        params.collection = new ArrayList<Integer>();
+        params.collection.add(234);
+        Collection<Integer> list = params.collection;
+        new CommandLine(params).parse("3", "2", "1");
+        assertSame(list, params.collection);
+        assertEquals(Arrays.asList(234, 3, 2, 1), params.collection);
     }
 
     @Test(expected = DuplicateOptionAnnotationsException.class)
@@ -2072,6 +2210,20 @@ public class CommandLineTest {
         assertTrue("status -b", status.branchInfo);
         assertFalse("NOT status --showIgnored", status.showIgnored);
         assertEquals("status -u=no", Demo.GitStatusMode.no, status.mode);
+    }
+
+    @Test
+    public void testCommandListReturnsRegisteredCommands() {
+        class MainCommand {}
+        class Command1 {}
+        class Command2 {}
+        CommandLine commandLine = new CommandLine(new MainCommand());
+        commandLine.addCommand("cmd1", new Command1()).addCommand("cmd2", new Command2());
+
+        Map<String, Object> commandMap = commandLine.getCommands();
+        assertEquals(2, commandMap.size());
+        assertTrue("cmd1", commandMap.get("cmd1") instanceof Command1);
+        assertTrue("cmd2", commandMap.get("cmd2") instanceof Command2);
     }
 
     @Test

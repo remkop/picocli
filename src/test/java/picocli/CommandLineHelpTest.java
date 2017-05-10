@@ -62,6 +62,16 @@ public class CommandLineHelpTest {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         commandLine.usage(new PrintStream(baos, true, "UTF8"), ansi);
         String result = baos.toString("UTF8");
+
+        if (ansi == Help.Ansi.AUTO) {
+            baos.reset();
+            commandLine.usage(new PrintStream(baos, true, "UTF8"));
+            assertEquals(result, baos.toString("UTF8"));
+        } else if (ansi == Help.Ansi.ON) {
+            baos.reset();
+            commandLine.usage(new PrintStream(baos, true, "UTF8"), Help.defaultColorScheme(Help.Ansi.ON));
+            assertEquals(result, baos.toString("UTF8"));
+        }
         return result;
     }
     private static Field field(Class<?> cls, String fieldName) throws NoSuchFieldException {
@@ -1365,9 +1375,68 @@ public class CommandLineHelpTest {
     }
 
     @Test
-    public void testAdjacentStyles() {
+    public void testTextAdjacentStyles() {
         assertEquals("\u001B[3m<commit\u001B[23m\u001B[0m\u001B[3m>\u001B[23m\u001B[0m%n\u001B[0m",
                 Help.Ansi.ON.new Text("@|italic <commit|@@|italic >|@%n").toString());
+    }
+
+    @Test
+    public void testTextNoConversionWithoutClosingTag() {
+        assertEquals("\u001B[3mabc\u001B[23m\u001B[0m", Help.Ansi.ON.new Text("@|italic abc|@").toString());
+        assertEquals("@|italic abc",                    Help.Ansi.ON.new Text("@|italic abc").toString());
+    }
+
+    @Test
+    public void testTextNoConversionWithoutSpaceSeparator() {
+        assertEquals("\u001B[3ma\u001B[23m\u001B[0m", Help.Ansi.ON.new Text("@|italic a|@").toString());
+        assertEquals("@|italic|@",                    Help.Ansi.ON.new Text("@|italic|@").toString());
+        assertEquals("",                              Help.Ansi.ON.new Text("@|italic |@").toString());
+    }
+
+    @Test
+    public void testPalette236ColorForegroundIndex() {
+        assertEquals("\u001B[38;5;45mabc\u001B[39m\u001B[0m", Help.Ansi.ON.new Text("@|fg(45) abc|@").toString());
+    }
+
+    @Test
+    public void testPalette236ColorForegroundRgb() {
+        int num = 16 + 36 * 5 + 6 * 5 + 5;
+        assertEquals("\u001B[38;5;" + num + "mabc\u001B[39m\u001B[0m", Help.Ansi.ON.new Text("@|fg(5;5;5) abc|@").toString());
+    }
+
+    @Test
+    public void testPalette236ColorBackgroundIndex() {
+        assertEquals("\u001B[48;5;77mabc\u001B[49m\u001B[0m", Help.Ansi.ON.new Text("@|bg(77) abc|@").toString());
+    }
+
+    @Test
+    public void testPalette236ColorBackgroundRgb() {
+        int num = 16 + 36 * 3 + 6 * 3 + 3;
+        assertEquals("\u001B[48;5;" + num + "mabc\u001B[49m\u001B[0m", Help.Ansi.ON.new Text("@|bg(3;3;3) abc|@").toString());
+    }
+
+    @Test
+    public void testAnsiEnabled() {
+        assertTrue(Help.Ansi.ON.enabled());
+        assertFalse(Help.Ansi.OFF.enabled());
+
+        System.setProperty("picocli.ansi", "true");
+        assertEquals(true, Help.Ansi.AUTO.enabled());
+
+        System.setProperty("picocli.ansi", "false");
+        assertEquals(false, Help.Ansi.AUTO.enabled());
+
+        System.clearProperty("picocli.ansi");
+        boolean isWindows = System.getProperty("os.name").startsWith("Windows");
+        boolean isXterm   = System.getenv("TERM") != null && System.getenv("TERM").startsWith("xterm");
+        boolean isAtty    = (isWindows && isXterm) // cygwin pseudo-tty
+                          || hasConsole();
+        assertEquals(isAtty && (!isWindows || isXterm), Help.Ansi.AUTO.enabled());
+    }
+
+    private boolean hasConsole() {
+        try { return System.class.getDeclaredMethod("console").invoke(null) != null; }
+        catch (Throwable reflectionFailed) { return true; }
     }
 
     @Test
