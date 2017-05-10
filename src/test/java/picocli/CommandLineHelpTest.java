@@ -86,7 +86,7 @@ public class CommandLineHelpTest {
     }
 
     @Test
-    public void testUsageAnnotationDetailedUsageWithoutDefaultValue() throws Exception {
+    public void testWithoutShowDefaultValues() throws Exception {
         @CommandLine.Command()
         class Params {
             @Option(names = {"-f", "--file"}, required = true, description = "the file to use") File file;
@@ -99,7 +99,7 @@ public class CommandLineHelpTest {
     }
 
     @Test
-    public void testUsageAnnotationDetailedUsageWithDefaultValue() throws Exception {
+    public void testShowDefaultValues() throws Exception {
         @CommandLine.Command(showDefaultValues = true)
         class Params {
             @Option(names = {"-f", "--file"}, required = true, description = "the file to use")
@@ -107,9 +107,23 @@ public class CommandLineHelpTest {
         }
         String result = usageString(new Params(), Help.Ansi.OFF);
         assertEquals(format("" +
-                        "Usage: <main class> -f=<file>%n" +
-                        "  -f, --file=<file>           the file to use%n" +
-                        "                                Default: theDefault.txt%n"), result);
+                "Usage: <main class> -f=<file>%n" +
+                "  -f, --file=<file>           the file to use%n" +
+                "                                Default: theDefault.txt%n"), result);
+    }
+
+    @Test
+    public void testShowDefaultValuesArrayField() throws Exception {
+        @CommandLine.Command(showDefaultValues = true)
+        class Params {
+            @Option(names = {"-x", "--array"}, required = true, description = "the array")
+            int[] array = {1, 5, 11, 23};
+        }
+        String result = usageString(new Params(), Help.Ansi.OFF);
+        assertEquals(format("" +
+                "Usage: <main class> -x[=<array>...]%n" +
+                "  -x, --array[=<array>...]    the array%n" +
+                "                                Default: [1, 5, 11, 23]%n"), result);
     }
 
     @Test
