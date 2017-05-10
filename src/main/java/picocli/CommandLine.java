@@ -1698,6 +1698,7 @@ public class CommandLine {
         static class UUIDConverter implements ITypeConverter<UUID> {
             public UUID convert(String s) throws Exception { return UUID.fromString(s); }
         }
+        private BuiltIn() {} // private constructor: never instantiate
     }
 
     /**
@@ -3387,6 +3388,7 @@ public class CommandLine {
             }
             return object;
         }
+        private Assert() {} // private constructor: never instantiate
     }
 
     /**
