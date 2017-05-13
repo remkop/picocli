@@ -1,4 +1,4 @@
-= picocli - a mighty tiny Command Line Interface
+= picocli - a mighty tiny command line interface
 :author: Remko Popma
 :email: rpopma@apache.org
 :revnumber: 0.9.6-SNAPSHOT

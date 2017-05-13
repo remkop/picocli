@@ -1,4 +1,4 @@
-# picocli - a mighty tiny Command Line Interpreter
+# picocli - a mighty tiny command line interpreter
 
 A Java command line parsing framework in a single file, so you can include it _in source form_.
 This lets users run picocli-based applications without requiring picocli as an external dependency.
