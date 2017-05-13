@@ -71,7 +71,12 @@ picocli can generate a usage help message. For example
 ![Longer help message with ANSI colors](docs/images/UsageHelpWithStyle.png?raw=true)
 
 See the [source code](https://github.com/remkop/picocli/blob/v0.9.4/src/test/java/picocli/Demo.java#L337). 
-Colors, styles and layout are easily customized with annotations.
+
+Colors, styles, headers, footers and section headings are easily customized with annotations.
+
+![Picocli Demo help message with ANSI colors](docs/images/picocli.Demo.png?raw=true)
+
+See the [source code](https://github.com/remkop/picocli/blob/v0.9.4/src/test/java/picocli/Demo.java#L32). 
 
 ## Usage Help API
 
