@@ -62,7 +62,7 @@ assert  app.verbose;
 assert  app.inputFiles != null && app.inputFiles.length == 2;
 ```
 
-Invoke `CommandLine.usage` if the user requested help or the input was invalid and a `ParameterException` was thrown. For example:
+Invoke `CommandLine.usage` if the user requested help or the input was invalid and a `ParameterException` was thrown.
 
 ```java
 CommandLine.usage(new Example(), System.out);
