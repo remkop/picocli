@@ -11,8 +11,8 @@ custom [type converters](http://picocli.info/#_custom_type_converters) and more.
 Distinguishes between [named options](http://picocli.info/#_options) and
 [positional parameters](http://picocli.info/#_positional_parameters) and allows _both_ to be 
 [strongly typed](http://picocli.info/#_strongly_typed_everything).
-[Multi-valued fields](http://picocli.info/#_multiple_values) can specify either an
-open or a precise [range](http://picocli.info/#_arity) of parameters (e.g., `0..*`, `1..2`).
+[Multi-valued fields](http://picocli.info/#_multiple_values) can specify 
+an exact number of parameters or a [range](http://picocli.info/#_arity) (e.g., `0..*`, `1..2`).
 
 Generates polished and easily tailored [usage help](http://picocli.info/#_usage_help),
 using [ANSI colors](http://picocli.info/#_ansi_colors_and_styles) where possible.
