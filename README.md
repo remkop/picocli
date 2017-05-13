@@ -4,7 +4,7 @@ A Java command line parsing framework in a single file, so you can include it _i
 This lets users run picocli-based applications without requiring picocli as an external dependency.
 
 How it works: annotate your class and picocli initializes it from the command line arguments,
-converting the input to strongly typed data. Supports [sub-commands](http://picocli.info/#_subcommands),
+converting the input to strongly typed data. Supports [subcommands](http://picocli.info/#_subcommands),
 any option prefix style, POSIX-style [groupable short options](http://picocli.info/#_options),
 custom [type converters](http://picocli.info/#_custom_type_converters) and more.
 
