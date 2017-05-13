@@ -96,6 +96,7 @@ assert  tar.archive.equals(new File("result.tar"));
 assert  Arrays.equals(tar.files, new File[] {new File("file1.txt"), new File("file2.txt")});
 ----
 
+=== Short Options
 Picocli supports http://pubs.opengroup.org/onlinepubs/9699919799/basedefs/V1_chap12.html#tag_12_02[POSIX clustered short options]:
 One or more options without option-arguments, followed by at most one option with an option-argument, can be grouped behind one '-' delimiter.
 
@@ -754,7 +755,7 @@ The example below shows how this can be used to add colors and styles to the hea
         synopsisHeading = "%n",
         descriptionHeading = "%n@|bold,underline Description|@:%n%n",
         parameterListHeading = "%n@|bold,underline Parameters|@:%n",
-        optionListHeading = "%n@|Options|@:%n",
+        optionListHeading = "%n@|bold,underline Options|@:%n",
         header = "Record changes to the repository.",
         description = "Stores the current contents of the index in a new commit " +
                 "along with a log message from the user describing the changes.")
