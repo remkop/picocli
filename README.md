@@ -18,7 +18,7 @@ Generates polished and easily tailored [usage help](http://picocli.info/#_usage_
 using [ANSI colors](http://picocli.info/#_ansi_colors_and_styles) where possible.
 Works with Java 5 or higher (but is designed to facilitate the use of Java 8 lambdas).
 
-![Usage help message with ANSI colors](docs/images/ExampleUsageANSI.png?raw=true)
+![Picocli Demo help message with ANSI colors](docs/images/picocli.Demo.png?raw=true)
 
 * user manual: [http://picocli.info](http://picocli.info)
 * [API Javadoc](http://picocli.info/apidocs/)
@@ -62,21 +62,24 @@ assert  app.verbose;
 assert  app.inputFiles != null && app.inputFiles.length == 2;
 ```
 
-## Colorized Usage Help
+Invoke `CommandLine.usage` if the user requested help or the input was invalid and a `ParameterException` was thrown. For example:
 
-If the user requested help or if invalid input resulted in a `ParameterException`,
-picocli can generate a usage help message. For example
-(colors only rendered when ANSI codes are enabled):
+```java
+CommandLine.usage(new Example(), System.out);
+```
+
+![Usage help message with ANSI colors](docs/images/ExampleUsageANSI.png?raw=true)
+
+## Polishing Usage Help
+
+Colors, styles, headers, footers and section headings are easily customized with annotations.
+For example (colors only rendered when ANSI codes are enabled):
 
 ![Longer help message with ANSI colors](docs/images/UsageHelpWithStyle.png?raw=true)
 
 See the [source code](https://github.com/remkop/picocli/blob/v0.9.4/src/test/java/picocli/Demo.java#L337). 
 
-Colors, styles, headers, footers and section headings are easily customized with annotations.
 
-![Picocli Demo help message with ANSI colors](docs/images/picocli.Demo.png?raw=true)
-
-See the [source code](https://github.com/remkop/picocli/blob/v0.9.4/src/test/java/picocli/Demo.java#L32). 
 
 ## Usage Help API
 
