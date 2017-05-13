@@ -73,7 +73,7 @@ CommandLine.usage(new Example(), System.out);
 ## Polishing Usage Help
 
 Colors, styles, headers, footers and section headings are easily customized with annotations.
-For example (colors only rendered when ANSI codes are enabled):
+For example:
 
 ![Longer help message with ANSI colors](docs/images/UsageHelpWithStyle.png?raw=true)
 
