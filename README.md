@@ -4,13 +4,18 @@ A Java command line parsing framework in a single file, so you can include it _i
 This lets users run picocli-based applications without requiring picocli as an external dependency.
 
 How it works: annotate your class and picocli initializes it from the command line arguments,
-converting the input to strongly typed data. Supports sub-commands, any option prefix style,
-POSIX-style short groupable options, custom type converters and more.
+converting the input to strongly typed data. Supports [sub-commands](http://picocli.info/#_subcommands),
+any option prefix style, POSIX-style [groupable short options](http://picocli.info/#_options),
+custom [type converters](http://picocli.info/#_custom_type_converters) and more.
 
-Distinguishes between named options and positional parameters and allows both to be strongly typed.
-Multi-valued fields can specify either an open or a precise range of parameters (e.g., `0..*`, `1..2`).
+Distinguishes between [named options](http://picocli.info/#_options) and
+[positional parameters](http://picocli.info/#_positional_parameters) and allows _both_ to be 
+[strongly typed](http://picocli.info/#_strongly_typed_everything).
+[Multi-valued fields](http://picocli.info/#_multiple_values) can specify either an
+open or a precise [range](http://picocli.info/#_arity) of parameters (e.g., `0..*`, `1..2`).
 
-Generates polished and easily tailored usage help, using ANSI colors where possible.
+Generates polished and easily tailored [usage help](http://picocli.info/#_usage_help),
+using [ANSI colors](http://picocli.info/#_ansi_colors_and_styles) where possible.
 Works with Java 5 or higher (but is designed to facilitate the use of Java 8 lambdas).
 
 ![Usage help message with ANSI colors](docs/images/ExampleUsageANSI.png?raw=true)
@@ -68,11 +73,11 @@ picocli can generate a usage help message. For example
 See the [source code](https://github.com/remkop/picocli/blob/v0.9.4/src/test/java/picocli/Demo.java#L337). 
 Colors, styles and layout are easily customized with annotations.
 
-## More Customized Usage Help
+## Usage Help API
 
 Picocli annotations offer many ways to customize the usage help message.
 
-If annotations are not sufficient, you can use picocli's Help API to customize even further.
+If annotations are not sufficient, you can use picocli's [Help API](http://picocli.info/#_usage_help_api) to customize even further.
 For example, your application can generate help like this with a custom layout:
 
 ![Usage help message with two options per row](docs/images/UsageHelpWithCustomLayout.png?raw=true)
