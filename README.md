@@ -5,7 +5,7 @@ This lets users run picocli-based applications without requiring picocli as an e
 
 How it works: annotate your class and picocli initializes it from the command line arguments,
 converting the input to strongly typed data. Supports [subcommands](http://picocli.info/#_subcommands),
-any option prefix style, POSIX-style [grouped short options](http://picocli.info/#_options),
+any option prefix style, POSIX-style [grouped short options](http://picocli.info/#_short_options),
 custom [type converters](http://picocli.info/#_custom_type_converters) and more.
 
 Distinguishes between [named options](http://picocli.info/#_options) and

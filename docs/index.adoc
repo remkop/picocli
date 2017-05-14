@@ -100,7 +100,7 @@ assert  Arrays.equals(tar.files, new File[] {new File("file1.txt"), new File("fi
 
 === Short Options
 Picocli supports http://pubs.opengroup.org/onlinepubs/9699919799/basedefs/V1_chap12.html#tag_12_02[POSIX clustered short options]:
-One or more options without option-arguments, followed by at most one option with an option-argument, can be grouped behind one '-' delimiter.
+one or more single-character options without option-arguments, followed by at most one option with an option-argument, can be grouped behind one '-' delimiter.
 
 
 For example, given this annotated class:
@@ -118,11 +118,12 @@ The following command line arguments are all equivalent and parsing them will gi
 [source,java]
 ----
 <command> -abcfInputFile.txt
+<command> -abcf=InputFile.txt
+<command> -abc -f=InputFile.txt
+<command> -ab -cf=InputFile.txt
 <command> -a -b -c -fInputFile.txt
 <command> -a -b -c -f InputFile.txt
 <command> -a -b -c -f=InputFile.txt
-<command> -abc -f=InputFile.txt
-<command> -ab -cf=InputFile.txt
 ...
 ----
 
