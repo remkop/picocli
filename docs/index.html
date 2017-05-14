@@ -745,7 +745,7 @@ Tar tar = CommandLine.parse(<span class="keyword">new</span> Tar(), args);
 <h3 id="_short_options">2.2. Short Options</h3>
 <div class="paragraph">
 <p>Picocli supports <a href="http://pubs.opengroup.org/onlinepubs/9699919799/basedefs/V1_chap12.html#tag_12_02">POSIX clustered short options</a>:
-One or more options without option-arguments, followed by at most one option with an option-argument, can be grouped behind one '-' delimiter.</p>
+one or more single-character options without option-arguments, followed by at most one option with an option-argument, can be grouped behind one '-' delimiter.</p>
 </div>
 <div class="paragraph">
 <p>For example, given this annotated class:</p>
@@ -766,11 +766,12 @@ One or more options without option-arguments, followed by at most one option wit
 <div class="listingblock">
 <div class="content">
 <pre class="CodeRay highlight"><code data-lang="java">&lt;command&gt; -abcfInputFile.txt
+&lt;command&gt; -abcf=InputFile.txt
+&lt;command&gt; -abc -f=InputFile.txt
+&lt;command&gt; -ab -cf=InputFile.txt
 &lt;command&gt; -a -b -c -fInputFile.txt
 &lt;command&gt; -a -b -c -f InputFile.txt
 &lt;command&gt; -a -b -c -f=InputFile.txt
-&lt;command&gt; -abc -f=InputFile.txt
-&lt;command&gt; -ab -cf=InputFile.txt
 ...</code></pre>
 </div>
 </div>
@@ -5878,7 +5879,7 @@ Here is the source. Copy and paste it into a file called <code>CommandLine.java<
 <div id="footer">
 <div id="footer-text">
 Version 0.9.6-SNAPSHOT<br>
-Last updated 2017-05-14 18:38:05 +09:00
+Last updated 2017-05-14 21:40:41 +09:00
 </div>
 </div>
 </body>
