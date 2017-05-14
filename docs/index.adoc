@@ -89,7 +89,7 @@ class Tar {
 Picocli matches the option names to set the field values.
 [source,java]
 ----
-String[] args = { "-cf", "result.tar", "file1.txt", "file2.txt" };
+String[] args = { "-c", "--file", "result.tar", "file1.txt", "file2.txt" };
 Tar tar = CommandLine.parse(new Tar(), args);
 
 assert !tar.helpRequested;

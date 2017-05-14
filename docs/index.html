@@ -731,7 +731,7 @@ You may be interested in this <a href="http://catb.org/~esr/writings/taoup/html/
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="CodeRay highlight"><code data-lang="java"><span class="predefined-type">String</span><span class="type">[]</span> args = { <span class="string"><span class="delimiter">&quot;</span><span class="content">-cf</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">result.tar</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">file1.txt</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">file2.txt</span><span class="delimiter">&quot;</span></span> };
+<pre class="CodeRay highlight"><code data-lang="java"><span class="predefined-type">String</span><span class="type">[]</span> args = { <span class="string"><span class="delimiter">&quot;</span><span class="content">-c</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">--file</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">result.tar</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">file1.txt</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">file2.txt</span><span class="delimiter">&quot;</span></span> };
 Tar tar = CommandLine.parse(<span class="keyword">new</span> Tar(), args);
 
 <span class="keyword">assert</span> !tar.helpRequested;
@@ -5879,7 +5879,7 @@ Here is the source. Copy and paste it into a file called <code>CommandLine.java<
 <div id="footer">
 <div id="footer-text">
 Version 0.9.6-SNAPSHOT<br>
-Last updated 2017-05-14 21:40:41 +09:00
+Last updated 2017-05-14 21:49:05 +09:00
 </div>
 </div>
 </body>
