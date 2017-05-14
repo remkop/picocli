@@ -6,7 +6,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="generator" content="Asciidoctor 1.5.3">
 <meta name="author" content="Remko Popma">
-<title>picocli - a mighty tiny Command Line Interface</title>
+<title>picocli - a mighty tiny command line interface</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Open+Sans:300,300italic,400,400italic,600,600italic%7CNoto+Serif:400,400italic,700,700italic%7CDroid+Sans+Mono:400,700">
 <style>
 /* Asciidoctor default stylesheet | MIT License | http://asciidoctor.org */
@@ -512,11 +512,11 @@ table.CodeRay td.code>pre{padding:0}
 </head>
 <body class="article toc2 toc-left">
 <div id="header">
-<h1>picocli - a mighty tiny Command Line Interface</h1>
+<h1>picocli - a mighty tiny command line interface</h1>
 <div class="details">
 <span id="author" class="author">Remko Popma</span><br>
 <span id="email" class="email"><a href="mailto:rpopma@apache.org">rpopma@apache.org</a></span><br>
-<span id="revnumber">version 0.9.5,</span>
+<span id="revnumber">version 0.9.6-SNAPSHOT,</span>
 <span id="revdate">2017-05-09</span>
 </div>
 <div id="toc" class="toc2">
@@ -526,8 +526,9 @@ table.CodeRay td.code>pre{padding:0}
 <li><a href="#_options_and_parameters">2. Options and Parameters</a>
 <ul class="sectlevel2">
 <li><a href="#_options">2.1. Options</a></li>
-<li><a href="#_positional_parameters">2.2. Positional Parameters</a></li>
-<li><a href="#_double_dash_code_code">2.3. Double dash (<code>--</code>)</a></li>
+<li><a href="#_short_options">2.2. Short Options</a></li>
+<li><a href="#_positional_parameters">2.3. Positional Parameters</a></li>
+<li><a href="#_double_dash_code_code">2.4. Double dash (<code>--</code>)</a></li>
 </ul>
 </li>
 <li><a href="#_strongly_typed_everything">3. Strongly Typed Everything</a>
@@ -614,6 +615,11 @@ table.CodeRay td.code>pre{padding:0}
 <div id="content">
 <div id="preamble">
 <div class="sectionbody">
+<div class="imageblock" style="float: right">
+<div class="content">
+<a class="image" href="https://github.com/remkop/picocli"><img src="https://s3.amazonaws.com/github/ribbons/forkme_right_red_aa0000.png" alt="Fork me on GitHub"></a>
+</div>
+</div>
 <div class="quoteblock">
 <blockquote>
 Every main method deserves picocli!
@@ -734,6 +740,9 @@ Tar tar = CommandLine.parse(<span class="keyword">new</span> Tar(), args);
 <span class="keyword">assert</span>  <span class="predefined-type">Arrays</span>.equals(tar.files, <span class="keyword">new</span> <span class="predefined-type">File</span><span class="type">[]</span> {<span class="keyword">new</span> <span class="predefined-type">File</span>(<span class="string"><span class="delimiter">&quot;</span><span class="content">file1.txt</span><span class="delimiter">&quot;</span></span>), <span class="keyword">new</span> <span class="predefined-type">File</span>(<span class="string"><span class="delimiter">&quot;</span><span class="content">file2.txt</span><span class="delimiter">&quot;</span></span>)});</code></pre>
 </div>
 </div>
+</div>
+<div class="sect2">
+<h3 id="_short_options">2.2. Short Options</h3>
 <div class="paragraph">
 <p>Picocli supports <a href="http://pubs.opengroup.org/onlinepubs/9699919799/basedefs/V1_chap12.html#tag_12_02">POSIX clustered short options</a>:
 One or more options without option-arguments, followed by at most one option with an option-argument, can be grouped behind one '-' delimiter.</p>
@@ -767,7 +776,7 @@ One or more options without option-arguments, followed by at most one option wit
 </div>
 </div>
 <div class="sect2">
-<h3 id="_positional_parameters">2.2. Positional Parameters</h3>
+<h3 id="_positional_parameters">2.3. Positional Parameters</h3>
 <div class="paragraph">
 <p>Positional parameters are the command line arguments following the options.</p>
 </div>
@@ -813,7 +822,7 @@ PositionalParameters params = CommandLine.parse(<span class="keyword">new</span>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_double_dash_code_code">2.3. Double dash (<code>--</code>)</h3>
+<h3 id="_double_dash_code_code">2.4. Double dash (<code>--</code>)</h3>
 <div class="paragraph">
 <p>When one of the command line arguments is just two dashes without any characters attached (<code>--</code>), picocli interprets all following arguments as positional parameters, even arguments that match an option name.</p>
 </div>
@@ -1706,7 +1715,7 @@ Similarly, <code>fg(&lt;color&gt;)</code> explicitly sets the foreground color.<
         synopsisHeading = <span class="string"><span class="delimiter">&quot;</span><span class="content">%n</span><span class="delimiter">&quot;</span></span>,
         descriptionHeading = <span class="string"><span class="delimiter">&quot;</span><span class="content">%n@|bold,underline Description|@:%n%n</span><span class="delimiter">&quot;</span></span>,
         parameterListHeading = <span class="string"><span class="delimiter">&quot;</span><span class="content">%n@|bold,underline Parameters|@:%n</span><span class="delimiter">&quot;</span></span>,
-        optionListHeading = <span class="string"><span class="delimiter">&quot;</span><span class="content">%n@|Options|@:%n</span><span class="delimiter">&quot;</span></span>,
+        optionListHeading = <span class="string"><span class="delimiter">&quot;</span><span class="content">%n@|bold,underline Options|@:%n</span><span class="delimiter">&quot;</span></span>,
         header = <span class="string"><span class="delimiter">&quot;</span><span class="content">Record changes to the repository.</span><span class="delimiter">&quot;</span></span>,
         description = <span class="string"><span class="delimiter">&quot;</span><span class="content">Stores the current contents of the index in a new commit </span><span class="delimiter">&quot;</span></span> +
                 <span class="string"><span class="delimiter">&quot;</span><span class="content">along with a log message from the user describing the changes.</span><span class="delimiter">&quot;</span></span>)
@@ -2521,7 +2530,7 @@ Here is the source. Copy and paste it into a file called <code>CommandLine.java<
  */</span>
 <span class="directive">public</span> <span class="type">class</span> <span class="class">CommandLine</span> {
     <span class="comment">/** This is picocli version {@value}. */</span>
-    <span class="directive">public</span> <span class="directive">static</span> <span class="directive">final</span> <span class="predefined-type">String</span> VERSION = <span class="string"><span class="delimiter">&quot;</span><span class="content">0.9.5</span><span class="delimiter">&quot;</span></span>;
+    <span class="directive">public</span> <span class="directive">static</span> <span class="directive">final</span> <span class="predefined-type">String</span> VERSION = <span class="string"><span class="delimiter">&quot;</span><span class="content">0.9.6-SNAPSHOT</span><span class="delimiter">&quot;</span></span>;
 
     <span class="directive">private</span> <span class="directive">final</span> Interpreter interpreter;
     <span class="directive">private</span> <span class="directive">final</span> <span class="predefined-type">List</span>&lt;<span class="predefined-type">Object</span>&gt; parsedCommands = <span class="keyword">new</span> <span class="predefined-type">ArrayList</span>&lt;<span class="predefined-type">Object</span>&gt;();
@@ -4099,6 +4108,7 @@ Here is the source. Copy and paste it into a file called <code>CommandLine.java<
         <span class="directive">static</span> <span class="type">class</span> <span class="class">UUIDConverter</span> <span class="directive">implements</span> ITypeConverter&lt;<span class="predefined-type">UUID</span>&gt; {
             <span class="directive">public</span> <span class="predefined-type">UUID</span> convert(<span class="predefined-type">String</span> s) <span class="directive">throws</span> <span class="exception">Exception</span> { <span class="keyword">return</span> <span class="predefined-type">UUID</span>.fromString(s); }
         }
+        <span class="directive">private</span> BuiltIn() {} <span class="comment">// private constructor: never instantiate</span>
     }
 
     <span class="comment">/**
@@ -5788,6 +5798,7 @@ Here is the source. Copy and paste it into a file called <code>CommandLine.java<
             }
             <span class="keyword">return</span> object;
         }
+        <span class="directive">private</span> Assert() {} <span class="comment">// private constructor: never instantiate</span>
     }
 
     <span class="comment">/**
@@ -5866,8 +5877,8 @@ Here is the source. Copy and paste it into a file called <code>CommandLine.java<
 </div>
 <div id="footer">
 <div id="footer-text">
-Version 0.9.5<br>
-Last updated 2017-05-09 21:39:43 +09:00
+Version 0.9.6-SNAPSHOT<br>
+Last updated 2017-05-14 18:38:05 +09:00
 </div>
 </div>
 </body>
