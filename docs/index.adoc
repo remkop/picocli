@@ -107,10 +107,10 @@ For example, given this annotated class:
 [source,java]
 ----
 class ClusteredShortOptions {
-    @Option(names = "-a") boolean a;
-    @Option(names = "-b") boolean b;
-    @Option(names = "-c") boolean c;
-    @Option(names = "-f") String  f;
+    @Option(names = "-a") boolean aaa;
+    @Option(names = "-b") boolean bbb;
+    @Option(names = "-c") boolean ccc;
+    @Option(names = "-f") String  file;
 }
 ----
 The following command line arguments are all equivalent and parsing them will give the same result:
