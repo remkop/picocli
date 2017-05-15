@@ -1,5 +1,5 @@
 group 'info.picocli'
-description 'Java command line parser and colorized usage help generator. In a single file, to be included in source form, so users can run picocli-based applications without requiring picocli as an external dependency. Generates easily customizable usage help messages with ANSI styles and colors.'
+description 'Annotation-based Java command line parser. Generates polished and extensible usage help with ANSI styles and colors. Easily included as source to avoid adding a dependency.'
 version '0.9.6-SNAPSHOT'
 
 // for bumpVersion task
