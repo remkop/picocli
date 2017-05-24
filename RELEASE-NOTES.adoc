@@ -1,5 +1,9 @@
 = picocli Release Notes
 
+== 0.9.6 - Bugfix release for public review. API may change.
+
+* #128 Fix unexpected MissingParameterException when a help-option is supplied (bug)
+
 == 0.9.5 - Bugfix and enhancements release for public review. API may change.
 
 * #122 API change: remove field CommandLine.ansi (enhancement)

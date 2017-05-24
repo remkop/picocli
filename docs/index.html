@@ -513,8 +513,8 @@ table.CodeRay td.code>pre{padding:0}
 <div id="header">
 <h1>picocli - a mighty tiny command line interface</h1>
 <div class="details">
-<span id="revnumber">version 0.9.6-SNAPSHOT,</span>
-<span id="revdate">2017-05-20</span>
+<span id="revnumber">version 0.9.6,</span>
+<span id="revdate">2017-05-25</span>
 </div>
 <div id="toc" class="toc2">
 <div id="toctitle">Features</div>
@@ -2528,7 +2528,7 @@ Here is the source. Copy and paste it into a file called <code>CommandLine.java<
  */</span>
 <span class="directive">public</span> <span class="type">class</span> <span class="class">CommandLine</span> {
     <span class="comment">/** This is picocli version {@value}. */</span>
-    <span class="directive">public</span> <span class="directive">static</span> <span class="directive">final</span> <span class="predefined-type">String</span> VERSION = <span class="string"><span class="delimiter">&quot;</span><span class="content">0.9.6-SNAPSHOT</span><span class="delimiter">&quot;</span></span>;
+    <span class="directive">public</span> <span class="directive">static</span> <span class="directive">final</span> <span class="predefined-type">String</span> VERSION = <span class="string"><span class="delimiter">&quot;</span><span class="content">0.9.6</span><span class="delimiter">&quot;</span></span>;
 
     <span class="directive">private</span> <span class="directive">final</span> Interpreter interpreter;
     <span class="directive">private</span> <span class="directive">final</span> <span class="predefined-type">List</span>&lt;<span class="predefined-type">Object</span>&gt; parsedCommands = <span class="keyword">new</span> <span class="predefined-type">ArrayList</span>&lt;<span class="predefined-type">Object</span>&gt;();
@@ -3504,7 +3504,6 @@ Here is the source. Copy and paste it into a file called <code>CommandLine.java<
             <span class="predefined-type">List</span>&lt;<span class="predefined-type">Field</span>&gt; required = <span class="keyword">new</span> <span class="predefined-type">ArrayList</span>&lt;<span class="predefined-type">Field</span>&gt;(requiredFields);
             <span class="predefined-type">Collections</span>.sort(required, <span class="keyword">new</span> PositionalParametersSorter());
             <span class="keyword">try</span> {
-                processPositionalParameters0(required, <span class="predefined-constant">true</span>, argumentStack);
                 processArguments(argumentStack, required, originalArgs);
             } <span class="keyword">catch</span> (ParameterException ex) {
                 <span class="keyword">throw</span> ex;
@@ -3517,7 +3516,10 @@ Here is the source. Copy and paste it into a file called <code>CommandLine.java<
                 <span class="keyword">if</span> (required.get(<span class="integer">0</span>).isAnnotationPresent(<span class="predefined-type">Option</span>.class)) {
                     <span class="keyword">throw</span> MissingParameterException.create(required);
                 } <span class="keyword">else</span> {
-                    assertNoMissingParameters(required.get(<span class="integer">0</span>), <span class="integer">1</span>, <span class="keyword">new</span> <span class="predefined-type">Stack</span>&lt;<span class="predefined-type">String</span>&gt;());
+                    <span class="keyword">try</span> {
+                        processPositionalParameters0(required, <span class="predefined-constant">true</span>, <span class="keyword">new</span> <span class="predefined-type">Stack</span>&lt;<span class="predefined-type">String</span>&gt;());
+                    } <span class="keyword">catch</span> (ParameterException ex) { <span class="keyword">throw</span> ex;
+                    } <span class="keyword">catch</span> (<span class="exception">Exception</span> ex) { <span class="keyword">throw</span> <span class="keyword">new</span> <span class="exception">IllegalStateException</span>(<span class="string"><span class="delimiter">&quot;</span><span class="content">Internal error: </span><span class="delimiter">&quot;</span></span> + ex, ex); }
                 }
             }
         }
@@ -3959,7 +3961,7 @@ Here is the source. Copy and paste it into a file called <code>CommandLine.java<
                     <span class="predefined-type">String</span> msg = <span class="string"><span class="delimiter">&quot;</span><span class="content">Missing required parameter</span><span class="delimiter">&quot;</span></span>;
                     Arity paramArity = Arity.forParameters(field);
                     <span class="keyword">if</span> (paramArity.isVariable) {
-                        msg += <span class="string"><span class="delimiter">&quot;</span><span class="content">s at positions </span><span class="delimiter">&quot;</span></span> + paramArity + <span class="string"><span class="delimiter">&quot;</span><span class="content">: </span><span class="delimiter">&quot;</span></span>;
+                        msg += <span class="string"><span class="delimiter">&quot;</span><span class="content">s at positions </span><span class="delimiter">&quot;</span></span> + indexRange + <span class="string"><span class="delimiter">&quot;</span><span class="content">: </span><span class="delimiter">&quot;</span></span>;
                     } <span class="keyword">else</span> {
                         msg += (count &gt; <span class="integer">1</span> ? <span class="string"><span class="delimiter">&quot;</span><span class="content">s: </span><span class="delimiter">&quot;</span></span> : <span class="string"><span class="delimiter">&quot;</span><span class="content">: </span><span class="delimiter">&quot;</span></span>);
                     }
@@ -5875,8 +5877,8 @@ Here is the source. Copy and paste it into a file called <code>CommandLine.java<
 </div>
 <div id="footer">
 <div id="footer-text">
-Version 0.9.6-SNAPSHOT<br>
-Last updated 2017-05-20 01:48:45 +09:00
+Version 0.9.6<br>
+Last updated 2017-05-25 01:28:02 +09:00
 </div>
 </div>
 </body>
