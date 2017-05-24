@@ -823,12 +823,12 @@ public class CommandLineTest {
             @Parameters(index = "0") String mandatory;
         }
         try { CommandLine.parse(new Example(), new String[] {"mandatory"}); }
-        catch(MissingParameterException ex) { fail(); }
+        catch (MissingParameterException ex) { fail(); }
 
         try {
             CommandLine.parse(new Example(), new String[0]);
             fail("Should not accept missing mandatory parameter");
-        } catch(MissingParameterException ex) {
+        } catch (MissingParameterException ex) {
             assertEquals("Missing required parameter: mandatory", ex.getMessage());
         }
     }
@@ -842,13 +842,13 @@ public class CommandLineTest {
         try {
             CommandLine.parse(new Tricky1(), new String[0]);
             fail("Should not accept missing mandatory parameter");
-        } catch(MissingParameterException ex) {
+        } catch (MissingParameterException ex) {
             assertEquals("Missing required parameters: mandatory, anotherMandatory", ex.getMessage());
         }
         try {
             CommandLine.parse(new Tricky1(), new String[] {"firstonly"});
             fail("Should not accept missing mandatory parameter");
-        } catch(MissingParameterException ex) {
+        } catch (MissingParameterException ex) {
             assertEquals("Missing required parameter: anotherMandatory", ex.getMessage());
         }
     }
@@ -860,12 +860,12 @@ public class CommandLineTest {
             @Parameters(index = "0") String mandatory;
         }
         try { CommandLine.parse(new Tricky2(), new String[] {"mandatory"}); }
-        catch(MissingParameterException ex) { fail(); }
+        catch (MissingParameterException ex) { fail(); }
 
         try {
             CommandLine.parse(new Tricky2(), new String[0]);
             fail("Should not accept missing mandatory parameter");
-        } catch(MissingParameterException ex) {
+        } catch (MissingParameterException ex) {
             assertEquals("Missing required parameter: mandatory", ex.getMessage());
         }
     }
@@ -880,14 +880,14 @@ public class CommandLineTest {
         try {
             CommandLine.parse(new Tricky3(), new String[] {"-t", "-v", "mandatory"});
             fail("Should not accept missing mandatory parameter");
-        } catch(MissingParameterException ex) {
+        } catch (MissingParameterException ex) {
             assertEquals("Missing required parameter: alsoMandatory", ex.getMessage());
         }
 
         try {
             CommandLine.parse(new Tricky3(), new String[] { "-t", "-v"});
             fail("Should not accept missing two mandatory parameters");
-        } catch(MissingParameterException ex) {
+        } catch (MissingParameterException ex) {
             assertEquals("Missing required parameters: mandatory, alsoMandatory", ex.getMessage());
         }
     }
@@ -900,9 +900,28 @@ public class CommandLineTest {
         try {
             CommandLine.parse(new Tricky3(), new String[] {"-t"});
             fail("Should not accept missing mandatory parameter");
-        } catch(MissingParameterException ex) {
-
+        } catch (MissingParameterException ex) {
             assertEquals("Missing required parameter: mandatory", ex.getMessage());
+        }
+    }
+    @Test
+    public void testNoMissingRequiredParamErrorIfHelpOptionSpecified() {
+        class App {
+            @Parameters(hidden = true)  // "hidden": don't show this parameter in usage help message
+                    List<String> allParameters; // no "index" attribute: captures _all_ arguments (as Strings)
+
+            @Parameters(index = "0")    InetAddress  host;
+            @Parameters(index = "1")    int          port;
+            @Parameters(index = "2..*") File[]       files;
+
+            @Option(names = "-?", help = true) boolean help;
+        }
+        CommandLine.parse(new App(), new String[] {"-?"});
+        try {
+            CommandLine.parse(new App(), new String[0]);
+            fail("Should not accept missing mandatory parameter");
+        } catch (MissingParameterException ex) {
+            assertEquals("Missing required parameters: host, port", ex.getMessage());
         }
     }
     @Test
@@ -1535,7 +1554,7 @@ public class CommandLineTest {
             params = CommandLine.parse(new ArrayParamsArity1_n());
             fail("Should not accept input with missing parameter");
         } catch (MissingParameterException ex) {
-            assertEquals("Missing required parameters at positions 1..*: params", ex.getMessage());
+            assertEquals("Missing required parameters at positions 0..*: params", ex.getMessage());
         }
     }
 

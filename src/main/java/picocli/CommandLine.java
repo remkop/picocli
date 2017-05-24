@@ -1096,7 +1096,6 @@ public class CommandLine {
             List<Field> required = new ArrayList<Field>(requiredFields);
             Collections.sort(required, new PositionalParametersSorter());
             try {
-                processPositionalParameters0(required, true, argumentStack);
                 processArguments(argumentStack, required, originalArgs);
             } catch (ParameterException ex) {
                 throw ex;
@@ -1109,7 +1108,10 @@ public class CommandLine {
                 if (required.get(0).isAnnotationPresent(Option.class)) {
                     throw MissingParameterException.create(required);
                 } else {
-                    assertNoMissingParameters(required.get(0), 1, new Stack<String>());
+                    try {
+                        processPositionalParameters0(required, true, new Stack<String>());
+                    } catch (ParameterException ex) { throw ex;
+                    } catch (Exception ex) { throw new IllegalStateException("Internal error: " + ex, ex); }
                 }
             }
         }
@@ -1551,7 +1553,7 @@ public class CommandLine {
                     String msg = "Missing required parameter";
                     Arity paramArity = Arity.forParameters(field);
                     if (paramArity.isVariable) {
-                        msg += "s at positions " + paramArity + ": ";
+                        msg += "s at positions " + indexRange + ": ";
                     } else {
                         msg += (count > 1 ? "s: " : ": ");
                     }
