@@ -120,7 +120,7 @@ import static picocli.CommandLine.Help.Column.Overflow.*;
  */
 public class CommandLine {
     /** This is picocli version {@value}. */
-    public static final String VERSION = "0.9.6";
+    public static final String VERSION = "0.9.7-SNAPSHOT";
 
     private final Interpreter interpreter;
     private final List<Object> parsedCommands = new ArrayList<Object>();
