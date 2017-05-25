@@ -171,7 +171,7 @@ public class CommandLine {
      * @throws ParameterException if the specified command line arguments are invalid
      */
     public static <T> T parse(T annotatedObject, String... args) {
-        CommandLine cli = new CommandLine(annotatedObject);
+        CommandLine cli = toCommandLine(annotatedObject);
         cli.parse(args);
         return annotatedObject;
     }
@@ -198,7 +198,7 @@ public class CommandLine {
      * @param out the print stream to print the help message to
      */
     public static void usage(Object annotatedObject, PrintStream out) {
-        new CommandLine(annotatedObject).usage(out);
+        toCommandLine(annotatedObject).usage(out);
     }
 
     /**
@@ -209,7 +209,7 @@ public class CommandLine {
      * @param ansi whether the usage message should contain ANSI escape codes or not
      */
     public static void usage(Object annotatedObject, PrintStream out, Help.Ansi ansi) {
-        new CommandLine(annotatedObject).usage(out, ansi);
+        toCommandLine(annotatedObject).usage(out, ansi);
     }
 
     /**
@@ -220,7 +220,7 @@ public class CommandLine {
      * @param colorScheme the {@code ColorScheme} defining the styles for options, parameters and commands when ANSI is enabled
      */
     public static void usage(Object annotatedObject, PrintStream out, Help.ColorScheme colorScheme) {
-        new CommandLine(annotatedObject).usage(out, colorScheme);
+        toCommandLine(annotatedObject).usage(out, colorScheme);
     }
 
     /**
@@ -396,7 +396,7 @@ public class CommandLine {
     private static boolean empty(Text txt) { return txt == null || txt.plain.toString().trim().length() == 0; }
     private static String str(String[] arr, int i) { return (arr == null || arr.length == 0) ? "" : arr[i]; }
     private static boolean isBoolean(Class<?> type) { return type == Boolean.class || type == Boolean.TYPE; }
-
+    private static CommandLine toCommandLine(Object obj) { return obj instanceof CommandLine ? (CommandLine) obj : new CommandLine(obj);}
     /**
      * <p>
      * Annotate fields in your class with {@code @Option} and picocli will initialize these fields when matching
