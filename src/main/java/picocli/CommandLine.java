@@ -135,28 +135,43 @@ public class CommandLine {
         interpreter = new Interpreter(annotatedObject);
     }
 
-    /** Registers a subcommand with the specified name. The specified object can be an annotated object or a
-     * {@code CommandLine} instance with its own nested subcommands. For example:
+    /** Registers a subcommand with the specified name. For example:
      * <pre>
-     * CommandLine commandLine = new CommandLine(new MainCommand());
-     * commandLine
+     * CommandLine commandLine = new CommandLine(new Git())
+     *         .addCommand("status",   new GitStatus())
+     *         .addCommand("commit",   new GitCommit();
+     *         .addCommand("add",      new GitAdd())
+     *         .addCommand("branch",   new GitBranch())
+     *         .addCommand("checkout", new GitCheckout())
+     *         //...
+     *         ;
+     * </pre>
+     *
+     * <p>The specified object can be an annotated object or a
+     * {@code CommandLine} instance with its own nested subcommands. For example:</p>
+     * <pre>
+     * CommandLine commandLine = new CommandLine(new MainCommand())
      *         .addCommand("cmd1",                 new ChildCommand1()) // subcommand
      *         .addCommand("cmd2",                 new ChildCommand2())
      *         .addCommand("cmd3", new CommandLine(new ChildCommand3()) // subcommand with nested sub-subcommands
-     *                 .addCommand("sub31", new GrandChild3Command1())
-     *                 .addCommand("sub32", new GrandChild3Command2())
-     *         )
-     *         .addCommand("cmd4", new CommandLine(new ChildCommand4())
-     *                 .addCommand("sub41", new GrandChild4Command1())
-     *                 .addCommand("sub42", new CommandLine(new GrandChild4Command2()) // deeper nesting
-     *                         .addCommand("sub42sub1", new GreatGrandChild4Command2_1())
+     *                 .addCommand("cmd3sub1",                 new GrandChild3Command1())
+     *                 .addCommand("cmd3sub2",                 new GrandChild3Command2())
+     *                 .addCommand("cmd3sub3", new CommandLine(new GrandChild3Command3()) // deeper nesting
+     *                         .addCommand("cmd3sub3sub1", new GreatGrandChild3Command3_1())
+     *                         .addCommand("cmd3sub3sub2", new GreatGrandChild3Command3_2())
      *                 )
      *         );
      * </pre>
+     * <p>The default type converters are available on all subcommands and nested sub-subcommands, but custom type
+     * converters are registered only with the subcommand hierarchy as it existed when the custom type was registered.
+     * To ensure a custom type converter is available to all subcommands, register the type converter last, after
+     * adding subcommands.</p>
+     *
      * @param name the string to recognize on the command line as a subcommand
      * @param annotatedObject the object to initialize with command line arguments following the subcommand name.
      *          This may be a {@code CommandLine} instance with its own (nested) subcommands
      * @return this CommandLine object, to allow method chaining
+     * @see #registerConverter(Class, ITypeConverter)
      */
     public CommandLine addCommand(String name, Object annotatedObject) {
         interpreter.commands.put(name, toCommandLine(annotatedObject));
@@ -393,14 +408,22 @@ public class CommandLine {
      *   <li>CharSequence</li>
      *   <li>String</li>
      * </ul>
+     * <p>The specified converter will be registered with this {@code CommandLine} and the full hierarchy of its
+     * subcommands and nested sub-subcommands <em>at the moment the converter is registered</em>. Subcommands added
+     * later will not have this converter added automatically. To ensure a custom type converter is available to all
+     * subcommands, register the type converter last, after adding subcommands.</p>
      *
      * @param cls the target class to convert parameter string values to
      * @param converter the class capable of converting string values to the specified target type
      * @param <K> the target type
      * @return this CommandLine object, to allow method chaining
+     * @see #addCommand(String, Object)
      */
     public <K> CommandLine registerConverter(Class<K> cls, ITypeConverter<K> converter) {
         interpreter.converterRegistry.put(Assert.notNull(cls, "class"), Assert.notNull(converter, "converter"));
+        for (CommandLine command : interpreter.commands.values()) {
+            command.registerConverter(cls, converter);
+        }
         return this;
     }
 

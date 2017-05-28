@@ -262,6 +262,11 @@ assert app.path.equals(Paths.get("file1.txt"));
 assert app.duration.equals(Duration.parse("PT15M"));
 ----
 
+CAUTION: _Note on subcommands:_ the specified converter will be registered with the `CommandLine` object
+and its subcommands (and nested sub-subcommands) added _before_ the converter was registered.
+Subcommands added later will not have the converter added automatically.
+To ensure a custom type converter is available to all subcommands, register the type converter last, after adding subcommands.
+
 === Arrays and Collections
 
 IMPORTANT: With array fields picocli uses reflection to discover the array element type, but with collections,
@@ -956,6 +961,11 @@ CommandLine commandLine = new CommandLine(new Git())
         .addCommand("tag",      new GitTag());
 ----
 
+CAUTION: _Note on custom type converters:_ custom type converters are registered only with the subcommands and nested
+sub-subcommands that were added _before_ the custom type was registered.
+To ensure a custom type converter is available to all subcommands, register the type converter last, after
+adding subcommands.
+
 === Parsing Subcommands
 The `CommandLine.parse` method returns a List with the recognized commands. The main command (`git` in this example) is always the first element in the returned list.
 
@@ -1047,6 +1057,25 @@ class Git {
 The usage help message for each subcommand is produced by calling `CommandLine.usage(new SubCommand(), out)`.
 For example, see <<Section Headings>> for an example subcommand (`git-commit`), which produces the help message shown
 in <<Expanded Example>>.
+
+=== Nested sub-subcommands
+The specified object can be an annotated object or a
+`CommandLine` instance with its own nested subcommands. For example:
+
+[source,java]
+----
+CommandLine commandLine = new CommandLine(new MainCommand())
+        .addCommand("cmd1",                 new ChildCommand1()) // subcommand
+        .addCommand("cmd2",                 new ChildCommand2())
+        .addCommand("cmd3", new CommandLine(new ChildCommand3()) // subcommand with nested sub-subcommands
+                .addCommand("cmd3sub1",                 new GrandChild3Command1())
+                .addCommand("cmd3sub2",                 new GrandChild3Command2())
+                .addCommand("cmd3sub3", new CommandLine(new GrandChild3Command3()) // deeper nesting
+                        .addCommand("cmd3sub3sub1", new GreatGrandChild3Command3_1())
+                        .addCommand("cmd3sub3sub2", new GreatGrandChild3Command3_2())
+                )
+        );
+----
 
 
 == Tips & Tricks

@@ -1,5 +1,10 @@
 = picocli Release Notes
 
+== 0.9.7 - Bugfix and enhancements release for public review. API may change.
+
+* #127 Added support for nested sub-subcommands
+* #133 API change: `CommandLine::getCommands` returns `Map<String, CommandLine>` instead of `Map<String, Object>`
+
 == 0.9.6 - Bugfix release for public review. API may change.
 
 * #128 Fix unexpected MissingParameterException when a help-option is supplied (bug)

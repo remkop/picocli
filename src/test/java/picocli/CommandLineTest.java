@@ -2249,24 +2249,33 @@ public class CommandLineTest {
     static class ChildCommand1 { @Option(names = "-b") boolean b; public boolean equals(Object o) { return getClass().equals(o.getClass()); }}
     static class ChildCommand2 { @Option(names = "-c") boolean c; public boolean equals(Object o) { return getClass().equals(o.getClass()); }}
     static class GrandChild1Command1 { @Option(names = "-d") boolean d; public boolean equals(Object o) { return getClass().equals(o.getClass()); }}
-    static class GrandChild1Command2 { @Option(names = "-e") boolean e; public boolean equals(Object o) { return getClass().equals(o.getClass()); }}
+    static class GrandChild1Command2 { @Option(names = "-e") CustomType e; public boolean equals(Object o) { return getClass().equals(o.getClass()); }}
     static class GrandChild2Command1 { @Option(names = "-f") boolean f; public boolean equals(Object o) { return getClass().equals(o.getClass()); }}
     static class GrandChild2Command2 { @Option(names = "-g") boolean g; public boolean equals(Object o) { return getClass().equals(o.getClass()); }}
-    static class GreatGrandChild2Command2_1 { @Option(names = "-h") boolean h; public boolean equals(Object o) { return getClass().equals(o.getClass()); }}
+    static class GreatGrandChild2Command2_1 {
+        @Option(names = "-h") boolean h;
+        @Option(names = {"-t", "--type"}) CustomType customType;
+        public boolean equals(Object o) { return getClass().equals(o.getClass()); }
+    }
 
+    static class CustomType implements ITypeConverter<CustomType> {
+        private final String val;
+        private CustomType(String val) { this.val = val; }
+        @Override public CustomType convert(String value) { return new CustomType(value); }
+    }
     private static CommandLine createNestedCommand() {
-CommandLine commandLine = new CommandLine(new MainCommand());
-commandLine
-        .addCommand("cmd1", new CommandLine(new ChildCommand1())
-                .addCommand("sub11", new GrandChild1Command1())
-                .addCommand("sub12", new GrandChild1Command2())
-        )
-        .addCommand("cmd2", new CommandLine(new ChildCommand2())
-                .addCommand("sub21", new GrandChild2Command1())
-                .addCommand("sub22", new CommandLine(new GrandChild2Command2())
-                        .addCommand("sub22sub1", new GreatGrandChild2Command2_1())
+        CommandLine commandLine = new CommandLine(new MainCommand());
+        commandLine
+                .addCommand("cmd1", new CommandLine(new ChildCommand1())
+                        .addCommand("sub11", new GrandChild1Command1())
+                        .addCommand("sub12", new GrandChild1Command2())
                 )
-        );
+                .addCommand("cmd2", new CommandLine(new ChildCommand2())
+                        .addCommand("sub21", new GrandChild2Command1())
+                        .addCommand("sub22", new CommandLine(new GrandChild2Command2())
+                                .addCommand("sub22sub1", new GreatGrandChild2Command2_1())
+                        )
+                );
         return commandLine;
     }
 
@@ -2350,6 +2359,35 @@ commandLine
         List<Object> invalid5 = createNestedCommand().parse("sub22sub1");
         assertEquals("should ignore sub-sub-commands without preceding parent/grandparent command",
                 Arrays.asList(new MainCommand()), invalid5);
+    }
+
+    @Test(expected = MissingTypeConverterException.class)
+    public void testCustomTypeConverterNotRegisteredAtAll() {
+        CommandLine commandLine = createNestedCommand();
+        commandLine.parse("cmd1", "sub12", "-e", "TXT");
+    }
+
+    @Test(expected = MissingTypeConverterException.class)
+    public void testCustomTypeConverterRegisteredBeforeSubcommandsAdded() {
+        class TopLevel {}
+        CommandLine commandLine = new CommandLine(new TopLevel());
+        commandLine.registerConverter(CustomType.class, new CustomType(null));
+
+        commandLine.addCommand("main", createNestedCommand());
+        commandLine.parse("main", "cmd1", "sub12", "-e", "TXT");
+    }
+
+    @Test
+    public void testCustomTypeConverterRegisteredAfterSubcommandsAdded() {
+        class TopLevel { public boolean equals(Object o) {return getClass().equals(o.getClass());}}
+        CommandLine commandLine = new CommandLine(new TopLevel());
+        commandLine.addCommand("main", createNestedCommand());
+        commandLine.registerConverter(CustomType.class, new CustomType(null));
+        List<Object> parsed = commandLine.parse("main", "cmd1", "sub12", "-e", "TXT");
+        assertEquals(Arrays.asList(new TopLevel(), new MainCommand(), new ChildCommand1(), new GrandChild1Command2()), parsed);
+        assertFalse(((MainCommand) parsed.get(1)).a);
+        assertFalse(((ChildCommand1) parsed.get(2)).b);
+        assertEquals("TXT", ((GrandChild1Command2) parsed.get(3)).e.val);
     }
 
     @Test
