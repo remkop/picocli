@@ -123,8 +123,7 @@ public class CommandLine {
     public static final String VERSION = "0.9.7-SNAPSHOT";
 
     private final Interpreter interpreter;
-    private final List<Object> parsedCommands = new ArrayList<Object>();
-    private final Map<String, Object> commandMap = new LinkedHashMap<String, Object>();
+    private final List<Object> parsedCommands    = new ArrayList<Object>();
 
     /**
      * Constructs a new {@code CommandLine} interpreter with the specified annotated object.
@@ -136,20 +135,45 @@ public class CommandLine {
         interpreter = new Interpreter(annotatedObject);
     }
 
-    /** Registers a sub-command with the specified name.
-     * @param name the string to recognize on the command line as a sub-command
-     * @param annotatedObject the object to initialize with command line arguments following the sub-command name
+    /** Registers a subcommand with the specified name. The specified object can be an annotated object or a
+     * {@code CommandLine} instance with its own nested subcommands. For example:
+     * <pre>
+     * CommandLine commandLine = new CommandLine(new MainCommand());
+     * commandLine
+     *         .addCommand("cmd1",                 new ChildCommand1()) // subcommand
+     *         .addCommand("cmd2",                 new ChildCommand2())
+     *         .addCommand("cmd3", new CommandLine(new ChildCommand3()) // subcommand with nested sub-subcommands
+     *                 .addCommand("sub31", new GrandChild3Command1())
+     *                 .addCommand("sub32", new GrandChild3Command2())
+     *         )
+     *         .addCommand("cmd4", new CommandLine(new ChildCommand4())
+     *                 .addCommand("sub41", new GrandChild4Command1())
+     *                 .addCommand("sub42", new CommandLine(new GrandChild4Command2()) // deeper nesting
+     *                         .addCommand("sub42sub1", new GreatGrandChild4Command2_1())
+     *                 )
+     *         );
+     * </pre>
+     * @param name the string to recognize on the command line as a subcommand
+     * @param annotatedObject the object to initialize with command line arguments following the subcommand name.
+     *          This may be a {@code CommandLine} instance with its own (nested) subcommands
      * @return this CommandLine object, to allow method chaining
      */
     public CommandLine addCommand(String name, Object annotatedObject) {
-        interpreter.commands.put(name, new Interpreter(annotatedObject));
-        commandMap.put(name, annotatedObject);
+        interpreter.commands.put(name, toCommandLine(annotatedObject));
         return this;
     }
-    /** Returns a map with the {@linkplain #addCommand(String, Object) registered} sub-commands.
-     * @return a map with the registered sub-commands */
-    public Map<String, Object> getCommands() {
-        return new LinkedHashMap<String, Object>(commandMap);
+    /** Returns a map with the subcommands {@linkplain #addCommand(String, Object) registered} on this instance.
+     * @return a map with the registered subcommands */
+    public Map<String, CommandLine> getCommands() {
+        return new LinkedHashMap<String, CommandLine>(interpreter.commands);
+    }
+
+    /**
+     * Returns the annotated object that this {@code CommandLine} instance was constructed with.
+     * @return the annotated object that this {@code CommandLine} instance was constructed with
+     */
+    public Object getAnnotatedObject() {
+        return interpreter.annotatedObject;
     }
 
     /**
@@ -274,7 +298,7 @@ public class CommandLine {
      * @param colorScheme the {@code ColorScheme} defining the styles for options, parameters and commands when ANSI is enabled
      */
     public void usage(PrintStream out, Help.ColorScheme colorScheme) {
-        Help help = new Help(interpreter.annotatedObject, colorScheme).addAllCommands(commandMap);
+        Help help = new Help(interpreter.annotatedObject, colorScheme).addAllCommands(getCommands());
         StringBuilder sb = new StringBuilder()
                 .append(help.headerHeading())
                 .append(help.header())
@@ -1016,7 +1040,7 @@ public class CommandLine {
      * Helper class responsible for processing command line arguments.
      */
     private class Interpreter {
-        private final Map<String, Interpreter> commands = new LinkedHashMap<String, Interpreter>();
+        private final Map<String, CommandLine> commands                  = new LinkedHashMap<String, CommandLine>();
         private final Map<Class<?>, ITypeConverter<?>> converterRegistry = new HashMap<Class<?>, ITypeConverter<?>>();
         private final Map<String, Field> optionName2Field                = new HashMap<String, Field>();
         private final Map<Character, Field> singleCharOption2Field       = new HashMap<Character, Field>();
@@ -1087,16 +1111,17 @@ public class CommandLine {
             }
             // first reset any state in case this CommandLine instance is being reused
             isHelpRequested = false;
-            parse(arguments, args);
+            parsedCommands.clear();
+            parse(parsedCommands, arguments, args);
             return annotatedObject;
         }
 
-        private void parse(Stack<String> argumentStack, String[] originalArgs) {
+        private void parse(List<Object> parsedCommands, Stack<String> argumentStack, String[] originalArgs) {
             parsedCommands.add(annotatedObject);
             List<Field> required = new ArrayList<Field>(requiredFields);
             Collections.sort(required, new PositionalParametersSorter());
             try {
-                processArguments(argumentStack, required, originalArgs);
+                processArguments(parsedCommands, argumentStack, required, originalArgs);
             } catch (ParameterException ex) {
                 throw ex;
             } catch (Exception ex) {
@@ -1116,7 +1141,10 @@ public class CommandLine {
             }
         }
 
-        private void processArguments(Stack<String> args, Collection<Field> required, String[] originalArgs) throws Exception {
+        private void processArguments(List<Object> parsedCommands,
+                                      Stack<String> args,
+                                      Collection<Field> required,
+                                      String[] originalArgs) throws Exception {
             // arg must be one of:
             // 1. the "--" double dash separating options from positional arguments
             // 1. a stand-alone flag, like "-v" or "--verbose": no value required, must map to boolean or Boolean field
@@ -1141,7 +1169,7 @@ public class CommandLine {
                     if (!isHelpRequested && !required.isEmpty()) { // ensure current command portion is valid
                         throw MissingParameterException.create(required);
                     }
-                    commands.get(arg).parse(args, originalArgs);
+                    commands.get(arg).interpreter.parse(parsedCommands, args, originalArgs);
                     return; // remainder done by the command
                 }
 
@@ -1898,11 +1926,12 @@ public class CommandLine {
         /** Registers all specified commands with this Help.
          * @param commands maps the command names to the associated annotated object
          * @return this Help instance (for method chaining)
+         * @see CommandLine#getCommands()
          */
-        public Help addAllCommands(Map<String, Object> commands) {
+        public Help addAllCommands(Map<String, CommandLine> commands) {
             if (commands != null) {
-                for (Map.Entry<String, Object> entry : commands.entrySet()) {
-                    addCommand(entry.getKey(), entry.getValue());
+                for (Map.Entry<String, CommandLine> entry : commands.entrySet()) {
+                    addCommand(entry.getKey(), entry.getValue().getAnnotatedObject());
                 }
             }
             return this;

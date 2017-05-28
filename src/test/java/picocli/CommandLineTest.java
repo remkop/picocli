@@ -2239,10 +2239,117 @@ public class CommandLineTest {
         CommandLine commandLine = new CommandLine(new MainCommand());
         commandLine.addCommand("cmd1", new Command1()).addCommand("cmd2", new Command2());
 
-        Map<String, Object> commandMap = commandLine.getCommands();
+        Map<String, CommandLine> commandMap = commandLine.getCommands();
         assertEquals(2, commandMap.size());
-        assertTrue("cmd1", commandMap.get("cmd1") instanceof Command1);
-        assertTrue("cmd2", commandMap.get("cmd2") instanceof Command2);
+        assertTrue("cmd1", commandMap.get("cmd1").getAnnotatedObject() instanceof Command1);
+        assertTrue("cmd2", commandMap.get("cmd2").getAnnotatedObject() instanceof Command2);
+    }
+
+    static class MainCommand { @Option(names = "-a") boolean a; public boolean equals(Object o) { return getClass().equals(o.getClass()); }}
+    static class ChildCommand1 { @Option(names = "-b") boolean b; public boolean equals(Object o) { return getClass().equals(o.getClass()); }}
+    static class ChildCommand2 { @Option(names = "-c") boolean c; public boolean equals(Object o) { return getClass().equals(o.getClass()); }}
+    static class GrandChild1Command1 { @Option(names = "-d") boolean d; public boolean equals(Object o) { return getClass().equals(o.getClass()); }}
+    static class GrandChild1Command2 { @Option(names = "-e") boolean e; public boolean equals(Object o) { return getClass().equals(o.getClass()); }}
+    static class GrandChild2Command1 { @Option(names = "-f") boolean f; public boolean equals(Object o) { return getClass().equals(o.getClass()); }}
+    static class GrandChild2Command2 { @Option(names = "-g") boolean g; public boolean equals(Object o) { return getClass().equals(o.getClass()); }}
+    static class GreatGrandChild2Command2_1 { @Option(names = "-h") boolean h; public boolean equals(Object o) { return getClass().equals(o.getClass()); }}
+
+    private static CommandLine createNestedCommand() {
+CommandLine commandLine = new CommandLine(new MainCommand());
+commandLine
+        .addCommand("cmd1", new CommandLine(new ChildCommand1())
+                .addCommand("sub11", new GrandChild1Command1())
+                .addCommand("sub12", new GrandChild1Command2())
+        )
+        .addCommand("cmd2", new CommandLine(new ChildCommand2())
+                .addCommand("sub21", new GrandChild2Command1())
+                .addCommand("sub22", new CommandLine(new GrandChild2Command2())
+                        .addCommand("sub22sub1", new GreatGrandChild2Command2_1())
+                )
+        );
+        return commandLine;
+    }
+
+    @Test
+    public void testCommandListReturnsOnlyCommandsRegisteredOnInstance() {
+        CommandLine commandLine = createNestedCommand();
+
+        Map<String, CommandLine> commandMap = commandLine.getCommands();
+        assertEquals(2, commandMap.size());
+        assertTrue("cmd1", commandMap.get("cmd1").getAnnotatedObject() instanceof ChildCommand1);
+        assertTrue("cmd2", commandMap.get("cmd2").getAnnotatedObject() instanceof ChildCommand2);
+    }
+
+    @Test
+    public void testParseNestedSubCommands() {
+        // valid
+        List<Object> main = createNestedCommand().parse("cmd1");
+        assertEquals(Arrays.asList(new MainCommand(), new ChildCommand1()), main);
+        assertFalse(((MainCommand) main.get(0)).a);
+        assertFalse(((ChildCommand1)    main.get(1)).b);
+
+        List<Object> mainWithOptions = createNestedCommand().parse("-a", "cmd1", "-b");
+        assertEquals(Arrays.asList(new MainCommand(), new ChildCommand1()), mainWithOptions);
+        assertTrue(((MainCommand) mainWithOptions.get(0)).a);
+        assertTrue(((ChildCommand1)    mainWithOptions.get(1)).b);
+
+        List<Object> sub1 = createNestedCommand().parse("cmd1", "sub11");
+        assertEquals(Arrays.asList(new MainCommand(), new ChildCommand1(), new GrandChild1Command1()), sub1);
+        assertFalse(((MainCommand) sub1.get(0)).a);
+        assertFalse(((ChildCommand1)    sub1.get(1)).b);
+        assertFalse(((GrandChild1Command1)      sub1.get(2)).d);
+
+        List<Object> sub1WithOptions = createNestedCommand().parse("-a", "cmd1", "-b", "sub11", "-d");
+        assertEquals(Arrays.asList(new MainCommand(), new ChildCommand1(), new GrandChild1Command1()), sub1WithOptions);
+        assertTrue(((MainCommand) sub1WithOptions.get(0)).a);
+        assertTrue(((ChildCommand1)    sub1WithOptions.get(1)).b);
+        assertTrue(((GrandChild1Command1)      sub1WithOptions.get(2)).d);
+
+        // sub12 is not nested under sub11 so is not recognized
+        List<Object> sub1sub2 = createNestedCommand().parse("cmd1", "sub11", "sub12");
+        assertEquals(Arrays.asList(new MainCommand(), new ChildCommand1(), new GrandChild1Command1()), sub1sub2);
+        assertFalse(((MainCommand) sub1sub2.get(0)).a);
+        assertFalse(((ChildCommand1)    sub1sub2.get(1)).b);
+        assertFalse(((GrandChild1Command1)      sub1sub2.get(2)).d);
+
+        List<Object> sub22sub1 = createNestedCommand().parse("cmd2", "sub22", "sub22sub1");
+        assertEquals(Arrays.asList(new MainCommand(), new ChildCommand2(), new GrandChild2Command2(), new GreatGrandChild2Command2_1()), sub22sub1);
+        assertFalse(((MainCommand) sub22sub1.get(0)).a);
+        assertFalse(((ChildCommand2)    sub22sub1.get(1)).c);
+        assertFalse(((GrandChild2Command2)      sub22sub1.get(2)).g);
+        assertFalse(((GreatGrandChild2Command2_1) sub22sub1.get(3)).h);
+
+        List<Object> sub22sub1WithOptions = createNestedCommand().parse("-a", "cmd2", "-c", "sub22", "-g", "sub22sub1", "-h");
+        assertEquals(Arrays.asList(new MainCommand(), new ChildCommand2(), new GrandChild2Command2(), new GreatGrandChild2Command2_1()), sub22sub1WithOptions);
+        assertTrue(((MainCommand) sub22sub1WithOptions.get(0)).a);
+        assertTrue(((ChildCommand2)    sub22sub1WithOptions.get(1)).c);
+        assertTrue(((GrandChild2Command2)      sub22sub1WithOptions.get(2)).g);
+        assertTrue(((GreatGrandChild2Command2_1) sub22sub1WithOptions.get(3)).h);
+
+        // invalid
+        List<Object> invalid0 = createNestedCommand().parse("-a", "-b", "cmd1");
+        assertEquals("unmatched option prevents remainder to be parsed as command",
+                Arrays.asList(new MainCommand()), invalid0);
+
+        List<Object> invalid1 = createNestedCommand().parse("cmd1", "sub21");
+        assertEquals("should ignore sub-commands for different parent command",
+                Arrays.asList(new MainCommand(), new ChildCommand1()), invalid1);
+
+        List<Object> invalid2 = createNestedCommand().parse("cmd1", "sub22sub1");
+        assertEquals("should ignore sub-sub-commands for different parent command",
+                Arrays.asList(new MainCommand(), new ChildCommand1()), invalid2);
+
+        List<Object> invalid3 = createNestedCommand().parse("sub11");
+        assertEquals("should ignore sub-commands without preceding parent command",
+                Arrays.asList(new MainCommand()), invalid3);
+
+        List<Object> invalid4 = createNestedCommand().parse("sub21");
+        assertEquals("should ignore sub-commands without preceding parent command",
+                Arrays.asList(new MainCommand()), invalid4);
+
+        List<Object> invalid5 = createNestedCommand().parse("sub22sub1");
+        assertEquals("should ignore sub-sub-commands without preceding parent/grandparent command",
+                Arrays.asList(new MainCommand()), invalid5);
     }
 
     @Test
