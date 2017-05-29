@@ -3,8 +3,12 @@
 == 0.9.7 - Bugfix and enhancements release for public review. API may change.
 
 * #127 Added support for nested sub-subcommands
-* #133 API change: `CommandLine::getCommands` returns `Map<String, CommandLine>` instead of `Map<String, Object>`;
-   also added method `CommandLine::getAnnotatedObject`
+* #135 API change: renamed instance method `CommandLine::parse` to `parseCommands`
+* #134 API change: `CommandLine::parseCommands` now returns `List<CommandLine>` (was `List<Object>`)
+* #133 API change: `CommandLine::getCommands` now returns `Map<String, CommandLine>` (was `Map<String, Object>`)
+* Added method `CommandLine::getCommand`
+* #136 API change: renamed method `CommandLine::addCommand` to `addSubcommand`;
+*                  renamed method `CommandLine::getCommands` to `getSubcommands`
 
 == 0.9.6 - Bugfix release for public review. API may change.
 
