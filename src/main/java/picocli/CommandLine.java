@@ -137,11 +137,11 @@ public class CommandLine {
     /** Registers a subcommand with the specified name. For example:
      * <pre>
      * CommandLine commandLine = new CommandLine(new Git())
-     *         .addCommand("status",   new GitStatus())
-     *         .addCommand("commit",   new GitCommit();
-     *         .addCommand("add",      new GitAdd())
-     *         .addCommand("branch",   new GitBranch())
-     *         .addCommand("checkout", new GitCheckout())
+     *         .addSubcommand("status",   new GitStatus())
+     *         .addSubcommand("commit",   new GitCommit();
+     *         .addSubcommand("add",      new GitAdd())
+     *         .addSubcommand("branch",   new GitBranch())
+     *         .addSubcommand("checkout", new GitCheckout())
      *         //...
      *         ;
      * </pre>
@@ -150,14 +150,14 @@ public class CommandLine {
      * {@code CommandLine} instance with its own nested subcommands. For example:</p>
      * <pre>
      * CommandLine commandLine = new CommandLine(new MainCommand())
-     *         .addCommand("cmd1",                 new ChildCommand1()) // subcommand
-     *         .addCommand("cmd2",                 new ChildCommand2())
-     *         .addCommand("cmd3", new CommandLine(new ChildCommand3()) // subcommand with nested sub-subcommands
-     *                 .addCommand("cmd3sub1",                 new GrandChild3Command1())
-     *                 .addCommand("cmd3sub2",                 new GrandChild3Command2())
-     *                 .addCommand("cmd3sub3", new CommandLine(new GrandChild3Command3()) // deeper nesting
-     *                         .addCommand("cmd3sub3sub1", new GreatGrandChild3Command3_1())
-     *                         .addCommand("cmd3sub3sub2", new GreatGrandChild3Command3_2())
+     *         .addSubcommand("cmd1",                 new ChildCommand1()) // subcommand
+     *         .addSubcommand("cmd2",                 new ChildCommand2())
+     *         .addSubcommand("cmd3", new CommandLine(new ChildCommand3()) // subcommand with nested sub-subcommands
+     *                 .addSubcommand("cmd3sub1",                 new GrandChild3Command1())
+     *                 .addSubcommand("cmd3sub2",                 new GrandChild3Command2())
+     *                 .addSubcommand("cmd3sub3", new CommandLine(new GrandChild3Command3()) // deeper nesting
+     *                         .addSubcommand("cmd3sub3sub1", new GreatGrandChild3Command3_1())
+     *                         .addSubcommand("cmd3sub3sub2", new GreatGrandChild3Command3_2())
      *                 )
      *         );
      * </pre>
@@ -172,13 +172,13 @@ public class CommandLine {
      * @return this CommandLine object, to allow method chaining
      * @see #registerConverter(Class, ITypeConverter)
      */
-    public CommandLine addCommand(String name, Object command) {
+    public CommandLine addSubcommand(String name, Object command) {
         interpreter.commands.put(name, toCommandLine(command));
         return this;
     }
-    /** Returns a map with the subcommands {@linkplain #addCommand(String, Object) registered} on this instance.
+    /** Returns a map with the subcommands {@linkplain #addSubcommand(String, Object) registered} on this instance.
      * @return a map with the registered subcommands */
-    public Map<String, CommandLine> getCommands() {
+    public Map<String, CommandLine> getSubcommands() {
         return new LinkedHashMap<String, CommandLine>(interpreter.commands);
     }
 
@@ -282,7 +282,7 @@ public class CommandLine {
      * Prints a usage help message for the specified annotated class to the specified {@code PrintStream}.
      * Delegates construction of the usage help message to the {@link Help} inner class and is equivalent to:
      * <pre>
-     * Help help = new Help(command).addAllCommands(getCommands());
+     * Help help = new Help(command).addAllSubcommands(getSubcommands());
      * StringBuilder sb = new StringBuilder()
      *         .append(help.headerHeading())
      *         .append(help.header())
@@ -311,7 +311,7 @@ public class CommandLine {
      * @param colorScheme the {@code ColorScheme} defining the styles for options, parameters and commands when ANSI is enabled
      */
     public void usage(PrintStream out, Help.ColorScheme colorScheme) {
-        Help help = new Help(interpreter.command, colorScheme).addAllCommands(getCommands());
+        Help help = new Help(interpreter.command, colorScheme).addAllSubcommands(getSubcommands());
         StringBuilder sb = new StringBuilder()
                 .append(help.headerHeading())
                 .append(help.header())
@@ -415,7 +415,7 @@ public class CommandLine {
      * @param converter the class capable of converting string values to the specified target type
      * @param <K> the target type
      * @return this CommandLine object, to allow method chaining
-     * @see #addCommand(String, Object)
+     * @see #addSubcommand(String, Object)
      */
     public <K> CommandLine registerConverter(Class<K> cls, ITypeConverter<K> converter) {
         interpreter.converterRegistry.put(Assert.notNull(cls, "class"), Assert.notNull(converter, "converter"));
@@ -846,9 +846,9 @@ public class CommandLine {
          * @see Help#showDefaultValues */
         boolean showDefaultValues() default false;
 
-        /** Set the heading preceding the sub-commands list. May contain embedded {@linkplain java.util.Formatter format specifiers}.
+        /** Set the heading preceding the subcommands list. May contain embedded {@linkplain java.util.Formatter format specifiers}.
          * The default heading is {@code "Commands:%n"} (with a line break at the end).
-         * @return the heading preceding the sub-commands list
+         * @return the heading preceding the subcommands list
          * @see Help#commandListHeading(Object...)  */
         String commandListHeading() default "Commands:%n";
 
@@ -1819,7 +1819,7 @@ public class CommandLine {
          * Applications may programmatically set this field to create a custom help message. */
         public String[] customSynopsis = {};
 
-        /** Optional header lines displayed at the top of the help message. For sub-commands, the first header line is
+        /** Optional header lines displayed at the top of the help message. For subcommands, the first header line is
          * displayed in the list of commands. Values are initialized from {@link Command#header()}
          * if the {@code Command} annotation is present, otherwise this is an empty array and the help message has no
          * header. Applications may programmatically set this field to create a custom help message. */
@@ -1861,7 +1861,7 @@ public class CommandLine {
         /** Optional heading preceding the options list. Initialized from {@link Command#optionListHeading()}, or null. */
         public String optionListHeading;
 
-        /** Optional heading preceding the command list. Initialized from {@link Command#commandListHeading()}. {@code "Commands:%n"} by default. */
+        /** Optional heading preceding the subcommand list. Initialized from {@link Command#commandListHeading()}. {@code "Commands:%n"} by default. */
         public String commandListHeading;
 
         /** Optional heading preceding the footer section. Initialized from {@link Command#footerHeading()}, or null. */
@@ -1944,26 +1944,26 @@ public class CommandLine {
             optionFields                 = Collections.unmodifiableList(options);
         }
 
-        /** Registers all specified commands with this Help.
-         * @param commands maps the command names to the associated annotated object
+        /** Registers all specified subcommands with this Help.
+         * @param commands maps the command names to the associated CommandLine object
          * @return this Help instance (for method chaining)
-         * @see CommandLine#getCommands()
+         * @see CommandLine#getSubcommands()
          */
-        public Help addAllCommands(Map<String, CommandLine> commands) {
+        public Help addAllSubcommands(Map<String, CommandLine> commands) {
             if (commands != null) {
                 for (Map.Entry<String, CommandLine> entry : commands.entrySet()) {
-                    addCommand(entry.getKey(), entry.getValue().getCommand());
+                    addSubcommand(entry.getKey(), entry.getValue().getCommand());
                 }
             }
             return this;
         }
 
-        /** Registers the specified command with this Help.
-         * @param commandName the name of the command to display in the usage message
+        /** Registers the specified subcommand with this Help.
+         * @param commandName the name of the subcommand to display in the usage message
          * @param command the annotated object to get more information from
          * @return this Help instance (for method chaining)
          */
-        public Help addCommand(String commandName, Object command) {
+        public Help addSubcommand(String commandName, Object command) {
             commands.put(commandName, new Help(command));
             return this;
         }

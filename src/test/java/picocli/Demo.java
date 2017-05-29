@@ -421,17 +421,17 @@ public class Demo implements Runnable {
 
     static CommandLine mainCommand() {
         CommandLine commandLine = new CommandLine(new Git());
-        commandLine.addCommand("status", new GitStatus());
-        commandLine.addCommand("commit", new GitCommit());
-        commandLine.addCommand("add", new GitAdd());
-        commandLine.addCommand("branch", new GitBranch());
-        commandLine.addCommand("checkout", new GitCheckout());
-        commandLine.addCommand("clone", new GitClone());
-        commandLine.addCommand("diff", new GitDiff());
-        commandLine.addCommand("merge", new GitMerge());
-        commandLine.addCommand("push", new GitPush());
-        commandLine.addCommand("rebase", new GitRebase());
-        commandLine.addCommand("tag", new GitTag());
+        commandLine.addSubcommand("status", new GitStatus());
+        commandLine.addSubcommand("commit", new GitCommit());
+        commandLine.addSubcommand("add", new GitAdd());
+        commandLine.addSubcommand("branch", new GitBranch());
+        commandLine.addSubcommand("checkout", new GitCheckout());
+        commandLine.addSubcommand("clone", new GitClone());
+        commandLine.addSubcommand("diff", new GitDiff());
+        commandLine.addSubcommand("merge", new GitMerge());
+        commandLine.addSubcommand("push", new GitPush());
+        commandLine.addSubcommand("rebase", new GitRebase());
+        commandLine.addSubcommand("tag", new GitTag());
         return commandLine;
     }
 

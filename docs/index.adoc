@@ -240,7 +240,7 @@ commandLine.registerConverter(java.nio.file.Path.class, s -> java.nio.file.Paths
 commandLine.registerConverter(java.time.Duration.class, s -> java.time.Duration.parse(s));
 ----
 
-After registering custom converters, call the `parse(String...)` method on the `CommandLine` instance where the converters are registered. (The static `parse` method cannot be used.) For example:
+After registering custom converters, call the `parseCommands(String...)` method on the `CommandLine` instance where the converters are registered. (The static `parse` method cannot be used.) For example:
 
 [source,java]
 ----
@@ -257,13 +257,13 @@ CommandLine commandLine = new CommandLine(app)
         .registerConverter(Path.class,     s -> Paths.get(s))
         .registerConverter(Duration.class, s -> Duration.parse(s));
 
-commandLine.parse("-d", "PT15M", "file1.txt");
+commandLine.parseCommands("-d", "PT15M", "file1.txt");
 assert app.path.equals(Paths.get("file1.txt"));
 assert app.duration.equals(Duration.parse("PT15M"));
 ----
 
 CAUTION: _Note on subcommands:_ the specified converter will be registered with the `CommandLine` object
-and its subcommands (and nested sub-subcommands) added _before_ the converter was registered.
+and all subcommands (and nested sub-subcommands) that were added _before_ the converter was registered.
 Subcommands added later will not have the converter added automatically.
 To ensure a custom type converter is available to all subcommands, register the type converter last, after adding subcommands.
 
@@ -948,17 +948,17 @@ Subcommands can be registered with the `CommandLine.addCommand` method. You pass
 [source,java]
 ----
 CommandLine commandLine = new CommandLine(new Git())
-        .addCommand("status",   new GitStatus())
-        .addCommand("commit",   new GitCommit();
-        .addCommand("add",      new GitAdd())
-        .addCommand("branch",   new GitBranch())
-        .addCommand("checkout", new GitCheckout())
-        .addCommand("clone",    new GitClone())
-        .addCommand("diff",     new GitDiff())
-        .addCommand("merge",    new GitMerge())
-        .addCommand("push",     new GitPush())
-        .addCommand("rebase",   new GitRebase())
-        .addCommand("tag",      new GitTag());
+        .addSubcommand("status",   new GitStatus())
+        .addSubcommand("commit",   new GitCommit();
+        .addSubcommand("add",      new GitAdd())
+        .addSubcommand("branch",   new GitBranch())
+        .addSubcommand("checkout", new GitCheckout())
+        .addSubcommand("clone",    new GitClone())
+        .addSubcommand("diff",     new GitDiff())
+        .addSubcommand("merge",    new GitMerge())
+        .addSubcommand("push",     new GitPush())
+        .addSubcommand("rebase",   new GitRebase())
+        .addSubcommand("tag",      new GitTag());
 ----
 
 CAUTION: _Note on custom type converters:_ custom type converters are registered only with the subcommands and nested
@@ -967,29 +967,29 @@ To ensure a custom type converter is available to all subcommands, register the 
 adding subcommands.
 
 === Parsing Subcommands
-The `CommandLine.parse` method returns a List with the recognized commands. The main command (`git` in this example) is always the first element in the returned list.
+The `CommandLine.parseCommands` method returns a List with the recognized commands. The main command (`git` in this example) is always the first element in the returned list.
 
 [source,java]
 ----
 CommandLine commandLine = new CommandLine(new Git());
-commandLine.addCommand("status",   new GitStatus());
+commandLine.addSubcommand("status",   new GitStatus());
 ...
 
 String[] args = { "--git-dir=/home/rpopma/picocli", "status", "-sbuno"};
-List<Object> parsed = commandLine.parse(args);
+List<CommandLine> parsed = commandLine.parseCommands(args);
 assert parsed.size() == 2 : "1 command and 1 subcommand found"
 
-assert parsed.get(0).getClass() == Git.class       : "main command"
-assert parsed.get(1).getClass() == GitStatus.class : "subcommand"
+assert parsed.get(0).getCommand().getClass() == Git.class       : "main command"
+assert parsed.get(1).getCommand().getClass() == GitStatus.class : "subcommand"
 ----
 
 Your application needs to inspect this list to see what subcommand was invoked and take appropriate action. For example:
 [source,java]
 ----
-Git git = (Git) parsed.get(0);
+Git git = (Git) parsed.get(0).getCommand();
 assert git.gitDir.equals(new File("/home/rpopma/picocli"));
 
-GitStatus gitstatus = (GitStatus) parsed.get(1);
+GitStatus gitstatus = (GitStatus) parsed.get(1).getCommand();
 assert  gitstatus.shortFormat              : "git status -s"
 assert  gitstatus.branchInfo               : "git status -b"
 assert !gitstatus.showIgnored              : "git status --showIgnored not specified"
@@ -1002,7 +1002,7 @@ After registering subcommands, calling the `commandLine.usage` method will show 
 [source,java]
 ----
 CommandLine commandLine = new CommandLine(new Git());
-commandLine.addCommand("status",   new GitStatus());
+commandLine.addSubcommand("status",   new GitStatus());
 ...
 commandLine.usage(System.out);
 ----
@@ -1065,14 +1065,14 @@ The specified object can be an annotated object or a
 [source,java]
 ----
 CommandLine commandLine = new CommandLine(new MainCommand())
-        .addCommand("cmd1",                 new ChildCommand1()) // subcommand
-        .addCommand("cmd2",                 new ChildCommand2())
-        .addCommand("cmd3", new CommandLine(new ChildCommand3()) // subcommand with nested sub-subcommands
-                .addCommand("cmd3sub1",                 new GrandChild3Command1())
-                .addCommand("cmd3sub2",                 new GrandChild3Command2())
-                .addCommand("cmd3sub3", new CommandLine(new GrandChild3Command3()) // deeper nesting
-                        .addCommand("cmd3sub3sub1", new GreatGrandChild3Command3_1())
-                        .addCommand("cmd3sub3sub2", new GreatGrandChild3Command3_2())
+        .addSubcommand("cmd1",                 new ChildCommand1()) // subcommand
+        .addSubcommand("cmd2",                 new ChildCommand2())
+        .addSubcommand("cmd3", new CommandLine(new ChildCommand3()) // subcommand with nested sub-subcommands
+                .addSubcommand("cmd3sub1",                 new GrandChild3Command1())
+                .addSubcommand("cmd3sub2",                 new GrandChild3Command2())
+                .addSubcommand("cmd3sub3", new CommandLine(new GrandChild3Command3()) // deeper nesting
+                        .addSubcommand("cmd3sub3sub1", new GreatGrandChild3Command3_1())
+                        .addSubcommand("cmd3sub3sub2", new GreatGrandChild3Command3_2())
                 )
         );
 ----
@@ -1219,7 +1219,7 @@ OptionArg optionArg     = new OptionArg();
 CommandLine commandLine = new CommandLine(optionArg);
 
 commandLine.setSeparator(":"); // programmatically set a separator
-commandLine.parse("-f:output.txt");
+commandLine.parseCommands("-f:output.txt");
 assert optionArg.file.equals("output.txt");
 ----
 

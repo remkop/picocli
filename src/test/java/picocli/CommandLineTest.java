@@ -2237,9 +2237,9 @@ public class CommandLineTest {
         class Command1 {}
         class Command2 {}
         CommandLine commandLine = new CommandLine(new MainCommand());
-        commandLine.addCommand("cmd1", new Command1()).addCommand("cmd2", new Command2());
+        commandLine.addSubcommand("cmd1", new Command1()).addSubcommand("cmd2", new Command2());
 
-        Map<String, CommandLine> commandMap = commandLine.getCommands();
+        Map<String, CommandLine> commandMap = commandLine.getSubcommands();
         assertEquals(2, commandMap.size());
         assertTrue("cmd1", commandMap.get("cmd1").getCommand() instanceof Command1);
         assertTrue("cmd2", commandMap.get("cmd2").getCommand() instanceof Command2);
@@ -2266,14 +2266,14 @@ public class CommandLineTest {
     private static CommandLine createNestedCommand() {
         CommandLine commandLine = new CommandLine(new MainCommand());
         commandLine
-                .addCommand("cmd1", new CommandLine(new ChildCommand1())
-                        .addCommand("sub11", new GrandChild1Command1())
-                        .addCommand("sub12", new GrandChild1Command2())
+                .addSubcommand("cmd1", new CommandLine(new ChildCommand1())
+                        .addSubcommand("sub11", new GrandChild1Command1())
+                        .addSubcommand("sub12", new GrandChild1Command2())
                 )
-                .addCommand("cmd2", new CommandLine(new ChildCommand2())
-                        .addCommand("sub21", new GrandChild2Command1())
-                        .addCommand("sub22", new CommandLine(new GrandChild2Command2())
-                                .addCommand("sub22sub1", new GreatGrandChild2Command2_1())
+                .addSubcommand("cmd2", new CommandLine(new ChildCommand2())
+                        .addSubcommand("sub21", new GrandChild2Command1())
+                        .addSubcommand("sub22", new CommandLine(new GrandChild2Command2())
+                                .addSubcommand("sub22sub1", new GreatGrandChild2Command2_1())
                         )
                 );
         return commandLine;
@@ -2283,7 +2283,7 @@ public class CommandLineTest {
     public void testCommandListReturnsOnlyCommandsRegisteredOnInstance() {
         CommandLine commandLine = createNestedCommand();
 
-        Map<String, CommandLine> commandMap = commandLine.getCommands();
+        Map<String, CommandLine> commandMap = commandLine.getSubcommands();
         assertEquals(2, commandMap.size());
         assertTrue("cmd1", commandMap.get("cmd1").getCommand() instanceof ChildCommand1);
         assertTrue("cmd2", commandMap.get("cmd2").getCommand() instanceof ChildCommand2);
@@ -2375,7 +2375,7 @@ public class CommandLineTest {
         CommandLine commandLine = new CommandLine(new TopLevel());
         commandLine.registerConverter(CustomType.class, new CustomType(null));
 
-        commandLine.addCommand("main", createNestedCommand());
+        commandLine.addSubcommand("main", createNestedCommand());
         commandLine.parseCommands("main", "cmd1", "sub12", "-e", "TXT");
     }
 
@@ -2383,7 +2383,7 @@ public class CommandLineTest {
     public void testCustomTypeConverterRegisteredAfterSubcommandsAdded() {
         class TopLevel { public boolean equals(Object o) {return getClass().equals(o.getClass());}}
         CommandLine commandLine = new CommandLine(new TopLevel());
-        commandLine.addCommand("main", createNestedCommand());
+        commandLine.addSubcommand("main", createNestedCommand());
         commandLine.registerConverter(CustomType.class, new CustomType(null));
         List<CommandLine> parsed = commandLine.parseCommands("main", "cmd1", "sub12", "-e", "TXT");
         assertEquals(4, parsed.size());
