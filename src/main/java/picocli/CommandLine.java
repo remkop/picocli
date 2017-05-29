@@ -129,10 +129,10 @@ public class CommandLine {
      * Constructs a new {@code CommandLine} interpreter with the specified annotated object.
      * When the {@link #parse(String...)} method is called, fields of the specified object that are annotated
      * with {@code @Option} or {@code @Parameters} will be initialized based on command line arguments.
-     * @param annotatedObject the object to initialize from the command line arguments
+     * @param command the object to initialize from the command line arguments
      */
-    public CommandLine(Object annotatedObject) {
-        interpreter = new Interpreter(annotatedObject);
+    public CommandLine(Object command) {
+        interpreter = new Interpreter(command);
     }
 
     /** Registers a subcommand with the specified name. For example:
@@ -168,13 +168,13 @@ public class CommandLine {
      * adding subcommands.</p>
      *
      * @param name the string to recognize on the command line as a subcommand
-     * @param annotatedObject the object to initialize with command line arguments following the subcommand name.
+     * @param command the object to initialize with command line arguments following the subcommand name.
      *          This may be a {@code CommandLine} instance with its own (nested) subcommands
      * @return this CommandLine object, to allow method chaining
      * @see #registerConverter(Class, ITypeConverter)
      */
-    public CommandLine addCommand(String name, Object annotatedObject) {
-        interpreter.commands.put(name, toCommandLine(annotatedObject));
+    public CommandLine addCommand(String name, Object command) {
+        interpreter.commands.put(name, toCommandLine(command));
         return this;
     }
     /** Returns a map with the subcommands {@linkplain #addCommand(String, Object) registered} on this instance.
@@ -187,8 +187,8 @@ public class CommandLine {
      * Returns the annotated object that this {@code CommandLine} instance was constructed with.
      * @return the annotated object that this {@code CommandLine} instance was constructed with
      */
-    public Object getAnnotatedObject() {
-        return interpreter.annotatedObject;
+    public Object getCommand() {
+        return interpreter.command;
     }
 
     /**
@@ -197,22 +197,22 @@ public class CommandLine {
      * </p><p>
      * This is equivalent to
      * </p><pre>
-     * CommandLine cli = new CommandLine(annotatedObject);
+     * CommandLine cli = new CommandLine(command);
      * cli.parse(args);
-     * return annotatedObject;
+     * return command;
      * </pre>
      *
-     * @param annotatedObject the object to initialize. This object contains fields annotated with
+     * @param command the object to initialize. This object contains fields annotated with
      *          {@code @Option} or {@code @Parameters}.
      * @param args the command line arguments to parse
      * @param <T> the type of the annotated object
      * @return the specified annotated object
      * @throws ParameterException if the specified command line arguments are invalid
      */
-    public static <T> T parse(T annotatedObject, String... args) {
-        CommandLine cli = toCommandLine(annotatedObject);
+    public static <T> T parse(T command, String... args) {
+        CommandLine cli = toCommandLine(command);
         cli.parse(args);
-        return annotatedObject;
+        return command;
     }
 
     /**
@@ -232,34 +232,34 @@ public class CommandLine {
     }
 
     /**
-     * Equivalent to {@code new CommandLine(annotatedObject).usage(out)}. See {@link #usage(PrintStream)} for details.
-     * @param annotatedObject the object annotated with {@link Command}, {@link Option} and {@link Parameters}
+     * Equivalent to {@code new CommandLine(command).usage(out)}. See {@link #usage(PrintStream)} for details.
+     * @param command the object annotated with {@link Command}, {@link Option} and {@link Parameters}
      * @param out the print stream to print the help message to
      */
-    public static void usage(Object annotatedObject, PrintStream out) {
-        toCommandLine(annotatedObject).usage(out);
+    public static void usage(Object command, PrintStream out) {
+        toCommandLine(command).usage(out);
     }
 
     /**
-     * Equivalent to {@code new CommandLine(annotatedObject).usage(out, ansi)}.
+     * Equivalent to {@code new CommandLine(command).usage(out, ansi)}.
      * See {@link #usage(PrintStream, Help.Ansi)} for details.
-     * @param annotatedObject the object annotated with {@link Command}, {@link Option} and {@link Parameters}
+     * @param command the object annotated with {@link Command}, {@link Option} and {@link Parameters}
      * @param out the print stream to print the help message to
      * @param ansi whether the usage message should contain ANSI escape codes or not
      */
-    public static void usage(Object annotatedObject, PrintStream out, Help.Ansi ansi) {
-        toCommandLine(annotatedObject).usage(out, ansi);
+    public static void usage(Object command, PrintStream out, Help.Ansi ansi) {
+        toCommandLine(command).usage(out, ansi);
     }
 
     /**
-     * Equivalent to {@code new CommandLine(annotatedObject).usage(out, colorScheme)}.
+     * Equivalent to {@code new CommandLine(command).usage(out, colorScheme)}.
      * See {@link #usage(PrintStream, Help.ColorScheme)} for details.
-     * @param annotatedObject the object annotated with {@link Command}, {@link Option} and {@link Parameters}
+     * @param command the object annotated with {@link Command}, {@link Option} and {@link Parameters}
      * @param out the print stream to print the help message to
      * @param colorScheme the {@code ColorScheme} defining the styles for options, parameters and commands when ANSI is enabled
      */
-    public static void usage(Object annotatedObject, PrintStream out, Help.ColorScheme colorScheme) {
-        toCommandLine(annotatedObject).usage(out, colorScheme);
+    public static void usage(Object command, PrintStream out, Help.ColorScheme colorScheme) {
+        toCommandLine(command).usage(out, colorScheme);
     }
 
     /**
@@ -284,7 +284,7 @@ public class CommandLine {
      * Prints a usage help message for the specified annotated class to the specified {@code PrintStream}.
      * Delegates construction of the usage help message to the {@link Help} inner class and is equivalent to:
      * <pre>
-     * Help help = new Help(annotatedObject).addAllCommands(getCommands());
+     * Help help = new Help(command).addAllCommands(getCommands());
      * StringBuilder sb = new StringBuilder()
      *         .append(help.headerHeading())
      *         .append(help.header())
@@ -313,7 +313,7 @@ public class CommandLine {
      * @param colorScheme the {@code ColorScheme} defining the styles for options, parameters and commands when ANSI is enabled
      */
     public void usage(PrintStream out, Help.ColorScheme colorScheme) {
-        Help help = new Help(interpreter.annotatedObject, colorScheme).addAllCommands(getCommands());
+        Help help = new Help(interpreter.command, colorScheme).addAllCommands(getCommands());
         StringBuilder sb = new StringBuilder()
                 .append(help.headerHeading())
                 .append(help.header())
@@ -334,14 +334,14 @@ public class CommandLine {
 
     /**
      * Delegates to {@link #run(Runnable, PrintStream, Help.Ansi, String...)} with {@link Help.Ansi#AUTO}.
-     * @param annotatedObject the command to run when {@linkplain #parse(Object, String...) parsing} succeeds.
+     * @param command the command to run when {@linkplain #parse(Object, String...) parsing} succeeds.
      * @param out the printStream to print to
      * @param args the command line arguments to parse
      * @param <R> the annotated object must implement Runnable
      * @see #run(Runnable, PrintStream, Help.Ansi, String...)
      */
-    public static <R extends Runnable> void run(R annotatedObject, PrintStream out, String... args) {
-        run(annotatedObject, out, AUTO, args);
+    public static <R extends Runnable> void run(R command, PrintStream out, String... args) {
+        run(command, out, AUTO, args);
     }
     /**
      * Convenience method to allow command line application authors to avoid some boilerplate code in their application.
@@ -349,28 +349,28 @@ public class CommandLine {
      * <pre>
      * Runnable runnable = null;
      * try {
-     *     runnable = parse(annotatedObject, args);
+     *     runnable = parse(command, args);
      * } catch (Exception ex) {
      *     System.err.println(ex.getMessage());
-     *     usage(annotatedObject, out, ansi);
+     *     usage(command, out, ansi);
      *     return;
      * }
      * runnable.run();
      * </pre>
      * Note that this method is not suitable for commands with subcommands.
-     * @param annotatedObject the command to run when {@linkplain #parse(Object, String...) parsing} succeeds.
+     * @param command the command to run when {@linkplain #parse(Object, String...) parsing} succeeds.
      * @param out the printStream to print to
      * @param ansi whether the usage message should include ANSI escape codes or not
      * @param args the command line arguments to parse
      * @param <R> the annotated object must implement Runnable
      */
-    public static <R extends Runnable> void run(R annotatedObject, PrintStream out, Help.Ansi ansi, String... args) {
+    public static <R extends Runnable> void run(R command, PrintStream out, Help.Ansi ansi, String... args) {
         Runnable runnable = null;
         try {
-            runnable = parse(annotatedObject, args);
+            runnable = parse(command, args);
         } catch (Exception ex) {
             out.println(ex.getMessage());
-            usage(annotatedObject, out, ansi);
+            usage(command, out, ansi);
             return;
         }
         runnable.run();
@@ -1069,11 +1069,11 @@ public class CommandLine {
         private final Map<Character, Field> singleCharOption2Field       = new HashMap<Character, Field>();
         private final List<Field> requiredFields                         = new ArrayList<Field>();
         private final List<Field> positionalParametersFields             = new ArrayList<Field>();
-        private final Object annotatedObject;
+        private final Object command;
         private boolean isHelpRequested;
         private String separator = "=";
 
-        Interpreter(Object annotatedObject) {
+        Interpreter(Object command) {
             converterRegistry.put(String.class,        new BuiltIn.StringConverter());
             converterRegistry.put(StringBuilder.class, new BuiltIn.StringBuilderConverter());
             converterRegistry.put(CharSequence.class,  new BuiltIn.CharSequenceConverter());
@@ -1105,14 +1105,14 @@ public class CommandLine {
             converterRegistry.put(Pattern.class,       new BuiltIn.PatternConverter());
             converterRegistry.put(UUID.class,          new BuiltIn.UUIDConverter());
 
-            this.annotatedObject    = Assert.notNull(annotatedObject, "annotatedObject");
-            Class<?> cls = annotatedObject.getClass();
+            this.command    = Assert.notNull(command, "command");
+            Class<?> cls = command.getClass();
             String declaredSeparator = null;
             while (cls != null) {
                 init(cls, requiredFields, optionName2Field, singleCharOption2Field, positionalParametersFields);
                 if (cls.isAnnotationPresent(Command.class)) {
-                    Command command = cls.getAnnotation(Command.class);
-                    declaredSeparator = (declaredSeparator == null) ? command.separator() : declaredSeparator;
+                    Command cmd = cls.getAnnotation(Command.class);
+                    declaredSeparator = (declaredSeparator == null) ? cmd.separator() : declaredSeparator;
                 }
                 cls = cls.getSuperclass();
             }
@@ -1136,11 +1136,11 @@ public class CommandLine {
             isHelpRequested = false;
             parsedCommands.clear();
             parse(parsedCommands, arguments, args);
-            return annotatedObject;
+            return command;
         }
 
         private void parse(List<Object> parsedCommands, Stack<String> argumentStack, String[] originalArgs) {
-            parsedCommands.add(annotatedObject);
+            parsedCommands.add(command);
             List<Field> required = new ArrayList<Field>(requiredFields);
             Collections.sort(required, new PositionalParametersSorter());
             try {
@@ -1355,7 +1355,7 @@ public class CommandLine {
             }
             ITypeConverter<?> converter = getTypeConverter(cls);
             Object objValue = tryConvert(field, -1, converter, value, cls);
-            field.set(annotatedObject, objValue);
+            field.set(command, objValue);
             return result;
         }
 
@@ -1367,7 +1367,7 @@ public class CommandLine {
             Class<?> type = cls.getComponentType();
             ITypeConverter<?> converter = getTypeConverter(type);
             List<Object> converted = consumeArguments(field, annotation, arity, args, converter, cls);
-            Object existing = field.get(annotatedObject);
+            Object existing = field.get(command);
             int length = existing == null ? 0 : Array.getLength(existing);
             List<Object> newValues = new ArrayList<Object>();
             for (int i = 0; i < length; i++) {
@@ -1381,7 +1381,7 @@ public class CommandLine {
                 }
             }
             Object array = Array.newInstance(type, newValues.size());
-            field.set(annotatedObject, array);
+            field.set(command, array);
             for (int i = 0; i < newValues.size(); i++) {
                 Array.set(array, i, newValues.get(i));
             }
@@ -1394,13 +1394,13 @@ public class CommandLine {
                                                  Arity arity,
                                                  Stack<String> args,
                                                  Class<?> cls) throws Exception {
-            Collection<Object> collection = (Collection<Object>) field.get(annotatedObject);
+            Collection<Object> collection = (Collection<Object>) field.get(command);
             Class<?> type = getTypeAttribute(field);
             ITypeConverter<?> converter = getTypeConverter(type);
             List<Object> converted = consumeArguments(field, annotation, arity, args, converter, type);
             if (collection == null) {
                 collection = createCollection(cls);
-                field.set(annotatedObject, collection);
+                field.set(command, collection);
             }
             for (Object element : converted) {
                 if (element instanceof Collection<?>) {
@@ -1791,7 +1791,7 @@ public class CommandLine {
         /** Constant String holding the default program name: {@value} */
         protected static final String DEFAULT_COMMAND_NAME = "<main class>";
 
-        private final Object annotatedObject;
+        private final Object command;
         private final Map<String, Help> commands = new LinkedHashMap<String, Help>();
         final ColorScheme colorScheme;
 
@@ -1871,29 +1871,29 @@ public class CommandLine {
 
         /** Constructs a new {@code Help} instance with a default color scheme, initialized from annotatations
          * on the specified class and superclasses.
-         * @param annotatedObject the annotated object to create usage help for */
-        public Help(Object annotatedObject) {
-            this(annotatedObject, Ansi.AUTO);
+         * @param command the annotated object to create usage help for */
+        public Help(Object command) {
+            this(command, Ansi.AUTO);
         }
 
         /** Constructs a new {@code Help} instance with a default color scheme, initialized from annotatations
          * on the specified class and superclasses.
-         * @param annotatedObject the annotated object to create usage help for
+         * @param command the annotated object to create usage help for
          * @param ansi whether to emit ANSI escape codes or not */
-        public Help(Object annotatedObject, Ansi ansi) {
-            this(annotatedObject, defaultColorScheme(ansi));
+        public Help(Object command, Ansi ansi) {
+            this(command, defaultColorScheme(ansi));
         }
 
         /** Constructs a new {@code Help} instance with the specified color scheme, initialized from annotatations
          * on the specified class and superclasses.
-         * @param annotatedObject the annotated object to create usage help for
+         * @param command the annotated object to create usage help for
          * @param colorScheme the color scheme to use */
-        public Help(Object annotatedObject, ColorScheme colorScheme) {
-            this.annotatedObject = Assert.notNull(annotatedObject, "annotatedObject");
+        public Help(Object command, ColorScheme colorScheme) {
+            this.command = Assert.notNull(command, "command");
             this.colorScheme = Assert.notNull(colorScheme, "colorScheme").applySystemProperties();
             List<Field> options = new ArrayList<Field>();
             List<Field> operands = new ArrayList<Field>();
-            Class<?> cls = annotatedObject.getClass();
+            Class<?> cls = command.getClass();
             while (cls != null) {
                 for (Field field : cls.getDeclaredFields()) {
                     field.setAccessible(true);
@@ -1910,26 +1910,26 @@ public class CommandLine {
                 }
                 // superclass values should not overwrite values if both class and superclass have a @Command annotation
                 if (cls.isAnnotationPresent(Command.class)) {
-                    Command command = cls.getAnnotation(Command.class);
+                    Command cmd = cls.getAnnotation(Command.class);
                     if (DEFAULT_COMMAND_NAME.equals(commandName)) {
-                        commandName = command.name();
+                        commandName = cmd.name();
                     }
-                    separator = (separator == null) ? command.separator() : separator;
-                    abbreviateSynopsis = (abbreviateSynopsis == null) ? command.abbreviateSynopsis() : abbreviateSynopsis;
-                    sortOptions = (sortOptions == null) ? command.sortOptions() : sortOptions;
-                    requiredOptionMarker = (requiredOptionMarker == null) ? command.requiredOptionMarker() : requiredOptionMarker;
-                    showDefaultValues = (showDefaultValues == null) ? command.showDefaultValues() : showDefaultValues;
-                    customSynopsis = empty(customSynopsis) ? command.customSynopsis() : customSynopsis;
-                    description = empty(description) ? command.description() : description;
-                    header = empty(header) ? command.header() : header;
-                    footer = empty(footer) ? command.footer() : footer;
-                    headerHeading = empty(headerHeading) ? command.headerHeading() : headerHeading;
-                    synopsisHeading = empty(synopsisHeading) || "Usage: ".equals(synopsisHeading) ? command.synopsisHeading() : synopsisHeading;
-                    descriptionHeading = empty(descriptionHeading) ? command.descriptionHeading() : descriptionHeading;
-                    parameterListHeading = empty(parameterListHeading) ? command.parameterListHeading() : parameterListHeading;
-                    optionListHeading = empty(optionListHeading) ? command.optionListHeading() : optionListHeading;
-                    commandListHeading = empty(commandListHeading) || "Commands:%n".equals(commandListHeading) ? command.commandListHeading() : commandListHeading;
-                    footerHeading = empty(footerHeading) ? command.footerHeading() : footerHeading;
+                    separator = (separator == null) ? cmd.separator() : separator;
+                    abbreviateSynopsis = (abbreviateSynopsis == null) ? cmd.abbreviateSynopsis() : abbreviateSynopsis;
+                    sortOptions = (sortOptions == null) ? cmd.sortOptions() : sortOptions;
+                    requiredOptionMarker = (requiredOptionMarker == null) ? cmd.requiredOptionMarker() : requiredOptionMarker;
+                    showDefaultValues = (showDefaultValues == null) ? cmd.showDefaultValues() : showDefaultValues;
+                    customSynopsis = empty(customSynopsis) ? cmd.customSynopsis() : customSynopsis;
+                    description = empty(description) ? cmd.description() : description;
+                    header = empty(header) ? cmd.header() : header;
+                    footer = empty(footer) ? cmd.footer() : footer;
+                    headerHeading = empty(headerHeading) ? cmd.headerHeading() : headerHeading;
+                    synopsisHeading = empty(synopsisHeading) || "Usage: ".equals(synopsisHeading) ? cmd.synopsisHeading() : synopsisHeading;
+                    descriptionHeading = empty(descriptionHeading) ? cmd.descriptionHeading() : descriptionHeading;
+                    parameterListHeading = empty(parameterListHeading) ? cmd.parameterListHeading() : parameterListHeading;
+                    optionListHeading = empty(optionListHeading) ? cmd.optionListHeading() : optionListHeading;
+                    commandListHeading = empty(commandListHeading) || "Commands:%n".equals(commandListHeading) ? cmd.commandListHeading() : commandListHeading;
+                    footerHeading = empty(footerHeading) ? cmd.footerHeading() : footerHeading;
                 }
                 cls = cls.getSuperclass();
             }
@@ -1954,19 +1954,19 @@ public class CommandLine {
         public Help addAllCommands(Map<String, CommandLine> commands) {
             if (commands != null) {
                 for (Map.Entry<String, CommandLine> entry : commands.entrySet()) {
-                    addCommand(entry.getKey(), entry.getValue().getAnnotatedObject());
+                    addCommand(entry.getKey(), entry.getValue().getCommand());
                 }
             }
             return this;
         }
 
         /** Registers the specified command with this Help.
-         * @param command the name of the command to display in the usage message
-         * @param annotatedObject the annotated object to get more information from
+         * @param commandName the name of the command to display in the usage message
+         * @param command the annotated object to get more information from
          * @return this Help instance (for method chaining)
          */
-        public Help addCommand(String command, Object annotatedObject) {
-            commands.put(command, new Help(annotatedObject));
+        public Help addCommand(String commandName, Object command) {
+            commands.put(commandName, new Help(command));
             return this;
         }
 
@@ -2278,7 +2278,7 @@ public class CommandLine {
             DefaultOptionRenderer result = new DefaultOptionRenderer();
             result.requiredMarker = String.valueOf(requiredOptionMarker);
             if (showDefaultValues != null && showDefaultValues.booleanValue()) {
-                result.annotatedObject = this.annotatedObject;
+                result.command = this.command;
             }
             return result;
         }
@@ -2394,7 +2394,7 @@ public class CommandLine {
          */
         static class DefaultOptionRenderer implements IOptionRenderer {
             public String requiredMarker = " ";
-            public Object annotatedObject;
+            public Object command;
             public Text[][] render(Option option, Field field, IParamLabelRenderer paramLabelRenderer, ColorScheme scheme) {
                 String[] names = ShortestFirst.sort(option.names());
                 int shortOptionCount = names[0].length() == 2 ? 1 : 0;
@@ -2412,10 +2412,10 @@ public class CommandLine {
                 longOptionText = longOptionText.append(paramLabelText);
                 String requiredOption = option.required() ? requiredMarker : "";
 
-                boolean showDefault = annotatedObject != null && !option.help() && !isBoolean(field.getType());
+                boolean showDefault = command != null && !option.help() && !isBoolean(field.getType());
                 Object defaultValue = null;
                 try {
-                    defaultValue = field.get(annotatedObject);
+                    defaultValue = field.get(command);
                     if (defaultValue != null && field.getType().isArray()) {
                         StringBuilder sb = new StringBuilder();
                         for (int i = 0; i < Array.getLength(defaultValue); i++) {

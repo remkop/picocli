@@ -2241,8 +2241,8 @@ public class CommandLineTest {
 
         Map<String, CommandLine> commandMap = commandLine.getCommands();
         assertEquals(2, commandMap.size());
-        assertTrue("cmd1", commandMap.get("cmd1").getAnnotatedObject() instanceof Command1);
-        assertTrue("cmd2", commandMap.get("cmd2").getAnnotatedObject() instanceof Command2);
+        assertTrue("cmd1", commandMap.get("cmd1").getCommand() instanceof Command1);
+        assertTrue("cmd2", commandMap.get("cmd2").getCommand() instanceof Command2);
     }
 
     static class MainCommand { @Option(names = "-a") boolean a; public boolean equals(Object o) { return getClass().equals(o.getClass()); }}
@@ -2285,8 +2285,8 @@ public class CommandLineTest {
 
         Map<String, CommandLine> commandMap = commandLine.getCommands();
         assertEquals(2, commandMap.size());
-        assertTrue("cmd1", commandMap.get("cmd1").getAnnotatedObject() instanceof ChildCommand1);
-        assertTrue("cmd2", commandMap.get("cmd2").getAnnotatedObject() instanceof ChildCommand2);
+        assertTrue("cmd1", commandMap.get("cmd1").getCommand() instanceof ChildCommand1);
+        assertTrue("cmd2", commandMap.get("cmd2").getCommand() instanceof ChildCommand2);
     }
 
     @Test
