@@ -123,7 +123,6 @@ public class CommandLine {
     public static final String VERSION = "0.9.7-SNAPSHOT";
 
     private final Interpreter interpreter;
-    private final List<Object> parsedCommands    = new ArrayList<Object>();
 
     /**
      * Constructs a new {@code CommandLine} interpreter with the specified annotated object.
@@ -217,18 +216,17 @@ public class CommandLine {
 
     /**
      * <p>
-     * Initializes the annotated object that this {@code CommandLine} was constructed with as well as possibly any
-     * registered commands, based on the specified command line arguments,
-     * and returns a list of all commands that were initialized by this method.
+     * Initializes the annotated object that this {@code CommandLine} was constructed with as well as
+     * possibly any registered commands, based on the specified command line arguments,
+     * and returns a list of all commands and subcommands that were initialized by this method.
      * </p>
      *
      * @param args the command line arguments to parse
-     * @return a list with all annotated objects initialized by this method
+     * @return a list with all commands and subcommands initialized by this method
      * @throws ParameterException if the specified command line arguments are invalid
      */
-    public List<Object> parseCommands(String... args) {
-        interpreter.parse(args);
-        return new ArrayList<Object>(parsedCommands);
+    public List<CommandLine> parseCommands(String... args) {
+        return interpreter.parse(args);
     }
 
     /**
@@ -1123,24 +1121,24 @@ public class CommandLine {
         /**
          * Entry point into parsing command line arguments.
          * @param args the command line arguments
-         * @return the annotated object, initialized with the command line arguments
+         * @return a list with all commands and subcommands initialized by this method
          * @throws ParameterException if the specified command line arguments are invalid
          */
-        Object parse(String... args) {
+        List<CommandLine> parse(String... args) {
             Assert.notNull(args, "argument array");
             Stack<String> arguments = new Stack<String>();
             for (int i = args.length - 1; i >= 0; i--) {
                 arguments.push(args[i]);
             }
-            // first reset any state in case this CommandLine instance is being reused
-            isHelpRequested = false;
-            parsedCommands.clear();
-            parse(parsedCommands, arguments, args);
-            return command;
+            List<CommandLine> result = new ArrayList<CommandLine>();
+            parse(result, arguments, args);
+            return result;
         }
 
-        private void parse(List<Object> parsedCommands, Stack<String> argumentStack, String[] originalArgs) {
-            parsedCommands.add(command);
+        private void parse(List<CommandLine> parsedCommands, Stack<String> argumentStack, String[] originalArgs) {
+            // first reset any state in case this CommandLine instance is being reused
+            isHelpRequested = false;
+            parsedCommands.add(CommandLine.this);
             List<Field> required = new ArrayList<Field>(requiredFields);
             Collections.sort(required, new PositionalParametersSorter());
             try {
@@ -1164,7 +1162,7 @@ public class CommandLine {
             }
         }
 
-        private void processArguments(List<Object> parsedCommands,
+        private void processArguments(List<CommandLine> parsedCommands,
                                       Stack<String> args,
                                       Collection<Field> required,
                                       String[] originalArgs) throws Exception {
