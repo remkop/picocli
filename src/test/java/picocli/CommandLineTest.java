@@ -236,15 +236,15 @@ public class CommandLineTest {
         };
         commandLine.registerConverter(Byte.class, converter);
         commandLine.registerConverter(Byte.TYPE, converter);
-        commandLine.parse("-byte", "0x1F", "-Byte", "0x0F");
+        commandLine.parseCommands("-byte", "0x1F", "-Byte", "0x0F");
         assertEquals(0x1F, bean.byteField);
         assertEquals(Byte.valueOf((byte) 0x0F), bean.aByteField);
 
-        commandLine.parse("-byte", "010", "-Byte", "010");
+        commandLine.parseCommands("-byte", "010", "-Byte", "010");
         assertEquals(8, bean.byteField);
         assertEquals(Byte.valueOf((byte) 8), bean.aByteField);
 
-        commandLine.parse("-byte", "34", "-Byte", "34");
+        commandLine.parseCommands("-byte", "34", "-Byte", "34");
         assertEquals(34, bean.byteField);
         assertEquals(Byte.valueOf((byte) 34), bean.aByteField);
     }
@@ -268,15 +268,15 @@ public class CommandLineTest {
         };
         commandLine.registerConverter(Short.class, shortConverter);
         commandLine.registerConverter(Short.TYPE, shortConverter);
-        commandLine.parse("-short", "0xFF", "-Short", "0x6FFE");
+        commandLine.parseCommands("-short", "0xFF", "-Short", "0x6FFE");
         assertEquals(0xFF, bean.shortField);
         assertEquals(Short.valueOf((short) 0x6FFE), bean.aShortField);
 
-        commandLine.parse("-short", "010", "-Short", "010");
+        commandLine.parseCommands("-short", "010", "-Short", "010");
         assertEquals(8, bean.shortField);
         assertEquals(Short.valueOf((short) 8), bean.aShortField);
 
-        commandLine.parse("-short", "34", "-Short", "34");
+        commandLine.parseCommands("-short", "34", "-Short", "34");
         assertEquals(34, bean.shortField);
         assertEquals(Short.valueOf((short) 34), bean.aShortField);
     }
@@ -300,15 +300,15 @@ public class CommandLineTest {
         };
         commandLine.registerConverter(Integer.class, intConverter);
         commandLine.registerConverter(Integer.TYPE, intConverter);
-        commandLine.parse("-int", "0xFF", "-Integer", "0xFFFF");
+        commandLine.parseCommands("-int", "0xFF", "-Integer", "0xFFFF");
         assertEquals(255, bean.intField);
         assertEquals(Integer.valueOf(0xFFFF), bean.anIntegerField);
 
-        commandLine.parse("-int", "010", "-Integer", "010");
+        commandLine.parseCommands("-int", "010", "-Integer", "010");
         assertEquals(8, bean.intField);
         assertEquals(Integer.valueOf(8), bean.anIntegerField);
 
-        commandLine.parse("-int", "34", "-Integer", "34");
+        commandLine.parseCommands("-int", "34", "-Integer", "34");
         assertEquals(34, bean.intField);
         assertEquals(Integer.valueOf(34), bean.anIntegerField);
     }
@@ -332,15 +332,15 @@ public class CommandLineTest {
         };
         commandLine.registerConverter(Long.class, longConverter);
         commandLine.registerConverter(Long.TYPE, longConverter);
-        commandLine.parse("-long", "0xAABBCC", "-Long", "0xAABBCCDD");
+        commandLine.parseCommands("-long", "0xAABBCC", "-Long", "0xAABBCCDD");
         assertEquals(0xAABBCC, bean.longField);
         assertEquals(Long.valueOf(0xAABBCCDDL), bean.aLongField);
 
-        commandLine.parse("-long", "010", "-Long", "010");
+        commandLine.parseCommands("-long", "010", "-Long", "010");
         assertEquals(8, bean.longField);
         assertEquals(Long.valueOf(8), bean.aLongField);
 
-        commandLine.parse("-long", "34", "-Long", "34");
+        commandLine.parseCommands("-long", "34", "-Long", "34");
         assertEquals(34, bean.longField);
         assertEquals(Long.valueOf(34), bean.aLongField);
     }
@@ -491,7 +491,7 @@ public class CommandLineTest {
         commandLine.registerConverter(Glob.class, new GlobConverter());
 
         String[] args = {"a*glob*pattern"};
-        List<Object> parsed = commandLine.parse(args);
+        List<Object> parsed = commandLine.parseCommands(args);
         assertEquals("not empty", 1, parsed.size());
         assertTrue(parsed.get(0) instanceof App);
         App app = (App) parsed.get(0);
@@ -554,14 +554,14 @@ public class CommandLineTest {
     public void testArrayOptionParametersAreAlwaysInstantiated() {
         EnumParams params = new EnumParams();
         TimeUnit[] array = params.timeUnitArray;
-        new CommandLine(params).parse("-timeUnitArray", "DAYS", "HOURS");
+        new CommandLine(params).parseCommands("-timeUnitArray", "DAYS", "HOURS");
         assertNotSame(array, params.timeUnitArray);
     }
     @Test
     public void testListOptionParametersAreInstantiatedIfNull() {
         EnumParams params = new EnumParams();
         assertNull(params.timeUnitList);
-        new CommandLine(params).parse("-timeUnitList", "DAYS", "HOURS", "DAYS");
+        new CommandLine(params).parseCommands("-timeUnitList", "DAYS", "HOURS", "DAYS");
         assertEquals(Arrays.asList(DAYS, HOURS, DAYS), params.timeUnitList);
     }
     @Test
@@ -569,7 +569,7 @@ public class CommandLineTest {
         EnumParams params = new EnumParams();
         List<TimeUnit> list = new ArrayList<TimeUnit>();
         params.timeUnitList = list;
-        new CommandLine(params).parse("-timeUnitList", "DAYS", "HOURS", "DAYS");
+        new CommandLine(params).parseCommands("-timeUnitList", "DAYS", "HOURS", "DAYS");
         assertEquals(Arrays.asList(DAYS, HOURS, DAYS), params.timeUnitList);
         assertSame(list, params.timeUnitList);
     }
@@ -581,7 +581,7 @@ public class CommandLineTest {
         ArrayPositionalParams params = new ArrayPositionalParams();
         params.array = new int[3];
         int[] array = params.array;
-        new CommandLine(params).parse("3", "2", "1");
+        new CommandLine(params).parseCommands("3", "2", "1");
         assertNotSame(array, params.array);
         assertArrayEquals(new int[]{0, 0, 0, 3, 2, 1}, params.array);
     }
@@ -592,7 +592,7 @@ public class CommandLineTest {
     public void testListPositionalParametersAreInstantiatedIfNull() {
         ListPositionalParams params = new ListPositionalParams();
         assertNull(params.list);
-        new CommandLine(params).parse("3", "2", "1");
+        new CommandLine(params).parseCommands("3", "2", "1");
         assertNotNull(params.list);
         assertEquals(Arrays.asList(3, 2, 1), params.list);
     }
@@ -601,7 +601,7 @@ public class CommandLineTest {
         ListPositionalParams params = new ListPositionalParams();
         params.list = new ArrayList<Integer>();
         List<Integer> list = params.list;
-        new CommandLine(params).parse("3", "2", "1");
+        new CommandLine(params).parseCommands("3", "2", "1");
         assertSame(list, params.list);
         assertEquals(Arrays.asList(3, 2, 1), params.list);
     }
@@ -611,7 +611,7 @@ public class CommandLineTest {
         params.list = new ArrayList<Integer>();
         params.list.add(234);
         List<Integer> list = params.list;
-        new CommandLine(params).parse("3", "2", "1");
+        new CommandLine(params).parseCommands("3", "2", "1");
         assertSame(list, params.list);
         assertEquals(Arrays.asList(234, 3, 2, 1), params.list);
     }
@@ -622,7 +622,7 @@ public class CommandLineTest {
     public void testSortedSetPositionalParametersAreInstantiatedIfNull() {
         SortedSetPositionalParams params = new SortedSetPositionalParams();
         assertNull(params.sortedSet);
-        new CommandLine(params).parse("3", "2", "1");
+        new CommandLine(params).parseCommands("3", "2", "1");
         assertNotNull(params.sortedSet);
         assertEquals(Arrays.asList(1, 2, 3), new ArrayList<Integer>(params.sortedSet));
     }
@@ -631,7 +631,7 @@ public class CommandLineTest {
         SortedSetPositionalParams params = new SortedSetPositionalParams();
         params.sortedSet = new TreeSet<Integer>();
         SortedSet<Integer> list = params.sortedSet;
-        new CommandLine(params).parse("3", "2", "1");
+        new CommandLine(params).parseCommands("3", "2", "1");
         assertSame(list, params.sortedSet);
         assertEquals(Arrays.asList(1, 2, 3), new ArrayList<Integer>(params.sortedSet));
     }
@@ -641,7 +641,7 @@ public class CommandLineTest {
         params.sortedSet = new TreeSet<Integer>();
         params.sortedSet.add(234);
         SortedSet<Integer> list = params.sortedSet;
-        new CommandLine(params).parse("3", "2", "1");
+        new CommandLine(params).parseCommands("3", "2", "1");
         assertSame(list, params.sortedSet);
         assertEquals(Arrays.asList(1, 2, 3, 234), new ArrayList<Integer>(params.sortedSet));
     }
@@ -652,7 +652,7 @@ public class CommandLineTest {
     public void testSetPositionalParametersAreInstantiatedIfNull() {
         SetPositionalParams params = new SetPositionalParams();
         assertNull(params.set);
-        new CommandLine(params).parse("3", "2", "1");
+        new CommandLine(params).parseCommands("3", "2", "1");
         assertNotNull(params.set);
         assertEquals(new HashSet(Arrays.asList(1, 2, 3)), params.set);
     }
@@ -661,7 +661,7 @@ public class CommandLineTest {
         SetPositionalParams params = new SetPositionalParams();
         params.set = new TreeSet<Integer>();
         Set<Integer> list = params.set;
-        new CommandLine(params).parse("3", "2", "1");
+        new CommandLine(params).parseCommands("3", "2", "1");
         assertSame(list, params.set);
         assertEquals(new HashSet(Arrays.asList(1, 2, 3)), params.set);
     }
@@ -671,7 +671,7 @@ public class CommandLineTest {
         params.set = new TreeSet<Integer>();
         params.set.add(234);
         Set<Integer> list = params.set;
-        new CommandLine(params).parse("3", "2", "1");
+        new CommandLine(params).parseCommands("3", "2", "1");
         assertSame(list, params.set);
         assertEquals(new HashSet(Arrays.asList(1, 2, 3, 234)), params.set);
     }
@@ -682,7 +682,7 @@ public class CommandLineTest {
     public void testQueuePositionalParametersAreInstantiatedIfNull() {
         QueuePositionalParams params = new QueuePositionalParams();
         assertNull(params.queue);
-        new CommandLine(params).parse("3", "2", "1");
+        new CommandLine(params).parseCommands("3", "2", "1");
         assertNotNull(params.queue);
         assertEquals(new LinkedList(Arrays.asList(3, 2, 1)), params.queue);
     }
@@ -691,7 +691,7 @@ public class CommandLineTest {
         QueuePositionalParams params = new QueuePositionalParams();
         params.queue = new LinkedList<Integer>();
         Queue<Integer> list = params.queue;
-        new CommandLine(params).parse("3", "2", "1");
+        new CommandLine(params).parseCommands("3", "2", "1");
         assertSame(list, params.queue);
         assertEquals(new LinkedList(Arrays.asList(3, 2, 1)), params.queue);
     }
@@ -701,7 +701,7 @@ public class CommandLineTest {
         params.queue = new LinkedList<Integer>();
         params.queue.add(234);
         Queue<Integer> list = params.queue;
-        new CommandLine(params).parse("3", "2", "1");
+        new CommandLine(params).parseCommands("3", "2", "1");
         assertSame(list, params.queue);
         assertEquals(new LinkedList(Arrays.asList(234, 3, 2, 1)), params.queue);
     }
@@ -712,7 +712,7 @@ public class CommandLineTest {
     public void testCollectionPositionalParametersAreInstantiatedIfNull() {
         CollectionPositionalParams params = new CollectionPositionalParams();
         assertNull(params.collection);
-        new CommandLine(params).parse("3", "2", "1");
+        new CommandLine(params).parseCommands("3", "2", "1");
         assertNotNull(params.collection);
         assertEquals(Arrays.asList(3, 2, 1), params.collection);
     }
@@ -721,7 +721,7 @@ public class CommandLineTest {
         CollectionPositionalParams params = new CollectionPositionalParams();
         params.collection = new ArrayList<Integer>();
         Collection<Integer> list = params.collection;
-        new CommandLine(params).parse("3", "2", "1");
+        new CommandLine(params).parseCommands("3", "2", "1");
         assertSame(list, params.collection);
         assertEquals(Arrays.asList(3, 2, 1), params.collection);
     }
@@ -731,7 +731,7 @@ public class CommandLineTest {
         params.collection = new ArrayList<Integer>();
         params.collection.add(234);
         Collection<Integer> list = params.collection;
-        new CommandLine(params).parse("3", "2", "1");
+        new CommandLine(params).parseCommands("3", "2", "1");
         assertSame(list, params.collection);
         assertEquals(Arrays.asList(234, 3, 2, 1), params.collection);
     }
@@ -943,14 +943,14 @@ public class CommandLineTest {
     public void testHelpRequestedFlagResetWhenParsing_instanceMethod() {
         RequiredField requiredField = new RequiredField();
         CommandLine commandLine = new CommandLine(requiredField);
-        commandLine.parse("--help");
+        commandLine.parseCommands("--help");
         assertTrue("help requested", requiredField.isHelpRequested);
 
         requiredField.isHelpRequested = false;
 
         // should throw error again on second pass (no help was requested here...)
         try {
-            commandLine.parse("arg1", "arg2");
+            commandLine.parseCommands("arg1", "arg2");
             fail("Missing required field should have thrown exception");
         } catch (MissingParameterException ex) {
             assertEquals("Missing required option 'required'", ex.getMessage());
@@ -1013,7 +1013,7 @@ public class CommandLineTest {
         CompactFields compact = new CompactFields();
         CommandLine cmd = new CommandLine(compact);
         cmd.setSeparator(":");
-        cmd.parse("-rvo:out p1 p2".split(" "));
+        cmd.parseCommands("-rvo:out p1 p2".split(" "));
         verifyCompact(compact, true, true, "out", fileArray("p1", "p2"));
     }
 
@@ -1038,7 +1038,7 @@ public class CommandLineTest {
         CompactFields compact = new CompactFields();
         CommandLine cmd = new CommandLine(compact);
         cmd.setSeparator(":");
-        cmd.parse("-ro: -v".split(" "));
+        cmd.parseCommands("-ro: -v".split(" "));
         verifyCompact(compact, true, true, "", null);
     }
     @Test
@@ -1706,13 +1706,13 @@ public class CommandLineTest {
         params = new VariousPrefixCharacters();
         CommandLine cmd = new CommandLine(params);
         cmd.setSeparator(":");
-        cmd.parse("--dash:345");
+        cmd.parseCommands("--dash:345");
         assertEquals("--dash:val", 345, params.dash);
 
         params = new VariousPrefixCharacters();
         cmd = new CommandLine(params);
         cmd.setSeparator(":");
-        cmd.parse("--dash:345 --owner:y".split(" "));
+        cmd.parseCommands("--dash:345 --owner:y".split(" "));
         assertEquals("--dash:val", 345, params.dash);
         assertEquals("--owner:y", "y", params.owner);
     }
@@ -1774,7 +1774,7 @@ public class CommandLineTest {
         VariousPrefixCharacters params = new VariousPrefixCharacters();
         CommandLine cmd = new CommandLine(params);
         cmd.setSeparator(":");
-        cmd.parse("-d 123 /4 /S 765 /T:98 /Owner:xyz -SingleDash [CPM CP/M (CMS:cmsVal".split(" "));
+        cmd.parseCommands("-d 123 /4 /S 765 /T:98 /Owner:xyz -SingleDash [CPM CP/M (CMS:cmsVal".split(" "));
         assertEquals("-d", 123, params.dash);
         assertEquals("/S", 765, params.slashS);
         assertEquals("/T", 98, params.slashT);
@@ -2215,7 +2215,7 @@ public class CommandLineTest {
     public void testParseSubCommands() {
         CommandLine commandLine = Demo.mainCommand();
 
-        List<Object> parsed = commandLine.parse("--git-dir=/home/rpopma/picocli status -sbuno".split(" "));
+        List<Object> parsed = commandLine.parseCommands("--git-dir=/home/rpopma/picocli status -sbuno".split(" "));
         assertEquals("command count", 2, parsed.size());
 
         assertEquals(Demo.Git.class, parsed.get(0).getClass());
@@ -2292,43 +2292,43 @@ public class CommandLineTest {
     @Test
     public void testParseNestedSubCommands() {
         // valid
-        List<Object> main = createNestedCommand().parse("cmd1");
+        List<Object> main = createNestedCommand().parseCommands("cmd1");
         assertEquals(Arrays.asList(new MainCommand(), new ChildCommand1()), main);
         assertFalse(((MainCommand) main.get(0)).a);
         assertFalse(((ChildCommand1)    main.get(1)).b);
 
-        List<Object> mainWithOptions = createNestedCommand().parse("-a", "cmd1", "-b");
+        List<Object> mainWithOptions = createNestedCommand().parseCommands("-a", "cmd1", "-b");
         assertEquals(Arrays.asList(new MainCommand(), new ChildCommand1()), mainWithOptions);
         assertTrue(((MainCommand) mainWithOptions.get(0)).a);
         assertTrue(((ChildCommand1)    mainWithOptions.get(1)).b);
 
-        List<Object> sub1 = createNestedCommand().parse("cmd1", "sub11");
+        List<Object> sub1 = createNestedCommand().parseCommands("cmd1", "sub11");
         assertEquals(Arrays.asList(new MainCommand(), new ChildCommand1(), new GrandChild1Command1()), sub1);
         assertFalse(((MainCommand) sub1.get(0)).a);
         assertFalse(((ChildCommand1)    sub1.get(1)).b);
         assertFalse(((GrandChild1Command1)      sub1.get(2)).d);
 
-        List<Object> sub1WithOptions = createNestedCommand().parse("-a", "cmd1", "-b", "sub11", "-d");
+        List<Object> sub1WithOptions = createNestedCommand().parseCommands("-a", "cmd1", "-b", "sub11", "-d");
         assertEquals(Arrays.asList(new MainCommand(), new ChildCommand1(), new GrandChild1Command1()), sub1WithOptions);
         assertTrue(((MainCommand) sub1WithOptions.get(0)).a);
         assertTrue(((ChildCommand1)    sub1WithOptions.get(1)).b);
         assertTrue(((GrandChild1Command1)      sub1WithOptions.get(2)).d);
 
         // sub12 is not nested under sub11 so is not recognized
-        List<Object> sub1sub2 = createNestedCommand().parse("cmd1", "sub11", "sub12");
+        List<Object> sub1sub2 = createNestedCommand().parseCommands("cmd1", "sub11", "sub12");
         assertEquals(Arrays.asList(new MainCommand(), new ChildCommand1(), new GrandChild1Command1()), sub1sub2);
         assertFalse(((MainCommand) sub1sub2.get(0)).a);
         assertFalse(((ChildCommand1)    sub1sub2.get(1)).b);
         assertFalse(((GrandChild1Command1)      sub1sub2.get(2)).d);
 
-        List<Object> sub22sub1 = createNestedCommand().parse("cmd2", "sub22", "sub22sub1");
+        List<Object> sub22sub1 = createNestedCommand().parseCommands("cmd2", "sub22", "sub22sub1");
         assertEquals(Arrays.asList(new MainCommand(), new ChildCommand2(), new GrandChild2Command2(), new GreatGrandChild2Command2_1()), sub22sub1);
         assertFalse(((MainCommand) sub22sub1.get(0)).a);
         assertFalse(((ChildCommand2)    sub22sub1.get(1)).c);
         assertFalse(((GrandChild2Command2)      sub22sub1.get(2)).g);
         assertFalse(((GreatGrandChild2Command2_1) sub22sub1.get(3)).h);
 
-        List<Object> sub22sub1WithOptions = createNestedCommand().parse("-a", "cmd2", "-c", "sub22", "-g", "sub22sub1", "-h");
+        List<Object> sub22sub1WithOptions = createNestedCommand().parseCommands("-a", "cmd2", "-c", "sub22", "-g", "sub22sub1", "-h");
         assertEquals(Arrays.asList(new MainCommand(), new ChildCommand2(), new GrandChild2Command2(), new GreatGrandChild2Command2_1()), sub22sub1WithOptions);
         assertTrue(((MainCommand) sub22sub1WithOptions.get(0)).a);
         assertTrue(((ChildCommand2)    sub22sub1WithOptions.get(1)).c);
@@ -2336,27 +2336,27 @@ public class CommandLineTest {
         assertTrue(((GreatGrandChild2Command2_1) sub22sub1WithOptions.get(3)).h);
 
         // invalid
-        List<Object> invalid0 = createNestedCommand().parse("-a", "-b", "cmd1");
+        List<Object> invalid0 = createNestedCommand().parseCommands("-a", "-b", "cmd1");
         assertEquals("unmatched option prevents remainder to be parsed as command",
                 Arrays.asList(new MainCommand()), invalid0);
 
-        List<Object> invalid1 = createNestedCommand().parse("cmd1", "sub21");
+        List<Object> invalid1 = createNestedCommand().parseCommands("cmd1", "sub21");
         assertEquals("should ignore sub-commands for different parent command",
                 Arrays.asList(new MainCommand(), new ChildCommand1()), invalid1);
 
-        List<Object> invalid2 = createNestedCommand().parse("cmd1", "sub22sub1");
+        List<Object> invalid2 = createNestedCommand().parseCommands("cmd1", "sub22sub1");
         assertEquals("should ignore sub-sub-commands for different parent command",
                 Arrays.asList(new MainCommand(), new ChildCommand1()), invalid2);
 
-        List<Object> invalid3 = createNestedCommand().parse("sub11");
+        List<Object> invalid3 = createNestedCommand().parseCommands("sub11");
         assertEquals("should ignore sub-commands without preceding parent command",
                 Arrays.asList(new MainCommand()), invalid3);
 
-        List<Object> invalid4 = createNestedCommand().parse("sub21");
+        List<Object> invalid4 = createNestedCommand().parseCommands("sub21");
         assertEquals("should ignore sub-commands without preceding parent command",
                 Arrays.asList(new MainCommand()), invalid4);
 
-        List<Object> invalid5 = createNestedCommand().parse("sub22sub1");
+        List<Object> invalid5 = createNestedCommand().parseCommands("sub22sub1");
         assertEquals("should ignore sub-sub-commands without preceding parent/grandparent command",
                 Arrays.asList(new MainCommand()), invalid5);
     }
@@ -2364,7 +2364,7 @@ public class CommandLineTest {
     @Test(expected = MissingTypeConverterException.class)
     public void testCustomTypeConverterNotRegisteredAtAll() {
         CommandLine commandLine = createNestedCommand();
-        commandLine.parse("cmd1", "sub12", "-e", "TXT");
+        commandLine.parseCommands("cmd1", "sub12", "-e", "TXT");
     }
 
     @Test(expected = MissingTypeConverterException.class)
@@ -2374,7 +2374,7 @@ public class CommandLineTest {
         commandLine.registerConverter(CustomType.class, new CustomType(null));
 
         commandLine.addCommand("main", createNestedCommand());
-        commandLine.parse("main", "cmd1", "sub12", "-e", "TXT");
+        commandLine.parseCommands("main", "cmd1", "sub12", "-e", "TXT");
     }
 
     @Test
@@ -2383,7 +2383,7 @@ public class CommandLineTest {
         CommandLine commandLine = new CommandLine(new TopLevel());
         commandLine.addCommand("main", createNestedCommand());
         commandLine.registerConverter(CustomType.class, new CustomType(null));
-        List<Object> parsed = commandLine.parse("main", "cmd1", "sub12", "-e", "TXT");
+        List<Object> parsed = commandLine.parseCommands("main", "cmd1", "sub12", "-e", "TXT");
         assertEquals(Arrays.asList(new TopLevel(), new MainCommand(), new ChildCommand1(), new GrandChild1Command2()), parsed);
         assertFalse(((MainCommand) parsed.get(1)).a);
         assertFalse(((ChildCommand1) parsed.get(2)).b);

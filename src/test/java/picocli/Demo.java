@@ -403,7 +403,7 @@ public class Demo implements Runnable {
         CommandLine commandLine = mainCommand();
 
         String[] args = { "--git-dir=/home/rpopma/picocli", "status", "-sbuno"};
-        List<Object> parsed = commandLine.parse(args);
+        List<Object> parsed = commandLine.parseCommands(args);
         assert parsed.size() == 2 : "found 2 commands";
 
         assert parsed.get(0).getClass() == Git.class;

@@ -127,7 +127,7 @@ public class CommandLine {
 
     /**
      * Constructs a new {@code CommandLine} interpreter with the specified annotated object.
-     * When the {@link #parse(String...)} method is called, fields of the specified object that are annotated
+     * When the {@link #parseCommands(String...)} method is called, fields of the specified object that are annotated
      * with {@code @Option} or {@code @Parameters} will be initialized based on command line arguments.
      * @param command the object to initialize from the command line arguments
      */
@@ -198,7 +198,7 @@ public class CommandLine {
      * This is equivalent to
      * </p><pre>
      * CommandLine cli = new CommandLine(command);
-     * cli.parse(args);
+     * cli.parseCommands(args);
      * return command;
      * </pre>
      *
@@ -211,7 +211,7 @@ public class CommandLine {
      */
     public static <T> T parse(T command, String... args) {
         CommandLine cli = toCommandLine(command);
-        cli.parse(args);
+        cli.parseCommands(args);
         return command;
     }
 
@@ -226,7 +226,7 @@ public class CommandLine {
      * @return a list with all annotated objects initialized by this method
      * @throws ParameterException if the specified command line arguments are invalid
      */
-    public List<Object> parse(String... args) {
+    public List<Object> parseCommands(String... args) {
         interpreter.parse(args);
         return new ArrayList<Object>(parsedCommands);
     }
@@ -336,7 +336,7 @@ public class CommandLine {
      * Delegates to {@link #run(Runnable, PrintStream, Help.Ansi, String...)} with {@link Help.Ansi#AUTO}.
      * @param command the command to run when {@linkplain #parse(Object, String...) parsing} succeeds.
      * @param out the printStream to print to
-     * @param args the command line arguments to parse
+     * @param args the command line arguments to parseCommands
      * @param <R> the annotated object must implement Runnable
      * @see #run(Runnable, PrintStream, Help.Ansi, String...)
      */
@@ -525,7 +525,7 @@ public class CommandLine {
         /**
          * Indicates whether this option is required. By default this is false.
          * If an option is required, but a user invokes the program without specifying the required option,
-         * a {@link MissingParameterException} is thrown from the {@link #parse(String...)} method.
+         * a {@link MissingParameterException} is thrown from the {@link #parseCommands(String...)} method.
          * @return whether this option is required
          */
         boolean required() default false;
@@ -539,7 +539,7 @@ public class CommandLine {
          * {@code -Version} on Windows).
          * </p>
          * <p>
-         * Note that the {@link #parse(String...)} method will not print help documentation. It will only set
+         * Note that the {@link #parseCommands(String...)} method will not print help documentation. It will only set
          * the value of the annotated field. It is the responsibility of the caller to inspect the annotated fields
          * and take the appropriate action.
          * </p>
@@ -556,7 +556,7 @@ public class CommandLine {
         /**
          * Specifies the minimum number of required parameters and the maximum number of accepted parameters.
          * If an option declares a positive arity, and the user specifies an insufficient number of parameters on the
-         * command line, a {@link MissingParameterException} is thrown by the {@link #parse(String...)} method.
+         * command line, a {@link MissingParameterException} is thrown by the {@link #parseCommands(String...)} method.
          * <p>
          * In many cases picocli can deduce the number of required parameters from the field's type.
          * By default, flags (boolean options) have arity zero,
@@ -578,7 +578,7 @@ public class CommandLine {
          * <p>
          * Because this boolean field is defined with arity 1, the user must specify either {@code <program> -v false}
          * or {@code <program> -v true}
-         * on the command line, or a {@link MissingParameterException} is thrown by the {@link #parse(String...)}
+         * on the command line, or a {@link MissingParameterException} is thrown by the {@link #parseCommands(String...)}
          * method.
          * </p><p>
          * To make the boolean parameter possible but optional, define the field with {@code arity = "0..1"}.
@@ -686,7 +686,7 @@ public class CommandLine {
         /**
          * Specifies the minimum number of required parameters and the maximum number of accepted parameters. If a
          * positive arity is declared, and the user specifies an insufficient number of parameters on the command line,
-         * {@link MissingParameterException} is thrown by the {@link #parse(String...)} method.
+         * {@link MissingParameterException} is thrown by the {@link #parseCommands(String...)} method.
          * <p>The default depends on the type of the parameter: booleans require no parameters, arrays and Collections
          * accept zero to any number of parameters, and any other type accepts one parameter.</p>
          * @return the range of minimum and maximum parameters accepted by this command
