@@ -911,7 +911,7 @@ public class CommandLine {
         K convert(String value) throws Exception;
     }
     /** Describes the number of parameters required and accepted by an option or a positional parameter. */
-    public static class Arity {
+    public static class Range {
         /** Required number of parameters for an option or positional parameter. */
         public final int min;
         /** Maximum accepted number of parameters for an option or positional parameter. */
@@ -920,71 +920,71 @@ public class CommandLine {
         private final boolean isUnspecified;
         private final String originalValue;
 
-        /** Constructs a new Arity object with the specified parameters.
+        /** Constructs a new Range object with the specified parameters.
          * @param min minimum number of required parameters
          * @param max maximum number of allowed parameters (or Integer.MAX_VALUE if variable)
          * @param variable {@code true} if any number or parameters is allowed, {@code false} otherwise
          * @param unspecified {@code true} if no arity was specified on the option/parameter (value is based on type)
          * @param originalValue the original value that was specified on the option or parameter
          */
-        public Arity(int min, int max, boolean variable, boolean unspecified, String originalValue) {
+        public Range(int min, int max, boolean variable, boolean unspecified, String originalValue) {
             this.min = min;
             this.max = max;
             this.isVariable = variable;
             this.isUnspecified = unspecified;
             this.originalValue = originalValue;
         }
-        /** Returns a new {@code Arity} based on the Option annotation on the specified field, or the field type if no
-         * arity was specified.
+        /** Returns a new {@code Range} based on the {@link Option#arity()} annotation on the specified field,
+         * or the field type's default arity if no arity was specified.
          * @param field the field whose Option annotation to inspect
-         * @return a new {@code Arity} based on the Option annotation on the specified field */
-        public static Arity forOption(Field field) {
-            return adjustForType(Arity.valueOf(field.getAnnotation(Option.class).arity()), field);
+         * @return a new {@code Range} based on the Option arity annotation on the specified field */
+        public static Range optionArity(Field field) {
+            return adjustForType(Range.valueOf(field.getAnnotation(Option.class).arity()), field);
         }
-        /** Returns a new {@code Arity} based on the Parameters annotation on the specified field, or the field type
-         * if no arity was specified.
+        /** Returns a new {@code Range} based on the {@link Parameters#arity()} annotation on the specified field,
+         * or the field type's default arity if no arity was specified.
          * @param field the field whose Parameters annotation to inspect
-         * @return a new {@code Arity} based on the Parameters annotation on the specified field */
-        public static Arity forParameters(Field field) {
-            return adjustForType(Arity.valueOf(field.getAnnotation(Parameters.class).arity()), field);
+         * @return a new {@code Range} based on the Parameters arity annotation on the specified field */
+        public static Range parameterArity(Field field) {
+            return adjustForType(Range.valueOf(field.getAnnotation(Parameters.class).arity()), field);
         }
-        static Arity adjustForType(Arity result, Field field) {
-            return result.isUnspecified ? forType(field.getType()) : result;
+        static Range adjustForType(Range result, Field field) {
+            return result.isUnspecified ? defaultArity(field.getType()) : result;
         }
-        /** Returns a new {@code Arity} based on the specified type: booleans have arity 0, arrays or Collections have
+        /** Returns a new {@code Range} based on the specified type: booleans have arity 0, arrays or Collections have
          * arity "0..*", and other types have arity 1.
          * @param type the type whose default arity to return
-         * @return a new {@code Arity} based on the specified type */
-        public static Arity forType(Class<?> type) {
+         * @return a new {@code Range} indicating the default arity of the specified type */
+        public static Range defaultArity(Class<?> type) {
             if (isBoolean(type)) {
-                return Arity.valueOf("0");
+                return Range.valueOf("0");
             } else if (type.isArray() || Collection.class.isAssignableFrom(type)) {
-                return Arity.valueOf("0..*");
+                return Range.valueOf("0..*");
             }
-            return Arity.valueOf("1");// for single-valued fields
+            return Range.valueOf("1");// for single-valued fields
         }
-        /** Leniently parses the specified String as an {@code Arity} value and return the result. An arity string can
+        /** Leniently parses the specified String as an {@code Range} value and return the result. A range string can
          * be a fixed integer value or a range of the form {@code MIN_VALUE + ".." + MAX_VALUE}. If the
          * {@code MIN_VALUE} string is not numeric, the minimum is zero. If the {@code MAX_VALUE} is not numeric, the
-         * arity is taken to be variable and the maximum is {@code Integer.MAX_VALUE}.
-         * @param arity the arity string to parse
-         * @return a new {@code Arity} value */
-        public static Arity valueOf(String arity) {
-            arity = arity.trim();
-            boolean unspecified = arity.length() == 0 || arity.startsWith(".."); // || arity.endsWith("..");
+         * range is taken to be variable and the maximum is {@code Integer.MAX_VALUE}.
+         * @param range the value range string to parse
+         * @return a new {@code Range} value */
+        public static Range valueOf(String range) {
+            range = range.trim();
+            boolean unspecified = range.length() == 0 || range.startsWith(".."); // || range.endsWith("..");
             int min = -1, max = -1;
             boolean variable = false;
             int dots = -1;
-            if ((dots = arity.indexOf("..")) >= 0) {
-                min = parseInt(arity.substring(0, dots), 0);
-                max = parseInt(arity.substring(dots + 2), Integer.MAX_VALUE);
+            if ((dots = range.indexOf("..")) >= 0) {
+                min = parseInt(range.substring(0, dots), 0);
+                max = parseInt(range.substring(dots + 2), Integer.MAX_VALUE);
                 variable = max == Integer.MAX_VALUE;
             } else {
-                max = parseInt(arity, Integer.MAX_VALUE);
+                max = parseInt(range, Integer.MAX_VALUE);
                 variable = max == Integer.MAX_VALUE;
                 min = variable ? 0 : max;
             }
-            Arity result = new Arity(min, max, variable, unspecified, arity);
+            Range result = new Range(min, max, variable, unspecified, range);
             return result;
         }
         private static int parseInt(String str, int defaultValue) {
@@ -994,19 +994,19 @@ public class CommandLine {
                 return defaultValue;
             }
         }
-        /** Returns a new Arity object with the {@code min} value replaced by the specified value.
-         * @param newMin the {@code min} value of the returned Arity object
-         * @return a new Arity object with the specified {@code min} value, all other values are kept */
-        public Arity min(int newMin) { return new Arity(newMin, max, isVariable, isUnspecified, originalValue); }
+        /** Returns a new Range object with the {@code min} value replaced by the specified value.
+         * @param newMin the {@code min} value of the returned Range object
+         * @return a new Range object with the specified {@code min} value, all other values are kept */
+        public Range min(int newMin) { return new Range(newMin, max, isVariable, isUnspecified, originalValue); }
 
-        /** Returns a new Arity object with the {@code max} value replaced by the specified value.
-         * @param newMax the {@code max} value of the returned Arity object
-         * @return a new Arity object with the specified {@code max} value, all other values are kept */
-        public Arity max(int newMax) { return new Arity(min, newMax, isVariable, isUnspecified, originalValue); }
+        /** Returns a new Range object with the {@code max} value replaced by the specified value.
+         * @param newMax the {@code max} value of the returned Range object
+         * @return a new Range object with the specified {@code max} value, all other values are kept */
+        public Range max(int newMax) { return new Range(min, newMax, isVariable, isUnspecified, originalValue); }
 
         public boolean equals(Object object) {
-            if (!(object instanceof Arity)) { return false; }
-            Arity other = (Arity) object;
+            if (!(object instanceof Range)) { return false; }
+            Range other = (Range) object;
             return other.max == this.max && other.min == this.min && other.isVariable == this.isVariable;
         }
         public int hashCode() {
@@ -1049,7 +1049,7 @@ public class CommandLine {
                             + field.getName() + "' is both.");
                 }
                 positionalParametersFields.add(field);
-                Arity arity = Arity.forParameters(field);
+                Range arity = Range.parameterArity(field);
                 if (arity.min > 0) {
                     requiredFields.add(field);
                 }
@@ -1234,7 +1234,7 @@ public class CommandLine {
 
         private void processPositionalParameters0(Collection<Field> required, boolean validateOnly, Stack<String> args) throws Exception {
             for (Field positionalParam : positionalParametersFields) {
-                Arity indexRange = Arity.valueOf(positionalParam.getAnnotation(Parameters.class).index());
+                Range indexRange = Range.valueOf(positionalParam.getAnnotation(Parameters.class).index());
                 @SuppressWarnings("unchecked")
                 Stack<String> argsCopy = (Stack<String>) args.clone();
                 Collections.reverse(argsCopy);
@@ -1245,7 +1245,7 @@ public class CommandLine {
                 }
                 Collections.reverse(argsCopy);
                 for (int i = 0; i < indexRange.min && !argsCopy.isEmpty(); i++) { argsCopy.pop(); }
-                Arity arity = Arity.forParameters(positionalParam);
+                Range arity = Range.parameterArity(positionalParam);
                 assertNoMissingParameters(positionalParam, arity.min, argsCopy);
                 if (!validateOnly) {
                     applyOption(positionalParam, Parameters.class, arity, false, argsCopy);
@@ -1263,7 +1263,7 @@ public class CommandLine {
                                              boolean paramAttachedToKey) throws Exception {
             Field field = optionName2Field.get(arg);
             required.remove(field);
-            Arity arity = Arity.forOption(field);
+            Range arity = Range.optionArity(field);
             if (paramAttachedToKey) {
                 arity = arity.min(Math.max(1, arity.min)); // if key=value, minimum arity is at least 1
             }
@@ -1279,7 +1279,7 @@ public class CommandLine {
                     required.remove(field);
                     cluster = cluster.length() > 0 ? cluster.substring(1) : "";
                     boolean paramAttachedToOption = cluster.length() > 0;
-                    Arity arity = Arity.forOption(field);
+                    Range arity = Range.optionArity(field);
                     if (cluster.startsWith(separator)) {// attached with separator, like -f=FILE or -v=true
                         cluster = cluster.substring(separator.length());
                         arity = arity.min(Math.max(1, arity.min)); // if key=value, minimum arity is at least 1
@@ -1310,7 +1310,7 @@ public class CommandLine {
 
         private int applyOption(Field field,
                                 Class<?> annotation,
-                                Arity arity,
+                                Range arity,
                                 boolean valueAttachedToOption,
                                 Stack<String> args) throws Exception {
             updateHelpRequested(field);
@@ -1330,7 +1330,7 @@ public class CommandLine {
             return applyValueToSingleValuedField(field, arity, args, cls);
         }
 
-        private int applyValueToSingleValuedField(Field field, Arity arity, Stack<String> args, Class<?> cls) throws Exception {
+        private int applyValueToSingleValuedField(Field field, Range arity, Stack<String> args, Class<?> cls) throws Exception {
             boolean noMoreValues = args.isEmpty();
             String value = args.isEmpty() ? null : trim(args.pop()); // unquote the value
             int result = arity.min; // the number or args we need to consume
@@ -1359,7 +1359,7 @@ public class CommandLine {
 
         private int applyValuesToArrayField(Field field,
                                             Class<?> annotation,
-                                            Arity arity,
+                                            Range arity,
                                             Stack<String> args,
                                             Class<?> cls) throws Exception {
             Class<?> type = cls.getComponentType();
@@ -1389,7 +1389,7 @@ public class CommandLine {
         @SuppressWarnings("unchecked")
         private int applyValuesToCollectionField(Field field,
                                                  Class<?> annotation,
-                                                 Arity arity,
+                                                 Range arity,
                                                  Stack<String> args,
                                                  Class<?> cls) throws Exception {
             Collection<Object> collection = (Collection<Object>) field.get(command);
@@ -1412,7 +1412,7 @@ public class CommandLine {
 
         private List<Object> consumeArguments(Field field,
                                               Class<?> annotation,
-                                              Arity arity,
+                                              Range arity,
                                               Stack<String> args,
                                               ITypeConverter<?> converter,
                                               Class<?> type) throws Exception {
@@ -1436,7 +1436,7 @@ public class CommandLine {
         }
 
         private int consumeOneArgument(Field field,
-                                       Arity arity,
+                                       Range arity,
                                        Stack<String> args,
                                        ITypeConverter<?> converter,
                                        Class<?> type,
@@ -1509,14 +1509,14 @@ public class CommandLine {
             if (field.isAnnotationPresent(Option.class)) {
                 desc = prefix + "option '" + field.getAnnotation(Option.class).names()[0] + "'";
                 if (index >= 0) {
-                    Arity arity = Arity.forOption(field);
+                    Range arity = Range.optionArity(field);
                     if (arity.max > 1) {
                         desc += " at index " + index;
                     }
                     desc += " (" + labelRenderer.renderParameterLabel(field, Help.Ansi.OFF, Collections.<IStyle>emptyList()) + ")";
                 }
             } else if (field.isAnnotationPresent(Parameters.class)) {
-                Arity indexRange = Arity.valueOf(field.getAnnotation(Parameters.class).index());
+                Range indexRange = Range.valueOf(field.getAnnotation(Parameters.class).index());
                 Text label = labelRenderer.renderParameterLabel(field, Help.Ansi.OFF, Collections.<IStyle>emptyList());
                 desc = prefix + "positional parameter at index " + indexRange + " (" + label + ")";
             }
@@ -1586,13 +1586,13 @@ public class CommandLine {
                         throw new MissingParameterException("Missing required parameter for " +
                                 optionDescription("", field, 0));
                     }
-                    Arity indexRange = Arity.valueOf(field.getAnnotation(Parameters.class).index());
+                    Range indexRange = Range.valueOf(field.getAnnotation(Parameters.class).index());
                     Help.IParamLabelRenderer labelRenderer = Help.createMinimalParamLabelRenderer();
                     String sep = "";
                     String names = "";
                     int count = 0;
                     for (int i = indexRange.min; i < positionalParametersFields.size(); i++) {
-                        if (Arity.forParameters(positionalParametersFields.get(i)).min > 0) {
+                        if (Range.parameterArity(positionalParametersFields.get(i)).min > 0) {
                             names += sep + labelRenderer.renderParameterLabel(positionalParametersFields.get(i),
                                     Help.Ansi.OFF, Collections.<IStyle>emptyList());
                             sep = ", ";
@@ -1600,7 +1600,7 @@ public class CommandLine {
                         }
                     }
                     String msg = "Missing required parameter";
-                    Arity paramArity = Arity.forParameters(field);
+                    Range paramArity = Range.parameterArity(field);
                     if (paramArity.isVariable) {
                         msg += "s at positions " + indexRange + ": ";
                     } else {
@@ -1627,8 +1627,8 @@ public class CommandLine {
     }
     private static class PositionalParametersSorter implements Comparator<Field> {
         public int compare(Field o1, Field o2) {
-            Arity indexRange1 = Arity.valueOf(o1.getAnnotation(Parameters.class).index());
-            Arity indexRange2 = Arity.valueOf(o2.getAnnotation(Parameters.class).index());
+            Range indexRange1 = Range.valueOf(o1.getAnnotation(Parameters.class).index());
+            Range indexRange2 = Range.valueOf(o2.getAnnotation(Parameters.class).index());
             int result = indexRange1.min - indexRange2.min;
             if (result == 0) {
                 result = indexRange1.max - indexRange2.max;
@@ -2344,8 +2344,8 @@ public class CommandLine {
         public static Comparator<Field> createShortOptionNameComparator() {
             return new SortByShortestOptionNameAlphabetically();
         }
-        /** Sorts Fields annotated with {@code Option} by their option {@linkplain Arity#max max arity} first, by
-         * {@linkplain Arity#min min arity} next, and by {@linkplain #createShortOptionNameComparator() option name} last.
+        /** Sorts Fields annotated with {@code Option} by their option {@linkplain Range#max max arity} first, by
+         * {@linkplain Range#min min arity} next, and by {@linkplain #createShortOptionNameComparator() option name} last.
          * @return a comparator that sorts fields by arity first, then their option name */
         public static Comparator<Field> createShortOptionArityAndNameComparator() {
             return new SortByOptionArityAndNameAlphabetically();
@@ -2492,7 +2492,7 @@ public class CommandLine {
             public String requiredMarker = " ";
             public Text[][] render(Parameters params, Field field, IParamLabelRenderer paramLabelRenderer, ColorScheme scheme) {
                 Text label = paramLabelRenderer.renderParameterLabel(field, scheme.ansi(), scheme.parameterStyles);
-                Text requiredParameter = scheme.parameterText(Arity.forParameters(field).min > 0 ? requiredMarker : "");
+                Text requiredParameter = scheme.parameterText(Range.parameterArity(field).min > 0 ? requiredMarker : "");
 
                 final int COLUMN_COUNT = 5;
                 final Text EMPTY = Ansi.EMPTY_TEXT;
@@ -2536,7 +2536,7 @@ public class CommandLine {
             public String separator() { return separator; }
             public Text renderParameterLabel(Field field, Ansi ansi, List<IStyle> styles) {
                 boolean isOptionParameter = field.isAnnotationPresent(Option.class);
-                Arity arity = isOptionParameter ? Arity.forOption(field) : Arity.forParameters(field);
+                Range arity = isOptionParameter ? Range.optionArity(field) : Range.parameterArity(field);
                 Text result = ansi.new Text("");
                 String sep = isOptionParameter ? separator : "";
                 if (arity.min > 0) {
@@ -2710,8 +2710,8 @@ public class CommandLine {
             public int compare(Field f1, Field f2) {
                 Option o1 = f1.getAnnotation(Option.class);
                 Option o2 = f2.getAnnotation(Option.class);
-                Arity arity1 = Arity.forOption(f1);
-                Arity arity2 = Arity.forOption(f2);
+                Range arity1 = Range.optionArity(f1);
+                Range arity2 = Range.optionArity(f2);
                 int result = arity1.max - arity2.max;
                 if (result == 0) {
                     result = arity1.min - arity2.min;
