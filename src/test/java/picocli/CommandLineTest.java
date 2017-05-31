@@ -2059,6 +2059,67 @@ public class CommandLineTest {
         assertArrayEquals(new String[]{"file1", "file2"}, app2.files);
     }
 
+    @Test(expected = ParameterIndexGapException.class)
+    public void testPositionalParamWithIndexGap_SkipZero() throws Exception {
+        class SkipZero { @Parameters(index = "1") String str; }
+        CommandLine.parse(new SkipZero(),"val1", "val2");
+    }
+
+    @Test(expected = ParameterIndexGapException.class)
+    public void testPositionalParamWithIndexGap_RangeSkipZero() throws Exception {
+        class SkipZero { @Parameters(index = "1..*") String str; }
+        CommandLine.parse(new SkipZero(),"val1", "val2");
+    }
+
+    @Test(expected = ParameterIndexGapException.class)
+    public void testPositionalParamWithIndexGap_FixedIndexGap() throws Exception {
+        class SkipOne {
+            @Parameters(index = "0") String str0;
+            @Parameters(index = "2") String str2;
+        }
+        CommandLine.parse(new SkipOne(),"val1", "val2");
+    }
+
+    @Test(expected = ParameterIndexGapException.class)
+    public void testPositionalParamWithIndexGap_RangeIndexGap() throws Exception {
+        class SkipTwo {
+            @Parameters(index = "0..1") String str0;
+            @Parameters(index = "3") String str2;
+        }
+        CommandLine.parse(new SkipTwo(),"val0", "val1", "val2", "val3");
+    }
+
+    @Test
+    public void testPositionalParamWithIndexGap_VariableRangeIndexNoGap() throws Exception {
+        class NoGap {
+            @Parameters(index = "0..*") String[] str0;
+            @Parameters(index = "3") String str2;
+        }
+        NoGap noGap = CommandLine.parse(new NoGap(),"val0", "val1", "val2", "val3");
+        assertArrayEquals(new String[] {"val0", "val1", "val2", "val3"}, noGap.str0);
+        assertEquals("val3", noGap.str2);
+    }
+
+    @Test
+    public void testPositionalParamWithIndexGap_RangeIndexNoGap() throws Exception {
+        class NoGap {
+            @Parameters(index = "0..1") String[] str0;
+            @Parameters(index = "2") String str2;
+        }
+        NoGap noGap = CommandLine.parse(new NoGap(),"val0", "val1", "val2", "val3");
+        assertArrayEquals(new String[] {"val0", "val1"}, noGap.str0);
+        assertEquals("val2", noGap.str2);
+    }
+
+    @Test
+    public void testPositionalParamSingleValueButWithoutIndex() throws Exception {
+        class SingleValue {
+            @Parameters String str;
+        }
+        SingleValue single = CommandLine.parse(new SingleValue(),"val1", "val2");
+        assertEquals("val1", single.str);
+    }
+
     @Test
     public void testSplitInOptionArray() {
         class Args {

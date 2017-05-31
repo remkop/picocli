@@ -911,7 +911,7 @@ public class CommandLine {
         K convert(String value) throws Exception;
     }
     /** Describes the number of parameters required and accepted by an option or a positional parameter. */
-    public static class Range {
+    public static class Range implements Comparable<Range> {
         /** Required number of parameters for an option or positional parameter. */
         public final int min;
         /** Maximum accepted number of parameters for an option or positional parameter. */
@@ -947,6 +947,12 @@ public class CommandLine {
          * @return a new {@code Range} based on the Parameters arity annotation on the specified field */
         public static Range parameterArity(Field field) {
             return adjustForType(Range.valueOf(field.getAnnotation(Parameters.class).arity()), field);
+        }
+        /** Returns a new {@code Range} based on the {@link Parameters#index()} annotation on the specified field.
+         * @param field the field whose Parameters annotation to inspect
+         * @return a new {@code Range} based on the Parameters index annotation on the specified field */
+        public static Range parameterIndex(Field field) {
+            return Range.valueOf(field.getAnnotation(Parameters.class).index());
         }
         static Range adjustForType(Range result, Field field) {
             return result.isUnspecified ? defaultArity(field.getType()) : result;
@@ -1015,6 +1021,10 @@ public class CommandLine {
         public String toString() {
             return min == max ? String.valueOf(min) : min + ".." + (isVariable ? "*" : max);
         }
+        public int compareTo(Range other) {
+            int result = min - other.min;
+            return (result == 0) ? max - other.max : result;
+        }
     }
     private static void init(Class<?> cls,
                               List<Field> requiredFields,
@@ -1056,7 +1066,18 @@ public class CommandLine {
             }
         }
     }
-
+    static void validatePositionalParameters(List<Field> positionalParametersFields) {
+        int min = 0;
+        for (Field field : positionalParametersFields) {
+            Range index = Range.parameterIndex(field);
+            if (index.min > min) {
+                throw new ParameterIndexGapException("Missing field annotated with @Parameter(index=" + min +
+                        "). Nearest field '" + field.getName() + "' has index=" + index.min);
+            }
+            min = Math.max(min, index.max);
+            min = min == Integer.MAX_VALUE ? min : min + 1;
+        }
+    }
     /**
      * Helper class responsible for processing command line arguments.
      */
@@ -1103,8 +1124,8 @@ public class CommandLine {
             converterRegistry.put(Pattern.class,       new BuiltIn.PatternConverter());
             converterRegistry.put(UUID.class,          new BuiltIn.UUIDConverter());
 
-            this.command    = Assert.notNull(command, "command");
-            Class<?> cls = command.getClass();
+            this.command             = Assert.notNull(command, "command");
+            Class<?> cls             = command.getClass();
             String declaredSeparator = null;
             while (cls != null) {
                 init(cls, requiredFields, optionName2Field, singleCharOption2Field, positionalParametersFields);
@@ -1116,6 +1137,7 @@ public class CommandLine {
             }
             separator = declaredSeparator != null ? declaredSeparator : separator;
             Collections.sort(positionalParametersFields, new PositionalParametersSorter());
+            validatePositionalParameters(positionalParametersFields);
         }
 
         /**
@@ -1234,7 +1256,7 @@ public class CommandLine {
 
         private void processPositionalParameters0(Collection<Field> required, boolean validateOnly, Stack<String> args) throws Exception {
             for (Field positionalParam : positionalParametersFields) {
-                Range indexRange = Range.valueOf(positionalParam.getAnnotation(Parameters.class).index());
+                Range indexRange = Range.parameterIndex(positionalParam);
                 @SuppressWarnings("unchecked")
                 Stack<String> argsCopy = (Stack<String>) args.clone();
                 Collections.reverse(argsCopy);
@@ -1516,7 +1538,7 @@ public class CommandLine {
                     desc += " (" + labelRenderer.renderParameterLabel(field, Help.Ansi.OFF, Collections.<IStyle>emptyList()) + ")";
                 }
             } else if (field.isAnnotationPresent(Parameters.class)) {
-                Range indexRange = Range.valueOf(field.getAnnotation(Parameters.class).index());
+                Range indexRange = Range.parameterIndex(field);
                 Text label = labelRenderer.renderParameterLabel(field, Help.Ansi.OFF, Collections.<IStyle>emptyList());
                 desc = prefix + "positional parameter at index " + indexRange + " (" + label + ")";
             }
@@ -1586,7 +1608,7 @@ public class CommandLine {
                         throw new MissingParameterException("Missing required parameter for " +
                                 optionDescription("", field, 0));
                     }
-                    Range indexRange = Range.valueOf(field.getAnnotation(Parameters.class).index());
+                    Range indexRange = Range.parameterIndex(field);
                     Help.IParamLabelRenderer labelRenderer = Help.createMinimalParamLabelRenderer();
                     String sep = "";
                     String names = "";
@@ -1627,13 +1649,8 @@ public class CommandLine {
     }
     private static class PositionalParametersSorter implements Comparator<Field> {
         public int compare(Field o1, Field o2) {
-            Range indexRange1 = Range.valueOf(o1.getAnnotation(Parameters.class).index());
-            Range indexRange2 = Range.valueOf(o2.getAnnotation(Parameters.class).index());
-            int result = indexRange1.min - indexRange2.min;
-            if (result == 0) {
-                result = indexRange1.max - indexRange2.max;
-            }
-            return result;
+            int result = Range.parameterIndex(o1).compareTo(Range.parameterIndex(o2));
+            return (result == 0) ? Range.parameterArity(o1).compareTo(Range.parameterArity(o2)) : result;
         }
     }
     /**
@@ -3500,7 +3517,11 @@ public class CommandLine {
                     field2.getDeclaringClass().getName() + "." + field2.getName());
         }
     }
-
+    /** Exception indicating that there was a gap in the indices of the fields annotated with {@link Parameters}. */
+    public static class ParameterIndexGapException extends ParameterException {
+        private static final long serialVersionUID = -1520981133257618319L;
+        public ParameterIndexGapException(String msg) { super(msg); }
+    }
     /**
      * Exception indicating that an annotated field had a type for which no {@link ITypeConverter} was
      * {@linkplain #registerConverter(Class, ITypeConverter) registered}.
