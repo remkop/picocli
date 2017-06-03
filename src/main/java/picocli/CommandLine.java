@@ -1078,6 +1078,10 @@ public class CommandLine {
             min = min == Integer.MAX_VALUE ? min : min + 1;
         }
     }
+    private static <T> Stack<T> reverse(Stack<T> stack) {
+        Collections.reverse(stack);
+        return stack;
+    }
     /**
      * Helper class responsible for processing command line arguments.
      */
@@ -1252,14 +1256,16 @@ public class CommandLine {
 
         private void processPositionalParameters(Collection<Field> required, Stack<String> args) throws Exception {
             processPositionalParameters0(required, false, args);
+            if (!args.empty()) { throw new UnknownArgumentException(args); };
         }
 
         private void processPositionalParameters0(Collection<Field> required, boolean validateOnly, Stack<String> args) throws Exception {
+            int max = -1;
             for (Field positionalParam : positionalParametersFields) {
                 Range indexRange = Range.parameterIndex(positionalParam);
+                max = Math.max(max, indexRange.max);
                 @SuppressWarnings("unchecked")
-                Stack<String> argsCopy = (Stack<String>) args.clone();
-                Collections.reverse(argsCopy);
+                Stack<String> argsCopy = reverse((Stack<String>) args.clone());
                 if (!indexRange.isVariable) {
                     for (int i = argsCopy.size() - 1; i > indexRange.max; i--) {
                         argsCopy.removeElementAt(i);
@@ -1274,8 +1280,10 @@ public class CommandLine {
                     required.remove(positionalParam);
                 }
             }
-            if (!validateOnly) {
-                args.clear(); // clear the stack to prevent processing the elements twice
+            // remove processed args from the stack
+            if (!validateOnly && !positionalParametersFields.isEmpty()) {
+                int processedArgCount = Math.min(args.size(), max < Integer.MAX_VALUE ? max + 1 : Integer.MAX_VALUE);
+                for (int i = 0; i < processedArgCount; i++) { args.pop(); }
             }
         }
 
@@ -1294,13 +1302,15 @@ public class CommandLine {
 
         private void processClusteredShortOptions(Collection<Field> required, String arg, Stack<String> args)
                 throws Exception {
+            String prefix = arg.substring(0, 1);
             String cluster = arg.substring(1);
+            boolean paramAttachedToOption = true;
             do {
                 if (cluster.length() > 0 && singleCharOption2Field.containsKey(cluster.charAt(0))) {
                     Field field = singleCharOption2Field.get(cluster.charAt(0));
                     required.remove(field);
                     cluster = cluster.length() > 0 ? cluster.substring(1) : "";
-                    boolean paramAttachedToOption = cluster.length() > 0;
+                    paramAttachedToOption = cluster.length() > 0;
                     Range arity = Range.optionArity(field);
                     if (cluster.startsWith(separator)) {// attached with separator, like -f=FILE or -v=true
                         cluster = cluster.substring(separator.length());
@@ -1322,7 +1332,11 @@ public class CommandLine {
                     }
                     // We get here when the remainder of the cluster group is neither an option,
                     // nor a parameter that the last option could consume.
-                    // Consume it and any other remaining parameters as positional parameters.
+                    if (arg.endsWith(cluster)) {
+                        // remainder was part of a clustered group that could not be completely parsed
+                        args.push(paramAttachedToOption ? prefix + cluster : cluster);
+                        throw new UnknownArgumentException(args);
+                    }
                     args.push(cluster);
                     processPositionalParameters(required, args);
                     return;
@@ -1634,7 +1648,6 @@ public class CommandLine {
                         " requires at least " + arity + " values, but only " + args.size() + " were specified.");
             }
         }
-
         private String trim(String value) {
             return unquote(value);
         }
@@ -3521,6 +3534,15 @@ public class CommandLine {
     public static class ParameterIndexGapException extends ParameterException {
         private static final long serialVersionUID = -1520981133257618319L;
         public ParameterIndexGapException(String msg) { super(msg); }
+    }
+    /** Exception indicating that a command line argument could not be mapped to any of the fields annotated with
+     * {@link Option} or {@link Parameters}. */
+    public static class UnknownArgumentException extends ParameterException {
+        private static final long serialVersionUID = -8700426380701452440L;
+        public UnknownArgumentException(String msg) { super(msg); }
+        public UnknownArgumentException(Stack<String> args) {
+            this("Unknown argument" + (args.size() == 1 ? " " : "s ") + reverse(args));
+        }
     }
     /**
      * Exception indicating that an annotated field had a type for which no {@link ITypeConverter} was

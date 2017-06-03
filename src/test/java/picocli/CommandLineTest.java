@@ -797,6 +797,7 @@ public class CommandLineTest {
     private static class RequiredField {
         @Option(names = {"-h", "--help", "-?", "/?"}, help = true) boolean isHelpRequested;
         @Option(names = "--required", required = true) private String required;
+        @Parameters private String[] remainder;
     }
     @Test
     public void testErrorIfRequiredOptionNotSpecified() {
@@ -1069,7 +1070,7 @@ public class CommandLineTest {
         if (params == null) {
             assertNull("args", compact.inputFiles);
         } else {
-            assertArrayEquals("args", params, compact.inputFiles);
+            assertArrayEquals("args=" + Arrays.toString(compact.inputFiles), params, compact.inputFiles);
         }
     }
 
@@ -1348,12 +1349,12 @@ public class CommandLineTest {
     }
     @Test
     public void testBooleanOptionsArity0_nShortFormFailsIfAttachedParamNotABoolean() { // ignores varargs
-        BooleanOptionsArity0_nAndParameters params =
+        try {
             CommandLine.parse(new BooleanOptionsArity0_nAndParameters(), "-rv234 -bool".split(" "));
-        assertTrue(params.vOrOther);
-        assertTrue(params.rBoolean);
-        assertArrayEquals(new String[]{ "234", "-bool"}, params.params);
-        assertFalse(params.bool);
+            fail("Expected exception");
+        } catch (UnknownArgumentException ok) {
+            assertEquals("Unknown arguments [-234, -bool]", ok.getMessage());
+        }
     }
     @Test
     public void testBooleanOptionsArity0_nShortFormFailsIfAttachedWithSepParamNotABoolean() { // ignores varargs
@@ -1727,8 +1728,10 @@ public class CommandLineTest {
         try {
             CommandLine.parse(new App(), "--opt=abc");
             fail("Expected failure with unknown separator");
-        } catch (MissingParameterException ok) {
-            assertEquals("Missing required option 'opt'", ok.getMessage());
+        } catch (UnknownArgumentException ok) {
+            //} catch (MissingParameterException ok) {
+            //assertEquals("Missing required option 'opt'", ok.getMessage());
+            assertEquals("Unknown argument [--opt=abc]", ok.getMessage());
         }
     }
     @Test
@@ -1810,8 +1813,12 @@ public class CommandLineTest {
         }
         Arity2 opt = CommandLine.parse(new Arity2(), "-o a b".split(" "));
 
-        opt = CommandLine.parse(new Arity2(), "-p a b".split(" "));
-        assertEquals("a", opt.path);
+        try {
+            opt = CommandLine.parse(new Arity2(), "-p a b".split(" "));
+            fail("expected exception");
+        } catch (UnknownArgumentException ex) {
+            assertEquals("Unknown argument [b]", ex.getMessage());
+        }
     }
 
     @Test
@@ -2106,12 +2113,29 @@ public class CommandLineTest {
             @Parameters(index = "0..1") String[] str0;
             @Parameters(index = "2") String str2;
         }
-        NoGap noGap = CommandLine.parse(new NoGap(),"val0", "val1", "val2", "val3");
+        NoGap noGap = CommandLine.parse(new NoGap(),"val0", "val1", "val2");
         assertArrayEquals(new String[] {"val0", "val1"}, noGap.str0);
         assertEquals("val2", noGap.str2);
     }
 
-    @Test
+    @Test(expected = UnknownArgumentException.class)
+    public void testPositionalParamsDisallowUnknownArgumentSingleValue() throws Exception {
+        class SingleValue {
+            @Parameters(index = "0") String str;
+        }
+        SingleValue single = CommandLine.parse(new SingleValue(),"val1", "val2");
+        assertEquals("val1", single.str);
+    }
+
+    @Test(expected = UnknownArgumentException.class)
+    public void testPositionalParamsDisallowUnknownArgumentMultiValue() throws Exception {
+        class SingleValue {
+            @Parameters(index = "0..2") String[] str;
+        }
+        CommandLine.parse(new SingleValue(),"val0", "val1", "val2", "val3");
+    }
+
+    @Test // TODO
     public void testPositionalParamSingleValueButWithoutIndex() throws Exception {
         class SingleValue {
             @Parameters String str;
@@ -2376,12 +2400,12 @@ public class CommandLineTest {
         assertTrue(((GrandChild1Command1) sub1WithOptions.get(2).getCommand()).d);
 
         // sub12 is not nested under sub11 so is not recognized
-        List<CommandLine> sub1sub2 = createNestedCommand().parseCommands("cmd1", "sub11", "sub12");
-        assertEquals(3, sub1sub2.size());
-        assertFalse(((MainCommand)         sub1sub2.get(0).getCommand()).a);
-        assertFalse(((ChildCommand1)       sub1sub2.get(1).getCommand()).b);
-        assertFalse(((GrandChild1Command1) sub1sub2.get(2).getCommand()).d);
-
+        try {
+            createNestedCommand().parseCommands("cmd1", "sub11", "sub12");
+            fail("Expected exception for sub12");
+        } catch (UnknownArgumentException ex) {
+            assertEquals("Unknown argument [sub12]", ex.getMessage());
+        }
         List<CommandLine> sub22sub1 = createNestedCommand().parseCommands("cmd2", "sub22", "sub22sub1");
         assertEquals(4, sub22sub1.size());
         assertFalse(((MainCommand)                sub22sub1.get(0).getCommand()).a);
@@ -2397,31 +2421,42 @@ public class CommandLineTest {
         assertTrue(((GreatGrandChild2Command2_1) sub22sub1WithOptions.get(3).getCommand()).h);
 
         // invalid
-        List<CommandLine> invalid0 = createNestedCommand().parseCommands("-a", "-b", "cmd1");
-        assertEquals("unmatched option prevents remainder to be parsed as command",1, invalid0.size());
-        assertEquals(new MainCommand(), invalid0.get(0).getCommand());
-
-        List<CommandLine> invalid1 = createNestedCommand().parseCommands("cmd1", "sub21");
-        assertEquals("should ignore sub-commands for different parent command", 2, invalid1.size());
-        assertEquals(new MainCommand(),   invalid1.get(0).getCommand());
-        assertEquals(new ChildCommand1(), invalid1.get(1).getCommand());
-
-        List<CommandLine> invalid2 = createNestedCommand().parseCommands("cmd1", "sub22sub1");
-        assertEquals("should ignore sub-sub-commands for different parent command", 2, invalid2.size());
-        assertEquals(new MainCommand(),   invalid2.get(0).getCommand());
-        assertEquals(new ChildCommand1(), invalid2.get(1).getCommand());
-
-        List<CommandLine> invalid3 = createNestedCommand().parseCommands("sub11");
-        assertEquals("should ignore sub-commands without preceding parent command", 1, invalid3.size());
-        assertEquals(new MainCommand(), invalid3.get(0).getCommand());
-
-        List<CommandLine> invalid4 = createNestedCommand().parseCommands("sub21");
-        assertEquals("should ignore sub-commands without preceding parent command",1, invalid4.size());
-        assertEquals(new MainCommand(), invalid4.get(0).getCommand());
-
-        List<CommandLine> invalid5 = createNestedCommand().parseCommands("sub22sub1");
-        assertEquals("should ignore sub-sub-commands without preceding parent/grandparent command", 1, invalid5.size());
-        assertEquals(new MainCommand(), invalid5.get(0).getCommand());
+        try {
+            createNestedCommand().parseCommands("-a", "-b", "cmd1");
+            fail("unmatched option should prevents remainder to be parsed as command");
+        } catch (UnknownArgumentException ex) {
+            assertEquals("Unknown arguments [-b, cmd1]", ex.getMessage());
+        }
+        try {
+            createNestedCommand().parseCommands("cmd1", "sub21");
+            fail("sub-commands for different parent command");
+        } catch (UnknownArgumentException ex) {
+            assertEquals("Unknown argument [sub21]", ex.getMessage());
+        }
+        try {
+            createNestedCommand().parseCommands("cmd1", "sub22sub1");
+            fail("sub-sub-commands for different parent command");
+        } catch (UnknownArgumentException ex) {
+            assertEquals("Unknown argument [sub22sub1]", ex.getMessage());
+        }
+        try {
+            createNestedCommand().parseCommands("sub11");
+            fail("sub-commands without preceding parent command");
+        } catch (UnknownArgumentException ex) {
+            assertEquals("Unknown argument [sub11]", ex.getMessage());
+        }
+        try {
+            createNestedCommand().parseCommands("sub21");
+            fail("sub-commands without preceding parent command");
+        } catch (UnknownArgumentException ex) {
+            assertEquals("Unknown argument [sub21]", ex.getMessage());
+        }
+        try {
+            createNestedCommand().parseCommands("sub22sub1");
+            fail("sub-sub-commands without preceding parent/grandparent command");
+        } catch (UnknownArgumentException ex) {
+            assertEquals("Unknown argument [sub22sub1]", ex.getMessage());
+        }
     }
 
     @Test(expected = MissingTypeConverterException.class)
