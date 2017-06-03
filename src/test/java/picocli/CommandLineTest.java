@@ -995,6 +995,13 @@ public class CommandLineTest {
 
         compact = CommandLine.parse(new CompactFields(), "-rvo out p1 p2".split(" "));
         verifyCompact(compact, true, true, "out", fileArray("p1", "p2"));
+
+        try {
+            CommandLine.parse(new CompactFields(), "-oout -r -vp1 p2".split(" "));
+            fail("should fail: -v does not take an argument");
+        } catch (UnknownArgumentException ex) {
+            assertEquals("Unknown arguments [-p1, p2]", ex.getMessage());
+        }
     }
 
     @Test
