@@ -123,6 +123,7 @@ public class CommandLine {
     public static final String VERSION = "0.9.7-SNAPSHOT";
 
     private final Interpreter interpreter;
+    private boolean overwrittenOptionsAllowed = false;
 
     /**
      * Constructs a new {@code CommandLine} interpreter with the specified annotated object.
@@ -188,6 +189,28 @@ public class CommandLine {
      */
     public Object getCommand() {
         return interpreter.command;
+    }
+
+    /** Returns whether options for single-value fields can be specified multiple times on the command line.
+     * The default is {@code false} and a {@link OverwrittenOptionException} is thrown if this happens.
+     * When {@code true}, the last specified value is retained.
+     * @return {@code true} if options for single-value fields can be specified multiple times on the command line, {@code false} otherwise
+     */
+    public boolean isOverwrittenOptionsAllowed() {
+        return overwrittenOptionsAllowed;
+    }
+
+    /** Sets whether options for single-value fields can be specified multiple times on the command line without a {@link OverwrittenOptionException} being thrown.
+     * <p>The specified setting will be registered with this {@code CommandLine} and the full hierarchy of its
+     * subcommands and nested sub-subcommands <em>at the moment this method is called</em>. Subcommands added
+     * later will have the default setting. To ensure a setting is applied to all
+     * subcommands, call the setter last, after adding subcommands.</p>
+     * @param overwrittenOptionsAllowed the new setting
+     * @return this {@code CommandLine} object, to allow method chaining
+     */
+    public CommandLine setOverwrittenOptionsAllowed(final boolean overwrittenOptionsAllowed) {
+        this.overwrittenOptionsAllowed = overwrittenOptionsAllowed;
+        return this;
     }
 
     /**
@@ -1001,14 +1024,16 @@ public class CommandLine {
             }
         }
         /** Returns a new Range object with the {@code min} value replaced by the specified value.
+         * The {@code max} of the returned Range is guaranteed not to be less than the new {@code min} value.
          * @param newMin the {@code min} value of the returned Range object
-         * @return a new Range object with the specified {@code min} value, all other values are kept */
-        public Range min(int newMin) { return new Range(newMin, max, isVariable, isUnspecified, originalValue); }
+         * @return a new Range object with the specified {@code min} value */
+        public Range min(int newMin) { return new Range(newMin, Math.max(newMin, max), isVariable, isUnspecified, originalValue); }
 
         /** Returns a new Range object with the {@code max} value replaced by the specified value.
+         * The {@code min} of the returned Range is guaranteed not to be greater than the new {@code max} value.
          * @param newMax the {@code max} value of the returned Range object
-         * @return a new Range object with the specified {@code max} value, all other values are kept */
-        public Range max(int newMax) { return new Range(min, newMax, isVariable, isUnspecified, originalValue); }
+         * @return a new Range object with the specified {@code max} value */
+        public Range max(int newMax) { return new Range(Math.min(min, newMax), newMax, isVariable, isUnspecified, originalValue); }
 
         public boolean equals(Object object) {
             if (!(object instanceof Range)) { return false; }
@@ -1166,9 +1191,10 @@ public class CommandLine {
             isHelpRequested = false;
             parsedCommands.add(CommandLine.this);
             List<Field> required = new ArrayList<Field>(requiredFields);
+            Set<Field> initialized = new HashSet<Field>();
             Collections.sort(required, new PositionalParametersSorter());
             try {
-                processArguments(parsedCommands, argumentStack, required, originalArgs);
+                processArguments(parsedCommands, argumentStack, required, initialized, originalArgs);
             } catch (ParameterException ex) {
                 throw ex;
             } catch (Exception ex) {
@@ -1191,6 +1217,7 @@ public class CommandLine {
         private void processArguments(List<CommandLine> parsedCommands,
                                       Stack<String> args,
                                       Collection<Field> required,
+                                      Set<Field> initialized,
                                       String[] originalArgs) throws Exception {
             // arg must be one of:
             // 1. the "--" double dash separating options from positional arguments
@@ -1237,12 +1264,12 @@ public class CommandLine {
                     }
                 }
                 if (optionName2Field.containsKey(arg)) {
-                    processStandaloneOption(required, arg, args, paramAttachedToOption);
+                    processStandaloneOption(required, initialized, arg, args, paramAttachedToOption);
                 }
                 // Compact (single-letter) options can be grouped with other options or with an argument.
                 // only single-letter options can be combined with other options or with an argument
                 else if (arg.length() > 2 && arg.startsWith("-")) {
-                    processClusteredShortOptions(required, arg, args);
+                    processClusteredShortOptions(required, initialized, arg, args);
                 }
                 // The argument could not be interpreted as an option.
                 // We take this to mean that the remainder are positional arguments
@@ -1276,7 +1303,7 @@ public class CommandLine {
                 Range arity = Range.parameterArity(positionalParam);
                 assertNoMissingParameters(positionalParam, arity.min, argsCopy);
                 if (!validateOnly) {
-                    applyOption(positionalParam, Parameters.class, arity, false, argsCopy);
+                    applyOption(positionalParam, Parameters.class, arity, false, argsCopy, null);
                     required.remove(positionalParam);
                 }
             }
@@ -1288,6 +1315,7 @@ public class CommandLine {
         }
 
         private void processStandaloneOption(Collection<Field> required,
+                                             Set<Field> initialized,
                                              String arg,
                                              Stack<String> args,
                                              boolean paramAttachedToKey) throws Exception {
@@ -1297,10 +1325,13 @@ public class CommandLine {
             if (paramAttachedToKey) {
                 arity = arity.min(Math.max(1, arity.min)); // if key=value, minimum arity is at least 1
             }
-            applyOption(field, Option.class, arity, paramAttachedToKey, args);
+            applyOption(field, Option.class, arity, paramAttachedToKey, args, initialized);
         }
 
-        private void processClusteredShortOptions(Collection<Field> required, String arg, Stack<String> args)
+        private void processClusteredShortOptions(Collection<Field> required,
+                                                  Set<Field> initialized,
+                                                  String arg,
+                                                  Stack<String> args)
                 throws Exception {
             String prefix = arg.substring(0, 1);
             String cluster = arg.substring(1);
@@ -1320,7 +1351,7 @@ public class CommandLine {
                     // arity may be >= 1, or
                     // arity <= 0 && !cluster.startsWith(separator)
                     // e.g., boolean @Option("-v", arity=0, varargs=true); arg "-rvTRUE", remainder cluster="TRUE"
-                    int consumed = applyOption(field, Option.class, arity, paramAttachedToOption, args);
+                    int consumed = applyOption(field, Option.class, arity, paramAttachedToOption, args, initialized);
                     // only return if cluster (and maybe more) was consumed, otherwise continue do-while loop
                     if (consumed > 0) {
                         return;
@@ -1348,7 +1379,8 @@ public class CommandLine {
                                 Class<?> annotation,
                                 Range arity,
                                 boolean valueAttachedToOption,
-                                Stack<String> args) throws Exception {
+                                Stack<String> args,
+                                Set<Field> initialized) throws Exception {
             updateHelpRequested(field);
             if (!args.isEmpty() && args.peek().length() == 0 && !valueAttachedToOption) {
                 args.pop(); // throw out empty string we get at the end of a group of clustered short options
@@ -1363,10 +1395,13 @@ public class CommandLine {
             if (Collection.class.isAssignableFrom(cls)) {
                 return applyValuesToCollectionField(field, annotation, arity, args, cls);
             }
-            return applyValueToSingleValuedField(field, arity, args, cls);
+            return applyValueToSingleValuedField(field, arity, args, cls, initialized);
         }
-
-        private int applyValueToSingleValuedField(Field field, Range arity, Stack<String> args, Class<?> cls) throws Exception {
+        private int applyValueToSingleValuedField(Field field,
+                                                  Range arity,
+                                                  Stack<String> args,
+                                                  Class<?> cls,
+                                                  Set<Field> initialized) throws Exception {
             boolean noMoreValues = args.isEmpty();
             String value = args.isEmpty() ? null : trim(args.pop()); // unquote the value
             int result = arity.min; // the number or args we need to consume
@@ -1386,6 +1421,12 @@ public class CommandLine {
             }
             if (noMoreValues && value == null) {
                 return 0;
+            }
+            if (initialized != null) {
+                if (initialized.contains(field) && !isOverwrittenOptionsAllowed()) {
+                    throw new OverwrittenOptionException(optionDescription("", field, 0) +  " should be specified only once");
+                }
+                initialized.add(field);
             }
             ITypeConverter<?> converter = getTypeConverter(cls);
             Object objValue = tryConvert(field, -1, converter, value, cls);
@@ -3543,6 +3584,11 @@ public class CommandLine {
         public UnknownArgumentException(Stack<String> args) {
             this("Unknown argument" + (args.size() == 1 ? " " : "s ") + reverse(args));
         }
+    }
+    /** Exception indicating that an option for a single-value field has been specified multiple times on the command line. */
+    public static class OverwrittenOptionException extends ParameterException {
+        private static final long serialVersionUID = 1338029208271055776L;
+        public OverwrittenOptionException(String msg) { super(msg); }
     }
     /**
      * Exception indicating that an annotated field had a type for which no {@link ITypeConverter} was

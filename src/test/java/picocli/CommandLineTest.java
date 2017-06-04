@@ -773,7 +773,9 @@ public class CommandLineTest {
     }
     @Test
     public void testLastValueSelectedIfOptionSpecifiedMultipleTimes() {
-        PrivateFinalOptionFields ff = CommandLine.parse(new PrivateFinalOptionFields(), "-f", "111", "-f", "222");
+        CommandLine cmd = new CommandLine(new PrivateFinalOptionFields()).setOverwrittenOptionsAllowed(true);
+        cmd.parseCommands("-f", "111", "-f", "222");
+        PrivateFinalOptionFields ff = (PrivateFinalOptionFields) cmd.getCommand();
         assertEquals("222", ff.field);
     }
 
@@ -2529,5 +2531,60 @@ public class CommandLineTest {
                 "Could not convert 'not a number' to int for option '-number'%n" +
                 "Usage: <main class> [-number=<number>]%n" +
                 "      -number=<number>%n"), result);
+    }
+
+    @Test
+    public void testOverwrittenOptionDisallowedByDefault() {
+        class App {
+            @Option(names = "-s") String string;
+            @Option(names = "-v") boolean bool;
+        }
+        try {
+            CommandLine.parse(new App(), "-s", "1", "-s", "2");
+            fail("expected exception");
+        } catch (OverwrittenOptionException ex) {
+            assertEquals("option '-s' (string) should be specified only once", ex.getMessage());
+        }
+        try {
+            CommandLine.parse(new App(), "-v", "-v");
+            fail("expected exception");
+        } catch (OverwrittenOptionException ex) {
+            assertEquals("option '-v' (bool) should be specified only once", ex.getMessage());
+        }
+    }
+
+    @Test
+    public void testOverwrittenOptionDisallowedByDefaultRegardlessOfAlias() {
+        class App {
+            @Option(names = {"-s", "--str"})      String string;
+            @Option(names = {"-v", "--verbose"}) boolean bool;
+        }
+        try {
+            CommandLine.parse(new App(), "-s", "1", "--str", "2");
+            fail("expected exception");
+        } catch (OverwrittenOptionException ex) {
+            assertEquals("option '-s' (string) should be specified only once", ex.getMessage());
+        }
+        try {
+            CommandLine.parse(new App(), "-v", "--verbose");
+            fail("expected exception");
+        } catch (OverwrittenOptionException ex) {
+            assertEquals("option '-v' (bool) should be specified only once", ex.getMessage());
+        }
+    }
+
+    @Test
+    public void testOverwrittenOptionSetsLastValueIfAllowed() {
+        class App {
+            @Option(names = {"-s", "--str"})      String string;
+            @Option(names = {"-v", "--verbose"}) boolean bool;
+        }
+        CommandLine commandLine = new CommandLine(new App()).setOverwrittenOptionsAllowed(true);
+        commandLine.parseCommands("-s", "1", "--str", "2");
+        assertEquals("2", ((App) commandLine.getCommand()).string);
+
+        commandLine = new CommandLine(new App()).setOverwrittenOptionsAllowed(true);
+        commandLine.parseCommands("-v", "--verbose");
+        assertEquals(true, ((App) commandLine.getCommand()).bool);
     }
 }

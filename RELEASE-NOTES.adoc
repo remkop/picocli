@@ -11,6 +11,7 @@
 * #136 API change: renamed method `CommandLine::getCommands` to `getSubcommands`
 * #131 API change: Renamed class `Arity` to `Range`
 * #137 Improve validation: disallow index gap in @Parameters annotations
+* #138 Improve validation: disallow option overwriting by default, can be configured to allow overwriting
 
 == 0.9.6 - Bugfix release for public review. API may change.
 
