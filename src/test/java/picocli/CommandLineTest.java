@@ -1007,6 +1007,13 @@ public class CommandLineTest {
     }
 
     @Test
+    public void testCompactFieldsWithUnmatchedArguments() {
+        CommandLine cmd = new CommandLine(new CompactFields()).setUnmatchedArgumentsAllowed(true);
+        cmd.parseCommands("-oout -r -vp1 p2".split(" "));
+        assertEquals(Arrays.asList("-p1", "p2"), cmd.getUnmatchedArguments());
+    }
+
+    @Test
     public void testCompactWithOptionParamSeparatePlusParameters() {
         CompactFields compact = CommandLine.parse(new CompactFields(), "-r -v -o out p1 p2".split(" "));
         verifyCompact(compact, true, true, "out", fileArray("p1", "p2"));
@@ -1364,6 +1371,12 @@ public class CommandLineTest {
         } catch (UnmatchedArgumentException ok) {
             assertEquals("Unmatched arguments [-234, -bool]", ok.getMessage());
         }
+    }
+    @Test
+    public void testBooleanOptionsArity0_nShortFormFailsIfAttachedParamNotABooleanWithUnmatchedArgsAllowed() { // ignores varargs
+        CommandLine cmd = new CommandLine(new BooleanOptionsArity0_nAndParameters()).setUnmatchedArgumentsAllowed(true);
+        cmd.parseCommands("-rv234 -bool".split(" "));
+        assertEquals(Arrays.asList("-234", "-bool"), cmd.getUnmatchedArguments());
     }
     @Test
     public void testBooleanOptionsArity0_nShortFormFailsIfAttachedWithSepParamNotABoolean() { // ignores varargs
@@ -1732,15 +1745,37 @@ public class CommandLineTest {
         class App {
             @Option(names = "--opt", required = true) String opt;
         }
-        App app = CommandLine.parse(new App(), "--opt:abc");
-        assertEquals("--opt:abc", "abc", app.opt);
         try {
             CommandLine.parse(new App(), "--opt=abc");
             fail("Expected failure with unknown separator");
         } catch (UnmatchedArgumentException ok) {
-            //} catch (MissingParameterException ok) {
-            //assertEquals("Missing required option 'opt'", ok.getMessage());
             assertEquals("Unmatched argument [--opt=abc]", ok.getMessage());
+        }
+    }
+    @Test
+    public void testIfSeparatorSetTheDefaultSeparatorIsNotRecognized() {
+        @Command(separator = ":")
+        class App {
+            @Option(names = "--opt", required = true) String opt;
+        }
+        try {
+            CommandLine.parse(new App(), "--opt=abc");
+            fail("Expected failure with unknown separator");
+        } catch (UnmatchedArgumentException ok) {
+            assertEquals("Unmatched argument [--opt=abc]", ok.getMessage());
+        }
+    }
+    @Test
+    public void testIfSeparatorSetTheDefaultSeparatorIsNotRecognizedWithUnmatchedArgsAllowed() {
+        @Command(separator = ":")
+        class App {
+            @Option(names = "--opt", required = true) String opt;
+        }
+        CommandLine cmd = new CommandLine(new App()).setUnmatchedArgumentsAllowed(true);
+        try {
+            cmd.parseCommands("--opt=abc");
+        } catch (MissingParameterException ok) {
+            assertEquals("Missing required option 'opt'", ok.getMessage());
         }
     }
     @Test
@@ -2143,6 +2178,27 @@ public class CommandLineTest {
         }
         CommandLine.parse(new SingleValue(),"val0", "val1", "val2", "val3");
     }
+    @Test
+    public void testPositionalParamsUnknownArgumentSingleValueWithUnmatchedArgsAllowed() throws Exception {
+        class SingleValue {
+            @Parameters(index = "0") String str;
+        }
+        CommandLine cmd = new CommandLine(new SingleValue()).setUnmatchedArgumentsAllowed(true);
+        cmd.parseCommands("val1", "val2");
+        assertEquals("val1", ((SingleValue)cmd.getCommand()).str);
+        assertEquals(Arrays.asList("val2"), cmd.getUnmatchedArguments());
+    }
+
+    @Test
+    public void testPositionalParamsUnknownArgumentMultiValueWithUnmatchedArgsAllowed() throws Exception {
+        class SingleValue {
+            @Parameters(index = "0..2") String[] str;
+        }
+        CommandLine cmd = new CommandLine(new SingleValue()).setUnmatchedArgumentsAllowed(true);
+        cmd.parseCommands("val0", "val1", "val2", "val3");
+        assertArrayEquals(new String[]{"val0", "val1", "val2"}, ((SingleValue)cmd.getCommand()).str);
+        assertEquals(Arrays.asList("val3"), cmd.getUnmatchedArguments());
+    }
 
     @Test // TODO
     public void testPositionalParamSingleValueButWithoutIndex() throws Exception {
@@ -2466,6 +2522,33 @@ public class CommandLineTest {
         } catch (UnmatchedArgumentException ex) {
             assertEquals("Unmatched argument [sub22sub1]", ex.getMessage());
         }
+    }
+
+    @Test
+    public void testParseNestedSubCommandsAllowingUnmatchedArguments() {
+        List<CommandLine> result1 = createNestedCommand().setUnmatchedArgumentsAllowed(true)
+                .parseCommands("-a", "-b", "cmd1");
+        assertEquals(Arrays.asList("-b", "cmd1"), result1.get(0).getUnmatchedArguments());
+
+        List<CommandLine> result2 = createNestedCommand().setUnmatchedArgumentsAllowed(true)
+                .parseCommands("cmd1", "sub21");
+        assertEquals(Arrays.asList("sub21"), result2.get(1).getUnmatchedArguments());
+
+        List<CommandLine> result3 = createNestedCommand().setUnmatchedArgumentsAllowed(true)
+                .parseCommands("cmd1", "sub22sub1");
+        assertEquals(Arrays.asList("sub22sub1"), result3.get(1).getUnmatchedArguments());
+
+        List<CommandLine> result4 = createNestedCommand().setUnmatchedArgumentsAllowed(true)
+                .parseCommands("sub11");
+        assertEquals(Arrays.asList("sub11"), result4.get(0).getUnmatchedArguments());
+
+        List<CommandLine> result5 = createNestedCommand().setUnmatchedArgumentsAllowed(true)
+                .parseCommands("sub21");
+        assertEquals(Arrays.asList("sub21"), result5.get(0).getUnmatchedArguments());
+
+        List<CommandLine> result6 = createNestedCommand().setUnmatchedArgumentsAllowed(true)
+                .parseCommands("sub22sub1");
+        assertEquals(Arrays.asList("sub22sub1"), result6.get(0).getUnmatchedArguments());
     }
 
     @Test(expected = MissingTypeConverterException.class)

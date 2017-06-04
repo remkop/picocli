@@ -124,6 +124,8 @@ public class CommandLine {
 
     private final Interpreter interpreter;
     private boolean overwrittenOptionsAllowed = false;
+    private boolean unmatchedArgumentsAllowed = false;
+    private List<String> unmatchedArguments = new ArrayList<String>();
 
     /**
      * Constructs a new {@code CommandLine} interpreter with the specified annotated object.
@@ -205,12 +207,49 @@ public class CommandLine {
      * subcommands and nested sub-subcommands <em>at the moment this method is called</em>. Subcommands added
      * later will have the default setting. To ensure a setting is applied to all
      * subcommands, call the setter last, after adding subcommands.</p>
-     * @param overwrittenOptionsAllowed the new setting
+     * @param newValue the new setting
      * @return this {@code CommandLine} object, to allow method chaining
      */
-    public CommandLine setOverwrittenOptionsAllowed(final boolean overwrittenOptionsAllowed) {
-        this.overwrittenOptionsAllowed = overwrittenOptionsAllowed;
+    public CommandLine setOverwrittenOptionsAllowed(boolean newValue) {
+        this.overwrittenOptionsAllowed = newValue;
+        for (CommandLine command : interpreter.commands.values()) {
+            command.setOverwrittenOptionsAllowed(newValue);
+        }
         return this;
+    }
+
+    /** Returns whether the end use may specify arguments on the command line that are not matched to any option or parameter fields.
+     * The default is {@code false} and a {@link UnmatchedArgumentException} is thrown if this happens.
+     * When {@code true}, the last unmatched arguments are available via the {@link #getUnmatchedArguments()} method.
+     * @return {@code true} if the end use may specify unmatched arguments on the command line, {@code false} otherwise
+     * @see #getUnmatchedArguments()
+     */
+    public boolean isUnmatchedArgumentsAllowed() {
+        return unmatchedArgumentsAllowed;
+    }
+
+    /** Sets whether the end use may specify unmatched arguments on the command line without a {@link UnmatchedArgumentException} being thrown.
+     * <p>The specified setting will be registered with this {@code CommandLine} and the full hierarchy of its
+     * subcommands and nested sub-subcommands <em>at the moment this method is called</em>. Subcommands added
+     * later will have the default setting. To ensure a setting is applied to all
+     * subcommands, call the setter last, after adding subcommands.</p>
+     * @param newValue the new setting
+     * @return this {@code CommandLine} object, to allow method chaining
+     */
+    public CommandLine setUnmatchedArgumentsAllowed(boolean newValue) {
+        this.unmatchedArgumentsAllowed = newValue;
+        for (CommandLine command : interpreter.commands.values()) {
+            command.setUnmatchedArgumentsAllowed(newValue);
+        }
+        return this;
+    }
+
+    /** Returns the list of unmatched command line arguments, if any.
+     * @return the list of unmatched command line arguments or an empty list
+     * @see #isUnmatchedArgumentsAllowed()
+     */
+    public List<String> getUnmatchedArguments() {
+        return unmatchedArguments;
     }
 
     /**
@@ -1283,7 +1322,15 @@ public class CommandLine {
 
         private void processPositionalParameters(Collection<Field> required, Stack<String> args) throws Exception {
             processPositionalParameters0(required, false, args);
-            if (!args.empty()) { throw new UnmatchedArgumentException(args); };
+            if (!args.empty()) {
+                handleUnmatchedArguments(args);
+                return;
+            };
+        }
+
+        private void handleUnmatchedArguments(Stack<String> args) {
+            if (!isUnmatchedArgumentsAllowed()) { throw new UnmatchedArgumentException(args); }
+            while (!args.isEmpty()) { unmatchedArguments.add(args.pop()); } // addAll would give args in reverse order
         }
 
         private void processPositionalParameters0(Collection<Field> required, boolean validateOnly, Stack<String> args) throws Exception {
@@ -1366,7 +1413,7 @@ public class CommandLine {
                     if (arg.endsWith(cluster)) {
                         // remainder was part of a clustered group that could not be completely parsed
                         args.push(paramAttachedToOption ? prefix + cluster : cluster);
-                        throw new UnmatchedArgumentException(args);
+                        handleUnmatchedArguments(args);
                     }
                     args.push(cluster);
                     processPositionalParameters(required, args);
