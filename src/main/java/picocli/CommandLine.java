@@ -1283,7 +1283,7 @@ public class CommandLine {
 
         private void processPositionalParameters(Collection<Field> required, Stack<String> args) throws Exception {
             processPositionalParameters0(required, false, args);
-            if (!args.empty()) { throw new UnknownArgumentException(args); };
+            if (!args.empty()) { throw new UnmatchedArgumentException(args); };
         }
 
         private void processPositionalParameters0(Collection<Field> required, boolean validateOnly, Stack<String> args) throws Exception {
@@ -1366,7 +1366,7 @@ public class CommandLine {
                     if (arg.endsWith(cluster)) {
                         // remainder was part of a clustered group that could not be completely parsed
                         args.push(paramAttachedToOption ? prefix + cluster : cluster);
-                        throw new UnknownArgumentException(args);
+                        throw new UnmatchedArgumentException(args);
                     }
                     args.push(cluster);
                     processPositionalParameters(required, args);
@@ -3578,11 +3578,11 @@ public class CommandLine {
     }
     /** Exception indicating that a command line argument could not be mapped to any of the fields annotated with
      * {@link Option} or {@link Parameters}. */
-    public static class UnknownArgumentException extends ParameterException {
+    public static class UnmatchedArgumentException extends ParameterException {
         private static final long serialVersionUID = -8700426380701452440L;
-        public UnknownArgumentException(String msg) { super(msg); }
-        public UnknownArgumentException(Stack<String> args) {
-            this("Unknown argument" + (args.size() == 1 ? " " : "s ") + reverse(args));
+        public UnmatchedArgumentException(String msg) { super(msg); }
+        public UnmatchedArgumentException(Stack<String> args) {
+            this("Unmatched argument" + (args.size() == 1 ? " " : "s ") + reverse(args));
         }
     }
     /** Exception indicating that an option for a single-value field has been specified multiple times on the command line. */
