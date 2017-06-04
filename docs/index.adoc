@@ -45,12 +45,12 @@ public class Example {
 }
 ----
 
-Then invoke `CommandLine.parse` with the command line parameters and an object you want to initialize.
+Then invoke `CommandLine.populateCommand` with the command line parameters and an object you want to initialize.
 
 [source,java]
 ----
 String[] args = { "-v", "inputFile1", "inputFile2" };
-Example app = CommandLine.parse(new Example(), args);
+Example app = CommandLine.populateCommand(new Example(), args);
 assert  app.verbose;
 assert  app.inputFiles != null && app.inputFiles.length == 2;
 ----
@@ -90,7 +90,7 @@ Picocli matches the option names to set the field values.
 [source,java]
 ----
 String[] args = { "-c", "--file", "result.tar", "file1.txt", "file2.txt" };
-Tar tar = CommandLine.parse(new Tar(), args);
+Tar tar = CommandLine.populateCommand(new Tar(), args);
 
 assert !tar.helpRequested;
 assert  tar.create;
@@ -155,7 +155,7 @@ Picocli initializes fields with the values at the specified index in the argumen
 [source,java]
 ----
 String[] args = { "localhost", "12345", "file1.txt", "file2.txt" };
-PositionalParameters params = CommandLine.parse(new PositionalParameters(), args);
+PositionalParameters params = CommandLine.populateCommand(new PositionalParameters(), args);
 
 assert params.host.getHostName().equals("localhost");
 assert params.port == 12345;
@@ -181,7 +181,7 @@ The `--` clarifies which of the arguments are positional parameters:
 [source,java]
 ----
 String[] args = { "-v", "--", "--files", "file1", "file2" };
-DoubleDashDemo demo = CommandLine.parse(new DoubleDashDemo(), args);
+DoubleDashDemo demo = CommandLine.populateCommand(new DoubleDashDemo(), args);
 
 assert demo.verbose;
 assert demo.files == null;
@@ -240,7 +240,7 @@ commandLine.registerConverter(java.nio.file.Path.class, s -> java.nio.file.Paths
 commandLine.registerConverter(java.time.Duration.class, s -> java.time.Duration.parse(s));
 ----
 
-After registering custom converters, call the `parseCommands(String...)` method on the `CommandLine` instance where the converters are registered. (The static `parse` method cannot be used.) For example:
+After registering custom converters, call the `parse(String...)` method on the `CommandLine` instance where the converters are registered. (The static `populateCommand` method cannot be used.) For example:
 
 [source,java]
 ----
@@ -257,7 +257,7 @@ CommandLine commandLine = new CommandLine(app)
         .registerConverter(Path.class,     s -> Paths.get(s))
         .registerConverter(Duration.class, s -> Duration.parse(s));
 
-commandLine.parseCommands("-d", "PT15M", "file1.txt");
+commandLine.parse("-d", "PT15M", "file1.txt");
 assert app.path.equals(Paths.get("file1.txt"));
 assert app.duration.equals(Duration.parse("PT15M"));
 ----
@@ -289,7 +289,7 @@ class Convert {
 [source,java]
 ----
 String[] args = { "-patterns", "a*b", "[a-e][i-u]", "--", "file1.txt", "file2.txt" };
-Convert convert = CommandLine.parse(new Convert(), args);
+Convert convert = CommandLine.populateCommand(new Convert(), args);
 
 // convert.patterns now has two Pattern objects
 // convert.files now has two File objects
@@ -424,7 +424,7 @@ This is suitable for options that should trigger the usage help message or appli
 It is the responsibility of the application to check the field and show the usage help message:
 [source,java]
 ----
-App app = CommandLine.parse(new App(), args);
+App app = CommandLine.populateCommand(new App(), args);
 if (app.helpRequested) {
    CommandLine.usage(new App(), System.err);
    return;
@@ -967,7 +967,7 @@ To ensure a custom type converter is available to all subcommands, register the 
 adding subcommands.
 
 === Parsing Subcommands
-The `CommandLine.parseCommands` method returns a List with the recognized commands. The main command (`git` in this example) is always the first element in the returned list.
+The `CommandLine.parse` method returns a List with the recognized commands. The main command (`git` in this example) is always the first element in the returned list.
 
 [source,java]
 ----
@@ -976,7 +976,7 @@ commandLine.addSubcommand("status",   new GitStatus());
 ...
 
 String[] args = { "--git-dir=/home/rpopma/picocli", "status", "-sbuno"};
-List<CommandLine> parsed = commandLine.parseCommands(args);
+List<CommandLine> parsed = commandLine.parse(args);
 assert parsed.size() == 2 : "1 command and 1 subcommand found"
 
 assert parsed.get(0).getCommand().getClass() == Git.class       : "main command"
@@ -1090,7 +1090,7 @@ You can omit some of the boilerplate code from your application when the annotat
 ----
 Runnable runnable = null;
 try {
-    runnable = CommandLine.parse(annotatedObject, args);
+    runnable = CommandLine.populateCommand(annotatedObject, args);
 } catch (Exception ex) {
     System.err.println(ex.getMessage());
     CommandLine.usage(annotatedObject, System.err);
@@ -1207,7 +1207,7 @@ class OptionArg {
 ----
 [source,java]
 ----
-OptionArg optionArg = CommandLine.parse(new OptionArg(), "-f:output.txt");
+OptionArg optionArg = CommandLine.populateCommand(new OptionArg(), "-f:output.txt");
 assert optionArg.file.equals("output.txt");
 ----
 
@@ -1219,7 +1219,7 @@ OptionArg optionArg     = new OptionArg();
 CommandLine commandLine = new CommandLine(optionArg);
 
 commandLine.setSeparator(":"); // programmatically set a separator
-commandLine.parseCommands("-f:output.txt");
+commandLine.parse("-f:output.txt");
 assert optionArg.file.equals("output.txt");
 ----
 
