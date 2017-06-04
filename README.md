@@ -51,7 +51,7 @@ public class Example {
 }
 ```
 
-Then invoke `CommandLine.parse` with the command line parameters and an object you want to initialize.
+Then invoke `CommandLine.populateCommand` with the command line parameters and an object you want to initialize.
 
 ```java
 String[] args = { "-v", "inputFile1", "inputFile2" };
