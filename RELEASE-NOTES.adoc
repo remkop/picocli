@@ -15,6 +15,7 @@
 * #138 Improve validation: disallow option overwriting by default
 * #129 Make "allow option overwriting" configurable
 * #140 Make "allow unmatched arguments" configurable
+* #139 Improve validation: CommandLine must be constructed with a command that has at least one of @Command, @Option or @Parameters annotation
 
 == 0.9.6 - Bugfix release for public review. API may change.
 

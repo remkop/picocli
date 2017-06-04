@@ -2383,9 +2383,9 @@ public class CommandLineTest {
 
     @Test
     public void testCommandListReturnsRegisteredCommands() {
-        class MainCommand {}
-        class Command1 {}
-        class Command2 {}
+        @Command class MainCommand {}
+        @Command class Command1 {}
+        @Command class Command2 {}
         CommandLine commandLine = new CommandLine(new MainCommand());
         commandLine.addSubcommand("cmd1", new Command1()).addSubcommand("cmd2", new Command2());
 
@@ -2559,7 +2559,7 @@ public class CommandLineTest {
 
     @Test(expected = MissingTypeConverterException.class)
     public void testCustomTypeConverterRegisteredBeforeSubcommandsAdded() {
-        class TopLevel {}
+        @Command class TopLevel {}
         CommandLine commandLine = new CommandLine(new TopLevel());
         commandLine.registerConverter(CustomType.class, new CustomType(null));
 
@@ -2569,7 +2569,7 @@ public class CommandLineTest {
 
     @Test
     public void testCustomTypeConverterRegisteredAfterSubcommandsAdded() {
-        class TopLevel { public boolean equals(Object o) {return getClass().equals(o.getClass());}}
+        @Command class TopLevel { public boolean equals(Object o) {return getClass().equals(o.getClass());}}
         CommandLine commandLine = new CommandLine(new TopLevel());
         commandLine.addSubcommand("main", createNestedCommand());
         commandLine.registerConverter(CustomType.class, new CustomType(null));
@@ -2584,7 +2584,7 @@ public class CommandLineTest {
     @Test
     public void testRunCallsRunnableIfParseSucceeds() {
         final boolean[] runWasCalled = {false};
-        class App implements Runnable {
+        @Command class App implements Runnable {
             public void run() {
                 runWasCalled[0] = true;
             }
@@ -2614,6 +2614,44 @@ public class CommandLineTest {
                 "Could not convert 'not a number' to int for option '-number'%n" +
                 "Usage: <main class> [-number=<number>]%n" +
                 "      -number=<number>%n"), result);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testRunRequiresAnnotatedCommand() {
+        class App implements Runnable {
+            public void run() { }
+        }
+        CommandLine.run(new App(), System.err);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testPopulateCommandRequiresAnnotatedCommand() {
+        class App { }
+        CommandLine.populateCommand(new App());
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testUsageObjectPrintstreamRequiresAnnotatedCommand() {
+        class App { }
+        CommandLine.usage(new App(), System.out);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testUsageObjectPrintstreamAnsiRequiresAnnotatedCommand() {
+        class App { }
+        CommandLine.usage(new App(), System.out, Help.Ansi.OFF);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testUsageObjectPrintstreamColorschemeRequiresAnnotatedCommand() {
+        class App { }
+        CommandLine.usage(new App(), System.out, Help.defaultColorScheme(Help.Ansi.OFF));
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testConstructorRequiresAnnotatedCommand() {
+        class App { }
+        new CommandLine(new App());
     }
 
     @Test

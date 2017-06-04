@@ -132,6 +132,7 @@ public class CommandLine {
      * When the {@link #parse(String...)} method is called, fields of the specified object that are annotated
      * with {@code @Option} or {@code @Parameters} will be initialized based on command line arguments.
      * @param command the object to initialize from the command line arguments
+     * @throws IllegalArgumentException if the specified command object does not have a {@link Command}, {@link Option} or {@link Parameters} annotation
      */
     public CommandLine(Object command) {
         interpreter = new Interpreter(command);
@@ -268,6 +269,7 @@ public class CommandLine {
      * @param args the command line arguments to parse
      * @param <T> the type of the annotated object
      * @return the specified annotated object
+     * @throws IllegalArgumentException if the specified command object does not have a {@link Command}, {@link Option} or {@link Parameters} annotation
      * @throws ParameterException if the specified command line arguments are invalid
      */
     public static <T> T populateCommand(T command, String... args) {
@@ -295,6 +297,7 @@ public class CommandLine {
      * Equivalent to {@code new CommandLine(command).usage(out)}. See {@link #usage(PrintStream)} for details.
      * @param command the object annotated with {@link Command}, {@link Option} and {@link Parameters}
      * @param out the print stream to print the help message to
+     * @throws IllegalArgumentException if the specified command object does not have a {@link Command}, {@link Option} or {@link Parameters} annotation
      */
     public static void usage(Object command, PrintStream out) {
         toCommandLine(command).usage(out);
@@ -306,6 +309,7 @@ public class CommandLine {
      * @param command the object annotated with {@link Command}, {@link Option} and {@link Parameters}
      * @param out the print stream to print the help message to
      * @param ansi whether the usage message should contain ANSI escape codes or not
+     * @throws IllegalArgumentException if the specified command object does not have a {@link Command}, {@link Option} or {@link Parameters} annotation
      */
     public static void usage(Object command, PrintStream out, Help.Ansi ansi) {
         toCommandLine(command).usage(out, ansi);
@@ -317,6 +321,7 @@ public class CommandLine {
      * @param command the object annotated with {@link Command}, {@link Option} and {@link Parameters}
      * @param out the print stream to print the help message to
      * @param colorScheme the {@code ColorScheme} defining the styles for options, parameters and commands when ANSI is enabled
+     * @throws IllegalArgumentException if the specified command object does not have a {@link Command}, {@link Option} or {@link Parameters} annotation
      */
     public static void usage(Object command, PrintStream out, Help.ColorScheme colorScheme) {
         toCommandLine(command).usage(out, colorScheme);
@@ -399,6 +404,7 @@ public class CommandLine {
      * @param args the command line arguments to parse
      * @param <R> the annotated object must implement Runnable
      * @see #run(Runnable, PrintStream, Help.Ansi, String...)
+     * @throws IllegalArgumentException if the specified command object does not have a {@link Command}, {@link Option} or {@link Parameters} annotation
      */
     public static <R extends Runnable> void run(R command, PrintStream out, String... args) {
         run(command, out, AUTO, args);
@@ -407,15 +413,15 @@ public class CommandLine {
      * Convenience method to allow command line application authors to avoid some boilerplate code in their application.
      * The annotated object needs to implement {@link Runnable}. Calling this method is equivalent to:
      * <pre>
-     * Runnable runnable = null;
+     * CommandLine cmd = new CommandLine(command);
      * try {
-     *     runnable = populateCommand(command, args);
+     *     cmd.parse(args);
      * } catch (Exception ex) {
      *     System.err.println(ex.getMessage());
-     *     usage(command, out, ansi);
+     *     cmd.usage(out, ansi);
      *     return;
      * }
-     * runnable.run();
+     * command.run();
      * </pre>
      * Note that this method is not suitable for commands with subcommands.
      * @param command the command to run when {@linkplain #populateCommand(Object, String...) parsing} succeeds.
@@ -423,17 +429,18 @@ public class CommandLine {
      * @param ansi whether the usage message should include ANSI escape codes or not
      * @param args the command line arguments to parse
      * @param <R> the annotated object must implement Runnable
+     * @throws IllegalArgumentException if the specified command object does not have a {@link Command}, {@link Option} or {@link Parameters} annotation
      */
     public static <R extends Runnable> void run(R command, PrintStream out, Help.Ansi ansi, String... args) {
-        Runnable runnable = null;
+        CommandLine cmd = new CommandLine(command); // validate command outside of try-catch
         try {
-            runnable = populateCommand(command, args);
+            cmd.parse(args);
         } catch (Exception ex) {
             out.println(ex.getMessage());
-            usage(command, out, ansi);
+            cmd.usage(out, ansi);
             return;
         }
-        runnable.run();
+        command.run();
     }
 
     /**
@@ -1195,9 +1202,11 @@ public class CommandLine {
             this.command             = Assert.notNull(command, "command");
             Class<?> cls             = command.getClass();
             String declaredSeparator = null;
+            boolean hasCommandAnnotation = false;
             while (cls != null) {
                 init(cls, requiredFields, optionName2Field, singleCharOption2Field, positionalParametersFields);
                 if (cls.isAnnotationPresent(Command.class)) {
+                    hasCommandAnnotation = true;
                     Command cmd = cls.getAnnotation(Command.class);
                     declaredSeparator = (declaredSeparator == null) ? cmd.separator() : declaredSeparator;
                 }
@@ -1206,6 +1215,11 @@ public class CommandLine {
             separator = declaredSeparator != null ? declaredSeparator : separator;
             Collections.sort(positionalParametersFields, new PositionalParametersSorter());
             validatePositionalParameters(positionalParametersFields);
+
+            if (positionalParametersFields.isEmpty() && optionName2Field.isEmpty() && !hasCommandAnnotation) {
+                throw new IllegalArgumentException(command + " (" + command.getClass() +
+                        ") is not a command: it has no @Command, @Option or @Parameters annotations");
+            }
         }
 
         /**
