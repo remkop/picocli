@@ -55,7 +55,7 @@ Then invoke `CommandLine.parse` with the command line parameters and an object y
 
 ```java
 String[] args = { "-v", "inputFile1", "inputFile2" };
-Example app = CommandLine.parse(new Example(), args);
+Example app = CommandLine.populateCommand(new Example(), args);
 
 assert !app.helpRequested;
 assert  app.verbose;
