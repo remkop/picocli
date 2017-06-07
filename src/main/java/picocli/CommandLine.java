@@ -1008,20 +1008,26 @@ public class CommandLine {
          * @param field the field whose Option annotation to inspect
          * @return a new {@code Range} based on the Option arity annotation on the specified field */
         public static Range optionArity(Field field) {
-            return adjustForType(Range.valueOf(field.getAnnotation(Option.class).arity()), field);
+            return field.isAnnotationPresent(Option.class)
+                    ? adjustForType(Range.valueOf(field.getAnnotation(Option.class).arity()), field)
+                    : new Range(0, 0, false, true, "0");
         }
         /** Returns a new {@code Range} based on the {@link Parameters#arity()} annotation on the specified field,
          * or the field type's default arity if no arity was specified.
          * @param field the field whose Parameters annotation to inspect
          * @return a new {@code Range} based on the Parameters arity annotation on the specified field */
         public static Range parameterArity(Field field) {
-            return adjustForType(Range.valueOf(field.getAnnotation(Parameters.class).arity()), field);
+            return field.isAnnotationPresent(Parameters.class)
+                    ? adjustForType(Range.valueOf(field.getAnnotation(Parameters.class).arity()), field)
+                    : new Range(0, 0, false, true, "0");
         }
         /** Returns a new {@code Range} based on the {@link Parameters#index()} annotation on the specified field.
          * @param field the field whose Parameters annotation to inspect
          * @return a new {@code Range} based on the Parameters index annotation on the specified field */
         public static Range parameterIndex(Field field) {
-            return Range.valueOf(field.getAnnotation(Parameters.class).index());
+            return field.isAnnotationPresent(Parameters.class)
+                    ? Range.valueOf(field.getAnnotation(Parameters.class).index())
+                    : new Range(0, 0, false, true, "0");
         }
         static Range adjustForType(Range result, Field field) {
             return result.isUnspecified ? defaultArity(field.getType()) : result;
