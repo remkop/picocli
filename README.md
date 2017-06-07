@@ -91,3 +91,27 @@ For example, your application can generate help like this with a custom layout:
 ![Usage help message with two options per row](docs/images/UsageHelpWithCustomLayout.png?raw=true)
 
 See the [source code](https://github.com/remkop/picocli/blob/master/src/test/java/picocli/CustomLayoutDemo.java#L61).
+
+## API Changes
+
+Version [0.9.7](https://github.com/remkop/picocli/releases/tag/v0.9.7) has some breaking API changes.
+
+**Better Groovy support**
+
+It was [pointed out](https://github.com/remkop/picocli/issues/135) that Groovy had trouble distinguishing between
+the static `parse(Object, String...)` method and the instance method `parse(String...)`.
+
+From version 0.9.7 the static `parse(Object, String...)` method has been renamed
+to `populateCommand(Object, String...)`.
+
+**Nested subcommands**
+
+* Version 0.9.7 adds support for [nested sub-subcommands](https://github.com/remkop/picocli/issues/127)
+* `CommandLine::parse` now returns `List<CommandLine>` (was `List<Object>`)
+* `CommandLine::getCommands` now returns `Map<String, CommandLine>` (was `Map<String, Object>`)
+* renamed method `CommandLine::addCommand` to `addSubcommand`
+* renamed method `CommandLine::getCommands` to `getSubcommands`
+
+**Miscellaneous**
+
+Renamed class `Arity` to `Range`.
