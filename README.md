@@ -19,6 +19,7 @@ Generates polished and easily tailored [usage help](http://picocli.info/#_usage_
 using [ANSI colors](http://picocli.info/#_ansi_colors_and_styles) where possible.
 Works with Java 5 or higher (but is designed to facilitate the use of Java 8 lambdas).
 
+<a id="picocli_demo"></a>
 ![Picocli Demo help message with ANSI colors](docs/images/picocli.Demo.png?raw=true)
 
 * user manual: [http://picocli.info](http://picocli.info)
