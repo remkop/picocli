@@ -120,7 +120,7 @@ import static picocli.CommandLine.Help.Column.Overflow.*;
  */
 public class CommandLine {
     /** This is picocli version {@value}. */
-    public static final String VERSION = "0.9.7-SNAPSHOT";
+    public static final String VERSION = "0.9.7";
 
     private final Interpreter interpreter;
     private boolean overwrittenOptionsAllowed = false;
@@ -219,7 +219,7 @@ public class CommandLine {
         return this;
     }
 
-    /** Returns whether the end use may specify arguments on the command line that are not matched to any option or parameter fields.
+    /** Returns whether the end user may specify arguments on the command line that are not matched to any option or parameter fields.
      * The default is {@code false} and a {@link UnmatchedArgumentException} is thrown if this happens.
      * When {@code true}, the last unmatched arguments are available via the {@link #getUnmatchedArguments()} method.
      * @return {@code true} if the end use may specify unmatched arguments on the command line, {@code false} otherwise
@@ -229,7 +229,7 @@ public class CommandLine {
         return unmatchedArgumentsAllowed;
     }
 
-    /** Sets whether the end use may specify unmatched arguments on the command line without a {@link UnmatchedArgumentException} being thrown.
+    /** Sets whether the end user may specify unmatched arguments on the command line without a {@link UnmatchedArgumentException} being thrown.
      * <p>The specified setting will be registered with this {@code CommandLine} and the full hierarchy of its
      * subcommands and nested sub-subcommands <em>at the moment this method is called</em>. Subcommands added
      * later will have the default setting. To ensure a setting is applied to all
