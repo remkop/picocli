@@ -102,8 +102,8 @@ Version [0.9.7](https://github.com/remkop/picocli/releases/tag/v0.9.7) has some 
 It was [pointed out](https://github.com/remkop/picocli/issues/135) that Groovy had trouble distinguishing between
 the static `parse(Object, String...)` method and the instance method `parse(String...)`.
 
-From version 0.9.7 the static `parse(Object, String...)` method has been renamed
-to `populateCommand(Object, String...)`.
+To address this, the static `parse(Object, String...)` method has been renamed
+to `populateCommand(Object, String...)` in  version 0.9.7.
 
 **Nested subcommands**
 
@@ -115,4 +115,4 @@ to `populateCommand(Object, String...)`.
 
 **Miscellaneous**
 
-Renamed class `Arity` to `Range`.
+Renamed class `Arity` to `Range` since it is not just used for @Option and @Parameters `arity` but also for `index` in positional @Parameters.
