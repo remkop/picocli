@@ -2,6 +2,7 @@
 
 == 0.9.8 - Bugfix and enhancements release for public review. API may change.
 
+* #146 Show underlying error when type conversion fails
 * #147 Toggle boolean flags instead of setting to `true`
 
 == 0.9.7 - Bugfix and enhancements release for public review. API may change.

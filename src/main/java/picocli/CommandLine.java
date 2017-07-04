@@ -1643,7 +1643,7 @@ public class CommandLine {
             } catch (ParameterException ex) {
                 throw new ParameterException(ex.getMessage() + optionDescription(" for ", field, index));
             } catch (Exception other) {
-                String desc = optionDescription(" for ", field, index);
+                String desc = optionDescription(" for ", field, index) + ": " + other;
                 throw new ParameterException("Could not convert '" + value + "' to " + type.getSimpleName() + desc, other);
             }
         }
@@ -3598,7 +3598,7 @@ public class CommandLine {
         private static ParameterException create(Exception ex, String arg, int i, String[] args) {
             String next = args.length < i + 1 ? "" : " " + args[i + 1];
             String msg = ex.getClass().getSimpleName() + ": " + ex.getLocalizedMessage()
-                    + " while processing option[" + i + "] '" + arg + next + "'.";
+                    + " while processing option[" + i + "] '" + arg + next + "': " + ex.toString();
             return new ParameterException(msg, ex);
         }
     }
