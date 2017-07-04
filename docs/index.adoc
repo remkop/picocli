@@ -74,7 +74,7 @@ The below example shows options with one or more names, options that take an opt
 ----
 class Tar {
     @Option(names = "-c", description = "create a new archive")
-    boolean extract;
+    boolean create;
 
     @Option(names = { "-f", "--file" }, paramLabel = "ARCHIVE", description = "the archive file")
     File archive;
@@ -1110,6 +1110,8 @@ Note that the `CommandLine.run` convenience method cannot be used with subcomman
 
 
 === Boolean Parameters
+By default the value of a boolean field is toggled to its logical negative when the field's option is specified on the command line.
+
 It is possible to let end users explicitly specify "true" or "false" as a parameter for a boolean option by defining an explicit <<Arity>> attribute. A boolean option with `arity = "0..1"` accepts zero to one parameters, `arity = "1"` means the option _must_ have one parameter. For example:
 
 [source, java]

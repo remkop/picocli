@@ -1,5 +1,9 @@
 = picocli Release Notes
 
+== 0.9.8 - Bugfix and enhancements release for public review. API may change.
+
+* #147 Toggle boolean flags instead of setting to `true`
+
 == 0.9.7 - Bugfix and enhancements release for public review. API may change.
 
 * #127 Added support for nested sub-subcommands

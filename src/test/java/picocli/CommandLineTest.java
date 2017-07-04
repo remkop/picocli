@@ -2705,7 +2705,7 @@ public class CommandLineTest {
         assertEquals("2", ((App) commandLine.getCommand()).string);
 
         commandLine = new CommandLine(new App()).setOverwrittenOptionsAllowed(true);
-        commandLine.parse("-v", "--verbose");
+        commandLine.parse("-v", "--verbose", "-v"); // F -> T -> F -> T
         assertEquals(true, ((App) commandLine.getCommand()).bool);
     }
 
@@ -2727,5 +2727,22 @@ public class CommandLineTest {
             assertEquals("Missing required option 'password'", ex.getLocalizedMessage());
         }
         commandLine.parse("-u", "foo", "-p", "abc");
+    }
+
+    @Test
+    public void testToggleBooleanValue() {
+        class App {
+            @Option(names = "-a") boolean primitiveFalse = false;
+            @Option(names = "-b") boolean primitiveTrue = true;
+            @Option(names = "-c") Boolean objectFalse = false;
+            @Option(names = "-d") Boolean objectTrue = true;
+            @Option(names = "-e") Boolean objectNull = null;
+        }
+        App app = CommandLine.populateCommand(new App(), "-a -b -c -d -e".split(" "));
+        assertTrue(app.primitiveFalse);
+        assertFalse(app.primitiveTrue);
+        assertTrue(app.objectFalse);
+        assertFalse(app.objectTrue);
+        assertTrue(app.objectNull);
     }
 }

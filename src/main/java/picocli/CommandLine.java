@@ -1483,7 +1483,8 @@ public class CommandLine {
                     if (value != null) {
                         args.push(value); // we don't consume the value
                     }
-                    value = "true";      // just specifying the option name sets the boolean to true
+                    Boolean currentValue = (Boolean) field.get(command);
+                    value = String.valueOf(currentValue == null ? true : !currentValue); // #147 toggle existing boolean value
                 }
             }
             if (noMoreValues && value == null) {
