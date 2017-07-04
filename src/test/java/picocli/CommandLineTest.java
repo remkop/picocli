@@ -473,14 +473,7 @@ public class CommandLineTest {
     }
     @Test
     public void testInetAddressConvertersInvalidError() {
-        parseInvalidValue("-InetAddress", "::a?*!a", ": java.net.UnknownHostException: ::a?*!a");
-    }
-    @Test
-    public void testDomainObjectConvertersInvalidError() {
-        parseInvalidValue("-URL", ":::", ": java.net.MalformedURLException: no protocol: :::");
-        parseInvalidValue("-URI", ":::", ": java.net.URISyntaxException: Expected scheme name at index 0: :::");
-        parseInvalidValue("-Charset", "aa", ": java.nio.charset.UnsupportedCharsetException: aa");
-        parseInvalidValue("-InetAddress", "::a?*!a", ": java.net.UnknownHostException: ::a?*!a");
+        parseInvalidValue("-InetAddress", "%$::a?*!a", ": java.net.UnknownHostException: %$::a?*!a");
     }
     @Test
     public void testUUIDConvertersInvalidError() {
