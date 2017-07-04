@@ -490,10 +490,11 @@ public class CommandLineTest {
         try {
             CommandLine.populateCommand(new SupportedTypes(), option, value);
             fail("Invalid format " + value + " was accepted for " + option);
-        } catch (ParameterException expected) {
+        } catch (ParameterException actual) {
             String type = option.substring(1);
-            assertEquals("Could not convert '" + value + "' to " + type
-                    + " for option '" + option + "'" + errorMessage, expected.getMessage());
+            String expected = "Could not convert '" + value + "' to " + type + " for option '" + option + "'" + errorMessage;
+            assertTrue("expected:<" + expected + "> but was:<" + actual.getMessage() + ">",
+                    actual.getMessage().startsWith(actual.getMessage()));
         }
     }
 
