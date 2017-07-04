@@ -465,10 +465,13 @@ public class CommandLineTest {
         parseInvalidValue("-URI", ":::", ": java.net.URISyntaxException: Expected scheme name at index 0: :::");
         parseInvalidValue("-Charset", "aa", ": java.nio.charset.UnsupportedCharsetException: aa");
         parseInvalidValue("-InetAddress", "::a?*!a", ": java.net.UnknownHostException: ::a?*!a");
+        parseInvalidValue("-UUID", "aa", ": java.lang.IllegalArgumentException: Invalid UUID string: aa");
+    }
+    @Test
+    public void testRegexPatternConverterInvalidError() {
         parseInvalidValue("-Pattern", "[[(aa", String.format(": java.util.regex.PatternSyntaxException: Unclosed character class near index 4%n" +
                 "[[(aa%n" +
                 "    ^"));
-        parseInvalidValue("-UUID", "aa", ": java.lang.IllegalArgumentException: Invalid UUID string: aa");
     }
 
     private void parseInvalidValue(String option, String value, String errorMessage) {
