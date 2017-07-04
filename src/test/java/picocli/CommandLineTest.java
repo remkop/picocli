@@ -460,11 +460,30 @@ public class CommandLineTest {
         parseInvalidValue("-BigInteger", "aa", ": java.lang.NumberFormatException: For input string: \"aa\"");
     }
     @Test
+    public void testURLConvertersInvalidError() {
+        parseInvalidValue("-URL", ":::", ": java.net.MalformedURLException: no protocol: :::");
+    }
+    @Test
+    public void testURIConvertersInvalidError() {
+        parseInvalidValue("-URI", ":::", ": java.net.URISyntaxException: Expected scheme name at index 0: :::");
+    }
+    @Test
+    public void testCharsetConvertersInvalidError() {
+        parseInvalidValue("-Charset", "aa", ": java.nio.charset.UnsupportedCharsetException: aa");
+    }
+    @Test
+    public void testInetAddressConvertersInvalidError() {
+        parseInvalidValue("-InetAddress", "::a?*!a", ": java.net.UnknownHostException: ::a?*!a");
+    }
+    @Test
     public void testDomainObjectConvertersInvalidError() {
         parseInvalidValue("-URL", ":::", ": java.net.MalformedURLException: no protocol: :::");
         parseInvalidValue("-URI", ":::", ": java.net.URISyntaxException: Expected scheme name at index 0: :::");
         parseInvalidValue("-Charset", "aa", ": java.nio.charset.UnsupportedCharsetException: aa");
         parseInvalidValue("-InetAddress", "::a?*!a", ": java.net.UnknownHostException: ::a?*!a");
+    }
+    @Test
+    public void testUUIDConvertersInvalidError() {
         parseInvalidValue("-UUID", "aa", ": java.lang.IllegalArgumentException: Invalid UUID string: aa");
     }
     @Test
