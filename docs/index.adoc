@@ -1285,7 +1285,8 @@ Picocli API Javadoc can be found https://remkop.github.io/picocli/apidocs[here].
 == GitHub Project
 The https://github.com/remkop/picocli[GitHub project] has the source code, tests, build scripts, etc.
 
-(Star this project on GitHub if you like it!)
+Star icon:star-o[] or fork icon:code-fork[] this project on GitHub if you like it!
+(Projects with many icon:code-fork[] forks are easier to find on GitHub Search.)
 
 == Issue Tracker
 Please use the https://github.com/remkop/picocli/issues[Issue Tracker] to report bugs or request features.
