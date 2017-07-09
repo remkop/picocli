@@ -31,12 +31,13 @@ import static picocli.CommandLine.Help.Column.Overflow.*;
 /**
  * Demonstrates how the CommandLine.Help API can be used to create custom layouts for usage help messages.
  */
-@Command(name = "picocli.CustomLayoutDemo", description = {
-        "Demonstrates picocli custom layouts.",
-        "Run with -Dpicocli.ansi=true to force picocli to use ansi codes,",
-        " or with -Dpicocli.ansi=false to force picocli to NOT use ansi codes.",
-        "(By default picocli will use ansi codes if the platform supports it.)"
-})
+@Command(name = "picocli.CustomLayoutDemo", description = "Demonstrates picocli custom layouts.",
+        footer = {
+        "Run with -Dpicocli.ansi=true  to force picocli to use ansi codes,",
+        "or  with -Dpicocli.ansi=false to force picocli to NOT use ansi codes.",
+        "By default picocli will use ansi codes if the platform supports it."
+        }
+)
 public class CustomLayoutDemo implements Runnable {
     public static void main(String[] args) {
         CommandLine.run(new CustomLayoutDemo(), System.err, args);
