@@ -84,7 +84,49 @@ public class AutoComplete {
             "    lastword=$(_get_lastword)\n" +
             "\n";
 
-    private static final String FOOTER = "}\n\n" +
+    private static final String CASE_START = "\n" +
+            "    # Un-comment this for debug purposes:\n" +
+            "    #   echo -e \"\\nprev = $prev, cur = $cur, firstword = $firstword, lastword = $lastword\\n\"\n" +
+            "\n" +
+            "    case \"${firstword}\" in\n";
+
+    private static final String CASE_END = "" +
+            "    -*)\n" +
+            "        complete_options=\"$GLOBAL_OPTIONS\"\n" +
+            "        ;;\n" +
+            "    *)\n" +
+            "        case \"${prev}\" in\n" +
+            "            --log|--localdir|-l)\n" +
+            "                # Special handling: return directories, no space at the end\n" +
+            "\n" +
+            "                compopt -o nospace\n" +
+            "                COMPREPLY=( $( compgen -d -S \"/\" -- $cur ) )\n" +
+            "\n" +
+            "                return 0\n" +
+            "                ;;\n" +
+            "\n" +
+            "            --loglevel)\n" +
+            "                complete_words=\"$GLOBAL_LOGLEVELS\"\n" +
+            "                ;;\n" +
+            "\n" +
+            "            *)\n" +
+            "                complete_words=\"$GLOBAL_COMMANDS\"\n" +
+            "                complete_options=\"$GLOBAL_OPTIONS\"\n" +
+            "                ;;\n" +
+            "        esac\n" +
+            "        ;;\n" +
+            "    esac\n" +
+            "\n" +
+            "    # Either display words or options, depending on the user input\n" +
+            "    if [[ $cur == -* ]]; then\n" +
+            "        COMPREPLY=( $( compgen -W \"$complete_options\" -- $cur ))\n" +
+            "\n" +
+            "    else\n" +
+            "        COMPREPLY=( $( compgen -W \"$complete_words\" -- $cur ))\n" +
+            "    fi\n";
+
+    private static final String FOOTER = "    return 0\n" +
+            "}\n\n" +
             "# Determines the first non-option word of the command line. This is usually the command.\n" +
             "_get_firstword() {\n" +
             "    local firstword i\n" +
@@ -108,7 +150,8 @@ public class AutoComplete {
             "        fi\n" +
             "    done\n" +
             "    echo $lastword\n" +
-            "}\n";
+            "}\n" +
+            "complete -F _%1$s -o %1$s\n";
 
     public static String bash(String scriptName, CommandLine commandLine) {
         if (scriptName == null)  { throw new NullPointerException("scriptName"); }
@@ -116,7 +159,7 @@ public class AutoComplete {
         String result = "";
         result += String.format(HEADER, scriptName);
         result += generateAutoComplete("_", commandLine);
-        return result + FOOTER;
+        return result + String.format(FOOTER, scriptName);
     }
 
     private static String generateAutoComplete(String prefix, CommandLine commandLine) {
@@ -140,7 +183,13 @@ public class AutoComplete {
         for (Map.Entry<String, CommandLine> entry : commands.entrySet()) {
             result += generateAutoComplete(prefix + entry.getKey() + "_", entry.getValue());
         }
+
+        result += caseBodyStart(optionName2Field);
         return result;
+    }
+
+    private static String caseBodyStart(final Map<String, Field> optionName2Field) {
+        return CASE_START + CASE_END;
     }
 
     private static String optionDeclaration(String prefix, Map<String, Field> options) {
