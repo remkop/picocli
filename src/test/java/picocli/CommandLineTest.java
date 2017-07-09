@@ -222,7 +222,8 @@ public class CommandLineTest {
             CommandLine.populateCommand(new SupportedTypes(), "-byte", "0x1F", "-Byte", "0x0F");
             fail("Should fail on hex input");
         } catch (ParameterException expected) {
-            assertEquals("Could not convert '0x1F' to byte for option '-byte'", expected.getMessage());
+            assertEquals("Could not convert '0x1F' to byte for option '-byte'" +
+                    ": java.lang.NumberFormatException: For input string: \"0x1F\"", expected.getMessage());
         }
     }
     @Test
@@ -254,7 +255,8 @@ public class CommandLineTest {
             CommandLine.populateCommand(new SupportedTypes(), "-short", "0xFF", "-Short", "0x6FFE");
             fail("Should fail on hex input");
         } catch (ParameterException expected) {
-            assertEquals("Could not convert '0xFF' to short for option '-short'", expected.getMessage());
+            assertEquals("Could not convert '0xFF' to short for option '-short'" +
+                    ": java.lang.NumberFormatException: For input string: \"0xFF\"", expected.getMessage());
         }
     }
     @Test
@@ -286,7 +288,8 @@ public class CommandLineTest {
             CommandLine.populateCommand(new SupportedTypes(), "-int", "0xFF", "-Integer", "0xFFFF");
             fail("Should fail on hex input");
         } catch (ParameterException expected) {
-            assertEquals("Could not convert '0xFF' to int for option '-int'", expected.getMessage());
+            assertEquals("Could not convert '0xFF' to int for option '-int'" +
+                    ": java.lang.NumberFormatException: For input string: \"0xFF\"", expected.getMessage());
         }
     }
     @Test
@@ -318,7 +321,8 @@ public class CommandLineTest {
             CommandLine.populateCommand(new SupportedTypes(), "-long", "0xAABBCC", "-Long", "0xAABBCCDD");
             fail("Should fail on hex input");
         } catch (ParameterException expected) {
-            assertEquals("Could not convert '0xAABBCC' to long for option '-long'", expected.getMessage());
+            assertEquals("Could not convert '0xAABBCC' to long for option '-long'" +
+                    ": java.lang.NumberFormatException: For input string: \"0xAABBCC\"", expected.getMessage());
         }
     }
     @Test
@@ -354,7 +358,8 @@ public class CommandLineTest {
             CommandLine.populateCommand(new SupportedTypes(),  "-Long", "-boolean");
             fail("should fail");
         } catch (ParameterException ex) {
-            assertEquals("Could not convert '-boolean' to Long for option '-Long'", ex.getMessage());
+            assertEquals("Could not convert '-boolean' to Long for option '-Long'" +
+                    ": java.lang.NumberFormatException: For input string: \"-boolean\"", ex.getMessage());
         }
     }
     @Test
@@ -439,39 +444,57 @@ public class CommandLineTest {
     }
     @Test
     public void testNumberConvertersInvalidError() {
-        parseInvalidValue("-Byte", "aa");
-        parseInvalidValue("-byte", "aa");
-        parseInvalidValue("-Short", "aa");
-        parseInvalidValue("-short", "aa");
-        parseInvalidValue("-Integer", "aa");
-        parseInvalidValue("-int", "aa");
-        parseInvalidValue("-Long", "aa");
-        parseInvalidValue("-long", "aa");
-        parseInvalidValue("-Float", "aa");
-        parseInvalidValue("-float", "aa");
-        parseInvalidValue("-Double", "aa");
-        parseInvalidValue("-double", "aa");
-        parseInvalidValue("-BigDecimal", "aa");
-        parseInvalidValue("-BigInteger", "aa");
+        parseInvalidValue("-Byte", "aa", ": java.lang.NumberFormatException: For input string: \"aa\"");
+        parseInvalidValue("-byte", "aa", ": java.lang.NumberFormatException: For input string: \"aa\"");
+        parseInvalidValue("-Short", "aa", ": java.lang.NumberFormatException: For input string: \"aa\"");
+        parseInvalidValue("-short", "aa", ": java.lang.NumberFormatException: For input string: \"aa\"");
+        parseInvalidValue("-Integer", "aa", ": java.lang.NumberFormatException: For input string: \"aa\"");
+        parseInvalidValue("-int", "aa", ": java.lang.NumberFormatException: For input string: \"aa\"");
+        parseInvalidValue("-Long", "aa", ": java.lang.NumberFormatException: For input string: \"aa\"");
+        parseInvalidValue("-long", "aa", ": java.lang.NumberFormatException: For input string: \"aa\"");
+        parseInvalidValue("-Float", "aa", ": java.lang.NumberFormatException: For input string: \"aa\"");
+        parseInvalidValue("-float", "aa", ": java.lang.NumberFormatException: For input string: \"aa\"");
+        parseInvalidValue("-Double", "aa", ": java.lang.NumberFormatException: For input string: \"aa\"");
+        parseInvalidValue("-double", "aa", ": java.lang.NumberFormatException: For input string: \"aa\"");
+        parseInvalidValue("-BigDecimal", "aa", ": java.lang.NumberFormatException");
+        parseInvalidValue("-BigInteger", "aa", ": java.lang.NumberFormatException: For input string: \"aa\"");
     }
     @Test
-    public void testDomainObjectConvertersInvalidError() {
-        parseInvalidValue("-URL", ":::");
-        parseInvalidValue("-URI", ":::");
-        parseInvalidValue("-Charset", "aa");
-        parseInvalidValue("-InetAddress", "::a?*!a");
-        parseInvalidValue("-Pattern", "[[(aa");
-        parseInvalidValue("-UUID", "aa");
+    public void testURLConvertersInvalidError() {
+        parseInvalidValue("-URL", ":::", ": java.net.MalformedURLException: no protocol: :::");
+    }
+    @Test
+    public void testURIConvertersInvalidError() {
+        parseInvalidValue("-URI", ":::", ": java.net.URISyntaxException: Expected scheme name at index 0: :::");
+    }
+    @Test
+    public void testCharsetConvertersInvalidError() {
+        parseInvalidValue("-Charset", "aa", ": java.nio.charset.UnsupportedCharsetException: aa");
+    }
+    @Test
+    public void testInetAddressConvertersInvalidError() {
+        parseInvalidValue("-InetAddress", "%$::a?*!a", ": java.net.UnknownHostException: %$::a?*!a");
+    }
+    @Test
+    public void testUUIDConvertersInvalidError() {
+        parseInvalidValue("-UUID", "aa", ": java.lang.IllegalArgumentException: Invalid UUID string: aa");
+    }
+    @Test
+    public void testRegexPatternConverterInvalidError() {
+        parseInvalidValue("-Pattern", "[[(aa", String.format(": java.util.regex.PatternSyntaxException: Unclosed character class near index 4%n" +
+                "[[(aa%n" +
+                "    ^"));
     }
 
-    private void parseInvalidValue(String option, String value) {
+    private void parseInvalidValue(String option, String value, String errorMessage) {
         try {
             CommandLine.populateCommand(new SupportedTypes(), option, value);
             fail("Invalid format " + value + " was accepted for " + option);
-        } catch (ParameterException expected) {
+        } catch (ParameterException actual) {
             String type = option.substring(1);
-            assertEquals("Could not convert '" + value + "' to " + type
-                    + " for option '" + option + "'", expected.getMessage());
+            String expected = "Could not convert '" + value + "' to " + type + " for option '" + option + "'" + errorMessage;
+            assertTrue("expected:<" + expected + "> but was:<" + actual.getMessage() + ">",
+                    actual.getMessage().startsWith(actual.getMessage()));
         }
     }
 
@@ -518,7 +541,8 @@ public class CommandLineTest {
             CommandLine.populateCommand(new EnumParams(), "-timeUnit", "xyz");
             fail("Accepted invalid timeunit");
         } catch (Exception ex) {
-            assertEquals("Could not convert 'xyz' to TimeUnit for option '-timeUnit'", ex.getMessage());
+            assertEquals("Could not convert 'xyz' to TimeUnit for option '-timeUnit'" +
+                    ": java.lang.IllegalArgumentException: No enum constant java.util.concurrent.TimeUnit.xyz", ex.getMessage());
         }
     }
     @Ignore("Requires #14 case-insensitive enum parsing")
@@ -537,7 +561,8 @@ public class CommandLineTest {
             CommandLine.populateCommand(new EnumParams(), "-timeUnitArray", "a", "b");
             fail("Accepted invalid timeunit");
         } catch (Exception ex) {
-            assertEquals("Could not convert 'a' to TimeUnit[] for option '-timeUnitArray' at index 0 (timeUnitArray)", ex.getMessage());
+            assertEquals("Could not convert 'a' to TimeUnit[] for option '-timeUnitArray' at index 0 (timeUnitArray)" +
+                    ": java.lang.IllegalArgumentException: No enum constant java.util.concurrent.TimeUnit.a", ex.getMessage());
         }
     }
     @Test
@@ -546,7 +571,9 @@ public class CommandLineTest {
             CommandLine.populateCommand(new EnumParams(), "-timeUnitList", "DAYS", "b", "c");
             fail("Accepted invalid timeunit");
         } catch (Exception ex) {
-            assertEquals("Could not convert 'b' to TimeUnit for option '-timeUnitList' at index 1 (timeUnitList)", ex.getMessage());
+            assertEquals("Could not convert 'b' to TimeUnit for option '-timeUnitList' at index 1 (timeUnitList)" +
+                    ": java.lang.IllegalArgumentException: No enum constant java.util.concurrent.TimeUnit.b",
+                    ex.getMessage());
         }
     }
 
@@ -1805,14 +1832,16 @@ public class CommandLineTest {
             params = CommandLine.populateCommand(new VariousPrefixCharacters(), "--dash=".split(" "));
             fail("int option (with sep but no value) needs arg");
         } catch (ParameterException ex) {
-            assertEquals("Could not convert '' to int for option '-d'", ex.getMessage());
+            assertEquals("Could not convert '' to int for option '-d'" +
+                    ": java.lang.NumberFormatException: For input string: \"\"", ex.getMessage());
         }
 
         try {
             params = CommandLine.populateCommand(new VariousPrefixCharacters(), "--dash= /4".split(" "));
             fail("int option (with sep but no value, followed by other option) needs arg");
         } catch (ParameterException ex) {
-            assertEquals("Could not convert '' to int for option '-d'", ex.getMessage());
+            assertEquals("Could not convert '' to int for option '-d'" +
+                    ": java.lang.NumberFormatException: For input string: \"\"", ex.getMessage());
         }
     }
 
@@ -2611,7 +2640,7 @@ public class CommandLineTest {
         String result = baos.toString("UTF8");
         assertFalse(runWasCalled[0]);
         assertEquals(String.format(
-                "Could not convert 'not a number' to int for option '-number'%n" +
+                "Could not convert 'not a number' to int for option '-number': java.lang.NumberFormatException: For input string: \"not a number\"%n" +
                 "Usage: <main class> [-number=<number>]%n" +
                 "      -number=<number>%n"), result);
     }
@@ -2705,7 +2734,7 @@ public class CommandLineTest {
         assertEquals("2", ((App) commandLine.getCommand()).string);
 
         commandLine = new CommandLine(new App()).setOverwrittenOptionsAllowed(true);
-        commandLine.parse("-v", "--verbose");
+        commandLine.parse("-v", "--verbose", "-v"); // F -> T -> F -> T
         assertEquals(true, ((App) commandLine.getCommand()).bool);
     }
 
@@ -2727,5 +2756,22 @@ public class CommandLineTest {
             assertEquals("Missing required option 'password'", ex.getLocalizedMessage());
         }
         commandLine.parse("-u", "foo", "-p", "abc");
+    }
+
+    @Test
+    public void testToggleBooleanValue() {
+        class App {
+            @Option(names = "-a") boolean primitiveFalse = false;
+            @Option(names = "-b") boolean primitiveTrue = true;
+            @Option(names = "-c") Boolean objectFalse = false;
+            @Option(names = "-d") Boolean objectTrue = true;
+            @Option(names = "-e") Boolean objectNull = null;
+        }
+        App app = CommandLine.populateCommand(new App(), "-a -b -c -d -e".split(" "));
+        assertTrue(app.primitiveFalse);
+        assertFalse(app.primitiveTrue);
+        assertTrue(app.objectFalse);
+        assertFalse(app.objectTrue);
+        assertTrue(app.objectNull);
     }
 }
