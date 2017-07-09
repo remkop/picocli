@@ -57,6 +57,45 @@ _script1() {
         --timeUnit\
         -u"
 
+
+    # Un-comment this for debug purposes:
+    #   echo -e "\nprev = $prev, cur = $cur, firstword = $firstword, lastword = $lastword\n"
+
+    case "${firstword}" in
+    -*)
+        complete_options="$GLOBAL_OPTIONS"
+        ;;
+    *)
+        case "${prev}" in
+            --log|--localdir|-l)
+                # Special handling: return directories, no space at the end
+
+                compopt -o nospace
+                COMPREPLY=( $( compgen -d -S "/" -- $cur ) )
+
+                return 0
+                ;;
+
+            --loglevel)
+                complete_words="$GLOBAL_LOGLEVELS"
+                ;;
+
+            *)
+                complete_words="$GLOBAL_COMMANDS"
+                complete_options="$GLOBAL_OPTIONS"
+                ;;
+        esac
+        ;;
+    esac
+
+    # Either display words or options, depending on the user input
+    if [[ $cur == -* ]]; then
+        COMPREPLY=( $( compgen -W "$complete_options" -- $cur ))
+
+    else
+        COMPREPLY=( $( compgen -W "$complete_words" -- $cur ))
+    fi
+    return 0
 }
 
 # Determines the first non-option word of the command line. This is usually the command.
@@ -83,5 +122,4 @@ _get_lastword() {
     done
     echo $lastword
 }
-
-complete -F _script1 script1
+complete -F _script1 -o script1
