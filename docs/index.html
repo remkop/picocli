@@ -711,7 +711,7 @@ You may be interested in this <a href="http://catb.org/~esr/writings/taoup/html/
 <div class="content">
 <pre class="CodeRay highlight"><code data-lang="java"><span class="type">class</span> <span class="class">Tar</span> {
     <span class="annotation">@Option</span>(names = <span class="string"><span class="delimiter">&quot;</span><span class="content">-c</span><span class="delimiter">&quot;</span></span>, description = <span class="string"><span class="delimiter">&quot;</span><span class="content">create a new archive</span><span class="delimiter">&quot;</span></span>)
-    <span class="type">boolean</span> extract;
+    <span class="type">boolean</span> create;
 
     <span class="annotation">@Option</span>(names = { <span class="string"><span class="delimiter">&quot;</span><span class="content">-f</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">--file</span><span class="delimiter">&quot;</span></span> }, paramLabel = <span class="string"><span class="delimiter">&quot;</span><span class="content">ARCHIVE</span><span class="delimiter">&quot;</span></span>, description = <span class="string"><span class="delimiter">&quot;</span><span class="content">the archive file</span><span class="delimiter">&quot;</span></span>)
     <span class="predefined-type">File</span> archive;
