@@ -4,7 +4,7 @@ A Java command line parsing framework in a single file, so you can include it _i
 This lets users run picocli-based applications without requiring picocli as an external dependency.
 
 How it works: annotate your class and picocli initializes it from the command line arguments,
-converting the input to strongly typed data. Supports [subcommands](http://picocli.info/#_subcommands)
+converting the input to strongly typed data. Supports git-like [subcommands](http://picocli.info/#_subcommands)
 (and nested [sub-subcommands](http://picocli.info/#_nested_sub_subcommands)),
 any option prefix style, POSIX-style [grouped short options](http://picocli.info/#_short_options),
 custom [type converters](http://picocli.info/#_custom_type_converters) and more.
@@ -72,7 +72,7 @@ CommandLine.usage(new Example(), System.out);
 
 ![Usage help message with ANSI colors](docs/images/ExampleUsageANSI.png?raw=true)
 
-## Polishing Usage Help
+## Usage Help with ANSI Colors and Styles
 
 Colors, styles, headers, footers and section headings are easily customized with annotations.
 For example:
