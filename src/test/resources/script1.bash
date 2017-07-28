@@ -9,13 +9,13 @@
 # Installation
 # ------------
 #
-# 1. Place it in a `bash-completion.d` folder:
+# 1. Place this file in a `bash-completion.d` folder:
 #
 #   * /etc/bash-completion.d
 #   * /usr/local/etc/bash-completion.d
 #   * ~/bash-completion.d
 #
-# 2. Open new bash, and type `script1 [TAB][TAB]`
+# 2. Open a new bash console, and type `script1 [TAB][TAB]`
 #
 # Documentation
 # -------------
@@ -25,101 +25,72 @@
 # completes the user input if only one entry is listed in the variable or
 # shows the options if more than one is listed in COMPREPLY.
 #
-# The script first determines the current parameter ($cur), the previous
-# parameter ($prev), the first word ($firstword) and the last word ($lastword).
-# Using the $firstword variable (= the command) and a giant switch/case,
-# completions are written to $complete_words and $complete_options.
-#
-# If the current user input ($cur) starts with '-', only $command_options are
-# displayed/completed, otherwise only $command_words.
-#
 # References
 # ----------
 # [1] http://stackoverflow.com/a/12495480/1440785
 # [2] http://tiswww.case.edu/php/chet/bash/FAQ
+# [3] https://www.gnu.org/software/bash/manual/html_node/The-Shopt-Builtin.html
+# [4] https://stackoverflow.com/questions/17042057/bash-check-element-in-array-for-elements-in-another-array/17042655#17042655
 #
 
+# Enable programmable completion facilities (see [3])
 shopt -s progcomp
-_script1() {
-    local cur prev firstword lastword complete_words complete_options
 
-    # Don't break words at : and =, see [1] and [2]
-    COMP_WORDBREAKS=${COMP_WORDBREAKS//[:=]}
+# ArrContains takes two arguments, both of which are the name of arrays.
+# It creates a temporary hash from lArr1 and then checks if all elements of lArr2
+# are in the hashtable.
+#
+# Returns zero (no error) if all elements of the 2nd array are in the 1st array,
+# otherwise returns 1 (error).
+#
+# Modified from [4]
+function ArrContains() {
+  local lArr1 lArr2
+  declare -A tmp
+  eval lArr1=("\"\${$1[@]}\"")
+  eval lArr2=("\"\${$2[@]}\"")
+  for i in "${lArr1[@]}";{ [ -n "$i" ] && ((++tmp['$i']));}
+  for i in "${lArr2[@]}";{ [ -z "${tmp[$i]}" ] && return 1;}
+  return 0
+}
 
-    cur=${COMP_WORDS[COMP_CWORD]}
-    prev=${COMP_WORDS[COMP_CWORD-1]}
-    firstword=$(_get_firstword)
-    lastword=$(_get_lastword)
+# Bash completion entry point function.
+# _complete_script1 finds which commands and subcommands have been specified
+# on the command line and delegates to the appropriate function
+# to generate possible options and subcommands for the last specified subcommand.
+function _complete_script1() {
+  CMDS0=(script1)
 
-    _OPTIONS="\
-        -t\
-        --timeout\
-        --timeUnit\
-        -u"
+  ArrContains COMP_WORDS CMDS0 && { _picocli_script1; return $?; }
+  echo "not found"
+  _picocli_script1; return $?;
+}
 
+function script1() {
+  # Get completion data
+  CURR_WORD=${COMP_WORDS[COMP_CWORD]}
+  PREV_WORD=${COMP_WORDS[COMP_CWORD-1]}
 
-    # Un-comment this for debug purposes:
-    #   echo -e "\nprev = $prev, cur = $cur, firstword = $firstword, lastword = $lastword\n"
+  COMMANDS=""
+  FLAG_OPTS=""
+  ARG_OPTS="-u --timeUnit -t --timeout"
+  timeUnit_OPTION_ARGS="NANOSECONDS MICROSECONDS MILLISECONDS SECONDS MINUTES HOURS DAYS" # TimeUnit values
 
-    case "${firstword}" in
-    -*)
-        complete_options="$GLOBAL_OPTIONS"
-        ;;
+  case ${CURR_WORD} in
+    -u|--timeUnit)
+      COMPREPLY=( $( compgen -W "${timeUnit_OPTION_ARGS}" -- "" ) )
+      return $?
+      ;;
     *)
-        case "${prev}" in
-            --log|--localdir|-l)
-                # Special handling: return directories, no space at the end
+      case ${PREV_WORD} in
+        -u|--timeUnit)
+          COMPREPLY=( $( compgen -W "${timeUnit_OPTION_ARGS}" -- $CURR_WORD ) )
+          return $?
+          ;;
+      esac
+  esac
 
-                compopt -o nospace
-                COMPREPLY=( $( compgen -d -S "/" -- $cur ) )
-
-                return 0
-                ;;
-
-            --loglevel)
-                complete_words="$GLOBAL_LOGLEVELS"
-                ;;
-
-            *)
-                complete_words="$GLOBAL_COMMANDS"
-                complete_options="$GLOBAL_OPTIONS"
-                ;;
-        esac
-        ;;
-    esac
-
-    # Either display words or options, depending on the user input
-    if [[ $cur == -* ]]; then
-        COMPREPLY=( $( compgen -W "$complete_options" -- $cur ))
-
-    else
-        COMPREPLY=( $( compgen -W "$complete_words" -- $cur ))
-    fi
-    return 0
+  COMPREPLY=( $(compgen -W "${FLAG_OPTS} ${ARG_OPTS} ${COMMANDS}" -- ${CURR_WORD}) )
 }
 
-# Determines the first non-option word of the command line. This is usually the command.
-_get_firstword() {
-    local firstword i
-    firstword=
-    for ((i = 1; i < ${#COMP_WORDS[@]}; ++i)); do
-        if [[ ${COMP_WORDS[i]} != -* ]]; then
-            firstword=${COMP_WORDS[i]}
-            break
-        fi
-    done
-    echo $firstword
-}
-
-# Determines the last non-option word of the command line. This is usally a sub-command.
-_get_lastword() {
-    local lastword i
-    lastword=
-    for ((i = 1; i < ${#COMP_WORDS[@]}; ++i)); do
-        if [[ ${COMP_WORDS[i]} != -* ]] && [[ -n ${COMP_WORDS[i]} ]] && [[ ${COMP_WORDS[i]} != $cur ]]; then
-            lastword=${COMP_WORDS[i]}
-        fi
-    done
-    echo $lastword
-}
-complete -F _script1 -o script1
+complete -F _complete_script1 script1
