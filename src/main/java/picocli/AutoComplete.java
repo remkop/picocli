@@ -213,7 +213,7 @@ public class AutoComplete {
         predecessors.add(scriptName);
         List<String> functionCallsToArrContains = new ArrayList<String>();
 
-        function2command.put(scriptName, commandLine);
+        function2command.put("_picocli_" + scriptName, commandLine);
         generateFunctionCallsToArrContains(predecessors, commandLine, buff, functionCallsToArrContains, function2command);
 
         buff.append("\n");
