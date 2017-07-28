@@ -15,18 +15,84 @@
  */
 package picocli;
 
+import java.io.File;
 import java.lang.reflect.Field;
+import java.net.InetAddress;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+
+import static java.lang.String.*;
 
 /**
  * Generates a bash auto-complete script.
  */
 public class AutoComplete {
-
     private AutoComplete() {
+    }
+
+    static interface Function<T, V> {
+        V apply(T t);
+    }
+
+    /**
+     * Drops all characters that are not valid for bash function and identifier names.
+     */
+    static class Bashify implements Function<CharSequence, String> {
+        public String apply(CharSequence value) {
+            return bashify(value);
+        }
+    }
+    private static String bashify(CharSequence value) {
+        StringBuilder builder = new StringBuilder();
+        for (int i = 0; i < value.length(); i++) {
+            char c = value.charAt(i);
+            if (Character.isLetterOrDigit(c) || c == '_') {
+                builder.append(c);
+            } else if (Character.isSpaceChar(c)) {
+                builder.append('_');
+            }
+        }
+        return builder.toString();
+    }
+    static class EnumNameFunction implements Function<Enum<?>, String> {
+        @Override public String apply(final Enum<?> anEnum) {
+            return anEnum.name();
+        }
+    }
+
+    static class NullFunction implements Function<CharSequence, String> {
+        @Override public String apply(CharSequence value) { return value.toString(); }
+    }
+
+    static interface Predicate<T> {
+        boolean test(T t);
+    }
+    static class BooleanFieldFilter implements Predicate<Field> {
+        @Override public boolean test(Field f) {
+            return f.getType() == Boolean.TYPE || f.getType() == Boolean.class;
+        }
+    }
+    static class EnumFieldFilter implements Predicate<Field> {
+        @Override public boolean test(Field f) {
+            return f.getType().isEnum();
+        }
+    }
+    static <T> Predicate<T> negate(final Predicate<T> original) {
+        return new Predicate<T>() {
+            @Override public boolean test(T t) {
+                return !original.test(t);
+            }
+        };
+    }
+    private static <T> List<T> filter(List<T> list, Predicate<T> filter) {
+        List<T> result = new ArrayList<T>();
+        for (T t : list) { if (filter.test(t)) { result.add(t); } }
+        return result;
     }
 
     private static final String HEADER = "" +
@@ -41,13 +107,13 @@ public class AutoComplete {
             "# Installation\n" +
             "# ------------\n" +
             "#\n" +
-            "# 1. Place it in a `bash-completion.d` folder:\n" +
+            "# 1. Place this file in a `bash-completion.d` folder:\n" +
             "#\n" +
             "#   * /etc/bash-completion.d\n" +
             "#   * /usr/local/etc/bash-completion.d\n" +
             "#   * ~/bash-completion.d\n" +
             "#\n" +
-            "# 2. Open new bash, and type `%1$s [TAB][TAB]`\n" +
+            "# 2. Open a new bash console, and type `%1$s [TAB][TAB]`\n" +
             "#\n" +
             "# Documentation\n" +
             "# -------------\n" +
@@ -57,158 +123,268 @@ public class AutoComplete {
             "# completes the user input if only one entry is listed in the variable or\n" +
             "# shows the options if more than one is listed in COMPREPLY.\n" +
             "#\n" +
-            "# The script first determines the current parameter ($cur), the previous\n" +
-            "# parameter ($prev), the first word ($firstword) and the last word ($lastword).\n" +
-            "# Using the $firstword variable (= the command) and a giant switch/case,\n" +
-            "# completions are written to $complete_words and $complete_options.\n" +
-            "#\n" +
-            "# If the current user input ($cur) starts with '-', only $command_options are\n" +
-            "# displayed/completed, otherwise only $command_words.\n" +
-            "#\n" +
             "# References\n" +
             "# ----------\n" +
             "# [1] http://stackoverflow.com/a/12495480/1440785\n" +
             "# [2] http://tiswww.case.edu/php/chet/bash/FAQ\n" +
+            "# [3] https://www.gnu.org/software/bash/manual/html_node/The-Shopt-Builtin.html\n" +
+            "# [4] https://stackoverflow.com/questions/17042057/bash-check-element-in-array-for-elements-in-another-array/17042655#17042655\n" +
             "#\n" +
             "\n" +
+            "# Enable programmable completion facilities (see [3])\n" +
             "shopt -s progcomp\n" +
-            "_%1$s() {\n" +
-            "    local cur prev firstword lastword complete_words complete_options\n" +
             "\n" +
-            "    # Don't break words at : and =, see [1] and [2]\n" +
-            "    COMP_WORDBREAKS=${COMP_WORDBREAKS//[:=]}\n" +
-            "\n" +
-            "    cur=${COMP_WORDS[COMP_CWORD]}\n" +
-            "    prev=${COMP_WORDS[COMP_CWORD-1]}\n" +
-            "    firstword=$(_get_firstword)\n" +
-            "    lastword=$(_get_lastword)\n" +
+            "# ArrContains takes two arguments, both of which are the name of arrays.\n" +
+            "# It creates a temporary hash from lArr1 and then checks if all elements of lArr2\n" +
+            "# are in the hashtable.\n" +
+            "#\n" +
+            "# Returns zero (no error) if all elements of the 2nd array are in the 1st array,\n" +
+            "# otherwise returns 1 (error).\n" +
+            "#\n" +
+            "# Modified from [4]\n" +
+            "function ArrContains() {\n" +
+            "  local lArr1 lArr2\n" +
+            "  declare -A tmp\n" +
+            "  eval lArr1=(\"\\\"\\${$1[@]}\\\"\")\n" +
+            "  eval lArr2=(\"\\\"\\${$2[@]}\\\"\")\n" +
+            "  for i in \"${lArr1[@]}\";{ [ -n \"$i\" ] && ((++tmp['$i']));}\n" +
+            "  for i in \"${lArr2[@]}\";{ [ -z \"${tmp[$i]}\" ] && return 1;}\n" +
+            "  return 0\n" +
+            "}\n" +
             "\n";
 
-    private static final String CASE_START = "\n" +
-            "    # Un-comment this for debug purposes:\n" +
-            "    #   echo -e \"\\nprev = $prev, cur = $cur, firstword = $firstword, lastword = $lastword\\n\"\n" +
+    private static final String FOOTER = "" +
             "\n" +
-            "    case \"${firstword}\" in\n";
-
-    private static final String CASE_END = "" +
-            "    -*)\n" +
-            "        complete_options=\"$GLOBAL_OPTIONS\"\n" +
-            "        ;;\n" +
-            "    *)\n" +
-            "        case \"${prev}\" in\n" +
-            "            --log|--localdir|-l)\n" +
-            "                # Special handling: return directories, no space at the end\n" +
-            "\n" +
-            "                compopt -o nospace\n" +
-            "                COMPREPLY=( $( compgen -d -S \"/\" -- $cur ) )\n" +
-            "\n" +
-            "                return 0\n" +
-            "                ;;\n" +
-            "\n" +
-            "            --loglevel)\n" +
-            "                complete_words=\"$GLOBAL_LOGLEVELS\"\n" +
-            "                ;;\n" +
-            "\n" +
-            "            *)\n" +
-            "                complete_words=\"$GLOBAL_COMMANDS\"\n" +
-            "                complete_options=\"$GLOBAL_OPTIONS\"\n" +
-            "                ;;\n" +
-            "        esac\n" +
-            "        ;;\n" +
-            "    esac\n" +
-            "\n" +
-            "    # Either display words or options, depending on the user input\n" +
-            "    if [[ $cur == -* ]]; then\n" +
-            "        COMPREPLY=( $( compgen -W \"$complete_options\" -- $cur ))\n" +
-            "\n" +
-            "    else\n" +
-            "        COMPREPLY=( $( compgen -W \"$complete_words\" -- $cur ))\n" +
-            "    fi\n";
-
-    private static final String FOOTER = "    return 0\n" +
-            "}\n\n" +
-            "# Determines the first non-option word of the command line. This is usually the command.\n" +
-            "_get_firstword() {\n" +
-            "    local firstword i\n" +
-            "    firstword=\n" +
-            "    for ((i = 1; i < ${#COMP_WORDS[@]}; ++i)); do\n" +
-            "        if [[ ${COMP_WORDS[i]} != -* ]]; then\n" +
-            "            firstword=${COMP_WORDS[i]}\n" +
-            "            break\n" +
-            "        fi\n" +
-            "    done\n" +
-            "    echo $firstword\n" +
-            "}\n" +
-            "\n" +
-            "# Determines the last non-option word of the command line. This is usally a sub-command.\n" +
-            "_get_lastword() {\n" +
-            "    local lastword i\n" +
-            "    lastword=\n" +
-            "    for ((i = 1; i < ${#COMP_WORDS[@]}; ++i)); do\n" +
-            "        if [[ ${COMP_WORDS[i]} != -* ]] && [[ -n ${COMP_WORDS[i]} ]] && [[ ${COMP_WORDS[i]} != $cur ]]; then\n" +
-            "            lastword=${COMP_WORDS[i]}\n" +
-            "        fi\n" +
-            "    done\n" +
-            "    echo $lastword\n" +
-            "}\n" +
-            "complete -F _%1$s -o %1$s\n";
+            "complete -F _complete_%1$s %1$s\n";
 
     public static String bash(String scriptName, CommandLine commandLine) {
         if (scriptName == null)  { throw new NullPointerException("scriptName"); }
         if (commandLine == null) { throw new NullPointerException("commandLine"); }
         String result = "";
-        result += String.format(HEADER, scriptName);
-        result += generateAutoComplete("_", commandLine);
-        return result + String.format(FOOTER, scriptName);
-    }
+        result += format(HEADER, scriptName);
 
-    private static String generateAutoComplete(String prefix, CommandLine commandLine) {
-        Object annotated = commandLine.getCommand();
-        List<Field> requiredFields = new ArrayList<Field>();
-        Map<String, Field> optionName2Field = new HashMap<String, Field>();
-        Map<Character, Field> singleCharOption2Field = new HashMap<Character, Field>();
-        List<Field> positionalParameterFields = new ArrayList<Field>();
-        Class<?> cls = annotated.getClass();
-        while (cls != null) {
-            CommandLine.init(cls, requiredFields, optionName2Field, singleCharOption2Field, positionalParameterFields);
-            cls = cls.getSuperclass();
+        Map<String, CommandLine> function2command = new LinkedHashMap<String, CommandLine>();
+        result += generateEntryPointFunction(scriptName, commandLine, function2command);
+
+        for (Map.Entry<String, CommandLine> functionSpec : function2command.entrySet()) {
+            result += generateFunctionForCommand(functionSpec.getKey(), functionSpec.getValue());
         }
-
-        String result = "";
-        result += optionDeclaration(prefix, optionName2Field);
-
-        Map<String, CommandLine> commands = commandLine.getSubcommands();
-        result += commandListDeclaration(prefix, commands);
-
-        for (Map.Entry<String, CommandLine> entry : commands.entrySet()) {
-            result += generateAutoComplete(prefix + entry.getKey() + "_", entry.getValue());
-        }
-
-        result += caseBodyStart(optionName2Field);
+        result += format(FOOTER, scriptName);
         return result;
     }
 
-    private static String caseBodyStart(final Map<String, Field> optionName2Field) {
-        return CASE_START + CASE_END;
+    private static String generateEntryPointFunction(String scriptName,
+                                                     CommandLine commandLine,
+                                                     Map<String, CommandLine> function2command) {
+        String HEADER = "" +
+                "# Bash completion entry point function.\n" +
+                "# _complete_%1$s finds which commands and subcommands have been specified\n" +
+                "# on the command line and delegates to the appropriate function\n" +
+                "# to generate possible options and subcommands for the last specified subcommand.\n" +
+                "function _complete_%1$s() {\n" +
+                "  CMDS0=(%1$s)\n" +
+//                "  CMDS1=(%1$s gettingstarted)\n" +
+//                "  CMDS2=(%1$s tool)\n" +
+//                "  CMDS3=(%1$s tool sub1)\n" +
+//                "  CMDS4=(%1$s tool sub2)\n" +
+//                "\n" +
+//                "  ArrContains COMP_WORDS CMDS4 && { _picocli_basic_tool_sub2; return $?; }\n" +
+//                "  ArrContains COMP_WORDS CMDS3 && { _picocli_basic_tool_sub1; return $?; }\n" +
+//                "  ArrContains COMP_WORDS CMDS2 && { _picocli_basic_tool; return $?; }\n" +
+//                "  ArrContains COMP_WORDS CMDS1 && { _picocli_basic_gettingstarted; return $?; }\n" +
+//                "  ArrContains COMP_WORDS CMDS0 && { _picocli_%1$s; return $?; }\n" +
+//                "  echo \"not found\"\n" +
+//                "  _picocli_%1$s; return $?;\n" +
+//                "}\n" +
+//                "\n" +
+//                "complete -F _complete_%1$s %1$s\n" +
+//                "\n";
+                "";
+        String FOOTER = "" +
+                "  ArrContains COMP_WORDS CMDS0 && { _picocli_%1$s; return $?; }\n" +
+                "  echo \"not found\"\n" +
+                "  _picocli_%1$s; return $?;\n" +
+                "}\n";
+
+        StringBuilder buff = new StringBuilder(1024);
+        buff.append(format(HEADER, scriptName));
+
+        List<String> predecessors = new ArrayList<String>();
+        predecessors.add(scriptName);
+        List<String> functionCallsToArrContains = new ArrayList<String>();
+
+        function2command.put(scriptName, commandLine);
+        generateFunctionCallsToArrContains(predecessors, commandLine, buff, functionCallsToArrContains, function2command);
+
+        buff.append("\n");
+        Collections.reverse(functionCallsToArrContains);
+        for (String func : functionCallsToArrContains) {
+            buff.append(func);
+        }
+        buff.append(format(FOOTER, scriptName));
+        return buff.toString();
     }
 
-    private static String optionDeclaration(String prefix, Map<String, Field> options) {
-        if (options.isEmpty()) { return ""; }
-        StringBuilder result = new StringBuilder("    ").append(prefix).append("OPTIONS=\"\\\n");
-        for (String key : options.keySet()) {
-            result.append("        ").append(key).append("\\\n");
+    private static void generateFunctionCallsToArrContains(List<String> predecessors,
+                                                           CommandLine commandLine,
+                                                           StringBuilder buff,
+                                                           List<String> functionCalls,
+                                                           Map<String, CommandLine> function2command) {
+
+        // breadth-first: generate command lists and function calls for predecessors + each subcommand
+        for (Map.Entry<String, CommandLine> entry : commandLine.getSubcommands().entrySet()) {
+            int count = functionCalls.size() + 1;
+            String functionName = "_picocli_" + concat("_", predecessors, entry.getKey(), new Bashify());
+            functionCalls.add(format("  ArrContains COMP_WORDS CMDS%2$d && { %1$s; return $?; }\n", functionName, count));
+            buff.append(      format("  CMDS%2$d=(%1$s)\n", concat(" ", predecessors, entry.getKey(), new Bashify()), count));
+
+            // remember the function name and associated subcommand so we can easily generate a function later
+            function2command.put(functionName, entry.getValue());
         }
-        result.setCharAt(result.length() - 2, '\"');
-        return result.toString() + "\n";
+
+        // then recursively do the same for all nested subcommands
+        for (Map.Entry<String, CommandLine> entry : commandLine.getSubcommands().entrySet()) {
+            predecessors.add(entry.getKey());
+            generateFunctionCallsToArrContains(predecessors, entry.getValue(), buff, functionCalls, function2command);
+            predecessors.remove(predecessors.size() - 1);
+        }
+    }
+    private static String concat(String infix, String... values) {
+        return concat(infix, Arrays.asList(values));
+    }
+    private static String concat(String infix, List<String> values) {
+        return concat(infix, values, null, new NullFunction());
+    }
+    private static <V, T extends V> String concat(String infix, List<T> values, T lastValue, Function<V, String> normalize) {
+        StringBuilder sb = new StringBuilder();
+        for (T val : values) {
+            if (sb.length() > 0) { sb.append(infix); }
+            sb.append(normalize.apply(val));
+        }
+        if (lastValue == null) { return sb.toString(); }
+        if (sb.length() > 0) { sb.append(infix); }
+        return sb.append(normalize.apply(lastValue)).toString();
     }
 
-    private static String commandListDeclaration(String prefix, Map<String, CommandLine> commands) {
-        if (commands.isEmpty()) { return ""; }
-        StringBuilder result = new StringBuilder("    ").append(prefix).append("COMMANDS=\"\\\n");
-        for (String key : commands.keySet()) {
-            result.append("        ").append(key).append("\\\n");
+    private static String generateFunctionForCommand(String functionName, CommandLine commandLine) {
+        String HEADER = "" +
+                "\n" +
+                "function %s() {\n" +
+                "  # Get completion data\n" +
+                "  CURR_WORD=${COMP_WORDS[COMP_CWORD]}\n" +
+                "  PREV_WORD=${COMP_WORDS[COMP_CWORD-1]}\n" +
+                "\n" +
+                "  COMMANDS=\"%s\"\n" +  // COMMANDS="gettingstarted tool"
+                "  FLAG_OPTS=\"%s\"\n" + // FLAG_OPTS="--verbose -V -x --extract -t --list"
+                "  ARG_OPTS=\"%s\"\n";   // ARG_OPTS="--host --option --file -f -u --timeUnit"
+
+        String FOOTER = "" +
+                "\n" +
+                "  COMPREPLY=( $(compgen -W \"${FLAG_OPTS} ${ARG_OPTS} ${COMMANDS}\" -- ${CURR_WORD}) )\n" +
+                "}\n";
+
+        // Get the fields annotated with @Option and @Parameters for the specified CommandLine.
+        List<Field> optionFields = new ArrayList<Field>();
+        List<Field> positionalFields = new ArrayList<Field>();
+        extractOptionsAndParameters(commandLine, optionFields, positionalFields);
+
+        // Build a list of "flag" options that take no parameters and "arg" options that do take parameters, and subcommands.
+        String flagOptionNames = optionNames(filter(optionFields, new BooleanFieldFilter()));
+        List<Field> argOptionFields = filter(optionFields, negate(new BooleanFieldFilter()));
+        String argOptionNames = optionNames(argOptionFields);
+        String commands = concat(" ", new ArrayList<String>(commandLine.getSubcommands().keySet())).trim();
+
+        // Generate the header: the function declaration, CURR_WORD, PREV_WORD and COMMANDS, FLAG_OPTS and ARG_OPTS.
+        StringBuilder buff = new StringBuilder(1024);
+        buff.append(format(HEADER, functionName, commands, flagOptionNames, argOptionNames));
+
+        // Generate completion lists for options with a known set of valid values.
+        // Starting with java enums.
+        List<Field> enumOptions = filter(optionFields, new EnumFieldFilter());
+        for (Field f : enumOptions) {
+            buff.append(format("  %s_OPTION_ARGS=\"%s\" # %s values\n",
+                    bashify(f.getName()),
+                    concat(" ", Arrays.asList((Enum[]) f.getType().getEnumConstants()), null, new EnumNameFunction()).trim(),
+                    f.getType().getSimpleName()));
         }
-        result.setCharAt(result.length() - 2, '\"');
-        return result.toString() + "\n";
+        // TODO generate completion lists for other option types:
+        // Charset, Currency, Locale, TimeZone, ByteOrder,
+        // javax.crypto.Cipher, javax.crypto.KeyGenerator, javax.crypto.Mac, javax.crypto.SecretKeyFactory
+        // java.security.AlgorithmParameterGenerator, java.security.AlgorithmParameters, java.security.KeyFactory, java.security.KeyPairGenerator, java.security.KeyStore, java.security.MessageDigest, java.security.Signature
+        // sql.Types?
+
+        // Now generate the "case" switches for the options whose arguments we can generate completions for
+        buff.append(generateOptionsSwitch(argOptionFields, enumOptions));
+
+        // Generate the footer: a default COMPREPLY to fall back to, and the function closing brace.
+        buff.append(format(FOOTER));
+        return buff.toString();
+    }
+
+    private static String generateOptionsSwitch(List<Field> argOptionFields, List<Field> enumOptions) {
+        StringBuilder buff = new StringBuilder(1024);
+        buff.append("\n");
+        buff.append("  case ${CURR_WORD} in\n"); // outer case
+        String outerCases = generateOptionsCases(argOptionFields, enumOptions, "", "\"\"");
+        if (outerCases.length() == 0) {
+            return "";
+        }
+        buff.append(outerCases);
+        buff.append("    *)\n");
+        buff.append("      case ${PREV_WORD} in\n"); // inner case
+        buff.append(generateOptionsCases(argOptionFields, enumOptions, "    ", "$CURR_WORD"));
+        buff.append("      esac\n"); // end inner case
+        buff.append("  esac\n"); // end outer case
+        return buff.toString();
+    }
+
+    private static String generateOptionsCases(List<Field> argOptionFields, List<Field> enumOptions, String indent, String currWord) {
+        StringBuilder buff = new StringBuilder(1024);
+        for (Field f : argOptionFields) {
+            CommandLine.Option option = f.getAnnotation(CommandLine.Option.class);
+            if (enumOptions.contains(f)) {
+                buff.append(format("%s    %s)\n", indent, concat("|", option.names()))); // "    -u|--timeUnit)\n"
+                buff.append(format("%s      COMPREPLY=( $( compgen -W \"${%s_OPTION_ARGS}\" -- %s ) )\n", indent, f.getName(), currWord));
+                buff.append(format("%s      return $?\n", indent));
+                buff.append(format("%s      ;;\n", indent));
+            } else if (f.getType().equals(File.class) || "java.nio.file.Path".equals(f.getType().getName())) {
+                buff.append(format("%s    %s)\n", indent, concat("|", option.names()))); // "    -f|--file)\n"
+                buff.append(format("%s      compopt -o filenames\n", indent));
+                buff.append(format("%s      COMPREPLY=( $( compgen -f -- %s ) ) # files\n", indent, currWord));
+                buff.append(format("%s      return $?\n", indent));
+                buff.append(format("%s      ;;\n", indent));
+            } else if (f.getType().equals(InetAddress.class)) {
+                buff.append(format("%s    %s)\n", indent, concat("|", option.names()))); // "    -h|--host)\n"
+                buff.append(format("%s      compopt -o filenames\n", indent));
+                buff.append(format("%s      COMPREPLY=( $( compgen -A hostname -- %s ) )\n", indent, currWord));
+                buff.append(format("%s      return $?\n", indent));
+                buff.append(format("%s      ;;\n", indent));
+            }
+        }
+        return buff.toString();
+    }
+
+    private static String optionNames(List<Field> optionFields) {
+        List<String> result = new ArrayList<String>();
+        for (Field f : optionFields) {
+            CommandLine.Option option = f.getAnnotation(CommandLine.Option.class);
+            result.addAll(Arrays.asList(option.names()));
+        }
+        return concat(" ", result, "", new NullFunction()).trim();
+    }
+
+    private static void extractOptionsAndParameters(CommandLine commandLine,
+                                                    List<Field> optionFields,
+                                                    List<Field> positionalParameterFields) {
+
+        Map<String, Field> optionName2Field = new LinkedHashMap<String, Field>();
+        Class<?> cls = commandLine.getCommand().getClass();
+        while (cls != null) {
+            CommandLine.init(cls, new ArrayList<Field>(), optionName2Field, new HashMap<Character, Field>(), positionalParameterFields);
+            cls = cls.getSuperclass();
+        }
+        for (Field f : optionName2Field.values()) {
+            if (!optionFields.contains(f)) { optionFields.add(f); }
+        }
     }
 }
