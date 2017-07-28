@@ -16,12 +16,18 @@
 package picocli;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.net.InetAddress;
 import java.net.URL;
 import java.util.concurrent.TimeUnit;
 
 import org.junit.Test;
+
+import picocli.CommandLine.Command;
+import picocli.CommandLine.Option;
+
 import static org.junit.Assert.*;
 
 /**
@@ -31,13 +37,48 @@ import static org.junit.Assert.*;
 // https://apple.stackexchange.com/a/13019
 public class AutoCompleteTest {
     @Test
-    public void bash() throws Exception {
+    public void basic() throws Exception {
         class App {
-            @CommandLine.Option(names = {"-u", "--timeUnit"}) private TimeUnit timeUnit;
-            @CommandLine.Option(names = {"-t", "--timeout"}) private long timeout;
+            @Option(names = {"-u", "--timeUnit"}) private TimeUnit timeUnit;
+            @Option(names = {"-t", "--timeout"}) private long timeout;
         }
-        String script = AutoComplete.bash("script1", new CommandLine(new App()));
-        String expected = loadTextFromClasspath("/script1.bash");
+        String script = AutoComplete.bash("basicExample", new CommandLine(new App()));
+        String expected = loadTextFromClasspath("/basic.bash");
+        assertEquals(expected, script);
+    }
+    @Test
+    public void nestedSubcommands() throws Exception {
+        class TopLevel {
+            @Option(names = {"-V", "--version"}, help = true) boolean versionRequested;
+            @Option(names = {"-h", "--help"}, help = true) boolean helpRequested;
+        }
+        @Command(description = "First level subcommand 1")
+        class Sub1 {
+            @Option(names = "--num", description = "a number") double number;
+            @Option(names = "--str", description = "a String") String str;
+        }
+        @Command(description = "First level subcommand 2")
+        class Sub2 {
+            @Option(names = "--num2", description = "another number") int number2;
+            @Option(names = {"--directory", "-d"}, description = "a directory") File directory;
+        }
+        @Command(description = "Second level sub-subcommand 1")
+        class Sub2Child1 {
+            @Option(names = {"-h", "--host"}, description = "a host") InetAddress host;
+        }
+        @Command(description = "Second level sub-subcommand 2")
+        class Sub2Child2 {
+            @Option(names = {"-u", "--timeUnit"}) private TimeUnit timeUnit;
+            @Option(names = {"-t", "--timeout"}) private long timeout;
+        }
+        CommandLine hierarchy = new CommandLine(new TopLevel())
+                .addSubcommand("sub1", new Sub1())
+                .addSubcommand("sub2", new CommandLine(new Sub2())
+                        .addSubcommand("subsub1", new Sub2Child1())
+                        .addSubcommand("subsub2", new Sub2Child2())
+                );
+        String script = AutoComplete.bash("hierarchy", hierarchy);
+        String expected = loadTextFromClasspath("/nestedSubcommands.bash");
         assertEquals(expected, script);
     }
 
