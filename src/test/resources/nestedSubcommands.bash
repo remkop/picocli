@@ -1,4 +1,4 @@
-#!bash
+#!/usr/bin/env bash
 #
 # hierarchy Bash Completion
 # =======================
