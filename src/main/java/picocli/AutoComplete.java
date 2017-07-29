@@ -96,7 +96,7 @@ public class AutoComplete {
     }
 
     private static final String HEADER = "" +
-            "#!bash\n" +
+            "#!/usr/bin/env bash\n" +
             "#\n" +
             "# %1$s Bash Completion\n" +
             "# =======================\n" +

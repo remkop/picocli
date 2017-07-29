@@ -1,4 +1,4 @@
-#!bash
+#!/usr/bin/env bash
 #
 # basicExample Bash Completion
 # =======================
