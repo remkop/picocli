@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+
+HIERARCHY_DIR=`cygpath -w "/cygdrive/c/Users/remko/IdeaProjects/pico-cli/build/libs"`
+HIERARCHY_CP="${HIERARCHY_DIR}/picocli-0.9.8-SNAPSHOT.jar;${HIERARCHY_DIR}/picocli-0.9.8-SNAPSHOT-tests.jar"
+java -cp "${HIERARCHY_CP}" 'picocli.AutoCompleteTest$TopLevel' $@
+
