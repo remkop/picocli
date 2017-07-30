@@ -19,8 +19,10 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.lang.reflect.Field;
 import java.net.InetAddress;
 import java.net.URL;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import org.junit.Test;
@@ -36,41 +38,64 @@ import static org.junit.Assert.*;
 // http://hayne.net/MacDev/Notes/unixFAQ.html#shellStartup
 // https://apple.stackexchange.com/a/13019
 public class AutoCompleteTest {
+    public static void main(String[] args) {
+        TopLevel.main(args);
+    }
+    public static class BasicExample implements Runnable {
+        @Option(names = {"-u", "--timeUnit"}) private TimeUnit timeUnit;
+        @Option(names = {"-t", "--timeout"}) private long timeout;
+        @Override public void run() {
+            System.out.printf("BasicExample was invoked with %d %s.%n", timeout, timeUnit);
+        }
+        public static void main(String[] args) { CommandLine.run(new BasicExample(), System.out, args); }
+    }
     @Test
     public void basic() throws Exception {
-        class App {
-            @Option(names = {"-u", "--timeUnit"}) private TimeUnit timeUnit;
-            @Option(names = {"-t", "--timeout"}) private long timeout;
-        }
-        String script = AutoComplete.bash("basicExample", new CommandLine(new App()));
+        String script = AutoComplete.bash("basicExample", new CommandLine(new BasicExample()));
         String expected = loadTextFromClasspath("/basic.bash");
         assertEquals(expected, script);
     }
+
+    public static class TopLevel {
+        @Option(names = {"-V", "--version"}, help = true) boolean versionRequested;
+        @Option(names = {"-h", "--help"}, help = true) boolean helpRequested;
+        public static void main(String[] args) {
+            CommandLine hierarchy = new CommandLine(new TopLevel())
+                    .addSubcommand("sub1", new Sub1())
+                    .addSubcommand("sub2", new CommandLine(new Sub2())
+                            .addSubcommand("subsub1", new Sub2Child1())
+                            .addSubcommand("subsub2", new Sub2Child2())
+                    );
+            List<CommandLine> commandLines = hierarchy.parse(args);
+            //Collections.reverse(commandLines);
+            for (CommandLine cmdLine : commandLines) {
+                Object command = cmdLine.getCommand();
+                System.out.printf("Parsed command %s%n", AutoCompleteTest.toString(command));
+            }
+        }
+    }
+    @Command(description = "First level subcommand 1")
+    public static class Sub1 {
+        @Option(names = "--num", description = "a number") double number;
+        @Option(names = "--str", description = "a String") String str;
+    }
+    @Command(description = "First level subcommand 2")
+    public static class Sub2 {
+        @Option(names = "--num2", description = "another number") int number2;
+        @Option(names = {"--directory", "-d"}, description = "a directory") File directory;
+    }
+    @Command(description = "Second level sub-subcommand 1")
+    public static class Sub2Child1 {
+        @Option(names = {"-h", "--host"}, description = "a host") InetAddress host;
+    }
+    @Command(description = "Second level sub-subcommand 2")
+    public static class Sub2Child2 {
+        @Option(names = {"-u", "--timeUnit"}) private TimeUnit timeUnit;
+        @Option(names = {"-t", "--timeout"}) private long timeout;
+    }
+
     @Test
     public void nestedSubcommands() throws Exception {
-        class TopLevel {
-            @Option(names = {"-V", "--version"}, help = true) boolean versionRequested;
-            @Option(names = {"-h", "--help"}, help = true) boolean helpRequested;
-        }
-        @Command(description = "First level subcommand 1")
-        class Sub1 {
-            @Option(names = "--num", description = "a number") double number;
-            @Option(names = "--str", description = "a String") String str;
-        }
-        @Command(description = "First level subcommand 2")
-        class Sub2 {
-            @Option(names = "--num2", description = "another number") int number2;
-            @Option(names = {"--directory", "-d"}, description = "a directory") File directory;
-        }
-        @Command(description = "Second level sub-subcommand 1")
-        class Sub2Child1 {
-            @Option(names = {"-h", "--host"}, description = "a host") InetAddress host;
-        }
-        @Command(description = "Second level sub-subcommand 2")
-        class Sub2Child2 {
-            @Option(names = {"-u", "--timeUnit"}) private TimeUnit timeUnit;
-            @Option(names = {"-t", "--timeout"}) private long timeout;
-        }
         CommandLine hierarchy = new CommandLine(new TopLevel())
                 .addSubcommand("sub1", new Sub1())
                 .addSubcommand("sub2", new CommandLine(new Sub2())
@@ -103,4 +128,17 @@ public class AutoCompleteTest {
         }
     }
 
+    private static String toString(Object obj) {
+        StringBuilder sb = new StringBuilder(256);
+        Class<?> cls = obj.getClass();
+        sb.append(cls.getSimpleName()).append("[");
+        String sep = "";
+        for (Field f : cls.getDeclaredFields()) {
+            f.setAccessible(true);
+            sb.append(sep).append(f.getName()).append("=");
+            try { sb.append(f.get(obj)); } catch (Exception ex) { sb.append(ex); }
+            sep = ", ";
+        }
+        return sb.append("]").toString();
+    }
 }
