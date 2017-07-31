@@ -35,14 +35,14 @@ public class AutoComplete {
     private AutoComplete() {
     }
 
-    static interface Function<T, V> {
+    private static interface Function<T, V> {
         V apply(T t);
     }
 
     /**
      * Drops all characters that are not valid for bash function and identifier names.
      */
-    static class Bashify implements Function<CharSequence, String> {
+    private static class Bashify implements Function<CharSequence, String> {
         public String apply(CharSequence value) {
             return bashify(value);
         }
@@ -59,30 +59,30 @@ public class AutoComplete {
         }
         return builder.toString();
     }
-    static class EnumNameFunction implements Function<Enum<?>, String> {
+    private static class EnumNameFunction implements Function<Enum<?>, String> {
         @Override public String apply(final Enum<?> anEnum) {
             return anEnum.name();
         }
     }
 
-    static class NullFunction implements Function<CharSequence, String> {
+    private static class NullFunction implements Function<CharSequence, String> {
         @Override public String apply(CharSequence value) { return value.toString(); }
     }
 
-    static interface Predicate<T> {
+    private static interface Predicate<T> {
         boolean test(T t);
     }
-    static class BooleanFieldFilter implements Predicate<Field> {
+    private static class BooleanFieldFilter implements Predicate<Field> {
         @Override public boolean test(Field f) {
             return f.getType() == Boolean.TYPE || f.getType() == Boolean.class;
         }
     }
-    static class EnumFieldFilter implements Predicate<Field> {
+    private static class EnumFieldFilter implements Predicate<Field> {
         @Override public boolean test(Field f) {
             return f.getType().isEnum();
         }
     }
-    static <T> Predicate<T> negate(final Predicate<T> original) {
+    private static <T> Predicate<T> negate(final Predicate<T> original) {
         return new Predicate<T>() {
             @Override public boolean test(T t) {
                 return !original.test(t);
