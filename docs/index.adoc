@@ -943,7 +943,9 @@ See the picocli tests for how to achieve this.
 
 == Subcommands
 === Registering Subcommands
-Subcommands can be registered with the `CommandLine.addCommand` method. You pass in the name of the command (used by the parser to recognize subcommands in the command line arguments) and the annotated object to populate with the subcommand options.
+Subcommands can be registered with the `CommandLine.addSubcommand` method.
+You pass in the name of the command and the annotated object to populate with the subcommand options.
+The specified name is used by the parser to recognize subcommands in the command line arguments.
 
 [source,java]
 ----
@@ -1065,16 +1067,16 @@ The specified object can be an annotated object or a
 [source,java]
 ----
 CommandLine commandLine = new CommandLine(new MainCommand())
-        .addSubcommand("cmd1",                 new ChildCommand1()) // subcommand
-        .addSubcommand("cmd2",                 new ChildCommand2())
-        .addSubcommand("cmd3", new CommandLine(new ChildCommand3()) // subcommand with nested sub-subcommands
-                .addSubcommand("cmd3sub1",                 new GrandChild3Command1())
-                .addSubcommand("cmd3sub2",                 new GrandChild3Command2())
-                .addSubcommand("cmd3sub3", new CommandLine(new GrandChild3Command3()) // deeper nesting
-                        .addSubcommand("cmd3sub3sub1", new GreatGrandChild3Command3_1())
-                        .addSubcommand("cmd3sub3sub2", new GreatGrandChild3Command3_2())
-                )
-        );
+    .addSubcommand("cmd1",                 new ChildCommand1())
+    .addSubcommand("cmd2",                 new ChildCommand2())
+    .addSubcommand("cmd3", new CommandLine(new ChildCommand3())
+        .addSubcommand("cmd3sub1",                 new GrandChild3Command1())
+        .addSubcommand("cmd3sub2",                 new GrandChild3Command2())
+        .addSubcommand("cmd3sub3", new CommandLine(new GrandChild3Command3())
+            .addSubcommand("cmd3sub3sub1", new GreatGrandChild3Command3_1())
+            .addSubcommand("cmd3sub3sub2", new GreatGrandChild3Command3_2())
+        )
+    );
 ----
 
 
