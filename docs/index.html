@@ -1989,7 +1989,9 @@ See the picocli tests for how to achieve this.</p>
 <div class="sect2">
 <h3 id="_registering_subcommands">10.1. Registering Subcommands</h3>
 <div class="paragraph">
-<p>Subcommands can be registered with the <code>CommandLine.addCommand</code> method. You pass in the name of the command (used by the parser to recognize subcommands in the command line arguments) and the annotated object to populate with the subcommand options.</p>
+<p>Subcommands can be registered with the <code>CommandLine.addSubcommand</code> method.
+You pass in the name of the command and the annotated object to populate with the subcommand options.
+The specified name is used by the parser to recognize subcommands in the command line arguments.</p>
 </div>
 <div class="listingblock">
 <div class="content">
@@ -2139,16 +2141,16 @@ in <a href="#_expanded_example">Expanded Example</a>.</p>
 <div class="listingblock">
 <div class="content">
 <pre class="CodeRay highlight"><code data-lang="java">CommandLine commandLine = <span class="keyword">new</span> CommandLine(<span class="keyword">new</span> MainCommand())
-        .addSubcommand(<span class="string"><span class="delimiter">&quot;</span><span class="content">cmd1</span><span class="delimiter">&quot;</span></span>,                 <span class="keyword">new</span> ChildCommand1()) <span class="comment">// subcommand</span>
-        .addSubcommand(<span class="string"><span class="delimiter">&quot;</span><span class="content">cmd2</span><span class="delimiter">&quot;</span></span>,                 <span class="keyword">new</span> ChildCommand2())
-        .addSubcommand(<span class="string"><span class="delimiter">&quot;</span><span class="content">cmd3</span><span class="delimiter">&quot;</span></span>, <span class="keyword">new</span> CommandLine(<span class="keyword">new</span> ChildCommand3()) <span class="comment">// subcommand with nested sub-subcommands</span>
-                .addSubcommand(<span class="string"><span class="delimiter">&quot;</span><span class="content">cmd3sub1</span><span class="delimiter">&quot;</span></span>,                 <span class="keyword">new</span> GrandChild3Command1())
-                .addSubcommand(<span class="string"><span class="delimiter">&quot;</span><span class="content">cmd3sub2</span><span class="delimiter">&quot;</span></span>,                 <span class="keyword">new</span> GrandChild3Command2())
-                .addSubcommand(<span class="string"><span class="delimiter">&quot;</span><span class="content">cmd3sub3</span><span class="delimiter">&quot;</span></span>, <span class="keyword">new</span> CommandLine(<span class="keyword">new</span> GrandChild3Command3()) <span class="comment">// deeper nesting</span>
-                        .addSubcommand(<span class="string"><span class="delimiter">&quot;</span><span class="content">cmd3sub3sub1</span><span class="delimiter">&quot;</span></span>, <span class="keyword">new</span> GreatGrandChild3Command3_1())
-                        .addSubcommand(<span class="string"><span class="delimiter">&quot;</span><span class="content">cmd3sub3sub2</span><span class="delimiter">&quot;</span></span>, <span class="keyword">new</span> GreatGrandChild3Command3_2())
-                )
-        );</code></pre>
+    .addSubcommand(<span class="string"><span class="delimiter">&quot;</span><span class="content">cmd1</span><span class="delimiter">&quot;</span></span>,                 <span class="keyword">new</span> ChildCommand1())
+    .addSubcommand(<span class="string"><span class="delimiter">&quot;</span><span class="content">cmd2</span><span class="delimiter">&quot;</span></span>,                 <span class="keyword">new</span> ChildCommand2())
+    .addSubcommand(<span class="string"><span class="delimiter">&quot;</span><span class="content">cmd3</span><span class="delimiter">&quot;</span></span>, <span class="keyword">new</span> CommandLine(<span class="keyword">new</span> ChildCommand3())
+        .addSubcommand(<span class="string"><span class="delimiter">&quot;</span><span class="content">cmd3sub1</span><span class="delimiter">&quot;</span></span>,                 <span class="keyword">new</span> GrandChild3Command1())
+        .addSubcommand(<span class="string"><span class="delimiter">&quot;</span><span class="content">cmd3sub2</span><span class="delimiter">&quot;</span></span>,                 <span class="keyword">new</span> GrandChild3Command2())
+        .addSubcommand(<span class="string"><span class="delimiter">&quot;</span><span class="content">cmd3sub3</span><span class="delimiter">&quot;</span></span>, <span class="keyword">new</span> CommandLine(<span class="keyword">new</span> GrandChild3Command3())
+            .addSubcommand(<span class="string"><span class="delimiter">&quot;</span><span class="content">cmd3sub3sub1</span><span class="delimiter">&quot;</span></span>, <span class="keyword">new</span> GreatGrandChild3Command3_1())
+            .addSubcommand(<span class="string"><span class="delimiter">&quot;</span><span class="content">cmd3sub3sub2</span><span class="delimiter">&quot;</span></span>, <span class="keyword">new</span> GreatGrandChild3Command3_2())
+        )
+    );</code></pre>
 </div>
 </div>
 </div>
