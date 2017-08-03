@@ -1247,25 +1247,16 @@ public class CommandLine {
                                     " is missing the mandatory @Command annotation with a 'name' attribute");
                         }
                         try {
-                            Constructor<?> constructor = sub.getConstructor();
-                            for (Constructor<?> c : sub.getDeclaredConstructors()) {
-                                if (c.getParameterTypes().length == 0) {
-                                    constructor = c;
-                                    break;
-                                }
-                                System.out.println(Arrays.toString(c.getParameterTypes()));
-                            }
-                            if (constructor == null) {
-                                throw new IllegalArgumentException("Could not instantiate subcommand class "
-                                        + sub.getName() + ": missing no-arg constructor.");
-                            }
+                            Constructor<?> constructor = sub.getDeclaredConstructor();
                             constructor.setAccessible(true);
-                            addSubcommand(subCommand.name(), sub.newInstance());
+                            commands.put(subCommand.name(), toCommandLine(constructor.newInstance()));
                         }
                         catch (IllegalArgumentException ex) { throw ex; }
+                        catch (NoSuchMethodException ex) { throw new IllegalArgumentException("Cannot instantiate subcommand " +
+                                sub.getName() + ": the class has no constructor", ex); }
                         catch (Exception ex) {
                             throw new IllegalStateException("Could not instantiate and add subcommand " +
-                                    sub.getName() + " with name '" + subCommand.name() + "'", ex);
+                                    sub.getName() + ": " + ex, ex);
                         }
                     }
                 }

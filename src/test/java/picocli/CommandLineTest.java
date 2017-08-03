@@ -2802,22 +2802,26 @@ public class CommandLineTest {
 
         assertEquals(expectedOutput, content);
     }
+    @Command(name = "subsub1")
+    static class SubSub1_testDeclarativelyAddSubcommands {private SubSub1_testDeclarativelyAddSubcommands(){}}
+
+    @Command(name = "sub1", subcommands = {SubSub1_testDeclarativelyAddSubcommands.class})
+    static class Sub1_testDeclarativelyAddSubcommands {public Sub1_testDeclarativelyAddSubcommands(){}}
+
+    @Command(subcommands = {Sub1_testDeclarativelyAddSubcommands.class})
+    static class MainCommand_testDeclarativelyAddSubcommands {}
     @Test
     public void testDeclarativelyAddSubcommands() {
-        @Command(name = "subsub1")
-        class SubSub1 {private SubSub1(){}}
-
-        @Command(name = "sub1", subcommands = {SubSub1.class})
-        class Sub1 {public Sub1(){}}
-
-        @Command(subcommands = {Sub1.class})
-        class MainCommand {}
-
-        CommandLine main = new CommandLine(new MainCommand());
+        CommandLine main = new CommandLine(new MainCommand_testDeclarativelyAddSubcommands());
         assertEquals(1, main.getSubcommands().size());
-        assertEquals(Sub1.class, main.getSubcommands().get("sub1").getCommand().getClass());
+
+        CommandLine sub1 = main.getSubcommands().get("sub1");
+        assertEquals(Sub1_testDeclarativelyAddSubcommands.class, sub1.getCommand().getClass());
+
+        assertEquals(1, sub1.getSubcommands().size());
+        CommandLine subsub1 = sub1.getSubcommands().get("subsub1");
+        assertEquals(SubSub1_testDeclarativelyAddSubcommands.class, subsub1.getCommand().getClass());
     }
-    @Ignore
     @Test
     public void testDeclarativelyAddSubcommandsFailsWithoutNoArgConstructor() {
         @Command(name = "sub1") class ABC {}
@@ -2825,7 +2829,7 @@ public class CommandLineTest {
         try {
             new CommandLine(new MainCommand());
         } catch (IllegalArgumentException ex) {
-            assertEquals("Could not instantiate subcommand class picocli.CommandLineTest$1ABC: missing no-arg constructor.", ex.getMessage());
+            assertEquals("Cannot instantiate subcommand picocli.CommandLineTest$1ABC: the class has no constructor", ex.getMessage());
         }
     }
     @Test
