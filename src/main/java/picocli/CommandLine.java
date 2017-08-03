@@ -23,6 +23,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 import java.lang.reflect.Array;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -835,9 +836,32 @@ public class CommandLine {
     @Target(ElementType.TYPE)
     public @interface Command {
         /** Program name to show in the synopsis. If omitted, {@code "<main class>"} is used.
+         * For {@linkplain #subcommands() declaratively added} subcommands, this attribute is also used
+         * by the parser to recognize subcommands in the command line arguments.
          * @return the program name to show in the synopsis
          * @see Help#commandName */
         String name() default "<main class>";
+
+        /** A list of classes to instantiate and register as subcommands. For example, this:
+         * <pre>
+         * &#064;Command(subcommands = { GitStatus.class, GitCommit.class, GitBranch.class })
+         * public class Git { ... }
+         *
+         * CommandLine commandLine = new CommandLine(new Git());
+         * </pre> is equivalent to this:
+         * <pre>
+         * // no subcommands attribute
+         * &#064;Command public class Git { ... }
+         *
+         * CommandLine commandLine = new CommandLine(new Git())
+         *         .addSubcommand("status",   new GitStatus())
+         *         .addSubcommand("commit",   new GitCommit())
+         *         .addSubcommand("branch",   new GitBranch());
+         * </pre>
+         * @return the declaratively registered subcommands of this command, or an empty array if none
+         * @see CommandLine#addSubcommand(String, Object)
+         */
+        Class<?>[] subcommands() default {};
 
         /** String that separates options from option parameters. Default is {@code "="}. Spaces are also accepted.
          * @return the string that separates options from option parameters, used both when parsing and when generating usage help
@@ -1215,6 +1239,35 @@ public class CommandLine {
                     hasCommandAnnotation = true;
                     Command cmd = cls.getAnnotation(Command.class);
                     declaredSeparator = (declaredSeparator == null) ? cmd.separator() : declaredSeparator;
+
+                    for (Class<?> sub : cmd.subcommands()) {
+                        Command subCommand = sub.getAnnotation(Command.class);
+                        if (subCommand == null || Help.DEFAULT_COMMAND_NAME.equals(subCommand.name())) {
+                            throw new IllegalArgumentException("Subcommand " + sub.getName() +
+                                    " is missing the mandatory @Command annotation with a 'name' attribute");
+                        }
+                        try {
+                            Constructor<?> constructor = sub.getConstructor();
+                            for (Constructor<?> c : sub.getDeclaredConstructors()) {
+                                if (c.getParameterTypes().length == 0) {
+                                    constructor = c;
+                                    break;
+                                }
+                                System.out.println(Arrays.toString(c.getParameterTypes()));
+                            }
+                            if (constructor == null) {
+                                throw new IllegalArgumentException("Could not instantiate subcommand class "
+                                        + sub.getName() + ": missing no-arg constructor.");
+                            }
+                            constructor.setAccessible(true);
+                            addSubcommand(subCommand.name(), sub.newInstance());
+                        }
+                        catch (IllegalArgumentException ex) { throw ex; }
+                        catch (Exception ex) {
+                            throw new IllegalStateException("Could not instantiate and add subcommand " +
+                                    sub.getName() + " with name '" + subCommand.name() + "'", ex);
+                        }
+                    }
                 }
                 cls = cls.getSuperclass();
             }

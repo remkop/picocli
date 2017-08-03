@@ -942,7 +942,7 @@ See the picocli tests for how to achieve this.
 
 
 == Subcommands
-=== Registering Subcommands
+=== Registering Subcommands Programmatically
 Subcommands can be registered with the `CommandLine.addSubcommand` method.
 You pass in the name of the command and the annotated object to populate with the subcommand options.
 The specified name is used by the parser to recognize subcommands in the command line arguments.
@@ -951,7 +951,7 @@ The specified name is used by the parser to recognize subcommands in the command
 ----
 CommandLine commandLine = new CommandLine(new Git())
         .addSubcommand("status",   new GitStatus())
-        .addSubcommand("commit",   new GitCommit();
+        .addSubcommand("commit",   new GitCommit())
         .addSubcommand("add",      new GitAdd())
         .addSubcommand("branch",   new GitBranch())
         .addSubcommand("checkout", new GitCheckout())
@@ -962,11 +962,42 @@ CommandLine commandLine = new CommandLine(new Git())
         .addSubcommand("rebase",   new GitRebase())
         .addSubcommand("tag",      new GitTag());
 ----
+It is strongly recommended that subcommands have a `@Command` annotation with `name` and `description` attributes.
+
+Subcommands registered programmatically can have a `@Command name` attribute that is different from the command name they are registered with. The `name` attribute value is not used when parsing the command line but only in the usage help synopsis of the subcommand. For example, a git command line could be `git commit -m "message"`, but the usage help for the `commit` subcommand could show `Usage: git-commit <options>`.
 
 CAUTION: _Note on custom type converters:_ custom type converters are registered only with the subcommands and nested
 sub-subcommands that were added _before_ the custom type was registered.
 To ensure a custom type converter is available to all subcommands, register the type converter last, after
 adding subcommands.
+
+=== Registering Subcommands Declaratively
+From version 0.9.8, picocli supports registering subcommands declaratively with the `@Command` annotation's `subcommands` attribute.
+
+[source,java]
+----
+@Command(subcommands = {
+    GitStatus.class,
+    GitCommit.class,
+    GitAdd.class,
+    GitBranch.class,
+    GitCheckout.class,
+    GitClone.class,
+    GitDiff.class,
+    GitMerge.class,
+    GitPush.class,
+    GitRebase.class,
+    GitTag.class
+})
+public class Git { ... }
+----
+
+The declared subcommands are automatically instantiated and added when the `new CommandLine(new Git())` instance is constructed. The result is the same as if subcommands were added <<Registering Subcommands Programmatically,programmatically>>.
+
+Subcommands referenced in a `subcommands` attribute _must_ have a `@Command` annotation with a `name` attribute, or an exception is thrown from the `CommandLine` constructor. This name will be used both for generating usage help and for recognizing subcommands when parsing the command line.
+
+Custom type converters registered on a `CommandLine` instance will apply to all subcommands that were declared on the main command with the `subcommands` annotation.
+
 
 === Parsing Subcommands
 The `CommandLine.parse` method returns a List with the recognized commands. The main command (`git` in this example) is always the first element in the returned list.
@@ -974,9 +1005,13 @@ The `CommandLine.parse` method returns a List with the recognized commands. The 
 [source,java]
 ----
 CommandLine commandLine = new CommandLine(new Git());
-commandLine.addSubcommand("status",   new GitStatus());
-...
 
+// add subcommands (either programmatically or declaratively)
+commandLine.addSubcommand("status",   new GitStatus())
+           .addSubcommand("commit",   new GitCommit())
+            ...
+
+// use the parse method to get a List with matched commands
 String[] args = { "--git-dir=/home/rpopma/picocli", "status", "-sbuno"};
 List<CommandLine> parsed = commandLine.parse(args);
 assert parsed.size() == 2 : "1 command and 1 subcommand found"
@@ -1004,6 +1039,8 @@ After registering subcommands, calling the `commandLine.usage` method will show 
 [source,java]
 ----
 CommandLine commandLine = new CommandLine(new Git());
+
+// add subcommands (either programmatically or declaratively)
 commandLine.addSubcommand("status",   new GitStatus());
 ...
 commandLine.usage(System.out);
@@ -1077,6 +1114,45 @@ CommandLine commandLine = new CommandLine(new MainCommand())
             .addSubcommand("cmd3sub3sub2", new GreatGrandChild3Command3_2())
         )
     );
+----
+
+Declaratively, subcommands can be nested by specifying the `subcommands` attribute on subcommand classes:
+[source,java]
+----
+@Command(name = "main", subcommands = {
+    ChildCommand1.class,
+    ChildCommand2.class,
+    ChildCommand3.class })
+class MainCommand { }
+
+@Command(name = "cmd1")
+class ChildCommand1 { }
+
+@Command(name = "cmd2")
+class ChildCommand2 { }
+
+@Command(name = "cmd3", subcommands = {
+    GrandChild3Command1.class,
+    GrandChild3Command2.class,
+    GrandChild3Command3.class })
+class ChildCommand3 { }
+
+@Command(name = "cmd3sub1")
+class GrandChild3Command1 { }
+
+@Command(name = "cmd3sub2")
+class GrandChild3Command2 { }
+
+@Command(name = "cmd3sub3", subcommands = {
+    GreatGrandChild3Command3_1.class,
+    GreatGrandChild3Command3_2.class })
+class GrandChild3Command3 { }
+
+@Command(name = "cmd3sub3sub1")
+class GreatGrandChild3Command3_1 { }
+
+@Command(name = "cmd3sub3sub2")
+class GreatGrandChild3Command3_2 { }
 ----
 
 

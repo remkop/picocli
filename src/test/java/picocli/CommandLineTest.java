@@ -2802,4 +2802,50 @@ public class CommandLineTest {
 
         assertEquals(expectedOutput, content);
     }
+    @Test
+    public void testDeclarativelyAddSubcommands() {
+        @Command(name = "subsub1")
+        class SubSub1 {private SubSub1(){}}
+
+        @Command(name = "sub1", subcommands = {SubSub1.class})
+        class Sub1 {public Sub1(){}}
+
+        @Command(subcommands = {Sub1.class})
+        class MainCommand {}
+
+        CommandLine main = new CommandLine(new MainCommand());
+        assertEquals(1, main.getSubcommands().size());
+        assertEquals(Sub1.class, main.getSubcommands().get("sub1").getCommand().getClass());
+    }
+    @Ignore
+    @Test
+    public void testDeclarativelyAddSubcommandsFailsWithoutNoArgConstructor() {
+        @Command(name = "sub1") class ABC {}
+        @Command(subcommands = {ABC.class}) class MainCommand {}
+        try {
+            new CommandLine(new MainCommand());
+        } catch (IllegalArgumentException ex) {
+            assertEquals("Could not instantiate subcommand class picocli.CommandLineTest$1ABC: missing no-arg constructor.", ex.getMessage());
+        }
+    }
+    @Test
+    public void testDeclarativelyAddSubcommandsFailsWithoutAnnotation() {
+        class MissingCommandAnnotation { public MissingCommandAnnotation() {} }
+        @Command(subcommands = {MissingCommandAnnotation.class}) class MainCommand {}
+        try {
+            new CommandLine(new MainCommand());
+        } catch (IllegalArgumentException ex) {
+            assertEquals("Subcommand picocli.CommandLineTest$1MissingCommandAnnotation is missing the mandatory @Command annotation with a 'name' attribute", ex.getMessage());
+        }
+    }
+    @Test
+    public void testDeclarativelyAddSubcommandsFailsWithoutNameOnCommandAnnotation() {
+        @Command class MissingNameAttribute{ public MissingNameAttribute() {} }
+        @Command(subcommands = {MissingNameAttribute.class}) class MainCommand {}
+        try {
+            new CommandLine(new MainCommand());
+        } catch (IllegalArgumentException ex) {
+            assertEquals("Subcommand picocli.CommandLineTest$1MissingNameAttribute is missing the mandatory @Command annotation with a 'name' attribute", ex.getMessage());
+        }
+    }
 }
