@@ -27,25 +27,29 @@ In the case of multiple possible completions, the Unix shell will display all su
 with those few characters. The user can type more characters and press TAB again to see a new, narrowed-down
 list if the typed characters are still ambiguous, or else complete the subcommand or option.
 
-== Example
-Assume we have a command line application with subcommands, all of which have some options. Below is an example:
+== Command Line Completion Example
+Assume we have a picocli-based command line application with subcommands, all of which have some options. Below is an example:
 
 [source,java]
 ----
-@Command(name = "hierarchy")
-public static class MainCommand {
+import picocli.CommandLine.Command;
+import picocli.CommandLine.Option;
+import picocli.CommandLine.Parameters;
+
+@Command(name = "hierarchy", subcommands = { Subcommand1.class, Subcommand2.class })
+class MainCommand {
     @Option(names = {"-V", "--version"}, help = true) boolean versionRequested;
     @Option(names = {"-h", "--help"},    help = true) boolean helpRequested;
 }
 
 @Command(name = "sub1", description = "subcommand 1")
-public static class Subcommand1 {
+class Subcommand1 {
     @Option(names = {"--directory", "-d"}, description = "a directory") File directory;
     @Option(names = {"-h", "--host"},      description = "a host")      InetAddress host;
 }
 
 @Command(name = "sub2", description = "subcommand 2")
-public static class Subcommand2 {
+class Subcommand2 {
     @Option(names = {"-u", "--timeUnit"}) private TimeUnit timeUnit;
     @Option(names = {"-t", "--timeout"})  private long timeout;
 }
@@ -130,47 +134,77 @@ DAYS     HOURS     MICROSECONDS  MILLISECONDS  MINUTES    NANOSECONDS   SECONDS
 == Generating the Completion Script
 
 Create a `CommandLine` instance with the full hierarchy of nested subcommands.
-```
+[source,java]
+----
 CommandLine hierarchy = new CommandLine(new TopLevel())
         .addSubcommand("sub1", new Subcommand1())
         .addSubcommand("sub2", new Subcommand2());
-```
+----
 
 Pass this `CommandLine` instance and the name of the script to the `picocli.AutoComplete::bash` method. The method will return the source code of a completion script. Save the source code to a file and install it.
 
 CAUTION: *_The AutoComplete class is not yet in master but can be checked out from the https://github.com/remkop/picocli/tree/%23121-autocomplete[autocomplete branch]._*
 
-```
+[source,bash]
+----
 String script = AutoComplete.bash("hierarchy", hierarchy);
 // save to file
-```
+----
 
 TODO 1) Save the generated completion script to a file
 
 TODO 2) generate the accompanying `hierarchy` command script to run the application. This is the script that Bash will recognize and generate completion matches for. It needs to contain something like
 
-```
+[source,bash]
+----
 // file: 'hierarchy'
 #!/usr/bin/env bash
 
 HIERARCHY_DIR=path/to/libs
 HIERARCHY_CP="${HIERARCHY_DIR}/myApp.jar"
 java -cp "${HIERARCHY_CP}" 'com.myorg.myproject.MainClass' $@
-```
+----
 
-== Installing the Completion Script
+== Installing the Completion Script in Bash
 
-Place the completion script file in a `bash_completion.d` folder:
+Make sure bash completion is installed.
 
-* /etc/bash_completion.d
-* /usr/local/etc/bash_completion.d
-* ~/bash_completion.d
+Place the completion script file in `/etc/bash_completion.d` (or `/usr/local/etc/bash_completion.d` on a Mac). If `bash-completion` is installed, placing the completion script in either of these directories should be sufficient. (Source your `~/.bash_profile` or launch a new terminal to start using this completion script.)
 
-TODO Test this.
+Alternatively, make a directory `mkdir ~/bash_completion.d`, and place the completion script in this directory. Edit your `~/.bashrc` file and add the following:
 
-== Supported Platforms
+[source,bash]
+----
+for bcfile in ~/bash_completion.d/* ; do
+  . $bcfile
+done
+----
 
-TODO Special instructions for ZSH, Cygwin and Babun.
+Source your `~/.bash_profile` or launch a new terminal to start using this completion script.
+
+
+== Installing the Completion Script in ZSH
+
+Zsh can handle bash completions functions. The latest development version of zsh has a function bashcompinit, that when run will allow zsh to read bash completion specifications and functions. This is documented in the zshcompsys man page. To use it all you need to do is run bashcompinit at any time after compinit. It will define complete and compgen functions corresponding to the bash builtins.
+
+Make a directory `mkdir ~/bash_completion.d`, and place the completion script in this directory. Edit your `~/.zshrc` file and add the following:
+
+[source,bash]
+----
+autoload -U +X compinit && compinit
+autoload -U +X bashcompinit && bashcompinit
+for bcfile in ~/bash_completion.d/* ; do
+  . $bcfile
+done
+----
+
+Then reload your shell:
+
+[source,bash]
+----
+exec $SHELL -l
+----
+
 
 == Picocli User Manual
 The http://picocli.info[picocli user manual] explains how to build Java command line applications with picocli.
