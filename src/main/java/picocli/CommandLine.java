@@ -127,6 +127,7 @@ public class CommandLine {
     private boolean overwrittenOptionsAllowed = false;
     private boolean unmatchedArgumentsAllowed = false;
     private List<String> unmatchedArguments = new ArrayList<String>();
+    private CommandLine parent;
 
     /**
      * Constructs a new {@code CommandLine} interpreter with the specified annotated object.
@@ -178,13 +179,24 @@ public class CommandLine {
      * @see #registerConverter(Class, ITypeConverter)
      */
     public CommandLine addSubcommand(String name, Object command) {
-        interpreter.commands.put(name, toCommandLine(command));
+        CommandLine commandLine = toCommandLine(command);
+        commandLine.parent = this;
+        interpreter.commands.put(name, commandLine);
         return this;
     }
     /** Returns a map with the subcommands {@linkplain #addSubcommand(String, Object) registered} on this instance.
      * @return a map with the registered subcommands */
     public Map<String, CommandLine> getSubcommands() {
         return new LinkedHashMap<String, CommandLine>(interpreter.commands);
+    }
+    /**
+     * Returns the command that this is a subcommand of, or {@code null} if this is a top-level command.
+     * @return the command that this is a subcommand of, or {@code null} if this is a top-level command
+     * @see #addSubcommand(String, Object)
+     * @see Command#subcommands()
+     */
+    public CommandLine getParent() {
+        return parent;
     }
 
     /**
@@ -1249,7 +1261,9 @@ public class CommandLine {
                         try {
                             Constructor<?> constructor = sub.getDeclaredConstructor();
                             constructor.setAccessible(true);
-                            commands.put(subCommand.name(), toCommandLine(constructor.newInstance()));
+                            CommandLine commandLine = toCommandLine(constructor.newInstance());
+                            commandLine.parent = CommandLine.this;
+                            commands.put(subCommand.name(), commandLine);
                         }
                         catch (IllegalArgumentException ex) { throw ex; }
                         catch (NoSuchMethodException ex) { throw new IllegalArgumentException("Cannot instantiate subcommand " +
