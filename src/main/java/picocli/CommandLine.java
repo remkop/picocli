@@ -396,7 +396,7 @@ public class CommandLine {
                 .append(help.headerHeading())
                 .append(help.header())
                 .append(help.synopsisHeading())      //e.g. Usage:
-                .append(help.synopsis())             //e.g. &lt;main class&gt; [OPTIONS] &lt;command&gt; [COMMAND-OPTIONS] [ARGUMENTS]
+                .append(help.synopsis(help.synopsisHeadingLength())) //e.g. &lt;main class&gt; [OPTIONS] &lt;command&gt; [COMMAND-OPTIONS] [ARGUMENTS]
                 .append(help.descriptionHeading())   //e.g. %nDescription:%n%n
                 .append(help.description())          //e.g. {"Converts foos to bars.", "Use options to control conversion mode."}
                 .append(help.parameterListHeading()) //e.g. %nPositional parameters:%n%n
@@ -1986,6 +1986,8 @@ public class CommandLine {
         /** Constant String holding the default program name: {@value} */
         protected static final String DEFAULT_COMMAND_NAME = "<main class>";
 
+        private final static int usageHelpWidth = 80;
+        private final static int optionsColumnWidth = 2 + 2 + 1 + 24;
         private final Object command;
         private final Map<String, Help> commands = new LinkedHashMap<String, Help>();
         final ColorScheme colorScheme;
@@ -2165,16 +2167,26 @@ public class CommandLine {
             return this;
         }
 
-        /**
-         * Returns a synopsis for the command.
+        /** Returns a synopsis for the command without reserving space for the synopsis heading.
          * @return a synopsis
          * @see #abbreviatedSynopsis()
          * @see #detailedSynopsis(Comparator, boolean)
+         * @deprecated use {@link #synopsis(int)} instead
          */
-        public String synopsis() {
+        public String synopsis() { return synopsis(0); }
+
+        /**
+         * Returns a synopsis for the command, reserving the specified space for the synopsis heading.
+         * @param synopsisHeadingLength the length of the synopsis heading that will be displayed on the same line
+         * @return a synopsis
+         * @see #abbreviatedSynopsis()
+         * @see #detailedSynopsis(Comparator, boolean)
+         * @see #synopsisHeading
+         */
+        public String synopsis(int synopsisHeadingLength) {
             if (!empty(customSynopsis)) { return customSynopsis(); }
             return abbreviateSynopsis ? abbreviatedSynopsis()
-                    : detailedSynopsis(createShortOptionArityAndNameComparator(), true);
+                    : detailedSynopsis(synopsisHeadingLength, createShortOptionArityAndNameComparator(), true);
         }
 
         /** Generates a generic synopsis like {@code <command name> [OPTIONS] [PARAM1 [PARAM2]...]}, omitting parts
@@ -2194,13 +2206,18 @@ public class CommandLine {
             return colorScheme.commandText(commandName).toString()
                     + (sb.toString()) + System.getProperty("line.separator");
         }
+        /** @deprecated use {@link #detailedSynopsis(int, Comparator, boolean)} instead. */
+        public String detailedSynopsis(Comparator<Field> optionSort, boolean clusterBooleanOptions) {
+            return detailedSynopsis(0, optionSort, clusterBooleanOptions);
+        }
 
         /** Generates a detailed synopsis message showing all options and parameters. Follows the unix convention of
          * showing optional options and parameters in square brackets ({@code [ ]}).
+         * @param synopsisHeadingLength the length of the synopsis heading that will be displayed on the same line
          * @param optionSort comparator to sort options or {@code null} if options should not be sorted
          * @param clusterBooleanOptions {@code true} if boolean short options should be clustered into a single string
          * @return a detailed synopsis */
-        public String detailedSynopsis(Comparator<Field> optionSort, boolean clusterBooleanOptions) {
+        public String detailedSynopsis(int synopsisHeadingLength, Comparator<Field> optionSort, boolean clusterBooleanOptions) {
             Text optionText = ansi().new Text(0);
             List<Field> fields = new ArrayList<Field>(optionFields); // iterate in declaration order
             if (optionSort != null) {
@@ -2255,10 +2272,25 @@ public class CommandLine {
                     optionText = optionText.append(label);
                 }
             }
-            TextTable textTable = new TextTable(ansi(), commandName.length(), 80 - commandName.length());
+            // Fix for #142: first line of synopsis overshoots max. characters
+            int firstColumnLength = commandName.length() + synopsisHeadingLength;
+
+            // synopsis heading ("Usage: ") may be on the same line, so adjust column width
+            TextTable textTable = new TextTable(ansi(), firstColumnLength, usageHelpWidth - firstColumnLength);
             textTable.indentWrappedLines = 1; // don't worry about first line: options (2nd column) always start with a space
-            textTable.addRowValues(new Text[] {colorScheme.commandText(commandName), optionText});
-            return textTable.toString();
+
+            // right-adjust the command name by length of synopsis heading
+            Text PADDING = Ansi.OFF.new Text(spaces(synopsisHeadingLength));
+            textTable.addRowValues(new Text[] {PADDING.append(colorScheme.commandText(commandName)), optionText});
+            return textTable.toString().substring(synopsisHeadingLength); // cut off leading synopsis heading spaces
+        }
+        /** Returns the number of characters the synopsis heading will take on the same line as the synopsis.
+         * @return the number of characters the synopsis heading will take on the same line as the synopsis.
+         * @see #detailedSynopsis(int, Comparator, boolean)
+         */
+        public int synopsisHeadingLength() {
+            String[] lines = Ansi.OFF.new Text(synopsisHeading).toString().split("\\r?\\n|\\r|%n", -1);
+            return lines[lines.length - 1].length();
         }
         /**
          * <p>Returns a description of the {@linkplain Option options} supported by the application.
@@ -2318,7 +2350,7 @@ public class CommandLine {
          * @return the specified StringBuilder */
         public static StringBuilder join(Ansi ansi, String[] values, StringBuilder sb, Object... params) {
             if (values != null) {
-                TextTable table = new TextTable(ansi, 80);
+                TextTable table = new TextTable(ansi, usageHelpWidth);
                 table.indentWrappedLines = 0;
                 for (String summaryLine : values) {
                     table.addRowValues(ansi.new Text(String.format(summaryLine, params)));
@@ -2426,7 +2458,7 @@ public class CommandLine {
             int commandLength = maxLength(commands.keySet());
             Help.TextTable textTable = new Help.TextTable(ansi(),
                     new Help.Column(commandLength + 2, 2, Help.Column.Overflow.SPAN),
-                    new Help.Column(80 - (commandLength + 2), 2, Help.Column.Overflow.WRAP));
+                    new Help.Column(usageHelpWidth - (commandLength + 2), 2, Help.Column.Overflow.WRAP));
 
             for (Map.Entry<String, Help> entry : commands.entrySet()) {
                 Help command = entry.getValue();
@@ -2448,6 +2480,11 @@ public class CommandLine {
                 result.append((i > offset) ? separator : "").append(names[i]);
             }
             return result.toString();
+        }
+        private static String spaces(int length) {
+            char[] buff = new char[length];
+            Arrays.fill(buff, ' ');
+            return new String(buff);
         }
 
         /** Returns a {@code Layout} instance configured with the user preferences captured in this Help instance.
@@ -2946,11 +2983,11 @@ public class CommandLine {
             public TextTable(Ansi ansi) {
                 // "* -c, --create                Creates a ...."
                 this(ansi, new Column[] {
-                            new Column(2,  0, TRUNCATE),   // "*"
-                            new Column(2,  0, TRUNCATE),   // "-c"
-                            new Column(1,  0, TRUNCATE),   // ","
-                            new Column(24, 1, SPAN),  // " --create"
-                            new Column(51, 1, WRAP) // " Creates a ..."
+                            new Column(2,                                        0, TRUNCATE), // "*"
+                            new Column(2,                                        0, TRUNCATE), // "-c"
+                            new Column(1,                                        0, TRUNCATE), // ","
+                            new Column(optionsColumnWidth - 2 - 2 - 1       , 1, SPAN),  // " --create"
+                            new Column(usageHelpWidth - optionsColumnWidth, 1, WRAP) // " Creates a ..."
                     });
             }
 
@@ -3115,7 +3152,7 @@ public class CommandLine {
              * @return the specified StringBuilder object (to allow method chaining and a more fluid API) */
             public StringBuilder toString(StringBuilder text) {
                 int columnCount = this.columns.length;
-                StringBuilder row = new StringBuilder(80);
+                StringBuilder row = new StringBuilder(usageHelpWidth);
                 for (int i = 0; i < columnValues.size(); i++) {
                     Text column = columnValues.get(i);
                     row.append(column.toString());

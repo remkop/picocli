@@ -240,7 +240,8 @@ public class CustomLayoutDemo implements Runnable {
         }
         StringBuilder sb = new StringBuilder();
         Help help = new Help(new Netstat(), ansi);
-        sb.append(help.header()).append(help.detailedSynopsis(null, false));
+        help.synopsisHeading = "";
+        sb.append(help.header()).append(help.detailedSynopsis(0, null, false));
         sb.append(System.getProperty("line.separator"));
 
         TextTable textTable = new TextTable(ansi,

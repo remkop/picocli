@@ -550,7 +550,7 @@ public class CommandLineHelpTest {
             @Option(names = {"--help", "-h"}, hidden = true) boolean helpRequested;
         }
         Help help = new Help(new App(), Help.Ansi.OFF);
-        assertEquals("<main class> [OPTIONS]" + LINESEP, help.synopsis());
+        assertEquals("<main class> [OPTIONS]" + LINESEP, help.synopsis(0));
     }
 
     @Test
@@ -562,7 +562,7 @@ public class CommandLineHelpTest {
             @Option(names = {"--help", "-h"}, hidden = true) boolean helpRequested;
         }
         Help help = new Help(new App(), Help.defaultColorScheme(Help.Ansi.ON));
-        assertEquals(Help.Ansi.ON.new Text("@|bold <main class>|@ [OPTIONS]" + LINESEP).toString(), help.synopsis());
+        assertEquals(Help.Ansi.ON.new Text("@|bold <main class>|@ [OPTIONS]" + LINESEP).toString(), help.synopsis(0));
     }
 
     @Test
@@ -575,7 +575,7 @@ public class CommandLineHelpTest {
             @Parameters File[] files;
         }
         Help help = new Help(new App(), Help.Ansi.OFF);
-        assertEquals("<main class> [OPTIONS] [<files>...]" + LINESEP, help.synopsis());
+        assertEquals("<main class> [OPTIONS] [<files>...]" + LINESEP, help.synopsis(0));
     }
 
     @Test
@@ -588,7 +588,7 @@ public class CommandLineHelpTest {
             @Parameters File[] files;
         }
         Help help = new Help(new App(), Help.defaultColorScheme(Help.Ansi.ON));
-        assertEquals(Help.Ansi.ON.new Text("@|bold <main class>|@ [OPTIONS] [@|yellow <files>|@...]" + LINESEP).toString(), help.synopsis());
+        assertEquals(Help.Ansi.ON.new Text("@|bold <main class>|@ [OPTIONS] [@|yellow <files>|@...]" + LINESEP).toString(), help.synopsis(0));
     }
 
     @Test
@@ -599,7 +599,7 @@ public class CommandLineHelpTest {
             @Option(names = {"--help", "-h"}, hidden = true) boolean helpRequested;
         }
         Help help = new Help(new App(), Help.Ansi.OFF);
-        assertEquals("<main class> [-v] [-c=<count> [<count>...]]" + LINESEP, help.synopsis());
+        assertEquals("<main class> [-v] [-c=<count> [<count>...]]" + LINESEP, help.synopsis(0));
     }
 
     @Test
@@ -611,7 +611,7 @@ public class CommandLineHelpTest {
         }
         Help help = new Help(new App(), Help.defaultColorScheme(Help.Ansi.ON));
         assertEquals(Help.Ansi.ON.new Text("@|bold <main class>|@ [@|yellow -v|@] [@|yellow -c|@=@|italic <count>|@ [@|italic <count>|@...]]" + LINESEP),
-                help.synopsis());
+                help.synopsis(0));
     }
 
     @Test
@@ -622,7 +622,7 @@ public class CommandLineHelpTest {
             @Option(names = {"--help", "-h"}, hidden = true) boolean helpRequested;
         }
         Help help = new Help(new App(), Help.Ansi.OFF);
-        assertEquals("<main class> [-v] [-c [<count>]]" + LINESEP, help.synopsis());
+        assertEquals("<main class> [-v] [-c [<count>]]" + LINESEP, help.synopsis(0));
     }
 
     @Test
@@ -633,7 +633,7 @@ public class CommandLineHelpTest {
             @Option(names = {"--help", "-h"}, hidden = true) boolean helpRequested;
         }
         Help help = new Help(new App(), Help.defaultColorScheme(Help.Ansi.ON));
-        assertEquals(Help.Ansi.ON.new Text("@|bold <main class>|@ [@|yellow -v|@] [@|yellow -c|@ [@|italic <count>|@]]" + LINESEP), help.synopsis());
+        assertEquals(Help.Ansi.ON.new Text("@|bold <main class>|@ [@|yellow -v|@] [@|yellow -c|@ [@|italic <count>|@]]" + LINESEP), help.synopsis(0));
     }
 
     @Test
@@ -644,7 +644,7 @@ public class CommandLineHelpTest {
             @Option(names = {"--help", "-h"}, hidden = true) boolean helpRequested;
         }
         Help help = new Help(new App(), Help.Ansi.OFF);
-        assertEquals("<main class> [-v] -c=<count>" + LINESEP, help.synopsis());
+        assertEquals("<main class> [-v] -c=<count>" + LINESEP, help.synopsis(0));
     }
 
     @Test
@@ -655,7 +655,7 @@ public class CommandLineHelpTest {
             @Option(names = {"--help", "-h"}, hidden = true) boolean helpRequested;
         }
         Help help = new Help(new App(), Help.defaultColorScheme(Help.Ansi.ON));
-        assertEquals(Help.Ansi.ON.new Text("@|bold <main class>|@ [@|yellow -v|@] @|yellow -c|@=@|italic <count>|@" + LINESEP), help.synopsis());
+        assertEquals(Help.Ansi.ON.new Text("@|bold <main class>|@ [@|yellow -v|@] @|yellow -c|@=@|italic <count>|@" + LINESEP), help.synopsis(0));
     }
 
     @Test
@@ -666,7 +666,7 @@ public class CommandLineHelpTest {
             @Option(names = {"--help", "-h"}, hidden = true) boolean helpRequested;
         }
         Help help = new Help(new App(), Help.Ansi.OFF);
-        assertEquals("<main class> [-v] [-c <count>]" + LINESEP, help.synopsis());
+        assertEquals("<main class> [-v] [-c <count>]" + LINESEP, help.synopsis(0));
     }
 
     @Test
@@ -677,7 +677,7 @@ public class CommandLineHelpTest {
             @Option(names = {"--help", "-h"}, hidden = true) boolean helpRequested;
         }
         Help help = new Help(new App(), Help.Ansi.OFF);
-        assertEquals("<main class> [-v] [-c[=<count>]]" + LINESEP, help.synopsis());
+        assertEquals("<main class> [-v] [-c[=<count>]]" + LINESEP, help.synopsis(0));
     }
 
     @Test
@@ -688,7 +688,7 @@ public class CommandLineHelpTest {
             @Option(names = {"--help", "-h"}, hidden = true) boolean helpRequested;
         }
         Help help = new Help(new App(), Help.Ansi.OFF);
-        assertEquals("<main class> [-v] [-c[=<count>...]]" + LINESEP, help.synopsis());
+        assertEquals("<main class> [-v] [-c[=<count>...]]" + LINESEP, help.synopsis(0));
     }
 
     @Test
@@ -699,7 +699,7 @@ public class CommandLineHelpTest {
             @Option(names = {"--help", "-h"}, hidden = true) boolean helpRequested;
         }
         Help help = new Help(new App(), Help.Ansi.OFF);
-        assertEquals("<main class> [-v] [-c=<count> [<count>...]]" + LINESEP, help.synopsis());
+        assertEquals("<main class> [-v] [-c=<count> [<count>...]]" + LINESEP, help.synopsis(0));
     }
 
     @Test
@@ -711,7 +711,7 @@ public class CommandLineHelpTest {
             @Parameters File[] files;
         }
         Help help = new Help(new App(), Help.Ansi.OFF);
-        assertEquals("<main class> [-v] [-c:<count>] [<files>...]" + LINESEP, help.synopsis());
+        assertEquals("<main class> [-v] [-c:<count>] [<files>...]" + LINESEP, help.synopsis(0));
     }
 
     @Test
@@ -724,7 +724,7 @@ public class CommandLineHelpTest {
         }
         Help help = new Help(new App(), Help.defaultColorScheme(Help.Ansi.ON));
         assertEquals(Help.Ansi.ON.new Text("@|bold <main class>|@ [@|yellow -v|@] [@|yellow -c|@:@|italic <count>|@] [@|yellow <files>|@...]" + LINESEP),
-                help.synopsis());
+                help.synopsis(0));
     }
 
     @Test
@@ -736,7 +736,7 @@ public class CommandLineHelpTest {
             @Parameters(paramLabel = "FILE") File[] files;
         }
         Help help = new Help(new App(), Help.Ansi.OFF);
-        assertEquals("<main class> [-v] [-c=<count>] [FILE...]" + LINESEP, help.synopsis());
+        assertEquals("<main class> [-v] [-c=<count>] [FILE...]" + LINESEP, help.synopsis(0));
     }
 
     @Test
@@ -749,7 +749,7 @@ public class CommandLineHelpTest {
         }
         Help help = new Help(new App(), Help.defaultColorScheme(Help.Ansi.ON));
         assertEquals(Help.Ansi.ON.new Text("@|bold <main class>|@ [@|yellow -v|@] [@|yellow -c|@=@|italic <count>|@] [@|yellow FILE|@...]" + LINESEP),
-                help.synopsis());
+                help.synopsis(0));
     }
 
     @Test
@@ -761,7 +761,7 @@ public class CommandLineHelpTest {
             @Parameters(paramLabel = "FILE", arity = "1..*") File[] files;
         }
         Help help = new Help(new App(), Help.Ansi.OFF);
-        assertEquals("<main class> [-v] [-c=<count>] FILE [FILE...]" + LINESEP, help.synopsis());
+        assertEquals("<main class> [-v] [-c=<count>] FILE [FILE...]" + LINESEP, help.synopsis(0));
     }
 
     @Test
@@ -774,7 +774,7 @@ public class CommandLineHelpTest {
         }
         Help help = new Help(new App(), Help.Ansi.ON);
         assertEquals(Help.Ansi.ON.new Text("@|bold <main class>|@ [@|yellow -v|@] [@|yellow -c|@=@|italic <count>|@] @|yellow FILE|@ [@|yellow FILE|@...]" + LINESEP),
-                help.synopsis());
+                help.synopsis(0));
     }
 
     @Test
@@ -786,7 +786,7 @@ public class CommandLineHelpTest {
             @Option(names = {"--count", "-c"}, paramLabel = "COUNT") int count;
         }
         Help help = new Help(new App(), Help.Ansi.OFF);
-        assertEquals("<main class> [-avx] [-c=COUNT]" + LINESEP, help.synopsis());
+        assertEquals("<main class> [-avx] [-c=COUNT]" + LINESEP, help.synopsis(0));
     }
 
     @Test
@@ -798,7 +798,7 @@ public class CommandLineHelpTest {
             @Option(names = {"--count", "-c"}, paramLabel = "COUNT") int count;
         }
         Help help = new Help(new App(), Help.Ansi.OFF);
-        assertEquals("<main class> -avx [-c=COUNT]" + LINESEP, help.synopsis());
+        assertEquals("<main class> -avx [-c=COUNT]" + LINESEP, help.synopsis(0));
     }
 
     @Test
@@ -813,7 +813,7 @@ public class CommandLineHelpTest {
             @Option(names = {"--count", "-c"}, paramLabel = "COUNT") int count;
         }
         Help help = new Help(new App(), Help.Ansi.OFF);
-        assertEquals("<main class> -AVX [-avx] [-c=COUNT]" + LINESEP, help.synopsis());
+        assertEquals("<main class> -AVX [-avx] [-c=COUNT]" + LINESEP, help.synopsis(0));
     }
 
     @Test
@@ -829,7 +829,42 @@ public class CommandLineHelpTest {
         }
         Help help = new Help(new App(), Help.defaultColorScheme(Help.Ansi.ON));
         assertEquals(Help.Ansi.ON.new Text("@|bold <main class>|@ @|yellow -AVX|@ [@|yellow -avx|@] [@|yellow -c|@=@|italic COUNT|@]" + LINESEP),
-                help.synopsis());
+                help.synopsis(0));
+    }
+
+    @Test
+    public void testSynopsis_firstLineLengthAdjustedForSynopsisHeading() throws Exception {
+        //Usage: small-test-program [-acorv!?] [--version] [-h <number>] [-p <file>|<folder>] [-d
+//                 <folder> [<folder>]] [-i <includePattern>
+//                 [<includePattern>...]]
+        @CommandLine.Command(name="small-test-program", sortOptions = false, separator = " ")
+        class App {
+            @Option(names = "-a") boolean a;
+            @Option(names = "-c") boolean c;
+            @Option(names = "-o") boolean o;
+            @Option(names = "-r") boolean r;
+            @Option(names = "-v") boolean v;
+            @Option(names = "-!") boolean exclamation;
+            @Option(names = "-?") boolean question;
+            @Option(names = {"--version"}) boolean version;
+            @Option(names = {"--handle", "-h"}) int number;
+            @Option(names = {"--ppp", "-p"}, paramLabel = "<file>|<folder>") File f;
+            @Option(names = {"--ddd", "-d"}, paramLabel = "<folder>", arity="1..2") File[] d;
+            @Option(names = {"--include", "-i"}, paramLabel = "<includePattern>") String pattern;
+        }
+        Help help = new Help(new App(), Help.Ansi.OFF);
+        String expected = "" +
+                "Usage: small-test-program [-!?acorv] [--version] [-h <number>] [-i" + LINESEP +
+                "                          <includePattern>] [-p <file>|<folder>] [-d <folder>" + LINESEP +
+                "                          [<folder>]]" + LINESEP;
+        assertEquals(expected, help.synopsisHeading() + help.synopsis(help.synopsisHeadingLength()));
+
+        help.synopsisHeading = "Usage:%n";
+        expected = "" +
+                "Usage:" + LINESEP +
+                "small-test-program [-!?acorv] [--version] [-h <number>] [-i <includePattern>]" + LINESEP +
+                "                   [-p <file>|<folder>] [-d <folder> [<folder>]]" + LINESEP;
+        assertEquals(expected, help.synopsisHeading() + help.synopsis(help.synopsisHeadingLength()));
     }
 
     @Test
@@ -847,7 +882,7 @@ public class CommandLineHelpTest {
                 "                [--fourth-long-option-name=<fourth-long-option-value>]%n" +
                 "                [--long-option-name=<long-option-value>]%n" +
                 "                [--third-long-option-name=<third-long-option-value>]%n"),
-                help.synopsis());
+                help.synopsis(0));
     }
 
     @Test
@@ -865,7 +900,7 @@ public class CommandLineHelpTest {
                 "                [--fourth-long-option-name=<fourth-long-option-value>]%n" +
                 "                [--long-option@-name=<long-option-valu@@e>]%n" +
                 "                [--third-long-option-name=<third-long-option-value>]%n"),
-                help.synopsis());
+                help.synopsis(0));
     }
 
     @Test
@@ -883,7 +918,7 @@ public class CommandLineHelpTest {
                         "                [@|yellow --fourth-long-option-name|@=@|italic <fourth-long-option-value>|@]%n" +
                         "                [@|yellow --long-option@-name|@=@|italic <long-option-valu@@e>|@]%n" +
                         "                [@|yellow --third-long-option-name|@=@|italic <third-long-option-value>|@]%n")),
-                help.synopsis());
+                help.synopsis(0));
     }
 
     @Test
@@ -899,7 +934,7 @@ public class CommandLineHelpTest {
                 "<the-app> --number=NUMBER --other-option=<aargh>%n" +
                 "          --more=OTHER --and-other-option=<aargh>%n" +
                 "<the-app> --number=NUMBER --and-other-option=<aargh>%n"),
-                help.synopsis());
+                help.synopsis(0));
     }
     @Test
     public void testTextTable() {
@@ -1076,7 +1111,8 @@ public class CommandLineHelpTest {
         }
         String actual = usageString(new App(), Help.Ansi.OFF);
         String expected = String.format(
-                "Usage: <main class> <host1> <port1> <host2> <port2range> [<port2range>] [<files>...]%n" +
+                "Usage: <main class> <host1> <port1> <host2> <port2range> [<port2range>]%n" +
+                "                    [<files>...]%n" +
                 "      host1                   source host%n" +
                 "      port1                   source port%n" +
                 "      host2                   destination host%n" +
@@ -1100,10 +1136,10 @@ public class CommandLineHelpTest {
         class EmptySub extends Base {}
         Help help = new Help(new EmptySub());
         assertEquals("base", help.commandName);
-        assertEquals(String.format("cust%n"), help.synopsis());
+        assertEquals(String.format("cust%n"), help.synopsis(0));
         assertEquals(String.format("cust%n"), help.customSynopsis());
         assertEquals(String.format("base%n"), help.abbreviatedSynopsis());
-        assertEquals(String.format("base%n"), help.detailedSynopsis(null, true));
+        assertEquals(String.format("base%n"), help.detailedSynopsis(0,null, true));
         assertEquals("abcd", help.synopsisHeading);
         assertEquals("", help.commandList());
         assertEquals("c o m m a n d s", help.commandListHeading);
@@ -1140,10 +1176,10 @@ public class CommandLineHelpTest {
         class FullBase extends EmptyBase{ }
         Help help = new Help(new FullBase());
         assertEquals("base", help.commandName);
-        assertEquals(String.format("cust%n"), help.synopsis());
+        assertEquals(String.format("cust%n"), help.synopsis(0));
         assertEquals(String.format("cust%n"), help.customSynopsis());
         assertEquals(String.format("base%n"), help.abbreviatedSynopsis());
-        assertEquals(String.format("base%n"), help.detailedSynopsis(null, true));
+        assertEquals(String.format("base%n"), help.detailedSynopsis(0, null, true));
         assertEquals("abcd", help.synopsisHeading);
         assertEquals("", help.commandList());
         assertEquals("c o m m a n d s", help.commandListHeading);
@@ -1175,10 +1211,10 @@ public class CommandLineHelpTest {
         class FullSub extends Base{ }
         Help help = new Help(new FullSub());
         assertEquals("sub", help.commandName);
-        assertEquals(String.format("subcust%n"), help.synopsis());
+        assertEquals(String.format("subcust%n"), help.synopsis(0));
         assertEquals(String.format("subcust%n"), help.customSynopsis());
         assertEquals(String.format("sub%n"), help.abbreviatedSynopsis());
-        assertEquals(String.format("sub%n"), help.detailedSynopsis(null, true));
+        assertEquals(String.format("sub%n"), help.detailedSynopsis(0,null, true));
         assertEquals("xyz", help.synopsisHeading);
         assertEquals("", help.commandList());
         assertEquals("subc o m m a n d s", help.commandListHeading);
@@ -1254,7 +1290,7 @@ public class CommandLineHelpTest {
             @Parameters(index = "0") String param0;
         }
         Help help = new Help(new WithParams());
-        assertEquals(format("<main class> <param0> <param1>%n"), help.synopsis());
+        assertEquals(format("<main class> <param0> <param1>%n"), help.synopsis(0));
     }
 
     @Test
@@ -1268,7 +1304,7 @@ public class CommandLineHelpTest {
             @Parameters(index = "2") String param2;
         }
         Help help = new Help(new SubWithParams());
-        assertEquals(format("<main class> <param0> <param1> <param2> <param3>%n"), help.synopsis());
+        assertEquals(format("<main class> <param0> <param1> <param2> <param3>%n"), help.synopsis(0));
     }
 
     @Test
@@ -1516,14 +1552,14 @@ public class CommandLineHelpTest {
         Help.Ansi ansi = Help.Ansi.ON;
         // default color scheme
         assertEquals(ansi.new Text("@|bold <main class>|@ [@|yellow -v|@] [@|yellow -c|@=@|italic <count>|@] @|yellow FILE|@ [@|yellow FILE|@...]" + LINESEP),
-                new Help(new App(), ansi).synopsis());
+                new Help(new App(), ansi).synopsis(0));
 
         System.setProperty("picocli.color.commands", "blue");
         System.setProperty("picocli.color.options", "green");
         System.setProperty("picocli.color.parameters", "cyan");
         System.setProperty("picocli.color.optionParams", "magenta");
         assertEquals(ansi.new Text("@|blue <main class>|@ [@|green -v|@] [@|green -c|@=@|magenta <count>|@] @|cyan FILE|@ [@|cyan FILE|@...]" + LINESEP),
-                new Help(new App(), ansi).synopsis());
+                new Help(new App(), ansi).synopsis(0));
     }
 
     @Test
@@ -1542,14 +1578,14 @@ public class CommandLineHelpTest {
                 .optionParams(Style.bg_green);
         // default color scheme
         assertEquals(ansi.new Text("@|faint,bg(magenta) <main class>|@ [@|bg(red) -v|@] [@|bg(red) -c|@=@|bg(green) <count>|@] @|reverse FILE|@ [@|reverse FILE|@...]" + LINESEP),
-                new Help(new App(), explicit).synopsis());
+                new Help(new App(), explicit).synopsis(0));
 
         System.setProperty("picocli.color.commands", "blue");
         System.setProperty("picocli.color.options", "blink");
         System.setProperty("picocli.color.parameters", "red");
         System.setProperty("picocli.color.optionParams", "magenta");
         assertEquals(ansi.new Text("@|blue <main class>|@ [@|blink -v|@] [@|blink -c|@=@|magenta <count>|@] @|red FILE|@ [@|red FILE|@...]" + LINESEP),
-                new Help(new App(), explicit).synopsis());
+                new Help(new App(), explicit).synopsis(0));
     }
 
 }
