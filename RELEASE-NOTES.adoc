@@ -2,6 +2,7 @@
 
 == 0.9.8 - Bugfix and enhancements release for public review. API may change.
 
+* #160 Added `@since` version in javadoc for recent API changes.
 * #157 API change: added `CommandLine::getParent` method to get the parent command of a subcommand. Thanks to https://github.com/nagkumar[nagkumar].
 * #152 Added support for registering subcommands declaratively with the `@Command(subcommands={...})` annotation. Thanks to https://github.com/nagkumar[nagkumar].
 * #146 Show underlying error when type conversion fails
