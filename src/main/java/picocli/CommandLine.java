@@ -177,6 +177,7 @@ public class CommandLine {
      *          This may be a {@code CommandLine} instance with its own (nested) subcommands
      * @return this CommandLine object, to allow method chaining
      * @see #registerConverter(Class, ITypeConverter)
+     * @since 0.9.7
      */
     public CommandLine addSubcommand(String name, Object command) {
         CommandLine commandLine = toCommandLine(command);
@@ -185,7 +186,9 @@ public class CommandLine {
         return this;
     }
     /** Returns a map with the subcommands {@linkplain #addSubcommand(String, Object) registered} on this instance.
-     * @return a map with the registered subcommands */
+     * @return a map with the registered subcommands
+     * @since 0.9.7
+     */
     public Map<String, CommandLine> getSubcommands() {
         return new LinkedHashMap<String, CommandLine>(interpreter.commands);
     }
@@ -194,6 +197,7 @@ public class CommandLine {
      * @return the command that this is a subcommand of, or {@code null} if this is a top-level command
      * @see #addSubcommand(String, Object)
      * @see Command#subcommands()
+     * @since 0.9.8
      */
     public CommandLine getParent() {
         return parent;
@@ -202,6 +206,7 @@ public class CommandLine {
     /**
      * Returns the annotated object that this {@code CommandLine} instance was constructed with.
      * @return the annotated object that this {@code CommandLine} instance was constructed with
+     * @since 0.9.7
      */
     public Object getCommand() {
         return interpreter.command;
@@ -211,6 +216,7 @@ public class CommandLine {
      * The default is {@code false} and a {@link OverwrittenOptionException} is thrown if this happens.
      * When {@code true}, the last specified value is retained.
      * @return {@code true} if options for single-value fields can be specified multiple times on the command line, {@code false} otherwise
+     * @since 0.9.7
      */
     public boolean isOverwrittenOptionsAllowed() {
         return overwrittenOptionsAllowed;
@@ -223,6 +229,7 @@ public class CommandLine {
      * subcommands, call the setter last, after adding subcommands.</p>
      * @param newValue the new setting
      * @return this {@code CommandLine} object, to allow method chaining
+     * @since 0.9.7
      */
     public CommandLine setOverwrittenOptionsAllowed(boolean newValue) {
         this.overwrittenOptionsAllowed = newValue;
@@ -237,6 +244,7 @@ public class CommandLine {
      * When {@code true}, the last unmatched arguments are available via the {@link #getUnmatchedArguments()} method.
      * @return {@code true} if the end use may specify unmatched arguments on the command line, {@code false} otherwise
      * @see #getUnmatchedArguments()
+     * @since 0.9.7
      */
     public boolean isUnmatchedArgumentsAllowed() {
         return unmatchedArgumentsAllowed;
@@ -249,6 +257,7 @@ public class CommandLine {
      * subcommands, call the setter last, after adding subcommands.</p>
      * @param newValue the new setting
      * @return this {@code CommandLine} object, to allow method chaining
+     * @since 0.9.7
      */
     public CommandLine setUnmatchedArgumentsAllowed(boolean newValue) {
         this.unmatchedArgumentsAllowed = newValue;
@@ -261,6 +270,7 @@ public class CommandLine {
     /** Returns the list of unmatched command line arguments, if any.
      * @return the list of unmatched command line arguments or an empty list
      * @see #isUnmatchedArgumentsAllowed()
+     * @since 0.9.7
      */
     public List<String> getUnmatchedArguments() {
         return unmatchedArguments;
@@ -284,6 +294,7 @@ public class CommandLine {
      * @return the specified annotated object
      * @throws IllegalArgumentException if the specified command object does not have a {@link Command}, {@link Option} or {@link Parameters} annotation
      * @throws ParameterException if the specified command line arguments are invalid
+     * @since 0.9.7
      */
     public static <T> T populateCommand(T command, String... args) {
         CommandLine cli = toCommandLine(command);
@@ -872,6 +883,7 @@ public class CommandLine {
          * </pre>
          * @return the declaratively registered subcommands of this command, or an empty array if none
          * @see CommandLine#addSubcommand(String, Object)
+         * @since 0.9.8
          */
         Class<?>[] subcommands() default {};
 
@@ -1015,7 +1027,9 @@ public class CommandLine {
          */
         K convert(String value) throws Exception;
     }
-    /** Describes the number of parameters required and accepted by an option or a positional parameter. */
+    /** Describes the number of parameters required and accepted by an option or a positional parameter.
+     * @since 0.9.7
+     */
     public static class Range implements Comparable<Range> {
         /** Required number of parameters for an option or positional parameter. */
         public final int min;
