@@ -1205,34 +1205,17 @@ Declaratively, subcommands can be nested by specifying the `subcommands` attribu
     ChildCommand3.class })
 class MainCommand { }
 
-@Command(name = "cmd1")
-class ChildCommand1 { }
-
-@Command(name = "cmd2")
-class ChildCommand2 { }
-
 @Command(name = "cmd3", subcommands = {
     GrandChild3Command1.class,
     GrandChild3Command2.class,
     GrandChild3Command3.class })
 class ChildCommand3 { }
 
-@Command(name = "cmd3sub1")
-class GrandChild3Command1 { }
-
-@Command(name = "cmd3sub2")
-class GrandChild3Command2 { }
-
 @Command(name = "cmd3sub3", subcommands = {
     GreatGrandChild3Command3_1.class,
     GreatGrandChild3Command3_2.class })
 class GrandChild3Command3 { }
-
-@Command(name = "cmd3sub3sub1")
-class GreatGrandChild3Command3_1 { }
-
-@Command(name = "cmd3sub3sub2")
-class GreatGrandChild3Command3_2 { }
+...
 ----
 
 
