@@ -1,10 +1,10 @@
 group 'info.picocli'
 description 'Annotation-based Java command line parser. Usage help with ANSI styles and colors. Easily included as source to avoid adding a dependency.'
-version '0.9.8'
+version '1.0.0-SNAPSHOT'
 
 // for bumpVersion task
-def oldVersion = '0\\.9\\.8-SNAPSHOT'
-def oldRevdate = '2017\\-06\\-08'
+def oldVersion = '0\\.9\\.8'
+def oldRevdate = '2017\\-08\\-07'
 def revDate    = '2017-08-07'
 
 buildscript {
@@ -82,9 +82,11 @@ artifacts {
 }
 task bumpVersion {
     doLast {
-        ant.replaceregexp(match: oldVersion, replace: version, flags: 'g', byline: true, encoding: 'UTF8') {
+        ant.replaceregexp(match: "\"$oldVersion\"", replace: "\"$version\"", flags: 'g', byline: true, encoding: 'UTF8') {
             fileset(dir: 'src/main/java/picocli', includes: 'CommandLine.java')
             fileset(dir: 'src/test/java/picocli', includes: 'CommandLineTest.java')
+        }
+        ant.replaceregexp(match: ":revnumber: $oldVersion", replace: ":revnumber: $version", flags: 'g', byline: true, encoding: 'UTF8') {
             fileset(dir: 'docs', includes: 'index.adoc')
         }
         ant.replaceregexp(match: oldRevdate, replace: revDate, flags: 'g', byline: true, encoding: 'UTF8') {

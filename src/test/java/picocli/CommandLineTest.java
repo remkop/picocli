@@ -91,7 +91,7 @@ import static picocli.CommandLine.*;
 public class CommandLineTest {
     @Test
     public void testVersion() {
-        assertEquals("0.9.8", CommandLine.VERSION);
+        assertEquals("1.0.0-SNAPSHOT", CommandLine.VERSION);
     }
 
     private static class SupportedTypes {
