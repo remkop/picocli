@@ -1235,7 +1235,7 @@ public class CommandLine {
             return (result == 0) ? max - other.max : result;
         }
     }
-    private static void init(Class<?> cls,
+    static void init(Class<?> cls,
                               List<Field> requiredFields,
                               Map<String, Field> optionName2Field,
                               Map<Character, Field> singleCharOption2Field,

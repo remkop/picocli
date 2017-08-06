@@ -62,6 +62,9 @@ public class Demo implements Runnable {
         CommandLine.run(new Demo(), System.err, args);
     }
 
+    @Option(names = {"-a", "--autocomplete"}, description = "Generate sample autocomplete script for git")
+    private boolean autocomplete;
+
     @Option(names = {"-1", "--showUsageForSubcommandGitCommit"}, description = "Shows usage help for the git-commit subcommand")
     private boolean showUsageForSubcommandGitCommit;
 
@@ -173,7 +176,8 @@ public class Demo implements Runnable {
                 !showRgbColorPalette &&
                 !showUsageForMainCommand &&
                 !showUsageForSubcommandGitCommit &&
-                !showUsageForSubcommandGitStatus) {
+                !showUsageForSubcommandGitStatus &&
+                !autocomplete) {
             CommandLine.usage(this, System.err);
             return;
         }
@@ -185,6 +189,11 @@ public class Demo implements Runnable {
         if (showUsageForMainCommand)         { testUsageMainCommand(); }
         if (showUsageForSubcommandGitStatus) { testUsageSubCommandStatus(); }
         if (showUsageForSubcommandGitCommit) { testUsageSubCommandCommit(); }
+        if (autocomplete)                    { generateAutoCompleteScript(); }
+    }
+
+    private void generateAutoCompleteScript() {
+        System.out.println(AutoComplete.bash("git", mainCommand()));
     }
 
     private void showSimpleExampleUsage() {
