@@ -1,5 +1,10 @@
 = picocli Release Notes
 
+== 1.0.0 - (Work in progress) Public release
+
+* (Work in progress) #121 Added support for command line complete: picocli can generate bash completion scripts that generate completion matches based on `@Option` and `@Command` annotations.
+
+
 == 0.9.8 - Bugfix and enhancements release for public review. API may change.
 
 === Summary: improved version and usage help, improved subcommand support, bugfixes

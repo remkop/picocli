@@ -25,7 +25,7 @@ Works with Java 5 or higher (but is designed to facilitate the use of Java 8 lam
 * user manual: [http://picocli.info](http://picocli.info)
 * [API Javadoc](http://picocli.info/apidocs/)
 * [FAQ](https://github.com/remkop/picocli/wiki/FAQ)
-* [Releases](https://github.com/remkop/picocli/releases)
+* [Releases](https://github.com/remkop/picocli/releases) - latest: 0.9.8
 * [![Build Status](https://travis-ci.org/remkop/picocli.svg?branch=master)](https://travis-ci.org/remkop/picocli) 
 [![codecov](https://codecov.io/gh/remkop/picocli/branch/master/graph/badge.svg)](https://codecov.io/gh/remkop/picocli)
 
@@ -96,7 +96,11 @@ See the [source code](https://github.com/remkop/picocli/blob/master/src/test/jav
 
 ## API Changes
 
-Version [0.9.7](https://github.com/remkop/picocli/releases/tag/v0.9.7) has some breaking API changes.
+### [0.9.8](https://github.com/remkop/picocli/releases/tag/v0.9.8)
+Non-breaking changes to add better help support and better subcommand support.
+
+### [0.9.7](https://github.com/remkop/picocli/releases/tag/v0.9.7)
+Version 0.9.7 has some breaking API changes.
 
 **Better Groovy support**
 
