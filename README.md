@@ -43,7 +43,7 @@ public class Example {
     @Option(names = { "-v", "--verbose" }, description = "Be verbose.")
     private boolean verbose = false;
 
-    @Option(names = { "-h", "--help" }, help = true,
+    @Option(names = { "-h", "--help" }, usageHelp = true,
             description = "Displays this help message and quits.")
     private boolean helpRequested = false;
 

@@ -128,6 +128,8 @@ public class CommandLine {
     private boolean unmatchedArgumentsAllowed = false;
     private List<String> unmatchedArguments = new ArrayList<String>();
     private CommandLine parent;
+    private boolean usageHelpRequested;
+    private boolean versionHelpRequested;
 
     /**
      * Constructs a new {@code CommandLine} interpreter with the specified annotated object.
@@ -211,6 +213,12 @@ public class CommandLine {
     public Object getCommand() {
         return interpreter.command;
     }
+
+    /** Returns {@code true} if an option annotated with {@link Option#usageHelp()} was specified on the command line.  */
+    public boolean isUsageHelpRequested() { return usageHelpRequested; }
+
+    /** Returns {@code true} if an option annotated with {@link Option#versionHelp()} was specified on the command line.  */
+    public boolean isVersionHelpRequested() { return versionHelpRequested; }
 
     /** Returns whether options for single-value fields can be specified multiple times on the command line.
      * The default is {@code false} and a {@link OverwrittenOptionException} is thrown if this happens.
@@ -639,6 +647,40 @@ public class CommandLine {
         boolean help() default false;
 
         /**
+         * Set {@code usageHelp=true} if this option allows the user to request usage help. If this option is
+         * specified on the command line, picocli will not validate the remaining arguments (so no "missing required
+         * option" errors) and the {@link CommandLine#isUsageHelpRequested()} method will return {@code true}.
+         * <p>
+         * This attribute is useful for special options like help ({@code -h} and {@code --help} on unix,
+         * {@code -?} and {@code -Help} on Windows).
+         * </p>
+         * <p>
+         * Note that the {@link #parse(String...)} method will not print usage help documentation. It will only set
+         * the value of the annotated field. It is the responsibility of the caller to inspect the annotated fields
+         * and take the appropriate action.
+         * </p>
+         * @return whether this option allows the user to request usage help
+         */
+        boolean usageHelp() default false;
+
+        /**
+         * Set {@code versionHelp=true} if this option allows the user to request version information. If this option is
+         * specified on the command line, picocli will not validate the remaining arguments (so no "missing required
+         * option" errors) and the {@link CommandLine#isVersionHelpRequested()} method will return {@code true}.
+         * <p>
+         * This attribute is useful for special options like version ({@code -V} and {@code --version} on unix,
+         * {@code -Version} on Windows).
+         * </p>
+         * <p>
+         * Note that the {@link #parse(String...)} method will not print version information. It will only set
+         * the value of the annotated field. It is the responsibility of the caller to inspect the annotated fields
+         * and take the appropriate action.
+         * </p>
+         * @return whether this option allows the user to request version information
+         */
+        boolean versionHelp() default false;
+
+        /**
          * Description of this option, used when generating the usage documentation.
          * @return the description of this option
          */
@@ -865,15 +907,20 @@ public class CommandLine {
          * @see Help#commandName */
         String name() default "<main class>";
 
-        /** A list of classes to instantiate and register as subcommands. For example, this:
+        /** A list of classes to instantiate and register as subcommands. When registering subcommands declaratively
+         * like this, you don't need to call the {@link CommandLine#addSubcommand(String, Object)} method. For example, this:
          * <pre>
-         * &#064;Command(subcommands = { GitStatus.class, GitCommit.class, GitBranch.class })
+         * &#064;Command(subcommands = {
+         *         GitStatus.class,
+         *         GitCommit.class,
+         *         GitBranch.class })
          * public class Git { ... }
          *
          * CommandLine commandLine = new CommandLine(new Git());
          * </pre> is equivalent to this:
          * <pre>
-         * // no subcommands attribute
+         * // alternative: programmatically add subcommands.
+         * // NOTE: in this case there should be no `subcommands` attribute on the @Command annotation.
          * &#064;Command public class Git { ... }
          *
          * CommandLine commandLine = new CommandLine(new Git())
@@ -1320,6 +1367,9 @@ public class CommandLine {
         private void parse(List<CommandLine> parsedCommands, Stack<String> argumentStack, String[] originalArgs) {
             // first reset any state in case this CommandLine instance is being reused
             isHelpRequested = false;
+            CommandLine.this.versionHelpRequested = false;
+            CommandLine.this.usageHelpRequested = false;
+
             parsedCommands.add(CommandLine.this);
             List<Field> required = new ArrayList<Field>(requiredFields);
             Set<Field> initialized = new HashSet<Field>();
@@ -1333,7 +1383,7 @@ public class CommandLine {
                 String arg = offendingArgIndex >= 0 && offendingArgIndex < originalArgs.length ? originalArgs[offendingArgIndex] : "?";
                 throw ParameterException.create(ex, arg, argumentStack.size(), originalArgs);
             }
-            if (!isHelpRequested && !required.isEmpty()) {
+            if (!isAnyHelpRequested() && !required.isEmpty()) {
                 if (required.get(0).isAnnotationPresent(Option.class)) {
                     throw MissingParameterException.create(required);
                 } else {
@@ -1749,9 +1799,13 @@ public class CommandLine {
             throw new IllegalStateException(field + " has neither @Parameters nor @Option annotation");
         }
 
+        private boolean isAnyHelpRequested() { return isHelpRequested || versionHelpRequested || usageHelpRequested; }
+
         private void updateHelpRequested(Field field) {
             if (field.isAnnotationPresent(Option.class)) {
-                isHelpRequested |= field.getAnnotation(Option.class).help();
+                isHelpRequested                       |= field.getAnnotation(Option.class).help();
+                CommandLine.this.versionHelpRequested |= field.getAnnotation(Option.class).versionHelp();
+                CommandLine.this.usageHelpRequested   |= field.getAnnotation(Option.class).usageHelp();
             }
         }
 

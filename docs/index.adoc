@@ -82,7 +82,7 @@ class Tar {
     @Parameters(paramLabel = "FILE", description = "one ore more files to archive")
     File[] files;
 
-    @Option(names = { "-h", "--help" }, help = true, description = "display a help message")
+    @Option(names = { "-h", "--help" }, usageHelp = true, description = "display a help message")
     private boolean helpRequested = false;
 }
 ----
@@ -411,25 +411,47 @@ The following command line arguments would be accepted:
 == Help Options
 Options with the attribute `help = true` are special: if one of the command line arguments is a "help" option, picocli will stop parsing the remaining arguments and will not check for required options.
 
+Picocli 0.9.8 introduces two new option attributes, `versionHelp` and `usageHelp`.
+These also stop validation to prevent "missing required option" errors, but are more specific and are preferred over the generic `help` attribute.
+
 [source,java]
 ----
-@Option(names = {"-V", "--version"}, help = true, description = "display version info")
-boolean versionRequested;
+@Option(names = {"-V", "--version"}, versionHelp = true, description = "display version info")
+boolean versionInfoRequested;
 
-@Option(names = {"-h", "--help"}, help = true, description = "display this help message")
-boolean helpRequested;
+@Option(names = {"-h", "--help"}, usageHelp = true, description = "display this help message")
+boolean usageHelpRequested;
 ----
-This is suitable for options that should trigger the usage help message or application version information being shown on the console.
+Use these attributes for options that request the usage help message or version information to be shown on the console.
 
-It is the responsibility of the application to check the field and show the usage help message:
+CAUTION: Picocli does not automatically print a help message.
+(https://github.com/remkop/picocli/issues/161[This ticket] explains why not; feel free to add your comments.)
+It is the responsibility of the application to check the field and show the usage help message.
+
 [source,java]
 ----
 App app = CommandLine.populateCommand(new App(), args);
-if (app.helpRequested) {
+if (app.usageHelpRequested) {
    CommandLine.usage(new App(), System.err);
    return;
 }
 ----
+
+Since version 0.9.8, the `CommandLine` class offers two methods that allow external components to detect whether
+usage help or version information was requested (without inspecting the annotated domain object):
+
+* `CommandLine::isUsageHelpRequested` returns `true` if the parser matched an option annotated with `usageHelp=true`
+* `CommandLine::isVersionHelpRequested` returns `true` if the parser matched an option annotated with `versionHelp=true`
+
+[source,java]
+----
+List<CommandLine> parsedCommands = new CommandLine(new App()).parse(args);
+if (parsedCommands.get(0).isUsageHelpRequested()) {
+   parsedCommands.get(0).usage(System.err);
+   return;
+}
+----
+
 
 == Usage Help
 === Compact Example
@@ -463,7 +485,7 @@ class Cat {
   @Parameters(paramLabel = "FILE", description = "Files whose contents to display")
   List<File> files;
 
-  @Option(names = "--help", help = true, description = "display this help and exit")
+  @Option(names = "--help", usageHelp = true, description = "display this help and exit")
   boolean help;
 
   @Option(names = "-t",                 description = "equivalent to -vT")  boolean t;
@@ -1080,11 +1102,11 @@ The above usage help message is produced from the annotations on the class below
                       "high-level operations and full access to internals.",
         commandListHeading = "%nCommands:%n%nThe most commonly used git commands are:%n")
 class Git {
-  @Option(names = {"-V", "--version"}, help = true,
+  @Option(names = {"-V", "--version"}, versionHelp = true,
           description = "Prints version information and exits")
   private boolean versionRequested;
 
-  @Option(names = {"-h", "--help"}, help = true,
+  @Option(names = {"-h", "--help"}, usageHelp = true,
           description = "Prints this help message and exits")
   private boolean helpRequested;
 
@@ -1291,6 +1313,8 @@ OptionArg optionArg = CommandLine.populateCommand(new OptionArg(), "-f:output.tx
 assert optionArg.file.equals("output.txt");
 ----
 
+Declaratively set separators are used both when parsing and in the usage help message.
+
 Alternatively, the separator string can be changed programmatically with the `CommandLine.setSeparator(String separator)` method.
 For example:
 [source,java]
@@ -1303,6 +1327,8 @@ commandLine.parse("-f:output.txt");
 assert optionArg.file.equals("output.txt");
 ----
 
+Programmatically set separators are only used when parsing.
+Changing the value does not modify the usage help message.
 
 === Subclassing for Reuse
 Picocli will walk the class hierarchy to check for annotations, so you can declare common @Options and @Command attributes on a superclass and override these fields or attributes on a subclass.
@@ -1318,11 +1344,11 @@ The below example shows how common options like `help` and `version` can be decl
          commandListHeading   = "%nCommands:%n%n")
 public abstract class AbstractCommand {
 
-    @Option(names = { "-h", "-?", "--help" }, help = true,
+    @Option(names = { "-h", "-?", "--help" }, usageHelp = true,
             description = "give this help list")
     protected boolean helpRequested;
 
-    @Option(names = { "-V", "--version" }, help = true,
+    @Option(names = { "-V", "--version" }, versionHelp = true,
             description = "print program version")
     protected boolean versionRequested;
 }

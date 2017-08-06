@@ -825,7 +825,9 @@ public class CommandLineTest {
     }
 
     private static class RequiredField {
-        @Option(names = {"-h", "--help", "-?", "/?"}, help = true) boolean isHelpRequested;
+        @Option(names = {"-?", "/?"},        help = true)       boolean isHelpRequested;
+        @Option(names = {"-V", "--version"}, versionHelp= true) boolean versionHelp;
+        @Option(names = {"-h", "--help"},    usageHelp = true)  boolean usageHelp;
         @Option(names = "--required", required = true) private String required;
         @Parameters private String[] remainder;
     }
@@ -844,8 +846,38 @@ public class CommandLineTest {
     }
     @Test
     public void testNoErrorIfRequiredOptionNotSpecifiedWhenHelpRequested() {
-        RequiredField requiredField = CommandLine.populateCommand(new RequiredField(), "--help");
+        RequiredField requiredField = CommandLine.populateCommand(new RequiredField(), "-?");
         assertTrue("help requested", requiredField.isHelpRequested);
+    }
+    @Test
+    public void testNoErrorIfRequiredOptionNotSpecifiedWhenUsageHelpRequested() {
+        RequiredField requiredField = CommandLine.populateCommand(new RequiredField(), "--help");
+        assertTrue("usage help requested", requiredField.usageHelp);
+    }
+    @Test
+    public void testNoErrorIfRequiredOptionNotSpecifiedWhenVersionHelpRequested() {
+        RequiredField requiredField = CommandLine.populateCommand(new RequiredField(), "--version");
+        assertTrue("version info requested", requiredField.versionHelp);
+    }
+    @Test
+    public void testCommandLine_isUsageHelpRequested_trueWhenSpecified() {
+        List<CommandLine> parsedCommands = new CommandLine(new RequiredField()).parse("--help");
+        assertTrue("usage help requested", parsedCommands.get(0).isUsageHelpRequested());
+    }
+    @Test
+    public void testCommandLine_isVersionHelpRequested_trueWhenSpecified() {
+        List<CommandLine> parsedCommands = new CommandLine(new RequiredField()).parse("--version");
+        assertTrue("version info requested", parsedCommands.get(0).isVersionHelpRequested());
+    }
+    @Test
+    public void testCommandLine_isUsageHelpRequested_falseWhenNotSpecified() {
+        List<CommandLine> parsedCommands = new CommandLine(new RequiredField()).parse("--version");
+        assertFalse("usage help requested", parsedCommands.get(0).isUsageHelpRequested());
+    }
+    @Test
+    public void testCommandLine_isVersionHelpRequested_falseWhenNotSpecified() {
+        List<CommandLine> parsedCommands = new CommandLine(new RequiredField()).parse("--help");
+        assertFalse("version info requested", parsedCommands.get(0).isVersionHelpRequested());
     }
     @Test
     public void testMissingRequiredParams() {
@@ -957,7 +989,7 @@ public class CommandLineTest {
     }
     @Test
     public void testHelpRequestedFlagResetWhenParsing_staticMethod() {
-        RequiredField requiredField = CommandLine.populateCommand(new RequiredField(), "--help");
+        RequiredField requiredField = CommandLine.populateCommand(new RequiredField(), "-?");
         assertTrue("help requested", requiredField.isHelpRequested);
 
         requiredField.isHelpRequested = false;
@@ -974,7 +1006,7 @@ public class CommandLineTest {
     public void testHelpRequestedFlagResetWhenParsing_instanceMethod() {
         RequiredField requiredField = new RequiredField();
         CommandLine commandLine = new CommandLine(requiredField);
-        commandLine.parse("--help");
+        commandLine.parse("-?");
         assertTrue("help requested", requiredField.isHelpRequested);
 
         requiredField.isHelpRequested = false;
