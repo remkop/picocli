@@ -2,6 +2,8 @@
 
 == 0.9.8 - Bugfix and enhancements release for public review. API may change.
 
+=== Summary: improved version and usage help, improved subcommand support, bugfixes
+
 * #162 Added new Version Help section to user manual; added `version` attribute on `@Command`; added `CommandLine::printVersionHelp` convenience method to print version information from this annotation to the console
 * #145 Added `usageHelp` and `versionHelp` attributes on `@Option`; added `CommandLine::isUsageHelpRequested` and `CommandLine::isVersionHelpRequested` to allow external components to detect whether usage help or version information was requested (without inspecting the annotated domain object). Thanks to https://github.com/kakawait[kakawait].
 * #160 Added `@since` version in javadoc for recent API changes.
