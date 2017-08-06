@@ -513,8 +513,8 @@ table.CodeRay td.code>pre{padding:0}
 <div id="header">
 <h1>picocli - a mighty tiny command line interface</h1>
 <div class="details">
-<span id="revnumber">version 0.9.7,</span>
-<span id="revdate">2017-06-08</span>
+<span id="revnumber">version 0.9.8,</span>
+<span id="revdate">2017-08-07</span>
 </div>
 <div id="toc" class="toc2">
 <div id="toctitle">Features</div>
@@ -550,63 +550,65 @@ table.CodeRay td.code>pre{padding:0}
 </ul>
 </li>
 <li><a href="#_help_options">6. Help Options</a></li>
-<li><a href="#_usage_help">7. Usage Help</a>
+<li><a href="#_version_help">7. Version Help</a></li>
+<li><a href="#_usage_help">8. Usage Help</a>
 <ul class="sectlevel2">
-<li><a href="#_compact_example">7.1. Compact Example</a></li>
-<li><a href="#_command_name">7.2. Command Name</a></li>
-<li><a href="#_parameter_labels">7.3. Parameter Labels</a></li>
-<li><a href="#_unsorted_option_list">7.4. Unsorted Option List</a></li>
-<li><a href="#_abbreviated_synopsis">7.5. Abbreviated Synopsis</a></li>
-<li><a href="#_custom_synopsis">7.6. Custom Synopsis</a></li>
-<li><a href="#_header_and_footer">7.7. Header and Footer</a></li>
-<li><a href="#_section_headings">7.8. Section Headings</a></li>
-<li><a href="#_expanded_example">7.9. Expanded Example</a></li>
-<li><a href="#_option_parameter_separators">7.10. Option-Parameter Separators</a></li>
-<li><a href="#_hidden_options_and_parameters">7.11. Hidden Options and Parameters</a></li>
-<li><a href="#_show_default_values">7.12. Show Default Values</a></li>
-<li><a href="#_required_option_marker">7.13. Required-Option Marker</a></li>
+<li><a href="#_compact_example">8.1. Compact Example</a></li>
+<li><a href="#_command_name">8.2. Command Name</a></li>
+<li><a href="#_parameter_labels">8.3. Parameter Labels</a></li>
+<li><a href="#_unsorted_option_list">8.4. Unsorted Option List</a></li>
+<li><a href="#_abbreviated_synopsis">8.5. Abbreviated Synopsis</a></li>
+<li><a href="#_custom_synopsis">8.6. Custom Synopsis</a></li>
+<li><a href="#_header_and_footer">8.7. Header and Footer</a></li>
+<li><a href="#_section_headings">8.8. Section Headings</a></li>
+<li><a href="#_expanded_example">8.9. Expanded Example</a></li>
+<li><a href="#_option_parameter_separators">8.10. Option-Parameter Separators</a></li>
+<li><a href="#_hidden_options_and_parameters">8.11. Hidden Options and Parameters</a></li>
+<li><a href="#_show_default_values">8.12. Show Default Values</a></li>
+<li><a href="#_required_option_marker">8.13. Required-Option Marker</a></li>
 </ul>
 </li>
-<li><a href="#_ansi_colors_and_styles">8. ANSI Colors and Styles</a>
+<li><a href="#_ansi_colors_and_styles">9. ANSI Colors and Styles</a>
 <ul class="sectlevel2">
-<li><a href="#_colorized_example">8.1. Colorized Example</a></li>
-<li><a href="#_usage_help_with_styles_and_colors">8.2. Usage Help with Styles and Colors</a></li>
-<li><a href="#_more_colors">8.3. More Colors</a></li>
-<li><a href="#_configuring_fixed_elements">8.4. Configuring Fixed Elements</a></li>
-<li><a href="#_supported_platforms">8.5. Supported Platforms</a></li>
-<li><a href="#_forcing_ansi_on_off">8.6. Forcing ANSI On/Off</a></li>
+<li><a href="#_colorized_example">9.1. Colorized Example</a></li>
+<li><a href="#_usage_help_with_styles_and_colors">9.2. Usage Help with Styles and Colors</a></li>
+<li><a href="#_more_colors">9.3. More Colors</a></li>
+<li><a href="#_configuring_fixed_elements">9.4. Configuring Fixed Elements</a></li>
+<li><a href="#_supported_platforms">9.5. Supported Platforms</a></li>
+<li><a href="#_forcing_ansi_on_off">9.6. Forcing ANSI On/Off</a></li>
 </ul>
 </li>
-<li><a href="#_usage_help_api">9. Usage Help API</a>
+<li><a href="#_usage_help_api">10. Usage Help API</a>
 <ul class="sectlevel2">
-<li><a href="#_reordering_sections">9.1. Reordering Sections</a></li>
-<li><a href="#_custom_layout">9.2. Custom Layout</a></li>
+<li><a href="#_reordering_sections">10.1. Reordering Sections</a></li>
+<li><a href="#_custom_layout">10.2. Custom Layout</a></li>
 </ul>
 </li>
-<li><a href="#_subcommands">10. Subcommands</a>
+<li><a href="#_subcommands">11. Subcommands</a>
 <ul class="sectlevel2">
-<li><a href="#_registering_subcommands">10.1. Registering Subcommands</a></li>
-<li><a href="#_parsing_subcommands">10.2. Parsing Subcommands</a></li>
-<li><a href="#_usage_help_for_subcommands">10.3. Usage Help for Subcommands</a></li>
-<li><a href="#_nested_sub_subcommands">10.4. Nested sub-subcommands</a></li>
+<li><a href="#_registering_subcommands_programmatically">11.1. Registering Subcommands Programmatically</a></li>
+<li><a href="#_registering_subcommands_declaratively">11.2. Registering Subcommands Declaratively</a></li>
+<li><a href="#_parsing_subcommands">11.3. Parsing Subcommands</a></li>
+<li><a href="#_usage_help_for_subcommands">11.4. Usage Help for Subcommands</a></li>
+<li><a href="#_nested_sub_subcommands">11.5. Nested sub-subcommands</a></li>
 </ul>
 </li>
-<li><a href="#_tips_tricks">11. Tips &amp; Tricks</a>
+<li><a href="#_tips_tricks">12. Tips &amp; Tricks</a>
 <ul class="sectlevel2">
-<li><a href="#_less_boilerplate">11.1. Less Boilerplate</a></li>
-<li><a href="#_boolean_parameters">11.2. Boolean Parameters</a></li>
-<li><a href="#_hexadecimal_values">11.3. Hexadecimal Values</a></li>
-<li><a href="#_option_parameter_separators_2">11.4. Option-Parameter Separators</a></li>
-<li><a href="#_subclassing_for_reuse">11.5. Subclassing for Reuse</a></li>
-<li><a href="#_best_practices_for_command_line_interfaces">11.6. Best Practices for Command Line Interfaces</a></li>
+<li><a href="#_less_boilerplate">12.1. Less Boilerplate</a></li>
+<li><a href="#_boolean_parameters">12.2. Boolean Parameters</a></li>
+<li><a href="#_hexadecimal_values">12.3. Hexadecimal Values</a></li>
+<li><a href="#_option_parameter_separators_2">12.4. Option-Parameter Separators</a></li>
+<li><a href="#_subclassing_for_reuse">12.5. Subclassing for Reuse</a></li>
+<li><a href="#_best_practices_for_command_line_interfaces">12.6. Best Practices for Command Line Interfaces</a></li>
 </ul>
 </li>
-<li><a href="#_api_javadoc">12. API Javadoc</a></li>
-<li><a href="#_github_project">13. GitHub Project</a></li>
-<li><a href="#_issue_tracker">14. Issue Tracker</a></li>
-<li><a href="#_license">15. License</a></li>
-<li><a href="#_releases">16. Releases</a></li>
-<li><a href="#_download">17. Download</a></li>
+<li><a href="#_api_javadoc">13. API Javadoc</a></li>
+<li><a href="#_github_project">14. GitHub Project</a></li>
+<li><a href="#_issue_tracker">15. Issue Tracker</a></li>
+<li><a href="#_license">16. License</a></li>
+<li><a href="#_releases">17. Releases</a></li>
+<li><a href="#_download">18. Download</a></li>
 </ul>
 </div>
 </div>
@@ -719,7 +721,7 @@ You may be interested in this <a href="http://catb.org/~esr/writings/taoup/html/
     <span class="annotation">@Parameters</span>(paramLabel = <span class="string"><span class="delimiter">&quot;</span><span class="content">FILE</span><span class="delimiter">&quot;</span></span>, description = <span class="string"><span class="delimiter">&quot;</span><span class="content">one ore more files to archive</span><span class="delimiter">&quot;</span></span>)
     <span class="predefined-type">File</span><span class="type">[]</span> files;
 
-    <span class="annotation">@Option</span>(names = { <span class="string"><span class="delimiter">&quot;</span><span class="content">-h</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">--help</span><span class="delimiter">&quot;</span></span> }, help = <span class="predefined-constant">true</span>, description = <span class="string"><span class="delimiter">&quot;</span><span class="content">display a help message</span><span class="delimiter">&quot;</span></span>)
+    <span class="annotation">@Option</span>(names = { <span class="string"><span class="delimiter">&quot;</span><span class="content">-h</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">--help</span><span class="delimiter">&quot;</span></span> }, usageHelp = <span class="predefined-constant">true</span>, description = <span class="string"><span class="delimiter">&quot;</span><span class="content">display a help message</span><span class="delimiter">&quot;</span></span>)
     <span class="directive">private</span> <span class="type">boolean</span> helpRequested = <span class="predefined-constant">false</span>;
 }</code></pre>
 </div>
@@ -1222,26 +1224,68 @@ the last three parameters will be recognized as belonging to the <code>-f</code>
 <div class="paragraph">
 <p>Options with the attribute <code>help = true</code> are special: if one of the command line arguments is a "help" option, picocli will stop parsing the remaining arguments and will not check for required options.</p>
 </div>
+<div class="paragraph">
+<p>Picocli 0.9.8 introduces two new option attributes, <code>versionHelp</code> and <code>usageHelp</code>.
+These also stop validation to prevent "missing required option" errors, but are more specific and are preferred over the generic <code>help</code> attribute.</p>
+</div>
 <div class="listingblock">
 <div class="content">
-<pre class="CodeRay highlight"><code data-lang="java"><span class="annotation">@Option</span>(names = {<span class="string"><span class="delimiter">&quot;</span><span class="content">-V</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">--version</span><span class="delimiter">&quot;</span></span>}, help = <span class="predefined-constant">true</span>, description = <span class="string"><span class="delimiter">&quot;</span><span class="content">display version info</span><span class="delimiter">&quot;</span></span>)
-<span class="type">boolean</span> versionRequested;
+<pre class="CodeRay highlight"><code data-lang="java"><span class="annotation">@Option</span>(names = {<span class="string"><span class="delimiter">&quot;</span><span class="content">-V</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">--version</span><span class="delimiter">&quot;</span></span>}, versionHelp = <span class="predefined-constant">true</span>, description = <span class="string"><span class="delimiter">&quot;</span><span class="content">display version info</span><span class="delimiter">&quot;</span></span>)
+<span class="type">boolean</span> versionInfoRequested;
 
-<span class="annotation">@Option</span>(names = {<span class="string"><span class="delimiter">&quot;</span><span class="content">-h</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">--help</span><span class="delimiter">&quot;</span></span>}, help = <span class="predefined-constant">true</span>, description = <span class="string"><span class="delimiter">&quot;</span><span class="content">display this help message</span><span class="delimiter">&quot;</span></span>)
-<span class="type">boolean</span> helpRequested;</code></pre>
+<span class="annotation">@Option</span>(names = {<span class="string"><span class="delimiter">&quot;</span><span class="content">-h</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">--help</span><span class="delimiter">&quot;</span></span>}, usageHelp = <span class="predefined-constant">true</span>, description = <span class="string"><span class="delimiter">&quot;</span><span class="content">display this help message</span><span class="delimiter">&quot;</span></span>)
+<span class="type">boolean</span> usageHelpRequested;</code></pre>
 </div>
 </div>
 <div class="paragraph">
-<p>This is suitable for options that should trigger the usage help message or application version information being shown on the console.</p>
+<p>Use these attributes for options that request the usage help message or version information to be shown on the console.</p>
 </div>
-<div class="paragraph">
-<p>It is the responsibility of the application to check the field and show the usage help message:</p>
+<div class="admonitionblock caution">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-caution" title="Caution"></i>
+</td>
+<td class="content">
+Picocli does not automatically print a help message.
+(<a href="https://github.com/remkop/picocli/issues/161">This ticket</a> explains why not; feedback is welcome.)
+It is the responsibility of the application to check the field and show the usage help message.
+</td>
+</tr>
+</table>
 </div>
 <div class="listingblock">
 <div class="content">
 <pre class="CodeRay highlight"><code data-lang="java">App app = CommandLine.populateCommand(<span class="keyword">new</span> App(), args);
-<span class="keyword">if</span> (app.helpRequested) {
+<span class="keyword">if</span> (app.usageHelpRequested) {
    CommandLine.usage(<span class="keyword">new</span> App(), <span class="predefined-type">System</span>.err);
+   <span class="keyword">return</span>;
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Since version 0.9.8, the <code>CommandLine</code> class offers two methods that allow external components to detect whether
+usage help or version information was requested (without inspecting the annotated domain object):</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>CommandLine.isUsageHelpRequested()</code> returns <code>true</code> if the parser matched an option annotated with <code>usageHelp=true</code></p>
+</li>
+<li>
+<p><code>CommandLine.isVersionHelpRequested()</code> returns <code>true</code> if the parser matched an option annotated with <code>versionHelp=true</code></p>
+</li>
+</ul>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="java">CommandLine commandLine = <span class="keyword">new</span> CommandLine(<span class="keyword">new</span> App());
+commandLine.parse(args);
+<span class="keyword">if</span> (commandLine.isUsageHelpRequested()) {
+   commandLine.usage(<span class="predefined-type">System</span>.err);
+   <span class="keyword">return</span>;
+} <span class="keyword">else</span> <span class="keyword">if</span> (commandLine.isVersionHelpRequested()) {
+   commandLine.printVersionHelp(<span class="predefined-type">System</span>.err);
    <span class="keyword">return</span>;
 }</code></pre>
 </div>
@@ -1249,10 +1293,79 @@ the last three parameters will be recognized as belonging to the <code>-f</code>
 </div>
 </div>
 <div class="sect1">
-<h2 id="_usage_help">7. Usage Help</h2>
+<h2 id="_version_help">7. Version Help</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Since 0.9.8, applications can specify version information in the <code>version</code> attribute of the <code>@Command</code> annotation.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="java"><span class="annotation">@Command</span>(version = <span class="string"><span class="delimiter">&quot;</span><span class="content">1.0</span><span class="delimiter">&quot;</span></span>)
+<span class="type">class</span> <span class="class">VersionedCommand</span> {
+    <span class="annotation">@Option</span>(names = { <span class="string"><span class="delimiter">&quot;</span><span class="content">-V</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">--version</span><span class="delimiter">&quot;</span></span> }, versionHelp = <span class="predefined-constant">true</span>,
+            description = <span class="string"><span class="delimiter">&quot;</span><span class="content">print version information and exit</span><span class="delimiter">&quot;</span></span>)
+    <span class="type">boolean</span> versionRequested;
+    ...</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The <code>CommandLine.printVersionHelp(PrintStream)</code> method extracts the version information from this
+annotation and prints it to the specified <code>PrintStream</code>.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="java">CommandLine commandLine = <span class="keyword">new</span> CommandLine(<span class="keyword">new</span> VersionedCommand());
+commandLine.parse(args);
+<span class="keyword">if</span> (commandLine.isVersionHelpRequested()) {
+    commandLine.printVersionHelp(<span class="predefined-type">System</span>.err);
+    <span class="keyword">return</span>;
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The version may specify multiple Strings. Each will be printed on a separate line.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="java"><span class="annotation">@Command</span>(version = { <span class="string"><span class="delimiter">&quot;</span><span class="content">Versioned Command 1.0</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">Build 12345</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">(c) 2017</span><span class="delimiter">&quot;</span></span> })
+<span class="type">class</span> <span class="class">VersionedCommand</span> { ... }</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The <code>CommandLine.printVersionHelp(PrintStream)</code> method will print the above as:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre>Versioned Command 1.0
+Build 12345
+(c) 2017</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The version strings may contain <a href="#_usage_help_with_styles_and_colors">markup</a> to show ANSI styles and colors. For example:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="java"><span class="annotation">@Command</span>(version = {
+        <span class="string"><span class="delimiter">&quot;</span><span class="content">@|yellow Versioned Command 1.0|@</span><span class="delimiter">&quot;</span></span>,
+        <span class="string"><span class="delimiter">&quot;</span><span class="content">@|blue Build 12345|@</span><span class="delimiter">&quot;</span></span>,
+        <span class="string"><span class="delimiter">&quot;</span><span class="content">@|red,bg(white) (c) 2017|@</span><span class="delimiter">&quot;</span></span> })
+<span class="type">class</span> <span class="class">VersionedCommand</span> { ... }</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The markup will be rendered as ANSI escape codes on supported systems.</p>
+</div>
+<div class="paragraph">
+<p><span class="image"><img src="images/VersionInfoWithColors.png" alt="Screenshot of version information containing markup with Ansi styles and colors"></span></p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_usage_help">8. Usage Help</h2>
 <div class="sectionbody">
 <div class="sect2">
-<h3 id="_compact_example">7.1. Compact Example</h3>
+<h3 id="_compact_example">8.1. Compact Example</h3>
 <div class="paragraph">
 <p>A default picocli usage help message looks like this:</p>
 </div>
@@ -1288,7 +1401,7 @@ Copyright(c) 2017</pre>
   <span class="annotation">@Parameters</span>(paramLabel = <span class="string"><span class="delimiter">&quot;</span><span class="content">FILE</span><span class="delimiter">&quot;</span></span>, description = <span class="string"><span class="delimiter">&quot;</span><span class="content">Files whose contents to display</span><span class="delimiter">&quot;</span></span>)
   <span class="predefined-type">List</span>&lt;<span class="predefined-type">File</span>&gt; files;
 
-  <span class="annotation">@Option</span>(names = <span class="string"><span class="delimiter">&quot;</span><span class="content">--help</span><span class="delimiter">&quot;</span></span>, help = <span class="predefined-constant">true</span>, description = <span class="string"><span class="delimiter">&quot;</span><span class="content">display this help and exit</span><span class="delimiter">&quot;</span></span>)
+  <span class="annotation">@Option</span>(names = <span class="string"><span class="delimiter">&quot;</span><span class="content">--help</span><span class="delimiter">&quot;</span></span>, usageHelp = <span class="predefined-constant">true</span>, description = <span class="string"><span class="delimiter">&quot;</span><span class="content">display this help and exit</span><span class="delimiter">&quot;</span></span>)
   <span class="type">boolean</span> help;
 
   <span class="annotation">@Option</span>(names = <span class="string"><span class="delimiter">&quot;</span><span class="content">-t</span><span class="delimiter">&quot;</span></span>,                 description = <span class="string"><span class="delimiter">&quot;</span><span class="content">equivalent to -vT</span><span class="delimiter">&quot;</span></span>)  <span class="type">boolean</span> t;
@@ -1301,7 +1414,7 @@ Copyright(c) 2017</pre>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_command_name">7.2. Command Name</h3>
+<h3 id="_command_name">8.2. Command Name</h3>
 <div class="paragraph">
 <p>In the above example, the program name is taken from the <code>name</code> attribute of the <code>Command</code> annotation:</p>
 </div>
@@ -1320,7 +1433,7 @@ Copyright(c) 2017</pre>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_parameter_labels">7.3. Parameter Labels</h3>
+<h3 id="_parameter_labels">8.3. Parameter Labels</h3>
 <div class="paragraph">
 <p>Non-boolean options require a value. The usage help should explain this, and picocli shows the option parameter
 in the synopsis and in the option list. By default, the field name is shown in <code>&lt;</code> and <code>&gt;</code> fish brackets.
@@ -1363,7 +1476,7 @@ For demonstration purposes the above example mixes the all-uppercase (e.g., <cod
 </div>
 </div>
 <div class="sect2">
-<h3 id="_unsorted_option_list">7.4. Unsorted Option List</h3>
+<h3 id="_unsorted_option_list">8.4. Unsorted Option List</h3>
 <div class="paragraph">
 <p>By default the options list displays options in alphabetical order. Use the <code>sortOptions = false</code> attribute to display options in the order they are declared in your class.</p>
 </div>
@@ -1374,7 +1487,7 @@ For demonstration purposes the above example mixes the all-uppercase (e.g., <cod
 </div>
 </div>
 <div class="sect2">
-<h3 id="_abbreviated_synopsis">7.5. Abbreviated Synopsis</h3>
+<h3 id="_abbreviated_synopsis">8.5. Abbreviated Synopsis</h3>
 <div class="paragraph">
 <p>If a command is very complex and has many options, it is sometimes desirable to suppress details from the synopsis with the <code>abbreviateSynopsis</code> attribute. For example:</p>
 </div>
@@ -1398,7 +1511,7 @@ For demonstration purposes the above example mixes the all-uppercase (e.g., <cod
 </div>
 </div>
 <div class="sect2">
-<h3 id="_custom_synopsis">7.6. Custom Synopsis</h3>
+<h3 id="_custom_synopsis">8.6. Custom Synopsis</h3>
 <div class="paragraph">
 <p>For even more control of the synopsis, use the <code>customSynopsis</code> attribute to specify one ore more synopsis lines. For example:</p>
 </div>
@@ -1426,7 +1539,7 @@ For demonstration purposes the above example mixes the all-uppercase (e.g., <cod
 </div>
 </div>
 <div class="sect2">
-<h3 id="_header_and_footer">7.7. Header and Footer</h3>
+<h3 id="_header_and_footer">8.7. Header and Footer</h3>
 <div class="paragraph">
 <p>The <code>header</code> will be shown at the top of the usage help message (before the synopsis). The first header line is also the line shown in the subcommand list if your command has subcommands (see <a href="#_usage_help_for_subcommands">Usage Help for Subcommands</a>).</p>
 </div>
@@ -1439,7 +1552,7 @@ Each element of the attribute String array is displayed on a separate line.</p>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_section_headings">7.8. Section Headings</h3>
+<h3 id="_section_headings">8.8. Section Headings</h3>
 <div class="paragraph">
 <p>Section headers can be used to make usage message layout appear more spacious. Section headings may contain embedded line separator (<code>%n</code>) format specifiers:</p>
 </div>
@@ -1463,7 +1576,7 @@ Each element of the attribute String array is displayed on a separate line.</p>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_expanded_example">7.9. Expanded Example</h3>
+<h3 id="_expanded_example">8.9. Expanded Example</h3>
 <div class="paragraph">
 <p>The below example demonstrates what a customized usage message can look like.
 Note how section headings with line separators can create a more spacious usage message,
@@ -1521,7 +1634,7 @@ Options:
 </div>
 </div>
 <div class="sect2">
-<h3 id="_option_parameter_separators">7.10. Option-Parameter Separators</h3>
+<h3 id="_option_parameter_separators">8.10. Option-Parameter Separators</h3>
 <div class="paragraph">
 <p>The separator displayed between options and option parameters (<code>=</code> by default)
 in the synopsis and the option list can be configured with the <code>separator</code> attribute.</p>
@@ -1545,7 +1658,7 @@ the <code>@Command(separator = " ")</code> annotation also affects how picocli p
 </div>
 </div>
 <div class="sect2">
-<h3 id="_hidden_options_and_parameters">7.11. Hidden Options and Parameters</h3>
+<h3 id="_hidden_options_and_parameters">8.11. Hidden Options and Parameters</h3>
 <div class="paragraph">
 <p>Options and Parameters with the <code>hidden</code> attribute set to <code>true</code> will not be shown in the usage help message.
 This is useful for example when a parameter at some index is captured into multiple fields:
@@ -1579,7 +1692,7 @@ by default each of these fields would be shown in the usage message, which would
 </div>
 </div>
 <div class="sect2">
-<h3 id="_show_default_values">7.12. Show Default Values</h3>
+<h3 id="_show_default_values">8.12. Show Default Values</h3>
 <div class="paragraph">
 <p>Use the <code>showDefaultValues = true</code> attribute to append the default value of the options and positional parameters to the description column. Picocli uses reflection to get the default values from the annotated fields. For example:</p>
 </div>
@@ -1606,7 +1719,7 @@ CommandLine.usage(<span class="keyword">new</span> DefaultValues(), <span class=
 </div>
 </div>
 <div class="sect2">
-<h3 id="_required_option_marker">7.13. Required-Option Marker</h3>
+<h3 id="_required_option_marker">8.13. Required-Option Marker</h3>
 <div class="paragraph">
 <p>Required options can be marked in the option list by the character specified with the <code>requiredOptionMarker</code> attribute. By default options are not marked because the synopsis shows users which options are required and which are optional. This feature may be useful in combination with <code>abbreviatedSynopsis</code>. For example:</p>
 </div>
@@ -1633,10 +1746,10 @@ CommandLine.usage(<span class="keyword">new</span> DefaultValues(), <span class=
 </div>
 </div>
 <div class="sect1">
-<h2 id="_ansi_colors_and_styles">8. ANSI Colors and Styles</h2>
+<h2 id="_ansi_colors_and_styles">9. ANSI Colors and Styles</h2>
 <div class="sectionbody">
 <div class="sect2">
-<h3 id="_colorized_example">8.1. Colorized Example</h3>
+<h3 id="_colorized_example">9.1. Colorized Example</h3>
 <div class="paragraph">
 <p>Below shows the same usage help message as shown in <a href="#_expanded_example">Expanded Example</a>, with ANSI escape codes enabled.</p>
 </div>
@@ -1645,13 +1758,13 @@ CommandLine.usage(<span class="keyword">new</span> DefaultValues(), <span class=
 </div>
 </div>
 <div class="sect2">
-<h3 id="_usage_help_with_styles_and_colors">8.2. Usage Help with Styles and Colors</h3>
+<h3 id="_usage_help_with_styles_and_colors">9.2. Usage Help with Styles and Colors</h3>
 <div class="paragraph">
 <p>You can use colors and styles in the descriptions, header and footer
 of the usage help message.</p>
 </div>
 <div class="paragraph">
-<p>Picocli supports a custom notation for mixing colors and styles in text,
+<p>Picocli supports a custom markup notation for mixing colors and styles in text,
 following a convention introduced by <a href="https://github.com/fusesource/jansi">Jansi</a>, where
 <code>@|</code> starts a styled section, and <code>|@</code> ends it.
 Immediately following the <code>@|</code> is a comma-separated list of colors and styles, so <code>@|STYLE1[,STYLE2]&#8230;&#8203; text|@</code>.
@@ -1719,7 +1832,7 @@ For example, <code>@|bg(red) text with red background|@</code>.
 Similarly, <code>fg(&lt;color&gt;)</code> explicitly sets the foreground color.</p>
 </div>
 <div class="paragraph">
-<p>The example below shows how this can be used to add colors and styles to the headings and descriptions of a usage help message:</p>
+<p>The example below shows how this markup can be used to add colors and styles to the headings and descriptions of a usage help message:</p>
 </div>
 <div class="listingblock">
 <div class="content">
@@ -1743,14 +1856,14 @@ Similarly, <code>fg(&lt;color&gt;)</code> explicitly sets the foreground color.<
 <i class="fa icon-caution" title="Caution"></i>
 </td>
 <td class="content">
-Styles cannot be nested, for example: <code>@|bold this @|underline that|@|@</code> will not work. You can achieve the same by combining styles, for example: <code>@|bold this|@ @|bold,underline that|@</code> will work fine.
+Markup styles cannot be nested, for example: <code>@|bold this @|underline that|@|@</code> will not work. You can achieve the same by combining styles, for example: <code>@|bold this|@ @|bold,underline that|@</code> will work fine.
 </td>
 </tr>
 </table>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_more_colors">8.3. More Colors</h3>
+<h3 id="_more_colors">9.3. More Colors</h3>
 <div class="paragraph">
 <p>Most terminals support a <a href="https://en.wikipedia.org/wiki/ANSI_escape_code#Colors">256 color indexed palette</a>:</p>
 </div>
@@ -1775,9 +1888,9 @@ or <code>@|fg(46) the same color by index, as foreground color|@</code>.</p>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_configuring_fixed_elements">8.4. Configuring Fixed Elements</h3>
+<h3 id="_configuring_fixed_elements">9.4. Configuring Fixed Elements</h3>
 <div class="sect3">
-<h4 id="_color_scheme">8.4.1. Color Scheme</h4>
+<h4 id="_color_scheme">9.4.1. Color Scheme</h4>
 <div class="paragraph">
 <p>Picocli uses a default color scheme for options, parameters and commands.
 There are no annotations to modify this color scheme, but it can be changed programmatically.</p>
@@ -1800,7 +1913,7 @@ CommandLine.usage(annotatedObject, <span class="predefined-type">System</span>.o
 </div>
 </div>
 <div class="sect3">
-<h4 id="_color_scheme_overrides">8.4.2. Color Scheme Overrides</h4>
+<h4 id="_color_scheme_overrides">9.4.2. Color Scheme Overrides</h4>
 <div class="paragraph">
 <p>The following system properties override the color scheme styles. This allows end users to adjust for their individual terminal color setup.</p>
 </div>
@@ -1827,12 +1940,12 @@ picocli.color.optionParams</pre>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_supported_platforms">8.5. Supported Platforms</h3>
+<h3 id="_supported_platforms">9.5. Supported Platforms</h3>
 <div class="paragraph">
 <p>Picocli will only emit ANSI escape codes on supported platforms.</p>
 </div>
 <div class="sect3">
-<h4 id="_unix_and_linux">8.5.1. Unix and Linux</h4>
+<h4 id="_unix_and_linux">9.5.1. Unix and Linux</h4>
 <div class="paragraph">
 <p>Most Unix and Linux platforms support ANSI colors natively.
 On Windows, when picocli detects it is running under a Unix variant like Cygwin or MSYS(2) on Windows
@@ -1840,7 +1953,7 @@ On Windows, when picocli detects it is running under a Unix variant like Cygwin 
 </div>
 </div>
 <div class="sect3">
-<h4 id="_windows">8.5.2. Windows</h4>
+<h4 id="_windows">9.5.2. Windows</h4>
 <div class="paragraph">
 <p>Starting from Windows 10 the Windows console <a href="https://msdn.microsoft.com/en-us/library/windows/desktop/mt638032(v=vs.85).aspx">supports ANSI escape sequences</a>, but <a href="http://www.nivot.org/blog/post/2016/02/04/Windows-10-TH2-(v1511)-Console-Host-Enhancements">they may need to be enabled</a>.</p>
 </div>
@@ -1876,7 +1989,7 @@ None of the above is mandatory. If not supported, picocli will simply not emit A
 </div>
 </div>
 <div class="sect2">
-<h3 id="_forcing_ansi_on_off">8.6. Forcing ANSI On/Off</h3>
+<h3 id="_forcing_ansi_on_off">9.6. Forcing ANSI On/Off</h3>
 <div class="paragraph">
 <p>You can force picocli to either always use ANSI codes or never use ANSI codes regardless of the platform:</p>
 </div>
@@ -1902,7 +2015,7 @@ App app = CommandLine.usage(<span class="keyword">new</span> App(), <span class=
 </div>
 </div>
 <div class="sect1">
-<h2 id="_usage_help_api">9. Usage Help API</h2>
+<h2 id="_usage_help_api">10. Usage Help API</h2>
 <div class="sectionbody">
 <div class="paragraph">
 <p>For further customization of the usage help message, picocli has a Help API.
@@ -1910,7 +2023,7 @@ The <code>Help</code> class provides a number of high-level operations, and a se
 Details of the Help API are out of scope for this document, but the following sections give some idea of what is possible.</p>
 </div>
 <div class="sect2">
-<h3 id="_reordering_sections">9.1. Reordering Sections</h3>
+<h3 id="_reordering_sections">10.1. Reordering Sections</h3>
 <div class="paragraph">
 <p>One thing you may want to do is reorder sections of the usage message or add custom sections.</p>
 </div>
@@ -1942,7 +2055,7 @@ Details of the Help API are out of scope for this document, but the following se
 </div>
 </div>
 <div class="sect2">
-<h3 id="_custom_layout">9.2. Custom Layout</h3>
+<h3 id="_custom_layout">10.2. Custom Layout</h3>
 <div class="paragraph">
 <p>Picocli also supports unconventional option list layouts. An example of an unconventional layout is the <code>zip</code> application, which shows multiple options per row:</p>
 </div>
@@ -1984,10 +2097,10 @@ See the picocli tests for how to achieve this.</p>
 </div>
 </div>
 <div class="sect1">
-<h2 id="_subcommands">10. Subcommands</h2>
+<h2 id="_subcommands">11. Subcommands</h2>
 <div class="sectionbody">
 <div class="sect2">
-<h3 id="_registering_subcommands">10.1. Registering Subcommands</h3>
+<h3 id="_registering_subcommands_programmatically">11.1. Registering Subcommands Programmatically</h3>
 <div class="paragraph">
 <p>Subcommands can be registered with the <code>CommandLine.addSubcommand</code> method.
 You pass in the name of the command and the annotated object to populate with the subcommand options.
@@ -1997,7 +2110,7 @@ The specified name is used by the parser to recognize subcommands in the command
 <div class="content">
 <pre class="CodeRay highlight"><code data-lang="java">CommandLine commandLine = <span class="keyword">new</span> CommandLine(<span class="keyword">new</span> Git())
         .addSubcommand(<span class="string"><span class="delimiter">&quot;</span><span class="content">status</span><span class="delimiter">&quot;</span></span>,   <span class="keyword">new</span> GitStatus())
-        .addSubcommand(<span class="string"><span class="delimiter">&quot;</span><span class="content">commit</span><span class="delimiter">&quot;</span></span>,   <span class="keyword">new</span> GitCommit();
+        .addSubcommand(<span class="string"><span class="delimiter">&quot;</span><span class="content">commit</span><span class="delimiter">&quot;</span></span>,   <span class="keyword">new</span> GitCommit())
         .addSubcommand(<span class="string"><span class="delimiter">&quot;</span><span class="content">add</span><span class="delimiter">&quot;</span></span>,      <span class="keyword">new</span> GitAdd())
         .addSubcommand(<span class="string"><span class="delimiter">&quot;</span><span class="content">branch</span><span class="delimiter">&quot;</span></span>,   <span class="keyword">new</span> GitBranch())
         .addSubcommand(<span class="string"><span class="delimiter">&quot;</span><span class="content">checkout</span><span class="delimiter">&quot;</span></span>, <span class="keyword">new</span> GitCheckout())
@@ -2008,6 +2121,12 @@ The specified name is used by the parser to recognize subcommands in the command
         .addSubcommand(<span class="string"><span class="delimiter">&quot;</span><span class="content">rebase</span><span class="delimiter">&quot;</span></span>,   <span class="keyword">new</span> GitRebase())
         .addSubcommand(<span class="string"><span class="delimiter">&quot;</span><span class="content">tag</span><span class="delimiter">&quot;</span></span>,      <span class="keyword">new</span> GitTag());</code></pre>
 </div>
+</div>
+<div class="paragraph">
+<p>It is strongly recommended that subcommands have a <code>@Command</code> annotation with <code>name</code> and <code>description</code> attributes.</p>
+</div>
+<div class="paragraph">
+<p>Subcommands registered programmatically can have a <code>@Command name</code> attribute that is different from the command name they are registered with. The <code>name</code> attribute value is not used when parsing the command line but only in the usage help synopsis of the subcommand. For example, a git command line could be <code>git commit -m "message"</code>, but the usage help for the <code>commit</code> subcommand could show <code>Usage: git-commit &lt;options&gt;</code>.</p>
 </div>
 <div class="admonitionblock caution">
 <table>
@@ -2026,16 +2145,53 @@ adding subcommands.
 </div>
 </div>
 <div class="sect2">
-<h3 id="_parsing_subcommands">10.2. Parsing Subcommands</h3>
+<h3 id="_registering_subcommands_declaratively">11.2. Registering Subcommands Declaratively</h3>
+<div class="paragraph">
+<p>From version 0.9.8, picocli supports registering subcommands declaratively with the <code>@Command</code> annotation&#8217;s <code>subcommands</code> attribute.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="java"><span class="annotation">@Command</span>(subcommands = {
+    GitStatus.class,
+    GitCommit.class,
+    GitAdd.class,
+    GitBranch.class,
+    GitCheckout.class,
+    GitClone.class,
+    GitDiff.class,
+    GitMerge.class,
+    GitPush.class,
+    GitRebase.class,
+    GitTag.class
+})
+<span class="directive">public</span> <span class="type">class</span> <span class="class">Git</span> { ... }</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The declared subcommands are automatically instantiated and added when the <code>new CommandLine(new Git())</code> instance is constructed. The result is the same as if subcommands were added <a href="#_registering_subcommands_programmatically">programmatically</a>.</p>
+</div>
+<div class="paragraph">
+<p>Subcommands referenced in a <code>subcommands</code> attribute <em>must</em> have a <code>@Command</code> annotation with a <code>name</code> attribute, or an exception is thrown from the <code>CommandLine</code> constructor. This name will be used both for generating usage help and for recognizing subcommands when parsing the command line.</p>
+</div>
+<div class="paragraph">
+<p>Custom type converters registered on a <code>CommandLine</code> instance will apply to all subcommands that were declared on the main command with the <code>subcommands</code> annotation.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_parsing_subcommands">11.3. Parsing Subcommands</h3>
 <div class="paragraph">
 <p>The <code>CommandLine.parse</code> method returns a List with the recognized commands. The main command (<code>git</code> in this example) is always the first element in the returned list.</p>
 </div>
 <div class="listingblock">
 <div class="content">
 <pre class="CodeRay highlight"><code data-lang="java">CommandLine commandLine = <span class="keyword">new</span> CommandLine(<span class="keyword">new</span> Git());
-commandLine.addSubcommand(<span class="string"><span class="delimiter">&quot;</span><span class="content">status</span><span class="delimiter">&quot;</span></span>,   <span class="keyword">new</span> GitStatus());
-...
 
+<span class="comment">// add subcommands (either programmatically or declaratively)</span>
+commandLine.addSubcommand(<span class="string"><span class="delimiter">&quot;</span><span class="content">status</span><span class="delimiter">&quot;</span></span>,   <span class="keyword">new</span> GitStatus())
+           .addSubcommand(<span class="string"><span class="delimiter">&quot;</span><span class="content">commit</span><span class="delimiter">&quot;</span></span>,   <span class="keyword">new</span> GitCommit())
+            ...
+
+<span class="comment">// use the parse method to get a List with matched commands</span>
 String<span class="type">[]</span> args = { <span class="string"><span class="delimiter">&quot;</span><span class="content">--git-dir=/home/rpopma/picocli</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">status</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">-sbuno</span><span class="delimiter">&quot;</span></span>};
 <span class="predefined-type">List</span>&lt;CommandLine&gt; parsed = commandLine.parse(args);
 <span class="keyword">assert</span> parsed.size() == <span class="integer">2</span> : <span class="string"><span class="delimiter">&quot;</span><span class="content">1 command and 1 subcommand found</span><span class="delimiter">&quot;</span></span>
@@ -2061,13 +2217,15 @@ GitStatus gitstatus = (GitStatus) parsed.get(<span class="integer">1</span>).get
 </div>
 </div>
 <div class="sect2">
-<h3 id="_usage_help_for_subcommands">10.3. Usage Help for Subcommands</h3>
+<h3 id="_usage_help_for_subcommands">11.4. Usage Help for Subcommands</h3>
 <div class="paragraph">
 <p>After registering subcommands, calling the <code>commandLine.usage</code> method will show a usage help message that includes all registered commands. For example:</p>
 </div>
 <div class="listingblock">
 <div class="content">
 <pre class="CodeRay highlight"><code data-lang="java">CommandLine commandLine = <span class="keyword">new</span> CommandLine(<span class="keyword">new</span> Git());
+
+<span class="comment">// add subcommands (either programmatically or declaratively)</span>
 commandLine.addSubcommand(<span class="string"><span class="delimiter">&quot;</span><span class="content">status</span><span class="delimiter">&quot;</span></span>,   <span class="keyword">new</span> GitStatus());
 ...
 commandLine.usage(<span class="predefined-type">System</span>.out);</code></pre>
@@ -2113,11 +2271,11 @@ The most commonly used git commands are:
                       <span class="string"><span class="delimiter">&quot;</span><span class="content">high-level operations and full access to internals.</span><span class="delimiter">&quot;</span></span>,
         commandListHeading = <span class="string"><span class="delimiter">&quot;</span><span class="content">%nCommands:%n%nThe most commonly used git commands are:%n</span><span class="delimiter">&quot;</span></span>)
 <span class="type">class</span> <span class="class">Git</span> {
-  <span class="annotation">@Option</span>(names = {<span class="string"><span class="delimiter">&quot;</span><span class="content">-V</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">--version</span><span class="delimiter">&quot;</span></span>}, help = <span class="predefined-constant">true</span>,
+  <span class="annotation">@Option</span>(names = {<span class="string"><span class="delimiter">&quot;</span><span class="content">-V</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">--version</span><span class="delimiter">&quot;</span></span>}, versionHelp = <span class="predefined-constant">true</span>,
           description = <span class="string"><span class="delimiter">&quot;</span><span class="content">Prints version information and exits</span><span class="delimiter">&quot;</span></span>)
   <span class="directive">private</span> <span class="type">boolean</span> versionRequested;
 
-  <span class="annotation">@Option</span>(names = {<span class="string"><span class="delimiter">&quot;</span><span class="content">-h</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">--help</span><span class="delimiter">&quot;</span></span>}, help = <span class="predefined-constant">true</span>,
+  <span class="annotation">@Option</span>(names = {<span class="string"><span class="delimiter">&quot;</span><span class="content">-h</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">--help</span><span class="delimiter">&quot;</span></span>}, usageHelp = <span class="predefined-constant">true</span>,
           description = <span class="string"><span class="delimiter">&quot;</span><span class="content">Prints this help message and exits</span><span class="delimiter">&quot;</span></span>)
   <span class="directive">private</span> <span class="type">boolean</span> helpRequested;
 
@@ -2133,7 +2291,7 @@ in <a href="#_expanded_example">Expanded Example</a>.</p>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_nested_sub_subcommands">10.4. Nested sub-subcommands</h3>
+<h3 id="_nested_sub_subcommands">11.5. Nested sub-subcommands</h3>
 <div class="paragraph">
 <p>The specified object can be an annotated object or a
 <code>CommandLine</code> instance with its own nested subcommands. For example:</p>
@@ -2153,14 +2311,38 @@ in <a href="#_expanded_example">Expanded Example</a>.</p>
     );</code></pre>
 </div>
 </div>
+<div class="paragraph">
+<p>Declaratively, subcommands can be nested by specifying the <code>subcommands</code> attribute on subcommand classes:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="java"><span class="annotation">@Command</span>(name = <span class="string"><span class="delimiter">&quot;</span><span class="content">main</span><span class="delimiter">&quot;</span></span>, subcommands = {
+    ChildCommand1.class,
+    ChildCommand2.class,
+    ChildCommand3.class })
+<span class="type">class</span> <span class="class">MainCommand</span> { }
+
+<span class="annotation">@Command</span>(name = <span class="string"><span class="delimiter">&quot;</span><span class="content">cmd3</span><span class="delimiter">&quot;</span></span>, subcommands = {
+    GrandChild3Command1.class,
+    GrandChild3Command2.class,
+    GrandChild3Command3.class })
+<span class="type">class</span> <span class="class">ChildCommand3</span> { }
+
+<span class="annotation">@Command</span>(name = <span class="string"><span class="delimiter">&quot;</span><span class="content">cmd3sub3</span><span class="delimiter">&quot;</span></span>, subcommands = {
+    GreatGrandChild3Command3_1.class,
+    GreatGrandChild3Command3_2.class })
+<span class="type">class</span> <span class="class">GrandChild3Command3</span> { }
+...</code></pre>
+</div>
+</div>
 </div>
 </div>
 </div>
 <div class="sect1">
-<h2 id="_tips_tricks">11. Tips &amp; Tricks</h2>
+<h2 id="_tips_tricks">12. Tips &amp; Tricks</h2>
 <div class="sectionbody">
 <div class="sect2">
-<h3 id="_less_boilerplate">11.1. Less Boilerplate</h3>
+<h3 id="_less_boilerplate">12.1. Less Boilerplate</h3>
 <div class="paragraph">
 <p>You can omit some of the boilerplate code from your application when the annotated object implements <code>Runnable</code>:</p>
 </div>
@@ -2189,7 +2371,10 @@ runnable.run();</code></pre>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_boolean_parameters">11.2. Boolean Parameters</h3>
+<h3 id="_boolean_parameters">12.2. Boolean Parameters</h3>
+<div class="paragraph">
+<p>By default the value of a boolean field is toggled to its logical negative when the field&#8217;s option is specified on the command line.</p>
+</div>
 <div class="paragraph">
 <p>It is possible to let end users explicitly specify "true" or "false" as a parameter for a boolean option by defining an explicit <a href="#_arity">Arity</a> attribute. A boolean option with <code>arity = "0..1"</code> accepts zero to one parameters, <code>arity = "1"</code> means the option <em>must</em> have one parameter. For example:</p>
 </div>
@@ -2220,7 +2405,7 @@ runnable.run();</code></pre>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_hexadecimal_values">11.3. Hexadecimal Values</h3>
+<h3 id="_hexadecimal_values">12.3. Hexadecimal Values</h3>
 <div class="paragraph">
 <p>Numeric values are interpreted as decimal numbers by default. If you want picocli to be more flexible, you can
 register a custom type converter that delegates to the <a href="https://docs.oracle.com/javase/8/docs/api/java/lang/Integer.html#decode-java.lang.String-">decode</a> method to convert strings to numbers.</p>
@@ -2272,9 +2457,9 @@ commandLine.registerConverter(<span class="predefined-type">Integer</span>.TYPE,
 </div>
 </div>
 <div class="sect2">
-<h3 id="_option_parameter_separators_2">11.4. Option-Parameter Separators</h3>
+<h3 id="_option_parameter_separators_2">12.4. Option-Parameter Separators</h3>
 <div class="sect3">
-<h4 id="_default_separators">11.4.1. Default Separators</h4>
+<h4 id="_default_separators">12.4.1. Default Separators</h4>
 <div class="paragraph">
 <p>Options may take an <em>option parameter</em> (also called <em>option-argument</em>).
 For POSIX-style short options (like <code>-f</code> or <code>-c</code>), the option parameter may be attached to the option,
@@ -2304,7 +2489,7 @@ That is, all of the below are equivalent:</p>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_custom_separators">11.4.2. Custom Separators</h4>
+<h4 id="_custom_separators">12.4.2. Custom Separators</h4>
 <div class="paragraph">
 <p>The separator string can be customized programmatically or declaratively.</p>
 </div>
@@ -2326,6 +2511,9 @@ That is, all of the below are equivalent:</p>
 </div>
 </div>
 <div class="paragraph">
+<p>Declaratively set separators are used both when parsing and in the usage help message.</p>
+</div>
+<div class="paragraph">
 <p>Alternatively, the separator string can be changed programmatically with the <code>CommandLine.setSeparator(String separator)</code> method.
 For example:</p>
 </div>
@@ -2339,10 +2527,14 @@ commandLine.parse(<span class="string"><span class="delimiter">&quot;</span><spa
 <span class="keyword">assert</span> optionArg.file.equals(<span class="string"><span class="delimiter">&quot;</span><span class="content">output.txt</span><span class="delimiter">&quot;</span></span>);</code></pre>
 </div>
 </div>
+<div class="paragraph">
+<p>Programmatically set separators are only used when parsing.
+Changing the value does not modify the usage help message.</p>
+</div>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_subclassing_for_reuse">11.5. Subclassing for Reuse</h3>
+<h3 id="_subclassing_for_reuse">12.5. Subclassing for Reuse</h3>
 <div class="paragraph">
 <p>Picocli will walk the class hierarchy to check for annotations, so you can declare common @Options and @Command attributes on a superclass and override these fields or attributes on a subclass.</p>
 </div>
@@ -2358,11 +2550,11 @@ commandLine.parse(<span class="string"><span class="delimiter">&quot;</span><spa
          commandListHeading   = <span class="string"><span class="delimiter">&quot;</span><span class="content">%nCommands:%n%n</span><span class="delimiter">&quot;</span></span>)
 <span class="directive">public</span> <span class="directive">abstract</span> <span class="type">class</span> <span class="class">AbstractCommand</span> {
 
-    <span class="annotation">@Option</span>(names = { <span class="string"><span class="delimiter">&quot;</span><span class="content">-h</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">-?</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">--help</span><span class="delimiter">&quot;</span></span> }, help = <span class="predefined-constant">true</span>,
+    <span class="annotation">@Option</span>(names = { <span class="string"><span class="delimiter">&quot;</span><span class="content">-h</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">-?</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">--help</span><span class="delimiter">&quot;</span></span> }, usageHelp = <span class="predefined-constant">true</span>,
             description = <span class="string"><span class="delimiter">&quot;</span><span class="content">give this help list</span><span class="delimiter">&quot;</span></span>)
     <span class="directive">protected</span> <span class="type">boolean</span> helpRequested;
 
-    <span class="annotation">@Option</span>(names = { <span class="string"><span class="delimiter">&quot;</span><span class="content">-V</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">--version</span><span class="delimiter">&quot;</span></span> }, help = <span class="predefined-constant">true</span>,
+    <span class="annotation">@Option</span>(names = { <span class="string"><span class="delimiter">&quot;</span><span class="content">-V</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">--version</span><span class="delimiter">&quot;</span></span> }, versionHelp = <span class="predefined-constant">true</span>,
             description = <span class="string"><span class="delimiter">&quot;</span><span class="content">print program version</span><span class="delimiter">&quot;</span></span>)
     <span class="directive">protected</span> <span class="type">boolean</span> versionRequested;
 }</code></pre>
@@ -2389,7 +2581,7 @@ commandLine.parse(<span class="string"><span class="delimiter">&quot;</span><spa
 </div>
 </div>
 <div class="sect2">
-<h3 id="_best_practices_for_command_line_interfaces">11.6. Best Practices for Command Line Interfaces</h3>
+<h3 id="_best_practices_for_command_line_interfaces">12.6. Best Practices for Command Line Interfaces</h3>
 <div class="paragraph">
 <p>When designing your command line application,
 the <a href="https://www.gnu.org/prep/standards/html_node/Command_002dLine-Interfaces.html#Command_002dLine-Interfaces">GNU recommendations</a> for command line interfaces and <a href="http://pubs.opengroup.org/onlinepubs/9699919799/basedefs/V1_chap12.html#tag_12_02">POSIX Utility Guidelines</a> may be useful.</p>
@@ -2402,7 +2594,7 @@ However, picocli lets you make options required if you want to, see <a href="#_r
 </div>
 </div>
 <div class="sect1">
-<h2 id="_api_javadoc">12. API Javadoc</h2>
+<h2 id="_api_javadoc">13. API Javadoc</h2>
 <div class="sectionbody">
 <div class="paragraph">
 <p>Picocli API Javadoc can be found <a href="https://remkop.github.io/picocli/apidocs">here</a>.</p>
@@ -2410,7 +2602,7 @@ However, picocli lets you make options required if you want to, see <a href="#_r
 </div>
 </div>
 <div class="sect1">
-<h2 id="_github_project">13. GitHub Project</h2>
+<h2 id="_github_project">14. GitHub Project</h2>
 <div class="sectionbody">
 <div class="paragraph">
 <p>The <a href="https://github.com/remkop/picocli">GitHub project</a> has the source code, tests, build scripts, etc.</p>
@@ -2422,7 +2614,7 @@ However, picocli lets you make options required if you want to, see <a href="#_r
 </div>
 </div>
 <div class="sect1">
-<h2 id="_issue_tracker">14. Issue Tracker</h2>
+<h2 id="_issue_tracker">15. Issue Tracker</h2>
 <div class="sectionbody">
 <div class="paragraph">
 <p>Please use the <a href="https://github.com/remkop/picocli/issues">Issue Tracker</a> to report bugs or request features.</p>
@@ -2430,7 +2622,7 @@ However, picocli lets you make options required if you want to, see <a href="#_r
 </div>
 </div>
 <div class="sect1">
-<h2 id="_license">15. License</h2>
+<h2 id="_license">16. License</h2>
 <div class="sectionbody">
 <div class="paragraph">
 <p>Picocli is licensed under the <a href="https://github.com/remkop/picocli/blob/master/LICENSE">Apache License 2.0</a>.</p>
@@ -2438,7 +2630,7 @@ However, picocli lets you make options required if you want to, see <a href="#_r
 </div>
 </div>
 <div class="sect1">
-<h2 id="_releases">16. Releases</h2>
+<h2 id="_releases">17. Releases</h2>
 <div class="sectionbody">
 <div class="paragraph">
 <p>Previous versions are available from the GitHub project <a href="https://github.com/remkop/picocli/releases">Releases</a>.</p>
@@ -2446,7 +2638,7 @@ However, picocli lets you make options required if you want to, see <a href="#_r
 </div>
 </div>
 <div class="sect1">
-<h2 id="_download">17. Download</h2>
+<h2 id="_download">18. Download</h2>
 <div class="sectionbody">
 <div class="admonitionblock note">
 <table>
@@ -2487,6 +2679,7 @@ Here is the source. Copy and paste it into a file called <code>CommandLine.java<
 <span class="keyword">import</span> <span class="include">java.lang.annotation.RetentionPolicy</span>;
 <span class="keyword">import</span> <span class="include">java.lang.annotation.Target</span>;
 <span class="keyword">import</span> <span class="include">java.lang.reflect.Array</span>;
+<span class="keyword">import</span> <span class="include">java.lang.reflect.Constructor</span>;
 <span class="keyword">import</span> <span class="include">java.lang.reflect.Field</span>;
 <span class="keyword">import</span> <span class="include">java.math.BigDecimal</span>;
 <span class="keyword">import</span> <span class="include">java.math.BigInteger</span>;
@@ -2584,12 +2777,16 @@ Here is the source. Copy and paste it into a file called <code>CommandLine.java<
  */</span>
 <span class="directive">public</span> <span class="type">class</span> <span class="class">CommandLine</span> {
     <span class="comment">/** This is picocli version {@value}. */</span>
-    <span class="directive">public</span> <span class="directive">static</span> <span class="directive">final</span> <span class="predefined-type">String</span> VERSION = <span class="string"><span class="delimiter">&quot;</span><span class="content">0.9.7</span><span class="delimiter">&quot;</span></span>;
+    <span class="directive">public</span> <span class="directive">static</span> <span class="directive">final</span> <span class="predefined-type">String</span> VERSION = <span class="string"><span class="delimiter">&quot;</span><span class="content">0.9.8</span><span class="delimiter">&quot;</span></span>;
 
     <span class="directive">private</span> <span class="directive">final</span> Interpreter interpreter;
     <span class="directive">private</span> <span class="type">boolean</span> overwrittenOptionsAllowed = <span class="predefined-constant">false</span>;
     <span class="directive">private</span> <span class="type">boolean</span> unmatchedArgumentsAllowed = <span class="predefined-constant">false</span>;
     <span class="directive">private</span> <span class="predefined-type">List</span>&lt;<span class="predefined-type">String</span>&gt; unmatchedArguments = <span class="keyword">new</span> <span class="predefined-type">ArrayList</span>&lt;<span class="predefined-type">String</span>&gt;();
+    <span class="directive">private</span> CommandLine parent;
+    <span class="directive">private</span> <span class="type">boolean</span> usageHelpRequested;
+    <span class="directive">private</span> <span class="type">boolean</span> versionHelpRequested;
+    <span class="directive">private</span> <span class="predefined-type">List</span>&lt;<span class="predefined-type">String</span>&gt; versionLines = <span class="keyword">new</span> <span class="predefined-type">ArrayList</span>&lt;<span class="predefined-type">String</span>&gt;();
 
     <span class="comment">/**
      * Constructs a new {@code CommandLine} interpreter with the specified annotated object.
@@ -2639,29 +2836,54 @@ Here is the source. Copy and paste it into a file called <code>CommandLine.java<
      *          This may be a {@code CommandLine} instance with its own (nested) subcommands
      * @return this CommandLine object, to allow method chaining
      * @see #registerConverter(Class, ITypeConverter)
+     * @since 0.9.7
      */</span>
     <span class="directive">public</span> CommandLine addSubcommand(<span class="predefined-type">String</span> name, <span class="predefined-type">Object</span> command) {
-        interpreter.commands.put(name, toCommandLine(command));
+        CommandLine commandLine = toCommandLine(command);
+        commandLine.parent = <span class="local-variable">this</span>;
+        interpreter.commands.put(name, commandLine);
         <span class="keyword">return</span> <span class="local-variable">this</span>;
     }
     <span class="comment">/** Returns a map with the subcommands {@linkplain #addSubcommand(String, Object) registered} on this instance.
-     * @return a map with the registered subcommands */</span>
+     * @return a map with the registered subcommands
+     * @since 0.9.7
+     */</span>
     <span class="directive">public</span> <span class="predefined-type">Map</span>&lt;<span class="predefined-type">String</span>, CommandLine&gt; getSubcommands() {
         <span class="keyword">return</span> <span class="keyword">new</span> <span class="predefined-type">LinkedHashMap</span>&lt;<span class="predefined-type">String</span>, CommandLine&gt;(interpreter.commands);
+    }
+    <span class="comment">/**
+     * Returns the command that this is a subcommand of, or {@code null} if this is a top-level command.
+     * @return the command that this is a subcommand of, or {@code null} if this is a top-level command
+     * @see #addSubcommand(String, Object)
+     * @see Command#subcommands()
+     * @since 0.9.8
+     */</span>
+    <span class="directive">public</span> CommandLine getParent() {
+        <span class="keyword">return</span> parent;
     }
 
     <span class="comment">/**
      * Returns the annotated object that this {@code CommandLine} instance was constructed with.
      * @return the annotated object that this {@code CommandLine} instance was constructed with
+     * @since 0.9.7
      */</span>
     <span class="directive">public</span> <span class="predefined-type">Object</span> getCommand() {
         <span class="keyword">return</span> interpreter.command;
     }
 
+    <span class="comment">/** Returns {@code true} if an option annotated with {@link Option#usageHelp()} was specified on the command line.
+     * @return whether the parser encountered an option annotated with {@link Option#usageHelp()}  */</span>
+    <span class="directive">public</span> <span class="type">boolean</span> isUsageHelpRequested() { <span class="keyword">return</span> usageHelpRequested; }
+
+    <span class="comment">/** Returns {@code true} if an option annotated with {@link Option#versionHelp()} was specified on the command line.
+     * @return whether the parser encountered an option annotated with {@link Option#versionHelp()}  */</span>
+    <span class="directive">public</span> <span class="type">boolean</span> isVersionHelpRequested() { <span class="keyword">return</span> versionHelpRequested; }
+
     <span class="comment">/** Returns whether options for single-value fields can be specified multiple times on the command line.
      * The default is {@code false} and a {@link OverwrittenOptionException} is thrown if this happens.
      * When {@code true}, the last specified value is retained.
      * @return {@code true} if options for single-value fields can be specified multiple times on the command line, {@code false} otherwise
+     * @since 0.9.7
      */</span>
     <span class="directive">public</span> <span class="type">boolean</span> isOverwrittenOptionsAllowed() {
         <span class="keyword">return</span> overwrittenOptionsAllowed;
@@ -2674,6 +2896,7 @@ Here is the source. Copy and paste it into a file called <code>CommandLine.java<
      * subcommands, call the setter last, after adding subcommands.&lt;/p&gt;
      * @param newValue the new setting
      * @return this {@code CommandLine} object, to allow method chaining
+     * @since 0.9.7
      */</span>
     <span class="directive">public</span> CommandLine setOverwrittenOptionsAllowed(<span class="type">boolean</span> newValue) {
         <span class="local-variable">this</span>.overwrittenOptionsAllowed = newValue;
@@ -2688,6 +2911,7 @@ Here is the source. Copy and paste it into a file called <code>CommandLine.java<
      * When {@code true}, the last unmatched arguments are available via the {@link #getUnmatchedArguments()} method.
      * @return {@code true} if the end use may specify unmatched arguments on the command line, {@code false} otherwise
      * @see #getUnmatchedArguments()
+     * @since 0.9.7
      */</span>
     <span class="directive">public</span> <span class="type">boolean</span> isUnmatchedArgumentsAllowed() {
         <span class="keyword">return</span> unmatchedArgumentsAllowed;
@@ -2700,6 +2924,7 @@ Here is the source. Copy and paste it into a file called <code>CommandLine.java<
      * subcommands, call the setter last, after adding subcommands.&lt;/p&gt;
      * @param newValue the new setting
      * @return this {@code CommandLine} object, to allow method chaining
+     * @since 0.9.7
      */</span>
     <span class="directive">public</span> CommandLine setUnmatchedArgumentsAllowed(<span class="type">boolean</span> newValue) {
         <span class="local-variable">this</span>.unmatchedArgumentsAllowed = newValue;
@@ -2712,6 +2937,7 @@ Here is the source. Copy and paste it into a file called <code>CommandLine.java<
     <span class="comment">/** Returns the list of unmatched command line arguments, if any.
      * @return the list of unmatched command line arguments or an empty list
      * @see #isUnmatchedArgumentsAllowed()
+     * @since 0.9.7
      */</span>
     <span class="directive">public</span> <span class="predefined-type">List</span>&lt;<span class="predefined-type">String</span>&gt; getUnmatchedArguments() {
         <span class="keyword">return</span> unmatchedArguments;
@@ -2735,6 +2961,7 @@ Here is the source. Copy and paste it into a file called <code>CommandLine.java<
      * @return the specified annotated object
      * @throws IllegalArgumentException if the specified command object does not have a {@link Command}, {@link Option} or {@link Parameters} annotation
      * @throws ParameterException if the specified command line arguments are invalid
+     * @since 0.9.7
      */</span>
     <span class="directive">public</span> <span class="directive">static</span> &lt;T&gt; T populateCommand(T command, <span class="predefined-type">String</span>... args) {
         CommandLine cli = toCommandLine(command);
@@ -2810,7 +3037,7 @@ Here is the source. Copy and paste it into a file called <code>CommandLine.java<
         usage(out, Help.defaultColorScheme(ansi));
     }
     <span class="comment">/**
-     * Prints a usage help message for the specified annotated class to the specified {@code PrintStream}.
+     * Prints a usage help message for the annotated command class to the specified {@code PrintStream}.
      * Delegates construction of the usage help message to the {@link Help} inner class and is equivalent to:
      * &lt;pre&gt;
      * Help help = new Help(command).addAllSubcommands(getSubcommands());
@@ -2847,7 +3074,7 @@ Here is the source. Copy and paste it into a file called <code>CommandLine.java<
                 .append(help.headerHeading())
                 .append(help.header())
                 .append(help.synopsisHeading())      <span class="comment">//e.g. Usage:</span>
-                .append(help.synopsis())             <span class="comment">//e.g. &amp;lt;main class&amp;gt; [OPTIONS] &amp;lt;command&amp;gt; [COMMAND-OPTIONS] [ARGUMENTS]</span>
+                .append(help.synopsis(help.synopsisHeadingLength())) <span class="comment">//e.g. &amp;lt;main class&amp;gt; [OPTIONS] &amp;lt;command&amp;gt; [COMMAND-OPTIONS] [ARGUMENTS]</span>
                 .append(help.descriptionHeading())   <span class="comment">//e.g. %nDescription:%n%n</span>
                 .append(help.description())          <span class="comment">//e.g. {&quot;Converts foos to bars.&quot;, &quot;Use options to control conversion mode.&quot;}</span>
                 .append(help.parameterListHeading()) <span class="comment">//e.g. %nPositional parameters:%n%n</span>
@@ -2859,6 +3086,29 @@ Here is the source. Copy and paste it into a file called <code>CommandLine.java<
                 .append(help.footerHeading())
                 .append(help.footer());
         out.print(sb);
+    }
+
+    <span class="comment">/**
+     * Delegates to {@link #printVersionHelp(PrintStream, Help.Ansi)} with the {@linkplain Help.Ansi#AUTO platform default}.
+     * @param out the printStream to print to
+     * @see #printVersionHelp(PrintStream, Help.Ansi)
+     */</span>
+    <span class="directive">public</span> <span class="type">void</span> printVersionHelp(<span class="predefined-type">PrintStream</span> out) { printVersionHelp(out, Help.Ansi.AUTO); }
+
+    <span class="comment">/**
+     * Prints version information from the {@link Command#version()} annotation to the specified {@code PrintStream}.
+     * Each element of the array of version strings is printed on a separate line. Version strings may contain
+     * &lt;a href=&quot;http://picocli.info/#_usage_help_with_styles_and_colors&quot;&gt;markup for colors and style&lt;/a&gt;.
+     * @param out the printStream to print to
+     * @param ansi whether the usage message should include ANSI escape codes or not
+     * @see Command#version()
+     * @see Option#versionHelp()
+     * @see #isVersionHelpRequested()
+     */</span>
+    <span class="directive">public</span> <span class="type">void</span> printVersionHelp(<span class="predefined-type">PrintStream</span> out, Help.Ansi ansi) {
+        <span class="keyword">for</span> (<span class="predefined-type">String</span> versionInfo : versionLines) {
+            out.println(ansi.new Text(versionInfo));
+        }
     }
 
     <span class="comment">/**
@@ -3077,6 +3327,40 @@ Here is the source. Copy and paste it into a file called <code>CommandLine.java<
          * @return whether this option disables validation of the other arguments
          */</span>
         <span class="type">boolean</span> help() <span class="keyword">default</span> <span class="predefined-constant">false</span>;
+
+        <span class="comment">/**
+         * Set {@code usageHelp=true} if this option allows the user to request usage help. If this option is
+         * specified on the command line, picocli will not validate the remaining arguments (so no &quot;missing required
+         * option&quot; errors) and the {@link CommandLine#isUsageHelpRequested()} method will return {@code true}.
+         * &lt;p&gt;
+         * This attribute is useful for special options like help ({@code -h} and {@code --help} on unix,
+         * {@code -?} and {@code -Help} on Windows).
+         * &lt;/p&gt;
+         * &lt;p&gt;
+         * Note that the {@link #parse(String...)} method will not print usage help documentation. It will only set
+         * the value of the annotated field. It is the responsibility of the caller to inspect the annotated fields
+         * and take the appropriate action.
+         * &lt;/p&gt;
+         * @return whether this option allows the user to request usage help
+         */</span>
+        <span class="type">boolean</span> usageHelp() <span class="keyword">default</span> <span class="predefined-constant">false</span>;
+
+        <span class="comment">/**
+         * Set {@code versionHelp=true} if this option allows the user to request version information. If this option is
+         * specified on the command line, picocli will not validate the remaining arguments (so no &quot;missing required
+         * option&quot; errors) and the {@link CommandLine#isVersionHelpRequested()} method will return {@code true}.
+         * &lt;p&gt;
+         * This attribute is useful for special options like version ({@code -V} and {@code --version} on unix,
+         * {@code -Version} on Windows).
+         * &lt;/p&gt;
+         * &lt;p&gt;
+         * Note that the {@link #parse(String...)} method will not print version information. It will only set
+         * the value of the annotated field. It is the responsibility of the caller to inspect the annotated fields
+         * and take the appropriate action.
+         * &lt;/p&gt;
+         * @return whether this option allows the user to request version information
+         */</span>
+        <span class="type">boolean</span> versionHelp() <span class="keyword">default</span> <span class="predefined-constant">false</span>;
 
         <span class="comment">/**
          * Description of this option, used when generating the usage documentation.
@@ -3299,15 +3583,53 @@ Here is the source. Copy and paste it into a file called <code>CommandLine.java<
     <span class="annotation">@Target</span>(<span class="predefined-type">ElementType</span>.TYPE)
     <span class="directive">public</span> <span class="annotation">@interface</span> Command {
         <span class="comment">/** Program name to show in the synopsis. If omitted, {@code &quot;&lt;main class&gt;&quot;} is used.
+         * For {@linkplain #subcommands() declaratively added} subcommands, this attribute is also used
+         * by the parser to recognize subcommands in the command line arguments.
          * @return the program name to show in the synopsis
          * @see Help#commandName */</span>
         <span class="predefined-type">String</span> name() <span class="keyword">default</span> <span class="string"><span class="delimiter">&quot;</span><span class="content">&lt;main class&gt;</span><span class="delimiter">&quot;</span></span>;
+
+        <span class="comment">/** A list of classes to instantiate and register as subcommands. When registering subcommands declaratively
+         * like this, you don't need to call the {@link CommandLine#addSubcommand(String, Object)} method. For example, this:
+         * &lt;pre&gt;
+         * &amp;#064;Command(subcommands = {
+         *         GitStatus.class,
+         *         GitCommit.class,
+         *         GitBranch.class })
+         * public class Git { ... }
+         *
+         * CommandLine commandLine = new CommandLine(new Git());
+         * &lt;/pre&gt; is equivalent to this:
+         * &lt;pre&gt;
+         * // alternative: programmatically add subcommands.
+         * // NOTE: in this case there should be no `subcommands` attribute on the @Command annotation.
+         * &amp;#064;Command public class Git { ... }
+         *
+         * CommandLine commandLine = new CommandLine(new Git())
+         *         .addSubcommand(&quot;status&quot;,   new GitStatus())
+         *         .addSubcommand(&quot;commit&quot;,   new GitCommit())
+         *         .addSubcommand(&quot;branch&quot;,   new GitBranch());
+         * &lt;/pre&gt;
+         * @return the declaratively registered subcommands of this command, or an empty array if none
+         * @see CommandLine#addSubcommand(String, Object)
+         * @since 0.9.8
+         */</span>
+        <span class="predefined-type">Class</span>&lt;?&gt;<span class="type">[]</span> subcommands() <span class="keyword">default</span> {};
 
         <span class="comment">/** String that separates options from option parameters. Default is {@code &quot;=&quot;}. Spaces are also accepted.
          * @return the string that separates options from option parameters, used both when parsing and when generating usage help
          * @see Help#separator
          * @see CommandLine#setSeparator(String) */</span>
         <span class="predefined-type">String</span> separator() <span class="keyword">default</span> <span class="string"><span class="delimiter">&quot;</span><span class="content">=</span><span class="delimiter">&quot;</span></span>;
+
+        <span class="comment">/** Version information for this command, to print to the console when the user specifies an
+         * {@linkplain Option#versionHelp() option} to request version help. This is not part of the usage help message.
+         *
+         * @return a string or an array of strings with version information about this command.
+         * @since 0.9.8
+         * @see CommandLine#printVersionHelp(PrintStream)
+         */</span>
+        <span class="predefined-type">String</span><span class="type">[]</span> version() <span class="keyword">default</span> {};
 
         <span class="comment">/** Set the heading preceding the header section. May contain embedded {@linkplain java.util.Formatter format specifiers}.
          * @return the heading preceding the header section
@@ -3443,7 +3765,9 @@ Here is the source. Copy and paste it into a file called <code>CommandLine.java<
          */</span>
         K convert(<span class="predefined-type">String</span> value) <span class="directive">throws</span> <span class="exception">Exception</span>;
     }
-    <span class="comment">/** Describes the number of parameters required and accepted by an option or a positional parameter. */</span>
+    <span class="comment">/** Describes the number of parameters required and accepted by an option or a positional parameter.
+     * @since 0.9.7
+     */</span>
     <span class="directive">public</span> <span class="directive">static</span> <span class="type">class</span> <span class="class">Range</span> <span class="directive">implements</span> <span class="predefined-type">Comparable</span>&lt;Range&gt; {
         <span class="comment">/** Required number of parameters for an option or positional parameter. */</span>
         <span class="directive">public</span> <span class="directive">final</span> <span class="type">int</span> min;
@@ -3679,6 +4003,29 @@ Here is the source. Copy and paste it into a file called <code>CommandLine.java<
                     hasCommandAnnotation = <span class="predefined-constant">true</span>;
                     Command cmd = cls.getAnnotation(Command.class);
                     declaredSeparator = (declaredSeparator == <span class="predefined-constant">null</span>) ? cmd.separator() : declaredSeparator;
+                    CommandLine.this.versionLines.addAll(<span class="predefined-type">Arrays</span>.asList(cmd.version()));
+
+                    <span class="keyword">for</span> (<span class="predefined-type">Class</span>&lt;?&gt; sub : cmd.subcommands()) {
+                        Command subCommand = sub.getAnnotation(Command.class);
+                        <span class="keyword">if</span> (subCommand == <span class="predefined-constant">null</span> || Help.DEFAULT_COMMAND_NAME.equals(subCommand.name())) {
+                            <span class="keyword">throw</span> <span class="keyword">new</span> <span class="exception">IllegalArgumentException</span>(<span class="string"><span class="delimiter">&quot;</span><span class="content">Subcommand </span><span class="delimiter">&quot;</span></span> + sub.getName() +
+                                    <span class="string"><span class="delimiter">&quot;</span><span class="content"> is missing the mandatory @Command annotation with a 'name' attribute</span><span class="delimiter">&quot;</span></span>);
+                        }
+                        <span class="keyword">try</span> {
+                            <span class="predefined-type">Constructor</span>&lt;?&gt; constructor = sub.getDeclaredConstructor();
+                            constructor.setAccessible(<span class="predefined-constant">true</span>);
+                            CommandLine commandLine = toCommandLine(constructor.newInstance());
+                            commandLine.parent = CommandLine.this;
+                            commands.put(subCommand.name(), commandLine);
+                        }
+                        <span class="keyword">catch</span> (<span class="exception">IllegalArgumentException</span> ex) { <span class="keyword">throw</span> ex; }
+                        <span class="keyword">catch</span> (<span class="exception">NoSuchMethodException</span> ex) { <span class="keyword">throw</span> <span class="keyword">new</span> <span class="exception">IllegalArgumentException</span>(<span class="string"><span class="delimiter">&quot;</span><span class="content">Cannot instantiate subcommand </span><span class="delimiter">&quot;</span></span> +
+                                sub.getName() + <span class="string"><span class="delimiter">&quot;</span><span class="content">: the class has no constructor</span><span class="delimiter">&quot;</span></span>, ex); }
+                        <span class="keyword">catch</span> (<span class="exception">Exception</span> ex) {
+                            <span class="keyword">throw</span> <span class="keyword">new</span> <span class="exception">IllegalStateException</span>(<span class="string"><span class="delimiter">&quot;</span><span class="content">Could not instantiate and add subcommand </span><span class="delimiter">&quot;</span></span> +
+                                    sub.getName() + <span class="string"><span class="delimiter">&quot;</span><span class="content">: </span><span class="delimiter">&quot;</span></span> + ex, ex);
+                        }
+                    }
                 }
                 cls = cls.getSuperclass();
             }
@@ -3712,6 +4059,9 @@ Here is the source. Copy and paste it into a file called <code>CommandLine.java<
         <span class="directive">private</span> <span class="type">void</span> parse(<span class="predefined-type">List</span>&lt;CommandLine&gt; parsedCommands, <span class="predefined-type">Stack</span>&lt;<span class="predefined-type">String</span>&gt; argumentStack, <span class="predefined-type">String</span><span class="type">[]</span> originalArgs) {
             <span class="comment">// first reset any state in case this CommandLine instance is being reused</span>
             isHelpRequested = <span class="predefined-constant">false</span>;
+            CommandLine.this.versionHelpRequested = <span class="predefined-constant">false</span>;
+            CommandLine.this.usageHelpRequested = <span class="predefined-constant">false</span>;
+
             parsedCommands.add(CommandLine.this);
             <span class="predefined-type">List</span>&lt;<span class="predefined-type">Field</span>&gt; required = <span class="keyword">new</span> <span class="predefined-type">ArrayList</span>&lt;<span class="predefined-type">Field</span>&gt;(requiredFields);
             <span class="predefined-type">Set</span>&lt;<span class="predefined-type">Field</span>&gt; initialized = <span class="keyword">new</span> <span class="predefined-type">HashSet</span>&lt;<span class="predefined-type">Field</span>&gt;();
@@ -3725,7 +4075,7 @@ Here is the source. Copy and paste it into a file called <code>CommandLine.java<
                 <span class="predefined-type">String</span> arg = offendingArgIndex &gt;= <span class="integer">0</span> &amp;&amp; offendingArgIndex &lt; originalArgs.length ? originalArgs[offendingArgIndex] : <span class="string"><span class="delimiter">&quot;</span><span class="content">?</span><span class="delimiter">&quot;</span></span>;
                 <span class="keyword">throw</span> ParameterException.create(ex, arg, argumentStack.size(), originalArgs);
             }
-            <span class="keyword">if</span> (!isHelpRequested &amp;&amp; !required.isEmpty()) {
+            <span class="keyword">if</span> (!isAnyHelpRequested() &amp;&amp; !required.isEmpty()) {
                 <span class="keyword">if</span> (required.get(<span class="integer">0</span>).isAnnotationPresent(<span class="predefined-type">Option</span>.class)) {
                     <span class="keyword">throw</span> MissingParameterException.create(required);
                 } <span class="keyword">else</span> {
@@ -3947,7 +4297,8 @@ Here is the source. Copy and paste it into a file called <code>CommandLine.java<
                     <span class="keyword">if</span> (value != <span class="predefined-constant">null</span>) {
                         args.push(value); <span class="comment">// we don't consume the value</span>
                     }
-                    value = <span class="string"><span class="delimiter">&quot;</span><span class="content">true</span><span class="delimiter">&quot;</span></span>;      <span class="comment">// just specifying the option name sets the boolean to true</span>
+                    <span class="predefined-type">Boolean</span> currentValue = (<span class="predefined-type">Boolean</span>) field.get(command);
+                    value = <span class="predefined-type">String</span>.valueOf(currentValue == <span class="predefined-constant">null</span> ? <span class="predefined-constant">true</span> : !currentValue); <span class="comment">// #147 toggle existing boolean value</span>
                 }
             }
             <span class="keyword">if</span> (noMoreValues &amp;&amp; value == <span class="predefined-constant">null</span>) {
@@ -4106,7 +4457,7 @@ Here is the source. Copy and paste it into a file called <code>CommandLine.java<
             } <span class="keyword">catch</span> (ParameterException ex) {
                 <span class="keyword">throw</span> <span class="keyword">new</span> ParameterException(ex.getMessage() + optionDescription(<span class="string"><span class="delimiter">&quot;</span><span class="content"> for </span><span class="delimiter">&quot;</span></span>, field, index));
             } <span class="keyword">catch</span> (<span class="exception">Exception</span> other) {
-                <span class="predefined-type">String</span> desc = optionDescription(<span class="string"><span class="delimiter">&quot;</span><span class="content"> for </span><span class="delimiter">&quot;</span></span>, field, index);
+                <span class="predefined-type">String</span> desc = optionDescription(<span class="string"><span class="delimiter">&quot;</span><span class="content"> for </span><span class="delimiter">&quot;</span></span>, field, index) + <span class="string"><span class="delimiter">&quot;</span><span class="content">: </span><span class="delimiter">&quot;</span></span> + other;
                 <span class="keyword">throw</span> <span class="keyword">new</span> ParameterException(<span class="string"><span class="delimiter">&quot;</span><span class="content">Could not convert '</span><span class="delimiter">&quot;</span></span> + value + <span class="string"><span class="delimiter">&quot;</span><span class="content">' to </span><span class="delimiter">&quot;</span></span> + type.getSimpleName() + desc, other);
             }
         }
@@ -4140,9 +4491,13 @@ Here is the source. Copy and paste it into a file called <code>CommandLine.java<
             <span class="keyword">throw</span> <span class="keyword">new</span> <span class="exception">IllegalStateException</span>(field + <span class="string"><span class="delimiter">&quot;</span><span class="content"> has neither @Parameters nor @Option annotation</span><span class="delimiter">&quot;</span></span>);
         }
 
+        <span class="directive">private</span> <span class="type">boolean</span> isAnyHelpRequested() { <span class="keyword">return</span> isHelpRequested || versionHelpRequested || usageHelpRequested; }
+
         <span class="directive">private</span> <span class="type">void</span> updateHelpRequested(<span class="predefined-type">Field</span> field) {
             <span class="keyword">if</span> (field.isAnnotationPresent(<span class="predefined-type">Option</span>.class)) {
-                isHelpRequested |= field.getAnnotation(<span class="predefined-type">Option</span>.class).help();
+                isHelpRequested                       |= field.getAnnotation(<span class="predefined-type">Option</span>.class).help();
+                CommandLine.this.versionHelpRequested |= field.getAnnotation(<span class="predefined-type">Option</span>.class).versionHelp();
+                CommandLine.this.usageHelpRequested   |= field.getAnnotation(<span class="predefined-type">Option</span>.class).usageHelp();
             }
         }
 
@@ -4391,6 +4746,8 @@ Here is the source. Copy and paste it into a file called <code>CommandLine.java<
         <span class="comment">/** Constant String holding the default program name: {@value} */</span>
         <span class="directive">protected</span> <span class="directive">static</span> <span class="directive">final</span> <span class="predefined-type">String</span> DEFAULT_COMMAND_NAME = <span class="string"><span class="delimiter">&quot;</span><span class="content">&lt;main class&gt;</span><span class="delimiter">&quot;</span></span>;
 
+        <span class="directive">private</span> <span class="directive">final</span> <span class="directive">static</span> <span class="type">int</span> usageHelpWidth = <span class="integer">80</span>;
+        <span class="directive">private</span> <span class="directive">final</span> <span class="directive">static</span> <span class="type">int</span> optionsColumnWidth = <span class="integer">2</span> + <span class="integer">2</span> + <span class="integer">1</span> + <span class="integer">24</span>;
         <span class="directive">private</span> <span class="directive">final</span> <span class="predefined-type">Object</span> command;
         <span class="directive">private</span> <span class="directive">final</span> <span class="predefined-type">Map</span>&lt;<span class="predefined-type">String</span>, Help&gt; commands = <span class="keyword">new</span> <span class="predefined-type">LinkedHashMap</span>&lt;<span class="predefined-type">String</span>, Help&gt;();
         <span class="directive">final</span> ColorScheme colorScheme;
@@ -4570,16 +4927,26 @@ Here is the source. Copy and paste it into a file called <code>CommandLine.java<
             <span class="keyword">return</span> <span class="local-variable">this</span>;
         }
 
-        <span class="comment">/**
-         * Returns a synopsis for the command.
+        <span class="comment">/** Returns a synopsis for the command without reserving space for the synopsis heading.
          * @return a synopsis
          * @see #abbreviatedSynopsis()
          * @see #detailedSynopsis(Comparator, boolean)
+         * @deprecated use {@link #synopsis(int)} instead
          */</span>
-        <span class="directive">public</span> <span class="predefined-type">String</span> synopsis() {
+        <span class="directive">public</span> <span class="predefined-type">String</span> synopsis() { <span class="keyword">return</span> synopsis(<span class="integer">0</span>); }
+
+        <span class="comment">/**
+         * Returns a synopsis for the command, reserving the specified space for the synopsis heading.
+         * @param synopsisHeadingLength the length of the synopsis heading that will be displayed on the same line
+         * @return a synopsis
+         * @see #abbreviatedSynopsis()
+         * @see #detailedSynopsis(Comparator, boolean)
+         * @see #synopsisHeading
+         */</span>
+        <span class="directive">public</span> <span class="predefined-type">String</span> synopsis(<span class="type">int</span> synopsisHeadingLength) {
             <span class="keyword">if</span> (!empty(customSynopsis)) { <span class="keyword">return</span> customSynopsis(); }
             <span class="keyword">return</span> abbreviateSynopsis ? abbreviatedSynopsis()
-                    : detailedSynopsis(createShortOptionArityAndNameComparator(), <span class="predefined-constant">true</span>);
+                    : detailedSynopsis(synopsisHeadingLength, createShortOptionArityAndNameComparator(), <span class="predefined-constant">true</span>);
         }
 
         <span class="comment">/** Generates a generic synopsis like {@code &lt;command name&gt; [OPTIONS] [PARAM1 [PARAM2]...]}, omitting parts
@@ -4599,13 +4966,23 @@ Here is the source. Copy and paste it into a file called <code>CommandLine.java<
             <span class="keyword">return</span> colorScheme.commandText(commandName).toString()
                     + (sb.toString()) + <span class="predefined-type">System</span>.getProperty(<span class="string"><span class="delimiter">&quot;</span><span class="content">line.separator</span><span class="delimiter">&quot;</span></span>);
         }
-
         <span class="comment">/** Generates a detailed synopsis message showing all options and parameters. Follows the unix convention of
          * showing optional options and parameters in square brackets ({@code [ ]}).
          * @param optionSort comparator to sort options or {@code null} if options should not be sorted
          * @param clusterBooleanOptions {@code true} if boolean short options should be clustered into a single string
-         * @return a detailed synopsis */</span>
+         * @return a detailed synopsis
+         * @deprecated use {@link #detailedSynopsis(int, Comparator, boolean)} instead. */</span>
         <span class="directive">public</span> <span class="predefined-type">String</span> detailedSynopsis(<span class="predefined-type">Comparator</span>&lt;<span class="predefined-type">Field</span>&gt; optionSort, <span class="type">boolean</span> clusterBooleanOptions) {
+            <span class="keyword">return</span> detailedSynopsis(<span class="integer">0</span>, optionSort, clusterBooleanOptions);
+        }
+
+        <span class="comment">/** Generates a detailed synopsis message showing all options and parameters. Follows the unix convention of
+         * showing optional options and parameters in square brackets ({@code [ ]}).
+         * @param synopsisHeadingLength the length of the synopsis heading that will be displayed on the same line
+         * @param optionSort comparator to sort options or {@code null} if options should not be sorted
+         * @param clusterBooleanOptions {@code true} if boolean short options should be clustered into a single string
+         * @return a detailed synopsis */</span>
+        <span class="directive">public</span> <span class="predefined-type">String</span> detailedSynopsis(<span class="type">int</span> synopsisHeadingLength, <span class="predefined-type">Comparator</span>&lt;<span class="predefined-type">Field</span>&gt; optionSort, <span class="type">boolean</span> clusterBooleanOptions) {
             Text optionText = ansi().new Text(<span class="integer">0</span>);
             <span class="predefined-type">List</span>&lt;<span class="predefined-type">Field</span>&gt; fields = <span class="keyword">new</span> <span class="predefined-type">ArrayList</span>&lt;<span class="predefined-type">Field</span>&gt;(optionFields); <span class="comment">// iterate in declaration order</span>
             <span class="keyword">if</span> (optionSort != <span class="predefined-constant">null</span>) {
@@ -4660,10 +5037,25 @@ Here is the source. Copy and paste it into a file called <code>CommandLine.java<
                     optionText = optionText.append(label);
                 }
             }
-            TextTable textTable = <span class="keyword">new</span> TextTable(ansi(), commandName.length(), <span class="integer">80</span> - commandName.length());
+            <span class="comment">// Fix for #142: first line of synopsis overshoots max. characters</span>
+            <span class="type">int</span> firstColumnLength = commandName.length() + synopsisHeadingLength;
+
+            <span class="comment">// synopsis heading (&quot;Usage: &quot;) may be on the same line, so adjust column width</span>
+            TextTable textTable = <span class="keyword">new</span> TextTable(ansi(), firstColumnLength, usageHelpWidth - firstColumnLength);
             textTable.indentWrappedLines = <span class="integer">1</span>; <span class="comment">// don't worry about first line: options (2nd column) always start with a space</span>
-            textTable.addRowValues(<span class="keyword">new</span> Text<span class="type">[]</span> {colorScheme.commandText(commandName), optionText});
-            <span class="keyword">return</span> textTable.toString();
+
+            <span class="comment">// right-adjust the command name by length of synopsis heading</span>
+            Text PADDING = Ansi.OFF.new Text(spaces(synopsisHeadingLength));
+            textTable.addRowValues(<span class="keyword">new</span> Text<span class="type">[]</span> {PADDING.append(colorScheme.commandText(commandName)), optionText});
+            <span class="keyword">return</span> textTable.toString().substring(synopsisHeadingLength); <span class="comment">// cut off leading synopsis heading spaces</span>
+        }
+        <span class="comment">/** Returns the number of characters the synopsis heading will take on the same line as the synopsis.
+         * @return the number of characters the synopsis heading will take on the same line as the synopsis.
+         * @see #detailedSynopsis(int, Comparator, boolean)
+         */</span>
+        <span class="directive">public</span> <span class="type">int</span> synopsisHeadingLength() {
+            <span class="predefined-type">String</span><span class="type">[]</span> lines = Ansi.OFF.new Text(synopsisHeading).toString().split(<span class="string"><span class="delimiter">&quot;</span><span class="char">\\</span><span class="content">r?</span><span class="char">\\</span><span class="content">n|</span><span class="char">\\</span><span class="content">r|%n</span><span class="delimiter">&quot;</span></span>, -<span class="integer">1</span>);
+            <span class="keyword">return</span> lines[lines.length - <span class="integer">1</span>].length();
         }
         <span class="comment">/**
          * &lt;p&gt;Returns a description of the {@linkplain Option options} supported by the application.
@@ -4723,7 +5115,7 @@ Here is the source. Copy and paste it into a file called <code>CommandLine.java<
          * @return the specified StringBuilder */</span>
         <span class="directive">public</span> <span class="directive">static</span> <span class="predefined-type">StringBuilder</span> join(Ansi ansi, <span class="predefined-type">String</span><span class="type">[]</span> values, <span class="predefined-type">StringBuilder</span> sb, <span class="predefined-type">Object</span>... params) {
             <span class="keyword">if</span> (values != <span class="predefined-constant">null</span>) {
-                TextTable table = <span class="keyword">new</span> TextTable(ansi, <span class="integer">80</span>);
+                TextTable table = <span class="keyword">new</span> TextTable(ansi, usageHelpWidth);
                 table.indentWrappedLines = <span class="integer">0</span>;
                 <span class="keyword">for</span> (<span class="predefined-type">String</span> summaryLine : values) {
                     table.addRowValues(ansi.new Text(<span class="predefined-type">String</span>.format(summaryLine, params)));
@@ -4831,7 +5223,7 @@ Here is the source. Copy and paste it into a file called <code>CommandLine.java<
             <span class="type">int</span> commandLength = maxLength(commands.keySet());
             Help.TextTable textTable = <span class="keyword">new</span> Help.TextTable(ansi(),
                     <span class="keyword">new</span> Help.Column(commandLength + <span class="integer">2</span>, <span class="integer">2</span>, Help.Column.Overflow.SPAN),
-                    <span class="keyword">new</span> Help.Column(<span class="integer">80</span> - (commandLength + <span class="integer">2</span>), <span class="integer">2</span>, Help.Column.Overflow.WRAP));
+                    <span class="keyword">new</span> Help.Column(usageHelpWidth - (commandLength + <span class="integer">2</span>), <span class="integer">2</span>, Help.Column.Overflow.WRAP));
 
             <span class="keyword">for</span> (<span class="predefined-type">Map</span>.Entry&lt;<span class="predefined-type">String</span>, Help&gt; entry : commands.entrySet()) {
                 Help command = entry.getValue();
@@ -4853,6 +5245,11 @@ Here is the source. Copy and paste it into a file called <code>CommandLine.java<
                 result.append((i &gt; offset) ? separator : <span class="string"><span class="delimiter">&quot;</span><span class="delimiter">&quot;</span></span>).append(names[i]);
             }
             <span class="keyword">return</span> result.toString();
+        }
+        <span class="directive">private</span> <span class="directive">static</span> <span class="predefined-type">String</span> spaces(<span class="type">int</span> length) {
+            <span class="type">char</span><span class="type">[]</span> buff = <span class="keyword">new</span> <span class="type">char</span>[length];
+            <span class="predefined-type">Arrays</span>.fill(buff, <span class="string"><span class="delimiter">'</span><span class="content"> </span><span class="delimiter">'</span></span>);
+            <span class="keyword">return</span> <span class="keyword">new</span> <span class="predefined-type">String</span>(buff);
         }
 
         <span class="comment">/** Returns a {@code Layout} instance configured with the user preferences captured in this Help instance.
@@ -5351,11 +5748,11 @@ Here is the source. Copy and paste it into a file called <code>CommandLine.java<
             <span class="directive">public</span> TextTable(Ansi ansi) {
                 <span class="comment">// &quot;* -c, --create                Creates a ....&quot;</span>
                 <span class="local-variable">this</span>(ansi, <span class="keyword">new</span> Column<span class="type">[]</span> {
-                            <span class="keyword">new</span> Column(<span class="integer">2</span>,  <span class="integer">0</span>, TRUNCATE),   <span class="comment">// &quot;*&quot;</span>
-                            <span class="keyword">new</span> Column(<span class="integer">2</span>,  <span class="integer">0</span>, TRUNCATE),   <span class="comment">// &quot;-c&quot;</span>
-                            <span class="keyword">new</span> Column(<span class="integer">1</span>,  <span class="integer">0</span>, TRUNCATE),   <span class="comment">// &quot;,&quot;</span>
-                            <span class="keyword">new</span> Column(<span class="integer">24</span>, <span class="integer">1</span>, SPAN),  <span class="comment">// &quot; --create&quot;</span>
-                            <span class="keyword">new</span> Column(<span class="integer">51</span>, <span class="integer">1</span>, WRAP) <span class="comment">// &quot; Creates a ...&quot;</span>
+                            <span class="keyword">new</span> Column(<span class="integer">2</span>,                                        <span class="integer">0</span>, TRUNCATE), <span class="comment">// &quot;*&quot;</span>
+                            <span class="keyword">new</span> Column(<span class="integer">2</span>,                                        <span class="integer">0</span>, TRUNCATE), <span class="comment">// &quot;-c&quot;</span>
+                            <span class="keyword">new</span> Column(<span class="integer">1</span>,                                        <span class="integer">0</span>, TRUNCATE), <span class="comment">// &quot;,&quot;</span>
+                            <span class="keyword">new</span> Column(optionsColumnWidth - <span class="integer">2</span> - <span class="integer">2</span> - <span class="integer">1</span>       , <span class="integer">1</span>, SPAN),  <span class="comment">// &quot; --create&quot;</span>
+                            <span class="keyword">new</span> Column(usageHelpWidth - optionsColumnWidth, <span class="integer">1</span>, WRAP) <span class="comment">// &quot; Creates a ...&quot;</span>
                     });
             }
 
@@ -5503,6 +5900,10 @@ Here is the source. Copy and paste it into a file called <code>CommandLine.java<
                         <span class="keyword">break</span>;
                     }
                 }
+                <span class="keyword">if</span> (done == <span class="integer">0</span> &amp;&amp; length(text) &gt; columnValue.maxLength) {
+                    <span class="comment">// The value is a single word that is too big to be written to the column. Write as much as we can.</span>
+                    done = copy(text, columnValue, offset);
+                }
                 <span class="keyword">return</span> done;
             }
             <span class="directive">private</span> <span class="directive">static</span> <span class="type">int</span> copy(Text value, Text destination, <span class="type">int</span> offset) {
@@ -5516,7 +5917,7 @@ Here is the source. Copy and paste it into a file called <code>CommandLine.java<
              * @return the specified StringBuilder object (to allow method chaining and a more fluid API) */</span>
             <span class="directive">public</span> <span class="predefined-type">StringBuilder</span> toString(<span class="predefined-type">StringBuilder</span> text) {
                 <span class="type">int</span> columnCount = <span class="local-variable">this</span>.columns.length;
-                <span class="predefined-type">StringBuilder</span> row = <span class="keyword">new</span> <span class="predefined-type">StringBuilder</span>(<span class="integer">80</span>);
+                <span class="predefined-type">StringBuilder</span> row = <span class="keyword">new</span> <span class="predefined-type">StringBuilder</span>(usageHelpWidth);
                 <span class="keyword">for</span> (<span class="type">int</span> i = <span class="integer">0</span>; i &lt; columnValues.size(); i++) {
                     Text column = columnValues.get(i);
                     row.append(column.toString());
@@ -5834,8 +6235,12 @@ Here is the source. Copy and paste it into a file called <code>CommandLine.java<
                     all[all.length - i - <span class="integer">1</span>] = temp;
                 }
             }
-            <span class="comment">/** &lt;p&gt;Encapsulates rich text with styles and colors in a way that other components like {@link TextTable}
-             * are unaware of the embedded ANSI escape codes.&lt;/p&gt; */</span>
+            <span class="comment">/** Encapsulates rich text with styles and colors. Text objects may be constructed with Strings containing
+             * markup like {@code @|bg(red),white,underline some text|@}, and this class converts the markup to ANSI
+             * escape codes.
+             * &lt;p&gt;
+             * Internally keeps both an enriched and a plain text representation to allow layout components to calculate
+             * text width while remaining unaware of the embedded ANSI escape codes.&lt;/p&gt; */</span>
             <span class="directive">public</span> <span class="type">class</span> <span class="class">Text</span> <span class="directive">implements</span> <span class="predefined-type">Cloneable</span> {
                 <span class="directive">private</span> <span class="directive">final</span> <span class="type">int</span> maxLength;
                 <span class="directive">private</span> <span class="type">int</span> from;
@@ -6061,7 +6466,7 @@ Here is the source. Copy and paste it into a file called <code>CommandLine.java<
         <span class="directive">private</span> <span class="directive">static</span> ParameterException create(<span class="exception">Exception</span> ex, <span class="predefined-type">String</span> arg, <span class="type">int</span> i, <span class="predefined-type">String</span><span class="type">[]</span> args) {
             <span class="predefined-type">String</span> next = args.length &lt; i + <span class="integer">1</span> ? <span class="string"><span class="delimiter">&quot;</span><span class="delimiter">&quot;</span></span> : <span class="string"><span class="delimiter">&quot;</span><span class="content"> </span><span class="delimiter">&quot;</span></span> + args[i + <span class="integer">1</span>];
             <span class="predefined-type">String</span> msg = ex.getClass().getSimpleName() + <span class="string"><span class="delimiter">&quot;</span><span class="content">: </span><span class="delimiter">&quot;</span></span> + ex.getLocalizedMessage()
-                    + <span class="string"><span class="delimiter">&quot;</span><span class="content"> while processing option[</span><span class="delimiter">&quot;</span></span> + i + <span class="string"><span class="delimiter">&quot;</span><span class="content">] '</span><span class="delimiter">&quot;</span></span> + arg + next + <span class="string"><span class="delimiter">&quot;</span><span class="content">'.</span><span class="delimiter">&quot;</span></span>;
+                    + <span class="string"><span class="delimiter">&quot;</span><span class="content"> while processing option[</span><span class="delimiter">&quot;</span></span> + i + <span class="string"><span class="delimiter">&quot;</span><span class="content">] '</span><span class="delimiter">&quot;</span></span> + arg + next + <span class="string"><span class="delimiter">&quot;</span><span class="content">': </span><span class="delimiter">&quot;</span></span> + ex.toString();
             <span class="keyword">return</span> <span class="keyword">new</span> ParameterException(msg, ex);
         }
     }
@@ -6139,8 +6544,8 @@ Here is the source. Copy and paste it into a file called <code>CommandLine.java<
 </div>
 <div id="footer">
 <div id="footer-text">
-Version 0.9.7<br>
-Last updated 2017-06-08 00:58:33 +09:00
+Version 0.9.8<br>
+Last updated 2017-08-07 01:34:43 +09:00
 </div>
 </div>
 </body>
