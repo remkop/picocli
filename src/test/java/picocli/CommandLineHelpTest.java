@@ -1588,4 +1588,46 @@ public class CommandLineHelpTest {
                 new Help(new App(), explicit).synopsis(0));
     }
 
+    @Test
+    public void testCommandLine_printVersionInfo_printsSinglePlainTextString() throws Exception {
+        @Command(version = "1.0") class Versioned {}
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        new CommandLine(new Versioned()).printVersionHelp(new PrintStream(baos, true, "UTF8"), Help.Ansi.OFF);
+        String result = baos.toString("UTF8");
+        assertEquals(String.format("1.0%n"), result);
+    }
+
+    @Test
+    public void testCommandLine_printVersionInfo_printsArrayOfPlainTextStrings() throws Exception {
+        @Command(version = {"Versioned Command 1.0", "512-bit superdeluxe", "(c) 2017"}) class Versioned {}
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        new CommandLine(new Versioned()).printVersionHelp(new PrintStream(baos, true, "UTF8"), Help.Ansi.OFF);
+        String result = baos.toString("UTF8");
+        assertEquals(String.format("Versioned Command 1.0%n512-bit superdeluxe%n(c) 2017%n"), result);
+    }
+
+    @Test
+    public void testCommandLine_printVersionInfo_printsSingleStringWithMarkup() throws Exception {
+        @Command(version = "@|red 1.0|@") class Versioned {}
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        new CommandLine(new Versioned()).printVersionHelp(new PrintStream(baos, true, "UTF8"), Help.Ansi.ON);
+        String result = baos.toString("UTF8");
+        assertEquals(String.format("\u001B[31m1.0\u001B[39m\u001B[0m%n"), result);
+    }
+
+    @Test
+    public void testCommandLine_printVersionInfo_printsArrayOfStringsWithMarkup() throws Exception {
+        @Command(version = {
+                "@|yellow Versioned Command 1.0|@",
+                "@|blue Build 12345|@",
+                "@|red,bg(white) (c) 2017|@" })
+        class Versioned {}
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        new CommandLine(new Versioned()).printVersionHelp(new PrintStream(baos, true, "UTF8"), Help.Ansi.ON);
+        String result = baos.toString("UTF8");
+        assertEquals(String.format("" +
+                "\u001B[33mVersioned Command 1.0\u001B[39m\u001B[0m%n" +
+                "\u001B[34mBuild 12345\u001B[39m\u001B[0m%n" +
+                "\u001B[31m\u001B[47m(c) 2017\u001B[49m\u001B[39m\u001B[0m%n"), result);
+    }
 }

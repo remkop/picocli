@@ -425,7 +425,7 @@ boolean usageHelpRequested;
 Use these attributes for options that request the usage help message or version information to be shown on the console.
 
 CAUTION: Picocli does not automatically print a help message.
-(https://github.com/remkop/picocli/issues/161[This ticket] explains why not; feel free to add your comments.)
+(https://github.com/remkop/picocli/issues/161[This ticket] explains why not; feedback is welcome.)
 It is the responsibility of the application to check the field and show the usage help message.
 
 [source,java]
@@ -440,17 +440,75 @@ if (app.usageHelpRequested) {
 Since version 0.9.8, the `CommandLine` class offers two methods that allow external components to detect whether
 usage help or version information was requested (without inspecting the annotated domain object):
 
-* `CommandLine::isUsageHelpRequested` returns `true` if the parser matched an option annotated with `usageHelp=true`
-* `CommandLine::isVersionHelpRequested` returns `true` if the parser matched an option annotated with `versionHelp=true`
+* `CommandLine.isUsageHelpRequested()` returns `true` if the parser matched an option annotated with `usageHelp=true`
+* `CommandLine.isVersionHelpRequested()` returns `true` if the parser matched an option annotated with `versionHelp=true`
 
 [source,java]
 ----
-List<CommandLine> parsedCommands = new CommandLine(new App()).parse(args);
-if (parsedCommands.get(0).isUsageHelpRequested()) {
-   parsedCommands.get(0).usage(System.err);
+CommandLine commandLine = new CommandLine(new App());
+commandLine.parse(args);
+if (commandLine.isUsageHelpRequested()) {
+   commandLine.usage(System.err);
+   return;
+} else if (commandLine.isVersionHelpRequested()) {
+   commandLine.printVersionHelp(System.err);
    return;
 }
 ----
+
+== Version Help
+Since 0.9.8, applications can specify version information in the `version` attribute of the `@Command` annotation.
+
+[source,java]
+----
+@Command(version = "1.0")
+class VersionedCommand {
+    @Option(names = { "-V", "--version" }, versionHelp = true,
+            description = "print version information and exit")
+    boolean versionRequested;
+    ...
+----
+
+The `CommandLine.printVersionHelp(PrintStream)` method extracts the version information from this
+annotation and prints it to the specified `PrintStream`.
+[source,java]
+----
+CommandLine commandLine = new CommandLine(new VersionedCommand());
+commandLine.parse(args);
+if (commandLine.isVersionHelpRequested()) {
+    commandLine.printVersionHelp(System.err);
+    return;
+}
+----
+
+The version may specify multiple Strings. Each will be printed on a separate line.
+
+[source,java]
+----
+@Command(version = { "Versioned Command 1.0", "Build 12345", "(c) 2017" })
+class VersionedCommand { ... }
+----
+The `CommandLine.printVersionHelp(PrintStream)` method will print the above as:
+
+----
+Versioned Command 1.0
+Build 12345
+(c) 2017
+----
+
+The version strings may contain <<Usage Help with Styles and Colors,markup>> to show ANSI styles and colors. For example:
+
+[source,java]
+----
+@Command(version = {
+        "@|yellow Versioned Command 1.0|@",
+        "@|blue Build 12345|@",
+        "@|red,bg(white) (c) 2017|@" })
+class VersionedCommand { ... }
+----
+The markup will be rendered as ANSI escape codes on supported systems.
+
+image:VersionInfoWithColors.png[Screenshot of version information containing markup with Ansi styles and colors]
 
 
 == Usage Help
@@ -741,7 +799,7 @@ image:UsageHelpWithStyle.png[Screenshot of usage help with Ansi codes enabled]
 You can use colors and styles in the descriptions, header and footer
 of the usage help message.
 
-Picocli supports a custom notation for mixing colors and styles in text,
+Picocli supports a custom markup notation for mixing colors and styles in text,
 following a convention introduced by https://github.com/fusesource/jansi[Jansi], where
 `@|` starts a styled section, and `|@` ends it.
 Immediately following the `@|` is a comma-separated list of colors and styles, so `@|STYLE1[,STYLE2]... text|@`.
@@ -775,7 +833,7 @@ For example, `@|bg(red) text with red background|@`.
 Similarly, `fg(<color>)` explicitly sets the foreground color.
 
 
-The example below shows how this can be used to add colors and styles to the headings and descriptions of a usage help message:
+The example below shows how this markup can be used to add colors and styles to the headings and descriptions of a usage help message:
 
 [source,java]
 ----
@@ -792,7 +850,7 @@ The example below shows how this can be used to add colors and styles to the hea
 class GitCommit { ... }
 ----
 
-CAUTION: Styles cannot be nested, for example: `@|bold this @|underline that|@|@` will not work. You can achieve the same by combining styles, for example: `@|bold this|@ @|bold,underline that|@` will work fine.
+CAUTION: Markup styles cannot be nested, for example: `@|bold this @|underline that|@|@` will not work. You can achieve the same by combining styles, for example: `@|bold this|@ @|bold,underline that|@` will work fine.
 
 === More Colors
 Most terminals support a https://en.wikipedia.org/wiki/ANSI_escape_code#Colors[256 color indexed palette]:

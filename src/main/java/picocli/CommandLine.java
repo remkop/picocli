@@ -130,6 +130,7 @@ public class CommandLine {
     private CommandLine parent;
     private boolean usageHelpRequested;
     private boolean versionHelpRequested;
+    private List<String> versionLines = new ArrayList<String>();
 
     /**
      * Constructs a new {@code CommandLine} interpreter with the specified annotated object.
@@ -214,10 +215,12 @@ public class CommandLine {
         return interpreter.command;
     }
 
-    /** Returns {@code true} if an option annotated with {@link Option#usageHelp()} was specified on the command line.  */
+    /** Returns {@code true} if an option annotated with {@link Option#usageHelp()} was specified on the command line.
+     * @return whether the parser encountered an option annotated with {@link Option#usageHelp()}  */
     public boolean isUsageHelpRequested() { return usageHelpRequested; }
 
-    /** Returns {@code true} if an option annotated with {@link Option#versionHelp()} was specified on the command line.  */
+    /** Returns {@code true} if an option annotated with {@link Option#versionHelp()} was specified on the command line.
+     * @return whether the parser encountered an option annotated with {@link Option#versionHelp()}  */
     public boolean isVersionHelpRequested() { return versionHelpRequested; }
 
     /** Returns whether options for single-value fields can be specified multiple times on the command line.
@@ -378,7 +381,7 @@ public class CommandLine {
         usage(out, Help.defaultColorScheme(ansi));
     }
     /**
-     * Prints a usage help message for the specified annotated class to the specified {@code PrintStream}.
+     * Prints a usage help message for the annotated command class to the specified {@code PrintStream}.
      * Delegates construction of the usage help message to the {@link Help} inner class and is equivalent to:
      * <pre>
      * Help help = new Help(command).addAllSubcommands(getSubcommands());
@@ -427,6 +430,29 @@ public class CommandLine {
                 .append(help.footerHeading())
                 .append(help.footer());
         out.print(sb);
+    }
+
+    /**
+     * Delegates to {@link #printVersionHelp(PrintStream, Help.Ansi)} with the {@linkplain Help.Ansi#AUTO platform default}.
+     * @param out the printStream to print to
+     * @see #printVersionHelp(PrintStream, Help.Ansi)
+     */
+    public void printVersionHelp(PrintStream out) { printVersionHelp(out, Help.Ansi.AUTO); }
+
+    /**
+     * Prints version information from the {@link Command#version()} annotation to the specified {@code PrintStream}.
+     * Each element of the array of version strings is printed on a separate line. Version strings may contain
+     * <a href="http://picocli.info/#_usage_help_with_styles_and_colors">markup for colors and style</a>.
+     * @param out the printStream to print to
+     * @param ansi whether the usage message should include ANSI escape codes or not
+     * @see Command#version()
+     * @see Option#versionHelp()
+     * @see #isVersionHelpRequested()
+     */
+    public void printVersionHelp(PrintStream out, Help.Ansi ansi) {
+        for (String versionInfo : versionLines) {
+            out.println(ansi.new Text(versionInfo));
+        }
     }
 
     /**
@@ -940,6 +966,15 @@ public class CommandLine {
          * @see CommandLine#setSeparator(String) */
         String separator() default "=";
 
+        /** Version information for this command, to print to the console when the user specifies an
+         * {@linkplain Option#versionHelp() option} to request version help. This is not part of the usage help message.
+         *
+         * @return a string or an array of strings with version information about this command.
+         * @since 0.9.8
+         * @see CommandLine#printVersionHelp(PrintStream)
+         */
+        String[] version() default {};
+
         /** Set the heading preceding the header section. May contain embedded {@linkplain java.util.Formatter format specifiers}.
          * @return the heading preceding the header section
          * @see Help#headerHeading(Object...)  */
@@ -1312,6 +1347,7 @@ public class CommandLine {
                     hasCommandAnnotation = true;
                     Command cmd = cls.getAnnotation(Command.class);
                     declaredSeparator = (declaredSeparator == null) ? cmd.separator() : declaredSeparator;
+                    CommandLine.this.versionLines.addAll(Arrays.asList(cmd.version()));
 
                     for (Class<?> sub : cmd.subcommands()) {
                         Command subCommand = sub.getAnnotation(Command.class);
@@ -2274,7 +2310,12 @@ public class CommandLine {
             return colorScheme.commandText(commandName).toString()
                     + (sb.toString()) + System.getProperty("line.separator");
         }
-        /** @deprecated use {@link #detailedSynopsis(int, Comparator, boolean)} instead. */
+        /** Generates a detailed synopsis message showing all options and parameters. Follows the unix convention of
+         * showing optional options and parameters in square brackets ({@code [ ]}).
+         * @param optionSort comparator to sort options or {@code null} if options should not be sorted
+         * @param clusterBooleanOptions {@code true} if boolean short options should be clustered into a single string
+         * @return a detailed synopsis
+         * @deprecated use {@link #detailedSynopsis(int, Comparator, boolean)} instead. */
         public String detailedSynopsis(Comparator<Field> optionSort, boolean clusterBooleanOptions) {
             return detailedSynopsis(0, optionSort, clusterBooleanOptions);
         }
@@ -3538,8 +3579,12 @@ public class CommandLine {
                     all[all.length - i - 1] = temp;
                 }
             }
-            /** <p>Encapsulates rich text with styles and colors in a way that other components like {@link TextTable}
-             * are unaware of the embedded ANSI escape codes.</p> */
+            /** Encapsulates rich text with styles and colors. Text objects may be constructed with Strings containing
+             * markup like {@code @|bg(red),white,underline some text|@}, and this class converts the markup to ANSI
+             * escape codes.
+             * <p>
+             * Internally keeps both an enriched and a plain text representation to allow layout components to calculate
+             * text width while remaining unaware of the embedded ANSI escape codes.</p> */
             public class Text implements Cloneable {
                 private final int maxLength;
                 private int from;
