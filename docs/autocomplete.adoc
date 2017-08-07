@@ -1,8 +1,8 @@
-= Autocomplete for Java command line applications
+= Autocomplete for Java Command Line Applications
 //:author: Remko Popma
 //:email: rpopma@apache.org
-:revnumber: 0.9.8-SNAPSHOT
-:revdate: 2017-06-08
+:revnumber: 1.0.0-BETA1
+:revdate: 2017-08-07
 :toc: left
 :numbered:
 :toclevels: 3
@@ -133,36 +133,65 @@ DAYS     HOURS     MICROSECONDS  MILLISECONDS  MINUTES    NANOSECONDS   SECONDS
 
 == Generating the Completion Script
 
-Create a `CommandLine` instance with the full hierarchy of nested subcommands.
+If your application has no subcommands, or if all subcommands are declared with the `subcommands` attribute of the
+`@Command` annotation, you can run the `picocli.AutoComplete` class as a java application, passing it
+the fully qualified class name of the annotated `@Command` object.
+
+[source,bash]
+----
+$ java -cp picocli-1.0.0.jar picocli.AutoComplete com.myproject.MyCommand
+----
+
+`picocli.AutoComplete` will create a new `CommandLine` instance with your command, and generate a completion script
+in the current directory. Script generation has the following options:
+
+----
+Usage: picocli.AutoComplete [-fw] [-n=<commandName>] [-o=<autoCompleteScript>]
+                            <commandLineFQCN>
+
+      commandLineFQCN         Fully qualified class name of the annotated
+                                @Command class to generate a completion script
+                                for.
+  -f, --force                 Overwrite existing script files.
+  -n, --name=<commandName>    Name of the command to create a completion script
+                                for. When omitted, the annotated class @Command
+                                'name' attribute is used. If no @Command 'name'
+                                attribute exists, '<CLASS-SIMPLE-NAME>' (in
+                                lower-case) is used.
+  -o, --completionScript=<autoCompleteScript>
+                              Name of the completion script file to generate.
+                                When omitted, a file named
+                                '<commandName>_completion' is generated in the
+                                current directory.
+  -w, --writeCommandScript    Write a '<commandName>' sample command script to
+                                the same directory as the completion script.
+----
+
+If your application has subcommands but the subcommands are not specified on the `subcommands` attribute of the
+`@Command` annotation, you need to do a bit more work. You need to create a small program that does the following:
+
+* Create a `CommandLine` instance with the full hierarchy of nested subcommands.
+
 [source,java]
 ----
+// programmatically (see above for declarative example)
 CommandLine hierarchy = new CommandLine(new TopLevel())
         .addSubcommand("sub1", new Subcommand1())
         .addSubcommand("sub2", new Subcommand2());
 ----
 
-Pass this `CommandLine` instance and the name of the script to the `picocli.AutoComplete::bash` method. The method will return the source code of a completion script. Save the source code to a file and install it.
+* Pass this `CommandLine` instance and the name of the script to the `picocli.AutoComplete::bash` method. The method will return the source code of a completion script. Save the source code to a file and install it.
 
-CAUTION: *_The AutoComplete class is not yet in master but can be checked out from the https://github.com/remkop/picocli/tree/%23121-autocomplete[autocomplete branch]._*
-
-[source,bash]
-----
-String script = AutoComplete.bash("hierarchy", hierarchy);
-// save to file
-----
-
-TODO 1) Save the generated completion script to a file
-
-TODO 2) generate the accompanying `hierarchy` command script to run the application. This is the script that Bash will recognize and generate completion matches for. It needs to contain something like
+* Save the generated completion script to a file, and finally, create the accompanying command script to run the application. This is the script that Bash will recognize and generate completion matches for. It needs to contain something like this:
 
 [source,bash]
 ----
 // file: 'hierarchy'
 #!/usr/bin/env bash
 
-HIERARCHY_DIR=path/to/libs
-HIERARCHY_CP="${HIERARCHY_DIR}/myApp.jar"
-java -cp "${HIERARCHY_CP}" 'com.myorg.myproject.MainClass' $@
+LIBS=path/to/libs
+CP="${LIBS}/myApp.jar"
+java -cp "${CP}" 'com.myorg.myproject.MainClass' $@
 ----
 
 == Installing the Completion Script in Bash
@@ -207,12 +236,10 @@ exec $SHELL -l
 
 
 == Picocli User Manual
-The http://picocli.info[picocli user manual] explains how to build Java command line applications with picocli.
+The link:index.html[picocli user manual] explains how to build Java command line applications with picocli.
 
 == GitHub Project
 The https://github.com/remkop/picocli[GitHub project] has the source code, tests, build scripts, etc.
-
-*_The AutoComplete class is not yet in master but can be checked out from the https://github.com/remkop/picocli/tree/%23121-autocomplete[autocomplete branch]._*
 
 Star icon:star-o[] or fork icon:code-fork[] this project on GitHub if you like it!
 (Projects with many icon:code-fork[] forks are easier to find on GitHub Search.)
