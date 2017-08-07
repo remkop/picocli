@@ -1423,6 +1423,10 @@ Generally, many applications use options for optional values and parameters for 
 However, picocli lets you make options required if you want to, see <<Required Arguments>>.
 
 
+== TAB Autocomplete
+Picocli-based applications can now have command line completion in Bash or Zsh Unix shells.
+See the link:autocomplete.html[Autocomplete for Java Command Line Applications] manual for how to generate an autocompletion script tailored to your application.
+
 
 == API Javadoc
 Picocli API Javadoc can be found https://remkop.github.io/picocli/apidocs[here].
