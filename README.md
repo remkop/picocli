@@ -1,5 +1,9 @@
 # picocli - a mighty tiny command line interface
 
+|Coming soon: autocomplete. Need your feedback!|
+|----|
+|Work in progress: [autocomplete for java command line applications](http://picocli.info/1.0.0-SNAPSHOT/autocomplete.html). Can you try it, and let us know what worked (or didn't) and what can be improved?
+
 A Java command line parsing framework in a single file, so you can include it _in source form_.
 This lets users run picocli-based applications without requiring picocli as an external dependency.
 
@@ -15,7 +19,8 @@ Distinguishes between [named options](http://picocli.info/#_options) and
 [Multi-valued fields](http://picocli.info/#_multiple_values) can specify 
 an exact number of parameters or a [range](http://picocli.info/#_arity) (e.g., `0..*`, `1..2`).
 
-Generates polished and easily tailored [usage help](http://picocli.info/#_usage_help),
+Generates polished and easily tailored [usage help](http://picocli.info/#_usage_help)
+and  [version help](http://picocli.info/#_version_help),
 using [ANSI colors](http://picocli.info/#_ansi_colors_and_styles) where possible.
 Works with Java 5 or higher (but is designed to facilitate the use of Java 8 lambdas).
 
