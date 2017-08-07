@@ -16,6 +16,9 @@
 package picocli;
 
 import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.Writer;
 import java.lang.reflect.Field;
 import java.net.InetAddress;
 import java.util.ArrayList;
@@ -26,6 +29,10 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import picocli.CommandLine.Command;
+import picocli.CommandLine.Option;
+import picocli.CommandLine.Parameters;
+
 import static java.lang.String.*;
 
 /**
@@ -33,6 +40,71 @@ import static java.lang.String.*;
  */
 public class AutoComplete {
     private AutoComplete() {
+    }
+
+    public static void main(String[] args) { CommandLine.run(new App(), System.err, args); }
+
+    @Command(name = "picocli.AutoComplete", description = "")
+    private static class App implements Runnable {
+
+        @Option(names = {"-n", "--name"}, description = "Name of the command to create a completion script for. " +
+                "When omitted, the annotated class @Command 'name' attribute is used. " +
+                "If no @Command 'name' attribute exists, '<CLASS-SIMPLE-NAME>' (in lower-case) is used.")
+        String commandName;
+
+        @Option(names = {"-o", "--completionScript"},
+                description = "Name of the completion script file to generate. " +
+                        "When omitted, a file named '<commandName>_completion' " +
+                        "is generated in the current directory.")
+        File autoCompleteScript;
+
+        @Option(names = {"-w", "--writeCommandScript"},
+                description = "Write a '<commandName>' sample command script to the same directory " +
+                        "as the completion script.")
+        boolean writeCommandScript;
+
+        @Parameters(arity = "1", description = "Fully qualified class name of the annotated " +
+                "@Command class to generate a completion script for.")
+        String commandLineFQCN;
+
+        @Option(names = {"-f", "--force"}, description = "Overwrite existing script files.")
+        boolean overwriteIfExists;
+
+        @Override
+        public void run() {
+            try {
+                Class<?> cls = Class.forName(commandLineFQCN);
+                CommandLine commandLine = new CommandLine(cls.newInstance());
+
+                if (commandName == null) {
+                    commandName = new CommandLine.Help(commandLine.getCommand()).commandName;
+                    if (CommandLine.Help.DEFAULT_COMMAND_NAME.equals(commandName)) {
+                        commandName = cls.getSimpleName().toLowerCase();
+                    }
+                }
+                if (autoCompleteScript == null) {
+                    autoCompleteScript = new File(commandName + "_completion");
+                }
+                File commandScript = null;
+                if (writeCommandScript) {
+                    commandScript = new File(autoCompleteScript.getAbsoluteFile().getParentFile(), commandName);
+                }
+                if (commandScript != null && !overwriteIfExists && checkExists(commandScript)) { return; }
+                if (!overwriteIfExists && checkExists(autoCompleteScript)) { return; }
+                AutoComplete.bash(commandName, autoCompleteScript, commandScript, commandLine);
+            } catch (Exception ex) {
+                ex.printStackTrace();
+            }
+        }
+
+        private boolean checkExists(final File file) {
+            if (file.exists()) {
+                System.err.println(file.getAbsolutePath() + " exists. Specify -f to overwrite.");
+                CommandLine.usage(this, System.err);
+                return true;
+            }
+            return false;
+        }
     }
 
     private static interface Function<T, V> {
@@ -181,6 +253,28 @@ public class AutoComplete {
             "# default Bash completions and the Readline default filename completions are performed.\n" +
             "complete -F _complete_%1$s -o default %1$s %1$s.sh %1$s.bash\n";
 
+    public static void bash(String scriptName, File out, File command, CommandLine commandLine) throws IOException {
+        String autoCompleteScript = bash(scriptName, commandLine);
+        Writer completionWriter = null;
+        Writer scriptWriter = null;
+        try {
+            completionWriter = new FileWriter(out);
+            completionWriter.write(autoCompleteScript);
+
+            if (command != null) {
+                scriptWriter = new FileWriter(command);
+                scriptWriter.write("" +
+                        "#!/usr/bin/env bash\n" +
+                        "\n" +
+                        "LIBS=path/to/libs\n" +
+                        "CP=\"${LIBS}/myApp.jar\"\n" +
+                        "java -cp \"${CP}\" '" + commandLine.getCommand().getClass().getName() + "' $@");
+            }
+        } finally {
+            if (completionWriter != null) { completionWriter.close(); }
+            if (scriptWriter != null)     { scriptWriter.close(); }
+        }
+    }
     public static String bash(String scriptName, CommandLine commandLine) {
         if (scriptName == null)  { throw new NullPointerException("scriptName"); }
         if (commandLine == null) { throw new NullPointerException("commandLine"); }
@@ -364,7 +458,7 @@ public class AutoComplete {
     private static String generateOptionsCases(List<Field> argOptionFields, List<Field> enumOptions, String indent, String currWord) {
         StringBuilder buff = new StringBuilder(1024);
         for (Field f : argOptionFields) {
-            CommandLine.Option option = f.getAnnotation(CommandLine.Option.class);
+            Option option = f.getAnnotation(Option.class);
             if (enumOptions.contains(f)) {
                 buff.append(format("%s    %s)\n", indent, concat("|", option.names()))); // "    -u|--timeUnit)\n"
                 buff.append(format("%s      COMPREPLY=( $( compgen -W \"${%s_OPTION_ARGS}\" -- %s ) )\n", indent, f.getName(), currWord));
@@ -390,7 +484,7 @@ public class AutoComplete {
     private static String optionNames(List<Field> optionFields) {
         List<String> result = new ArrayList<String>();
         for (Field f : optionFields) {
-            CommandLine.Option option = f.getAnnotation(CommandLine.Option.class);
+            Option option = f.getAnnotation(Option.class);
             result.addAll(Arrays.asList(option.names()));
         }
         return concat(" ", result, "", new NullFunction()).trim();
