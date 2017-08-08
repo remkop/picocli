@@ -36,9 +36,10 @@ dependencies {
 }
 jar {
     manifest {
-        attributes 'Implementation-Title': 'picocli',
-                'Implementation-Vendor': 'Remko Popma',
-                'Implementation-Version': version
+        attributes 'Implementation-Title'  : 'picocli',
+                   'Implementation-Vendor' : 'Remko Popma',
+                   'Implementation-Version': version,
+                   'Main-Class'              : 'picocli.AutoComplete'
     }
 }
 javadoc {
