@@ -535,7 +535,15 @@ table.CodeRay td.code>pre{padding:0}
 </li>
 </ul>
 </li>
-<li><a href="#_generating_the_completion_script">3. Generating the Completion Script</a></li>
+<li><a href="#_generating_the_completion_script">3. Generating the Completion Script</a>
+<ul class="sectlevel2">
+<li><a href="#_overview">3.1. Overview</a></li>
+<li><a href="#_command_name">3.2. Command Name</a></li>
+<li><a href="#_subcommands">3.3. Subcommands</a></li>
+<li><a href="#_subcommands_the_do_it_yourself_way">3.4. Subcommands (The Do-It-Yourself Way)</a></li>
+<li><a href="#_command_script">3.5. Command Script</a></li>
+</ul>
+</li>
 <li><a href="#_installing_the_completion_script_in_bash">4. Installing the Completion Script in Bash</a></li>
 <li><a href="#_installing_the_completion_script_in_zsh">5. Installing the Completion Script in ZSH</a></li>
 <li><a href="#_picocli_user_manual">6. Picocli User Manual</a></li>
@@ -732,10 +740,11 @@ DAYS     HOURS     MICROSECONDS  MILLISECONDS  MINUTES    NANOSECONDS   SECONDS<
 <div class="sect1">
 <h2 id="_generating_the_completion_script">3. Generating the Completion Script</h2>
 <div class="sectionbody">
+<div class="sect2">
+<h3 id="_overview">3.1. Overview</h3>
 <div class="paragraph">
-<p>If your application has no subcommands, or if all subcommands are declared with the <code>subcommands</code> attribute of the
-<code>@Command</code> annotation, you can run the <code>picocli.AutoComplete</code> class as a java application, passing it
-the fully qualified class name of the annotated <code>@Command</code> object.</p>
+<p>To generate the completion script, run the <code>picocli.AutoComplete</code> class as a java application, passing it
+the fully qualified class name of the annotated command object.</p>
 </div>
 <div class="listingblock">
 <div class="content">
@@ -743,35 +752,53 @@ the fully qualified class name of the annotated <code>@Command</code> object.</p
 </div>
 </div>
 <div class="paragraph">
-<p><code>picocli.AutoComplete</code> will create a new <code>CommandLine</code> instance with your command, and generate a completion script
-in the current directory. Script generation has the following options:</p>
+<p><code>picocli.AutoComplete</code> will instantiate your command, and inspect it for <code>@Option</code> and <code>@Command</code> annotations. Based on these annotations it will  generate a completion script in the current directory.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_command_name">3.2. Command Name</h3>
+<div class="paragraph">
+<p>The name of the generated completion script is based on the <code>@Command(name ="&lt;COMMAND-NAME&gt;")</code> annotation, or, if that is missing, the command class name.
+Use the <code>-n</code> or <code>--name</code> option to control the name of the command that the completion script is for.</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre>Usage: picocli.AutoComplete [-fw] [-n=&lt;commandName&gt;] [-o=&lt;autoCompleteScript&gt;]
-                            &lt;commandLineFQCN&gt;
-
-      commandLineFQCN         Fully qualified class name of the annotated
-                                @Command class to generate a completion script
-                                for.
-  -f, --force                 Overwrite existing script files.
-  -n, --name=&lt;commandName&gt;    Name of the command to create a completion script
-                                for. When omitted, the annotated class @Command
-                                'name' attribute is used. If no @Command 'name'
-                                attribute exists, '&lt;CLASS-SIMPLE-NAME&gt;' (in
-                                lower-case) is used.
-  -o, --completionScript=&lt;autoCompleteScript&gt;
-                              Name of the completion script file to generate.
-                                When omitted, a file named
-                                '&lt;commandName&gt;_completion' is generated in the
-                                current directory.
-  -w, --writeCommandScript    Write a '&lt;commandName&gt;' sample command script to
-                                the same directory as the completion script.</pre>
+<pre class="CodeRay highlight"><code data-lang="bash">$ java -cp picocli-1.0.0.jar picocli.AutoComplete -n hierarchy com.myproject.MyCommand</code></pre>
 </div>
 </div>
 <div class="paragraph">
-<p>If your application has subcommands but the subcommands are not specified on the <code>subcommands</code> attribute of the
-<code>@Command</code> annotation, you need to do a bit more work. You need to create a small program that does the following:</p>
+<p>This will generate a  <code>hierarchy_completion</code> script in the current directory.</p>
+</div>
+<div class="paragraph">
+<p>Other options are:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Use <code>-o</code> or <code>--completionScript</code> to specify the full path to the completion script to generate.</p>
+</li>
+<li>
+<p>Use the <code>-f</code> or <code>--force</code> option to overwrite existing files.</p>
+</li>
+<li>
+<p>Use the <code>-w</code>, <code>--writeCommandScript</code> option to generate a sample command script.</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_subcommands">3.3. Subcommands</h3>
+<div class="paragraph">
+<p>For commands with subcommands, bear in mind that <code>picocli.AutoComplete</code> needs the full hierarchy of command and subcommands to generate a completion script that also works for the subcommands.</p>
+</div>
+<div class="paragraph">
+<p>The above will work when subcommands are registered declaratively with annotations like <code>@Command(subcommands = { &#8230;&#8203; })</code>.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_subcommands_the_do_it_yourself_way">3.4. Subcommands (The Do-It-Yourself Way)</h3>
+<div class="paragraph">
+<p>Otherwise, you need to do a bit more work. You need to create a small program that does the following:</p>
 </div>
 <div class="ulist">
 <ul>
@@ -793,19 +820,28 @@ CommandLine hierarchy = <span class="keyword">new</span> CommandLine(<span class
 <li>
 <p>Pass this <code>CommandLine</code> instance and the name of the script to the <code>picocli.AutoComplete::bash</code> method. The method will return the source code of a completion script. Save the source code to a file and install it.</p>
 </li>
-<li>
-<p>Save the generated completion script to a file, and finally, create the accompanying command script to run the application. This is the script that Bash will recognize and generate completion matches for. It needs to contain something like this:</p>
-</li>
 </ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_command_script">3.5. Command Script</h3>
+<div class="paragraph">
+<p>Finally, create the accompanying command script to run the application. This is the script that Bash will recognize and generate completion matches for.</p>
+</div>
+<div class="paragraph">
+<p>The name of this script is important! The command completion script will only generate completions for the matching command.</p>
+</div>
+<div class="paragraph">
+<p>It should contain something like this:</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="CodeRay highlight"><code data-lang="bash">// file: 'hierarchy'
-#!/usr/bin/env bash
+<pre class="CodeRay highlight"><code data-lang="bash">#!/usr/bin/env bash
 
 LIBS=path/to/libs
 CP=&quot;${LIBS}/myApp.jar&quot;
 java -cp &quot;${CP}&quot; 'com.myorg.myproject.MainClass' $@</code></pre>
+</div>
 </div>
 </div>
 </div>
@@ -910,7 +946,7 @@ done</code></pre>
 <div id="footer">
 <div id="footer-text">
 Version 1.0.0-BETA1<br>
-Last updated 2017-08-07 22:58:32 +09:00
+Last updated 2017-08-08 21:43:12 +09:00
 </div>
 </div>
 </body>

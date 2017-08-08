@@ -133,42 +133,42 @@ DAYS     HOURS     MICROSECONDS  MILLISECONDS  MINUTES    NANOSECONDS   SECONDS
 
 == Generating the Completion Script
 
-If your application has no subcommands, or if all subcommands are declared with the `subcommands` attribute of the
-`@Command` annotation, you can run the `picocli.AutoComplete` class as a java application, passing it
-the fully qualified class name of the annotated `@Command` object.
+=== Overview
+
+To generate the completion script, run the `picocli.AutoComplete` class as a java application, passing it
+the fully qualified class name of the annotated command object.
 
 [source,bash]
 ----
 $ java -cp picocli-1.0.0.jar picocli.AutoComplete com.myproject.MyCommand
 ----
 
-`picocli.AutoComplete` will create a new `CommandLine` instance with your command, and generate a completion script
-in the current directory. Script generation has the following options:
+`picocli.AutoComplete` will instantiate your command, and inspect it for `@Option` and `@Command` annotations. Based on these annotations it will  generate a completion script in the current directory.
 
+=== Command Name
+The name of the generated completion script is based on the `@Command(name ="<COMMAND-NAME>")` annotation, or, if that is missing, the command class name.
+Use the `-n` or `--name` option to control the name of the command that the completion script is for.
+
+[source,bash]
 ----
-Usage: picocli.AutoComplete [-fw] [-n=<commandName>] [-o=<autoCompleteScript>]
-                            <commandLineFQCN>
-
-      commandLineFQCN         Fully qualified class name of the annotated
-                                @Command class to generate a completion script
-                                for.
-  -f, --force                 Overwrite existing script files.
-  -n, --name=<commandName>    Name of the command to create a completion script
-                                for. When omitted, the annotated class @Command
-                                'name' attribute is used. If no @Command 'name'
-                                attribute exists, '<CLASS-SIMPLE-NAME>' (in
-                                lower-case) is used.
-  -o, --completionScript=<autoCompleteScript>
-                              Name of the completion script file to generate.
-                                When omitted, a file named
-                                '<commandName>_completion' is generated in the
-                                current directory.
-  -w, --writeCommandScript    Write a '<commandName>' sample command script to
-                                the same directory as the completion script.
+$ java -cp picocli-1.0.0.jar picocli.AutoComplete -n hierarchy com.myproject.MyCommand
 ----
 
-If your application has subcommands but the subcommands are not specified on the `subcommands` attribute of the
-`@Command` annotation, you need to do a bit more work. You need to create a small program that does the following:
+This will generate a  `hierarchy_completion` script in the current directory.
+
+Other options are:
+
+* Use `-o` or `--completionScript` to specify the full path to the completion script to generate.
+* Use the `-f` or `--force` option to overwrite existing files.
+* Use the `-w`, `--writeCommandScript` option to generate a sample command script.
+
+=== Subcommands
+For commands with subcommands, bear in mind that `picocli.AutoComplete` needs the full hierarchy of command and subcommands to generate a completion script that also works for the subcommands.
+
+The above will work when subcommands are registered declaratively with annotations like `@Command(subcommands = { ... })`.
+
+=== Subcommands (The Do-It-Yourself Way)
+Otherwise, you need to do a bit more work. You need to create a small program that does the following:
 
 * Create a `CommandLine` instance with the full hierarchy of nested subcommands.
 
@@ -182,11 +182,15 @@ CommandLine hierarchy = new CommandLine(new TopLevel())
 
 * Pass this `CommandLine` instance and the name of the script to the `picocli.AutoComplete::bash` method. The method will return the source code of a completion script. Save the source code to a file and install it.
 
-* Save the generated completion script to a file, and finally, create the accompanying command script to run the application. This is the script that Bash will recognize and generate completion matches for. It needs to contain something like this:
+=== Command Script
+Finally, create the accompanying command script to run the application. This is the script that Bash will recognize and generate completion matches for.
+
+The name of this script is important! The command completion script will only generate completions for the matching command.
+
+It should contain something like this:
 
 [source,bash]
 ----
-// file: 'hierarchy'
 #!/usr/bin/env bash
 
 LIBS=path/to/libs
