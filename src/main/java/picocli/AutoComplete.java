@@ -44,8 +44,16 @@ public class AutoComplete {
 
     public static void main(String[] args) { CommandLine.run(new App(), System.err, args); }
 
-    @Command(name = "picocli.AutoComplete", description = "")
+    /**
+     * CLI command class for generating completion script.
+     */
+    @Command(name = "picocli.AutoComplete", sortOptions = false,
+            description = "Generates a bash completion script for the specified command class.")
     private static class App implements Runnable {
+
+        @Parameters(arity = "1", description = "Fully qualified class name of the annotated " +
+                "@Command class to generate a completion script for.")
+        String commandLineFQCN;
 
         @Option(names = {"-n", "--name"}, description = "Name of the command to create a completion script for. " +
                 "When omitted, the annotated class @Command 'name' attribute is used. " +
@@ -53,7 +61,7 @@ public class AutoComplete {
         String commandName;
 
         @Option(names = {"-o", "--completionScript"},
-                description = "Name of the completion script file to generate. " +
+                description = "Path of the completion script file to generate. " +
                         "When omitted, a file named '<commandName>_completion' " +
                         "is generated in the current directory.")
         File autoCompleteScript;
@@ -63,16 +71,19 @@ public class AutoComplete {
                         "as the completion script.")
         boolean writeCommandScript;
 
-        @Parameters(arity = "1", description = "Fully qualified class name of the annotated " +
-                "@Command class to generate a completion script for.")
-        String commandLineFQCN;
-
         @Option(names = {"-f", "--force"}, description = "Overwrite existing script files.")
         boolean overwriteIfExists;
+
+        @Option(names = { "-h", "--help"}, usageHelp = true, description = "Display this help message and quit.")
+        boolean usageHelpRequested;
 
         @Override
         public void run() {
             try {
+                if (usageHelpRequested || commandLineFQCN == null) {
+                    CommandLine.usage(new App(), System.err);
+                    return;
+                }
                 Class<?> cls = Class.forName(commandLineFQCN);
                 CommandLine commandLine = new CommandLine(cls.newInstance());
 
@@ -91,9 +102,12 @@ public class AutoComplete {
                 }
                 if (commandScript != null && !overwriteIfExists && checkExists(commandScript)) { return; }
                 if (!overwriteIfExists && checkExists(autoCompleteScript)) { return; }
+
                 AutoComplete.bash(commandName, autoCompleteScript, commandScript, commandLine);
+
             } catch (Exception ex) {
                 ex.printStackTrace();
+                CommandLine.usage(new App(), System.err);
             }
         }
 
