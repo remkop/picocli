@@ -305,7 +305,7 @@ Arity is the number of parameters that will be consumed by an option.
 === Default Arity
 The default arity value of an `@Option` or `@Parameters` field depends on its type.
 
-* Boolean fields: the default arity is 0 (consume zero parameters) the field is set to `true` when the option name is recognized. (You can <<Boolean Parameters,change this>>.)
+* Boolean fields: the default arity is 0 (consume zero parameters) the field is toggled to its logical negative when the option name is recognized. (You can <<Boolean Parameters,change this>>.)
 * Single-valued types like `int`, `String`, `File`: arity is 1 (consume one parameter). Omitting the option parameter results in a ParameterException: "Missing required parameter for field '<field-name>'".
 * Multi-valued types like arrays or collections: consume from zero up to all available parameters (until encountering another option or <<Subcommands,subcommand>>).
 
