@@ -174,6 +174,7 @@ public class CommandLine {
      * converters are registered only with the subcommand hierarchy as it existed when the custom type was registered.
      * To ensure a custom type converter is available to all subcommands, register the type converter last, after
      * adding subcommands.</p>
+     * <p>See also the {@link Command#subcommands()} annotation to register subcommands declaratively.</p>
      *
      * @param name the string to recognize on the command line as a subcommand
      * @param command the object to initialize with command line arguments following the subcommand name.
@@ -181,6 +182,7 @@ public class CommandLine {
      * @return this CommandLine object, to allow method chaining
      * @see #registerConverter(Class, ITypeConverter)
      * @since 0.9.7
+     * @see Command#subcommands()
      */
     public CommandLine addSubcommand(String name, Object command) {
         CommandLine commandLine = toCommandLine(command);
@@ -436,6 +438,7 @@ public class CommandLine {
      * Delegates to {@link #printVersionHelp(PrintStream, Help.Ansi)} with the {@linkplain Help.Ansi#AUTO platform default}.
      * @param out the printStream to print to
      * @see #printVersionHelp(PrintStream, Help.Ansi)
+     * @since 0.9.8
      */
     public void printVersionHelp(PrintStream out) { printVersionHelp(out, Help.Ansi.AUTO); }
 
@@ -448,6 +451,7 @@ public class CommandLine {
      * @see Command#version()
      * @see Option#versionHelp()
      * @see #isVersionHelpRequested()
+     * @since 0.9.8
      */
     public void printVersionHelp(PrintStream out, Help.Ansi ansi) {
         for (String versionInfo : versionLines) {
@@ -686,6 +690,7 @@ public class CommandLine {
          * and take the appropriate action.
          * </p>
          * @return whether this option allows the user to request usage help
+         * @since 0.9.8
          */
         boolean usageHelp() default false;
 
@@ -703,6 +708,7 @@ public class CommandLine {
          * and take the appropriate action.
          * </p>
          * @return whether this option allows the user to request version information
+         * @since 0.9.8
          */
         boolean versionHelp() default false;
 
