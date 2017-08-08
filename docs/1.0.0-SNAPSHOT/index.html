@@ -1058,7 +1058,7 @@ If a collection is returned from a type converter, the <em>contents</em> of the 
 <div class="ulist">
 <ul>
 <li>
-<p>Boolean fields: the default arity is 0 (consume zero parameters) the field is set to <code>true</code> when the option name is recognized. (You can <a href="#_boolean_parameters">change this</a>.)</p>
+<p>Boolean fields: the default arity is 0 (consume zero parameters) the field is toggled to its logical negative when the option name is recognized. (You can <a href="#_boolean_parameters">change this</a>.)</p>
 </li>
 <li>
 <p>Single-valued types like <code>int</code>, <code>String</code>, <code>File</code>: arity is 1 (consume one parameter). Omitting the option parameter results in a ParameterException: "Missing required parameter for field '&lt;field-name&gt;'".</p>
@@ -2841,6 +2841,7 @@ Here is the source. Copy and paste it into a file called <code>CommandLine.java<
      * converters are registered only with the subcommand hierarchy as it existed when the custom type was registered.
      * To ensure a custom type converter is available to all subcommands, register the type converter last, after
      * adding subcommands.&lt;/p&gt;
+     * &lt;p&gt;See also the {@link Command#subcommands()} annotation to register subcommands declaratively.&lt;/p&gt;
      *
      * @param name the string to recognize on the command line as a subcommand
      * @param command the object to initialize with command line arguments following the subcommand name.
@@ -2848,6 +2849,7 @@ Here is the source. Copy and paste it into a file called <code>CommandLine.java<
      * @return this CommandLine object, to allow method chaining
      * @see #registerConverter(Class, ITypeConverter)
      * @since 0.9.7
+     * @see Command#subcommands()
      */</span>
     <span class="directive">public</span> CommandLine addSubcommand(<span class="predefined-type">String</span> name, <span class="predefined-type">Object</span> command) {
         CommandLine commandLine = toCommandLine(command);
@@ -3103,6 +3105,7 @@ Here is the source. Copy and paste it into a file called <code>CommandLine.java<
      * Delegates to {@link #printVersionHelp(PrintStream, Help.Ansi)} with the {@linkplain Help.Ansi#AUTO platform default}.
      * @param out the printStream to print to
      * @see #printVersionHelp(PrintStream, Help.Ansi)
+     * @since 0.9.8
      */</span>
     <span class="directive">public</span> <span class="type">void</span> printVersionHelp(<span class="predefined-type">PrintStream</span> out) { printVersionHelp(out, Help.Ansi.AUTO); }
 
@@ -3115,6 +3118,7 @@ Here is the source. Copy and paste it into a file called <code>CommandLine.java<
      * @see Command#version()
      * @see Option#versionHelp()
      * @see #isVersionHelpRequested()
+     * @since 0.9.8
      */</span>
     <span class="directive">public</span> <span class="type">void</span> printVersionHelp(<span class="predefined-type">PrintStream</span> out, Help.Ansi ansi) {
         <span class="keyword">for</span> (<span class="predefined-type">String</span> versionInfo : versionLines) {
@@ -3353,6 +3357,7 @@ Here is the source. Copy and paste it into a file called <code>CommandLine.java<
          * and take the appropriate action.
          * &lt;/p&gt;
          * @return whether this option allows the user to request usage help
+         * @since 0.9.8
          */</span>
         <span class="type">boolean</span> usageHelp() <span class="keyword">default</span> <span class="predefined-constant">false</span>;
 
@@ -3370,6 +3375,7 @@ Here is the source. Copy and paste it into a file called <code>CommandLine.java<
          * and take the appropriate action.
          * &lt;/p&gt;
          * @return whether this option allows the user to request version information
+         * @since 0.9.8
          */</span>
         <span class="type">boolean</span> versionHelp() <span class="keyword">default</span> <span class="predefined-constant">false</span>;
 
@@ -6556,7 +6562,7 @@ Here is the source. Copy and paste it into a file called <code>CommandLine.java<
 <div id="footer">
 <div id="footer-text">
 Version 1.0.0-SNAPSHOT<br>
-Last updated 2017-08-08 22:53:29 +09:00
+Last updated 2017-08-09 00:09:57 +09:00
 </div>
 </div>
 </body>

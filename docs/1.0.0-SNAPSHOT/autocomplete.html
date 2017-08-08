@@ -591,7 +591,8 @@ list if the typed characters are still ambiguous, or else complete the subcomman
 <h2 id="_command_line_completion_example">2. Command Line Completion Example</h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>Assume we have a picocli-based command line application with subcommands, all of which have some options. Below is an example:</p>
+<p>Assume we have a <a href="index.html">picocli</a>-based command line application with <a href="index.html#_subcommands">subcommands</a>,
+all of which have some <a href="index.html#_options_and_parameters">options</a>. Below is an example:</p>
 </div>
 <div class="listingblock">
 <div class="content">
@@ -752,14 +753,15 @@ the fully qualified class name of the annotated command object.</p>
 </div>
 </div>
 <div class="paragraph">
-<p>This will instantiate your command, and inspect it for <code>@Option</code> and <code>@Command</code> annotations.
+<p>This will instantiate your command, and inspect it for <a href="http://picocli.info/apidocs/picocli/CommandLine.Option.html"><code>@Option</code></a>
+and <a href="http://picocli.info/apidocs/picocli/CommandLine.Command.html"><code>@Command</code></a> annotations.
 Based on these annotations it will generate a completion script in the current directory.</p>
 </div>
 </div>
 <div class="sect2">
 <h3 id="_command_name">3.2. Command Name</h3>
 <div class="paragraph">
-<p>The name of the generated completion script is based on the <code>@Command(name ="&lt;COMMAND-NAME&gt;")</code> annotation, or, if that is missing, the command class name.
+<p>The name of the generated completion script is based on the <code>@Command(name ="&lt;COMMAND-NAME&gt;")</code> <a href="index.html#_command_name">annotation</a>, or, if that is missing, the command class name.
 Use the <code>-n</code> or <code>--name</code> option to control the name of the command that the completion script is for.</p>
 </div>
 <div class="listingblock">
@@ -952,7 +954,7 @@ done</code></pre>
 <div id="footer">
 <div id="footer-text">
 Version 1.0.0-BETA1<br>
-Last updated 2017-08-08 22:05:59 +09:00
+Last updated 2017-08-09 00:16:09 +09:00
 </div>
 </div>
 </body>

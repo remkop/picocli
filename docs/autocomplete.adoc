@@ -28,7 +28,8 @@ with those few characters. The user can type more characters and press TAB again
 list if the typed characters are still ambiguous, or else complete the subcommand or option.
 
 == Command Line Completion Example
-Assume we have a picocli-based command line application with subcommands, all of which have some options. Below is an example:
+Assume we have a link:index.html[picocli]-based command line application with link:index.html#_subcommands[subcommands],
+all of which have some link:index.html#_options_and_parameters[options]. Below is an example:
 
 [source,java]
 ----
@@ -143,11 +144,12 @@ the fully qualified class name of the annotated command object.
 $ java -jar picocli-1.0.0.jar com.myproject.MyCommand
 ----
 
-This will instantiate your command, and inspect it for `@Option` and `@Command` annotations.
+This will instantiate your command, and inspect it for http://picocli.info/apidocs/picocli/CommandLine.Option.html[`@Option`]
+and http://picocli.info/apidocs/picocli/CommandLine.Command.html[`@Command`] annotations.
 Based on these annotations it will generate a completion script in the current directory.
 
 === Command Name
-The name of the generated completion script is based on the `@Command(name ="<COMMAND-NAME>")` annotation, or, if that is missing, the command class name.
+The name of the generated completion script is based on the `@Command(name ="<COMMAND-NAME>")` link:index.html#_command_name[annotation], or, if that is missing, the command class name.
 Use the `-n` or `--name` option to control the name of the command that the completion script is for.
 
 [source,bash]
