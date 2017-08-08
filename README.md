@@ -2,7 +2,7 @@
 
 |Now in BETA: [command line autocompletion](http://picocli.info/1.0.0-SNAPSHOT/autocomplete.html)|
 |----|
-|This is work in progress. Comments, bug reports, pull requests welcome!|
+|Autocomplete is work in progress. Comments, bug reports, pull requests welcome!|
 
 A Java command line parsing framework in a single file, so you can include it _in source form_.
 This lets users run picocli-based applications without requiring picocli as an external dependency.
