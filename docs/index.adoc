@@ -19,6 +19,7 @@ Every main method deserves picocli!
 == Introduction
 Picocli is a one-file Java framework for parsing command line arguments
 and generating polished, easily tailored usage help messages. With <<ANSI Colors and Styles,colors>>.
+Now in BETA: http://picocli.info/1.0.0-SNAPSHOT/autocomplete.html[command line autocompletion]. (Comments, bug reports, pull requests welcome!)
 
 image:ExampleUsageANSI.png[Screenshot of usage help with Ansi codes enabled]
 
