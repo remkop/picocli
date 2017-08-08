@@ -1,8 +1,8 @@
 # picocli - a mighty tiny command line interface
 
-|Coming soon: autocomplete. Need your feedback!|
+|Now in BETA: [command line autocompletion](http://picocli.info/1.0.0-SNAPSHOT/autocomplete.html)|
 |----|
-|Work in progress: [autocomplete for java command line applications](http://picocli.info/1.0.0-SNAPSHOT/autocomplete.html). Can you try it, and let us know what worked (or didn't) and what can be improved?
+|This is work in progress. Comments, bug reports, pull requests welcome!|
 
 A Java command line parsing framework in a single file, so you can include it _in source form_.
 This lets users run picocli-based applications without requiring picocli as an external dependency.
