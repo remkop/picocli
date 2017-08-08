@@ -748,11 +748,12 @@ the fully qualified class name of the annotated command object.</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="CodeRay highlight"><code data-lang="bash">$ java -cp picocli-1.0.0.jar picocli.AutoComplete com.myproject.MyCommand</code></pre>
+<pre class="CodeRay highlight"><code data-lang="bash">$ java -jar picocli-1.0.0.jar com.myproject.MyCommand</code></pre>
 </div>
 </div>
 <div class="paragraph">
-<p><code>picocli.AutoComplete</code> will instantiate your command, and inspect it for <code>@Option</code> and <code>@Command</code> annotations. Based on these annotations it will  generate a completion script in the current directory.</p>
+<p>This will instantiate your command, and inspect it for <code>@Option</code> and <code>@Command</code> annotations.
+Based on these annotations it will generate a completion script in the current directory.</p>
 </div>
 </div>
 <div class="sect2">
@@ -763,7 +764,7 @@ Use the <code>-n</code> or <code>--name</code> option to control the name of the
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="CodeRay highlight"><code data-lang="bash">$ java -cp picocli-1.0.0.jar picocli.AutoComplete -n hierarchy com.myproject.MyCommand</code></pre>
+<pre class="CodeRay highlight"><code data-lang="bash">$ java -jar picocli-1.0.0.jar -n hierarchy com.myproject.MyCommand</code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -789,7 +790,8 @@ Use the <code>-n</code> or <code>--name</code> option to control the name of the
 <div class="sect2">
 <h3 id="_subcommands">3.3. Subcommands</h3>
 <div class="paragraph">
-<p>For commands with subcommands, bear in mind that <code>picocli.AutoComplete</code> needs the full hierarchy of command and subcommands to generate a completion script that also works for the subcommands.</p>
+<p>For commands with subcommands, bear in mind that the class that generates the completion script (<code>picocli.AutoComplete</code>)
+needs the full hierarchy of command and subcommands to generate a completion script that also works for the subcommands.</p>
 </div>
 <div class="paragraph">
 <p>The above will work when subcommands are registered declaratively with annotations like <code>@Command(subcommands = { &#8230;&#8203; })</code>.</p>
@@ -838,9 +840,7 @@ CommandLine hierarchy = <span class="keyword">new</span> CommandLine(<span class
 <div class="content">
 <pre class="CodeRay highlight"><code data-lang="bash">#!/usr/bin/env bash
 
-LIBS=path/to/libs
-CP=&quot;${LIBS}/myApp.jar&quot;
-java -cp &quot;${CP}&quot; 'com.myorg.myproject.MainClass' $@</code></pre>
+java -cp myApp.jar com.myorg.myproject.MainClass $@</code></pre>
 </div>
 </div>
 </div>
@@ -853,7 +853,10 @@ java -cp &quot;${CP}&quot; 'com.myorg.myproject.MainClass' $@</code></pre>
 <p>Make sure bash completion is installed.</p>
 </div>
 <div class="paragraph">
-<p>Place the completion script file in <code>/etc/bash_completion.d</code> (or <code>/usr/local/etc/bash_completion.d</code> on a Mac). If <code>bash-completion</code> is installed, placing the completion script in either of these directories should be sufficient. (Source your <code>~/.bash_profile</code> or launch a new terminal to start using this completion script.)</p>
+<p>The generated completion script needs to be <a href="http://tldp.org/HOWTO/Bash-Prompt-HOWTO/x237.html">sourced</a> to install it in your current bash session.</p>
+</div>
+<div class="paragraph">
+<p>To install it more permanently, place the completion script file in <code>/etc/bash_completion.d</code> (or <code>/usr/local/etc/bash_completion.d</code> on a Mac). If <code>bash-completion</code> is installed, placing the completion script in either of these directories should be sufficient. (Source your <code>~/.bash_profile</code> or launch a new terminal to start using this completion script.)</p>
 </div>
 <div class="paragraph">
 <p>Alternatively, make a directory <code>mkdir ~/bash_completion.d</code>, and place the completion script in this directory. Edit your <code>~/.bashrc</code> file and add the following:</p>
@@ -877,7 +880,10 @@ done</code></pre>
 <p>Zsh can handle bash completions functions. The latest development version of zsh has a function bashcompinit, that when run will allow zsh to read bash completion specifications and functions. This is documented in the zshcompsys man page. To use it all you need to do is run bashcompinit at any time after compinit. It will define complete and compgen functions corresponding to the bash builtins.</p>
 </div>
 <div class="paragraph">
-<p>Make a directory <code>mkdir ~/bash_completion.d</code>, and place the completion script in this directory. Edit your <code>~/.zshrc</code> file and add the following:</p>
+<p>The generated completion script needs to be <a href="http://tldp.org/HOWTO/Bash-Prompt-HOWTO/x237.html">sourced</a> to install it in your current session.</p>
+</div>
+<div class="paragraph">
+<p>To install it more permanently, make a directory <code>mkdir ~/bash_completion.d</code>, and place the completion script in this directory. Edit your <code>~/.zshrc</code> file and add the following:</p>
 </div>
 <div class="listingblock">
 <div class="content">
@@ -946,7 +952,7 @@ done</code></pre>
 <div id="footer">
 <div id="footer-text">
 Version 1.0.0-BETA1<br>
-Last updated 2017-08-08 21:43:12 +09:00
+Last updated 2017-08-08 22:05:59 +09:00
 </div>
 </div>
 </body>

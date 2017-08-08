@@ -140,10 +140,11 @@ the fully qualified class name of the annotated command object.
 
 [source,bash]
 ----
-$ java -cp picocli-1.0.0.jar picocli.AutoComplete com.myproject.MyCommand
+$ java -jar picocli-1.0.0.jar com.myproject.MyCommand
 ----
 
-`picocli.AutoComplete` will instantiate your command, and inspect it for `@Option` and `@Command` annotations. Based on these annotations it will  generate a completion script in the current directory.
+This will instantiate your command, and inspect it for `@Option` and `@Command` annotations.
+Based on these annotations it will generate a completion script in the current directory.
 
 === Command Name
 The name of the generated completion script is based on the `@Command(name ="<COMMAND-NAME>")` annotation, or, if that is missing, the command class name.
@@ -151,7 +152,7 @@ Use the `-n` or `--name` option to control the name of the command that the comp
 
 [source,bash]
 ----
-$ java -cp picocli-1.0.0.jar picocli.AutoComplete -n hierarchy com.myproject.MyCommand
+$ java -jar picocli-1.0.0.jar -n hierarchy com.myproject.MyCommand
 ----
 
 This will generate a  `hierarchy_completion` script in the current directory.
@@ -163,7 +164,8 @@ Other options are:
 * Use the `-w`, `--writeCommandScript` option to generate a sample command script.
 
 === Subcommands
-For commands with subcommands, bear in mind that `picocli.AutoComplete` needs the full hierarchy of command and subcommands to generate a completion script that also works for the subcommands.
+For commands with subcommands, bear in mind that the class that generates the completion script (`picocli.AutoComplete`)
+needs the full hierarchy of command and subcommands to generate a completion script that also works for the subcommands.
 
 The above will work when subcommands are registered declaratively with annotations like `@Command(subcommands = { ... })`.
 
@@ -193,16 +195,16 @@ It should contain something like this:
 ----
 #!/usr/bin/env bash
 
-LIBS=path/to/libs
-CP="${LIBS}/myApp.jar"
-java -cp "${CP}" 'com.myorg.myproject.MainClass' $@
+java -cp myApp.jar com.myorg.myproject.MainClass $@
 ----
 
 == Installing the Completion Script in Bash
 
 Make sure bash completion is installed.
 
-Place the completion script file in `/etc/bash_completion.d` (or `/usr/local/etc/bash_completion.d` on a Mac). If `bash-completion` is installed, placing the completion script in either of these directories should be sufficient. (Source your `~/.bash_profile` or launch a new terminal to start using this completion script.)
+The generated completion script needs to be http://tldp.org/HOWTO/Bash-Prompt-HOWTO/x237.html[sourced] to install it in your current bash session.
+
+To install it more permanently, place the completion script file in `/etc/bash_completion.d` (or `/usr/local/etc/bash_completion.d` on a Mac). If `bash-completion` is installed, placing the completion script in either of these directories should be sufficient. (Source your `~/.bash_profile` or launch a new terminal to start using this completion script.)
 
 Alternatively, make a directory `mkdir ~/bash_completion.d`, and place the completion script in this directory. Edit your `~/.bashrc` file and add the following:
 
@@ -220,7 +222,9 @@ Source your `~/.bash_profile` or launch a new terminal to start using this compl
 
 Zsh can handle bash completions functions. The latest development version of zsh has a function bashcompinit, that when run will allow zsh to read bash completion specifications and functions. This is documented in the zshcompsys man page. To use it all you need to do is run bashcompinit at any time after compinit. It will define complete and compgen functions corresponding to the bash builtins.
 
-Make a directory `mkdir ~/bash_completion.d`, and place the completion script in this directory. Edit your `~/.zshrc` file and add the following:
+The generated completion script needs to be http://tldp.org/HOWTO/Bash-Prompt-HOWTO/x237.html[sourced] to install it in your current session.
+
+To install it more permanently, make a directory `mkdir ~/bash_completion.d`, and place the completion script in this directory. Edit your `~/.zshrc` file and add the following:
 
 [source,bash]
 ----
