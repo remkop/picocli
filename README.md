@@ -1,5 +1,7 @@
 # picocli - a mighty tiny command line interface
 
+Annotation-based Java command line parser. Usage help with ANSI colors. Autocomplete. Easily included as source to avoid adding dependencies. Nested subcommands.
+
 |Now in BETA: [command line autocompletion](http://picocli.info/1.0.0-SNAPSHOT/autocomplete.html)|
 |----|
 |Autocomplete is work in progress. Comments, bug reports, pull requests welcome!|
