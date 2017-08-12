@@ -30,6 +30,7 @@ import org.junit.Test;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 
+import static java.lang.String.format;
 import static org.junit.Assert.*;
 
 /**
@@ -52,7 +53,7 @@ public class AutoCompleteTest {
     @Test
     public void basic() throws Exception {
         String script = AutoComplete.bash("basicExample", new CommandLine(new BasicExample()));
-        String expected = loadTextFromClasspath("/basic.bash");
+        String expected = format(loadTextFromClasspath("/basic.bash"), CommandLine.VERSION);
         assertEquals(expected, script);
     }
 
@@ -102,8 +103,8 @@ public class AutoCompleteTest {
                         .addSubcommand("subsub1", new Sub2Child1())
                         .addSubcommand("subsub2", new Sub2Child2())
                 );
-        String script = AutoComplete.bash("hierarchy", hierarchy);
-        String expected = loadTextFromClasspath("/nestedSubcommands.bash");
+        String script = AutoComplete.bash("picocompletion-demo", hierarchy);
+        String expected = format(loadTextFromClasspath("/picocompletion-demo_completion"), CommandLine.VERSION);
         assertEquals(expected, script);
     }
 

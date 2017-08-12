@@ -1,6 +1,0 @@
-#!/usr/bin/env bash
-
-LIBS=`cygpath -w "/cygdrive/c/Users/remko/IdeaProjects/pico-cli/build/libs"`
-CP="${LIBS}/picocli-0.9.8-SNAPSHOT.jar;${LIBS}/picocli-0.9.8-SNAPSHOT-tests.jar"
-java -cp "${CP}" 'picocli.AutoCompleteTest$TopLevel' $@
-
