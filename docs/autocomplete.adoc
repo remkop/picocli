@@ -27,6 +27,8 @@ In the case of multiple possible completions, the Unix shell will display all su
 with those few characters. The user can type more characters and press TAB again to see a new, narrowed-down
 list if the typed characters are still ambiguous, or else complete the subcommand or option.
 
+image:picocli-autocompletion-demo.gif[Autocompletion demo animation]
+
 == Command Line Completion Example
 Assume we have a link:index.html[picocli]-based command line application with link:index.html#_subcommands[subcommands],
 all of which have some link:index.html#_options_and_parameters[options]. Below is an example:
