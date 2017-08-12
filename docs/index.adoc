@@ -1448,7 +1448,35 @@ Picocli is licensed under the https://github.com/remkop/picocli/blob/master/LICE
 Previous versions are available from the GitHub project https://github.com/remkop/picocli/releases[Releases].
 
 == Download
-NOTE: Here is the source. Copy and paste it into a file called `CommandLine.java`, add it to your project, and enjoy!
+You can add picocli as an external dependency to your project, or you can include it as source.
+See the <<Source,source code>> below. Copy and paste it into a file called `CommandLine.java`, add it to your project, and enjoy!
+
+=== Gradle
+----
+compile 'info.picocli:picocli:1.0.0-SNAPSHOT'
+----
+
+=== Maven
+----
+<dependency>
+  <groupId>info.picocli</groupId>
+  <artifactId>picocli</artifactId>
+  <version>1.0.0-SNAPSHOT</version>
+</dependency>
+----
+
+=== Scala SBT
+----
+libraryDependencies += "info.picocli" % "picocli" % "1.0.0-SNAPSHOT"
+----
+
+=== Ivy
+
+----
+<dependency org="info.picocli" name="picocli" rev="1.0.0-SNAPSHOT" />
+----
+
+=== Source
 
 [source,java]
 ----
