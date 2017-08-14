@@ -2043,7 +2043,9 @@ public class CommandLineTest {
             CommandLine.populateCommand(new ChildOption(), "");
             fail("expected CommandLine$DuplicateOptionAnnotationsException");
         } catch (DuplicateOptionAnnotationsException ex) {
-            assertEquals("Option name '-p' is used by both picocli.CommandLineTest$2ParentOption.path and picocli.CommandLineTest$2ChildOption.text", ex.getMessage());
+            String expected = String.format("Option name '-p' is used by both %s.path and %s.text",
+                    ParentOption.class.getName(), ChildOption.class.getName());
+            assertEquals(expected, ex.getMessage());
         }
     }
 
@@ -2890,7 +2892,8 @@ public class CommandLineTest {
         try {
             new CommandLine(new MainCommand());
         } catch (IllegalArgumentException ex) {
-            assertEquals("Cannot instantiate subcommand picocli.CommandLineTest$1ABC: the class has no constructor", ex.getMessage());
+            String expected = String.format("Cannot instantiate subcommand %s: the class has no constructor", ABC.class.getName());
+            assertEquals(expected, ex.getMessage());
         }
     }
     @Test
@@ -2900,7 +2903,8 @@ public class CommandLineTest {
         try {
             new CommandLine(new MainCommand());
         } catch (IllegalArgumentException ex) {
-            assertEquals("Subcommand picocli.CommandLineTest$1MissingCommandAnnotation is missing the mandatory @Command annotation with a 'name' attribute", ex.getMessage());
+            String expected = String.format("Subcommand %s is missing the mandatory @Command annotation with a 'name' attribute", MissingCommandAnnotation.class.getName());
+            assertEquals(expected, ex.getMessage());
         }
     }
     @Test
@@ -2910,7 +2914,8 @@ public class CommandLineTest {
         try {
             new CommandLine(new MainCommand());
         } catch (IllegalArgumentException ex) {
-            assertEquals("Subcommand picocli.CommandLineTest$1MissingNameAttribute is missing the mandatory @Command annotation with a 'name' attribute", ex.getMessage());
+            String expected = String.format("Subcommand %s is missing the mandatory @Command annotation with a 'name' attribute", MissingNameAttribute.class.getName());
+            assertEquals(expected, ex.getMessage());
         }
     }
 }
