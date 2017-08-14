@@ -460,6 +460,24 @@ public class CommandLine {
             out.println(ansi.new Text(versionInfo));
         }
     }
+    /**
+     * Prints version information from the {@link Command#version()} annotation to the specified {@code PrintStream}.
+     * Each element of the array of version strings is {@linkplain String#format(String, Object...) formatted} with the
+     * specified parameters, and printed on a separate line. Both version strings and parameters may contain
+     * <a href="http://picocli.info/#_usage_help_with_styles_and_colors">markup for colors and style</a>.
+     * @param out the printStream to print to
+     * @param ansi whether the usage message should include ANSI escape codes or not
+     * @param params Arguments referenced by the format specifiers in the version strings
+     * @see Command#version()
+     * @see Option#versionHelp()
+     * @see #isVersionHelpRequested()
+     * @since 1.0.0
+     */
+    public void printVersionHelp(PrintStream out, Help.Ansi ansi, Object... params) {
+        for (String versionInfo : versionLines) {
+            out.println(ansi.new Text(String.format(versionInfo, params)));
+        }
+    }
 
     /**
      * Delegates to {@link #run(Runnable, PrintStream, Help.Ansi, String...)} with {@link Help.Ansi#AUTO}.

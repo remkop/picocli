@@ -1630,4 +1630,31 @@ public class CommandLineHelpTest {
                 "\u001B[34mBuild 12345\u001B[39m\u001B[0m%n" +
                 "\u001B[31m\u001B[47m(c) 2017\u001B[49m\u001B[39m\u001B[0m%n"), result);
     }
+    @Test
+    public void testCommandLine_printVersionInfo_formatsArguments() throws Exception {
+        @Command(version = {"First line %1$s", "Second line %2$s", "Third line %s %s"}) class Versioned {}
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        PrintStream ps = new PrintStream(baos, true, "UTF8");
+        new CommandLine(new Versioned()).printVersionHelp(ps, Help.Ansi.OFF, "VALUE1", "VALUE2", "VALUE3");
+        String result = baos.toString("UTF8");
+        assertEquals(String.format("First line VALUE1%nSecond line VALUE2%nThird line VALUE1 VALUE2%n"), result);
+    }
+
+    @Test
+    public void testCommandLine_printVersionInfo_withMarkupAndParameterContainingMarkup() throws Exception {
+        @Command(version = {
+                "@|yellow Versioned Command 1.0|@",
+                "@|blue Build 12345|@%1$s",
+                "@|red,bg(white) (c) 2017|@%2$s" })
+        class Versioned {}
+        String[] args = {"@|bold VALUE1|@", "@|underline VALUE2|@", "VALUE3"};
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        PrintStream ps = new PrintStream(baos, true, "UTF8");
+        new CommandLine(new Versioned()).printVersionHelp(ps, Help.Ansi.ON, args);
+        String result = baos.toString("UTF8");
+        assertEquals(String.format("" +
+                "\u001B[33mVersioned Command 1.0\u001B[39m\u001B[0m%n" +
+                "\u001B[34mBuild 12345\u001B[39m\u001B[0m\u001B[1mVALUE1\u001B[21m\u001B[0m%n" +
+                "\u001B[31m\u001B[47m(c) 2017\u001B[49m\u001B[39m\u001B[0m\u001B[4mVALUE2\u001B[24m\u001B[0m%n"), result);
+    }
 }
