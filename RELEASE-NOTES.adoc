@@ -3,7 +3,7 @@
 == 1.0.0 - (Work in progress) Public release
 
 * (Work in progress) #121 Added support for command line complete: picocli can generate bash completion scripts that generate completion matches based on `@Option` and `@Command` annotations.
-
+* #166 Fixed bug where adjacent markup sections resulted in incorrect ANSI escape sequences
 
 == 0.9.8 - Bugfix and enhancements release for public review. API may change.
 

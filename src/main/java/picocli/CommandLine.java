@@ -51,10 +51,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
-import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.Stack;
-import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.UUID;
 import java.util.regex.Pattern;
@@ -3557,7 +3555,16 @@ public class CommandLine {
                 public String on() { return String.format(CSI + "%d;5;%dm", fgbg, color); }
                 public String off() { return CSI + (fgbg + 1) + "m"; }
             }
-
+            private static class StyledSection {
+                int startIndex, length;
+                String startStyles, endStyles;
+                StyledSection(int start, int len, String style1, String style2) {
+                    startIndex = start; length = len; startStyles = style1; endStyles = style2;
+                }
+                StyledSection withStartIndex(int newStart) {
+                    return new StyledSection(newStart, length, startStyles, endStyles);
+                }
+            }
 
             /**
              * Returns a new Text object where all the specified styles are applied to the full length of the
@@ -3570,20 +3577,20 @@ public class CommandLine {
                 if (plainText.length() == 0) { return new Text(0); }
                 Text result = new Text(plainText.length());
                 IStyle[] all = styles.toArray(new IStyle[styles.size()]);
-                result.indexToStyle.put(result.plain.length(), Style.on(all));
+                result.sections.add(new StyledSection(
+                        0, plainText.length(), Style.on(all), Style.off(reverse(all)) + Style.reset.off()));
                 result.plain.append(plainText);
                 result.length = result.plain.length();
-                reverse(all);
-                result.indexToStyle.put(result.plain.length(), Style.off(all) + Style.reset.off());
                 return result;
             }
 
-            private static void reverse(Object[] all) {
+            private static <T> T[] reverse(T[] all) {
                 for (int i = 0; i < all.length / 2; i++) {
-                    Object temp = all[i];
+                    T temp = all[i];
                     all[i] = all[all.length - i - 1];
                     all[all.length - i - 1] = temp;
                 }
+                return all;
             }
             /** Encapsulates rich text with styles and colors. Text objects may be constructed with Strings containing
              * markup like {@code @|bg(red),white,underline some text|@}, and this class converts the markup to ANSI
@@ -3596,7 +3603,7 @@ public class CommandLine {
                 private int from;
                 private int length;
                 private StringBuilder plain = new StringBuilder();
-                private SortedMap<Integer, String> indexToStyle = new TreeMap<Integer, String>();
+                private List<StyledSection> sections = new ArrayList<StyledSection>();
 
                 /** Constructs a Text with the specified max length (for use in a TextTable Column).
                  * @param maxLength max length of this text */
@@ -3642,17 +3649,14 @@ public class CommandLine {
                         }
 
                         IStyle[] styles = Style.parse(items[0]);
-                        putStyle(plain.length(), Style.on(styles));
+                        addStyledSection(plain.length(), items[1].length(),
+                                Style.on(styles), Style.off(reverse(styles)) + Style.reset.off());
                         plain.append(items[1]);
-                        reverse(styles);
-                        putStyle(plain.length(), Style.off(styles));
-                        putStyle(plain.length(), Style.reset.off());
                         i = k + 2;
                     }
                 }
-                private void putStyle(int index, String style) {
-                    String existing = indexToStyle.put(index, style);
-                    if (existing != null) { indexToStyle.put(index, existing + style); }
+                private void addStyledSection(int start, int length, String startStyle, String endStyle) {
+                    sections.add(new StyledSection(start, length, startStyle, endStyle));
                 }
                 public Object clone() {
                     try { return super.clone(); } catch (CloneNotSupportedException e) { throw new IllegalStateException(e); }
@@ -3689,17 +3693,14 @@ public class CommandLine {
                     Text result = (Text) clone();
                     result.plain = new StringBuilder(plain.toString().substring(from, from + length));
                     result.from = 0;
-                    result.indexToStyle = new TreeMap<Integer, String>();
-                    for (Integer index : indexToStyle.keySet()) {
-                        result.indexToStyle.put(index - from, indexToStyle.get(index));
+                    result.sections = new ArrayList<StyledSection>();
+                    for (StyledSection section : sections) {
+                        result.sections.add(section.withStartIndex(section.startIndex - from));
                     }
                     result.plain.append(other.plain.toString().substring(other.from, other.from + other.length));
-                    for (Integer otherIndex : other.indexToStyle.keySet()) {
-                        int index = result.length + otherIndex - other.from;
-                        String replaced = result.indexToStyle.put(index, other.indexToStyle.get(otherIndex));
-                        if (replaced != null) {
-                            result.indexToStyle.put(index, replaced + other.indexToStyle.get(otherIndex));
-                        }
+                    for (StyledSection section : other.sections) {
+                        int index = result.length + section.startIndex - other.from;
+                        result.sections.add(section.withStartIndex(index));
                     }
                     result.length = result.plain.length();
                     return result;
@@ -3719,8 +3720,8 @@ public class CommandLine {
                         }
                         destination.length = offset;
                     }
-                    for (Integer index : indexToStyle.keySet()) {
-                        destination.indexToStyle.put(index - from + destination.length, indexToStyle.get(index));
+                    for (StyledSection section : sections) {
+                        destination.sections.add(section.withStartIndex(section.startIndex - from + destination.length));
                     }
                     destination.plain.append(plain.toString().substring(from, from + length));
                     destination.length = destination.plain.length();
@@ -3740,41 +3741,29 @@ public class CommandLine {
                         return plain.toString().substring(from, from + length);
                     }
                     if (length == 0) { return ""; }
-                    StringBuilder sb = new StringBuilder(plain.length() + 20 * indexToStyle.size());
-                    Integer startStyle = null;
-                    Integer endStyle = -1;
-                    for (Integer index : indexToStyle.keySet()) {
-                        if (index <= from) {
-                            startStyle = startStyle == null ? index : null;
-                            endStyle   = endStyle   == null ? index : null;
-                        }
-                        if (index >= from) {break;}
-                    }
-                    if (startStyle != null) {
-                        sb.append(indexToStyle.get(startStyle));
-                        endStyle = startStyle;
-                    }
+                    StringBuilder sb = new StringBuilder(plain.length() + 20 * sections.size());
+                    StyledSection current = null;
                     int end = Math.min(from + length, plain.length());
                     for (int i = from; i < end; i++) {
-                        String style = indexToStyle.get(i);
-                        if (style != null) {
-                            if (endStyle != null && endStyle != i) {
-                                sb.append(style);
-                                startStyle = startStyle == null ? i : null;
-                            }
-                            endStyle = i;
+                        StyledSection section = findSectionContaining(i);
+                        if (section != current) {
+                            if (current != null) { sb.append(current.endStyles); }
+                            if (section != null) { sb.append(section.startStyles); }
+                            current = section;
                         }
                         sb.append(plain.charAt(i));
                     }
-                    if (startStyle != null) { // find closing style
-                        SortedMap<Integer, String> tailMap = indexToStyle.tailMap(startStyle + 1);
-                        if (!tailMap.isEmpty()) {
-                            sb.append(indexToStyle.get(tailMap.firstKey()));
-                        } else {
-                            sb.append(Style.reset.off());
+                    if (current != null) { sb.append(current.endStyles); }
+                    return sb.toString();
+                }
+
+                private StyledSection findSectionContaining(int index) {
+                    for (StyledSection section : sections) {
+                        if (index >= section.startIndex && index < section.startIndex + section.length) {
+                            return section;
                         }
                     }
-                    return sb.toString();
+                    return null;
                 }
             }
         }

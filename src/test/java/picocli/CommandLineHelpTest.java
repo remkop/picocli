@@ -1478,7 +1478,7 @@ public class CommandLineHelpTest {
 
     @Test
     public void testTextAdjacentStyles() {
-        assertEquals("\u001B[3m<commit\u001B[23m\u001B[0m\u001B[3m>\u001B[23m\u001B[0m%n\u001B[0m",
+        assertEquals("\u001B[3m<commit\u001B[23m\u001B[0m\u001B[3m>\u001B[23m\u001B[0m%n",
                 Help.Ansi.ON.new Text("@|italic <commit|@@|italic >|@%n").toString());
     }
 
