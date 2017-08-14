@@ -57,11 +57,15 @@ import java.util.TreeSet;
 import java.util.UUID;
 import java.util.regex.Pattern;
 
+import picocli.CommandLine.Help.Ansi;
+import picocli.CommandLine.Help.Ansi.IStyle;
+import picocli.CommandLine.Help.Ansi.Style;
 import picocli.CommandLine.Help.Ansi.Text;
 
 import static java.util.Locale.ENGLISH;
-import static picocli.CommandLine.Help.Ansi.*;
-import static picocli.CommandLine.Help.Column.Overflow.*;
+import static picocli.CommandLine.Help.Column.Overflow.SPAN;
+import static picocli.CommandLine.Help.Column.Overflow.TRUNCATE;
+import static picocli.CommandLine.Help.Column.Overflow.WRAP;
 
 /**
  * <p>
@@ -467,7 +471,7 @@ public class CommandLine {
      * @throws IllegalArgumentException if the specified command object does not have a {@link Command}, {@link Option} or {@link Parameters} annotation
      */
     public static <R extends Runnable> void run(R command, PrintStream out, String... args) {
-        run(command, out, AUTO, args);
+        run(command, out, Help.Ansi.AUTO, args);
     }
     /**
      * Convenience method to allow command line application authors to avoid some boilerplate code in their application.
