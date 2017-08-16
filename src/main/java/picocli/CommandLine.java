@@ -799,7 +799,8 @@ public class CommandLine {
 
         /**
          * <p>
-         * Specify a {@code type} if the annotated field is a {@code Collection} that should hold objects other than Strings.
+         * Specify a {@code type} if the annotated field is a {@code Collection} that should hold objects other than
+         * Strings, or an array of types (one for the key type, one for the value type) if the annotated field is a {@code Map}.
          * </p><p>
          * If the field's type is a {@code Collection}, the generic type parameter of the collection is erased and
          * cannot be determined at runtime. Specify a {@code type} attribute to store values other than String in
@@ -810,9 +811,9 @@ public class CommandLine {
          * When the field's type is an array, the {@code type} attribute is ignored: the values will be converted
          * to the array component type and the array will be replaced with a new instance containing both the old and
          * the new values. </p>
-         * @return the type to convert the raw String values to before adding them to the Collection
+         * @return the type(s) to convert the raw String values to before adding them to the Collection or Map
          */
-        Class<?> type() default String.class;
+        Class<?>[] type() default {String.class};
 
         /**
          * Specify a regular expression to use to split option parameter values before applying them to the field.
@@ -895,7 +896,8 @@ public class CommandLine {
 
         /**
          * <p>
-         * Specify a {@code type} if the annotated field is a {@code Collection} that should hold objects other than Strings.
+         * Specify a {@code type} if the annotated field is a {@code Collection} that should hold objects other than
+         * Strings, or an array of types (one for the key type, one for the value type) if the annotated field is a {@code Map}.
          * </p><p>
          * If the field's type is a {@code Collection}, the generic type parameter of the collection is erased and
          * cannot be determined at runtime. Specify a {@code type} attribute to store values other than String in
@@ -906,9 +908,9 @@ public class CommandLine {
          * When the field's type is an array, the {@code type} attribute is ignored: the values will be converted
          * to the array component type and the array will be replaced with a new instance containing both the old and
          * the new values. </p>
-         * @return the type to convert the raw String values to before adding them to the Collection
+         * @return the type(s) to convert the raw String values to before adding them to the Collection or Map
          */
-        Class<?> type() default String.class;
+        Class<?>[] type() default {String.class};
 
         /**
          * Specify a regular expression to use to split positional parameter values before applying them to the field.
@@ -1648,6 +1650,7 @@ public class CommandLine {
             }
             return applyValueToSingleValuedField(field, arity, args, cls, initialized);
         }
+
         private int applyValueToSingleValuedField(Field field,
                                                   Range arity,
                                                   Stack<String> args,
@@ -1693,7 +1696,7 @@ public class CommandLine {
                                             Class<?> cls) throws Exception {
             Class<?> type = cls.getComponentType();
             ITypeConverter<?> converter = getTypeConverter(type);
-            List<Object> converted = consumeArguments(field, annotation, arity, args, converter, cls);
+            List<Object> converted = consumeArguments(field, annotation, arity, args, type);
             Object existing = field.get(command);
             int length = existing == null ? 0 : Array.getLength(existing);
             List<Object> newValues = new ArrayList<Object>();
@@ -1722,9 +1725,8 @@ public class CommandLine {
                                                  Stack<String> args,
                                                  Class<?> cls) throws Exception {
             Collection<Object> collection = (Collection<Object>) field.get(command);
-            Class<?> type = getTypeAttribute(field);
-            ITypeConverter<?> converter = getTypeConverter(type);
-            List<Object> converted = consumeArguments(field, annotation, arity, args, converter, type);
+            Class<?> type = getTypeAttribute(field)[0];
+            List<Object> converted = consumeArguments(field, annotation, arity, args, type);
             if (collection == null) {
                 collection = createCollection(cls);
                 field.set(command, collection);
@@ -1743,14 +1745,13 @@ public class CommandLine {
                                               Class<?> annotation,
                                               Range arity,
                                               Stack<String> args,
-                                              ITypeConverter<?> converter,
                                               Class<?> type) throws Exception {
             List<Object> result = new ArrayList<Object>();
             int index = 0;
 
             // first do the arity.min mandatory parameters
             for (int i = 0; result.size() < arity.min; i++) {
-                index = consumeOneArgument(field, arity, args, converter, type, result, index);
+                index = consumeOneArgument(field, arity, args, type, result, index);
             }
             // now process the varargs if any
             while (result.size() < arity.max && !args.isEmpty()) {
@@ -1759,7 +1760,7 @@ public class CommandLine {
                         return result;
                     }
                 }
-                index = consumeOneArgument(field, arity, args, converter, type, result, index);
+                index = consumeOneArgument(field, arity, args, type, result, index);
             }
             return result;
         }
@@ -1767,10 +1768,12 @@ public class CommandLine {
         private int consumeOneArgument(Field field,
                                        Range arity,
                                        Stack<String> args,
-                                       ITypeConverter<?> converter,
                                        Class<?> type,
-                                       List<Object> result, int index) throws Exception {
+                                       List<Object> result,
+                                       int index) throws Exception {
             String[] values = split(trim(args.pop()), field);
+
+            ITypeConverter<?> converter = getTypeConverter(type);
 
             // ensure we don't process more than arity.max (as result of splitting args)
             int max = Math.min(arity.max - result.size(), values.length);
@@ -1852,7 +1855,7 @@ public class CommandLine {
             return desc;
         }
 
-        private Class<?> getTypeAttribute(Field field) {
+        private Class<?>[] getTypeAttribute(Field field) {
             if (field.isAnnotationPresent(Parameters.class)) {
                 return field.getAnnotation(Parameters.class).type();
             } else if (field.isAnnotationPresent(Option.class)) {

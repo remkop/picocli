@@ -5,6 +5,7 @@
 * (Work in progress) #121 Added support for command line complete: picocli can generate bash completion scripts that generate completion matches based on `@Option` and `@Command` annotations.
 * #164 Support format patterns in version string and printVersionHelp
 * #166 Fixed bug where adjacent markup sections resulted in incorrect ANSI escape sequences
+* #167 Change `@Option(type=Class)` attribute from `Class` to `Class[]`
 
 == 0.9.8 - Bugfix and enhancements release for public review. API may change.
 
