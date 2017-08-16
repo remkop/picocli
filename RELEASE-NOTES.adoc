@@ -6,6 +6,7 @@
 * #164 Support format patterns in version string and printVersionHelp
 * #166 Fixed bug where adjacent markup sections resulted in incorrect ANSI escape sequences
 * #167 Change `@Option(type=Class)` attribute from `Class` to `Class[]`
+* #67 Support options for Map fields like `-Dkey1=val1 -Dkey2=val2`
 
 == 0.9.8 - Bugfix and enhancements release for public review. API may change.
 

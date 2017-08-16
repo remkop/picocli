@@ -1199,7 +1199,7 @@ public class CommandLine {
         public static Range defaultArity(Class<?> type) {
             if (isBoolean(type)) {
                 return Range.valueOf("0");
-            } else if (type.isArray() || Collection.class.isAssignableFrom(type)) {
+            } else if (type.isArray() || Collection.class.isAssignableFrom(type) || Map.class.isAssignableFrom(type)) {
                 return Range.valueOf("0..*");
             }
             return Range.valueOf("1");// for single-valued fields
@@ -1648,6 +1648,9 @@ public class CommandLine {
             if (Collection.class.isAssignableFrom(cls)) {
                 return applyValuesToCollectionField(field, annotation, arity, args, cls);
             }
+            if (Map.class.isAssignableFrom(cls)) {
+                return applyValuesToMapField(field, annotation, arity, args, cls);
+            }
             return applyValueToSingleValuedField(field, arity, args, cls, initialized);
         }
 
@@ -1683,10 +1686,53 @@ public class CommandLine {
                 }
                 initialized.add(field);
             }
-            ITypeConverter<?> converter = getTypeConverter(cls);
+            ITypeConverter<?> converter = getTypeConverter(cls, field);
             Object objValue = tryConvert(field, -1, converter, value, cls);
             field.set(command, objValue);
             return result;
+        }
+        private int applyValuesToMapField(Field field,
+                                          Class<?> annotation,
+                                          Range arity,
+                                          Stack<String> args,
+                                          Class<?> cls) throws Exception {
+            Class<?>[] classes = getTypeAttribute(field);
+            if (classes.length < 2) { throw new ParameterException("Field " + field + " needs two types (one for the map key, one for the value) but only has " + classes.length + " types configured."); }
+            ITypeConverter<?> keyConverter   = getTypeConverter(classes[0], field);
+            ITypeConverter<?> valueConverter = getTypeConverter(classes[1], field);
+            Map<Object, Object> result = (Map<Object, Object>) field.get(command);
+            if (result == null) {
+                result = createMap(cls);
+                field.set(command, result);
+            }
+            int originalSize = result.size();
+            String[] values = split(trim(args.pop()), field);
+
+            // ensure we don't process more than arity.max (as result of splitting args)
+            int max = Math.min(arity.max, values.length);
+            for (int j = 0; j < max; j++) {
+                String value = values[j];
+                String[] keyValue = value.split("=");
+                if (keyValue.length < 2) {
+                    String splitRegex = splitRegex(field);
+                    if (splitRegex.length() == 0) {
+                        throw new CommandLine.ParameterException("Value for option " + optionDescription("", field,
+                                0) + " should be in KEY=VALUE format but was " + value);
+                    } else {
+                        throw new CommandLine.ParameterException("Value for option " + optionDescription("", field,
+                                0) + " should be in KEY=VALUE[" + splitRegex + "KEY=VALUE]... format but was " + value);
+                    }
+                }
+                Object mapKey =   tryConvert(field, j, keyConverter,   keyValue[0], classes[0]);
+                Object mapValue = tryConvert(field, j, valueConverter, keyValue[1], classes[1]);
+                result.put(mapKey, mapValue);
+            }
+            // TODO (debatable...) if this option cannot consume values because of its arity.max,
+            // then push them back on the stack (they are likely processed as positional parameters)
+            for (int j = values.length - 1; j >= max; j--) {
+                args.push(values[j]);
+            }
+            return result.size() - originalSize;
         }
 
         private int applyValuesToArrayField(Field field,
@@ -1695,7 +1741,7 @@ public class CommandLine {
                                             Stack<String> args,
                                             Class<?> cls) throws Exception {
             Class<?> type = cls.getComponentType();
-            ITypeConverter<?> converter = getTypeConverter(type);
+            ITypeConverter<?> converter = getTypeConverter(type, field);
             List<Object> converted = consumeArguments(field, annotation, arity, args, type);
             Object existing = field.get(command);
             int length = existing == null ? 0 : Array.getLength(existing);
@@ -1772,8 +1818,7 @@ public class CommandLine {
                                        List<Object> result,
                                        int index) throws Exception {
             String[] values = split(trim(args.pop()), field);
-
-            ITypeConverter<?> converter = getTypeConverter(type);
+            ITypeConverter<?> converter = getTypeConverter(type, field);
 
             // ensure we don't process more than arity.max (as result of splitting args)
             int max = Math.min(arity.max - result.size(), values.length);
@@ -1789,16 +1834,16 @@ public class CommandLine {
             return index;
         }
 
-        private String[] split(String value, Field field) {
+        private String splitRegex(Field field) {
             if (field.isAnnotationPresent(Option.class)) {
-                String regex = field.getAnnotation(Option.class).split();
-                return regex.length() == 0 ? new String[] {value} : value.split(regex);
-            }
-            if (field.isAnnotationPresent(Parameters.class)) {
-                String regex = field.getAnnotation(Parameters.class).split();
-                return regex.length() == 0 ? new String[] {value} : value.split(regex);
-            }
-            return new String[] {value};
+                return field.getAnnotation(Option.class).split();
+            } else if (field.isAnnotationPresent(Parameters.class)) {
+                return field.getAnnotation(Parameters.class).split();
+            } else { return ""; }
+        }
+        private String[] split(String value, Field field) {
+            String regex = splitRegex(field);
+            return regex.length() == 0 ? new String[] {value} : value.split(regex);
         }
 
         /**
@@ -1891,8 +1936,13 @@ public class CommandLine {
             // custom Collection implementation class must have default constructor
             return (Collection<Object>) collectionClass.newInstance();
         }
-
-        private ITypeConverter<?> getTypeConverter(final Class<?> type) {
+        private Map<Object, Object> createMap(Class<?> mapClass) throws Exception {
+            try { // if it is an implementation class, instantiate it
+                return (Map<Object, Object>) mapClass.newInstance();
+            } catch (Exception ignored) {}
+            return new LinkedHashMap<Object, Object>();
+        }
+        private ITypeConverter<?> getTypeConverter(final Class<?> type, Field field) {
             ITypeConverter<?> result = converterRegistry.get(type);
             if (result != null) {
                 return result;
@@ -1905,7 +1955,7 @@ public class CommandLine {
                     }
                 };
             }
-            throw new MissingTypeConverterException("No TypeConverter registered for " + type.getName());
+            throw new MissingTypeConverterException("No TypeConverter registered for " + type.getName() + " of field " + field);
         }
 
         private void assertNoMissingParameters(Field field, int arity, Stack<String> args) {

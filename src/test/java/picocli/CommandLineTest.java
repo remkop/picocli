@@ -40,13 +40,16 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
 import java.util.SortedSet;
+import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
@@ -2916,6 +2919,71 @@ public class CommandLineTest {
         } catch (IllegalArgumentException ex) {
             String expected = String.format("Subcommand %s is missing the mandatory @Command annotation with a 'name' attribute", MissingNameAttribute.class.getName());
             assertEquals(expected, ex.getMessage());
+        }
+    }
+    @Test
+    public void testMapFieldHappyCase() {
+        class App {
+            @Option(names = {"-P", "-map"}, type = {String.class, String.class}) Map<String, String> map = new HashMap<String, String>();
+            private void validateMapField() {
+                assertEquals(1, map.size());
+                assertEquals(HashMap.class, map.getClass());
+                assertEquals("BBB", map.get("AAA"));
+            }
+        }
+        CommandLine.populateCommand(new App(), "-map=AAA=BBB").validateMapField();
+        CommandLine.populateCommand(new App(), "-PAAA=BBB").validateMapField();
+        CommandLine.populateCommand(new App(), "-P", "AAA=BBB").validateMapField();
+    }
+    @Test
+    public void testMapFieldHappyCaseWithMultipleValues() {
+        class App {
+            @Option(names = {"-P", "-map"}, split = ",", type = {String.class, String.class}) Map<String, String> map;
+            private void validateMapField3Values() {
+                assertEquals(3, map.size());
+                assertEquals(LinkedHashMap.class, map.getClass());
+                assertEquals("BBB", map.get("AAA"));
+                assertEquals("DDD", map.get("CCC"));
+                assertEquals("FFF", map.get("EEE"));
+            }
+        }
+        CommandLine.populateCommand(new App(), "-map=AAA=BBB,CCC=DDD,EEE=FFF").validateMapField3Values();
+        CommandLine.populateCommand(new App(), "-PAAA=BBB,CCC=DDD,EEE=FFF").validateMapField3Values();
+        CommandLine.populateCommand(new App(), "-P", "AAA=BBB,CCC=DDD,EEE=FFF").validateMapField3Values();
+    }
+
+    @Test
+    public void testMapField_InstantiatesConcreteMap() {
+        class App {
+            @Option(names = "-map", type = {String.class, String.class}) TreeMap<String, String> map;
+        }
+        App app = CommandLine.populateCommand(new App(), "-map=AAA=BBB");
+        assertEquals(1, app.map.size());
+        assertEquals(TreeMap.class, app.map.getClass());
+        assertEquals("BBB", app.map.get("AAA"));
+    }
+    @Test
+    public void testMapFieldMissingTypeAttribute() {
+        class App {
+            @Option(names = "-map") TreeMap<String, String> map;
+        }
+        try {
+            CommandLine.populateCommand(new App(), "-map=AAA=BBB");
+        } catch (ParameterException ex) {
+            assertEquals("Field java.util.TreeMap " + App.class.getName() +
+                    ".map needs two types (one for the map key, one for the value) but only has 1 types configured.", ex.getMessage());
+        }
+    }
+    @Test
+    public void testMapFieldMissingTypeConverter() {
+        class App {
+            @Option(names = "-map", type = {Thread.class, Thread.class}) TreeMap<String, String> map;
+        }
+        try {
+            CommandLine.populateCommand(new App(), "-map=AAA=BBB");
+        } catch (ParameterException ex) {
+            assertEquals("No TypeConverter registered for java.lang.Thread of field java.util.TreeMap " +
+                    App.class.getName() + ".map", ex.getMessage());
         }
     }
 }
