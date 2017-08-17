@@ -583,9 +583,11 @@ public class CommandLine {
     }
 
     /** Sets the String the parser uses to separate option names from option values to the specified value.
-     * @param separator the String that separates option names from option values */
-    public void setSeparator(String separator) {
+     * @param separator the String that separates option names from option values
+     * @return this {@code CommandLine} object, to allow method chaining */
+    public CommandLine setSeparator(String separator) {
         interpreter.separator = Assert.notNull(separator, "separator");
+        return this;
     }
     private static boolean empty(String str) { return str == null || str.trim().length() == 0; }
     private static boolean empty(Object[] array) { return array == null || array.length == 0; }
