@@ -268,19 +268,24 @@ and all subcommands (and nested sub-subcommands) that were added _before_ the co
 Subcommands added later will not have the converter added automatically.
 To ensure a custom type converter is available to all subcommands, register the type converter last, after adding subcommands.
 
-=== Arrays and Collections
+=== Arrays, Collections, Maps
 
 IMPORTANT: With array fields picocli uses reflection to discover the array element type, but with collections,
 Java type erasure means picocli cannot find out the generic type of the collection.
 For non-String collections, use the `type` attribute to specify what type to convert the command line arguments to.
 
+==== Arrays and Collections
+
 Multiple parameters can be captured together in a single array or `Collection` field. When using a collection, use the `type` attribute to specify the collection element type. For example:
 
 [source,java]
 ----
+import java.util.regex.Pattern;
+import java.io.File;
+
 class Convert {
-    @Option(type = java.util.regex.Pattern.class, names = "-patterns");
-    List<Pattern> patterns;
+    @Option(names = "-patterns"); // no `type` annotation attribute needed
+    Pattern[] patterns;           // for array fields
 
     @Parameters(type = File.class)
     List<File> files;
@@ -298,6 +303,34 @@ Convert convert = CommandLine.populateCommand(new Convert(), args);
 
 NOTE: If a collection is returned from a type converter, the _contents_ of the collection are added to the field, not the collection itself.
 
+==== Maps
+Picocli supports `java.util.Map` fields since 1.0.0.
+
+For `Map` fields, use the `type` attribute to specify the both the _key type_ and the _value type_. For example:
+
+[source,java]
+----
+import java.net.InetAddress;
+import java.net.Proxy.Type;
+import java.util.concurrent.TimeUnit;
+
+class MapDemo {
+    @Option(names = {"-h", "--proxyHost"}, type = {Proxy.Type.class, InetAddress.class});
+    Map<Proxy.Type, InetAddress> proxies;
+
+    @Option(names = {"-u", "--timeUnit"}, type = {TimeUnit.class, Long.class});
+    Map<TimeUnit, Long> timeout;
+}
+----
+For map options, the same option name may be specified multiple times with different key-value pairs.
+
+[source,bash]
+----
+<command> -hHTTP=123.123.123.123 --proxyHost SOCKS=212.212.212.212
+<command> -uDAYS=3 -u HOURS=23 -u=MINUTES=59 --timeUnit=SECONDS=13
+----
+
+NOTE: On the command line, the key and the value must be separated by a `=` character.
 
 == Multiple Values
 Arity is the number of parameters that will be consumed by an option.
@@ -307,7 +340,7 @@ The default arity value of an `@Option` or `@Parameters` field depends on its ty
 
 * Boolean fields: the default arity is 0 (consume zero parameters) the field is toggled to its logical negative when the option name is recognized. (You can <<Boolean Parameters,change this>>.)
 * Single-valued types like `int`, `String`, `File`: arity is 1 (consume one parameter). Omitting the option parameter results in a ParameterException: "Missing required parameter for field '<field-name>'".
-* Multi-valued types like arrays or collections: consume from zero up to all available parameters (until encountering another option or <<Subcommands,subcommand>>).
+* Multi-valued types like arrays, collections or maps: consume from zero up to all available parameters (until encountering another option or <<Subcommands,subcommand>>).
 
 === Arity
 
@@ -351,6 +384,16 @@ Command line arguments like the following are interpreted as three `int` values 
 -option 111,222,333
 ----
 
+Similarly for <<Maps>>:
+[source,java]
+----
+@Option(names = "-fix", split = "\\|", type = {Integer.class, String.class})
+Map<Integer,String> message;
+----
+With the above option, command line arguments like the following are interpreted as a set of key-value pairs instead of a single string:
+----
+-fix 8=FIX.4.4|9=69|35=A|49=MBT|56=TargetCompID|34=9|52=20130625-04:05:32.682|98=0|108=30|10=052
+----
 
 === Multiple Occurrences
 Users may also specify the same option multiple times. For example:
