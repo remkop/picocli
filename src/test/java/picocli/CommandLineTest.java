@@ -2931,7 +2931,9 @@ public class CommandLineTest {
                 assertEquals("BBB", map.get("AAA"));
             }
         }
+        CommandLine.populateCommand(new App(), "-map", "AAA=BBB").validateMapField();
         CommandLine.populateCommand(new App(), "-map=AAA=BBB").validateMapField();
+        CommandLine.populateCommand(new App(), "-P=AAA=BBB").validateMapField();
         CommandLine.populateCommand(new App(), "-PAAA=BBB").validateMapField();
         CommandLine.populateCommand(new App(), "-P", "AAA=BBB").validateMapField();
     }
@@ -2950,9 +2952,13 @@ public class CommandLineTest {
         CommandLine.populateCommand(new App(), "-map=AAA=BBB,CCC=DDD,EEE=FFF").validateMapField3Values();
         CommandLine.populateCommand(new App(), "-PAAA=BBB,CCC=DDD,EEE=FFF").validateMapField3Values();
         CommandLine.populateCommand(new App(), "-P", "AAA=BBB,CCC=DDD,EEE=FFF").validateMapField3Values();
+        CommandLine.populateCommand(new App(), "-P", "AAA=BBB", "CCC=DDD", "EEE=FFF").validateMapField3Values();
         CommandLine.populateCommand(new App(), "-map=AAA=BBB", "-map=CCC=DDD", "-map=EEE=FFF").validateMapField3Values();
+        CommandLine.populateCommand(new App(), "-map=AAA=BBB", "CCC=DDD", "EEE=FFF").validateMapField3Values();
         CommandLine.populateCommand(new App(), "-PAAA=BBB", "-PCCC=DDD", "-PEEE=FFF").validateMapField3Values();
+        CommandLine.populateCommand(new App(), "-PAAA=BBB", "-PCCC=DDD", "EEE=FFF").validateMapField3Values();
         CommandLine.populateCommand(new App(), "-P", "AAA=BBB", "-P", "CCC=DDD", "-P", "EEE=FFF").validateMapField3Values();
+        CommandLine.populateCommand(new App(), "-P", "AAA=BBB", "-P", "CCC=DDD", "EEE=FFF").validateMapField3Values();
     }
 
     @Test
@@ -2988,5 +2994,27 @@ public class CommandLineTest {
             assertEquals("No TypeConverter registered for java.lang.Thread of field java.util.TreeMap " +
                     App.class.getName() + ".map", ex.getMessage());
         }
+    }
+    @Test
+    public void testMapFieldWithSplitRegex() {
+        class App {
+            @Option(names = "-fix", split = "\\|", type = {Integer.class, String.class})
+            Map<Integer,String> message;
+            private void validate() {
+                assertEquals(10, message.size());
+                assertEquals(LinkedHashMap.class, message.getClass());
+                assertEquals("FIX.4.4", message.get(8));
+                assertEquals("69", message.get(9));
+                assertEquals("A", message.get(35));
+                assertEquals("MBT", message.get(49));
+                assertEquals("TargetCompID", message.get(56));
+                assertEquals("9", message.get(34));
+                assertEquals("20130625-04:05:32.682", message.get(52));
+                assertEquals("0", message.get(98));
+                assertEquals("30", message.get(108));
+                assertEquals("052", message.get(10));
+            }
+        }
+        CommandLine.populateCommand(new App(), "-fix", "8=FIX.4.4|9=69|35=A|49=MBT|56=TargetCompID|34=9|52=20130625-04:05:32.682|98=0|108=30|10=052").validate();
     }
 }
