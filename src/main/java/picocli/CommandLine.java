@@ -1706,20 +1706,49 @@ public class CommandLine {
                 field.set(command, result);
             }
             int originalSize = result.size();
+            consumeMapArguments(field, arity, args, classes, keyConverter, valueConverter, result);
+            return result.size() - originalSize;
+        }
+
+        private void consumeMapArguments(Field field, Range arity, Stack<String> args, Class<?>[] classes, ITypeConverter<?> keyConverter, ITypeConverter<?> valueConverter, Map<Object, Object> result) throws Exception {
+            int originalSize = result.size();
+
+            // first do the arity.min mandatory parameters
+            for (int i = 0; result.size() - originalSize < arity.min; i++) {
+                consumeOneMapArgument(field, arity, args, classes, keyConverter, valueConverter, result, result.size() - originalSize);
+            }
+            // now process the varargs if any
+            while (result.size() - originalSize < arity.max && !args.isEmpty()) {
+                if (!field.isAnnotationPresent(Parameters.class)) {
+                    if (commands.containsKey(args.peek()) || isOption(args.peek())) {
+                        return;
+                    }
+                }
+                consumeOneMapArgument(field, arity, args, classes, keyConverter, valueConverter, result, result.size() - originalSize);
+            }
+        }
+
+        private void consumeOneMapArgument(Field field,
+                                           Range arity,
+                                           Stack<String> args,
+                                           Class<?>[] classes,
+                                           ITypeConverter<?> keyConverter, ITypeConverter<?> valueConverter,
+                                           Map<Object, Object> result,
+                                           int consumed) throws Exception {
             String[] values = split(trim(args.pop()), field);
 
             // ensure we don't process more than arity.max (as result of splitting args)
-            int max = Math.min(arity.max, values.length);
+            int max = Math.min(arity.max - consumed, values.length);
             for (int j = 0; j < max; j++) {
                 String value = values[j];
                 String[] keyValue = value.split("=");
                 if (keyValue.length < 2) {
                     String splitRegex = splitRegex(field);
                     if (splitRegex.length() == 0) {
-                        throw new CommandLine.ParameterException("Value for option " + optionDescription("", field,
+                        throw new ParameterException("Value for option " + optionDescription("", field,
                                 0) + " should be in KEY=VALUE format but was " + value);
                     } else {
-                        throw new CommandLine.ParameterException("Value for option " + optionDescription("", field,
+                        throw new ParameterException("Value for option " + optionDescription("", field,
                                 0) + " should be in KEY=VALUE[" + splitRegex + "KEY=VALUE]... format but was " + value);
                     }
                 }
@@ -1732,7 +1761,6 @@ public class CommandLine {
             for (int j = values.length - 1; j >= max; j--) {
                 args.push(values[j]);
             }
-            return result.size() - originalSize;
         }
 
         private int applyValuesToArrayField(Field field,
@@ -1741,7 +1769,6 @@ public class CommandLine {
                                             Stack<String> args,
                                             Class<?> cls) throws Exception {
             Class<?> type = cls.getComponentType();
-            ITypeConverter<?> converter = getTypeConverter(type, field);
             List<Object> converted = consumeArguments(field, annotation, arity, args, type);
             Object existing = field.get(command);
             int length = existing == null ? 0 : Array.getLength(existing);
