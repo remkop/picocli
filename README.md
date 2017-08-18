@@ -4,7 +4,6 @@ Annotation-based Java command line parser. Usage help with ANSI colors. Autocomp
 
 |Now in BETA: [command line autocompletion](http://picocli.info/1.0.0-SNAPSHOT/autocomplete.html)|
 |----|
-|![Autocompletion demo animation](docs/images/picocli-autocompletion-demo.gif?raw=true)|
 |Autocomplete is work in progress. Comments, bug reports, pull requests welcome!|
 
 A Java command line parsing framework in a single file, so you can include it _in source form_.
