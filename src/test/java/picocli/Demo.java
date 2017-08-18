@@ -664,26 +664,27 @@ public class Demo implements Runnable {
 
     static
     // tag::CheckSum[]
-    @Command(name = "checksum", description = "Prints the checksum (MD5 by default) of a file to STDOUT")
-    class CheckSum implements Callable<byte[]> {
+    @Command(name = "checksum", description = "Prints the checksum (MD5 by default) of a file to STDOUT.")
+    class CheckSum implements Callable<Void> {
 
         @Option(names = {"-a", "--algorithm"}, description = "MD5, SHA-1, SHA-256, ...")
         private String algorithm = "MD5";
 
-        @Parameters(index = "0", description = "The file whose checksum to calculate")
+        @Parameters(index = "0", description = "The file whose checksum to calculate.")
         private File file;
 
         public static void main(String[] args) throws Exception {
-            byte[] digest = CommandLine.call(new CheckSum(), System.err, args);
-            if (digest != null) { print(digest, System.out); }
+            CommandLine.call(new CheckSum(), System.err, args);
         }
 
         @Override
-        public byte[] call() throws Exception {
-            return MessageDigest.getInstance(algorithm).digest(readBytes(file));
+        public Void call() throws Exception {
+            byte[] digest = MessageDigest.getInstance(algorithm).digest(readBytes(file));
+            print(digest, System.out);
+            return null;
         }
 
-        private static byte[] readBytes(File f) throws IOException {
+        byte[] readBytes(File f) throws IOException {
             int pos = 0;
             int len = 0;
             byte[] buffer = new byte[(int) f.length()];
@@ -692,7 +693,7 @@ public class Demo implements Runnable {
             fis.close();
             return buffer;
         }
-        private static void print(byte[] digest, PrintStream out) {
+        void print(byte[] digest, PrintStream out) {
             for (int i = 0; i < digest.length; i++) {
                 if ((digest[i] & 0xFF) < 16) { out.print('0'); }
                 out.print(Integer.toHexString(digest[i] & 0xFF));

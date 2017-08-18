@@ -60,6 +60,51 @@ assert  app.verbose;
 assert  app.inputFiles != null && app.inputFiles.length == 2;
 ----
 
+A more realistic example:
+
+[source,java]
+----
+@Command(name = "checksum", description = "Prints the checksum (MD5 by default) of a file to STDOUT.")
+class CheckSum implements Callable<Void> {
+
+    @Option(names = {"-a", "--algorithm"}, description = "MD5, SHA-1, SHA-256, ...")
+    private String algorithm = "MD5";
+
+    @Parameters(index = "0", description = "The file whose checksum to calculate.")
+    private File file;
+
+    public static void main(String[] args) throws Exception {
+        CommandLine.call(new CheckSum(), System.err, args);
+    }
+
+    @Override
+    public Void call() throws Exception {
+        byte[] digest = MessageDigest.getInstance(algorithm).digest(readBytes(file));
+        print(digest, System.out);
+        return null;
+    }
+
+    byte[] readBytes(File f) throws IOException {...}
+    void print(byte[] digest, PrintStream out) {...}
+}
+----
+
+The `CommandLine.call` method is a convenience method that only invokes the `Callable` when the
+command line parameters are valid. Otherwise it shows the usage help message.
+For example, when this application is run without any parameters, the following usage help message is displayed:
+[source,bash]
+----
+$ java CheckSum
+
+Missing required parameter: file
+Usage: checksum [-a=<algorithm>] <file>
+Prints the checksum (MD5 by default) of a file to STDOUT.
+      file                    The file whose checksum to calculate.
+  -a, --algorithm=<algorithm> MD5, SHA-1, SHA-256, ...
+----
+
+
+
 == Options and Parameters
 Command line arguments can be separated into _options_  and _positional parameters_.
 Options have a name, positional parameters are the values that follow the options.

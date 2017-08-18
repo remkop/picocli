@@ -9,6 +9,7 @@
 * #167 API change: Change `type` attribute from `Class` to `Class[]` for Map support
 * #168 API change: `CommandLine::setSeparator` method now returns this CommandLine (was void)
 * #170 API change: Add `call` convenience method similar to `run`
+* #156 add example to user manual to clarify main command common usage
 
 == 0.9.8 - Bugfix and enhancements release for public review. API may change.
 
