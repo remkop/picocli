@@ -19,9 +19,13 @@ Every main method deserves picocli!
 == Introduction
 Picocli is a one-file Java framework for parsing command line arguments
 and generating polished, easily tailored usage help messages. With <<ANSI Colors and Styles,colors>>.
-Now in BETA: http://picocli.info/1.0.0-SNAPSHOT/autocomplete.html[command line autocompletion]. (Comments, bug reports, pull requests welcome!)
 
 image:ExampleUsageANSI.png[Screenshot of usage help with Ansi codes enabled]
+
+Now in BETA: http://picocli.info/1.0.0-SNAPSHOT/autocomplete.html[command line autocompletion]. (Comments, bug reports, pull requests welcome!)
+
+image:picocli-autocompletion-demo.gif[Autocompletion demo animation]
+
 
 A distinguishing feature of picocli is how it aims
 to let users run picocli-based applications without requiring picocli as an external dependency:
@@ -1266,8 +1270,7 @@ class GrandChild3Command3 { }
 == Tips & Tricks
 
 === Less Boilerplate
-You can omit some of the boilerplate code from your application when the annotated object implements `Runnable`:
-
+You can omit some of the boilerplate code from your application when the annotated object implements `Runnable` or `Callable`:
 
 .Before
 
@@ -1293,6 +1296,13 @@ CommandLine.run(new MyApp(), System.err, args);
 
 Note that the `CommandLine.run` convenience method cannot be used with subcommands.
 
+When the annotated object implements `Callable`, use the `call` method. For example:
+[source,java]
+----
+Object result = CommandLine.call(new MyCallable(), System.err, args);
+----
+The `call` method returns the result of the `Callable`, or `null` if the command line options were invalid.
+Exceptions thrown by the `Callable` are not caught by the `CommandLine.call` method.
 
 === Boolean Parameters
 By default the value of a boolean field is toggled to its logical negative when the field's option is specified on the command line.

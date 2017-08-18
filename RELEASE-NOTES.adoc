@@ -4,10 +4,11 @@
 
 * (Work in progress) #121 Added support for command line complete: picocli can generate bash completion scripts that generate completion matches based on `@Option` and `@Command` annotations.
 * #67 Support options for Map fields like `-Dkey1=val1 -Dkey2=val2`
-* #164 Support format patterns in version string and printVersionHelp
+* #164 API change: Support format patterns in version string and printVersionHelp
 * #166 Fixed bug where adjacent markup sections resulted in incorrect ANSI escape sequences
-* #167 Change `type` attribute from `Class` to `Class[]` for Map support
+* #167 API change: Change `type` attribute from `Class` to `Class[]` for Map support
 * #168 API change: `CommandLine::setSeparator` method now returns this CommandLine (was void)
+* #170 API change: Add `call` convenience method similar to `run`
 
 == 0.9.8 - Bugfix and enhancements release for public review. API may change.
 

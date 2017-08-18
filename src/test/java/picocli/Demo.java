@@ -21,10 +21,14 @@ import picocli.CommandLine.Parameters;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.io.PrintStream;
 import java.io.UnsupportedEncodingException;
+import java.security.MessageDigest;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Callable;
 
 /**
  * Demonstrates picocli subcommands.
@@ -657,4 +661,44 @@ public class Demo implements Runnable {
             "  @|yellow -m|@, @|yellow --message|@[=@|italic <msg>|@...]     Use the given <msg> as the commit message. If%n" +
             "                                multiple -m options are given, their values are%n" +
             "                                concatenated as separate paragraphs.%n";
+
+    static
+    // tag::CheckSum[]
+    @Command(name = "checksum", description = "Prints the checksum (MD5 by default) of a file to STDOUT")
+    class CheckSum implements Callable<byte[]> {
+
+        @Option(names = {"-a", "--algorithm"}, description = "MD5, SHA-1, SHA-256, ...")
+        private String algorithm = "MD5";
+
+        @Parameters(index = "0", description = "The file whose checksum to calculate")
+        private File file;
+
+        public static void main(String[] args) throws Exception {
+            byte[] digest = CommandLine.call(new CheckSum(), System.err, args);
+            if (digest != null) { print(digest, System.out); }
+        }
+
+        @Override
+        public byte[] call() throws Exception {
+            return MessageDigest.getInstance(algorithm).digest(readBytes(file));
+        }
+
+        private static byte[] readBytes(File f) throws IOException {
+            int pos = 0;
+            int len = 0;
+            byte[] buffer = new byte[(int) f.length()];
+            FileInputStream fis = new FileInputStream(f);
+            while ((len = fis.read(buffer, pos, buffer.length - pos)) > 0) { pos += len; }
+            fis.close();
+            return buffer;
+        }
+        private static void print(byte[] digest, PrintStream out) {
+            for (int i = 0; i < digest.length; i++) {
+                if ((digest[i] & 0xFF) < 16) { out.print('0'); }
+                out.print(Integer.toHexString(digest[i] & 0xFF));
+            }
+            out.println();
+        }
+    }
+    // end::CheckSum[]
 }

@@ -55,6 +55,7 @@ import java.util.SortedSet;
 import java.util.Stack;
 import java.util.TreeSet;
 import java.util.UUID;
+import java.util.concurrent.Callable;
 import java.util.regex.Pattern;
 
 import picocli.CommandLine.Help.Ansi;
@@ -480,41 +481,93 @@ public class CommandLine {
     }
 
     /**
+     * Delegates to {@link #call(Callable, PrintStream, Help.Ansi, String...)} with {@link Help.Ansi#AUTO}.
+     * @param callable the command to call when {@linkplain #populateCommand(Object, String...) parsing} succeeds.
+     * @param out the printStream to print to
+     * @param args the command line arguments to parse
+     * @param <C> the annotated object must implement Runnable
+     * @param <T> the return type of the Callable
+     * @see #call(Callable, PrintStream, Help.Ansi, String...)
+     * @throws IllegalArgumentException if the specified command object does not have a {@link Command}, {@link Option} or {@link Parameters} annotation
+     * @throws Exception if the Callable throws an exception
+     * @return {@code null} if an error occurred while parsing the command line options, otherwise returns the result of calling the Callable
+     */
+    public static <C extends Callable<T>, T> T call(C callable, PrintStream out, String... args) throws Exception {
+        return call(callable, out, Help.Ansi.AUTO, args);
+    }
+    /**
+     * Convenience method to allow command line application authors to avoid some boilerplate code in their application.
+     * The annotated object needs to implement {@link Callable}. Calling this method is equivalent to:
+     * <pre>
+     * CommandLine cmd = new CommandLine(callable);
+     * try {
+     *     cmd.parse(args);
+     * } catch (Exception ex) {
+     *     out.println(ex.getMessage());
+     *     cmd.usage(out, ansi);
+     *     return null;
+     * }
+     * return callable.call();
+     * </pre>
+     * Note that this method is not suitable for commands with subcommands.
+     * @param callable the command to call when {@linkplain #populateCommand(Object, String...) parsing} succeeds.
+     * @param out the printStream to print to
+     * @param ansi whether the usage message should include ANSI escape codes or not
+     * @param args the command line arguments to parse
+     * @param <C> the annotated object must implement Callable
+     * @param <T> the return type of the Callable
+     * @throws IllegalArgumentException if the specified command object does not have a {@link Command}, {@link Option} or {@link Parameters} annotation
+     * @throws Exception if the Callable throws an exception
+     * @return {@code null} if an error occurred while parsing the command line options, otherwise returns the result of calling the Callable
+     */
+    public static <C extends Callable<T>, T> T call(C callable, PrintStream out, Help.Ansi ansi, String... args) throws Exception {
+        CommandLine cmd = new CommandLine(callable); // validate command outside of try-catch
+        try {
+            cmd.parse(args);
+        } catch (Exception ex) {
+            out.println(ex.getMessage());
+            cmd.usage(out, ansi);
+            return null;
+        }
+        return callable.call();
+    }
+
+    /**
      * Delegates to {@link #run(Runnable, PrintStream, Help.Ansi, String...)} with {@link Help.Ansi#AUTO}.
-     * @param command the command to run when {@linkplain #populateCommand(Object, String...) parsing} succeeds.
+     * @param runnable the command to run when {@linkplain #populateCommand(Object, String...) parsing} succeeds.
      * @param out the printStream to print to
      * @param args the command line arguments to parse
      * @param <R> the annotated object must implement Runnable
      * @see #run(Runnable, PrintStream, Help.Ansi, String...)
      * @throws IllegalArgumentException if the specified command object does not have a {@link Command}, {@link Option} or {@link Parameters} annotation
      */
-    public static <R extends Runnable> void run(R command, PrintStream out, String... args) {
-        run(command, out, Help.Ansi.AUTO, args);
+    public static <R extends Runnable> void run(R runnable, PrintStream out, String... args) {
+        run(runnable, out, Help.Ansi.AUTO, args);
     }
     /**
      * Convenience method to allow command line application authors to avoid some boilerplate code in their application.
      * The annotated object needs to implement {@link Runnable}. Calling this method is equivalent to:
      * <pre>
-     * CommandLine cmd = new CommandLine(command);
+     * CommandLine cmd = new CommandLine(runnable);
      * try {
      *     cmd.parse(args);
      * } catch (Exception ex) {
-     *     System.err.println(ex.getMessage());
+     *     out.println(ex.getMessage());
      *     cmd.usage(out, ansi);
      *     return;
      * }
-     * command.run();
+     * runnable.run();
      * </pre>
      * Note that this method is not suitable for commands with subcommands.
-     * @param command the command to run when {@linkplain #populateCommand(Object, String...) parsing} succeeds.
+     * @param runnable the command to run when {@linkplain #populateCommand(Object, String...) parsing} succeeds.
      * @param out the printStream to print to
      * @param ansi whether the usage message should include ANSI escape codes or not
      * @param args the command line arguments to parse
      * @param <R> the annotated object must implement Runnable
      * @throws IllegalArgumentException if the specified command object does not have a {@link Command}, {@link Option} or {@link Parameters} annotation
      */
-    public static <R extends Runnable> void run(R command, PrintStream out, Help.Ansi ansi, String... args) {
-        CommandLine cmd = new CommandLine(command); // validate command outside of try-catch
+    public static <R extends Runnable> void run(R runnable, PrintStream out, Help.Ansi ansi, String... args) {
+        CommandLine cmd = new CommandLine(runnable); // validate command outside of try-catch
         try {
             cmd.parse(args);
         } catch (Exception ex) {
@@ -522,7 +575,7 @@ public class CommandLine {
             cmd.usage(out, ansi);
             return;
         }
-        command.run();
+        runnable.run();
     }
 
     /**

@@ -52,6 +52,7 @@ import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.UUID;
+import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 
@@ -2689,6 +2690,42 @@ public class CommandLineTest {
             public void run() { }
         }
         CommandLine.run(new App(), System.err);
+    }
+
+    @Test
+    public void testCallReturnsCallableResultParseSucceeds() throws Exception {
+        @Command class App implements Callable<Boolean> {
+            public Boolean call() { return true; }
+        }
+        assertTrue(CommandLine.call(new App(), System.err));
+    }
+
+    @Test
+    public void testCallReturnsNullAndPrintsErrorIfParseFails() throws Exception {
+        class App implements Callable<Boolean> {
+            @Option(names = "-number") int number;
+            public Boolean call() { return true; }
+        }
+        PrintStream oldErr = System.err;
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        System.setErr(new PrintStream(baos, true, "UTF8"));
+        Boolean callResult = CommandLine.call(new App(), System.err, "-number", "not a number");
+        System.setErr(oldErr);
+
+        String result = baos.toString("UTF8");
+        assertNull(callResult);
+        assertEquals(String.format(
+                "Could not convert 'not a number' to int for option '-number': java.lang.NumberFormatException: For input string: \"not a number\"%n" +
+                        "Usage: <main class> [-number=<number>]%n" +
+                        "      -number=<number>%n"), result);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testCallRequiresAnnotatedCommand() throws Exception {
+        class App implements Callable<Object> {
+            public Object call() { return null; }
+        }
+        CommandLine.call(new App(), System.err);
     }
 
     @Test(expected = IllegalArgumentException.class)
