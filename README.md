@@ -1,13 +1,12 @@
 # picocli - a mighty tiny command line interface
 
-Annotation-based Java command line parser. Usage help with ANSI colors. Autocomplete. Easily included as source to avoid adding dependencies. Nested subcommands.
+Annotation-based Java command line parser, featuring usage help with ANSI colors, autocomplete and nested subcommands.
+In a single file, so you can include it _in source form_.
+This lets users run picocli-based applications without requiring picocli as an external dependency.
 
 |Now in BETA: [command line autocompletion](http://picocli.info/1.0.0-SNAPSHOT/autocomplete.html)|
 |----|
 |Autocomplete is work in progress. Comments, bug reports, pull requests welcome!|
-
-A Java command line parsing framework in a single file, so you can include it _in source form_.
-This lets users run picocli-based applications without requiring picocli as an external dependency.
 
 How it works: annotate your class and picocli initializes it from the command line arguments,
 converting the input to strongly typed data. Supports git-like [subcommands](http://picocli.info/#_subcommands)
