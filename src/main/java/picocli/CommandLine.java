@@ -58,7 +58,6 @@ import java.util.UUID;
 import java.util.concurrent.Callable;
 import java.util.regex.Pattern;
 
-import picocli.CommandLine.Help.Ansi;
 import picocli.CommandLine.Help.Ansi.IStyle;
 import picocli.CommandLine.Help.Ansi.Style;
 import picocli.CommandLine.Help.Ansi.Text;
@@ -126,6 +125,7 @@ public class CommandLine {
     /** This is picocli version {@value}. */
     public static final String VERSION = "1.0.0-SNAPSHOT";
 
+    private final Tracer tracer = new Tracer();
     private final Interpreter interpreter;
     private boolean overwrittenOptionsAllowed = false;
     private boolean unmatchedArgumentsAllowed = false;
@@ -1474,6 +1474,7 @@ public class CommandLine {
          */
         List<CommandLine> parse(String... args) {
             Assert.notNull(args, "argument array");
+            tracer.info("parsing command line args %s%n", Arrays.toString(args));
             Stack<String> arguments = new Stack<String>();
             for (int i = args.length - 1; i >= 0; i--) {
                 arguments.push(args[i]);
@@ -1745,6 +1746,7 @@ public class CommandLine {
             ITypeConverter<?> converter = getTypeConverter(cls, field);
             Object objValue = tryConvert(field, -1, converter, value, cls);
             field.set(command, objValue);
+            tracer.info("Setting %s field '%s' to '%s'%n", field.getType().getSimpleName(), field.getName(), String.valueOf(objValue));
             return result;
         }
         private int applyValuesToMapField(Field field,
@@ -1814,6 +1816,8 @@ public class CommandLine {
                 Object mapKey =   tryConvert(field, j, keyConverter,   keyValue[0], classes[0]);
                 Object mapValue = tryConvert(field, j, valueConverter, keyValue[1], classes[1]);
                 result.put(mapKey, mapValue);
+                tracer.info("Putting [%s : %s] in %s<%s, %s> field '%s'%n", String.valueOf(mapKey), String.valueOf(mapValue),
+                        result.getClass().getSimpleName(), classes[0].getSimpleName(), classes[1].getSimpleName(), field.getName());
             }
             checkMaxArityExceeded(arity, max, field, values);
         }
@@ -1917,6 +1921,11 @@ public class CommandLine {
             int max = Math.min(arity.max - (result.size() + originalSize), values.length);
             for (int j = 0; j < max; j++) {
                 result.add(tryConvert(field, index, converter, values[j], type));
+                if (field.getType().isArray()) {
+                    tracer.info("Adding [%s] to %s[] field '%s'%n", String.valueOf(result.get(result.size()-1)), type.getSimpleName(), field.getName());
+                } else {
+                    tracer.info("Adding [%s] to %s<%s> field '%s'%n", String.valueOf(result.get(result.size()-1)), field.getType().getSimpleName(), type.getSimpleName(), field.getName());
+                }
             }
             checkMaxArityExceeded(arity, max, field, values);
             index++;
@@ -1958,6 +1967,7 @@ public class CommandLine {
         private Object tryConvert(Field field, int index, ITypeConverter<?> converter, String value, Class<?> type)
                 throws Exception {
             try {
+                tracer.debug("Converting value '%s' to %s for field '%s' with converter '%s'%n", value, type.getName(), field.getName(), String.valueOf(converter));
                 return converter.convert(value);
             } catch (ParameterException ex) {
                 throw new ParameterException(ex.getMessage() + optionDescription(" for ", field, index));
@@ -2000,12 +2010,15 @@ public class CommandLine {
 
         private void updateHelpRequested(Field field) {
             if (field.isAnnotationPresent(Option.class)) {
-                isHelpRequested                       |= field.getAnnotation(Option.class).help();
-                CommandLine.this.versionHelpRequested |= field.getAnnotation(Option.class).versionHelp();
-                CommandLine.this.usageHelpRequested   |= field.getAnnotation(Option.class).usageHelp();
+                isHelpRequested                       |= is(field, "help", field.getAnnotation(Option.class).help());
+                CommandLine.this.versionHelpRequested |= is(field, "versionHelp", field.getAnnotation(Option.class).versionHelp());
+                CommandLine.this.usageHelpRequested   |= is(field, "usageHelp", field.getAnnotation(Option.class).usageHelp());
             }
         }
-
+        private boolean is(Field f, String description, boolean value) {
+            if (value) { tracer.info("Field '%s' has '%s' annotation: not validating required fields%n", f.getName(), description); }
+            return value;
+        }
         @SuppressWarnings("unchecked")
         private Collection<Object> createCollection(Class<?> collectionClass) throws Exception {
             if (collectionClass.isInterface()) {
@@ -3949,6 +3962,20 @@ public class CommandLine {
             return object;
         }
         private Assert() {} // private constructor: never instantiate
+    }
+    private enum TraceLevel { OFF, WARN, INFO, DEBUG;
+        public boolean isEnabled(TraceLevel other) { return ordinal() >= other.ordinal(); }
+        private void print(Tracer tracer, String msg, Object... params) {
+            if (tracer.level.isEnabled(this)) { tracer.stream.printf(prefix(msg), params); }
+        }
+        private String prefix(String msg) { return "[picocli " + this + "] " + msg; }
+    }
+    private static class Tracer {
+        TraceLevel level = TraceLevel.valueOf(System.getProperty("picocli.traceLevel", System.getProperty("picocli.trace") == null ? "WARN" : "INFO"));
+        PrintStream stream = System.err;
+        void warn (String msg, Object... params) { TraceLevel.WARN.print(this, msg, params); }
+        void info (String msg, Object... params) { TraceLevel.INFO.print(this, msg, params); }
+        void debug(String msg, Object... params) { TraceLevel.DEBUG.print(this, msg, params); }
     }
 
     /**
