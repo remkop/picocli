@@ -10,6 +10,8 @@
 * #168 API change: `CommandLine::setSeparator` method now returns this CommandLine (was void)
 * #170 API change: Add `call` convenience method similar to `run`
 * #156 add example to user manual to clarify main command common usage
+* #172 Parser now throws MaxValuesforFieldExceededException when multi-valued option or parameters max arity exceeded
+* #173 Parser now throws UnmatchedArgumentException when not all positional parameters are assigned to a field
 
 == 0.9.8 - Bugfix and enhancements release for public review. API may change.
 

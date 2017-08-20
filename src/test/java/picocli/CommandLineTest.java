@@ -1675,13 +1675,19 @@ public class CommandLineTest {
             @Parameters(arity = "-1")
             List<String> params;
         }
-        NonVarArgArrayParamsNegativeArity params = CommandLine.populateCommand(new NonVarArgArrayParamsNegativeArity(), "a", "b", "c");
-        assertEquals(Arrays.asList(), params.params);
-
-        params = CommandLine.populateCommand(new NonVarArgArrayParamsNegativeArity(), "a");
-        assertEquals(Arrays.asList(), params.params);
-
-        params = CommandLine.populateCommand(new NonVarArgArrayParamsNegativeArity());
+        try {
+            CommandLine.populateCommand(new NonVarArgArrayParamsNegativeArity(), "a", "b", "c");
+            fail("Expected UnmatchedArgumentException");
+        } catch (UnmatchedArgumentException ex) {
+            assertEquals("Unmatched arguments [a, b, c]", ex.getMessage());
+        }
+        try {
+            CommandLine.populateCommand(new NonVarArgArrayParamsNegativeArity(), "a");
+            fail("Expected UnmatchedArgumentException");
+        } catch (UnmatchedArgumentException ex) {
+            assertEquals("Unmatched argument [a]", ex.getMessage());
+        }
+        NonVarArgArrayParamsNegativeArity params = CommandLine.populateCommand(new NonVarArgArrayParamsNegativeArity());
         assertEquals(null, params.params);
     }
 
@@ -1691,13 +1697,19 @@ public class CommandLineTest {
             @Parameters(arity = "0")
             List<String> params;
         }
-        NonVarArgArrayParamsZeroArity params = CommandLine.populateCommand(new NonVarArgArrayParamsZeroArity(), "a", "b", "c");
-        assertEquals(new ArrayList<String>(), params.params);
-
-        params = CommandLine.populateCommand(new NonVarArgArrayParamsZeroArity(), "a");
-        assertEquals(new ArrayList<String>(), params.params);
-
-        params = CommandLine.populateCommand(new NonVarArgArrayParamsZeroArity());
+        try {
+            CommandLine.populateCommand(new NonVarArgArrayParamsZeroArity(), "a", "b", "c");
+            fail("Expected UnmatchedArgumentException");
+        } catch (UnmatchedArgumentException ex) {
+            assertEquals("Unmatched arguments [a, b, c]", ex.getMessage());
+        }
+        try {
+            CommandLine.populateCommand(new NonVarArgArrayParamsZeroArity(), "a");
+            fail("Expected UnmatchedArgumentException");
+        } catch (UnmatchedArgumentException ex) {
+            assertEquals("Unmatched argument [a]", ex.getMessage());
+        }
+        NonVarArgArrayParamsZeroArity params = CommandLine.populateCommand(new NonVarArgArrayParamsZeroArity());
         assertEquals(null, params.params);
     }
 
@@ -1707,10 +1719,13 @@ public class CommandLineTest {
             @Parameters(arity = "1")
             List<String> params;
         }
-        NonVarArgArrayParamsArity1 params = CommandLine.populateCommand(new NonVarArgArrayParamsArity1(), "a", "b", "c");
-        assertEquals(Arrays.asList("a"), params.params);
-
-        params = CommandLine.populateCommand(new NonVarArgArrayParamsArity1(), "a");
+        try {
+            CommandLine.populateCommand(new NonVarArgArrayParamsArity1(), "a", "b", "c");
+            fail("Expected UnmatchedArgumentException");
+        } catch (UnmatchedArgumentException ex) {
+            assertEquals("Unmatched arguments [b, c]", ex.getMessage());
+        }
+        NonVarArgArrayParamsArity1  params = CommandLine.populateCommand(new NonVarArgArrayParamsArity1(), "a");
         assertEquals(Arrays.asList("a"), params.params);
 
         try {
@@ -1727,9 +1742,16 @@ public class CommandLineTest {
             @Parameters(arity = "2")
             List<String> params;
         }
-        NonVarArgArrayParamsArity2 params = CommandLine.populateCommand(new NonVarArgArrayParamsArity2(), "a", "b", "c");
-        assertEquals(Arrays.asList("a", "b"), params.params);
-
+        NonVarArgArrayParamsArity2 params = null;
+        try {
+            CommandLine.populateCommand(new NonVarArgArrayParamsArity2(), "a", "b", "c");
+            fail("expected UnmatchedArgumentException");
+        } catch (UnmatchedArgumentException ex) {
+            assertEquals("Unmatched argument [c]", ex.getMessage());
+        }
+        CommandLine cmd = new CommandLine(new NonVarArgArrayParamsArity2()).setUnmatchedArgumentsAllowed(true);
+        cmd.parse("a", "b", "c");
+        assertEquals(Arrays.asList("c"), cmd.getUnmatchedArguments());
         try {
             params = CommandLine.populateCommand(new NonVarArgArrayParamsArity2(), "a");
             fail("Should not accept input with missing parameter");
@@ -2268,13 +2290,20 @@ public class CommandLineTest {
         assertEquals(Arrays.asList("val3"), cmd.getUnmatchedArguments());
     }
 
-    @Test // TODO
+    @Test
     public void testPositionalParamSingleValueButWithoutIndex() throws Exception {
         class SingleValue {
             @Parameters String str;
         }
-        SingleValue single = CommandLine.populateCommand(new SingleValue(),"val1", "val2");
-        assertEquals("val1", single.str);
+        try {
+            CommandLine.populateCommand(new SingleValue(),"val1", "val2");
+            fail("Expected UnmatchedArgumentException");
+        } catch (UnmatchedArgumentException ex) {
+            assertEquals("Unmatched argument [val2]", ex.getMessage());
+        }
+        CommandLine cmd = new CommandLine(new SingleValue()).setUnmatchedArgumentsAllowed(true);
+        cmd.parse("val1", "val2");
+        assertEquals(Arrays.asList("val2"), cmd.getUnmatchedArguments());
     }
 
     @Test
@@ -2334,9 +2363,28 @@ public class CommandLineTest {
         assertArrayEquals(new String[] {"a", "b", "c", "B"}, args.values);
         assertArrayEquals(new String[] {"C", "D,E,F"}, args.params);
 
-        args = CommandLine.populateCommand(new Args(), "-a=a,b,c,d,e", "B", "C", "D,E,F");
+        args = CommandLine.populateCommand(new Args(), "-a=a,b,c,d", "B", "C", "D,E,F");
         assertArrayEquals(new String[] {"a", "b", "c", "d"}, args.values);
-        assertArrayEquals(new String[] {"e", "B", "C", "D,E,F"}, args.params);
+        assertArrayEquals(new String[] {"B", "C", "D,E,F"}, args.params);
+
+        try {
+            CommandLine.populateCommand(new Args(), "-a=a,b,c,d,e", "B", "C", "D,E,F");
+            fail("MaxValuesforFieldExceededException expected");
+        } catch (MaxValuesforFieldExceededException ex) {
+            assertEquals("option '-a' max number of values (4) exceeded: remainder is 4 but 5 values were specified: [a, b, c, d, e]", ex.getMessage());
+        }
+        try {
+            CommandLine.populateCommand(new Args(), "-a=a,b", "-a=c,d,e", "C", "D,E,F");
+            fail("MaxValuesforFieldExceededException expected");
+        } catch (MaxValuesforFieldExceededException ex) {
+            assertEquals("option '-a' max number of values (4) exceeded: remainder is 2 but 3 values were specified: [c, d, e]", ex.getMessage());
+        }
+        try {
+            CommandLine.populateCommand(new Args(), "-a=1", "-a=2", "-a=3", "-a=4", "-a=5");
+            fail("MaxValuesforFieldExceededException expected");
+        } catch (MaxValuesforFieldExceededException ex) {
+            assertEquals("option '-a' max number of values (4) exceeded: remainder is 0 but 1 values were specified: [5]", ex.getMessage());
+        }
     }
 
     @Test
@@ -2383,14 +2431,41 @@ public class CommandLineTest {
         Args args = CommandLine.populateCommand(new Args(), "a,b,c");
         assertArrayEquals(new String[] {"a", "b", "c"}, args.values);
 
-        args = CommandLine.populateCommand(new Args(), "a,b,c", "B", "C");
+        args = CommandLine.populateCommand(new Args(), "a,b,c,d");
+        assertArrayEquals(new String[] {"a", "b", "c", "d"}, args.values);
+
+        args = CommandLine.populateCommand(new Args(), "a,b,c", "B");
         assertArrayEquals(new String[] {"a", "b", "c", "B"}, args.values);
 
-        args = CommandLine.populateCommand(new Args(), "a,b,c", "B,C");
-        assertArrayEquals(new String[] {"a", "b", "c", "B"}, args.values);
-
-        args = CommandLine.populateCommand(new Args(), "a,b", "A,B,C");
-        assertArrayEquals(new String[] {"a", "b", "A", "B"}, args.values);
+        args = CommandLine.populateCommand(new Args(), "a,b", "B,C");
+        assertArrayEquals(new String[] {"a", "b", "B", "C"}, args.values);
+        try {
+            CommandLine.populateCommand(new Args(), "a,b,c,d,e");
+            fail("MaxValuesforFieldExceededException expected");
+        } catch (MaxValuesforFieldExceededException ex) {
+            assertEquals("positional parameter at index 0..* (values) max number of values (4) exceeded: remainder is 4 but 5 values were specified: [a, b, c, d, e]", ex.getMessage());
+        }
+        try {
+            CommandLine.populateCommand(new Args(), "a,b,c", "B,C");
+            fail("MaxValuesforFieldExceededException expected");
+        } catch (MaxValuesforFieldExceededException ex) {
+            assertEquals("positional parameter at index 0..* (values) max number of values (4) exceeded: remainder is 1 but 2 values were specified: [B, C]", ex.getMessage());
+        }
+        try {
+            CommandLine.populateCommand(new Args(), "a,b", "A,B,C");
+            fail("MaxValuesforFieldExceededException expected");
+        } catch (MaxValuesforFieldExceededException ex) {
+            assertEquals("positional parameter at index 0..* (values) max number of values (4) exceeded: remainder is 2 but 3 values were specified: [A, B, C]", ex.getMessage());
+        }
+        try {
+            CommandLine.populateCommand(new Args(), "a,b,c", "B", "C");
+            fail("UnmatchedArgumentException expected");
+        } catch (UnmatchedArgumentException ex) {
+            assertEquals("Unmatched argument [C]", ex.getMessage());
+        }
+        CommandLine cmd = new CommandLine(new Args()).setUnmatchedArgumentsAllowed(true);
+        cmd.parse("a,b,c", "B", "C");
+        assertEquals(Arrays.asList("C"), cmd.getUnmatchedArguments());
     }
 
     @Test
@@ -3053,5 +3128,34 @@ public class CommandLineTest {
             }
         }
         CommandLine.populateCommand(new App(), "-fix", "8=FIX.4.4|9=69|35=A|49=MBT|56=TargetCompID|34=9|52=20130625-04:05:32.682|98=0|108=30|10=052").validate();
+    }
+    @Test
+    public void testMapFieldArityWithSplitRegex() {
+        class App {
+            @Option(names = "-fix", arity = "2", split = "\\|", type = {Integer.class, String.class})
+            Map<Integer,String> message;
+        }
+        try {
+            CommandLine.populateCommand(new App(), "-fix", "1=a|2=b|3=c|4=d");
+            fail("MaxValuesforFieldExceededException expected");
+        } catch (MaxValuesforFieldExceededException ex) {
+            assertEquals("option '-fix' max number of values (2) exceeded: remainder is 2 but 4 values were specified: [1=a, 2=b, 3=c, 4=d]", ex.getMessage());
+        }
+    }
+    @Test
+    public void testMapPositionalParameterFieldMaxArity() {
+        class App {
+            @Parameters(arity = "2", split = "\\|", type = {Integer.class, String.class})
+            Map<Integer,String> message;
+        }
+        try {
+            CommandLine.populateCommand(new App(), "1=a", "2=b", "3=c", "4=d");
+            fail("UnmatchedArgumentsException expected");
+        } catch (UnmatchedArgumentException ex) {
+            assertEquals("Unmatched arguments [3=c, 4=d]", ex.getMessage());
+        }
+        CommandLine cmd = new CommandLine(new App()).setUnmatchedArgumentsAllowed(true);
+        cmd.parse("1=a", "2=b", "3=c", "4=d");
+        assertEquals(Arrays.asList("3=c", "4=d"), cmd.getUnmatchedArguments());
     }
 }
