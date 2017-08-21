@@ -667,6 +667,9 @@ public class Demo implements Runnable {
     @Command(name = "checksum", description = "Prints the checksum (MD5 by default) of a file to STDOUT.")
     class CheckSum implements Callable<Void> {
 
+        @Option(names = {"-h", "--help"}, usageHelp = true, description = "Show this help message and exit.")
+        private boolean helpRequested;
+
         @Option(names = {"-a", "--algorithm"}, description = "MD5, SHA-1, SHA-256, ...")
         private String algorithm = "MD5";
 
@@ -679,6 +682,10 @@ public class Demo implements Runnable {
 
         @Override
         public Void call() throws Exception {
+            if (helpRequested) {
+                CommandLine.usage(this, System.err);
+                return null;
+            }
             byte[] digest = MessageDigest.getInstance(algorithm).digest(readBytes(file));
             print(digest, System.out);
             return null;
