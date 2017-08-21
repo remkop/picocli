@@ -103,11 +103,12 @@ For example, when this application is run without any parameters, the following 
 $ java CheckSum
 
 Missing required parameter: file
-Usage: checksum [-a=<algorithm>] <file>
+Usage: checksum [-h] [-a=<algorithm>] <file>
 Prints the checksum (MD5 by default) of a file to STDOUT.
       file                    The file whose checksum to calculate.
   -a, --algorithm=<algorithm> MD5, SHA-1, SHA-256, ...
-----
+  -h, --help                  Show this help message and exit.
+ ----
 
 
 
