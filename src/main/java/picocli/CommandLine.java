@@ -1474,7 +1474,7 @@ public class CommandLine {
          */
         List<CommandLine> parse(String... args) {
             Assert.notNull(args, "argument array");
-            tracer.info("parsing command line args %s%n", Arrays.toString(args));
+            tracer.info("Parsing %d command line args %s%n", args.length, Arrays.toString(args));
             Stack<String> arguments = new Stack<String>();
             for (int i = args.length - 1; i >= 0; i--) {
                 arguments.push(args[i]);
@@ -1490,6 +1490,8 @@ public class CommandLine {
             CommandLine.this.versionHelpRequested = false;
             CommandLine.this.usageHelpRequested = false;
 
+            Class<?> cmdClass = this.command.getClass();
+            if (tracer.isDebug()) {tracer.debug("Initializing %s: %d options, %d positional parameters, %d required, %d subcommands.%n", cmdClass.getName(), new HashSet<Field>(optionName2Field.values()).size(), positionalParametersFields.size(), requiredFields.size(), commands.size());}
             parsedCommands.add(CommandLine.this);
             List<Field> required = new ArrayList<Field>(requiredFields);
             Set<Field> initialized = new HashSet<Field>();
@@ -1535,6 +1537,7 @@ public class CommandLine {
                 // Double-dash separates options from positional arguments.
                 // If found, then interpret the remaining args as positional parameters.
                 if ("--".equals(arg)) {
+                    tracer.info("Found '--'. Stopping option parsing and processing remainder as positional parameters.");
                     processPositionalParameters(required, args);
                     return; // we are done
                 }
@@ -1544,6 +1547,7 @@ public class CommandLine {
                     if (!isHelpRequested && !required.isEmpty()) { // ensure current command portion is valid
                         throw MissingParameterException.create(required);
                     }
+                    if (tracer.isDebug()) {tracer.debug("Found subcommand '%s' (%s). Stack=%s%n", arg, commands.get(arg).interpreter.command.getClass().getName(), args);}
                     commands.get(arg).interpreter.parse(parsedCommands, args, originalArgs);
                     return; // remainder done by the command
                 }
@@ -1562,20 +1566,28 @@ public class CommandLine {
                         String optionParam = arg.substring(separatorIndex + separator.length());
                         args.push(optionParam);
                         arg = key;
+                        if (tracer.isDebug()) {tracer.debug("Separated '%s' option from '%s' option parameter%n", key, optionParam);}
+                    } else {
+                        if (tracer.isDebug()) {tracer.debug("'%s' contains separator '%s' but '%s' is not a known option%n", arg, separator, key);}
                     }
+                } else {
+                    if (tracer.isDebug()) {tracer.debug("'%s' cannot be separated into <option>%s<option-parameter>%n", arg, separator);}
                 }
                 if (optionName2Field.containsKey(arg)) {
+                    if (tracer.isDebug()) {tracer.debug("Found option named '%s'. Stack=%s%n", arg, args);}
                     processStandaloneOption(required, initialized, arg, args, paramAttachedToOption);
                 }
                 // Compact (single-letter) options can be grouped with other options or with an argument.
                 // only single-letter options can be combined with other options or with an argument
                 else if (arg.length() > 2 && arg.startsWith("-")) {
+                    if (tracer.isDebug()) {tracer.debug("Trying to process '%s' as clustered short options. Stack=%s%n", arg, args);}
                     processClusteredShortOptions(required, initialized, arg, args);
                 }
                 // The argument could not be interpreted as an option.
                 // We take this to mean that the remainder are positional arguments
                 else {
                     args.push(arg);
+                    if (tracer.isDebug()) {tracer.debug("No option named '%s' found. Processing remainder as positional parameters. Stack=%s%n", arg, args);}
                     processPositionalParameters(required, args);
                     return;
                 }
@@ -1593,9 +1605,11 @@ public class CommandLine {
         private void handleUnmatchedArguments(Stack<String> args) {
             if (!isUnmatchedArgumentsAllowed()) { throw new UnmatchedArgumentException(args); }
             while (!args.isEmpty()) { unmatchedArguments.add(args.pop()); } // addAll would give args in reverse order
+            tracer.info("Stored remainder in unmatched arguments list: %s%n", unmatchedArguments);
         }
 
         private void processPositionalParameters0(Collection<Field> required, boolean validateOnly, Stack<String> args) throws Exception {
+            if (tracer.isDebug()) {tracer.debug("Processing remainder as positional parameters. Stack=%s%n", args);}
             int max = 0;
             for (Field positionalParam : positionalParametersFields) {
                 Range indexRange = Range.parameterIndex(positionalParam);
@@ -1649,6 +1663,7 @@ public class CommandLine {
             do {
                 if (cluster.length() > 0 && singleCharOption2Field.containsKey(cluster.charAt(0))) {
                     Field field = singleCharOption2Field.get(cluster.charAt(0));
+                    if (tracer.isDebug()) {tracer.debug("Found option '%s%s' in %s%n", prefix, cluster.charAt(0), arg);}
                     required.remove(field);
                     cluster = cluster.length() > 0 ? cluster.substring(1) : "";
                     paramAttachedToOption = cluster.length() > 0;
@@ -1967,7 +1982,7 @@ public class CommandLine {
         private Object tryConvert(Field field, int index, ITypeConverter<?> converter, String value, Class<?> type)
                 throws Exception {
             try {
-                tracer.debug("Converting value '%s' to %s for field '%s' with converter '%s'%n", value, type.getName(), field.getName(), String.valueOf(converter));
+                if (tracer.isDebug()) {tracer.debug("Converting value '%s' to %s for field '%s' with converter '%s'%n", value, type.getName(), field.getName(), String.valueOf(converter));}
                 return converter.convert(value);
             } catch (ParameterException ex) {
                 throw new ParameterException(ex.getMessage() + optionDescription(" for ", field, index));
@@ -3969,13 +3984,17 @@ public class CommandLine {
             if (tracer.level.isEnabled(this)) { tracer.stream.printf(prefix(msg), params); }
         }
         private String prefix(String msg) { return "[picocli " + this + "] " + msg; }
+        static TraceLevel lookup(String key) { return key == null ? WARN : empty(key) ? INFO : valueOf(key); }
     }
     private static class Tracer {
-        TraceLevel level = TraceLevel.valueOf(System.getProperty("picocli.traceLevel", System.getProperty("picocli.trace") == null ? "WARN" : "INFO"));
+        TraceLevel level = TraceLevel.lookup(System.getProperty("picocli.trace"));
         PrintStream stream = System.err;
         void warn (String msg, Object... params) { TraceLevel.WARN.print(this, msg, params); }
         void info (String msg, Object... params) { TraceLevel.INFO.print(this, msg, params); }
         void debug(String msg, Object... params) { TraceLevel.DEBUG.print(this, msg, params); }
+        boolean isWarn()  { return level.isEnabled(TraceLevel.WARN); }
+        boolean isInfo()  { return level.isEnabled(TraceLevel.INFO); }
+        boolean isDebug() { return level.isEnabled(TraceLevel.DEBUG); }
     }
 
     /**
