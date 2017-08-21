@@ -1044,6 +1044,10 @@ public class CommandLineTest {
         compact = CommandLine.populateCommand(new CompactFields(), "-vroout");
         verifyCompact(compact, true, true, "out", null);
 
+        // compact group with separator
+        compact = CommandLine.populateCommand(new CompactFields(), "-vro=out");
+        verifyCompact(compact, true, true, "out", null);
+
         compact = CommandLine.populateCommand(new CompactFields(), "-rv p1 p2".split(" "));
         verifyCompact(compact, true, true, null, fileArray("p1", "p2"));
 
@@ -1860,8 +1864,10 @@ public class CommandLineTest {
         CommandLine cmd = new CommandLine(new App()).setUnmatchedArgumentsAllowed(true);
         try {
             cmd.parse("--opt=abc");
+            fail("Expected MissingParameterException");
         } catch (MissingParameterException ok) {
             assertEquals("Missing required option 'opt'", ok.getMessage());
+            assertEquals(Arrays.asList("--opt=abc"), cmd.getUnmatchedArguments());
         }
     }
     @Test

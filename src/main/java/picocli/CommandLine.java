@@ -1691,10 +1691,13 @@ public class CommandLine {
                     if (arg.endsWith(cluster)) {
                         // remainder was part of a clustered group that could not be completely parsed
                         args.push(paramAttachedToOption ? prefix + cluster : cluster);
+                        if (tracer.isDebug()) {tracer.debug("No option found for %s in %s%n", cluster, arg);}
                         handleUnmatchedArguments(args);
+                    } else {
+                        args.push(cluster);
+                        if (tracer.isDebug()) {tracer.debug("%s is not an option parameter for %s%n", cluster, arg);}
+                        processPositionalParameters(required, args);
                     }
-                    args.push(cluster);
-                    processPositionalParameters(required, args);
                     return;
                 }
             } while (true);

@@ -13,6 +13,7 @@
 * #158 Support tracing functionality to show internal processing details
 * #172 Parser now throws MaxValuesforFieldExceededException when multi-valued option or parameters max arity exceeded
 * #173 Parser now throws UnmatchedArgumentException when not all positional parameters are assigned to a field
+* #174 Fixed bug where under some circumstances, unmatched parameters were added to UnmatchedParameters list twice
 
 == 0.9.8 - Bugfix and enhancements release for public review. API may change.
 
