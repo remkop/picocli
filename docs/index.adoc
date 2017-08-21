@@ -98,6 +98,7 @@ The `CommandLine.call` method is a convenience method that parses the command li
 only invokes the `Callable` when the command line parameters are valid.
 Otherwise it shows the usage help message.
 For example, when this application is run without any parameters, the following usage help message is displayed:
+
 [source,bash]
 ----
 $ java CheckSum
@@ -108,7 +109,7 @@ Prints the checksum (MD5 by default) of a file to STDOUT.
       file                    The file whose checksum to calculate.
   -a, --algorithm=<algorithm> MD5, SHA-1, SHA-256, ...
   -h, --help                  Show this help message and exit.
- ----
+----
 
 
 
