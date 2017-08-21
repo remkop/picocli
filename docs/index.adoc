@@ -24,8 +24,6 @@ image:ExampleUsageANSI.png[Screenshot of usage help with Ansi codes enabled]
 
 Now in BETA: http://picocli.info/1.0.0-SNAPSHOT/autocomplete.html[command line autocompletion]. (Comments, bug reports, pull requests welcome!)
 
-image:picocli-autocompletion-demo.gif[Autocompletion demo animation]
-
 
 A distinguishing feature of picocli is how it aims
 to let users run picocli-based applications without requiring picocli as an external dependency:
@@ -67,11 +65,14 @@ A more realistic example:
 @Command(name = "checksum", description = "Prints the checksum (MD5 by default) of a file to STDOUT.")
 class CheckSum implements Callable<Void> {
 
+    @Parameters(index = "0", description = "The file whose checksum to calculate.")
+    private File file;
+
     @Option(names = {"-a", "--algorithm"}, description = "MD5, SHA-1, SHA-256, ...")
     private String algorithm = "MD5";
 
-    @Parameters(index = "0", description = "The file whose checksum to calculate.")
-    private File file;
+    @Option(names = {"-h", "--help"}, usageHelp = true, description = "Show this help message and exit.")
+    private boolean helpRequested;
 
     public static void main(String[] args) throws Exception {
         CommandLine.call(new CheckSum(), System.err, args);
@@ -79,6 +80,10 @@ class CheckSum implements Callable<Void> {
 
     @Override
     public Void call() throws Exception {
+        if (helpRequested) {
+            CommandLine.usage(this, System.err);
+            return null;
+        }
         byte[] digest = MessageDigest.getInstance(algorithm).digest(readBytes(file));
         print(digest, System.out);
         return null;
@@ -89,8 +94,9 @@ class CheckSum implements Callable<Void> {
 }
 ----
 
-The `CommandLine.call` method is a convenience method that only invokes the `Callable` when the
-command line parameters are valid. Otherwise it shows the usage help message.
+The `CommandLine.call` method is a convenience method that parses the command line arguments and
+only invokes the `Callable` when the command line parameters are valid.
+Otherwise it shows the usage help message.
 For example, when this application is run without any parameters, the following usage help message is displayed:
 [source,bash]
 ----
