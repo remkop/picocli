@@ -48,7 +48,7 @@ public class Example {
 }
 ----
 
-Then invoke `CommandLine.populateCommand` with the command line parameters and an object you want to initialize.
+Then invoke `CommandLine.populateCommand` or `CommandLine.parse` with the command line parameters and an object you want to initialize.
 
 [source,java]
 ----
@@ -58,12 +58,12 @@ assert  app.verbose;
 assert  app.inputFiles != null && app.inputFiles.length == 2;
 ----
 
-A more realistic example:
+Here is a small example application:
 
 [source,java]
 ----
 @Command(name = "checksum", description = "Prints the checksum (MD5 by default) of a file to STDOUT.")
-class CheckSum implements Callable<Void> {
+class CheckSum {
 
     @Parameters(index = "0", description = "The file whose checksum to calculate.")
     private File file;
@@ -75,18 +75,24 @@ class CheckSum implements Callable<Void> {
     private boolean helpRequested;
 
     public static void main(String[] args) throws Exception {
-        CommandLine.call(new CheckSum(), System.err, args);
+        CheckSum checkSum = new CheckSum();
+        try {
+            new CommandLine(checkSum).parse(args);
+        } catch (ParameterException ex) { // handle invalid input
+            System.err.println(ex.getMessage());
+            CommandLine.usage(checkSum, System.err);
+            return;
+        }
+        checkSum.call();
     }
 
-    @Override
-    public Void call() throws Exception {
+    public void call() throws Exception {
         if (helpRequested) {
             CommandLine.usage(this, System.err);
-            return null;
+            return;
         }
         byte[] digest = MessageDigest.getInstance(algorithm).digest(readBytes(file));
         print(digest, System.out);
-        return null;
     }
 
     byte[] readBytes(File f) throws IOException {...}
@@ -94,23 +100,7 @@ class CheckSum implements Callable<Void> {
 }
 ----
 
-The `CommandLine.call` method is a convenience method that parses the command line arguments and
-only invokes the `Callable` when the command line parameters are valid.
-Otherwise it shows the usage help message.
-For example, when this application is run without any parameters, the following usage help message is displayed:
-
-[source,bash]
-----
-$ java CheckSum
-
-Missing required parameter: file
-Usage: checksum [-h] [-a=<algorithm>] <file>
-Prints the checksum (MD5 by default) of a file to STDOUT.
-      file                    The file whose checksum to calculate.
-  -a, --algorithm=<algorithm> MD5, SHA-1, SHA-256, ...
-  -h, --help                  Show this help message and exit.
-----
-
+Picocli has some <<Less Boilerplate,convenience methods>> that take care of handling invalid command line arguments for applications that implement `Runnable` or `Callable`.
 
 
 == Options and Parameters
@@ -363,9 +353,9 @@ Convert convert = CommandLine.populateCommand(new Convert(), args);
 NOTE: If a collection is returned from a type converter, the _contents_ of the collection are added to the field, not the collection itself.
 
 ==== Maps
-Picocli supports `java.util.Map` fields since 1.0.0.
+Since 1.0.0, picocli supports `Map` fields like Java's system properties `-Dkey=value` or Gradle's project properties `-Pmyprop=myvalue`.
 
-For `Map` fields, use the `type` attribute to specify the both the _key type_ and the _value type_. For example:
+`Map` fields may have any type for their key and value. Use the `type` attribute to specify the both the _key type_ and the _value type_. For example:
 
 [source,java]
 ----
@@ -381,7 +371,7 @@ class MapDemo {
     Map<TimeUnit, Long> timeout;
 }
 ----
-For map options, the same option name may be specified multiple times with different key-value pairs.
+Map options may be specified multiple times with different key-value pairs. (See <<#default-arity,arity>>.)
 
 [source,bash]
 ----
@@ -1531,6 +1521,50 @@ the https://www.gnu.org/prep/standards/html_node/Command_002dLine-Interfaces.htm
 Generally, many applications use options for optional values and parameters for mandatory values.
 However, picocli lets you make options required if you want to, see <<Required Arguments>>.
 
+== Tracing
+From version 1.0.0, picocli supports parser tracing to facilitate troubleshooting.
+
+System property `picocli.trace` controls the trace level. Supported levels are `OFF`, `WARN`, `INFO`, and `DEBUG`. The default trace level is `WARN`.
+
+Specifying system property `-Dpicocli.trace` without a value will set the trace level to `INFO`.
+
+* OFF: Suppresses all tracing including warnings.
+* WARN: Shows single-value options that were specified multiple times (when `CommandLine.overwrittenOptionsAllowed` is `true`), and command line arguments that could not be matched as an option or positional parameter (when `CommandLine.unmatchedArgumentsAllowed` is `true`).
+* INFO: Shows a high-level overview of what happens during command line parsing.
+* DEBUG: Shows details of the decisions made by the parser during command line parsing.
+
+Example:
+
+[source,bash]
+----
+alias git='java -Dpicocli.trace=DEBUG -cp picocli-all.jar picocli.Demo$Git'
+git --git-dir=/home/rpopma/picocli commit -m "Fixed typos" -- src1.java src2.java src3.java
+unalias git
+----
+
+Output:
+----
+[picocli INFO] Parsing 8 command line args [--git-dir=/home/rpopma/picocli, commit, -m, "Fixed typos", --, src1.java, src2.java, src3.java]
+[picocli DEBUG] Initializing picocli.Demo$Git: 3 options, 0 positional parameters, 0 required, 11 subcommands.
+[picocli DEBUG] Processing argument '--git-dir=/home/rpopma/picocli'. Remainder=[commit, -m, "Fixed typos", --, src1.java, src2.java, src3.java]
+[picocli DEBUG] Separated '--git-dir' option from '/home/rpopma/picocli' option parameter
+[picocli DEBUG] Found option named '--git-dir': field java.io.File picocli.Demo$Git.gitDir, arity=1
+[picocli INFO] Setting File field 'Git.gitDir' to '\home\rpopma\picocli'
+[picocli DEBUG] Processing argument 'commit'. Remainder=[-m, "Fixed typos", --, src1.java, src2.java, src3.java]
+[picocli DEBUG] Found subcommand 'commit' (picocli.Demo$GitCommit)
+[picocli DEBUG] Initializing picocli.Demo$GitCommit: 8 options, 1 positional parameters, 0 required, 0 subcommands.
+[picocli DEBUG] Processing argument '-m'. Remainder=["Fixed typos", --, src1.java, src2.java, src3.java]
+[picocli DEBUG] '-m' cannot be separated into <option>=<option-parameter>
+[picocli DEBUG] Found option named '-m': field java.util.List picocli.Demo$GitCommit.message, arity=0..*
+[picocli INFO] Adding [Fixed typos] to List<String> field 'GitCommit.message'
+[picocli DEBUG] Processing argument '--'. Remainder=[src1.java, src2.java, src3.java]
+[picocli INFO] Found end-of-options delimiter '--'. Treating remainder as positional parameters
+[picocli DEBUG] Processing positional parameters. Remainder=[src1.java, src2.java, src3.java]
+[picocli DEBUG] Trying to assign args at index 0..* [src1.java, src2.java, src3.java] to java.util.List picocli.Demo$GitCommit.files, arity=0..*
+[picocli INFO] Adding [src1.java] to List<String> field 'GitCommit.files'
+[picocli INFO] Adding [src2.java] to List<String> field 'GitCommit.files'
+[picocli INFO] Adding [src3.java] to List<String> field 'GitCommit.files'
+----
 
 == TAB Autocomplete
 Picocli-based applications can now have command line completion in Bash or Zsh Unix shells.
