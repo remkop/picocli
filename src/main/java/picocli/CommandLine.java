@@ -1533,11 +1533,12 @@ public class CommandLine {
 
             while (!args.isEmpty()) {
                 String arg = args.pop();
+                if (tracer.isDebug()) {tracer.debug("Processing argument '%s'. Remainder=%s%n", arg, reverse((Stack<String>) args.clone()));}
 
                 // Double-dash separates options from positional arguments.
                 // If found, then interpret the remaining args as positional parameters.
                 if ("--".equals(arg)) {
-                    tracer.info("Found '--'. Stopping option parsing and processing remainder as positional parameters.");
+                    tracer.info("Found end-of-options delimiter '--'. Treating remainder as positional parameters.%n");
                     processPositionalParameters(required, args);
                     return; // we are done
                 }
@@ -1547,7 +1548,7 @@ public class CommandLine {
                     if (!isHelpRequested && !required.isEmpty()) { // ensure current command portion is valid
                         throw MissingParameterException.create(required);
                     }
-                    if (tracer.isDebug()) {tracer.debug("Found subcommand '%s' (%s). Stack=%s%n", arg, commands.get(arg).interpreter.command.getClass().getName(), args);}
+                    if (tracer.isDebug()) {tracer.debug("Found subcommand '%s' (%s)%n", arg, commands.get(arg).interpreter.command.getClass().getName());}
                     commands.get(arg).interpreter.parse(parsedCommands, args, originalArgs);
                     return; // remainder done by the command
                 }
@@ -1574,20 +1575,19 @@ public class CommandLine {
                     if (tracer.isDebug()) {tracer.debug("'%s' cannot be separated into <option>%s<option-parameter>%n", arg, separator);}
                 }
                 if (optionName2Field.containsKey(arg)) {
-                    if (tracer.isDebug()) {tracer.debug("Found option named '%s'. Stack=%s%n", arg, args);}
                     processStandaloneOption(required, initialized, arg, args, paramAttachedToOption);
                 }
                 // Compact (single-letter) options can be grouped with other options or with an argument.
                 // only single-letter options can be combined with other options or with an argument
                 else if (arg.length() > 2 && arg.startsWith("-")) {
-                    if (tracer.isDebug()) {tracer.debug("Trying to process '%s' as clustered short options. Stack=%s%n", arg, args);}
+                    if (tracer.isDebug()) {tracer.debug("Trying to process '%s' as clustered short options%n", arg, args);}
                     processClusteredShortOptions(required, initialized, arg, args);
                 }
                 // The argument could not be interpreted as an option.
                 // We take this to mean that the remainder are positional arguments
                 else {
                     args.push(arg);
-                    if (tracer.isDebug()) {tracer.debug("No option named '%s' found. Processing remainder as positional parameters. Stack=%s%n", arg, args);}
+                    if (tracer.isDebug()) {tracer.debug("No option named '%s' found. Processing remainder as positional parameters%n", arg);}
                     processPositionalParameters(required, args);
                     return;
                 }
@@ -1609,7 +1609,7 @@ public class CommandLine {
         }
 
         private void processPositionalParameters0(Collection<Field> required, boolean validateOnly, Stack<String> args) throws Exception {
-            if (tracer.isDebug()) {tracer.debug("Processing remainder as positional parameters. Stack=%s%n", args);}
+            if (tracer.isDebug()) {tracer.debug("Processing positional parameters. Remainder=%s%n", reverse((Stack<String>) args.clone()));}
             int max = 0;
             for (Field positionalParam : positionalParametersFields) {
                 Range indexRange = Range.parameterIndex(positionalParam);
@@ -1623,6 +1623,7 @@ public class CommandLine {
                 Collections.reverse(argsCopy);
                 for (int i = 0; i < indexRange.min && !argsCopy.isEmpty(); i++) { argsCopy.pop(); }
                 Range arity = Range.parameterArity(positionalParam);
+                if (tracer.isDebug()) {tracer.debug("Trying to assign args at index %s %s to %s, arity=%s%n", indexRange, reverse((Stack<String>) argsCopy.clone()), positionalParam, arity);}
                 assertNoMissingParameters(positionalParam, arity.min, argsCopy);
                 if (!validateOnly) {
                     int originalSize = argsCopy.size();
@@ -1649,6 +1650,7 @@ public class CommandLine {
             if (paramAttachedToKey) {
                 arity = arity.min(Math.max(1, arity.min)); // if key=value, minimum arity is at least 1
             }
+            if (tracer.isDebug()) {tracer.debug("Found option named '%s': field %s, arity=%s%n", arg, field, arity);}
             applyOption(field, Option.class, arity, paramAttachedToKey, args, initialized);
         }
 
@@ -1663,14 +1665,17 @@ public class CommandLine {
             do {
                 if (cluster.length() > 0 && singleCharOption2Field.containsKey(cluster.charAt(0))) {
                     Field field = singleCharOption2Field.get(cluster.charAt(0));
-                    if (tracer.isDebug()) {tracer.debug("Found option '%s%s' in %s%n", prefix, cluster.charAt(0), arg);}
+                    Range arity = Range.optionArity(field);
+                    if (tracer.isDebug()) {tracer.debug("Found option '%s%s' in %s: field %s, arity=%s%n", prefix, cluster.charAt(0), arg, field, arity);}
                     required.remove(field);
                     cluster = cluster.length() > 0 ? cluster.substring(1) : "";
                     paramAttachedToOption = cluster.length() > 0;
-                    Range arity = Range.optionArity(field);
                     if (cluster.startsWith(separator)) {// attached with separator, like -f=FILE or -v=true
                         cluster = cluster.substring(separator.length());
                         arity = arity.min(Math.max(1, arity.min)); // if key=value, minimum arity is at least 1
+                    }
+                    if (arity.min > 0) {
+                        if (tracer.isDebug() && !empty(cluster)) {tracer.debug("Trying to process '%s' as option parameter%n", cluster);}
                     }
                     args.push(cluster); // interpret remainder as option parameter (CAUTION: may be empty string!)
                     // arity may be >= 1, or
@@ -1764,7 +1769,7 @@ public class CommandLine {
             ITypeConverter<?> converter = getTypeConverter(cls, field);
             Object objValue = tryConvert(field, -1, converter, value, cls);
             field.set(command, objValue);
-            tracer.info("Setting %s field '%s' to '%s'%n", field.getType().getSimpleName(), field.getName(), String.valueOf(objValue));
+            tracer.info("Setting %s field '%s.%s' to '%s'%n", field.getType().getSimpleName(), field.getDeclaringClass().getSimpleName(), field.getName(), String.valueOf(objValue));
             return result;
         }
         private int applyValuesToMapField(Field field,
@@ -1834,8 +1839,8 @@ public class CommandLine {
                 Object mapKey =   tryConvert(field, j, keyConverter,   keyValue[0], classes[0]);
                 Object mapValue = tryConvert(field, j, valueConverter, keyValue[1], classes[1]);
                 result.put(mapKey, mapValue);
-                tracer.info("Putting [%s : %s] in %s<%s, %s> field '%s'%n", String.valueOf(mapKey), String.valueOf(mapValue),
-                        result.getClass().getSimpleName(), classes[0].getSimpleName(), classes[1].getSimpleName(), field.getName());
+                tracer.info("Putting [%s : %s] in %s<%s, %s> field '%s.%s'%n", String.valueOf(mapKey), String.valueOf(mapValue),
+                        result.getClass().getSimpleName(), classes[0].getSimpleName(), classes[1].getSimpleName(), field.getDeclaringClass().getSimpleName(), field.getName());
             }
             checkMaxArityExceeded(arity, max, field, values);
         }
@@ -1940,9 +1945,9 @@ public class CommandLine {
             for (int j = 0; j < max; j++) {
                 result.add(tryConvert(field, index, converter, values[j], type));
                 if (field.getType().isArray()) {
-                    tracer.info("Adding [%s] to %s[] field '%s'%n", String.valueOf(result.get(result.size()-1)), type.getSimpleName(), field.getName());
+                    tracer.info("Adding [%s] to %s[] field '%s.%s'%n", String.valueOf(result.get(result.size()-1)), type.getSimpleName(), field.getDeclaringClass().getSimpleName(), field.getName());
                 } else {
-                    tracer.info("Adding [%s] to %s<%s> field '%s'%n", String.valueOf(result.get(result.size()-1)), field.getType().getSimpleName(), type.getSimpleName(), field.getName());
+                    tracer.info("Adding [%s] to %s<%s> field '%s.%s'%n", String.valueOf(result.get(result.size()-1)), field.getType().getSimpleName(), type.getSimpleName(), field.getDeclaringClass().getSimpleName(), field.getName());
                 }
             }
             checkMaxArityExceeded(arity, max, field, values);
@@ -1985,7 +1990,6 @@ public class CommandLine {
         private Object tryConvert(Field field, int index, ITypeConverter<?> converter, String value, Class<?> type)
                 throws Exception {
             try {
-                if (tracer.isDebug()) {tracer.debug("Converting value '%s' to %s for field '%s' with converter '%s'%n", value, type.getName(), field.getName(), String.valueOf(converter));}
                 return converter.convert(value);
             } catch (ParameterException ex) {
                 throw new ParameterException(ex.getMessage() + optionDescription(" for ", field, index));
@@ -2034,7 +2038,7 @@ public class CommandLine {
             }
         }
         private boolean is(Field f, String description, boolean value) {
-            if (value) { tracer.info("Field '%s' has '%s' annotation: not validating required fields%n", f.getName(), description); }
+            if (value) { tracer.info("Field '%s.%s' has '%s' annotation: not validating required fields%n", f.getDeclaringClass().getSimpleName(), f.getName(), description); }
             return value;
         }
         @SuppressWarnings("unchecked")
