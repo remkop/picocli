@@ -603,19 +603,20 @@ table.CodeRay td.code>pre{padding:0}
 <li><a href="#_best_practices_for_command_line_interfaces">12.6. Best Practices for Command Line Interfaces</a></li>
 </ul>
 </li>
-<li><a href="#_tab_autocomplete">13. TAB Autocomplete</a></li>
-<li><a href="#_api_javadoc">14. API Javadoc</a></li>
-<li><a href="#_github_project">15. GitHub Project</a></li>
-<li><a href="#_issue_tracker">16. Issue Tracker</a></li>
-<li><a href="#_license">17. License</a></li>
-<li><a href="#_releases">18. Releases</a></li>
-<li><a href="#_download">19. Download</a>
+<li><a href="#_tracing">13. Tracing</a></li>
+<li><a href="#_tab_autocomplete">14. TAB Autocomplete</a></li>
+<li><a href="#_api_javadoc">15. API Javadoc</a></li>
+<li><a href="#_github_project">16. GitHub Project</a></li>
+<li><a href="#_issue_tracker">17. Issue Tracker</a></li>
+<li><a href="#_license">18. License</a></li>
+<li><a href="#_releases">19. Releases</a></li>
+<li><a href="#_download">20. Download</a>
 <ul class="sectlevel2">
-<li><a href="#_gradle">19.1. Gradle</a></li>
-<li><a href="#_maven">19.2. Maven</a></li>
-<li><a href="#_scala_sbt">19.3. Scala SBT</a></li>
-<li><a href="#_ivy">19.4. Ivy</a></li>
-<li><a href="#_source">19.5. Source</a></li>
+<li><a href="#_gradle">20.1. Gradle</a></li>
+<li><a href="#_maven">20.2. Maven</a></li>
+<li><a href="#_scala_sbt">20.3. Scala SBT</a></li>
+<li><a href="#_ivy">20.4. Ivy</a></li>
+<li><a href="#_source">20.5. Source</a></li>
 </ul>
 </li>
 </ul>
@@ -675,7 +676,7 @@ converting the input to strongly typed values in the fields of your class.</p>
 </div>
 </div>
 <div class="paragraph">
-<p>Then invoke <code>CommandLine.populateCommand</code> with the command line parameters and an object you want to initialize.</p>
+<p>Then invoke <code>CommandLine.populateCommand</code> or <code>CommandLine.parse</code> with the command line parameters and an object you want to initialize.</p>
 </div>
 <div class="listingblock">
 <div class="content">
@@ -686,12 +687,12 @@ Example app = CommandLine.populateCommand(<span class="keyword">new</span> Examp
 </div>
 </div>
 <div class="paragraph">
-<p>A more realistic example:</p>
+<p>Here is a small example application:</p>
 </div>
 <div class="listingblock">
 <div class="content">
 <pre class="CodeRay highlight"><code data-lang="java"><span class="annotation">@Command</span>(name = <span class="string"><span class="delimiter">&quot;</span><span class="content">checksum</span><span class="delimiter">&quot;</span></span>, description = <span class="string"><span class="delimiter">&quot;</span><span class="content">Prints the checksum (MD5 by default) of a file to STDOUT.</span><span class="delimiter">&quot;</span></span>)
-<span class="type">class</span> <span class="class">CheckSum</span> <span class="directive">implements</span> <span class="predefined-type">Callable</span>&lt;<span class="predefined-type">Void</span>&gt; {
+<span class="type">class</span> <span class="class">CheckSum</span> {
 
     <span class="annotation">@Parameters</span>(index = <span class="string"><span class="delimiter">&quot;</span><span class="content">0</span><span class="delimiter">&quot;</span></span>, description = <span class="string"><span class="delimiter">&quot;</span><span class="content">The file whose checksum to calculate.</span><span class="delimiter">&quot;</span></span>)
     <span class="directive">private</span> <span class="predefined-type">File</span> file;
@@ -703,18 +704,24 @@ Example app = CommandLine.populateCommand(<span class="keyword">new</span> Examp
     <span class="directive">private</span> <span class="type">boolean</span> helpRequested;
 
     <span class="directive">public</span> <span class="directive">static</span> <span class="type">void</span> main(<span class="predefined-type">String</span><span class="type">[]</span> args) <span class="directive">throws</span> <span class="exception">Exception</span> {
-        CommandLine.call(<span class="keyword">new</span> CheckSum(), <span class="predefined-type">System</span>.err, args);
+        CheckSum checkSum = <span class="keyword">new</span> CheckSum();
+        <span class="keyword">try</span> {
+            <span class="keyword">new</span> CommandLine(checkSum).parse(args);
+        } <span class="keyword">catch</span> (ParameterException ex) { <span class="comment">// handle invalid input</span>
+            <span class="predefined-type">System</span>.err.println(ex.getMessage());
+            CommandLine.usage(checkSum, <span class="predefined-type">System</span>.err);
+            <span class="keyword">return</span>;
+        }
+        checkSum.call();
     }
 
-    <span class="annotation">@Override</span>
-    <span class="directive">public</span> <span class="predefined-type">Void</span> call() <span class="directive">throws</span> <span class="exception">Exception</span> {
+    <span class="directive">public</span> <span class="type">void</span> call() <span class="directive">throws</span> <span class="exception">Exception</span> {
         <span class="keyword">if</span> (helpRequested) {
             CommandLine.usage(<span class="local-variable">this</span>, <span class="predefined-type">System</span>.err);
-            <span class="keyword">return</span> <span class="predefined-constant">null</span>;
+            <span class="keyword">return</span>;
         }
         <span class="type">byte</span><span class="type">[]</span> digest = <span class="predefined-type">MessageDigest</span>.getInstance(algorithm).digest(readBytes(file));
         print(digest, <span class="predefined-type">System</span>.out);
-        <span class="keyword">return</span> <span class="predefined-constant">null</span>;
     }
 
     <span class="type">byte</span><span class="type">[]</span> readBytes(<span class="predefined-type">File</span> f) <span class="directive">throws</span> <span class="exception">IOException</span> {...}
@@ -723,22 +730,7 @@ Example app = CommandLine.populateCommand(<span class="keyword">new</span> Examp
 </div>
 </div>
 <div class="paragraph">
-<p>The <code>CommandLine.call</code> method is a convenience method that parses the command line arguments and
-only invokes the <code>Callable</code> when the command line parameters are valid.
-Otherwise it shows the usage help message.
-For example, when this application is run without any parameters, the following usage help message is displayed:</p>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre class="CodeRay highlight"><code data-lang="bash">$ java CheckSum
-
-Missing required parameter: file
-Usage: checksum [-a=&lt;algorithm&gt;] &lt;file&gt;
-Prints the checksum (MD5 by default) of a file to STDOUT.
-      file                    The file whose checksum to calculate.
-  -a, --algorithm=&lt;algorithm&gt; MD5, SHA-1, SHA-256, ...
-  -h, --help                  Show this help message and exit.</code></pre>
-</div>
+<p>Picocli has some <a href="#_less_boilerplate">convenience methods</a> that take care of handling invalid command line arguments for applications that implement <code>Runnable</code> or <code>Callable</code>.</p>
 </div>
 </div>
 </div>
@@ -1117,10 +1109,10 @@ If a collection is returned from a type converter, the <em>contents</em> of the 
 <div class="sect3">
 <h4 id="_maps">3.3.2. Maps</h4>
 <div class="paragraph">
-<p>Picocli supports <code>java.util.Map</code> fields since 1.0.0.</p>
+<p>Since 1.0.0, picocli supports <code>Map</code> fields like Java&#8217;s system properties <code>-Dkey=value</code> or Gradle&#8217;s project properties <code>-Pmyprop=myvalue</code>.</p>
 </div>
 <div class="paragraph">
-<p>For <code>Map</code> fields, use the <code>type</code> attribute to specify the both the <em>key type</em> and the <em>value type</em>. For example:</p>
+<p><code>Map</code> fields may have any type for their key and value. Use the <code>type</code> attribute to specify the both the <em>key type</em> and the <em>value type</em>. For example:</p>
 </div>
 <div class="listingblock">
 <div class="content">
@@ -1138,7 +1130,7 @@ If a collection is returned from a type converter, the <em>contents</em> of the 
 </div>
 </div>
 <div class="paragraph">
-<p>For map options, the same option name may be specified multiple times with different key-value pairs.</p>
+<p>Map options may be specified multiple times with different key-value pairs. (See &lt;&lt;#default-arity,arity&gt;&gt;.)</p>
 </div>
 <div class="listingblock">
 <div class="content">
@@ -2743,7 +2735,74 @@ However, picocli lets you make options required if you want to, see <a href="#_r
 </div>
 </div>
 <div class="sect1">
-<h2 id="_tab_autocomplete">13. TAB Autocomplete</h2>
+<h2 id="_tracing">13. Tracing</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>From version 1.0.0, picocli supports parser tracing to facilitate troubleshooting.</p>
+</div>
+<div class="paragraph">
+<p>System property <code>picocli.trace</code> controls the trace level. Supported levels are <code>OFF</code>, <code>WARN</code>, <code>INFO</code>, and <code>DEBUG</code>. The default trace level is <code>WARN</code>.</p>
+</div>
+<div class="paragraph">
+<p>Specifying system property <code>-Dpicocli.trace</code> without a value will set the trace level to <code>INFO</code>.</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>OFF: Suppresses all tracing including warnings.</p>
+</li>
+<li>
+<p>WARN: Shows single-value options that were specified multiple times (when <code>CommandLine.overwrittenOptionsAllowed</code> is <code>true</code>), and command line arguments that could not be matched as an option or positional parameter (when <code>CommandLine.unmatchedArgumentsAllowed</code> is <code>true</code>).</p>
+</li>
+<li>
+<p>INFO: Shows a high-level overview of what happens during command line parsing.</p>
+</li>
+<li>
+<p>DEBUG: Shows details of the decisions made by the parser during command line parsing.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Example:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="bash">alias git='java -Dpicocli.trace=DEBUG -cp picocli-all.jar picocli.Demo$Git'
+git --git-dir=/home/rpopma/picocli commit -m &quot;Fixed typos&quot; -- src1.java src2.java src3.java
+unalias git</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Output:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre>[picocli INFO] Parsing 8 command line args [--git-dir=/home/rpopma/picocli, commit, -m, "Fixed typos", --, src1.java, src2.java, src3.java]
+[picocli DEBUG] Initializing picocli.Demo$Git: 3 options, 0 positional parameters, 0 required, 11 subcommands.
+[picocli DEBUG] Processing argument '--git-dir=/home/rpopma/picocli'. Remainder=[commit, -m, "Fixed typos", --, src1.java, src2.java, src3.java]
+[picocli DEBUG] Separated '--git-dir' option from '/home/rpopma/picocli' option parameter
+[picocli DEBUG] Found option named '--git-dir': field java.io.File picocli.Demo$Git.gitDir, arity=1
+[picocli INFO] Setting File field 'Git.gitDir' to '\home\rpopma\picocli'
+[picocli DEBUG] Processing argument 'commit'. Remainder=[-m, "Fixed typos", --, src1.java, src2.java, src3.java]
+[picocli DEBUG] Found subcommand 'commit' (picocli.Demo$GitCommit)
+[picocli DEBUG] Initializing picocli.Demo$GitCommit: 8 options, 1 positional parameters, 0 required, 0 subcommands.
+[picocli DEBUG] Processing argument '-m'. Remainder=["Fixed typos", --, src1.java, src2.java, src3.java]
+[picocli DEBUG] '-m' cannot be separated into &lt;option&gt;=&lt;option-parameter&gt;
+[picocli DEBUG] Found option named '-m': field java.util.List picocli.Demo$GitCommit.message, arity=0..*
+[picocli INFO] Adding [Fixed typos] to List&lt;String&gt; field 'GitCommit.message'
+[picocli DEBUG] Processing argument '--'. Remainder=[src1.java, src2.java, src3.java]
+[picocli INFO] Found end-of-options delimiter '--'. Treating remainder as positional parameters
+[picocli DEBUG] Processing positional parameters. Remainder=[src1.java, src2.java, src3.java]
+[picocli DEBUG] Trying to assign args at index 0..* [src1.java, src2.java, src3.java] to java.util.List picocli.Demo$GitCommit.files, arity=0..*
+[picocli INFO] Adding [src1.java] to List&lt;String&gt; field 'GitCommit.files'
+[picocli INFO] Adding [src2.java] to List&lt;String&gt; field 'GitCommit.files'
+[picocli INFO] Adding [src3.java] to List&lt;String&gt; field 'GitCommit.files'</pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_tab_autocomplete">14. TAB Autocomplete</h2>
 <div class="sectionbody">
 <div class="paragraph">
 <p>Picocli-based applications can now have command line completion in Bash or Zsh Unix shells.
@@ -2752,7 +2811,7 @@ See the <a href="autocomplete.html">Autocomplete for Java Command Line Applicati
 </div>
 </div>
 <div class="sect1">
-<h2 id="_api_javadoc">14. API Javadoc</h2>
+<h2 id="_api_javadoc">15. API Javadoc</h2>
 <div class="sectionbody">
 <div class="paragraph">
 <p>Picocli API Javadoc can be found <a href="https://remkop.github.io/picocli/apidocs">here</a>.</p>
@@ -2760,7 +2819,7 @@ See the <a href="autocomplete.html">Autocomplete for Java Command Line Applicati
 </div>
 </div>
 <div class="sect1">
-<h2 id="_github_project">15. GitHub Project</h2>
+<h2 id="_github_project">16. GitHub Project</h2>
 <div class="sectionbody">
 <div class="paragraph">
 <p>The <a href="https://github.com/remkop/picocli">GitHub project</a> has the source code, tests, build scripts, etc.</p>
@@ -2772,7 +2831,7 @@ See the <a href="autocomplete.html">Autocomplete for Java Command Line Applicati
 </div>
 </div>
 <div class="sect1">
-<h2 id="_issue_tracker">16. Issue Tracker</h2>
+<h2 id="_issue_tracker">17. Issue Tracker</h2>
 <div class="sectionbody">
 <div class="paragraph">
 <p>Please use the <a href="https://github.com/remkop/picocli/issues">Issue Tracker</a> to report bugs or request features.</p>
@@ -2780,7 +2839,7 @@ See the <a href="autocomplete.html">Autocomplete for Java Command Line Applicati
 </div>
 </div>
 <div class="sect1">
-<h2 id="_license">17. License</h2>
+<h2 id="_license">18. License</h2>
 <div class="sectionbody">
 <div class="paragraph">
 <p>Picocli is licensed under the <a href="https://github.com/remkop/picocli/blob/master/LICENSE">Apache License 2.0</a>.</p>
@@ -2788,7 +2847,7 @@ See the <a href="autocomplete.html">Autocomplete for Java Command Line Applicati
 </div>
 </div>
 <div class="sect1">
-<h2 id="_releases">18. Releases</h2>
+<h2 id="_releases">19. Releases</h2>
 <div class="sectionbody">
 <div class="paragraph">
 <p>Previous versions are available from the GitHub project <a href="https://github.com/remkop/picocli/releases">Releases</a>.</p>
@@ -2796,14 +2855,14 @@ See the <a href="autocomplete.html">Autocomplete for Java Command Line Applicati
 </div>
 </div>
 <div class="sect1">
-<h2 id="_download">19. Download</h2>
+<h2 id="_download">20. Download</h2>
 <div class="sectionbody">
 <div class="paragraph">
 <p>You can add picocli as an external dependency to your project, or you can include it as source.
 See the <a href="#_source">source code</a> below. Copy and paste it into a file called <code>CommandLine.java</code>, add it to your project, and enjoy!</p>
 </div>
 <div class="sect2">
-<h3 id="_gradle">19.1. Gradle</h3>
+<h3 id="_gradle">20.1. Gradle</h3>
 <div class="listingblock">
 <div class="content">
 <pre>compile 'info.picocli:picocli:1.0.0-SNAPSHOT'</pre>
@@ -2811,7 +2870,7 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
 </div>
 </div>
 <div class="sect2">
-<h3 id="_maven">19.2. Maven</h3>
+<h3 id="_maven">20.2. Maven</h3>
 <div class="listingblock">
 <div class="content">
 <pre>&lt;dependency&gt;
@@ -2823,7 +2882,7 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
 </div>
 </div>
 <div class="sect2">
-<h3 id="_scala_sbt">19.3. Scala SBT</h3>
+<h3 id="_scala_sbt">20.3. Scala SBT</h3>
 <div class="listingblock">
 <div class="content">
 <pre>libraryDependencies += "info.picocli" % "picocli" % "1.0.0-SNAPSHOT"</pre>
@@ -2831,7 +2890,7 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
 </div>
 </div>
 <div class="sect2">
-<h3 id="_ivy">19.4. Ivy</h3>
+<h3 id="_ivy">20.4. Ivy</h3>
 <div class="listingblock">
 <div class="content">
 <pre>&lt;dependency org="info.picocli" name="picocli" rev="1.0.0-SNAPSHOT" /&gt;</pre>
@@ -2839,7 +2898,7 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
 </div>
 </div>
 <div class="sect2">
-<h3 id="_source">19.5. Source</h3>
+<h3 id="_source">20.5. Source</h3>
 <div class="listingblock">
 <div class="content">
 <pre class="CodeRay highlight"><code data-lang="java"><span class="comment">/*
@@ -4377,11 +4436,12 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
 
             <span class="keyword">while</span> (!args.isEmpty()) {
                 <span class="predefined-type">String</span> arg = args.pop();
+                <span class="keyword">if</span> (tracer.isDebug()) {tracer.debug(<span class="string"><span class="delimiter">&quot;</span><span class="content">Processing argument '%s'. Remainder=%s%n</span><span class="delimiter">&quot;</span></span>, arg, reverse((<span class="predefined-type">Stack</span>&lt;<span class="predefined-type">String</span>&gt;) args.clone()));}
 
                 <span class="comment">// Double-dash separates options from positional arguments.</span>
                 <span class="comment">// If found, then interpret the remaining args as positional parameters.</span>
                 <span class="keyword">if</span> (<span class="string"><span class="delimiter">&quot;</span><span class="content">--</span><span class="delimiter">&quot;</span></span>.equals(arg)) {
-                    tracer.info(<span class="string"><span class="delimiter">&quot;</span><span class="content">Found '--'. Stopping option parsing and processing remainder as positional parameters.</span><span class="delimiter">&quot;</span></span>);
+                    tracer.info(<span class="string"><span class="delimiter">&quot;</span><span class="content">Found end-of-options delimiter '--'. Treating remainder as positional parameters.%n</span><span class="delimiter">&quot;</span></span>);
                     processPositionalParameters(required, args);
                     <span class="keyword">return</span>; <span class="comment">// we are done</span>
                 }
@@ -4391,7 +4451,7 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
                     <span class="keyword">if</span> (!isHelpRequested &amp;&amp; !required.isEmpty()) { <span class="comment">// ensure current command portion is valid</span>
                         <span class="keyword">throw</span> MissingParameterException.create(required);
                     }
-                    <span class="keyword">if</span> (tracer.isDebug()) {tracer.debug(<span class="string"><span class="delimiter">&quot;</span><span class="content">Found subcommand '%s' (%s). Stack=%s%n</span><span class="delimiter">&quot;</span></span>, arg, commands.get(arg).interpreter.command.getClass().getName(), args);}
+                    <span class="keyword">if</span> (tracer.isDebug()) {tracer.debug(<span class="string"><span class="delimiter">&quot;</span><span class="content">Found subcommand '%s' (%s)%n</span><span class="delimiter">&quot;</span></span>, arg, commands.get(arg).interpreter.command.getClass().getName());}
                     commands.get(arg).interpreter.parse(parsedCommands, args, originalArgs);
                     <span class="keyword">return</span>; <span class="comment">// remainder done by the command</span>
                 }
@@ -4418,20 +4478,19 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
                     <span class="keyword">if</span> (tracer.isDebug()) {tracer.debug(<span class="string"><span class="delimiter">&quot;</span><span class="content">'%s' cannot be separated into &lt;option&gt;%s&lt;option-parameter&gt;%n</span><span class="delimiter">&quot;</span></span>, arg, separator);}
                 }
                 <span class="keyword">if</span> (optionName2Field.containsKey(arg)) {
-                    <span class="keyword">if</span> (tracer.isDebug()) {tracer.debug(<span class="string"><span class="delimiter">&quot;</span><span class="content">Found option named '%s'. Stack=%s%n</span><span class="delimiter">&quot;</span></span>, arg, args);}
                     processStandaloneOption(required, initialized, arg, args, paramAttachedToOption);
                 }
                 <span class="comment">// Compact (single-letter) options can be grouped with other options or with an argument.</span>
                 <span class="comment">// only single-letter options can be combined with other options or with an argument</span>
                 <span class="keyword">else</span> <span class="keyword">if</span> (arg.length() &gt; <span class="integer">2</span> &amp;&amp; arg.startsWith(<span class="string"><span class="delimiter">&quot;</span><span class="content">-</span><span class="delimiter">&quot;</span></span>)) {
-                    <span class="keyword">if</span> (tracer.isDebug()) {tracer.debug(<span class="string"><span class="delimiter">&quot;</span><span class="content">Trying to process '%s' as clustered short options. Stack=%s%n</span><span class="delimiter">&quot;</span></span>, arg, args);}
+                    <span class="keyword">if</span> (tracer.isDebug()) {tracer.debug(<span class="string"><span class="delimiter">&quot;</span><span class="content">Trying to process '%s' as clustered short options%n</span><span class="delimiter">&quot;</span></span>, arg, args);}
                     processClusteredShortOptions(required, initialized, arg, args);
                 }
                 <span class="comment">// The argument could not be interpreted as an option.</span>
                 <span class="comment">// We take this to mean that the remainder are positional arguments</span>
                 <span class="keyword">else</span> {
                     args.push(arg);
-                    <span class="keyword">if</span> (tracer.isDebug()) {tracer.debug(<span class="string"><span class="delimiter">&quot;</span><span class="content">No option named '%s' found. Processing remainder as positional parameters. Stack=%s%n</span><span class="delimiter">&quot;</span></span>, arg, args);}
+                    <span class="keyword">if</span> (tracer.isDebug()) {tracer.debug(<span class="string"><span class="delimiter">&quot;</span><span class="content">No option named '%s' found. Processing remainder as positional parameters%n</span><span class="delimiter">&quot;</span></span>, arg);}
                     processPositionalParameters(required, args);
                     <span class="keyword">return</span>;
                 }
@@ -4453,7 +4512,7 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
         }
 
         <span class="directive">private</span> <span class="type">void</span> processPositionalParameters0(<span class="predefined-type">Collection</span>&lt;<span class="predefined-type">Field</span>&gt; required, <span class="type">boolean</span> validateOnly, <span class="predefined-type">Stack</span>&lt;<span class="predefined-type">String</span>&gt; args) <span class="directive">throws</span> <span class="exception">Exception</span> {
-            <span class="keyword">if</span> (tracer.isDebug()) {tracer.debug(<span class="string"><span class="delimiter">&quot;</span><span class="content">Processing remainder as positional parameters. Stack=%s%n</span><span class="delimiter">&quot;</span></span>, args);}
+            <span class="keyword">if</span> (tracer.isDebug()) {tracer.debug(<span class="string"><span class="delimiter">&quot;</span><span class="content">Processing positional parameters. Remainder=%s%n</span><span class="delimiter">&quot;</span></span>, reverse((<span class="predefined-type">Stack</span>&lt;<span class="predefined-type">String</span>&gt;) args.clone()));}
             <span class="type">int</span> max = <span class="integer">0</span>;
             <span class="keyword">for</span> (<span class="predefined-type">Field</span> positionalParam : positionalParametersFields) {
                 Range indexRange = Range.parameterIndex(positionalParam);
@@ -4467,6 +4526,7 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
                 <span class="predefined-type">Collections</span>.reverse(argsCopy);
                 <span class="keyword">for</span> (<span class="type">int</span> i = <span class="integer">0</span>; i &lt; indexRange.min &amp;&amp; !argsCopy.isEmpty(); i++) { argsCopy.pop(); }
                 Range arity = Range.parameterArity(positionalParam);
+                <span class="keyword">if</span> (tracer.isDebug()) {tracer.debug(<span class="string"><span class="delimiter">&quot;</span><span class="content">Trying to assign args at index %s %s to %s, arity=%s%n</span><span class="delimiter">&quot;</span></span>, indexRange, reverse((<span class="predefined-type">Stack</span>&lt;<span class="predefined-type">String</span>&gt;) argsCopy.clone()), positionalParam, arity);}
                 assertNoMissingParameters(positionalParam, arity.min, argsCopy);
                 <span class="keyword">if</span> (!validateOnly) {
                     <span class="type">int</span> originalSize = argsCopy.size();
@@ -4493,6 +4553,7 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
             <span class="keyword">if</span> (paramAttachedToKey) {
                 arity = arity.min(<span class="predefined-type">Math</span>.max(<span class="integer">1</span>, arity.min)); <span class="comment">// if key=value, minimum arity is at least 1</span>
             }
+            <span class="keyword">if</span> (tracer.isDebug()) {tracer.debug(<span class="string"><span class="delimiter">&quot;</span><span class="content">Found option named '%s': field %s, arity=%s%n</span><span class="delimiter">&quot;</span></span>, arg, field, arity);}
             applyOption(field, <span class="predefined-type">Option</span>.class, arity, paramAttachedToKey, args, initialized);
         }
 
@@ -4507,14 +4568,17 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
             <span class="keyword">do</span> {
                 <span class="keyword">if</span> (cluster.length() &gt; <span class="integer">0</span> &amp;&amp; singleCharOption2Field.containsKey(cluster.charAt(<span class="integer">0</span>))) {
                     <span class="predefined-type">Field</span> field = singleCharOption2Field.get(cluster.charAt(<span class="integer">0</span>));
-                    <span class="keyword">if</span> (tracer.isDebug()) {tracer.debug(<span class="string"><span class="delimiter">&quot;</span><span class="content">Found option '%s%s' in %s%n</span><span class="delimiter">&quot;</span></span>, prefix, cluster.charAt(<span class="integer">0</span>), arg);}
+                    Range arity = Range.optionArity(field);
+                    <span class="keyword">if</span> (tracer.isDebug()) {tracer.debug(<span class="string"><span class="delimiter">&quot;</span><span class="content">Found option '%s%s' in %s: field %s, arity=%s%n</span><span class="delimiter">&quot;</span></span>, prefix, cluster.charAt(<span class="integer">0</span>), arg, field, arity);}
                     required.remove(field);
                     cluster = cluster.length() &gt; <span class="integer">0</span> ? cluster.substring(<span class="integer">1</span>) : <span class="string"><span class="delimiter">&quot;</span><span class="delimiter">&quot;</span></span>;
                     paramAttachedToOption = cluster.length() &gt; <span class="integer">0</span>;
-                    Range arity = Range.optionArity(field);
                     <span class="keyword">if</span> (cluster.startsWith(separator)) {<span class="comment">// attached with separator, like -f=FILE or -v=true</span>
                         cluster = cluster.substring(separator.length());
                         arity = arity.min(<span class="predefined-type">Math</span>.max(<span class="integer">1</span>, arity.min)); <span class="comment">// if key=value, minimum arity is at least 1</span>
+                    }
+                    <span class="keyword">if</span> (arity.min &gt; <span class="integer">0</span>) {
+                        <span class="keyword">if</span> (tracer.isDebug() &amp;&amp; !empty(cluster)) {tracer.debug(<span class="string"><span class="delimiter">&quot;</span><span class="content">Trying to process '%s' as option parameter%n</span><span class="delimiter">&quot;</span></span>, cluster);}
                     }
                     args.push(cluster); <span class="comment">// interpret remainder as option parameter (CAUTION: may be empty string!)</span>
                     <span class="comment">// arity may be &gt;= 1, or</span>
@@ -4608,7 +4672,7 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
             ITypeConverter&lt;?&gt; converter = getTypeConverter(cls, field);
             <span class="predefined-type">Object</span> objValue = tryConvert(field, -<span class="integer">1</span>, converter, value, cls);
             field.set(command, objValue);
-            tracer.info(<span class="string"><span class="delimiter">&quot;</span><span class="content">Setting %s field '%s' to '%s'%n</span><span class="delimiter">&quot;</span></span>, field.getType().getSimpleName(), field.getName(), <span class="predefined-type">String</span>.valueOf(objValue));
+            tracer.info(<span class="string"><span class="delimiter">&quot;</span><span class="content">Setting %s field '%s.%s' to '%s'%n</span><span class="delimiter">&quot;</span></span>, field.getType().getSimpleName(), field.getDeclaringClass().getSimpleName(), field.getName(), <span class="predefined-type">String</span>.valueOf(objValue));
             <span class="keyword">return</span> result;
         }
         <span class="directive">private</span> <span class="type">int</span> applyValuesToMapField(<span class="predefined-type">Field</span> field,
@@ -4678,8 +4742,8 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
                 <span class="predefined-type">Object</span> mapKey =   tryConvert(field, j, keyConverter,   keyValue[<span class="integer">0</span>], classes[<span class="integer">0</span>]);
                 <span class="predefined-type">Object</span> mapValue = tryConvert(field, j, valueConverter, keyValue[<span class="integer">1</span>], classes[<span class="integer">1</span>]);
                 result.put(mapKey, mapValue);
-                tracer.info(<span class="string"><span class="delimiter">&quot;</span><span class="content">Putting [%s : %s] in %s&lt;%s, %s&gt; field '%s'%n</span><span class="delimiter">&quot;</span></span>, <span class="predefined-type">String</span>.valueOf(mapKey), <span class="predefined-type">String</span>.valueOf(mapValue),
-                        result.getClass().getSimpleName(), classes[<span class="integer">0</span>].getSimpleName(), classes[<span class="integer">1</span>].getSimpleName(), field.getName());
+                tracer.info(<span class="string"><span class="delimiter">&quot;</span><span class="content">Putting [%s : %s] in %s&lt;%s, %s&gt; field '%s.%s'%n</span><span class="delimiter">&quot;</span></span>, <span class="predefined-type">String</span>.valueOf(mapKey), <span class="predefined-type">String</span>.valueOf(mapValue),
+                        result.getClass().getSimpleName(), classes[<span class="integer">0</span>].getSimpleName(), classes[<span class="integer">1</span>].getSimpleName(), field.getDeclaringClass().getSimpleName(), field.getName());
             }
             checkMaxArityExceeded(arity, max, field, values);
         }
@@ -4784,9 +4848,9 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
             <span class="keyword">for</span> (<span class="type">int</span> j = <span class="integer">0</span>; j &lt; max; j++) {
                 result.add(tryConvert(field, index, converter, values[j], type));
                 <span class="keyword">if</span> (field.getType().isArray()) {
-                    tracer.info(<span class="string"><span class="delimiter">&quot;</span><span class="content">Adding [%s] to %s[] field '%s'%n</span><span class="delimiter">&quot;</span></span>, <span class="predefined-type">String</span>.valueOf(result.get(result.size()-<span class="integer">1</span>)), type.getSimpleName(), field.getName());
+                    tracer.info(<span class="string"><span class="delimiter">&quot;</span><span class="content">Adding [%s] to %s[] field '%s.%s'%n</span><span class="delimiter">&quot;</span></span>, <span class="predefined-type">String</span>.valueOf(result.get(result.size()-<span class="integer">1</span>)), type.getSimpleName(), field.getDeclaringClass().getSimpleName(), field.getName());
                 } <span class="keyword">else</span> {
-                    tracer.info(<span class="string"><span class="delimiter">&quot;</span><span class="content">Adding [%s] to %s&lt;%s&gt; field '%s'%n</span><span class="delimiter">&quot;</span></span>, <span class="predefined-type">String</span>.valueOf(result.get(result.size()-<span class="integer">1</span>)), field.getType().getSimpleName(), type.getSimpleName(), field.getName());
+                    tracer.info(<span class="string"><span class="delimiter">&quot;</span><span class="content">Adding [%s] to %s&lt;%s&gt; field '%s.%s'%n</span><span class="delimiter">&quot;</span></span>, <span class="predefined-type">String</span>.valueOf(result.get(result.size()-<span class="integer">1</span>)), field.getType().getSimpleName(), type.getSimpleName(), field.getDeclaringClass().getSimpleName(), field.getName());
                 }
             }
             checkMaxArityExceeded(arity, max, field, values);
@@ -4829,7 +4893,6 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
         <span class="directive">private</span> <span class="predefined-type">Object</span> tryConvert(<span class="predefined-type">Field</span> field, <span class="type">int</span> index, ITypeConverter&lt;?&gt; converter, <span class="predefined-type">String</span> value, <span class="predefined-type">Class</span>&lt;?&gt; type)
                 <span class="directive">throws</span> <span class="exception">Exception</span> {
             <span class="keyword">try</span> {
-                <span class="keyword">if</span> (tracer.isDebug()) {tracer.debug(<span class="string"><span class="delimiter">&quot;</span><span class="content">Converting value '%s' to %s for field '%s' with converter '%s'%n</span><span class="delimiter">&quot;</span></span>, value, type.getName(), field.getName(), <span class="predefined-type">String</span>.valueOf(converter));}
                 <span class="keyword">return</span> converter.convert(value);
             } <span class="keyword">catch</span> (ParameterException ex) {
                 <span class="keyword">throw</span> <span class="keyword">new</span> ParameterException(ex.getMessage() + optionDescription(<span class="string"><span class="delimiter">&quot;</span><span class="content"> for </span><span class="delimiter">&quot;</span></span>, field, index));
@@ -4878,7 +4941,7 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
             }
         }
         <span class="directive">private</span> <span class="type">boolean</span> is(<span class="predefined-type">Field</span> f, <span class="predefined-type">String</span> description, <span class="type">boolean</span> value) {
-            <span class="keyword">if</span> (value) { tracer.info(<span class="string"><span class="delimiter">&quot;</span><span class="content">Field '%s' has '%s' annotation: not validating required fields%n</span><span class="delimiter">&quot;</span></span>, f.getName(), description); }
+            <span class="keyword">if</span> (value) { tracer.info(<span class="string"><span class="delimiter">&quot;</span><span class="content">Field '%s.%s' has '%s' annotation: not validating required fields%n</span><span class="delimiter">&quot;</span></span>, f.getDeclaringClass().getSimpleName(), f.getName(), description); }
             <span class="keyword">return</span> value;
         }
         <span class="annotation">@SuppressWarnings</span>(<span class="string"><span class="delimiter">&quot;</span><span class="content">unchecked</span><span class="delimiter">&quot;</span></span>)
@@ -6945,7 +7008,7 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
 <div id="footer">
 <div id="footer-text">
 Version 1.0.0-SNAPSHOT<br>
-Last updated 2017-08-21 20:15:38 +09:00
+Last updated 2017-08-23 00:13:26 +09:00
 </div>
 </div>
 </body>
