@@ -354,7 +354,7 @@ Convert convert = CommandLine.populateCommand(new Convert(), args);
 NOTE: If a collection is returned from a type converter, the _contents_ of the collection are added to the field, not the collection itself.
 
 ==== Maps
-Since 1.0.0, picocli supports `Map` fields like Java's system properties `-Dkey=value` or Gradle's project properties `-Pmyprop=myvalue`.
+Since 1.0.0, picocli supports `Map` fields similar to Java's system properties `-Dkey=value` or Gradle's project properties `-Pmyprop=myvalue`.
 
 `Map` fields may have any type for their key and value. Use the `type` attribute to specify the both the _key type_ and the _value type_. For example:
 
