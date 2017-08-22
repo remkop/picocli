@@ -100,7 +100,8 @@ class CheckSum {
 }
 ----
 
-Picocli has some <<Less Boilerplate,convenience methods>> that take care of handling invalid command line arguments for applications that implement `Runnable` or `Callable`.
+NOTE: You may also be interested in the `CommandLine.run` and `CommandLine.call` <<Less Boilerplate,convenience methods>>
+for parsing that take care of handling invalid command line arguments.
 
 
 == Options and Parameters
