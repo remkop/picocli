@@ -182,6 +182,25 @@ public class AutoCompleteTest {
     }
 
     @Test
+    public void testAutoCompleteAppCannotInstantiate() throws Exception {
+        @Command(name = "test")
+        class TestApp {
+            public TestApp() { throw new RuntimeException();}
+        }
+
+        PrintStream originalErr = System.err;
+        ByteArrayOutputStream baos = new ByteArrayOutputStream(2500);
+        System.setErr(new PrintStream(baos));
+
+        AutoComplete.main(TestApp.class.getName());
+
+        System.setErr(originalErr);
+        String actual = new String(baos.toByteArray(), "UTF8");
+        assertTrue(actual.startsWith("java.lang.InstantiationException: picocli.AutoCompleteTest$1TestApp"));
+        assertTrue(actual.endsWith(AUTO_COMPLETE_APP_USAGE));
+    }
+
+    @Test
     public void testAutoCompleteAppCompletionScriptFileWillNotOverwrite() throws Exception {
         PrintStream originalErr = System.err;
         ByteArrayOutputStream baos = new ByteArrayOutputStream(2500);

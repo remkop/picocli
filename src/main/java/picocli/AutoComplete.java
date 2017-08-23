@@ -39,8 +39,7 @@ import static java.lang.String.*;
  * Generates a bash auto-complete script.
  */
 public class AutoComplete {
-    private AutoComplete() {
-    }
+    private AutoComplete() { }
 
     public static void main(String... args) { CommandLine.run(new App(), System.err, args); }
 
