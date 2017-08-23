@@ -15,9 +15,6 @@
  */
 package picocli;
 
-import org.junit.Ignore;
-import org.junit.Test;
-
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.PrintStream;
@@ -32,7 +29,6 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.UnknownHostException;
 import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
 import java.sql.Time;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -52,9 +48,13 @@ import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.UUID;
+import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
+
+import org.junit.Ignore;
+import org.junit.Test;
 
 import static java.util.concurrent.TimeUnit.*;
 import static org.junit.Assert.*;
@@ -3192,5 +3192,32 @@ public class CommandLineTest {
         CommandLine cmd = new CommandLine(new App()).setUnmatchedArgumentsAllowed(true);
         cmd.parse("1=a", "2=b", "3=c", "4=d");
         assertEquals(Arrays.asList("3=c", "4=d"), cmd.getUnmatchedArguments());
+    }
+    @Test
+    public void testMultipleMissingParams() {
+        class App {
+            @Option(names = "-a", required = true) String first;
+            @Option(names = "-b", required = true) String second;
+            @Option(names = "-c", required = true) String third;
+        }
+        try {
+            CommandLine.populateCommand(new App());
+            fail("MissingParameterException expected");
+        } catch (MissingParameterException ex) {
+            assertEquals("Missing required options [first, second, third]", ex.getMessage());
+        }
+    }
+    @Test
+    public void testAnyExceptionWrappedInParameterException() {
+        class App {
+            @Option(names = "-queue", type = String.class, split = ",")
+            ArrayBlockingQueue<String> queue = new ArrayBlockingQueue<String>(2);
+        }
+        try {
+            CommandLine.populateCommand(new App(), "-queue a,b,c".split(" "));
+            fail("ParameterException expected");
+        } catch (ParameterException ex) {
+            assertEquals("IllegalStateException: Queue full while processing argument at or before arg[1] 'a,b,c' in [-queue, a,b,c]: java.lang.IllegalStateException: Queue full", ex.getMessage());
+        }
     }
 }

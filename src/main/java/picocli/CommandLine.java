@@ -1501,9 +1501,9 @@ public class CommandLine {
             } catch (ParameterException ex) {
                 throw ex;
             } catch (Exception ex) {
-                int offendingArgIndex = originalArgs.length - argumentStack.size();
+                int offendingArgIndex = originalArgs.length - argumentStack.size() - 1;
                 String arg = offendingArgIndex >= 0 && offendingArgIndex < originalArgs.length ? originalArgs[offendingArgIndex] : "?";
-                throw ParameterException.create(ex, arg, argumentStack.size(), originalArgs);
+                throw ParameterException.create(ex, arg, offendingArgIndex, originalArgs);
             }
             if (!isAnyHelpRequested() && !required.isEmpty()) {
                 if (required.get(0).isAnnotationPresent(Option.class)) {
@@ -4028,9 +4028,8 @@ public class CommandLine {
         }
 
         private static ParameterException create(Exception ex, String arg, int i, String[] args) {
-            String next = args.length < i + 1 ? "" : " " + args[i + 1];
             String msg = ex.getClass().getSimpleName() + ": " + ex.getLocalizedMessage()
-                    + " while processing option[" + i + "] '" + arg + next + "': " + ex.toString();
+                    + " while processing argument at or before arg[" + i + "] '" + arg + "' in " + Arrays.toString(args) + ": " + ex.toString();
             return new ParameterException(msg, ex);
         }
     }
