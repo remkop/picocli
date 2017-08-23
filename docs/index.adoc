@@ -48,7 +48,7 @@ public class Example {
 }
 ----
 
-Then invoke `CommandLine.populateCommand` or `CommandLine.parse` with the command line parameters and an object you want to initialize.
+Then invoke `CommandLine.parse` or `CommandLine.populateCommand` with the command line parameters and an object you want to initialize.
 
 [source,java]
 ----
@@ -221,22 +221,22 @@ When one of the command line arguments is just two dashes without any characters
 [source,java]
 ----
 class DoubleDashDemo {
-    @Option(names = "-v")      boolean verbose;
-    @Option(names = "--files") List<String> files;
-    @Parameters                List<String> params;
+    @Option(names = "-v")     boolean verbose;
+    @Option(names = "-files") List<String> files;
+    @Parameters               List<String> params;
 }
 ----
 
 The `--` clarifies which of the arguments are positional parameters:
 [source,java]
 ----
-String[] args = { "-v", "--", "--files", "file1", "file2" };
+String[] args = { "-v", "--", "-files", "file1", "file2" };
 DoubleDashDemo demo = new DoubleDashDemo();
 new CommandLine(demo).parse(args);
 
 assert demo.verbose;
 assert demo.files == null;
-assert demo.params.equals(Arrays.asList("--files", "file1", "file2"));
+assert demo.params.equals(Arrays.asList("-files", "file1", "file2"));
 ----
 
 
@@ -365,7 +365,7 @@ import java.net.Proxy.Type;
 import java.util.concurrent.TimeUnit;
 
 class MapDemo {
-    @Option(names = {"-h", "--proxyHost"}, type = {Proxy.Type.class, InetAddress.class});
+    @Option(names = {"-p", "--proxyHost"}, type = {Proxy.Type.class, InetAddress.class});
     Map<Proxy.Type, InetAddress> proxies;
 
     @Option(names = {"-u", "--timeUnit"}, type = {TimeUnit.class, Long.class});
@@ -376,7 +376,7 @@ Map options may be specified multiple times with different key-value pairs. (See
 
 [source,bash]
 ----
-<command> -hHTTP=123.123.123.123 --proxyHost SOCKS=212.212.212.212
+<command> -p HTTP=123.123.123.123 --proxyHost SOCKS=212.212.212.212
 <command> -uDAYS=3 -u HOURS=23 -u=MINUTES=59 --timeUnit=SECONDS=13
 ----
 
@@ -575,7 +575,7 @@ if (commandLine.isVersionHelpRequested()) {
 }
 ----
 
-The version may specify multiple Strings. Each will be printed on a separate line.
+The `version` may specify multiple Strings. Each will be printed on a separate line.
 
 [source,java]
 ----
@@ -604,6 +604,24 @@ The markup will be rendered as ANSI escape codes on supported systems.
 
 image:VersionInfoWithColors.png[Screenshot of version information containing markup with Ansi styles and colors]
 
+From 1.0.0, the `version` may contain https://docs.oracle.com/javase/7/docs/api/java/util/Formatter.html[format specifiers]:
+
+[source,java]
+----
+@Command(version = {
+    "Versioned Command 1.0",
+    "Build %1$s",
+    "(c) 2017, licensed to %2$s" })
+class VersionedCommand { ... }
+----
+Format argument values can be passed to the `printVersionHelp` method:
+
+[source,java]
+----
+String licensedUser = System.getProperty("user.name");
+new CommandLine(new VersionedCommand())
+    .printVersionHelp(System.err, "1234", licensedUser);
+----
 
 == Usage Help
 === Compact Example
@@ -1322,33 +1340,34 @@ You can omit some of the boilerplate code from your application when the annotat
 
 [source,java]
 ----
-Runnable runnable = null;
+Callable<Object> callable = null;
 try {
-    runnable = CommandLine.populateCommand(annotatedObject, args);
+    callable = CommandLine.populateCommand(annotatedObject, args);
 } catch (Exception ex) {
     System.err.println(ex.getMessage());
     CommandLine.usage(annotatedObject, System.err);
-    return;
+    return null;
 }
-runnable.run();
+return callable.call();
 ----
 
 .After
 
 [source,java]
 ----
-CommandLine.run(new MyApp(), System.err, args);
-----
-
-Note that the `CommandLine.run` convenience method cannot be used with subcommands.
-
-When the annotated object implements `Callable`, use the `call` method. For example:
-[source,java]
-----
 Object result = CommandLine.call(new MyCallable(), System.err, args);
 ----
-The `call` method returns the result of the `Callable`, or `null` if the command line options were invalid.
-Exceptions thrown by the `Callable` are not caught by the `CommandLine.call` method.
+The `CommandLine.call` method returns the result of the `Callable`, or `null` if the command line options were invalid. An error message and a usage help message are printed when the command line options were invalid. Exceptions thrown from the `Callable.call` method are not caught by the `CommandLine.call` method.
+
+
+When the annotated object implements `Runnable`, use the `run` method. For example:
+[source,java]
+----
+CommandLine.run(new MyRunnable(), System.err, args);
+----
+
+CAUTION: Note that the `CommandLine.call` and `CommandLine.run` convenience methods cannot be used with subcommands.
+
 
 === Boolean Parameters
 By default the value of a boolean field is toggled to its logical negative when the field's option is specified on the command line.
@@ -1538,7 +1557,7 @@ Example:
 
 [source,bash]
 ----
-alias git='java -Dpicocli.trace=DEBUG -cp picocli-all.jar picocli.Demo$Git'
+alias git='java -Dpicocli.trace -cp picocli-all.jar picocli.Demo$Git'
 git --git-dir=/home/rpopma/picocli commit -m "Fixed typos" -- src1.java src2.java src3.java
 unalias git
 ----
@@ -1546,25 +1565,12 @@ unalias git
 Output:
 ----
 [picocli INFO] Parsing 8 command line args [--git-dir=/home/rpopma/picocli, commit, -m, "Fixed typos", --, src1.java, src2.java, src3.java]
-[picocli DEBUG] Initializing picocli.Demo$Git: 3 options, 0 positional parameters, 0 required, 11 subcommands.
-[picocli DEBUG] Processing argument '--git-dir=/home/rpopma/picocli'. Remainder=[commit, -m, "Fixed typos", --, src1.java, src2.java, src3.java]
-[picocli DEBUG] Separated '--git-dir' option from '/home/rpopma/picocli' option parameter
-[picocli DEBUG] Found option named '--git-dir': field java.io.File picocli.Demo$Git.gitDir, arity=1
-[picocli INFO] Setting File field 'Git.gitDir' to '\home\rpopma\picocli'
-[picocli DEBUG] Processing argument 'commit'. Remainder=[-m, "Fixed typos", --, src1.java, src2.java, src3.java]
-[picocli DEBUG] Found subcommand 'commit' (picocli.Demo$GitCommit)
-[picocli DEBUG] Initializing picocli.Demo$GitCommit: 8 options, 1 positional parameters, 0 required, 0 subcommands.
-[picocli DEBUG] Processing argument '-m'. Remainder=["Fixed typos", --, src1.java, src2.java, src3.java]
-[picocli DEBUG] '-m' cannot be separated into <option>=<option-parameter>
-[picocli DEBUG] Found option named '-m': field java.util.List picocli.Demo$GitCommit.message, arity=0..*
-[picocli INFO] Adding [Fixed typos] to List<String> field 'GitCommit.message'
-[picocli DEBUG] Processing argument '--'. Remainder=[src1.java, src2.java, src3.java]
-[picocli INFO] Found end-of-options delimiter '--'. Treating remainder as positional parameters
-[picocli DEBUG] Processing positional parameters. Remainder=[src1.java, src2.java, src3.java]
-[picocli DEBUG] Trying to assign args at index 0..* [src1.java, src2.java, src3.java] to java.util.List picocli.Demo$GitCommit.files, arity=0..*
-[picocli INFO] Adding [src1.java] to List<String> field 'GitCommit.files'
-[picocli INFO] Adding [src2.java] to List<String> field 'GitCommit.files'
-[picocli INFO] Adding [src3.java] to List<String> field 'GitCommit.files'
+[picocli INFO] Setting File field 'Git.gitDir' to '\home\rpopma\picocli' for option --git-dir
+[picocli INFO] Adding [Fixed typos] to List<String> field 'GitCommit.message' for option -m
+[picocli INFO] Found end-of-options delimiter '--'. Treating remainder as positional parameters.
+[picocli INFO] Adding [src1.java] to List<String> field 'GitCommit.files' for args[0..*]
+[picocli INFO] Adding [src2.java] to List<String> field 'GitCommit.files' for args[0..*]
+[picocli INFO] Adding [src3.java] to List<String> field 'GitCommit.files' for args[0..*]
 ----
 
 == TAB Autocomplete
