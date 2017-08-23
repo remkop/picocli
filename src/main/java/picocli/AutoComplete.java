@@ -42,7 +42,7 @@ public class AutoComplete {
     private AutoComplete() {
     }
 
-    public static void main(String[] args) { CommandLine.run(new App(), System.err, args); }
+    public static void main(String... args) { CommandLine.run(new App(), System.err, args); }
 
     /**
      * CLI command class for generating completion script.
