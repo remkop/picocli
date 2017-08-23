@@ -1627,7 +1627,7 @@ public class CommandLine {
                 assertNoMissingParameters(positionalParam, arity.min, argsCopy);
                 if (!validateOnly) {
                     int originalSize = argsCopy.size();
-                    int count = applyOption(positionalParam, Parameters.class, arity, false, argsCopy, null);
+                    int count = applyOption(positionalParam, Parameters.class, arity, false, argsCopy, null, "args[" + indexRange + "]");
                     if (count > 0) { required.remove(positionalParam); }
                     max = Math.max(max, indexRange.min + (originalSize - argsCopy.size())); // track unprocessed args
                 }
@@ -1651,7 +1651,7 @@ public class CommandLine {
                 arity = arity.min(Math.max(1, arity.min)); // if key=value, minimum arity is at least 1
             }
             if (tracer.isDebug()) {tracer.debug("Found option named '%s': field %s, arity=%s%n", arg, field, arity);}
-            applyOption(field, Option.class, arity, paramAttachedToKey, args, initialized);
+            applyOption(field, Option.class, arity, paramAttachedToKey, args, initialized, "option " + arg);
         }
 
         private void processClusteredShortOptions(Collection<Field> required,
@@ -1666,6 +1666,7 @@ public class CommandLine {
                 if (cluster.length() > 0 && singleCharOption2Field.containsKey(cluster.charAt(0))) {
                     Field field = singleCharOption2Field.get(cluster.charAt(0));
                     Range arity = Range.optionArity(field);
+                    String argDescription = "option " + prefix + cluster.charAt(0);
                     if (tracer.isDebug()) {tracer.debug("Found option '%s%s' in %s: field %s, arity=%s%n", prefix, cluster.charAt(0), arg, field, arity);}
                     required.remove(field);
                     cluster = cluster.length() > 0 ? cluster.substring(1) : "";
@@ -1681,7 +1682,7 @@ public class CommandLine {
                     // arity may be >= 1, or
                     // arity <= 0 && !cluster.startsWith(separator)
                     // e.g., boolean @Option("-v", arity=0, varargs=true); arg "-rvTRUE", remainder cluster="TRUE"
-                    int consumed = applyOption(field, Option.class, arity, paramAttachedToOption, args, initialized);
+                    int consumed = applyOption(field, Option.class, arity, paramAttachedToOption, args, initialized, argDescription);
                     // only return if cluster (and maybe more) was consumed, otherwise continue do-while loop
                     if (consumed > 0) {
                         return;
@@ -1713,7 +1714,8 @@ public class CommandLine {
                                 Range arity,
                                 boolean valueAttachedToOption,
                                 Stack<String> args,
-                                Set<Field> initialized) throws Exception {
+                                Set<Field> initialized,
+                                String argDescription) throws Exception {
             updateHelpRequested(field);
             if (!args.isEmpty() && args.peek().length() == 0 && !valueAttachedToOption) {
                 args.pop(); // throw out empty string we get at the end of a group of clustered short options
@@ -1723,22 +1725,23 @@ public class CommandLine {
 
             Class<?> cls = field.getType();
             if (cls.isArray()) {
-                return applyValuesToArrayField(field, annotation, arity, args, cls);
+                return applyValuesToArrayField(field, annotation, arity, args, cls, argDescription);
             }
             if (Collection.class.isAssignableFrom(cls)) {
-                return applyValuesToCollectionField(field, annotation, arity, args, cls);
+                return applyValuesToCollectionField(field, annotation, arity, args, cls, argDescription);
             }
             if (Map.class.isAssignableFrom(cls)) {
-                return applyValuesToMapField(field, annotation, arity, args, cls);
+                return applyValuesToMapField(field, annotation, arity, args, cls, argDescription);
             }
-            return applyValueToSingleValuedField(field, arity, args, cls, initialized);
+            return applyValueToSingleValuedField(field, arity, args, cls, initialized, argDescription);
         }
 
         private int applyValueToSingleValuedField(Field field,
                                                   Range arity,
                                                   Stack<String> args,
                                                   Class<?> cls,
-                                                  Set<Field> initialized) throws Exception {
+                                                  Set<Field> initialized,
+                                                  String argDescription) throws Exception {
             boolean noMoreValues = args.isEmpty();
             String value = args.isEmpty() ? null : trim(args.pop()); // unquote the value
             int result = arity.min; // the number or args we need to consume
@@ -1769,14 +1772,15 @@ public class CommandLine {
             ITypeConverter<?> converter = getTypeConverter(cls, field);
             Object objValue = tryConvert(field, -1, converter, value, cls);
             field.set(command, objValue);
-            tracer.info("Setting %s field '%s.%s' to '%s'%n", field.getType().getSimpleName(), field.getDeclaringClass().getSimpleName(), field.getName(), String.valueOf(objValue));
+            tracer.info("Setting %s field '%s.%s' to '%s' for %s%n", field.getType().getSimpleName(), field.getDeclaringClass().getSimpleName(), field.getName(), String.valueOf(objValue), argDescription);
             return result;
         }
         private int applyValuesToMapField(Field field,
                                           Class<?> annotation,
                                           Range arity,
                                           Stack<String> args,
-                                          Class<?> cls) throws Exception {
+                                          Class<?> cls,
+                                          String argDescription) throws Exception {
             Class<?>[] classes = getTypeAttribute(field);
             if (classes.length < 2) { throw new ParameterException("Field " + field + " needs two types (one for the map key, one for the value) but only has " + classes.length + " types configured."); }
             ITypeConverter<?> keyConverter   = getTypeConverter(classes[0], field);
@@ -1787,7 +1791,7 @@ public class CommandLine {
                 field.set(command, result);
             }
             int originalSize = result.size();
-            consumeMapArguments(field, arity, args, classes, keyConverter, valueConverter, result);
+            consumeMapArguments(field, arity, args, classes, keyConverter, valueConverter, result, argDescription);
             return result.size() - originalSize;
         }
 
@@ -1797,10 +1801,11 @@ public class CommandLine {
                                          Class<?>[] classes,
                                          ITypeConverter<?> keyConverter,
                                          ITypeConverter<?> valueConverter,
-                                         Map<Object, Object> result) throws Exception {
+                                         Map<Object, Object> result,
+                                         String argDescription) throws Exception {
             // first do the arity.min mandatory parameters
             for (int i = 0; result.size() < arity.min; i++) {
-                consumeOneMapArgument(field, arity, args, classes, keyConverter, valueConverter, result);
+                consumeOneMapArgument(field, arity, args, classes, keyConverter, valueConverter, result, argDescription);
             }
             // now process the varargs if any
             while (result.size() < arity.max && !args.isEmpty()) {
@@ -1809,7 +1814,7 @@ public class CommandLine {
                         return;
                     }
                 }
-                consumeOneMapArgument(field, arity, args, classes, keyConverter, valueConverter, result);
+                consumeOneMapArgument(field, arity, args, classes, keyConverter, valueConverter, result, argDescription);
             }
         }
 
@@ -1818,7 +1823,8 @@ public class CommandLine {
                                            Stack<String> args,
                                            Class<?>[] classes,
                                            ITypeConverter<?> keyConverter, ITypeConverter<?> valueConverter,
-                                           Map<Object, Object> result) throws Exception {
+                                           Map<Object, Object> result,
+                                           String argDescription) throws Exception {
             String[] values = split(trim(args.pop()), field);
 
             // ensure we don't process more than arity.max (as result of splitting args)
@@ -1839,8 +1845,8 @@ public class CommandLine {
                 Object mapKey =   tryConvert(field, j, keyConverter,   keyValue[0], classes[0]);
                 Object mapValue = tryConvert(field, j, valueConverter, keyValue[1], classes[1]);
                 result.put(mapKey, mapValue);
-                tracer.info("Putting [%s : %s] in %s<%s, %s> field '%s.%s'%n", String.valueOf(mapKey), String.valueOf(mapValue),
-                        result.getClass().getSimpleName(), classes[0].getSimpleName(), classes[1].getSimpleName(), field.getDeclaringClass().getSimpleName(), field.getName());
+                tracer.info("Putting [%s : %s] in %s<%s, %s> field '%s.%s' for %s%n", String.valueOf(mapKey), String.valueOf(mapValue),
+                        result.getClass().getSimpleName(), classes[0].getSimpleName(), classes[1].getSimpleName(), field.getDeclaringClass().getSimpleName(), field.getName(), argDescription);
             }
             checkMaxArityExceeded(arity, max, field, values);
         }
@@ -1857,11 +1863,12 @@ public class CommandLine {
                                             Class<?> annotation,
                                             Range arity,
                                             Stack<String> args,
-                                            Class<?> cls) throws Exception {
+                                            Class<?> cls,
+                                            String argDescription) throws Exception {
             Object existing = field.get(command);
             int length = existing == null ? 0 : Array.getLength(existing);
             Class<?> type = cls.getComponentType();
-            List<Object> converted = consumeArguments(field, annotation, arity, args, type, length);
+            List<Object> converted = consumeArguments(field, annotation, arity, args, type, length, argDescription);
             List<Object> newValues = new ArrayList<Object>();
             for (int i = 0; i < length; i++) {
                 newValues.add(Array.get(existing, i));
@@ -1886,11 +1893,12 @@ public class CommandLine {
                                                  Class<?> annotation,
                                                  Range arity,
                                                  Stack<String> args,
-                                                 Class<?> cls) throws Exception {
+                                                 Class<?> cls,
+                                                 String argDescription) throws Exception {
             Collection<Object> collection = (Collection<Object>) field.get(command);
             Class<?> type = getTypeAttribute(field)[0];
             int length = collection == null ? 0 : collection.size();
-            List<Object> converted = consumeArguments(field, annotation, arity, args, type, length);
+            List<Object> converted = consumeArguments(field, annotation, arity, args, type, length, argDescription);
             if (collection == null) {
                 collection = createCollection(cls);
                 field.set(command, collection);
@@ -1910,13 +1918,14 @@ public class CommandLine {
                                               Range arity,
                                               Stack<String> args,
                                               Class<?> type,
-                                              int originalSize) throws Exception {
+                                              int originalSize,
+                                              String argDescription) throws Exception {
             List<Object> result = new ArrayList<Object>();
             int index = 0;
 
             // first do the arity.min mandatory parameters
             for (int i = 0; result.size() + originalSize < arity.min; i++) {
-                index = consumeOneArgument(field, arity, args, type, result, index, originalSize);
+                index = consumeOneArgument(field, arity, args, type, result, index, originalSize, argDescription);
             }
             // now process the varargs if any
             while (result.size() < arity.max && !args.isEmpty()) {
@@ -1925,7 +1934,7 @@ public class CommandLine {
                         return result;
                     }
                 }
-                index = consumeOneArgument(field, arity, args, type, result, index, originalSize);
+                index = consumeOneArgument(field, arity, args, type, result, index, originalSize, argDescription);
             }
             return result;
         }
@@ -1936,7 +1945,8 @@ public class CommandLine {
                                        Class<?> type,
                                        List<Object> result,
                                        int index,
-                                       int originalSize) throws Exception {
+                                       int originalSize,
+                                       String argDescription) throws Exception {
             String[] values = split(trim(args.pop()), field);
             ITypeConverter<?> converter = getTypeConverter(type, field);
 
@@ -1945,9 +1955,9 @@ public class CommandLine {
             for (int j = 0; j < max; j++) {
                 result.add(tryConvert(field, index, converter, values[j], type));
                 if (field.getType().isArray()) {
-                    tracer.info("Adding [%s] to %s[] field '%s.%s'%n", String.valueOf(result.get(result.size()-1)), type.getSimpleName(), field.getDeclaringClass().getSimpleName(), field.getName());
+                    tracer.info("Adding [%s] to %s[] field '%s.%s' for %s%n", String.valueOf(result.get(result.size()-1)), type.getSimpleName(), field.getDeclaringClass().getSimpleName(), field.getName(), argDescription);
                 } else {
-                    tracer.info("Adding [%s] to %s<%s> field '%s.%s'%n", String.valueOf(result.get(result.size()-1)), field.getType().getSimpleName(), type.getSimpleName(), field.getDeclaringClass().getSimpleName(), field.getName());
+                    tracer.info("Adding [%s] to %s<%s> field '%s.%s' for %s%n", String.valueOf(result.get(result.size()-1)), field.getType().getSimpleName(), type.getSimpleName(), field.getDeclaringClass().getSimpleName(), field.getName(), argDescription);
                 }
             }
             checkMaxArityExceeded(arity, max, field, values);

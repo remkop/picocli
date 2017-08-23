@@ -2536,7 +2536,7 @@ public class CommandLineTest {
         System.setErr(new PrintStream(baos));
         final String PROPERTY = "picocli.trace";
         String old = System.getProperty(PROPERTY);
-        System.setProperty(PROPERTY, "DEBUG");
+        System.setProperty(PROPERTY, "");
         CommandLine commandLine = Demo.mainCommand();
         commandLine.parse("--git-dir=/home/rpopma/picocli", "commit", "-m", "\"Fixed typos\"", "--", "src1.java", "src2.java", "src3.java");
         System.setErr(originalErr);
@@ -2547,25 +2547,12 @@ public class CommandLineTest {
         }
         String expected = String.format("" +
                         "[picocli INFO] Parsing 8 command line args [--git-dir=/home/rpopma/picocli, commit, -m, \"Fixed typos\", --, src1.java, src2.java, src3.java]%n" +
-                        "[picocli DEBUG] Initializing picocli.Demo$Git: 3 options, 0 positional parameters, 0 required, 11 subcommands.%n" +
-                        "[picocli DEBUG] Processing argument '--git-dir=/home/rpopma/picocli'. Remainder=[commit, -m, \"Fixed typos\", --, src1.java, src2.java, src3.java]%n" +
-                        "[picocli DEBUG] Separated '--git-dir' option from '/home/rpopma/picocli' option parameter%n" +
-                        "[picocli DEBUG] Found option named '--git-dir': field java.io.File picocli.Demo$Git.gitDir, arity=1%n" +
-                        "[picocli INFO] Setting File field 'Git.gitDir' to '%s'%n" +
-                        "[picocli DEBUG] Processing argument 'commit'. Remainder=[-m, \"Fixed typos\", --, src1.java, src2.java, src3.java]%n" +
-                        "[picocli DEBUG] Found subcommand 'commit' (picocli.Demo$GitCommit)%n" +
-                        "[picocli DEBUG] Initializing picocli.Demo$GitCommit: 8 options, 1 positional parameters, 0 required, 0 subcommands.%n" +
-                        "[picocli DEBUG] Processing argument '-m'. Remainder=[\"Fixed typos\", --, src1.java, src2.java, src3.java]%n" +
-                        "[picocli DEBUG] '-m' cannot be separated into <option>=<option-parameter>%n" +
-                        "[picocli DEBUG] Found option named '-m': field java.util.List picocli.Demo$GitCommit.message, arity=0..*%n" +
-                        "[picocli INFO] Adding [Fixed typos] to List<String> field 'GitCommit.message'%n" +
-                        "[picocli DEBUG] Processing argument '--'. Remainder=[src1.java, src2.java, src3.java]%n" +
+                        "[picocli INFO] Setting File field 'Git.gitDir' to '%s' for option --git-dir%n" +
+                        "[picocli INFO] Adding [Fixed typos] to List<String> field 'GitCommit.message' for option -m%n" +
                         "[picocli INFO] Found end-of-options delimiter '--'. Treating remainder as positional parameters.%n" +
-                        "[picocli DEBUG] Processing positional parameters. Remainder=[src1.java, src2.java, src3.java]%n" +
-                        "[picocli DEBUG] Trying to assign args at index 0..* [src1.java, src2.java, src3.java] to java.util.List picocli.Demo$GitCommit.files, arity=0..*%n" +
-                        "[picocli INFO] Adding [src1.java] to List<String> field 'GitCommit.files'%n" +
-                        "[picocli INFO] Adding [src2.java] to List<String> field 'GitCommit.files'%n" +
-                        "[picocli INFO] Adding [src3.java] to List<String> field 'GitCommit.files'%n",
+                        "[picocli INFO] Adding [src1.java] to List<String> field 'GitCommit.files' for args[0..*]%n" +
+                        "[picocli INFO] Adding [src2.java] to List<String> field 'GitCommit.files' for args[0..*]%n" +
+                        "[picocli INFO] Adding [src3.java] to List<String> field 'GitCommit.files' for args[0..*]%n",
                 new File("/home/rpopma/picocli"));
         String actual = new String(baos.toByteArray(), "UTF8");
         //System.out.println(actual);
