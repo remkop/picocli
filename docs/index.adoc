@@ -60,6 +60,7 @@ assert  app.inputFiles != null && app.inputFiles.length == 2;
 
 Here is a small example application:
 
+[[CheckSum-application]]
 [source,java]
 ----
 @Command(name = "checksum", description = "Prints the checksum (MD5 by default) of a file to STDOUT.")

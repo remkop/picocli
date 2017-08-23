@@ -17,7 +17,7 @@ image::https://s3.amazonaws.com/github/ribbons/forkme_right_red_aa0000.png[Fork 
 Every main method deserves picocli!
 
 == Introduction
-Picocli-based applications can now have command line completion in Bash or Zsh Unix shells.
+Picocli-based applications can now have command line completion in Bash or ZSH Unix shells.
 Picocli can generate an autocompletion script tailored to your application.
 
 With this script installed, users can type the first few letters of a subcommand or an option,
@@ -28,6 +28,149 @@ with those few characters. The user can type more characters and press TAB again
 list if the typed characters are still ambiguous, or else complete the subcommand or option.
 
 image:picocli-autocompletion-demo.gif[Autocompletion demo animation]
+
+== Customizable Completion Functions
+Picocli uses the programmable completion functionality available in the Bash and ZSH Unix shells.
+
+How does this work?
+
+=== Create Application
+We start by creating a picocli-based application.
+For our purposes, let's use the link:index.html#CheckSum-application[CheckSum example application] from the picocli user manual.
+
+We also create a jar file, `myproject.jar` that contains all the necessary class files.
+
+=== Create Command
+Next, we create a command that runs the application. Let's name our command `jchecksum`.
+In Bash and ZSH, there are multiple ways to do this. One way is to define an alias:
+
+[source,bash]
+----
+alias jchecksum='java -cp picocli-1.0.0.jar:myproject.jar com.myproject.CheckSum'
+----
+
+Another way is to create a script:
+
+[source,bash]
+----
+$ echo '#!/usr/bin/env bash' > jchecksum
+$ echo 'java -cp picocli-1.0.0.jar:myproject.jar com.myproject.CheckSum $@' >> jchecksum
+$ chmod 755 jchecksum
+$ cat jchecksum
+#!/usr/bin/env bash
+java -cp picocli-1.0.0.jar:myproject.jar com.myproject.CheckSum $@
+----
+
+We now have a command, `jchecksum`, that accepts options and parameters and can be executed on the command line:
+
+[source,bash]
+----
+$ jchecksum -a SHA-256 README.md
+a5f4bdb624bae09b6b48def737389f2d701576f1e6231ae56de8bd8215d13065
+----
+
+We are ready for the next step: creating a completion function.
+
+
+== Generating the Completion Script
+
+=== Overview
+
+To generate the completion script, run the `picocli.AutoComplete` class as a java application, passing it
+the fully qualified class name of the annotated command object.
+
+[source,bash]
+----
+$ java -cp picocli-1.0.0.jar:myproject.jar picocli.AutoComplete com.myproject.CheckSum
+----
+
+This will instantiate your command, and inspect it for http://picocli.info/apidocs/picocli/CommandLine.Option.html[`@Option`]
+and http://picocli.info/apidocs/picocli/CommandLine.Command.html[`@Command`] annotations.
+Based on these annotations it will generate a completion script in the current directory.
+
+=== Command Name
+The name of the generated completion script is based on the `@Command(name ="<COMMAND-NAME>")` link:index.html#_command_name[annotation], or, if that is missing, the command class name.
+Use the `-n` or `--name` option to control the name of the command that the completion script is for.
+
+[source,bash]
+----
+$ java -cp picocli-1.0.0.jar:myproject.jar picocli.AutoComplete -n jchecksum com.myproject.CheckSum
+----
+
+This will generate a  `jchecksum_completion` script in the current directory.
+
+Other options are:
+
+* Use `-o` or `--completionScript` to specify the full path to the completion script to generate.
+* Use the `-f` or `--force` option to overwrite existing files.
+* Use the `-w`, `--writeCommandScript` option to generate a sample command script.
+
+=== Subcommands
+For commands with subcommands, bear in mind that the class that generates the completion script (`picocli.AutoComplete`)
+needs the full hierarchy of command and subcommands to generate a completion script that also works for the subcommands.
+
+The above will work when subcommands are registered declaratively with annotations like `@Command(subcommands = { ... })`.
+
+=== Subcommands (The Do-It-Yourself Way)
+Otherwise, you need to do a bit more work. You need to create a small program that does the following:
+
+* Create a `CommandLine` instance with the full hierarchy of nested subcommands.
+
+[source,java]
+----
+// programmatically (see above for declarative example)
+CommandLine hierarchy = new CommandLine(new TopLevel())
+        .addSubcommand("sub1", new Subcommand1())
+        .addSubcommand("sub2", new Subcommand2());
+----
+
+* Pass this `CommandLine` instance and the name of the script to the `picocli.AutoComplete::bash` method. The method will return the source code of a completion script. Save the source code to a file and install it.
+
+
+== Installing the Completion Script in Bash
+
+Make sure bash completion is installed.
+
+The generated completion script needs to be http://tldp.org/HOWTO/Bash-Prompt-HOWTO/x237.html[sourced] to install it in your current bash session.
+
+To install it more permanently, place the completion script file in `/etc/bash_completion.d` (or `/usr/local/etc/bash_completion.d` on a Mac). If `bash-completion` is installed, placing the completion script in either of these directories should be sufficient. (Source your `~/.bash_profile` or launch a new terminal to start using this completion script.)
+
+Alternatively, make a directory `mkdir ~/bash_completion.d`, and place the completion script in this directory. Edit your `~/.bashrc` file and add the following:
+
+[source,bash]
+----
+for bcfile in ~/bash_completion.d/* ; do
+  . $bcfile
+done
+----
+
+Source your `~/.bash_profile` or launch a new terminal to start using this completion script.
+
+
+== Installing the Completion Script in ZSH
+
+Zsh can handle bash completions functions. The latest development version of zsh has a function bashcompinit, that when run will allow zsh to read bash completion specifications and functions. This is documented in the zshcompsys man page. To use it all you need to do is run bashcompinit at any time after compinit. It will define complete and compgen functions corresponding to the bash builtins.
+
+The generated completion script needs to be http://tldp.org/HOWTO/Bash-Prompt-HOWTO/x237.html[sourced] to install it in your current session.
+
+To install it more permanently, make a directory `mkdir ~/bash_completion.d`, and place the completion script in this directory. Edit your `~/.zshrc` file and add the following:
+
+[source,bash]
+----
+autoload -U +X compinit && compinit
+autoload -U +X bashcompinit && bashcompinit
+for bcfile in ~/bash_completion.d/* ; do
+  . $bcfile
+done
+----
+
+Then reload your shell:
+
+[source,bash]
+----
+exec $SHELL -l
+----
+
 
 == Command Line Completion Example
 Assume we have a link:index.html[picocli]-based command line application with link:index.html#_subcommands[subcommands],
@@ -132,118 +275,6 @@ In the above example, `Subcommand2` has a field of type `java.util.concurrent.Ti
 ----
 $ hierarchy sub2 --timeUnit <TAB><TAB>
 DAYS     HOURS     MICROSECONDS  MILLISECONDS  MINUTES    NANOSECONDS   SECONDS
-----
-
-== Generating the Completion Script
-
-=== Overview
-
-To generate the completion script, run the `picocli.AutoComplete` class as a java application, passing it
-the fully qualified class name of the annotated command object.
-
-[source,bash]
-----
-$ java -jar picocli-1.0.0.jar com.myproject.MyCommand
-----
-
-This will instantiate your command, and inspect it for http://picocli.info/apidocs/picocli/CommandLine.Option.html[`@Option`]
-and http://picocli.info/apidocs/picocli/CommandLine.Command.html[`@Command`] annotations.
-Based on these annotations it will generate a completion script in the current directory.
-
-=== Command Name
-The name of the generated completion script is based on the `@Command(name ="<COMMAND-NAME>")` link:index.html#_command_name[annotation], or, if that is missing, the command class name.
-Use the `-n` or `--name` option to control the name of the command that the completion script is for.
-
-[source,bash]
-----
-$ java -jar picocli-1.0.0.jar -n hierarchy com.myproject.MyCommand
-----
-
-This will generate a  `hierarchy_completion` script in the current directory.
-
-Other options are:
-
-* Use `-o` or `--completionScript` to specify the full path to the completion script to generate.
-* Use the `-f` or `--force` option to overwrite existing files.
-* Use the `-w`, `--writeCommandScript` option to generate a sample command script.
-
-=== Subcommands
-For commands with subcommands, bear in mind that the class that generates the completion script (`picocli.AutoComplete`)
-needs the full hierarchy of command and subcommands to generate a completion script that also works for the subcommands.
-
-The above will work when subcommands are registered declaratively with annotations like `@Command(subcommands = { ... })`.
-
-=== Subcommands (The Do-It-Yourself Way)
-Otherwise, you need to do a bit more work. You need to create a small program that does the following:
-
-* Create a `CommandLine` instance with the full hierarchy of nested subcommands.
-
-[source,java]
-----
-// programmatically (see above for declarative example)
-CommandLine hierarchy = new CommandLine(new TopLevel())
-        .addSubcommand("sub1", new Subcommand1())
-        .addSubcommand("sub2", new Subcommand2());
-----
-
-* Pass this `CommandLine` instance and the name of the script to the `picocli.AutoComplete::bash` method. The method will return the source code of a completion script. Save the source code to a file and install it.
-
-=== Command Script
-Finally, create the accompanying command script to run the application. This is the script that Bash will recognize and generate completion matches for.
-
-The name of this script is important! The command completion script will only generate completions for the matching command.
-
-It should contain something like this:
-
-[source,bash]
-----
-#!/usr/bin/env bash
-
-java -cp myApp.jar com.myorg.myproject.MainClass $@
-----
-
-== Installing the Completion Script in Bash
-
-Make sure bash completion is installed.
-
-The generated completion script needs to be http://tldp.org/HOWTO/Bash-Prompt-HOWTO/x237.html[sourced] to install it in your current bash session.
-
-To install it more permanently, place the completion script file in `/etc/bash_completion.d` (or `/usr/local/etc/bash_completion.d` on a Mac). If `bash-completion` is installed, placing the completion script in either of these directories should be sufficient. (Source your `~/.bash_profile` or launch a new terminal to start using this completion script.)
-
-Alternatively, make a directory `mkdir ~/bash_completion.d`, and place the completion script in this directory. Edit your `~/.bashrc` file and add the following:
-
-[source,bash]
-----
-for bcfile in ~/bash_completion.d/* ; do
-  . $bcfile
-done
-----
-
-Source your `~/.bash_profile` or launch a new terminal to start using this completion script.
-
-
-== Installing the Completion Script in ZSH
-
-Zsh can handle bash completions functions. The latest development version of zsh has a function bashcompinit, that when run will allow zsh to read bash completion specifications and functions. This is documented in the zshcompsys man page. To use it all you need to do is run bashcompinit at any time after compinit. It will define complete and compgen functions corresponding to the bash builtins.
-
-The generated completion script needs to be http://tldp.org/HOWTO/Bash-Prompt-HOWTO/x237.html[sourced] to install it in your current session.
-
-To install it more permanently, make a directory `mkdir ~/bash_completion.d`, and place the completion script in this directory. Edit your `~/.zshrc` file and add the following:
-
-[source,bash]
-----
-autoload -U +X compinit && compinit
-autoload -U +X bashcompinit && bashcompinit
-for bcfile in ~/bash_completion.d/* ; do
-  . $bcfile
-done
-----
-
-Then reload your shell:
-
-[source,bash]
-----
-exec $SHELL -l
 ----
 
 
