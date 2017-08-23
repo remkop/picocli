@@ -403,4 +403,16 @@ public class AutoCompleteTest {
         fis.close();
         return buffer;
     }
+    @Test
+    public void testCommandDescriptor() {
+        AutoComplete.CommandDescriptor descriptor = new AutoComplete.CommandDescriptor("aaa", "bbb");
+        assertEquals(descriptor, descriptor);
+
+        AutoComplete.CommandDescriptor other = new AutoComplete.CommandDescriptor("111", "222");
+        assertNotEquals(descriptor, other);
+
+        assertEquals(descriptor.hashCode(), descriptor.hashCode());
+        assertEquals(other.hashCode(), other.hashCode());
+        assertNotEquals(other.hashCode(), descriptor.hashCode());
+    }
 }

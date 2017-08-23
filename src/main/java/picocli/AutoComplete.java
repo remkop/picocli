@@ -179,8 +179,8 @@ public class AutoComplete {
         for (T t : list) { if (filter.test(t)) { result.add(t); } }
         return result;
     }
-
-    private static class CommandDescriptor {
+    /** Package-private for tests; consider this class private. */
+    static class CommandDescriptor {
         final String functionName;
         final String commandName;
         CommandDescriptor(String functionName, String commandName) {
