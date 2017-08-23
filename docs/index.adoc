@@ -618,9 +618,9 @@ Format argument values can be passed to the `printVersionHelp` method:
 
 [source,java]
 ----
-String licensedUser = System.getProperty("user.name");
+String[] args = {"1234", System.getProperty("user.name")};
 new CommandLine(new VersionedCommand())
-    .printVersionHelp(System.err, "1234", licensedUser);
+    .printVersionHelp(System.err, Help.Ansi.AUTO, args);
 ----
 
 == Usage Help

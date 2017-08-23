@@ -676,7 +676,7 @@ converting the input to strongly typed values in the fields of your class.</p>
 </div>
 </div>
 <div class="paragraph">
-<p>Then invoke <code>CommandLine.populateCommand</code> or <code>CommandLine.parse</code> with the command line parameters and an object you want to initialize.</p>
+<p>Then invoke <code>CommandLine.parse</code> or <code>CommandLine.populateCommand</code> with the command line parameters and an object you want to initialize.</p>
 </div>
 <div class="listingblock">
 <div class="content">
@@ -900,9 +900,9 @@ PositionalParameters params = CommandLine.populateCommand(<span class="keyword">
 <div class="listingblock">
 <div class="content">
 <pre class="CodeRay highlight"><code data-lang="java"><span class="type">class</span> <span class="class">DoubleDashDemo</span> {
-    <span class="annotation">@Option</span>(names = <span class="string"><span class="delimiter">&quot;</span><span class="content">-v</span><span class="delimiter">&quot;</span></span>)      <span class="type">boolean</span> verbose;
-    <span class="annotation">@Option</span>(names = <span class="string"><span class="delimiter">&quot;</span><span class="content">--files</span><span class="delimiter">&quot;</span></span>) <span class="predefined-type">List</span>&lt;<span class="predefined-type">String</span>&gt; files;
-    <span class="annotation">@Parameters</span>                <span class="predefined-type">List</span>&lt;<span class="predefined-type">String</span>&gt; params;
+    <span class="annotation">@Option</span>(names = <span class="string"><span class="delimiter">&quot;</span><span class="content">-v</span><span class="delimiter">&quot;</span></span>)     <span class="type">boolean</span> verbose;
+    <span class="annotation">@Option</span>(names = <span class="string"><span class="delimiter">&quot;</span><span class="content">-files</span><span class="delimiter">&quot;</span></span>) <span class="predefined-type">List</span>&lt;<span class="predefined-type">String</span>&gt; files;
+    <span class="annotation">@Parameters</span>               <span class="predefined-type">List</span>&lt;<span class="predefined-type">String</span>&gt; params;
 }</code></pre>
 </div>
 </div>
@@ -911,13 +911,13 @@ PositionalParameters params = CommandLine.populateCommand(<span class="keyword">
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="CodeRay highlight"><code data-lang="java"><span class="predefined-type">String</span><span class="type">[]</span> args = { <span class="string"><span class="delimiter">&quot;</span><span class="content">-v</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">--</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">--files</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">file1</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">file2</span><span class="delimiter">&quot;</span></span> };
+<pre class="CodeRay highlight"><code data-lang="java"><span class="predefined-type">String</span><span class="type">[]</span> args = { <span class="string"><span class="delimiter">&quot;</span><span class="content">-v</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">--</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">-files</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">file1</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">file2</span><span class="delimiter">&quot;</span></span> };
 DoubleDashDemo demo = <span class="keyword">new</span> DoubleDashDemo();
 <span class="keyword">new</span> CommandLine(demo).parse(args);
 
 <span class="keyword">assert</span> demo.verbose;
 <span class="keyword">assert</span> demo.files == <span class="predefined-constant">null</span>;
-<span class="keyword">assert</span> demo.params.equals(<span class="predefined-type">Arrays</span>.asList(<span class="string"><span class="delimiter">&quot;</span><span class="content">--files</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">file1</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">file2</span><span class="delimiter">&quot;</span></span>));</code></pre>
+<span class="keyword">assert</span> demo.params.equals(<span class="predefined-type">Arrays</span>.asList(<span class="string"><span class="delimiter">&quot;</span><span class="content">-files</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">file1</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">file2</span><span class="delimiter">&quot;</span></span>));</code></pre>
 </div>
 </div>
 </div>
@@ -1131,7 +1131,7 @@ If a collection is returned from a type converter, the <em>contents</em> of the 
 <span class="keyword">import</span> <span class="include">java.util.concurrent.TimeUnit</span>;
 
 <span class="type">class</span> <span class="class">MapDemo</span> {
-    <span class="annotation">@Option</span>(names = {<span class="string"><span class="delimiter">&quot;</span><span class="content">-h</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">--proxyHost</span><span class="delimiter">&quot;</span></span>}, type = {<span class="predefined-type">Proxy</span>.Type.class, <span class="predefined-type">InetAddress</span>.class});
+    <span class="annotation">@Option</span>(names = {<span class="string"><span class="delimiter">&quot;</span><span class="content">-p</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">--proxyHost</span><span class="delimiter">&quot;</span></span>}, type = {<span class="predefined-type">Proxy</span>.Type.class, <span class="predefined-type">InetAddress</span>.class});
     <span class="predefined-type">Map</span>&lt;<span class="predefined-type">Proxy</span>.Type, <span class="predefined-type">InetAddress</span>&gt; proxies;
 
     <span class="annotation">@Option</span>(names = {<span class="string"><span class="delimiter">&quot;</span><span class="content">-u</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">--timeUnit</span><span class="delimiter">&quot;</span></span>}, type = {<span class="predefined-type">TimeUnit</span>.class, <span class="predefined-type">Long</span>.class});
@@ -1144,7 +1144,7 @@ If a collection is returned from a type converter, the <em>contents</em> of the 
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="CodeRay highlight"><code data-lang="bash">&lt;command&gt; -hHTTP=123.123.123.123 --proxyHost SOCKS=212.212.212.212
+<pre class="CodeRay highlight"><code data-lang="bash">&lt;command&gt; -p HTTP=123.123.123.123 --proxyHost SOCKS=212.212.212.212
 &lt;command&gt; -uDAYS=3 -u HOURS=23 -u=MINUTES=59 --timeUnit=SECONDS=13</code></pre>
 </div>
 </div>
@@ -1462,7 +1462,7 @@ commandLine.parse(args);
 </div>
 </div>
 <div class="paragraph">
-<p>The version may specify multiple Strings. Each will be printed on a separate line.</p>
+<p>The <code>version</code> may specify multiple Strings. Each will be printed on a separate line.</p>
 </div>
 <div class="listingblock">
 <div class="content">
@@ -1497,6 +1497,28 @@ Build 12345
 </div>
 <div class="paragraph">
 <p><span class="image"><img src="images/VersionInfoWithColors.png" alt="Screenshot of version information containing markup with Ansi styles and colors"></span></p>
+</div>
+<div class="paragraph">
+<p>From 1.0.0, the <code>version</code> may contain <a href="https://docs.oracle.com/javase/7/docs/api/java/util/Formatter.html">format specifiers</a>:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="java"><span class="annotation">@Command</span>(version = {
+    <span class="string"><span class="delimiter">&quot;</span><span class="content">Versioned Command 1.0</span><span class="delimiter">&quot;</span></span>,
+    <span class="string"><span class="delimiter">&quot;</span><span class="content">Build %1$s</span><span class="delimiter">&quot;</span></span>,
+    <span class="string"><span class="delimiter">&quot;</span><span class="content">(c) 2017, licensed to %2$s</span><span class="delimiter">&quot;</span></span> })
+<span class="type">class</span> <span class="class">VersionedCommand</span> { ... }</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Format argument values can be passed to the <code>printVersionHelp</code> method:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="java"><span class="predefined-type">String</span><span class="type">[]</span> args = {<span class="string"><span class="delimiter">&quot;</span><span class="content">1234</span><span class="delimiter">&quot;</span></span>, <span class="predefined-type">System</span>.getProperty(<span class="string"><span class="delimiter">&quot;</span><span class="content">user.name</span><span class="delimiter">&quot;</span></span>)};
+<span class="keyword">new</span> CommandLine(<span class="keyword">new</span> VersionedCommand())
+    .printVersionHelp(<span class="predefined-type">System</span>.err, Help.Ansi.AUTO, args);</code></pre>
+</div>
 </div>
 </div>
 </div>
@@ -2488,37 +2510,45 @@ in <a href="#_expanded_example">Expanded Example</a>.</p>
 <div class="listingblock">
 <div class="title">Before</div>
 <div class="content">
-<pre class="CodeRay highlight"><code data-lang="java"><span class="predefined-type">Runnable</span> runnable = <span class="predefined-constant">null</span>;
+<pre class="CodeRay highlight"><code data-lang="java"><span class="predefined-type">Callable</span>&lt;<span class="predefined-type">Object</span>&gt; callable = <span class="predefined-constant">null</span>;
 <span class="keyword">try</span> {
-    runnable = CommandLine.populateCommand(annotatedObject, args);
+    callable = CommandLine.populateCommand(annotatedObject, args);
 } <span class="keyword">catch</span> (<span class="exception">Exception</span> ex) {
     <span class="predefined-type">System</span>.err.println(ex.getMessage());
     CommandLine.usage(annotatedObject, <span class="predefined-type">System</span>.err);
-    <span class="keyword">return</span>;
+    <span class="keyword">return</span> <span class="predefined-constant">null</span>;
 }
-runnable.run();</code></pre>
+<span class="keyword">return</span> callable.call();</code></pre>
 </div>
 </div>
 <div class="listingblock">
 <div class="title">After</div>
 <div class="content">
-<pre class="CodeRay highlight"><code data-lang="java">CommandLine.run(<span class="keyword">new</span> MyApp(), <span class="predefined-type">System</span>.err, args);</code></pre>
-</div>
-</div>
-<div class="paragraph">
-<p>Note that the <code>CommandLine.run</code> convenience method cannot be used with subcommands.</p>
-</div>
-<div class="paragraph">
-<p>When the annotated object implements <code>Callable</code>, use the <code>call</code> method. For example:</p>
-</div>
-<div class="listingblock">
-<div class="content">
 <pre class="CodeRay highlight"><code data-lang="java"><span class="predefined-type">Object</span> result = CommandLine.call(<span class="keyword">new</span> MyCallable(), <span class="predefined-type">System</span>.err, args);</code></pre>
 </div>
 </div>
 <div class="paragraph">
-<p>The <code>call</code> method returns the result of the <code>Callable</code>, or <code>null</code> if the command line options were invalid.
-Exceptions thrown by the <code>Callable</code> are not caught by the <code>CommandLine.call</code> method.</p>
+<p>The <code>CommandLine.call</code> method returns the result of the <code>Callable</code>, or <code>null</code> if the command line options were invalid. An error message and a usage help message are printed when the command line options were invalid. Exceptions thrown from the <code>Callable.call</code> method are not caught by the <code>CommandLine.call</code> method.</p>
+</div>
+<div class="paragraph">
+<p>When the annotated object implements <code>Runnable</code>, use the <code>run</code> method. For example:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="java">CommandLine.run(<span class="keyword">new</span> MyRunnable(), <span class="predefined-type">System</span>.err, args);</code></pre>
+</div>
+</div>
+<div class="admonitionblock caution">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-caution" title="Caution"></i>
+</td>
+<td class="content">
+Note that the <code>CommandLine.call</code> and <code>CommandLine.run</code> convenience methods cannot be used with subcommands.
+</td>
+</tr>
+</table>
 </div>
 </div>
 <div class="sect2">
@@ -2777,7 +2807,7 @@ However, picocli lets you make options required if you want to, see <a href="#_r
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="CodeRay highlight"><code data-lang="bash">alias git='java -Dpicocli.trace=DEBUG -cp picocli-all.jar picocli.Demo$Git'
+<pre class="CodeRay highlight"><code data-lang="bash">alias git='java -Dpicocli.trace -cp picocli-all.jar picocli.Demo$Git'
 git --git-dir=/home/rpopma/picocli commit -m &quot;Fixed typos&quot; -- src1.java src2.java src3.java
 unalias git</code></pre>
 </div>
@@ -2788,25 +2818,12 @@ unalias git</code></pre>
 <div class="listingblock">
 <div class="content">
 <pre>[picocli INFO] Parsing 8 command line args [--git-dir=/home/rpopma/picocli, commit, -m, "Fixed typos", --, src1.java, src2.java, src3.java]
-[picocli DEBUG] Initializing picocli.Demo$Git: 3 options, 0 positional parameters, 0 required, 11 subcommands.
-[picocli DEBUG] Processing argument '--git-dir=/home/rpopma/picocli'. Remainder=[commit, -m, "Fixed typos", --, src1.java, src2.java, src3.java]
-[picocli DEBUG] Separated '--git-dir' option from '/home/rpopma/picocli' option parameter
-[picocli DEBUG] Found option named '--git-dir': field java.io.File picocli.Demo$Git.gitDir, arity=1
-[picocli INFO] Setting File field 'Git.gitDir' to '\home\rpopma\picocli'
-[picocli DEBUG] Processing argument 'commit'. Remainder=[-m, "Fixed typos", --, src1.java, src2.java, src3.java]
-[picocli DEBUG] Found subcommand 'commit' (picocli.Demo$GitCommit)
-[picocli DEBUG] Initializing picocli.Demo$GitCommit: 8 options, 1 positional parameters, 0 required, 0 subcommands.
-[picocli DEBUG] Processing argument '-m'. Remainder=["Fixed typos", --, src1.java, src2.java, src3.java]
-[picocli DEBUG] '-m' cannot be separated into &lt;option&gt;=&lt;option-parameter&gt;
-[picocli DEBUG] Found option named '-m': field java.util.List picocli.Demo$GitCommit.message, arity=0..*
-[picocli INFO] Adding [Fixed typos] to List&lt;String&gt; field 'GitCommit.message'
-[picocli DEBUG] Processing argument '--'. Remainder=[src1.java, src2.java, src3.java]
-[picocli INFO] Found end-of-options delimiter '--'. Treating remainder as positional parameters
-[picocli DEBUG] Processing positional parameters. Remainder=[src1.java, src2.java, src3.java]
-[picocli DEBUG] Trying to assign args at index 0..* [src1.java, src2.java, src3.java] to java.util.List picocli.Demo$GitCommit.files, arity=0..*
-[picocli INFO] Adding [src1.java] to List&lt;String&gt; field 'GitCommit.files'
-[picocli INFO] Adding [src2.java] to List&lt;String&gt; field 'GitCommit.files'
-[picocli INFO] Adding [src3.java] to List&lt;String&gt; field 'GitCommit.files'</pre>
+[picocli INFO] Setting File field 'Git.gitDir' to '\home\rpopma\picocli' for option --git-dir
+[picocli INFO] Adding [Fixed typos] to List&lt;String&gt; field 'GitCommit.message' for option -m
+[picocli INFO] Found end-of-options delimiter '--'. Treating remainder as positional parameters.
+[picocli INFO] Adding [src1.java] to List&lt;String&gt; field 'GitCommit.files' for args[0..*]
+[picocli INFO] Adding [src2.java] to List&lt;String&gt; field 'GitCommit.files' for args[0..*]
+[picocli INFO] Adding [src3.java] to List&lt;String&gt; field 'GitCommit.files' for args[0..*]</pre>
 </div>
 </div>
 </div>
@@ -4414,9 +4431,9 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
             } <span class="keyword">catch</span> (ParameterException ex) {
                 <span class="keyword">throw</span> ex;
             } <span class="keyword">catch</span> (<span class="exception">Exception</span> ex) {
-                <span class="type">int</span> offendingArgIndex = originalArgs.length - argumentStack.size();
+                <span class="type">int</span> offendingArgIndex = originalArgs.length - argumentStack.size() - <span class="integer">1</span>;
                 <span class="predefined-type">String</span> arg = offendingArgIndex &gt;= <span class="integer">0</span> &amp;&amp; offendingArgIndex &lt; originalArgs.length ? originalArgs[offendingArgIndex] : <span class="string"><span class="delimiter">&quot;</span><span class="content">?</span><span class="delimiter">&quot;</span></span>;
-                <span class="keyword">throw</span> ParameterException.create(ex, arg, argumentStack.size(), originalArgs);
+                <span class="keyword">throw</span> ParameterException.create(ex, arg, offendingArgIndex, originalArgs);
             }
             <span class="keyword">if</span> (!isAnyHelpRequested() &amp;&amp; !required.isEmpty()) {
                 <span class="keyword">if</span> (required.get(<span class="integer">0</span>).isAnnotationPresent(<span class="predefined-type">Option</span>.class)) {
@@ -4540,7 +4557,7 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
                 assertNoMissingParameters(positionalParam, arity.min, argsCopy);
                 <span class="keyword">if</span> (!validateOnly) {
                     <span class="type">int</span> originalSize = argsCopy.size();
-                    <span class="type">int</span> count = applyOption(positionalParam, Parameters.class, arity, <span class="predefined-constant">false</span>, argsCopy, <span class="predefined-constant">null</span>);
+                    <span class="type">int</span> count = applyOption(positionalParam, Parameters.class, arity, <span class="predefined-constant">false</span>, argsCopy, <span class="predefined-constant">null</span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">args[</span><span class="delimiter">&quot;</span></span> + indexRange + <span class="string"><span class="delimiter">&quot;</span><span class="content">]</span><span class="delimiter">&quot;</span></span>);
                     <span class="keyword">if</span> (count &gt; <span class="integer">0</span>) { required.remove(positionalParam); }
                     max = <span class="predefined-type">Math</span>.max(max, indexRange.min + (originalSize - argsCopy.size())); <span class="comment">// track unprocessed args</span>
                 }
@@ -4564,7 +4581,7 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
                 arity = arity.min(<span class="predefined-type">Math</span>.max(<span class="integer">1</span>, arity.min)); <span class="comment">// if key=value, minimum arity is at least 1</span>
             }
             <span class="keyword">if</span> (tracer.isDebug()) {tracer.debug(<span class="string"><span class="delimiter">&quot;</span><span class="content">Found option named '%s': field %s, arity=%s%n</span><span class="delimiter">&quot;</span></span>, arg, field, arity);}
-            applyOption(field, <span class="predefined-type">Option</span>.class, arity, paramAttachedToKey, args, initialized);
+            applyOption(field, <span class="predefined-type">Option</span>.class, arity, paramAttachedToKey, args, initialized, <span class="string"><span class="delimiter">&quot;</span><span class="content">option </span><span class="delimiter">&quot;</span></span> + arg);
         }
 
         <span class="directive">private</span> <span class="type">void</span> processClusteredShortOptions(<span class="predefined-type">Collection</span>&lt;<span class="predefined-type">Field</span>&gt; required,
@@ -4579,6 +4596,7 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
                 <span class="keyword">if</span> (cluster.length() &gt; <span class="integer">0</span> &amp;&amp; singleCharOption2Field.containsKey(cluster.charAt(<span class="integer">0</span>))) {
                     <span class="predefined-type">Field</span> field = singleCharOption2Field.get(cluster.charAt(<span class="integer">0</span>));
                     Range arity = Range.optionArity(field);
+                    <span class="predefined-type">String</span> argDescription = <span class="string"><span class="delimiter">&quot;</span><span class="content">option </span><span class="delimiter">&quot;</span></span> + prefix + cluster.charAt(<span class="integer">0</span>);
                     <span class="keyword">if</span> (tracer.isDebug()) {tracer.debug(<span class="string"><span class="delimiter">&quot;</span><span class="content">Found option '%s%s' in %s: field %s, arity=%s%n</span><span class="delimiter">&quot;</span></span>, prefix, cluster.charAt(<span class="integer">0</span>), arg, field, arity);}
                     required.remove(field);
                     cluster = cluster.length() &gt; <span class="integer">0</span> ? cluster.substring(<span class="integer">1</span>) : <span class="string"><span class="delimiter">&quot;</span><span class="delimiter">&quot;</span></span>;
@@ -4594,7 +4612,7 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
                     <span class="comment">// arity may be &gt;= 1, or</span>
                     <span class="comment">// arity &lt;= 0 &amp;&amp; !cluster.startsWith(separator)</span>
                     <span class="comment">// e.g., boolean @Option(&quot;-v&quot;, arity=0, varargs=true); arg &quot;-rvTRUE&quot;, remainder cluster=&quot;TRUE&quot;</span>
-                    <span class="type">int</span> consumed = applyOption(field, <span class="predefined-type">Option</span>.class, arity, paramAttachedToOption, args, initialized);
+                    <span class="type">int</span> consumed = applyOption(field, <span class="predefined-type">Option</span>.class, arity, paramAttachedToOption, args, initialized, argDescription);
                     <span class="comment">// only return if cluster (and maybe more) was consumed, otherwise continue do-while loop</span>
                     <span class="keyword">if</span> (consumed &gt; <span class="integer">0</span>) {
                         <span class="keyword">return</span>;
@@ -4626,7 +4644,8 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
                                 Range arity,
                                 <span class="type">boolean</span> valueAttachedToOption,
                                 <span class="predefined-type">Stack</span>&lt;<span class="predefined-type">String</span>&gt; args,
-                                <span class="predefined-type">Set</span>&lt;<span class="predefined-type">Field</span>&gt; initialized) <span class="directive">throws</span> <span class="exception">Exception</span> {
+                                <span class="predefined-type">Set</span>&lt;<span class="predefined-type">Field</span>&gt; initialized,
+                                <span class="predefined-type">String</span> argDescription) <span class="directive">throws</span> <span class="exception">Exception</span> {
             updateHelpRequested(field);
             <span class="keyword">if</span> (!args.isEmpty() &amp;&amp; args.peek().length() == <span class="integer">0</span> &amp;&amp; !valueAttachedToOption) {
                 args.pop(); <span class="comment">// throw out empty string we get at the end of a group of clustered short options</span>
@@ -4636,22 +4655,23 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
 
             <span class="predefined-type">Class</span>&lt;?&gt; cls = field.getType();
             <span class="keyword">if</span> (cls.isArray()) {
-                <span class="keyword">return</span> applyValuesToArrayField(field, annotation, arity, args, cls);
+                <span class="keyword">return</span> applyValuesToArrayField(field, annotation, arity, args, cls, argDescription);
             }
             <span class="keyword">if</span> (<span class="predefined-type">Collection</span>.class.isAssignableFrom(cls)) {
-                <span class="keyword">return</span> applyValuesToCollectionField(field, annotation, arity, args, cls);
+                <span class="keyword">return</span> applyValuesToCollectionField(field, annotation, arity, args, cls, argDescription);
             }
             <span class="keyword">if</span> (<span class="predefined-type">Map</span>.class.isAssignableFrom(cls)) {
-                <span class="keyword">return</span> applyValuesToMapField(field, annotation, arity, args, cls);
+                <span class="keyword">return</span> applyValuesToMapField(field, annotation, arity, args, cls, argDescription);
             }
-            <span class="keyword">return</span> applyValueToSingleValuedField(field, arity, args, cls, initialized);
+            <span class="keyword">return</span> applyValueToSingleValuedField(field, arity, args, cls, initialized, argDescription);
         }
 
         <span class="directive">private</span> <span class="type">int</span> applyValueToSingleValuedField(<span class="predefined-type">Field</span> field,
                                                   Range arity,
                                                   <span class="predefined-type">Stack</span>&lt;<span class="predefined-type">String</span>&gt; args,
                                                   <span class="predefined-type">Class</span>&lt;?&gt; cls,
-                                                  <span class="predefined-type">Set</span>&lt;<span class="predefined-type">Field</span>&gt; initialized) <span class="directive">throws</span> <span class="exception">Exception</span> {
+                                                  <span class="predefined-type">Set</span>&lt;<span class="predefined-type">Field</span>&gt; initialized,
+                                                  <span class="predefined-type">String</span> argDescription) <span class="directive">throws</span> <span class="exception">Exception</span> {
             <span class="type">boolean</span> noMoreValues = args.isEmpty();
             <span class="predefined-type">String</span> value = args.isEmpty() ? <span class="predefined-constant">null</span> : trim(args.pop()); <span class="comment">// unquote the value</span>
             <span class="type">int</span> result = arity.min; <span class="comment">// the number or args we need to consume</span>
@@ -4682,14 +4702,15 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
             ITypeConverter&lt;?&gt; converter = getTypeConverter(cls, field);
             <span class="predefined-type">Object</span> objValue = tryConvert(field, -<span class="integer">1</span>, converter, value, cls);
             field.set(command, objValue);
-            tracer.info(<span class="string"><span class="delimiter">&quot;</span><span class="content">Setting %s field '%s.%s' to '%s'%n</span><span class="delimiter">&quot;</span></span>, field.getType().getSimpleName(), field.getDeclaringClass().getSimpleName(), field.getName(), <span class="predefined-type">String</span>.valueOf(objValue));
+            tracer.info(<span class="string"><span class="delimiter">&quot;</span><span class="content">Setting %s field '%s.%s' to '%s' for %s%n</span><span class="delimiter">&quot;</span></span>, field.getType().getSimpleName(), field.getDeclaringClass().getSimpleName(), field.getName(), <span class="predefined-type">String</span>.valueOf(objValue), argDescription);
             <span class="keyword">return</span> result;
         }
         <span class="directive">private</span> <span class="type">int</span> applyValuesToMapField(<span class="predefined-type">Field</span> field,
                                           <span class="predefined-type">Class</span>&lt;?&gt; annotation,
                                           Range arity,
                                           <span class="predefined-type">Stack</span>&lt;<span class="predefined-type">String</span>&gt; args,
-                                          <span class="predefined-type">Class</span>&lt;?&gt; cls) <span class="directive">throws</span> <span class="exception">Exception</span> {
+                                          <span class="predefined-type">Class</span>&lt;?&gt; cls,
+                                          <span class="predefined-type">String</span> argDescription) <span class="directive">throws</span> <span class="exception">Exception</span> {
             <span class="predefined-type">Class</span>&lt;?&gt;<span class="type">[]</span> classes = getTypeAttribute(field);
             <span class="keyword">if</span> (classes.length &lt; <span class="integer">2</span>) { <span class="keyword">throw</span> <span class="keyword">new</span> ParameterException(<span class="string"><span class="delimiter">&quot;</span><span class="content">Field </span><span class="delimiter">&quot;</span></span> + field + <span class="string"><span class="delimiter">&quot;</span><span class="content"> needs two types (one for the map key, one for the value) but only has </span><span class="delimiter">&quot;</span></span> + classes.length + <span class="string"><span class="delimiter">&quot;</span><span class="content"> types configured.</span><span class="delimiter">&quot;</span></span>); }
             ITypeConverter&lt;?&gt; keyConverter   = getTypeConverter(classes[<span class="integer">0</span>], field);
@@ -4700,7 +4721,7 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
                 field.set(command, result);
             }
             <span class="type">int</span> originalSize = result.size();
-            consumeMapArguments(field, arity, args, classes, keyConverter, valueConverter, result);
+            consumeMapArguments(field, arity, args, classes, keyConverter, valueConverter, result, argDescription);
             <span class="keyword">return</span> result.size() - originalSize;
         }
 
@@ -4710,10 +4731,11 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
                                          <span class="predefined-type">Class</span>&lt;?&gt;<span class="type">[]</span> classes,
                                          ITypeConverter&lt;?&gt; keyConverter,
                                          ITypeConverter&lt;?&gt; valueConverter,
-                                         <span class="predefined-type">Map</span>&lt;<span class="predefined-type">Object</span>, <span class="predefined-type">Object</span>&gt; result) <span class="directive">throws</span> <span class="exception">Exception</span> {
+                                         <span class="predefined-type">Map</span>&lt;<span class="predefined-type">Object</span>, <span class="predefined-type">Object</span>&gt; result,
+                                         <span class="predefined-type">String</span> argDescription) <span class="directive">throws</span> <span class="exception">Exception</span> {
             <span class="comment">// first do the arity.min mandatory parameters</span>
             <span class="keyword">for</span> (<span class="type">int</span> i = <span class="integer">0</span>; result.size() &lt; arity.min; i++) {
-                consumeOneMapArgument(field, arity, args, classes, keyConverter, valueConverter, result);
+                consumeOneMapArgument(field, arity, args, classes, keyConverter, valueConverter, result, argDescription);
             }
             <span class="comment">// now process the varargs if any</span>
             <span class="keyword">while</span> (result.size() &lt; arity.max &amp;&amp; !args.isEmpty()) {
@@ -4722,7 +4744,7 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
                         <span class="keyword">return</span>;
                     }
                 }
-                consumeOneMapArgument(field, arity, args, classes, keyConverter, valueConverter, result);
+                consumeOneMapArgument(field, arity, args, classes, keyConverter, valueConverter, result, argDescription);
             }
         }
 
@@ -4731,7 +4753,8 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
                                            <span class="predefined-type">Stack</span>&lt;<span class="predefined-type">String</span>&gt; args,
                                            <span class="predefined-type">Class</span>&lt;?&gt;<span class="type">[]</span> classes,
                                            ITypeConverter&lt;?&gt; keyConverter, ITypeConverter&lt;?&gt; valueConverter,
-                                           <span class="predefined-type">Map</span>&lt;<span class="predefined-type">Object</span>, <span class="predefined-type">Object</span>&gt; result) <span class="directive">throws</span> <span class="exception">Exception</span> {
+                                           <span class="predefined-type">Map</span>&lt;<span class="predefined-type">Object</span>, <span class="predefined-type">Object</span>&gt; result,
+                                           <span class="predefined-type">String</span> argDescription) <span class="directive">throws</span> <span class="exception">Exception</span> {
             <span class="predefined-type">String</span><span class="type">[]</span> values = split(trim(args.pop()), field);
 
             <span class="comment">// ensure we don't process more than arity.max (as result of splitting args)</span>
@@ -4752,8 +4775,8 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
                 <span class="predefined-type">Object</span> mapKey =   tryConvert(field, j, keyConverter,   keyValue[<span class="integer">0</span>], classes[<span class="integer">0</span>]);
                 <span class="predefined-type">Object</span> mapValue = tryConvert(field, j, valueConverter, keyValue[<span class="integer">1</span>], classes[<span class="integer">1</span>]);
                 result.put(mapKey, mapValue);
-                tracer.info(<span class="string"><span class="delimiter">&quot;</span><span class="content">Putting [%s : %s] in %s&lt;%s, %s&gt; field '%s.%s'%n</span><span class="delimiter">&quot;</span></span>, <span class="predefined-type">String</span>.valueOf(mapKey), <span class="predefined-type">String</span>.valueOf(mapValue),
-                        result.getClass().getSimpleName(), classes[<span class="integer">0</span>].getSimpleName(), classes[<span class="integer">1</span>].getSimpleName(), field.getDeclaringClass().getSimpleName(), field.getName());
+                tracer.info(<span class="string"><span class="delimiter">&quot;</span><span class="content">Putting [%s : %s] in %s&lt;%s, %s&gt; field '%s.%s' for %s%n</span><span class="delimiter">&quot;</span></span>, <span class="predefined-type">String</span>.valueOf(mapKey), <span class="predefined-type">String</span>.valueOf(mapValue),
+                        result.getClass().getSimpleName(), classes[<span class="integer">0</span>].getSimpleName(), classes[<span class="integer">1</span>].getSimpleName(), field.getDeclaringClass().getSimpleName(), field.getName(), argDescription);
             }
             checkMaxArityExceeded(arity, max, field, values);
         }
@@ -4770,11 +4793,12 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
                                             <span class="predefined-type">Class</span>&lt;?&gt; annotation,
                                             Range arity,
                                             <span class="predefined-type">Stack</span>&lt;<span class="predefined-type">String</span>&gt; args,
-                                            <span class="predefined-type">Class</span>&lt;?&gt; cls) <span class="directive">throws</span> <span class="exception">Exception</span> {
+                                            <span class="predefined-type">Class</span>&lt;?&gt; cls,
+                                            <span class="predefined-type">String</span> argDescription) <span class="directive">throws</span> <span class="exception">Exception</span> {
             <span class="predefined-type">Object</span> existing = field.get(command);
             <span class="type">int</span> length = existing == <span class="predefined-constant">null</span> ? <span class="integer">0</span> : <span class="predefined-type">Array</span>.getLength(existing);
             <span class="predefined-type">Class</span>&lt;?&gt; type = cls.getComponentType();
-            <span class="predefined-type">List</span>&lt;<span class="predefined-type">Object</span>&gt; converted = consumeArguments(field, annotation, arity, args, type, length);
+            <span class="predefined-type">List</span>&lt;<span class="predefined-type">Object</span>&gt; converted = consumeArguments(field, annotation, arity, args, type, length, argDescription);
             <span class="predefined-type">List</span>&lt;<span class="predefined-type">Object</span>&gt; newValues = <span class="keyword">new</span> <span class="predefined-type">ArrayList</span>&lt;<span class="predefined-type">Object</span>&gt;();
             <span class="keyword">for</span> (<span class="type">int</span> i = <span class="integer">0</span>; i &lt; length; i++) {
                 newValues.add(<span class="predefined-type">Array</span>.get(existing, i));
@@ -4799,11 +4823,12 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
                                                  <span class="predefined-type">Class</span>&lt;?&gt; annotation,
                                                  Range arity,
                                                  <span class="predefined-type">Stack</span>&lt;<span class="predefined-type">String</span>&gt; args,
-                                                 <span class="predefined-type">Class</span>&lt;?&gt; cls) <span class="directive">throws</span> <span class="exception">Exception</span> {
+                                                 <span class="predefined-type">Class</span>&lt;?&gt; cls,
+                                                 <span class="predefined-type">String</span> argDescription) <span class="directive">throws</span> <span class="exception">Exception</span> {
             <span class="predefined-type">Collection</span>&lt;<span class="predefined-type">Object</span>&gt; collection = (<span class="predefined-type">Collection</span>&lt;<span class="predefined-type">Object</span>&gt;) field.get(command);
             <span class="predefined-type">Class</span>&lt;?&gt; type = getTypeAttribute(field)[<span class="integer">0</span>];
             <span class="type">int</span> length = collection == <span class="predefined-constant">null</span> ? <span class="integer">0</span> : collection.size();
-            <span class="predefined-type">List</span>&lt;<span class="predefined-type">Object</span>&gt; converted = consumeArguments(field, annotation, arity, args, type, length);
+            <span class="predefined-type">List</span>&lt;<span class="predefined-type">Object</span>&gt; converted = consumeArguments(field, annotation, arity, args, type, length, argDescription);
             <span class="keyword">if</span> (collection == <span class="predefined-constant">null</span>) {
                 collection = createCollection(cls);
                 field.set(command, collection);
@@ -4823,13 +4848,14 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
                                               Range arity,
                                               <span class="predefined-type">Stack</span>&lt;<span class="predefined-type">String</span>&gt; args,
                                               <span class="predefined-type">Class</span>&lt;?&gt; type,
-                                              <span class="type">int</span> originalSize) <span class="directive">throws</span> <span class="exception">Exception</span> {
+                                              <span class="type">int</span> originalSize,
+                                              <span class="predefined-type">String</span> argDescription) <span class="directive">throws</span> <span class="exception">Exception</span> {
             <span class="predefined-type">List</span>&lt;<span class="predefined-type">Object</span>&gt; result = <span class="keyword">new</span> <span class="predefined-type">ArrayList</span>&lt;<span class="predefined-type">Object</span>&gt;();
             <span class="type">int</span> index = <span class="integer">0</span>;
 
             <span class="comment">// first do the arity.min mandatory parameters</span>
             <span class="keyword">for</span> (<span class="type">int</span> i = <span class="integer">0</span>; result.size() + originalSize &lt; arity.min; i++) {
-                index = consumeOneArgument(field, arity, args, type, result, index, originalSize);
+                index = consumeOneArgument(field, arity, args, type, result, index, originalSize, argDescription);
             }
             <span class="comment">// now process the varargs if any</span>
             <span class="keyword">while</span> (result.size() &lt; arity.max &amp;&amp; !args.isEmpty()) {
@@ -4838,7 +4864,7 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
                         <span class="keyword">return</span> result;
                     }
                 }
-                index = consumeOneArgument(field, arity, args, type, result, index, originalSize);
+                index = consumeOneArgument(field, arity, args, type, result, index, originalSize, argDescription);
             }
             <span class="keyword">return</span> result;
         }
@@ -4849,7 +4875,8 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
                                        <span class="predefined-type">Class</span>&lt;?&gt; type,
                                        <span class="predefined-type">List</span>&lt;<span class="predefined-type">Object</span>&gt; result,
                                        <span class="type">int</span> index,
-                                       <span class="type">int</span> originalSize) <span class="directive">throws</span> <span class="exception">Exception</span> {
+                                       <span class="type">int</span> originalSize,
+                                       <span class="predefined-type">String</span> argDescription) <span class="directive">throws</span> <span class="exception">Exception</span> {
             <span class="predefined-type">String</span><span class="type">[]</span> values = split(trim(args.pop()), field);
             ITypeConverter&lt;?&gt; converter = getTypeConverter(type, field);
 
@@ -4858,9 +4885,9 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
             <span class="keyword">for</span> (<span class="type">int</span> j = <span class="integer">0</span>; j &lt; max; j++) {
                 result.add(tryConvert(field, index, converter, values[j], type));
                 <span class="keyword">if</span> (field.getType().isArray()) {
-                    tracer.info(<span class="string"><span class="delimiter">&quot;</span><span class="content">Adding [%s] to %s[] field '%s.%s'%n</span><span class="delimiter">&quot;</span></span>, <span class="predefined-type">String</span>.valueOf(result.get(result.size()-<span class="integer">1</span>)), type.getSimpleName(), field.getDeclaringClass().getSimpleName(), field.getName());
+                    tracer.info(<span class="string"><span class="delimiter">&quot;</span><span class="content">Adding [%s] to %s[] field '%s.%s' for %s%n</span><span class="delimiter">&quot;</span></span>, <span class="predefined-type">String</span>.valueOf(result.get(result.size()-<span class="integer">1</span>)), type.getSimpleName(), field.getDeclaringClass().getSimpleName(), field.getName(), argDescription);
                 } <span class="keyword">else</span> {
-                    tracer.info(<span class="string"><span class="delimiter">&quot;</span><span class="content">Adding [%s] to %s&lt;%s&gt; field '%s.%s'%n</span><span class="delimiter">&quot;</span></span>, <span class="predefined-type">String</span>.valueOf(result.get(result.size()-<span class="integer">1</span>)), field.getType().getSimpleName(), type.getSimpleName(), field.getDeclaringClass().getSimpleName(), field.getName());
+                    tracer.info(<span class="string"><span class="delimiter">&quot;</span><span class="content">Adding [%s] to %s&lt;%s&gt; field '%s.%s' for %s%n</span><span class="delimiter">&quot;</span></span>, <span class="predefined-type">String</span>.valueOf(result.get(result.size()-<span class="integer">1</span>)), field.getType().getSimpleName(), type.getSimpleName(), field.getDeclaringClass().getSimpleName(), field.getName(), argDescription);
                 }
             }
             checkMaxArityExceeded(arity, max, field, values);
@@ -6931,9 +6958,8 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
         }
 
         <span class="directive">private</span> <span class="directive">static</span> ParameterException create(<span class="exception">Exception</span> ex, <span class="predefined-type">String</span> arg, <span class="type">int</span> i, <span class="predefined-type">String</span><span class="type">[]</span> args) {
-            <span class="predefined-type">String</span> next = args.length &lt; i + <span class="integer">1</span> ? <span class="string"><span class="delimiter">&quot;</span><span class="delimiter">&quot;</span></span> : <span class="string"><span class="delimiter">&quot;</span><span class="content"> </span><span class="delimiter">&quot;</span></span> + args[i + <span class="integer">1</span>];
             <span class="predefined-type">String</span> msg = ex.getClass().getSimpleName() + <span class="string"><span class="delimiter">&quot;</span><span class="content">: </span><span class="delimiter">&quot;</span></span> + ex.getLocalizedMessage()
-                    + <span class="string"><span class="delimiter">&quot;</span><span class="content"> while processing option[</span><span class="delimiter">&quot;</span></span> + i + <span class="string"><span class="delimiter">&quot;</span><span class="content">] '</span><span class="delimiter">&quot;</span></span> + arg + next + <span class="string"><span class="delimiter">&quot;</span><span class="content">': </span><span class="delimiter">&quot;</span></span> + ex.toString();
+                    + <span class="string"><span class="delimiter">&quot;</span><span class="content"> while processing argument at or before arg[</span><span class="delimiter">&quot;</span></span> + i + <span class="string"><span class="delimiter">&quot;</span><span class="content">] '</span><span class="delimiter">&quot;</span></span> + arg + <span class="string"><span class="delimiter">&quot;</span><span class="content">' in </span><span class="delimiter">&quot;</span></span> + <span class="predefined-type">Arrays</span>.toString(args) + <span class="string"><span class="delimiter">&quot;</span><span class="content">: </span><span class="delimiter">&quot;</span></span> + ex.toString();
             <span class="keyword">return</span> <span class="keyword">new</span> ParameterException(msg, ex);
         }
     }
@@ -7018,7 +7044,7 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
 <div id="footer">
 <div id="footer-text">
 Version 1.0.0-SNAPSHOT<br>
-Last updated 2017-08-23 01:08:57 +09:00
+Last updated 2017-08-24 00:30:32 +09:00
 </div>
 </div>
 </body>
