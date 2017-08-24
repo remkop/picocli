@@ -519,38 +519,49 @@ table.CodeRay td.code>pre{padding:0}
 <div id="toc" class="toc2">
 <div id="toctitle">Table of Contents</div>
 <ul class="sectlevel1">
-<li><a href="#_introduction">1. Introduction</a></li>
-<li><a href="#_command_line_completion_example">2. Command Line Completion Example</a>
+<li><a href="#_command_line_completion">1. Command Line Completion</a></li>
+<li><a href="#_quick_start_tutorial">2. Quick Start Tutorial</a>
 <ul class="sectlevel2">
-<li><a href="#_options_and_subcommands">2.1. Options and Subcommands</a></li>
-<li><a href="#_partial_input">2.2. Partial Input</a></li>
-<li><a href="#_context_sensitive">2.3. Context-sensitive</a></li>
-<li><a href="#_nested_sub_subcommands">2.4. Nested sub-subcommands</a></li>
-<li><a href="#_option_values">2.5. Option Values</a>
+<li><a href="#_create_command">2.1. Create Command</a></li>
+<li><a href="#_generate_completion_script">2.2. Generate Completion Script</a></li>
+<li><a href="#_install_completion_script">2.3. Install Completion Script</a></li>
+<li><a href="#_permanent_installation">2.4. Permanent Installation</a></li>
+</ul>
+</li>
+<li><a href="#_designing_for_completion">3. Designing for Completion</a>
+<ul class="sectlevel2">
+<li><a href="#_register_subcommands_declaratively">3.1. Register Subcommands Declaratively</a></li>
+<li><a href="#_use_strong_typing">3.2. Use Strong Typing</a>
 <ul class="sectlevel3">
-<li><a href="#_files_and_directories">2.5.1. Files and Directories</a></li>
-<li><a href="#_host_names">2.5.2. Host Names</a></li>
-<li><a href="#_java_code_enum_code_values">2.5.3. Java <code>enum</code> Values</a></li>
+<li><a href="#_files_and_directories">3.2.1. Files and Directories</a></li>
+<li><a href="#_host_names">3.2.2. Host Names</a></li>
+<li><a href="#_java_code_enum_code_values">3.2.3. Java <code>enum</code> Values</a></li>
 </ul>
 </li>
 </ul>
 </li>
-<li><a href="#_generating_the_completion_script">3. Generating the Completion Script</a>
+<li><a href="#_alternative_ways_to_define_commands">4. Alternative Ways to Define Commands</a>
 <ul class="sectlevel2">
-<li><a href="#_overview">3.1. Overview</a></li>
-<li><a href="#_command_name">3.2. Command Name</a></li>
-<li><a href="#_subcommands">3.3. Subcommands</a></li>
-<li><a href="#_subcommands_the_do_it_yourself_way">3.4. Subcommands (The Do-It-Yourself Way)</a></li>
-<li><a href="#_command_script">3.5. Command Script</a></li>
+<li><a href="#_alias">4.1. Alias</a></li>
+<li><a href="#_function">4.2. Function</a></li>
+<li><a href="#_script">4.3. Script</a></li>
 </ul>
 </li>
-<li><a href="#_installing_the_completion_script_in_bash">4. Installing the Completion Script in Bash</a></li>
-<li><a href="#_installing_the_completion_script_in_zsh">5. Installing the Completion Script in ZSH</a></li>
-<li><a href="#_picocli_user_manual">6. Picocli User Manual</a></li>
-<li><a href="#_github_project">7. GitHub Project</a></li>
-<li><a href="#_issue_tracker">8. Issue Tracker</a></li>
-<li><a href="#_license">9. License</a></li>
-<li><a href="#_releases">10. Releases</a></li>
+<li><a href="#_completion_script_generation_details">5. Completion Script Generation Details</a>
+<ul class="sectlevel2">
+<li><a href="#_running_autocomplete">5.1. Running AutoComplete</a></li>
+<li><a href="#_command_name">5.2. Command Name</a></li>
+<li><a href="#_subcommands">5.3. Subcommands</a></li>
+<li><a href="#_programmatically_registered_subcommands">5.4. Programmatically Registered Subcommands</a></li>
+</ul>
+</li>
+<li><a href="#_installing_completion_scripts_permanently_in_bash">6. Installing Completion Scripts Permanently in Bash</a></li>
+<li><a href="#_installing_completion_scripts_permanently_in_zsh">7. Installing Completion Scripts Permanently in ZSH</a></li>
+<li><a href="#_picocli_user_manual">8. Picocli User Manual</a></li>
+<li><a href="#_github_project">9. GitHub Project</a></li>
+<li><a href="#_issue_tracker">10. Issue Tracker</a></li>
+<li><a href="#_license">11. License</a></li>
+<li><a href="#_releases">12. Releases</a></li>
 </ul>
 </div>
 </div>
@@ -570,10 +581,10 @@ Every main method deserves picocli!
 </div>
 </div>
 <div class="sect1">
-<h2 id="_introduction">1. Introduction</h2>
+<h2 id="_command_line_completion">1. Command Line Completion</h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>Picocli-based applications can now have command line completion in Bash or Zsh Unix shells.
+<p>Starting from version 1.0.0, picocli-based applications can have command line completion in Bash or ZSH Unix shells.
 Picocli can generate an autocompletion script tailored to your application.</p>
 </div>
 <div class="paragraph">
@@ -591,89 +602,137 @@ list if the typed characters are still ambiguous, or else complete the subcomman
 </div>
 </div>
 <div class="sect1">
-<h2 id="_command_line_completion_example">2. Command Line Completion Example</h2>
+<h2 id="_quick_start_tutorial">2. Quick Start Tutorial</h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>Assume we have a <a href="index.html">picocli</a>-based command line application with <a href="index.html#_subcommands">subcommands</a>,
-all of which have some <a href="index.html#_options_and_parameters">options</a>. Below is an example:</p>
+<p>This tutorial uses the <a href="index.html#CheckSum-application">CheckSum example application</a> from the picocli user manual. We created a class <code>com.myproject.CheckSum</code> and put it in a jar file, <code>myproject.jar</code>.</p>
+</div>
+<div class="paragraph">
+<p>Follow these steps to give this application command line autocompletion.</p>
+</div>
+<div class="sect2">
+<h3 id="_create_command">2.1. Create Command</h3>
+<div class="paragraph">
+<p>First, create an executable command that runs the main application class. For this tutorial, the command name is <code>jchecksum</code>.</p>
+</div>
+<div class="paragraph">
+<p>We use an <a href="https://en.wikipedia.org/wiki/Alias_(command)">alias</a> here to create the command (see <a href="#Alternative Ways to Create Commands">alternatives</a>):</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="CodeRay highlight"><code data-lang="java"><span class="keyword">import</span> <span class="include">picocli.CommandLine.Command</span>;
-<span class="keyword">import</span> <span class="include">picocli.CommandLine.Option</span>;
-<span class="keyword">import</span> <span class="include">picocli.CommandLine.Parameters</span>;
-
-<span class="annotation">@Command</span>(name = <span class="string"><span class="delimiter">&quot;</span><span class="content">hierarchy</span><span class="delimiter">&quot;</span></span>, subcommands = { Subcommand1.class, Subcommand2.class })
-<span class="type">class</span> <span class="class">MainCommand</span> {
-    <span class="annotation">@Option</span>(names = {<span class="string"><span class="delimiter">&quot;</span><span class="content">-V</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">--version</span><span class="delimiter">&quot;</span></span>}, help = <span class="predefined-constant">true</span>) <span class="type">boolean</span> versionRequested;
-    <span class="annotation">@Option</span>(names = {<span class="string"><span class="delimiter">&quot;</span><span class="content">-h</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">--help</span><span class="delimiter">&quot;</span></span>},    help = <span class="predefined-constant">true</span>) <span class="type">boolean</span> helpRequested;
-}
-
-<span class="annotation">@Command</span>(name = <span class="string"><span class="delimiter">&quot;</span><span class="content">sub1</span><span class="delimiter">&quot;</span></span>, description = <span class="string"><span class="delimiter">&quot;</span><span class="content">subcommand 1</span><span class="delimiter">&quot;</span></span>)
-<span class="type">class</span> <span class="class">Subcommand1</span> {
-    <span class="annotation">@Option</span>(names = {<span class="string"><span class="delimiter">&quot;</span><span class="content">--directory</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">-d</span><span class="delimiter">&quot;</span></span>}, description = <span class="string"><span class="delimiter">&quot;</span><span class="content">a directory</span><span class="delimiter">&quot;</span></span>) <span class="predefined-type">File</span> directory;
-    <span class="annotation">@Option</span>(names = {<span class="string"><span class="delimiter">&quot;</span><span class="content">-h</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">--host</span><span class="delimiter">&quot;</span></span>},      description = <span class="string"><span class="delimiter">&quot;</span><span class="content">a host</span><span class="delimiter">&quot;</span></span>)      <span class="predefined-type">InetAddress</span> host;
-}
-
-<span class="annotation">@Command</span>(name = <span class="string"><span class="delimiter">&quot;</span><span class="content">sub2</span><span class="delimiter">&quot;</span></span>, description = <span class="string"><span class="delimiter">&quot;</span><span class="content">subcommand 2</span><span class="delimiter">&quot;</span></span>)
-<span class="type">class</span> <span class="class">Subcommand2</span> {
-    <span class="annotation">@Option</span>(names = {<span class="string"><span class="delimiter">&quot;</span><span class="content">-u</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">--timeUnit</span><span class="delimiter">&quot;</span></span>}) <span class="directive">private</span> <span class="predefined-type">TimeUnit</span> timeUnit;
-    <span class="annotation">@Option</span>(names = {<span class="string"><span class="delimiter">&quot;</span><span class="content">-t</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">--timeout</span><span class="delimiter">&quot;</span></span>})  <span class="directive">private</span> <span class="type">long</span> timeout;
-}</code></pre>
+<pre class="CodeRay highlight"><code data-lang="bash">alias jchecksum='java -cp &quot;picocli-1.0.0.jar;myproject.jar&quot; com.myproject.CheckSum'</code></pre>
 </div>
 </div>
 <div class="paragraph">
-<p>Assume we <a href="#_generating_the_completion_script">generated</a> and <a href="#Installing the Completion Script">installed</a> a completion script for this application. Assume the command script to run the application is called <code>hierarchy</code>.</p>
-</div>
-<div class="sect2">
-<h3 id="_options_and_subcommands">2.1. Options and Subcommands</h3>
-<div class="paragraph">
-<p>After the command name, press the TAB key to trigger autocomplete. The shell will show all options and all subcommands for the <code>hierarchy</code> main command:</p>
+<p>Let&#8217;s test that the command works:</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="CodeRay highlight"><code data-lang="bash">$ hierarchy &lt;TAB&gt;&lt;TAB&gt;
--h         --help     sub1       sub2       -V         --version</code></pre>
+<pre class="CodeRay highlight"><code data-lang="bash">$ jchecksum --help
+Usage: jchecksum [-h] [-a=&lt;algorithm&gt;] &lt;file&gt;
+Prints the checksum (MD5 by default) of a file to STDOUT.
+      file                    The file whose checksum to calculate.
+  -a, --algorithm=&lt;algorithm&gt; MD5, SHA-1, SHA-256, ...
+  -h, --help                  Show this help message and exit.</code></pre>
 </div>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_partial_input">2.2. Partial Input</h3>
+<h3 id="_generate_completion_script">2.2. Generate Completion Script</h3>
 <div class="paragraph">
-<p>If the option or subcommand is partially specified, a narrowed-down list is shown. For example, after typing 's' and triggering autocomplete, only the completion options starting with 's' are shown:</p>
+<p>To generate the completion script, run the <code>picocli.AutoComplete</code> class as a java application. Pass it the command name and the fully qualified class name of the annotated command class. (See also <a href="#_completion_script_generation_details">full description</a> for using <code>AutoComplete</code>.)</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="CodeRay highlight"><code data-lang="bash">$ hierarchy s&lt;TAB&gt;&lt;TAB&gt;
-sub1  sub2</code></pre>
+<pre class="CodeRay highlight"><code data-lang="bash">java -cp &quot;picocli-1.0.0.jar;myproject.jar&quot; picocli.AutoComplete -n jchecksum com.myproject.CheckSum</code></pre>
 </div>
-</div>
-</div>
-<div class="sect2">
-<h3 id="_context_sensitive">2.3. Context-sensitive</h3>
-<div class="paragraph">
-<p>Picocli autocomplete is context-sensitive to the selected subcommand and the selected option.</p>
 </div>
 <div class="paragraph">
-<p>After selecting a subcommand, the user can hit &lt;TAB&gt;&lt;TAB&gt; again to see what options are available on that subcommand. Only the options for the selected subcommand are shown:</p>
+<p>This generated a <code>jchecksum_completion</code> script in the current directory. To verify:</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="CodeRay highlight"><code data-lang="bash">$ hierarchy sub1 &lt;TAB&gt;&lt;TAB&gt;
--d           --directory  --h       --host</code></pre>
+<pre class="CodeRay highlight"><code data-lang="bash">$ ls
+jchecksum_completion  myproject.jar  picocli-1.0.0.jar</code></pre>
 </div>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_nested_sub_subcommands">2.4. Nested sub-subcommands</h3>
+<h3 id="_install_completion_script">2.3. Install Completion Script</h3>
 <div class="paragraph">
-<p>There is no restriction to the number of levels for nested subcommands. The completion script generated by picocli will show context-sensitive matches for the most specific (deepest) subcommand.</p>
+<p>Finally, <a href="http://tldp.org/HOWTO/Bash-Prompt-HOWTO/x237.html">source</a> the completion script:</p>
+</div>
+<div class="listingblock">
+<div class="title">Bash</div>
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="bash">. jchecksum_completion</code></pre>
+</div>
+</div>
+<div class="listingblock">
+<div class="title">ZSH</div>
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="bash">autoload -U +X compinit &amp;&amp; compinit
+autoload -U +X bashcompinit &amp;&amp; bashcompinit
+. ./jchecksum_completion</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>&#8230;&#8203;and you are done. The <code>jchecksum</code> command now has autocompletion:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="bash">$ jchecksum &lt;TAB&gt;&lt;TAB&gt;
+-a           --algorithm  -h           --help</code></pre>
+</div>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_option_values">2.5. Option Values</h3>
+<h3 id="_permanent_installation">2.4. Permanent Installation</h3>
 <div class="paragraph">
-<p>In addition to showing a list of option <em>names</em>, tab completion can also generate possible option <em>values</em>. The type of the field annotated with <code>@Option</code> determines the generated values.</p>
+<p>The above will last for the duration of your shell session. If you want to make this permanent you need to modify your ~/.bashrc or ~/.zshrc file to add a line that defines the command alias and a line that sources the completion script:</p>
+</div>
+<div class="listingblock">
+<div class="title">Bash</div>
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="bash">echo &quot;alias jchecksum='java -cp \&quot;picocli-1.0.0.jar;myproject.jar\&quot; com.myproject.CheckSum'&quot; &gt;&gt; ~/.bashrc
+echo &quot;. jchecksum_completion&quot; &gt;&gt; ~/.bashrc</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Make sure to use <code>&gt;&gt;</code> (append), using a single <code>&gt;</code> would overwrite the file.</p>
+</div>
+<div class="paragraph">
+<p><code>~/.bashrc</code> indicates <code>.bashrc</code> is in your home directory.</p>
+</div>
+<div class="paragraph">
+<p>(See <a href="#_installing_completion_scripts_permanently_in_bash">detailed Bash installation</a>, <a href="#_installing_completion_scripts_permanently_in_zsh">Installing Completion Scripts Permanently in ZSH</a>.)</p>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_designing_for_completion">3. Designing for Completion</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>When writing a <a href="index.html">picocli</a>-based command line application there are a few things to consider to facilitate autocompletion.</p>
+</div>
+<div class="sect2">
+<h3 id="_register_subcommands_declaratively">3.1. Register Subcommands Declaratively</h3>
+<div class="paragraph">
+<p>Register subcommands <a href="index.html#_registering_subcommands_declaratively">declaratively</a> in your application with <code>@Command(subcommands = { &#8230;&#8203; })</code> annotations where possible.</p>
+</div>
+<div class="paragraph">
+<p>This way, you can generate a completion script by passing a single command class name to <code>picocli.AutoComplete</code>, and picocli will be able to infer the full hierarchy of command and subcommands from that top-level command class.</p>
+</div>
+<div class="paragraph">
+<p>If your application registers subcommands programmatically, you can still generate a completion script, it is just <a href="#_programmatically_registered_subcommands">more work</a>.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_use_strong_typing">3.2. Use Strong Typing</h3>
+<div class="paragraph">
+<p>When generating the completion script, picocli inspects the type of the fields annotated with <code>@Option</code>. For some types,
+tab completion can also generate possible option <em>values</em>.</p>
 </div>
 <div class="paragraph">
 <p>Picocli can generate completion matches for the following types:</p>
@@ -695,28 +754,25 @@ sub1  sub2</code></pre>
 </ul>
 </div>
 <div class="sect3">
-<h4 id="_files_and_directories">2.5.1. Files and Directories</h4>
+<h4 id="_files_and_directories">3.2.1. Files and Directories</h4>
 <div class="paragraph">
-<p>In the above example, <code>Subcommand1</code> has a <code>java.io.File</code> field annotated with <code>@Option(names = {"--directory", "-d"}</code>. Generating autocomplete matches for that option will display a list of all files and directories in the current directory.</p>
+<p>Generating autocomplete matches for <code>@Option</code> fields of type <code>java.io.File</code> or <code>java.nio.file.Path</code> will display a list of all files and directories in the current directory.</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="CodeRay highlight"><code data-lang="bash">$ hierarchy sub1 -d &lt;TAB&gt;&lt;TAB&gt;
+<pre class="CodeRay highlight"><code data-lang="bash">$ demo --file &lt;TAB&gt;&lt;TAB&gt;
 basic.bash              hierarchy               nestedSubcommands.bash</code></pre>
 </div>
 </div>
-<div class="paragraph">
-<p>The same tab completion matches are shown for fields of type <code>java.nio.file.Path</code> annotated with <code>@Option</code>.</p>
-</div>
 </div>
 <div class="sect3">
-<h4 id="_host_names">2.5.2. Host Names</h4>
+<h4 id="_host_names">3.2.2. Host Names</h4>
 <div class="paragraph">
-<p>In the above example, <code>Subcommand1</code> has a <code>java.net.InetAddress</code> field annotated with <code>@Option(names = {"-h", "--host"}</code>. Generating autocomplete matches for that option will display a list of known hosts.</p>
+<p>Generating autocomplete matches for <code>@Option</code> fields of type <code>java.net.InetAddress</code> will display a list of known hosts (from your <code>/etc/hosts</code> file).</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="CodeRay highlight"><code data-lang="bash">$ hierarchy sub1 --host &lt;TAB&gt;&lt;TAB&gt;
+<pre class="CodeRay highlight"><code data-lang="bash">$ demo --host &lt;TAB&gt;&lt;TAB&gt;
 cluster-p-1                          openvpn-client.myvpn.picocli.com
 cluster-p-2                          picop1
 cluster-p-3                          picop2
@@ -727,13 +783,16 @@ client.openvpn.net                   picoscm1</code></pre>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_java_code_enum_code_values">2.5.3. Java <code>enum</code> Values</h4>
+<h4 id="_java_code_enum_code_values">3.2.3. Java <code>enum</code> Values</h4>
 <div class="paragraph">
-<p>In the above example, <code>Subcommand2</code> has a field of type <code>java.util.concurrent.TimeUnit</code>, which is a Java <code>enum</code>.  Generating autocomplete matches for that option will display the list of enum values.</p>
+<p>Generating autocomplete matches for <code>@Option</code> fields of any Java <code>enum</code> type <code>java.net.InetAddress</code> will display the list of enum values.</p>
+</div>
+<div class="paragraph">
+<p>For example:</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="CodeRay highlight"><code data-lang="bash">$ hierarchy sub2 --timeUnit &lt;TAB&gt;&lt;TAB&gt;
+<pre class="CodeRay highlight"><code data-lang="bash">$ demo --timeUnit &lt;TAB&gt;&lt;TAB&gt;
 DAYS     HOURS     MICROSECONDS  MILLISECONDS  MINUTES    NANOSECONDS   SECONDS</code></pre>
 </div>
 </div>
@@ -742,17 +801,82 @@ DAYS     HOURS     MICROSECONDS  MILLISECONDS  MINUTES    NANOSECONDS   SECONDS<
 </div>
 </div>
 <div class="sect1">
-<h2 id="_generating_the_completion_script">3. Generating the Completion Script</h2>
+<h2 id="_alternative_ways_to_define_commands">4. Alternative Ways to Define Commands</h2>
 <div class="sectionbody">
+<div class="paragraph">
+<p>This section describes creating commands in more depth than the <a href="#_quick_start_tutorial">Quick Start Tutorial</a>.</p>
+</div>
+<div class="paragraph">
+<p>In Bash and ZSH, there are multiple ways to create an executable command for a java class.</p>
+</div>
 <div class="sect2">
-<h3 id="_overview">3.1. Overview</h3>
+<h3 id="_alias">4.1. Alias</h3>
+<div class="paragraph">
+<p>One way is to define an alias:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="bash">alias jchecksum='java -cp &quot;picocli-1.0.0.jar;myproject.jar&quot; com.myproject.CheckSum'</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Be aware that the alias only lasts as long as the current shell session.
+To make it permanent, add it to your <code>~/.bashrc</code> or <code>~/.zshrc</code> file.</p>
+</div>
+<div class="paragraph">
+<p>You may also want to specify the full path to the jar files in the classpath so that the command can be executed anywhere.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_function">4.2. Function</h3>
+<div class="paragraph">
+<p>Another way is to define a function:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="bash">jchecksum() {
+    java -cp &quot;picocli-1.0.0.jar;myproject.jar&quot; com.myproject.CheckSum &quot;$@&quot;
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>To make it permanent, add it to your <code>~/.bashrc</code> or <code>~/.zshrc</code> file.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_script">4.3. Script</h3>
+<div class="paragraph">
+<p>Yet another way is to create a script:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="bash">$ echo '#!/usr/bin/env bash' &gt; jchecksum
+$ echo 'java -cp &quot;picocli-1.0.0.jar;myproject.jar&quot; com.myproject.CheckSum $@' &gt;&gt; jchecksum
+$ chmod 755 jchecksum
+
+$ cat jchecksum
+#!/usr/bin/env bash
+java -cp &quot;picocli-1.0.0.jar;myproject.jar&quot; com.myproject.CheckSum $@</code></pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_completion_script_generation_details">5. Completion Script Generation Details</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>This section describes generating completion scripts in more depth than the <a href="#_quick_start_tutorial">Quick Start Tutorial</a>.</p>
+</div>
+<div class="sect2">
+<h3 id="_running_autocomplete">5.1. Running AutoComplete</h3>
 <div class="paragraph">
 <p>To generate the completion script, run the <code>picocli.AutoComplete</code> class as a java application, passing it
 the fully qualified class name of the annotated command object.</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="CodeRay highlight"><code data-lang="bash">$ java -jar picocli-1.0.0.jar com.myproject.MyCommand</code></pre>
+<pre class="CodeRay highlight"><code data-lang="bash">$ java -cp &quot;picocli-1.0.0.jar;myproject.jar&quot; picocli.AutoComplete com.myproject.CheckSum</code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -760,20 +884,23 @@ the fully qualified class name of the annotated command object.</p>
 and <a href="http://picocli.info/apidocs/picocli/CommandLine.Command.html"><code>@Command</code></a> annotations.
 Based on these annotations it will generate a completion script in the current directory.</p>
 </div>
+<div class="paragraph">
+<p>Because of this, the command class needs to be on the classpath when running the <code>picocli.AutoComplete</code> class.</p>
+</div>
 </div>
 <div class="sect2">
-<h3 id="_command_name">3.2. Command Name</h3>
+<h3 id="_command_name">5.2. Command Name</h3>
 <div class="paragraph">
 <p>The name of the generated completion script is based on the <code>@Command(name ="&lt;COMMAND-NAME&gt;")</code> <a href="index.html#_command_name">annotation</a>, or, if that is missing, the command class name.
 Use the <code>-n</code> or <code>--name</code> option to control the name of the command that the completion script is for.</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="CodeRay highlight"><code data-lang="bash">$ java -jar picocli-1.0.0.jar -n hierarchy com.myproject.MyCommand</code></pre>
+<pre class="CodeRay highlight"><code data-lang="bash">$ java -cp &quot;picocli-1.0.0.jar;myproject.jar&quot; picocli.AutoComplete -n jchecksum com.myproject.CheckSum</code></pre>
 </div>
 </div>
 <div class="paragraph">
-<p>This will generate a  <code>hierarchy_completion</code> script in the current directory.</p>
+<p>This will generate a  <code>jchecksum_completion</code> script in the current directory.</p>
 </div>
 <div class="paragraph">
 <p>Other options are:</p>
@@ -793,7 +920,7 @@ Use the <code>-n</code> or <code>--name</code> option to control the name of the
 </div>
 </div>
 <div class="sect2">
-<h3 id="_subcommands">3.3. Subcommands</h3>
+<h3 id="_subcommands">5.3. Subcommands</h3>
 <div class="paragraph">
 <p>For commands with subcommands, bear in mind that the class that generates the completion script (<code>picocli.AutoComplete</code>)
 needs the full hierarchy of command and subcommands to generate a completion script that also works for the subcommands.</p>
@@ -803,9 +930,9 @@ needs the full hierarchy of command and subcommands to generate a completion scr
 </div>
 </div>
 <div class="sect2">
-<h3 id="_subcommands_the_do_it_yourself_way">3.4. Subcommands (The Do-It-Yourself Way)</h3>
+<h3 id="_programmatically_registered_subcommands">5.4. Programmatically Registered Subcommands</h3>
 <div class="paragraph">
-<p>Otherwise, you need to do a bit more work. You need to create a small program that does the following:</p>
+<p>When subcommands are not registered declaratively, you need to do a bit more work. You need to create a small program that does the following:</p>
 </div>
 <div class="ulist">
 <ul>
@@ -830,35 +957,19 @@ CommandLine hierarchy = <span class="keyword">new</span> CommandLine(<span class
 </ul>
 </div>
 </div>
-<div class="sect2">
-<h3 id="_command_script">3.5. Command Script</h3>
-<div class="paragraph">
-<p>Finally, create the accompanying command script to run the application. This is the script that Bash will recognize and generate completion matches for.</p>
-</div>
-<div class="paragraph">
-<p>The name of this script is important! The command completion script will only generate completions for the matching command.</p>
-</div>
-<div class="paragraph">
-<p>It should contain something like this:</p>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre class="CodeRay highlight"><code data-lang="bash">#!/usr/bin/env bash
-
-java -cp myApp.jar com.myorg.myproject.MainClass $@</code></pre>
-</div>
-</div>
-</div>
 </div>
 </div>
 <div class="sect1">
-<h2 id="_installing_the_completion_script_in_bash">4. Installing the Completion Script in Bash</h2>
+<h2 id="_installing_completion_scripts_permanently_in_bash">6. Installing Completion Scripts Permanently in Bash</h2>
 <div class="sectionbody">
+<div class="paragraph">
+<p>This section describes installing completion scripts in more depth than the <a href="#_quick_start_tutorial">Quick Start Tutorial</a>.</p>
+</div>
 <div class="paragraph">
 <p>Make sure bash completion is installed.</p>
 </div>
 <div class="paragraph">
-<p>The generated completion script needs to be <a href="http://tldp.org/HOWTO/Bash-Prompt-HOWTO/x237.html">sourced</a> to install it in your current bash session.</p>
+<p><a href="http://tldp.org/HOWTO/Bash-Prompt-HOWTO/x237.html">Source</a> the generated completion script to install it in your current bash session.</p>
 </div>
 <div class="paragraph">
 <p>To install it more permanently, place the completion script file in <code>/etc/bash_completion.d</code> (or <code>/usr/local/etc/bash_completion.d</code> on a Mac). If <code>bash-completion</code> is installed, placing the completion script in either of these directories should be sufficient. (Source your <code>~/.bash_profile</code> or launch a new terminal to start using this completion script.)</p>
@@ -874,18 +985,24 @@ done</code></pre>
 </div>
 </div>
 <div class="paragraph">
+<p>All completion scripts in the <code>~/bash_completion.d</code> directory will now be available every time you launch a new shell.</p>
+</div>
+<div class="paragraph">
 <p>Source your <code>~/.bash_profile</code> or launch a new terminal to start using this completion script.</p>
 </div>
 </div>
 </div>
 <div class="sect1">
-<h2 id="_installing_the_completion_script_in_zsh">5. Installing the Completion Script in ZSH</h2>
+<h2 id="_installing_completion_scripts_permanently_in_zsh">7. Installing Completion Scripts Permanently in ZSH</h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>Zsh can handle bash completions functions. The latest development version of zsh has a function bashcompinit, that when run will allow zsh to read bash completion specifications and functions. This is documented in the zshcompsys man page. To use it all you need to do is run bashcompinit at any time after compinit. It will define complete and compgen functions corresponding to the bash builtins.</p>
+<p>This section describes installing completion scripts in more depth than the <a href="#_quick_start_tutorial">Quick Start Tutorial</a>.</p>
 </div>
 <div class="paragraph">
-<p>The generated completion script needs to be <a href="http://tldp.org/HOWTO/Bash-Prompt-HOWTO/x237.html">sourced</a> to install it in your current session.</p>
+<p>Zsh can handle bash completions functions. The latest development version of zsh has a function bashcompinit, that when run will allow zsh to read bash completion specifications and functions. The zshcompsys man page has details. To use it, run bashcompinit at any time after compinit. It will define complete and compgen functions corresponding to the bash builtins.</p>
+</div>
+<div class="paragraph">
+<p><a href="http://tldp.org/HOWTO/Bash-Prompt-HOWTO/x237.html">Source</a> the generated completion script to install it in your current shell session.</p>
 </div>
 <div class="paragraph">
 <p>To install it more permanently, make a directory <code>mkdir ~/bash_completion.d</code>, and place the completion script in this directory. Edit your <code>~/.zshrc</code> file and add the following:</p>
@@ -900,6 +1017,9 @@ done</code></pre>
 </div>
 </div>
 <div class="paragraph">
+<p>All completion scripts in the <code>~/bash_completion.d</code> directory will now be available every time you launch a new shell.</p>
+</div>
+<div class="paragraph">
 <p>Then reload your shell:</p>
 </div>
 <div class="listingblock">
@@ -910,7 +1030,7 @@ done</code></pre>
 </div>
 </div>
 <div class="sect1">
-<h2 id="_picocli_user_manual">6. Picocli User Manual</h2>
+<h2 id="_picocli_user_manual">8. Picocli User Manual</h2>
 <div class="sectionbody">
 <div class="paragraph">
 <p>The <a href="index.html">picocli user manual</a> explains how to build Java command line applications with picocli.</p>
@@ -918,7 +1038,7 @@ done</code></pre>
 </div>
 </div>
 <div class="sect1">
-<h2 id="_github_project">7. GitHub Project</h2>
+<h2 id="_github_project">9. GitHub Project</h2>
 <div class="sectionbody">
 <div class="paragraph">
 <p>The <a href="https://github.com/remkop/picocli">GitHub project</a> has the source code, tests, build scripts, etc.</p>
@@ -930,7 +1050,7 @@ done</code></pre>
 </div>
 </div>
 <div class="sect1">
-<h2 id="_issue_tracker">8. Issue Tracker</h2>
+<h2 id="_issue_tracker">10. Issue Tracker</h2>
 <div class="sectionbody">
 <div class="paragraph">
 <p>Please use the <a href="https://github.com/remkop/picocli/issues">Issue Tracker</a> to report bugs or request features.</p>
@@ -938,7 +1058,7 @@ done</code></pre>
 </div>
 </div>
 <div class="sect1">
-<h2 id="_license">9. License</h2>
+<h2 id="_license">11. License</h2>
 <div class="sectionbody">
 <div class="paragraph">
 <p>Picocli is licensed under the <a href="https://github.com/remkop/picocli/blob/master/LICENSE">Apache License 2.0</a>.</p>
@@ -946,7 +1066,7 @@ done</code></pre>
 </div>
 </div>
 <div class="sect1">
-<h2 id="_releases">10. Releases</h2>
+<h2 id="_releases">12. Releases</h2>
 <div class="sectionbody">
 <div class="paragraph">
 <p>Previous versions are available from the GitHub project <a href="https://github.com/remkop/picocli/releases">Releases</a>.</p>
@@ -957,7 +1077,7 @@ done</code></pre>
 <div id="footer">
 <div id="footer-text">
 Version 1.0.0-BETA1<br>
-Last updated 2017-08-09 00:16:09 +09:00
+Last updated 2017-08-25 00:30:15 +09:00
 </div>
 </div>
 </body>
