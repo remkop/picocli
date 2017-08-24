@@ -1344,7 +1344,7 @@ You can omit some of the boilerplate code from your application when the annotat
 Callable<Object> callable = null;
 try {
     callable = CommandLine.populateCommand(annotatedObject, args);
-} catch (Exception ex) {
+} catch (ParameterException ex) {
     System.err.println(ex.getMessage());
     CommandLine.usage(annotatedObject, System.err);
     return null;
