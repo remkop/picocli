@@ -1587,6 +1587,8 @@ public class CommandLine {
                 // We take this to mean that the remainder are positional arguments
                 else {
                     args.push(arg);
+                    if (tracer.isDebug()) {tracer.debug("Could not find option '%s', deciding whether to treat as unmatched option or positional parameter...%n", arg);}
+                    if (resemblesOption(arg)) { handleUnmatchedArguments(args.pop()); continue; } // #149
                     if (tracer.isDebug()) {tracer.debug("No option named '%s' found. Processing remainder as positional parameters%n", arg);}
                     processPositionalParameters(required, args);
                     return;
@@ -1602,6 +1604,18 @@ public class CommandLine {
             };
         }
 
+        private boolean resemblesOption(String arg) {
+            int count = 0;
+            for (String optionName : optionName2Field.keySet()) {
+                for (int i = 0; i < arg.length(); i++) {
+                    if (optionName.length() > i && arg.charAt(i) == optionName.charAt(i)) { count++; } else { break; }
+                }
+            }
+            boolean result = count > 0 && count * 10 >= optionName2Field.size() * 9; // at least one prefix char in common with 9 out of 10 options
+            if (tracer.isDebug()) {tracer.debug("%s %s an option: %d matching prefix chars out of %d option names%n", arg, (result ? "resembles" : "doesn't resemble"), count, optionName2Field.size());}
+            return result;
+        }
+        private void handleUnmatchedArguments(String arg) {Stack<String> args = new Stack<String>(); args.add(arg); handleUnmatchedArguments(args);}
         private void handleUnmatchedArguments(Stack<String> args) {
             if (!isUnmatchedArgumentsAllowed()) { throw new UnmatchedArgumentException(args); }
             while (!args.isEmpty()) { unmatchedArguments.add(args.pop()); } // addAll would give args in reverse order
@@ -1695,10 +1709,16 @@ public class CommandLine {
                     // We get here when the remainder of the cluster group is neither an option,
                     // nor a parameter that the last option could consume.
                     if (arg.endsWith(cluster)) {
-                        // remainder was part of a clustered group that could not be completely parsed
                         args.push(paramAttachedToOption ? prefix + cluster : cluster);
+                        if (args.peek().equals(arg)) { // #149 be consistent between unmatched short and long options
+                            if (tracer.isDebug()) {tracer.debug("Could not match any short options in %s, deciding whether to treat as unmatched option or positional parameter...%n", arg);}
+                            if (resemblesOption(arg)) { handleUnmatchedArguments(args.pop()); return; } // #149
+                            processPositionalParameters(required, args);
+                            return;
+                        }
+                        // remainder was part of a clustered group that could not be completely parsed
                         if (tracer.isDebug()) {tracer.debug("No option found for %s in %s%n", cluster, arg);}
-                        handleUnmatchedArguments(args);
+                        handleUnmatchedArguments(args.pop());
                     } else {
                         args.push(cluster);
                         if (tracer.isDebug()) {tracer.debug("%s is not an option parameter for %s%n", cluster, arg);}

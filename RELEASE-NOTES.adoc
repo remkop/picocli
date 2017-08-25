@@ -1,8 +1,10 @@
 = picocli Release Notes
 
-== 1.0.0 - (Work in progress) Public release
+== 1.0.0 - Public release
 
-* (Work in progress) #121 Added support for command line complete: picocli can generate bash completion scripts that generate completion matches based on `@Option` and `@Command` annotations.
+=== Summary: command line autocompletion, `-Dkey=value`-like Map options, parser tracing, stricter parsing, bugfixes
+
+* #121 Added support for command line complete: picocli can generate bash completion scripts that generate completion matches based on `@Option` and `@Command` annotations.
 * #67 Support options for Map fields like `-Dkey1=val1 -Dkey2=val2`
 * #164 API change: Support format patterns in version string and printVersionHelp
 * #166 Fixed bug where adjacent markup sections resulted in incorrect ANSI escape sequences
@@ -10,7 +12,8 @@
 * #168 API change: `CommandLine::setSeparator` method now returns this CommandLine (was void)
 * #170 API change: Add `call` convenience method similar to `run`
 * #156 add example to user manual to clarify main command common usage
-* #158 Support tracing functionality to show internal processing details
+* #158 Support TRACING functionality to show internal processing details
+* #149 Parser now throws UnmatchedArgumentException for args that resemble options but are not, instead of treating like them positional parameters
 * #171 WARN when option overwritten with different value (when isOverwrittenOptionsAllowed=true); WARN for unmatched args (when isUnmatchedArgumentsAllowed=true)
 * #172 Parser now throws MaxValuesforFieldExceededException when multi-valued option or parameters max arity exceeded
 * #173 Parser now throws UnmatchedArgumentException when not all positional parameters are assigned to a field

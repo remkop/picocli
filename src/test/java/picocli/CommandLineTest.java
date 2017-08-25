@@ -1079,7 +1079,7 @@ public class CommandLineTest {
             CommandLine.populateCommand(new CompactFields(), "-oout -r -vp1 p2".split(" "));
             fail("should fail: -v does not take an argument");
         } catch (UnmatchedArgumentException ex) {
-            assertEquals("Unmatched arguments [-p1, p2]", ex.getMessage());
+            assertEquals("Unmatched argument [-p1]", ex.getMessage());
         }
     }
 
@@ -1088,7 +1088,7 @@ public class CommandLineTest {
         setTraceLevel("OFF");
         CommandLine cmd = new CommandLine(new CompactFields()).setUnmatchedArgumentsAllowed(true);
         cmd.parse("-oout -r -vp1 p2".split(" "));
-        assertEquals(Arrays.asList("-p1", "p2"), cmd.getUnmatchedArguments());
+        assertEquals(Arrays.asList("-p1"), cmd.getUnmatchedArguments());
     }
 
     @Test
@@ -1447,7 +1447,7 @@ public class CommandLineTest {
             CommandLine.populateCommand(new BooleanOptionsArity0_nAndParameters(), "-rv234 -bool".split(" "));
             fail("Expected exception");
         } catch (UnmatchedArgumentException ok) {
-            assertEquals("Unmatched arguments [-234, -bool]", ok.getMessage());
+            assertEquals("Unmatched argument [-234]", ok.getMessage());
         }
     }
     @Test
@@ -1455,7 +1455,7 @@ public class CommandLineTest {
         setTraceLevel("OFF");
         CommandLine cmd = new CommandLine(new BooleanOptionsArity0_nAndParameters()).setUnmatchedArgumentsAllowed(true);
         cmd.parse("-rv234 -bool".split(" "));
-        assertEquals(Arrays.asList("-234", "-bool"), cmd.getUnmatchedArguments());
+        assertEquals(Arrays.asList("-234"), cmd.getUnmatchedArguments());
     }
     @Test
     public void testBooleanOptionsArity0_nShortFormFailsIfAttachedWithSepParamNotABoolean() { // ignores varargs
@@ -2766,7 +2766,7 @@ public class CommandLineTest {
             createNestedCommand().parse("-a", "-b", "cmd1");
             fail("unmatched option should prevents remainder to be parsed as command");
         } catch (UnmatchedArgumentException ex) {
-            assertEquals("Unmatched arguments [-b, cmd1]", ex.getMessage());
+            assertEquals("Unmatched argument [-b]", ex.getMessage());
         }
         try {
             createNestedCommand().parse("cmd1", "sub21");
@@ -2805,7 +2805,7 @@ public class CommandLineTest {
         setTraceLevel("OFF");
         List<CommandLine> result1 = createNestedCommand().setUnmatchedArgumentsAllowed(true)
                 .parse("-a", "-b", "cmd1");
-        assertEquals(Arrays.asList("-b", "cmd1"), result1.get(0).getUnmatchedArguments());
+        assertEquals(Arrays.asList("-b"), result1.get(0).getUnmatchedArguments());
 
         List<CommandLine> result2 = createNestedCommand().setUnmatchedArgumentsAllowed(true)
                 .parse("cmd1", "sub21");
@@ -3320,5 +3320,99 @@ public class CommandLineTest {
         } catch (ParameterException ex) {
             assertEquals("IllegalStateException: Queue full while processing argument at or before arg[1] 'a,b,c' in [-queue, a,b,c]: java.lang.IllegalStateException: Queue full", ex.getMessage());
         }
+    }
+    @Test
+    public void test149UnmatchedShortOptionsAreMisinterpretedAsOperands() {
+        class App {
+            @Option(names = "-a") String first;
+            @Option(names = "-b") String second;
+            @Option(names = {"-c", "--ccc"}) String third;
+            @Parameters String[] positional;
+        }
+        //System.setProperty("picocli.trace", "DEBUG");
+        try {
+            CommandLine.populateCommand(new App(), "-xx", "-a");
+            fail("UnmatchedArgumentException expected for -xx");
+        } catch (UnmatchedArgumentException ex) {
+            assertEquals("Unmatched argument [-xx]", ex.getMessage());
+        }
+        try {
+            CommandLine.populateCommand(new App(), "-x", "-a");
+            fail("UnmatchedArgumentException expected for -x");
+        } catch (UnmatchedArgumentException ex) {
+            assertEquals("Unmatched argument [-x]", ex.getMessage());
+        }
+        try {
+            CommandLine.populateCommand(new App(), "--x", "-a");
+            fail("UnmatchedArgumentException expected for --x");
+        } catch (UnmatchedArgumentException ex) {
+            assertEquals("Unmatched argument [--x]", ex.getMessage());
+        }
+    }
+    @Test
+    public void test149NonOptionArgsShouldBeTreatedAsOperands() {
+        class App {
+            @Option(names = "/a") String first;
+            @Option(names = "/b") String second;
+            @Option(names = {"/c", "--ccc"}) String third;
+            @Parameters String[] positional;
+        }
+        //System.setProperty("picocli.trace", "DEBUG");
+        App app = CommandLine.populateCommand(new App(), "-yy", "-a");
+        assertArrayEquals(new String[] {"-yy", "-a"}, app.positional);
+
+        app = CommandLine.populateCommand(new App(), "-y", "-a");
+        assertArrayEquals(new String[] {"-y", "-a"}, app.positional);
+
+        app = CommandLine.populateCommand(new App(), "--y", "-a");
+        assertArrayEquals(new String[] {"--y", "-a"}, app.positional);
+    }
+    @Test
+    public void test149LongMatchWeighsWhenDeterminingOptionResemblance() {
+        class App {
+            @Option(names = "/a") String first;
+            @Option(names = "/b") String second;
+            @Option(names = {"/c", "--ccc"}) String third;
+            @Parameters String[] positional;
+        }
+        //System.setProperty("picocli.trace", "DEBUG");
+        try {
+            CommandLine.populateCommand(new App(), "--ccd", "-a");
+            fail("UnmatchedArgumentException expected for --x");
+        } catch (UnmatchedArgumentException ex) {
+            assertEquals("Unmatched argument [--ccd]", ex.getMessage());
+        }
+    }
+    @Test
+    public void test149OnlyUnmatchedOptionStoredOthersParsed() throws Exception {
+        class App {
+            @Option(names = "-a") String first;
+            @Option(names = "-b") String second;
+            @Option(names = {"-c", "--ccc"}) String third;
+            @Parameters String[] positional;
+        }
+        //System.setProperty("picocli.trace", "DEBUG");
+        PrintStream originalErr = System.err;
+        ByteArrayOutputStream baos = new ByteArrayOutputStream(2500);
+        System.setErr(new PrintStream(baos));
+
+        CommandLine cmd = new CommandLine(new App()).setUnmatchedArgumentsAllowed(true).parse("-yy", "-a=A").get(0);
+        assertEquals(Arrays.asList("-yy"), cmd.getUnmatchedArguments());
+        assertEquals("A", ((App) cmd.getCommand()).first);
+
+        cmd = new CommandLine(new App()).setUnmatchedArgumentsAllowed(true).parse("-y", "-b=B").get(0);
+        assertEquals(Arrays.asList("-y"), cmd.getUnmatchedArguments());
+        assertEquals("B", ((App) cmd.getCommand()).second);
+
+        cmd = new CommandLine(new App()).setUnmatchedArgumentsAllowed(true).parse("--y", "-c=C").get(0);
+        assertEquals(Arrays.asList("--y"), cmd.getUnmatchedArguments());
+        assertEquals("C", ((App) cmd.getCommand()).third);
+
+        String expected = String.format("" +
+                "[picocli WARN] Unmatched arguments: [-yy]%n" +
+                "[picocli WARN] Unmatched arguments: [-y]%n" +
+                "[picocli WARN] Unmatched arguments: [--y]%n");
+        String actual = new String(baos.toByteArray(), "UTF8");
+        assertEquals(expected, actual);
     }
 }
