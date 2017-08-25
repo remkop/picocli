@@ -1474,7 +1474,7 @@ public class CommandLine {
          */
         List<CommandLine> parse(String... args) {
             Assert.notNull(args, "argument array");
-            tracer.info("Parsing %d command line args %s%n", args.length, Arrays.toString(args));
+            if (tracer.isInfo()) {tracer.info("Parsing %d command line args %s%n", args.length, Arrays.toString(args));}
             Stack<String> arguments = new Stack<String>();
             for (int i = args.length - 1; i >= 0; i--) {
                 arguments.push(args[i]);
@@ -1605,7 +1605,7 @@ public class CommandLine {
         private void handleUnmatchedArguments(Stack<String> args) {
             if (!isUnmatchedArgumentsAllowed()) { throw new UnmatchedArgumentException(args); }
             while (!args.isEmpty()) { unmatchedArguments.add(args.pop()); } // addAll would give args in reverse order
-            tracer.info("Stored remainder in unmatched arguments list: %s%n", unmatchedArguments);
+            if (tracer.isWarn()) {tracer.warn("Unmatched arguments: %s%n", unmatchedArguments);}
         }
 
         private void processPositionalParameters0(Collection<Field> required, boolean validateOnly, Stack<String> args) throws Exception {
@@ -1763,16 +1763,25 @@ public class CommandLine {
             if (noMoreValues && value == null) {
                 return 0;
             }
+            ITypeConverter<?> converter = getTypeConverter(cls, field);
+            Object newValue = tryConvert(field, -1, converter, value, cls);
+            Object oldValue = field.get(command);
+            TraceLevel level = TraceLevel.INFO;
+            String traceMessage = "Setting %s field '%s.%s' to '%5$s' (was '%4$s') for %6$s%n";
             if (initialized != null) {
-                if (initialized.contains(field) && !isOverwrittenOptionsAllowed()) {
-                    throw new OverwrittenOptionException(optionDescription("", field, 0) +  " should be specified only once");
+                if (initialized.contains(field)) {
+                    if (!isOverwrittenOptionsAllowed()) {
+                        throw new OverwrittenOptionException(optionDescription("", field, 0) +  " should be specified only once");
+                    }
+                    level = TraceLevel.WARN;
+                    traceMessage = "Overwriting %s field '%s.%s' value '%s' with '%s' for %s%n";
                 }
                 initialized.add(field);
             }
-            ITypeConverter<?> converter = getTypeConverter(cls, field);
-            Object objValue = tryConvert(field, -1, converter, value, cls);
-            field.set(command, objValue);
-            tracer.info("Setting %s field '%s.%s' to '%s' for %s%n", field.getType().getSimpleName(), field.getDeclaringClass().getSimpleName(), field.getName(), String.valueOf(objValue), argDescription);
+            if (tracer.level.isEnabled(level)) { level.print(tracer, traceMessage, field.getType().getSimpleName(),
+                        field.getDeclaringClass().getSimpleName(), field.getName(), String.valueOf(oldValue), String.valueOf(newValue), argDescription);
+            }
+            field.set(command, newValue);
             return result;
         }
         private int applyValuesToMapField(Field field,
@@ -1845,8 +1854,8 @@ public class CommandLine {
                 Object mapKey =   tryConvert(field, j, keyConverter,   keyValue[0], classes[0]);
                 Object mapValue = tryConvert(field, j, valueConverter, keyValue[1], classes[1]);
                 result.put(mapKey, mapValue);
-                tracer.info("Putting [%s : %s] in %s<%s, %s> field '%s.%s' for %s%n", String.valueOf(mapKey), String.valueOf(mapValue),
-                        result.getClass().getSimpleName(), classes[0].getSimpleName(), classes[1].getSimpleName(), field.getDeclaringClass().getSimpleName(), field.getName(), argDescription);
+                if (tracer.isInfo()) {tracer.info("Putting [%s : %s] in %s<%s, %s> field '%s.%s' for %s%n", String.valueOf(mapKey), String.valueOf(mapValue),
+                        result.getClass().getSimpleName(), classes[0].getSimpleName(), classes[1].getSimpleName(), field.getDeclaringClass().getSimpleName(), field.getName(), argDescription);}
             }
             checkMaxArityExceeded(arity, max, field, values);
         }
@@ -1954,10 +1963,12 @@ public class CommandLine {
             int max = Math.min(arity.max - (result.size() + originalSize), values.length);
             for (int j = 0; j < max; j++) {
                 result.add(tryConvert(field, index, converter, values[j], type));
-                if (field.getType().isArray()) {
-                    tracer.info("Adding [%s] to %s[] field '%s.%s' for %s%n", String.valueOf(result.get(result.size()-1)), type.getSimpleName(), field.getDeclaringClass().getSimpleName(), field.getName(), argDescription);
-                } else {
-                    tracer.info("Adding [%s] to %s<%s> field '%s.%s' for %s%n", String.valueOf(result.get(result.size()-1)), field.getType().getSimpleName(), type.getSimpleName(), field.getDeclaringClass().getSimpleName(), field.getName(), argDescription);
+                if (tracer.isInfo()) {
+                    if (field.getType().isArray()) {
+                        tracer.info("Adding [%s] to %s[] field '%s.%s' for %s%n", String.valueOf(result.get(result.size() - 1)), type.getSimpleName(), field.getDeclaringClass().getSimpleName(), field.getName(), argDescription);
+                    } else {
+                        tracer.info("Adding [%s] to %s<%s> field '%s.%s' for %s%n", String.valueOf(result.get(result.size() - 1)), field.getType().getSimpleName(), type.getSimpleName(), field.getDeclaringClass().getSimpleName(), field.getName(), argDescription);
+                    }
                 }
             }
             checkMaxArityExceeded(arity, max, field, values);
@@ -2048,7 +2059,7 @@ public class CommandLine {
             }
         }
         private boolean is(Field f, String description, boolean value) {
-            if (value) { tracer.info("Field '%s.%s' has '%s' annotation: not validating required fields%n", f.getDeclaringClass().getSimpleName(), f.getName(), description); }
+            if (value) { if (tracer.isInfo()) {tracer.info("Field '%s.%s' has '%s' annotation: not validating required fields%n", f.getDeclaringClass().getSimpleName(), f.getName(), description); }}
             return value;
         }
         @SuppressWarnings("unchecked")

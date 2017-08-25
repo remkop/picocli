@@ -53,6 +53,8 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 
@@ -93,6 +95,12 @@ import static picocli.CommandLine.*;
 // DONE -vrx, -vro outputFile, -vrooutputFile, -vro=outputFile, -vro:outputFile, -vro=, -vro:, -vro
 // DONE --out outputFile, --out=outputFile, --out:outputFile, --out=, --out:, --out
 public class CommandLineTest {
+    @Before public void setUp() { System.clearProperty("picocli.trace"); }
+    @After public void tearDown() { System.clearProperty("picocli.trace"); }
+
+    private static void setTraceLevel(String level) {
+        System.setProperty("picocli.trace", level);
+    }
     @Test
     public void testVersion() {
         assertEquals("1.0.0-SNAPSHOT", CommandLine.VERSION);
@@ -805,6 +813,7 @@ public class CommandLineTest {
     }
     @Test
     public void testLastValueSelectedIfOptionSpecifiedMultipleTimes() {
+        setTraceLevel("OFF");
         CommandLine cmd = new CommandLine(new PrivateFinalOptionFields()).setOverwrittenOptionsAllowed(true);
         cmd.parse("-f", "111", "-f", "222");
         PrivateFinalOptionFields ff = (PrivateFinalOptionFields) cmd.getCommand();
@@ -1076,6 +1085,7 @@ public class CommandLineTest {
 
     @Test
     public void testCompactFieldsWithUnmatchedArguments() {
+        setTraceLevel("OFF");
         CommandLine cmd = new CommandLine(new CompactFields()).setUnmatchedArgumentsAllowed(true);
         cmd.parse("-oout -r -vp1 p2".split(" "));
         assertEquals(Arrays.asList("-p1", "p2"), cmd.getUnmatchedArguments());
@@ -1442,6 +1452,7 @@ public class CommandLineTest {
     }
     @Test
     public void testBooleanOptionsArity0_nShortFormFailsIfAttachedParamNotABooleanWithUnmatchedArgsAllowed() { // ignores varargs
+        setTraceLevel("OFF");
         CommandLine cmd = new CommandLine(new BooleanOptionsArity0_nAndParameters()).setUnmatchedArgumentsAllowed(true);
         cmd.parse("-rv234 -bool".split(" "));
         assertEquals(Arrays.asList("-234", "-bool"), cmd.getUnmatchedArguments());
@@ -1753,6 +1764,7 @@ public class CommandLineTest {
         } catch (UnmatchedArgumentException ex) {
             assertEquals("Unmatched argument [c]", ex.getMessage());
         }
+        setTraceLevel("OFF");
         CommandLine cmd = new CommandLine(new NonVarArgArrayParamsArity2()).setUnmatchedArgumentsAllowed(true);
         cmd.parse("a", "b", "c");
         assertEquals(Arrays.asList("c"), cmd.getUnmatchedArguments());
@@ -1861,6 +1873,7 @@ public class CommandLineTest {
         class App {
             @Option(names = "--opt", required = true) String opt;
         }
+        setTraceLevel("OFF");
         CommandLine cmd = new CommandLine(new App()).setUnmatchedArgumentsAllowed(true);
         try {
             cmd.parse("--opt=abc");
@@ -2279,6 +2292,7 @@ public class CommandLineTest {
         class SingleValue {
             @Parameters(index = "0") String str;
         }
+        setTraceLevel("OFF");
         CommandLine cmd = new CommandLine(new SingleValue()).setUnmatchedArgumentsAllowed(true);
         cmd.parse("val1", "val2");
         assertEquals("val1", ((SingleValue)cmd.getCommand()).str);
@@ -2290,6 +2304,7 @@ public class CommandLineTest {
         class SingleValue {
             @Parameters(index = "0..2") String[] str;
         }
+        setTraceLevel("OFF");
         CommandLine cmd = new CommandLine(new SingleValue()).setUnmatchedArgumentsAllowed(true);
         cmd.parse("val0", "val1", "val2", "val3");
         assertArrayEquals(new String[]{"val0", "val1", "val2"}, ((SingleValue)cmd.getCommand()).str);
@@ -2307,6 +2322,7 @@ public class CommandLineTest {
         } catch (UnmatchedArgumentException ex) {
             assertEquals("Unmatched argument [val2]", ex.getMessage());
         }
+        setTraceLevel("OFF");
         CommandLine cmd = new CommandLine(new SingleValue()).setUnmatchedArgumentsAllowed(true);
         cmd.parse("val1", "val2");
         assertEquals(Arrays.asList("val2"), cmd.getUnmatchedArguments());
@@ -2469,6 +2485,7 @@ public class CommandLineTest {
         } catch (UnmatchedArgumentException ex) {
             assertEquals("Unmatched argument [C]", ex.getMessage());
         }
+        setTraceLevel("OFF");
         CommandLine cmd = new CommandLine(new Args()).setUnmatchedArgumentsAllowed(true);
         cmd.parse("a,b,c", "B", "C");
         assertEquals(Arrays.asList("C"), cmd.getUnmatchedArguments());
@@ -2530,7 +2547,7 @@ public class CommandLineTest {
         assertEquals("status -u=no", Demo.GitStatusMode.no, status.mode);
     }
     @Test
-    public void testTracingWithSubCommands() throws Exception {
+    public void testTracingInfoWithSubCommands() throws Exception {
         PrintStream originalErr = System.err;
         ByteArrayOutputStream baos = new ByteArrayOutputStream(2500);
         System.setErr(new PrintStream(baos));
@@ -2547,13 +2564,94 @@ public class CommandLineTest {
         }
         String expected = String.format("" +
                         "[picocli INFO] Parsing 8 command line args [--git-dir=/home/rpopma/picocli, commit, -m, \"Fixed typos\", --, src1.java, src2.java, src3.java]%n" +
-                        "[picocli INFO] Setting File field 'Git.gitDir' to '%s' for option --git-dir%n" +
+                        "[picocli INFO] Setting File field 'Git.gitDir' to '%s' (was 'null') for option --git-dir%n" +
                         "[picocli INFO] Adding [Fixed typos] to List<String> field 'GitCommit.message' for option -m%n" +
                         "[picocli INFO] Found end-of-options delimiter '--'. Treating remainder as positional parameters.%n" +
                         "[picocli INFO] Adding [src1.java] to List<String> field 'GitCommit.files' for args[0..*]%n" +
                         "[picocli INFO] Adding [src2.java] to List<String> field 'GitCommit.files' for args[0..*]%n" +
                         "[picocli INFO] Adding [src3.java] to List<String> field 'GitCommit.files' for args[0..*]%n",
                 new File("/home/rpopma/picocli"));
+        String actual = new String(baos.toByteArray(), "UTF8");
+        //System.out.println(actual);
+        assertEquals(expected, actual);
+    }
+    @Test
+    public void testTracingDebugWithSubCommands() throws Exception {
+        PrintStream originalErr = System.err;
+        ByteArrayOutputStream baos = new ByteArrayOutputStream(2500);
+        System.setErr(new PrintStream(baos));
+        final String PROPERTY = "picocli.trace";
+        String old = System.getProperty(PROPERTY);
+        System.setProperty(PROPERTY, "DEBUG");
+        CommandLine commandLine = Demo.mainCommand();
+        commandLine.parse("--git-dir=/home/rpopma/picocli", "commit", "-m", "\"Fixed typos\"", "--", "src1.java", "src2.java", "src3.java");
+        System.setErr(originalErr);
+        if (old == null) {
+            System.clearProperty(PROPERTY);
+        } else {
+            System.setProperty(PROPERTY, old);
+        }
+        String expected = String.format("" +
+                        "[picocli INFO] Parsing 8 command line args [--git-dir=/home/rpopma/picocli, commit, -m, \"Fixed typos\", --, src1.java, src2.java, src3.java]%n" +
+                        "[picocli DEBUG] Initializing picocli.Demo$Git: 3 options, 0 positional parameters, 0 required, 11 subcommands.%n" +
+                        "[picocli DEBUG] Processing argument '--git-dir=/home/rpopma/picocli'. Remainder=[commit, -m, \"Fixed typos\", --, src1.java, src2.java, src3.java]%n" +
+                        "[picocli DEBUG] Separated '--git-dir' option from '/home/rpopma/picocli' option parameter%n" +
+                        "[picocli DEBUG] Found option named '--git-dir': field java.io.File picocli.Demo$Git.gitDir, arity=1%n" +
+                        "[picocli INFO] Setting File field 'Git.gitDir' to '%s' (was 'null') for option --git-dir%n" +
+                        "[picocli DEBUG] Processing argument 'commit'. Remainder=[-m, \"Fixed typos\", --, src1.java, src2.java, src3.java]%n" +
+                        "[picocli DEBUG] Found subcommand 'commit' (picocli.Demo$GitCommit)%n" +
+                        "[picocli DEBUG] Initializing picocli.Demo$GitCommit: 8 options, 1 positional parameters, 0 required, 0 subcommands.%n" +
+                        "[picocli DEBUG] Processing argument '-m'. Remainder=[\"Fixed typos\", --, src1.java, src2.java, src3.java]%n" +
+                        "[picocli DEBUG] '-m' cannot be separated into <option>=<option-parameter>%n" +
+                        "[picocli DEBUG] Found option named '-m': field java.util.List picocli.Demo$GitCommit.message, arity=0..*%n" +
+                        "[picocli INFO] Adding [Fixed typos] to List<String> field 'GitCommit.message' for option -m%n" +
+                        "[picocli DEBUG] Processing argument '--'. Remainder=[src1.java, src2.java, src3.java]%n" +
+                        "[picocli INFO] Found end-of-options delimiter '--'. Treating remainder as positional parameters.%n" +
+                        "[picocli DEBUG] Processing positional parameters. Remainder=[src1.java, src2.java, src3.java]%n" +
+                        "[picocli DEBUG] Trying to assign args at index 0..* [src1.java, src2.java, src3.java] to java.util.List picocli.Demo$GitCommit.files, arity=0..*%n" +
+                        "[picocli INFO] Adding [src1.java] to List<String> field 'GitCommit.files' for args[0..*]%n" +
+                        "[picocli INFO] Adding [src2.java] to List<String> field 'GitCommit.files' for args[0..*]%n" +
+                        "[picocli INFO] Adding [src3.java] to List<String> field 'GitCommit.files' for args[0..*]%n",
+                new File("/home/rpopma/picocli"));
+        String actual = new String(baos.toByteArray(), "UTF8");
+        //System.out.println(actual);
+        assertEquals(expected, actual);
+    }
+    @Test
+    public void testTraceWarningIfOptionOverwrittenWhenOverwrittenOptionsAllowed() throws Exception {
+        PrintStream originalErr = System.err;
+        ByteArrayOutputStream baos = new ByteArrayOutputStream(2500);
+        System.setErr(new PrintStream(baos));
+
+        CommandLine cmd = new CommandLine(new PrivateFinalOptionFields()).setOverwrittenOptionsAllowed(true);
+        cmd.parse("-f", "111", "-f", "222", "-f", "333");
+        PrivateFinalOptionFields ff = (PrivateFinalOptionFields) cmd.getCommand();
+        assertEquals("333", ff.field);
+        System.setErr(originalErr);
+
+        String expected = String.format("" +
+                        "[picocli WARN] Overwriting String field 'PrivateFinalOptionFields.field' value '111' with '222' for option -f%n" +
+                        "[picocli WARN] Overwriting String field 'PrivateFinalOptionFields.field' value '222' with '333' for option -f%n"
+        );
+        String actual = new String(baos.toByteArray(), "UTF8");
+        //System.out.println(actual);
+        assertEquals(expected, actual);
+    }
+    @Test
+    public void testTraceWarningIfUnmatchedArgsWhenUnmatchedArgumentsAllowed() throws Exception {
+        PrintStream originalErr = System.err;
+        ByteArrayOutputStream baos = new ByteArrayOutputStream(2500);
+        System.setErr(new PrintStream(baos));
+
+        class App {
+            @Parameters(arity = "2", split = "\\|", type = {Integer.class, String.class})
+            Map<Integer,String> message;
+        }
+        CommandLine cmd = new CommandLine(new App()).setUnmatchedArgumentsAllowed(true).parse("1=a", "2=b", "3=c", "4=d").get(0);
+        assertEquals(Arrays.asList("3=c", "4=d"), cmd.getUnmatchedArguments());
+        System.setErr(originalErr);
+
+        String expected = String.format("[picocli WARN] Unmatched arguments: [3=c, 4=d]%n");
         String actual = new String(baos.toByteArray(), "UTF8");
         //System.out.println(actual);
         assertEquals(expected, actual);
@@ -2704,6 +2802,7 @@ public class CommandLineTest {
 
     @Test
     public void testParseNestedSubCommandsAllowingUnmatchedArguments() {
+        setTraceLevel("OFF");
         List<CommandLine> result1 = createNestedCommand().setUnmatchedArgumentsAllowed(true)
                 .parse("-a", "-b", "cmd1");
         assertEquals(Arrays.asList("-b", "cmd1"), result1.get(0).getUnmatchedArguments());
@@ -2914,6 +3013,7 @@ public class CommandLineTest {
             @Option(names = {"-s", "--str"})      String string;
             @Option(names = {"-v", "--verbose"}) boolean bool;
         }
+        setTraceLevel("OFF");
         CommandLine commandLine = new CommandLine(new App()).setOverwrittenOptionsAllowed(true);
         commandLine.parse("-s", "1", "--str", "2");
         assertEquals("2", ((App) commandLine.getCommand()).string);
@@ -3189,6 +3289,7 @@ public class CommandLineTest {
         } catch (UnmatchedArgumentException ex) {
             assertEquals("Unmatched arguments [3=c, 4=d]", ex.getMessage());
         }
+        setTraceLevel("OFF");
         CommandLine cmd = new CommandLine(new App()).setUnmatchedArgumentsAllowed(true);
         cmd.parse("1=a", "2=b", "3=c", "4=d");
         assertEquals(Arrays.asList("3=c", "4=d"), cmd.getUnmatchedArguments());
