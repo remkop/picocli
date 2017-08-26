@@ -217,7 +217,8 @@ assert params.allParameters.equals(Arrays.asList("localhost", "12345", "file1.tx
 See <<Strongly Typed Everything>> for which types are supported out of the box and how to add custom types.
 
 === Double dash (`--`)
-When one of the command line arguments is just two dashes without any characters attached (`--`), picocli interprets all following arguments as positional parameters, even arguments that match an option name.
+When one of the command line arguments is just two dashes without any characters attached (`--`),
+picocli interprets all following arguments as positional parameters, even arguments that match an option name.
 
 [source,java]
 ----
@@ -228,7 +229,7 @@ class DoubleDashDemo {
 }
 ----
 
-The `--` clarifies which of the arguments are positional parameters:
+The `--` end-of-options delimiter clarifies which of the arguments are positional parameters:
 [source,java]
 ----
 String[] args = { "-v", "--", "-files", "file1", "file2" };
@@ -502,6 +503,83 @@ The following command line arguments would be accepted:
 ----
 
 
+== Strict or Lenient Parsing
+
+=== Too Many Values
+
+When a single-value option is specified multiple times on the command line, the default parser behaviour is
+to throw an `OverwrittenOptionException`. For example:
+[source,java]
+----
+@Option(name = "-p") int port;
+----
+The following input results in an `OverwrittenOptionException`:
+----
+<command> -p 80 -p 8080
+----
+Applications can change this by calling `CommandLine.setOverwrittenOptionsAllowed(true)` before parsing the input.
+When overwritten options are allowed, the last specified value takes effect (the above input will set the `port` field to `8080`)
+and a WARN level message is printed to the console. (See <<Tracing>> for how to switch off the warnings.)
+
+=== Unmatched Input
+By default, an `UnmatchedArgumentException` is thrown when a command line argument cannot be assigned to
+an option or positional parameter. For example:
+
+[source,java]
+----
+@Parameters(arity = "3") String[] values;
+----
+The command has only one annotated field, `values`, and it expects exactly three arguments,
+so the following input results in an `UnmatchedArgumentException`:
+----
+<command> 1 2 3 4 5
+----
+
+Applications can change this by calling `CommandLine.setUnmatchedArgumentsAllowed(true)` before parsing the input.
+When unmatched arguments are allowed, the above input will be accepted and a WARN level message is printed to the console.
+(See <<Tracing>> for how to switch off the warnings.)
+
+The unmatched argument values can be obtained with the `CommandLine.getUnmatchedArguments()` method.
+
+=== Unknown Options
+A special case of unmatched input are arguments that look like options but don't match any of the defined options.
+For example:
+
+[source,java]
+----
+@Option(names = "-a") String alpha;
+@Option(names = "-b") String beta;
+@Parameters String[] remainder;
+----
+The above defines options `-a` and `-b`, but what should the parser do with input like this?
+
+----
+<command> -x -a AAA
+----
+The `-x` argument "looks like" an option but there is no `-x` option defined...
+
+One possibility is to silently accept such values as positional parameters but this is often not desirable.
+From version 1.0.0, picocli determines if the unmatched argument "looks like an option"
+by comparing its leading characters to the prefix characters of the known options.
+
+When the unmatched value is similar to the known options, picocli throws an `UnmatchedArgumentException`
+rather than treating it as a positional parameter.
+
+As usual, `CommandLine.setUnmatchedArgumentsAllowed(true)` will accept unmatched input and
+display a WARN-level message on the console.
+
+
+Arguments that are not considered similar to the known options are interpreted as positional parameters:
+----
+<command> x -a AAA
+----
+The above input is treated as three positional parameters by the parser.
+
+Use the `--` end-of-options delimiter to ensure that arguments resembling an option are treated as positional parameters without `UnmatchedArgumentException`:
+
+----
+<command> -- -x -a AAA
+----
 
 == Help Options
 Options with the attribute `help = true` are special: if one of the command line arguments is a "help" option, picocli will stop parsing the remaining arguments and will not check for required options.
