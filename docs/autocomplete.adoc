@@ -159,7 +159,7 @@ client.openvpn.net                   picoscm1
 ----
 
 ==== Java `enum` Values
-Generating autocomplete matches for `@Option` fields of any Java `enum` type `java.net.InetAddress` will display the list of enum values.
+Generating autocomplete matches for `@Option` fields of any Java `enum` type will display the list of enum values.
 
 For example:
 
