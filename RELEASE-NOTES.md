@@ -1,8 +1,11 @@
 # picocli Release Notes
 
-## 1.0.0 - Public release
+## 1.0.0 - Bugfix and enhancements release.
 
 ### Summary: command line autocompletion, `-Dkey=value`-like Map options, parser tracing, stricter parsing, bugfixes
+
+This is the tenth public release.
+Picocli follows [semantic versioning](http://semver.org/).
 
 * #121 New feature: command line autocompletion. Picocli can generate bash and zsh completion scripts that allow the shell to generate potential completion matches based on the `@Option` and `@Command` annotations in your application. After this script is installed, the shell will show the options and subcommands available in your java command line application, and in some cases show possible option values.
 * #67  New feature: Map options like `-Dkey1=val1 -Dkey2=val2`. Both key and value can be strongly typed (not just Strings).

@@ -1,8 +1,8 @@
 = picocli - a mighty tiny command line interface
 //:author: Remko Popma
 //:email: rpopma@apache.org
-:revnumber: 1.0.0-SNAPSHOT
-:revdate: 2017-08-07
+:revnumber: 1.0.0
+:revdate: 2017-08-26
 :toc: left
 :numbered:
 :toclevels: 2
@@ -1681,7 +1681,7 @@ See the <<Source,source code>> below. Copy and paste it into a file called `Comm
 
 === Gradle
 ----
-compile 'info.picocli:picocli:1.0.0-SNAPSHOT'
+compile 'info.picocli:picocli:1.0.0'
 ----
 
 === Maven
@@ -1689,19 +1689,19 @@ compile 'info.picocli:picocli:1.0.0-SNAPSHOT'
 <dependency>
   <groupId>info.picocli</groupId>
   <artifactId>picocli</artifactId>
-  <version>1.0.0-SNAPSHOT</version>
+  <version>1.0.0</version>
 </dependency>
 ----
 
 === Scala SBT
 ----
-libraryDependencies += "info.picocli" % "picocli" % "1.0.0-SNAPSHOT"
+libraryDependencies += "info.picocli" % "picocli" % "1.0.0"
 ----
 
 === Ivy
 
 ----
-<dependency org="info.picocli" name="picocli" rev="1.0.0-SNAPSHOT" />
+<dependency org="info.picocli" name="picocli" rev="1.0.0" />
 ----
 
 === Source

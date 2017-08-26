@@ -1,11 +1,11 @@
 group 'info.picocli'
-description 'Annotation-based Java command line parser. Usage help with ANSI styles and colors. Easily included as source to avoid adding a dependency.'
-version '1.0.0-SNAPSHOT'
+description 'Annotation-based Java command line parser. Usage help with ANSI styles and colors. Autocomplete. Nested subcommands. Easily included as source to avoid adding a dependency.'
+version '1.0.0'
 
 // for bumpVersion task
-def oldVersion = '0\\.9\\.8'
+def oldVersion = '1\\.0\\.0-SNAPSHOT'
 def oldRevdate = '2017\\-08\\-07'
-def revDate    = '2017-08-07'
+def revDate    = '2017-08-26'
 
 buildscript {
     repositories {
@@ -87,9 +87,13 @@ task bumpVersion {
             fileset(dir: 'src/main/java/picocli', includes: 'CommandLine.java')
             fileset(dir: 'src/test/java/picocli', includes: 'CommandLineTest.java')
         }
+        ant.replaceregexp(match: "version $oldVersion", replace: "version $version", flags: 'g', byline: true, encoding: 'UTF8') {
+            fileset(dir: 'src/test/java/picocli', includes: 'AutoCompleteTest.java')
+        }
         // Doc header
         ant.replaceregexp(match: ":revnumber: $oldVersion", replace: ":revnumber: $version", flags: 'g', byline: true, encoding: 'UTF8') {
             fileset(dir: 'docs', includes: 'index.adoc')
+            fileset(dir: 'docs', includes: 'autocomplete.adoc')
         }
         // Downloads section, Gradle
         ant.replaceregexp(match: ":picocli:$oldVersion", replace: ":picocli:$version", flags: 'g', byline: true, encoding: 'UTF8') {
@@ -109,11 +113,13 @@ task bumpVersion {
         }
         ant.replaceregexp(match: oldRevdate, replace: revDate, flags: 'g', byline: true, encoding: 'UTF8') {
             fileset(dir: 'docs', includes: 'index.adoc')
+            fileset(dir: 'docs', includes: 'autocomplete.adoc')
         }
     }
 }
 task copyDocs(type: Copy) {
     from 'build/docs/html5/index.html'
+    from 'build/docs/html5/autocomplete.html'
     from('build/docs/') { exclude 'html5'}
     into 'docs'
 }
