@@ -271,9 +271,10 @@ public class CommandLine {
      * subcommands and nested sub-subcommands <em>at the moment this method is called</em>. Subcommands added
      * later will have the default setting. To ensure a setting is applied to all
      * subcommands, call the setter last, after adding subcommands.</p>
-     * @param newValue the new setting
+     * @param newValue the new setting. When {@code true}, the last unmatched arguments are available via the {@link #getUnmatchedArguments()} method.
      * @return this {@code CommandLine} object, to allow method chaining
      * @since 0.9.7
+     * @see #getUnmatchedArguments()
      */
     public CommandLine setUnmatchedArgumentsAllowed(boolean newValue) {
         this.unmatchedArgumentsAllowed = newValue;
