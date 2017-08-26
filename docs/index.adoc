@@ -374,7 +374,7 @@ class MapDemo {
     Map<TimeUnit, Long> timeout;
 }
 ----
-Map options may be specified multiple times with different key-value pairs. (See <<#default-arity,arity>>.)
+Map options may be specified multiple times with different key-value pairs. (See <<Default Arity,arity>>.)
 
 [source,bash]
 ----
