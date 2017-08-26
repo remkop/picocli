@@ -4,7 +4,7 @@ Annotation-based Java command line parser, featuring usage help with ANSI colors
 In a single file, so you can include it _in source form_.
 This lets users run picocli-based applications without requiring picocli as an external dependency.
 
-|Now in BETA: [command line autocompletion](http://picocli.info/1.0.0-SNAPSHOT/autocomplete.html)|
+|Now in BETA: [command line autocompletion](http://picocli.info/autocomplete.html)|
 |----|
 |Autocomplete is work in progress. Comments, bug reports, pull requests welcome!|
 
@@ -31,7 +31,7 @@ Works with Java 5 or higher (but is designed to facilitate the use of Java 8 lam
 * user manual: [http://picocli.info](http://picocli.info)
 * [API Javadoc](http://picocli.info/apidocs/)
 * [FAQ](https://github.com/remkop/picocli/wiki/FAQ)
-* [Releases](https://github.com/remkop/picocli/releases) - latest: 0.9.8
+* [Releases](https://github.com/remkop/picocli/releases) - latest: 1.0.0
 * [![Build Status](https://travis-ci.org/remkop/picocli.svg?branch=master)](https://travis-ci.org/remkop/picocli) 
 [![codecov](https://codecov.io/gh/remkop/picocli/branch/master/graph/badge.svg)](https://codecov.io/gh/remkop/picocli)
 
@@ -101,6 +101,10 @@ For example, your application can generate help like this with a custom layout:
 See the [source code](https://github.com/remkop/picocli/blob/master/src/test/java/picocli/CustomLayoutDemo.java#L61).
 
 ## API Changes
+
+### [1.0.0](https://github.com/remkop/picocli/releases/tag/v1.0.0)
+New features: command line autocompletion, Map options and parser tracing.
+Non-breaking changes to support Callable commands, Map options and format specifiers in version help.
 
 ### [0.9.8](https://github.com/remkop/picocli/releases/tag/v0.9.8)
 Non-breaking changes to add better help support and better subcommand support.
