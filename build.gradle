@@ -128,7 +128,7 @@ distributions {
             from testSourcesJar
             from javadocJar
             from ('LICENSE')
-            from ('RELEASE-NOTES.adoc')
+            from ('RELEASE-NOTES.md')
         }
     }
 }
@@ -194,7 +194,7 @@ Release procedure:
 3. check modified files (especially line 767 in index.adoc)
 4. gradlew clean build
 5. gradlew copyDocs
-6. update RELEASE-NOTES.adoc
+6. update RELEASE-NOTES.md
 7. commit -m "Release picocli version ..."
 8. tag v$version
 9. gradlew publishPluginPublicationToBintrayRepository
@@ -206,12 +206,12 @@ Release procedure:
 14. push (make sure that Push Tags is checked)
 
 15. Log in to GitHub, go to https://github.com/remkop/picocli/releases
-16. Click the new tag, click Edit button, update title and release notes (copy from RELEASE-NOTES.adoc)
+16. Click the new tag, click Edit button, update title and release notes (copy from RELEASE-NOTES.md)
 17. Upload picocli-$version.jar and picocli-all$version.zip to GitHub
 
 18. Log in to Bintray
 19. Navigate to the page for the new version
-20. Edit version: Publication Date, Description, VCS tag, GitHub release notes file (RELEASE-NOTES.adoc)
+20. Edit version: Publication Date, Description, VCS tag, GitHub release notes file (RELEASE-NOTES.md)
 21. On the version page, Release Notes tab, select GitHub File
 22. Publish artifacts to JCenter
 22. On the version page, Maven Central tab, sync to Maven (takes several minutes)
