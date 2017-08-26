@@ -103,7 +103,7 @@ public class CommandLineTest {
     }
     @Test
     public void testVersion() {
-        assertEquals("1.0.0", CommandLine.VERSION);
+        assertEquals("1.1.0-SNAPSHOT", CommandLine.VERSION);
     }
 
     private static class SupportedTypes {
