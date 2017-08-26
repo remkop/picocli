@@ -13,12 +13,14 @@ converting the input to strongly typed data. Supports git-like [subcommands](htt
 (and nested [sub-subcommands](http://picocli.info/#_nested_sub_subcommands)),
 any option prefix style, POSIX-style [grouped short options](http://picocli.info/#_short_options),
 custom [type converters](http://picocli.info/#_custom_type_converters) and more.
+Parser [tracing](http://picocli.info/#_tracing) facilitates troubleshooting.
 
 Distinguishes between [named options](http://picocli.info/#_options) and
 [positional parameters](http://picocli.info/#_positional_parameters) and allows _both_ to be 
 [strongly typed](http://picocli.info/#_strongly_typed_everything).
 [Multi-valued fields](http://picocli.info/#_multiple_values) can specify 
 an exact number of parameters or a [range](http://picocli.info/#_arity) (e.g., `0..*`, `1..2`).
+Supports [Map options](http://picocli.info/#_maps) like `-Dkey1=val1 -Dkey2=val2`, where both key and value can be strongly typed.
 
 Generates polished and easily tailored [usage help](http://picocli.info/#_usage_help)
 and  [version help](http://picocli.info/#_version_help),
