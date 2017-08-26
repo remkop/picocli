@@ -1650,7 +1650,7 @@ public class CommandLineHelpTest {
         String[] args = {"@|bold VALUE1|@", "@|underline VALUE2|@", "VALUE3"};
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         PrintStream ps = new PrintStream(baos, true, "UTF8");
-        new CommandLine(new Versioned()).printVersionHelp(ps, Help.Ansi.ON, args);
+        new CommandLine(new Versioned()).printVersionHelp(ps, Help.Ansi.ON, (Object[]) args);
         String result = baos.toString("UTF8");
         assertEquals(String.format("" +
                 "\u001B[33mVersioned Command 1.0\u001B[39m\u001B[0m%n" +
