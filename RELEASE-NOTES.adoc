@@ -4,19 +4,19 @@
 
 === Summary: command line autocompletion, `-Dkey=value`-like Map options, parser tracing, stricter parsing, bugfixes
 
-* #121 Added support for command line complete: picocli can generate bash completion scripts that generate completion matches based on `@Option` and `@Command` annotations.
-* #67 Support options for Map fields like `-Dkey1=val1 -Dkey2=val2`
-* #164 API change: Support format patterns in version string and printVersionHelp
-* #166 Fixed bug where adjacent markup sections resulted in incorrect ANSI escape sequences
-* #167 API change: Change `type` attribute from `Class` to `Class[]` for Map support
-* #168 API change: `CommandLine::setSeparator` method now returns this CommandLine (was void)
-* #170 API change: Add `call` convenience method similar to `run`
-* #156 add example to user manual to clarify main command common usage
-* #158 Support TRACING functionality to show internal processing details
-* #149 Parser now throws UnmatchedArgumentException for args that resemble options but are not, instead of treating like them positional parameters
-* #171 WARN when option overwritten with different value (when isOverwrittenOptionsAllowed=true); WARN for unmatched args (when isUnmatchedArgumentsAllowed=true)
+* #121 Added support for command line autocompletion: picocli can generate bash and zsh completion scripts that generate potential completion matches based on the `@Option` and `@Command` annotations in your application. After this script is installed, the shell will show the options and subcommands available in your java command line application, and in some cases show possible option values.
+* #67 Support options for Map fields like `-Dkey1=val1 -Dkey2=val2`. Both key and value can be strongly typed (not just Strings).
+* #158 Support TRACING functionality for improved troubleshooting. End users can control the trace level with a system property.
+* #170 API change: Add `call` convenience method similar to `run`. Applications whose main business logic may throw an exception or returns a result can now implement `Callable` and reduce some boilerplate code.
+* #149 Parser now throws UnmatchedArgumentException for args that resemble options but are not, instead of treating like them positional parameters. Thanks to https://github.com/giaco777[giaco777].
 * #172 Parser now throws MaxValuesforFieldExceededException when multi-valued option or parameters max arity exceeded
 * #173 Parser now throws UnmatchedArgumentException when not all positional parameters are assigned to a field
+* #171 WARN when option overwritten with different value (when isOverwrittenOptionsAllowed=true); WARN for unmatched args (when isUnmatchedArgumentsAllowed=true). Thanks to https://github.com/ddimtirov[ddimtirov].
+* #164 API change: Support format patterns in version string and printVersionHelp
+* #167 API change: Change `type` attribute from `Class` to `Class[]`. This was needed for Map options support.
+* #168 API change: `CommandLine::setSeparator` method now returns this CommandLine (was void), allowing for chained method calls.
+* #156 Added example to user manual to clarify main command common usage. Thanks to https://github.com/nagkumar[nagkumar].
+* #166 Fixed bug where adjacent markup sections resulted in incorrect ANSI escape sequences
 * #174 Fixed bug where under some circumstances, unmatched parameters were added to UnmatchedParameters list twice
 
 == 0.9.8 - Bugfix and enhancements release for public review. API may change.
