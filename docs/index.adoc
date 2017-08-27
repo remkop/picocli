@@ -22,7 +22,7 @@ and generating polished, easily tailored usage help messages. With <<ANSI Colors
 
 image:ExampleUsageANSI.png[Screenshot of usage help with Ansi codes enabled]
 
-Now in BETA: autocomplete.html[command line autocompletion]. (Comments, bug reports, pull requests welcome!)
+Now in BETA: link:autocomplete.html[command line autocompletion]. (Comments, bug reports, pull requests welcome!)
 
 
 A distinguishing feature of picocli is how it aims
