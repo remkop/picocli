@@ -339,8 +339,8 @@ public class AutoCompleteTest {
                 "  declare -A tmp\n" +
                 "  eval lArr1=(\"\\\"\\${$1[@]}\\\"\")\n" +
                 "  eval lArr2=(\"\\\"\\${$2[@]}\\\"\")\n" +
-                "  for i in \"${lArr1[@]}\";{ [ -n \"$i\" ] && ((++tmp['$i']));}\n" +
-                "  for i in \"${lArr2[@]}\";{ [ -z \"${tmp[$i]}\" ] && return 1;}\n" +
+                "  for i in \"${lArr1[@]}\";{ [ -n \"$i\" ] && ((++tmp[$i]));}\n" +
+                "  for i in \"${lArr2[@]}\";{ [ -n \"$i\" ] && [ -z \"${tmp[$i]}\" ] && return 1;}\n" +
                 "  return 0\n" +
                 "}\n" +
                 "\n" +

@@ -1,5 +1,14 @@
 # picocli Release Notes
 
+## 1.0.1 - Bugfix release.
+
+### Summary: zsh autocompletion bugfix
+
+This is the eleventh public release.
+Picocli follows [semantic versioning](http://semver.org/).
+
+- #178 Fixed autocompletion bug for subcommands in zsh. Autocomplete on zsh would show only the global command options even when a subcommand was specified. Autocompletion now works for nested subcommands.
+
 ## 1.0.0 - Bugfix and enhancements release.
 
 ### Summary: command line autocompletion, `-Dkey=value`-like Map options, parser tracing, stricter parsing, bugfixes

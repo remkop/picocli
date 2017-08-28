@@ -50,8 +50,8 @@ function ArrContains() {
   declare -A tmp
   eval lArr1=("\"\${$1[@]}\"")
   eval lArr2=("\"\${$2[@]}\"")
-  for i in "${lArr1[@]}";{ [ -n "$i" ] && ((++tmp['$i']));}
-  for i in "${lArr2[@]}";{ [ -z "${tmp[$i]}" ] && return 1;}
+  for i in "${lArr1[@]}";{ [ -n "$i" ] && ((++tmp[$i]));}
+  for i in "${lArr2[@]}";{ [ -n "$i" ] && [ -z "${tmp[$i]}" ] && return 1;}
   return 0
 }
 
