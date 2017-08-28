@@ -123,7 +123,7 @@ import static picocli.CommandLine.Help.Column.Overflow.WRAP;
  */
 public class CommandLine {
     /** This is picocli version {@value}. */
-    public static final String VERSION = "1.0.1";
+    public static final String VERSION = "1.1.0-SNAPSHOT";
 
     private final Tracer tracer = new Tracer();
     private final Interpreter interpreter;
