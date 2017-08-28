@@ -1,8 +1,8 @@
 = picocli - a mighty tiny command line interface
 //:author: Remko Popma
 //:email: rpopma@apache.org
-:revnumber: 1.1.0-SNAPSHOT
-:revdate: 2017-08-26
+:revnumber: 1.0.1
+:revdate: 2017-08-29
 :toc: left
 :numbered:
 :toclevels: 2
@@ -17,12 +17,14 @@ image::https://s3.amazonaws.com/github/ribbons/forkme_right_red_aa0000.png[Fork 
 Every main method deserves picocli!
 
 == Introduction
-Picocli is a one-file Java framework for parsing command line arguments
-and generating polished, easily tailored usage help messages. With <<ANSI Colors and Styles,colors>>.
+Picocli is a one-file framework for creating Java command line applications with almost zero code.
+Supports a variety of command line syntax styles including POSIX, GNU, MS-DOS and more.
+Generates highly customizable usage help messages with <<ANSI Colors and Styles,ANSI colors and styles>>.
+Picocli-based applications can have link:autocomplete.html[command line TAB completion] showing available options, option parameters and subcommands, for any level of nested subcommands.
 
 image:ExampleUsageANSI.png[Screenshot of usage help with Ansi codes enabled]
 
-Now in BETA: link:autocomplete.html[command line autocompletion]. (Comments, bug reports, pull requests welcome!)
+link:autocomplete.html[Command line autocompletion] is in BETA. Comments, bug reports, pull requests welcome!
 
 
 A distinguishing feature of picocli is how it aims
@@ -58,13 +60,14 @@ assert  app.verbose;
 assert  app.inputFiles != null && app.inputFiles.length == 2;
 ----
 
-Here is a small example application:
+Here is a small example application that uses the `CommandLine.call` <<Less Boilerplate,convenience method>>
+to do parsing and error handling in one line of code.
 
 [[CheckSum-application]]
 [source,java]
 ----
 @Command(name = "checksum", description = "Prints the checksum (MD5 by default) of a file to STDOUT.")
-class CheckSum {
+class CheckSum implements Callable<Void> {
 
     @Parameters(index = "0", description = "The file whose checksum to calculate.")
     private File file;
@@ -76,33 +79,27 @@ class CheckSum {
     private boolean helpRequested;
 
     public static void main(String[] args) throws Exception {
-        CheckSum checkSum = new CheckSum();
-        try {
-            new CommandLine(checkSum).parse(args);
-        } catch (ParameterException ex) { // handle invalid input
-            System.err.println(ex.getMessage());
-            CommandLine.usage(checkSum, System.err);
-            return;
-        }
-        checkSum.call();
+        // CheckSum implements Callable,
+        // so parsing and error handling can be done in one line of code
+        CommandLine.call(new CheckSum(), System.err, args);
     }
 
-    public void call() throws Exception {
+    @Override
+    public Void call() throws Exception {
+        // business logic: do different things depending on options the user specified
         if (helpRequested) {
             CommandLine.usage(this, System.err);
-            return;
+            return null;
         }
         byte[] digest = MessageDigest.getInstance(algorithm).digest(readBytes(file));
         print(digest, System.out);
+        return null;
     }
 
     byte[] readBytes(File f) throws IOException {...}
     void print(byte[] digest, PrintStream out) {...}
 }
 ----
-
-NOTE: You may also be interested in the `CommandLine.run` and `CommandLine.call` <<Less Boilerplate,convenience methods>>
-for parsing that take care of handling invalid command line arguments.
 
 
 == Options and Parameters
@@ -1681,7 +1678,7 @@ See the <<Source,source code>> below. Copy and paste it into a file called `Comm
 
 === Gradle
 ----
-compile 'info.picocli:picocli:1.1.0-SNAPSHOT'
+compile 'info.picocli:picocli:1.0.1'
 ----
 
 === Maven
@@ -1689,19 +1686,19 @@ compile 'info.picocli:picocli:1.1.0-SNAPSHOT'
 <dependency>
   <groupId>info.picocli</groupId>
   <artifactId>picocli</artifactId>
-  <version>1.1.0-SNAPSHOT</version>
+  <version>1.0.1</version>
 </dependency>
 ----
 
 === Scala SBT
 ----
-libraryDependencies += "info.picocli" % "picocli" % "1.1.0-SNAPSHOT"
+libraryDependencies += "info.picocli" % "picocli" % "1.0.1"
 ----
 
 === Ivy
 
 ----
-<dependency org="info.picocli" name="picocli" rev="1.1.0-SNAPSHOT" />
+<dependency org="info.picocli" name="picocli" rev="1.0.1" />
 ----
 
 === Source

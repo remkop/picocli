@@ -667,21 +667,24 @@ public class Demo implements Runnable {
     @Command(name = "checksum", description = "Prints the checksum (MD5 by default) of a file to STDOUT.")
     class CheckSum implements Callable<Void> {
 
-        @Option(names = {"-h", "--help"}, usageHelp = true, description = "Show this help message and exit.")
-        private boolean helpRequested;
+        @Parameters(index = "0", description = "The file whose checksum to calculate.")
+        private File file;
 
         @Option(names = {"-a", "--algorithm"}, description = "MD5, SHA-1, SHA-256, ...")
         private String algorithm = "MD5";
 
-        @Parameters(index = "0", description = "The file whose checksum to calculate.")
-        private File file;
+        @Option(names = {"-h", "--help"}, usageHelp = true, description = "Show this help message and exit.")
+        private boolean helpRequested;
 
         public static void main(String[] args) throws Exception {
+            // CheckSum implements Callable,
+            // so parsing and error handling can be done in one line of code
             CommandLine.call(new CheckSum(), System.err, args);
         }
 
         @Override
         public Void call() throws Exception {
+            // business logic: do different things depending on options the user specified
             if (helpRequested) {
                 CommandLine.usage(this, System.err);
                 return null;
@@ -695,9 +698,13 @@ public class Demo implements Runnable {
             int pos = 0;
             int len = 0;
             byte[] buffer = new byte[(int) f.length()];
-            FileInputStream fis = new FileInputStream(f);
-            while ((len = fis.read(buffer, pos, buffer.length - pos)) > 0) { pos += len; }
-            fis.close();
+            FileInputStream fis = null;
+            try {
+                fis = new FileInputStream(f);
+                while ((len = fis.read(buffer, pos, buffer.length - pos)) > 0) { pos += len; }
+            } finally {
+                if (fis != null) { fis.close(); }
+            }
             return buffer;
         }
         void print(byte[] digest, PrintStream out) {
