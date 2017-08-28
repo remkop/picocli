@@ -33,7 +33,7 @@ Works with Java 5 or higher (but is designed to facilitate the use of Java 8 lam
 * user manual: [http://picocli.info](http://picocli.info)
 * [API Javadoc](http://picocli.info/apidocs/)
 * [FAQ](https://github.com/remkop/picocli/wiki/FAQ)
-* [Releases](https://github.com/remkop/picocli/releases) - latest: 1.0.0
+* [Releases](https://github.com/remkop/picocli/releases) - latest: 1.0.1
 * [![Build Status](https://travis-ci.org/remkop/picocli.svg?branch=master)](https://travis-ci.org/remkop/picocli) 
 [![codecov](https://codecov.io/gh/remkop/picocli/branch/master/graph/badge.svg)](https://codecov.io/gh/remkop/picocli)
 
