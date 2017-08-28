@@ -513,8 +513,8 @@ table.CodeRay td.code>pre{padding:0}
 <div id="header">
 <h1>picocli - a mighty tiny command line interface</h1>
 <div class="details">
-<span id="revnumber">version 1.0.0,</span>
-<span id="revdate">2017-08-26</span>
+<span id="revnumber">version 1.0.1,</span>
+<span id="revdate">2017-08-29</span>
 </div>
 <div id="toc" class="toc2">
 <div id="toctitle">Features</div>
@@ -648,14 +648,16 @@ Every main method deserves picocli!
 <h2 id="_introduction">1. Introduction</h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>Picocli is a one-file Java framework for parsing command line arguments
-and generating polished, easily tailored usage help messages. With <a href="#_ansi_colors_and_styles">colors</a>.</p>
+<p>Picocli is a one-file framework for creating Java command line applications with almost zero code.
+Supports a variety of command line syntax styles including POSIX, GNU, MS-DOS and more.
+Generates highly customizable usage help messages with <a href="#_ansi_colors_and_styles">ANSI colors and styles</a>.
+Picocli-based applications can have <a href="autocomplete.html">command line TAB completion</a> showing available options, option parameters and subcommands, for any level of nested subcommands.</p>
 </div>
 <div class="paragraph">
 <p><span class="image"><img src="images/ExampleUsageANSI.png" alt="Screenshot of usage help with Ansi codes enabled"></span></p>
 </div>
 <div class="paragraph">
-    <p>Now in BETA: <a href="autocomplete.html">command line autocompletion</a>. (Comments, bug reports, pull requests welcome!)</p>
+<p><a href="autocomplete.html">Command line autocompletion</a> is in BETA. Comments, bug reports, pull requests welcome!</p>
 </div>
 <div class="paragraph">
 <p>A distinguishing feature of picocli is how it aims
@@ -694,12 +696,13 @@ Example app = CommandLine.populateCommand(<span class="keyword">new</span> Examp
 </div>
 </div>
 <div class="paragraph">
-<p>Here is a small example application:</p>
+<p>Here is a small example application that uses the <code>CommandLine.call</code> <a href="#_less_boilerplate">convenience method</a>
+to do parsing and error handling in one line of code.</p>
 </div>
 <div id="CheckSum-application" class="listingblock">
 <div class="content">
 <pre class="CodeRay highlight"><code data-lang="java"><span class="annotation">@Command</span>(name = <span class="string"><span class="delimiter">&quot;</span><span class="content">checksum</span><span class="delimiter">&quot;</span></span>, description = <span class="string"><span class="delimiter">&quot;</span><span class="content">Prints the checksum (MD5 by default) of a file to STDOUT.</span><span class="delimiter">&quot;</span></span>)
-<span class="type">class</span> <span class="class">CheckSum</span> {
+<span class="type">class</span> <span class="class">CheckSum</span> <span class="directive">implements</span> <span class="predefined-type">Callable</span>&lt;<span class="predefined-type">Void</span>&gt; {
 
     <span class="annotation">@Parameters</span>(index = <span class="string"><span class="delimiter">&quot;</span><span class="content">0</span><span class="delimiter">&quot;</span></span>, description = <span class="string"><span class="delimiter">&quot;</span><span class="content">The file whose checksum to calculate.</span><span class="delimiter">&quot;</span></span>)
     <span class="directive">private</span> <span class="predefined-type">File</span> file;
@@ -711,43 +714,27 @@ Example app = CommandLine.populateCommand(<span class="keyword">new</span> Examp
     <span class="directive">private</span> <span class="type">boolean</span> helpRequested;
 
     <span class="directive">public</span> <span class="directive">static</span> <span class="type">void</span> main(<span class="predefined-type">String</span><span class="type">[]</span> args) <span class="directive">throws</span> <span class="exception">Exception</span> {
-        CheckSum checkSum = <span class="keyword">new</span> CheckSum();
-        <span class="keyword">try</span> {
-            <span class="keyword">new</span> CommandLine(checkSum).parse(args);
-        } <span class="keyword">catch</span> (ParameterException ex) { <span class="comment">// handle invalid input</span>
-            <span class="predefined-type">System</span>.err.println(ex.getMessage());
-            CommandLine.usage(checkSum, <span class="predefined-type">System</span>.err);
-            <span class="keyword">return</span>;
-        }
-        checkSum.call();
+        <span class="comment">// CheckSum implements Callable,</span>
+        <span class="comment">// so parsing and error handling can be done in one line of code</span>
+        CommandLine.call(<span class="keyword">new</span> CheckSum(), <span class="predefined-type">System</span>.err, args);
     }
 
-    <span class="directive">public</span> <span class="type">void</span> call() <span class="directive">throws</span> <span class="exception">Exception</span> {
+    <span class="annotation">@Override</span>
+    <span class="directive">public</span> <span class="predefined-type">Void</span> call() <span class="directive">throws</span> <span class="exception">Exception</span> {
+        <span class="comment">// business logic: do different things depending on options the user specified</span>
         <span class="keyword">if</span> (helpRequested) {
             CommandLine.usage(<span class="local-variable">this</span>, <span class="predefined-type">System</span>.err);
-            <span class="keyword">return</span>;
+            <span class="keyword">return</span> <span class="predefined-constant">null</span>;
         }
         <span class="type">byte</span><span class="type">[]</span> digest = <span class="predefined-type">MessageDigest</span>.getInstance(algorithm).digest(readBytes(file));
         print(digest, <span class="predefined-type">System</span>.out);
+        <span class="keyword">return</span> <span class="predefined-constant">null</span>;
     }
 
     <span class="type">byte</span><span class="type">[]</span> readBytes(<span class="predefined-type">File</span> f) <span class="directive">throws</span> <span class="exception">IOException</span> {...}
     <span class="type">void</span> print(<span class="type">byte</span><span class="type">[]</span> digest, <span class="predefined-type">PrintStream</span> out) {...}
 }</code></pre>
 </div>
-</div>
-<div class="admonitionblock note">
-<table>
-<tr>
-<td class="icon">
-<i class="fa icon-note" title="Note"></i>
-</td>
-<td class="content">
-You may also be interested in the <code>CommandLine.run</code> and <code>CommandLine.call</code> <a href="#_less_boilerplate">convenience methods</a>
-for parsing that take care of handling invalid command line arguments.
-</td>
-</tr>
-</table>
 </div>
 </div>
 </div>
@@ -3016,7 +3003,7 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
 <h3 id="_gradle">21.1. Gradle</h3>
 <div class="listingblock">
 <div class="content">
-<pre>compile 'info.picocli:picocli:1.0.0'</pre>
+<pre>compile 'info.picocli:picocli:1.0.1'</pre>
 </div>
 </div>
 </div>
@@ -3027,7 +3014,7 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
 <pre>&lt;dependency&gt;
   &lt;groupId&gt;info.picocli&lt;/groupId&gt;
   &lt;artifactId&gt;picocli&lt;/artifactId&gt;
-  &lt;version&gt;1.0.0&lt;/version&gt;
+  &lt;version&gt;1.0.1&lt;/version&gt;
 &lt;/dependency&gt;</pre>
 </div>
 </div>
@@ -3036,7 +3023,7 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
 <h3 id="_scala_sbt">21.3. Scala SBT</h3>
 <div class="listingblock">
 <div class="content">
-<pre>libraryDependencies += "info.picocli" % "picocli" % "1.0.0"</pre>
+<pre>libraryDependencies += "info.picocli" % "picocli" % "1.0.1"</pre>
 </div>
 </div>
 </div>
@@ -3044,7 +3031,7 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
 <h3 id="_ivy">21.4. Ivy</h3>
 <div class="listingblock">
 <div class="content">
-<pre>&lt;dependency org="info.picocli" name="picocli" rev="1.0.0" /&gt;</pre>
+<pre>&lt;dependency org="info.picocli" name="picocli" rev="1.0.1" /&gt;</pre>
 </div>
 </div>
 </div>
@@ -3177,7 +3164,7 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
  */</span>
 <span class="directive">public</span> <span class="type">class</span> <span class="class">CommandLine</span> {
     <span class="comment">/** This is picocli version {@value}. */</span>
-    <span class="directive">public</span> <span class="directive">static</span> <span class="directive">final</span> <span class="predefined-type">String</span> VERSION = <span class="string"><span class="delimiter">&quot;</span><span class="content">1.0.0</span><span class="delimiter">&quot;</span></span>;
+    <span class="directive">public</span> <span class="directive">static</span> <span class="directive">final</span> <span class="predefined-type">String</span> VERSION = <span class="string"><span class="delimiter">&quot;</span><span class="content">1.0.1</span><span class="delimiter">&quot;</span></span>;
 
     <span class="directive">private</span> <span class="directive">final</span> Tracer tracer = <span class="keyword">new</span> Tracer();
     <span class="directive">private</span> <span class="directive">final</span> Interpreter interpreter;
@@ -7199,8 +7186,8 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
 </div>
 <div id="footer">
 <div id="footer-text">
-Version 1.0.0<br>
-Last updated 2017-08-26 23:38:06 +09:00
+Version 1.0.1<br>
+Last updated 2017-08-29 00:35:32 +09:00
 </div>
 </div>
 </body>
