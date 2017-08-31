@@ -4136,7 +4136,7 @@ public class CommandLine {
         }
     }
 
-    private static class Point {
+    public static class Point {
         public int x;
         public int y;
 

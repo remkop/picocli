@@ -22,7 +22,6 @@ import picocli.CommandLine.Help.IParameterRenderer;
 import picocli.CommandLine.Help.Layout;
 import picocli.CommandLine.Help.TextTable;
 
-import java.awt.Point;
 import java.lang.reflect.Field;
 
 import static picocli.CommandLine.*;
