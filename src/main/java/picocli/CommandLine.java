@@ -15,7 +15,6 @@
  */
 package picocli;
 
-import java.awt.Point;
 import java.io.File;
 import java.io.PrintStream;
 import java.lang.annotation.ElementType;
@@ -4134,6 +4133,16 @@ public class CommandLine {
         private static final long serialVersionUID = -6050931703233083760L;
         public MissingTypeConverterException(String msg) {
             super(msg);
+        }
+    }
+
+    private static class Point {
+        public int x;
+        public int y;
+
+        public Point(int x, int y) {
+            this.x = x;
+            this.y = y;
         }
     }
 }
