@@ -39,6 +39,8 @@ import java.net.InetAddress;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import static java.lang.String.format;
 import static org.junit.Assert.*;
@@ -154,22 +156,50 @@ public class CommandLineHelpTest {
                 ""), result);
     }
 
+    @Ignore("Until #181 is fixed: Incorrect help message for short options with paramLabel when arity > 1")
     @Test
     public void testUsageParamLabels() throws Exception {
         @Command()
         class ParamLabels {
-            @Option(names = "-f", paramLabel = "FILE", description = "a file") File f;
-            @Option(names = "-n", description = "a number") int number;
+            @Option(names = "-P",    paramLabel = "KEY=VALUE", type  = {String.class, String.class},
+                    description = "Project properties (key-value pairs)")              Map<String, String> props;
+            @Option(names = "-f",    paramLabel = "FILE", description = "files")      File[] f;
+            @Option(names = "-n",    description = "a number option")                  int number;
             @Parameters(index = "0", paramLabel = "NUM", description = "number param") int n;
-            @Parameters(index = "1", description = "the host") InetAddress host;
+            @Parameters(index = "1", description = "the host parameter")               InetAddress host;
         }
         String result = usageString(new ParamLabels(), Help.Ansi.OFF);
         assertEquals(format("" +
-                        "Usage: <main class> [-f=FILE] [-n=<number>] NUM <host>%n" +
+                        "Usage: <main class> [-n=<number>] [-f[=FILE...]] [-P[=KEY=VALUE...]] NUM <host>%n" +
                         "      NUM                     number param%n" +
-                        "      host                    the host%n" +
+                        "      host                    the host parameter%n" +
+                        "  -f= [FILE...]               files%n" +
+                        "  -n= <number>                a number option%n" +
+                        "  -P= [KEY=VALUE...]          Project properties (key-value pairs)%n",
+                ""), result);
+    }
+
+    @Test
+    public void testUsageParamLabelsWithLongMapOptionName() throws Exception {
+        @Command()
+        class ParamLabels {
+            @Option(names = {"-P", "--properties"},
+                    paramLabel = "KEY=VALUE", type  = {String.class, String.class},
+                    description = "Project properties (key-value pairs)")              Map<String, String> props;
+            @Option(names = "-f",    paramLabel = "FILE", description = "a file")      File f;
+            @Option(names = "-n",    description = "a number option")                  int number;
+            @Parameters(index = "0", paramLabel = "NUM", description = "number param") int n;
+            @Parameters(index = "1", description = "the host parameter")               InetAddress host;
+        }
+        String result = usageString(new ParamLabels(), Help.Ansi.OFF);
+        assertEquals(format("" +
+                        "Usage: <main class> [-f=FILE] [-n=<number>] [-P[=KEY=VALUE...]] NUM <host>%n" +
+                        "      NUM                     number param%n" +
+                        "      host                    the host parameter%n" +
                         "  -f= FILE                    a file%n" +
-                        "  -n= <number>                a number%n",
+                        "  -n= <number>                a number option%n" +
+                        "  -P, --properties[=KEY=VALUE...]%n" +
+                        "                              Project properties (key-value pairs)%n",
                 ""), result);
     }
 
@@ -1656,5 +1686,30 @@ public class CommandLineHelpTest {
                 "\u001B[33mVersioned Command 1.0\u001B[39m\u001B[0m%n" +
                 "\u001B[34mBuild 12345\u001B[39m\u001B[0m\u001B[1mVALUE1\u001B[21m\u001B[0m%n" +
                 "\u001B[31m\u001B[47m(c) 2017\u001B[49m\u001B[39m\u001B[0m\u001B[4mVALUE2\u001B[24m\u001B[0m%n"), result);
+    }
+
+    @Test
+    public void testMapFieldHelp() throws Exception {
+        class App {
+            @Parameters(arity = "2", split = "\\|", type = {Integer.class, String.class},
+                    paramLabel = "FIXTAG=VALUE",
+                    description = "Exactly two lists of vertical bar '|'-separated FIXTAG=VALUE pairs.")
+            Map<Integer,String> message;
+
+            @Option(names = {"-P", "-map"}, split = ",", type = {TimeUnit.class, String.class},
+                    paramLabel = "TIMEUNIT=VALUE",
+                    description = "Any number of TIMEUNIT=VALUE pairs. These may be specified separately (-PTIMEUNIT=VALUE) or as a comma-separated list.")
+            Map<TimeUnit, String> map;
+        }
+        String actual = usageString(new App(), Help.Ansi.OFF);
+        String expected = String.format("" +
+                "Usage: <main class> [-P[=TIMEUNIT=VALUE...]] FIXTAG=VALUE FIXTAG=VALUE%n" +
+                "      FIXTAG=VALUE            Exactly two lists of vertical bar '|'-separated%n" +
+                "                                FIXTAG=VALUE pairs.%n" +
+                "  -P, -map[=TIMEUNIT=VALUE...]%n" +
+                "                              Any number of TIMEUNIT=VALUE pairs. These may be%n" +
+                "                                specified separately (-PTIMEUNIT=VALUE) or as a%n" +
+                "                                comma-separated list.%n");
+        assertEquals(expected, actual);
     }
 }
