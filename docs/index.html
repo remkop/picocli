@@ -721,18 +721,15 @@ to do parsing and error handling in one line of code.</p>
 
     <span class="annotation">@Override</span>
     <span class="directive">public</span> <span class="predefined-type">Void</span> call() <span class="directive">throws</span> <span class="exception">Exception</span> {
-        <span class="comment">// business logic: do different things depending on options the user specified</span>
         <span class="keyword">if</span> (helpRequested) {
             CommandLine.usage(<span class="local-variable">this</span>, <span class="predefined-type">System</span>.err);
             <span class="keyword">return</span> <span class="predefined-constant">null</span>;
         }
-        <span class="type">byte</span><span class="type">[]</span> digest = <span class="predefined-type">MessageDigest</span>.getInstance(algorithm).digest(readBytes(file));
-        print(digest, <span class="predefined-type">System</span>.out);
+        <span class="type">byte</span><span class="type">[]</span> fileContents = Files.readAllBytes(file.toPath());
+        <span class="type">byte</span><span class="type">[]</span> digest = <span class="predefined-type">MessageDigest</span>.getInstance(algorithm).digest(fileContents);
+        <span class="predefined-type">System</span>.out.println(javax.xml.bind.DatatypeConverter.printHexBinary(digest));
         <span class="keyword">return</span> <span class="predefined-constant">null</span>;
     }
-
-    <span class="type">byte</span><span class="type">[]</span> readBytes(<span class="predefined-type">File</span> f) <span class="directive">throws</span> <span class="exception">IOException</span> {...}
-    <span class="type">void</span> print(<span class="type">byte</span><span class="type">[]</span> digest, <span class="predefined-type">PrintStream</span> out) {...}
 }</code></pre>
 </div>
 </div>

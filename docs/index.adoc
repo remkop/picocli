@@ -86,18 +86,15 @@ class CheckSum implements Callable<Void> {
 
     @Override
     public Void call() throws Exception {
-        // business logic: do different things depending on options the user specified
         if (helpRequested) {
             CommandLine.usage(this, System.err);
             return null;
         }
-        byte[] digest = MessageDigest.getInstance(algorithm).digest(readBytes(file));
-        print(digest, System.out);
+        byte[] fileContents = Files.readAllBytes(file.toPath());
+        byte[] digest = MessageDigest.getInstance(algorithm).digest(fileContents);
+        System.out.println(javax.xml.bind.DatatypeConverter.printHexBinary(digest));
         return null;
     }
-
-    byte[] readBytes(File f) throws IOException {...}
-    void print(byte[] digest, PrintStream out) {...}
 }
 ----
 
