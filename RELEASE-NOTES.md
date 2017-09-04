@@ -1,5 +1,9 @@
 # picocli Release Notes
 
+## Unreleased
+
+- #181 Fixed bug where incorrect help message is displayed for short options with paramLabel when arity > 1
+
 ## 1.0.1 - Bugfix release.
 
 ### Summary: zsh autocompletion bugfix

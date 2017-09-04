@@ -2990,7 +2990,10 @@ public class CommandLine {
                 // if no long option, fill in the space between the short option name and the param label value
                 if (paramLabelText.length > 0 && longOption.length() == 0) {
                     sep = paramLabelRenderer.separator();
-                    paramLabelText = paramLabelText.substring(sep.length());
+                    // #181 paramLabelText may be =LABEL or [=LABEL...]
+                    int sepStart = paramLabelText.plainString().indexOf(sep);
+                    Text prefix = paramLabelText.substring(0, sepStart);
+                    paramLabelText = prefix.append(paramLabelText.substring(sepStart + sep.length()));
                 }
                 Text longOptionText = scheme.optionText(longOption);
                 longOptionText = longOptionText.append(paramLabelText);

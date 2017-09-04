@@ -156,7 +156,6 @@ public class CommandLineHelpTest {
                 ""), result);
     }
 
-    @Ignore("Until #181 is fixed: Incorrect help message for short options with paramLabel when arity > 1")
     @Test
     public void testUsageParamLabels() throws Exception {
         @Command()
