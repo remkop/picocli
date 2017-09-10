@@ -36,7 +36,8 @@ Works with Java 5 or higher (but is designed to facilitate the use of Java 8 lam
 * [Releases](https://github.com/remkop/picocli/releases) - latest: 1.0.1
 * [![Build Status](https://travis-ci.org/remkop/picocli.svg?branch=master)](https://travis-ci.org/remkop/picocli) 
 [![codecov](https://codecov.io/gh/remkop/picocli/branch/master/graph/badge.svg)](https://codecov.io/gh/remkop/picocli)
-
+* Check out Thibaud Lepretre's [picocli Spring boot starter](https://github.com/kakawait/picocli-spring-boot-starter)!
+* [Announcing picocli 1.0](http://picocli.info/announcing-picocli-1.0.html)
 
 ## Example
 

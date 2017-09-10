@@ -1,0 +1,73 @@
+= Announcing picocli 1.0 - a mighty tiny command line interface
+:author: Remko Popma
+//:email: rpopma@apache.org
+//:revnumber: 1.0.1
+:revdate: 2017-09-10
+//:toc: left
+//:numbered:
+//:toclevels: 2
+//:toc-title: Features
+:source-highlighter: coderay
+:icons: font
+:imagesdir: images
+
+[link=https://github.com/remkop/picocli]
+image::https://s3.amazonaws.com/github/ribbons/forkme_right_red_aa0000.png[Fork me on GitHub,float="right"]
+
+
+Picocli (http://picocli.info/) is a one-file framework for creating Java command line applications with almost zero code. A number of similar libraries already exist, so why create another one? There are three common concerns that have been mostly ignored by other command line parser libraries.
+
+* No extra dependencies for end users. How can we avoid adding a JAR?
+* Usage help should look beautiful, be customizable and use colors.
+* Command line TAB autocompletion. Because why not!
+
+Let's look at how picocli tries to address these issues.
+
+== One Single Source File - Include as Source
+
+How often have you chosen to write custom code to parse command line arguments instead of using a library because you didn’t want to burden your users with the extra dependency?
+
+Picocli offers a way to let users run picocli-based applications without requiring the picocli library as an external dependency: all the source code lives in a https://github.com/remkop/picocli/blob/master/src/main/java/picocli/CommandLine.java[single file], to encourage application authors to include it in source form. This is convenient for utility-like single-jar applications.
+
+There are other ways to accomplish this, like JAR shading, but this is an alternative. It is easy to understand, easy to do, and it doesn’t require any special tooling. Application authors can upgrade to newer versions of picocli by replacing a single source file.
+
+=== Binaries Available
+Including as source is optional. If you prefer to use picocli as a library, that is fine. Picocli is distributed in binary form as well as source and its JAR file is available on https://search.maven.org/#search%7Cga%7C1%7Cpicocli[Maven], https://bintray.com/remkop/picocli/picocli/[Bintray JCenter] and https://github.com/remkop/picocli/releases[GitHub].
+
+== Customizable Usage Help - with ANSI Styles and Colors
+Usage help is the face of a command line application. The generated help message should look great out of the box, but should also be easy to tweak.
+
+Do you want your application's usage help to look http://picocli.info/index.html#_compact_example[compact], or do you prefer a more http://picocli.info/index.html#_expanded_example[spacious] look? A good command line library should let you customize the usage help message to accomodate a variety of styles.
+
+This is easily accomplished in picocli with http://picocli.info/index.html#_section_headings[annotations]. Separate annotations exist for sections like description, header and footer. Text can be multi-line and each section has a customizable heading. If the annotations are not sufficient, picocli has a Help http://picocli.info/index.html#_usage_help_api[API] that offers some building blocks for further customizing the help message. This may range from the basic (reordering sections and passing parameters for https://docs.oracle.com/javase/8/docs/api/java/util/Formatter.html#syntax[format specifiers] in the headings or section text) to the more advanced (http://picocli.info/index.html#_custom_layout[custom layouts] for options).
+
+http://picocli.info/index.html#_ansi_colors_and_styles[ANSI styles and colors] are applied automatically to the generated sections of the help message on supported platforms. Picocli uses a default http://picocli.info/index.html#_configuring_fixed_elements[color scheme] for options, parameters and subcommands. This color scheme can be http://picocli.info/index.html#_color_scheme_overrides[customized].
+
+In addition, you can use ANSI colors and styles in your descriptions and headings by embedding http://picocli.info/index.html#_usage_help_with_styles_and_colors[markup] like `@|red text|@` in the annotations text. For example, generating usage for an annotated class like this:
+
+[code,java]
+----
+@Command(description = "Custom @|bold,underline styles|@ and @|fg(red) colors|@.")
+class AnsiDescription { }
+CommandLine.usage(new AnsiDescription(), System.out);
+----
+
+image::http://picocli.info/images/DescriptionWithColors.png[Custom description with ANSI styles and colors]
+
+Below is an example of what kind of usage help messages can be created with just annotations.
+
+image::http://picocli.info/images/picocli.Demo.png[Picocli demo help message]
+
+== Command Line Completion
+Picocli-based applications can have http://picocli.info/autocomplete.html[command line autocompletion] on supported platforms.
+
+Not all shells support programmable completion. Currently picocli autocompletion works only in the Bash and Zsh shells. Hopefully this is still useful: the Bash Unix shell has been distributed widely as the default login shell for most Linux distributions and Apple's macOS. Windows 10 now offers https://msdn.microsoft.com/en-us/commandline/wsl/about[native support for Bash], on older versions of Windows you may want to look at Cygwin or Babun.
+
+How does this work? Picocli inspects the  `@Command`  and  `@Option`  annotations of your command class and http://picocli.info/autocomplete.html#_quick_start_tutorial[generates a completion function]. When this completion function is installed, pressing the TAB key shows the available options, option parameters and subcommands, for any level of nested subcommands. For options that accept files or directories, hosts, or Java enums, the shell will show the possible option values that match what the user typed so far.
+
+== Feedback Welcome
+There is much more to picocli but hopefully the above has whetted your appetite.
+
+Please give it a try and use the https://github.com/remkop/picocli/issues[issue tracker] to let me know your thoughts. Bug reports, documentation improvements, ideas, any feedback is welcome!
+
+If you like the project, please star it https://github.com/remkop/picocli[on GitHub] and tell your friends!
