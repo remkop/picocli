@@ -13,8 +13,11 @@
 
 [link=https://github.com/remkop/picocli]
 image::https://s3.amazonaws.com/github/ribbons/forkme_right_red_aa0000.png[Fork me on GitHub,float="right"]
+
 [quote]
 Every main method deserves picocli!
+
+image:cli.jpg[picocli the Mighty Tiny Command Line Interface]
 
 == Introduction
 Picocli is a one-file framework for creating Java command line applications with almost zero code.
