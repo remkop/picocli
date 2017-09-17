@@ -637,6 +637,8 @@ public class CommandLine {
     }
 
     /** Sets the String the parser uses to separate option names from option values to the specified value.
+     * Note that this method only modifies parsing behaviour, it does not impact the usage help message.
+     * Use the {@link CommandLine.Command#separator()} annotation attribute to affect both the usage help message and the command line parser.
      * @param separator the String that separates option names from option values
      * @return this {@code CommandLine} object, to allow method chaining */
     public CommandLine setSeparator(String separator) {

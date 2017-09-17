@@ -3,6 +3,7 @@
 ## Unreleased
 
 - #181 Fixed bug where incorrect help message is displayed for short options with paramLabel when arity > 1
+- #184 Improved CommandLine.setSeparator javadoc to clarify that this affects parsing only and link to the `@Command` `separator` annotation attribute.
 
 ## 1.0.1 - Bugfix release.
 
