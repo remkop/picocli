@@ -2900,16 +2900,19 @@ However, picocli lets you make options required if you want to, see <a href="#_r
 <div class="ulist">
 <ul>
 <li>
-<p>OFF: Suppresses all tracing including warnings.</p>
-</li>
-<li>
-<p>WARN: Shows single-value options that were specified multiple times (when <code>CommandLine.overwrittenOptionsAllowed</code> is <code>true</code>), and command line arguments that could not be matched as an option or positional parameter (when <code>CommandLine.unmatchedArgumentsAllowed</code> is <code>true</code>).</p>
+<p>DEBUG: Shows details of the decisions made by the parser during command line parsing.</p>
 </li>
 <li>
 <p>INFO: Shows a high-level overview of what happens during command line parsing.</p>
 </li>
 <li>
-<p>DEBUG: Shows details of the decisions made by the parser during command line parsing.</p>
+<p>WARN: The default. Shows warnings instead of errors when lenient parsing is enabled:
+when single-value options were specified multiple times (and <code>CommandLine.overwrittenOptionsAllowed</code> is <code>true</code>),
+or when command line arguments could not be matched as an option or positional parameter
+(and <code>CommandLine.unmatchedArgumentsAllowed</code> is <code>true</code>).</p>
+</li>
+<li>
+<p>OFF: Suppresses all tracing including warnings.</p>
 </li>
 </ul>
 </div>
@@ -2918,8 +2921,13 @@ However, picocli lets you make options required if you want to, see <a href="#_r
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="CodeRay highlight"><code data-lang="bash">alias git='java -Dpicocli.trace -cp picocli-all.jar picocli.Demo$Git'
+<pre class="CodeRay highlight"><code data-lang="bash"># create a custom 'git' command that invokes picocli.Demo$Git with tracing switched on
+alias git='java -Dpicocli.trace -cp picocli-all.jar picocli.Demo$Git'
+
+# invoke our command with some parameters
 git --git-dir=/home/rpopma/picocli commit -m &quot;Fixed typos&quot; -- src1.java src2.java src3.java
+
+# remove our 'git' pseudonym from the current shell environment
 unalias git</code></pre>
 </div>
 </div>

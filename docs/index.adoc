@@ -1624,17 +1624,25 @@ System property `picocli.trace` controls the trace level. Supported levels are `
 
 Specifying system property `-Dpicocli.trace` without a value will set the trace level to `INFO`.
 
-* OFF: Suppresses all tracing including warnings.
-* WARN: Shows single-value options that were specified multiple times (when `CommandLine.overwrittenOptionsAllowed` is `true`), and command line arguments that could not be matched as an option or positional parameter (when `CommandLine.unmatchedArgumentsAllowed` is `true`).
-* INFO: Shows a high-level overview of what happens during command line parsing.
 * DEBUG: Shows details of the decisions made by the parser during command line parsing.
+* INFO: Shows a high-level overview of what happens during command line parsing.
+* WARN: The default. Shows warnings instead of errors when lenient parsing is enabled:
+ when single-value options were specified multiple times (and `CommandLine.overwrittenOptionsAllowed` is `true`),
+ or when command line arguments could not be matched as an option or positional parameter
+ (and `CommandLine.unmatchedArgumentsAllowed` is `true`).
+* OFF: Suppresses all tracing including warnings.
 
 Example:
 
 [source,bash]
 ----
+# create a custom 'git' command that invokes picocli.Demo$Git with tracing switched on
 alias git='java -Dpicocli.trace -cp picocli-all.jar picocli.Demo$Git'
+
+# invoke our command with some parameters
 git --git-dir=/home/rpopma/picocli commit -m "Fixed typos" -- src1.java src2.java src3.java
+
+# remove our 'git' pseudonym from the current shell environment
 unalias git
 ----
 
