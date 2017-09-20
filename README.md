@@ -33,8 +33,8 @@ Works with Java 5 or higher (but is designed to facilitate the use of Java 8 lam
 * [![Build Status](https://travis-ci.org/remkop/picocli.svg?branch=master)](https://travis-ci.org/remkop/picocli) 
 [![codecov](https://codecov.io/gh/remkop/picocli/branch/master/graph/badge.svg)](https://codecov.io/gh/remkop/picocli)
 * [Releases](https://github.com/remkop/picocli/releases) - latest: 1.0.1
-* User manual: [http://picocli.info](http://picocli.info)
-* [Command line autocompletion](http://picocli.info/autocomplete.html)|
+* [User manual: http://picocli.info](http://picocli.info)
+* [Command line autocompletion](http://picocli.info/autocomplete.html)
 * [API Javadoc](http://picocli.info/apidocs/)
 * [FAQ](https://github.com/remkop/picocli/wiki/FAQ)
 * [Announcing picocli 1.0](http://picocli.info/announcing-picocli-1.0.html)
