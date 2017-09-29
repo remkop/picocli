@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- #193 Splitting an argument should not cause max arity to be exceeded
+- #191 Arity should not limit the total number of values put in an array or collection
 - #181 Fixed bug where incorrect help message is displayed for short options with paramLabel when arity > 1
 - #184 Improved CommandLine.setSeparator javadoc to clarify that this affects parsing only and link to the `@Command` `separator` annotation attribute.
 

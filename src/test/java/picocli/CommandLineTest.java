@@ -1586,6 +1586,15 @@ public class CommandLineTest {
                 new double[] {1.1, 2.2, }, params.doubleOptions, 0.000001);
         assertArrayEquals(new double[]{3.3, 4.4}, params.doubleParams, 0.000001);
     }
+    /** Arity should not limit the total number of values put in an array or collection #191 */
+    @Test
+    public void testArrayOptionsWithArity2MayContainMoreThan2Values() {
+        ArrayOptionArity2AndParameters
+                params = CommandLine.populateCommand(new ArrayOptionArity2AndParameters(), "-doubles=1 2 -doubles 3 4 -doubles 5 6".split(" "));
+        assertArrayEquals(Arrays.toString(params.doubleOptions),
+                new double[] {1, 2, 3, 4, 5, 6 }, params.doubleOptions, 0.000001);
+        assertArrayEquals(null, params.doubleParams, 0.000001);
+    }
 
     @Test
     public void testArrayOptionWithoutArityConsumesAllArguments() {
@@ -2370,43 +2379,28 @@ public class CommandLineTest {
             @Option(names = "-a", split = ",", arity = "0..4") String[] values;
             @Parameters() String[] params;
         }
-        Args args = CommandLine.populateCommand(new Args(), "-a=a,b,c");
+        Args args = CommandLine.populateCommand(new Args(), "-a=a,b,c"); // 1 args
         assertArrayEquals(new String[] {"a", "b", "c"}, args.values);
 
-        args = CommandLine.populateCommand(new Args(), "-a=a,b,c", "B", "C");
-        assertArrayEquals(new String[] {"a", "b", "c", "B"}, args.values);
-        assertArrayEquals(new String[] {"C"}, args.params);
+        args = CommandLine.populateCommand(new Args(), "-a"); // 0 args
+        assertArrayEquals(new String[0], args.values);
+        assertNull(args.params);
 
-        args = CommandLine.populateCommand(new Args(), "-a", "a,b,c", "B", "C");
-        assertArrayEquals(new String[] {"a", "b", "c", "B"}, args.values);
-        assertArrayEquals(new String[] {"C"}, args.params);
+        args = CommandLine.populateCommand(new Args(), "-a=a,b,c", "B", "C"); // 3 args
+        assertArrayEquals(new String[] {"a", "b", "c", "B", "C"}, args.values);
+        assertNull(args.params);
 
-        args = CommandLine.populateCommand(new Args(), "-a=a,b,c", "B", "C", "D,E,F");
-        assertArrayEquals(new String[] {"a", "b", "c", "B"}, args.values);
-        assertArrayEquals(new String[] {"C", "D,E,F"}, args.params);
+        args = CommandLine.populateCommand(new Args(), "-a", "a,b,c", "B", "C"); // 3 args
+        assertArrayEquals(new String[] {"a", "b", "c", "B", "C"}, args.values);
+        assertNull(args.params);
 
-        args = CommandLine.populateCommand(new Args(), "-a=a,b,c,d", "B", "C", "D,E,F");
-        assertArrayEquals(new String[] {"a", "b", "c", "d"}, args.values);
-        assertArrayEquals(new String[] {"B", "C", "D,E,F"}, args.params);
+        args = CommandLine.populateCommand(new Args(), "-a=a,b,c", "B", "C", "D,E,F"); // 4 args
+        assertArrayEquals(new String[] {"a", "b", "c", "B", "C", "D", "E", "F"}, args.values);
+        assertNull(args.params);
 
-        try {
-            CommandLine.populateCommand(new Args(), "-a=a,b,c,d,e", "B", "C", "D,E,F");
-            fail("MaxValuesforFieldExceededException expected");
-        } catch (MaxValuesforFieldExceededException ex) {
-            assertEquals("option '-a' max number of values (4) exceeded: remainder is 4 but 5 values were specified: [a, b, c, d, e]", ex.getMessage());
-        }
-        try {
-            CommandLine.populateCommand(new Args(), "-a=a,b", "-a=c,d,e", "C", "D,E,F");
-            fail("MaxValuesforFieldExceededException expected");
-        } catch (MaxValuesforFieldExceededException ex) {
-            assertEquals("option '-a' max number of values (4) exceeded: remainder is 2 but 3 values were specified: [c, d, e]", ex.getMessage());
-        }
-        try {
-            CommandLine.populateCommand(new Args(), "-a=1", "-a=2", "-a=3", "-a=4", "-a=5");
-            fail("MaxValuesforFieldExceededException expected");
-        } catch (MaxValuesforFieldExceededException ex) {
-            assertEquals("option '-a' max number of values (4) exceeded: remainder is 0 but 1 values were specified: [5]", ex.getMessage());
-        }
+        args = CommandLine.populateCommand(new Args(), "-a=a,b,c,d", "B", "C", "D", "E,F"); // 5 args
+        assertArrayEquals(new String[] {"a", "b", "c", "d", "B", "C", "D"}, args.values);
+        assertArrayEquals(new String[] {"E,F"}, args.params);
     }
 
     @Test
@@ -2450,44 +2444,35 @@ public class CommandLineTest {
         class Args {
             @Parameters(arity = "2..4", split = ",") String[] values;
         }
-        Args args = CommandLine.populateCommand(new Args(), "a,b,c");
-        assertArrayEquals(new String[] {"a", "b", "c"}, args.values);
-
-        args = CommandLine.populateCommand(new Args(), "a,b,c,d");
+        Args args = CommandLine.populateCommand(new Args(), "a,b", "c,d"); // 2 args
         assertArrayEquals(new String[] {"a", "b", "c", "d"}, args.values);
 
-        args = CommandLine.populateCommand(new Args(), "a,b,c", "B");
-        assertArrayEquals(new String[] {"a", "b", "c", "B"}, args.values);
+        args = CommandLine.populateCommand(new Args(), "a,b", "c,d", "e,f"); // 3 args
+        assertArrayEquals(new String[] {"a", "b", "c", "d", "e", "f"}, args.values);
 
-        args = CommandLine.populateCommand(new Args(), "a,b", "B,C");
-        assertArrayEquals(new String[] {"a", "b", "B", "C"}, args.values);
+        args = CommandLine.populateCommand(new Args(), "a,b,c", "B", "d", "e,f"); // 4 args
+        assertArrayEquals(new String[] {"a", "b", "c", "B", "d", "e", "f"}, args.values);
         try {
-            CommandLine.populateCommand(new Args(), "a,b,c,d,e");
-            fail("MaxValuesforFieldExceededException expected");
-        } catch (MaxValuesforFieldExceededException ex) {
-            assertEquals("positional parameter at index 0..* (values) max number of values (4) exceeded: remainder is 4 but 5 values were specified: [a, b, c, d, e]", ex.getMessage());
+            CommandLine.populateCommand(new Args(), "a,b,c,d,e"); // 1 arg: should fail
+            fail("MissingParameterException expected");
+        } catch (MissingParameterException ex) {
+            assertEquals("positional parameter at index 0..* (values) requires at least 2 values, but only 1 were specified.", ex.getMessage());
         }
         try {
-            CommandLine.populateCommand(new Args(), "a,b,c", "B,C");
-            fail("MaxValuesforFieldExceededException expected");
-        } catch (MaxValuesforFieldExceededException ex) {
-            assertEquals("positional parameter at index 0..* (values) max number of values (4) exceeded: remainder is 1 but 2 values were specified: [B, C]", ex.getMessage());
+            CommandLine.populateCommand(new Args()); // 0 arg: should fail
+            fail("MissingParameterException expected");
+        } catch (MissingParameterException ex) {
+            assertEquals("positional parameter at index 0..* (values) requires at least 2 values, but only 0 were specified.", ex.getMessage());
         }
         try {
-            CommandLine.populateCommand(new Args(), "a,b", "A,B,C");
-            fail("MaxValuesforFieldExceededException expected");
-        } catch (MaxValuesforFieldExceededException ex) {
-            assertEquals("positional parameter at index 0..* (values) max number of values (4) exceeded: remainder is 2 but 3 values were specified: [A, B, C]", ex.getMessage());
-        }
-        try {
-            CommandLine.populateCommand(new Args(), "a,b,c", "B", "C");
+            CommandLine.populateCommand(new Args(), "a,b,c", "B,C", "d", "e", "f,g"); // 5 args
             fail("UnmatchedArgumentException expected");
         } catch (UnmatchedArgumentException ex) {
-            assertEquals("Unmatched argument [C]", ex.getMessage());
+            assertEquals("Unmatched argument [f,g]", ex.getMessage());
         }
         setTraceLevel("OFF");
         CommandLine cmd = new CommandLine(new Args()).setUnmatchedArgumentsAllowed(true);
-        cmd.parse("a,b,c", "B", "C");
+        cmd.parse("1,1,1", "2", "3,3,3", "4,4", "C");
         assertEquals(Arrays.asList("C"), cmd.getUnmatchedArguments());
     }
 
@@ -3269,12 +3254,30 @@ public class CommandLineTest {
         class App {
             @Option(names = "-fix", arity = "2", split = "\\|", type = {Integer.class, String.class})
             Map<Integer,String> message;
+            private void validate() {
+                assertEquals(message.toString(), 4, message.size());
+                assertEquals(LinkedHashMap.class, message.getClass());
+                assertEquals("a", message.get(1));
+                assertEquals("b", message.get(2));
+                assertEquals("c", message.get(3));
+                assertEquals("d", message.get(4));
+            }
+        }
+        CommandLine.populateCommand(new App(), "-fix", "1=a", "2=b|3=c|4=d").validate(); // 2 args
+        //Arity should not limit the total number of values put in an array or collection #191
+        CommandLine.populateCommand(new App(), "-fix", "1=a", "2=b", "-fix", "3=c", "4=d").validate(); // 2 args
+
+        try {
+            CommandLine.populateCommand(new App(), "-fix", "1=a|2=b|3=c|4=d"); // 1 arg
+            fail("MissingParameterException expected");
+        } catch (MissingParameterException ex) {
+            assertEquals("option '-fix' at index 0 (message) requires at least 2 values, but only 1 were specified.", ex.getMessage());
         }
         try {
-            CommandLine.populateCommand(new App(), "-fix", "1=a|2=b|3=c|4=d");
-            fail("MaxValuesforFieldExceededException expected");
-        } catch (MaxValuesforFieldExceededException ex) {
-            assertEquals("option '-fix' max number of values (2) exceeded: remainder is 2 but 4 values were specified: [1=a, 2=b, 3=c, 4=d]", ex.getMessage());
+            CommandLine.populateCommand(new App(), "-fix", "1=a", "2=b", "3=c|4=d"); // 3 args
+            fail("UnmatchedArgumentException expected");
+        } catch (UnmatchedArgumentException ex) {
+            assertEquals("Unmatched argument [3=c|4=d]", ex.getMessage());
         }
     }
     @Test

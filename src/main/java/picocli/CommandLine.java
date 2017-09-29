@@ -1836,17 +1836,17 @@ public class CommandLine {
                                          Map<Object, Object> result,
                                          String argDescription) throws Exception {
             // first do the arity.min mandatory parameters
-            for (int i = 0; result.size() < arity.min; i++) {
-                consumeOneMapArgument(field, arity, args, classes, keyConverter, valueConverter, result, argDescription);
+            for (int i = 0; i < arity.min; i++) {
+                consumeOneMapArgument(field, arity, args, classes, keyConverter, valueConverter, result, i, argDescription);
             }
             // now process the varargs if any
-            while (result.size() < arity.max && !args.isEmpty()) {
+            for (int i = arity.min; i < arity.max && !args.isEmpty(); i++) {
                 if (!field.isAnnotationPresent(Parameters.class)) {
                     if (commands.containsKey(args.peek()) || isOption(args.peek())) {
                         return;
                     }
                 }
-                consumeOneMapArgument(field, arity, args, classes, keyConverter, valueConverter, result, argDescription);
+                consumeOneMapArgument(field, arity, args, classes, keyConverter, valueConverter, result, i, argDescription);
             }
         }
 
@@ -1856,13 +1856,10 @@ public class CommandLine {
                                            Class<?>[] classes,
                                            ITypeConverter<?> keyConverter, ITypeConverter<?> valueConverter,
                                            Map<Object, Object> result,
+                                           int index,
                                            String argDescription) throws Exception {
             String[] values = split(trim(args.pop()), field);
-
-            // ensure we don't process more than arity.max (as result of splitting args)
-            int max = Math.min(arity.max - result.size(), values.length);
-            for (int j = 0; j < max; j++) {
-                String value = values[j];
+            for (String value : values) {
                 String[] keyValue = value.split("=");
                 if (keyValue.length < 2) {
                     String splitRegex = splitRegex(field);
@@ -1874,13 +1871,12 @@ public class CommandLine {
                                 0) + " should be in KEY=VALUE[" + splitRegex + "KEY=VALUE]... format but was " + value);
                     }
                 }
-                Object mapKey =   tryConvert(field, j, keyConverter,   keyValue[0], classes[0]);
-                Object mapValue = tryConvert(field, j, valueConverter, keyValue[1], classes[1]);
+                Object mapKey =   tryConvert(field, index, keyConverter,   keyValue[0], classes[0]);
+                Object mapValue = tryConvert(field, index, valueConverter, keyValue[1], classes[1]);
                 result.put(mapKey, mapValue);
                 if (tracer.isInfo()) {tracer.info("Putting [%s : %s] in %s<%s, %s> field '%s.%s' for %s%n", String.valueOf(mapKey), String.valueOf(mapValue),
                         result.getClass().getSimpleName(), classes[0].getSimpleName(), classes[1].getSimpleName(), field.getDeclaringClass().getSimpleName(), field.getName(), argDescription);}
             }
-            checkMaxArityExceeded(arity, max, field, values);
         }
 
         private void checkMaxArityExceeded(Range arity, int remainder, Field field, String[] values) {
@@ -1953,20 +1949,19 @@ public class CommandLine {
                                               int originalSize,
                                               String argDescription) throws Exception {
             List<Object> result = new ArrayList<Object>();
-            int index = 0;
 
             // first do the arity.min mandatory parameters
-            for (int i = 0; result.size() + originalSize < arity.min; i++) {
-                index = consumeOneArgument(field, arity, args, type, result, index, originalSize, argDescription);
+            for (int i = 0; i < arity.min; i++) {
+                consumeOneArgument(field, arity, args, type, result, i, originalSize, argDescription);
             }
             // now process the varargs if any
-            while (result.size() < arity.max && !args.isEmpty()) {
-                if (annotation != Parameters.class) {
+            for (int i = arity.min; i < arity.max && !args.isEmpty(); i++) {
+                if (annotation != Parameters.class) { // for vararg Options, we stop if we encounter '--', a command, or another option
                     if (commands.containsKey(args.peek()) || isOption(args.peek())) {
                         return result;
                     }
                 }
-                index = consumeOneArgument(field, arity, args, type, result, index, originalSize, argDescription);
+                consumeOneArgument(field, arity, args, type, result, i, originalSize, argDescription);
             }
             return result;
         }
@@ -1982,9 +1977,7 @@ public class CommandLine {
             String[] values = split(trim(args.pop()), field);
             ITypeConverter<?> converter = getTypeConverter(type, field);
 
-            // ensure we don't process more than arity.max (as result of splitting args)
-            int max = Math.min(arity.max - (result.size() + originalSize), values.length);
-            for (int j = 0; j < max; j++) {
+            for (int j = 0; j < values.length; j++) {
                 result.add(tryConvert(field, index, converter, values[j], type));
                 if (tracer.isInfo()) {
                     if (field.getType().isArray()) {
@@ -1994,9 +1987,8 @@ public class CommandLine {
                     }
                 }
             }
-            checkMaxArityExceeded(arity, max, field, values);
-            index++;
-            return index;
+            //checkMaxArityExceeded(arity, max, field, values);
+            return ++index;
         }
 
         private String splitRegex(Field field) {
@@ -2126,13 +2118,6 @@ public class CommandLine {
 
         private void assertNoMissingParameters(Field field, int arity, Stack<String> args) {
             if (arity > args.size()) {
-                int actualSize = 0;
-                @SuppressWarnings("unchecked")
-                Stack<String> copy = (Stack<String>) args.clone();
-                while (!copy.isEmpty()) {
-                    actualSize += split(copy.pop(), field).length;
-                    if (actualSize >= arity) { return; }
-                }
                 if (arity == 1) {
                     if (field.isAnnotationPresent(Option.class)) {
                         throw new MissingParameterException("Missing required parameter for " +
