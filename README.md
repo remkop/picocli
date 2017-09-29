@@ -8,6 +8,12 @@ This lets users run picocli-based applications without requiring picocli as an e
 |----|
 |Autocomplete is work in progress. Comments, bug reports, pull requests welcome!|
 
+
+|CAUTION: breaking changes ahead in version 2.0!|
+|----|
+|List and array options will [not be greedy by default](https://github.com/remkop/picocli/issues/192) any more.|
+|Arity will [not limit the total](https://github.com/remkop/picocli/issues/191) number of list/array values any more. |
+
 How it works: annotate your class and picocli initializes it from the command line arguments,
 converting the input to strongly typed data. Supports git-like [subcommands](http://picocli.info/#_subcommands)
 (and nested [sub-subcommands](http://picocli.info/#_nested_sub_subcommands)),
