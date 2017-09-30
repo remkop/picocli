@@ -651,6 +651,8 @@ public class CommandLine {
     private static String str(String[] arr, int i) { return (arr == null || arr.length == 0) ? "" : arr[i]; }
     private static boolean isBoolean(Class<?> type) { return type == Boolean.class || type == Boolean.TYPE; }
     private static CommandLine toCommandLine(Object obj) { return obj instanceof CommandLine ? (CommandLine) obj : new CommandLine(obj);}
+    private static boolean isMultiValue(Field field) {  return isMultiValue(field.getType()); }
+    private static boolean isMultiValue(Class<?> cls) { return cls.isArray() || Collection.class.isAssignableFrom(cls) || Map.class.isAssignableFrom(cls); }
     /**
      * <p>
      * Annotate fields in your class with {@code @Option} and picocli will initialize these fields when matching
@@ -1248,19 +1250,31 @@ public class CommandLine {
                     : new Range(0, 0, false, true, "0");
         }
         static Range adjustForType(Range result, Field field) {
-            return result.isUnspecified ? defaultArity(field.getType()) : result;
+            return result.isUnspecified ? defaultArity(field) : result;
         }
-        /** Returns a new {@code Range} based on the specified type: booleans have arity 0, arrays or Collections have
+        /** Returns the default arity {@code Range}: for {@link Option options} this is 0 for booleans and 1 for
+         * other types, for {@link Parameters parameters} booleans have arity 0, arrays or Collections have
          * arity "0..*", and other types have arity 1.
-         * @param type the type whose default arity to return
-         * @return a new {@code Range} indicating the default arity of the specified type */
-        public static Range defaultArity(Class<?> type) {
+         * @param field the field whose default arity to return
+         * @return a new {@code Range} indicating the default arity of the specified field
+         * @since 2.0 */
+        public static Range defaultArity(Field field) {
+            Class<?> type = field.getType();
+            if (field.isAnnotationPresent(Option.class)) {
+                return defaultArity(type);
+            }
             if (isBoolean(type)) {
                 return Range.valueOf("0");
             } else if (type.isArray() || Collection.class.isAssignableFrom(type) || Map.class.isAssignableFrom(type)) {
                 return Range.valueOf("0..*");
             }
             return Range.valueOf("1");// for single-valued fields
+        }
+        /** Returns the default arity {@code Range} for {@link Option options}: booleans have arity 0, other types have arity 1.
+         * @param type the type whose default arity to return
+         * @return a new {@code Range} indicating the default arity of the specified type */
+        public static Range defaultArity(Class<?> type) {
+            return isBoolean(type) ? Range.valueOf("0") : Range.valueOf("1");
         }
         /** Leniently parses the specified String as an {@code Range} value and return the result. A range string can
          * be a fixed integer value or a range of the form {@code MIN_VALUE + ".." + MAX_VALUE}. If the
@@ -2591,16 +2605,16 @@ public class CommandLine {
             for (Field field : fields) {
                 Option option = field.getAnnotation(Option.class);
                 if (!option.hidden()) {
-                    //sb.append(" ");
-                    optionText = optionText.append(option.required() ? " " : " [");
-
-                    String optionNames = ShortestFirst.sort(option.names())[0];
-                    optionText = optionText.append(colorScheme.optionText(optionNames));
-
-                    Text optionParamText = parameterLabelRenderer.renderParameterLabel(field, colorScheme.ansi(), colorScheme.optionParamStyles);
-                    optionText = optionText.append(optionParamText);
-                    if (!option.required()) {
-                        optionText = optionText.append("]");
+                    if (option.required()) {
+                        optionText = appendOptionSynopsis(optionText, field, ShortestFirst.sort(option.names())[0], " ", "");
+                        if (isMultiValue(field)) {
+                            optionText = appendOptionSynopsis(optionText, field, ShortestFirst.sort(option.names())[0], " [", "]...");
+                        }
+                    } else {
+                        optionText = appendOptionSynopsis(optionText, field, ShortestFirst.sort(option.names())[0], " [", "]");
+                        if (isMultiValue(field)) {
+                            optionText = optionText.append("...");
+                        }
                     }
                 }
             }
@@ -2623,6 +2637,15 @@ public class CommandLine {
             textTable.addRowValues(new Text[] {PADDING.append(colorScheme.commandText(commandName)), optionText});
             return textTable.toString().substring(synopsisHeadingLength); // cut off leading synopsis heading spaces
         }
+
+        private Text appendOptionSynopsis(Text optionText, Field field, String optionName, String prefix, String suffix) {
+            Text optionParamText = parameterLabelRenderer.renderParameterLabel(field, colorScheme.ansi(), colorScheme.optionParamStyles);
+            return optionText.append(prefix)
+                    .append(colorScheme.optionText(optionName))
+                    .append(optionParamText)
+                    .append(suffix);
+        }
+
         /** Returns the number of characters the synopsis heading will take on the same line as the synopsis.
          * @return the number of characters the synopsis heading will take on the same line as the synopsis.
          * @see #detailedSynopsis(int, Comparator, boolean)
@@ -3115,27 +3138,28 @@ public class CommandLine {
                 Range arity = isOptionParameter ? Range.optionArity(field) : Range.parameterArity(field);
                 Text result = ansi.new Text("");
                 String sep = isOptionParameter ? separator : "";
-                if (arity.min > 0) {
-                    for (int i = 0; i < arity.min; i++) {
-                        result = result.append(sep).append(ansi.apply(renderParameterName(field), styles));
-                        sep = " ";
-                    }
+                Text paramName = ansi.apply(renderParameterName(field), styles);
+                for (int i = 0; i < arity.min; i++) {
+                    result = result.append(sep).append(paramName);
+                    sep = " ";
                 }
-                if (arity.max > arity.min) {
+                if (arity.isVariable) {
+                    if (result.length == 0) { // arity="*" or arity="0..*"
+                        result = result.append(sep + "[").append(paramName).append("]...");
+                    } else {
+                        result = result.append("...");
+                    }
+                } else {
                     sep = result.length == 0 ? (isOptionParameter ? separator : "") : " ";
-                    int max = arity.isVariable ? 1 : arity.max - arity.min;
-                    for (int i = 0; i < max; i++) {
+                    for (int i = arity.min; i < arity.max; i++) {
                         if (sep.trim().length() == 0) {
-                            result = result.append(sep + "[").append(ansi.apply(renderParameterName(field), styles));
+                            result = result.append(sep + "[").append(paramName);
                         } else {
-                            result = result.append("[" + sep).append(ansi.apply(renderParameterName(field), styles));
+                            result = result.append("[" + sep).append(paramName);
                         }
                         sep  = " ";
                     }
-                    if (arity.isVariable) {
-                        result = result.append("...");
-                    }
-                    for (int i = 0; i < max; i++) { result = result.append("]"); }
+                    for (int i = arity.min; i < arity.max; i++) { result = result.append("]"); }
                 }
                 return result;
             }
@@ -3291,6 +3315,10 @@ public class CommandLine {
                 int result = arity1.max - arity2.max;
                 if (result == 0) {
                     result = arity1.min - arity2.min;
+                }
+                if (result == 0) { // arity is same
+                    if (isMultiValue(f1) && !isMultiValue(f2)) { result = 1; } // f1 > f2
+                    if (!isMultiValue(f1) && isMultiValue(f2)) { result = -1; } // f1 < f2
                 }
                 return result == 0 ? super.compare(f1, f2) : result;
             }

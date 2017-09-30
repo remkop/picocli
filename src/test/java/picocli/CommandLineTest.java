@@ -1224,15 +1224,15 @@ public class CommandLineTest {
     public void testArityForOption_listFieldImplicitArity0_n() throws Exception {
         class ImplicitList { @Option(names = "-a") List<Integer> listIntegers; }
         Range arity = Range.optionArity(ImplicitList.class.getDeclaredField("listIntegers"));
-        assertEquals(Range.valueOf("0..*"), arity);
-        assertEquals("0..*", arity.toString());
+        assertEquals(Range.valueOf("1"), arity);
+        assertEquals("1", arity.toString());
     }
     @Test
     public void testArityForOption_arrayFieldImplicitArity0_n() throws Exception {
         class ImplicitList { @Option(names = "-a") int[] intArray; }
         Range arity = Range.optionArity(ImplicitList.class.getDeclaredField("intArray"));
-        assertEquals(Range.valueOf("0..*"), arity);
-        assertEquals("0..*", arity.toString());
+        assertEquals(Range.valueOf("1"), arity);
+        assertEquals("1", arity.toString());
     }
     @Test
     public void testArityForParameters_booleanFieldImplicitArity0() throws Exception {
@@ -1564,6 +1564,13 @@ public class CommandLineTest {
         assertArrayEquals(Arrays.toString(params.doubleOptions),
                 new double[] {1.1}, params.doubleOptions, 0.000001);
         assertArrayEquals(new double[]{2.2, 3.3, 4.4}, params.doubleParams, 0.000001);
+
+        // repeated occurrence
+        params = CommandLine.populateCommand(new Options1ArityAndParameters(), "-doubles 1.1 -doubles 2.2 -doubles 3.3 4.4".split(" "));
+        assertArrayEquals(Arrays.toString(params.doubleOptions),
+                new double[] {1.1, 2.2, 3.3}, params.doubleOptions, 0.000001);
+        assertArrayEquals(new double[]{4.4}, params.doubleParams, 0.000001);
+
     }
 
     private static class ArrayOptionArity2AndParameters {
@@ -1577,6 +1584,12 @@ public class CommandLineTest {
         assertArrayEquals(Arrays.toString(params.doubleOptions),
                 new double[] {1.1, 2.2, }, params.doubleOptions, 0.000001);
         assertArrayEquals(new double[]{3.3, 4.4}, params.doubleParams, 0.000001);
+
+        // repeated occurrence
+        params = CommandLine.populateCommand(new ArrayOptionArity2AndParameters(), "-doubles 1.1 2.2 -doubles 3.3 4.4 0".split(" "));
+        assertArrayEquals(Arrays.toString(params.doubleOptions),
+                new double[] {1.1, 2.2, 3.3, 4.4 }, params.doubleOptions, 0.000001);
+        assertArrayEquals(new double[]{ 0.0 }, params.doubleParams, 0.000001);
     }
     @Test
     public void testArrayOptionsWithArity2Consume2ArgumentsEvenIfFirstIsAttached() {
@@ -1585,6 +1598,12 @@ public class CommandLineTest {
         assertArrayEquals(Arrays.toString(params.doubleOptions),
                 new double[] {1.1, 2.2, }, params.doubleOptions, 0.000001);
         assertArrayEquals(new double[]{3.3, 4.4}, params.doubleParams, 0.000001);
+
+        // repeated occurrence
+        params = CommandLine.populateCommand(new ArrayOptionArity2AndParameters(), "-doubles=1.1 2.2 -doubles=3.3 4.4 0".split(" "));
+        assertArrayEquals(Arrays.toString(params.doubleOptions),
+                new double[] {1.1, 2.2, 3.3, 4.4}, params.doubleOptions, 0.000001);
+        assertArrayEquals(new double[]{0}, params.doubleParams, 0.000001);
     }
     /** Arity should not limit the total number of values put in an array or collection #191 */
     @Test
@@ -1597,7 +1616,7 @@ public class CommandLineTest {
     }
 
     @Test
-    public void testArrayOptionWithoutArityConsumesAllArguments() {
+    public void testArrayOptionWithoutArityConsumesOneArgument() { // #192
         class OptionsNoArityAndParameters {
             @Parameters char[] charParams;
             @Option(names = "-chars") char[] charOptions;
@@ -1605,8 +1624,14 @@ public class CommandLineTest {
         OptionsNoArityAndParameters
                 params = CommandLine.populateCommand(new OptionsNoArityAndParameters(), "-chars a b c d".split(" "));
         assertArrayEquals(Arrays.toString(params.charOptions),
-                new char[] {'a', 'b', 'c', 'd'}, params.charOptions);
-        assertArrayEquals(Arrays.toString(params.charParams), null, params.charParams);
+                new char[] {'a', }, params.charOptions);
+        assertArrayEquals(Arrays.toString(params.charParams), new char[] {'b', 'c', 'd'}, params.charParams);
+
+        // repeated occurrence
+        params = CommandLine.populateCommand(new OptionsNoArityAndParameters(), "-chars a -chars b c d".split(" "));
+        assertArrayEquals(Arrays.toString(params.charOptions),
+                new char[] {'a', 'b', }, params.charOptions);
+        assertArrayEquals(Arrays.toString(params.charParams), new char[] {'c', 'd'}, params.charParams);
     }
 
     @Test(expected = MissingTypeConverterException.class)
@@ -2035,14 +2060,21 @@ public class CommandLineTest {
         class TextOption {
             @CommandLine.Option(names = "-t") String[] text;
         }
-        TextOption opt = CommandLine.populateCommand(new TextOption(), "-t", "\"a text\"", "\"another text\"", "\"x z\"");
+        TextOption opt = CommandLine.populateCommand(new TextOption(), "-t", "\"a text\"", "-t", "\"another text\"", "-t", "\"x z\"");
         assertArrayEquals(new String[]{"a text", "another text", "x z"}, opt.text);
 
-        opt = CommandLine.populateCommand(new TextOption(), "-t\"a text\"", "\"another text\"", "\"x z\"");
+        opt = CommandLine.populateCommand(new TextOption(), "-t\"a text\"", "-t\"another text\"", "-t\"x z\"");
         assertArrayEquals(new String[]{"a text", "another text", "x z"}, opt.text);
 
-        opt = CommandLine.populateCommand(new TextOption(), "-t=\"a text\"", "\"another text\"", "\"x z\"");
+        opt = CommandLine.populateCommand(new TextOption(), "-t=\"a text\"", "-t=\"another text\"", "-t=\"x z\"");
         assertArrayEquals(new String[]{"a text", "another text", "x z"}, opt.text);
+
+        try {
+            opt = CommandLine.populateCommand(new TextOption(), "-t=\"a text\"", "-t=\"another text\"", "\"x z\"");
+            fail("Expected UnmatchedArgumentException");
+        } catch (UnmatchedArgumentException ok) {
+            assertEquals("Unmatched argument [\"x z\"]", ok.getMessage());
+        }
     }
 
     @Test
@@ -2345,14 +2377,27 @@ public class CommandLineTest {
         Args args = CommandLine.populateCommand(new Args(), "-a=a,b,c");
         assertArrayEquals(new String[] {"a", "b", "c"}, args.values);
 
-        args = CommandLine.populateCommand(new Args(), "-a=a,b,c", "B", "C");
+        args = CommandLine.populateCommand(new Args(), "-a=a,b,c", "-a=B", "-a", "C");
         assertArrayEquals(new String[] {"a", "b", "c", "B", "C"}, args.values);
 
-        args = CommandLine.populateCommand(new Args(), "-a", "a,b,c", "B", "C");
+        args = CommandLine.populateCommand(new Args(), "-a", "a,b,c", "-a", "B", "-a", "C");
         assertArrayEquals(new String[] {"a", "b", "c", "B", "C"}, args.values);
 
-        args = CommandLine.populateCommand(new Args(), "-a=a,b,c", "B", "C", "D,E,F");
+        args = CommandLine.populateCommand(new Args(), "-a=a,b,c", "-a", "B", "-a", "C", "-a", "D,E,F");
         assertArrayEquals(new String[] {"a", "b", "c", "B", "C", "D", "E", "F"}, args.values);
+
+        try {
+            args = CommandLine.populateCommand(new Args(), "-a=a,b,c", "B", "C");
+            fail("Expected UnmatchedArgEx");
+        } catch (UnmatchedArgumentException ok) {
+            assertEquals("Unmatched arguments [B, C]", ok.getMessage());
+        }
+        try {
+            args = CommandLine.populateCommand(new Args(), "-a=a,b,c", "B", "-a=C");
+            fail("Expected UnmatchedArgEx");
+        } catch (UnmatchedArgumentException ok) {
+            assertEquals("Unmatched arguments [B, -a=C]", ok.getMessage());
+        }
     }
 
     @Test
@@ -2363,14 +2408,27 @@ public class CommandLineTest {
         Args args = CommandLine.populateCommand(new Args(), "-a=\"a b c\"");
         assertArrayEquals(new String[] {"a", "b", "c"}, args.values);
 
-        args = CommandLine.populateCommand(new Args(), "-a=a b c", "B", "C");
+        args = CommandLine.populateCommand(new Args(), "-a=a b c", "-a", "B", "-a", "C");
         assertArrayEquals(new String[] {"a", "b", "c", "B", "C"}, args.values);
 
-        args = CommandLine.populateCommand(new Args(), "-a", "\"a b c\"", "B", "C");
+        args = CommandLine.populateCommand(new Args(), "-a", "\"a b c\"", "-a=B", "-a=C");
         assertArrayEquals(new String[] {"a", "b", "c", "B", "C"}, args.values);
 
-        args = CommandLine.populateCommand(new Args(), "-a=\"a b c\"", "B", "C", "D E F");
+        args = CommandLine.populateCommand(new Args(), "-a=\"a b c\"", "-a=B", "-a", "C", "-a=D E F");
         assertArrayEquals(new String[] {"a", "b", "c", "B", "C", "D", "E", "F"}, args.values);
+
+        try {
+            args = CommandLine.populateCommand(new Args(), "-a=a b c", "B", "C");
+            fail("Expected UnmatchedArgEx");
+        } catch (UnmatchedArgumentException ok) {
+            assertEquals("Unmatched arguments [B, C]", ok.getMessage());
+        }
+        try {
+            args = CommandLine.populateCommand(new Args(), "-a=a b c", "B", "-a=C");
+            fail("Expected UnmatchedArgEx");
+        } catch (UnmatchedArgumentException ok) {
+            assertEquals("Unmatched arguments [B, -a=C]", ok.getMessage());
+        }
     }
 
     @Test
@@ -2411,14 +2469,21 @@ public class CommandLineTest {
         Args args = CommandLine.populateCommand(new Args(), "-a=a,b,c");
         assertEquals(Arrays.asList("a", "b", "c"), args.values);
 
-        args = CommandLine.populateCommand(new Args(), "-a=a,b,c", "B", "C");
+        args = CommandLine.populateCommand(new Args(), "-a=a,b,c", "-a", "B", "-a=C");
         assertEquals(Arrays.asList("a", "b", "c", "B", "C"), args.values);
 
-        args = CommandLine.populateCommand(new Args(), "-a", "a,b,c", "B", "C");
+        args = CommandLine.populateCommand(new Args(), "-a", "a,b,c", "-a", "B", "-a", "C");
         assertEquals(Arrays.asList("a", "b", "c", "B", "C"), args.values);
 
-        args = CommandLine.populateCommand(new Args(), "-a=a,b,c", "B", "C", "D,E,F");
+        args = CommandLine.populateCommand(new Args(), "-a=a,b,c", "-a", "B", "-a", "C", "-a", "D,E,F");
         assertEquals(Arrays.asList("a", "b", "c", "B", "C", "D", "E", "F"), args.values);
+
+        try {
+            args = CommandLine.populateCommand(new Args(), "-a=a,b,c", "B", "C");
+            fail("Expected UnmatchedArgumentException");
+        } catch (UnmatchedArgumentException ok) {
+            assertEquals("Unmatched arguments [B, C]", ok.getMessage());
+        }
     }
 
     @Test
@@ -2588,7 +2653,7 @@ public class CommandLineTest {
                         "[picocli DEBUG] Initializing picocli.Demo$GitCommit: 8 options, 1 positional parameters, 0 required, 0 subcommands.%n" +
                         "[picocli DEBUG] Processing argument '-m'. Remainder=[\"Fixed typos\", --, src1.java, src2.java, src3.java]%n" +
                         "[picocli DEBUG] '-m' cannot be separated into <option>=<option-parameter>%n" +
-                        "[picocli DEBUG] Found option named '-m': field java.util.List picocli.Demo$GitCommit.message, arity=0..*%n" +
+                        "[picocli DEBUG] Found option named '-m': field java.util.List picocli.Demo$GitCommit.message, arity=1%n" +
                         "[picocli INFO] Adding [Fixed typos] to List<String> field 'GitCommit.message' for option -m%n" +
                         "[picocli DEBUG] Processing argument '--'. Remainder=[src1.java, src2.java, src3.java]%n" +
                         "[picocli INFO] Found end-of-options delimiter '--'. Treating remainder as positional parameters.%n" +
@@ -3184,13 +3249,34 @@ public class CommandLineTest {
         CommandLine.populateCommand(new App(), "-map=AAA=BBB,CCC=DDD,EEE=FFF").validateMapField3Values();
         CommandLine.populateCommand(new App(), "-PAAA=BBB,CCC=DDD,EEE=FFF").validateMapField3Values();
         CommandLine.populateCommand(new App(), "-P", "AAA=BBB,CCC=DDD,EEE=FFF").validateMapField3Values();
-        CommandLine.populateCommand(new App(), "-P", "AAA=BBB", "CCC=DDD", "EEE=FFF").validateMapField3Values();
         CommandLine.populateCommand(new App(), "-map=AAA=BBB", "-map=CCC=DDD", "-map=EEE=FFF").validateMapField3Values();
-        CommandLine.populateCommand(new App(), "-map=AAA=BBB", "CCC=DDD", "EEE=FFF").validateMapField3Values();
         CommandLine.populateCommand(new App(), "-PAAA=BBB", "-PCCC=DDD", "-PEEE=FFF").validateMapField3Values();
-        CommandLine.populateCommand(new App(), "-PAAA=BBB", "-PCCC=DDD", "EEE=FFF").validateMapField3Values();
         CommandLine.populateCommand(new App(), "-P", "AAA=BBB", "-P", "CCC=DDD", "-P", "EEE=FFF").validateMapField3Values();
-        CommandLine.populateCommand(new App(), "-P", "AAA=BBB", "-P", "CCC=DDD", "EEE=FFF").validateMapField3Values();
+
+        try {
+            CommandLine.populateCommand(new App(), "-P", "AAA=BBB", "CCC=DDD", "EEE=FFF").validateMapField3Values();
+            fail("Expected UnmatchedArgEx");
+        } catch (UnmatchedArgumentException ok) {
+            assertEquals("Unmatched arguments [CCC=DDD, EEE=FFF]", ok.getMessage());
+        }
+        try {
+            CommandLine.populateCommand(new App(), "-map=AAA=BBB", "CCC=DDD", "EEE=FFF").validateMapField3Values();
+            fail("Expected UnmatchedArgEx");
+        } catch (UnmatchedArgumentException ok) {
+            assertEquals("Unmatched arguments [CCC=DDD, EEE=FFF]", ok.getMessage());
+        }
+        try {
+            CommandLine.populateCommand(new App(), "-PAAA=BBB", "-PCCC=DDD", "EEE=FFF").validateMapField3Values();
+            fail("Expected UnmatchedArgEx");
+        } catch (UnmatchedArgumentException ok) {
+            assertEquals("Unmatched argument [EEE=FFF]", ok.getMessage());
+        }
+        try {
+            CommandLine.populateCommand(new App(), "-P", "AAA=BBB", "-P", "CCC=DDD", "EEE=FFF").validateMapField3Values();
+            fail("Expected UnmatchedArgEx");
+        } catch (UnmatchedArgumentException ok) {
+            assertEquals("Unmatched argument [EEE=FFF]", ok.getMessage());
+        }
     }
 
     @Test

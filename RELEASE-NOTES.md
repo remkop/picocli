@@ -2,8 +2,59 @@
 
 ## Unreleased
 
+This is the twelfth public release.
+Picocli follows [semantic versioning](http://semver.org/).
+
+## Why the major version increase?
+
+This release has a number of incompatible changes:
+* Multi-value options (array, list and map fields) are **not greedy by default** any more.
+* **Arity is not max values**: end users may specify multi-value options (array, list and map fields) an unlimited number of times.
+* A single argument that is split into parts with a regex now **counts as a single argument** (so `arity="1"` won't prevent all parts from being added to the field)
+
+I am not happy about the disruption this may cause, but I felt these changes were needed for three reasons:
+the old picocli v1.0 behaviour caused ambiguity in common use cases,
+was inconsistent with most Unix tools, 
+and prevented supporting mixing options with positional arguments on the command line.
+
+To illustrate the new non-greedy behaviour, consider this common use case:
+```
+class Args {
+    @Option(names="-o") List<String> options;
+    @Parameters         List<String> positionalParams;
+}
+```
+With picocli v1.0, arguments like the below would all end up in the `options` list.
+From picocli v2.0, only the first argument following `-o` is added to the `options` list, the remainder is parsed as positional parameters.
+
+```
+Args args = CommandLine.populateCommand(new Args(), "-o", "1", "2", "3");
+
+// in picocli v1.0:
+assert args.options.size() == 3
+assert args.positionalParams.isEmpty()
+
+// in picocli v2.0:
+assert args.options.size() == 1
+assert args.positionalParams.size() == 2
+```
+To put multiple values in the options list in picocli v2.0, users need to specify the `-o` option multiple times:
+```
+<command> -o 1 -o 2 -o 3
+```
+Alternatively, application authors can make a multi-value option greedy in picocli v2.0 by explicitly setting a variable arity:
+```
+class Args {
+    @Option(names = "-o", arity = "1..*") List<String> options;
+}
+```
+
+### Issues fixed
+
+- #192 Default arity should be 1, not *, for array and collection options
 - #193 Splitting an argument should not cause max arity to be exceeded
 - #191 Arity should not limit the total number of values put in an array or collection
+- #186 Confusing usage message for collection options
 - #181 Fixed bug where incorrect help message is displayed for short options with paramLabel when arity > 1
 - #184 Improved CommandLine.setSeparator javadoc to clarify that this affects parsing only and link to the `@Command` `separator` annotation attribute.
 

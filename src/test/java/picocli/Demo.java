@@ -391,7 +391,7 @@ public class Demo implements Runnable {
         File file;
 
         @Option(names = {"-m", "--message"}, paramLabel = "<msg>",
-                description = " Use the given <msg> as the commit message. If multiple -m options" +
+                description = "Use the given <msg> as the commit message. If multiple -m options" +
                         " are given, their values are concatenated as separate paragraphs.")
         List<String> message = new ArrayList<String>();
 
@@ -579,7 +579,7 @@ public class Demo implements Runnable {
             "Record changes to the repository.%n" +
             "%n" +
             "git-commit [-ap] [--fixup=<commit>] [--squash=<commit>] [-c=<commit>]%n" +
-            "           [-C=<commit>] [-F=<file>] [-m[=<msg>...]] [<files>...]%n" +
+            "           [-C=<commit>] [-F=<file>] [-m=<msg>]... [<files>]...%n" +
             "%n" +
             "Description:%n" +
             "%n" +
@@ -614,7 +614,7 @@ public class Demo implements Runnable {
             "                                commit message options (-m/-c/-C/-F).%n" +
             "  -F, --file=<file>           Take the commit message from the given file. Use%n" +
             "                                - to read the message from the standard input.%n" +
-            "  -m, --message[=<msg>...]     Use the given <msg> as the commit message. If%n" +
+            "  -m, --message=<msg>         Use the given <msg> as the commit message. If%n" +
             "                                multiple -m options are given, their values are%n" +
             "                                concatenated as separate paragraphs.%n";
 
@@ -623,7 +623,7 @@ public class Demo implements Runnable {
             "Record changes to the repository.%n" +
             "%n" +
             "@|bold git-commit|@ [@|yellow -ap|@] [@|yellow --fixup|@=@|italic <commit>|@] [@|yellow --squash|@=@|italic <commit>|@] [@|yellow -c|@=@|italic <commit>|@]%n" +
-            "           [@|yellow -C|@=@|italic <commit>|@] [@|yellow -F|@=@|italic <file>|@] [@|yellow -m|@[=@|italic <msg>|@...]] [@|yellow <files>|@...]%n" +
+            "           [@|yellow -C|@=@|italic <commit>|@] [@|yellow -F|@=@|italic <file>|@] [@|yellow -m|@=@|italic <msg>|@]... [@|yellow <files>|@]...%n" +
             "%n" +
             "@|bold,underline Description:|@%n" +
             "%n" +
@@ -658,7 +658,7 @@ public class Demo implements Runnable {
             "                                commit message options (-m/-c/-C/-F).%n" +
             "  @|yellow -F|@, @|yellow --file|@=@|italic <file>|@           Take the commit message from the given file. Use%n" +
             "                                - to read the message from the standard input.%n" +
-            "  @|yellow -m|@, @|yellow --message|@[=@|italic <msg>|@...]     Use the given <msg> as the commit message. If%n" +
+            "  @|yellow -m|@, @|yellow --message|@=@|italic <msg>|@         Use the given <msg> as the commit message. If%n" +
             "                                multiple -m options are given, their values are%n" +
             "                                concatenated as separate paragraphs.%n";
 
