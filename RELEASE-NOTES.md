@@ -11,6 +11,7 @@ This release has a number of incompatible changes:
 * Multi-value options (array, list and map fields) are **not greedy by default** any more.
 * **Arity is not max values**: end users may specify multi-value options (array, list and map fields) an unlimited number of times.
 * A single argument that is split into parts with a regex now **counts as a single argument** (so `arity="1"` won't prevent all parts from being added to the field)
+* API change: use custom `Cell` class instead of `java.awt.Point` as return value type for public method `Help.TextTable.putValue()` .
 
 I am not happy about the disruption this may cause, but I felt these changes were needed for three reasons:
 the old picocli v1.0 behaviour caused ambiguity in common use cases,
