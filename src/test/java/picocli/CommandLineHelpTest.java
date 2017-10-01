@@ -174,7 +174,7 @@ public class CommandLineHelpTest {
         assertEquals(format("" +
                         "Usage: <main class> [-n=<number>] [-f=FILE]... [-P=KEY=VALUE]... NUM <host>%n" +
                         "      NUM                     number param%n" +
-                        "      host                    the host parameter%n" +
+                        "      <host>                  the host parameter%n" +
                         "  -f= FILE                    files%n" +
                         "  -n= <number>                a number option%n" +
                         "  -P= KEY=VALUE               Project properties (key-value pairs)%n",
@@ -197,7 +197,7 @@ public class CommandLineHelpTest {
         assertEquals(format("" +
                         "Usage: <main class> [-f=FILE] [-n=<number>] [-P=KEY=VALUE]... NUM <host>%n" +
                         "      NUM                     number param%n" +
-                        "      host                    the host parameter%n" +
+                        "      <host>                  the host parameter%n" +
                         "  -f= FILE                    a file%n" +
                         "  -n= <number>                a number option%n" +
                         "  -P, --properties=KEY=VALUE  Project properties (key-value pairs)%n",
@@ -513,12 +513,12 @@ public class CommandLineHelpTest {
             Map<Integer, URL> d;
         }
         String expected = String.format("" +
-                "Usage: <main class> -a=KEY=VAL [-a=KEY=VAL]... -b=[<Object=Object>]... [-b=%n" +
-                "                    [<Object=Object>]...]... -c=<String=TimeUnit>...%n" +
+                "Usage: <main class> -a=KEY=VAL [-a=KEY=VAL]... -b=[<String=String>]... [-b=%n" +
+                "                    [<String=String>]...]... -c=<String=TimeUnit>...%n" +
                 "                    [-c=<String=TimeUnit>...]... -d=<Integer=URL>%n" +
                 "                    <Integer=URL>... [-d=<Integer=URL> <Integer=URL>...]...%n" +
                 "  -a= KEY=VAL%n" +
-                "  -b= [<Object=Object>]...%n" +
+                "  -b= [<String=String>]...%n" +
                 "  -c= <String=TimeUnit>...%n" +
                 "  -d= <Integer=URL> <Integer=URL>...%n" +
                 "                              description%n");
@@ -539,9 +539,9 @@ public class CommandLineHelpTest {
             Map<String, URL> d;
         }
         String expected = String.format("" +
-                "Usage: <main class> [-a=<Object=Object>]... [-b=[<Integer=Integer>]...]...%n" +
+                "Usage: <main class> [-a=<String=String>]... [-b=[<Integer=Integer>]...]...%n" +
                 "                    [-c=KEY=VALUE...]... [-d=<String=URL> <String=URL>...]...%n" +
-                "  -a= <Object=Object>%n" +
+                "  -a= <String=String>%n" +
                 "  -b= [<Integer=Integer>]...%n" +
                 "  -c= KEY=VALUE...%n" +
                 "  -d= <String=URL> <String=URL>...%n" +
@@ -565,13 +565,13 @@ public class CommandLineHelpTest {
             Map<String, URL> d;
         }
         String expected = String.format("" +
-                "Usage: <main class> -a[=<Object=Object>] [-a[=<Object=Object>]]...%n" +
+                "Usage: <main class> -a[=<String=String>] [-a[=<String=String>]]...%n" +
                 "                    -b=<Integer=Integer> [<Integer=Integer>]%n" +
                 "                    [-b=<Integer=Integer> [<Integer=Integer>]]...%n" +
                 "                    -c=<String=URL> [<String=URL> [<String=URL>]]%n" +
                 "                    [-c=<String=URL> [<String=URL> [<String=URL>]]]... -d=K=URL%n" +
                 "                    K=URL [K=URL [K=URL]] [-d=K=URL K=URL [K=URL [K=URL]]]...%n" +
-                "  -a= [<Object=Object>]       a description%n" +
+                "  -a= [<String=String>]       a description%n" +
                 "  -b= <Integer=Integer> [<Integer=Integer>]%n" +
                 "                              b description%n" +
                 "  -c= <String=URL> [<String=URL> [<String=URL>]]%n" +
@@ -595,13 +595,13 @@ public class CommandLineHelpTest {
             Map<?, ?> d;
         }
         String expected = String.format("" +
-                "Usage: <main class> [-a[=<Object=Object>]]... [-b=<Long=UUID> [<Long=UUID>]]...%n" +
-                "                    [-c=<Object=Object> [<Object=Object> [<Object=Object>]]]...%n" +
+                "Usage: <main class> [-a[=<String=String>]]... [-b=<Long=UUID> [<Long=UUID>]]...%n" +
+                "                    [-c=<String=String> [<String=String> [<String=String>]]]...%n" +
                 "                    [-d=K=V K=V [K=V [K=V]]]...%n" +
-                "  -a= [<Object=Object>]       a description%n" +
+                "  -a= [<String=String>]       a description%n" +
                 "  -b= <Long=UUID> [<Long=UUID>]%n" +
                 "                              b description%n" +
-                "  -c= <Object=Object> [<Object=Object> [<Object=Object>]]%n" +
+                "  -c= <String=String> [<String=String> [<String=String>]]%n" +
                 "                              c description%n" +
                 "  -d= K=V K=V [K=V [K=V]]     d description%n");
         //CommandLine.usage(new Args(), System.out);
@@ -624,10 +624,10 @@ public class CommandLineHelpTest {
             Map<URI, URL> d;
         }
         String expected = String.format("" +
-                "Usage: <main class> -b [-b]... -a=<Object=Object> [-a=<Object=Object>]...%n" +
+                "Usage: <main class> -b [-b]... -a=<String=String> [-a=<String=String>]...%n" +
                 "                    -c=<Long=File> [-c=<Long=File>]... -d=<URI=URL> <URI=URL>%n" +
                 "                    [-d=<URI=URL> <URI=URL>]...%n" +
-                "  -a= <Object=Object>         a description%n" +
+                "  -a= <String=String>         a description%n" +
                 "  -b                          b description%n" +
                 "  -c= <Long=File>             c description%n" +
                 "  -d= <URI=URL> <URI=URL>     d description%n");
@@ -649,16 +649,154 @@ public class CommandLineHelpTest {
             Map<URI, URL> d;
         }
         String expected = String.format("" +
-                "Usage: <main class> [-b]... [-a=<Short=Field>]... [-c=<Object=Object>]...%n" +
+                "Usage: <main class> [-b]... [-a=<Short=Field>]... [-c=<String=String>]...%n" +
                 "                    [-d=<URI=URL> <URI=URL>]...%n" +
                 "  -a= <Short=Field>           a description%n" +
                 "  -b                          b description%n" +
-                "  -c= <Object=Object>         c description%n" +
+                "  -c= <String=String>         c description%n" +
                 "  -d= <URI=URL> <URI=URL>     d description%n");
         //CommandLine.usage(new Args(), System.out);
         assertEquals(expected, usageString(new Args(), Help.Ansi.OFF));
     }
     //--------------
+    @Test
+    public void testUsageVariableArityParametersArray() throws UnsupportedEncodingException {
+        // if option is required at least once and can be specified multiple times:
+        // -f=ARG [-f=ARG]...
+        class Args {
+            @Parameters(paramLabel = "APARAM")
+            String[] a;
+            @Parameters(arity = "0..*")
+            List<String> b;
+            @Parameters(arity = "1..*")
+            String[] c;
+            @Parameters(arity = "2..*")
+            List<String> d;
+        }
+        String expected = String.format("" +
+                "Usage: <main class> [APARAM]... [<b>]... <c>... <d> <d>...%n" +
+                "      APARAM%n" +
+                "      <b>%n" +
+                "      <c>%n" +
+                "      <d>%n");
+        //CommandLine.usage(new Args(), System.out);
+        assertEquals(expected, usageString(new Args(), Help.Ansi.OFF));
+    }
+
+    @Test
+    public void testUsageRangeArityParameterArray() throws UnsupportedEncodingException {
+        class Args {
+            @Parameters(paramLabel = "PARAMA", arity = "0..1")
+            List<String> a;
+            @Parameters(paramLabel = "PARAMB", arity = "1..2")
+            String[] b;
+            @Parameters(paramLabel = "PARAMC", arity = "1..3")
+            String[] c;
+            @Parameters(paramLabel = "PARAMD", arity = "2..4")
+            String[] d;
+        }
+        String expected = String.format("" +
+                "Usage: <main class> [PARAMA] PARAMB [PARAMB] PARAMC [PARAMC [PARAMC]] PARAMD%n" +
+                "                    PARAMD [PARAMD [PARAMD]]%n" +
+                "      PARAMA%n" +
+                "      PARAMB%n" +
+                "      PARAMC%n" +
+                "      PARAMD%n");
+        //CommandLine.usage(new Args(), System.out);
+        assertEquals(expected, usageString(new Args(), Help.Ansi.OFF));
+    }
+
+    @Test
+    public void testUsageFixedArityParametersArray() throws UnsupportedEncodingException {
+        class Args {
+            @Parameters()
+            String[] a;
+            @Parameters(arity = "0")
+            String[] b;
+            @Parameters(arity = "1")
+            String[] c;
+            @Parameters(arity = "2")
+            String[] d;
+        }
+        String expected = String.format("" +
+                "Usage: <main class>  [<a>]... <c> <d> <d>%n" +
+                "      <b>%n" +
+                "      <a>%n" +
+                "      <c>%n" +
+                "      <d>%n");
+        //CommandLine.usage(new Args(), System.out);
+        assertEquals(expected, usageString(new Args(), Help.Ansi.OFF));
+    }
+
+    @Test
+    public void testUsageVariableArityParametersMap() throws UnsupportedEncodingException {
+        class Args {
+            @Parameters()
+            Map<String, String> a;
+            @Parameters(arity = "0..*", type = {Integer.class, Integer.class})
+            Map<Integer, Integer> b;
+            @Parameters(paramLabel = "KEY=VALUE", arity = "1..*", type = {String.class, TimeUnit.class})
+            Map<String, TimeUnit> c;
+            @Parameters(arity = "2..*", type = {String.class, URL.class}, description = "description")
+            Map<String, URL> d;
+        }
+        String expected = String.format("" +
+                "Usage: <main class> [<String=String>]... [<Integer=Integer>]... KEY=VALUE...%n" +
+                "                    <String=URL> <String=URL>...%n" +
+                "      <String=String>%n" +
+                "      <Integer=Integer>%n" +
+                "      KEY=VALUE%n" +
+                "      <String=URL>            description%n");
+        //CommandLine.usage(new Args(), System.out);
+        assertEquals(expected, usageString(new Args(), Help.Ansi.OFF));
+    }
+
+    @Test
+    public void testUsageRangeArityParametersMap() throws UnsupportedEncodingException {
+        class Args {
+            @Parameters(arity = "0..1"/*, type = {UUID.class, URL.class}*/, description = "a description")
+            Map<UUID, URL> a;
+            @Parameters(arity = "1..2", type = {Long.class, UUID.class}, description = "b description")
+            Map<?, ?> b;
+            @Parameters(arity = "1..3", type = {Long.class}, description = "c description")
+            Map<?, ?> c;
+            @Parameters(paramLabel = "K=V", arity = "2..4", description = "d description")
+            Map<?, ?> d;
+        }
+        String expected = String.format("" +
+                "Usage: <main class> [<String=String>] <Long=UUID> [<Long=UUID>] <String=String>%n" +
+                "                    [<String=String> [<String=String>]] K=V K=V [K=V [K=V]]%n" +
+                "      <String=String>         a description%n" +
+                "      <Long=UUID>             b description%n" +
+                "      <String=String>         c description%n" +
+                "      K=V                     d description%n");
+        //CommandLine.usage(new Args(), System.out);
+        assertEquals(expected, usageString(new Args(), Help.Ansi.OFF));
+    }
+
+    @Test
+    public void testUsageFixedArityParametersMap() throws UnsupportedEncodingException {
+        class Args {
+            @Parameters(type = {Short.class, Field.class}, description = "a description")
+            Map<Short, Field> a;
+            @Parameters(arity = "0", type = {UUID.class, Long.class}, description = "b description")
+            @SuppressWarnings("unchecked")
+            Map b;
+            @Parameters(arity = "1", description = "c description")
+            Map<Long, File> c;
+            @Parameters(arity = "2", type = {URI.class, URL.class}, description = "d description")
+            Map<URI, URL> d;
+        }
+        String expected = String.format("" +
+                "Usage: <main class>  [<Short=Field>]... <String=String> <URI=URL> <URI=URL>%n" +
+                "      <UUID=Long>             b description%n" +
+                "      <Short=Field>           a description%n" +
+                "      <String=String>         c description%n" +
+                "      <URI=URL>               d description%n");
+        //CommandLine.usage(new Args(), System.out);
+        assertEquals(expected, usageString(new Args(), Help.Ansi.OFF));
+    }
+    //----------
     @Test
     public void testShortestFirstComparator_sortsShortestFirst() {
         String[] values = {"12345", "12", "123", "123456", "1", "", "1234"};
@@ -858,7 +996,7 @@ public class CommandLineHelpTest {
         Field field = help.positionalParametersFields.get(0);
         Text[][] row1 = renderer.render(field.getAnnotation(Parameters.class), field, parameterRenderer, help.colorScheme);
         assertEquals(1, row1.length);
-        assertArrayEquals(Arrays.toString(row1[0]), textArray(help, " ", "", "", "required", "required"), row1[0]);
+        assertArrayEquals(Arrays.toString(row1[0]), textArray(help, " ", "", "", "<required>", "required"), row1[0]);
     }
 
     @Test
@@ -873,7 +1011,7 @@ public class CommandLineHelpTest {
         Field field = help.positionalParametersFields.get(0);
         Text[][] row1 = renderer.render(field.getAnnotation(Parameters.class), field, parameterRenderer, help.colorScheme);
         assertEquals(1, row1.length);
-        assertArrayEquals(Arrays.toString(row1[0]), textArray(help, "*", "", "", "required", "required"), row1[0]);
+        assertArrayEquals(Arrays.toString(row1[0]), textArray(help, "*", "", "", "<required>", "required"), row1[0]);
     }
 
     @Test
@@ -888,7 +1026,7 @@ public class CommandLineHelpTest {
         Field field = help.positionalParametersFields.get(0);
         Text[][] row1 = renderer.render(field.getAnnotation(Parameters.class), field, parameterRenderer, help.colorScheme);
         assertEquals(1, row1.length);
-        assertArrayEquals(Arrays.toString(row1[0]), textArray(help, "", "", "", "optional", "optional"), row1[0]);
+        assertArrayEquals(Arrays.toString(row1[0]), textArray(help, "", "", "", "<optional>", "optional"), row1[0]);
     }
 
     @Test
@@ -1600,11 +1738,11 @@ public class CommandLineHelpTest {
         String expected = String.format(
                 "Usage: <main class> <host1> <port1> <host2> <port2range> [<port2range>]%n" +
                 "                    [<files>]...%n" +
-                "      host1                   source host%n" +
-                "      port1                   source port%n" +
-                "      host2                   destination host%n" +
-                "      port2range              destination port range%n" +
-                "      files                   files to transfer%n"
+                "      <host1>                 source host%n" +
+                "      <port1>                 source port%n" +
+                "      <host2>                 destination host%n" +
+                "      <port2range>            destination port range%n" +
+                "      <files>                 files to transfer%n"
         );
         assertEquals(expected, actual);
     }

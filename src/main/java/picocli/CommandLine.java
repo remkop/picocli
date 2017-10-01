@@ -1528,7 +1528,7 @@ public class CommandLine {
             }
             if (!isAnyHelpRequested() && !required.isEmpty()) {
                 if (required.get(0).isAnnotationPresent(Option.class)) {
-                    throw MissingParameterException.create(required);
+                    throw MissingParameterException.create(required, separator);
                 } else {
                     try {
                         processPositionalParameters0(required, true, new Stack<String>());
@@ -1567,7 +1567,7 @@ public class CommandLine {
                 // if we find another command, we are done with the current command
                 if (commands.containsKey(arg)) {
                     if (!isHelpRequested && !required.isEmpty()) { // ensure current command portion is valid
-                        throw MissingParameterException.create(required);
+                        throw MissingParameterException.create(required, separator);
                     }
                     if (tracer.isDebug()) {tracer.debug("Found subcommand '%s' (%s)%n", arg, commands.get(arg).interpreter.command.getClass().getName());}
                     commands.get(arg).interpreter.parse(parsedCommands, args, originalArgs);
@@ -2908,14 +2908,7 @@ public class CommandLine {
         public static IParamLabelRenderer createMinimalParamLabelRenderer() {
             return new IParamLabelRenderer() {
                 public Text renderParameterLabel(Field field, Ansi ansi, List<IStyle> styles) {
-                    String paramLabel = null;
-                    Parameters parameters = field.getAnnotation(Parameters.class);
-                    if (parameters != null) {
-                        paramLabel = parameters.paramLabel();
-                    } else {
-                        paramLabel = field.isAnnotationPresent(Option.class) ? field.getAnnotation(Option.class).paramLabel() : null;
-                    }
-                    String text = paramLabel == null || paramLabel.length() == 0 ? field.getName() : paramLabel;
+                    String text = DefaultParamLabelRenderer.renderParameterName(field);
                     return ansi.apply(text, styles);
                 }
                 public String separator() { return ""; }
@@ -3158,7 +3151,7 @@ public class CommandLine {
                 }
                 return result;
             }
-            private String renderParameterName(Field field) {
+            private static String renderParameterName(Field field) {
                 String result = null;
                 if (field.isAnnotationPresent(Option.class)) {
                     result = field.getAnnotation(Option.class).paramLabel();
@@ -3172,7 +3165,7 @@ public class CommandLine {
                 if (Map.class.isAssignableFrom(field.getType())) { // #195 better param labels for map fields
                     Class<?>[] paramTypes = getTypeAttribute(field);
                     if (paramTypes.length < 2 || paramTypes[0] == null || paramTypes[1] == null) {
-                        name = "Object=Object";
+                        name = "String=String";
                     } else { name = paramTypes[0].getSimpleName() + "=" + paramTypes[1].getSimpleName(); }
                 }
                 return "<" + name + ">";
@@ -4094,16 +4087,22 @@ public class CommandLine {
             super(msg);
         }
 
-        private static MissingParameterException create(Collection<Field> missing) {
+        private static MissingParameterException create(Collection<Field> missing, String separator) {
             if (missing.size() == 1) {
                 return new MissingParameterException("Missing required option '"
-                        + missing.iterator().next().getName() + "'");
+                        + describe(missing.iterator().next(), separator) + "'");
             }
             List<String> names = new ArrayList<String>(missing.size());
             for (Field field : missing) {
-                names.add(field.getName());
+                names.add(describe(field, separator));
             }
             return new MissingParameterException("Missing required options " + names.toString());
+        }
+        private static String describe(Field field, String separator) {
+            String prefix = (field.isAnnotationPresent(Option.class))
+                ? field.getAnnotation(Option.class).names()[0] + separator
+                : "params[" + field.getAnnotation(Parameters.class).index() + "]" + separator;
+            return prefix + Help.DefaultParamLabelRenderer.renderParameterName(field);
         }
     }
 

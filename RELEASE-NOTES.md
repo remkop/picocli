@@ -55,6 +55,7 @@ class Args {
 - #193 Splitting an argument should not cause max arity to be exceeded
 - #191 Arity should not limit the total number of values put in an array or collection
 - #195 Usage help should show Map types if paramLabel not specified
+- #185 Missing option exception text should not use field names but be more descriptive and consistent with usage help. Thanks to [AlexFalappa](https://github.com/AlexFalappa). 
 - #186 Confusing usage message for collection options
 - #181 Fixed bug where incorrect help message is displayed for short options with paramLabel when arity > 1
 - #184 Improved CommandLine.setSeparator javadoc to clarify that this affects parsing only and link to the `@Command` `separator` annotation attribute.

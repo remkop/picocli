@@ -574,7 +574,7 @@ public class CommandLineTest {
             CommandLine.populateCommand(new EnumParams(), "-timeUnitArray", "a", "b");
             fail("Accepted invalid timeunit");
         } catch (Exception ex) {
-            assertEquals("Could not convert 'a' to TimeUnit for option '-timeUnitArray' at index 0 (timeUnitArray)" +
+            assertEquals("Could not convert 'a' to TimeUnit for option '-timeUnitArray' at index 0 (<timeUnitArray>)" +
                     ": java.lang.IllegalArgumentException: No enum constant java.util.concurrent.TimeUnit.a", ex.getMessage());
         }
     }
@@ -584,7 +584,7 @@ public class CommandLineTest {
             CommandLine.populateCommand(new EnumParams(), "-timeUnitList", "DAYS", "b", "c");
             fail("Accepted invalid timeunit");
         } catch (Exception ex) {
-            assertEquals("Could not convert 'b' to TimeUnit for option '-timeUnitList' at index 1 (timeUnitList)" +
+            assertEquals("Could not convert 'b' to TimeUnit for option '-timeUnitList' at index 1 (<timeUnitList>)" +
                     ": java.lang.IllegalArgumentException: No enum constant java.util.concurrent.TimeUnit.b",
                     ex.getMessage());
         }
@@ -850,7 +850,7 @@ public class CommandLineTest {
             CommandLine.populateCommand(new RequiredField(), "arg1", "arg2");
             fail("Missing required field should have thrown exception");
         } catch (MissingParameterException ex) {
-            assertEquals("Missing required option 'required'", ex.getMessage());
+            assertEquals("Missing required option '--required=<required>'", ex.getMessage());
         }
     }
     @Test
@@ -905,7 +905,7 @@ public class CommandLineTest {
             CommandLine.populateCommand(new Example(), new String[0]);
             fail("Should not accept missing mandatory parameter");
         } catch (MissingParameterException ex) {
-            assertEquals("Missing required parameter: mandatory", ex.getMessage());
+            assertEquals("Missing required parameter: <mandatory>", ex.getMessage());
         }
     }
     @Test
@@ -919,13 +919,13 @@ public class CommandLineTest {
             CommandLine.populateCommand(new Tricky1(), new String[0]);
             fail("Should not accept missing mandatory parameter");
         } catch (MissingParameterException ex) {
-            assertEquals("Missing required parameters: mandatory, anotherMandatory", ex.getMessage());
+            assertEquals("Missing required parameters: <mandatory>, <anotherMandatory>", ex.getMessage());
         }
         try {
             CommandLine.populateCommand(new Tricky1(), new String[] {"firstonly"});
             fail("Should not accept missing mandatory parameter");
         } catch (MissingParameterException ex) {
-            assertEquals("Missing required parameter: anotherMandatory", ex.getMessage());
+            assertEquals("Missing required parameter: <anotherMandatory>", ex.getMessage());
         }
     }
     @Test
@@ -942,7 +942,7 @@ public class CommandLineTest {
             CommandLine.populateCommand(new Tricky2(), new String[0]);
             fail("Should not accept missing mandatory parameter");
         } catch (MissingParameterException ex) {
-            assertEquals("Missing required parameter: mandatory", ex.getMessage());
+            assertEquals("Missing required parameter: <mandatory>", ex.getMessage());
         }
     }
     @Test
@@ -957,14 +957,14 @@ public class CommandLineTest {
             CommandLine.populateCommand(new Tricky3(), new String[] {"-t", "-v", "mandatory"});
             fail("Should not accept missing mandatory parameter");
         } catch (MissingParameterException ex) {
-            assertEquals("Missing required parameter: alsoMandatory", ex.getMessage());
+            assertEquals("Missing required parameter: <alsoMandatory>", ex.getMessage());
         }
 
         try {
             CommandLine.populateCommand(new Tricky3(), new String[] { "-t", "-v"});
             fail("Should not accept missing two mandatory parameters");
         } catch (MissingParameterException ex) {
-            assertEquals("Missing required parameters: mandatory, alsoMandatory", ex.getMessage());
+            assertEquals("Missing required parameters: <mandatory>, <alsoMandatory>", ex.getMessage());
         }
     }
     @Test
@@ -977,7 +977,7 @@ public class CommandLineTest {
             CommandLine.populateCommand(new Tricky3(), new String[] {"-t"});
             fail("Should not accept missing mandatory parameter");
         } catch (MissingParameterException ex) {
-            assertEquals("Missing required parameter: mandatory", ex.getMessage());
+            assertEquals("Missing required parameter: <mandatory>", ex.getMessage());
         }
     }
     @Test
@@ -997,7 +997,27 @@ public class CommandLineTest {
             CommandLine.populateCommand(new App(), new String[0]);
             fail("Should not accept missing mandatory parameter");
         } catch (MissingParameterException ex) {
-            assertEquals("Missing required parameters: host, port", ex.getMessage());
+            assertEquals("Missing required parameters: <host>, <port>", ex.getMessage());
+        }
+    }
+    @Test
+    public void testNoMissingRequiredParamErrorWithLabelIfHelpOptionSpecified() {
+        class App {
+            @Parameters(hidden = true)  // "hidden": don't show this parameter in usage help message
+                    List<String> allParameters; // no "index" attribute: captures _all_ arguments (as Strings)
+
+            @Parameters(index = "0", paramLabel = "HOST")     InetAddress  host;
+            @Parameters(index = "1", paramLabel = "PORT")     int          port;
+            @Parameters(index = "2..*", paramLabel = "FILES") File[]       files;
+
+            @Option(names = "-?", help = true) boolean help;
+        }
+        CommandLine.populateCommand(new App(), new String[] {"-?"});
+        try {
+            CommandLine.populateCommand(new App(), new String[0]);
+            fail("Should not accept missing mandatory parameter");
+        } catch (MissingParameterException ex) {
+            assertEquals("Missing required parameters: HOST, PORT", ex.getMessage());
         }
     }
     @Test
@@ -1012,7 +1032,7 @@ public class CommandLineTest {
             CommandLine.populateCommand(requiredField, "arg1", "arg2");
             fail("Missing required field should have thrown exception");
         } catch (MissingParameterException ex) {
-            assertEquals("Missing required option 'required'", ex.getMessage());
+            assertEquals("Missing required option '--required=<required>'", ex.getMessage());
         }
     }
     @Test
@@ -1029,7 +1049,7 @@ public class CommandLineTest {
             commandLine.parse("arg1", "arg2");
             fail("Missing required field should have thrown exception");
         } catch (MissingParameterException ex) {
-            assertEquals("Missing required option 'required'", ex.getMessage());
+            assertEquals("Missing required option '--required=<required>'", ex.getMessage());
         }
     }
 
@@ -1512,7 +1532,7 @@ public class CommandLineTest {
             CommandLine.populateCommand(new BooleanOptionsArity1_nAndParameters(), "-bool".split(" "));
             fail("Missing param was accepted for boolean with arity=1");
         } catch (ParameterException expected) {
-            assertEquals("Missing required parameter for option '-bool' at index 0 (aBoolean)", expected.getMessage());
+            assertEquals("Missing required parameter for option '-bool' at index 0 (<aBoolean>)", expected.getMessage());
         }
     }
 
@@ -1690,7 +1710,7 @@ public class CommandLineTest {
             params = CommandLine.populateCommand(new ArrayParamsArity1_n());
             fail("Should not accept input with missing parameter");
         } catch (MissingParameterException ex) {
-            assertEquals("Missing required parameters at positions 0..*: params", ex.getMessage());
+            assertEquals("Missing required parameters at positions 0..*: <params>", ex.getMessage());
         }
     }
 
@@ -1707,14 +1727,14 @@ public class CommandLineTest {
             params = CommandLine.populateCommand(new ArrayParamsArity2_n(), "a");
             fail("Should not accept input with missing parameter");
         } catch (MissingParameterException ex) {
-            assertEquals("positional parameter at index 0..* (params) requires at least 2 values, but only 1 were specified.", ex.getMessage());
+            assertEquals("positional parameter at index 0..* (<params>) requires at least 2 values, but only 1 were specified.", ex.getMessage());
         }
 
         try {
             params = CommandLine.populateCommand(new ArrayParamsArity2_n());
             fail("Should not accept input with missing parameter");
         } catch (MissingParameterException ex) {
-            assertEquals("positional parameter at index 0..* (params) requires at least 2 values, but only 0 were specified.", ex.getMessage());
+            assertEquals("positional parameter at index 0..* (<params>) requires at least 2 values, but only 0 were specified.", ex.getMessage());
         }
     }
 
@@ -1781,7 +1801,7 @@ public class CommandLineTest {
             params = CommandLine.populateCommand(new NonVarArgArrayParamsArity1());
             fail("Should not accept input with missing parameter");
         } catch (MissingParameterException ex) {
-            assertEquals("Missing required parameter: params", ex.getMessage());
+            assertEquals("Missing required parameter: <params>", ex.getMessage());
         }
     }
 
@@ -1806,14 +1826,14 @@ public class CommandLineTest {
             params = CommandLine.populateCommand(new NonVarArgArrayParamsArity2(), "a");
             fail("Should not accept input with missing parameter");
         } catch (MissingParameterException ex) {
-            assertEquals("positional parameter at index 0..* (params) requires at least 2 values, but only 1 were specified.", ex.getMessage());
+            assertEquals("positional parameter at index 0..* (<params>) requires at least 2 values, but only 1 were specified.", ex.getMessage());
         }
 
         try {
             params = CommandLine.populateCommand(new NonVarArgArrayParamsArity2());
             fail("Should not accept input with missing parameter");
         } catch (MissingParameterException ex) {
-            assertEquals("positional parameter at index 0..* (params) requires at least 2 values, but only 0 were specified.", ex.getMessage());
+            assertEquals("positional parameter at index 0..* (<params>) requires at least 2 values, but only 0 were specified.", ex.getMessage());
         }
     }
 
@@ -1826,7 +1846,7 @@ public class CommandLineTest {
         try {
             CommandLine.populateCommand(new WithParams(), new String[0]);
         } catch (MissingParameterException ex) {
-            assertEquals("Missing required parameters: param0, param1", ex.getMessage());
+            assertEquals("Missing required parameters: <param0>, <param1>", ex.getMessage());
         }
     }
 
@@ -1913,7 +1933,7 @@ public class CommandLineTest {
             cmd.parse("--opt=abc");
             fail("Expected MissingParameterException");
         } catch (MissingParameterException ok) {
-            assertEquals("Missing required option 'opt'", ok.getMessage());
+            assertEquals("Missing required option '--opt:<opt>'", ok.getMessage());
             assertEquals(Arrays.asList("--opt=abc"), cmd.getUnmatchedArguments());
         }
     }
@@ -1924,13 +1944,13 @@ public class CommandLineTest {
             params = CommandLine.populateCommand(new VariousPrefixCharacters(), "--dash".split(" "));
             fail("int option needs arg");
         } catch (ParameterException ex) {
-            assertEquals("Missing required parameter for option '-d' (dash)", ex.getMessage());
+            assertEquals("Missing required parameter for option '-d' (<dash>)", ex.getMessage());
         }
 
         try {
             params = CommandLine.populateCommand(new VariousPrefixCharacters(), "--owner".split(" "));
         } catch (ParameterException ex) {
-            assertEquals("Missing required parameter for option '/Owner' (owner)", ex.getMessage());
+            assertEquals("Missing required parameter for option '/Owner' (<owner>)", ex.getMessage());
         }
 
         params = CommandLine.populateCommand(new VariousPrefixCharacters(), "--owner=".split(" "));
@@ -2174,7 +2194,7 @@ public class CommandLineTest {
             CommandLine.populateCommand(new App(), "000");
             fail("Should fail with missingParamException");
         } catch (MissingParameterException ex) {
-            assertEquals("Missing required parameter: file1", ex.getMessage());
+            assertEquals("Missing required parameter: <file1>", ex.getMessage());
         }
     }
 
@@ -2220,7 +2240,7 @@ public class CommandLineTest {
             CommandLine.populateCommand(new App());
             fail("Should fail with missingParamException");
         } catch (MissingParameterException ex) {
-            assertEquals("Missing required parameter: file0_1", ex.getMessage());
+            assertEquals("Missing required parameter: <file0_1>", ex.getMessage());
         }
     }
 
@@ -2521,13 +2541,13 @@ public class CommandLineTest {
             CommandLine.populateCommand(new Args(), "a,b,c,d,e"); // 1 arg: should fail
             fail("MissingParameterException expected");
         } catch (MissingParameterException ex) {
-            assertEquals("positional parameter at index 0..* (values) requires at least 2 values, but only 1 were specified.", ex.getMessage());
+            assertEquals("positional parameter at index 0..* (<values>) requires at least 2 values, but only 1 were specified.", ex.getMessage());
         }
         try {
             CommandLine.populateCommand(new Args()); // 0 arg: should fail
             fail("MissingParameterException expected");
         } catch (MissingParameterException ex) {
-            assertEquals("positional parameter at index 0..* (values) requires at least 2 values, but only 0 were specified.", ex.getMessage());
+            assertEquals("positional parameter at index 0..* (<values>) requires at least 2 values, but only 0 were specified.", ex.getMessage());
         }
         try {
             CommandLine.populateCommand(new Args(), "a,b,c", "B,C", "d", "e", "f,g"); // 5 args
@@ -3027,13 +3047,13 @@ public class CommandLineTest {
             CommandLine.populateCommand(new App(), "-s", "1", "-s", "2");
             fail("expected exception");
         } catch (OverwrittenOptionException ex) {
-            assertEquals("option '-s' (string) should be specified only once", ex.getMessage());
+            assertEquals("option '-s' (<string>) should be specified only once", ex.getMessage());
         }
         try {
             CommandLine.populateCommand(new App(), "-v", "-v");
             fail("expected exception");
         } catch (OverwrittenOptionException ex) {
-            assertEquals("option '-v' (bool) should be specified only once", ex.getMessage());
+            assertEquals("option '-v' (<bool>) should be specified only once", ex.getMessage());
         }
     }
 
@@ -3047,13 +3067,13 @@ public class CommandLineTest {
             CommandLine.populateCommand(new App(), "-s", "1", "--str", "2");
             fail("expected exception");
         } catch (OverwrittenOptionException ex) {
-            assertEquals("option '-s' (string) should be specified only once", ex.getMessage());
+            assertEquals("option '-s' (<string>) should be specified only once", ex.getMessage());
         }
         try {
             CommandLine.populateCommand(new App(), "-v", "--verbose");
             fail("expected exception");
         } catch (OverwrittenOptionException ex) {
-            assertEquals("option '-v' (bool) should be specified only once", ex.getMessage());
+            assertEquals("option '-v' (<bool>) should be specified only once", ex.getMessage());
         }
     }
 
@@ -3088,7 +3108,7 @@ public class CommandLineTest {
             commandLine.parse("-u", "foo");
             fail("expected exception");
         } catch (MissingParameterException ex) {
-            assertEquals("Missing required option 'password'", ex.getLocalizedMessage());
+            assertEquals("Missing required option '-p=<password>'", ex.getLocalizedMessage());
         }
         commandLine.parse("-u", "foo", "-p", "abc");
     }
@@ -3357,7 +3377,7 @@ public class CommandLineTest {
             CommandLine.populateCommand(new App(), "-fix", "1=a|2=b|3=c|4=d"); // 1 arg
             fail("MissingParameterException expected");
         } catch (MissingParameterException ex) {
-            assertEquals("option '-fix' at index 0 (message) requires at least 2 values, but only 1 were specified.", ex.getMessage());
+            assertEquals("option '-fix' at index 0 (<Integer=String>) requires at least 2 values, but only 1 were specified.", ex.getMessage());
         }
         try {
             CommandLine.populateCommand(new App(), "-fix", "1=a", "2=b", "3=c|4=d"); // 3 args
@@ -3384,7 +3404,7 @@ public class CommandLineTest {
         assertEquals(Arrays.asList("3=c", "4=d"), cmd.getUnmatchedArguments());
     }
     @Test
-    public void testMultipleMissingParams() {
+    public void testMultipleMissingOptions() {
         class App {
             @Option(names = "-a", required = true) String first;
             @Option(names = "-b", required = true) String second;
@@ -3394,7 +3414,39 @@ public class CommandLineTest {
             CommandLine.populateCommand(new App());
             fail("MissingParameterException expected");
         } catch (MissingParameterException ex) {
-            assertEquals("Missing required options [first, second, third]", ex.getMessage());
+            assertEquals("Missing required options [-a=<first>, -b=<second>, -c=<third>]", ex.getMessage());
+        }
+    }
+    @Test
+    public void test185MissingOptionsShouldUseLabel() {
+        class App {
+            @Parameters(arity = "1", paramLabel = "IN_FILE", description = "The input file")
+            File foo;
+            @Option(names = "-o", paramLabel = "OUT_FILE", description = "The output file", required = true)
+            File bar;
+        }
+        try {
+            CommandLine.populateCommand(new App());
+            fail("MissingParameterException expected");
+        } catch (MissingParameterException ex) {
+            assertEquals("Missing required options [-o=OUT_FILE, params[*]=IN_FILE]", ex.getMessage());
+        }
+    }
+    @Test
+    public void test185MissingMapOptionsShouldUseLabel() {
+        class App {
+            @Parameters(arity = "1", type = {Long.class, File.class}, description = "The input file mapping")
+            Map<Long, File> foo;
+            @Option(names = "-o", description = "The output file mapping", required = true)
+            Map<String, String> bar;
+            @Option(names = "-x", paramLabel = "KEY=VAL", description = "Some other mapping", required = true)
+            Map<String, String> xxx;
+        }
+        try {
+            CommandLine.populateCommand(new App());
+            fail("MissingParameterException expected");
+        } catch (MissingParameterException ex) {
+            assertEquals("Missing required options [-o=<String=String>, -x=KEY=VAL, params[*]=<Long=File>]", ex.getMessage());
         }
     }
     @Test

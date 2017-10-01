@@ -150,7 +150,7 @@ public class AutoCompleteTest {
             "Usage: picocli.AutoComplete [-fhw] [-n=<commandName>] [-o=<autoCompleteScript>]%n" +
             "                            <commandLineFQCN>%n" +
             "Generates a bash completion script for the specified command class.%n" +
-            "      commandLineFQCN         Fully qualified class name of the annotated%n" +
+            "      <commandLineFQCN>       Fully qualified class name of the annotated%n" +
             "                                @Command class to generate a completion script%n" +
             "                                for.%n" +
             "  -n, --name=<commandName>    Name of the command to create a completion script%n" +
