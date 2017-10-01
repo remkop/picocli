@@ -653,6 +653,11 @@ public class CommandLine {
     private static CommandLine toCommandLine(Object obj) { return obj instanceof CommandLine ? (CommandLine) obj : new CommandLine(obj);}
     private static boolean isMultiValue(Field field) {  return isMultiValue(field.getType()); }
     private static boolean isMultiValue(Class<?> cls) { return cls.isArray() || Collection.class.isAssignableFrom(cls) || Map.class.isAssignableFrom(cls); }
+    private static Class<?>[] getTypeAttribute(Field field) {
+        if (field.isAnnotationPresent(Parameters.class)) {  return field.getAnnotation(Parameters.class).type(); }
+        else if (field.isAnnotationPresent(Option.class)) { return field.getAnnotation(Option.class).type(); }
+        throw new IllegalStateException(field + " has neither @Parameters nor @Option annotation");
+    }
     /**
      * <p>
      * Annotate fields in your class with {@code @Option} and picocli will initialize these fields when matching
@@ -2069,15 +2074,6 @@ public class CommandLine {
             return desc;
         }
 
-        private Class<?>[] getTypeAttribute(Field field) {
-            if (field.isAnnotationPresent(Parameters.class)) {
-                return field.getAnnotation(Parameters.class).type();
-            } else if (field.isAnnotationPresent(Option.class)) {
-                return field.getAnnotation(Option.class).type();
-            }
-            throw new IllegalStateException(field + " has neither @Parameters nor @Option annotation");
-        }
-
         private boolean isAnyHelpRequested() { return isHelpRequested || versionHelpRequested || usageHelpRequested; }
 
         private void updateHelpRequested(Field field) {
@@ -3173,7 +3169,14 @@ public class CommandLine {
                 if (result != null && result.trim().length() > 0) {
                     return result.trim();
                 }
-                return "<" + field.getName() + ">";
+                String name = field.getName();
+                if (Map.class.isAssignableFrom(field.getType())) { // #195 better param labels for map fields
+                    Class<?>[] paramTypes = getTypeAttribute(field);
+                    if (paramTypes.length < 2 || paramTypes[0] == null || paramTypes[1] == null) {
+                        name = "Object=Object";
+                    } else { name = paramTypes[0].getSimpleName() + "=" + paramTypes[1].getSimpleName(); }
+                }
+                return "<" + name + ">";
             }
         }
         /** Use a Layout to format usage help text for options and parameters in tabular format.

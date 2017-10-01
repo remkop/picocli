@@ -36,11 +36,13 @@ import java.io.UnsupportedEncodingException;
 import java.lang.String;
 import java.lang.reflect.Field;
 import java.net.InetAddress;
+import java.net.URI;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 import static java.lang.String.format;
@@ -495,13 +497,35 @@ public class CommandLineHelpTest {
     }
 
     //------------------
-    @Ignore
     @Test
-    public void testUsageVariableArityRequiredOptionMap() throws UnsupportedEncodingException {
-        fail();
+    public void testUsageVariableArityRequiredShortOptionMap() throws UnsupportedEncodingException {
+        // if option is required at least once and can be specified multiple times:
+        // -f=ARG [-f=ARG]...
+        class Args {
+            @Option(names = "-a", required = true, paramLabel = "KEY=VAL") // default
+            Map<String, String> a;
+            @Option(names = "-b", required = true, arity = "0..*")
+            @SuppressWarnings("unchecked")
+            Map b;
+            @Option(names = "-c", required = true, arity = "1..*", type = {String.class, TimeUnit.class})
+            Map<String, TimeUnit> c;
+            @Option(names = "-d", required = true, arity = "2..*", type = {Integer.class, URL.class}, description = "description")
+            Map<Integer, URL> d;
+        }
+        String expected = String.format("" +
+                "Usage: <main class> -a=KEY=VAL [-a=KEY=VAL]... -b=[<Object=Object>]... [-b=%n" +
+                "                    [<Object=Object>]...]... -c=<String=TimeUnit>...%n" +
+                "                    [-c=<String=TimeUnit>...]... -d=<Integer=URL>%n" +
+                "                    <Integer=URL>... [-d=<Integer=URL> <Integer=URL>...]...%n" +
+                "  -a= KEY=VAL%n" +
+                "  -b= [<Object=Object>]...%n" +
+                "  -c= <String=TimeUnit>...%n" +
+                "  -d= <Integer=URL> <Integer=URL>...%n" +
+                "                              description%n");
+        //CommandLine.usage(new Args(), System.out);
+        assertEquals(expected, usageString(new Args(), Help.Ansi.OFF));
     }
 
-    @Ignore("Pending #195: Map options should show types in usage help message if paramLabel not specified")
     @Test
     public void testUsageVariableArityOptionMap() throws UnsupportedEncodingException {
         class Args {
@@ -511,116 +535,130 @@ public class CommandLineHelpTest {
             Map<Integer, Integer> b;
             @Option(names = "-c", paramLabel = "KEY=VALUE", arity = "1..*", type = {String.class, TimeUnit.class})
             Map<String, TimeUnit> c;
-            @Option(names = "-d", arity = "2..*", type = {String.class, URL.class})
+            @Option(names = "-d", arity = "2..*", type = {String.class, URL.class}, description = "description")
             Map<String, URL> d;
         }
         String expected = String.format("" +
-                "Usage: <main class> [-a=<String=String>]... [-b=[<Integer=Integer>]...]...%n" +
+                "Usage: <main class> [-a=<Object=Object>]... [-b=[<Integer=Integer>]...]...%n" +
                 "                    [-c=KEY=VALUE...]... [-d=<String=URL> <String=URL>...]...%n" +
-                "  -a= <String=String>%n" +
+                "  -a= <Object=Object>%n" +
                 "  -b= [<Integer=Integer>]...%n" +
                 "  -c= KEY=VALUE...%n" +
-                "  -d= <String=URL> <String=URL>...%n");
+                "  -d= <String=URL> <String=URL>...%n" +
+                "                              description%n");
         //CommandLine.usage(new Args(), System.out);
         assertEquals(expected, usageString(new Args(), Help.Ansi.OFF));
     }
 
-//    @Test
-//    public void testUsageRangeArityRequiredOptionArray() throws UnsupportedEncodingException {
-//        // if option is required at least once and can be specified multiple times:
-//        // -f=ARG [-f=ARG]...
-//        class Args {
-//            @Option(names = "-a", required = true, paramLabel = "ARG", arity = "0..1")
-//            List<String> a;
-//            @Option(names = "-b", required = true, paramLabel = "ARG", arity = "1..2")
-//            String[] b;
-//            @Option(names = "-c", required = true, paramLabel = "ARG", arity = "1..3")
-//            String[] c;
-//            @Option(names = "-d", required = true, paramLabel = "ARG", arity = "2..4")
-//            String[] d;
-//        }
-//        String expected = String.format("" +
-//                "Usage: <main class> -a[=ARG] [-a[=ARG]]... -b=ARG [ARG] [-b=ARG [ARG]]...%n" +
-//                "                    -c=ARG [ARG [ARG]] [-c=ARG [ARG [ARG]]]... -d=ARG ARG [ARG%n" +
-//                "                    [ARG]] [-d=ARG ARG [ARG [ARG]]]...%n" +
-//                "  -a= [ARG]%n" +
-//                "  -b= ARG [ARG]%n" +
-//                "  -c= ARG [ARG [ARG]]%n" +
-//                "  -d= ARG ARG [ARG [ARG]]%n");
-//        //CommandLine.usage(new Args(), System.out);
-//        assertEquals(expected, usageString(new Args(), Help.Ansi.OFF));
-//    }
-//
-//    @Test
-//    public void testUsageRangeArityOptionArray() throws UnsupportedEncodingException {
-//        class Args {
-//            @Option(names = "-a", paramLabel = "ARG", arity = "0..1")
-//            List<String> a;
-//            @Option(names = "-b", paramLabel = "ARG", arity = "1..2")
-//            String[] b;
-//            @Option(names = "-c", paramLabel = "ARG", arity = "1..3")
-//            String[] c;
-//            @Option(names = "-d", paramLabel = "ARG", arity = "2..4")
-//            String[] d;
-//        }
-//        String expected = String.format("" +
-//                "Usage: <main class> [-a[=ARG]]... [-b=ARG [ARG]]... [-c=ARG [ARG [ARG]]]...%n" +
-//                "                    [-d=ARG ARG [ARG [ARG]]]...%n" +
-//                "  -a= [ARG]%n" +
-//                "  -b= ARG [ARG]%n" +
-//                "  -c= ARG [ARG [ARG]]%n" +
-//                "  -d= ARG ARG [ARG [ARG]]%n");
-//        //CommandLine.usage(new Args(), System.out);
-//        assertEquals(expected, usageString(new Args(), Help.Ansi.OFF));
-//    }
-//
-//    @Test
-//    public void testUsageFixedArityRequiredOptionArray() throws UnsupportedEncodingException {
-//        // if option is required at least once and can be specified multiple times:
-//        // -f=ARG [-f=ARG]...
-//        class Args {
-//            @Option(names = "-a", required = true, paramLabel = "ARG") // default
-//                    String[] a;
-//            @Option(names = "-b", required = true, paramLabel = "ARG", arity = "0")
-//            String[] b;
-//            @Option(names = "-c", required = true, paramLabel = "ARG", arity = "1")
-//            String[] c;
-//            @Option(names = "-d", required = true, paramLabel = "ARG", arity = "2")
-//            String[] d;
-//        }
-//        String expected = String.format("" +
-//                "Usage: <main class> -b [-b]... -a=ARG [-a=ARG]... -c=ARG [-c=ARG]... -d=ARG ARG%n" +
-//                "                    [-d=ARG ARG]...%n" +
-//                "  -a= ARG%n" +
-//                "  -b%n" +
-//                "  -c= ARG%n" +
-//                "  -d= ARG ARG%n");
-//        //CommandLine.usage(new Args(), System.out);
-//        assertEquals(expected, usageString(new Args(), Help.Ansi.OFF));
-//    }
-//
-//    @Test
-//    public void testUsageFixedArityOptionArray() throws UnsupportedEncodingException {
-//        class Args {
-//            @Option(names = "-a", paramLabel = "ARG") // default
-//                    String[] a;
-//            @Option(names = "-b", paramLabel = "ARG", arity = "0")
-//            String[] b;
-//            @Option(names = "-c", paramLabel = "ARG", arity = "1")
-//            String[] c;
-//            @Option(names = "-d", paramLabel = "ARG", arity = "2")
-//            String[] d;
-//        }
-//        String expected = String.format("" +
-//                "Usage: <main class> [-b]... [-a=ARG]... [-c=ARG]... [-d=ARG ARG]...%n" +
-//                "  -a= ARG%n" +
-//                "  -b%n" +
-//                "  -c= ARG%n" +
-//                "  -d= ARG ARG%n");
-//        //CommandLine.usage(new Args(), System.out);
-//        assertEquals(expected, usageString(new Args(), Help.Ansi.OFF));
-//    }
+    @Test
+    public void testUsageRangeArityRequiredOptionMap() throws UnsupportedEncodingException {
+        // if option is required at least once and can be specified multiple times:
+        // -f=ARG [-f=ARG]...
+        class Args {
+            @Option(names = "-a", required = true, arity = "0..1", description = "a description")
+            Map<String, String> a;
+            @Option(names = "-b", required = true, arity = "1..2", type = {Integer.class, Integer.class}, description = "b description")
+            Map<Integer, Integer> b;
+            @Option(names = "-c", required = true, arity = "1..3", type = {String.class, URL.class}, description = "c description")
+            Map<String, URL> c;
+            @Option(names = "-d", required = true, paramLabel = "K=URL", arity = "2..4", description = "d description")
+            Map<String, URL> d;
+        }
+        String expected = String.format("" +
+                "Usage: <main class> -a[=<Object=Object>] [-a[=<Object=Object>]]...%n" +
+                "                    -b=<Integer=Integer> [<Integer=Integer>]%n" +
+                "                    [-b=<Integer=Integer> [<Integer=Integer>]]...%n" +
+                "                    -c=<String=URL> [<String=URL> [<String=URL>]]%n" +
+                "                    [-c=<String=URL> [<String=URL> [<String=URL>]]]... -d=K=URL%n" +
+                "                    K=URL [K=URL [K=URL]] [-d=K=URL K=URL [K=URL [K=URL]]]...%n" +
+                "  -a= [<Object=Object>]       a description%n" +
+                "  -b= <Integer=Integer> [<Integer=Integer>]%n" +
+                "                              b description%n" +
+                "  -c= <String=URL> [<String=URL> [<String=URL>]]%n" +
+                "                              c description%n" +
+                "  -d= K=URL K=URL [K=URL [K=URL]]%n" +
+                "                              d description%n");
+        //CommandLine.usage(new Args(), System.out);
+        assertEquals(expected, usageString(new Args(), Help.Ansi.OFF));
+    }
 
+    @Test
+    public void testUsageRangeArityOptionMap() throws UnsupportedEncodingException {
+        class Args {
+            @Option(names = "-a", arity = "0..1"/*, type = {UUID.class, URL.class}*/, description = "a description")
+            Map<UUID, URL> a;
+            @Option(names = "-b", arity = "1..2", type = {Long.class, UUID.class}, description = "b description")
+            Map<?, ?> b;
+            @Option(names = "-c", arity = "1..3", type = {Long.class}, description = "c description")
+            Map<?, ?> c;
+            @Option(names = "-d", paramLabel = "K=V", arity = "2..4", description = "d description")
+            Map<?, ?> d;
+        }
+        String expected = String.format("" +
+                "Usage: <main class> [-a[=<Object=Object>]]... [-b=<Long=UUID> [<Long=UUID>]]...%n" +
+                "                    [-c=<Object=Object> [<Object=Object> [<Object=Object>]]]...%n" +
+                "                    [-d=K=V K=V [K=V [K=V]]]...%n" +
+                "  -a= [<Object=Object>]       a description%n" +
+                "  -b= <Long=UUID> [<Long=UUID>]%n" +
+                "                              b description%n" +
+                "  -c= <Object=Object> [<Object=Object> [<Object=Object>]]%n" +
+                "                              c description%n" +
+                "  -d= K=V K=V [K=V [K=V]]     d description%n");
+        //CommandLine.usage(new Args(), System.out);
+        assertEquals(expected, usageString(new Args(), Help.Ansi.OFF));
+    }
+
+    @Test
+    public void testUsageFixedArityRequiredOptionMap() throws UnsupportedEncodingException {
+        // if option is required at least once and can be specified multiple times:
+        // -f=ARG [-f=ARG]...
+        class Args {
+            @Option(names = "-a", required = true, description = "a description")
+            Map<Short, Field> a;
+            @Option(names = "-b", required = true, paramLabel = "KEY=VAL", arity = "0", description = "b description")
+            @SuppressWarnings("unchecked")
+            Map b;
+            @Option(names = "-c", required = true, arity = "1", type = {Long.class, File.class}, description = "c description")
+            Map<Long, File> c;
+            @Option(names = "-d", required = true, arity = "2", type = {URI.class, URL.class}, description = "d description")
+            Map<URI, URL> d;
+        }
+        String expected = String.format("" +
+                "Usage: <main class> -b [-b]... -a=<Object=Object> [-a=<Object=Object>]...%n" +
+                "                    -c=<Long=File> [-c=<Long=File>]... -d=<URI=URL> <URI=URL>%n" +
+                "                    [-d=<URI=URL> <URI=URL>]...%n" +
+                "  -a= <Object=Object>         a description%n" +
+                "  -b                          b description%n" +
+                "  -c= <Long=File>             c description%n" +
+                "  -d= <URI=URL> <URI=URL>     d description%n");
+        //CommandLine.usage(new Args(), System.out);
+        assertEquals(expected, usageString(new Args(), Help.Ansi.OFF));
+    }
+
+    @Test
+    public void testUsageFixedArityOptionMap() throws UnsupportedEncodingException {
+        class Args {
+            @Option(names = "-a", type = {Short.class, Field.class}, description = "a description")
+            Map<Short, Field> a;
+            @Option(names = "-b", arity = "0", type = {UUID.class, Long.class}, description = "b description")
+            @SuppressWarnings("unchecked")
+            Map b;
+            @Option(names = "-c", arity = "1", description = "c description")
+            Map<Long, File> c;
+            @Option(names = "-d", arity = "2", type = {URI.class, URL.class}, description = "d description")
+            Map<URI, URL> d;
+        }
+        String expected = String.format("" +
+                "Usage: <main class> [-b]... [-a=<Short=Field>]... [-c=<Object=Object>]...%n" +
+                "                    [-d=<URI=URL> <URI=URL>]...%n" +
+                "  -a= <Short=Field>           a description%n" +
+                "  -b                          b description%n" +
+                "  -c= <Object=Object>         c description%n" +
+                "  -d= <URI=URL> <URI=URL>     d description%n");
+        //CommandLine.usage(new Args(), System.out);
+        assertEquals(expected, usageString(new Args(), Help.Ansi.OFF));
+    }
+    //--------------
     @Test
     public void testShortestFirstComparator_sortsShortestFirst() {
         String[] values = {"12345", "12", "123", "123456", "1", "", "1234"};
