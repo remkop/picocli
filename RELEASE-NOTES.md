@@ -11,7 +11,7 @@ This release has a number of incompatible changes:
 * Multi-value options (array, list and map fields) are **not greedy by default** any more.
 * **Arity is not max values**: end users may specify multi-value options (array, list and map fields) an unlimited number of times.
 * A single argument that is split into parts with a regex now **counts as a single argument** (so `arity="1"` won't prevent all parts from being added to the field)
-* API change: use custom `Cell` class instead of `java.awt.Point` as return value type for public method `Help.TextTable.putValue()` .
+* API change: replaced `java.awt.Point` with custom `Cell` class as return value type for public method `Help.TextTable.putValue()`.
 
 I am not happy about the disruption this may cause, but I felt these changes were needed for three reasons:
 the old picocli v1.0 behaviour caused ambiguity in common use cases,
@@ -52,15 +52,15 @@ class Args {
 
 ### Issues fixed
 
-- #192 Default arity should be 1, not *, for array and collection options. Thanks to [RobertZenz](https://github.com/RobertZenz).
-- #193 Splitting an argument should not cause max arity to be exceeded.
-- #191 Arity should not limit the total number of values put in an array or collection. Thanks to [RobertZenz](https://github.com/RobertZenz).
-- #195 Usage help should show Map types if paramLabel not specified
-- #185 Missing option exception text should not use field names but be more descriptive and consistent with usage help. Thanks to [AlexFalappa](https://github.com/AlexFalappa).
-- #186 Confusing usage message for collection options. Thanks to [AlexFalappa](https://github.com/AlexFalappa).
-- #179 Remove full JRE dependency: require only Compact Profile. Replace use of `java.awt.Point` with `picocli.CommandLine.Help.TextTable.Cell`. Thanks to [webfolderio](https://github.com/webfolderio).
-- #181 Fixed bug where incorrect help message is displayed for short options with paramLabel when arity > 1
-- #184 Improved CommandLine.setSeparator javadoc to clarify that this affects parsing only and link to the `@Command` `separator` annotation attribute. Thanks to [defnull](https://github.com/defnull).
+- #179 API Change to remove full JRE dependency and require only Compact Profile. Replace use of `java.awt.Point` with `picocli.CommandLine.Help.TextTable.Cell`. Thanks to [webfolderio](https://github.com/webfolderio).
+- #192 Bugfix: Default arity should be 1, not *, for array and collection options. Thanks to [RobertZenz](https://github.com/RobertZenz).
+- #193 Bugfix: Splitting an argument should not cause max arity to be exceeded.
+- #191 Bugfix: Arity should not limit the total number of values put in an array or collection. Thanks to [RobertZenz](https://github.com/RobertZenz).
+- #186 Bugfix: Confusing usage message for collection options. Thanks to [AlexFalappa](https://github.com/AlexFalappa).
+- #181 Bugfix: Incorrect help message was displayed for short options with paramLabel when arity > 1
+- #195 Enhancement: Usage help should show Map types if paramLabel not specified
+- #185 Enhancement: Exception message text for missing options should not use field names but be more descriptive and consistent with usage help. Thanks to [AlexFalappa](https://github.com/AlexFalappa).
+- #184 Doc: Improved CommandLine.setSeparator javadoc to clarify that this affects parsing only and link to the `@Command` `separator` annotation attribute. Thanks to [defnull](https://github.com/defnull).
 
 ## 1.0.1 - Bugfix release.
 
