@@ -3556,4 +3556,23 @@ public class CommandLineTest {
         String actual = new String(baos.toByteArray(), "UTF8");
         assertEquals(expected, actual);
     }
+
+    @Test
+    public void test176OptionModifier() {
+        class Args {
+            @Option(names = "-option", description = "the option value")
+            String option;
+
+            @Option(names = "-option:env", description = "the environment variable to look up for the actual value")
+            String optionEnvKey;
+
+            @Option(names = "-option:file", description = "path to the file containing the option value")
+            File optionFile;
+        }
+        Args args = CommandLine.populateCommand(new Args(), "-option", "VAL", "-option:env", "KEY", "-option:file", "/path/to/file");
+        assertEquals("VAL", args.option);
+        assertEquals("KEY", args.optionEnvKey);
+        assertEquals(new File("/path/to/file"), args.optionFile);
+        //CommandLine.usage(new Args(), System.out);
+    }
 }
