@@ -52,9 +52,9 @@ class Args {
 
 ### Issues fixed
 
-- #192 Default arity should be 1, not *, for array and collection options
-- #193 Splitting an argument should not cause max arity to be exceeded
-- #191 Arity should not limit the total number of values put in an array or collection
+- #192 Default arity should be 1, not *, for array and collection options. Thanks to [RobertZenz](https://github.com/RobertZenz).
+- #193 Splitting an argument should not cause max arity to be exceeded.
+- #191 Arity should not limit the total number of values put in an array or collection. Thanks to [RobertZenz](https://github.com/RobertZenz).
 - #195 Usage help should show Map types if paramLabel not specified
 - #185 Missing option exception text should not use field names but be more descriptive and consistent with usage help. Thanks to [AlexFalappa](https://github.com/AlexFalappa).
 - #186 Confusing usage message for collection options. Thanks to [AlexFalappa](https://github.com/AlexFalappa).
