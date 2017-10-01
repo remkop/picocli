@@ -127,7 +127,7 @@ public class CustomLayoutDemo implements Runnable {
         }
 
         class TwoOptionsPerRowLayout extends Layout { // define a custom layout
-            Point previous = new Point(0, 0);
+            TextTable.Cell previous = new TextTable.Cell(0, 0);
 
             private TwoOptionsPerRowLayout(Help.ColorScheme colorScheme, TextTable textTable,
                                            IOptionRenderer optionRenderer,
@@ -141,11 +141,11 @@ public class CustomLayoutDemo implements Runnable {
 
                 // We want to show two options on one row, next to each other,
                 // unless the first option spanned multiple columns (in which case there are not enough columns left)
-                int col = previous.x + 1;
+                int col = previous.column + 1;
                 if (col == 1 || col + columnValues.length > table.columns.length) { // if true, write into next row
 
                     // table also adds an empty row if a text value spanned multiple columns
-                    if (table.rowCount() == 0 || table.rowCount() == previous.y + 1) { // avoid adding 2 empty rows
+                    if (table.rowCount() == 0 || table.rowCount() == previous.row + 1) { // avoid adding 2 empty rows
                         table.addEmptyRow(); // create the slots to write the text values into
                     }
                     col = 0; // we are starting a new row, reset the column to write into

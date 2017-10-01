@@ -3324,6 +3324,21 @@ public class CommandLine {
          * longer than the column's width.</p>
          */
         public static class TextTable {
+            /**
+             * Helper class to index positions in a {@code Help.TextTable}.
+             * @since 2.0
+             */
+            public static class Cell {
+                /** Table column index (zero based). */
+                public final int column;
+                /** Table row index (zero based). */
+                public final int row;
+                /** Constructs a new Cell with the specified coordinates in the table.
+                 * @param column the zero-based table column
+                 * @param row the zero-based table row */
+                public Cell(int column, int row) { this.column = column; this.row = row; }
+            }
+
             /** The column definitions of this table. */
             public final Column[] columns;
 
@@ -3379,8 +3394,11 @@ public class CommandLine {
             /** Returns the {@code Text} slot at the specified row and column to write a text value into.
              * @param row the row of the cell whose Text to return
              * @param col the column of the cell whose Text to return
-             * @return the Text object at the specified row and column */
-            public Text cellAt(int row, int col) { return columnValues.get(col + (row * columns.length)); }
+             * @return the Text object at the specified row and column
+             * @since 2.0 */
+            public Text textAt(int row, int col) { return columnValues.get(col + (row * columns.length)); }
+            /** @deprecated use {@link #textAt(int, int)} instead */
+            public Text cellAt(int row, int col) { return textAt(row, col); }
 
             /** Returns the current number of rows of this {@code TextTable}.
              * @return the current number of rows in this TextTable */
@@ -3417,10 +3435,10 @@ public class CommandLine {
                 addEmptyRow();
                 for (int col = 0; col < values.length; col++) {
                     int row = rowCount() - 1;// write to last row: previous value may have wrapped to next row
-                    Point cell = putValue(row, col, values[col]);
+                    Cell cell = putValue(row, col, values[col]);
 
                     // add row if a value spanned/wrapped and there are still remaining values
-                    if ((cell.y != row || cell.x != col) && col != values.length - 1) {
+                    if ((cell.row != row || cell.column != col) && col != values.length - 1) {
                         addEmptyRow();
                     }
                 }
@@ -3432,29 +3450,29 @@ public class CommandLine {
              * @param row the target row in the table
              * @param col the target column in the table to write to
              * @param value the value to write
-             * @return a Point whose {@code x} value is the last column written to and whose {@code y} value is the
-             *          last row written to
+             * @return a Cell indicating the position in the table that was last written to (since 2.0)
              * @throws IllegalArgumentException if the specified row exceeds the table's {@linkplain
              *          TextTable#rowCount() row count}
+             * @since 2.0 (previous versions returned a {@code java.awt.Point} object)
              */
-            public Point putValue(int row, int col, Text value) {
+            public Cell putValue(int row, int col, Text value) {
                 if (row > rowCount() - 1) {
                     throw new IllegalArgumentException("Cannot write to row " + row + ": rowCount=" + rowCount());
                 }
-                if (value == null || value.plain.length() == 0) { return new Point(col, row); }
+                if (value == null || value.plain.length() == 0) { return new Cell(col, row); }
                 Column column = columns[col];
                 int indent = column.indent;
                 switch (column.overflow) {
                     case TRUNCATE:
-                        copy(value, cellAt(row, col), indent);
-                        return new Point(col, row);
+                        copy(value, textAt(row, col), indent);
+                        return new Cell(col, row);
                     case SPAN:
                         int startColumn = col;
                         do {
                             boolean lastColumn = col == columns.length - 1;
                             int charsWritten = lastColumn
-                                    ? copy(BreakIterator.getLineInstance(), value, cellAt(row, col), indent)
-                                    : copy(value, cellAt(row, col), indent);
+                                    ? copy(BreakIterator.getLineInstance(), value, textAt(row, col), indent)
+                                    : copy(value, textAt(row, col), indent);
                             value = value.substring(charsWritten);
                             indent = 0;
                             if (value.length > 0) { // value did not fit in column
@@ -3467,11 +3485,11 @@ public class CommandLine {
                                 indent = column.indent + indentWrappedLines;
                             }
                         } while (value.length > 0);
-                        return new Point(col, row);
+                        return new Cell(col, row);
                     case WRAP:
                         BreakIterator lineBreakIterator = BreakIterator.getLineInstance();
                         do {
-                            int charsWritten = copy(lineBreakIterator, value, cellAt(row, col), indent);
+                            int charsWritten = copy(lineBreakIterator, value, textAt(row, col), indent);
                             value = value.substring(charsWritten);
                             indent = column.indent + indentWrappedLines;
                             if (value.length > 0) {  // value did not fit in column
@@ -3479,7 +3497,7 @@ public class CommandLine {
                                 addEmptyRow();
                             }
                         } while (value.length > 0);
-                        return new Point(col, row);
+                        return new Cell(col, row);
                 }
                 throw new IllegalStateException(column.overflow.toString());
             }
@@ -4153,16 +4171,6 @@ public class CommandLine {
         private static final long serialVersionUID = -6050931703233083760L;
         public MissingTypeConverterException(String msg) {
             super(msg);
-        }
-    }
-
-    public static class Point {
-        public int x;
-        public int y;
-
-        public Point(int x, int y) {
-            this.x = x;
-            this.y = y;
         }
     }
 }
