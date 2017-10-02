@@ -595,10 +595,10 @@ public class CommandLineHelpTest {
             Map<?, ?> d;
         }
         String expected = String.format("" +
-                "Usage: <main class> [-a[=<String=String>]]... [-b=<Long=UUID> [<Long=UUID>]]...%n" +
+                "Usage: <main class> [-a[=<UUID=URL>]]... [-b=<Long=UUID> [<Long=UUID>]]...%n" +
                 "                    [-c=<String=String> [<String=String> [<String=String>]]]...%n" +
                 "                    [-d=K=V K=V [K=V [K=V]]]...%n" +
-                "  -a= [<String=String>]       a description%n" +
+                "  -a= [<UUID=URL>]            a description%n" +
                 "  -b= <Long=UUID> [<Long=UUID>]%n" +
                 "                              b description%n" +
                 "  -c= <String=String> [<String=String> [<String=String>]]%n" +
@@ -624,10 +624,10 @@ public class CommandLineHelpTest {
             Map<URI, URL> d;
         }
         String expected = String.format("" +
-                "Usage: <main class> -b [-b]... -a=<String=String> [-a=<String=String>]...%n" +
+                "Usage: <main class> -b [-b]... -a=<Short=Field> [-a=<Short=Field>]...%n" +
                 "                    -c=<Long=File> [-c=<Long=File>]... -d=<URI=URL> <URI=URL>%n" +
                 "                    [-d=<URI=URL> <URI=URL>]...%n" +
-                "  -a= <String=String>         a description%n" +
+                "  -a= <Short=Field>           a description%n" +
                 "  -b                          b description%n" +
                 "  -c= <Long=File>             c description%n" +
                 "  -d= <URI=URL> <URI=URL>     d description%n");
@@ -649,11 +649,11 @@ public class CommandLineHelpTest {
             Map<URI, URL> d;
         }
         String expected = String.format("" +
-                "Usage: <main class> [-b]... [-a=<Short=Field>]... [-c=<String=String>]...%n" +
+                "Usage: <main class> [-b]... [-a=<Short=Field>]... [-c=<Long=File>]...%n" +
                 "                    [-d=<URI=URL> <URI=URL>]...%n" +
                 "  -a= <Short=Field>           a description%n" +
                 "  -b                          b description%n" +
-                "  -c= <String=String>         c description%n" +
+                "  -c= <Long=File>             c description%n" +
                 "  -d= <URI=URL> <URI=URL>     d description%n");
         //CommandLine.usage(new Args(), System.out);
         assertEquals(expected, usageString(new Args(), Help.Ansi.OFF));
@@ -764,9 +764,9 @@ public class CommandLineHelpTest {
             Map<?, ?> d;
         }
         String expected = String.format("" +
-                "Usage: <main class> [<String=String>] <Long=UUID> [<Long=UUID>] <String=String>%n" +
+                "Usage: <main class> [<UUID=URL>] <Long=UUID> [<Long=UUID>] <String=String>%n" +
                 "                    [<String=String> [<String=String>]] K=V K=V [K=V [K=V]]%n" +
-                "      <String=String>         a description%n" +
+                "      <UUID=URL>              a description%n" +
                 "      <Long=UUID>             b description%n" +
                 "      <String=String>         c description%n" +
                 "      K=V                     d description%n");
@@ -788,10 +788,10 @@ public class CommandLineHelpTest {
             Map<URI, URL> d;
         }
         String expected = String.format("" +
-                "Usage: <main class>  [<Short=Field>]... <String=String> <URI=URL> <URI=URL>%n" +
+                "Usage: <main class>  [<Short=Field>]... <Long=File> <URI=URL> <URI=URL>%n" +
                 "      <UUID=Long>             b description%n" +
                 "      <Short=Field>           a description%n" +
-                "      <String=String>         c description%n" +
+                "      <Long=File>             c description%n" +
                 "      <URI=URL>               d description%n");
         //CommandLine.usage(new Args(), System.out);
         assertEquals(expected, usageString(new Args(), Help.Ansi.OFF));
@@ -2304,6 +2304,34 @@ public class CommandLineHelpTest {
                 "  -P, -map=TIMEUNIT=VALUE     Any number of TIMEUNIT=VALUE pairs. These may be%n" +
                 "                                specified separately (-PTIMEUNIT=VALUE) or as a%n" +
                 "                                comma-separated list.%n");
+        assertEquals(expected, actual);
+    }
+    @Test
+    public void testMapFieldTypeInference() throws UnsupportedEncodingException {
+        class App {
+            @Option(names = "-a") Map<Integer, URI> a;
+            @Option(names = "-b") Map<TimeUnit, StringBuilder> b;
+            @SuppressWarnings("unchecked")
+            @Option(names = "-c") Map c;
+            @Option(names = "-d") List<File> d;
+            @Option(names = "-e") Map<? extends Integer, ? super Long> e;
+            @Option(names = "-f", type = {Long.class, Float.class}) Map<? extends Number, ? super Number> f;
+            @SuppressWarnings("unchecked")
+            @Option(names = "-g", type = {TimeUnit.class, Float.class}) Map g;
+        }
+        String actual = usageString(new App(), Help.Ansi.OFF);
+        String expected = String.format("" +
+                "Usage: <main class> [-a=<Integer=URI>]... [-b=<TimeUnit=StringBuilder>]...%n" +
+                "                    [-c=<String=String>]... [-d=<d>]... [-e=<Integer=Long>]...%n" +
+                "                    [-f=<Long=Float>]... [-g=<TimeUnit=Float>]...%n" +
+                "  -a= <Integer=URI>%n" +
+                "  -b= <TimeUnit=StringBuilder>%n" +
+                "%n" +
+                "  -c= <String=String>%n" +
+                "  -d= <d>%n" +
+                "  -e= <Integer=Long>%n" +
+                "  -f= <Long=Float>%n" +
+                "  -g= <TimeUnit=Float>%n");
         assertEquals(expected, actual);
     }
 }

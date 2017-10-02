@@ -24,6 +24,9 @@ import java.lang.annotation.Target;
 import java.lang.reflect.Array;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
+import java.lang.reflect.WildcardType;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.net.InetAddress;
@@ -653,9 +656,31 @@ public class CommandLine {
     private static boolean isMultiValue(Field field) {  return isMultiValue(field.getType()); }
     private static boolean isMultiValue(Class<?> cls) { return cls.isArray() || Collection.class.isAssignableFrom(cls) || Map.class.isAssignableFrom(cls); }
     private static Class<?>[] getTypeAttribute(Field field) {
-        if (field.isAnnotationPresent(Parameters.class)) {  return field.getAnnotation(Parameters.class).type(); }
-        else if (field.isAnnotationPresent(Option.class)) { return field.getAnnotation(Option.class).type(); }
-        throw new IllegalStateException(field + " has neither @Parameters nor @Option annotation");
+        Class<?>[] explicit = field.isAnnotationPresent(Parameters.class) ? field.getAnnotation(Parameters.class).type() : field.getAnnotation(Option.class).type();
+        if (explicit.length > 0) { return explicit; }
+        if (field.getType().isArray()) { return new Class<?>[] { field.getType().getComponentType() }; }
+        if (isMultiValue(field)) {
+            Type type = field.getGenericType(); // e.g. Map<Long, ? extends Number>
+            if (type instanceof ParameterizedType) {
+                ParameterizedType parameterizedType = (ParameterizedType) type;
+                Type[] paramTypes = parameterizedType.getActualTypeArguments(); // e.g. ? extends Number
+                Class<?>[] result = new Class<?>[paramTypes.length];
+                for (int i = 0; i < paramTypes.length; i++) {
+                    if (paramTypes[i] instanceof Class) { result[i] = (Class<?>) paramTypes[i]; continue; } // e.g. Long
+                    if (paramTypes[i] instanceof WildcardType) { // e.g. ? extends Number
+                        WildcardType wildcardType = (WildcardType) paramTypes[i];
+                        Type[] lower = wildcardType.getLowerBounds(); // e.g. []
+                        if (lower.length > 0 && lower[0] instanceof Class) { result[i] = (Class<?>) lower[0]; continue; }
+                        Type[] upper = wildcardType.getUpperBounds(); // e.g. Number
+                        if (upper.length > 0 && upper[0] instanceof Class) { result[i] = (Class<?>) upper[0]; continue; }
+                    }
+                    Arrays.fill(result, String.class); return result; // too convoluted generic type, giving up
+                }
+                return result; // we inferred all types from ParameterizedType
+            }
+            return new Class<?>[] {String.class, String.class}; // field is multi-value but not ParameterizedType
+        }
+        return new Class<?>[] {field.getType()}; // not a multi-value field
     }
     /**
      * <p>
@@ -861,23 +886,34 @@ public class CommandLine {
          */
         String paramLabel() default "";
 
-        /**
-         * <p>
-         * Specify a {@code type} if the annotated field is a {@code Collection} that should hold objects other than
-         * Strings, or an array of types (one for the key type, one for the value type) if the annotated field is a {@code Map}.
+        /** <p>
+         * Optionally specify a {@code type} to control exactly what Class the option parameter should be converted
+         * to. This may be useful when the field type is an interface or an abstract class. For example, a field can
+         * be declared to have type {@code java.lang.Number}, and annotating {@code @Parameters(type=Short.class)}
+         * ensures that the option parameter value is converted to a {@code Short} before setting the field value.
          * </p><p>
-         * If the field's type is a {@code Collection}, the generic type parameter of the collection is erased and
-         * cannot be determined at runtime. Specify a {@code type} attribute to store values other than String in
-         * the Collection. Picocli will use the {@link ITypeConverter}
-         * that is {@linkplain #registerConverter(Class, ITypeConverter) registered} for that type to convert
-         * the raw String values before they are added to the collection.
+         * For array fields whose <em>component</em> type is an interface or abstract class, specify the concrete <em>component</em> type.
+         * For example, a field with type {@code Number[]} may be annotated with {@code @Parameters(type=Short.class)}
+         * to ensure that option parameter values are converted to {@code Short} before adding an element to the array.
          * </p><p>
-         * When the field's type is an array, the {@code type} attribute is ignored: the values will be converted
-         * to the array component type and the array will be replaced with a new instance containing both the old and
-         * the new values. </p>
-         * @return the type(s) to convert the raw String values to before adding them to the Collection or Map
+         * Picocli will use the {@link ITypeConverter} that is
+         * {@linkplain #registerConverter(Class, ITypeConverter) registered} for the specified type to convert
+         * the raw String values before modifying the field value.
+         * </p><p>
+         * Prior to 2.0, the {@code type} attribute was necessary for {@code Collection} and {@code Map} fields,
+         * but starting from 2.0 picocli will infer the component type from the generic type's type arguments.
+         * For example, for a field of type {@code Map<TimeUnit, Long>} picocli will know the option parameter
+         * should be split up in key=value pairs, where the key should be converted to a {@code java.util.concurrent.TimeUnit}
+         * enum value, and the value should be converted to a {@code Long}. No {@code @Parameters(type=...)} type attribute
+         * is required for this. For generic types with wildcards, picocli will take the specified upper or lower bound
+         * as the Class to convert to, unless the {@code @Parameters} annotation specifies an explicit {@code type} attribute.
+         * </p><p>
+         * If the field type is a raw collection or a raw map, and you want it to contain other values than Strings,
+         * or if the generic type's type arguments are interfaces or abstract classes, you may
+         * specify a {@code type} attribute to control the Class that the option parameter should be converted to.
+         * @return the type(s) to convert the raw String values
          */
-        Class<?>[] type() default {String.class};
+        Class<?>[] type() default {};
 
         /**
          * Specify a regular expression to use to split option parameter values before applying them to the field.
@@ -960,21 +996,33 @@ public class CommandLine {
 
         /**
          * <p>
-         * Specify a {@code type} if the annotated field is a {@code Collection} that should hold objects other than
-         * Strings, or an array of types (one for the key type, one for the value type) if the annotated field is a {@code Map}.
+         * Optionally specify a {@code type} to control exactly what Class the positional parameter should be converted
+         * to. This may be useful when the field type is an interface or an abstract class. For example, a field can
+         * be declared to have type {@code java.lang.Number}, and annotating {@code @Parameters(type=Short.class)}
+         * ensures that the positional parameter value is converted to a {@code Short} before setting the field value.
          * </p><p>
-         * If the field's type is a {@code Collection}, the generic type parameter of the collection is erased and
-         * cannot be determined at runtime. Specify a {@code type} attribute to store values other than String in
-         * the Collection. Picocli will use the {@link ITypeConverter}
-         * that is {@linkplain #registerConverter(Class, ITypeConverter) registered} for that type to convert
-         * the raw String values before they are added to the collection.
+         * For array fields whose <em>component</em> type is an interface or abstract class, specify the concrete <em>component</em> type.
+         * For example, a field with type {@code Number[]} may be annotated with {@code @Parameters(type=Short.class)}
+         * to ensure that positional parameter values are converted to {@code Short} before adding an element to the array.
          * </p><p>
-         * When the field's type is an array, the {@code type} attribute is ignored: the values will be converted
-         * to the array component type and the array will be replaced with a new instance containing both the old and
-         * the new values. </p>
-         * @return the type(s) to convert the raw String values to before adding them to the Collection or Map
+         * Picocli will use the {@link ITypeConverter} that is
+         * {@linkplain #registerConverter(Class, ITypeConverter) registered} for the specified type to convert
+         * the raw String values before modifying the field value.
+         * </p><p>
+         * Prior to 2.0, the {@code type} attribute was necessary for {@code Collection} and {@code Map} fields,
+         * but starting from 2.0 picocli will infer the component type from the generic type's type arguments.
+         * For example, for a field of type {@code Map<TimeUnit, Long>} picocli will know the positional parameter
+         * should be split up in key=value pairs, where the key should be converted to a {@code java.util.concurrent.TimeUnit}
+         * enum value, and the value should be converted to a {@code Long}. No {@code @Parameters(type=...)} type attribute
+         * is required for this. For generic types with wildcards, picocli will take the specified upper or lower bound
+         * as the Class to convert to, unless the {@code @Parameters} annotation specifies an explicit {@code type} attribute.
+         * </p><p>
+         * If the field type is a raw collection or a raw map, and you want it to contain other values than Strings,
+         * or if the generic type's type arguments are interfaces or abstract classes, you may
+         * specify a {@code type} attribute to control the Class that the positional parameter should be converted to.
+         * @return the type(s) to convert the raw String values
          */
-        Class<?>[] type() default {String.class};
+        Class<?>[] type() default {};
 
         /**
          * Specify a regular expression to use to split positional parameter values before applying them to the field.
@@ -1774,6 +1822,7 @@ public class CommandLine {
             if (Map.class.isAssignableFrom(cls)) {
                 return applyValuesToMapField(field, annotation, arity, args, cls, argDescription);
             }
+            cls = getTypeAttribute(field)[0]; // field may be interface/abstract type, use annotation to get concrete type
             return applyValueToSingleValuedField(field, arity, args, cls, initialized, argDescription);
         }
 
@@ -1913,7 +1962,7 @@ public class CommandLine {
                                             String argDescription) throws Exception {
             Object existing = field.get(command);
             int length = existing == null ? 0 : Array.getLength(existing);
-            Class<?> type = cls.getComponentType();
+            Class<?> type = getTypeAttribute(field)[0];
             List<Object> converted = consumeArguments(field, annotation, arity, args, type, length, argDescription);
             List<Object> newValues = new ArrayList<Object>();
             for (int i = 0; i < length; i++) {
@@ -3397,7 +3446,12 @@ public class CommandLine {
              * @return the Text object at the specified row and column
              * @since 2.0 */
             public Text textAt(int row, int col) { return columnValues.get(col + (row * columns.length)); }
-            /** @deprecated use {@link #textAt(int, int)} instead */
+
+            /** Returns the {@code Text} slot at the specified row and column to write a text value into.
+             * @param row the row of the cell whose Text to return
+             * @param col the column of the cell whose Text to return
+             * @return the Text object at the specified row and column
+             * @deprecated use {@link #textAt(int, int)} instead */
             public Text cellAt(int row, int col) { return textAt(row, col); }
 
             /** Returns the current number of rows of this {@code TextTable}.

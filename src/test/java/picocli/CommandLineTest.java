@@ -24,6 +24,7 @@ import java.math.BigInteger;
 import java.net.InetAddress;
 import java.net.MalformedURLException;
 import java.net.Socket;
+import java.net.SocketOptions;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -2637,9 +2638,9 @@ public class CommandLineTest {
                         "[picocli INFO] Setting File field 'Git.gitDir' to '%s' (was 'null') for option --git-dir%n" +
                         "[picocli INFO] Adding [Fixed typos] to List<String> field 'GitCommit.message' for option -m%n" +
                         "[picocli INFO] Found end-of-options delimiter '--'. Treating remainder as positional parameters.%n" +
-                        "[picocli INFO] Adding [src1.java] to List<String> field 'GitCommit.files' for args[0..*]%n" +
-                        "[picocli INFO] Adding [src2.java] to List<String> field 'GitCommit.files' for args[0..*]%n" +
-                        "[picocli INFO] Adding [src3.java] to List<String> field 'GitCommit.files' for args[0..*]%n",
+                        "[picocli INFO] Adding [src1.java] to List<File> field 'GitCommit.files' for args[0..*]%n" +
+                        "[picocli INFO] Adding [src2.java] to List<File> field 'GitCommit.files' for args[0..*]%n" +
+                        "[picocli INFO] Adding [src3.java] to List<File> field 'GitCommit.files' for args[0..*]%n",
                 new File("/home/rpopma/picocli"));
         String actual = new String(baos.toByteArray(), "UTF8");
         //System.out.println(actual);
@@ -2679,9 +2680,9 @@ public class CommandLineTest {
                         "[picocli INFO] Found end-of-options delimiter '--'. Treating remainder as positional parameters.%n" +
                         "[picocli DEBUG] Processing positional parameters. Remainder=[src1.java, src2.java, src3.java]%n" +
                         "[picocli DEBUG] Trying to assign args at index 0..* [src1.java, src2.java, src3.java] to java.util.List picocli.Demo$GitCommit.files, arity=0..*%n" +
-                        "[picocli INFO] Adding [src1.java] to List<String> field 'GitCommit.files' for args[0..*]%n" +
-                        "[picocli INFO] Adding [src2.java] to List<String> field 'GitCommit.files' for args[0..*]%n" +
-                        "[picocli INFO] Adding [src3.java] to List<String> field 'GitCommit.files' for args[0..*]%n",
+                        "[picocli INFO] Adding [src1.java] to List<File> field 'GitCommit.files' for args[0..*]%n" +
+                        "[picocli INFO] Adding [src2.java] to List<File> field 'GitCommit.files' for args[0..*]%n" +
+                        "[picocli INFO] Adding [src3.java] to List<File> field 'GitCommit.files' for args[0..*]%n",
                 new File("/home/rpopma/picocli"));
         String actual = new String(baos.toByteArray(), "UTF8");
         //System.out.println(actual);
@@ -3402,6 +3403,65 @@ public class CommandLineTest {
         CommandLine cmd = new CommandLine(new App()).setUnmatchedArgumentsAllowed(true);
         cmd.parse("1=a", "2=b", "3=c", "4=d");
         assertEquals(Arrays.asList("3=c", "4=d"), cmd.getUnmatchedArguments());
+    }
+    @Test
+    public void testMapAndCollectionFieldTypeInference() {
+        class App {
+            @Option(names = "-a") Map<Integer, URI> a;
+            @Option(names = "-b") Map<TimeUnit, StringBuilder> b;
+            @SuppressWarnings("unchecked")
+            @Option(names = "-c") Map c;
+            @Option(names = "-d") List<File> d;
+            @Option(names = "-e") Map<? extends Integer, ? super Long> e;
+            @Option(names = "-f", type = {Long.class, Float.class}) Map<? extends Number, ? super Number> f;
+            @SuppressWarnings("unchecked")
+            @Option(names = "-g", type = {TimeUnit.class, Float.class}) Map g;
+        }
+        App app = CommandLine.populateCommand(new App(),
+                "-a", "8=/path", "-a", "98765432=/path/to/resource",
+                "-b", "SECONDS=abc",
+                "-c", "123=ABC",
+                "-d", "/path/to/file",
+                "-e", "12345=67890",
+                "-f", "12345=67.89",
+                "-g", "DAYS=12.34");
+        assertEquals(app.a.size(), 2);
+        assertEquals(URI.create("/path"), app.a.get(8));
+        assertEquals(URI.create("/path/to/resource"), app.a.get(98765432));
+
+        assertEquals(app.b.size(), 1);
+        assertEquals(new StringBuilder("abc").toString(), app.b.get(TimeUnit.SECONDS).toString());
+
+        assertEquals(app.c.size(), 1);
+        assertEquals("ABC", app.c.get("123"));
+
+        assertEquals(app.d.size(), 1);
+        assertEquals(new File("/path/to/file"), app.d.get(0));
+
+        assertEquals(app.e.size(), 1);
+        assertEquals(new Long(67890), app.e.get(12345));
+
+        assertEquals(app.f.size(), 1);
+        assertEquals(67.89f, app.f.get(new Long(12345)));
+
+        assertEquals(app.g.size(), 1);
+        assertEquals(12.34f, app.g.get(TimeUnit.DAYS));
+    }
+    @Test
+    public void testUseTypeAttributeInsteadOfFieldType() {
+        class App {
+            @Option(names = "--num", type = BigDecimal.class) // subclass of field type
+            Number[] number; // array type with abstract component class
+
+            @Parameters(type = StringBuilder.class) // concrete impl class
+            Appendable address; // type declared as interface
+        }
+        App app = CommandLine.populateCommand(new App(), "--num", "123.456", "ABC");
+        assertEquals(1, app.number.length);
+        assertEquals(new BigDecimal("123.456"), app.number[0]);
+
+        assertEquals("ABC", app.address.toString());
+        assertTrue(app.address instanceof StringBuilder);
     }
     @Test
     public void testMultipleMissingOptions() {
