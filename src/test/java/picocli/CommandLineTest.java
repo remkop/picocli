@@ -1242,14 +1242,14 @@ public class CommandLineTest {
         assertEquals("3", arity.toString());
     }
     @Test
-    public void testArityForOption_listFieldImplicitArity0_n() throws Exception {
+    public void testArityForOption_listFieldImplicitArity1() throws Exception {
         class ImplicitList { @Option(names = "-a") List<Integer> listIntegers; }
         Range arity = Range.optionArity(ImplicitList.class.getDeclaredField("listIntegers"));
         assertEquals(Range.valueOf("1"), arity);
         assertEquals("1", arity.toString());
     }
     @Test
-    public void testArityForOption_arrayFieldImplicitArity0_n() throws Exception {
+    public void testArityForOption_arrayFieldImplicitArity1() throws Exception {
         class ImplicitList { @Option(names = "-a") int[] intArray; }
         Range arity = Range.optionArity(ImplicitList.class.getDeclaredField("intArray"));
         assertEquals(Range.valueOf("1"), arity);
@@ -1653,6 +1653,13 @@ public class CommandLineTest {
         assertArrayEquals(Arrays.toString(params.charOptions),
                 new char[] {'a', 'b', }, params.charOptions);
         assertArrayEquals(Arrays.toString(params.charParams), new char[] {'c', 'd'}, params.charParams);
+
+        try {
+            CommandLine.populateCommand(new OptionsNoArityAndParameters(), "-chars".split(" "));
+            fail("expected MissingParameterException");
+        } catch (MissingParameterException ok) {
+            assertEquals("Missing required parameter for option '-chars' (<charOptions>)", ok.getMessage());
+        }
     }
 
     @Test(expected = MissingTypeConverterException.class)
