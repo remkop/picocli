@@ -1,9 +1,36 @@
 # picocli Release Notes
 
-## Unreleased
+## 2.0 Unreleased
 
 This is the twelfth public release.
 Picocli follows [semantic versioning](http://semver.org/).
+
+## What's in this release?
+
+### Groovy Script Support
+Picocli now provides a Script subclass that allows Groovy scripts to use picocli directly.
+`@Field` variables can be annotated with picocli `@Option` or `@Parameters`,
+and the script is invoked when the user input was successfully parsed.
+
+Groovy scripts can get picocli grooviness by adding these two lines:
+```
+@Grab('info.picocli:picocli:2.0.0')
+@groovy.transform.BaseScript(picocli.groovy.PicocliGroovyScript)
+```
+
+### Better Parsing
+Positional parameters can now be mixed with options on the command line.
+Also various fixes related to the number of parameters an option can or must have.
+
+### Better Usage Help
+Various bugfixes related to usage help for multi-value options and collections.
+Show key type and value type instead of internal Java field name for Maps that don't have a `paramLabel`.
+
+### Easier To Use
+Collection and Map fields no longer require the `type` annotation attribute: 
+picocli now infers the conversion target type from the generic type parameters where possible.
+
+(TBD) Added `parseWithHandler` convenience method 
 
 ## Why the major version increase?
 
@@ -12,6 +39,7 @@ This release has a number of incompatible changes:
 * **Arity is not max values**: end users may specify multi-value options (array, list and map fields) an unlimited number of times.
 * A single argument that is split into parts with a regex now **counts as a single argument** (so `arity="1"` won't prevent all parts from being added to the field)
 * API change: replaced `java.awt.Point` with custom `Cell` class as return value type for public method `Help.TextTable.putValue()`.
+* API change: `@Option.type()` and `@Parameters.type()` now return an empty array by default (was `{String.class}`).
 
 I am not happy about the disruption this may cause, but I felt these changes were needed for three reasons:
 the old picocli v1.0 behaviour caused ambiguity in common use cases,
