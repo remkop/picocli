@@ -889,11 +889,11 @@ public class CommandLine {
         /** <p>
          * Optionally specify a {@code type} to control exactly what Class the option parameter should be converted
          * to. This may be useful when the field type is an interface or an abstract class. For example, a field can
-         * be declared to have type {@code java.lang.Number}, and annotating {@code @Parameters(type=Short.class)}
+         * be declared to have type {@code java.lang.Number}, and annotating {@code @Option(type=Short.class)}
          * ensures that the option parameter value is converted to a {@code Short} before setting the field value.
          * </p><p>
          * For array fields whose <em>component</em> type is an interface or abstract class, specify the concrete <em>component</em> type.
-         * For example, a field with type {@code Number[]} may be annotated with {@code @Parameters(type=Short.class)}
+         * For example, a field with type {@code Number[]} may be annotated with {@code @Option(type=Short.class)}
          * to ensure that option parameter values are converted to {@code Short} before adding an element to the array.
          * </p><p>
          * Picocli will use the {@link ITypeConverter} that is
@@ -904,9 +904,9 @@ public class CommandLine {
          * but starting from 2.0 picocli will infer the component type from the generic type's type arguments.
          * For example, for a field of type {@code Map<TimeUnit, Long>} picocli will know the option parameter
          * should be split up in key=value pairs, where the key should be converted to a {@code java.util.concurrent.TimeUnit}
-         * enum value, and the value should be converted to a {@code Long}. No {@code @Parameters(type=...)} type attribute
+         * enum value, and the value should be converted to a {@code Long}. No {@code @Option(type=...)} type attribute
          * is required for this. For generic types with wildcards, picocli will take the specified upper or lower bound
-         * as the Class to convert to, unless the {@code @Parameters} annotation specifies an explicit {@code type} attribute.
+         * as the Class to convert to, unless the {@code @Option} annotation specifies an explicit {@code type} attribute.
          * </p><p>
          * If the field type is a raw collection or a raw map, and you want it to contain other values than Strings,
          * or if the generic type's type arguments are interfaces or abstract classes, you may
