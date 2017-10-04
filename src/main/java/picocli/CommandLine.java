@@ -3173,9 +3173,11 @@ public class CommandLine {
             public Text renderParameterLabel(Field field, Ansi ansi, List<IStyle> styles) {
                 boolean isOptionParameter = field.isAnnotationPresent(Option.class);
                 Range arity = isOptionParameter ? Range.optionArity(field) : Range.parameterArity(field);
+                String split = isOptionParameter ? field.getAnnotation(Option.class).split() : field.getAnnotation(Parameters.class).split();
                 Text result = ansi.new Text("");
                 String sep = isOptionParameter ? separator : "";
                 Text paramName = ansi.apply(renderParameterName(field), styles);
+                if (!empty(split)) { paramName = paramName.append("[" + split).append(paramName).append("]..."); } // #194
                 for (int i = 0; i < arity.min; i++) {
                     result = result.append(sep).append(paramName);
                     sep = " ";

@@ -89,6 +89,7 @@ class Args {
 - #191 Bugfix: Arity should not limit the total number of values put in an array or collection. Thanks to [RobertZenz](https://github.com/RobertZenz).
 - #186 Bugfix: Confusing usage message for collection options. Thanks to [AlexFalappa](https://github.com/AlexFalappa).
 - #181 Bugfix: Incorrect help message was displayed for short options with paramLabel when arity > 1
+- #194 Bugfix: Usage help should show split regex for option/parameters
 - #195 Enhancement: Usage help should show Map types if paramLabel not specified
 - #185 Enhancement: Exception message text for missing options should not use field names but be more descriptive and consistent with usage help. Thanks to [AlexFalappa](https://github.com/AlexFalappa).
 - #184 Doc: Improved CommandLine.setSeparator javadoc to clarify that this affects parsing only and link to the `@Command` `separator` annotation attribute. Thanks to [defnull](https://github.com/defnull).

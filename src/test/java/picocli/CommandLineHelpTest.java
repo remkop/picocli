@@ -2286,22 +2286,24 @@ public class CommandLineHelpTest {
     @Test
     public void testMapFieldHelp() throws Exception {
         class App {
-            @Parameters(arity = "2", split = "\\|", type = {Integer.class, String.class},
+            @Parameters(arity = "2", split = "\\|",
                     paramLabel = "FIXTAG=VALUE",
                     description = "Exactly two lists of vertical bar '|'-separated FIXTAG=VALUE pairs.")
             Map<Integer,String> message;
 
-            @Option(names = {"-P", "-map"}, split = ",", type = {TimeUnit.class, String.class},
+            @Option(names = {"-P", "-map"}, split = ",",
                     paramLabel = "TIMEUNIT=VALUE",
                     description = "Any number of TIMEUNIT=VALUE pairs. These may be specified separately (-PTIMEUNIT=VALUE) or as a comma-separated list.")
             Map<TimeUnit, String> map;
         }
         String actual = usageString(new App(), Help.Ansi.OFF);
         String expected = String.format("" +
-                "Usage: <main class> [-P=TIMEUNIT=VALUE]... FIXTAG=VALUE FIXTAG=VALUE%n" +
+                "Usage: <main class> [-P=TIMEUNIT=VALUE[,TIMEUNIT=VALUE]...]... FIXTAG=VALUE%n" +
+                "                    [\\|FIXTAG=VALUE]... FIXTAG=VALUE[\\|FIXTAG=VALUE]...%n" +
                 "      FIXTAG=VALUE            Exactly two lists of vertical bar '|'-separated%n" +
                 "                                FIXTAG=VALUE pairs.%n" +
-                "  -P, -map=TIMEUNIT=VALUE     Any number of TIMEUNIT=VALUE pairs. These may be%n" +
+                "  -P, -map=TIMEUNIT=VALUE[,TIMEUNIT=VALUE]...%n" +
+                "                              Any number of TIMEUNIT=VALUE pairs. These may be%n" +
                 "                                specified separately (-PTIMEUNIT=VALUE) or as a%n" +
                 "                                comma-separated list.%n");
         assertEquals(expected, actual);
