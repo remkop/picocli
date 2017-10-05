@@ -587,7 +587,7 @@ public class Demo implements Runnable {
             "message from the user describing the changes.%n" +
             "%n" +
             "Parameters:%n" +
-            "      <files>                 the files to commit%n" +
+            "      [<files>]...            the files to commit%n" +
             "%n" +
             "Options:%n" +
             "  -a, --all                   Tell the command to automatically stage files%n" +
@@ -631,7 +631,7 @@ public class Demo implements Runnable {
             "message from the user describing the changes.%n" +
             "%n" +
             "@|bold,underline Parameters:|@%n" +
-            "      @|yellow <files>|@                 the files to commit%n" +
+            "      [@|yellow <files>|@]...            the files to commit%n" +
             "%n" +
             "@|bold,underline Options:|@%n" +
             "  @|yellow -a|@, @|yellow --all|@                   Tell the command to automatically stage files%n" +

@@ -2735,7 +2735,7 @@ public class CommandLine {
          * @return the section of the usage help message that lists the parameters
          */
         public String parameterList() {
-            return parameterList(createDefaultLayout(), createMinimalParamLabelRenderer());
+            return parameterList(createDefaultLayout(), createDefaultParamLabelRenderer());
         }
         /**
          * Returns the section of the usage help message that lists the parameters with their descriptions.

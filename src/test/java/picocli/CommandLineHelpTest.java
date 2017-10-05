@@ -664,21 +664,21 @@ public class CommandLineHelpTest {
         // if option is required at least once and can be specified multiple times:
         // -f=ARG [-f=ARG]...
         class Args {
-            @Parameters(paramLabel = "APARAM")
+            @Parameters(paramLabel = "APARAM", description = "APARAM description")
             String[] a;
-            @Parameters(arity = "0..*")
+            @Parameters(arity = "0..*", description = "b description")
             List<String> b;
-            @Parameters(arity = "1..*")
+            @Parameters(arity = "1..*", description = "c description")
             String[] c;
-            @Parameters(arity = "2..*")
+            @Parameters(arity = "2..*", description = "d description")
             List<String> d;
         }
         String expected = String.format("" +
                 "Usage: <main class> [APARAM]... [<b>]... <c>... <d> <d>...%n" +
-                "      APARAM%n" +
-                "      <b>%n" +
-                "      <c>%n" +
-                "      <d>%n");
+                "      [APARAM]...             APARAM description%n" +
+                "      [<b>]...                b description%n" +
+                "      <c>...                  c description%n" +
+                "      <d> <d>...              d description%n");
         //CommandLine.usage(new Args(), System.out);
         assertEquals(expected, usageString(new Args(), Help.Ansi.OFF));
     }
@@ -686,22 +686,24 @@ public class CommandLineHelpTest {
     @Test
     public void testUsageRangeArityParameterArray() throws UnsupportedEncodingException {
         class Args {
-            @Parameters(paramLabel = "PARAMA", arity = "0..1")
+            @Parameters(paramLabel = "PARAMA", arity = "0..1", description = "PARAMA description")
             List<String> a;
-            @Parameters(paramLabel = "PARAMB", arity = "1..2")
+            @Parameters(paramLabel = "PARAMB", arity = "1..2", description = "PARAMB description")
             String[] b;
-            @Parameters(paramLabel = "PARAMC", arity = "1..3")
+            @Parameters(paramLabel = "PARAMC", arity = "1..3", description = "PARAMC description")
             String[] c;
-            @Parameters(paramLabel = "PARAMD", arity = "2..4")
+            @Parameters(paramLabel = "PARAMD", arity = "2..4", description = "PARAMD description")
             String[] d;
         }
         String expected = String.format("" +
                 "Usage: <main class> [PARAMA] PARAMB [PARAMB] PARAMC [PARAMC [PARAMC]] PARAMD%n" +
                 "                    PARAMD [PARAMD [PARAMD]]%n" +
-                "      PARAMA%n" +
-                "      PARAMB%n" +
-                "      PARAMC%n" +
-                "      PARAMD%n");
+                "      [PARAMA]                PARAMA description%n" +
+                "      PARAMB [PARAMB]         PARAMB description%n" +
+                "      PARAMC [PARAMC [PARAMC]]%n" +
+                "                              PARAMC description%n" +
+                "      PARAMD PARAMD [PARAMD [PARAMD]]%n" +
+                "                              PARAMD description%n");
         //CommandLine.usage(new Args(), System.out);
         assertEquals(expected, usageString(new Args(), Help.Ansi.OFF));
     }
@@ -709,21 +711,21 @@ public class CommandLineHelpTest {
     @Test
     public void testUsageFixedArityParametersArray() throws UnsupportedEncodingException {
         class Args {
-            @Parameters()
+            @Parameters(description = "a description (default arity)")
             String[] a;
-            @Parameters(arity = "0")
+            @Parameters(arity = "0", description = "b description (arity=0)")
             String[] b;
-            @Parameters(arity = "1")
+            @Parameters(arity = "1", description = "b description (arity=1)")
             String[] c;
-            @Parameters(arity = "2")
+            @Parameters(arity = "2", description = "b description (arity=2)")
             String[] d;
         }
         String expected = String.format("" +
                 "Usage: <main class>  [<a>]... <c> <d> <d>%n" +
-                "      <b>%n" +
-                "      <a>%n" +
-                "      <c>%n" +
-                "      <d>%n");
+                "                              b description (arity=0)%n" +
+                "      [<a>]...                a description (default arity)%n" +
+                "      <c>                     b description (arity=1)%n" +
+                "      <d> <d>                 b description (arity=2)%n");
         //CommandLine.usage(new Args(), System.out);
         assertEquals(expected, usageString(new Args(), Help.Ansi.OFF));
     }
@@ -733,7 +735,7 @@ public class CommandLineHelpTest {
         class Args {
             @Parameters()
             Map<String, String> a;
-            @Parameters(arity = "0..*", type = {Integer.class, Integer.class})
+            @Parameters(arity = "0..*", description = "a description (arity=0..*)")
             Map<Integer, Integer> b;
             @Parameters(paramLabel = "KEY=VALUE", arity = "1..*", type = {String.class, TimeUnit.class})
             Map<String, TimeUnit> c;
@@ -743,10 +745,11 @@ public class CommandLineHelpTest {
         String expected = String.format("" +
                 "Usage: <main class> [<String=String>]... [<Integer=Integer>]... KEY=VALUE...%n" +
                 "                    <String=URL> <String=URL>...%n" +
-                "      <String=String>%n" +
-                "      <Integer=Integer>%n" +
-                "      KEY=VALUE%n" +
-                "      <String=URL>            description%n");
+                "      [<String=String>]...%n" +
+                "      [<Integer=Integer>]...  a description (arity=0..*)%n" +
+                "      KEY=VALUE...%n" +
+                "      <String=URL> <String=URL>...%n" +
+                "                              description%n");
         //CommandLine.usage(new Args(), System.out);
         assertEquals(expected, usageString(new Args(), Help.Ansi.OFF));
     }
@@ -766,10 +769,12 @@ public class CommandLineHelpTest {
         String expected = String.format("" +
                 "Usage: <main class> [<UUID=URL>] <Long=UUID> [<Long=UUID>] <String=String>%n" +
                 "                    [<String=String> [<String=String>]] K=V K=V [K=V [K=V]]%n" +
-                "      <UUID=URL>              a description%n" +
-                "      <Long=UUID>             b description%n" +
-                "      <String=String>         c description%n" +
-                "      K=V                     d description%n");
+                "      [<UUID=URL>]            a description%n" +
+                "      <Long=UUID> [<Long=UUID>]%n" +
+                "                              b description%n" +
+                "      <String=String> [<String=String> [<String=String>]]%n" +
+                "                              c description%n" +
+                "      K=V K=V [K=V [K=V]]     d description%n");
         //CommandLine.usage(new Args(), System.out);
         assertEquals(expected, usageString(new Args(), Help.Ansi.OFF));
     }
@@ -779,7 +784,7 @@ public class CommandLineHelpTest {
         class Args {
             @Parameters(type = {Short.class, Field.class}, description = "a description")
             Map<Short, Field> a;
-            @Parameters(arity = "0", type = {UUID.class, Long.class}, description = "b description")
+            @Parameters(arity = "0", type = {UUID.class, Long.class}, description = "b description (arity=0)")
             @SuppressWarnings("unchecked")
             Map b;
             @Parameters(arity = "1", description = "c description")
@@ -789,10 +794,10 @@ public class CommandLineHelpTest {
         }
         String expected = String.format("" +
                 "Usage: <main class>  [<Short=Field>]... <Long=File> <URI=URL> <URI=URL>%n" +
-                "      <UUID=Long>             b description%n" +
-                "      <Short=Field>           a description%n" +
+                "                              b description (arity=0)%n" +
+                "      [<Short=Field>]...      a description%n" +
                 "      <Long=File>             c description%n" +
-                "      <URI=URL>               d description%n");
+                "      <URI=URL> <URI=URL>     d description%n");
         //CommandLine.usage(new Args(), System.out);
         assertEquals(expected, usageString(new Args(), Help.Ansi.OFF));
     }
@@ -1737,12 +1742,13 @@ public class CommandLineHelpTest {
         String actual = usageString(new App(), Help.Ansi.OFF);
         String expected = String.format(
                 "Usage: <main class> <host1> <port1> <host2> <port2range> [<port2range>]%n" +
-                "                    [<files>]...%n" +
-                "      <host1>                 source host%n" +
-                "      <port1>                 source port%n" +
-                "      <host2>                 destination host%n" +
-                "      <port2range>            destination port range%n" +
-                "      <files>                 files to transfer%n"
+                        "                    [<files>]...%n" +
+                        "      <host1>                 source host%n" +
+                        "      <port1>                 source port%n" +
+                        "      <host2>                 destination host%n" +
+                        "      <port2range> [<port2range>]%n" +
+                        "                              destination port range%n" +
+                        "      [<files>]...            files to transfer%n"
         );
         assertEquals(expected, actual);
     }
@@ -2300,7 +2306,8 @@ public class CommandLineHelpTest {
         String expected = String.format("" +
                 "Usage: <main class> [-P=TIMEUNIT=VALUE[,TIMEUNIT=VALUE]...]... FIXTAG=VALUE%n" +
                 "                    [\\|FIXTAG=VALUE]... FIXTAG=VALUE[\\|FIXTAG=VALUE]...%n" +
-                "      FIXTAG=VALUE            Exactly two lists of vertical bar '|'-separated%n" +
+                "      FIXTAG=VALUE[\\|FIXTAG=VALUE]... FIXTAG=VALUE[\\|FIXTAG=VALUE]...%n" +
+                "                              Exactly two lists of vertical bar '|'-separated%n" +
                 "                                FIXTAG=VALUE pairs.%n" +
                 "  -P, -map=TIMEUNIT=VALUE[,TIMEUNIT=VALUE]...%n" +
                 "                              Any number of TIMEUNIT=VALUE pairs. These may be%n" +
