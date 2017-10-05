@@ -1512,9 +1512,10 @@ public class CommandLine {
             converterRegistry.put(Pattern.class,       new BuiltIn.PatternConverter());
             converterRegistry.put(UUID.class,          new BuiltIn.UUIDConverter());
 
-            this.command             = Assert.notNull(command, "command");
-            Class<?> cls             = command.getClass();
-            String declaredSeparator = null;
+            this.command                 = Assert.notNull(command, "command");
+            Class<?> cls                 = command.getClass();
+            String declaredName          = null;
+            String declaredSeparator     = null;
             boolean hasCommandAnnotation = false;
             while (cls != null) {
                 init(cls, requiredFields, optionName2Field, singleCharOption2Field, positionalParametersFields);
@@ -1522,6 +1523,7 @@ public class CommandLine {
                     hasCommandAnnotation = true;
                     Command cmd = cls.getAnnotation(Command.class);
                     declaredSeparator = (declaredSeparator == null) ? cmd.separator() : declaredSeparator;
+                    declaredName = (declaredName == null) ? cmd.name() : declaredName;
                     CommandLine.this.versionLines.addAll(Arrays.asList(cmd.version()));
 
                     for (Class<?> sub : cmd.subcommands()) {
@@ -1549,6 +1551,7 @@ public class CommandLine {
                 cls = cls.getSuperclass();
             }
             separator = declaredSeparator != null ? declaredSeparator : separator;
+            CommandLine.this.commandName = declaredName != null ? declaredName : CommandLine.this.commandName;
             Collections.sort(positionalParametersFields, new PositionalParametersSorter());
             validatePositionalParameters(positionalParametersFields);
 

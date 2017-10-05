@@ -3642,4 +3642,35 @@ public class CommandLineTest {
         assertEquals(new File("/path/to/file"), args.optionFile);
         //CommandLine.usage(new Args(), System.out);
     }
+
+    @Test
+    public void test187GetCommandNameReturnsMainClassByDefault() {
+        class Args { @Parameters String[] args; }
+        assertEquals("<main class>", new CommandLine(new Args()).getCommandName());
+        assertEquals("<main class>", Help.DEFAULT_COMMAND_NAME);
+    }
+
+    @Test
+    public void test187GetCommandNameReturnsCommandAnnotationNameAttribute() {
+        @Command(name = "someCommand")
+        class Args { @Parameters String[] args; }
+        assertEquals("someCommand", new CommandLine(new Args()).getCommandName());
+    }
+
+    @Test
+    public void test187SetCommandNameOverwritesCommandAnnotationNameAttribute() {
+        @Command(name = "someCommand")
+        class Args { @Parameters String[] args; }
+        assertEquals("someCommand", new CommandLine(new Args()).getCommandName());
+
+        String OTHER = "a different name";
+        assertEquals(OTHER, new CommandLine(new Args()).setCommandName(OTHER).getCommandName());
+    }
+
+    @Test
+    public void test187GetCommandReturnsSubclassName() {
+        @Command(name = "parent") class Parent { }
+        @Command(name = "child")  class Child extends Parent { }
+        assertEquals("child", new CommandLine(new Child()).getCommandName());
+    }
 }
