@@ -129,6 +129,7 @@ public class CommandLine {
 
     private final Tracer tracer = new Tracer();
     private final Interpreter interpreter;
+    private String commandName = Help.DEFAULT_COMMAND_NAME;
     private boolean overwrittenOptionsAllowed = false;
     private boolean unmatchedArgumentsAllowed = false;
     private List<String> unmatchedArguments = new ArrayList<String>();
@@ -422,6 +423,13 @@ public class CommandLine {
      */
     public void usage(PrintStream out, Help.ColorScheme colorScheme) {
         Help help = new Help(interpreter.command, colorScheme).addAllSubcommands(getSubcommands());
+        if (!Help.DEFAULT_SEPARATOR.equals(getSeparator())) {
+            help.separator = getSeparator();
+            help.parameterLabelRenderer = help.createDefaultParamLabelRenderer(); // update for new separator
+        }
+        if (!Help.DEFAULT_COMMAND_NAME.equals(getCommandName())) {
+            help.commandName = getCommandName();
+        }
         StringBuilder sb = new StringBuilder()
                 .append(help.headerHeading())
                 .append(help.header())
@@ -632,19 +640,34 @@ public class CommandLine {
         return this;
     }
 
-    /** Returns the String that separates option names from option values when parsing command line options. {@code '='} by default.
+    /** Returns the String that separates option names from option values when parsing command line options. {@value Help#DEFAULT_SEPARATOR} by default.
      * @return the String the parser uses to separate option names from option values */
     public String getSeparator() {
         return interpreter.separator;
     }
 
     /** Sets the String the parser uses to separate option names from option values to the specified value.
-     * Note that this method only modifies parsing behaviour, it does not impact the usage help message.
-     * Use the {@link CommandLine.Command#separator()} annotation attribute to affect both the usage help message and the command line parser.
+     * The separator may also be set declaratively with the {@link CommandLine.Command#separator()} annotation attribute.
      * @param separator the String that separates option names from option values
      * @return this {@code CommandLine} object, to allow method chaining */
     public CommandLine setSeparator(String separator) {
         interpreter.separator = Assert.notNull(separator, "separator");
+        return this;
+    }
+
+    /** Returns the command name (also called program name) displayed in the usage help synopsis. {@value Help#DEFAULT_COMMAND_NAME} by default.
+     * @return the command name (also called program name) displayed in the usage */
+    public String getCommandName() {
+        return commandName;
+    }
+
+    /** Sets the command name (also called program name) displayed in the usage help synopsis to the specified value.
+     * Note that this method only modifies the usage help message, it does not impact parsing behaviour.
+     * The command name may also be set declaratively with the {@link CommandLine.Command#name()} annotation attribute.
+     * @param commandName command name (also called program name) displayed in the usage help synopsis
+     * @return this {@code CommandLine} object, to allow method chaining */
+    public CommandLine setCommandName(String commandName) {
+        this.commandName = Assert.notNull(commandName, "commandName");
         return this;
     }
     private static boolean empty(String str) { return str == null || str.trim().length() == 0; }
@@ -1455,7 +1478,7 @@ public class CommandLine {
         private final List<Field> positionalParametersFields             = new ArrayList<Field>();
         private final Object command;
         private boolean isHelpRequested;
-        private String separator = "=";
+        private String separator = Help.DEFAULT_SEPARATOR;
 
         Interpreter(Object command) {
             converterRegistry.put(String.class,        new BuiltIn.StringConverter());
@@ -2378,6 +2401,9 @@ public class CommandLine {
         /** Constant String holding the default program name: {@value} */
         protected static final String DEFAULT_COMMAND_NAME = "<main class>";
 
+        /** Constant String holding the default string that separates options from option parameters: {@value} */
+        protected static final String DEFAULT_SEPARATOR = "=";
+
         private final static int usageHelpWidth = 80;
         private final static int optionsColumnWidth = 2 + 2 + 1 + 24;
         private final Object command;
@@ -2391,7 +2417,8 @@ public class CommandLine {
         public final List<Field> positionalParametersFields;
 
         /** The String to use as the separator between options and option parameters. {@code "="} by default,
-         * initialized from {@link Command#separator()} if defined. */
+         * initialized from {@link Command#separator()} if defined.
+         * @see #parameterLabelRenderer */
         public String separator;
 
         /** The String to use as the program name in the synopsis line of the help message.
@@ -2422,7 +2449,10 @@ public class CommandLine {
          * Applications may programmatically set this field to create a custom help message. */
         public String[] footer = {};
 
-        /** Option and positional parameter value label renderer used for the synopsis line(s) and the option list. */
+        /** Option and positional parameter value label renderer used for the synopsis line(s) and the option list.
+         * By default initialized to the result of {@link #createDefaultParamLabelRenderer()}, which takes a snapshot
+         * of the {@link #separator} at construction time. If the separator is modified after Help construction, you
+         * may need to re-initialize this field by calling {@link #createDefaultParamLabelRenderer()} again. */
         public IParamLabelRenderer parameterLabelRenderer;
 
         /** If {@code true}, the synopsis line(s) will show an abbreviated synopsis without detailed option names. */
@@ -2528,8 +2558,8 @@ public class CommandLine {
             showDefaultValues =    (showDefaultValues == null)    ? false : showDefaultValues;
             synopsisHeading =      (synopsisHeading == null)      ? "Usage: " : synopsisHeading;
             commandListHeading =   (commandListHeading == null)   ? "Commands:%n" : commandListHeading;
-            separator =            (separator == null)            ? "=" : separator;
-            parameterLabelRenderer = new DefaultParamLabelRenderer(separator);
+            separator =            (separator == null)            ? DEFAULT_SEPARATOR : separator;
+            parameterLabelRenderer = createDefaultParamLabelRenderer(); // uses help separator
             Collections.sort(operands, new PositionalParametersSorter());
             positionalParametersFields = Collections.unmodifiableList(operands);
             optionFields                 = Collections.unmodifiableList(options);
@@ -2710,7 +2740,7 @@ public class CommandLine {
             Comparator<Field> sortOrder = sortOptions == null || sortOptions.booleanValue()
                     ? createShortOptionNameComparator()
                     : null;
-            return optionList(createDefaultLayout(), sortOrder, createDefaultParamLabelRenderer());
+            return optionList(createDefaultLayout(), sortOrder, parameterLabelRenderer);
         }
 
         /** Sorts all {@code Options} with the specified {@code comparator} (if the comparator is non-{@code null}),
@@ -2735,7 +2765,7 @@ public class CommandLine {
          * @return the section of the usage help message that lists the parameters
          */
         public String parameterList() {
-            return parameterList(createDefaultLayout(), createDefaultParamLabelRenderer());
+            return parameterList(createDefaultLayout(), parameterLabelRenderer);
         }
         /**
          * Returns the section of the usage help message that lists the parameters with their descriptions.

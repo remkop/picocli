@@ -1221,6 +1221,77 @@ public class CommandLineHelpTest {
     }
 
     @Test
+    public void testAbreviatedSynopsis_commandNameCustomizableDeclaratively() throws UnsupportedEncodingException {
+        @CommandLine.Command(abbreviateSynopsis = true, name = "aprogram")
+        class App {
+            @Option(names = {"--verbose", "-v"}) boolean verbose;
+            @Option(names = {"--count", "-c"}) int count;
+            @Option(names = {"--help", "-h"}, hidden = true) boolean helpRequested;
+            @Parameters File[] files;
+        }
+        String expected = "" +
+                "Usage: aprogram [OPTIONS] [<files>]...%n" +
+                "      [<files>]...%n" +
+                "  -c, --count=<count>%n" +
+                "  -v, --verbose%n";
+        String actual = usageString(new CommandLine(new App()), Help.Ansi.OFF);
+        assertEquals(String.format(expected), actual);
+    }
+
+    @Test
+    public void testAbreviatedSynopsis_commandNameCustomizableProgrammatically() throws UnsupportedEncodingException {
+        @CommandLine.Command(abbreviateSynopsis = true)
+        class App {
+            @Option(names = {"--verbose", "-v"}) boolean verbose;
+            @Option(names = {"--count", "-c"}) int count;
+            @Option(names = {"--help", "-h"}, hidden = true) boolean helpRequested;
+            @Parameters File[] files;
+        }
+        String expected = "" +
+                "Usage: anotherProgram [OPTIONS] [<files>]...%n" +
+                "      [<files>]...%n" +
+                "  -c, --count=<count>%n" +
+                "  -v, --verbose%n";
+        String actual = usageString(new CommandLine(new App()).setCommandName("anotherProgram"), Help.Ansi.OFF);
+        assertEquals(String.format(expected), actual);
+    }
+
+    @Test
+    public void testSynopsis_commandNameCustomizableDeclaratively() throws UnsupportedEncodingException {
+        @CommandLine.Command(name = "aprogram")
+        class App {
+            @Option(names = {"--verbose", "-v"}) boolean verbose;
+            @Option(names = {"--count", "-c"}) int count;
+            @Option(names = {"--help", "-h"}, hidden = true) boolean helpRequested;
+            @Parameters File[] files;
+        }
+        String expected = "" +
+                "Usage: aprogram [-v] [-c=<count>] [<files>]...%n" +
+                "      [<files>]...%n" +
+                "  -c, --count=<count>%n" +
+                "  -v, --verbose%n";
+        String actual = usageString(new CommandLine(new App()), Help.Ansi.OFF);
+        assertEquals(String.format(expected), actual);
+    }
+
+    @Test
+    public void testSynopsis_commandNameCustomizableProgrammatically() throws UnsupportedEncodingException {
+        class App {
+            @Option(names = {"--verbose", "-v"}) boolean verbose;
+            @Option(names = {"--count", "-c"}) int count;
+            @Option(names = {"--help", "-h"}, hidden = true) boolean helpRequested;
+            @Parameters File[] files;
+        }
+        String expected = "" +
+                "Usage: anotherProgram [-v] [-c=<count>] [<files>]...%n" +
+                "      [<files>]...%n" +
+                "  -c, --count=<count>%n" +
+                "  -v, --verbose%n";
+        String actual = usageString(new CommandLine(new App()).setCommandName("anotherProgram"), Help.Ansi.OFF);
+        assertEquals(String.format(expected), actual);
+    }
+
+    @Test
     public void testSynopsis_optionalOptionArity1_n_withDefaultSeparator() {
         @Command() class App {
             @Option(names = {"--verbose", "-v"}) boolean verbose;
@@ -1330,6 +1401,24 @@ public class CommandLineHelpTest {
         }
         Help help = new Help(new App(), Help.Ansi.OFF);
         assertEquals("<main class> [-v] [-c=<count>...]" + LINESEP, help.synopsis(0));
+    }
+
+    @Test
+    public void testSynopsis_withProgrammaticallySetSeparator_withParameters() throws UnsupportedEncodingException {
+        class App {
+            @Option(names = {"--verbose", "-v"}) boolean verbose;
+            @Option(names = {"--count", "-c"}) int count;
+            @Option(names = {"--help", "-h"}, hidden = true) boolean helpRequested;
+            @Parameters File[] files;
+        }
+        CommandLine commandLine = new CommandLine(new App()).setSeparator(":");
+        String actual = usageString(commandLine, Help.Ansi.OFF);
+        String expected = "" +
+                "Usage: <main class> [-v] [-c:<count>] [<files>]...%n" +
+                "      [<files>]...%n" +
+                "  -c, --count:<count>%n" +
+                "  -v, --verbose%n";
+        assertEquals(String.format(expected), actual);
     }
 
     @Test
