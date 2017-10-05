@@ -957,7 +957,8 @@ in the synopsis and the option list can be configured with the `separator` attri
 @Command(separator = " ")
 ----
 
-NOTE: the `@Command(separator = " ")` annotation also affects how picocli parses the command line. If you want the command parser to recognize one separator (`=` for example), but display a different separator (a space for example) in the usage help message, you need to programmatically configure the parser with the `CommandLine.setSeparator` method. See <<Custom Separators>>.
+NOTE: the `@Command(separator = " ")` annotation also affects how picocli parses the command line.  See also <<Custom Separators>>.
+
 
 === Hidden Options and Parameters
 Options and Parameters with the `hidden` attribute set to `true` will not be shown in the usage help message.
@@ -1597,7 +1598,6 @@ OptionArg optionArg = CommandLine.populateCommand(new OptionArg(), "-f:output.tx
 assert optionArg.file.equals("output.txt");
 ----
 
-Declaratively set separators are used both when parsing and in the usage help message.
 
 Alternatively, the separator string can be changed programmatically with the `CommandLine.setSeparator(String separator)` method.
 For example:
@@ -1611,8 +1611,6 @@ commandLine.parse("-f:output.txt");
 assert optionArg.file.equals("output.txt");
 ----
 
-Programmatically set separators are only used when parsing.
-Changing the value does not modify the usage help message.
 
 === Subclassing for Reuse
 Picocli will walk the class hierarchy to check for annotations, so you can declare common @Options and @Command attributes on a superclass and override these fields or attributes on a subclass.
