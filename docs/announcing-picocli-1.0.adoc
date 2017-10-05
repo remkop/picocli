@@ -45,7 +45,7 @@ http://picocli.info/index.html#_ansi_colors_and_styles[ANSI styles and colors] a
 
 In addition, you can use ANSI colors and styles in your descriptions and headings by embedding http://picocli.info/index.html#_usage_help_with_styles_and_colors[markup] like `@|red text|@` in the annotations text. For example, generating usage for an annotated class like this:
 
-[code,java]
+[source,java]
 ----
 @Command(description = "Custom @|bold,underline styles|@ and @|fg(red) colors|@.")
 class AnsiDescription { }
