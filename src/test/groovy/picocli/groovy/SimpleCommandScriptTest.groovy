@@ -19,9 +19,10 @@ package picocli.groovy
 /**
  * @author Jim White
  * @author Remko Popma
+ * @since 2.0
  */
 
-@groovy.transform.BaseScript(picocli.groovy.PicocliGroovyScript)
+@groovy.transform.BaseScript(PicocliBaseScript)
 import groovy.transform.Field
 import picocli.CommandLine
 

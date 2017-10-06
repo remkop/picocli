@@ -23,9 +23,9 @@ import org.junit.Test
 /**
  * @author Jim White
  * @author Remko Popma
+ * @since 2.0
  */
-
-public class PicocliGroovyScriptTest {
+public class PicocliBaseScriptTest {
     @SourceURI URI sourceURI
 
     @Test
@@ -34,7 +34,7 @@ public class PicocliGroovyScriptTest {
         shell.context.setVariable('args',
                 ["--codepath", "/usr/x.jar", "-cp", "/bin/y.jar", "-cp", "z", "--", "placeholder", "another"] as String[])
         def result = shell.evaluate '''
-@groovy.transform.BaseScript(picocli.groovy.PicocliGroovyScript)
+@groovy.transform.BaseScript(picocli.groovy.PicocliBaseScript)
 import groovy.transform.Field
 import picocli.CommandLine
 

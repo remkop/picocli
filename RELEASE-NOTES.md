@@ -15,7 +15,7 @@ and the script is invoked when the user input was successfully parsed.
 Groovy scripts can get picocli grooviness by adding these two lines:
 ```
 @Grab('info.picocli:picocli:2.0.0')
-@groovy.transform.BaseScript(picocli.groovy.PicocliGroovyScript)
+@groovy.transform.BaseScript(picocli.groovy.PicocliBaseScript)
 ```
 
 ### Better Parsing

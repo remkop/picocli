@@ -30,8 +30,9 @@ import java.util.concurrent.Callable;
  *
  * @author Jim White
  * @author Remko Popma
+ * @since 2.0
  */
-abstract public class PicocliGroovyScript extends Script {
+abstract public class PicocliBaseScript extends Script {
     /**
      * Name of the property that holds the CommandLine instance for this script ({@value}).
      */

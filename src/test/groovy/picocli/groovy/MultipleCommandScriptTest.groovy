@@ -17,18 +17,18 @@
 package picocli.groovy
 
 /**
- * Test PicocliGroovyScript's multiple command feature in a simple Script.
- * More tests are embedded in PicocliGroovyScriptTest strings.
+ * Test PicocliBaseScript's multiple command feature in a simple Script.
+ * More tests are embedded in PicocliBaseScriptTest strings.
  *
  * @author Jim White
  * @author Remko Popma
  */
-
 import groovy.transform.BaseScript
 import groovy.transform.Field
 import picocli.CommandLine
 
-@BaseScript PicocliGroovyScript thisScript
+@CommandLine.Command(name = "git", subcommands = [picocli.groovy.CommandCommit, picocli.groovy.CommandAdd])
+@PicocliScript PicocliBaseScript thisScript
 
 // Override the default of using the 'args' binding for our test so we can be run without a special driver.
 String[] getScriptArguments() {
@@ -64,12 +64,13 @@ public class CommandAdd {
     Boolean interactive = false;
 }
 
-@Field CommandCommit commitCommand = new CommandCommit()
-@Field CommandAdd addCommand = new CommandAdd()
+// Below is replaced by @Command(subcommands = [ ... ]) annotation
+//@Field CommandCommit commitCommand = new CommandCommit()
+//@Field CommandAdd addCommand = new CommandAdd()
+//public CommandLine createScriptCommandLine() {
+//    return new CommandLine(this).addSubcommand("add", addCommand).addSubcommand("commit", commitCommand)
+//}
 
-public CommandLine createScriptCommandLine() {
-    return new CommandLine(this).addSubcommand("add", addCommand).addSubcommand("commit", commitCommand)
-}
 @Field List<CommandLine> parsed;
 public List<CommandLine> parseScriptArguments(CommandLine commandLine, String[] args) {
     parsed = commandLine.parse(args);
@@ -77,10 +78,13 @@ public List<CommandLine> parseScriptArguments(CommandLine commandLine, String[] 
 }
 
 println verbose
+println "parsed.size=" + parsed.size()
 foundAdd = false
+CommandAdd addCommand
 parsed.each {
-    println it.command
-    if (it.command == addCommand) {
+    println it.commandName
+    if (it.command instanceof CommandAdd) {
+        addCommand = it.command
         foundAdd = true
         if (addCommand.interactive) {
             println "Adding ${addCommand.patterns} interactively."
@@ -90,10 +94,8 @@ parsed.each {
     }
 }
 
-
 assert foundAdd
 assert addCommand.interactive
 assert addCommand.patterns == ["zoos"]
 
 [33]
-
