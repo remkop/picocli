@@ -1087,7 +1087,7 @@ public class CommandLine {
      *   <li>[footer]</li>
      * </ul> */
     @Retention(RetentionPolicy.RUNTIME)
-    @Target(ElementType.TYPE)
+    @Target({ElementType.TYPE, ElementType.LOCAL_VARIABLE})
     public @interface Command {
         /** Program name to show in the synopsis. If omitted, {@code "<main class>"} is used.
          * For {@linkplain #subcommands() declaratively added} subcommands, this attribute is also used
