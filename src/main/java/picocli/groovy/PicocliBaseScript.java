@@ -133,6 +133,7 @@ abstract public class PicocliBaseScript extends Script {
      * </p>
      * @param commandLine The CommandLine instance for this script instance.
      * @param args  The argument array.
+     * @return the list of {@code CommandLine} objects that result from parsing the user input
      */
     public List<CommandLine> parseScriptArguments(CommandLine commandLine, String[] args) {
         return commandLine.parse(args);
@@ -167,7 +168,7 @@ abstract public class PicocliBaseScript extends Script {
      * The default is to print to System.err.
      * If you want to use System.out, a logger, or something else, this is the method to override.
      *
-     * @param message
+     * @param message the error message to print
      */
     public void printErrorMessage(String message) {
         System.err.println(message);
