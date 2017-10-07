@@ -25,22 +25,25 @@ import java.lang.annotation.Target;
 
 
 /**
- * Variable annotation used for changing the base script class of the current script.
- * {@link picocli.CommandLine.Command} annotations on the same variable or import statement will be added to the script class.
  * <p>
- * The type of the variable annotated with {@code @PicocliScript} must extend {@link picocli.groovy.PicocliBaseScript}.
- * Otherwise, this annotation works similar to the Groovy built-in {@link groovy.transform.BaseScript}.
+ * Annotation to give Groovy scripts convenient access to picocli functionality.
+ * Scripts may annotate the package statement, an import statement or a local variable with
+ * {@code @PicocliScript} and the script base class will be {@link PicocliScriptASTTransformation transformed} to
+ * {@link picocli.groovy.PicocliBaseScript}.
  * </p><p>
- * It will be used as the base script class.
- * The annotated variable will become shortcut to <code>this</code> object.
- * Using this annotation will override base script set by Groovy compiler or
- * {@link org.codehaus.groovy.control.CompilerConfiguration} of {@link groovy.lang.GroovyShell}
+ * Also, any {@link picocli.CommandLine.Command} annotation on the same variable or import statement will be added to
+ * the script class. With the {@code @Command} annotation scripts can customize elements shown in the usage message
+ * like command name, description, headers, footers etc.
  * </p><p>
  * Example usage:
  * </p>
  * <pre>
  * &#64;Command(name = "myCommand", description = "does something special")
- * &#64;CommandScript CustomScript theScript
+ * &#64;PicocliScript
+ * import picocli.groovy.PicocliScript
+ * import picocli.CommandLine.Command
+ * import picocli.CommandLine.Option
+ * import groovy.transform.Field
  *
  * &#64;Option(names = "-x", description = "number of repetitions")
  * &#64;Field int count;
@@ -48,13 +51,36 @@ import java.lang.annotation.Target;
  * &#64;Option(names = "-h", usageHelp = true, description = "print this help message and exit")
  * &#64;Field boolean helpRequested;
  *
+ * if (helpRequested) { CommandLine.usage(this, System.err); return 0; }
  * count.times {
  *     println "hi"
  * }
  * assert this == theScript
  * assert this.scriptCommandLine.commandName == "myCommand"
  * </pre>
+ * <p>
+ * Otherwise, this annotation works similar to the Groovy built-in {@link groovy.transform.BaseScript}.
+ * Using this annotation will override the base script set by Groovy compiler or
+ * {@link org.codehaus.groovy.control.CompilerConfiguration} of {@link groovy.lang.GroovyShell}.
+ * </p><p>
+ * To customize further, a base script class may be specified as the value of this annotation, for example:
+ * </p><pre>
+ * &#64;PicocliScript(com.mycompany.MyScriptBaseClass)
+ * import picocli.groovy.PicocliScript
+ * </pre><p>
+ * Alternatively, when a local variable is annotated {@code @PicocliScript},
+ * this type will be used as the base script class.
+ * The annotated variable will become a shortcut to {@code this} object.
+ * </p><pre>
+ * import picocli.groovy.PicocliScript
+ * import com.mycompany.MyScriptBaseClass
+ * &#64;PicocliScript MyScriptBaseClass theScript;
+ * </pre>
+ * <p>
+ * In both cases the type of the annotated variable must extend {@link picocli.groovy.PicocliBaseScript}.
+ * </p>
  *
+ * @see PicocliScriptASTTransformation
  * @author Remko Popma
  * @since 2.0
  */
