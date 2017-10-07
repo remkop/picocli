@@ -48,10 +48,10 @@ import java.lang.annotation.Target;
  * &#64;Option(names = "-x", description = "number of repetitions")
  * &#64;Field int count;
  *
- * &#64;Option(names = "-h", usageHelp = true, description = "print this help message and exit")
+ * &#64;Option(names = ["-h", "--help"], usageHelp = true, description = "print this help message and exit")
  * &#64;Field boolean helpRequested;
  *
- * if (helpRequested) { CommandLine.usage(this, System.err); return 0; }
+ * //if (helpRequested) { CommandLine.usage(this, System.err); return 0; } // PicocliBaseScript takes care of this
  * count.times {
  *     println "hi"
  * }
@@ -63,22 +63,21 @@ import java.lang.annotation.Target;
  * Using this annotation will override the base script set by Groovy compiler or
  * {@link org.codehaus.groovy.control.CompilerConfiguration} of {@link groovy.lang.GroovyShell}.
  * </p><p>
- * To customize further, a base script class may be specified as the value of this annotation, for example:
+ * To customize further, a base script class extending {@link picocli.groovy.PicocliBaseScript}
+ * may be specified as the value of this annotation, for example:
  * </p><pre>
  * &#64;PicocliScript(com.mycompany.MyScriptBaseClass)
  * import picocli.groovy.PicocliScript
  * </pre><p>
- * Alternatively, when a local variable is annotated {@code @PicocliScript},
- * this type will be used as the base script class.
- * The annotated variable will become a shortcut to {@code this} object.
+ * An alternative way to customize the base script is annotating a local variable with {@code @PicocliScript}.
+ * This way the variable type will be used as the base script class and
+ * the annotated variable will become a shortcut to {@code this} object.
+ * The type of the annotated variable must extend {@link picocli.groovy.PicocliBaseScript}.
  * </p><pre>
  * import picocli.groovy.PicocliScript
  * import com.mycompany.MyScriptBaseClass
  * &#64;PicocliScript MyScriptBaseClass theScript;
  * </pre>
- * <p>
- * In both cases the type of the annotated variable must extend {@link picocli.groovy.PicocliBaseScript}.
- * </p>
  *
  * @see PicocliScriptASTTransformation
  * @author Remko Popma
