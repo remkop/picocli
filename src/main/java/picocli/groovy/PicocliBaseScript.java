@@ -26,7 +26,49 @@ import java.util.List;
 import java.util.concurrent.Callable;
 
 /**
- * Base script that provides CommandLine declarative (annotation-based) argument processing for scripts.
+ * <p>
+ * Base script that provides picocli declarative (annotation-based) argument processing for scripts.
+ * </p><p>
+ * Scripts may install this base script via the standard Groovy
+ * {@code @groovy.transform.BaseScript(picocli.groovy.PicocliBaseScript)} annotation, but
+ * the {@link PicocliScript} annotation is preferred since it is more compact and enables scripts to use the
+ * {@code @Command} annotation:
+ * </p>
+ * <pre>
+ * &#64;Command(name = "myCommand", description = "does something special")
+ * &#64;PicocliScript
+ * import picocli.groovy.PicocliScript
+ * import picocli.CommandLine.Command
+ * ...
+ * </pre>
+ * <p>
+ * Before the script body is executed,
+ * the {@code PicocliBaseScript} base class parses the command line and initializes {@code @Field} variables
+ * annotated with {@code @Option} or {@code @Parameters}.
+ * It also takes care of error handling and common use cases like requests for usage help.
+ * </p><p>
+ * Here is a break-down of the steps the base class takes before the statements in the script body are executed:
+ * </p>
+ * <ol>
+ *   <li>A new {@link CommandLine} is created with this script instance as the annotated command object.
+ *     The {@code CommandLine} instance is cached in the {@code scriptCommandLine} property
+ *     (so it can be referred to in script code with
+ *     {@code this.scriptCommandLine}). {@code CommandLine} creation and initialization may be
+ *     customized by overriding {@link #createScriptCommandLine()}.</li>
+ *   <li>The {@link CommandLine#parse(String...)} method is called with the script arguments.
+ *     This initialises all {@code @Field} variables annotated with {@link CommandLine.Option} or
+ *     {@link CommandLine.Parameters}, unless the user input was invalid.</li>
+ *   <li>If the user input was invalid, an error message and the usage message are printed to standard err and the
+ *     script exits. This may be customized by overriding
+ *     {@link #handleParameterException(CommandLine, String[], ParameterException)}.</li>
+ *   <li>Otherwise, if the user input requested version help or usage help, the version string or usage help message is
+ *     printed to standard err and the script exits.</li>
+ *   <li>If the script implements {@code Runnable} or {@code Callable}, its {@code run} (or {@code call}) method
+ *     is called. The script may support subcommands. In that case only the last specified subcommand is run or called
+ *     if it implements {@code Runnable} or {@code Callable}. This may be customized by overriding
+ *     {@link #runRunnableSubcommand(List)}.</li>
+ *   <li>Finally, the script body is executed.</li>
+ * </ol>
  *
  * @author Jim White
  * @author Remko Popma
@@ -111,12 +153,13 @@ abstract public class PicocliBaseScript extends Script {
 
     /**
      * Create a new CommandLine instance.
-     * The default name for the command name in the usage help message is the script's class simple name.
+     * The default name for the command name in the usage help message is the script's class simple name (unless
+     * annotated with some other command name with the {@code @Command(name = "...")} annotation).
      * <p>
      * Subclasses may override to register custom type converters or programmatically add subcommands.
      * </p>
      *
-     * @return A CommandLine instance with the commands (if any) initialized.
+     * @return A CommandLine instance.
      */
     public CommandLine createScriptCommandLine() {
         CommandLine commandLine = new CommandLine(this);
