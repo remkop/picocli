@@ -1,6 +1,6 @@
 # picocli Release Notes
 
-## 2.0 Unreleased
+## (Unreleased) 2.0
 
 This is the twelfth public release.
 Picocli follows [semantic versioning](http://semver.org/).
@@ -8,14 +8,39 @@ Picocli follows [semantic versioning](http://semver.org/).
 ## What's in this release?
 
 ### Groovy Script Support
-Picocli now provides a Script subclass that allows Groovy scripts to use picocli directly.
-`@Field` variables can be annotated with picocli `@Option` or `@Parameters`,
-and the script is invoked when the user input was successfully parsed.
+Picocli 2.0 introduces special support for Groovy scripts.
 
-Groovy scripts can get picocli grooviness by adding these two lines:
+Scripts annotated with `@picocli.groovy.PicocliScript` are automatically transformed to use
+`picocli.groovy.PicocliBaseScript` as their base class and can also use the `@Command` annotation to
+customize parts of the usage message like command name, description, headers, footers etc.
+
+Before the script body is executed, the `PicocliBaseScript` base class parses the command line and initializes
+`@Field` variables annotated with `@Option` or `@Parameters`.
+The script body is executed if the user input was valid and did not request usage help or version information.
+
 ```
 @Grab('info.picocli:picocli:2.0.0')
-@groovy.transform.BaseScript(picocli.groovy.PicocliBaseScript)
+@Command(name = "myCommand", description = "does something special")
+@PicocliScript
+import picocli.groovy.PicocliScript
+import picocli.CommandLine.Command
+import picocli.CommandLine.Option
+import groovy.transform.Field
+
+@Option(names = "-x", description = "number of repetitions")
+@Field int count;
+
+@Option(names = ["-h", "--help"], usageHelp = true, description = "print this help message and exit")
+@Field boolean helpRequested;
+
+//if (helpRequested) { // not necessary: PicocliBaseScript takes care of this
+//    CommandLine.usage(this, System.err); return 0;
+//}
+count.times {
+   println "hi"
+}
+assert this == theScript
+assert this.scriptCommandLine.commandName == "myCommand"
 ```
 
 ### Better Parsing
