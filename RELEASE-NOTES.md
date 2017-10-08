@@ -5,7 +5,7 @@
 This is the twelfth public release.
 Picocli follows [semantic versioning](http://semver.org/).
 
-## What's in this release?
+## New and noteworthy
 
 ### Groovy Script Support
 Picocli 2.0 introduces special support for Groovy scripts.
@@ -19,7 +19,7 @@ Before the script body is executed, the `PicocliBaseScript` base class parses th
 The script body is executed if the user input was valid and did not request usage help or version information.
 
 ```
-@Grab('info.picocli:picocli:2.0.0')
+@Grab('info.picocli:picocli:2.0.0-SNAPSHOT')
 @Command(name = "myCommand", description = "does something special")
 @PicocliScript
 import picocli.groovy.PicocliScript
@@ -57,7 +57,34 @@ picocli now infers the conversion target type from the generic type parameters w
 
 (TBD) Added `parseWithHandler` convenience method 
 
-## Why the major version increase?
+## Promoted features
+Promoted features are features that were incubating in previous versions of picocli but are now supported and subject to backwards compatibility. 
+
+The following are the features that have been promoted in this picocli release.
+
+* Autocomplete - as of picocli 2.0, autocompletion is no longer beta.
+
+## Fixed issues
+
+- #179 API Change to remove full JRE dependency and require only Compact Profile. Replace use of `java.awt.Point` with `picocli.CommandLine.Help.TextTable.Cell`. Thanks to [webfolderio](https://github.com/webfolderio).
+- #196 API Change: `Option::type()` and `Parameters::type()` now return empty array by default (was `{String.class}`).
+- #196 New feature: Infer type from collections and maps when `type` annotation not specified. Thanks to [ddimtirov](https://github.com/ddimtirov) for the suggestion.
+- #197 New feature: Use `type` attribute to determine conversion target type instead of field type. This allows fields to be declared as interfaces or abstract types (or arrays/collections/maps of these) and via the `type` attribute picocli will be able to convert String arguments to concrete implementation objects.
+- #187 New feature: Added methods to programmatically get and set the command name
+- #192 Bugfix: Default arity should be 1, not *, for array and collection options. Thanks to [RobertZenz](https://github.com/RobertZenz).
+- #193 Bugfix: Splitting an argument should not cause max arity to be exceeded.
+- #191 Bugfix: Arity should not limit the total number of values put in an array or collection. Thanks to [RobertZenz](https://github.com/RobertZenz).
+- #186 Bugfix: Confusing usage message for collection options. Thanks to [AlexFalappa](https://github.com/AlexFalappa).
+- #181 Bugfix: Incorrect help message was displayed for short options with paramLabel when arity > 1
+- #184 Bugfix/Enhancement: Programmatically setting the separator is now reflected in the usage help message. Thanks to [defnull](https://github.com/defnull).
+- #194 Enhancement: Usage help should show split regex for option/parameters
+- #198 Enhancement: Usage help parameter list details should indicate arity for positional parameters
+- #195 Enhancement: Usage help should show Map types if paramLabel not specified
+- #185 Enhancement: Exception message text for missing options should not use field names but be more descriptive and consistent with usage help. Thanks to [AlexFalappa](https://github.com/AlexFalappa).
+
+## Deprecations
+
+## Potentially breaking changes
 
 This release has a number of incompatible changes:
 * Multi-value options (array, list and map fields) are **not greedy by default** any more.
@@ -103,23 +130,7 @@ class Args {
 }
 ```
 
-### Issues fixed
 
-- #179 API Change to remove full JRE dependency and require only Compact Profile. Replace use of `java.awt.Point` with `picocli.CommandLine.Help.TextTable.Cell`. Thanks to [webfolderio](https://github.com/webfolderio).
-- #196 API Change: `Option::type()` and `Parameters::type()` now return empty array by default (was `{String.class}`).
-- #196 New feature: Infer type from collections and maps when `type` annotation not specified. Thanks to [ddimtirov](https://github.com/ddimtirov) for the suggestion.
-- #197 New feature: Use `type` attribute to determine conversion target type instead of field type. This allows fields to be declared as interfaces or abstract types (or arrays/collections/maps of these) and via the `type` attribute picocli will be able to convert String arguments to concrete implementation objects.
-- #187 New feature: Added methods to programmatically get and set the command name
-- #192 Bugfix: Default arity should be 1, not *, for array and collection options. Thanks to [RobertZenz](https://github.com/RobertZenz).
-- #193 Bugfix: Splitting an argument should not cause max arity to be exceeded.
-- #191 Bugfix: Arity should not limit the total number of values put in an array or collection. Thanks to [RobertZenz](https://github.com/RobertZenz).
-- #186 Bugfix: Confusing usage message for collection options. Thanks to [AlexFalappa](https://github.com/AlexFalappa).
-- #181 Bugfix: Incorrect help message was displayed for short options with paramLabel when arity > 1
-- #184 Bugfix/Enhancement: Programmatically setting the separator is now reflected in the usage help message. Thanks to [defnull](https://github.com/defnull).
-- #194 Enhancement: Usage help should show split regex for option/parameters
-- #198 Enhancement: Usage help parameter list details should indicate arity for positional parameters
-- #195 Enhancement: Usage help should show Map types if paramLabel not specified
-- #185 Enhancement: Exception message text for missing options should not use field names but be more descriptive and consistent with usage help. Thanks to [AlexFalappa](https://github.com/AlexFalappa).
 
 ## 1.0.1 - Bugfix release.
 
