@@ -1765,6 +1765,8 @@ Kotlin does not allow specifying an array https://kotlinlang.org/docs/reference/
  attribute as a single value,
 so be aware that you will have to write `arrayOf(...)` for the `names`, `description` and `type` attributes.
 
+(Kotlin https://blog.jetbrains.com/kotlin/2017/06/early-access-program-for-kotlin-1-2-has-been-started/[1.2 may support] array literals like `names = ["-h", "--help"]` in annotations.)
+
 [source,kotlin]
 ----
 @Command(name = "MyApp", version = arrayOf("Kotlin picocli demo v1.0"),
@@ -1801,7 +1803,6 @@ class MyApp : Runnable {
     }
 }
 ----
-(Kotlin https://blog.jetbrains.com/kotlin/2017/06/early-access-program-for-kotlin-1-2-has-been-started/[1.2 may support] array literals like `names = ["-h", "--help"]` in annotations.)
 
 === Scala
 Scala does not allow specifying array annotation attribute as a single value,
