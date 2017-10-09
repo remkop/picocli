@@ -1779,20 +1779,34 @@ so be aware that you will have to write `Array(...)` for the `names`, `descripti
 
 [source,scala]
 ----
-class Args {
-    @field:Option(names = Array("-h", "--help"), usageHelp = true,
-                   description = Array("Print this help and exit"))
-    var helpRequested = false;
-}
-object App {
-  def main(args: Array[String]) {
-    val commandLine= new CommandLine(Args)
-    commandLine.parse(args.toArray: _*)
-    if (Args.helpRequested) {
-      commandLine.usage(System.err)
-      System.exit(0)
+@Command(name = "MyApp", version = Array("Scala picocli demo v1.0"),
+  description = Array("@|bold Scala|@ @|underline picocli|@ example"))
+class MyApp extends Runnable {
+
+  @Option(names = Array("-c", "--count"), description = Array("the count"), paramLabel = "COUNT")
+  private val count: Int = 0
+
+  @Option(names = Array("-h", "--help"), description = Array("print this help and exit"), usageHelp = true)
+  private val helpRequested: Boolean = false
+
+  @Option(names = Array("-V", "--version"), description = Array("print version info and exit"), versionHelp = true)
+  private val versionRequested: Boolean = false
+
+  def run() : Unit = {
+    if (helpRequested) {
+      new CommandLine(this).usage(System.err)
+    } else if (versionRequested) {
+      new CommandLine(this).printVersionHelp(System.err)
+    } else {
+      for (i <- 0 until count) {
+        println(s"hello world $i...")
+      }
     }
-    // do something with Args
+  }
+}
+object MyApp {
+  def main(args: Array[String]) {
+    CommandLine.run(new MyApp(), System.err, args: _*)
   }
 }
 ----
