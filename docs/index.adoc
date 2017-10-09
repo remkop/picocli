@@ -1771,6 +1771,7 @@ class Args {
     var helpRequested = false;
 }
 ----
+(Kotlin https://blog.jetbrains.com/kotlin/2017/06/early-access-program-for-kotlin-1-2-has-been-started/[1.2 may support] array literals like `names = ["-h", "--help"]` in annotations.)
 
 === Scala
 Scala does not allow specifying array annotation attribute as a single value,
