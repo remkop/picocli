@@ -1717,7 +1717,8 @@ In Groovy, use `[` and `]` to surround array values, instead of the `{` and `}` 
 [source,groovy]
 ----
 class Args {
-    @Option(names = ["-h", "--help"], usageHelp=true, description="Print this help and exit")
+    @Option(names = ["-h", "--help"], usageHelp=true,
+      description = "Print this help and exit")
     boolean helpRequested = false;
 }
 ----
@@ -1745,7 +1746,8 @@ import groovy.transform.Field
 @Option(names = "-x", description = "number of repetitions")
 @Field int count;
 
-@Option(names = ["-h", "--help"], usageHelp = true, description = "print this help message and exit")
+@Option(names = ["-h", "--help"], usageHelp = true,
+  description = "print this help message and exit")
 @Field boolean helpRequested;
 
 //if (helpRequested) { // not necessary: PicocliBaseScript takes care of this
@@ -1765,10 +1767,38 @@ so be aware that you will have to write `arrayOf(...)` for the `names`, `descrip
 
 [source,kotlin]
 ----
-class Args {
-    @field:Option(names = arrayOf("-h", "--help"), usageHelp = true,
-                   description = arrayOf("Print this help and exit"))
-    var helpRequested = false;
+@Command(name = "MyApp", version = arrayOf("Kotlin picocli demo v1.0"),
+        description = arrayOf("@|bold Kotlin|@ @|underline picocli|@ example"))
+class MyApp : Runnable {
+
+    @Option(names = arrayOf("-c", "--count"), paramLabel = "COUNT",
+            description = arrayOf("the count"))
+    private val count: Int = 0
+
+    @Option(names = arrayOf("-h", "--help"), usageHelp = true,
+            description = arrayOf("print this help and exit"))
+    private val helpRequested: Boolean = false
+
+    @Option(names = arrayOf("-V", "--version"), versionHelp = true,
+            description = arrayOf("print version info and exit"))
+    private val versionRequested: Boolean = false
+
+    override fun run() {
+        if (helpRequested) {
+            CommandLine(this).usage(System.err)
+        } else if (versionRequested) {
+            CommandLine(this).printVersionHelp(System.err)
+        } else {
+            for (i in 0 until count) {
+                println("hello world $i...")
+            }
+        }
+    }
+    companion object {
+        @JvmStatic fun main(args: Array<String>) {
+            CommandLine.run(MyApp(), System.err, *args)
+        }
+    }
 }
 ----
 (Kotlin https://blog.jetbrains.com/kotlin/2017/06/early-access-program-for-kotlin-1-2-has-been-started/[1.2 may support] array literals like `names = ["-h", "--help"]` in annotations.)
@@ -1783,13 +1813,16 @@ so be aware that you will have to write `Array(...)` for the `names`, `descripti
   description = Array("@|bold Scala|@ @|underline picocli|@ example"))
 class MyApp extends Runnable {
 
-  @Option(names = Array("-c", "--count"), description = Array("the count"), paramLabel = "COUNT")
+  @Option(names = Array("-c", "--count"), paramLabel = "COUNT",
+    description = Array("the count"))
   private val count: Int = 0
 
-  @Option(names = Array("-h", "--help"), description = Array("print this help and exit"), usageHelp = true)
+  @Option(names = Array("-h", "--help"), usageHelp = true,
+    description = Array("print this help and exit"))
   private val helpRequested: Boolean = false
 
-  @Option(names = Array("-V", "--version"), description = Array("print version info and exit"), versionHelp = true)
+  @Option(names = Array("-V", "--version"), versionHelp = true,
+    description = Array("print version info and exit"))
   private val versionRequested: Boolean = false
 
   def run() : Unit = {
