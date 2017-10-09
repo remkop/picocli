@@ -135,15 +135,8 @@ public class PicocliScriptASTTransformation extends AbstractASTTransformation {
             addError("Declared type " + baseScriptType + " does not extend groovy.lang.Script class!", parent);
             return;
         }
-        source.getErrorCollector().addWarning(WarningMessage.LIKELY_ERRORS, "source=" + source.getName(), source.getCST(), source);
-        source.getErrorCollector().addWarning(WarningMessage.LIKELY_ERRORS, "sourceUnit=" + sourceUnit.getName(), source.getCST(), source);
-        source.getErrorCollector().addWarning(WarningMessage.LIKELY_ERRORS, "AnnotationNode=" + node.getClassNode(), source.getCST(), source);
-        source.getErrorCollector().addWarning(WarningMessage.LIKELY_ERRORS, "baseScriptType=" + baseScriptType, source.getCST(), source);
-        source.getErrorCollector().addWarning(WarningMessage.LIKELY_ERRORS, "cNode=" + cNode, source.getCST(), source);
-        source.getErrorCollector().addWarning(WarningMessage.LIKELY_ERRORS, "parent=" + parent, source.getCST(), source);
 
         List<AnnotationNode> annotations = parent.getAnnotations(COMMAND_TYPE);
-        source.getErrorCollector().addWarning(WarningMessage.LIKELY_ERRORS, "@Command annotations=" + annotations, source.getCST(), source);
         cNode.addAnnotations(annotations);
         cNode.setSuperClass(baseScriptType);
 
