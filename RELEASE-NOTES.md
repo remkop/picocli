@@ -77,6 +77,7 @@ The following are the features that have been promoted in this picocli release.
 - #186 Bugfix: Confusing usage message for collection options. Thanks to [AlexFalappa](https://github.com/AlexFalappa).
 - #181 Bugfix: Incorrect help message was displayed for short options with paramLabel when arity > 1
 - #184 Bugfix/Enhancement: Programmatically setting the separator is now reflected in the usage help message. Thanks to [defnull](https://github.com/defnull).
+- #200 Bugfix: Prevent NPE when command name is set to empty string or spaces. Thanks to [jansohn](https://github.com/jansohn).
 - #194 Enhancement: Usage help should show split regex for option/parameters
 - #198 Enhancement: Usage help parameter list details should indicate arity for positional parameters
 - #195 Enhancement: Usage help should show Map types if paramLabel not specified

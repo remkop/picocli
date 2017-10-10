@@ -2432,4 +2432,13 @@ public class CommandLineHelpTest {
                 "  -g= <TimeUnit=Float>%n");
         assertEquals(expected, actual);
     }
+    @Test
+    public void test200NPEWithEmptyCommandName() throws UnsupportedEncodingException {
+        @Command(name = "") class Args {}
+        String actual = usageString(new Args(), Help.Ansi.OFF);
+        String expected = String.format("" +
+                "Usage: %n" +
+                "");
+        assertEquals(expected, actual);
+    }
 }

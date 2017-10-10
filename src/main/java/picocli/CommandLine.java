@@ -2710,7 +2710,7 @@ public class CommandLine {
             textTable.indentWrappedLines = 1; // don't worry about first line: options (2nd column) always start with a space
 
             // right-adjust the command name by length of synopsis heading
-            Text PADDING = Ansi.OFF.new Text(spaces(synopsisHeadingLength));
+            Text PADDING = Ansi.OFF.new Text(stringOf('X', synopsisHeadingLength));
             textTable.addRowValues(new Text[] {PADDING.append(colorScheme.commandText(commandName)), optionText});
             return textTable.toString().substring(synopsisHeadingLength); // cut off leading synopsis heading spaces
         }
@@ -2920,9 +2920,9 @@ public class CommandLine {
             }
             return result.toString();
         }
-        private static String spaces(int length) {
+        private static String stringOf(char chr, int length) {
             char[] buff = new char[length];
-            Arrays.fill(buff, ' ');
+            Arrays.fill(buff, chr);
             return new String(buff);
         }
 
