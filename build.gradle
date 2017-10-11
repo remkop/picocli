@@ -41,7 +41,8 @@ jar {
         attributes 'Implementation-Title'  : 'picocli',
                    'Implementation-Vendor' : 'Remko Popma',
                    'Implementation-Version': version,
-                   'Main-Class'              : 'picocli.AutoComplete'
+                   'Main-Class'              : 'picocli.AutoComplete',
+                   'Automatic-Module-Name' : 'info.picocli'
     }
 }
 javadoc {
