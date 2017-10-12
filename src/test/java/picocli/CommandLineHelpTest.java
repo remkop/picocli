@@ -686,13 +686,13 @@ public class CommandLineHelpTest {
     @Test
     public void testUsageRangeArityParameterArray() throws UnsupportedEncodingException {
         class Args {
-            @Parameters(paramLabel = "PARAMA", arity = "0..1", description = "PARAMA description")
+            @Parameters(index = "0", paramLabel = "PARAMA", arity = "0..1", description = "PARAMA description")
             List<String> a;
-            @Parameters(paramLabel = "PARAMB", arity = "1..2", description = "PARAMB description")
+            @Parameters(index = "0", paramLabel = "PARAMB", arity = "1..2", description = "PARAMB description")
             String[] b;
-            @Parameters(paramLabel = "PARAMC", arity = "1..3", description = "PARAMC description")
+            @Parameters(index = "0", paramLabel = "PARAMC", arity = "1..3", description = "PARAMC description")
             String[] c;
-            @Parameters(paramLabel = "PARAMD", arity = "2..4", description = "PARAMD description")
+            @Parameters(index = "0", paramLabel = "PARAMD", arity = "2..4", description = "PARAMD description")
             String[] d;
         }
         String expected = String.format("" +
@@ -713,11 +713,11 @@ public class CommandLineHelpTest {
         class Args {
             @Parameters(description = "a description (default arity)")
             String[] a;
-            @Parameters(arity = "0", description = "b description (arity=0)")
+            @Parameters(index = "0", arity = "0", description = "b description (arity=0)")
             String[] b;
-            @Parameters(arity = "1", description = "b description (arity=1)")
+            @Parameters(index = "1", arity = "1", description = "b description (arity=1)")
             String[] c;
-            @Parameters(arity = "2", description = "b description (arity=2)")
+            @Parameters(index = "2", arity = "2", description = "b description (arity=2)")
             String[] d;
         }
         String expected = String.format("" +
@@ -757,13 +757,13 @@ public class CommandLineHelpTest {
     @Test
     public void testUsageRangeArityParametersMap() throws UnsupportedEncodingException {
         class Args {
-            @Parameters(arity = "0..1"/*, type = {UUID.class, URL.class}*/, description = "a description")
+            @Parameters(index = "0", arity = "0..1"/*, type = {UUID.class, URL.class}*/, description = "a description")
             Map<UUID, URL> a;
-            @Parameters(arity = "1..2", type = {Long.class, UUID.class}, description = "b description")
+            @Parameters(index = "1", arity = "1..2", type = {Long.class, UUID.class}, description = "b description")
             Map<?, ?> b;
-            @Parameters(arity = "1..3", type = {Long.class}, description = "c description")
+            @Parameters(index = "2", arity = "1..3", type = {Long.class}, description = "c description")
             Map<?, ?> c;
-            @Parameters(paramLabel = "K=V", arity = "2..4", description = "d description")
+            @Parameters(index = "3", paramLabel = "K=V", arity = "2..4", description = "d description")
             Map<?, ?> d;
         }
         String expected = String.format("" +
@@ -784,12 +784,12 @@ public class CommandLineHelpTest {
         class Args {
             @Parameters(type = {Short.class, Field.class}, description = "a description")
             Map<Short, Field> a;
-            @Parameters(arity = "0", type = {UUID.class, Long.class}, description = "b description (arity=0)")
+            @Parameters(index = "0", arity = "0", type = {UUID.class, Long.class}, description = "b description (arity=0)")
             @SuppressWarnings("unchecked")
             Map b;
-            @Parameters(arity = "1", description = "c description")
+            @Parameters(index = "1", arity = "1", description = "c description")
             Map<Long, File> c;
-            @Parameters(arity = "2", type = {URI.class, URL.class}, description = "d description")
+            @Parameters(index = "2", arity = "2", type = {URI.class, URL.class}, description = "d description")
             Map<URI, URL> d;
         }
         String expected = String.format("" +
@@ -1824,7 +1824,7 @@ public class CommandLineHelpTest {
             @Parameters(index = "0", description = "source host") InetAddress host1;
             @Parameters(index = "1", description = "source port") int port1;
             @Parameters(index = "2", description = "destination host") InetAddress host2;
-            @Parameters(index = "3..4", arity = "1..2", description = "destination port range") int[] port2range;
+            @Parameters(index = "3", arity = "1..2", description = "destination port range") int[] port2range;
             @Parameters(index = "4..*", description = "files to transfer") String[] files;
             @Parameters(hidden = true) String[] all;
         }

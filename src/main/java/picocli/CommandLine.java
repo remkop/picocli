@@ -1338,18 +1338,28 @@ public class CommandLine {
             if (field.isAnnotationPresent(Option.class)) {
                 return defaultArity(type);
             }
-            if (isBoolean(type)) {
-                return Range.valueOf("0");
-            } else if (type.isArray() || Collection.class.isAssignableFrom(type) || Map.class.isAssignableFrom(type)) {
-                return Range.valueOf("0..*");
+            if (isMultiValue(type)) {
+                return Range.valueOf("0..1");
             }
-            return Range.valueOf("1");// for single-valued fields
+            return Range.valueOf("1");// for single-valued fields (incl. boolean positional parameters)
         }
         /** Returns the default arity {@code Range} for {@link Option options}: booleans have arity 0, other types have arity 1.
          * @param type the type whose default arity to return
          * @return a new {@code Range} indicating the default arity of the specified type */
         public static Range defaultArity(Class<?> type) {
             return isBoolean(type) ? Range.valueOf("0") : Range.valueOf("1");
+        }
+        private int size() { return 1 + max - min; }
+        static Range parameterCapacity(Field field) {
+            Range arity = parameterArity(field);
+            if (!isMultiValue(field)) { return arity; }
+            Range index = parameterIndex(field);
+            if (arity.max == 0)    { return arity; }
+            if (index.size() == 1) { return arity; }
+            if (index.isVariable)  { return Range.valueOf(arity.min + "..*"); }
+            if (arity.size() == 1) { return Range.valueOf(arity.min * index.size() + ""); }
+            if (arity.isVariable)  { return Range.valueOf(arity.min * index.size() + "..*"); }
+            return Range.valueOf(arity.min * index.size() + ".." + arity.max * index.size());
         }
         /** Leniently parses the specified String as an {@code Range} value and return the result. A range string can
          * be a fixed integer value or a range of the form {@code MIN_VALUE + ".." + MAX_VALUE}. If the
@@ -1393,6 +1403,13 @@ public class CommandLine {
          * @param newMax the {@code max} value of the returned Range object
          * @return a new Range object with the specified {@code max} value */
         public Range max(int newMax) { return new Range(Math.min(min, newMax), newMax, isVariable, isUnspecified, originalValue); }
+
+        /**
+         * Returns {@code true} if this Range includes the specified value, {@code false} otherwise.
+         * @param value the value to check
+         * @return {@code true} if the specified value is not less than the minimum and not greater than the maximum of this Range
+         */
+        public boolean contains(int value) { return min <= value && max >= value; }
 
         public boolean equals(Object object) {
             if (!(object instanceof Range)) { return false; }
@@ -1479,6 +1496,7 @@ public class CommandLine {
         private final Object command;
         private boolean isHelpRequested;
         private String separator = Help.DEFAULT_SEPARATOR;
+        private int position;
 
         Interpreter(Object command) {
             converterRegistry.put(String.class,        new BuiltIn.StringConverter());
@@ -1601,14 +1619,17 @@ public class CommandLine {
                 throw ParameterException.create(ex, arg, offendingArgIndex, originalArgs);
             }
             if (!isAnyHelpRequested() && !required.isEmpty()) {
-                if (required.get(0).isAnnotationPresent(Option.class)) {
-                    throw MissingParameterException.create(required, separator);
-                } else {
-                    try {
-                        processPositionalParameters0(required, true, new Stack<String>());
-                    } catch (ParameterException ex) { throw ex;
-                    } catch (Exception ex) { throw new IllegalStateException("Internal error: " + ex, ex); }
+                for (Field missing : required) {
+                    if (missing.isAnnotationPresent(Option.class)) {
+                        throw MissingParameterException.create(required, separator);
+                    } else {
+                        assertNoMissingParameters(missing, Range.parameterArity(missing).min, argumentStack);
+                    }
                 }
+            }
+            if (!unmatchedArguments.isEmpty()) {
+                if (!isUnmatchedArgumentsAllowed()) { throw new UnmatchedArgumentException(unmatchedArguments); }
+                if (tracer.isWarn()) { tracer.warn("Unmatched arguments: %s%n", unmatchedArguments); }
             }
         }
 
@@ -1634,7 +1655,7 @@ public class CommandLine {
                 // If found, then interpret the remaining args as positional parameters.
                 if ("--".equals(arg)) {
                     tracer.info("Found end-of-options delimiter '--'. Treating remainder as positional parameters.%n");
-                    processPositionalParameters(required, args);
+                    processRemainderAsPositionalParameters(required, initialized, args);
                     return; // we are done
                 }
 
@@ -1685,20 +1706,10 @@ public class CommandLine {
                     if (tracer.isDebug()) {tracer.debug("Could not find option '%s', deciding whether to treat as unmatched option or positional parameter...%n", arg);}
                     if (resemblesOption(arg)) { handleUnmatchedArguments(args.pop()); continue; } // #149
                     if (tracer.isDebug()) {tracer.debug("No option named '%s' found. Processing remainder as positional parameters%n", arg);}
-                    processPositionalParameters(required, args);
-                    return;
+                    processPositionalParameter(required, initialized, args);
                 }
             }
         }
-
-        private void processPositionalParameters(Collection<Field> required, Stack<String> args) throws Exception {
-            processPositionalParameters0(required, false, args);
-            if (!args.empty()) {
-                handleUnmatchedArguments(args);
-                return;
-            };
-        }
-
         private boolean resemblesOption(String arg) {
             int count = 0;
             for (String optionName : optionName2Field.keySet()) {
@@ -1712,39 +1723,38 @@ public class CommandLine {
         }
         private void handleUnmatchedArguments(String arg) {Stack<String> args = new Stack<String>(); args.add(arg); handleUnmatchedArguments(args);}
         private void handleUnmatchedArguments(Stack<String> args) {
-            if (!isUnmatchedArgumentsAllowed()) { throw new UnmatchedArgumentException(args); }
             while (!args.isEmpty()) { unmatchedArguments.add(args.pop()); } // addAll would give args in reverse order
-            if (tracer.isWarn()) {tracer.warn("Unmatched arguments: %s%n", unmatchedArguments);}
         }
 
-        private void processPositionalParameters0(Collection<Field> required, boolean validateOnly, Stack<String> args) throws Exception {
-            if (tracer.isDebug()) {tracer.debug("Processing positional parameters. Remainder=%s%n", reverse((Stack<String>) args.clone()));}
-            int max = 0;
+        private void processRemainderAsPositionalParameters(Collection<Field> required, Set<Field> initialized, Stack<String> args) throws Exception {
+            while (!args.empty()) {
+                processPositionalParameter(required, initialized, args);
+            }
+        }
+        private void processPositionalParameter(Collection<Field> required, Set<Field> initialized, Stack<String> args) throws Exception {
+            if (tracer.isDebug()) {tracer.debug("Processing next arg as a positional parameter at index=%d. Remainder=%s%n", position, reverse((Stack<String>) args.clone()));}
+            int consumed = 0;
             for (Field positionalParam : positionalParametersFields) {
                 Range indexRange = Range.parameterIndex(positionalParam);
+                if (!indexRange.contains(position)) {
+                    continue;
+                }
                 @SuppressWarnings("unchecked")
-                Stack<String> argsCopy = reverse((Stack<String>) args.clone());
-                if (!indexRange.isVariable) {
-                    for (int i = argsCopy.size() - 1; i > indexRange.max; i--) {
-                        argsCopy.removeElementAt(i);
-                    }
-                }
-                Collections.reverse(argsCopy);
-                for (int i = 0; i < indexRange.min && !argsCopy.isEmpty(); i++) { argsCopy.pop(); }
+                Stack<String> argsCopy = (Stack<String>) args.clone();
                 Range arity = Range.parameterArity(positionalParam);
-                if (tracer.isDebug()) {tracer.debug("Trying to assign args at index %s %s to %s, arity=%s%n", indexRange, reverse((Stack<String>) argsCopy.clone()), positionalParam, arity);}
+                if (tracer.isDebug()) {tracer.debug("Position %d is in index range %s. Trying to assign args to %s, arity=%s%n", position, indexRange, positionalParam, arity);}
                 assertNoMissingParameters(positionalParam, arity.min, argsCopy);
-                if (!validateOnly) {
-                    int originalSize = argsCopy.size();
-                    int count = applyOption(positionalParam, Parameters.class, arity, false, argsCopy, null, "args[" + indexRange + "]");
-                    if (count > 0) { required.remove(positionalParam); }
-                    max = Math.max(max, indexRange.min + (originalSize - argsCopy.size())); // track unprocessed args
-                }
+                int originalSize = argsCopy.size();
+                applyOption(positionalParam, Parameters.class, arity, false, argsCopy, initialized, "args[" + indexRange + "]");
+                int count = originalSize - argsCopy.size();
+                if (count > 0) { required.remove(positionalParam); }
+                consumed = Math.max(consumed, count);
             }
             // remove processed args from the stack
-            if (!validateOnly && !positionalParametersFields.isEmpty()) {
-                int processedArgCount = Math.min(args.size(), max < Integer.MAX_VALUE ? max : Integer.MAX_VALUE);
-                for (int i = 0; i < processedArgCount; i++) { args.pop(); }
+            for (int i = 0; i < consumed; i++) { args.pop(); }
+            position += consumed;
+            if (consumed == 0 && !args.isEmpty()) {
+                handleUnmatchedArguments(args.pop());
             }
         }
 
@@ -1784,8 +1794,8 @@ public class CommandLine {
                         cluster = cluster.substring(separator.length());
                         arity = arity.min(Math.max(1, arity.min)); // if key=value, minimum arity is at least 1
                     }
-                    if (arity.min > 0) {
-                        if (tracer.isDebug() && !empty(cluster)) {tracer.debug("Trying to process '%s' as option parameter%n", cluster);}
+                    if (arity.min > 0 && !empty(cluster)) {
+                        if (tracer.isDebug()) {tracer.debug("Trying to process '%s' as option parameter%n", cluster);}
                     }
                     args.push(cluster); // interpret remainder as option parameter (CAUTION: may be empty string!)
                     // arity may be >= 1, or
@@ -1808,7 +1818,7 @@ public class CommandLine {
                         if (args.peek().equals(arg)) { // #149 be consistent between unmatched short and long options
                             if (tracer.isDebug()) {tracer.debug("Could not match any short options in %s, deciding whether to treat as unmatched option or positional parameter...%n", arg);}
                             if (resemblesOption(arg)) { handleUnmatchedArguments(args.pop()); return; } // #149
-                            processPositionalParameters(required, args);
+                            processPositionalParameter(required, initialized, args);
                             return;
                         }
                         // remainder was part of a clustered group that could not be completely parsed
@@ -1817,7 +1827,7 @@ public class CommandLine {
                     } else {
                         args.push(cluster);
                         if (tracer.isDebug()) {tracer.debug("%s is not an option parameter for %s%n", cluster, arg);}
-                        processPositionalParameters(required, args);
+                        processPositionalParameter(required, initialized, args);
                     }
                     return;
                 }
@@ -2229,8 +2239,12 @@ public class CommandLine {
                     }
                     throw new MissingParameterException(msg + names);
                 }
+                if (args.isEmpty()) {
+                    throw new MissingParameterException(optionDescription("", field, 0) +
+                            " requires at least " + arity + " values, but none were specified.");
+                }
                 throw new MissingParameterException(optionDescription("", field, 0) +
-                        " requires at least " + arity + " values, but only " + args.size() + " were specified.");
+                        " requires at least " + arity + " values, but only " + args.size() + " were specified: " + reverse(args));
             }
         }
         private String trim(String value) {
@@ -3205,7 +3219,7 @@ public class CommandLine {
             public String separator() { return separator; }
             public Text renderParameterLabel(Field field, Ansi ansi, List<IStyle> styles) {
                 boolean isOptionParameter = field.isAnnotationPresent(Option.class);
-                Range arity = isOptionParameter ? Range.optionArity(field) : Range.parameterArity(field);
+                Range arity = isOptionParameter ? Range.optionArity(field) : Range.parameterCapacity(field);
                 String split = isOptionParameter ? field.getAnnotation(Option.class).split() : field.getAnnotation(Parameters.class).split();
                 Text result = ansi.new Text("");
                 String sep = isOptionParameter ? separator : "";
@@ -3218,7 +3232,7 @@ public class CommandLine {
                 if (arity.isVariable) {
                     if (result.length == 0) { // arity="*" or arity="0..*"
                         result = result.append(sep + "[").append(paramName).append("]...");
-                    } else {
+                    } else if (!result.plainString().endsWith("...")) { // split param may already end with "..."
                         result = result.append("...");
                     }
                 } else {
@@ -4218,9 +4232,7 @@ public class CommandLine {
      */
     public static class DuplicateOptionAnnotationsException extends ParameterException {
         private static final long serialVersionUID = -3355128012575075641L;
-        public DuplicateOptionAnnotationsException(String msg) {
-            super(msg);
-        }
+        public DuplicateOptionAnnotationsException(String msg) { super(msg); }
 
         private static DuplicateOptionAnnotationsException create(String name, Field field1, Field field2) {
             return new DuplicateOptionAnnotationsException("Option name '" + name + "' is used by both " +
@@ -4238,16 +4250,15 @@ public class CommandLine {
     public static class UnmatchedArgumentException extends ParameterException {
         private static final long serialVersionUID = -8700426380701452440L;
         public UnmatchedArgumentException(String msg) { super(msg); }
-        public UnmatchedArgumentException(Stack<String> args) {
-            this("Unmatched argument" + (args.size() == 1 ? " " : "s ") + reverse(args));
-        }
+        public UnmatchedArgumentException(Stack<String> args) { this(new ArrayList<String>(reverse(args))); }
+        public UnmatchedArgumentException(List<String> args) { this("Unmatched argument" + (args.size() == 1 ? " " : "s ") + args); }
     }
     /** Exception indicating that more values were specified for an option or parameter than its {@link Option#arity() arity} allows. */
     public static class MaxValuesforFieldExceededException extends ParameterException {
         private static final long serialVersionUID = 6536145439570100641L;
         public MaxValuesforFieldExceededException(String msg) { super(msg); }
     }
-    /** Exception indicating that an option for a single-value field has been specified multiple times on the command line. */
+    /** Exception indicating that an option for a single-value option field has been specified multiple times on the command line. */
     public static class OverwrittenOptionException extends ParameterException {
         private static final long serialVersionUID = 1338029208271055776L;
         public OverwrittenOptionException(String msg) { super(msg); }
@@ -4258,8 +4269,6 @@ public class CommandLine {
      */
     public static class MissingTypeConverterException extends ParameterException {
         private static final long serialVersionUID = -6050931703233083760L;
-        public MissingTypeConverterException(String msg) {
-            super(msg);
-        }
+        public MissingTypeConverterException(String msg) { super(msg); }
     }
 }
