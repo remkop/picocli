@@ -1753,6 +1753,7 @@ public class CommandLine {
             // remove processed args from the stack
             for (int i = 0; i < consumed; i++) { args.pop(); }
             position += consumed;
+            if (tracer.isDebug()) {tracer.debug("Consumed %d arguments, moving position to index %d.%n", consumed, position);}
             if (consumed == 0 && !args.isEmpty()) {
                 handleUnmatchedArguments(args.pop());
             }
