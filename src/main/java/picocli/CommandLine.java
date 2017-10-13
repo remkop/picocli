@@ -1802,6 +1802,9 @@ public class CommandLine {
                     // arity may be >= 1, or
                     // arity <= 0 && !cluster.startsWith(separator)
                     // e.g., boolean @Option("-v", arity=0, varargs=true); arg "-rvTRUE", remainder cluster="TRUE"
+                    if (!args.isEmpty() && args.peek().length() == 0 && !paramAttachedToOption) {
+                        args.pop(); // throw out empty string we get at the end of a group of clustered short options
+                    }
                     int consumed = applyOption(field, Option.class, arity, paramAttachedToOption, args, initialized, argDescription);
                     // only return if cluster (and maybe more) was consumed, otherwise continue do-while loop
                     if (consumed > 0) {
@@ -1843,9 +1846,6 @@ public class CommandLine {
                                 Set<Field> initialized,
                                 String argDescription) throws Exception {
             updateHelpRequested(field);
-            if (!args.isEmpty() && args.peek().length() == 0 && !valueAttachedToOption) {
-                args.pop(); // throw out empty string we get at the end of a group of clustered short options
-            }
             int length = args.size();
             assertNoMissingParameters(field, arity.min, args);
 

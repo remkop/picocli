@@ -3753,4 +3753,73 @@ public class CommandLineTest {
         assertEquals(Arrays.asList("/usr/x.jar", "/bin/y.jar"), result.codepath);
         assertEquals(Arrays.asList("placeholder", "another"), result.parameters);
     }
+
+    @Test
+    public void testIssue203() {
+        class Example {
+            @Option(names = {"-h", "--help"}, help = true, // NOTE: this should be usageHelp = true
+                    description = "Displays this help message and quits.")
+            private boolean helpRequested;
+
+            @Option(names = {"-o", "--out-dir"}, required = true, description = "The output directory"
+                    /*usageHelp = true, NOTE: I'm guessing this usageHelp=true was a copy-paste mistake. */ )
+            private File outputDir;
+
+            @Parameters(arity = "1..*", description = "The input files")
+            private File[] inputFiles;
+        }
+
+        try {
+            // Comment from AshwinJay : "Should've failed as inputFiles were not provided".
+            //
+            // RP: After removing `usageHelp = true`, the "-o /tmp" argument is parsed as '-o'
+            // with attached option value ' /tmp' (note the leading space).
+            // A MissingParameterException is thrown for the missing <inputFiles>, as expected.
+            new CommandLine(new Example()).parse("-o /tmp");
+            fail("Expected MissingParameterException");
+        } catch (MissingParameterException ex) {
+            assertEquals("Missing required parameters at positions 0..*: <inputFiles>", ex.getMessage());
+        }
+        try {
+            // Comment from AshwinJay : "Should've failed as inputFiles were not provided"
+            //
+            // RP: After removing `usageHelp = true`, the ["-o", " /tmp"] arguments are parsed and
+            // a MissingParameterException is thrown for the missing <inputFiles>, as expected.
+            new CommandLine(new Example()).parse("-o", " /tmp");
+            fail("Expected MissingParameterException");
+        } catch (MissingParameterException ex) {
+            assertEquals("Missing required parameters at positions 0..*: <inputFiles>", ex.getMessage());
+        }
+        try {
+            // a MissingParameterException is thrown for missing required option -o, as expected
+            new CommandLine(new Example()).parse("inputfile1", "inputfile2");
+            fail("Expected MissingParameterException");
+        } catch (MissingParameterException ex) {
+            assertEquals("Missing required option '-o=<outputDir>'", ex.getMessage());
+        }
+
+        // a single empty string parameter was specified: this becomes an <inputFile> value
+        try {
+            new CommandLine(new Example()).parse("");
+            fail("Expected MissingParameterException");
+        } catch (MissingParameterException ex) {
+            assertEquals("Missing required option '-o=<outputDir>'", ex.getMessage());
+        }
+
+        // no parameters were specified
+        try {
+            new CommandLine(new Example()).parse();
+            fail("Expected MissingParameterException");
+        } catch (MissingParameterException ex) {
+            assertEquals("Missing required options [-o=<outputDir>, params[*]=<inputFiles>]", ex.getMessage());
+        }
+
+        // finally, let's test the success scenario
+        Example example = new Example();
+        new CommandLine(example).parse("-o", "/tmp","inputfile1", "inputfile2");
+        assertEquals(new File("/tmp"), example.outputDir);
+        assertEquals(2, example.inputFiles.length);
+        assertEquals(new File("inputfile1"), example.inputFiles[0]);
+        assertEquals(new File("inputfile2"), example.inputFiles[1]);
+    }
 }
