@@ -917,9 +917,9 @@ public class CommandLineHelpTest {
         Help.IParamLabelRenderer parameterRenderer = help.createDefaultParamLabelRenderer();
         Field field = help.optionFields.get(0);
         Text[][] row1 = renderer.render(field.getAnnotation(Option.class), field, parameterRenderer, help.colorScheme);
-        assertEquals(2, row1.length);
+        assertEquals(1, row1.length);
         assertArrayEquals(Arrays.toString(row1[0]), textArray(help, "", "-L", ",", "---long=<longField>", "long description"), row1[0]);
-        assertArrayEquals(Arrays.toString(row1[1]), textArray(help, "", "", "", "", "  Default: null"), row1[1]);
+        //assertArrayEquals(Arrays.toString(row1[1]), textArray(help, "", "", "", "", "  Default: null"), row1[1]); // #201 don't show null defaults
 
         field = help.optionFields.get(1);
         Text[][] row2 = renderer.render(field.getAnnotation(Option.class), field, parameterRenderer, help.colorScheme);
@@ -985,9 +985,9 @@ public class CommandLineHelpTest {
         Help.IParamLabelRenderer parameterRenderer = help.createDefaultParamLabelRenderer();
         Field field = help.optionFields.get(0);
         Text[][] row = renderer.render(field.getAnnotation(Option.class), field, parameterRenderer, help.colorScheme);
-        assertEquals(2, row.length);
+        assertEquals(1, row.length);
         assertArrayEquals(Arrays.toString(row[0]), textArray(help, " ", "-b", ",", "-a, --alpha=<otherField>", "other"), row[0]);
-        assertArrayEquals(Arrays.toString(row[1]), textArray(help, "",    "", "",  "", "  Default: null"), row[1]);
+        // assertArrayEquals(Arrays.toString(row[1]), textArray(help, "",    "", "",  "", "  Default: null"), row[1]); // #201 don't show null defaults
     }
 
     @Test

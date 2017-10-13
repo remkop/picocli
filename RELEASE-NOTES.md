@@ -82,8 +82,9 @@ The following are the features that have been promoted in this picocli release.
 - #194 Enhancement: Usage help should show split regex for option/parameters
 - #198 Enhancement: Usage help parameter list details should indicate arity for positional parameters
 - #195 Enhancement: Usage help should show Map types if paramLabel not specified
-- #185 Enhancement: Exception message text for missing options should not use field names but be more descriptive and consistent with usage help. Thanks to [AlexFalappa](https://github.com/AlexFalappa).
 - #183 Enhancement: Add examples to user manual for using picocli in other JVM languages. Thanks to [binkley](https://github.com/binkley) for pointing out that Kotlin may support array literals in annotations from 1.2.
+- #185 Enhancement: Exception message text for missing options should not use field names but be more descriptive and consistent with usage help. Thanks to [AlexFalappa](https://github.com/AlexFalappa).
+- #201 Enhancement: Usage help should not show `null` default values. Thanks to [jansohn](https://github.com/jansohn).
 - #202 Enhancement: Add 'Automatic-Module-Name':'info.picocli' to MANIFEST.MF to make picocli play nice in the Java 9 module system.
 
 ## Deprecations

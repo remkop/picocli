@@ -3098,7 +3098,8 @@ public class CommandLine {
                 Object defaultValue = null;
                 try {
                     defaultValue = field.get(command);
-                    if (defaultValue != null && field.getType().isArray()) {
+                    if (defaultValue == null) { showDefault = false; } // #201 don't show null default values
+                    else if (field.getType().isArray()) {
                         StringBuilder sb = new StringBuilder();
                         for (int i = 0; i < Array.getLength(defaultValue); i++) {
                             sb.append(i > 0 ? ", " : "").append(Array.get(defaultValue, i));
