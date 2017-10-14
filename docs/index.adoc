@@ -19,6 +19,8 @@ Every main method deserves picocli!
 
 image:cli.jpg[picocli the Mighty Tiny Command Line Interface]
 
+The user manual for the last release is at http://picocli.info.
+
 == Introduction
 Picocli is a one-file framework for creating Java command line applications with almost zero code.
 Supports a variety of command line syntax styles including POSIX, GNU, MS-DOS and more.
