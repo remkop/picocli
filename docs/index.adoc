@@ -1735,8 +1735,9 @@ The script body is executed if the user input was valid and did not request usag
 
 [source,groovy]
 ----
-@Grab('info.picocli:picocli:2.0.0')
-@Command(name = "myCommand", description = "does something special")
+@Grab('info.picocli:picocli:2.0.0-SNAPSHOT')
+@Command(name = "myCommand",
+  description = "@|bold Groovy script|@ @|underline picocli|@ example")
 @PicocliScript
 import picocli.groovy.PicocliScript
 import picocli.CommandLine.Command
