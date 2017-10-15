@@ -220,8 +220,8 @@ public class CommandLine {
      * @return the annotated object that this {@code CommandLine} instance was constructed with
      * @since 0.9.7
      */
-    public Object getCommand() {
-        return interpreter.command;
+    public <T> T getCommand() {
+        return (T) interpreter.command;
     }
 
     /** Returns {@code true} if an option annotated with {@link Option#usageHelp()} was specified on the command line.
