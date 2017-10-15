@@ -19,7 +19,7 @@ Every main method deserves picocli!
 
 image:cli.jpg[picocli the Mighty Tiny Command Line Interface]
 
-The user manual for the last release is at http://picocli.info.
+The user manual for the latest release is at http://picocli.info.
 
 == Introduction
 Picocli is a one-file framework for creating Java command line applications with almost zero code.
@@ -179,7 +179,8 @@ The following command line arguments are all equivalent and parsing them will gi
 
 
 === Positional Parameters
-Positional parameters are the command line arguments following the options.
+Any command line arguments that are not subcommands or options (or option parameters) are interpreted as positional parameters.
+Positional parameters generally follow the options but from picocli v2.0, positional parameters can be mixed with options on the command line.
 
 Use the (zero-based) `index` attribute to specify exactly which parameters to capture.
 Omitting the `index` attribute means the field captures _all_ positional parameters.
@@ -214,6 +215,34 @@ assert params.allParameters.equals(Arrays.asList("localhost", "12345", "file1.tx
 ----
 
 See <<Strongly Typed Everything>> for which types are supported out of the box and how to add custom types.
+
+=== Mixing Options and Positional Parameters
+From picocli v2.0, positional parameters can be mixed with options on the command line.
+
+For example:
+
+[source,java]
+----
+class Mixed {
+    @Parameters
+    List<String> positional;
+
+    @Option(names = "-o")
+    List<String> options;
+}
+----
+
+Any command line argument that is not an option or subcommand is interpreted as a positional parameter.
+[source,java]
+----
+String[] args = { "param0", "-o", "AAA", "param1", "param2", "-o", "BBB", "param3" };
+Mixed mixed = new Mixed();
+new CommandLine(mixed).parse(args);
+
+assert mixed.positional.equals(Arrays.asList("param0", "param1", "param2", "param3");
+assert mixed.options.equals   (Arrays.asList("AAA", "BBB"));
+----
+
 
 === Double dash (`--`)
 When one of the command line arguments is just two dashes without any characters attached (`--`),
@@ -319,25 +348,6 @@ and all subcommands (and nested sub-subcommands) that were added _before_ the co
 Subcommands added later will not have the converter added automatically.
 To ensure a custom type converter is available to all subcommands, register the type converter last, after adding subcommands.
 
-=== Abstract Field Types
-The field's type can be an interface or an abstract class.
-The `type` attribute can be used to control for each field what concrete class the string value should be converted to.
-For example:
-
-[source,java]
-----
-class App {
-    @Option(names = "--big", type = BigDecimal.class) // concrete Number subclass
-    Number[] big; // array type with abstract component class
-
-    @Option(names = "--small", type = Short.class) // other Number subclass
-    Number[] small;
-
-    @Parameters(type = StringBuilder.class) // StringBuilder implements CharSequence
-    CharSequence address; // interface type
-}
-----
-
 === Arrays, Collections, Maps
 NOTE: Starting from picocli v2.0, the `type` attribute is no longer necessary for `Collection` and `Map` fields:
 picocli will infer the collection element type from the generic type.
@@ -358,8 +368,8 @@ class Convert {
     @Option(names = "-patterns", description = "the regex patterns to use");
     Pattern[] patterns;
 
-    @Parameters(description = "the files to convert")
-    List<File> files;
+    @Parameters(/* type = File.class, */ description = "the files to convert")
+    List<File> files; // picocli infers type from the generic type
 }
 ----
 
@@ -373,6 +383,10 @@ Convert convert = CommandLine.populateCommand(new Convert(), args);
 ----
 
 NOTE: If a collection is returned from a type converter, the _contents_ of the collection are added to the field, not the collection itself.
+
+If the field is `null`, picocli will instantiate it. If the `Collection` type is not a concrete class, picocli will
+make a best effort to instantiate it based on the field type: `List -> ArrayList`, `OrderedSet -> TreeSet`,
+`Set -> LinkedHashSet`, `Queue -> LinkedList`, otherwise, `ArrayList`.
 
 ==== Maps
 Picocli v1.0 introduced support for `Map` fields similar to Java's system properties `-Dkey=value` or Gradle's project properties `-Pmyprop=myvalue`.
@@ -396,15 +410,36 @@ class MapDemo {
     Map<TimeUnit, Long> timeout;
 }
 ----
-Map options may be specified multiple times with different key-value pairs. (See <<Default Arity,arity>>.)
+Map options may be specified multiple times with different key-value pairs. (See <<Multiple Values>>.)
 
 [source,bash]
 ----
 <command> -p HTTP=123.123.123.123 --proxyHost SOCKS=212.212.212.212
 <command> -uDAYS=3 -u HOURS=23 -u=MINUTES=59 --timeUnit=SECONDS=13
 ----
+If the field is `null`, picocli will instantiate it. If the type is not a concrete class, picocli will
+instantiate a `LinkedHashMap` to preserve the input ordering.
 
 NOTE: On the command line, the key and the value must be separated by a `=` character.
+
+=== Abstract Field Types
+The field's type can be an interface or an abstract class.
+The `type` attribute can be used to control for each field what concrete class the string value should be converted to.
+For example:
+
+[source,java]
+----
+class App {
+    @Option(names = "--big", type = BigDecimal.class) // concrete Number subclass
+    Number[] big; // array type with abstract component class
+
+    @Option(names = "--small", type = Short.class) // other Number subclass
+    Number[] small;
+
+    @Parameters(type = StringBuilder.class) // StringBuilder implements CharSequence
+    CharSequence address; // interface type
+}
+----
 
 ==== Maps and Collections with Abstract Elements
 For raw maps and collections, or when using generics with unbounded wildcards like `Map<?, ?>`, or when the type parameters are themselves abstract classes like `List<CharSequence>` or `Map<? extends Number, ? super Number>`, there is not enough information to convert to a stronger type. By default, the raw String values are added as is to such collections.
@@ -426,66 +461,44 @@ class TypeDemo {
 
 
 == Multiple Values
-Arity is the number of parameters that will be consumed by an option.
-
-=== Default Arity
-The default arity value of an `@Option` or `@Parameters` field depends on its type.
-
-* Boolean fields: the default arity is 0 (consume zero parameters) the field is toggled to its logical negative when the option name is recognized. (You can <<Boolean Parameters,change this>>.)
-* Single-valued types like `int`, `String`, `File`: arity is 1 (consume one parameter). Omitting the option parameter results in a ParameterException: "Missing required parameter for option '-option' (<name>)".
-* For multi-valued _options_ (arrays, collections or maps), the default arity is 1: consume one parameter per option. Omitting the option parameter results in a ParameterException: "Missing required parameter for option '-option' (<name>)". To add multiple values, specify the option multiple times.
-* For multi-valued _positional parameters_ (arrays, collections or maps), the default arity is `0..*`: consume from zero up to all available parameters.
-
-CAUTION: Prior to picocli v2.0, multi-valued options used to greedily consume as many arguments as possible until
-encountering another option or subcommand.
-If your application relies on this behaviour, you need to explicitly specify an arity of `0..*` when migrating to picocli v2.0.
+Multi-valued options and positional parameters can capture multiple values from the command line.
 
 === Multiple Occurrences
+The simplest way to create a multi-valued option is to declare an annotated field whose type is an array, collection or a map.
+
+[source,java]
+----
+@Option(names = "-option")
+int[] values;
+----
 Users may specify the same option multiple times. For example:
 ----
--option 111 -option 222 -option 333
+<command> -option 111 -option 222 -option 333
 ----
 Each value is appended to the array or collection.
 
-
-=== Arity
-
-When an option or parameters field has a type that can hold multiple values (an array or a collection),
-the `arity` attribute lets you control exactly how many parameters to capture.
-
-The `arity` attribute can specify an exact number of required parameters, or a _range_ with a minimum and a maximum number of parameters.
-The maximum can be an exact upper bound, or it can be `"*"` to denote _any number_ of parameters. For example:
-[source, java]
+Similarly for multi-valued positional parameters:
+[source,java]
 ----
-class ArityDemo {
-    @Parameters(arity = "3", descriptions = "exactly three Files")
-    File[] files;
-
-    @Option(names = "-f", arity = "2..4", description = "two to four floating point numbers")
-    double[] doubles;
-
-    @Option(names = "-s", arity = "1..*", description = "at least one string")
-    String[] strings;
-}
+@Parameters
+List<TimeUnit> units;
 ----
-A `MissingParameterException` is thrown when fewer than the miminum number of parameters is specified on the command line.
-
-Once the minimum number of parameters is consumed, picocli will check each subsequent command line argument to see whether it is an additional parameter, or a new option. For example:
-
+Users may specify multiple positional parameters. For example:
 ----
-ArityDemo -s A B C -f 1.0 2.0 3.0
+<command> SECONDS HOURS DAYS
 ----
-Option `-s` has arity `"1..*"` but instead of consuming all parameters,
-the last three parameters will be recognized as belonging to the `-f` option.
+Again, each value is appended to the array or collection.
+
 
 === Split Regex
-Options and parameters may also specify a `split` regular expression used to split each option parameter into smaller substrings. Each of these strings is converted to the type of the collection or array. See <<Arrays and Collections>>.
+Options and parameters may also specify a `split` regular expression used to split each option parameter into smaller substrings.
+Each of these strings is converted to the type of the collection or array. See <<Arrays and Collections>>.
 [source,java]
 ----
 @Option(names = "-option", split = ",")
 int[] values;
 ----
-Command line arguments like the following are interpreted as three `int` values instead of a single string:
+A single command line argument like the following will be split up and three `int` values are added to the array:
 ----
 -option 111,222,333
 ----
@@ -500,6 +513,75 @@ With the above option, command line arguments like the following are interpreted
 ----
 -fix 8=FIX.4.4|9=69|35=A|49=MBT|56=TargetCompID|34=9|52=20130625-04:05:32.682|98=0|108=30|10=052
 ----
+
+
+=== Arity
+Sometimes you want to define an option that requires more than one option parameter _for each option occurrence_ on the command line.
+
+The `arity` attribute lets you control exactly how many parameters to consume for each option occurrence.
+
+The `arity` attribute can specify an exact number of required parameters, or a _range_ with a minimum and a maximum number of parameters.
+The maximum can be an exact upper bound, or it can be `"*"` to denote _any number_ of parameters. For example:
+[source, java]
+----
+class ArityDemo {
+    @Parameters(arity = "1..3", descriptions = "one to three Files")
+    File[] files;
+
+    @Option(names = "-f", arity = "2", description = "exactly two floating point numbers")
+    double[] doubles;
+
+    @Option(names = "-s", arity = "1..*", description = "at least one string")
+    String[] strings;
+}
+----
+A `MissingParameterException` is thrown when fewer than the miminum number of parameters is specified on the command line.
+
+Once the minimum number of parameters is consumed, picocli will check each subsequent command line argument to see whether it is an additional parameter, or a new option. For example:
+
+----
+ArityDemo -s A B C -f 1.0 2.0 /file1 /file2
+----
+Option `-s` has arity `"1..*"` but instead of consuming all parameters,
+the `-f` argument is recognized as a separate option.
+
+
+=== Default Arity
+If no `arity` is specified, the number of parameters depends on the field's type.
+
+==== Option Arity
+.Default `arity` for `@Option` fields
+[grid=cols,cols="30,5,65",options="header"]
+|===
+| @Option Field Type | Default Arity | Notes
+| boolean      | 0 |Boolean options by default don't require an option parameter. The field is toggled to its logical negative when the option name is recognized.
+| Single-valued type (e.g., `int`, `String`, `File`) | 1 | The option name must be followed by a value.
+| Multi-valued type (arrays, collections or maps) | 1 | The option name must be followed by a value.
+|===
+
+
+CAUTION: Prior to picocli v2.0, multi-valued options used to greedily consume as many arguments as possible until
+encountering another option or subcommand.
+If your application relies on the previous behaviour, you need to explicitly specify an option arity of `0..*` when migrating to picocli v2.0.
+
+==== Positional Parameter Arity
+
+.Default `arity` for `@Parameters` fields
+[grid=cols,cols="30,5,65",options="header"]
+|===
+| @Parameters Field Type | Default Arity | Notes
+| boolean      | 1 |Positional parameters of type `boolean` or `Boolean` require a value. Only `true` or `false` (case insensitive) are valid values.
+| Single-valued type (e.g., `int`, `String`, `File`) | 1 | One parameter required for each position.
+| Multi-valued type (arrays, collections or maps) | 0..1 | For multi-valued positional parameters (arrays, collections or maps), values are optional, not required.
+|===
+
+
+`@Parameters` fields are applied to a command line argument if their index matches the argument's position.
+The default index is `\*`, meaning all positions.
+A `@Parameters` field with `index = "*"` is applied multiple times: once for each positional parameter on the command line.
+
+Every time `@Parameters` field's index matches the index of the positional parameter, the field may consume zero, one or more arguments, depending on its arity.
+
 
 
 == Required Arguments
@@ -620,16 +702,21 @@ Arguments that are not considered similar to the known options are interpreted a
 ----
 <command> x -a AAA
 ----
-The above input is treated as three positional parameters by the parser.
+The above input is treated by the parser as one positional parameter (`x`) followed by the `-a` option and its value.
 
-Use the `--` end-of-options delimiter to ensure that arguments resembling an option are treated as positional parameters without `UnmatchedArgumentException`:
+Use the <<Double dash (`--`),end-of-options delimiter>> (`--`) to ensure that arguments resembling an option are treated as positional parameters without `UnmatchedArgumentException`:
 
 ----
 <command> -- -x -a AAA
 ----
+Everything following the `--` end-of-options delimiter is treated as positional parameters by the parser, so
+the above input is treated as three positional parameters.
 
 == Help Options
-Options with the attribute `help = true` are special: if one of the command line arguments is a "help" option, picocli will stop parsing the remaining arguments and will not check for required options.
+Options with the attribute `versionHelp = true`, `usageHelp = true` or `help = true` are special:
+if one of the command line arguments is a "help" option, picocli will stop parsing the remaining arguments and will not check for required options.
+
+// TODO update documentation for convenience methods
 
 Picocli 0.9.8 introduces two new option attributes, `versionHelp` and `usageHelp`.
 These also stop validation to prevent "missing required option" errors, but are more specific and are preferred over the generic `help` attribute.

@@ -24,7 +24,6 @@ import java.math.BigInteger;
 import java.net.InetAddress;
 import java.net.MalformedURLException;
 import java.net.Socket;
-import java.net.SocketOptions;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -1715,6 +1714,22 @@ public class CommandLineTest {
             @Option(names = "--socket") Socket socket;
         }
         CommandLine.populateCommand(new MissingConverter(), "--socket anyString".split(" "));
+    }
+
+    @Test
+    public void testArrayParametersWithDefaultArity() {
+        class ArrayParamsDefaultArity {
+            @Parameters
+            List<String> params;
+        }
+        ArrayParamsDefaultArity params = CommandLine.populateCommand(new ArrayParamsDefaultArity(), "a", "b", "c");
+        assertEquals(Arrays.asList("a", "b", "c"), params.params);
+
+        params = CommandLine.populateCommand(new ArrayParamsDefaultArity(), "a");
+        assertEquals(Arrays.asList("a"), params.params);
+
+        params = CommandLine.populateCommand(new ArrayParamsDefaultArity());
+        assertEquals(null, params.params);
     }
 
     @Test
@@ -3752,6 +3767,39 @@ public class CommandLineTest {
         Arg result = CommandLine.populateCommand(new Arg(), "--codepath", "/usr/x.jar", "placeholder", "-cp", "/bin/y.jar", "another");
         assertEquals(Arrays.asList("/usr/x.jar", "/bin/y.jar"), result.codepath);
         assertEquals(Arrays.asList("placeholder", "another"), result.parameters);
+    }
+
+    @Test
+    public void test130MixPositionalParamsWithOptions1() {
+        class Arg {
+            @Parameters           List<String> parameters;
+            @Option(names = "-o") List<String> options;
+        }
+        Arg result = CommandLine.populateCommand(new Arg(), "-o", "v1", "p1", "p2", "-o", "v2", "p3");
+        assertEquals(Arrays.asList("v1", "v2"), result.options);
+        assertEquals(Arrays.asList("p1", "p2", "p3"), result.parameters);
+    }
+
+    @Test
+    public void test130MixPositionalParamsWithOptionsArity() {
+        class Arg {
+            @Parameters(arity = "2") List<String> parameters;
+            @Option(names = "-o")    List<String> options;
+        }
+        Arg result = CommandLine.populateCommand(new Arg(), "-o", "v1", "p1", "p2", "-o", "v2", "p3", "p4");
+        assertEquals(Arrays.asList("v1", "v2"), result.options);
+        assertEquals(Arrays.asList("p1", "p2", "p3", "p4"), result.parameters);
+
+        Arg result2 = CommandLine.populateCommand(new Arg(), "-o", "v1", "p1", "-o", "v2", "p3");
+        assertEquals(Arrays.asList("v1"), result2.options);
+        assertEquals(Arrays.asList("p1", "-o", "v2", "p3"), result2.parameters);
+
+        try {
+            CommandLine.populateCommand(new Arg(), "-o", "v1", "p1", "p2", "-o", "v2", "p3");
+            fail("Expected MissingParameterException");
+        } catch (MissingParameterException ex) {
+            assertEquals("positional parameter at index 0..* (<parameters>) requires at least 2 values, but only 1 were specified: [p3]", ex.getMessage());
+        }
     }
 
     @Test
