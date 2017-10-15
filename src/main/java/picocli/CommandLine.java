@@ -337,7 +337,54 @@ public class CommandLine {
     public List<CommandLine> parse(String... args) {
         return interpreter.parse(args);
     }
+    public static interface IParseResultHandler<T> {
+        T handle(List<CommandLine> parsedCommands, PrintStream out, Help.Ansi ansi) throws Exception;
+    }
+    public static interface IExceptionHandler<T> {
+        T handleException(Exception ex, CommandLine commandLine, PrintStream out, Help.Ansi ansi, String... args);
+    }
+    public static class DefaultExceptionHandler<T> implements IExceptionHandler<T> {
+        @Override
+        public T handleException(Exception ex, CommandLine commandLine, PrintStream out, Help.Ansi ansi, String... args) {
+            out.println(ex.getMessage());
+            commandLine.usage(out, ansi);
+            return null;
+        }
+    }
+    public static class RunLast<T> implements IParseResultHandler<T> {
+        public T handle(List<CommandLine> parsedCommands, PrintStream out, Help.Ansi ansi) throws Exception {
+            for (CommandLine parsed : parsedCommands) {
+                if (parsed.isUsageHelpRequested()) {
+                    parsed.usage(out, ansi);
+                    return null;
+                } else if (parsed.isVersionHelpRequested()) {
+                    parsed.printVersionHelp(out, ansi);
+                    return null;
+                }
+            }
+            Object last = parsedCommands.get(parsedCommands.size() - 1).getCommand();
+            if (last instanceof Runnable) {
+                ((Runnable) last).run();
+                return null;
+            } else if (last instanceof Callable) {
+                return ((Callable<T>) last).call();
+            } else {
+                throw new IllegalArgumentException("Last subcommand (" + last + ") is not Runnable or Callable");
+            }
+        }
+    }
+    public <T> T parseWithHandler(IParseResultHandler<T> handler, PrintStream out, String... args) {
+        return parseWithHandlers(handler, out, Help.Ansi.AUTO, new DefaultExceptionHandler<T>(), args);
+    }
 
+    public <T> T parseWithHandlers(IParseResultHandler<T> handler, PrintStream out, Help.Ansi ansi, IExceptionHandler<T> exceptionHandler, String... args) {
+        try {
+            List<CommandLine> result = parse(args);
+            return handler.handle(result, out, ansi);
+        } catch (Exception ex) {
+            return exceptionHandler.handleException(ex, this, out, ansi, args);
+        }
+    }
     /**
      * Equivalent to {@code new CommandLine(command).usage(out)}. See {@link #usage(PrintStream)} for details.
      * @param command the object annotated with {@link Command}, {@link Option} and {@link Parameters}
@@ -534,14 +581,7 @@ public class CommandLine {
      */
     public static <C extends Callable<T>, T> T call(C callable, PrintStream out, Help.Ansi ansi, String... args) throws Exception {
         CommandLine cmd = new CommandLine(callable); // validate command outside of try-catch
-        try {
-            cmd.parse(args);
-        } catch (Exception ex) {
-            out.println(ex.getMessage());
-            cmd.usage(out, ansi);
-            return null;
-        }
-        return callable.call();
+        return cmd.parseWithHandlers(new RunLast<T>(), out, ansi, new DefaultExceptionHandler<T>(), args);
     }
 
     /**
@@ -580,14 +620,7 @@ public class CommandLine {
      */
     public static <R extends Runnable> void run(R runnable, PrintStream out, Help.Ansi ansi, String... args) {
         CommandLine cmd = new CommandLine(runnable); // validate command outside of try-catch
-        try {
-            cmd.parse(args);
-        } catch (Exception ex) {
-            out.println(ex.getMessage());
-            cmd.usage(out, ansi);
-            return;
-        }
-        runnable.run();
+        cmd.parseWithHandlers(new RunLast<Void>(), out, ansi, new DefaultExceptionHandler<Void>(), args);
     }
 
     /**
