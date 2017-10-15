@@ -48,6 +48,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -2180,7 +2181,7 @@ public class CommandLine {
                 } else if (SortedSet.class.isAssignableFrom(collectionClass)) {
                     return new TreeSet<Object>();
                 } else if (Set.class.isAssignableFrom(collectionClass)) {
-                    return new HashSet<Object>();
+                    return new LinkedHashSet<Object>();
                 } else if (Queue.class.isAssignableFrom(collectionClass)) {
                     return new LinkedList<Object>(); // ArrayDeque is only available since 1.6
                 }

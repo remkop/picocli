@@ -68,6 +68,7 @@ The following are the features that have been promoted in this picocli release.
 
 - #179 API Change to remove full JRE dependency and require only Compact Profile. Replace use of `java.awt.Point` with `picocli.CommandLine.Help.TextTable.Cell`. Thanks to [webfolderio](https://github.com/webfolderio).
 - #196 API Change: `Option::type()` and `Parameters::type()` now return empty array by default (was `{String.class}`).
+- #130 New feature: Options and positional parameters can now be mixed on the command line.
 - #196 New feature: Infer type from collections and maps when `type` annotation not specified. Thanks to [ddimtirov](https://github.com/ddimtirov) for the suggestion.
 - #197 New feature: Use `type` attribute to determine conversion target type instead of field type. This allows fields to be declared as interfaces or abstract types (or arrays/collections/maps of these) and via the `type` attribute picocli will be able to convert String arguments to concrete implementation objects.
 - #187 New feature: Added methods to programmatically get and set the command name
@@ -86,6 +87,7 @@ The following are the features that have been promoted in this picocli release.
 - #185 Enhancement: Exception message text for missing options should not use field names but be more descriptive and consistent with usage help. Thanks to [AlexFalappa](https://github.com/AlexFalappa).
 - #201 Enhancement: Usage help should not show `null` default values. Thanks to [jansohn](https://github.com/jansohn).
 - #202 Enhancement: Java 9: add `Automatic-Module-Name: info.picocli` to MANIFEST.MF to make picocli play nice in the Java 9 module system.
+- #204 Enhancement: instantiate `LinkedHashSet` instead of `HashSet` for `Set` fields to preserve input ordering
 
 ## Deprecations
 
