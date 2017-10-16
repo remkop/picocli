@@ -55,7 +55,6 @@ assert codepath == ['/usr/x.jar', '/bin/y.jar', 'z']
         assert result == [2, 3]
     }
 
-    @Ignore("Requires #130 support for options _following_ positional parameters enhancement")
     @Test
     void testSimpleCommandScript() {
         GroovyShell shell = new GroovyShell()
