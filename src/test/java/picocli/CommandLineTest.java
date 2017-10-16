@@ -786,7 +786,7 @@ public class CommandLineTest {
         new CommandLine(new DuplicateOptions());
     }
 
-    @Test(expected = ParameterException.class)
+    @Test(expected = DuplicateOptionAnnotationsException.class)
     public void testClashingAnnotationsAreRejected() {
         class ClashingAnnotation {
             @Option(names = "-o")
@@ -3033,7 +3033,7 @@ public class CommandLineTest {
                 "      -number=<number>%n"), result);
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test(expected = InitializationException.class)
     public void testRunRequiresAnnotatedCommand() {
         class App implements Runnable {
             public void run() { }
@@ -3069,7 +3069,7 @@ public class CommandLineTest {
                         "      -number=<number>%n"), result);
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test(expected = InitializationException.class)
     public void testCallRequiresAnnotatedCommand() throws Exception {
         class App implements Callable<Object> {
             public Object call() { return null; }
@@ -3077,31 +3077,31 @@ public class CommandLineTest {
         CommandLine.call(new App(), System.err);
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test(expected = InitializationException.class)
     public void testPopulateCommandRequiresAnnotatedCommand() {
         class App { }
         CommandLine.populateCommand(new App());
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test(expected = InitializationException.class)
     public void testUsageObjectPrintstreamRequiresAnnotatedCommand() {
         class App { }
         CommandLine.usage(new App(), System.out);
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test(expected = InitializationException.class)
     public void testUsageObjectPrintstreamAnsiRequiresAnnotatedCommand() {
         class App { }
         CommandLine.usage(new App(), System.out, Help.Ansi.OFF);
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test(expected = InitializationException.class)
     public void testUsageObjectPrintstreamColorschemeRequiresAnnotatedCommand() {
         class App { }
         CommandLine.usage(new App(), System.out, Help.defaultColorScheme(Help.Ansi.OFF));
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test(expected = InitializationException.class)
     public void testConstructorRequiresAnnotatedCommand() {
         class App { }
         new CommandLine(new App());
@@ -3281,7 +3281,7 @@ public class CommandLineTest {
         @Command(subcommands = {ABC.class}) class MainCommand {}
         try {
             new CommandLine(new MainCommand());
-        } catch (IllegalArgumentException ex) {
+        } catch (InitializationException ex) {
             String expected = String.format("Cannot instantiate subcommand %s: the class has no constructor", ABC.class.getName());
             assertEquals(expected, ex.getMessage());
         }
@@ -3292,7 +3292,7 @@ public class CommandLineTest {
         @Command(subcommands = {MissingCommandAnnotation.class}) class MainCommand {}
         try {
             new CommandLine(new MainCommand());
-        } catch (IllegalArgumentException ex) {
+        } catch (InitializationException ex) {
             String expected = String.format("Subcommand %s is missing the mandatory @Command annotation with a 'name' attribute", MissingCommandAnnotation.class.getName());
             assertEquals(expected, ex.getMessage());
         }
@@ -3303,7 +3303,7 @@ public class CommandLineTest {
         @Command(subcommands = {MissingNameAttribute.class}) class MainCommand {}
         try {
             new CommandLine(new MainCommand());
-        } catch (IllegalArgumentException ex) {
+        } catch (InitializationException ex) {
             String expected = String.format("Subcommand %s is missing the mandatory @Command annotation with a 'name' attribute", MissingNameAttribute.class.getName());
             assertEquals(expected, ex.getMessage());
         }
@@ -3803,7 +3803,7 @@ public class CommandLineTest {
     }
 
     @Test
-    public void testIssue203() {
+    public void testIssue203InconsistentExceptions() {
         class Example {
             @Option(names = {"-h", "--help"}, help = true, // NOTE: this should be usageHelp = true
                     description = "Displays this help message and quits.")
@@ -3869,5 +3869,79 @@ public class CommandLineTest {
         assertEquals(2, example.inputFiles.length);
         assertEquals(new File("inputfile1"), example.inputFiles[0]);
         assertEquals(new File("inputfile2"), example.inputFiles[1]);
+    }
+    @Test
+    public void testIssue207ParameterExceptionProvidesAccessToFailedCommand_Programmatic() {
+        class Top {
+            @Option(names = "-o", required = true) String option;
+        }
+        class Sub1 {
+            @Option(names = "-x", required = true) String x;
+        }
+        class Sub2 {
+            @Option(names = "-y", required = true) String y;
+        }
+        try {
+            new CommandLine(new Top()).
+                    addSubcommand("sub1", new Sub1()).
+                    addSubcommand("sub2", new Sub2()).
+                    parse("sub1 -x abc".split(" "));
+        } catch (ParameterException ex) {
+            assertTrue(ex.getCommandLine().getCommand() instanceof Top);
+        }
+        try {
+            new CommandLine(new Top()).
+                    addSubcommand("sub1", new Sub1()).
+                    addSubcommand("sub2", new Sub2()).
+                    parse("-o OPT sub1 -wrong ABC".split(" "));
+        } catch (ParameterException ex) {
+            assertTrue(ex.getCommandLine().getCommand() instanceof Sub1);
+        }
+        try {
+            new CommandLine(new Top()).
+                    addSubcommand("sub1", new Sub1()).
+                    addSubcommand("sub2", new Sub2()).
+                    parse("-o OPT sub2 -wrong ABC".split(" "));
+        } catch (ParameterException ex) {
+            assertTrue(ex.getCommandLine().getCommand() instanceof Sub2);
+        }
+        List<CommandLine> parsed = new CommandLine(new Top()).
+                addSubcommand("sub1", new Sub1()).
+                addSubcommand("sub2", new Sub2()).
+                parse("-o OPT sub1 -x ABC".split(" "));
+        assertEquals(2, parsed.size());
+        assertEquals("OPT", ((Top) parsed.get(0).getCommand()).option);
+        assertEquals("ABC", ((Sub1) parsed.get(1).getCommand()).x);
+    }
+    @Command(name = "sub207A")
+    private static class Sub207A { @Option(names = "-x", required = true) String x;  }
+    @Command(name = "sub207B")
+    private static class Sub207B { @Option(names = "-y", required = true) String y;  }
+    @Test
+    public void testIssue207ParameterExceptionProvidesAccessToFailedCommand_Declarative() {
+        @Command(subcommands = {Sub207A.class, Sub207B.class})
+        class Top {
+            @Option(names = "-o", required = true) String option;
+        }
+        try {
+            new CommandLine(new Top()).parse("sub207A -x abc".split(" "));
+        } catch (ParameterException ex) {
+            assertTrue(ex.getCommandLine().getCommand() instanceof Top);
+        }
+        try {
+            new CommandLine(new Top()).parse("-o OPT sub207A -wrong ABC".split(" "));
+        } catch (ParameterException ex) {
+            assertTrue(ex.getCommandLine().getCommand() instanceof Sub207A);
+        }
+        try {
+            new CommandLine(new Top()).parse("-o OPT sub207B -wrong ABC".split(" "));
+        } catch (ParameterException ex) {
+            assertTrue(ex.getCommandLine().getCommand() instanceof Sub207B);
+        }
+        List<CommandLine> parsed = new CommandLine(new Top()).
+                parse("-o OPT sub207A -x ABC".split(" "));
+        assertEquals(2, parsed.size());
+        assertEquals("OPT", ((Top) parsed.get(0).getCommand()).option);
+        assertEquals("ABC", ((Sub207A) parsed.get(1).getCommand()).x);
     }
 }

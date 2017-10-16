@@ -52,6 +52,7 @@ import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Queue;
 import java.util.Set;
 import java.util.SortedSet;
@@ -1490,7 +1491,7 @@ public class CommandLine {
             }
             if (field.isAnnotationPresent(Parameters.class)) {
                 if (field.isAnnotationPresent(Option.class)) {
-                    throw new ParameterException("A field can be either @Option or @Parameters, but '"
+                    throw new DuplicateOptionAnnotationsException("A field can be either @Option or @Parameters, but '"
                             + field.getName() + "' is both.");
                 }
                 positionalParametersFields.add(field);
@@ -1581,7 +1582,7 @@ public class CommandLine {
                     for (Class<?> sub : cmd.subcommands()) {
                         Command subCommand = sub.getAnnotation(Command.class);
                         if (subCommand == null || Help.DEFAULT_COMMAND_NAME.equals(subCommand.name())) {
-                            throw new IllegalArgumentException("Subcommand " + sub.getName() +
+                            throw new InitializationException("Subcommand " + sub.getName() +
                                     " is missing the mandatory @Command annotation with a 'name' attribute");
                         }
                         try {
@@ -1591,11 +1592,11 @@ public class CommandLine {
                             commandLine.parent = CommandLine.this;
                             commands.put(subCommand.name(), commandLine);
                         }
-                        catch (IllegalArgumentException ex) { throw ex; }
-                        catch (NoSuchMethodException ex) { throw new IllegalArgumentException("Cannot instantiate subcommand " +
+                        catch (InitializationException ex) { throw ex; }
+                        catch (NoSuchMethodException ex) { throw new InitializationException("Cannot instantiate subcommand " +
                                 sub.getName() + ": the class has no constructor", ex); }
                         catch (Exception ex) {
-                            throw new IllegalStateException("Could not instantiate and add subcommand " +
+                            throw new InitializationException("Could not instantiate and add subcommand " +
                                     sub.getName() + ": " + ex, ex);
                         }
                     }
@@ -1608,7 +1609,7 @@ public class CommandLine {
             validatePositionalParameters(positionalParametersFields);
 
             if (positionalParametersFields.isEmpty() && optionName2Field.isEmpty() && !hasCommandAnnotation) {
-                throw new IllegalArgumentException(command + " (" + command.getClass() +
+                throw new InitializationException(command + " (" + command.getClass() +
                         ") is not a command: it has no @Command, @Option or @Parameters annotations");
             }
         }
@@ -1650,19 +1651,19 @@ public class CommandLine {
             } catch (Exception ex) {
                 int offendingArgIndex = originalArgs.length - argumentStack.size() - 1;
                 String arg = offendingArgIndex >= 0 && offendingArgIndex < originalArgs.length ? originalArgs[offendingArgIndex] : "?";
-                throw ParameterException.create(ex, arg, offendingArgIndex, originalArgs);
+                throw ParameterException.create(CommandLine.this, ex, arg, offendingArgIndex, originalArgs);
             }
             if (!isAnyHelpRequested() && !required.isEmpty()) {
                 for (Field missing : required) {
                     if (missing.isAnnotationPresent(Option.class)) {
-                        throw MissingParameterException.create(required, separator);
+                        throw MissingParameterException.create(CommandLine.this, required, separator);
                     } else {
                         assertNoMissingParameters(missing, Range.parameterArity(missing).min, argumentStack);
                     }
                 }
             }
             if (!unmatchedArguments.isEmpty()) {
-                if (!isUnmatchedArgumentsAllowed()) { throw new UnmatchedArgumentException(unmatchedArguments); }
+                if (!isUnmatchedArgumentsAllowed()) { throw new UnmatchedArgumentException(CommandLine.this, unmatchedArguments); }
                 if (tracer.isWarn()) { tracer.warn("Unmatched arguments: %s%n", unmatchedArguments); }
             }
         }
@@ -1696,7 +1697,7 @@ public class CommandLine {
                 // if we find another command, we are done with the current command
                 if (commands.containsKey(arg)) {
                     if (!isHelpRequested && !required.isEmpty()) { // ensure current command portion is valid
-                        throw MissingParameterException.create(required, separator);
+                        throw MissingParameterException.create(CommandLine.this, required, separator);
                     }
                     if (tracer.isDebug()) {tracer.debug("Found subcommand '%s' (%s)%n", arg, commands.get(arg).interpreter.command.getClass().getName());}
                     commands.get(arg).interpreter.parse(parsedCommands, args, originalArgs);
@@ -1932,7 +1933,7 @@ public class CommandLine {
             if (initialized != null) {
                 if (initialized.contains(field)) {
                     if (!isOverwrittenOptionsAllowed()) {
-                        throw new OverwrittenOptionException(optionDescription("", field, 0) +  " should be specified only once");
+                        throw new OverwrittenOptionException(CommandLine.this, optionDescription("", field, 0) +  " should be specified only once");
                     }
                     level = TraceLevel.WARN;
                     traceMessage = "Overwriting %s field '%s.%s' value '%s' with '%s' for %s%n";
@@ -1952,7 +1953,7 @@ public class CommandLine {
                                           Class<?> cls,
                                           String argDescription) throws Exception {
             Class<?>[] classes = getTypeAttribute(field);
-            if (classes.length < 2) { throw new ParameterException("Field " + field + " needs two types (one for the map key, one for the value) but only has " + classes.length + " types configured."); }
+            if (classes.length < 2) { throw new ParameterException(CommandLine.this, "Field " + field + " needs two types (one for the map key, one for the value) but only has " + classes.length + " types configured."); }
             ITypeConverter<?> keyConverter   = getTypeConverter(classes[0], field);
             ITypeConverter<?> valueConverter = getTypeConverter(classes[1], field);
             Map<Object, Object> result = (Map<Object, Object>) field.get(command);
@@ -2002,10 +2003,10 @@ public class CommandLine {
                 if (keyValue.length < 2) {
                     String splitRegex = splitRegex(field);
                     if (splitRegex.length() == 0) {
-                        throw new ParameterException("Value for option " + optionDescription("", field,
+                        throw new ParameterException(CommandLine.this, "Value for option " + optionDescription("", field,
                                 0) + " should be in KEY=VALUE format but was " + value);
                     } else {
-                        throw new ParameterException("Value for option " + optionDescription("", field,
+                        throw new ParameterException(CommandLine.this, "Value for option " + optionDescription("", field,
                                 0) + " should be in KEY=VALUE[" + splitRegex + "KEY=VALUE]... format but was " + value);
                     }
                 }
@@ -2020,7 +2021,7 @@ public class CommandLine {
         private void checkMaxArityExceeded(Range arity, int remainder, Field field, String[] values) {
             if (values.length <= remainder) { return; }
             String desc = arity.max == remainder ? "" + remainder : arity + ", remainder=" + remainder;
-            throw new MaxValuesforFieldExceededException(optionDescription("", field, -1) +
+            throw new MaxValuesforFieldExceededException(CommandLine.this, optionDescription("", field, -1) +
                     " max number of values (" + arity.max + ") exceeded: remainder is " + remainder + " but " +
                     values.length + " values were specified: " + Arrays.toString(values));
         }
@@ -2165,11 +2166,11 @@ public class CommandLine {
                 throws Exception {
             try {
                 return converter.convert(value);
-            } catch (ParameterException ex) {
-                throw new ParameterException(ex.getMessage() + optionDescription(" for ", field, index));
+            } catch (TypeConversionException ex) {
+                throw new ParameterException(CommandLine.this, ex.getMessage() + optionDescription(" for ", field, index));
             } catch (Exception other) {
                 String desc = optionDescription(" for ", field, index) + ": " + other;
-                throw new ParameterException("Could not convert '" + value + "' to " + type.getSimpleName() + desc, other);
+                throw new ParameterException(CommandLine.this, "Could not convert '" + value + "' to " + type.getSimpleName() + desc, other);
             }
         }
 
@@ -2242,14 +2243,14 @@ public class CommandLine {
                     }
                 };
             }
-            throw new MissingTypeConverterException("No TypeConverter registered for " + type.getName() + " of field " + field);
+            throw new MissingTypeConverterException(CommandLine.this, "No TypeConverter registered for " + type.getName() + " of field " + field);
         }
 
         private void assertNoMissingParameters(Field field, int arity, Stack<String> args) {
             if (arity > args.size()) {
                 if (arity == 1) {
                     if (field.isAnnotationPresent(Option.class)) {
-                        throw new MissingParameterException("Missing required parameter for " +
+                        throw new MissingParameterException(CommandLine.this, "Missing required parameter for " +
                                 optionDescription("", field, 0));
                     }
                     Range indexRange = Range.parameterIndex(field);
@@ -2272,13 +2273,13 @@ public class CommandLine {
                     } else {
                         msg += (count > 1 ? "s: " : ": ");
                     }
-                    throw new MissingParameterException(msg + names);
+                    throw new MissingParameterException(CommandLine.this, msg + names);
                 }
                 if (args.isEmpty()) {
-                    throw new MissingParameterException(optionDescription("", field, 0) +
+                    throw new MissingParameterException(CommandLine.this, optionDescription("", field, 0) +
                             " requires at least " + arity + " values, but none were specified.");
                 }
-                throw new MissingParameterException(optionDescription("", field, 0) +
+                throw new MissingParameterException(CommandLine.this, optionDescription("", field, 0) +
                         " requires at least " + arity + " values, but only " + args.size() + " were specified: " + reverse(args));
             }
         }
@@ -2323,14 +2324,14 @@ public class CommandLine {
                 if ("true".equalsIgnoreCase(value) || "false".equalsIgnoreCase(value)) {
                     return Boolean.parseBoolean(value);
                 } else {
-                    throw new ParameterException("'" + value + "' is not a boolean");
+                    throw new TypeConversionException("'" + value + "' is not a boolean");
                 }
             }
         }
         static class CharacterConverter implements ITypeConverter<Character> {
             public Character convert(String value) {
                 if (value.length() > 1) {
-                    throw new ParameterException("'" + value + "' is not a single character");
+                    throw new TypeConversionException("'" + value + "' is not a single character");
                 }
                 return value.charAt(0);
             }
@@ -2368,7 +2369,7 @@ public class CommandLine {
                 try {
                     return new SimpleDateFormat("yyyy-MM-dd").parse(value);
                 } catch (ParseException e) {
-                    throw new ParameterException("'" + value + "' is not a yyyy-MM-dd date");
+                    throw new TypeConversionException("'" + value + "' is not a yyyy-MM-dd date");
                 }
             }
         }
@@ -2391,7 +2392,7 @@ public class CommandLine {
                 } catch (ParseException ignored) {
                     // ignored because we throw a ParameterException below
                 }
-                throw new ParameterException("'" + value + "' is not a HH:mm[:ss[.SSS]] time");
+                throw new TypeConversionException("'" + value + "' is not a HH:mm[:ss[.SSS]] time");
             }
         }
         static class BigDecimalConverter implements ITypeConverter<BigDecimal> {
@@ -4215,24 +4216,66 @@ public class CommandLine {
         boolean isInfo()  { return level.isEnabled(TraceLevel.INFO); }
         boolean isDebug() { return level.isEnabled(TraceLevel.DEBUG); }
     }
+    /** Base class of all exceptions thrown by {@code picocli.CommandLine}. */
+    public static class PicocliException extends RuntimeException {
+        private static final long serialVersionUID = -2574128880125050818L;
+        public PicocliException(String msg) { super(msg); }
+        public PicocliException(String msg, Exception ex) { super(msg, ex); }
+    }
+    /** Exception indicating a problem during {@code CommandLine} initialization. */
+    public static class InitializationException extends PicocliException {
+        private static final long serialVersionUID = 8423014001666638895L;
+        public InitializationException(String msg) { super(msg); }
+        public InitializationException(String msg, Exception ex) { super(msg, ex); }
+    }
+    /** Exception indicating a problem while invoking a command or subcommand. */
+    public static class ExecutionException extends PicocliException {
+        private static final long serialVersionUID = 7764539594267007998L;
+        private final CommandLine commandLine;
+        public ExecutionException(CommandLine commandLine, String msg) {
+            super(msg);
+            this.commandLine = Objects.requireNonNull(commandLine, "commandLine");
+        }
+        public ExecutionException(CommandLine commandLine, String msg, Exception ex) {
+            super(msg, ex);
+            this.commandLine = Objects.requireNonNull(commandLine, "commandLine");
+        }
+        /** Returns the {@code CommandLine} object for the (sub)command that could not be invoked.
+         * @return the {@code CommandLine} object for the (sub)command where invocation failed.
+         */
+        public CommandLine getCommandLine() { return commandLine; }
+    }
 
+    /** Exception thrown by {@link ITypeConverter} implementations to indicate a String could not be converted. */
+    public static class TypeConversionException extends PicocliException {
+        private static final long serialVersionUID = 4251973913816346114L;
+        public TypeConversionException(String msg) { super(msg); }
+    }
     /**
      * Exception indicating something went wrong while parsing command line options.
      */
     public static class ParameterException extends RuntimeException {
         private static final long serialVersionUID = 1477112829129763139L;
-        public ParameterException(String msg) {
+        private final CommandLine commandLine;
+
+        public ParameterException(CommandLine commandLine, String msg) {
             super(msg);
+            this.commandLine = Objects.requireNonNull(commandLine, "commandLine");
         }
-
-        public ParameterException(String msg, Exception ex) {
+        public ParameterException(CommandLine commandLine, String msg, Exception ex) {
             super(msg, ex);
+            this.commandLine = Objects.requireNonNull(commandLine, "commandLine");
         }
 
-        private static ParameterException create(Exception ex, String arg, int i, String[] args) {
+        /** Returns the {@code CommandLine} object for the (sub)command whose input could not be parsed.
+         * @return the {@code CommandLine} object for the (sub)command where parsing failed.
+         */
+        public CommandLine getCommandLine() { return commandLine; }
+
+        private static ParameterException create(CommandLine cmd, Exception ex, String arg, int i, String[] args) {
             String msg = ex.getClass().getSimpleName() + ": " + ex.getLocalizedMessage()
                     + " while processing argument at or before arg[" + i + "] '" + arg + "' in " + Arrays.toString(args) + ": " + ex.toString();
-            return new ParameterException(msg, ex);
+            return new ParameterException(cmd, msg, ex);
         }
     }
     /**
@@ -4240,20 +4283,20 @@ public class CommandLine {
      */
     public static class MissingParameterException extends ParameterException {
         private static final long serialVersionUID = 5075678535706338753L;
-        public MissingParameterException(String msg) {
-            super(msg);
+        public MissingParameterException(CommandLine commandLine, String msg) {
+            super(commandLine, msg);
         }
 
-        private static MissingParameterException create(Collection<Field> missing, String separator) {
+        private static MissingParameterException create(CommandLine cmd, Collection<Field> missing, String separator) {
             if (missing.size() == 1) {
-                return new MissingParameterException("Missing required option '"
+                return new MissingParameterException(cmd, "Missing required option '"
                         + describe(missing.iterator().next(), separator) + "'");
             }
             List<String> names = new ArrayList<String>(missing.size());
             for (Field field : missing) {
                 names.add(describe(field, separator));
             }
-            return new MissingParameterException("Missing required options " + names.toString());
+            return new MissingParameterException(cmd, "Missing required options " + names.toString());
         }
         private static String describe(Field field, String separator) {
             String prefix = (field.isAnnotationPresent(Option.class))
@@ -4266,7 +4309,7 @@ public class CommandLine {
     /**
      * Exception indicating that multiple fields have been annotated with the same Option name.
      */
-    public static class DuplicateOptionAnnotationsException extends ParameterException {
+    public static class DuplicateOptionAnnotationsException extends InitializationException {
         private static final long serialVersionUID = -3355128012575075641L;
         public DuplicateOptionAnnotationsException(String msg) { super(msg); }
 
@@ -4277,7 +4320,7 @@ public class CommandLine {
         }
     }
     /** Exception indicating that there was a gap in the indices of the fields annotated with {@link Parameters}. */
-    public static class ParameterIndexGapException extends ParameterException {
+    public static class ParameterIndexGapException extends InitializationException {
         private static final long serialVersionUID = -1520981133257618319L;
         public ParameterIndexGapException(String msg) { super(msg); }
     }
@@ -4285,19 +4328,19 @@ public class CommandLine {
      * {@link Option} or {@link Parameters}. */
     public static class UnmatchedArgumentException extends ParameterException {
         private static final long serialVersionUID = -8700426380701452440L;
-        public UnmatchedArgumentException(String msg) { super(msg); }
-        public UnmatchedArgumentException(Stack<String> args) { this(new ArrayList<String>(reverse(args))); }
-        public UnmatchedArgumentException(List<String> args) { this("Unmatched argument" + (args.size() == 1 ? " " : "s ") + args); }
+        public UnmatchedArgumentException(CommandLine commandLine, String msg) { super(commandLine, msg); }
+        public UnmatchedArgumentException(CommandLine commandLine, Stack<String> args) { this(commandLine, new ArrayList<String>(reverse(args))); }
+        public UnmatchedArgumentException(CommandLine commandLine, List<String> args) { this(commandLine, "Unmatched argument" + (args.size() == 1 ? " " : "s ") + args); }
     }
     /** Exception indicating that more values were specified for an option or parameter than its {@link Option#arity() arity} allows. */
     public static class MaxValuesforFieldExceededException extends ParameterException {
         private static final long serialVersionUID = 6536145439570100641L;
-        public MaxValuesforFieldExceededException(String msg) { super(msg); }
+        public MaxValuesforFieldExceededException(CommandLine commandLine, String msg) { super(commandLine, msg); }
     }
     /** Exception indicating that an option for a single-value option field has been specified multiple times on the command line. */
     public static class OverwrittenOptionException extends ParameterException {
         private static final long serialVersionUID = 1338029208271055776L;
-        public OverwrittenOptionException(String msg) { super(msg); }
+        public OverwrittenOptionException(CommandLine commandLine, String msg) { super(commandLine, msg); }
     }
     /**
      * Exception indicating that an annotated field had a type for which no {@link ITypeConverter} was
@@ -4305,6 +4348,6 @@ public class CommandLine {
      */
     public static class MissingTypeConverterException extends ParameterException {
         private static final long serialVersionUID = -6050931703233083760L;
-        public MissingTypeConverterException(String msg) { super(msg); }
+        public MissingTypeConverterException(CommandLine commandLine, String msg) { super(commandLine, msg); }
     }
 }

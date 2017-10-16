@@ -45,7 +45,9 @@ assert this.scriptCommandLine.commandName == "myCommand"
 
 ### Better Parsing
 Positional parameters can now be mixed with options on the command line.
-Also various fixes related to the number of parameters an option can or must have.
+Various fixes related to the number of parameters an option can or must have.
+`ParameterException` (the exception thrown on invalid user input) now has a `ParameterException::getCommandLine`
+method that returns the command or subcommand where the parsing failed.
 
 ### Better Usage Help
 Various bugfixes related to usage help for multi-value options and collections.
@@ -69,6 +71,7 @@ The following are the features that have been promoted in this picocli release.
 - #179 API Change to remove full JRE dependency and require only Compact Profile. Replace use of `java.awt.Point` with `picocli.CommandLine.Help.TextTable.Cell`. Thanks to [webfolderio](https://github.com/webfolderio).
 - #196 API Change: `Option::type()` and `Parameters::type()` now return empty array by default (was `{String.class}`).
 - #205 API Change: `CommandLine::getCommand` now returns a generic type instead of Object so client code can avoid type casting.
+- #207 API Change: Provide ability to find which subcommand threw a ParameterException API enhancement. Thanks to [velit](https://github.com/velit) and [AshwinJay](https://github.com/AshwinJay).
 - #130 New feature: Options and positional parameters can now be mixed on the command line.
 - #196 New feature: Infer type from collections and maps when `type` annotation not specified. Thanks to [ddimtirov](https://github.com/ddimtirov) for the suggestion.
 - #197 New feature: Use `type` attribute to determine conversion target type instead of field type. This allows fields to be declared as interfaces or abstract types (or arrays/collections/maps of these) and via the `type` attribute picocli will be able to convert String arguments to concrete implementation objects.
@@ -100,6 +103,7 @@ This release has a number of incompatible changes:
 * A single argument that is split into parts with a regex now **counts as a single argument** (so `arity="1"` won't prevent all parts from being added to the field)
 * API change: replaced `java.awt.Point` with custom `Cell` class as return value type for public method `Help.TextTable.putValue()`.
 * API change: `@Option.type()` and `@Parameters.type()` now return an empty array by default (was `{String.class}`).
+* API change: `ParameterException` and all subclasses now require a `CommandLine` object indicating the command or subcommand that the user provided invalid input for.
 
 I am not happy about the disruption this may cause, but I felt these changes were needed for three reasons:
 the old picocli v1.0 behaviour caused ambiguity in common use cases,
