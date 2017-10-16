@@ -333,7 +333,8 @@ public class CommandLine {
      *
      * @param args the command line arguments to parse
      * @return a list with all commands and subcommands initialized by this method
-     * @throws ParameterException if the specified command line arguments are invalid
+     * @throws ParameterException if the specified command line arguments are invalid; use
+     *      {@link ParameterException#getCommandLine()} to get the command or subcommand whose user input was invalid
      */
     public List<CommandLine> parse(String... args) {
         return interpreter.parse(args);
@@ -4216,19 +4217,22 @@ public class CommandLine {
         boolean isInfo()  { return level.isEnabled(TraceLevel.INFO); }
         boolean isDebug() { return level.isEnabled(TraceLevel.DEBUG); }
     }
-    /** Base class of all exceptions thrown by {@code picocli.CommandLine}. */
+    /** Base class of all exceptions thrown by {@code picocli.CommandLine}.
+     * @since 2.0 */
     public static class PicocliException extends RuntimeException {
         private static final long serialVersionUID = -2574128880125050818L;
         public PicocliException(String msg) { super(msg); }
         public PicocliException(String msg, Exception ex) { super(msg, ex); }
     }
-    /** Exception indicating a problem during {@code CommandLine} initialization. */
+    /** Exception indicating a problem during {@code CommandLine} initialization.
+     * @since 2.0 */
     public static class InitializationException extends PicocliException {
         private static final long serialVersionUID = 8423014001666638895L;
         public InitializationException(String msg) { super(msg); }
         public InitializationException(String msg, Exception ex) { super(msg, ex); }
     }
-    /** Exception indicating a problem while invoking a command or subcommand. */
+    /** Exception indicating a problem while invoking a command or subcommand.
+     * @since 2.0 */
     public static class ExecutionException extends PicocliException {
         private static final long serialVersionUID = 7764539594267007998L;
         private final CommandLine commandLine;
@@ -4251,17 +4255,24 @@ public class CommandLine {
         private static final long serialVersionUID = 4251973913816346114L;
         public TypeConversionException(String msg) { super(msg); }
     }
-    /**
-     * Exception indicating something went wrong while parsing command line options.
-     */
-    public static class ParameterException extends RuntimeException {
+    /** Exception indicating something went wrong while parsing command line options. */
+    public static class ParameterException extends PicocliException {
         private static final long serialVersionUID = 1477112829129763139L;
         private final CommandLine commandLine;
 
+        /** Constructs a new ParameterException with the specified CommandLine and error message.
+         * @param commandLine the command or subcommand whose input was invalid
+         * @param msg describes the problem
+         * @since 2.0 */
         public ParameterException(CommandLine commandLine, String msg) {
             super(msg);
             this.commandLine = Objects.requireNonNull(commandLine, "commandLine");
         }
+        /** Constructs a new ParameterException with the specified CommandLine and error message.
+         * @param commandLine the command or subcommand whose input was invalid
+         * @param msg describes the problem
+         * @param ex the exception that caused this ParameterException
+         * @since 2.0 */
         public ParameterException(CommandLine commandLine, String msg, Exception ex) {
             super(msg, ex);
             this.commandLine = Objects.requireNonNull(commandLine, "commandLine");
@@ -4269,6 +4280,7 @@ public class CommandLine {
 
         /** Returns the {@code CommandLine} object for the (sub)command whose input could not be parsed.
          * @return the {@code CommandLine} object for the (sub)command where parsing failed.
+         * @since 2.0
          */
         public CommandLine getCommandLine() { return commandLine; }
 
