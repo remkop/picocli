@@ -1,3 +1,10 @@
+[![GitHub Release](https://img.shields.io/github/release/remkop/picocli.svg)](https://github.com/remkop/picocli/releases) 
+[![Build Status](https://travis-ci.org/remkop/picocli.svg?branch=master)](https://travis-ci.org/remkop/picocli) 
+[![codecov](https://codecov.io/gh/remkop/picocli/branch/master/graph/badge.svg)](https://codecov.io/gh/remkop/picocli) 
+[![codecov](https://img.shields.io/twitter/follow/remkopopma.svg?style=social)](https://twitter.com/intent/follow?screen_name=remkopopma) 
+[![codecov](https://img.shields.io/twitter/follow/picocli.svg?style=social)](https://twitter.com/intent/follow?screen_name=picocli) 
+
+
 # picocli - a mighty tiny command line interface
 
 Annotation-based Java command line parser, featuring usage help with ANSI colors, autocomplete and nested subcommands.
@@ -36,8 +43,6 @@ Works with Java 5 or higher (but is designed to facilitate the use of Java 8 lam
 <a id="picocli_demo"></a>
 ![Picocli Demo help message with ANSI colors](docs/images/picocli.Demo.png?raw=true)
 
-* [![Build Status](https://travis-ci.org/remkop/picocli.svg?branch=master)](https://travis-ci.org/remkop/picocli) 
-[![codecov](https://codecov.io/gh/remkop/picocli/branch/master/graph/badge.svg)](https://codecov.io/gh/remkop/picocli)
 * [Releases](https://github.com/remkop/picocli/releases) - latest: 1.0.1
 * [User manual: http://picocli.info](http://picocli.info)
 * [Command line autocompletion](http://picocli.info/autocomplete.html)
