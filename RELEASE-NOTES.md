@@ -92,6 +92,7 @@ The following are the features that have been promoted in this picocli release.
 - #201 Enhancement: Usage help should not show `null` default values. Thanks to [jansohn](https://github.com/jansohn).
 - #202 Enhancement: Java 9: add `Automatic-Module-Name: info.picocli` to MANIFEST.MF to make picocli play nice in the Java 9 module system.
 - #204 Enhancement: instantiate `LinkedHashSet` instead of `HashSet` for `Set` fields to preserve input ordering
+- #208 Enhancement: Remove pom.xml, which was not being maintained. Everyone should use build.gradle instead.
 
 ## Deprecations
 
