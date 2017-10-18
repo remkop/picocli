@@ -605,36 +605,28 @@ public class CommandLine {
      * <p>
      * This is a convenience method intended to offer the same ease of use as the {@link #run(Runnable, PrintStream, Help.Ansi, String...) run}
      * and {@link #call(Callable, PrintStream, Help.Ansi, String...) call} methods, but with more flexibility and better
-     * support for nested subcommands. For example, this single line of code can replace 15-20 lines of previous code:
+     * support for nested subcommands.
      * </p>
+     * </p>
+     * <p>Calling this method roughly expands to:</p>
      * <pre>
-     * CommandLine cmd = new CommandLine(new TopLevelCommand());
-     * List&lt;Object&gt; results = cmd.parseWithHandlers(new RunLast(), System.err, Help.Ansi.AUTO, new DefaultExceptionHandler(), args);
-     * return results;
-     * </pre>
-     * <p>Without this convenience method, client code would look like this:</p>
-     * <pre>
-     * CommandLine cmd = new CommandLine(new TopLevelCommand());
      * try {
-     *     List&lt;CommandLine&gt; parsedCommands = cmd.parse(args);
-     *     if (CommandLine.printHelpIfRequested(parsedCommands, System.err, Help.Ansi.AUTO)) { return; }
-     *     CommandLine last = parsedCommands.get(parsedCommands.size() - 1);
-     *     Object command = last.getCommand();
-     *     if (command instanceof Runnable) {
-     *         try { ((Runnable) command).run(); } catch (Exception ex) { throw new ExecutionException(last, "Error in runnable " + command, ex); }
-     *     } else if (command instanceof Callable) {
-     *         Object result;
-     *         try { result = ((Callable) command).call(); } catch (Exception ex) { throw new ExecutionException(last, "Error in callable " + command, ex); }
-     *         // ...do something with result
-     *     } else {
-     *         throw new ExecutionException(last, "Parsed command (" + command + ") is not Runnable or Callable");
-     *     }
-     * } catch (ParameterException invalidUserInput) {
-     *     // DefaultExceptionHandler prints the error and usage help
-     *     System.err.println(invalidUserInput.getMessage());
-     *     invalidUserInput.getCommandLine().usage(System.err);
+     *     List&lt;CommandLine&gt; parsedCommands = parse(args);
+     *     return parseResultsHandler.handleParseResult(parsedCommands, out, ansi);
+     * } catch (ParameterException ex) {
+     *     return new exceptionHandler.handleException(ex, out, ansi, args);
      * }
      * </pre>
+     * <p>
+     * Picocli provides some default handlers that allow you to accomplish some common tasks with very little code.
+     * The following handlers are available:</p>
+     * <ul>
+     *   <li>{@link RunLast} handler prints help if requested, and otherwise gets the last specified command or subcommand
+     * and tries to execute it as a {@code Runnable} or {@code Callable}.</li>
+     *   <li>{@link RunFirst} handler prints help if requested, and otherwise executes the top-level command as a {@code Runnable} or {@code Callable}.</li>
+     *   <li>{@link RunAll} handler prints help if requested, and otherwise executes all recognized commands and subcommands as {@code Runnable} or {@code Callable} tasks.</li>
+     *   <li>{@link DefaultExceptionHandler} prints the error message followed by usage help</li>
+     * </ul>
      *
      * @param handler the function that will process the result of successfully parsing the command line arguments
      * @param out the {@code PrintStream} to print help to if requested
