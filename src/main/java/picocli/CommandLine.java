@@ -1159,6 +1159,7 @@ public class CommandLine {
          * and take the appropriate action.
          * </p>
          * @return whether this option disables validation of the other arguments
+         * @deprecated Use {@link #usageHelp()} and {@link #versionHelp()} instead. See {@link #printHelpIfRequested(List, PrintStream, CommandLine.Help.Ansi)}
          */
         boolean help() default false;
 
