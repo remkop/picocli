@@ -60,7 +60,7 @@ import java.util.concurrent.Callable;
  *     {@link CommandLine.Parameters}, unless the user input was invalid.</li>
  *   <li>If the user input was invalid, an error message and the usage message are printed to standard err and the
  *     script exits. This may be customized by overriding
- *     {@link #handleParameterException(CommandLine, String[], ParameterException)}.</li>
+ *     {@link #handleParameterException(CommandLine, String[], CommandLine.ParameterException)}.</li>
  *   <li>Otherwise, if the user input requested version help or usage help, the version string or usage help message is
  *     printed to standard err and the script exits.</li>
  *   <li>If the script implements {@code Runnable} or {@code Callable}, its {@code run} (or {@code call}) method

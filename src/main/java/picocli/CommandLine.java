@@ -607,7 +607,6 @@ public class CommandLine {
      * and {@link #call(Callable, PrintStream, Help.Ansi, String...) call} methods, but with more flexibility and better
      * support for nested subcommands.
      * </p>
-     * </p>
      * <p>Calling this method roughly expands to:</p>
      * <pre>
      * try {
