@@ -351,8 +351,13 @@ public class CommandLine {
      * {@linkplain #parse(String...) parsing} the command line arguments. This is a
      * <a href="https://docs.oracle.com/javase/8/docs/api/java/util/function/package-summary.html">functional interface</a>
      * whose functional method is {@link #handleParseResult(List, PrintStream, CommandLine.Help.Ansi)}.
-     * @see RunAll
+     * <p>
+     * Implementations of this functions can be passed to the {@link #parseWithHandlers(IParseResultHandler, PrintStream, Help.Ansi, IExceptionHandler, String...) CommandLine::parseWithHandler}
+     * methods to take some next step after the command line was successfully parsed.
+     * </p>
+     * @see RunFirst
      * @see RunLast
+     * @see RunAll
      * @since 2.0 */
     public static interface IParseResultHandler {
         /** Processes a List of {@code CommandLine} objects resulting from successfully
@@ -371,6 +376,10 @@ public class CommandLine {
      * {@linkplain #parse(String...) parsing} the command line arguments. This is a
      * <a href="https://docs.oracle.com/javase/8/docs/api/java/util/function/package-summary.html">functional interface</a>
      * whose functional method is {@link #handleException(CommandLine.ParameterException, PrintStream, CommandLine.Help.Ansi, String...)}.
+     * <p>
+     * Implementations of this functions can be passed to the {@link #parseWithHandlers(IParseResultHandler, PrintStream, Help.Ansi, IExceptionHandler, String...) CommandLine::parseWithHandler}
+     * methods to handle situations when the command line could not be parsed.
+     * </p>
      * @see DefaultExceptionHandler
      * @since 2.0 */
     public static interface IExceptionHandler {
@@ -388,6 +397,11 @@ public class CommandLine {
     /**
      * Default exception handler that prints the exception message to the specified {@code PrintStream}, followed by the
      * usage message for the command or subcommand whose input was invalid.
+     * <p>Implementation roughly looks like this:</p>
+     * <pre>
+     *     System.err.println(paramException.getMessage());
+     *     paramException.getCommandLine().usage(System.err);
+     * </pre>
      * @since 2.0 */
     public static class DefaultExceptionHandler implements IExceptionHandler {
         @Override
@@ -474,6 +488,25 @@ public class CommandLine {
      * Command line parse result handler that prints help if requested, and otherwise executes the most specific
      * {@code Runnable} or {@code Callable} subcommand.
      * For use in the {@link #parseWithHandlers(IParseResultHandler, PrintStream, Help.Ansi, IExceptionHandler, String...) parseWithHandler} methods.
+     * <p>
+     * Something like this:</p>
+     * <pre>
+     *     // RunLast implementation: print help if requested, otherwise execute the most specific subcommand
+     *     if (CommandLine.printHelpIfRequested(parsedCommands, System.err, Help.Ansi.AUTO)) {
+     *         return emptyList();
+     *     }
+     *     CommandLine last = parsedCommands.get(parsedCommands.size() - 1);
+     *     Object command = last.getCommand();
+     *     if (command instanceof Runnable) {
+     *         try { ((Runnable) command).run(); } catch (Exception ex) { throw new ExecutionException(last, "Error in runnable " + command, ex); }
+     *     } else if (command instanceof Callable) {
+     *         Object result;
+     *         try { result = ((Callable) command).call(); } catch (Exception ex) { throw new ExecutionException(last, "Error in callable " + command, ex); }
+     *         // ...do something with result
+     *     } else {
+     *         throw new ExecutionException(last, "Parsed command (" + command + ") is not Runnable or Callable");
+     *     }
+     * </pre>
      * @since 2.0 */
     public static class RunLast implements IParseResultHandler {
         /** Prints help if requested, and otherwise executes the most specific {@code Runnable} or {@code Callable} subcommand.
@@ -526,41 +559,32 @@ public class CommandLine {
     }
     /**
      * Returns the result of calling {@link #parseWithHandlers(IParseResultHandler, PrintStream, Help.Ansi, IExceptionHandler, String...)}
-     * with the specified parse result handler and {@code PrintStream}, {@code Help.Ansi.AUTO} and a new {@link DefaultExceptionHandler}
-     * and the specified command line arguments.
+     * with {@code Help.Ansi.AUTO} and a new {@link DefaultExceptionHandler} in addition to the specified parse result handler,
+     * {@code PrintStream}, and the specified command line arguments.
      * <p>
      * This is a convenience method intended to offer the same ease of use as the {@link #run(Runnable, PrintStream, Help.Ansi, String...) run}
      * and {@link #call(Callable, PrintStream, Help.Ansi, String...) call} methods, but with more flexibility and better
-     * support for nested subcommands. For example, this single line of code can replace 15-20 lines of previous code:
+     * support for nested subcommands.
      * </p>
+     * <p>Calling this method roughly expands to:</p>
      * <pre>
-     * CommandLine cmd = new CommandLine(new TopLevelCommand());
-     * List&lt;Object&gt; results = cmd.parseWithHandler(new RunLast(), System.err, args);
-     * return results;
-     * </pre>
-     * <p>Without this convenience method, client code would look like this:</p>
-     * <pre>
-     * CommandLine cmd = new CommandLine(new TopLevelCommand());
      * try {
-     *     List&lt;CommandLine&gt; parsedCommands = cmd.parse(args);
-     *     if (CommandLine.printHelpIfRequested(parsedCommands, System.err, Help.Ansi.AUTO)) { return; }
-     *     CommandLine last = parsedCommands.get(parsedCommands.size() - 1);
-     *     Object command = last.getCommand();
-     *     if (command instanceof Runnable) {
-     *         try { ((Runnable) command).run(); } catch (Exception ex) { throw new ExecutionException(last, "Error in runnable " + command, ex); }
-     *     } else if (command instanceof Callable) {
-     *         Object result;
-     *         try { result = ((Callable) command).call(); } catch (Exception ex) { throw new ExecutionException(last, "Error in callable " + command, ex); }
-     *         // ...do something with result
-     *     } else {
-     *         throw new ExecutionException(last, "Parsed command (" + command + ") is not Runnable or Callable");
-     *     }
-     * } catch (ParameterException invalidUserInput) {
-     *     // DefaultExceptionHandler prints the error and usage help
-     *     System.err.println(invalidUserInput.getMessage());
-     *     invalidUserInput.getCommandLine().usage(System.err);
+     *     List&lt;CommandLine&gt; parsedCommands = parse(args);
+     *     return parseResultsHandler.handleParseResult(parsedCommands, out, Help.Ansi.AUTO);
+     * } catch (ParameterException ex) {
+     *     return new DefaultExceptionHandler().handleException(ex, out, ansi, args);
      * }
      * </pre>
+     * <p>
+     * Picocli provides some default handlers that allow you to accomplish some common tasks with very little code.
+     * The following handlers are available:</p>
+     * <ul>
+     *   <li>{@link RunLast} handler prints help if requested, and otherwise gets the last specified command or subcommand
+     * and tries to execute it as a {@code Runnable} or {@code Callable}.</li>
+     *   <li>{@link RunFirst} handler prints help if requested, and otherwise executes the top-level command as a {@code Runnable} or {@code Callable}.</li>
+     *   <li>{@link RunAll} handler prints help if requested, and otherwise executes all recognized commands and subcommands as {@code Runnable} or {@code Callable} tasks.</li>
+     *   <li>{@link DefaultExceptionHandler} prints the error message followed by usage help</li>
+     * </ul>
      * @param handler the function that will process the result of successfully parsing the command line arguments
      * @param out the {@code PrintStream} to print help to if requested
      * @param args the command line arguments
@@ -1054,10 +1078,10 @@ public class CommandLine {
      *     &#064;Option(names = { "-v", "--verbose"}, description = "Verbosely list files processed")
      *     private boolean verbose;
      *
-     *     &#064;Option(names = { "-h", "--help", "-?", "-help"}, help = true, description = "Display this help and exit")
+     *     &#064;Option(names = { "-h", "--help", "-?", "-help"}, usageHelp = true, description = "Display this help and exit")
      *     private boolean help;
      *
-     *     &#064;Option(names = { "-V", "--version"}, help = true, description = "Display version information and exit")
+     *     &#064;Option(names = { "-V", "--version"}, versionHelp = true, description = "Display version information and exit")
      *     private boolean version;
      * }
      * </pre>
