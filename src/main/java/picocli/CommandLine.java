@@ -498,10 +498,18 @@ public class CommandLine {
      *     CommandLine last = parsedCommands.get(parsedCommands.size() - 1);
      *     Object command = last.getCommand();
      *     if (command instanceof Runnable) {
-     *         try { ((Runnable) command).run(); } catch (Exception ex) { throw new ExecutionException(last, "Error in runnable " + command, ex); }
+     *         try {
+     *             ((Runnable) command).run();
+     *         } catch (Exception ex) {
+     *             throw new ExecutionException(last, "Error in runnable " + command, ex);
+     *         }
      *     } else if (command instanceof Callable) {
      *         Object result;
-     *         try { result = ((Callable) command).call(); } catch (Exception ex) { throw new ExecutionException(last, "Error in callable " + command, ex); }
+     *         try {
+     *             result = ((Callable) command).call();
+     *         } catch (Exception ex) {
+     *             throw new ExecutionException(last, "Error in callable " + command, ex);
+     *         }
      *         // ...do something with result
      *     } else {
      *         throw new ExecutionException(last, "Parsed command (" + command + ") is not Runnable or Callable");
@@ -838,16 +846,19 @@ public class CommandLine {
      * if (CommandLine.printHelpIfRequested(parsedCommands, out, ansi)) {
      *     return null;
      * }
+     * CommandLine last = parsedCommands.get(parsedCommands.size() - 1);
      * try {
-     *     return callable.call();
+     *     Callable&lt;Object&gt; subcommand = last.getCommand();
+     *     return subcommand.call();
      * } catch (Exception ex) {
-     *     throw new ExecutionException(cmd, "Error calling " + callable, ex);
+     *     throw new ExecutionException(last, "Error calling " + last.getCommand(), ex);
      * }
      * </pre>
      * <p>
-     * If the specified Callable command has subcommands, they are ignored. This method only {@linkplain RunFirst calls the top-level command}.
+     * If the specified Callable command has subcommands, the {@linkplain RunLast last} subcommand specified on the
+     * command line is executed.
      * Commands with subcommands may be interested in calling the {@link #parseWithHandler(IParseResultHandler, PrintStream, String...) parseWithHandler}
-     * method with a {@link RunLast} or a {@link RunAll} handler.
+     * method with a {@link RunAll} handler or a custom handler.
      * </p><p>
      * From picocli v2.0, this method prints usage help or version help if {@linkplain #printHelpIfRequested(List, PrintStream, Help.Ansi) requested},
      * and any exceptions thrown by the {@code Callable} are caught and rethrown wrapped in an {@code ExecutionException}.
@@ -862,11 +873,11 @@ public class CommandLine {
      * @throws ExecutionException if the Callable throws an exception
      * @return {@code null} if an error occurred while parsing the command line options, or if help was requested and printed. Otherwise returns the result of calling the Callable
      * @see #parseWithHandlers(IParseResultHandler, PrintStream, Help.Ansi, IExceptionHandler, String...)
-     * @see RunFirst
+     * @see RunLast
      */
     public static <C extends Callable<T>, T> T call(C callable, PrintStream out, Help.Ansi ansi, String... args) {
         CommandLine cmd = new CommandLine(callable); // validate command outside of try-catch
-        List<Object> results = cmd.parseWithHandlers(new RunFirst(), out, ansi, new DefaultExceptionHandler(), args);
+        List<Object> results = cmd.parseWithHandlers(new RunLast(), out, ansi, new DefaultExceptionHandler(), args);
         return results == null || results.isEmpty() ? null : (T) results.get(0);
     }
 
@@ -905,16 +916,19 @@ public class CommandLine {
      * if (CommandLine.printHelpIfRequested(parsedCommands, out, ansi)) {
      *     return null;
      * }
+     * CommandLine last = parsedCommands.get(parsedCommands.size() - 1);
      * try {
-     *     runnable.run();
+     *     Runnable subcommand = last.getCommand();
+     *     subcommand.run();
      * } catch (Exception ex) {
-     *     throw new ExecutionException(cmd, "Error running " + runnable, ex);
+     *     throw new ExecutionException(last, "Error running " + last.getCommand(), ex);
      * }
      * </pre>
      * <p>
-     * If the specified Runnable command has subcommands, they are ignored. This method only {@linkplain RunFirst runs the top-level command}.
+     * If the specified Runnable command has subcommands, the {@linkplain RunLast last} subcommand specified on the
+     * command line is executed.
      * Commands with subcommands may be interested in calling the {@link #parseWithHandler(IParseResultHandler, PrintStream, String...) parseWithHandler}
-     * method with a {@link RunLast} or a {@link RunAll} handler.
+     * method with a {@link RunAll} handler or a custom handler.
      * </p><p>
      * From picocli v2.0, this method prints usage help or version help if {@linkplain #printHelpIfRequested(List, PrintStream, Help.Ansi) requested},
      * and any exceptions thrown by the {@code Runnable} are caught and rethrown wrapped in an {@code ExecutionException}.
@@ -927,7 +941,7 @@ public class CommandLine {
      * @throws InitializationException if the specified command object does not have a {@link Command}, {@link Option} or {@link Parameters} annotation
      * @throws ExecutionException if the Runnable throws an exception
      * @see #parseWithHandlers(IParseResultHandler, PrintStream, Help.Ansi, IExceptionHandler, String...)
-     * @see RunFirst
+     * @see RunLast
      */
     public static <R extends Runnable> void run(R runnable, PrintStream out, Help.Ansi ansi, String... args) {
         CommandLine cmd = new CommandLine(runnable); // validate command outside of try-catch
