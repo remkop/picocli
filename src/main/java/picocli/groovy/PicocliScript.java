@@ -56,7 +56,7 @@ import java.lang.annotation.Target;
  *     println "hi"
  * }
  * assert this == theScript
- * assert this.scriptCommandLine.commandName == "myCommand"
+ * assert this.commandLine.commandName == "myCommand"
  * </pre>
  * <p>
  * Otherwise, this annotation works similar to the Groovy built-in {@link groovy.transform.BaseScript}.

@@ -90,7 +90,7 @@ import picocli.CommandLine.Parameters
 @Option(names = ["-cp", "--codepath"], description = "the codepath")
 @Field List<String> codepath = []
 
-assert this.scriptCommandLine.commandName == "test-command"
+assert this.commandLine.commandName == "test-command"
 codepath
 '''
         assert result == ["A", "B"]
@@ -118,7 +118,7 @@ import picocli.CommandLine.Parameters
 @Option(names = ["-cp", "--codepath"], description = "the codepath")
 @Field List<String> codepath = []
 
-assert this.scriptCommandLine.commandName == "test-command"
+assert this.commandLine.commandName == "test-command"
 codepath
 '''
         assert result == ["A", "B"]
@@ -146,7 +146,7 @@ import picocli.CommandLine.Parameters
 @Option(names = ["-cp", "--codepath"], description = "the codepath")
 @Field List<String> codepath = []
 
-assert this.scriptCommandLine.commandName == "test-command"
+assert this.commandLine.commandName == "test-command"
 codepath
 '''
         assert result == ["A", "B"]
@@ -176,7 +176,7 @@ import picocli.CommandLine.Parameters
 @Option(names = ["-cp", "--codepath"], description = "the codepath")
 @Field List<String> codepath = []
 
-assert this.scriptCommandLine.commandName == "test-command"
+assert this.commandLine.commandName == "test-command"
 codepath
 '''
         assert result == ["A", "B"]
@@ -207,7 +207,7 @@ import picocli.CommandLine.Parameters
 @Option(names = ["-cp", "--codepath"], description = "the codepath")
 @Field List<String> codepath = []
 
-assert this.scriptCommandLine.commandName == "test-command"
+assert this.commandLine.commandName == "test-command"
 codepath
 '''
         assert result == ["A", "B"]

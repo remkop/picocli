@@ -40,7 +40,7 @@ count.times {
    println "hi"
 }
 assert this == theScript
-assert this.scriptCommandLine.commandName == "myCommand"
+assert this.commandLine.commandName == "myCommand"
 ```
 
 ### Better Parsing

@@ -18,6 +18,7 @@ package picocli.groovy;
 import groovy.lang.MissingPropertyException;
 import groovy.lang.Script;
 import picocli.CommandLine;
+import picocli.CommandLine.ExecutionException;
 import picocli.CommandLine.ParameterException;
 
 import java.io.PrintStream;
@@ -51,16 +52,16 @@ import java.util.concurrent.Callable;
  * </p>
  * <ol>
  *   <li>A new {@link CommandLine} is created with this script instance as the annotated command object.
- *     The {@code CommandLine} instance is cached in the {@code scriptCommandLine} property
+ *     The {@code CommandLine} instance is cached in the {@code commandLine} property
  *     (so it can be referred to in script code with
- *     {@code this.scriptCommandLine}). {@code CommandLine} creation and initialization may be
- *     customized by overriding {@link #createScriptCommandLine()}.</li>
+ *     {@code this.commandLine}). {@code CommandLine} creation and initialization may be
+ *     customized by overriding {@link #createCommandLine()}.</li>
  *   <li>The {@link CommandLine#parse(String...)} method is called with the script arguments.
  *     This initialises all {@code @Field} variables annotated with {@link CommandLine.Option} or
  *     {@link CommandLine.Parameters}, unless the user input was invalid.</li>
  *   <li>If the user input was invalid, an error message and the usage message are printed to standard err and the
  *     script exits. This may be customized by overriding
- *     {@link #handleParameterException(CommandLine, String[], CommandLine.ParameterException)}.</li>
+ *     {@link #handleParameterException(CommandLine.ParameterException, String[])}.</li>
  *   <li>Otherwise, if the user input requested version help or usage help, the version string or usage help message is
  *     printed to standard err and the script exits.</li>
  *   <li>If the script implements {@code Runnable} or {@code Callable}, its {@code run} (or {@code call}) method
@@ -78,7 +79,7 @@ abstract public class PicocliBaseScript extends Script {
     /**
      * Name of the property that holds the CommandLine instance for this script ({@value}).
      */
-    public final static String SCRIPT_COMMAND_LINE = "scriptCommandLine";
+    public final static String COMMAND_LINE = "commandLine";
 
     /**
      * The script body
@@ -89,12 +90,12 @@ abstract public class PicocliBaseScript extends Script {
     @Override
     public Object run() {
         String[] args = getScriptArguments();
-        CommandLine commandLine = getScriptCommandLineWithInit();
+        CommandLine commandLine = getOrCreateCommandLine();
         List<CommandLine> parsedCommands = null;
         try {
             parsedCommands = parseScriptArguments(commandLine, args);
         } catch (ParameterException pe) {
-            return handleParameterException(commandLine, args, pe);
+            return handleParameterException(pe, args);
         }
         try {
             // check if the user requested help for the top-level command or any of the subcommands
@@ -125,28 +126,28 @@ abstract public class PicocliBaseScript extends Script {
 
     /**
      * Return the CommandLine for this script.
-     * If there isn't one already, then create it using createScriptCommandLine.
+     * If there isn't one already, then create it using {@link #createCommandLine()}.
      *
      * @return the CommandLine for this script.
      */
-    protected CommandLine getScriptCommandLineWithInit() {
+    protected CommandLine getOrCreateCommandLine() {
         try {
-            CommandLine commandLine = (CommandLine) getProperty(SCRIPT_COMMAND_LINE);
+            CommandLine commandLine = (CommandLine) getProperty(COMMAND_LINE);
             if (commandLine == null) {
-                commandLine = createScriptCommandLine();
+                commandLine = createCommandLine();
                 // The script has a real property (a field or getter) but if we let Script.setProperty handle
                 // this then it just gets stuffed into a binding that shadows the property.
                 // This is somewhat related to other bugged behavior in Script wrt properties and bindings.
                 // See http://jira.codehaus.org/browse/GROOVY-6582 for example.
                 // The correct behavior for Script.setProperty would be to check whether
                 // the property has a setter before creating a new script binding.
-                this.getMetaClass().setProperty(this, SCRIPT_COMMAND_LINE, commandLine);
+                this.getMetaClass().setProperty(this, COMMAND_LINE, commandLine);
             }
             return commandLine;
         } catch (MissingPropertyException mpe) {
-            CommandLine commandLine = createScriptCommandLine();
+            CommandLine commandLine = createCommandLine();
             // Since no property or binding already exists, we can use plain old setProperty here.
-            setProperty(SCRIPT_COMMAND_LINE, commandLine);
+            setProperty(COMMAND_LINE, commandLine);
             return commandLine;
         }
     }
@@ -161,7 +162,7 @@ abstract public class PicocliBaseScript extends Script {
      *
      * @return A CommandLine instance.
      */
-    public CommandLine createScriptCommandLine() {
+    public CommandLine createCommandLine() {
         CommandLine commandLine = new CommandLine(this);
         if (commandLine.getCommandName().equals("<main class>")) { // only if user did not specify @Command(name) attribute
             commandLine.setCommandName(this.getClass().getSimpleName());
@@ -225,30 +226,32 @@ abstract public class PicocliBaseScript extends Script {
      * The return value becomes the return value for the Script.run which will be the exit code
      * if we've been called from the command line.
      *
-     * @param commandLine The CommandLine instance
-     * @param args The argument array
      * @param pe The ParameterException that occurred
-     * @return The value that Script.run should return (1 by default).
+     * @param args The argument array
+     * @return The value that Script.run should return. This implementation returns 1, subclasses may override.
      */
-    public Object handleParameterException(CommandLine commandLine, String[] args, ParameterException pe) {
+    public Object handleParameterException(ParameterException pe, String[] args) {
         printErrorMessage(String.format("args: %s%n%s", Arrays.toString(args), pe.getMessage()));
-        printHelpMessage(commandLine);
+        printHelpMessage(pe.getCommandLine());
         return 1;
     }
 
     /**
      * If an Exception occurs during {@link #runRunnableSubcommand(List)}, or {@link #runScriptBody()}
      * then this gets called to report the problem.
-     * The default behavior is to throw a new {@code RuntimeException} wrapping the specified exception.
+     * The default behavior is to throw a new {@code ExecutionException} wrapping the specified exception.
      *
      * @param commandLine The CommandLine instance
      * @param args The argument array
      * @param ex The Exception that occurred
      * @return The value that Script.run should return when overriding this method
-     * @throws RuntimeException wrapping the specified exception by default
+     * @throws ExecutionException wrapping the specified exception by default
      */
     public Object handleExecutionException(CommandLine commandLine, String[] args, Exception ex) {
-        throw new RuntimeException(ex);
+        if (ex instanceof ExecutionException) {
+            throw (ExecutionException) ex;
+        }
+        throw new ExecutionException(commandLine, ex.toString(), ex);
     }
 
     /**
