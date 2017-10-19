@@ -46,7 +46,8 @@ jar {
     }
 }
 javadoc {
-    destinationDir = file("build/docs/apidocs")
+    options.overview = "src/main/java/overview.html"
+    destinationDir   = file("build/docs/apidocs")
 }
 javadoc.dependsOn('asciidoctor')
 
