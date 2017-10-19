@@ -1925,14 +1925,8 @@ class MyApp : Runnable {
     private val versionRequested: Boolean = false
 
     override fun run() {
-        if (helpRequested) {
-            CommandLine(this).usage(System.err)
-        } else if (versionRequested) {
-            CommandLine(this).printVersionHelp(System.err)
-        } else {
-            for (i in 0 until count) {
-                println("hello world $i...")
-            }
+        for (i in 0 until count) {
+            println("hello world $i...")
         }
     }
     companion object {
@@ -1966,14 +1960,8 @@ class MyApp extends Runnable {
   private val versionRequested: Boolean = false
 
   def run() : Unit = {
-    if (helpRequested) {
-      new CommandLine(this).usage(System.err)
-    } else if (versionRequested) {
-      new CommandLine(this).printVersionHelp(System.err)
-    } else {
-      for (i <- 0 until count) {
-        println(s"hello world $i...")
-      }
+    for (i <- 0 until count) {
+      println(s"hello world $i...")
     }
   }
 }
