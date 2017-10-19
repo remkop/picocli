@@ -1628,7 +1628,7 @@ Picocli provides some default `IParseResultHandler` implementations for common t
 
 * the `RunLast` handler prints help if requested, and otherwise gets the last specified command or subcommand and tries to execute it as a `Runnable` or `Callable`
 * the `RunFirst` handler prints help if requested, and otherwise executes the top-level command as a `Runnable` or `Callable`
-* the `RunAll` handler prints help if requested, and otherwise executes all recognized commands and subcommands as `Runnable` or `Callable` tasks
+* the `RunAll` handler prints help if requested, and otherwise executes all commands and subcommands that the user specified on the command line as `Runnable` or `Callable` tasks
 
 
 
