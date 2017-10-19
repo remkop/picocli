@@ -84,17 +84,14 @@ class CheckSum implements Callable<Void> {
     private boolean helpRequested;
 
     public static void main(String[] args) throws Exception {
-        // CheckSum implements Callable,
-        // so parsing and error handling can be done in one line of code
+        // CheckSum implements Callable, so parsing, error handling and handling user
+        // requests for usage help or version help can be done with one line of code.
         CommandLine.call(new CheckSum(), System.err, args);
     }
 
     @Override
     public Void call() throws Exception {
-        if (helpRequested) {
-            CommandLine.usage(this, System.err);
-            return null;
-        }
+        // your business logic goes here...
         byte[] fileContents = Files.readAllBytes(file.toPath());
         byte[] digest = MessageDigest.getInstance(algorithm).digest(fileContents);
         System.out.println(javax.xml.bind.DatatypeConverter.printHexBinary(digest));
@@ -106,7 +103,8 @@ class CheckSum implements Callable<Void> {
 
 == Options and Parameters
 Command line arguments can be separated into _options_  and _positional parameters_.
-Options have a name, positional parameters are the values that follow the options.
+Options have a name, positional parameters are usually the values that follow the options,
+but they may be mixed.
 
 image:OptionsAndParameters2.png[Example command with annotated @Option and @Parameters]
 
@@ -461,7 +459,7 @@ class TypeDemo {
 
 
 == Multiple Values
-Multi-valued options and positional parameters can capture multiple values from the command line.
+Multi-valued options and positional parameters are annotated fields that can capture multiple values from the command line.
 
 === Multiple Occurrences
 The simplest way to create a multi-valued option is to declare an annotated field whose type is an array, collection or a map.
@@ -580,7 +578,7 @@ If your application relies on the previous behaviour, you need to explicitly spe
 The default index is `\*`, meaning all positions.
 A `@Parameters` field with `index = "*"` is applied multiple times: once for each positional parameter on the command line.
 
-Every time `@Parameters` field's index matches the index of the positional parameter, the field may consume zero, one or more arguments, depending on its arity.
+When a `@Parameters` field is applied (because its index matches the index of the positional parameter), the field may consume zero, one or more arguments, depending on its arity.
 
 
 
@@ -716,10 +714,7 @@ the above input is treated as three positional parameters.
 Options with the attribute `versionHelp = true`, `usageHelp = true` or `help = true` are special:
 if one of the command line arguments is a "help" option, picocli will stop parsing the remaining arguments and will not check for required options.
 
-// TODO update documentation for convenience methods
-
-Picocli 0.9.8 introduces two new option attributes, `versionHelp` and `usageHelp`.
-These also stop validation to prevent "missing required option" errors, but are more specific and are preferred over the generic `help` attribute.
+Picocli v0.9.8 introduced two new option attributes, `versionHelp` and `usageHelp`, and from v2.0, the `help` attribute is deprecated.
 
 [source,java]
 ----
@@ -731,10 +726,6 @@ boolean usageHelpRequested;
 ----
 Use these attributes for options that request the usage help message or version information to be shown on the console.
 
-CAUTION: Picocli does not automatically print a help message.
-(https://github.com/remkop/picocli/issues/161[This ticket] explains why not; feedback is welcome.)
-It is the responsibility of the application to check the field and show the usage help message.
-
 [source,java]
 ----
 App app = CommandLine.populateCommand(new App(), args);
@@ -744,7 +735,7 @@ if (app.usageHelpRequested) {
 }
 ----
 
-Since version 0.9.8, the `CommandLine` class offers two methods that allow external components to detect whether
+Since v0.9.8, the `CommandLine` class offers two methods that allow external components to detect whether
 usage help or version information was requested (without inspecting the annotated domain object):
 
 * `CommandLine.isUsageHelpRequested()` returns `true` if the parser matched an option annotated with `usageHelp=true`
@@ -763,8 +754,22 @@ if (commandLine.isUsageHelpRequested()) {
 }
 ----
 
+From picocli v2.0, the <<Less Boilerplate,convenience methods>> will automatically print usage help and version information when requested with the `versionHelp` and `usageHelp` option attributes (but not for the `help` attribute).
+
+Methods that automatically print help:
+
+* `CommandLine::call`
+* `CommandLine::run`
+* `CommandLine::parseWithHandler` (with the built-in `Run...` handlers)
+* `CommandLine::parseWithHandlers` (with the built-in `Run...` handlers)
+
+Methods that *do not* automatically print help:
+
+* `CommandLine::parse`
+* `CommandLine::populateCommand`
+
 == Version Help
-Since 0.9.8, applications can specify version information in the `version` attribute of the `@Command` annotation.
+Since v0.9.8, applications can specify version information in the `version` attribute of the `@Command` annotation.
 
 [source,java]
 ----
@@ -1378,7 +1383,7 @@ To ensure a custom type converter is available to all subcommands, register the 
 adding subcommands.
 
 === Registering Subcommands Declaratively
-From version 0.9.8, picocli supports registering subcommands declaratively with the `@Command` annotation's `subcommands` attribute.
+From v0.9.8, picocli supports registering subcommands declaratively with the `@Command` annotation's `subcommands` attribute.
 
 [source,java]
 ----
@@ -1438,6 +1443,8 @@ assert  gitstatus.branchInfo               : "git status -b"
 assert !gitstatus.showIgnored              : "git status --showIgnored not specified"
 assert  gitstatus.mode == GitStatusMode.no : "git status -u=no"
 ----
+
+You may be interested in the <<Convenience Methods for Subcommands,convenience methods for subcommands>> to reduce error handling and other boilerplate code in your application.
 
 === Usage Help for Subcommands
 After registering subcommands, calling the `commandLine.usage` method will show a usage help message that includes all registered commands. For example:
@@ -1554,15 +1561,25 @@ You can omit some of the boilerplate code from your application when the annotat
 
 [source,java]
 ----
-Callable<Object> callable = null;
+Callable<Object> callable = new MyCallable();
+CommandLine cmd = new CommandLine(callable);
 try {
-    callable = CommandLine.populateCommand(annotatedObject, args);
+    cmd.parse(args);
+    if (cmd.isUsageHelpRequested()) {
+        cmd.usage(System.err);
+        return null;
+    } else if (cmd.isVersionHelpRequested()) {
+        cmd.printVersionHelp(System.err);
+        return null;
+    }
+    return callable.call();
 } catch (ParameterException ex) {
     System.err.println(ex.getMessage());
-    CommandLine.usage(annotatedObject, System.err);
+    ex.getCommandLine().usage(System.err);
     return null;
+} catch (Exception ex) {
+    throw new ExecutionException(cmd, "Error while calling " + callable, ex);
 }
-return callable.call();
 ----
 
 .After
@@ -1571,7 +1588,7 @@ return callable.call();
 ----
 Object result = CommandLine.call(new MyCallable(), System.err, args);
 ----
-The `CommandLine.call` method returns the result of the `Callable`, or `null` if the command line options were invalid. An error message and a usage help message are printed when the command line options were invalid. Exceptions thrown from the `Callable.call` method are not caught by the `CommandLine.call` method.
+The `CommandLine.call` method returns the result of the `Callable`, or `null` if the command line options were invalid. An error message and a usage help message are printed when the command line options were invalid. Exceptions thrown from the `Callable.call` method are caught, wrapped in an `ExecutionException` and rethrown.
 
 
 When the annotated object implements `Runnable`, use the `run` method. For example:
@@ -1580,10 +1597,42 @@ When the annotated object implements `Runnable`, use the `run` method. For examp
 CommandLine.run(new MyRunnable(), System.err, args);
 ----
 
-CAUTION: Note that the `CommandLine.call` and `CommandLine.run` convenience methods cannot be used with subcommands.
+If the command class has subcommands, the `CommandLine::call` and `CommandLine::run` convenience methods will execute the most specific subcommand on the command line. For example:
+
+----
+<command> -g global_option subcommand -x -y -z subsubcommand param1 param2
+----
+In the above example, the `subsubcommand` is the most specific subcommand, and only the `Runnable` or `Callable` associated with that subcommand will be executed by the `CommandLine::call` and `CommandLine::run` convenience methods.
+
+=== Convenience Methods for Subcommands
+Picocli v2.0 introduced the `CommandLine::parseWithHandler` and `CommandLine::parseWithHandlers` convenience methods.
+These methods are intended to offer the same ease of use as the `run` and `call` methods, but with more flexibility and better support for nested subcommands.
+
+For example:
+[source,java]
+----
+CommandLine cmd = new CommandLine(MyTopLevelCommand())
+        .addSubcommand("status",   new GitStatus())
+        .addSubcommand("commit",   new GitCommit())
+        .addSubcommand("add",      new GitAdd());
+List<Object result = cmd.parseWithHandler(new RunAll(), System.err, args);
+----
+
+The `CommandLine::parseWithHandler` method will take care of the following:
+
+* parse the specified command line arguments
+* if the input was invalid, delegate to `DefaultExceptionHandler`, which will print the error message followed by the usage help message
+* otherwise, if the command line arguments were parsed successfully, let the specified `IParseResultHandler` handle the parse result
+
+Picocli provides some default `IParseResultHandler` implementations for common tasks:
+
+* the `RunLast` handler prints help if requested, and otherwise gets the last specified command or subcommand and tries to execute it as a `Runnable` or `Callable`
+* the `RunFirst` handler prints help if requested, and otherwise executes the top-level command as a `Runnable` or `Callable`
+* the `RunAll` handler prints help if requested, and otherwise executes all recognized commands and subcommands as `Runnable` or `Callable` tasks
 
 
-=== Boolean Parameters
+
+=== Boolean Options with Parameters
 By default the value of a boolean field is toggled to its logical negative when the field's option is specified on the command line.
 
 It is possible to let end users explicitly specify "true" or "false" as a parameter for a boolean option by defining an explicit <<Arity>> attribute. A boolean option with `arity = "0..1"` accepts zero to one parameters, `arity = "1"` means the option _must_ have one parameter. For example:
