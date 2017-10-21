@@ -1,8 +1,8 @@
 # picocli Release Notes
 
-# <a name="2.0"></a> (Unreleased) 2.0
+# <a name="2.0"></a> Picocli 2.0
 
-I'm pleased to announce picocli 2.0.
+The picocli community is pleased to announce picocli 2.0.
 
 First, picocli now provides tight integration for Groovy scripts.
 The new `@picocli.groovy.PicocliScript` annotation allows Groovy scripts to use the `@Command` annotation,
