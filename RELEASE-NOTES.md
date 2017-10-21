@@ -1,6 +1,6 @@
 # picocli Release Notes
 
-# (Unreleased) 2.0
+# <a name="2.0"></a> (Unreleased) 2.0
 
 I'm pleased to announce picocli 2.0.
 
@@ -15,20 +15,36 @@ The `CommandLine.run` and `CommandLine.call` methods now work for subcommands,
 and if more flexibility is needed, take a look at the new `parseWithHandler` methods.
 Error handling for subcommands has been improved in this release with the new `ParseException.getCommandLine` method.
 
-Usage help is now printed automatically from the `CommandLine.run` and `CommandLine.call` methods
+Improved ease of use: Usage help is now printed automatically from the `CommandLine.run` and `CommandLine.call` methods
 and from the built-in handlers used with the `parseWithHandler` method.
 
 The parser has been improved and users can now mix positional arguments with options on the command line.
 Previously, positional parameter had to follow the options.
 **Important notice:** To make this feature possible, the default parsing behaviour of multi-value options and parameters changed to be non-greedy by default.
 
+Finally, this release includes many [bug fixes](#2.0-fixes).
 
 This is the twelfth public release.
 Picocli follows [semantic versioning](http://semver.org/).
 
-## New and noteworthy
+## <a name="2.0-toc"></a> Table of Contents
 
-### Groovy Script Support
+* [New and noteworthy](#2.0-new)
+    * [Groovy Script Support](#2.0-groovy-script)
+    * [Better Subcommand Support](#2.0-subcommands)
+    * [Easier To Use](#2.0-ease-of-use)
+    * [Parser Improvements](#2.0-parser-improvements) 
+    * [Usage Help Format Improvements](#2.0-help-improvements)
+* [Promoted features](#2.0-promoted)
+* [Fixed issues](#2.0-fixes)
+* [Deprecations](#2.0-deprecated)
+* [Potentially breaking changes](#2.0-breaking-changes)
+
+
+
+## <a name="2.0-new"></a> New and noteworthy
+
+### <a name="2.0-groovy-script"></a> Groovy Script Support
 Picocli 2.0 introduces special support for Groovy scripts.
 
 Scripts annotated with `@picocli.groovy.PicocliScript` are automatically transformed to use
@@ -41,7 +57,7 @@ The script body is executed if the user input was valid and did not request usag
 
 ```
 // exampleScript.groovy
-@Grab('info.picocli:picocli:2.0.0-SNAPSHOT')
+@Grab('info.picocli:picocli:2.0.0')
 @Command(name = "myCommand", description = "does something special")
 @PicocliScript
 import picocli.groovy.PicocliScript
@@ -65,7 +81,7 @@ assert this == theScript
 assert this.commandLine.commandName == "myCommand"
 ```
 
-### Better Subcommand Support
+### <a name="2.0-subcommands"></a> Better Subcommand Support
 New methods `CommandLine::parseWithHandler` were added. These methods intend to offer the same ease of use as 
 the `run` and `call` methods, but with more flexibility and better support for nested subcommands.
 
@@ -77,7 +93,7 @@ that returns the command or subcommand where parsing or execution failed.
 Previously, if the user provided invalid input for applications with subcommands,
 it was difficult to pinpoint exactly which subcommand failed to parse the input.
 
-### Easier To Use
+### <a name="2.0-ease-of-use"></a> Easier To Use
 The convenience methods will automatically print usage help and version information
 when the user specifies options annotated with the `versionHelp` or `usageHelp` attributes.
 
@@ -96,23 +112,23 @@ Methods that do not automatically print help:
 Also notable: Collection and Map fields no longer require the `type` annotation attribute: 
 picocli now infers the conversion target type from the generic type parameters where possible.
 
-### Parser Improvements 
+### <a name="2.0-parser-improvements"></a> Parser Improvements 
 Positional parameters can now be mixed with options on the command line. Previously, positional parameter had to follow the options.
 
 To make this feature possible, the default parsing behaviour of multi-value options and parameters changed to be non-greedy by default.
 
-### Usage Help Format Improvements
+### <a name="2.0-help-improvements"></a> Usage Help Format Improvements
 This release contains various bugfixes related to improving the usage help format for multi-value options and collections.
 For example, for Maps that don't have a `paramLabel`, picocli now shows key type and value type instead of the internal Java field name.
 
-## Promoted features
+## <a name="2.0-promoted"></a> Promoted features
 Promoted features are features that were incubating in previous versions of picocli but are now supported and subject to backwards compatibility. 
 
 The following are the features that have been promoted in this picocli release.
 
 * Autocomplete - as of picocli 2.0, autocompletion is no longer beta.
 
-## Fixed issues
+## <a name="2.0-fixes"></a> Fixed issues
 
 - [#207] API Change: Provide ability to find which subcommand threw a ParameterException API enhancement. Thanks to [velit](https://github.com/velit) and [AshwinJay](https://github.com/AshwinJay).
 - [#179] API Change to remove full JRE dependency and require only Compact Profile. Replace use of `java.awt.Point` with `picocli.CommandLine.Help.TextTable.Cell`. Thanks to [webfolderio](https://github.com/webfolderio).
@@ -143,13 +159,13 @@ The following are the features that have been promoted in this picocli release.
 - [#208] Enhancement: Remove pom.xml, which was not being maintained. Picocli can only be built with gradle going forward.
 - [#212] Enhancement: Improve javadoc for picocli.AutoComplete.
 
-## Deprecations
+## <a name="2.0-deprecated"></a> Deprecations
 The `help` attribute for options is now deprecated. Please change to use `usageHelp` and `versionHelp` attributes instead.
 From picocli v2.0, the convenience methods will automatically print usage help and version information
 when requested with the `versionHelp` and `usageHelp` option attributes (but not for the `help` attribute).
 
 
-## Potentially breaking changes
+## <a name="2.0-breaking-changes"></a> Potentially breaking changes
 
 This release has a number of incompatible changes:
 * Multi-value options (array, list and map fields) are **not greedy by default** any more.
@@ -199,18 +215,18 @@ class Args {
 (... with the caveat that "greedy" means consume until the next option, not all remaining command line arguments.)
 
 
-# 1.0.1 - Bugfix release.
+# <a name="1.0.1"></a> 1.0.1 - Bugfix release.
 
-## Summary: zsh autocompletion bugfix
+## <a name="1.0.1-summary"></a> Summary: zsh autocompletion bugfix
 
 This is the eleventh public release.
 Picocli follows [semantic versioning](http://semver.org/).
 
 - [#178] Fixed autocompletion bug for subcommands in zsh. Autocomplete on zsh would show only the global command options even when a subcommand was specified. Autocompletion now works for nested subcommands.
 
-# 1.0.0 - Bugfix and enhancements release.
+# <a name="1.0.0"></a> 1.0.0 - Bugfix and enhancements release.
 
-## Summary: command line autocompletion, `-Dkey=value`-like Map options, parser tracing, stricter parsing, bugfixes
+## <a name="1.0.0-summary"></a> Summary: command line autocompletion, `-Dkey=value`-like Map options, parser tracing, stricter parsing, bugfixes
 
 This is the tenth public release.
 Picocli follows [semantic versioning](http://semver.org/).
@@ -230,9 +246,9 @@ Picocli follows [semantic versioning](http://semver.org/).
 * [#166] Fixed bug where adjacent markup sections resulted in incorrect ANSI escape sequences
 * [#174] Fixed bug where under some circumstances, unmatched parameters were added to UnmatchedParameters list twice
 
-# 0.9.8 - Bugfix and enhancements release for public review. API may change.
+# <a name="0.9.8"></a> 0.9.8 - Bugfix and enhancements release for public review. API may change.
 
-## Summary: improved version and usage help, improved subcommand support, bugfixes
+## <a name="0.9.8-summary"></a> Summary: improved version and usage help, improved subcommand support, bugfixes
 
 * [#162] Added new Version Help section to user manual; added `version` attribute on `@Command`; added `CommandLine::printVersionHelp` convenience method to print version information from this annotation to the console
 * [#145] Added `usageHelp` and `versionHelp` attributes on `@Option`; added `CommandLine::isUsageHelpRequested` and `CommandLine::isVersionHelpRequested` to allow external components to detect whether usage help or version information was requested (without inspecting the annotated domain object). Thanks to [kakawait](https://github.com/kakawait).
@@ -244,7 +260,7 @@ Picocli follows [semantic versioning](http://semver.org/).
 * [#148] Long string in default value no longer causes infinite loop when printing usage. Thanks to [smartboyathome](https://github.com/smartboyathome).
 * [#142] First line of long synopsis no longer overshoots 80-character usage help width. Thanks to [waacc-gh](https://github.com/waacc-gh).
 
-# 0.9.7 - Bugfix and enhancements release for public review. API may change.
+# <a name="0.9.7"></a> 0.9.7 - Bugfix and enhancements release for public review. API may change.
 
 * [#127] Added support for nested sub-subcommands
 * [#135] API change: renamed static convenience method `CommandLine::parse` to `populateCommand`
@@ -262,11 +278,11 @@ Picocli follows [semantic versioning](http://semver.org/).
 * [#139] Improve validation: CommandLine must be constructed with a command that has at least one of @Command, @Option or @Parameters annotation
 * [#141] Bugfix: prevent NullPointerException when sorting required options/parameters
 
-# 0.9.6 - Bugfix release for public review. API may change.
+# <a name="0.9.6"></a> 0.9.6 - Bugfix release for public review. API may change.
 
 * [#128] Fix unexpected MissingParameterException when a help-option is supplied (bug)
 
-# 0.9.5 - Bugfix and enhancements release for public review. API may change.
+# <a name="0.9.5"></a> 0.9.5 - Bugfix and enhancements release for public review. API may change.
 
 * [#122] API change: remove field CommandLine.ansi (enhancement)
 * [#123] API change: make public Arity fields final (enhancement)
@@ -274,7 +290,7 @@ Picocli follows [semantic versioning](http://semver.org/).
 * [#118] BumpVersion gradle task scrambles chars in manual (bug)
 * [#119] Add gradle task to publish to local folder (enhancement)
 
-# 0.9.4 - Bugfix release for public review. API may change.
+# <a name="0.9.4"></a> 0.9.4 - Bugfix release for public review. API may change.
 
 * [#114] Replace ISO-8613-3 "true colors" with more widely supported 256-color palette (enhancement)
 * [#113] Fix javadoc warnings (doc enhancement)
@@ -282,7 +298,7 @@ Picocli follows [semantic versioning](http://semver.org/).
 * [#112] Improve (shorten) user manual (doc enhancement)
 * [#105] Automate publishing to JCentral & Maven Central
 
-# 0.9.3 - Bugfix release for public review. API may change.
+# <a name="0.9.3"></a> 0.9.3 - Bugfix release for public review. API may change.
 
 * [#90] Automate release
 * [#111] Improve picocli.Demo (enhancement)
@@ -290,12 +306,12 @@ Picocli follows [semantic versioning](http://semver.org/).
 * [#108] Improve user manual (doc enhancement)
 * [#109] `run` convenience method should accept PrintStream (enhancement)
 
-# 0.9.2 - Bugfix release for public review. API may change.
+# <a name="0.9.2"></a> 0.9.2 - Bugfix release for public review. API may change.
 
 * [#106] MissingParameterException not thrown for missing mandatory @Parameters when options are specified
 * [#104] Investigate why colors don't show by default on Cygwin
 
-# 0.9.1 - Bugfix release for public review. API may change.
+# <a name="0.9.1"></a> 0.9.1 - Bugfix release for public review. API may change.
 
 * [#103] Replace javadoc occurences of ASCII with ANSI.  (doc bug)
 * [#102] Move ColorScheme inside Ansi class  (enhancement question wontfix)
@@ -310,7 +326,7 @@ Picocli follows [semantic versioning](http://semver.org/).
 * [#93] Only option fields are set accessible, not parameters fields  (bug)
 * [#91] Syntax highlighting in manual source blocks  (doc enhancement)
 
-# 0.9.0 (was 0.4.0) - User Manual and API Changes. Initial public release.
+# <a name="0.9.0"></a> 0.9.0 (was 0.4.0) - User Manual and API Changes. Initial public release.
 
 * [#89] Improve error message for missing required options and parameters  (enhancement)
 * [#88] Code cleanup  (enhancement)
@@ -341,7 +357,7 @@ Picocli follows [semantic versioning](http://semver.org/).
 * [#4] Should @Option and @Parameters have listConverter attribute instead of elementType?  (enhancement question wontfix)
 
 
-# 0.3.0 - Customizable Usage Help
+# <a name="0.3.0"></a> 0.3.0 - Customizable Usage Help
 
 * [#69] Improve TextTable API  (enhancement question)
 * [#63] Unify @Option and @Parameters annotations  (enhancement wontfix)
@@ -376,13 +392,13 @@ Picocli follows [semantic versioning](http://semver.org/).
 * [#5] Rename `description` attribute to `helpText` or `usage`  (enhancement wontfix)
 
 
-# 0.2.0 - Vararg Support
+# <a name="0.2.0"></a> 0.2.0 - Vararg Support
 
 * [#25] Use Integer.decode(String) rather than Integer.parseInt  (enhancement)
 * [#23] @Option should not greedily consume args if varargs=false  (bug)
 
 
-# 0.1.0 - Basic Option and Parameter Parsing
+# <a name="0.1.0"></a> 0.1.0 - Basic Option and Parameter Parsing
 
 * [#20] add test where option name is "-p", give it input "-pa-p"  (QA)
 * [#19] Improve error message for type conversion: include field name (and option name?)  (enhancement)
