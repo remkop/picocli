@@ -36,11 +36,17 @@ import picocli.CommandLine.Parameters;
 import static java.lang.String.*;
 
 /**
- * Generates a bash auto-complete script.
+ * Stand-alone tool that generates bash auto-complete scripts for picocli-based command line applications.
  */
 public class AutoComplete {
     private AutoComplete() { }
 
+    /**
+     * Generates a bash completion script for the specified command class.
+     * @param args command line options. Specify at least the {@code commandLineFQCN} mandatory parameter, which is
+     *      the fully qualified class name of the annotated {@code @Command} class to generate a completion script for.
+     *      Other parameters are optional. Specify {@code -h} to see details on the available options.
+     */
     public static void main(String... args) { CommandLine.run(new App(), System.err, args); }
 
     /**
@@ -266,6 +272,16 @@ public class AutoComplete {
             "# default Bash completions and the Readline default filename completions are performed.\n" +
             "complete -F _complete_%1$s -o default %1$s %1$s.sh %1$s.bash\n";
 
+    /**
+     * Generates source code for an autocompletion bash script for the specified picocli-based application,
+     * and writes this script to the specified {@code out} file, and optionally writes an invocation script
+     * to the specified {@code command} file.
+     * @param scriptName the name of the command to generate a bash autocompletion script for
+     * @param commandLine the {@code CommandLine} instance for the command line application
+     * @param out the file to write the autocompletion bash script source code to
+     * @param command the file to write a helper script to that invokes the command, or {@code null} if no helper script file should be written
+     * @throws IOException if a problem occurred writing to the specified files
+     */
     public static void bash(String scriptName, File out, File command, CommandLine commandLine) throws IOException {
         String autoCompleteScript = bash(scriptName, commandLine);
         Writer completionWriter = null;
@@ -288,6 +304,13 @@ public class AutoComplete {
             if (scriptWriter != null)     { scriptWriter.close(); }
         }
     }
+
+    /**
+     * Generates and returns the source code for an autocompletion bash script for the specified picocli-based application.
+     * @param scriptName the name of the command to generate a bash autocompletion script for
+     * @param commandLine the {@code CommandLine} instance for the command line application
+     * @return source code for an autocompletion bash script
+     */
     public static String bash(String scriptName, CommandLine commandLine) {
         if (scriptName == null)  { throw new NullPointerException("scriptName"); }
         if (commandLine == null) { throw new NullPointerException("commandLine"); }
