@@ -11,7 +11,7 @@ Annotation-based Java command line parser, featuring usage help with ANSI colors
 In a single file, so you can include it _in source form_.
 This lets users run picocli-based applications without requiring picocli as an external dependency.
 
-|CAUTION: breaking changes ahead in version 2.0!|
+|CAUTION: version 2.0 has some potentially breaking changes|
 |----|
 |List and array options will [not be greedy by default](https://github.com/remkop/picocli/issues/192) any more.|
 |Arity will [not limit the total](https://github.com/remkop/picocli/issues/191) number of list/array values any more. |
@@ -43,7 +43,7 @@ Works with Java 5 or higher (but is designed to facilitate the use of Java 8 lam
 <a id="picocli_demo"></a>
 ![Picocli Demo help message with ANSI colors](docs/images/picocli.Demo.png?raw=true)
 
-* [Releases](https://github.com/remkop/picocli/releases) - latest: 1.0.1
+* [Releases](https://github.com/remkop/picocli/releases) - latest: 2.0.0
 * [User manual: http://picocli.info](http://picocli.info)
 * [Command line autocompletion](http://picocli.info/autocomplete.html)
 * [API Javadoc](http://picocli.info/apidocs/)
