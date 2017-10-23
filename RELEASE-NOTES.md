@@ -77,7 +77,7 @@ import groovy.transform.Field
 count.times {
    println "hi"
 }
-assert this == theScript
+// the CommandLine that parsed the args is available as a property
 assert this.commandLine.commandName == "myCommand"
 ```
 

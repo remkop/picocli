@@ -3309,7 +3309,7 @@ The script body is executed if the user input was valid and did not request usag
 count.times {
    println <span class="string"><span class="delimiter">&quot;</span><span class="content">hi</span><span class="delimiter">&quot;</span></span>
 }
-<span class="keyword">assert</span> <span class="local-variable">this</span> == theScript
+<span class="comment">// the CommandLine that parsed the args is available as a property</span>
 <span class="keyword">assert</span> <span class="local-variable">this</span>.commandLine.commandName == <span class="string"><span class="delimiter">&quot;</span><span class="content">myCommand</span><span class="delimiter">&quot;</span></span></code></pre>
 </div>
 </div>
