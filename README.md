@@ -11,11 +11,6 @@ Annotation-based Java command line parser, featuring usage help with ANSI colors
 In a single file, so you can include it _in source form_.
 This lets users run picocli-based applications without requiring picocli as an external dependency.
 
-|CAUTION: version 2.0 has some potentially breaking changes|
-|----|
-|List and array options will [not be greedy by default](https://github.com/remkop/picocli/issues/192) any more.|
-|Arity will [not limit the total](https://github.com/remkop/picocli/issues/191) number of list/array values any more. |
-
 How it works: annotate your class and picocli initializes it from the command line arguments,
 converting the input to strongly typed data. Supports git-like [subcommands](http://picocli.info/#_subcommands)
 (and nested [sub-subcommands](http://picocli.info/#_nested_sub_subcommands)),
@@ -35,21 +30,21 @@ and  [version help](http://picocli.info/#_version_help),
 using [ANSI colors](http://picocli.info/#_ansi_colors_and_styles) where possible.
 Works with Java 5 or higher (but is designed to facilitate the use of Java 8 lambdas).
 
-|Now in BETA: [command line autocompletion](http://picocli.info/autocomplete.html)|
-|----|
-|Autocomplete is work in progress. Comments, bug reports, pull requests welcome!|
-
+Picocli-based command line applications can have [TAB autocompletion](http://picocli.info/autocomplete.html),
+interactively showing users what options are subcommands are available.
 
 <a id="picocli_demo"></a>
 ![Picocli Demo help message with ANSI colors](docs/images/picocli.Demo.png?raw=true)
 
-* [Releases](https://github.com/remkop/picocli/releases) - latest: 2.0.0
+* [Releases](https://github.com/remkop/picocli/releases) - latest: 2.0
+* [What's New in Picocli 2.0](https://github.com/remkop/picocli/releases/tag/v2.0.0) - including some [potentially breaking changes](https://github.com/remkop/picocli/releases/tag/v2.0.0#2.0-breaking-changes)
 * [User manual: http://picocli.info](http://picocli.info)
 * [Command line autocompletion](http://picocli.info/autocomplete.html)
 * [API Javadoc](http://picocli.info/apidocs/)
 * [FAQ](https://github.com/remkop/picocli/wiki/FAQ)
 * [Announcing picocli 1.0](http://picocli.info/announcing-picocli-1.0.html)
 * Check out Thibaud Lepretre's [picocli Spring boot starter](https://github.com/kakawait/picocli-spring-boot-starter)!
+
 
 ## Example
 
@@ -116,6 +111,9 @@ For example, your application can generate help like this with a custom layout:
 See the [source code](https://github.com/remkop/picocli/blob/master/src/test/java/picocli/CustomLayoutDemo.java#L61).
 
 ## API Changes
+
+### [2.0.0](https://github.com/remkop/picocli/releases/tag/v2.0.0)
+See the [release notes](https://github.com/remkop/picocli/releases/tag/v2.0.0) for details on [potentially breaking changes](https://github.com/remkop/picocli/releases/tag/v2.0.0#2.0-breaking-changes).
 
 ### [1.0.0](https://github.com/remkop/picocli/releases/tag/v1.0.0)
 New features: command line autocompletion, Map options and parser tracing.
