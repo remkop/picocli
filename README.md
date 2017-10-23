@@ -31,7 +31,7 @@ using [ANSI colors](http://picocli.info/#_ansi_colors_and_styles) where possible
 Works with Java 5 or higher (but is designed to facilitate the use of Java 8 lambdas).
 
 Picocli-based command line applications can have [TAB autocompletion](http://picocli.info/autocomplete.html),
-interactively showing users what options are subcommands are available.
+interactively showing users what options and subcommands are available.
 
 <a id="picocli_demo"></a>
 ![Picocli Demo help message with ANSI colors](docs/images/picocli.Demo.png?raw=true)
