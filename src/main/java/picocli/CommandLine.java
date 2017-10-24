@@ -52,7 +52,6 @@ import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Queue;
 import java.util.Set;
 import java.util.SortedSet;
@@ -4562,11 +4561,11 @@ public class CommandLine {
         private final CommandLine commandLine;
         public ExecutionException(CommandLine commandLine, String msg) {
             super(msg);
-            this.commandLine = Objects.requireNonNull(commandLine, "commandLine");
+            this.commandLine = Assert.notNull(commandLine, "commandLine");
         }
         public ExecutionException(CommandLine commandLine, String msg, Exception ex) {
             super(msg, ex);
-            this.commandLine = Objects.requireNonNull(commandLine, "commandLine");
+            this.commandLine = Assert.notNull(commandLine, "commandLine");
         }
         /** Returns the {@code CommandLine} object for the (sub)command that could not be invoked.
          * @return the {@code CommandLine} object for the (sub)command where invocation failed.
@@ -4590,7 +4589,7 @@ public class CommandLine {
          * @since 2.0 */
         public ParameterException(CommandLine commandLine, String msg) {
             super(msg);
-            this.commandLine = Objects.requireNonNull(commandLine, "commandLine");
+            this.commandLine = Assert.notNull(commandLine, "commandLine");
         }
         /** Constructs a new ParameterException with the specified CommandLine and error message.
          * @param commandLine the command or subcommand whose input was invalid
@@ -4599,7 +4598,7 @@ public class CommandLine {
          * @since 2.0 */
         public ParameterException(CommandLine commandLine, String msg, Exception ex) {
             super(msg, ex);
-            this.commandLine = Objects.requireNonNull(commandLine, "commandLine");
+            this.commandLine = Assert.notNull(commandLine, "commandLine");
         }
 
         /** Returns the {@code CommandLine} object for the (sub)command whose input could not be parsed.
