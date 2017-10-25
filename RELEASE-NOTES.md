@@ -1,5 +1,41 @@
 # picocli Release Notes
 
+# <a name="2.0.1"></a> (Unreleased) Picocli 2.0.1
+
+The picocli community is pleased to announce picocli 2.0.1.
+
+This is a bugfix release that removes a dependency on Java 1.7 which was accidentally included.
+
+## <a name="2.0.1-toc"></a> Table of Contents
+
+* [New and noteworthy](#2.0.1-new)
+* [Promoted features](#2.0.1-promoted)
+* [Fixed issues](#2.0.1-fixes)
+* [Deprecations](#2.0.1-deprecated)
+* [Potentially breaking changes](#2.0.1-breaking-changes)
+
+## <a name="2.0.1-new"></a> New and noteworthy
+
+This is a bugfix release and does not include any new features.
+
+## <a name="2.0.1-promoted"></a> Promoted features
+Promoted features are features that were incubating in previous versions of picocli but are now supported and subject to backwards compatibility. 
+
+No features have been promoted in this picocli release.
+
+## <a name="2.0.1-fixes"></a> Fixed issues
+
+- [#214] Removed a dependency on Java 1.7 that was accidentally included. Thanks to [sjsajj](https://github.com/sjsajj).
+
+## <a name="2.0.1-deprecated"></a> Deprecations
+
+This release does not deprecate any features.
+
+## <a name="2.0.1-breaking-changes"></a> Potentially breaking changes
+
+This release does not include any breaking features.
+
+
 # <a name="2.0"></a> Picocli 2.0
 
 The picocli community is pleased to announce picocli 2.0.

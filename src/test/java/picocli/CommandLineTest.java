@@ -103,7 +103,7 @@ public class CommandLineTest {
     }
     @Test
     public void testVersion() {
-        assertEquals("2.1.0-SNAPSHOT", CommandLine.VERSION);
+        assertEquals("2.0.1", CommandLine.VERSION);
     }
 
     private static class SupportedTypes {
@@ -542,9 +542,9 @@ public class CommandLineTest {
     @Test
     public void testEnumTypeConversionSuceedsForValidInput() {
         EnumParams params = CommandLine.populateCommand(new EnumParams(),
-                "-timeUnit DAYS -timeUnitArray HOURS MINUTES -timeUnitList SECONDS MICROSECONDS NANOSECONDS".split(" "));
-        assertEquals(DAYS, params.timeUnit);
-        assertArrayEquals(new TimeUnit[]{HOURS, TimeUnit.MINUTES}, params.timeUnitArray);
+                "-timeUnit SECONDS -timeUnitArray MILLISECONDS SECONDS -timeUnitList SECONDS MICROSECONDS NANOSECONDS".split(" "));
+        assertEquals(SECONDS, params.timeUnit);
+        assertArrayEquals(new TimeUnit[]{MILLISECONDS, TimeUnit.SECONDS}, params.timeUnitArray);
         List<TimeUnit> expected = new ArrayList<TimeUnit>(Arrays.asList(TimeUnit.SECONDS, TimeUnit.MICROSECONDS, TimeUnit.NANOSECONDS));
         assertEquals(expected, params.timeUnitList);
     }
@@ -554,17 +554,20 @@ public class CommandLineTest {
             CommandLine.populateCommand(new EnumParams(), "-timeUnit", "xyz");
             fail("Accepted invalid timeunit");
         } catch (Exception ex) {
-            assertEquals("Could not convert 'xyz' to TimeUnit for option '-timeUnit'" +
-                    ": java.lang.IllegalArgumentException: No enum constant java.util.concurrent.TimeUnit.xyz", ex.getMessage());
+            String prefix = "Could not convert 'xyz' to TimeUnit for option '-timeUnit'" +
+                    ": java.lang.IllegalArgumentException: No enum cons";
+            String suffix = " java.util.concurrent.TimeUnit.xyz";
+            assertEquals(prefix, ex.getMessage().substring(0, prefix.length()));
+            assertEquals(suffix, ex.getMessage().substring(ex.getMessage().length() - suffix.length(), ex.getMessage().length()));
         }
     }
     @Ignore("Requires #14 case-insensitive enum parsing")
     @Test
     public void testEnumTypeConversionIsCaseInsensitive() {
         EnumParams params = CommandLine.populateCommand(new EnumParams(),
-                "-timeUnit daYS -timeUnitArray hours miNutEs -timeUnitList SEConds MiCROsEconds nanoSEConds".split(" "));
-        assertEquals(DAYS, params.timeUnit);
-        assertArrayEquals(new TimeUnit[]{HOURS, TimeUnit.MINUTES}, params.timeUnitArray);
+                "-timeUnit sEcONds -timeUnitArray milliSeconds miCroSeConds -timeUnitList SEConds MiCROsEconds nanoSEConds".split(" "));
+        assertEquals(SECONDS, params.timeUnit);
+        assertArrayEquals(new TimeUnit[]{MILLISECONDS, TimeUnit.MICROSECONDS}, params.timeUnitArray);
         List<TimeUnit> expected = new ArrayList<TimeUnit>(Arrays.asList(TimeUnit.SECONDS, TimeUnit.MICROSECONDS, TimeUnit.NANOSECONDS));
         assertEquals(expected, params.timeUnitList);
     }
@@ -574,19 +577,24 @@ public class CommandLineTest {
             CommandLine.populateCommand(new EnumParams(), "-timeUnitArray", "a", "b");
             fail("Accepted invalid timeunit");
         } catch (Exception ex) {
-            assertEquals("Could not convert 'a' to TimeUnit for option '-timeUnitArray' at index 0 (<timeUnitArray>)" +
-                    ": java.lang.IllegalArgumentException: No enum constant java.util.concurrent.TimeUnit.a", ex.getMessage());
+            String prefix = "Could not convert 'a' to TimeUnit for option '-timeUnitArray' at index 0 (<timeUnitArray>)" +
+                    ": java.lang.IllegalArgumentException: No enum const";
+            String suffix = " java.util.concurrent.TimeUnit.a";
+            assertEquals(prefix, ex.getMessage().substring(0, prefix.length()));
+            assertEquals(suffix, ex.getMessage().substring(ex.getMessage().length() - suffix.length(), ex.getMessage().length()));
         }
     }
     @Test
     public void testEnumListTypeConversionFailsForInvalidInput() {
         try {
-            CommandLine.populateCommand(new EnumParams(), "-timeUnitList", "DAYS", "b", "c");
+            CommandLine.populateCommand(new EnumParams(), "-timeUnitList", "SECONDS", "b", "c");
             fail("Accepted invalid timeunit");
         } catch (Exception ex) {
-            assertEquals("Could not convert 'b' to TimeUnit for option '-timeUnitList' at index 1 (<timeUnitList>)" +
-                    ": java.lang.IllegalArgumentException: No enum constant java.util.concurrent.TimeUnit.b",
-                    ex.getMessage());
+            String prefix = "Could not convert 'b' to TimeUnit for option '-timeUnitList' at index 1 (<timeUnitList>)" +
+                    ": java.lang.IllegalArgumentException: No enum const";
+            String suffix = " java.util.concurrent.TimeUnit.b";
+            assertEquals(prefix, ex.getMessage().substring(0, prefix.length()));
+            assertEquals(suffix, ex.getMessage().substring(ex.getMessage().length() - suffix.length(), ex.getMessage().length()));
         }
     }
 
@@ -594,23 +602,23 @@ public class CommandLineTest {
     public void testArrayOptionParametersAreAlwaysInstantiated() {
         EnumParams params = new EnumParams();
         TimeUnit[] array = params.timeUnitArray;
-        new CommandLine(params).parse("-timeUnitArray", "DAYS", "HOURS");
+        new CommandLine(params).parse("-timeUnitArray", "SECONDS", "MILLISECONDS");
         assertNotSame(array, params.timeUnitArray);
     }
     @Test
     public void testListOptionParametersAreInstantiatedIfNull() {
         EnumParams params = new EnumParams();
         assertNull(params.timeUnitList);
-        new CommandLine(params).parse("-timeUnitList", "DAYS", "HOURS", "DAYS");
-        assertEquals(Arrays.asList(DAYS, HOURS, DAYS), params.timeUnitList);
+        new CommandLine(params).parse("-timeUnitList", "SECONDS", "MICROSECONDS", "MILLISECONDS");
+        assertEquals(Arrays.asList(SECONDS, MICROSECONDS, MILLISECONDS), params.timeUnitList);
     }
     @Test
     public void testListOptionParametersAreReusedInstantiatedIfNonNull() {
         EnumParams params = new EnumParams();
         List<TimeUnit> list = new ArrayList<TimeUnit>();
         params.timeUnitList = list;
-        new CommandLine(params).parse("-timeUnitList", "DAYS", "HOURS", "DAYS");
-        assertEquals(Arrays.asList(DAYS, HOURS, DAYS), params.timeUnitList);
+        new CommandLine(params).parse("-timeUnitList", "SECONDS", "MICROSECONDS", "SECONDS");
+        assertEquals(Arrays.asList(SECONDS, MICROSECONDS, SECONDS), params.timeUnitList);
         assertSame(list, params.timeUnitList);
     }
     @Test
@@ -3510,7 +3518,7 @@ public class CommandLineTest {
                 "-d", "/path/to/file",
                 "-e", "12345=67890",
                 "-f", "12345=67.89",
-                "-g", "DAYS=12.34");
+                "-g", "MILLISECONDS=12.34");
         assertEquals(app.a.size(), 2);
         assertEquals(URI.create("/path"), app.a.get(8));
         assertEquals(URI.create("/path/to/resource"), app.a.get(98765432));
@@ -3531,7 +3539,7 @@ public class CommandLineTest {
         assertEquals(67.89f, app.f.get(new Long(12345)));
 
         assertEquals(app.g.size(), 1);
-        assertEquals(12.34f, app.g.get(TimeUnit.DAYS));
+        assertEquals(12.34f, app.g.get(TimeUnit.MILLISECONDS));
     }
     @Test
     public void testUseTypeAttributeInsteadOfFieldType() {

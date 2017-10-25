@@ -513,8 +513,8 @@ table.CodeRay td.code>pre{padding:0}
 <div id="header">
 <h1>picocli - a mighty tiny command line interface</h1>
 <div class="details">
-<span id="revnumber">version 2.0.0,</span>
-<span id="revdate">2017-10-21</span>
+<span id="revnumber">version 2.0.1,</span>
+<span id="revdate">2017-10-25</span>
 </div>
 <div id="toc" class="toc2">
 <div id="toctitle">Features</div>
@@ -3287,7 +3287,7 @@ The script body is executed if the user input was valid and did not request usag
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="CodeRay highlight"><code data-lang="groovy"><span class="annotation">@Grab</span>(<span class="string"><span class="delimiter">'</span><span class="content">info.picocli:picocli:2.0.0</span><span class="delimiter">'</span></span>)
+<pre class="CodeRay highlight"><code data-lang="groovy"><span class="annotation">@Grab</span>(<span class="string"><span class="delimiter">'</span><span class="content">info.picocli:picocli:2.0.1</span><span class="delimiter">'</span></span>)
 <span class="annotation">@Command</span>(name = <span class="string"><span class="delimiter">&quot;</span><span class="content">myCommand</span><span class="delimiter">&quot;</span></span>,
   description = <span class="string"><span class="delimiter">&quot;</span><span class="content">@|bold Groovy script|@ @|underline picocli|@ example</span><span class="delimiter">&quot;</span></span>)
 <span class="annotation">@PicocliScript</span>
@@ -3451,7 +3451,7 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
 <h3 id="_gradle">22.1. Gradle</h3>
 <div class="listingblock">
 <div class="content">
-<pre>compile 'info.picocli:picocli:2.0.0'</pre>
+<pre>compile 'info.picocli:picocli:2.0.1'</pre>
 </div>
 </div>
 </div>
@@ -3462,7 +3462,7 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
 <pre>&lt;dependency&gt;
   &lt;groupId&gt;info.picocli&lt;/groupId&gt;
   &lt;artifactId&gt;picocli&lt;/artifactId&gt;
-  &lt;version&gt;2.0.0&lt;/version&gt;
+  &lt;version&gt;2.0.1&lt;/version&gt;
 &lt;/dependency&gt;</pre>
 </div>
 </div>
@@ -3471,7 +3471,7 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
 <h3 id="_scala_sbt">22.3. Scala SBT</h3>
 <div class="listingblock">
 <div class="content">
-<pre>libraryDependencies += "info.picocli" % "picocli" % "2.0.0"</pre>
+<pre>libraryDependencies += "info.picocli" % "picocli" % "2.0.1"</pre>
 </div>
 </div>
 </div>
@@ -3479,7 +3479,7 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
 <h3 id="_ivy">22.4. Ivy</h3>
 <div class="listingblock">
 <div class="content">
-<pre>&lt;dependency org="info.picocli" name="picocli" rev="2.0.0" /&gt;</pre>
+<pre>&lt;dependency org="info.picocli" name="picocli" rev="2.0.1" /&gt;</pre>
 </div>
 </div>
 </div>
@@ -3541,7 +3541,6 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
 <span class="keyword">import</span> <span class="include">java.util.LinkedList</span>;
 <span class="keyword">import</span> <span class="include">java.util.List</span>;
 <span class="keyword">import</span> <span class="include">java.util.Map</span>;
-<span class="keyword">import</span> <span class="include">java.util.Objects</span>;
 <span class="keyword">import</span> <span class="include">java.util.Queue</span>;
 <span class="keyword">import</span> <span class="include">java.util.Set</span>;
 <span class="keyword">import</span> <span class="include">java.util.SortedSet</span>;
@@ -3619,7 +3618,7 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
  */</span>
 <span class="directive">public</span> <span class="type">class</span> <span class="class">CommandLine</span> {
     <span class="comment">/** This is picocli version {@value}. */</span>
-    <span class="directive">public</span> <span class="directive">static</span> <span class="directive">final</span> <span class="predefined-type">String</span> VERSION = <span class="string"><span class="delimiter">&quot;</span><span class="content">2.0.0</span><span class="delimiter">&quot;</span></span>;
+    <span class="directive">public</span> <span class="directive">static</span> <span class="directive">final</span> <span class="predefined-type">String</span> VERSION = <span class="string"><span class="delimiter">&quot;</span><span class="content">2.0.1</span><span class="delimiter">&quot;</span></span>;
 
     <span class="directive">private</span> <span class="directive">final</span> Tracer tracer = <span class="keyword">new</span> Tracer();
     <span class="directive">private</span> <span class="directive">final</span> Interpreter interpreter;
@@ -8051,11 +8050,11 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
         <span class="directive">private</span> <span class="directive">final</span> CommandLine commandLine;
         <span class="directive">public</span> <span class="exception">ExecutionException</span>(CommandLine commandLine, <span class="predefined-type">String</span> msg) {
             <span class="local-variable">super</span>(msg);
-            <span class="local-variable">this</span>.commandLine = Objects.requireNonNull(commandLine, <span class="string"><span class="delimiter">&quot;</span><span class="content">commandLine</span><span class="delimiter">&quot;</span></span>);
+            <span class="local-variable">this</span>.commandLine = Assert.notNull(commandLine, <span class="string"><span class="delimiter">&quot;</span><span class="content">commandLine</span><span class="delimiter">&quot;</span></span>);
         }
         <span class="directive">public</span> <span class="exception">ExecutionException</span>(CommandLine commandLine, <span class="predefined-type">String</span> msg, <span class="exception">Exception</span> ex) {
             <span class="local-variable">super</span>(msg, ex);
-            <span class="local-variable">this</span>.commandLine = Objects.requireNonNull(commandLine, <span class="string"><span class="delimiter">&quot;</span><span class="content">commandLine</span><span class="delimiter">&quot;</span></span>);
+            <span class="local-variable">this</span>.commandLine = Assert.notNull(commandLine, <span class="string"><span class="delimiter">&quot;</span><span class="content">commandLine</span><span class="delimiter">&quot;</span></span>);
         }
         <span class="comment">/** Returns the {@code CommandLine} object for the (sub)command that could not be invoked.
          * @return the {@code CommandLine} object for the (sub)command where invocation failed.
@@ -8079,7 +8078,7 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
          * @since 2.0 */</span>
         <span class="directive">public</span> ParameterException(CommandLine commandLine, <span class="predefined-type">String</span> msg) {
             <span class="local-variable">super</span>(msg);
-            <span class="local-variable">this</span>.commandLine = Objects.requireNonNull(commandLine, <span class="string"><span class="delimiter">&quot;</span><span class="content">commandLine</span><span class="delimiter">&quot;</span></span>);
+            <span class="local-variable">this</span>.commandLine = Assert.notNull(commandLine, <span class="string"><span class="delimiter">&quot;</span><span class="content">commandLine</span><span class="delimiter">&quot;</span></span>);
         }
         <span class="comment">/** Constructs a new ParameterException with the specified CommandLine and error message.
          * @param commandLine the command or subcommand whose input was invalid
@@ -8088,7 +8087,7 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
          * @since 2.0 */</span>
         <span class="directive">public</span> ParameterException(CommandLine commandLine, <span class="predefined-type">String</span> msg, <span class="exception">Exception</span> ex) {
             <span class="local-variable">super</span>(msg, ex);
-            <span class="local-variable">this</span>.commandLine = Objects.requireNonNull(commandLine, <span class="string"><span class="delimiter">&quot;</span><span class="content">commandLine</span><span class="delimiter">&quot;</span></span>);
+            <span class="local-variable">this</span>.commandLine = Assert.notNull(commandLine, <span class="string"><span class="delimiter">&quot;</span><span class="content">commandLine</span><span class="delimiter">&quot;</span></span>);
         }
 
         <span class="comment">/** Returns the {@code CommandLine} object for the (sub)command whose input could not be parsed.
@@ -8184,8 +8183,8 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
 </div>
 <div id="footer">
 <div id="footer-text">
-Version 2.0.0<br>
-Last updated 2017-10-21 19:14:33 +09:00
+Version 2.0.1<br>
+Last updated 2017-10-25 22:35:29 +09:00
 </div>
 </div>
 </body>
