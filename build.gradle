@@ -1,10 +1,10 @@
 group 'info.picocli'
 description 'Annotation-based Java command line parser. Usage help with ANSI styles and colors. Autocomplete. Nested subcommands. Easily included as source to avoid adding a dependency.'
-version '2.0.1'
+version '2.1.0-SNAPSHOT'
 
 // for bumpVersion task
-def oldVersion = '2\\.1\\.0-SNAPSHOT'
-def oldRevdate = '2017\\-10\\-21'
+def oldVersion = '2\\.0\\.1'
+def oldRevdate = '2017\\-10\\-25'
 def revDate    = '2017-10-25'
 
 buildscript {
@@ -202,7 +202,7 @@ publishing {
 Release procedure:
 1. edit version numbers: remove -SNAPSHOT classifier
 2. gradlew bumpVersion
-3. check modified files (especially line 767 in index.adoc)
+3. check modified files
 4. gradlew clean build
 5. gradlew copyDocs
 6. update RELEASE-NOTES.md
@@ -212,7 +212,7 @@ Release procedure:
 
 10. edit version numbers: increase minor version and add -SNAPSHOT classifier
 11. gradlew bumpVersion
-12. check modified files (especially line 767 in index.adoc)
+12. check modified files
 13. commit -m "Prepare for next development cycle"
 14. push (make sure that Push Tags is checked)
 

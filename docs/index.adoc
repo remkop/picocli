@@ -1,7 +1,7 @@
 = picocli - a mighty tiny command line interface
 //:author: Remko Popma
 //:email: rpopma@apache.org
-:revnumber: 2.0.1
+:revnumber: 2.1.0-SNAPSHOT
 :revdate: 2017-10-25
 :toc: left
 :numbered:
@@ -1873,7 +1873,7 @@ The script body is executed if the user input was valid and did not request usag
 
 [source,groovy]
 ----
-@Grab('info.picocli:picocli:2.0.1')
+@Grab('info.picocli:picocli:2.1.0-SNAPSHOT')
 @Command(name = "myCommand",
   description = "@|bold Groovy script|@ @|underline picocli|@ example")
 @PicocliScript
@@ -1996,7 +1996,7 @@ See the <<Source,source code>> below. Copy and paste it into a file called `Comm
 
 === Gradle
 ----
-compile 'info.picocli:picocli:2.0.1'
+compile 'info.picocli:picocli:2.1.0-SNAPSHOT'
 ----
 
 === Maven
@@ -2004,19 +2004,19 @@ compile 'info.picocli:picocli:2.0.1'
 <dependency>
   <groupId>info.picocli</groupId>
   <artifactId>picocli</artifactId>
-  <version>2.0.1</version>
+  <version>2.1.0-SNAPSHOT</version>
 </dependency>
 ----
 
 === Scala SBT
 ----
-libraryDependencies += "info.picocli" % "picocli" % "2.0.1"
+libraryDependencies += "info.picocli" % "picocli" % "2.1.0-SNAPSHOT"
 ----
 
 === Ivy
 
 ----
-<dependency org="info.picocli" name="picocli" rev="2.0.1" />
+<dependency org="info.picocli" name="picocli" rev="2.1.0-SNAPSHOT" />
 ----
 
 === Source
