@@ -1899,6 +1899,16 @@ count.times {
 assert this.commandLine.commandName == "myCommand"
 ----
 
+CAUTION: When using a Groovy version older than 2.4.7, use this workaround for the https://issues.apache.org/jira/browse/GROOVY-7613[Grape bug] that causes this error:
+`java.lang.ClassNotFoundException: # Licensed to the Apache Software Foundation (ASF) under one or more`.
+
+[source,groovy]
+----
+@Grab('info.picocli:picocli:2.1.0-SNAPSHOT')
+@GrabExclude('org.codehaus.groovy:groovy-all') // work around GROOVY-7613
+...
+----
+
 === Kotlin
 Kotlin does not allow specifying an array https://kotlinlang.org/docs/reference/annotations.html[annotation]
  attribute as a single value,

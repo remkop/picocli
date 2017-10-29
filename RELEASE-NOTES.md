@@ -5,6 +5,7 @@
 ## <a name="2.1.0-fixes"></a> Fixed issues
 
 - [#220] Improve tracing for positional parameters (provide detail on current position).
+- [#221] Document workaround for Grapes bug on Groovy versions before 2.4.7.
 
 # <a name="2.0.1"></a> Picocli 2.0.1
 
