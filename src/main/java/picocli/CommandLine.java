@@ -403,7 +403,6 @@ public class CommandLine {
      * </pre>
      * @since 2.0 */
     public static class DefaultExceptionHandler implements IExceptionHandler {
-        @Override
         public List<Object> handleException(ParameterException ex, PrintStream out, Help.Ansi ansi, String... args) {
             out.println(ex.getMessage());
             ex.getCommandLine().usage(out, ansi);
