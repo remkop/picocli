@@ -32,6 +32,9 @@ import java.util.concurrent.Callable;
 
 /**
  * Demonstrates picocli subcommands.
+ * <p>
+ * Banner ascii art thanks to <a href="http://patorjk.com/software/taag/">http://patorjk.com/software/taag/</a>.
+ * </p>
  */
 @Command(name = "picocli.Demo", sortOptions = false,
         header = {
@@ -682,7 +685,6 @@ public class Demo implements Runnable {
             CommandLine.call(new CheckSum(), System.err, args);
         }
 
-        @Override
         public Void call() throws Exception {
             // business logic: do different things depending on options the user specified
             if (helpRequested) {
