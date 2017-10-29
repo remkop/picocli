@@ -1,5 +1,11 @@
 # picocli Release Notes
 
+# <a name="2.1.0"></a> (UNRELEASED) Picocli 2.1.0
+
+## <a name="2.1.0-fixes"></a> Fixed issues
+
+- [#220] Improve tracing for positional parameters (provide detail on current position).
+
 # <a name="2.0.1"></a> Picocli 2.0.1
 
 The picocli community is pleased to announce picocli 2.0.1.

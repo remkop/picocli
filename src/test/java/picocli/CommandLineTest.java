@@ -1062,19 +1062,19 @@ public class CommandLineTest {
                         "[picocli INFO] Found end-of-options delimiter '--'. Treating remainder as positional parameters.%n" +
                         "[picocli DEBUG] Processing next arg as a positional parameter at index=0. Remainder=[-r, -v, p1, p2]%n" +
                         "[picocli DEBUG] Position 0 is in index range 0..*. Trying to assign args to java.io.File[] %1$s$CompactFields.inputFiles, arity=0..1%n" +
-                        "[picocli INFO] Adding [-r] to File[] field 'CompactFields.inputFiles' for args[0..*]%n" +
+                        "[picocli INFO] Adding [-r] to File[] field 'CompactFields.inputFiles' for args[0..*] at position 0%n" +
                         "[picocli DEBUG] Consumed 1 arguments, moving position to index 1.%n" +
                         "[picocli DEBUG] Processing next arg as a positional parameter at index=1. Remainder=[-v, p1, p2]%n" +
                         "[picocli DEBUG] Position 1 is in index range 0..*. Trying to assign args to java.io.File[] %1$s$CompactFields.inputFiles, arity=0..1%n" +
-                        "[picocli INFO] Adding [-v] to File[] field 'CompactFields.inputFiles' for args[0..*]%n" +
+                        "[picocli INFO] Adding [-v] to File[] field 'CompactFields.inputFiles' for args[0..*] at position 1%n" +
                         "[picocli DEBUG] Consumed 1 arguments, moving position to index 2.%n" +
                         "[picocli DEBUG] Processing next arg as a positional parameter at index=2. Remainder=[p1, p2]%n" +
                         "[picocli DEBUG] Position 2 is in index range 0..*. Trying to assign args to java.io.File[] %1$s$CompactFields.inputFiles, arity=0..1%n" +
-                        "[picocli INFO] Adding [p1] to File[] field 'CompactFields.inputFiles' for args[0..*]%n" +
+                        "[picocli INFO] Adding [p1] to File[] field 'CompactFields.inputFiles' for args[0..*] at position 2%n" +
                         "[picocli DEBUG] Consumed 1 arguments, moving position to index 3.%n" +
                         "[picocli DEBUG] Processing next arg as a positional parameter at index=3. Remainder=[p2]%n" +
                         "[picocli DEBUG] Position 3 is in index range 0..*. Trying to assign args to java.io.File[] %1$s$CompactFields.inputFiles, arity=0..1%n" +
-                        "[picocli INFO] Adding [p2] to File[] field 'CompactFields.inputFiles' for args[0..*]%n" +
+                        "[picocli INFO] Adding [p2] to File[] field 'CompactFields.inputFiles' for args[0..*] at position 3%n" +
                         "[picocli DEBUG] Consumed 1 arguments, moving position to index 4.%n",
                 CommandLineTest.class.getName(), new File("/home/rpopma/picocli"));
         String actual = new String(baos.toByteArray(), "UTF8");
@@ -1926,9 +1926,9 @@ public class CommandLineTest {
                         "[picocli INFO] Setting File field 'Git.gitDir' to '%s' (was 'null') for option --git-dir%n" +
                         "[picocli INFO] Adding [Fixed typos] to List<String> field 'GitCommit.message' for option -m%n" +
                         "[picocli INFO] Found end-of-options delimiter '--'. Treating remainder as positional parameters.%n" +
-                        "[picocli INFO] Adding [src1.java] to List<File> field 'GitCommit.files' for args[0..*]%n" +
-                        "[picocli INFO] Adding [src2.java] to List<File> field 'GitCommit.files' for args[0..*]%n" +
-                        "[picocli INFO] Adding [src3.java] to List<File> field 'GitCommit.files' for args[0..*]%n",
+                        "[picocli INFO] Adding [src1.java] to List<File> field 'GitCommit.files' for args[0..*] at position 0%n" +
+                        "[picocli INFO] Adding [src2.java] to List<File> field 'GitCommit.files' for args[0..*] at position 1%n" +
+                        "[picocli INFO] Adding [src3.java] to List<File> field 'GitCommit.files' for args[0..*] at position 2%n",
                 new File("/home/rpopma/picocli"));
         String actual = new String(baos.toByteArray(), "UTF8");
         //System.out.println(actual);
@@ -1968,15 +1968,15 @@ public class CommandLineTest {
                         "[picocli INFO] Found end-of-options delimiter '--'. Treating remainder as positional parameters.%n" +
                         "[picocli DEBUG] Processing next arg as a positional parameter at index=0. Remainder=[src1.java, src2.java, src3.java]%n" +
                         "[picocli DEBUG] Position 0 is in index range 0..*. Trying to assign args to java.util.List %1$s$GitCommit.files, arity=0..1%n" +
-                        "[picocli INFO] Adding [src1.java] to List<File> field 'GitCommit.files' for args[0..*]%n" +
+                        "[picocli INFO] Adding [src1.java] to List<File> field 'GitCommit.files' for args[0..*] at position 0%n" +
                         "[picocli DEBUG] Consumed 1 arguments, moving position to index 1.%n" +
                         "[picocli DEBUG] Processing next arg as a positional parameter at index=1. Remainder=[src2.java, src3.java]%n" +
                         "[picocli DEBUG] Position 1 is in index range 0..*. Trying to assign args to java.util.List %1$s$GitCommit.files, arity=0..1%n" +
-                        "[picocli INFO] Adding [src2.java] to List<File> field 'GitCommit.files' for args[0..*]%n" +
+                        "[picocli INFO] Adding [src2.java] to List<File> field 'GitCommit.files' for args[0..*] at position 1%n" +
                         "[picocli DEBUG] Consumed 1 arguments, moving position to index 2.%n" +
                         "[picocli DEBUG] Processing next arg as a positional parameter at index=2. Remainder=[src3.java]%n" +
                         "[picocli DEBUG] Position 2 is in index range 0..*. Trying to assign args to java.util.List %1$s$GitCommit.files, arity=0..1%n" +
-                        "[picocli INFO] Adding [src3.java] to List<File> field 'GitCommit.files' for args[0..*]%n" +
+                        "[picocli INFO] Adding [src3.java] to List<File> field 'GitCommit.files' for args[0..*] at position 2%n" +
                         "[picocli DEBUG] Consumed 1 arguments, moving position to index 3.%n",
                 Demo.class.getName(), new File("/home/rpopma/picocli"));
         String actual = new String(baos.toByteArray(), "UTF8");

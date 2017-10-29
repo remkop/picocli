@@ -2103,7 +2103,7 @@ public class CommandLine {
                 if (tracer.isDebug()) {tracer.debug("Position %d is in index range %s. Trying to assign args to %s, arity=%s%n", position, indexRange, positionalParam, arity);}
                 assertNoMissingParameters(positionalParam, arity.min, argsCopy);
                 int originalSize = argsCopy.size();
-                applyOption(positionalParam, Parameters.class, arity, false, argsCopy, initialized, "args[" + indexRange + "]");
+                applyOption(positionalParam, Parameters.class, arity, false, argsCopy, initialized, "args[" + indexRange + "] at position " + position);
                 int count = originalSize - argsCopy.size();
                 if (count > 0) { required.remove(positionalParam); }
                 consumed = Math.max(consumed, count);
