@@ -4528,7 +4528,7 @@ public class CommandLine {
             if (tracer.level.isEnabled(this)) { tracer.stream.printf(prefix(msg), params); }
         }
         private String prefix(String msg) { return "[picocli " + this + "] " + msg; }
-        static TraceLevel lookup(String key) { return key == null ? WARN : empty(key) ? INFO : valueOf(key); }
+        static TraceLevel lookup(String key) { return key == null ? WARN : empty(key) || "true".equalsIgnoreCase(key) ? INFO : valueOf(key); }
     }
     private static class Tracer {
         TraceLevel level = TraceLevel.lookup(System.getProperty("picocli.trace"));

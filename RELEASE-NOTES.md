@@ -7,6 +7,7 @@
 - [#220] Improve tracing for positional parameters (provide detail on current position).
 - [#221] Document workaround for Grapes bug on Groovy versions before 2.4.7.
 - [#222] Register default converter for Object fields for better scripting support.
+- [#219] Command line system property -Dpicocli.trace (without value) throws exception when used with Groovy.
 
 # <a name="2.0.1"></a> Picocli 2.0.1
 
