@@ -48,7 +48,7 @@ public class AutoCompleteTest {
     public static class BasicExample implements Runnable {
         @Option(names = {"-u", "--timeUnit"}) private TimeUnit timeUnit;
         @Option(names = {"-t", "--timeout"}) private long timeout;
-        @Override public void run() {
+        public void run() {
             System.out.printf("BasicExample was invoked with %d %s.%n", timeout, timeUnit);
         }
         public static void main(String[] args) { CommandLine.run(new BasicExample(), System.out, args); }
@@ -56,7 +56,8 @@ public class AutoCompleteTest {
     @Test
     public void basic() throws Exception {
         String script = AutoComplete.bash("basicExample", new CommandLine(new BasicExample()));
-        String expected = format(loadTextFromClasspath("/basic.bash"), CommandLine.VERSION);
+        String expected = format(loadTextFromClasspath("/basic.bash"),
+                CommandLine.VERSION, spaced(TimeUnit.values()));
         assertEquals(expected, script);
     }
 
@@ -107,8 +108,17 @@ public class AutoCompleteTest {
                         .addSubcommand("subsub2", new Sub2Child2())
                 );
         String script = AutoComplete.bash("picocompletion-demo", hierarchy);
-        String expected = format(loadTextFromClasspath("/picocompletion-demo_completion"), CommandLine.VERSION);
+        String expected = format(loadTextFromClasspath("/picocompletion-demo_completion"),
+                CommandLine.VERSION, spaced(TimeUnit.values()));
         assertEquals(expected, script);
+    }
+
+    private static String spaced(Object[] values) {
+        StringBuilder result = new StringBuilder();
+        for (Object value : values) {
+            result.append(value).append(' ');
+        }
+        return result.toString().substring(0, result.length() - 1);
     }
 
     private static String loadTextFromClasspath(String path) {
