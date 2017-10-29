@@ -1857,6 +1857,7 @@ public class CommandLine {
         private int position;
 
         Interpreter(Object command) {
+            converterRegistry.put(Object.class,        new BuiltIn.StringConverter());
             converterRegistry.put(String.class,        new BuiltIn.StringConverter());
             converterRegistry.put(StringBuilder.class, new BuiltIn.StringBuilderConverter());
             converterRegistry.put(CharSequence.class,  new BuiltIn.CharSequenceConverter());
