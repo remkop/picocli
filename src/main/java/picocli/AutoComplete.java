@@ -82,7 +82,6 @@ public class AutoComplete {
         @Option(names = { "-h", "--help"}, usageHelp = true, description = "Display this help message and quit.")
         boolean usageHelpRequested;
 
-        @Override
         public void run() {
             try {
                 if (usageHelpRequested || commandLineFQCN == null) {
@@ -151,31 +150,31 @@ public class AutoComplete {
         return builder.toString();
     }
     private static class EnumNameFunction implements Function<Enum<?>, String> {
-        @Override public String apply(final Enum<?> anEnum) {
+        public String apply(final Enum<?> anEnum) {
             return anEnum.name();
         }
     }
 
     private static class NullFunction implements Function<CharSequence, String> {
-        @Override public String apply(CharSequence value) { return value.toString(); }
+        public String apply(CharSequence value) { return value.toString(); }
     }
 
     private static interface Predicate<T> {
         boolean test(T t);
     }
     private static class BooleanFieldFilter implements Predicate<Field> {
-        @Override public boolean test(Field f) {
+        public boolean test(Field f) {
             return f.getType() == Boolean.TYPE || f.getType() == Boolean.class;
         }
     }
     private static class EnumFieldFilter implements Predicate<Field> {
-        @Override public boolean test(Field f) {
+        public boolean test(Field f) {
             return f.getType().isEnum();
         }
     }
     private static <T> Predicate<T> negate(final Predicate<T> original) {
         return new Predicate<T>() {
-            @Override public boolean test(T t) {
+            public boolean test(T t) {
                 return !original.test(t);
             }
         };
