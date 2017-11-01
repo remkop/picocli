@@ -267,6 +267,38 @@ assert demo.files == null;
 assert demo.params.equals(Arrays.asList("-files", "file1", "file2"));
 ----
 
+=== @-files
+Users sometimes run into system limitations on the length of a command line when creating a
+command line with lots of options or with long arguments for options.
+
+Starting from v2.1.0, picocli supports "argument files" or "@-files".
+Command line arguments starting with the `@` character are taken as the path to a file containing argument strings.
+When this file is expanded, the `@file` argument is replaced by a list of arguments,
+one argument for each line in the file. Lines starting with `#` are comments and are ignored.
+Multiple @-files may be specified on the command line.
+The specified path may be relative or absolute.
+
+For example, suppose a file with arguments exists at `/home/foo/args`, with these contests:
+----
+# This line is a comment and is ignored.
+A
+BB
+CCC
+----
+
+A command may be invoked with the @file argument, like this:
+[source,bash]
+----
+java MyCommand @/home/foo/args
+----
+The above will be expanded to the contents of the file:
+[source,bash]
+----
+java MyCommand A BB CCC
+----
+
+@-file expansion can be switched off by calling `CommandLine::setExpandAtFiles` with `false`.
+
 
 == Strongly Typed Everything
 When command line options and positional parameters are mapped to the annotated fields,

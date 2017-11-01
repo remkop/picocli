@@ -4,6 +4,7 @@
 
 ## <a name="2.1.0-fixes"></a> Fixed issues
 
+- [#126] New feature: Support reading argument files, also called `@-files`.
 - [#217] New feature: Support repeated boolean flag options captured in multi-valued fields.
 - [#226] Bugfix: EmptyStackException when command line ends in a cluster of boolean options.
 - [#222] Bugfix: Register default converter for Object fields for better scripting support.

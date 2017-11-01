@@ -15,7 +15,9 @@
  */
 package picocli;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
 import java.io.PrintStream;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -135,8 +137,9 @@ public class CommandLine {
     private final Interpreter interpreter;
     private String commandName = Help.DEFAULT_COMMAND_NAME;
     private boolean overwrittenOptionsAllowed = false;
-    private boolean unmatchedArgumentsAllowed = false;
+    private boolean expandAtFiles = true;
     private List<String> unmatchedArguments = new ArrayList<String>();
+    private boolean unmatchedArgumentsAllowed = false;
     private CommandLine parent;
     private boolean usageHelpRequested;
     private boolean versionHelpRequested;
@@ -1013,7 +1016,8 @@ public class CommandLine {
     }
 
     /** Returns the command name (also called program name) displayed in the usage help synopsis. {@value Help#DEFAULT_COMMAND_NAME} by default.
-     * @return the command name (also called program name) displayed in the usage */
+     * @return the command name (also called program name) displayed in the usage
+     * @since 2.0 */
     public String getCommandName() {
         return commandName;
     }
@@ -1022,9 +1026,29 @@ public class CommandLine {
      * Note that this method only modifies the usage help message, it does not impact parsing behaviour.
      * The command name may also be set declaratively with the {@link CommandLine.Command#name()} annotation attribute.
      * @param commandName command name (also called program name) displayed in the usage help synopsis
-     * @return this {@code CommandLine} object, to allow method chaining */
+     * @return this {@code CommandLine} object, to allow method chaining
+     * @since 2.0 */
     public CommandLine setCommandName(String commandName) {
         this.commandName = Assert.notNull(commandName, "commandName");
+        return this;
+    }
+
+    /** Returns whether arguments starting with {@code '@'} should be treated as the path to an argument file and its
+     * contents should be expanded into separate arguments for each line in the specified file.
+     * This property is {@code true} by default.
+     * @return whether "argument files" or {@code @files} should be expanded into their content
+     * @since 2.1 */
+    public boolean isExpandAtFiles() {
+        return expandAtFiles;
+    }
+
+    /** Sets whether arguments starting with {@code '@'} should be treated as the path to an argument file and its
+     * contents should be expanded into separate arguments for each line in the specified file. ({@code true} by default.)
+     * @param expandAtFiles whether "argument files" or {@code @files} should be expanded into their content
+     * @return this {@code CommandLine} object, to allow method chaining
+     * @since 2.1 */
+    public CommandLine setExpandAtFiles(boolean expandAtFiles) {
+        this.expandAtFiles = expandAtFiles;
         return this;
     }
     private static boolean empty(String str) { return str == null || str.trim().length() == 0; }
@@ -1842,6 +1866,10 @@ public class CommandLine {
         Collections.reverse(stack);
         return stack;
     }
+    private static <T> List<T> reverseList(List<T> list) {
+        Collections.reverse(list);
+        return list;
+    }
     /**
      * Helper class responsible for processing command line arguments.
      */
@@ -1950,10 +1978,33 @@ public class CommandLine {
             if (tracer.isInfo()) {tracer.info("Parsing %d command line args %s%n", args.length, Arrays.toString(args));}
             Stack<String> arguments = new Stack<String>();
             for (int i = args.length - 1; i >= 0; i--) {
-                arguments.push(args[i]);
+                if (expandAtFiles && args[i].startsWith("@")) {
+                    arguments.addAll(reverseList(readFile(args[i].substring(1))));
+                } else {
+                    arguments.push(args[i]);
+                }
             }
             List<CommandLine> result = new ArrayList<CommandLine>();
             parse(result, arguments, args);
+            return result;
+        }
+
+        private List<String> readFile(String fileName) {
+            List<String> result = new ArrayList<String>();
+            BufferedReader reader = null;
+            try {
+                reader = new BufferedReader(new FileReader(fileName));
+                String line = null;
+                while ((line = reader.readLine()) != null) {
+                    if (line.length() > 0 && !line.trim().startsWith("#")) { // ignore comment lines
+                        result.add(line);
+                    }
+                }
+            } catch (Exception ex) {
+                throw new InitializationException("Could not read argument file @" + fileName, ex);
+            } finally {
+                if (reader != null) { try {reader.close();} catch (Exception ignored) {} }
+            }
             return result;
         }
 
