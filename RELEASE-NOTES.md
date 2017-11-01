@@ -6,6 +6,7 @@
 
 - [#126] New feature: Support reading argument files, also called `@-files`.
 - [#217] New feature: Support repeated boolean flag options captured in multi-valued fields.
+- [#223] New feature: Added `examples` subproject containing running examples.
 - [#226] Bugfix: EmptyStackException when command line ends in a cluster of boolean options.
 - [#222] Bugfix: Register default converter for Object fields for better scripting support.
 - [#219] Bugfix: Command line system property -Dpicocli.trace (without value) throws exception when used with Groovy.
