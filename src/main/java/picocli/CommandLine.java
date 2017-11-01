@@ -1694,7 +1694,8 @@ public class CommandLine {
         public static Range defaultArity(Field field) {
             Class<?> type = field.getType();
             if (field.isAnnotationPresent(Option.class)) {
-                return defaultArity(type);
+                boolean zeroArgs = isBoolean(type) || (isMultiValue(type) && isBoolean(getTypeAttribute(field)[0]));
+                return zeroArgs ? Range.valueOf("0") : Range.valueOf("1");
             }
             if (isMultiValue(type)) {
                 return Range.valueOf("0..1");
@@ -1704,7 +1705,7 @@ public class CommandLine {
         /** Returns the default arity {@code Range} for {@link Option options}: booleans have arity 0, other types have arity 1.
          * @param type the type whose default arity to return
          * @return a new {@code Range} indicating the default arity of the specified type */
-        public static Range defaultArity(Class<?> type) {
+        @Deprecated public static Range defaultArity(Class<?> type) {
             return isBoolean(type) ? Range.valueOf("0") : Range.valueOf("1");
         }
         private int size() { return 1 + max - min; }
@@ -2157,16 +2158,17 @@ public class CommandLine {
                     if (arity.min > 0 && !empty(cluster)) {
                         if (tracer.isDebug()) {tracer.debug("Trying to process '%s' as option parameter%n", cluster);}
                     }
-                    args.push(cluster); // interpret remainder as option parameter (CAUTION: may be empty string!)
                     // arity may be >= 1, or
                     // arity <= 0 && !cluster.startsWith(separator)
                     // e.g., boolean @Option("-v", arity=0, varargs=true); arg "-rvTRUE", remainder cluster="TRUE"
+                    args.push(cluster); // interpret remainder as option parameter (CAUTION: may be empty string!)
                     if (!args.isEmpty() && args.peek().length() == 0 && !paramAttachedToOption) {
                         args.pop(); // throw out empty string we get at the end of a group of clustered short options
                     }
+                    int argCount = args.size();
                     int consumed = applyOption(field, Option.class, arity, paramAttachedToOption, args, initialized, argDescription);
-                    // only return if cluster (and maybe more) was consumed, otherwise continue do-while loop
-                    if (consumed > 0 || args.isEmpty()) {
+                    // if cluster was consumed as a parameter or if this field was the last in the cluster we're done; otherwise continue do-while loop
+                    if (args.isEmpty() || args.size() < argCount) {
                         return;
                     }
                     cluster = args.pop();
@@ -2421,10 +2423,13 @@ public class CommandLine {
             for (int i = arity.min; i < arity.max && !args.isEmpty(); i++) {
                 if (annotation != Parameters.class) { // for vararg Options, we stop if we encounter '--', a command, or another option
                     if (commands.containsKey(args.peek()) || isOption(args.peek())) {
-                        return result;
+                        break;
                     }
                 }
                 consumeOneArgument(field, arity, args, type, result, i, originalSize, argDescription);
+            }
+            if (result.isEmpty() && arity.min == 0 && arity.max <= 1 && isBoolean(type)) {
+                return Arrays.asList((Object) Boolean.TRUE);
             }
             return result;
         }

@@ -462,6 +462,8 @@ class TypeDemo {
 Multi-valued options and positional parameters are annotated fields that can capture multiple values from the command line.
 
 === Multiple Occurrences
+
+==== Options
 The simplest way to create a multi-valued option is to declare an annotated field whose type is an array, collection or a map.
 
 [source,java]
@@ -475,6 +477,7 @@ Users may specify the same option multiple times. For example:
 ----
 Each value is appended to the array or collection.
 
+==== Positional Parameters
 Similarly for multi-valued positional parameters:
 [source,java]
 ----
@@ -487,6 +490,20 @@ Users may specify multiple positional parameters. For example:
 ----
 Again, each value is appended to the array or collection.
 
+
+==== Boolean Options
+Boolean options with multiple values are supported from picocli v2.1.0.
+[source,java]
+----
+@Option(names = "-v", description = { "Specify multiple -v options to increase verbosity.",
+                                      "For example, `-v -v -v` or `-vvv`"})
+boolean[] verbosity;
+----
+Users may specify multiple boolean flag options without parameters. For example:
+----
+<command> -v -v -v -vvv
+----
+The above example results in six `true` values being added to the `verbosity` array.
 
 === Split Regex
 Options and parameters may also specify a `split` regular expression used to split each option parameter into smaller substrings.

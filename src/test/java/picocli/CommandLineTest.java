@@ -3139,4 +3139,73 @@ public class CommandLineTest {
         assertFalse(options.overwriteOutput);
         assertTrue(options.verbose);
     }
+    @Test
+    public void testIssue217BooleanOptionArrayWithParameter() {
+        class App {
+            @Option(names = "-a", split = ",")
+            private boolean[] array;
+        }
+        App app;
+
+        app = CommandLine.populateCommand(new App(), "-a=true");
+        assertArrayEquals(new boolean[]{true}, app.array);
+
+        app = CommandLine.populateCommand(new App(), "-a=true", "-a=true", "-a=true");
+        assertArrayEquals(new boolean[]{true, true, true}, app.array);
+
+        app = CommandLine.populateCommand(new App(), "-a=true,true,true");
+        assertArrayEquals(new boolean[]{true, true, true}, app.array);
+    }
+    @Test
+    public void testIssue217BooleanOptionArray() {
+        class App {
+            @Option(names = "-a")
+            private boolean[] array;
+        }
+        App app;
+
+        app = CommandLine.populateCommand(new App(), "-a");
+        assertArrayEquals(new boolean[]{true}, app.array);
+
+        app = CommandLine.populateCommand(new App(), "-a", "-a", "-a");
+        assertArrayEquals(new boolean[]{true, true, true}, app.array);
+
+        app = CommandLine.populateCommand(new App(), "-aaa");
+        assertArrayEquals(new boolean[]{true, true, true}, app.array);
+    }
+    @Test
+    public void testIssue217BooleanOptionArrayExplicitArity() {
+        class App {
+            @Option(names = "-a", arity = "0")
+            private boolean[] array;
+        }
+        App app;
+
+        app = CommandLine.populateCommand(new App(), "-a");
+        assertArrayEquals(new boolean[]{true}, app.array);
+
+        app = CommandLine.populateCommand(new App(), "-a", "-a", "-a");
+        assertArrayEquals(new boolean[]{true, true, true}, app.array);
+
+        setTraceLevel("DEBUG");
+        app = CommandLine.populateCommand(new App(), "-aaa");
+        assertArrayEquals(new boolean[]{true, true, true}, app.array);
+    }
+    @Test
+    public void testIssue217BooleanOptionList() {
+        class App {
+            @Option(names = "-a")
+            private List<Boolean> list;
+        }
+        App app;
+
+        app = CommandLine.populateCommand(new App(), "-a");
+        assertEquals(Arrays.asList(true), app.list);
+
+        app = CommandLine.populateCommand(new App(), "-a", "-a", "-a");
+        assertEquals(Arrays.asList(true, true, true), app.list);
+
+        app = CommandLine.populateCommand(new App(), "-aaa");
+        assertEquals(Arrays.asList(true, true, true), app.list);
+    }
 }
