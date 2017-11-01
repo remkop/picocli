@@ -2166,7 +2166,7 @@ public class CommandLine {
                     }
                     int consumed = applyOption(field, Option.class, arity, paramAttachedToOption, args, initialized, argDescription);
                     // only return if cluster (and maybe more) was consumed, otherwise continue do-while loop
-                    if (consumed > 0) {
+                    if (consumed > 0 || args.isEmpty()) {
                         return;
                     }
                     cluster = args.pop();

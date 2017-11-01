@@ -3122,4 +3122,21 @@ public class CommandLineTest {
         assertEquals("OPT", ((Top) parsed.get(0).getCommand()).option);
         assertEquals("ABC", ((Sub207A) parsed.get(1).getCommand()).x);
     }
+    @Test
+    public void testIssue226EmptyStackWithClusteredOptions() {
+        class Options {
+            @Option(names = "-b")
+            private boolean buffered = false;
+
+            @Option(names = "-o")
+            private boolean overwriteOutput = true;
+
+            @Option(names = "-v")
+            private boolean verbose = false;
+        }
+        Options options = CommandLine.populateCommand(new Options(), "-bov");
+        assertTrue(options.buffered);
+        assertFalse(options.overwriteOutput);
+        assertTrue(options.verbose);
+    }
 }
