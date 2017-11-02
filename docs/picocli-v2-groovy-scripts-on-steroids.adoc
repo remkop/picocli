@@ -1,0 +1,189 @@
+= Picocli v2: Groovy Scripts on Steroids
+//:author: Remko Popma
+//:email: rpopma@apache.org
+//:revnumber: 2.1.0-SNAPSHOT
+//:revdate: 2017-11-03
+:source-highlighter: coderay
+:icons: font
+:imagesdir: images
+
+Picocli v2 adds improved support for other JVM languages, especially Groovy.
+Why use picocli when the Groovy language has built-in CLI support with the http://docs.groovy-lang.org/2.4.7/html/gapi/groovy/util/CliBuilder.html[CliBuilder] class?
+
+You may like picocli's usage help, which shows ANSI http://picocli.info/#_ansi_colors_and_styles[colors and styles]
+by default. Another feature you may fancy is the command line
+http://picocli.info/autocomplete.html[TAB autocompletion]. Finally, there is a slew of smaller features,
+like the fact that your script needs zero lines of command line parsing code,
+picocli's http://picocli.info/#_subcommands[subcommand] support,
+http://picocli.info/#_strongly_typed_everything[type conversion] for both options and positional parameters,
+and http://picocli.info/#_tracing[parser tracing], to name a few.
+
+[.text-center]
+image:cli.jpg[Alt="picocli the Mighty Tiny Command Line Interface",width='20%']
+
+== Example
+
+Let's take a look at an example. The `checksum.groovy` script below takes one or more file parameters,
+and for each file prints out a checksum and the file name. The "checksum" algorithm is MD5 by default,
+but users may specify a different MessageDigest algorithm. Users can request usage help with the
+`-h` or `--help` option.
+
+[source,groovy]
+----
+@Grab('info.picocli:picocli:2.0.1')
+@picocli.groovy.PicocliScript
+import groovy.transform.Field
+
+import java.nio.file.Files
+import java.security.MessageDigest
+
+import static picocli.CommandLine.*
+
+@Parameters(arity = "1", paramLabel = "FILE", description= "The file(s) whose checksum to calculate.")
+@Field File[] files
+
+@Option(names = ["-a", "--algorithm"], description = [
+        "MD2, MD5, SHA-1, SHA-256, SHA-384, SHA-512,",
+        "  or any other MessageDigest algorithm."])
+@Field String algorithm = "MD5"
+
+@Option(names = ["-h", "--help"], usageHelp = true, description = "Show this help message and exit.")
+@Field boolean helpRequested
+
+files.each {
+    byte[] fileContents = Files.readAllBytes(it.toPath())
+    byte[] digest = MessageDigest.getInstance(algorithm).digest(fileContents)
+    println javax.xml.bind.DatatypeConverter.printHexBinary(digest) + "\t" + it
+}
+----
+When run in the `$picocli-home/examples/src/main/groovy/picocli/examples` directory,
+this example script gives the following results:
+
+[source,bash]
+----
+$ groovy checksum.groovy *.*
+4DCE157CA654199494642D49FB67BF11        checksum.groovy
+8C7D823F1C9345213977FF6DA964AA02        checksum-with-banner.groovy
+----
+
+Invoking the script with the `-h` or `--help` option shows the usage help message
+with ANSI colors and styles below:
+
+image:GroovyChecksum.png[Usage help with ANSI colors and styles]
+
+You may have noticed that the script does not contain any logic for parsing the command
+line arguments or for handling requests for usage help. Let's take a look at how this works.
+
+== Basescript
+
+Scripts annotated with `@picocli.groovy.PicocliScript` are automatically transformed to use
+`picocli.groovy.PicocliBaseScript` as their base class.
+This turns a Groovy script into a picocli-based command line application.
+
+[.text-center]
+image:AllYourBase.png[ALL YOUR BASE ARE BELONG TO US]
+
+When the script is run, Groovy calls the script's `run` method.
+The `PicocliBaseScript::run` method takes care of parsing the command line and populating the script
+fields with the results. The run method does the following:
+
+* First, `@Field` variables annotated with `@Option` or `@Parameters` are initialized from the command line arguments.
+
+* If the user input was invalid, an error message is printed followed by the usage help message.
+
+* If the user requested usage help or version information, this is printed to the console and the script exits.
+
+* Otherwise, the script body is executed.
+
+See the http://picocli.info/apidocs/picocli/groovy/PicocliBaseScript.html#run--[PicocliBaseScript javadoc] for more details.
+
+In addition to changing the script base class, the `@PicocliScript` annotation also allows Groovy
+scripts to use the `@Command` annotation. The picocli parser will look for this annotation on the
+class containing the `@Option` and `@Parameters`-annotated fields. The same custom
+http://picocli.info/apidocs/picocli/groovy/PicocliScriptASTTransformation.html[AST transformation]
+that changes the script's base class also moves any `@Command` annotation in the script to this
+transformed class so the picocli parser can pick it up.
+
+== Usage Help With Colors
+
+The `@Command` annotation lets you customize parts of the usage help message like command name, description, headers, footers etc.
+
+Let's add some bells and whistles to the above script.
+
+[source,groovy]
+----
+@Grab('info.picocli:picocli:2.0.1')
+@Command(header = [
+    "@|bold,green    ___                            ___ _           _                  |@",
+    "@|bold,green   / __|_ _ ___  _____ ___  _     / __| |_  ___ __| |__ ____  _ _ __  |@",
+    "@|bold,green  | (_ | '_/ _ \\/ _ \\ V / || |   | (__| ' \\/ -_) _| / /(_-< || | '  \\ |@",
+    "@|bold,green   \\___|_| \\___/\\___/\\_/ \\_, |    \\___|_||_\\___\\__|_\\_\\/__/\\_,_|_|_|_||@",
+    "@|bold,green                         |__/                                         |@"
+        ],
+        description = "Print a checksum of each specified FILE.",
+        version = 'checksum v1.2.3', showDefaultValues = true,
+        footerHeading = "%nFor more details, see:%n",
+        footer = ["[1] https://docs.oracle.com/javase/9/docs/specs/security/standard-names.html",
+                "ASCII Art thanks to http://patorjk.com/software/taag/"]
+)
+@picocli.groovy.PicocliScript
+import groovy.transform.Field
+
+import java.nio.file.Files
+import java.security.MessageDigest
+
+import static picocli.CommandLine.*
+
+@Parameters(arity = "1", paramLabel = "FILE", description= "The file(s) whose checksum to calculate.")
+@Field private File[] files
+
+@Option(names = ["-a", "--algorithm"], description = [
+        "MD2, MD5, SHA-1, SHA-256, SHA-384, SHA-512, or",
+        "  any other MessageDigest algorithm. See [1] for more details."])
+@Field private String algorithm = "MD5"
+
+@Option(names = ["-h", "--help"], usageHelp = true, description = "Show this help message and exit.")
+@Field private boolean helpRequested
+
+@Option(names = ["-V", "--version"], versionHelp = true, description = "Show version info and exit.")
+@Field private boolean versionInfoRequested
+
+files.each {
+    byte[] fileContents = Files.readAllBytes(it.toPath())
+    byte[] digest = MessageDigest.getInstance(algorithm).digest(fileContents)
+    println javax.xml.bind.DatatypeConverter.printHexBinary(digest) + "\t" + it
+}
+----
+
+The new version of the script adds a header and footer, and the ability to print version information.
+All text displayed in the usage help message and version information may contain format specifiers
+like the '`%n`' line separator.
+
+The usage help message can also display ANSI colors and styles.
+Picocli supports a simple markup syntax where `@|` starts an ANSI styled section and `|@` ends it.
+Immediately following the `@|` is a comma-separated list of colors and styles,
+like `@|STYLE1[,STYLE2]… text|@`.
+See the picocli http://picocli.info/#_usage_help_with_styles_and_colors[user manual] for details on what colors and styles are available.
+
+image:GroovyChecksumWithBanner.png[Customized header and footer with styles and colors]
+
+The `@Command` annotation also has a `version = "checksum v1.2.3"` attribute.
+This version string is printed when the user specifies `--version` on the command line because
+we declared an `@Option` with that name with attribute `versionHelp = true`.
+
+[source,bash]
+----
+$ groovy checksum-with-banner.groovy --version
+checksum v1.2.3
+----
+
+For more details, see the http://picocli.info/#_version_help[Version Help] section of the user manual.
+
+== Conclusion
+
+The script above is surprisingly small given all the things it can do.
+Most of the code is actually description text for the usage help message.
+
+There is a lot more to picocli, give it a try!
+
+Please star the https://github.com/remkop/picocli[project on GitHub] if you like it and tell your friends!
