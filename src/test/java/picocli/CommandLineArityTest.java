@@ -57,15 +57,20 @@ public class CommandLineArityTest {
         assertEquals("1..*", arity.toString());
         assertEquals(Range.valueOf("1..*"), arity);
     }
-    @Test
+    private static class SupportedTypes2 {
+        @Option(names = "-boolean")       boolean booleanField;
+        @Option(names = "-int")           int intField;
+    }
+
+     @Test
     public void testArityForOption_booleanFieldImplicitArity0() throws Exception {
-        Range arity = Range.optionArity(CommandLineTest.SupportedTypes.class.getDeclaredField("booleanField"));
+        Range arity = Range.optionArity(SupportedTypes2.class.getDeclaredField("booleanField"));
         assertEquals(Range.valueOf("0"), arity);
         assertEquals("0", arity.toString());
     }
     @Test
     public void testArityForOption_intFieldImplicitArity1() throws Exception {
-        Range arity = Range.optionArity(CommandLineTest.SupportedTypes.class.getDeclaredField("intField"));
+        Range arity = Range.optionArity(SupportedTypes2.class.getDeclaredField("intField"));
         assertEquals(Range.valueOf("1"), arity);
         assertEquals("1", arity.toString());
     }
@@ -521,12 +526,17 @@ public class CommandLineArityTest {
     }
     @Test(expected = MissingParameterException.class)
     public void testSingleValueFieldDefaultMinArityIs1() {
-        CommandLine.populateCommand(new CommandLineTest.SupportedTypes(),  "-Long");
+        class App { @Option(names = "-Long")          Long aLongField; }
+        CommandLine.populateCommand(new App(),  "-Long");
     }
     @Test
     public void testSingleValueFieldDefaultMinArityIsOne() {
+        class App {
+            @Option(names = "-boolean")       boolean booleanField;
+            @Option(names = "-Long")          Long aLongField;
+        }
         try {
-            CommandLine.populateCommand(new CommandLineTest.SupportedTypes(),  "-Long", "-boolean");
+            CommandLine.populateCommand(new App(),  "-Long", "-boolean");
             fail("should fail");
         } catch (CommandLine.ParameterException ex) {
             assertEquals("Could not convert '-boolean' to Long for option '-Long'" +
