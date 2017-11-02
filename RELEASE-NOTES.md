@@ -2,6 +2,30 @@
 
 # <a name="2.1.0"></a> (UNRELEASED) Picocli 2.1.0
 
+This release contains bugfixes and new features.
+
+TODO: high-level overview
+
+This is the fourteenth public release.
+Picocli follows [semantic versioning](http://semver.org/).
+
+## <a name="2.1.0-toc"></a> Table of Contents
+
+* [New and noteworthy](#2.1.0-new)
+* [Promoted features](#2.1.0-promoted)
+* [Fixed issues](#2.1.0-fixes)
+* [Deprecations](#2.1.0-deprecated)
+* [Potentially breaking changes](#2.1.0-breaking-changes)
+
+## <a name="2.1.0-new"></a> New and noteworthy
+
+TODO
+
+## <a name="2.1.0-promoted"></a> Promoted features
+Promoted features are features that were incubating in previous versions of picocli but are now supported and subject to backwards compatibility. 
+
+No features have been promoted in this picocli release.
+
 ## <a name="2.1.0-fixes"></a> Fixed issues
 
 - [#126] New feature: Support reading argument files, also called `@-files`.
@@ -10,14 +34,29 @@
 - [#226] Bugfix: EmptyStackException when command line ends in a cluster of boolean options. Thanks to [RobertZenz](https://github.com/RobertZenz).
 - [#222] Bugfix: Register default converter for Object fields for better scripting support.
 - [#219] Bugfix: Command line system property -Dpicocli.trace (without value) throws exception when used with Groovy.
+- [#68]  Enhancement: Reject private final primitive fields annotated with @Option or @Parameters: because compile-time constants are inlined, updates by picocli to such fields would not be visible to the application.
 - [#220] Enhancement: Improve tracing for positional parameters (provide detail on current position).
 - [#221] Enhancement: Document workaround for Grapes bug on Groovy versions before 2.4.7.
+
+## <a name="2.1.0-deprecated"></a> Deprecations
+
+The `Range::defaultArity(Class)` method is now deprecated in favour of the `Range::defaultArity(Field)` method introduced in v2.0.
+
+## <a name="2.1.0-breaking-changes"></a> Potentially breaking changes
+
+Private final fields that are either `String` or primitive types can no longer be annotated with `@Option` or `@Parameters`.
+Picocli will throw an `InitializationException` when it detects such fields,
+because compile-time constants are inlined, and updates by picocli to such fields would not be visible to the application.
+
 
 # <a name="2.0.1"></a> Picocli 2.0.1
 
 The picocli community is pleased to announce picocli 2.0.1.
 
 This is a bugfix release that removes a dependency on Java 1.7 which was accidentally included.
+
+This is the thirteenth public release.
+Picocli follows [semantic versioning](http://semver.org/).
 
 ## <a name="2.0.1-toc"></a> Table of Contents
 

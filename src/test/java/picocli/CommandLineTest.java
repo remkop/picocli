@@ -794,23 +794,24 @@ public class CommandLineTest {
         @Option(names = "-f") private final String field = null;
         @Option(names = "-p") private final int primitive = 43;
     }
-    @Test
-    public void testCanInitializePrivateFinalFields() {
-        PrivateFinalOptionFields ff = CommandLine.populateCommand(new PrivateFinalOptionFields(), "-f", "reference value");
-        assertEquals("reference value", ff.field);
+    @Test(expected = InitializationException.class)
+    public void testPopulateRejectsPrivateFinalFields() {
+        CommandLine.populateCommand(new PrivateFinalOptionFields(), "-f", "reference value");
     }
-    @Ignore("Needs Reject final primitive fields annotated with @Option or @Parameters #68")
-    @Test
-    public void testCanInitializeFinalPrimitiveFields() {
-        PrivateFinalOptionFields ff = CommandLine.populateCommand(new PrivateFinalOptionFields(), "-p", "12");
-        assertEquals("primitive value", 12, ff.primitive);
+    @Test(expected = InitializationException.class)
+    public void testConstructorRejectsPrivateFinalFields() {
+        new CommandLine(new PrivateFinalOptionFields());
     }
     @Test
     public void testLastValueSelectedIfOptionSpecifiedMultipleTimes() {
+        class App {
+            @Option(names = "-f") String field = null;
+            @Option(names = "-p") int primitive = 43;
+        }
         setTraceLevel("OFF");
-        CommandLine cmd = new CommandLine(new PrivateFinalOptionFields()).setOverwrittenOptionsAllowed(true);
+        CommandLine cmd = new CommandLine(new App()).setOverwrittenOptionsAllowed(true);
         cmd.parse("-f", "111", "-f", "222");
-        PrivateFinalOptionFields ff = (PrivateFinalOptionFields) cmd.getCommand();
+        App ff = cmd.getCommand();
         assertEquals("222", ff.field);
     }
 
@@ -818,17 +819,29 @@ public class CommandLineTest {
         @Parameters(index = "0") private final String field = null;
         @Parameters(index = "1", arity = "0..1") private final int primitive = 43;
     }
-    @Test
-    public void testCanInitializePrivateFinalParameterFields() {
-        PrivateFinalParameterFields ff = CommandLine.populateCommand(new PrivateFinalParameterFields(), "ref value");
-        assertEquals("ref value", ff.field);
+    @Test(expected = InitializationException.class)
+    public void testPopulateRejectsInitializePrivateFinalParameterFields() {
+        CommandLine.populateCommand(new PrivateFinalParameterFields(), "ref value");
     }
-    @Ignore("Needs Reject final primitive fields annotated with @Option or @Parameters #68")
+    @Test(expected = InitializationException.class)
+    public void testConstructorRejectsPrivateFinalPrimitiveParameterFields() {
+        new CommandLine(new PrivateFinalParameterFields());
+    }
+
+    private static class PrivateFinalAllowedFields {
+        @Option(names = "-d") private final Date date = null;
+        @Option(names = "-u") private final TimeUnit enumValue = TimeUnit.SECONDS;
+        @Parameters(index = "0") private final Integer integer = null;
+        @Parameters(index = "1") private final Long longValue = Long.valueOf(9876L);
+    }
     @Test
-    public void testCannotInitializePrivateFinalPrimitiveParameterFields() {
-        PrivateFinalParameterFields ff = CommandLine.populateCommand(new PrivateFinalParameterFields(), "ref value", "12");
-        assertEquals("ref value", ff.field);
-        assertEquals("primitive value", 12, ff.primitive);
+    public void testPrivateFinalNonPrimitiveNonStringFieldsAreAllowed() throws Exception {
+        PrivateFinalAllowedFields fields = new PrivateFinalAllowedFields();
+        new CommandLine(fields).parse("-d=2017-11-02", "-u=MILLISECONDS", "123", "123456");
+        assertEquals(new SimpleDateFormat("yyyy-MM-dd").parse("2017-11-02"), fields.date);
+        assertSame(TimeUnit.MILLISECONDS, fields.enumValue);
+        assertEquals(Integer.valueOf(123), fields.integer);
+        assertEquals(Long.valueOf(123456), fields.longValue);
     }
 
     private static class RequiredField {
@@ -1989,18 +2002,21 @@ public class CommandLineTest {
         ByteArrayOutputStream baos = new ByteArrayOutputStream(2500);
         System.setErr(new PrintStream(baos));
 
-        CommandLine cmd = new CommandLine(new PrivateFinalOptionFields()).setOverwrittenOptionsAllowed(true);
+        class App {
+            @Option(names = "-f") String field = null;
+            @Option(names = "-p") int primitive = 43;
+        }
+        CommandLine cmd = new CommandLine(new App()).setOverwrittenOptionsAllowed(true);
         cmd.parse("-f", "111", "-f", "222", "-f", "333");
-        PrivateFinalOptionFields ff = (PrivateFinalOptionFields) cmd.getCommand();
+        App ff = cmd.getCommand();
         assertEquals("333", ff.field);
         System.setErr(originalErr);
 
         String expected = String.format("" +
-                        "[picocli WARN] Overwriting String field 'PrivateFinalOptionFields.field' value '111' with '222' for option -f%n" +
-                        "[picocli WARN] Overwriting String field 'PrivateFinalOptionFields.field' value '222' with '333' for option -f%n"
+                        "[picocli WARN] Overwriting String field 'App.field' value '111' with '222' for option -f%n" +
+                        "[picocli WARN] Overwriting String field 'App.field' value '222' with '333' for option -f%n"
         );
         String actual = new String(baos.toByteArray(), "UTF8");
-        //System.out.println(actual);
         assertEquals(expected, actual);
     }
     @Test

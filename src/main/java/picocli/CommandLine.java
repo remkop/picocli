@@ -26,6 +26,7 @@ import java.lang.annotation.Target;
 import java.lang.reflect.Array;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.lang.reflect.WildcardType;
@@ -1817,8 +1818,19 @@ public class CommandLine {
                               List<Field> positionalParametersFields) {
         Field[] declaredFields = cls.getDeclaredFields();
         for (Field field : declaredFields) {
+            boolean isOption = field.isAnnotationPresent(Option.class);
+            boolean isPositional = field.isAnnotationPresent(Parameters.class);
+            if (isOption && isPositional) {
+                throw new DuplicateOptionAnnotationsException("A field can be either @Option or @Parameters, but '"
+                        + field + "' is both.");
+            }
+            if (!isOption && !isPositional) { continue; }
+            if (Modifier.isFinal(field.getModifiers()) && (field.getType().isPrimitive() || String.class.isAssignableFrom(field.getType()))) {
+                throw new InitializationException("Constant (final) primitive and String fields like " + field + " cannot be used as " +
+                        (isOption ? "an @Option" : "a @Parameter") + ": compile-time constant inlining may hide new values written to it.");
+            }
             field.setAccessible(true);
-            if (field.isAnnotationPresent(Option.class)) {
+            if (isOption) {
                 Option option = field.getAnnotation(Option.class);
                 if (option.required()) {
                     requiredFields.add(field);
@@ -1837,11 +1849,7 @@ public class CommandLine {
                     }
                 }
             }
-            if (field.isAnnotationPresent(Parameters.class)) {
-                if (field.isAnnotationPresent(Option.class)) {
-                    throw new DuplicateOptionAnnotationsException("A field can be either @Option or @Parameters, but '"
-                            + field.getName() + "' is both.");
-                }
+            if (isPositional) {
                 positionalParametersFields.add(field);
                 Range arity = Range.parameterArity(field);
                 if (arity.min > 0) {
