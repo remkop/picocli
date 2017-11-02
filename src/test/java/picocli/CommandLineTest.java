@@ -3208,4 +3208,99 @@ public class CommandLineTest {
         app = CommandLine.populateCommand(new App(), "-aaa");
         assertEquals(Arrays.asList(true, true, true), app.list);
     }
+
+    private File findFile(String resource) {
+        URL url = this.getClass().getResource(resource);
+        assertNotNull(resource, url);
+        String str = url.toString();
+        return new File(str.substring(str.indexOf("file:") + 5));
+    }
+
+    @Test
+    public void testAtFileExpandedAbsolute() {
+        class App {
+            @Option(names = "-v")
+            private boolean verbose;
+
+            @Parameters
+            private List<String> files;
+        }
+        File file = findFile("/argfile1.txt");
+        App app = CommandLine.populateCommand(new App(), "@" + file.getAbsolutePath());
+        assertTrue(app.verbose);
+        assertEquals(Arrays.asList("1111", "2222", "3333"), app.files);
+    }
+
+    @Test
+    public void testAtFileExpandedRelative() {
+        class App {
+            @Option(names = "-v")
+            private boolean verbose;
+
+            @Parameters
+            private List<String> files;
+        }
+        File file = findFile("/argfile1.txt");
+        if (!file.getAbsolutePath().startsWith(System.getProperty("user.dir"))) {
+            return;
+        }
+        String relative = file.getAbsolutePath().substring(System.getProperty("user.dir").length());
+        if (relative.startsWith(File.separator)) {
+            relative = relative.substring(File.separator.length());
+        }
+        App app = CommandLine.populateCommand(new App(), "@" + relative);
+        assertTrue(app.verbose);
+        assertEquals(Arrays.asList("1111", "2222", "3333"), app.files);
+    }
+
+    @Test
+    public void testAtFileExpandedMixedWithOtherParams() {
+        class App {
+            @Option(names = "-x")
+            private boolean xxx;
+
+            @Option(names = "-f")
+            private String[] fff;
+
+            @Option(names = "-v")
+            private boolean verbose;
+
+            @Parameters
+            private List<String> files;
+        }
+        File file = findFile("/argfile1.txt");
+        App app = CommandLine.populateCommand(new App(), "-f", "fVal1", "@" + file.getAbsolutePath(), "-x", "-f", "fVal2");
+        assertTrue(app.verbose);
+        assertEquals(Arrays.asList("1111", "2222", "3333"), app.files);
+        assertTrue(app.xxx);
+        assertArrayEquals(new String[]{"fVal1", "fVal2"}, app.fff);
+    }
+
+    @Test
+    public void testMultipleAtFilesExpandedMixedWithOtherParams() {
+        class App {
+            @Option(names = "-x")
+            private boolean xxx;
+
+            @Option(names = "-f")
+            private String[] fff;
+
+            @Option(names = "-v")
+            private boolean verbose;
+
+            @Parameters
+            private List<String> files;
+        }
+        File file = findFile("/argfile1.txt");
+        File file2 = findFile("/argfile2.txt");
+
+        setTraceLevel("OFF");
+        App app = new App();
+        CommandLine commandLine = new CommandLine(app).setOverwrittenOptionsAllowed(true);
+        commandLine.parse("-f", "fVal1", "@" + file.getAbsolutePath(), "-x", "@" + file2.getAbsolutePath(),  "-f", "fVal2");
+        assertFalse("invoked twice", app.verbose);
+        assertEquals(Arrays.asList("1111", "2222", "3333", "1111", "2222", "3333"), app.files);
+        assertFalse("invoked twice", app.xxx);
+        assertArrayEquals(new String[]{"fVal1", "FFFF", "F2F2F2", "fVal2"}, app.fff);
+    }
 }

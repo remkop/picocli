@@ -267,6 +267,7 @@ assert demo.files == null;
 assert demo.params.equals(Arrays.asList("-files", "file1", "file2"));
 ----
 
+[[AtFiles]]
 === @-files
 Users sometimes run into system limitations on the length of a command line when creating a
 command line with lots of options or with long arguments for options.
@@ -278,12 +279,13 @@ one argument for each line in the file. Lines starting with `#` are comments and
 Multiple @-files may be specified on the command line.
 The specified path may be relative or absolute.
 
-For example, suppose a file with arguments exists at `/home/foo/args`, with these contests:
+For example, suppose a file with arguments exists at `/home/foo/args`, with these contents:
+
 ----
 # This line is a comment and is ignored.
-A
-BB
-CCC
+ABC
+-option=123
+XYZ
 ----
 
 A command may be invoked with the @file argument, like this:
@@ -294,8 +296,9 @@ java MyCommand @/home/foo/args
 The above will be expanded to the contents of the file:
 [source,bash]
 ----
-java MyCommand A BB CCC
+java MyCommand ABC -option=123 XYZ
 ----
+
 
 @-file expansion can be switched off by calling `CommandLine::setExpandAtFiles` with `false`.
 
@@ -495,7 +498,7 @@ Multi-valued options and positional parameters are annotated fields that can cap
 
 === Multiple Occurrences
 
-==== Options
+==== Repeated Options
 The simplest way to create a multi-valued option is to declare an annotated field whose type is an array, collection or a map.
 
 [source,java]
@@ -509,7 +512,7 @@ Users may specify the same option multiple times. For example:
 ----
 Each value is appended to the array or collection.
 
-==== Positional Parameters
+==== Multiple Positional Parameters
 Similarly for multi-valued positional parameters:
 [source,java]
 ----
@@ -523,7 +526,7 @@ Users may specify multiple positional parameters. For example:
 Again, each value is appended to the array or collection.
 
 
-==== Boolean Options
+==== Repeated Boolean Options
 Boolean options with multiple values are supported from picocli v2.1.0.
 [source,java]
 ----
