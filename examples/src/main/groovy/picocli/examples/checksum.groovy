@@ -4,10 +4,7 @@ package picocli.examples
 @GrabExclude('org.codehaus.groovy:groovy-all')
 @picocli.groovy.PicocliScript
 import groovy.transform.Field
-
-import java.nio.file.Files
 import java.security.MessageDigest
-
 import static picocli.CommandLine.*
 
 @Parameters(arity = "1", paramLabel = "FILE", description = "The file(s) whose checksum to calculate.")
@@ -21,7 +18,5 @@ import static picocli.CommandLine.*
 @Field private boolean helpRequested
 
 files.each {
-    byte[] fileContents = Files.readAllBytes(it.toPath())
-    byte[] digest = MessageDigest.getInstance(algorithm).digest(fileContents)
-    println javax.xml.bind.DatatypeConverter.printHexBinary(digest) + "\t" + it
+    println MessageDigest.getInstance(algorithm).digest(it.bytes).encodeHex().toString() + "\t" + it
 }
