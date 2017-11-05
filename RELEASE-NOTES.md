@@ -77,7 +77,7 @@ No features have been promoted in this picocli release.
 - [#222] Bugfix: Register default converter for Object fields for better scripting support.
 - [#219] Bugfix: Command line system property -Dpicocli.trace (without value) throws exception when used with Groovy.
 - [#220] Enhancement: Improve tracing for positional parameters (provide detail on current position).
-- [#221] Enhancement: Add documentation for workaround for Grapes bug on Groovy versions before 2.4.7.
+- [#221] Enhancement: Add documentation for Grapes bug workaround on Groovy versions before 2.4.7.
 
 ## <a name="2.0.2-deprecated"></a> Deprecations
 

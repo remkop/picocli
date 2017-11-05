@@ -513,8 +513,8 @@ table.CodeRay td.code>pre{padding:0}
 <div id="header">
 <h1>picocli - a mighty tiny command line interface</h1>
 <div class="details">
-<span id="revnumber">version 2.0.1,</span>
-<span id="revdate">2017-10-25</span>
+<span id="revnumber">version 2.0.2,</span>
+<span id="revdate">2017-11-05</span>
 </div>
 <div id="toc" class="toc2">
 <div id="toctitle">Features</div>
@@ -3287,14 +3287,12 @@ The script body is executed if the user input was valid and did not request usag
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="CodeRay highlight"><code data-lang="groovy"><span class="annotation">@Grab</span>(<span class="string"><span class="delimiter">'</span><span class="content">info.picocli:picocli:2.0.1</span><span class="delimiter">'</span></span>)
+<pre class="CodeRay highlight"><code data-lang="groovy"><span class="annotation">@Grab</span>(<span class="string"><span class="delimiter">'</span><span class="content">info.picocli:picocli:2.0.2</span><span class="delimiter">'</span></span>)
 <span class="annotation">@Command</span>(name = <span class="string"><span class="delimiter">&quot;</span><span class="content">myCommand</span><span class="delimiter">&quot;</span></span>,
   description = <span class="string"><span class="delimiter">&quot;</span><span class="content">@|bold Groovy script|@ @|underline picocli|@ example</span><span class="delimiter">&quot;</span></span>)
-<span class="annotation">@PicocliScript</span>
-<span class="keyword">import</span> <span class="include">picocli.groovy.PicocliScript</span>
-<span class="keyword">import</span> <span class="include">picocli.CommandLine.Command</span>
-<span class="keyword">import</span> <span class="include">picocli.CommandLine.Option</span>
+<span class="annotation">@picocli</span>.groovy.PicocliScript
 <span class="keyword">import</span> <span class="include">groovy.transform.Field</span>
+<span class="keyword">import</span> <span class="include">static</span> <span class="include">picocli.CommandLine.*</span>
 
 <span class="annotation">@Option</span>(names = <span class="string"><span class="delimiter">&quot;</span><span class="content">-x</span><span class="delimiter">&quot;</span></span>, description = <span class="string"><span class="delimiter">&quot;</span><span class="content">number of repetitions</span><span class="delimiter">&quot;</span></span>)
 <span class="annotation">@Field</span> <span class="type">int</span> count;
@@ -3311,6 +3309,26 @@ count.times {
 }
 <span class="comment">// the CommandLine that parsed the args is available as a property</span>
 <span class="keyword">assert</span> <span class="local-variable">this</span>.commandLine.commandName == <span class="string"><span class="delimiter">&quot;</span><span class="content">myCommand</span><span class="delimiter">&quot;</span></span></code></pre>
+</div>
+</div>
+<div class="admonitionblock caution">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-caution" title="Caution"></i>
+</td>
+<td class="content">
+When using a Groovy version older than 2.4.7, use this workaround for the <a href="https://issues.apache.org/jira/browse/GROOVY-7613">Grape bug</a> that causes this error:
+<code>java.lang.ClassNotFoundException: # Licensed to the Apache Software Foundation (ASF) under one or more</code>.
+</td>
+</tr>
+</table>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="groovy"><span class="annotation">@Grab</span>(<span class="string"><span class="delimiter">'</span><span class="content">info.picocli:picocli:2.0.2</span><span class="delimiter">'</span></span>)
+<span class="annotation">@GrabExclude</span>(<span class="string"><span class="delimiter">'</span><span class="content">org.codehaus.groovy:groovy-all</span><span class="delimiter">'</span></span>) <span class="comment">// work around GROOVY-7613</span>
+...</code></pre>
 </div>
 </div>
 </div>
@@ -3451,7 +3469,7 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
 <h3 id="_gradle">22.1. Gradle</h3>
 <div class="listingblock">
 <div class="content">
-<pre>compile 'info.picocli:picocli:2.0.1'</pre>
+<pre>compile 'info.picocli:picocli:2.0.2'</pre>
 </div>
 </div>
 </div>
@@ -3462,7 +3480,7 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
 <pre>&lt;dependency&gt;
   &lt;groupId&gt;info.picocli&lt;/groupId&gt;
   &lt;artifactId&gt;picocli&lt;/artifactId&gt;
-  &lt;version&gt;2.0.1&lt;/version&gt;
+  &lt;version&gt;2.0.2&lt;/version&gt;
 &lt;/dependency&gt;</pre>
 </div>
 </div>
@@ -3471,7 +3489,7 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
 <h3 id="_scala_sbt">22.3. Scala SBT</h3>
 <div class="listingblock">
 <div class="content">
-<pre>libraryDependencies += "info.picocli" % "picocli" % "2.0.1"</pre>
+<pre>libraryDependencies += "info.picocli" % "picocli" % "2.0.2"</pre>
 </div>
 </div>
 </div>
@@ -3479,7 +3497,7 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
 <h3 id="_ivy">22.4. Ivy</h3>
 <div class="listingblock">
 <div class="content">
-<pre>&lt;dependency org="info.picocli" name="picocli" rev="2.0.1" /&gt;</pre>
+<pre>&lt;dependency org="info.picocli" name="picocli" rev="2.0.2" /&gt;</pre>
 </div>
 </div>
 </div>
@@ -3618,7 +3636,7 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
  */</span>
 <span class="directive">public</span> <span class="type">class</span> <span class="class">CommandLine</span> {
     <span class="comment">/** This is picocli version {@value}. */</span>
-    <span class="directive">public</span> <span class="directive">static</span> <span class="directive">final</span> <span class="predefined-type">String</span> VERSION = <span class="string"><span class="delimiter">&quot;</span><span class="content">2.0.1</span><span class="delimiter">&quot;</span></span>;
+    <span class="directive">public</span> <span class="directive">static</span> <span class="directive">final</span> <span class="predefined-type">String</span> VERSION = <span class="string"><span class="delimiter">&quot;</span><span class="content">2.0.2</span><span class="delimiter">&quot;</span></span>;
 
     <span class="directive">private</span> <span class="directive">final</span> Tracer tracer = <span class="keyword">new</span> Tracer();
     <span class="directive">private</span> <span class="directive">final</span> Interpreter interpreter;
@@ -3892,7 +3910,6 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
      * &lt;/pre&gt;
      * @since 2.0 */</span>
     <span class="directive">public</span> <span class="directive">static</span> <span class="type">class</span> <span class="class">DefaultExceptionHandler</span> <span class="directive">implements</span> IExceptionHandler {
-        <span class="annotation">@Override</span>
         <span class="directive">public</span> <span class="predefined-type">List</span>&lt;<span class="predefined-type">Object</span>&gt; handleException(ParameterException ex, <span class="predefined-type">PrintStream</span> out, Help.Ansi ansi, <span class="predefined-type">String</span>... args) {
             out.println(ex.getMessage());
             ex.getCommandLine().usage(out, ansi);
@@ -5347,6 +5364,7 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
         <span class="directive">private</span> <span class="type">int</span> position;
 
         Interpreter(<span class="predefined-type">Object</span> command) {
+            converterRegistry.put(<span class="predefined-type">Object</span>.class,        <span class="keyword">new</span> BuiltIn.StringConverter());
             converterRegistry.put(<span class="predefined-type">String</span>.class,        <span class="keyword">new</span> BuiltIn.StringConverter());
             converterRegistry.put(<span class="predefined-type">StringBuilder</span>.class, <span class="keyword">new</span> BuiltIn.StringBuilderConverter());
             converterRegistry.put(<span class="predefined-type">CharSequence</span>.class,  <span class="keyword">new</span> BuiltIn.CharSequenceConverter());
@@ -5593,7 +5611,7 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
                 <span class="keyword">if</span> (tracer.isDebug()) {tracer.debug(<span class="string"><span class="delimiter">&quot;</span><span class="content">Position %d is in index range %s. Trying to assign args to %s, arity=%s%n</span><span class="delimiter">&quot;</span></span>, position, indexRange, positionalParam, arity);}
                 assertNoMissingParameters(positionalParam, arity.min, argsCopy);
                 <span class="type">int</span> originalSize = argsCopy.size();
-                applyOption(positionalParam, Parameters.class, arity, <span class="predefined-constant">false</span>, argsCopy, initialized, <span class="string"><span class="delimiter">&quot;</span><span class="content">args[</span><span class="delimiter">&quot;</span></span> + indexRange + <span class="string"><span class="delimiter">&quot;</span><span class="content">]</span><span class="delimiter">&quot;</span></span>);
+                applyOption(positionalParam, Parameters.class, arity, <span class="predefined-constant">false</span>, argsCopy, initialized, <span class="string"><span class="delimiter">&quot;</span><span class="content">args[</span><span class="delimiter">&quot;</span></span> + indexRange + <span class="string"><span class="delimiter">&quot;</span><span class="content">] at position </span><span class="delimiter">&quot;</span></span> + position);
                 <span class="type">int</span> count = originalSize - argsCopy.size();
                 <span class="keyword">if</span> (count &gt; <span class="integer">0</span>) { required.remove(positionalParam); }
                 consumed = <span class="predefined-type">Math</span>.max(consumed, count);
@@ -5655,7 +5673,7 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
                     }
                     <span class="type">int</span> consumed = applyOption(field, <span class="predefined-type">Option</span>.class, arity, paramAttachedToOption, args, initialized, argDescription);
                     <span class="comment">// only return if cluster (and maybe more) was consumed, otherwise continue do-while loop</span>
-                    <span class="keyword">if</span> (consumed &gt; <span class="integer">0</span>) {
+                    <span class="keyword">if</span> (consumed &gt; <span class="integer">0</span> || args.isEmpty()) {
                         <span class="keyword">return</span>;
                     }
                     cluster = args.pop();
@@ -8017,7 +8035,7 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
             <span class="keyword">if</span> (tracer.level.isEnabled(<span class="local-variable">this</span>)) { tracer.stream.printf(prefix(msg), params); }
         }
         <span class="directive">private</span> <span class="predefined-type">String</span> prefix(<span class="predefined-type">String</span> msg) { <span class="keyword">return</span> <span class="string"><span class="delimiter">&quot;</span><span class="content">[picocli </span><span class="delimiter">&quot;</span></span> + <span class="local-variable">this</span> + <span class="string"><span class="delimiter">&quot;</span><span class="content">] </span><span class="delimiter">&quot;</span></span> + msg; }
-        <span class="directive">static</span> TraceLevel lookup(<span class="predefined-type">String</span> key) { <span class="keyword">return</span> key == <span class="predefined-constant">null</span> ? WARN : empty(key) ? INFO : valueOf(key); }
+        <span class="directive">static</span> TraceLevel lookup(<span class="predefined-type">String</span> key) { <span class="keyword">return</span> key == <span class="predefined-constant">null</span> ? WARN : empty(key) || <span class="string"><span class="delimiter">&quot;</span><span class="content">true</span><span class="delimiter">&quot;</span></span>.equalsIgnoreCase(key) ? INFO : valueOf(key); }
     }
     <span class="directive">private</span> <span class="directive">static</span> <span class="type">class</span> <span class="class">Tracer</span> {
         TraceLevel level = TraceLevel.lookup(<span class="predefined-type">System</span>.getProperty(<span class="string"><span class="delimiter">&quot;</span><span class="content">picocli.trace</span><span class="delimiter">&quot;</span></span>));
@@ -8183,8 +8201,8 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
 </div>
 <div id="footer">
 <div id="footer-text">
-Version 2.0.1<br>
-Last updated 2017-10-25 22:35:29 +09:00
+Version 2.0.2<br>
+Last updated 2017-11-05 13:13:03 +09:00
 </div>
 </div>
 </body>
