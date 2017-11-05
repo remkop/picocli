@@ -4,7 +4,7 @@
 
 The picocli community is pleased to announce picocli 2.0.2.
 
-This is a bugfix release that prevents a EmptyStackException from being thrown when the command line
+This is a bugfix release that prevents an EmptyStackException from being thrown when the command line
 ends in a cluster of boolean options, and furthermore fixes two scripting-related minor issues.
 
 This is the fourteenth public release.
