@@ -6,7 +6,7 @@ This release contains bugfixes and new features.
 
 TODO: high-level overview
 
-This is the fourteenth public release.
+This is the fifteenth public release.
 Picocli follows [semantic versioning](http://semver.org/).
 
 ## <a name="2.1.0-toc"></a> Table of Contents
@@ -31,12 +31,7 @@ No features have been promoted in this picocli release.
 - [#126] New feature: Support reading argument files, also called `@-files`.
 - [#217] New feature: Support repeated boolean flag options captured in multi-valued fields.
 - [#223] New feature: Added `examples` subproject containing running examples.  Thanks to [aadrian](https://github.com/aadrian) and [RobertZenz](https://github.com/RobertZenz).
-- [#226] Bugfix: EmptyStackException when command line ends in a cluster of boolean options. Thanks to [RobertZenz](https://github.com/RobertZenz).
-- [#222] Bugfix: Register default converter for Object fields for better scripting support.
-- [#219] Bugfix: Command line system property -Dpicocli.trace (without value) throws exception when used with Groovy.
 - [#68]  Enhancement: Reject private final primitive fields annotated with @Option or @Parameters: because compile-time constants are inlined, updates by picocli to such fields would not be visible to the application.
-- [#220] Enhancement: Improve tracing for positional parameters (provide detail on current position).
-- [#221] Enhancement: Document workaround for Grapes bug on Groovy versions before 2.4.7.
 
 ## <a name="2.1.0-deprecated"></a> Deprecations
 
@@ -47,6 +42,50 @@ The `Range::defaultArity(Class)` method is now deprecated in favour of the `Rang
 Private final fields that are either `String` or primitive types can no longer be annotated with `@Option` or `@Parameters`.
 Picocli will throw an `InitializationException` when it detects such fields,
 because compile-time constants are inlined, and updates by picocli to such fields would not be visible to the application.
+
+
+# <a name="2.0.2"></a> Picocli 2.0.2
+
+The picocli community is pleased to announce picocli 2.0.2.
+
+This is a bugfix release that prevents an EmptyStackException from being thrown when the command line
+ends in a cluster of boolean options, and furthermore fixes two scripting-related minor issues.
+
+This is the fourteenth public release.
+Picocli follows [semantic versioning](http://semver.org/).
+
+## <a name="2.0.2-toc"></a> Table of Contents
+
+* [New and noteworthy](#2.0.2-new)
+* [Promoted features](#2.0.2-promoted)
+* [Fixed issues](#2.0.2-fixes)
+* [Deprecations](#2.0.2-deprecated)
+* [Potentially breaking changes](#2.0.2-breaking-changes)
+
+## <a name="2.0.2-new"></a> New and noteworthy
+
+This is a bugfix release and does not include any new features.
+
+## <a name="2.0.2-promoted"></a> Promoted features
+Promoted features are features that were incubating in previous versions of picocli but are now supported and subject to backwards compatibility. 
+
+No features have been promoted in this picocli release.
+
+## <a name="2.0.2-fixes"></a> Fixed issues
+
+- [#226] Bugfix: EmptyStackException when command line ends in a cluster of boolean options. Thanks to [RobertZenz](https://github.com/RobertZenz).
+- [#222] Bugfix: Register default converter for Object fields for better scripting support.
+- [#219] Bugfix: Command line system property -Dpicocli.trace (without value) throws exception when used with Groovy.
+- [#220] Enhancement: Improve tracing for positional parameters (provide detail on current position).
+- [#221] Enhancement: Add documentation for workaround for Grapes bug on Groovy versions before 2.4.7.
+
+## <a name="2.0.2-deprecated"></a> Deprecations
+
+This release does not deprecate any features.
+
+## <a name="2.0.2-breaking-changes"></a> Potentially breaking changes
+
+This release does not include any breaking features.
 
 
 # <a name="2.0.1"></a> Picocli 2.0.1

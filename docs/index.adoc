@@ -1928,11 +1928,9 @@ The script body is executed if the user input was valid and did not request usag
 @Grab('info.picocli:picocli:2.1.0-SNAPSHOT')
 @Command(name = "myCommand",
   description = "@|bold Groovy script|@ @|underline picocli|@ example")
-@PicocliScript
-import picocli.groovy.PicocliScript
-import picocli.CommandLine.Command
-import picocli.CommandLine.Option
+@picocli.groovy.PicocliScript
 import groovy.transform.Field
+import static picocli.CommandLine.*
 
 @Option(names = "-x", description = "number of repetitions")
 @Field int count;
