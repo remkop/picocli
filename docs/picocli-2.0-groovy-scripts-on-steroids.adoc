@@ -31,7 +31,7 @@ but users may specify a different MessageDigest algorithm. Users can request usa
 
 [source,groovy]
 ----
-@Grab('info.picocli:picocli:2.0.1')
+@Grab('info.picocli:picocli:2.0.2')
 @picocli.groovy.PicocliScript
 import groovy.transform.Field
 import java.security.MessageDigest
@@ -154,7 +154,7 @@ Let's add some bells and whistles to the example script.
 
 [source,groovy]
 ----
-@Grab('info.picocli:picocli:2.0.1')
+@Grab('info.picocli:picocli:2.0.2')
 @Command(header = [
     "@|bold,green    ___                            ___ _           _                  |@",
     "@|bold,green   / __|_ _ ___  _____ ___  _     / __| |_  ___ __| |__ ____  _ _ __  |@",
