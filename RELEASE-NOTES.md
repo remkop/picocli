@@ -1,20 +1,58 @@
 # picocli Release Notes
 
-# <a name="2.1.0"></a> (UNRELEASED) Picocli 2.1.0
+# <a name="2.0.2"></a> Picocli 2.0.2
 
-## <a name="2.1.0-fixes"></a> Fixed issues
+The picocli community is pleased to announce picocli 2.0.2.
 
-- [#226] Bugfix: EmptyStackException when command line ends in a cluster of boolean options
+This is a bugfix release that prevents a EmptyStackException from being thrown when the command line
+ends in a cluster of boolean options, and furthermore fixes two scripting-related minor issues.
+
+This is the fourteenth public release.
+Picocli follows [semantic versioning](http://semver.org/).
+
+## <a name="2.0.2-toc"></a> Table of Contents
+
+* [New and noteworthy](#2.0.2-new)
+* [Promoted features](#2.0.2-promoted)
+* [Fixed issues](#2.0.2-fixes)
+* [Deprecations](#2.0.2-deprecated)
+* [Potentially breaking changes](#2.0.2-breaking-changes)
+
+## <a name="2.0.2-new"></a> New and noteworthy
+
+This is a bugfix release and does not include any new features.
+
+## <a name="2.0.2-promoted"></a> Promoted features
+Promoted features are features that were incubating in previous versions of picocli but are now supported and subject to backwards compatibility. 
+
+No features have been promoted in this picocli release.
+
+## <a name="2.0.2-fixes"></a> Fixed issues
+
+- [#226] Bugfix: EmptyStackException when command line ends in a cluster of boolean options. Thanks to [RobertZenz](https://github.com/RobertZenz).
 - [#222] Bugfix: Register default converter for Object fields for better scripting support.
 - [#219] Bugfix: Command line system property -Dpicocli.trace (without value) throws exception when used with Groovy.
 - [#220] Enhancement: Improve tracing for positional parameters (provide detail on current position).
-- [#221] Enhancement: Document workaround for Grapes bug on Groovy versions before 2.4.7.
+- [#221] Enhancement: Add documentation for workaround for Grapes bug on Groovy versions before 2.4.7.
+
+## <a name="2.0.2-deprecated"></a> Deprecations
+
+This release does not deprecate any features.
+
+## <a name="2.0.2-breaking-changes"></a> Potentially breaking changes
+
+This release does not include any breaking features.
+
+
 
 # <a name="2.0.1"></a> Picocli 2.0.1
 
 The picocli community is pleased to announce picocli 2.0.1.
 
 This is a bugfix release that removes a dependency on Java 1.7 which was accidentally included.
+
+This is the thirteenth public release.
+Picocli follows [semantic versioning](http://semver.org/).
 
 ## <a name="2.0.1-toc"></a> Table of Contents
 
