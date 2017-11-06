@@ -1961,8 +1961,7 @@ public class CommandLineTest {
                 "Usage: <main class> [--foo-bar-baz=<foo>]\n" +
                 "      --foo-bar-baz=<foo>       Default:\n" +
                 "                                aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\n" +
-                "                                aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\n" +
-                "\n";
+                "                                aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\n";
 
         assertEquals(expectedOutput, content);
     }
