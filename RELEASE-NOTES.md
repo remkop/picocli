@@ -1,5 +1,11 @@
 # picocli Release Notes
 
+# <a name="2.0.3"></a> Picocli 2.0.3 (UNRELEASED)
+
+## <a name="2.0.3-fixes"></a> Fixed issues
+- [#230] Enhancement: Support embedded newlines in usage help sections like header or descriptions. Thanks to [ddimtirov](https://github.com/ddimtirov).
+
+
 # <a name="2.0.2"></a> Picocli 2.0.2
 
 The picocli community is pleased to announce picocli 2.0.2.

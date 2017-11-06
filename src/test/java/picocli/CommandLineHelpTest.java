@@ -2189,7 +2189,98 @@ public class CommandLineHelpTest {
         assertEquals(ansi.new Text("@|bold abc|@@|underline DE|@"), txt2.substring(0,5));
         assertEquals(ansi.new Text("@|bold bc|@@|underline DE|@"), txt2.substring(1,5));
     }
-
+    @Test
+    public void testTextSplitLines() {
+        Help.Ansi ansi = Help.Ansi.ON;
+        Text[] all = {
+                ansi.new Text("@|bold 012\n34|@").append("5\nAA\n6").append("@|underline 78\n90|@"),
+                ansi.new Text("@|bold 012\r34|@").append("5\rAA\r6").append("@|underline 78\r90|@"),
+                ansi.new Text("@|bold 012\r\n34|@").append("5\r\nAA\r\n6").append("@|underline 78\r\n90|@"),
+        };
+        for (Text text : all) {
+            Text[] lines = text.splitLines();
+            int i = 0;
+            assertEquals(ansi.new Text("@|bold 012|@"), lines[i++]);
+            assertEquals(ansi.new Text("@|bold 34|@5"), lines[i++]);
+            assertEquals(ansi.new Text("AA"), lines[i++]);
+            assertEquals(ansi.new Text("6@|underline 78|@"), lines[i++]);
+            assertEquals(ansi.new Text("@|underline 90|@"), lines[i++]);
+        }
+    }
+    @Test
+    public void testTextSplitLinesStartEnd() {
+        Help.Ansi ansi = Help.Ansi.ON;
+        Text[] all = {
+                ansi.new Text("\n@|bold 012\n34|@").append("5\nAA\n6").append("@|underline 78\n90|@\n"),
+                ansi.new Text("\r@|bold 012\r34|@").append("5\rAA\r6").append("@|underline 78\r90|@\r"),
+                ansi.new Text("\r\n@|bold 012\r\n34|@").append("5\r\nAA\r\n6").append("@|underline 78\r\n90|@\r\n"),
+        };
+        for (Text text : all) {
+            Text[] lines = text.splitLines();
+            int i = 0;
+            assertEquals(ansi.new Text(""), lines[i++]);
+            assertEquals(ansi.new Text("@|bold 012|@"), lines[i++]);
+            assertEquals(ansi.new Text("@|bold 34|@5"), lines[i++]);
+            assertEquals(ansi.new Text("AA"), lines[i++]);
+            assertEquals(ansi.new Text("6@|underline 78|@"), lines[i++]);
+            assertEquals(ansi.new Text("@|underline 90|@"), lines[i++]);
+            assertEquals(ansi.new Text(""), lines[i++]);
+        }
+    }
+    @Test
+    public void testTextSplitLinesStartEndIntermediate() {
+        Help.Ansi ansi = Help.Ansi.ON;
+        Text[] all = {
+                ansi.new Text("\n@|bold 012\n\n\n34|@").append("5\n\n\nAA\n\n\n6").append("@|underline 78\n90|@\n"),
+                ansi.new Text("\r@|bold 012\r\r\r34|@").append("5\r\r\rAA\r\r\r6").append("@|underline 78\r90|@\r"),
+                ansi.new Text("\r\n@|bold 012\r\n\r\n\r\n34|@").append("5\r\n\r\n\r\nAA\r\n\r\n\r\n6").append("@|underline 78\r\n90|@\r\n"),
+        };
+        for (Text text : all) {
+            Text[] lines = text.splitLines();
+            int i = 0;
+            assertEquals(ansi.new Text(""), lines[i++]);
+            assertEquals(ansi.new Text("@|bold 012|@"), lines[i++]);
+            assertEquals(ansi.new Text(""), lines[i++]);
+            assertEquals(ansi.new Text(""), lines[i++]);
+            assertEquals(ansi.new Text("@|bold 34|@5"), lines[i++]);
+            assertEquals(ansi.new Text(""), lines[i++]);
+            assertEquals(ansi.new Text(""), lines[i++]);
+            assertEquals(ansi.new Text("AA"), lines[i++]);
+            assertEquals(ansi.new Text(""), lines[i++]);
+            assertEquals(ansi.new Text(""), lines[i++]);
+            assertEquals(ansi.new Text("6@|underline 78|@"), lines[i++]);
+            assertEquals(ansi.new Text("@|underline 90|@"), lines[i++]);
+            assertEquals(ansi.new Text(""), lines[i++]);
+        }
+    }
+    @Test
+    public void testEmbeddedNewLinesInUsageSections() throws UnsupportedEncodingException {
+        @Command(description = "first line\nsecond line\nthird line", headerHeading = "headerHeading1\nheaderHeading2",
+                header = "header1\nheader2", descriptionHeading = "descriptionHeading1\ndescriptionHeading2",
+                footerHeading = "footerHeading1\nfooterHeading2", footer = "footer1\nfooter2")
+        class App {
+            @Option(names = {"-v", "--verbose"}, description = "optionDescription1\noptionDescription2") boolean v;
+            @Parameters(description = "paramDescription1\nparamDescription2") String file;
+        }
+        String actual = usageString(new App(), Help.Ansi.OFF);
+        String expected = String.format("" +
+                "headerHeading1%n" +
+                "headerHeading2header1%n" +
+                "header2%n" +
+                "Usage: <main class> [-v] <file>%n" +
+                "descriptionHeading1%n" +
+                "descriptionHeading2first line%n" +
+                "second line%n" +
+                "third line%n" +
+                "      <file>                  paramDescription1%n" +
+                "                              paramDescription2%n" +
+                "  -v, --verbose               optionDescription1%n" +
+                "                              optionDescription2%n" +
+                "footerHeading1%n" +
+                "footerHeading2footer1%n" +
+                "footer2%n");
+        assertEquals(expected, actual);
+    }
     @Test
     public void testTextWithMultipleStyledSections() {
         assertEquals("\u001B[1m<main class>\u001B[21m\u001B[0m [\u001B[33m-v\u001B[39m\u001B[0m] [\u001B[33m-c\u001B[39m\u001B[0m [\u001B[3m<count>\u001B[23m\u001B[0m]]",
