@@ -701,12 +701,12 @@ transformed class so the picocli parser can pick it up.</p>
 <div class="content">
 <pre class="CodeRay highlight nowrap"><code data-lang="groovy"><span class="annotation">@Grab</span>(<span class="string"><span class="delimiter">'</span><span class="content">info.picocli:picocli:2.0.2</span><span class="delimiter">'</span></span>)
 <span class="annotation">@Command</span>(header = [
-    <span class="string"><span class="delimiter">&quot;</span><span class="content">@|bold,green    ___                            ___ _           _                  |@</span><span class="delimiter">&quot;</span></span>,
-    <span class="string"><span class="delimiter">&quot;</span><span class="content">@|bold,green   / __|_ _ ___  _____ ___  _     / __| |_  ___ __| |__ ____  _ _ __  |@</span><span class="delimiter">&quot;</span></span>,
-    <span class="string"><span class="delimiter">&quot;</span><span class="content">@|bold,green  | (_ | '_/ _ </span><span class="char">\\</span><span class="content">/ _ </span><span class="char">\\</span><span class="content"> V / || |   | (__| ' </span><span class="char">\\</span><span class="content">/ -_) _| / /(_-&lt; || | '  </span><span class="char">\\</span><span class="content"> |@</span><span class="delimiter">&quot;</span></span>,
-    <span class="string"><span class="delimiter">&quot;</span><span class="content">@|bold,green   </span><span class="char">\\</span><span class="content">___|_| </span><span class="char">\\</span><span class="content">___/</span><span class="char">\\</span><span class="content">___/</span><span class="char">\\</span><span class="content">_/ </span><span class="char">\\</span><span class="content">_, |    </span><span class="char">\\</span><span class="content">___|_||_</span><span class="char">\\</span><span class="content">___</span><span class="char">\\</span><span class="content">__|_</span><span class="char">\\</span><span class="content">_</span><span class="char">\\</span><span class="content">/__/</span><span class="char">\\</span><span class="content">_,_|_|_|_||@</span><span class="delimiter">&quot;</span></span>,
-    <span class="string"><span class="delimiter">&quot;</span><span class="content">@|bold,green                         |__/                                         |@</span><span class="delimiter">&quot;</span></span>
-        ],
+        <span class="error">$</span><span class="regexp"><span class="delimiter">/</span><span class="content">@|bold,green    ___                            ___ _           _                  |@</span><span class="delimiter">/</span></span><span class="error">$</span>,
+        <span class="error">$</span><span class="regexp"><span class="delimiter">/</span><span class="content">@|bold,green   </span><span class="delimiter">/</span></span> __|_ _ ___  _____ ___  _     / __| |_  ___ __| |__ ____  _ _ __  |<span class="error">@</span><span class="regexp"><span class="delimiter">/</span><span class="content">$</span><span class="content">,</span></span><span class="error">
+</span>        <span class="error">$</span>/<span class="error">@</span>|bold,green  | (_ | <span class="string"><span class="delimiter">'</span><span class="content">_/ _ \/ _ \ V / || |   | (__| </span><span class="delimiter">'</span></span> <span class="error">\</span>/ -_) _| <span class="regexp"><span class="delimiter">/</span><span class="content"> </span><span class="delimiter">/</span></span>(_-&lt; || | <span class="string"><span class="delimiter">'</span><span class="content">  \ |@/$,</span></span><span class="error">
+</span>        <span class="error">$</span>/<span class="error">@</span>|bold,green   <span class="error">\</span>___|_| <span class="error">\</span>___/<span class="error">\</span>___/<span class="error">\</span>_/ <span class="error">\</span>_, |    <span class="error">\</span>___|_||_<span class="error">\</span>___<span class="error">\</span>__|_<span class="error">\</span>_<span class="error">\</span>/__/<span class="error">\</span>_,_|_|_|_||<span class="error">@</span><span class="regexp"><span class="delimiter">/</span><span class="content">$</span><span class="content">,</span></span><span class="error">
+</span>        <span class="error">$</span>/<span class="error">@</span>|bold,green                         |__/                                         |<span class="error">@</span><span class="regexp"><span class="delimiter">/</span><span class="content">$</span></span><span class="error">
+</span>        ],
         description = <span class="string"><span class="delimiter">&quot;</span><span class="content">Print a checksum of each specified FILE.</span><span class="delimiter">&quot;</span></span>,
         version = <span class="string"><span class="delimiter">'</span><span class="content">checksum v1.2.3</span><span class="delimiter">'</span></span>, showDefaultValues = <span class="predefined-constant">true</span>,
         footerHeading = <span class="string"><span class="delimiter">&quot;</span><span class="content">%nFor more details, see:%n</span><span class="delimiter">&quot;</span></span>,
@@ -789,7 +789,7 @@ In the final version of our example script, most of the code is actually descrip
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2017-11-04 23:06:54 +09:00
+Last updated 2017-11-06 23:34:18 +09:00
 </div>
 </div>
 </body>

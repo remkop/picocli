@@ -156,11 +156,11 @@ Let's add some bells and whistles to the example script.
 ----
 @Grab('info.picocli:picocli:2.0.2')
 @Command(header = [
-    "@|bold,green    ___                            ___ _           _                  |@",
-    "@|bold,green   / __|_ _ ___  _____ ___  _     / __| |_  ___ __| |__ ____  _ _ __  |@",
-    "@|bold,green  | (_ | '_/ _ \\/ _ \\ V / || |   | (__| ' \\/ -_) _| / /(_-< || | '  \\ |@",
-    "@|bold,green   \\___|_| \\___/\\___/\\_/ \\_, |    \\___|_||_\\___\\__|_\\_\\/__/\\_,_|_|_|_||@",
-    "@|bold,green                         |__/                                         |@"
+        $/@|bold,green    ___                            ___ _           _                  |@/$,
+        $/@|bold,green   / __|_ _ ___  _____ ___  _     / __| |_  ___ __| |__ ____  _ _ __  |@/$,
+        $/@|bold,green  | (_ | '_/ _ \/ _ \ V / || |   | (__| ' \/ -_) _| / /(_-< || | '  \ |@/$,
+        $/@|bold,green   \___|_| \___/\___/\_/ \_, |    \___|_||_\___\__|_\_\/__/\_,_|_|_|_||@/$,
+        $/@|bold,green                         |__/                                         |@/$
         ],
         description = "Print a checksum of each specified FILE.",
         version = 'checksum v1.2.3', showDefaultValues = true,
