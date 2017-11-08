@@ -276,16 +276,11 @@ The new convenience method is `parseWithHandler`. You pass it an `IParseResultHa
 Picocli provides some built-in handlers for common use cases: `RunFirst`, `RunLast` and `RunAll`.
 All of these first check if the user requested usageHelp or versionHelp. If so, the requested info is printed and the handler returns.
 
-`RunFirst` only runs the first (main command).
+* `RunFirst` only runs the first (main command).
+* `RunLast` only runs the most specific subcommand. For example, if the user invoked `java MainApplication print param1 param2`, only `Print::call` is invoked. This is used to implement the existing `CommandLine::run` and `CommandLine::call` convenience methods.
+* `RunAll` invokes `run` (or `call`) on all commands and subcommands that appeared on the command line (if they implement Runnable or Callable).
 
-`RunLast` only runs the most specific subcommand. For example, if the user invoked
-`java MainApplication print param1 param2`, only `Print::call` is invoked.
-This is used to implement the existing `CommandLine::run` and `CommandLine::call` convenience methods.
-
-The below example uses the `RunAll` handler.
-This handler invokes run (or call) on all commands and subcommands that appeared on the command line (if they implement Runnable or Callable).
-
-From version 2.0, the code you need to write is reduced to this:
+From version 2.0, the boilerplate code you need to write is reduced to a single line and you can focus on the business logic of your application:
 [source,java]
 ----
 @Command(name = "git",
