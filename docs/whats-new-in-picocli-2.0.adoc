@@ -1,0 +1,331 @@
+= What's New in Picocli 2.0?
+//:author: Remko Popma
+//:email: rpopma@apache.org
+//:revnumber: 2.1.0-SNAPSHOT
+//:revdate: 2017-11-05
+:prewrap!:
+:source-highlighter: coderay
+:icons: font
+:imagesdir: images
+
+== Introduction
+
+Picocli is a one-file command line parsing framework that allows you to create command line applications with almost no code. Fields are annotated with `@Option` or `@Parameters` for named options and positional parameters respectively, and picocli will populate these fields with values from the command line arguments. For example:
+
+[source,java]
+----
+class App implements Runnable {
+  @Option(names = "--name", description = "the user name")
+  String name;
+
+  public static void main(String... args) {
+    CommandLine.run(new App(), System.err, args);
+  }
+
+  public void run() {
+    System.out.println("Hello world " + name);
+  }
+}
+----
+
+Picocli generates usage help messages with http://picocli.info/#_ansi_colors_and_styles[Ansi colors and styles].
+It can generate an http://picocli.info/autocomplete.html[autocompletion] script that allows end users to use `<TAB>` command line completion to discover which options and subcommands are available.
+Picocli supports http://picocli.info/#_subcommands[subcommands] and http://picocli.info/#_nested_sub_subcommands[nested sub-subcommands] to any level of depth.
+
+The http://picocli.info[user manual] describes picocli's functionality in detail. This article highlights new and noteworthy features introduced with the picocli 2.0 release.
+
+== Mixing Options With Positional Parameters
+The parser has been improved and positional parameters can now be mixed with options on the command line.
+
+image:http://picocli.info/images/whisk.png[]
+
+Previously, positional parameters had to follow the options.
+From this release, any command line argument that is not an option or subcommand is interpreted as a positional parameter.
+
+For example:
+
+[source,java]
+----
+class Mixed implements Runnable {
+  @Parameters
+  List<String> positional;
+
+  @Option(names = "-o")
+  List<String> options;
+
+  public static void main(String[] ignored) {
+    String[] demo = { "param0", "-o", "AAA", "param1", "param2", "-o", "BBB", "param3" };
+    CommandLine.run(new Mixed(), System.err, demo);
+  }
+
+  public void run() {
+    System.out.println("positional: " + positional);
+    System.out.println("options   : " + options);
+  }
+}
+----
+
+Running the above class prints out:
+
+[source,bash]
+----
+positional: [param0, param1, param2, param3]
+options   : [AAA, BBB]
+----
+
+To support mixing options with positional parameters, the parsing behaviour has changed in picocli 2.0.
+
+* Multi-value options (array, list and map fields) are **not greedy by default** any more.
+* End users may specify multi-value options (array, list and map fields) an unlimited number of times on the command line. Previously this was erroneously limited to the number specified in `arity`.
+* A single argument that is split into parts with a `split` regex now counts as a single argument. `arity="1"` won't prevent all parts from being added to the field.
+
+To illustrate the new non-greedy behaviour, consider this common use case:
+
+[source,java]
+----
+class GreedyDemo implements Runnable {
+    @Option(names="-o") List<String> options;
+    @Parameters         List<String> positionalParams;
+
+    public void run() {
+        System.out.println("picocli-" + CommandLine.VERSION);
+        System.out.println("positional: " + positionalParams);
+        System.out.println("options   : " + options);
+    }
+
+    public static void main(String[] ignored) {
+        CommandLine.run(new GreedyDemo(), System.err, "-o", "1", "2", "3");
+    }
+}
+----
+
+With picocli v1.0, arguments like the below would all end up in the `options` list. Running `GreedyDemo` would print out the following:
+
+[source,bash]
+----
+picocli-1.0.1
+positional: null
+options   : [1, 2, 3]
+----
+
+From picocli v2.0, only the first argument following `-o` is added to the `options` list, the remainder is parsed as positional parameters. Running `GreedyDemo` with picocli v2.0 gives different, non-greedy, results:
+
+[source,bash]
+----
+picocli-2.0.2
+positional: [2, 3]
+options   : [1]
+----
+
+To put multiple values in the options list in picocli v2.0, users need to specify the `-o` option multiple times:
+----
+java GreedyDemo -o 1 -o 2 -o 3
+----
+
+== Discovering Collection Types
+
+The `type` attribute is no longer necessary for `Collection` and `Map` fields: picocli will infer the collection element type from the generic type. The `type` attribute still works as before, it is just optional in most cases.
+
+image:http://picocli.info/images/binoculars.jpg[]
+
+Prior to v2.0, picocli required the `type` attribute to be able to do the type conversion:
+
+[source,java]
+----
+class Before {
+    @Option(names = "-u", type = {TimeUnit.class, Long.class});
+    Map<TimeUnit, Long> timeout;
+
+    @Parameters(type = File.class)
+    List<File> files;
+}
+----
+
+From v2.0, the `type` attribute can be omitted and the following is possible:
+
+[source,java]
+----
+class Current {
+    @Option(names = "-u");
+    Map<TimeUnit, Long> timeout;
+
+    @Parameters()
+    List<File> files;
+}
+----
+
+In the above example, picocli 2.0 is able to automatically discover that the map key values need to be converted to `TimeUnit` and the values to `Long`.
+
+
+
+== Automatic Help
+Picocli provides a number of convenience methods like `run` and `call` that parse the command line arguments, take care of error handling, and invoke an interface method to execute the application.
+
+From this release, the convenience methods will also automatically print usage help and version information
+when the user specifies options annotated with the `versionHelp` or `usageHelp` attributes.
+
+image:http://cceffect.org/wp-content/uploads/2016/01/AskingForHelp.jpg[]
+
+[source,java]
+----
+@Command(version = "App with help v1.2.3")
+class AppWithHelp implements Runnable {
+    @Option(names = "--count", description = "The number of times to repeat.")
+    int count;
+
+    @Option(names = {"-h", "--help"}, usageHelp = true,
+            description = "Print usage help and exit.")
+    boolean usageHelpRequested;
+
+    @Option(names = {"-V", "--version"}, versionHelp = true,
+            description = "Print version information and exit.")
+    boolean versionHelpRequested;
+
+    public static void main(String... args) {
+        CommandLine.run(new AppWithHelp(), System.err, args);
+    }
+
+    public void run() {
+        // -- Code like below is no longer required:
+        //
+        // if (usageHelpRequested) {
+        //     new CommandLine(this).usage(System.err);
+        //     return;
+        // } else if (versionHelpRequested) {
+        //     new CommandLine(this).printVersionHelp(System.err);
+        // }
+
+        for (int i = 0; i < count; i++) {
+            System.out.println("Hello world");
+        }
+    }
+}
+----
+
+Methods that automatically print help:
+
+* CommandLine::call
+* CommandLine::run
+* CommandLine::parseWithHandler (with the built-in Run...​ handlers)
+* CommandLine::parseWithHandlers (with the built-in Run...​ handlers)
+
+Methods that do not automatically print help:
+
+* CommandLine::parse
+* CommandLine::populateCommand
+
+
+== Usage Help Format Improvements
+This release contains various bugfixes that improve the usage help format for multi-value options and collections.
+For example, for Maps that don't have a `paramLabel`, picocli now shows key type and value type instead of the internal Java field name.
+
+== Better Subcommand Support
+
+This release adds new `CommandLine::parseWithHandler` methods. These methods intend to offer the same ease of use as the `run` and `call` methods, but with more flexibility and better support for nested subcommands.
+
+// image:https://www.intersoft.no/wp-content/uploads/2015/11/duplicate.png[]
+image:http://picocli.info/images/strong_leadership.jpg[]
+
+Consider what an application with subcommands needs to do:
+
+1. Parse the command line.
+2. If user input was invalid, print the error message and the usage help message for the subcommand where the parsing failed.
+3. If parsing succeeded, check if the user requested usage help or version information. If so, print the requested information and exit.
+4. Otherwise, execute the business logic. Usually this means executing the most specific subcommand.
+
+Previously, you would have to write code like this:
+[source,java]
+----
+public static void main() {
+    PrintStream out = System.err;
+    CommandLine top = new CommandLine(new MainApplication());
+    List<CommandLine> parsedCommands;
+    try {
+        parsedCommands = top.parse(args);
+    } catch (ParameterException ex) { // incorrect user input for one of the subcommands
+        out.println(ex.getMessage());
+        ex.getCommandLine().usage(out); // get the offended subcommand from the exception
+        return;
+    }
+    // check if the user requested help
+    for (CommandLine parsed : parsedCommands) {
+        if (parsed.isUsageHelpRequested()) {
+            parsed.usage(out);
+            return;
+        } else if (parsed.isVersionHelpRequested()) {
+            parsed.printVersionHelp(out);
+            return;
+        }
+    }
+    // execute the most specific subcommand
+    Object last = parsedCommands.get(parsedCommands.size() - 1).getCommand();
+    if (last instanceof Runnable) {
+        ((Runnable) last).run();
+    } else if (last instanceof Callable) {
+        Object result = ((Callable) last).call();
+        // ... do something with result
+    } else {
+        throw new ExecutionException("Not a Runnable or Callable");
+    }
+}
+----
+This is quite a lot of boilerplate code. Picocli 2.0 provides a convenience method that allows you to do all of the above in a single line of code.
+
+The new convenience method is `parseWithHandler`. You pass it an `IParseResultHandler` implementation that invokes the business logic if the command line was parsed successfully, and optionally an `IExceptionHandler` to deal with invalid user input.
+
+Picocli provides some built-in handlers for common use cases: `RunFirst`, `RunLast` and `RunAll`.
+All of these first check if the user requested usageHelp or versionHelp. If so, the requested info is printed and the handler returns.
+
+`RunFirst` only runs the first (main command).
+
+`RunLast` only runs the most specific subcommand. For example, if the user invoked
+`java MainApplication print param1 param2`, only `Print::call` is invoked.
+This is used to implement the existing `CommandLine::run` and `CommandLine::call` convenience methods.
+
+The below example uses the `RunAll` handler.
+This handler invokes run (or call) on all commands and subcommands that appeared on the command line (if they implement Runnable or Callable).
+
+From version 2.0, the code you need to write is reduced to this:
+[source,java]
+----
+@Command(name = "git",
+    description = "version control",
+    version = "1.2.3",
+    subcommands = {
+        GitAdd.class, GitCommit.class, GitBranch.class, GitTag.class, GitPush.class
+    }
+)
+public class Git implements Callable<Void> {
+  @Option(name = "-h", usageHelp = true, description = "Print help and exit")
+  boolean usageHelpRequested;
+
+  @Option(name = "-V", versionHelp = true, description = "Print version and exit")
+  boolean versionHelpRequested;
+
+  public static void main(String[] args) {
+    CommandLine cmd = new CommandLine(new Git());
+    List<Object> results = cmd.parseWithHandler(new RunAll(), System.err, args);
+  }
+
+  @Override
+  public Void call() throws Exception {
+    // ... your business logic
+    return null;
+  }
+}
+----
+
+=== Improved
+The `CommandLine::call` and `CommandLine::run` now support subcommands and will execute the **last** subcommand
+specified by the user. Previously subcommands were ignored and only the top-level command was executed.
+
+Finally, from this release, all picocli exceptions provide a `getCommandLine` method
+that returns the command or subcommand where parsing or execution failed.
+Previously, if the user provided invalid input for applications with subcommands,
+it was difficult to pinpoint exactly which subcommand failed to parse the input.
+
+== Conclusion
+If you are already using picocli, v2.0 is an essential upgrade.
+If you haven't used picocli before, I hope the above made you interested to give it a try.
+
+Please star the https://github.com/remkop/picocli[project on GitHub] if you like it and tell your friends!
