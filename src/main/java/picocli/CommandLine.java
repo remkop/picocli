@@ -2220,14 +2220,13 @@ public class CommandLine {
                     // arity may be >= 1, or
                     // arity <= 0 && !cluster.startsWith(separator)
                     // e.g., boolean @Option("-v", arity=0, varargs=true); arg "-rvTRUE", remainder cluster="TRUE"
-                    args.push(cluster); // interpret remainder as option parameter (CAUTION: may be empty string!)
-                    if (!args.isEmpty() && args.peek().length() == 0 && !paramAttachedToOption) {
-                        args.pop(); // throw out empty string we get at the end of a group of clustered short options
+                    if (!empty(cluster)) {
+                        args.push(cluster); // interpret remainder as option parameter (CAUTION: may be empty string!)
                     }
                     int argCount = args.size();
                     int consumed = applyOption(field, Option.class, arity, paramAttachedToOption, args, initialized, argDescription);
                     // if cluster was consumed as a parameter or if this field was the last in the cluster we're done; otherwise continue do-while loop
-                    if (args.isEmpty() || args.size() < argCount) {
+                    if (empty(cluster) || args.isEmpty() || args.size() < argCount) {
                         return;
                     }
                     cluster = args.pop();
