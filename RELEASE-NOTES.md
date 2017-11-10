@@ -76,7 +76,7 @@ No features have been promoted in this picocli release.
 ## <a name="2.0.3-fixes"></a> Fixed issues
 - [#230] Enhancement: Support embedded newlines in usage help sections like header or descriptions. Thanks to [ddimtirov](https://github.com/ddimtirov).
 - [#233] Bugfix: Parser bug: first argument following clustered options is treated as a positional parameter. Thanks to [mgrossmann](https://github.com/mgrossmann). 
-- [#232] Bugfix: Groovy-lang should not be a required runtime dependency. Thanks to [aadrian](https://github.com/aadrian). 
+- [#232] Bugfix: Remove required runtime dependency on `groovy-lang`. Thanks to [aadrian](https://github.com/aadrian). 
 
 ## <a name="2.0.3-deprecated"></a> Deprecations
 
