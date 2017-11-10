@@ -2157,16 +2157,15 @@ public class CommandLine {
                     if (arity.min > 0 && !empty(cluster)) {
                         if (tracer.isDebug()) {tracer.debug("Trying to process '%s' as option parameter%n", cluster);}
                     }
-                    args.push(cluster); // interpret remainder as option parameter (CAUTION: may be empty string!)
                     // arity may be >= 1, or
                     // arity <= 0 && !cluster.startsWith(separator)
                     // e.g., boolean @Option("-v", arity=0, varargs=true); arg "-rvTRUE", remainder cluster="TRUE"
-                    if (!args.isEmpty() && args.peek().length() == 0 && !paramAttachedToOption) {
-                        args.pop(); // throw out empty string we get at the end of a group of clustered short options
+                    if (!empty(cluster)) {
+                        args.push(cluster); // interpret remainder as option parameter
                     }
                     int consumed = applyOption(field, Option.class, arity, paramAttachedToOption, args, initialized, argDescription);
                     // only return if cluster (and maybe more) was consumed, otherwise continue do-while loop
-                    if (consumed > 0 || args.isEmpty()) {
+                    if (empty(cluster) || consumed > 0 || args.isEmpty()) {
                         return;
                     }
                     cluster = args.pop();

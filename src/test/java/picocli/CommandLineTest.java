@@ -955,6 +955,9 @@ public class CommandLineTest {
         compact = CommandLine.populateCommand(new CompactFields(), "-r -v -oout p1 p2".split(" "));
         verifyCompact(compact, true, true, "out", fileArray("p1", "p2"));
 
+        compact = CommandLine.populateCommand(new CompactFields(), "-rv -o out p1 p2".split(" ")); //#233
+        verifyCompact(compact, true, true, "out", fileArray("p1", "p2"));
+
         compact = CommandLine.populateCommand(new CompactFields(), "-oout -r -v p1 p2".split(" "));
         verifyCompact(compact, true, true, "out", fileArray("p1", "p2"));
 
@@ -1012,7 +1015,7 @@ public class CommandLineTest {
     @Test
     public void testShortOptionsWithSeparatorButNoValueAssignsEmptyStringEvenIfNotLast() {
         CompactFields compact = CommandLine.populateCommand(new CompactFields(), "-ro= -v".split(" "));
-        verifyCompact(compact, true, true, "", null);
+        verifyCompact(compact, false, true, "-v", null);
     }
     @Test
     public void testShortOptionsWithColonSeparatorButNoValueAssignsEmptyStringEvenIfNotLast() {
@@ -1020,11 +1023,33 @@ public class CommandLineTest {
         CommandLine cmd = new CommandLine(compact);
         cmd.setSeparator(":");
         cmd.parse("-ro: -v".split(" "));
+        verifyCompact(compact, false, true, "-v", null);
+    }
+    @Test
+    public void testShortOptionsWithSeparatorButNoValueFailsIfValueRequired() {
+        try {
+            CommandLine.populateCommand(new CompactFields(), "-rvo=".split(" "));
+            fail("Expected exception");
+        } catch (ParameterException ex) {
+            assertEquals("Missing required parameter for option '-o' (<outputFile>)", ex.getMessage());
+        }
+    }
+    @Test
+    public void testShortOptionsWithSeparatorButNoValueAssignsQuotedEmptyStringEvenIfNotLast() {
+        CompactFields compact = CommandLine.populateCommand(new CompactFields(), "-ro=\"\" -v".split(" "));
         verifyCompact(compact, true, true, "", null);
     }
     @Test
-    public void testShortOptionsWithSeparatorButNoValueAssignsEmptyStringIfLast() {
-        CompactFields compact = CommandLine.populateCommand(new CompactFields(), "-rvo=".split(" "));
+    public void testShortOptionsWithColonSeparatorButNoValueAssignsQuotedEmptyStringEvenIfNotLast() {
+        CompactFields compact = new CompactFields();
+        CommandLine cmd = new CommandLine(compact);
+        cmd.setSeparator(":");
+        cmd.parse("-ro:\"\" -v".split(" "));
+        verifyCompact(compact, true, true, "", null);
+    }
+    @Test
+    public void testShortOptionsWithSeparatorButNoValueAssignsEmptyQuotedStringIfLast() {
+        CompactFields compact = CommandLine.populateCommand(new CompactFields(), "-rvo=\"\"".split(" "));
         verifyCompact(compact, true, true, "", null);
     }
 

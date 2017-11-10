@@ -4,6 +4,7 @@
 
 ## <a name="2.0.3-fixes"></a> Fixed issues
 - [#230] Enhancement: Support embedded newlines in usage help sections like header or descriptions. Thanks to [ddimtirov](https://github.com/ddimtirov).
+- [#233] Bugfix: Parser bug: first argument following clustered options is treated as a positional parameter. Thanks to [mgrossmann](https://github.com/mgrossmann). 
 
 
 # <a name="2.0.2"></a> Picocli 2.0.2
