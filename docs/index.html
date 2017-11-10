@@ -513,8 +513,8 @@ table.CodeRay td.code>pre{padding:0}
 <div id="header">
 <h1>picocli - a mighty tiny command line interface</h1>
 <div class="details">
-<span id="revnumber">version 2.0.2,</span>
-<span id="revdate">2017-11-05</span>
+<span id="revnumber">version 2.0.3,</span>
+<span id="revdate">2017-11-10</span>
 </div>
 <div id="toc" class="toc2">
 <div id="toctitle">Features</div>
@@ -3287,7 +3287,7 @@ The script body is executed if the user input was valid and did not request usag
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="CodeRay highlight"><code data-lang="groovy"><span class="annotation">@Grab</span>(<span class="string"><span class="delimiter">'</span><span class="content">info.picocli:picocli:2.0.2</span><span class="delimiter">'</span></span>)
+<pre class="CodeRay highlight"><code data-lang="groovy"><span class="annotation">@Grab</span>(<span class="string"><span class="delimiter">'</span><span class="content">info.picocli:picocli:2.0.3</span><span class="delimiter">'</span></span>)
 <span class="annotation">@Command</span>(name = <span class="string"><span class="delimiter">&quot;</span><span class="content">myCommand</span><span class="delimiter">&quot;</span></span>,
   description = <span class="string"><span class="delimiter">&quot;</span><span class="content">@|bold Groovy script|@ @|underline picocli|@ example</span><span class="delimiter">&quot;</span></span>)
 <span class="annotation">@picocli</span>.groovy.PicocliScript
@@ -3326,7 +3326,7 @@ When using a Groovy version older than 2.4.7, use this workaround for the <a hre
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="CodeRay highlight"><code data-lang="groovy"><span class="annotation">@Grab</span>(<span class="string"><span class="delimiter">'</span><span class="content">info.picocli:picocli:2.0.2</span><span class="delimiter">'</span></span>)
+<pre class="CodeRay highlight"><code data-lang="groovy"><span class="annotation">@Grab</span>(<span class="string"><span class="delimiter">'</span><span class="content">info.picocli:picocli:2.0.3</span><span class="delimiter">'</span></span>)
 <span class="annotation">@GrabExclude</span>(<span class="string"><span class="delimiter">'</span><span class="content">org.codehaus.groovy:groovy-all</span><span class="delimiter">'</span></span>) <span class="comment">// work around GROOVY-7613</span>
 ...</code></pre>
 </div>
@@ -3469,7 +3469,7 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
 <h3 id="_gradle">22.1. Gradle</h3>
 <div class="listingblock">
 <div class="content">
-<pre>compile 'info.picocli:picocli:2.0.2'</pre>
+<pre>compile 'info.picocli:picocli:2.0.3'</pre>
 </div>
 </div>
 </div>
@@ -3480,7 +3480,7 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
 <pre>&lt;dependency&gt;
   &lt;groupId&gt;info.picocli&lt;/groupId&gt;
   &lt;artifactId&gt;picocli&lt;/artifactId&gt;
-  &lt;version&gt;2.0.2&lt;/version&gt;
+  &lt;version&gt;2.0.3&lt;/version&gt;
 &lt;/dependency&gt;</pre>
 </div>
 </div>
@@ -3489,7 +3489,7 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
 <h3 id="_scala_sbt">22.3. Scala SBT</h3>
 <div class="listingblock">
 <div class="content">
-<pre>libraryDependencies += "info.picocli" % "picocli" % "2.0.2"</pre>
+<pre>libraryDependencies += "info.picocli" % "picocli" % "2.0.3"</pre>
 </div>
 </div>
 </div>
@@ -3497,7 +3497,7 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
 <h3 id="_ivy">22.4. Ivy</h3>
 <div class="listingblock">
 <div class="content">
-<pre>&lt;dependency org="info.picocli" name="picocli" rev="2.0.2" /&gt;</pre>
+<pre>&lt;dependency org="info.picocli" name="picocli" rev="2.0.3" /&gt;</pre>
 </div>
 </div>
 </div>
@@ -3636,7 +3636,7 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
  */</span>
 <span class="directive">public</span> <span class="type">class</span> <span class="class">CommandLine</span> {
     <span class="comment">/** This is picocli version {@value}. */</span>
-    <span class="directive">public</span> <span class="directive">static</span> <span class="directive">final</span> <span class="predefined-type">String</span> VERSION = <span class="string"><span class="delimiter">&quot;</span><span class="content">2.0.2</span><span class="delimiter">&quot;</span></span>;
+    <span class="directive">public</span> <span class="directive">static</span> <span class="directive">final</span> <span class="predefined-type">String</span> VERSION = <span class="string"><span class="delimiter">&quot;</span><span class="content">2.0.3</span><span class="delimiter">&quot;</span></span>;
 
     <span class="directive">private</span> <span class="directive">final</span> Tracer tracer = <span class="keyword">new</span> Tracer();
     <span class="directive">private</span> <span class="directive">final</span> Interpreter interpreter;
@@ -5664,16 +5664,15 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
                     <span class="keyword">if</span> (arity.min &gt; <span class="integer">0</span> &amp;&amp; !empty(cluster)) {
                         <span class="keyword">if</span> (tracer.isDebug()) {tracer.debug(<span class="string"><span class="delimiter">&quot;</span><span class="content">Trying to process '%s' as option parameter%n</span><span class="delimiter">&quot;</span></span>, cluster);}
                     }
-                    args.push(cluster); <span class="comment">// interpret remainder as option parameter (CAUTION: may be empty string!)</span>
                     <span class="comment">// arity may be &gt;= 1, or</span>
                     <span class="comment">// arity &lt;= 0 &amp;&amp; !cluster.startsWith(separator)</span>
                     <span class="comment">// e.g., boolean @Option(&quot;-v&quot;, arity=0, varargs=true); arg &quot;-rvTRUE&quot;, remainder cluster=&quot;TRUE&quot;</span>
-                    <span class="keyword">if</span> (!args.isEmpty() &amp;&amp; args.peek().length() == <span class="integer">0</span> &amp;&amp; !paramAttachedToOption) {
-                        args.pop(); <span class="comment">// throw out empty string we get at the end of a group of clustered short options</span>
+                    <span class="keyword">if</span> (!empty(cluster)) {
+                        args.push(cluster); <span class="comment">// interpret remainder as option parameter</span>
                     }
                     <span class="type">int</span> consumed = applyOption(field, <span class="predefined-type">Option</span>.class, arity, paramAttachedToOption, args, initialized, argDescription);
                     <span class="comment">// only return if cluster (and maybe more) was consumed, otherwise continue do-while loop</span>
-                    <span class="keyword">if</span> (consumed &gt; <span class="integer">0</span> || args.isEmpty()) {
+                    <span class="keyword">if</span> (empty(cluster) || consumed &gt; <span class="integer">0</span> || args.isEmpty()) {
                         <span class="keyword">return</span>;
                     }
                     cluster = args.pop();
@@ -6662,6 +6661,21 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
             <span class="keyword">return</span> layout.toString();
         }
 
+        <span class="directive">private</span> <span class="directive">static</span> <span class="predefined-type">String</span> heading(Ansi ansi, <span class="predefined-type">String</span> values, <span class="predefined-type">Object</span>... params) {
+            <span class="predefined-type">StringBuilder</span> sb = join(ansi, <span class="keyword">new</span> <span class="predefined-type">String</span><span class="type">[]</span> {values}, <span class="keyword">new</span> <span class="predefined-type">StringBuilder</span>(), params);
+            <span class="predefined-type">String</span> result = sb.toString();
+            result = result.endsWith(<span class="predefined-type">System</span>.getProperty(<span class="string"><span class="delimiter">&quot;</span><span class="content">line.separator</span><span class="delimiter">&quot;</span></span>))
+                    ? result.substring(<span class="integer">0</span>, result.length() - <span class="predefined-type">System</span>.getProperty(<span class="string"><span class="delimiter">&quot;</span><span class="content">line.separator</span><span class="delimiter">&quot;</span></span>).length()) : result;
+            <span class="keyword">return</span> result + <span class="keyword">new</span> <span class="predefined-type">String</span>(spaces(countTrailingSpaces(values)));
+        }
+        <span class="directive">private</span> <span class="directive">static</span> <span class="type">char</span><span class="type">[]</span> spaces(<span class="type">int</span> length) { <span class="type">char</span><span class="type">[]</span> result = <span class="keyword">new</span> <span class="type">char</span>[length]; <span class="predefined-type">Arrays</span>.fill(result, <span class="string"><span class="delimiter">'</span><span class="content"> </span><span class="delimiter">'</span></span>); <span class="keyword">return</span> result; }
+        <span class="directive">private</span> <span class="directive">static</span> <span class="type">int</span> countTrailingSpaces(<span class="predefined-type">String</span> str) {
+            <span class="keyword">if</span> (str == <span class="predefined-constant">null</span>) {<span class="keyword">return</span> <span class="integer">0</span>;}
+            <span class="type">int</span> trailingSpaces = <span class="integer">0</span>;
+            <span class="keyword">for</span> (<span class="type">int</span> i = str.length() - <span class="integer">1</span>; i &gt;= <span class="integer">0</span> &amp;&amp; str.charAt(i) == <span class="string"><span class="delimiter">'</span><span class="content"> </span><span class="delimiter">'</span></span>; i--) { trailingSpaces++; }
+            <span class="keyword">return</span> trailingSpaces;
+        }
+
         <span class="comment">/** Formats each of the specified values and appends it to the specified StringBuilder.
          * @param ansi whether the result should contain ANSI escape codes or not
          * @param values the values to format and append to the StringBuilder
@@ -6673,11 +6687,15 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
                 TextTable table = <span class="keyword">new</span> TextTable(ansi, usageHelpWidth);
                 table.indentWrappedLines = <span class="integer">0</span>;
                 <span class="keyword">for</span> (<span class="predefined-type">String</span> summaryLine : values) {
-                    table.addRowValues(ansi.new Text(<span class="predefined-type">String</span>.format(summaryLine, params)));
+                    Text<span class="type">[]</span> lines = ansi.new Text(format(summaryLine, params)).splitLines();
+                    <span class="keyword">for</span> (Text line : lines) {  table.addRowValues(line); }
                 }
                 table.toString(sb);
             }
             <span class="keyword">return</span> sb;
+        }
+        <span class="directive">private</span> <span class="directive">static</span> <span class="predefined-type">String</span> format(<span class="predefined-type">String</span> formatString,  <span class="predefined-type">Object</span>... params) {
+            <span class="keyword">return</span> formatString == <span class="predefined-constant">null</span> ? <span class="string"><span class="delimiter">&quot;</span><span class="delimiter">&quot;</span></span> : <span class="predefined-type">String</span>.format(formatString, params);
         }
         <span class="comment">/** Returns command custom synopsis as a string. A custom synopsis can be zero or more lines, and can be
          * specified declaratively with the {@link Command#customSynopsis()} annotation attribute or programmatically
@@ -6720,14 +6738,14 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
          * @param params the parameters to use to format the header heading
          * @return the formatted header heading */</span>
         <span class="directive">public</span> <span class="predefined-type">String</span> headerHeading(<span class="predefined-type">Object</span>... params) {
-            <span class="keyword">return</span> ansi().new Text(format(headerHeading, params)).toString();
+            <span class="keyword">return</span> heading(ansi(), headerHeading, params);
         }
 
         <span class="comment">/** Returns the text displayed before the synopsis text; the result of {@code String.format(synopsisHeading, params)}.
          * @param params the parameters to use to format the synopsis heading
          * @return the formatted synopsis heading */</span>
         <span class="directive">public</span> <span class="predefined-type">String</span> synopsisHeading(<span class="predefined-type">Object</span>... params) {
-            <span class="keyword">return</span> ansi().new Text(format(synopsisHeading, params)).toString();
+            <span class="keyword">return</span> heading(ansi(), synopsisHeading, params);
         }
 
         <span class="comment">/** Returns the text displayed before the description text; an empty string if there is no description,
@@ -6735,7 +6753,7 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
          * @param params the parameters to use to format the description heading
          * @return the formatted description heading */</span>
         <span class="directive">public</span> <span class="predefined-type">String</span> descriptionHeading(<span class="predefined-type">Object</span>... params) {
-            <span class="keyword">return</span> empty(descriptionHeading) ? <span class="string"><span class="delimiter">&quot;</span><span class="delimiter">&quot;</span></span> : ansi().new Text(format(descriptionHeading, params)).toString();
+            <span class="keyword">return</span> empty(descriptionHeading) ? <span class="string"><span class="delimiter">&quot;</span><span class="delimiter">&quot;</span></span> : heading(ansi(), descriptionHeading, params);
         }
 
         <span class="comment">/** Returns the text displayed before the positional parameter list; an empty string if there are no positional
@@ -6743,7 +6761,7 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
          * @param params the parameters to use to format the parameter list heading
          * @return the formatted parameter list heading */</span>
         <span class="directive">public</span> <span class="predefined-type">String</span> parameterListHeading(<span class="predefined-type">Object</span>... params) {
-            <span class="keyword">return</span> positionalParametersFields.isEmpty() ? <span class="string"><span class="delimiter">&quot;</span><span class="delimiter">&quot;</span></span> : ansi().new Text(format(parameterListHeading, params)).toString();
+            <span class="keyword">return</span> positionalParametersFields.isEmpty() ? <span class="string"><span class="delimiter">&quot;</span><span class="delimiter">&quot;</span></span> : heading(ansi(), parameterListHeading, params);
         }
 
         <span class="comment">/** Returns the text displayed before the option list; an empty string if there are no options,
@@ -6751,7 +6769,7 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
          * @param params the parameters to use to format the option list heading
          * @return the formatted option list heading */</span>
         <span class="directive">public</span> <span class="predefined-type">String</span> optionListHeading(<span class="predefined-type">Object</span>... params) {
-            <span class="keyword">return</span> optionFields.isEmpty() ? <span class="string"><span class="delimiter">&quot;</span><span class="delimiter">&quot;</span></span> : ansi().new Text(format(optionListHeading, params)).toString();
+            <span class="keyword">return</span> optionFields.isEmpty() ? <span class="string"><span class="delimiter">&quot;</span><span class="delimiter">&quot;</span></span> : heading(ansi(), optionListHeading, params);
         }
 
         <span class="comment">/** Returns the text displayed before the command list; an empty string if there are no commands,
@@ -6759,17 +6777,14 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
          * @param params the parameters to use to format the command list heading
          * @return the formatted command list heading */</span>
         <span class="directive">public</span> <span class="predefined-type">String</span> commandListHeading(<span class="predefined-type">Object</span>... params) {
-            <span class="keyword">return</span> commands.isEmpty() ? <span class="string"><span class="delimiter">&quot;</span><span class="delimiter">&quot;</span></span> : ansi().new Text(format(commandListHeading, params)).toString();
+            <span class="keyword">return</span> commands.isEmpty() ? <span class="string"><span class="delimiter">&quot;</span><span class="delimiter">&quot;</span></span> : heading(ansi(), commandListHeading, params);
         }
 
         <span class="comment">/** Returns the text displayed before the footer text; the result of {@code String.format(footerHeading, params)}.
          * @param params the parameters to use to format the footer heading
          * @return the formatted footer heading */</span>
         <span class="directive">public</span> <span class="predefined-type">String</span> footerHeading(<span class="predefined-type">Object</span>... params) {
-            <span class="keyword">return</span> ansi().new Text(format(footerHeading, params)).toString();
-        }
-        <span class="directive">private</span> <span class="predefined-type">String</span> format(<span class="predefined-type">String</span> formatString,  <span class="predefined-type">Object</span><span class="type">[]</span> params) {
-            <span class="keyword">return</span> formatString == <span class="predefined-constant">null</span> ? <span class="string"><span class="delimiter">&quot;</span><span class="delimiter">&quot;</span></span> : <span class="predefined-type">String</span>.format(formatString, params);
+            <span class="keyword">return</span> heading(ansi(), footerHeading, params);
         }
         <span class="comment">/** Returns a 2-column list with command names and the first line of their header or (if absent) description.
          * @return a usage help section describing the added commands */</span>
@@ -6940,27 +6955,25 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
         <span class="directive">static</span> <span class="type">class</span> <span class="class">DefaultOptionRenderer</span> <span class="directive">implements</span> IOptionRenderer {
             <span class="directive">public</span> <span class="predefined-type">String</span> requiredMarker = <span class="string"><span class="delimiter">&quot;</span><span class="content"> </span><span class="delimiter">&quot;</span></span>;
             <span class="directive">public</span> <span class="predefined-type">Object</span> command;
+            <span class="directive">private</span> <span class="predefined-type">String</span> sep;
+            <span class="directive">private</span> <span class="type">boolean</span> showDefault;
             <span class="directive">public</span> Text<span class="type">[]</span><span class="type">[]</span> render(<span class="predefined-type">Option</span> option, <span class="predefined-type">Field</span> field, IParamLabelRenderer paramLabelRenderer, ColorScheme scheme) {
                 <span class="predefined-type">String</span><span class="type">[]</span> names = ShortestFirst.sort(option.names());
                 <span class="type">int</span> shortOptionCount = names[<span class="integer">0</span>].length() == <span class="integer">2</span> ? <span class="integer">1</span> : <span class="integer">0</span>;
                 <span class="predefined-type">String</span> shortOption = shortOptionCount &gt; <span class="integer">0</span> ? names[<span class="integer">0</span>] : <span class="string"><span class="delimiter">&quot;</span><span class="delimiter">&quot;</span></span>;
-                Text paramLabelText = paramLabelRenderer.renderParameterLabel(field, scheme.ansi(), scheme.optionParamStyles);
+                sep = shortOptionCount &gt; <span class="integer">0</span> &amp;&amp; names.length &gt; <span class="integer">1</span> ? <span class="string"><span class="delimiter">&quot;</span><span class="content">,</span><span class="delimiter">&quot;</span></span> : <span class="string"><span class="delimiter">&quot;</span><span class="delimiter">&quot;</span></span>;
+
                 <span class="predefined-type">String</span> longOption = join(names, shortOptionCount, names.length - shortOptionCount, <span class="string"><span class="delimiter">&quot;</span><span class="content">, </span><span class="delimiter">&quot;</span></span>);
-                <span class="predefined-type">String</span> sep = shortOptionCount &gt; <span class="integer">0</span> &amp;&amp; names.length &gt; <span class="integer">1</span> ? <span class="string"><span class="delimiter">&quot;</span><span class="content">,</span><span class="delimiter">&quot;</span></span> : <span class="string"><span class="delimiter">&quot;</span><span class="delimiter">&quot;</span></span>;
+                Text longOptionText = createLongOptionText(field, paramLabelRenderer, scheme, longOption);
 
-                <span class="comment">// if no long option, fill in the space between the short option name and the param label value</span>
-                <span class="keyword">if</span> (paramLabelText.length &gt; <span class="integer">0</span> &amp;&amp; longOption.length() == <span class="integer">0</span>) {
-                    sep = paramLabelRenderer.separator();
-                    <span class="comment">// #181 paramLabelText may be =LABEL or [=LABEL...]</span>
-                    <span class="type">int</span> sepStart = paramLabelText.plainString().indexOf(sep);
-                    Text prefix = paramLabelText.substring(<span class="integer">0</span>, sepStart);
-                    paramLabelText = prefix.append(paramLabelText.substring(sepStart + sep.length()));
-                }
-                Text longOptionText = scheme.optionText(longOption);
-                longOptionText = longOptionText.append(paramLabelText);
+                showDefault = command != <span class="predefined-constant">null</span> &amp;&amp; !option.help() &amp;&amp; !isBoolean(field.getType());
+                <span class="predefined-type">Object</span> defaultValue = createDefaultValue(field);
+
                 <span class="predefined-type">String</span> requiredOption = option.required() ? requiredMarker : <span class="string"><span class="delimiter">&quot;</span><span class="delimiter">&quot;</span></span>;
+                <span class="keyword">return</span> renderDescriptionLines(option, scheme, requiredOption, shortOption, longOptionText, defaultValue);
+            }
 
-                <span class="type">boolean</span> showDefault = command != <span class="predefined-constant">null</span> &amp;&amp; !option.help() &amp;&amp; !isBoolean(field.getType());
+            <span class="directive">private</span> <span class="predefined-type">Object</span> createDefaultValue(<span class="predefined-type">Field</span> field) {
                 <span class="predefined-type">Object</span> defaultValue = <span class="predefined-constant">null</span>;
                 <span class="keyword">try</span> {
                     defaultValue = field.get(command);
@@ -6975,22 +6988,57 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
                 } <span class="keyword">catch</span> (<span class="exception">Exception</span> ex) {
                     showDefault = <span class="predefined-constant">false</span>;
                 }
-                <span class="directive">final</span> <span class="type">int</span> descriptionCount = <span class="predefined-type">Math</span>.max(<span class="integer">1</span>, option.description().length);
-                <span class="directive">final</span> <span class="type">int</span> ROW_COUNT = showDefault ? descriptionCount + <span class="integer">1</span> : descriptionCount;
-                <span class="directive">final</span> <span class="type">int</span> COLUMN_COUNT = <span class="integer">5</span>;
+                <span class="keyword">return</span> defaultValue;
+            }
+
+            <span class="directive">private</span> Text createLongOptionText(<span class="predefined-type">Field</span> field, IParamLabelRenderer renderer, ColorScheme scheme, <span class="predefined-type">String</span> longOption) {
+                Text paramLabelText = renderer.renderParameterLabel(field, scheme.ansi(), scheme.optionParamStyles);
+
+                <span class="comment">// if no long option, fill in the space between the short option name and the param label value</span>
+                <span class="keyword">if</span> (paramLabelText.length &gt; <span class="integer">0</span> &amp;&amp; longOption.length() == <span class="integer">0</span>) {
+                    sep = renderer.separator();
+                    <span class="comment">// #181 paramLabelText may be =LABEL or [=LABEL...]</span>
+                    <span class="type">int</span> sepStart = paramLabelText.plainString().indexOf(sep);
+                    Text prefix = paramLabelText.substring(<span class="integer">0</span>, sepStart);
+                    paramLabelText = prefix.append(paramLabelText.substring(sepStart + sep.length()));
+                }
+                Text longOptionText = scheme.optionText(longOption);
+                longOptionText = longOptionText.append(paramLabelText);
+                <span class="keyword">return</span> longOptionText;
+            }
+
+            <span class="directive">private</span> Text<span class="type">[]</span><span class="type">[]</span> renderDescriptionLines(<span class="predefined-type">Option</span> option,
+                                                    ColorScheme scheme,
+                                                    <span class="predefined-type">String</span> requiredOption,
+                                                    <span class="predefined-type">String</span> shortOption,
+                                                    Text longOptionText,
+                                                    <span class="predefined-type">Object</span> defaultValue) {
                 Text EMPTY = Ansi.EMPTY_TEXT;
-                Text<span class="type">[]</span><span class="type">[]</span> result = <span class="keyword">new</span> Text[ROW_COUNT][COLUMN_COUNT];
-                result[<span class="integer">0</span>] = <span class="keyword">new</span> Text<span class="type">[]</span> { scheme.optionText(requiredOption), scheme.optionText(shortOption),
-                        scheme.ansi().new Text(sep), longOptionText, scheme.ansi().new Text(str(option.description(), <span class="integer">0</span>)) };
+                <span class="predefined-type">List</span>&lt;Text<span class="type">[]</span>&gt; result = <span class="keyword">new</span> <span class="predefined-type">ArrayList</span>&lt;Text<span class="type">[]</span>&gt;();
+                Text<span class="type">[]</span> descriptionFirstLines = scheme.ansi().new Text(str(option.description(), <span class="integer">0</span>)).splitLines();
+                <span class="keyword">if</span> (descriptionFirstLines.length == <span class="integer">0</span>) {
+                    <span class="keyword">if</span> (showDefault) {
+                        descriptionFirstLines = <span class="keyword">new</span> Text<span class="type">[]</span>{scheme.ansi().new Text(<span class="string"><span class="delimiter">&quot;</span><span class="content">  Default: </span><span class="delimiter">&quot;</span></span> + defaultValue)};
+                        showDefault = <span class="predefined-constant">false</span>; <span class="comment">// don't show the default value twice</span>
+                    } <span class="keyword">else</span> {
+                        descriptionFirstLines = <span class="keyword">new</span> Text<span class="type">[]</span>{ EMPTY };
+                    }
+                }
+                result.add(<span class="keyword">new</span> Text<span class="type">[]</span> { scheme.optionText(requiredOption), scheme.optionText(shortOption),
+                        scheme.ansi().new Text(sep), longOptionText, descriptionFirstLines[<span class="integer">0</span>] });
+                <span class="keyword">for</span> (<span class="type">int</span> i = <span class="integer">1</span>; i &lt; descriptionFirstLines.length; i++) {
+                    result.add(<span class="keyword">new</span> Text<span class="type">[]</span> { EMPTY, EMPTY, EMPTY, EMPTY, descriptionFirstLines[i] });
+                }
                 <span class="keyword">for</span> (<span class="type">int</span> i = <span class="integer">1</span>; i &lt; option.description().length; i++) {
-                    result[i] = <span class="keyword">new</span> Text<span class="type">[]</span> { EMPTY, EMPTY, EMPTY, EMPTY, scheme.ansi().new Text(option.description()[i]) };
+                    Text<span class="type">[]</span> descriptionNextLines = scheme.ansi().new Text(option.description()[i]).splitLines();
+                    <span class="keyword">for</span> (Text line : descriptionNextLines) {
+                        result.add(<span class="keyword">new</span> Text<span class="type">[]</span> { EMPTY, EMPTY, EMPTY, EMPTY, line });
+                    }
                 }
                 <span class="keyword">if</span> (showDefault) {
-                    <span class="predefined-type">Arrays</span>.fill(result[result.length - <span class="integer">1</span>], EMPTY);
-                    <span class="type">int</span> row = empty(result[ROW_COUNT - <span class="integer">2</span>][COLUMN_COUNT - <span class="integer">1</span>]) ? ROW_COUNT - <span class="integer">2</span> : ROW_COUNT - <span class="integer">1</span>;
-                    result[row][COLUMN_COUNT - <span class="integer">1</span>] = scheme.ansi().new Text(<span class="string"><span class="delimiter">&quot;</span><span class="content">  Default: </span><span class="delimiter">&quot;</span></span> + defaultValue);
+                    result.add(<span class="keyword">new</span> Text<span class="type">[]</span> { EMPTY, EMPTY, EMPTY, EMPTY, scheme.ansi().new Text(<span class="string"><span class="delimiter">&quot;</span><span class="content">  Default: </span><span class="delimiter">&quot;</span></span> + defaultValue) });
                 }
-                <span class="keyword">return</span> result;
+                <span class="keyword">return</span> result.toArray(<span class="keyword">new</span> Text[result.size()]<span class="type">[]</span>);
             }
         }
         <span class="comment">/** The MinimalOptionRenderer converts {@link Option Options} to a single row with two columns of text: an
@@ -7045,14 +7093,21 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
                 Text label = paramLabelRenderer.renderParameterLabel(field, scheme.ansi(), scheme.parameterStyles);
                 Text requiredParameter = scheme.parameterText(Range.parameterArity(field).min &gt; <span class="integer">0</span> ? requiredMarker : <span class="string"><span class="delimiter">&quot;</span><span class="delimiter">&quot;</span></span>);
 
-                <span class="directive">final</span> <span class="type">int</span> COLUMN_COUNT = <span class="integer">5</span>;
-                <span class="directive">final</span> Text EMPTY = Ansi.EMPTY_TEXT;
-                Text<span class="type">[]</span><span class="type">[]</span> result = <span class="keyword">new</span> Text[<span class="predefined-type">Math</span>.max(<span class="integer">1</span>, params.description().length)][COLUMN_COUNT];
-                result[<span class="integer">0</span>] = <span class="keyword">new</span> Text<span class="type">[]</span> { requiredParameter, EMPTY, EMPTY, label, scheme.ansi().new Text(str(params.description(), <span class="integer">0</span>)) };
-                <span class="keyword">for</span> (<span class="type">int</span> i = <span class="integer">1</span>; i &lt; params.description().length; i++) {
-                    result[i] = <span class="keyword">new</span> Text<span class="type">[]</span> { EMPTY, EMPTY, EMPTY, EMPTY, scheme.ansi().new Text(params.description()[i]) };
+                Text EMPTY = Ansi.EMPTY_TEXT;
+                <span class="predefined-type">List</span>&lt;Text<span class="type">[]</span>&gt; result = <span class="keyword">new</span> <span class="predefined-type">ArrayList</span>&lt;Text<span class="type">[]</span>&gt;();
+                Text<span class="type">[]</span> descriptionFirstLines = scheme.ansi().new Text(str(params.description(), <span class="integer">0</span>)).splitLines();
+                <span class="keyword">if</span> (descriptionFirstLines.length == <span class="integer">0</span>) { descriptionFirstLines = <span class="keyword">new</span> Text<span class="type">[]</span>{ EMPTY }; }
+                result.add(<span class="keyword">new</span> Text<span class="type">[]</span> { requiredParameter, EMPTY, EMPTY, label, descriptionFirstLines[<span class="integer">0</span>] });
+                <span class="keyword">for</span> (<span class="type">int</span> i = <span class="integer">1</span>; i &lt; descriptionFirstLines.length; i++) {
+                    result.add(<span class="keyword">new</span> Text<span class="type">[]</span> { EMPTY, EMPTY, EMPTY, EMPTY, descriptionFirstLines[i] });
                 }
-                <span class="keyword">return</span> result;
+                <span class="keyword">for</span> (<span class="type">int</span> i = <span class="integer">1</span>; i &lt; params.description().length; i++) {
+                    Text<span class="type">[]</span> descriptionNextLines = scheme.ansi().new Text(params.description()[i]).splitLines();
+                    <span class="keyword">for</span> (Text line : descriptionNextLines) {
+                        result.add(<span class="keyword">new</span> Text<span class="type">[]</span> { EMPTY, EMPTY, EMPTY, EMPTY, line });
+                    }
+                }
+                <span class="keyword">return</span> result.toArray(<span class="keyword">new</span> Text[result.size()]<span class="type">[]</span>);
             }
         }
         <span class="comment">/** When customizing online usage help for an option parameter or a positional parameter, a custom
@@ -7475,7 +7530,6 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
             <span class="directive">private</span> <span class="directive">static</span> <span class="type">int</span> length(Text str) {
                 <span class="keyword">return</span> str.length; <span class="comment">// TODO count some characters as double length</span>
             }
-            <span class="directive">private</span> <span class="type">char</span><span class="type">[]</span> spaces(<span class="type">int</span> length) { <span class="type">char</span><span class="type">[]</span> result = <span class="keyword">new</span> <span class="type">char</span>[length]; <span class="predefined-type">Arrays</span>.fill(result, <span class="string"><span class="delimiter">'</span><span class="content"> </span><span class="delimiter">'</span></span>); <span class="keyword">return</span> result; }
 
             <span class="directive">private</span> <span class="type">int</span> copy(<span class="predefined-type">BreakIterator</span> line, Text text, Text columnValue, <span class="type">int</span> offset) {
                 <span class="comment">// Deceive the BreakIterator to ensure no line breaks after '-' character</span>
@@ -7903,6 +7957,27 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
                     <span class="keyword">try</span> { <span class="keyword">return</span> <span class="local-variable">super</span>.clone(); } <span class="keyword">catch</span> (<span class="exception">CloneNotSupportedException</span> e) { <span class="keyword">throw</span> <span class="keyword">new</span> <span class="exception">IllegalStateException</span>(e); }
                 }
 
+                <span class="directive">public</span> Text<span class="type">[]</span> splitLines() {
+                    <span class="predefined-type">List</span>&lt;Text&gt; result = <span class="keyword">new</span> <span class="predefined-type">ArrayList</span>&lt;Text&gt;();
+                    <span class="type">boolean</span> trailingEmptyString = <span class="predefined-constant">false</span>;
+                    <span class="type">int</span> start = <span class="integer">0</span>, end = <span class="integer">0</span>;
+                    <span class="keyword">for</span> (<span class="type">int</span> i = <span class="integer">0</span>; i &lt; plain.length(); i++, end = i) {
+                        <span class="type">char</span> c = plain.charAt(i);
+                        <span class="type">boolean</span> eol = c == <span class="string"><span class="delimiter">'</span><span class="content">\n</span><span class="delimiter">'</span></span>;
+                        eol |= (c == <span class="string"><span class="delimiter">'</span><span class="content">\r</span><span class="delimiter">'</span></span> &amp;&amp; i + <span class="integer">1</span> &lt; plain.length() &amp;&amp; plain.charAt(i + <span class="integer">1</span>) == <span class="string"><span class="delimiter">'</span><span class="content">\n</span><span class="delimiter">'</span></span> &amp;&amp; ++i &gt; <span class="integer">0</span>); <span class="comment">// \r\n</span>
+                        eol |= c == <span class="string"><span class="delimiter">'</span><span class="content">\r</span><span class="delimiter">'</span></span>;
+                        <span class="keyword">if</span> (eol) {
+                            result.add(<span class="local-variable">this</span>.substring(start, end));
+                            trailingEmptyString = i == plain.length() - <span class="integer">1</span>;
+                            start = i + <span class="integer">1</span>;
+                        }
+                    }
+                    <span class="keyword">if</span> (start &lt; plain.length() || trailingEmptyString) {
+                        result.add(<span class="local-variable">this</span>.substring(start, plain.length()));
+                    }
+                    <span class="keyword">return</span> result.toArray(<span class="keyword">new</span> Text[result.size()]);
+                }
+
                 <span class="comment">/** Returns a new {@code Text} instance that is a substring of this Text. Does not modify this instance!
                  * @param start index in the plain text where to start the substring
                  * @return a new Text instance that is a substring of this Text */</span>
@@ -8201,8 +8276,8 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
 </div>
 <div id="footer">
 <div id="footer-text">
-Version 2.0.2<br>
-Last updated 2017-11-05 13:13:03 +09:00
+Version 2.0.3<br>
+Last updated 2017-11-10 23:02:38 +09:00
 </div>
 </div>
 </body>

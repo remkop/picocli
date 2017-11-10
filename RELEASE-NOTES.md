@@ -6,7 +6,7 @@ This release contains bugfixes and new features.
 
 TODO: high-level overview
 
-This is the fifteenth public release.
+This is the sixteenth public release.
 Picocli follows [semantic versioning](http://semver.org/).
 
 ## <a name="2.1.0-toc"></a> Table of Contents
@@ -32,9 +32,6 @@ No features have been promoted in this picocli release.
 - [#217] New feature: Support repeated boolean flag options captured in multi-valued fields.
 - [#223] New feature: Added `examples` subproject containing running examples.  Thanks to [aadrian](https://github.com/aadrian) and [RobertZenz](https://github.com/RobertZenz).
 - [#68]  Enhancement: Reject private final primitive fields annotated with @Option or @Parameters: because compile-time constants are inlined, updates by picocli to such fields would not be visible to the application.
-- [#230] Enhancement: Support embedded newlines in usage help sections like header or descriptions. Thanks to [ddimtirov](https://github.com/ddimtirov).
-- [#233] Bugfix: Parser bug: first argument following clustered options is treated as a positional parameter. Thanks to [mgrossmann](https://github.com/mgrossmann). 
-- [#232] Bugfix: Groovy-lang should not be a required runtime dependency. Thanks to [aadrian](https://github.com/aadrian). 
 
 ## <a name="2.1.0-deprecated"></a> Deprecations
 
@@ -45,6 +42,49 @@ The `Range::defaultArity(Class)` method is now deprecated in favour of the `Rang
 Private final fields that are either `String` or primitive types can no longer be annotated with `@Option` or `@Parameters`.
 Picocli will throw an `InitializationException` when it detects such fields,
 because compile-time constants are inlined, and updates by picocli to such fields would not be visible to the application.
+
+
+
+# <a name="2.0.3"></a> Picocli 2.0.3
+
+The picocli community is pleased to announce picocli 2.0.3.
+
+This is a bugfix release that fixes a parser bug where the first argument following a clustered options was treated as a positional parameter, and removes the erroneous runtime dependency on `groovy-lang` that slipped in with the 2.0 release.
+
+This release also includes a minor enhancement to support embedded newlines in usage help sections like header or descriptions. This allows Groovy applications to use [triple-quoted](http://groovy-lang.org/syntax.html#_triple_double_quoted_string) and [dollar slashy](http://groovy-lang.org/syntax.html#_dollar_slashy_string) multi-line strings in usage help sections.
+
+This is the fifteenth public release.
+Picocli follows [semantic versioning](http://semver.org/).
+
+## <a name="2.0.3-toc"></a> Table of Contents
+
+* [New and noteworthy](#2.0.3-new)
+* [Promoted features](#2.0.3-promoted)
+* [Fixed issues](#2.0.3-fixes)
+* [Deprecations](#2.0.3-deprecated)
+* [Potentially breaking changes](#2.0.3-breaking-changes)
+
+## <a name="2.0.3-new"></a> New and noteworthy
+
+This is a bugfix release and does not include any new features.
+
+## <a name="2.0.3-promoted"></a> Promoted features
+Promoted features are features that were incubating in previous versions of picocli but are now supported and subject to backwards compatibility. 
+
+No features have been promoted in this picocli release.
+
+## <a name="2.0.3-fixes"></a> Fixed issues
+- [#230] Enhancement: Support embedded newlines in usage help sections like header or descriptions. Thanks to [ddimtirov](https://github.com/ddimtirov).
+- [#233] Bugfix: Parser bug: first argument following clustered options is treated as a positional parameter. Thanks to [mgrossmann](https://github.com/mgrossmann). 
+- [#232] Bugfix: Groovy-lang should not be a required runtime dependency. Thanks to [aadrian](https://github.com/aadrian). 
+
+## <a name="2.0.3-deprecated"></a> Deprecations
+
+This release does not deprecate any features.
+
+## <a name="2.0.3-breaking-changes"></a> Potentially breaking changes
+
+This release does not include any breaking features.
 
 
 # <a name="2.0.2"></a> Picocli 2.0.2
