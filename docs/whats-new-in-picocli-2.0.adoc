@@ -14,16 +14,16 @@ Picocli is a one-file command line parsing framework that allows you to create c
 
 [source,java]
 ----
-class App implements Runnable {
-  @Option(names = "--name", description = "the user name")
+class Greet implements Runnable {
+  @Option(names = "--name", required = true, description = "the user name")
   String name;
 
   public static void main(String... args) {
-    CommandLine.run(new App(), System.err, args);
+    CommandLine.run(new Greet(), System.err, args);
   }
 
   public void run() {
-    System.out.println("Hello world " + name);
+    System.out.println("Hello, " + name);
   }
 }
 ----
@@ -99,7 +99,7 @@ class GreedyDemo implements Runnable {
 }
 ----
 
-With picocli v1.0, arguments like the below would all end up in the `options` list. Running `GreedyDemo` would print out the following:
+With picocli 1.0, arguments like the below would all end up in the `options` list. Running `GreedyDemo` would print out the following:
 
 [source,bash]
 ----
@@ -108,16 +108,16 @@ positional: null
 options   : [1, 2, 3]
 ----
 
-From picocli v2.0, only the first argument following `-o` is added to the `options` list, the remainder is parsed as positional parameters. Running `GreedyDemo` with picocli v2.0 gives different, non-greedy, results:
+From picocli 2.0, only the first argument following `-o` is added to the `options` list, the remainder is parsed as positional parameters. Running `GreedyDemo` with picocli 2.0 gives different, non-greedy, results:
 
 [source,bash]
 ----
-picocli-2.0.2
+picocli-2.0.3
 positional: [2, 3]
 options   : [1]
 ----
 
-To put multiple values in the options list in picocli v2.0, users need to specify the `-o` option multiple times:
+To put multiple values in the options list in picocli 2.0, users need to specify the `-o` option multiple times:
 ----
 java GreedyDemo -o 1 -o 2 -o 3
 ----
@@ -154,7 +154,7 @@ class Current {
 }
 ----
 
-In the above example, picocli 2.0 is able to automatically discover that the map key values need to be converted to `TimeUnit` and the values to `Long`.
+In the above example, picocli 2.0 is able to automatically discover that command line arguments need to be converted to `File` before adding them to the list, and for the map, that keys need to be converted to `TimeUnit` and values to `Long`.
 
 
 
@@ -233,31 +233,32 @@ Consider what an application with subcommands needs to do:
 3. If parsing succeeded, check if the user requested usage help or version information. If so, print the requested information and exit.
 4. Otherwise, execute the business logic. Usually this means executing the most specific subcommand.
 
-Previously, you would have to write code like this:
+Picocli provides some building blocks to accomplish this, but it was up to the application to wire them together. This wiring is essentially boilerplate and is very similar between applications. For example, previously, an application with subcommands would typically contain code like this:
 [source,java]
 ----
 public static void main() {
-    PrintStream out = System.err;
+    // 1. parse the command line
     CommandLine top = new CommandLine(new MainApplication());
     List<CommandLine> parsedCommands;
     try {
         parsedCommands = top.parse(args);
-    } catch (ParameterException ex) { // incorrect user input for one of the subcommands
-        out.println(ex.getMessage());
-        ex.getCommandLine().usage(out); // get the offended subcommand from the exception
+    } catch (ParameterException ex) {
+        // 2. handle incorrect user input for one of the subcommands
+        System.err.println(ex.getMessage());
+        ex.getCommandLine().usage(System.err);
         return;
     }
-    // check if the user requested help
+    // 3. check if the user requested help
     for (CommandLine parsed : parsedCommands) {
         if (parsed.isUsageHelpRequested()) {
-            parsed.usage(out);
+            parsed.usage(System.err);
             return;
         } else if (parsed.isVersionHelpRequested()) {
-            parsed.printVersionHelp(out);
+            parsed.printVersionHelp(System.err);
             return;
         }
     }
-    // execute the most specific subcommand
+    // 4. execute the most specific subcommand
     Object last = parsedCommands.get(parsedCommands.size() - 1).getCommand();
     if (last instanceof Runnable) {
         ((Runnable) last).run();
@@ -271,10 +272,9 @@ public static void main() {
 ----
 This is quite a lot of boilerplate code. Picocli 2.0 provides a convenience method that allows you to do all of the above in a single line of code.
 
-The new convenience method is `parseWithHandler`. You pass it an `IParseResultHandler` implementation that invokes the business logic if the command line was parsed successfully, and optionally an `IExceptionHandler` to deal with invalid user input.
+The new convenience method is `parseWithHandler`. You pass it an `IParseResultHandler` implementation that invokes the business logic if the command line was parsed successfully. Optionally, you may also pass it an `IExceptionHandler` to deal with invalid user input.
 
-Picocli provides some built-in handlers for common use cases: `RunFirst`, `RunLast` and `RunAll`.
-All of these first check if the user requested usageHelp or versionHelp. If so, the requested info is printed and the handler returns.
+Picocli provides some built-in `IParseResultHandler` implementations for common use cases: `RunFirst`, `RunLast` and `RunAll`. All of these first check if the user requested usageHelp or versionHelp. If so, the requested info is printed and the handler returns.
 
 * `RunFirst` only runs the first (main command).
 * `RunLast` only runs the most specific subcommand. For example, if the user invoked `java MainApplication print param1 param2`, only `Print::call` is invoked. This is used to implement the existing `CommandLine::run` and `CommandLine::call` convenience methods.
@@ -305,7 +305,6 @@ public class Git implements Callable<Void> {
   @Override
   public Void call() throws Exception {
     // ... your business logic
-    return null;
   }
 }
 ----
@@ -322,5 +321,7 @@ it was difficult to pinpoint exactly which subcommand failed to parse the input.
 == Conclusion
 If you are already using picocli, v2.0 is an essential upgrade.
 If you haven't used picocli before, I hope the above made you interested to give it a try.
+
+Many of these improvements originated in user feedback and subsequent discussions. Please don't hesitate to ask questions, request features or give other feedback on the picocli https://github.com/remkop/picocli/issues[issue tracker].
 
 Please star the https://github.com/remkop/picocli[project on GitHub] if you like it and tell your friends!
