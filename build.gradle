@@ -1,10 +1,10 @@
 group 'info.picocli'
 description 'Annotation-based Java command line parser. Usage help with ANSI styles and colors. Autocomplete. Nested subcommands. Easily included as source to avoid adding a dependency.'
-version '2.0.3'
+version '2.0.4-SNAPSHOT'
 
 // for bumpVersion task
-def oldVersion = '2\\.0\\.3-SNAPSHOT'
-def oldRevdate = '2017\\-11\\-07'
+def oldVersion = '2\\.0\\.3'
+def oldRevdate = '2017\\-11\\-10'
 def revDate    = '2017-11-10'
 
 buildscript {
