@@ -161,7 +161,7 @@ Picocli provides a number of convenience methods like `run` and `call` that pars
 From this release, the convenience methods will also automatically print usage help and version information
 when the user specifies options annotated with the `versionHelp` or `usageHelp` attributes.
 
-image:http://cceffect.org/wp-content/uploads/2016/01/AskingForHelp.jpg[]
+image:http://picocli.info/images/AskingForHelp.jpg[]
 
 [source,java]
 ----
