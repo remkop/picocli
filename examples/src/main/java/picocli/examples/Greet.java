@@ -18,7 +18,7 @@ package picocli.examples;
 import picocli.CommandLine;
 import static picocli.CommandLine.*;
 
-@Command(name = "Greet", header = "@|green Hello world demo|@")
+@Command(name = "Greet", header = "%n@|green Hello world demo|@")
 public class Greet implements Runnable {
     @Option(names = {"-u", "--name"}, required = true, description = "The user name.")
     String name;
