@@ -2,7 +2,7 @@
 //:author: Remko Popma
 //:email: rpopma@apache.org
 //:revnumber: 2.1.0-SNAPSHOT
-//:revdate: 2017-11-05
+//:revdate: 2017-11-14
 :prewrap!:
 :source-highlighter: coderay
 :icons: font
@@ -14,8 +14,9 @@ Picocli is a one-file command line parsing framework that allows you to create c
 
 [source,java]
 ----
+@Command(name = "Greet", header = "%n@|green Hello world demo|@")
 class Greet implements Runnable {
-  @Option(names = "--name", required = true, description = "the user name")
+  @Option(names = {"-u", "--name"}, required = true, description = "The user name.")
   String name;
 
   public void run() {
@@ -28,9 +29,20 @@ class Greet implements Runnable {
 }
 ----
 
-Picocli generates usage help messages with http://picocli.info/#_ansi_colors_and_styles[Ansi colors and styles].
-It can generate an http://picocli.info/autocomplete.html[autocompletion] script that allows end users to use `<TAB>` command line completion to discover which options and subcommands are available.
-Picocli supports http://picocli.info/#_subcommands[subcommands] and http://picocli.info/#_nested_sub_subcommands[nested sub-subcommands] to any level of depth.
+Picocli generates usage help messages with http://picocli.info/#_ansi_colors_and_styles[Ansi colors and styles]. For example, when the above program is run with invalid input (missing the required user name option), it prints an error and the usage help message:
+
+//[source,shell]
+//----
+//Missing required option '-u=<name>'
+//Hello world demo
+//Usage: Greet -u=<name>
+//  -u, --name=<name>           the user name
+//----
+image:http://picocli.info/images/Greet-screenshot.png[Screenshot of error message and usage help for Greet application]
+
+
+Picocli can generate an http://picocli.info/autocomplete.html[autocompletion] script that allows end users to use `<TAB>` command line completion to discover which options and subcommands are available.
+For more involved use cases, it supports http://picocli.info/#_subcommands[subcommands] and http://picocli.info/#_nested_sub_subcommands[nested sub-subcommands] to any level of depth.
 
 The http://picocli.info[user manual] describes picocli's functionality in detail. This article highlights new and noteworthy features introduced with the picocli 2.0 release.
 
@@ -165,7 +177,8 @@ image:http://picocli.info/images/AskingForHelp.jpg[]
 
 [source,java]
 ----
-@Command(version = "App with help v1.2.3")
+@Command(version = "App with help v1.2.3", header = "%nAutomatic Help Demo%n",
+         description = "Prints usage help and version help when requested.%n")
 class AppWithHelp implements Runnable {
     @Option(names = "--count", description = "The number of times to repeat.")
     int count;
@@ -177,10 +190,6 @@ class AppWithHelp implements Runnable {
     @Option(names = {"-V", "--version"}, versionHelp = true,
             description = "Print version information and exit.")
     boolean versionHelpRequested;
-
-    public static void main(String... args) {
-        CommandLine.run(new AppWithHelp(), System.err, args);
-    }
 
     public void run() {
         // -- Code like below is no longer required:
@@ -195,8 +204,39 @@ class AppWithHelp implements Runnable {
             System.out.println("Hello world");
         }
     }
+
+    public static void main(String... args) {
+        CommandLine.run(new AppWithHelp(), System.err, args);
+    }
 }
 ----
+
+When executed with `--help`, the program prints usage help:
+
+//[code,shell]
+//----
+//$ java AppWithHelp --help
+//
+//Automatic Help Demo
+//
+//Usage: <main class> [-hV] [--count=<count>]
+//Prints usage help and version help when requested.
+//
+//      --count=<count>         The number of times to repeat.
+//  -h, --help                  Print usage help and exit.
+//  -V, --version               Print version information and exit.
+//----
+image:http://picocli.info/images/AppWithHelp-usage-screenshot.png[Usage help message for AppWithHelp]
+
+Similarly, when executed with `--version`, the program prints version information:
+
+//[code,shell]
+//----
+//$ java AppWithHelp --version
+//
+//App with help v1.2.3
+//----
+image:http://picocli.info/images/AppWithHelp-version-screenshot.png[Version information for AppWithHelp]
 
 Methods that automatically print help:
 
@@ -270,16 +310,21 @@ This is quite a lot of boilerplate code. Picocli 2.0 provides a convenience meth
 [source,java]
 ----
 public static void main() {
+    // This handles all of the above in one line:
+    // 1. parse the command line
+    // 2. handle incorrect user input for one of the subcommands
+    // 3. automatically print help if requested
+    // 4. execute one or more subcommands
     new CommandLine(new YourApp()).parseWithHandler(new RunAll(), System.err, args);
 }
 ----
 
-The new convenience method is `parseWithHandler`. You pass it an `IParseResultHandler` implementation that invokes the business logic if the command line was parsed successfully. Optionally, you may also pass it an `IExceptionHandler` to deal with invalid user input.
+The new convenience method is `parseWithHandler`. You pass it an `IParseResultHandler` implementation that is invoked if the command line was parsed successfully. A default exception handler prints an error message and usage help if the user input was invalid. There is a similar method that additionally accepts an `IExceptionHandler` if you want to customize how invalid user input is processed.
 
 Picocli provides some built-in `IParseResultHandler` implementations for common use cases: `RunFirst`, `RunLast` and `RunAll`. All of these first check if the user requested usageHelp or versionHelp. If so, the requested info is printed and the handler returns.
 
 * `RunFirst` only runs the first (main command).
-* `RunLast` only runs the most specific subcommand. For example, if the user invoked `java MainApplication print param1 param2`, only `Print::call` is invoked. `RunLast` is now used to implement the existing `CommandLine::run` and `CommandLine::call` convenience methods.
+* `RunLast` only runs the most specific subcommand. For example, if the user invoked `java YourApp print param1 param2`, and `print` is a `Callable` subcommand, only `Print::call` is invoked. `RunLast` is now used to implement the existing `CommandLine::run` and `CommandLine::call` convenience methods.
 * `RunAll` invokes `run` (or `call`) on all commands and subcommands that appeared on the command line (if they implement Runnable or Callable).
 
 
