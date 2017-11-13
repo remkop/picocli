@@ -15,7 +15,7 @@ Picocli follows [semantic versioning](http://semver.org/).
 * [Promoted features](#2.1.0-promoted)
 * [Fixed issues](#2.1.0-fixes)
 * [Deprecations](#2.1.0-deprecated)
-* [Potentially breaking changes](#2.1.0-breaking-changes)
+* [Potential breaking changes](#2.1.0-breaking-changes)
 
 ## <a name="2.1.0-new"></a> New and noteworthy
 
@@ -37,7 +37,7 @@ No features have been promoted in this picocli release.
 
 The `Range::defaultArity(Class)` method is now deprecated in favour of the `Range::defaultArity(Field)` method introduced in v2.0.
 
-## <a name="2.1.0-breaking-changes"></a> Potentially breaking changes
+## <a name="2.1.0-breaking-changes"></a> Potential breaking changes
 
 Private final fields that are either `String` or primitive types can no longer be annotated with `@Option` or `@Parameters`.
 Picocli will throw an `InitializationException` when it detects such fields,
@@ -62,7 +62,7 @@ Picocli follows [semantic versioning](http://semver.org/).
 * [Promoted features](#2.0.3-promoted)
 * [Fixed issues](#2.0.3-fixes)
 * [Deprecations](#2.0.3-deprecated)
-* [Potentially breaking changes](#2.0.3-breaking-changes)
+* [Potential breaking changes](#2.0.3-breaking-changes)
 
 ## <a name="2.0.3-new"></a> New and noteworthy
 
@@ -82,7 +82,7 @@ No features have been promoted in this picocli release.
 
 This release does not deprecate any features.
 
-## <a name="2.0.3-breaking-changes"></a> Potentially breaking changes
+## <a name="2.0.3-breaking-changes"></a> Potential breaking changes
 
 This release does not include any breaking features.
 
@@ -103,7 +103,7 @@ Picocli follows [semantic versioning](http://semver.org/).
 * [Promoted features](#2.0.2-promoted)
 * [Fixed issues](#2.0.2-fixes)
 * [Deprecations](#2.0.2-deprecated)
-* [Potentially breaking changes](#2.0.2-breaking-changes)
+* [Potential breaking changes](#2.0.2-breaking-changes)
 
 ## <a name="2.0.2-new"></a> New and noteworthy
 
@@ -126,7 +126,7 @@ No features have been promoted in this picocli release.
 
 This release does not deprecate any features.
 
-## <a name="2.0.2-breaking-changes"></a> Potentially breaking changes
+## <a name="2.0.2-breaking-changes"></a> Potential breaking changes
 
 This release does not include any breaking features.
 
@@ -146,7 +146,7 @@ Picocli follows [semantic versioning](http://semver.org/).
 * [Promoted features](#2.0.1-promoted)
 * [Fixed issues](#2.0.1-fixes)
 * [Deprecations](#2.0.1-deprecated)
-* [Potentially breaking changes](#2.0.1-breaking-changes)
+* [Potential breaking changes](#2.0.1-breaking-changes)
 
 ## <a name="2.0.1-new"></a> New and noteworthy
 
@@ -165,7 +165,7 @@ No features have been promoted in this picocli release.
 
 This release does not deprecate any features.
 
-## <a name="2.0.1-breaking-changes"></a> Potentially breaking changes
+## <a name="2.0.1-breaking-changes"></a> Potential breaking changes
 
 This release does not include any breaking features.
 
@@ -208,7 +208,7 @@ Picocli follows [semantic versioning](http://semver.org/).
 * [Promoted features](#2.0-promoted)
 * [Fixed issues](#2.0-fixes)
 * [Deprecations](#2.0-deprecated)
-* [Potentially breaking changes](#2.0-breaking-changes)
+* [Potential breaking changes](#2.0-breaking-changes)
 
 
 
@@ -335,7 +335,7 @@ From picocli v2.0, the convenience methods will automatically print usage help a
 when requested with the `versionHelp` and `usageHelp` option attributes (but not for the `help` attribute).
 
 
-## <a name="2.0-breaking-changes"></a> Potentially breaking changes
+## <a name="2.0-breaking-changes"></a> Potential breaking changes
 
 This release has a number of incompatible changes:
 * Multi-value options (array, list and map fields) are **not greedy by default** any more.
