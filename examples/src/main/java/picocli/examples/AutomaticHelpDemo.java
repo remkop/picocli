@@ -20,7 +20,8 @@ import static picocli.CommandLine.*;
 
 @Command(version = "App with help v1.2.3", header = "%nAutomatic Help Demo%n",
         description = "Prints usage help and version help when requested.%n")
-public class AppWithHelp implements Runnable {
+public class AutomaticHelpDemo implements Runnable {
+
     @Option(names = "--count", description = "The number of times to repeat.")
     int count;
 
@@ -47,6 +48,6 @@ public class AppWithHelp implements Runnable {
     }
 
     public static void main(String... args) {
-        CommandLine.run(new AppWithHelp(), System.err, args);
+        CommandLine.run(new AutomaticHelpDemo(), System.err, args);
     }
 }
