@@ -351,38 +351,64 @@ the old picocli v1.0 behaviour caused ambiguity in common use cases,
 was inconsistent with most Unix tools, 
 and prevented supporting mixing options with positional arguments on the command line.
 
-To illustrate the new non-greedy behaviour, consider this common use case:
+To illustrate the new non-greedy behaviour, consider this example program:
 ```
-class Args {
-    @Option(names="-o") List<String> options;
-    @Parameters         List<String> positionalParams;
+class MixDemo {
+  @Option(names="-o") List<String> options;
+  @Parameters         List<String> positionalParams;
+
+  public void run() {
+    System.out.println("positional: " + positionalParams);
+    System.out.println("options   : " + options);
+  }
+
+  public static void main(String[] args) {
+    CommandLine.run(new MixDemo(), System.err, args);
+  }
 }
 ```
-With picocli v1.0, arguments like the below would all end up in the `options` list.
-From picocli v2.0, only the first argument following `-o` is added to the `options` list, the remainder is parsed as positional parameters.
+We run this program as below, where the option is followed by multiple values:
 
 ```
-Args args = CommandLine.populateCommand(new Args(), "-o", "1", "2", "3");
+$ java MixDemo -o 1 2 3
+```
 
-// in picocli v1.0:
-assert args.options.size() == 3
-assert args.positionalParams.isEmpty()
+Previously, the arguments following `-o` would all end up in the `options` list. Running the above command with picocli 1.0 would print out the following:
 
-// in picocli v2.0:
-assert args.options.size() == 1
-assert args.positionalParams.size() == 2
 ```
-To put multiple values in the options list in picocli v2.0, users need to specify the `-o` option multiple times:
+# (Previously, in picocli-1.0.1)
+$ java MixDemo -o 1 2 3
+
+positional: null
+options   : [1, 2, 3]
 ```
-<command> -o 1 -o 2 -o 3
+
+From picocli 2.0, only the first argument following `-o` is added to the `options` list, the remainder is parsed as positional parameters:
+
 ```
+# (Currently, in picocli-2.0)
+$ java MixDemo -o 1 2 3
+
+positional: [2, 3]
+options   : [1]
+```
+
+To put multiple values in the options list in picocli 2.0, users can specify the `-o` option multiple times:
+```
+$ java MixDemo -o 1 -o 2 -o 3
+
+positional: null
+options   : [1, 2, 3]
+```
+
 Alternatively, application authors can make a multi-value option greedy in picocli v2.0 by explicitly setting a variable arity:
 ```
 class Args {
     @Option(names = "-o", arity = "1..*") List<String> options;
 }
 ```
-(... with the caveat that "greedy" means consume until the next option, not all remaining command line arguments.)
+(... "greedy" means consume until the next option, so not necessarily all remaining command line arguments.)
+
 
 
 # <a name="1.0.1"></a> 1.0.1 - Bugfix release.
