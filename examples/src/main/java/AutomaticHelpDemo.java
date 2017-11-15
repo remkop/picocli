@@ -13,22 +13,10 @@
    See the License for the specific language governing permissions and
    limitations under the License.
  */
-package picocli.examples;
 
-import picocli.CommandLine;
-import static picocli.CommandLine.*;
-
-@Command(name = "Greet", header = "%n@|green Hello world demo|@")
-public class Greet implements Runnable {
-
-    @Option(names = {"-u", "--user"}, required = true, description = "The user name.")
-    String userName;
-
-    public void run() {
-        System.out.println("Hello, " + userName);
-    }
-
-    public static void main(String... args) {
-        CommandLine.run(new Greet(), System.err, args);
+// For "Picocli 2.0: Do More With Less" article
+public class AutomaticHelpDemo {
+    public static void main(String[] args) {
+        picocli.examples.AutomaticHelpDemo.main(args);
     }
 }

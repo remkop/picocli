@@ -6,7 +6,7 @@
 :prewrap!:
 :source-highlighter: coderay
 :icons: font
-:imagesdir: images
+:imagesdir: images/
 
 == Introduction
 
@@ -17,11 +17,11 @@ Picocli is a one-file command line parsing framework that allows you to create c
 @Command(name = "Greet", header = "%n@|green Hello world demo|@")
 class Greet implements Runnable {
 
-  @Option(names = {"-u", "--name"}, required = true, description = "The user name.")
-  String name;
+  @Option(names = {"-u", "--user"}, required = true, description = "The user name.")
+  String userName;
 
   public void run() {
-    System.out.println("Hello, " + name);
+    System.out.println("Hello, " + userName);
   }
 
   public static void main(String... args) {
@@ -30,7 +30,7 @@ class Greet implements Runnable {
 }
 ----
 
-When we execute this program, picocli parses the command line and populates the `name` field before invoking the `run` method:
+When we execute this program, picocli parses the command line and populates the `userName` field before invoking the `run` method:
 
 [source,bash]
 ----
@@ -41,13 +41,6 @@ Hello, picocli
 
 Picocli generates usage help messages with http://picocli.info/#_ansi_colors_and_styles[Ansi colors and styles]. If we run the above program with invalid input (missing the required user name option), picocli prints an error and the usage help message:
 
-//[source,shell]
-//----
-//Missing required option '-u=<name>'
-//Hello world demo
-//Usage: Greet -u=<name>
-//  -u, --name=<name>           the user name
-//----
 image:Greet-screenshot.png[Screenshot of error message and usage help for Greet application]
 
 
@@ -103,8 +96,7 @@ Picocli performs http://picocli.info/#_strongly_typed_everything[automatic type 
 
 image:binoculars.jpg[]
 
-Prior to v2.0, type conversion worked automatically for arrays and for single-value types like `int` or `java.io.File`, but for `Collection` and `Map` fields, picocli required the `type` attribute to be able to do the type conversion:
-
+Prior to v2.0, picocli needed `Collection` and `Map` fields to be annotated with the `type` attribute to be able to do type conversion. For fields with other types, like array fields and single-value fields like `int` or `java.io.File` fields, picocli automatically detects the target type from the field type, but collections and maps needed more verbose annotation. For example:
 
 [source,java]
 ----
@@ -117,9 +109,9 @@ class Before {
 }
 ----
 
-The `type` attribute is no longer necessary for `Collection` and `Map` fields: picocli will infer the collection element type from the generic type. The `type` attribute still works as before, it is just optional in most cases.
+From v2.0, the `type` attribute is no longer necessary for `Collection` and `Map` fields: picocli will infer the collection element type from the generic type. The `type` attribute still works as before, it is just optional in most cases.
 
-From v2.0, the `type` attribute can be omitted and the following is possible:
+Omitting the `type` attribute removes some duplication and results in simpler and cleaner code:
 
 [source,java]
 ----
@@ -148,7 +140,7 @@ The example program below demonstrates automatic help:
 
 [source,java]
 ----
-@Command(version = "App with help v1.2.3", header = "%nAutomatic Help Demo%n",
+@Command(version = "Help demo v1.2.3", header = "%nAutomatic Help Demo%n",
          description = "Prints usage help and version help when requested.%n")
 class AutomaticHelpDemo implements Runnable {
 
@@ -164,7 +156,7 @@ class AutomaticHelpDemo implements Runnable {
     boolean versionHelpRequested;
 
     public void run() {
-        // -- Code like below is no longer required:
+        // NOTE: code like below is no longer required:
         //
         // if (usageHelpRequested) {
         //     new CommandLine(this).usage(System.err);
@@ -185,30 +177,11 @@ class AutomaticHelpDemo implements Runnable {
 
 When executed with `-h` or `--help`, the program prints usage help:
 
-//[source,shell]
-//----
-//$ java AppWithHelp --help
-//
-//Automatic Help Demo
-//
-//Usage: <main class> [-hV] [--count=<count>]
-//Prints usage help and version help when requested.
-//
-//      --count=<count>         The number of times to repeat.
-//  -h, --help                  Print usage help and exit.
-//  -V, --version               Print version information and exit.
-//----
-image:AppWithHelp-usage-screenshot.png[Usage help message for AppWithHelp]
+image:AutoHelpDemo-usage-screenshot.png[Usage help message for AutomaticHelpDemo]
 
 Similarly, when executed with `-V` or `--version`, the program prints version information:
 
-//[source,shell]
-//----
-//$ java AppWithHelp --version
-//
-//App with help v1.2.3
-//----
-image:AppWithHelp-version-screenshot.png[Version information for AppWithHelp]
+image:AutoHelpDemo-version-screenshot.png[Version information for AutomaticHelpDemo]
 
 Methods that automatically print help:
 
@@ -287,13 +260,13 @@ public static void main() {
 }
 ----
 
-The new convenience method is `parseWithHandler`. You can create your own custom handler or use one of the built-in handlers. Picocli provides handler implementations for some common use cases described below.  All of these implement automatic help: if the user requests usageHelp or versionHelp, the requested information is printed and the handler returns without further processing.
+The new convenience method is `parseWithHandler`. You can create your own custom handler or use one of the built-in handlers. Picocli provides handler implementations for some common use cases.
 
-The built-in handlers are `RunFirst`, `RunLast` and `RunAll`:
+The built-in handlers are `RunFirst`, `RunLast` and `RunAll`. All of these provide automatic help: if the user requests usageHelp or versionHelp, the requested information is printed and the handler returns without further processing. The handlers expect all commands to implement either `java.lang.Runnable` or `java.util.concurrent.Callable`.
 
-* `RunFirst` only runs the *first*, top-level, command (if it implements Runnable or Callable) and ignores subcommands.
-* `RunLast` only runs the *most specific* subcommand. For example, if the user invoked `java Git commit -m "commit message"`, and `commit` is a `Callable` subcommand, only `Commit::call` is invoked. `RunLast` is now used internally by picocli to implement the existing `CommandLine::run` and `CommandLine::call` convenience methods.
-* `RunAll` invokes `run` (or `call`) on the *top-level command and all subcommands* that appeared on the command line (if they implement Runnable or Callable).
+* `RunLast` executes the *most specific* command or subcommand. For example, if the user invoked `java Git commit -m "commit message"`, picocli considers `Git` the top-level command and `commit` a subcommand. In this example, the `commit` subcommand is the most specific command, so `RunLast` would only execute that subcommand. If there are no subcommands, the top-level command is executed. `RunLast` is now used internally by picocli to implement the existing `CommandLine::run` and `CommandLine::call` convenience methods.
+* `RunFirst` only executes the *first*, top-level, command and ignores subcommands.
+* `RunAll` executes the *top-level command and all subcommands* that appeared on the command line.
 
 There is also a `parseWithHandlers` method, which is similar but additionally lets you specify a custom handler for incorrect user input.
 

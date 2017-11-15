@@ -18,7 +18,7 @@ package picocli.examples;
 import picocli.CommandLine;
 import static picocli.CommandLine.*;
 
-@Command(version = "App with help v1.2.3", header = "%nAutomatic Help Demo%n",
+@Command(version = "Help demo v1.2.3", header = "%nAutomatic Help Demo%n",
         description = "Prints usage help and version help when requested.%n")
 public class AutomaticHelpDemo implements Runnable {
 
@@ -34,7 +34,7 @@ public class AutomaticHelpDemo implements Runnable {
     boolean versionHelpRequested;
 
     public void run() {
-        // -- Code like below is no longer required:
+        // NOTE: code like below is no longer required:
         //
         // if (usageHelpRequested) {
         //     new CommandLine(this).usage(System.err);
