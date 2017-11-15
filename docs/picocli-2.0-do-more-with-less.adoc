@@ -272,7 +272,7 @@ There is also a `parseWithHandlers` method, which is similar but additionally le
 
 
 === Improved `run` and `call` Methods
-The `CommandLine::call` and `CommandLine::run` methods now support subcommands and will execute the **last** subcommand
+The `CommandLine::call` and `CommandLine::run` convenience methods now support subcommands and will execute the **last** subcommand
 specified by the user. Previously subcommands were ignored and only the top-level command was executed.
 
 === Improved Exceptions
