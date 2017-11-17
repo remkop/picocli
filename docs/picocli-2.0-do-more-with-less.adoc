@@ -213,7 +213,7 @@ Consider what an application with subcommands needs to do:
 Picocli provides some building blocks to accomplish this, but it was up to the application to wire them together. This wiring is essentially boilerplate and is very similar between applications. For example, previously, an application with subcommands would typically contain code like this:
 [source,java]
 ----
-public static void main() {
+public static void main(String... args) {
     // 1. parse the command line
     CommandLine top = new CommandLine(new YourApp());
     List<CommandLine> parsedCommands;
@@ -250,7 +250,7 @@ public static void main() {
 This is quite a lot of boilerplate code. Picocli 2.0 provides a convenience method that allows you to reduce all of the above to a single line of code so you can focus on the business logic of your application:
 [source,java]
 ----
-public static void main() {
+public static void main(String... args) {
     // This handles all of the above in one line:
     // 1. parse the command line
     // 2. handle incorrect user input for one of the subcommands
