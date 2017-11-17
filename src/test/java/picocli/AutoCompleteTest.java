@@ -425,4 +425,45 @@ public class AutoCompleteTest {
         assertEquals(other.hashCode(), other.hashCode());
         assertNotEquals(other.hashCode(), descriptor.hashCode());
     }
+
+
+    @Test
+    public void testBashRejectsNullScript() {
+        try {
+            AutoComplete.bash(null, new CommandLine(new TopLevel()));
+            fail("Expected NPE");
+        } catch (NullPointerException ok) {
+            assertEquals("scriptName", ok.getMessage());
+        }
+    }
+
+    @Test
+    public void testBashRejectsNullCommandLine() {
+        try {
+            AutoComplete.bash("script", null);
+            fail("Expected NPE");
+        } catch (NullPointerException ok) {
+            assertEquals("commandLine", ok.getMessage());
+        }
+    }
+
+    @Test
+    public void testBashAcceptsNullCommand() throws Exception {
+        File temp = File.createTempFile("abc", "b");
+        temp.deleteOnExit();
+        AutoComplete.bash("script", temp, null, new CommandLine(new TopLevel()));
+        assertTrue(temp.length() > 0);
+    }
+
+    @Test
+    public void testBashRejectsNullOut() throws Exception {
+        File commandFile = File.createTempFile("abc", "b");
+        commandFile.deleteOnExit();
+        try {
+            AutoComplete.bash("script", null, commandFile,  new CommandLine(new TopLevel()));
+            fail("Expected NPE");
+        } catch (NullPointerException ok) {
+            assertEquals(null, ok.getMessage());
+        }
+    }
 }

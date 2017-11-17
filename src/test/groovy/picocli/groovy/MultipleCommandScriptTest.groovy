@@ -27,13 +27,11 @@ import groovy.transform.BaseScript
 import groovy.transform.Field
 import picocli.CommandLine
 
+import java.util.concurrent.Callable
+
 @CommandLine.Command(name = "git", subcommands = [picocli.groovy.CommandCommit, picocli.groovy.CommandAdd])
 @PicocliScript PicocliBaseScript thisScript
 
-// Override the default of using the 'args' binding for our test so we can be run without a special driver.
-String[] getScriptArguments() {
-    [ "add", "-i", "zoos"] as String[]
-}
 
 @CommandLine.Option(names = ["-log", "-verbose" ], description = "Level of verbosity")
 @Field Integer verbose = 1;
@@ -51,25 +49,27 @@ class CommandCommit implements Runnable {
 
     @Override
     void run() {
-        println "$author committed $files ${amend ? "using" : "not using"} amend."
+        assert amend
+        assert author == "Remko"
+        assert files.contains("MultipleCommandScriptTest.groovy")
     }
 }
 
 @CommandLine.Command(name = "add", separator = "=", description = "Add file contents to the index")
-public class CommandAdd {
+public class CommandAdd implements Callable<Object> {
     @CommandLine.Parameters(description = "File patterns to add to the index")
     List<String> patterns;
 
     @CommandLine.Option(names = "-i")
     Boolean interactive = false;
-}
 
-// Below is replaced by @Command(subcommands = [ ... ]) annotation
-//@Field CommandCommit commitCommand = new CommandCommit()
-//@Field CommandAdd addCommand = new CommandAdd()
-//public CommandLine createScriptCommandLine() {
-//    return new CommandLine(this).addSubcommand("add", addCommand).addSubcommand("commit", commitCommand)
-//}
+    @Override
+    Object call() throws Exception { // called from
+        assert interactive
+        assert patterns.contains("zoos")
+        return null
+    }
+}
 
 @Field List<CommandLine> parsed;
 public List<CommandLine> parseScriptArguments(CommandLine commandLine, String[] args) {
@@ -77,25 +77,18 @@ public List<CommandLine> parseScriptArguments(CommandLine commandLine, String[] 
     return parsed
 }
 
-println verbose
-println "parsed.size=" + parsed.size()
-foundAdd = false
-CommandAdd addCommand
+assert verbose == 2
+assert 2 == parsed.size()
+
+result = []
 parsed.each {
-    println it.commandName
     if (it.command instanceof CommandAdd) {
-        addCommand = it.command
-        foundAdd = true
-        if (addCommand.interactive) {
-            println "Adding ${addCommand.patterns} interactively."
-        } else {
-            println "Adding ${addCommand.patterns} in batch mode."
-        }
+        CommandAdd addCommand = it.command
+        result = addCommand.patterns
+    } else if (it.command instanceof CommandCommit) {
+        CommandCommit commitCommand = it.command
+        result = commitCommand.files
     }
 }
 
-assert foundAdd
-assert addCommand.interactive
-assert addCommand.patterns == ["zoos"]
-
-[33]
+result

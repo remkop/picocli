@@ -19,6 +19,12 @@ package picocli.groovy
 import groovy.transform.SourceURI
 import org.junit.Ignore
 import org.junit.Test
+import picocli.CommandLine
+import picocli.CommandLine.ExecutionException
+
+import java.nio.charset.Charset
+
+import static org.junit.Assert.*
 
 /**
  * @author Jim White
@@ -65,10 +71,172 @@ assert codepath == ['/usr/x.jar', '/bin/y.jar', 'z']
     }
 
     @Test
-    void testMultipleCommandScript() {
+    void testRunnableSubcommand() {
         GroovyShell shell = new GroovyShell()
+        shell.context.setVariable('args',
+                [ "-verbose=2", "commit", "--amend", "--author=Remko", "MultipleCommandScriptTest.groovy"] as String[])
         def result = shell.evaluate(new File(new File(sourceURI).parentFile, 'MultipleCommandScriptTest.groovy'))
-        assert result == [33]
+        assert result == ["MultipleCommandScriptTest.groovy"]
     }
-}
 
+    @Test
+    void testCallableSubcommand() {
+        GroovyShell shell = new GroovyShell()
+        shell.context.setVariable('args',
+                [ "-verbose=2", "add", "-i", "zoos" ] as String[])
+        def result = shell.evaluate(new File(new File(sourceURI).parentFile, 'MultipleCommandScriptTest.groovy'))
+        assert result == ["zoos"]
+    }
+
+    @Test
+    void testScriptAutomaticUsageHelp() {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream()
+        System.setErr(new PrintStream(baos))
+
+        GroovyShell shell = new GroovyShell()
+        shell.context.setVariable('args', ["--help"] as String[])
+        shell.evaluate '''
+@picocli.groovy.PicocliScript
+import groovy.transform.Field
+import picocli.CommandLine
+
+@CommandLine.Option(names = ["-h", "--help"], usageHelp = true)
+@Field boolean usageHelpRequested
+'''
+        String expected = String.format("" +
+                "Usage: Script1 [-h]%n" +
+                "  -h, --help%n")
+        assert expected == new String(baos.toByteArray(), Charset.defaultCharset())
+    }
+
+    @Test
+    void testScriptAutomaticVersionHelp() {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream()
+        System.setErr(new PrintStream(baos))
+
+        GroovyShell shell = new GroovyShell()
+        shell.context.setVariable('args', ["--version"] as String[])
+        shell.evaluate '''
+@picocli.CommandLine.Command(version = "best version ever v1.2.3")
+@picocli.groovy.PicocliScript
+import groovy.transform.Field
+import picocli.CommandLine
+
+@CommandLine.Option(names = ["-V", "--version"], versionHelp = true)
+@Field boolean usageHelpRequested
+'''
+        String expected = String.format("" +
+                "best version ever v1.2.3%n")
+        assert expected == new String(baos.toByteArray(), Charset.defaultCharset())
+    }
+
+    @Test
+    void testScriptExecutionExceptionWrapsException() {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream()
+        System.setErr(new PrintStream(baos))
+
+        String script = '''
+@picocli.CommandLine.Command
+@picocli.groovy.PicocliScript
+import groovy.transform.Field
+import picocli.CommandLine
+
+throw new IllegalStateException("Hi this is a test exception")
+'''
+        GroovyShell shell = new GroovyShell()
+        shell.context.setVariable('args', [] as String[])
+        try {
+            shell.evaluate script
+            fail("Expected exception")
+        } catch (ExecutionException ex) {
+            assert "java.lang.IllegalStateException: Hi this is a test exception" == ex.getMessage()
+            assert ex.getCause() instanceof IllegalStateException
+        }
+    }
+
+    @Test
+    void testScriptExecutionException() {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream()
+        System.setErr(new PrintStream(baos))
+
+        String script = '''
+@picocli.CommandLine.Command
+@picocli.groovy.PicocliScript
+import groovy.transform.Field
+import picocli.CommandLine
+
+throw new CommandLine.ExecutionException(new CommandLine(this), "Hi this is a test ExecutionException")
+'''
+        GroovyShell shell = new GroovyShell()
+        shell.context.setVariable('args', [] as String[])
+        try {
+            shell.evaluate script
+            fail("Expected exception")
+        } catch (ExecutionException ex) {
+            assert "Hi this is a test ExecutionException" == ex.getMessage()
+            assert ex.getCause() == null
+        }
+    }
+
+    @Test
+    void testScriptBindingNullCommandLine() {
+
+        Binding binding = new Binding()
+        binding.setProperty("commandLine", null)
+        ByteArrayOutputStream baos = new ByteArrayOutputStream()
+        System.setErr(new PrintStream(baos))
+
+        String script = '''
+@picocli.CommandLine.Command
+@picocli.groovy.PicocliScript
+import groovy.transform.Field
+import picocli.CommandLine
+
+throw new IllegalStateException("Hi this is a test exception")
+'''
+        GroovyShell shell = new GroovyShell(binding)
+        shell.context.setVariable('args', [] as String[])
+        try {
+            shell.evaluate script
+            fail("Expected exception")
+        } catch (ExecutionException ex) {
+            assert "java.lang.IllegalStateException: Hi this is a test exception" == ex.getMessage()
+        }
+    }
+
+    private class Params {
+        @CommandLine.Parameters String[] positional
+        @CommandLine.Option(names = "-o") option
+    }
+
+    @Test
+    void testScriptBindingCommandLine() {
+
+        CommandLine commandLine = new CommandLine(new Params())
+        Binding binding = new Binding()
+        binding.setProperty("commandLine", commandLine)
+        ByteArrayOutputStream baos = new ByteArrayOutputStream()
+        System.setErr(new PrintStream(baos))
+
+        String script = '''
+@picocli.CommandLine.Command
+@picocli.groovy.PicocliScript
+import groovy.transform.Field
+import picocli.CommandLine
+
+throw new IllegalStateException("Hi this is a test exception")
+'''
+        GroovyShell shell = new GroovyShell(binding)
+        shell.context.setVariable('args', ["-o=hi", "123"] as String[])
+        try {
+            shell.evaluate script
+            fail("Expected exception")
+        } catch (ExecutionException ex) {
+            assert "java.lang.IllegalStateException: Hi this is a test exception" == ex.getMessage()
+        }
+        Params params = commandLine.command
+        assert params.option == "hi"
+        assert params.positional.contains("123")
+    }
+
+}
