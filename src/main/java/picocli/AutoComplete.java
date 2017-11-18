@@ -84,10 +84,6 @@ public class AutoComplete {
 
         public void run() {
             try {
-                if (usageHelpRequested || commandLineFQCN == null) {
-                    CommandLine.usage(new App(), System.err);
-                    return;
-                }
                 Class<?> cls = Class.forName(commandLineFQCN);
                 CommandLine commandLine = new CommandLine(cls.newInstance());
 
