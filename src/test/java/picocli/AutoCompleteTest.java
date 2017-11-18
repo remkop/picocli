@@ -180,15 +180,35 @@ public class AutoCompleteTest {
 
     @Test
     public void testAutoCompleteAppHelp() throws Exception {
+        String[][] argsList = new String[][] {
+                {"-h"},
+                {"--help"},
+        };
+        for (String[] args : argsList) {
+            PrintStream originalErr = System.err;
+            ByteArrayOutputStream baos = new ByteArrayOutputStream(2500);
+            System.setErr(new PrintStream(baos));
+
+            AutoComplete.main(args);
+
+            System.setErr(originalErr);
+            String actual = new String(baos.toByteArray(), "UTF8");
+            assertEquals(AUTO_COMPLETE_APP_USAGE, actual);
+        }
+    }
+
+    @Test
+    public void testAutoCompleteRequiresCommandLineFQCN() throws Exception {
         PrintStream originalErr = System.err;
         ByteArrayOutputStream baos = new ByteArrayOutputStream(2500);
         System.setErr(new PrintStream(baos));
 
-        AutoComplete.main("-h");
+        AutoComplete.main();
 
         System.setErr(originalErr);
         String actual = new String(baos.toByteArray(), "UTF8");
-        assertEquals(AUTO_COMPLETE_APP_USAGE, actual);
+        String expected = String.format("Missing required parameter: <commandLineFQCN>%n") + AUTO_COMPLETE_APP_USAGE;
+        assertEquals(expected, actual);
     }
 
     @Test
