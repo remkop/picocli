@@ -205,16 +205,13 @@ abstract public class PicocliBaseScript extends Script {
     public void runRunnableSubcommand(List<CommandLine> parsedCommands) throws Exception {
         CommandLine deepestSubcommand = parsedCommands.get(parsedCommands.size() - 1);
         Object commandObject = deepestSubcommand.getCommand();
+        if (commandObject == this) {
+            return;
+        }
         if (commandObject instanceof Runnable) {
-            Runnable runnableCommand = (Runnable) commandObject;
-            if (runnableCommand != this) {
-                runnableCommand.run();
-            }
+            ((Runnable) commandObject).run();
         } else if (commandObject instanceof Callable<?>) {
-            Callable<?> callableCommand = (Callable<?>) commandObject;
-            if (callableCommand != this) {
-                callableCommand.call();
-            }
+            ((Callable<?>) commandObject).call();
         }
     }
 
