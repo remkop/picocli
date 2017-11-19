@@ -349,4 +349,20 @@ import picocli.CommandLine.Parameters
         }
     }
 
+    @Test
+    void testPicocliScriptAnnotationWithCustomScriptBody() {
+        def script = '''
+@picocli.groovy.PicocliScript(groovy.lang.Script)
+import groovy.transform.Field
+import picocli.CommandLine.Parameters
+
+@Parameters(description = "some parameters")
+@Field List<String> parameters
+
+123
+'''
+        def result = new GroovyShell().evaluate script
+        assert 123 == result
+    }
+
 }
