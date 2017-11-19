@@ -20,17 +20,10 @@ import java.io.File;
 import java.io.PrintStream;
 import java.io.UnsupportedEncodingException;
 import java.math.BigDecimal;
-import java.math.BigInteger;
 import java.net.InetAddress;
-import java.net.MalformedURLException;
 import java.net.Socket;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.net.URL;
-import java.net.UnknownHostException;
-import java.nio.charset.Charset;
-import java.sql.Time;
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -47,18 +40,15 @@ import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
-import java.util.UUID;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
-import java.util.regex.Pattern;
 
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import static java.util.concurrent.TimeUnit.*;
 import static org.junit.Assert.*;
 import static picocli.CommandLine.*;
 
@@ -2683,6 +2673,62 @@ public class CommandLineTest {
         assertEquals(2, parsed.size());
         assertEquals("OPT", ((Top) parsed.get(0).getCommand()).option);
         assertEquals("ABC", ((Sub207A) parsed.get(1).getCommand()).x);
+    }
+
+    interface Factory { Object create(); }
+    @Test
+    public void testParseWithHandlerRunXxxFailsIfNotRunnableOrCallable() {
+        @Command class App {
+            @Parameters String[] params;
+        }
+        Factory factory = new Factory() {
+            public Object create() {return new App();}
+        };
+        String[] args = { "abc" };
+        verifyAllFail(factory, "Parsed command (picocli.CommandLineTest$", ") is not Runnable or Callable", args);
+    }
+
+    @Test
+    public void testParseWithHandlerRunXxxCatchesAndRethrowsExceptionFromRunnable() {
+        @Command class App implements Runnable {
+            @Parameters String[] params;
+            public void run() { throw new IllegalStateException("TEST EXCEPTION"); }
+        }
+        Factory factory = new Factory() {
+            public Object create() {return new App();}
+        };
+        verifyAllFail(factory, "Error while running command (picocli.CommandLineTest$",
+                "): java.lang.IllegalStateException: TEST EXCEPTION", new String[0]);
+    }
+
+    @Test
+    public void testParseWithHandlerRunXxxCatchesAndRethrowsExceptionFromCallable() {
+        @Command class App implements Callable<Object> {
+            @Parameters String[] params;
+            public Object call() { throw new IllegalStateException("TEST EXCEPTION2"); }
+        }
+        Factory factory = new Factory() {
+            public Object create() {return new App();}
+        };
+        verifyAllFail(factory, "Error while calling command (picocli.CommandLineTest$",
+                "): java.lang.IllegalStateException: TEST EXCEPTION2", new String[0]);
+    }
+
+    private void verifyAllFail(Factory factory, String prefix, String suffix, String[] args) {
+        IParseResultHandler[] handlers = new IParseResultHandler[] {
+                new RunFirst(), new RunLast(), new RunAll()
+        };
+        for (IParseResultHandler handler : handlers) {
+            String descr = handler.getClass().getSimpleName();
+            try {
+                new CommandLine(factory.create()).parseWithHandler(handler, System.out, args);
+                fail(descr + ": expected exception");
+            } catch (ExecutionException ex) {
+                String actual = ex.getMessage();
+                assertTrue(descr + ": " + actual, actual.startsWith(prefix));
+                assertTrue(descr + ": " + actual, actual.endsWith(suffix));
+            }
+        }
     }
     @Test
     public void testIssue226EmptyStackWithClusteredOptions() {

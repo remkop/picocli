@@ -448,13 +448,13 @@ public class CommandLine {
                 ((Runnable) command).run();
                 return null;
             } catch (Exception ex) {
-                throw new ExecutionException(parsed, "Error while running command (" + command + ")", ex);
+                throw new ExecutionException(parsed, "Error while running command (" + command + "): " + ex, ex);
             }
         } else if (command instanceof Callable) {
             try {
                 return ((Callable<Object>) command).call();
             } catch (Exception ex) {
-                throw new ExecutionException(parsed, "Error while calling command (" + command + ")", ex);
+                throw new ExecutionException(parsed, "Error while calling command (" + command + "): " + ex, ex);
             }
         }
         throw new ExecutionException(parsed, "Parsed command (" + command + ") is not Runnable or Callable");
