@@ -231,4 +231,122 @@ import picocli.CommandLine.Parameters
         }
     }
 
+    @Test
+    void testPicocliScriptAnnotationCannotBeUsedWithAssignment() {
+        def script = '''
+import groovy.transform.Field
+import picocli.groovy.PicocliBaseScript
+import picocli.groovy.PicocliScript
+import picocli.CommandLine.Command
+import picocli.CommandLine.Option
+import picocli.CommandLine.Parameters
+
+@Command
+@PicocliScript PicocliBaseScript cli = new PicocliBaseScript() { // invalid assignment
+ @Override protected Object runScriptBody(){
+ return null
+}};
+
+@Parameters(description = "some parameters")
+@Field List<String> parameters
+'''
+        try {
+            new GroovyShell().evaluate script
+            fail("Expected exception")
+        } catch (MultipleCompilationErrorsException ex) {
+            ErrorCollector collector = ex.errorCollector
+            assert collector.errors[0] instanceof SyntaxErrorMessage
+            SyntaxException syntex = ((SyntaxErrorMessage) collector.errors[0]).cause
+            String expected = String.format("Annotation @PicocliScript not supported with variable assignment.\n @ line 9, column 1.")
+            assert expected == syntex.message
+        }
+    }
+
+    @Test
+    void testPicocliScriptAnnotationCannotBeUsedWithMultipleAssignmentDeclaration() {
+        def script = '''
+import groovy.transform.Field
+import picocli.groovy.PicocliBaseScript
+import picocli.groovy.PicocliScript
+import picocli.CommandLine.Command
+import picocli.CommandLine.Option
+import picocli.CommandLine.Parameters
+
+@Command
+@PicocliScript def (cli1, cli2) = [new PicocliBaseScript() { // invalid assignment
+ @Override protected Object runScriptBody(){
+ return null
+}},
+new PicocliBaseScript() { // invalid assignment
+ @Override protected Object runScriptBody(){
+ return null
+}}]
+
+@Parameters(description = "some parameters")
+@Field List<String> parameters
+'''
+        try {
+            new GroovyShell().evaluate script
+            fail("Expected exception")
+        } catch (MultipleCompilationErrorsException ex) {
+            ErrorCollector collector = ex.errorCollector
+            assert collector.errors[0] instanceof SyntaxErrorMessage
+            SyntaxException syntex = ((SyntaxErrorMessage) collector.errors[0]).cause
+            String expected = String.format("Annotation @PicocliScript not supported with multiple assignment notation.\n @ line 9, column 1.")
+            assert expected == syntex.message
+        }
+    }
+
+    @Test
+    void testPicocliScriptAnnotationCannotHaveAValueWhenUsedOnDeclaration() {
+        def script = '''
+import groovy.transform.Field
+import picocli.groovy.PicocliBaseScript
+import picocli.groovy.PicocliScript
+import picocli.CommandLine.Command
+import picocli.CommandLine.Option
+import picocli.CommandLine.Parameters
+
+@Command
+@PicocliScript(picocli.groovy.PicocliBaseScript.class)
+PicocliBaseScript cli;
+
+@Parameters(description = "some parameters")
+@Field List<String> parameters
+'''
+        try {
+            new GroovyShell().evaluate script
+            fail("Expected exception")
+        } catch (MultipleCompilationErrorsException ex) {
+            ErrorCollector collector = ex.errorCollector
+            assert collector.errors[0] instanceof SyntaxErrorMessage
+            SyntaxException syntex = ((SyntaxErrorMessage) collector.errors[0]).cause
+            String expected = String.format("Annotation @PicocliScript cannot have member 'value' if used on a declaration.\n @ line 10, column 16.")
+            assert expected == syntex.message
+        }
+    }
+
+    @Test
+    void testPicocliScriptAnnotationValueMustInheritFromScript() {
+        def script = '''
+@PicocliScript(Long.class) // invalid script class
+import groovy.transform.Field
+import picocli.groovy.PicocliScript
+import picocli.CommandLine.Parameters
+
+@Parameters(description = "some parameters")
+@Field List<String> parameters
+'''
+        try {
+            new GroovyShell().evaluate script
+            fail("Expected exception")
+        } catch (MultipleCompilationErrorsException ex) {
+            ErrorCollector collector = ex.errorCollector
+            assert collector.errors[0] instanceof SyntaxErrorMessage
+            SyntaxException syntex = ((SyntaxErrorMessage) collector.errors[0]).cause
+            String expected = String.format("Declared type java.lang.Long -> java.lang.Long does not extend groovy.lang.Script class!\n @ line 2, column 1.")
+            assert expected == syntex.message
+        }
+    }
+
 }
