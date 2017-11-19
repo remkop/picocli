@@ -179,6 +179,30 @@ throw new CommandLine.ExecutionException(new CommandLine(this), "Hi this is a te
     }
 
     @Test
+    void testScriptCallsHandleExecutionException() {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream()
+        System.setErr(new PrintStream(baos))
+
+        String script = '''
+@picocli.CommandLine.Command
+@picocli.groovy.PicocliScript
+import picocli.CommandLine
+
+public Object handleExecutionException(CommandLine commandLine, String[] args, Exception ex) {
+    return ex
+}
+    
+throw new CommandLine.ExecutionException(new CommandLine(this), "Hi this is a test handleExecutionException")
+'''
+        GroovyShell shell = new GroovyShell()
+        shell.context.setVariable('args', [] as String[])
+        def result = shell.evaluate script
+        assert result instanceof ExecutionException
+        assert "Hi this is a test handleExecutionException" == result.getMessage()
+        assert result.getCause() == null
+    }
+
+    @Test
     void testScriptBindingNullCommandLine() {
 
         Binding binding = new Binding()
