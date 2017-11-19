@@ -1987,6 +1987,7 @@ public class CommandLine {
             Stack<String> arguments = new Stack<String>();
             for (int i = args.length - 1; i >= 0; i--) {
                 if (expandAtFiles && args[i].startsWith("@")) {
+                    if (tracer.isInfo()) {tracer.info("Expanding argument file %s%n", args[i]);}
                     arguments.addAll(reverseList(readFile(args[i].substring(1))));
                 } else {
                     arguments.push(args[i]);
@@ -1998,14 +1999,23 @@ public class CommandLine {
         }
 
         private List<String> readFile(String fileName) {
+            File file = new File(fileName);
+            if (!file.canRead()) {
+                if (tracer.isInfo()) {tracer.info("File %s does not exist or cannot be read; treating argument literally%n", fileName);}
+                return Arrays.asList("@" + fileName);
+            }
             List<String> result = new ArrayList<String>();
             BufferedReader reader = null;
             try {
-                reader = new BufferedReader(new FileReader(fileName));
+                reader = new BufferedReader(new FileReader(file));
                 String line = null;
                 while ((line = reader.readLine()) != null) {
                     if (line.length() > 0 && !line.trim().startsWith("#")) { // ignore comment lines
-                        result.add(line);
+                        if (line.startsWith("@")) {
+                            result.addAll(readFile(line.substring(1)));
+                        } else {
+                            result.add(line);
+                        }
                     }
                 }
             } catch (Exception ex) {
@@ -2013,6 +2023,7 @@ public class CommandLine {
             } finally {
                 if (reader != null) { try {reader.close();} catch (Exception ignored) {} }
             }
+            if (tracer.isInfo()) {tracer.info("Expanded file @%s to arguments %s%n", fileName, result);}
             return result;
         }
 

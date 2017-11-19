@@ -276,8 +276,10 @@ Starting from v2.1.0, picocli supports "argument files" or "@-files".
 Command line arguments starting with the `@` character are taken as the path to a file containing argument strings.
 When this file is expanded, the `@file` argument is replaced by a list of arguments,
 one argument for each line in the file. Lines starting with `#` are comments and are ignored.
-Multiple @-files may be specified on the command line.
-The specified path may be relative or absolute.
+The file may itself contain additional @-file arguments; any such arguments will be processed recursively.
+
+If the file does not exist, or cannot be read, then the argument will be treated literally, and not removed.
+Multiple @-files may be specified on the command line. The specified path may be relative or absolute.
 
 For example, suppose a file with arguments exists at `/home/foo/args`, with these contents:
 
@@ -301,6 +303,7 @@ java MyCommand ABC -option=123 XYZ
 
 
 @-file expansion can be switched off by calling `CommandLine::setExpandAtFiles` with `false`.
+
 
 
 == Strongly Typed Everything

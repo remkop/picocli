@@ -1,0 +1,4 @@
+# first comment
+abcdefg
+#another comment
+@argfile2.txt

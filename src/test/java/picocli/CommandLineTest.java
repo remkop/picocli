@@ -17,6 +17,11 @@ package picocli;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.PrintStream;
 import java.io.UnsupportedEncodingException;
 import java.math.BigDecimal;
@@ -2908,6 +2913,29 @@ public class CommandLineTest {
     }
 
     @Test
+    public void testAtFileNotExpandedIfDisabled() {
+        class App {
+            @Option(names = "-v")
+            private boolean verbose;
+
+            @Parameters
+            private List<String> files;
+        }
+        File file = findFile("/argfile1.txt");
+        assertTrue(file.getAbsoluteFile().exists());
+        App app = new App();
+        new CommandLine(app).setExpandAtFiles(false).parse("@" + file.getAbsolutePath());
+        assertFalse(app.verbose);
+        assertEquals(Arrays.asList("@" + file.getAbsolutePath()), app.files);
+    }
+
+    @Test
+    public void testAtFileExpansionEnabledByDefault() {
+        @Command class App { }
+        assertTrue(new CommandLine(new App()).isExpandAtFiles());
+    }
+
+    @Test
     public void testAtFileExpandedRelative() {
         class App {
             @Option(names = "-v")
@@ -2978,5 +3006,85 @@ public class CommandLineTest {
         assertEquals(Arrays.asList("1111", "2222", "3333", "1111", "2222", "3333"), app.files);
         assertFalse("invoked twice", app.xxx);
         assertArrayEquals(new String[]{"fVal1", "FFFF", "F2F2F2", "fVal2"}, app.fff);
+    }
+
+    @Test
+    public void testNestedAtFile() throws IOException {
+        class App {
+            @Option(names = "-x")
+            private boolean xxx;
+
+            @Option(names = "-f")
+            private String[] fff;
+
+            @Option(names = "-v")
+            private boolean verbose;
+
+            @Parameters
+            private List<String> files;
+        }
+        File file = findFile("/argfile-with-nested-at-file.txt");
+        File file2 = findFile("/argfile2.txt");
+        File nested = new File("argfile2.txt");
+        nested.delete();
+        assertFalse("does not exist yet", nested.exists());
+        copyFile(file2, nested);
+
+        setTraceLevel("OFF");
+        App app = new App();
+        CommandLine commandLine = new CommandLine(app).setOverwrittenOptionsAllowed(true);
+        commandLine.parse("-f", "fVal1", "@" + file.getAbsolutePath(),  "-f", "fVal2");
+        assertTrue("invoked in argFile2", app.verbose);
+        assertEquals(Arrays.asList("abcdefg", "1111", "2222", "3333"), app.files);
+        assertTrue("invoked in argFile2", app.xxx);
+        assertArrayEquals(new String[]{"fVal1", "FFFF", "F2F2F2", "fVal2"}, app.fff);
+        assertTrue("Deleted " + nested, nested.delete());
+    }
+
+    @Test
+    public void testNestedAtFileNotFound() throws IOException {
+        class App {
+            @Option(names = "-x")
+            private boolean xxx;
+
+            @Option(names = "-f")
+            private String[] fff;
+
+            @Option(names = "-v")
+            private boolean verbose;
+
+            @Parameters
+            private List<String> files;
+        }
+        File file = findFile("/argfile-with-nested-at-file.txt");
+        File nested = new File("argfile2.txt");
+        nested.delete();
+        assertFalse(nested + " does not exist", nested.exists());
+
+        setTraceLevel("OFF");
+        App app = new App();
+        CommandLine commandLine = new CommandLine(app).setOverwrittenOptionsAllowed(true);
+        commandLine.parse("-f", "fVal1", "@" + file.getAbsolutePath(),  "-f", "fVal2");
+        assertFalse("never invoked", app.verbose);
+        assertEquals(Arrays.asList("abcdefg", "@" + nested.getName()), app.files);
+        assertFalse("never invoked", app.xxx);
+        assertArrayEquals(new String[]{"fVal1", "fVal2"}, app.fff);
+    }
+
+    private void copyFile(File source, File destination) throws IOException {
+        InputStream in = null;
+        OutputStream out = null;
+        try {
+            in = new FileInputStream(source);
+            out = new FileOutputStream(destination);
+            byte[] buff = new byte[(int) source.length()];
+            int read = 0;
+            while ((read = in.read(buff)) > 0) {
+                out.write(buff, 0, read);
+            }
+        } finally {
+            if (in != null) { try { in.close(); } catch (Exception ignored) {} }
+            if (out != null) { try { out.close(); } catch (Exception ignored) {} }
+        }
     }
 }
