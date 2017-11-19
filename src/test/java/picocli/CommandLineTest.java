@@ -1929,6 +1929,30 @@ public class CommandLineTest {
     }
 
     @Test
+    public void testOverwrittenOptionAppliesToRegisteredSubcommands() {
+        @Command(name = "parent")
+        class Parent {
+            public Parent() {}
+            @Option(names = "--parent") String parentString;
+        }
+        @Command()
+        class App {
+            @Option(names = {"-s", "--str"})      String string;
+        }
+        setTraceLevel("OFF");
+        CommandLine commandLine = new CommandLine(new App())
+                .addSubcommand("parent", new Parent())
+                .setOverwrittenOptionsAllowed(true);
+        commandLine.parse("-s", "1", "--str", "2", "parent", "--parent", "parentVal", "--parent", "2ndVal");
+
+        App app = commandLine.getCommand();
+        assertEquals("2", app.string);
+
+        Parent parent = commandLine.getSubcommands().get("parent").getCommand();
+        assertEquals("2ndVal", parent.parentString);
+    }
+
+    @Test
     public void testIssue141Npe() {
         class A {
             @Option(names = { "-u", "--user" }, required = true, description = "user id")

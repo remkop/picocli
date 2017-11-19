@@ -38,6 +38,7 @@ import java.lang.reflect.Field;
 import java.net.InetAddress;
 import java.net.URI;
 import java.net.URL;
+import java.nio.charset.Charset;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -2531,5 +2532,47 @@ public class CommandLineHelpTest {
                 "Usage: %n" +
                 "");
         assertEquals(expected, actual);
+    }
+
+    @Test
+    public void testPrintHelpIfRequestedReturnsTrueForUsageHelp() throws IOException {
+        class App {
+            @Option(names = "-h", usageHelp = true) boolean usageRequested;
+        }
+        List<CommandLine> list = new CommandLine(new App()).parse("-h");
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        assertTrue(CommandLine.printHelpIfRequested(list, new PrintStream(baos), Help.Ansi.OFF));
+
+        String expected = String.format("" +
+                "Usage: <main class> [-h]%n" +
+                "  -h%n");
+        assertEquals(expected, new String(baos.toByteArray(), "UTF-8"));
+    }
+
+    @Test
+    public void testPrintHelpIfRequestedReturnsTrueForVersionHelp() throws IOException {
+        @Command(version = "abc 1.2.3 myversion")
+        class App {
+            @Option(names = "-V", versionHelp = true) boolean versionRequested;
+        }
+        List<CommandLine> list = new CommandLine(new App()).parse("-V");
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        assertTrue(CommandLine.printHelpIfRequested(list, new PrintStream(baos), Help.Ansi.OFF));
+
+        String expected = String.format("abc 1.2.3 myversion%n");
+        assertEquals(expected, new String(baos.toByteArray(), "UTF-8"));
+    }
+
+    @Test
+    public void testPrintHelpIfRequestedReturnsFalseForNoHelp() throws IOException {
+        class App {
+            @Option(names = "-v") boolean verbose;
+        }
+        List<CommandLine> list = new CommandLine(new App()).parse("-v");
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        assertFalse(CommandLine.printHelpIfRequested(list, new PrintStream(baos), Help.Ansi.OFF));
+
+        String expected = "";
+        assertEquals(expected, new String(baos.toByteArray(), "UTF-8"));
     }
 }
