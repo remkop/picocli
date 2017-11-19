@@ -16,6 +16,10 @@
 
 package picocli.groovy
 
+import org.codehaus.groovy.control.ErrorCollector
+import org.codehaus.groovy.control.MultipleCompilationErrorsException
+import org.codehaus.groovy.control.messages.SyntaxErrorMessage
+import org.codehaus.groovy.syntax.SyntaxException
 import org.junit.Ignore;
 
 import java.io.ByteArrayOutputStream;
@@ -182,35 +186,49 @@ codepath
         assert result == ["A", "B"]
     }
 
-    @Ignore
     @Test
-    void testAnnotatedType() {
-        GroovyShell shell = new GroovyShell()
-        shell.context.setVariable('args',
-                ["-cp", "A", "-cp", "B"] as String[])
-        ByteArrayOutputStream bytes = new ByteArrayOutputStream()
-        System.setErr(new PrintStream(bytes))
-        def result = shell.evaluate '''
+    void testClassCannotBeAnnotatedWithPicocliScript() {
+        def script = '''
+@picocli.CommandLine.Command
+@picocli.groovy.PicocliScript
+class Arg {};
+'''
+        try {
+            new GroovyShell().evaluate script
+            fail("Expected exception")
+        } catch (MultipleCompilationErrorsException ex) {
+            ErrorCollector collector = ex.errorCollector
+            assert collector.errors[0] instanceof SyntaxErrorMessage
+            SyntaxException syntex = ((SyntaxErrorMessage) collector.errors[0]).cause
+            String expected = String.format("Annotation @PicocliScript can only be used within a Script.\n @ line 2, column 1.")
+            assert expected == syntex.message
+        }
+    }
+
+    @Test
+    void testPicocliScriptAnnotationValueMustBeAClassLiteral() {
+        def script = '''
+@Command(name = "test-command", description = "invalid annotation")
+@PicocliScript("invalid string") // expect groovyc compiler error
 import groovy.transform.Field
-import picocli.groovy.PicocliBaseScript
 import picocli.groovy.PicocliScript
 import picocli.CommandLine.Command
 import picocli.CommandLine.Option
 import picocli.CommandLine.Parameters
 
-@Command(name = "test-command", description = "tests help from a command script")
-@PicocliScript class Arg {};
-
 @Parameters(description = "some parameters")
 @Field List<String> parameters
-
-@Option(names = ["-cp", "--codepath"], description = "the codepath")
-@Field List<String> codepath = []
-
-assert this.commandLine.commandName == "test-command"
-codepath
 '''
-        assert result == ["A", "B"]
+        try {
+            new GroovyShell().evaluate script
+            fail("Expected exception")
+        } catch (MultipleCompilationErrorsException ex) {
+            ErrorCollector collector = ex.errorCollector
+            assert collector.errors[0] instanceof SyntaxErrorMessage
+            SyntaxException syntex = ((SyntaxErrorMessage) collector.errors[0]).cause
+            String expected = String.format("Annotation @PicocliScript member 'value' should be a class literal.\n @ line 3, column 16.")
+            assert expected == syntex.message
+        }
     }
 
 }

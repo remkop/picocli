@@ -16,6 +16,8 @@
 
 package picocli.groovy;
 
+import java.util.List;
+
 import org.codehaus.groovy.ast.ASTNode;
 import org.codehaus.groovy.ast.AnnotatedNode;
 import org.codehaus.groovy.ast.AnnotationNode;
@@ -33,12 +35,10 @@ import org.codehaus.groovy.ast.expr.Expression;
 import org.codehaus.groovy.ast.expr.VariableExpression;
 import org.codehaus.groovy.control.CompilePhase;
 import org.codehaus.groovy.control.SourceUnit;
-import org.codehaus.groovy.control.messages.WarningMessage;
 import org.codehaus.groovy.transform.AbstractASTTransformation;
 import org.codehaus.groovy.transform.GroovyASTTransformation;
-import picocli.CommandLine;
 
-import java.util.List;
+import picocli.CommandLine;
 
 /**
  * Ensures that Groovy scripts annotated with {@link PicocliScript} are transformed into a class that
