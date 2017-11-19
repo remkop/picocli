@@ -558,7 +558,7 @@ public class CommandLine {
          */
         public List<Object> handleParseResult(List<CommandLine> parsedCommands, PrintStream out, Help.Ansi ansi) {
             if (printHelpIfRequested(parsedCommands, out, ansi)) {
-                return null;
+                return Collections.emptyList();
             }
             List<Object> result = new ArrayList<Object>();
             for (CommandLine parsed : parsedCommands) {

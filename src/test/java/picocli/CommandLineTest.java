@@ -28,6 +28,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -2729,6 +2730,73 @@ public class CommandLineTest {
                 assertTrue(descr + ": " + actual, actual.endsWith(suffix));
             }
         }
+    }
+
+    @Test
+    public void testParseWithHandlerRunXxxReturnsEmptyListIfHelpRequested() {
+        @Command(version = "abc 1.3.4")
+        class App implements Callable<Object> {
+            @Option(names = "-h", usageHelp = true) boolean requestHelp;
+            @Option(names = "-V", versionHelp = true) boolean requestVersion;
+            public Object call() { return "RETURN VALUE"; }
+        }
+        CommandLineFactory factory = new CommandLineFactory() {
+            public CommandLine create() {return new CommandLine(new App());}
+        };
+        verifyReturnValue(factory, Collections.emptyList(), new String[] {"-h"});
+        verifyReturnValue(factory, Collections.emptyList(), new String[] {"-V"});
+    }
+
+    @Test
+    public void testParseWithHandlerRunXxxReturnsCallableResult() {
+        @Command
+        class App implements Callable<Object> {
+            public Object call() { return "RETURN VALUE"; }
+        }
+        CommandLineFactory factory = new CommandLineFactory() {
+            public CommandLine create() {return new CommandLine(new App());}
+        };
+        verifyReturnValue(factory, Arrays.asList("RETURN VALUE"), new String[0]);
+    }
+
+    interface CommandLineFactory {
+        CommandLine create();
+    }
+
+    private void verifyReturnValue(CommandLineFactory factory, Object expected, String[] args) {
+        IParseResultHandler[] handlers = new IParseResultHandler[] {
+                new RunFirst(), new RunLast(), new RunAll()
+        };
+        PrintStream out = new PrintStream(new ByteArrayOutputStream());
+        for (IParseResultHandler handler : handlers) {
+            String descr = handler.getClass().getSimpleName();
+            Object actual = factory.create().parseWithHandler(handler, out, args);
+            assertEquals(descr + ": return value", expected, actual);
+        }
+    }
+    @Test
+    public void testParseWithHandlerRunXxxReturnsCallableResultWithSubcommand() {
+        @Command
+        class App implements Callable<Object> {
+            public Object call() { return "RETURN VALUE"; }
+        }
+        @Command(name = "sub")
+        class Sub implements Callable<Object> {
+            public Object call() { return "SUB RETURN VALUE"; }
+        }
+        CommandLineFactory factory = new CommandLineFactory() {
+            public CommandLine create() {return new CommandLine(new App()).addSubcommand("sub", new Sub());}
+        };
+        PrintStream out = new PrintStream(new ByteArrayOutputStream());
+
+        Object actual1 = factory.create().parseWithHandler(new RunFirst(), out, new String[] {"sub"});
+        assertEquals("RunFirst: return value", Arrays.asList("RETURN VALUE"), actual1);
+
+        Object actual2 = factory.create().parseWithHandler(new RunLast(), out, new String[] {"sub"});
+        assertEquals("RunLast: return value", Arrays.asList("SUB RETURN VALUE"), actual2);
+
+        Object actual3 = factory.create().parseWithHandler(new RunAll(), out, new String[] {"sub"});
+        assertEquals("RunAll: return value", Arrays.asList("RETURN VALUE", "SUB RETURN VALUE"), actual3);
     }
     @Test
     public void testIssue226EmptyStackWithClusteredOptions() {

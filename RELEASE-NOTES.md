@@ -33,6 +33,7 @@ No features have been promoted in this picocli release.
 - [#223] New feature: Added `examples` subproject containing running examples.  Thanks to [aadrian](https://github.com/aadrian) and [RobertZenz](https://github.com/RobertZenz).
 - [#68]  Enhancement: Reject private final primitive fields annotated with @Option or @Parameters: because compile-time constants are inlined, updates by picocli to such fields would not be visible to the application.
 - [#239] Enhancement: Improve error message when Exception thrown from Runnable/Callable.
+- [#240] RunAll handler should return empty list, not null, when help is requested.
 
 ## <a name="2.1.0-deprecated"></a> Deprecations
 
