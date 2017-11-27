@@ -425,10 +425,16 @@ Picocli follows [semantic versioning](http://semver.org/).
 
 # <a name="1.0.0"></a> 1.0.0 - Bugfix and enhancements release.
 
-## <a name="1.0.0-summary"></a> Summary: command line autocompletion, `-Dkey=value`-like Map options, parser tracing, stricter parsing, bugfixes
+## <a name="1.0.0-summary"></a> Summary
+
+New features: command line autocompletion, `-Dkey=value`-like Map options and parser tracing.
+
+Non-breaking changes to support Callable commands, Map options and format specifiers in version help.
 
 This is the tenth public release.
 Picocli follows [semantic versioning](http://semver.org/).
+
+## <a name="1.0.0-fixes"></a> Fixed issues
 
 * [#121] New feature: command line autocompletion. Picocli can generate bash and zsh completion scripts that allow the shell to generate potential completion matches based on the `@Option` and `@Command` annotations in your application. After this script is installed, the shell will show the options and subcommands available in your java command line application, and in some cases show possible option values.
 * [#67] New feature: Map options like `-Dkey1=val1 -Dkey2=val2`. Both key and value can be strongly typed (not just Strings).
@@ -447,7 +453,11 @@ Picocli follows [semantic versioning](http://semver.org/).
 
 # <a name="0.9.8"></a> 0.9.8 - Bugfix and enhancements release for public review. API may change.
 
-## <a name="0.9.8-summary"></a> Summary: improved version and usage help, improved subcommand support, bugfixes
+## <a name="0.9.8-summary"></a> Summary
+
+Non-breaking changes to add better help support and better subcommand support.
+
+## <a name="0.9.8-fixes"></a> Fixed issues
 
 * [#162] Added new Version Help section to user manual; added `version` attribute on `@Command`; added `CommandLine::printVersionHelp` convenience method to print version information from this annotation to the console
 * [#145] Added `usageHelp` and `versionHelp` attributes on `@Option`; added `CommandLine::isUsageHelpRequested` and `CommandLine::isVersionHelpRequested` to allow external components to detect whether usage help or version information was requested (without inspecting the annotated domain object). Thanks to [kakawait](https://github.com/kakawait).
@@ -460,6 +470,32 @@ Picocli follows [semantic versioning](http://semver.org/).
 * [#142] First line of long synopsis no longer overshoots 80-character usage help width. Thanks to [waacc-gh](https://github.com/waacc-gh).
 
 # <a name="0.9.7"></a> 0.9.7 - Bugfix and enhancements release for public review. API may change.
+
+## <a name="0.9.7-summary"></a> Summary
+
+Version 0.9.7 has some breaking API changes.
+
+**Better Groovy support**
+
+It was [pointed out](https://github.com/remkop/picocli/issues/135) that Groovy had trouble distinguishing between
+the static `parse(Object, String...)` method and the instance method `parse(String...)`.
+
+To address this, the static `parse(Object, String...)` method has been renamed
+to `populateCommand(Object, String...)` in  version 0.9.7.
+
+**Nested subcommands**
+
+* Version 0.9.7 adds support for [nested sub-subcommands](https://github.com/remkop/picocli/issues/127)
+* `CommandLine::parse` now returns `List<CommandLine>` (was `List<Object>`)
+* `CommandLine::getCommands` now returns `Map<String, CommandLine>` (was `Map<String, Object>`)
+* renamed method `CommandLine::addCommand` to `addSubcommand`
+* renamed method `CommandLine::getCommands` to `getSubcommands`
+
+**Miscellaneous**
+
+Renamed class `Arity` to `Range` since it is not just used for @Option and @Parameters `arity` but also for `index` in positional @Parameters.
+
+## <a name="0.9.7-fixes"></a> Fixed issues
 
 * [#127] Added support for nested sub-subcommands
 * [#135] API change: renamed static convenience method `CommandLine::parse` to `populateCommand`

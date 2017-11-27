@@ -44,6 +44,7 @@ interactively showing users what options and subcommands are available.
 * [FAQ](https://github.com/remkop/picocli/wiki/FAQ)
 * [Announcing picocli 1.0](http://picocli.info/announcing-picocli-1.0.html)
 * [Picocli 2.0: Do More With Less](http://picocli.info/picocli-2.0-do-more-with-less.html)
+* [Picocli 2.0: Groovy Scripts on Steroids](http://picocli.info/picocli-2.0-groovy-scripts-on-steroids.html)
 * Check out Thibaud Lepretre's [picocli Spring boot starter](https://github.com/kakawait/picocli-spring-boot-starter)!
 
 
@@ -111,37 +112,3 @@ For example, your application can generate help like this with a custom layout:
 
 See the [source code](https://github.com/remkop/picocli/blob/master/src/test/java/picocli/CustomLayoutDemo.java#L61).
 
-## API Changes
-
-### [2.0.0](https://github.com/remkop/picocli/releases/tag/v2.0.0)
-See the [release notes](https://github.com/remkop/picocli/releases/tag/v2.0.0) for details on [potentially breaking changes](https://github.com/remkop/picocli/releases/tag/v2.0.0#2.0-breaking-changes).
-
-### [1.0.0](https://github.com/remkop/picocli/releases/tag/v1.0.0)
-New features: command line autocompletion, Map options and parser tracing.
-Non-breaking changes to support Callable commands, Map options and format specifiers in version help.
-
-### [0.9.8](https://github.com/remkop/picocli/releases/tag/v0.9.8)
-Non-breaking changes to add better help support and better subcommand support.
-
-### [0.9.7](https://github.com/remkop/picocli/releases/tag/v0.9.7)
-Version 0.9.7 has some breaking API changes.
-
-**Better Groovy support**
-
-It was [pointed out](https://github.com/remkop/picocli/issues/135) that Groovy had trouble distinguishing between
-the static `parse(Object, String...)` method and the instance method `parse(String...)`.
-
-To address this, the static `parse(Object, String...)` method has been renamed
-to `populateCommand(Object, String...)` in  version 0.9.7.
-
-**Nested subcommands**
-
-* Version 0.9.7 adds support for [nested sub-subcommands](https://github.com/remkop/picocli/issues/127)
-* `CommandLine::parse` now returns `List<CommandLine>` (was `List<Object>`)
-* `CommandLine::getCommands` now returns `Map<String, CommandLine>` (was `Map<String, Object>`)
-* renamed method `CommandLine::addCommand` to `addSubcommand`
-* renamed method `CommandLine::getCommands` to `getSubcommands`
-
-**Miscellaneous**
-
-Renamed class `Arity` to `Range` since it is not just used for @Option and @Parameters `arity` but also for `index` in positional @Parameters.
