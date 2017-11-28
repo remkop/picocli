@@ -2575,4 +2575,20 @@ public class CommandLineHelpTest {
         String expected = "";
         assertEquals(expected, new String(baos.toByteArray(), "UTF-8"));
     }
+
+    @Command(name = "top", subcommands = {Sub.class})
+    static class Top {
+        @Option(names = "-o", required = true) String mandatory;
+        @Option(names = "-h", usageHelp = true) boolean isUsageHelpRequested;
+    }
+    @Command(name = "sub") static class Sub {}
+
+    @Test
+    public void test244SubcommandsNotParsed() {
+        List<CommandLine> list = new CommandLine(new Top()).parse("-h", "sub");
+        assertEquals(2, list.size());
+        assertTrue(list.get(0).getCommand() instanceof Top);
+        assertTrue(list.get(1).getCommand() instanceof Sub);
+        assertTrue(((Top) list.get(0).getCommand()).isUsageHelpRequested);
+    }
 }

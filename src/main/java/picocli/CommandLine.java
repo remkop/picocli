@@ -2091,7 +2091,7 @@ public class CommandLine {
 
                 // if we find another command, we are done with the current command
                 if (commands.containsKey(arg)) {
-                    if (!isHelpRequested && !required.isEmpty()) { // ensure current command portion is valid
+                    if (!isAnyHelpRequested() && !required.isEmpty()) { // ensure current command portion is valid
                         throw MissingParameterException.create(CommandLine.this, required, separator);
                     }
                     if (tracer.isDebug()) {tracer.debug("Found subcommand '%s' (%s)%n", arg, commands.get(arg).interpreter.command.getClass().getName());}
