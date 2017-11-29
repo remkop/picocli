@@ -35,6 +35,7 @@ No features have been promoted in this picocli release.
 - [#239] Enhancement: Improve error message when Exception thrown from Runnable/Callable.
 - [#241] Enhancement: Recursively process nested @-files.
 - [#240] Bugfix: RunAll handler should return empty list, not null, when help is requested.
+- [#244] Fixed bug where parser only considered help options instead of any of help, usageHelp and versionHelp to determine if missing required options can be ignored when encountering a subcommand. Thanks to [mkavanagh](https://github.com/mkavanagh).
 
 ## <a name="2.1.0-deprecated"></a> Deprecations
 
