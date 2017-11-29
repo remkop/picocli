@@ -1729,7 +1729,8 @@ public class CommandLine {
         }
         /** Returns the default arity {@code Range} for {@link Option options}: booleans have arity 0, other types have arity 1.
          * @param type the type whose default arity to return
-         * @return a new {@code Range} indicating the default arity of the specified type */
+         * @return a new {@code Range} indicating the default arity of the specified type
+         * @deprecated use {@link #defaultArity(Field)} instead */
         @Deprecated public static Range defaultArity(Class<?> type) {
             return isBoolean(type) ? Range.valueOf("0") : Range.valueOf("1");
         }
