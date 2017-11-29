@@ -513,8 +513,8 @@ table.CodeRay td.code>pre{padding:0}
 <div id="header">
 <h1>picocli - a mighty tiny command line interface</h1>
 <div class="details">
-<span id="revnumber">version 2.0.3,</span>
-<span id="revdate">2017-11-10</span>
+<span id="revnumber">version 2.1.0,</span>
+<span id="revdate">2017-11-30</span>
 </div>
 <div id="toc" class="toc2">
 <div id="toctitle">Features</div>
@@ -527,6 +527,7 @@ table.CodeRay td.code>pre{padding:0}
 <li><a href="#_positional_parameters">2.3. Positional Parameters</a></li>
 <li><a href="#_mixing_options_and_positional_parameters">2.4. Mixing Options and Positional Parameters</a></li>
 <li><a href="#_double_dash_code_code">2.5. Double dash (<code>--</code>)</a></li>
+<li><a href="#AtFiles">2.6. @-files</a></li>
 </ul>
 </li>
 <li><a href="#_strongly_typed_everything">3. Strongly Typed Everything</a>
@@ -961,6 +962,68 @@ DoubleDashDemo demo = <span class="keyword">new</span> DoubleDashDemo();
 </div>
 </div>
 </div>
+<div class="sect2">
+<h3 id="AtFiles">2.6. @-files</h3>
+<div class="paragraph">
+<p>Users sometimes run into system limitations on the length of a command line when creating a
+command line with lots of options or with long arguments for options.</p>
+</div>
+<div class="paragraph">
+<p>Starting from v2.1.0, picocli supports "argument files" or "@-files".
+Argument files are files that themselves contain arguments to the command.
+When picocli encounters an argument beginning with the character `@',
+it expands the contents of that file into the argument list.</p>
+</div>
+<div class="paragraph">
+<p>An argument file can include options and positional parameters in any combination.
+The arguments within a file can be space-separated or newline-separated.
+If an argument contains embedded whitespace, put the whole argument in double or single quotes
+(<code>"-f=My Files\Stuff.java"</code>).</p>
+</div>
+<div class="paragraph">
+<p>Lines starting with <code>#</code> are comments and are ignored.
+The file may itself contain additional @-file arguments; any such arguments will be processed recursively.</p>
+</div>
+<div class="paragraph">
+<p>If the file does not exist, or cannot be read, then the argument will be treated literally, and not removed.
+Multiple @-files may be specified on the command line. The specified path may be relative (to the current directory) or absolute.</p>
+</div>
+<div class="paragraph">
+<p>For example, suppose a file with arguments exists at <code>/home/foo/args</code>, with these contents:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre># This line is a comment and is ignored.
+ABC -option=123
+'X Y Z'</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>A command may be invoked with the @file argument, like this:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="bash">java MyCommand @/home/foo/args</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The above will be expanded to the contents of the file:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="bash">java MyCommand ABC -option=123 &quot;X Y Z&quot;</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>@-file expansion can be switched off by calling <code>CommandLine::setExpandAtFiles</code> with <code>false</code>.
+If turned on, you can still pass a real parameter with an initial '@' character by escaping it
+with an additional '@' symbol, e.g. '@@somearg' will become '@somearg' and not be subject to expansion.</p>
+</div>
+<div class="paragraph">
+<p>The feature is similar to the 'Command Line Argument File' processing supported by gcc, javadoc and javac.
+The documentation for these tools shows further examples.</p>
+</div>
+</div>
 </div>
 </div>
 <div class="sect1">
@@ -1271,6 +1334,8 @@ For example:</p>
 </div>
 <div class="sect2">
 <h3 id="_multiple_occurrences">4.1. Multiple Occurrences</h3>
+<div class="sect3">
+<h4 id="_repeated_options">4.1.1. Repeated Options</h4>
 <div class="paragraph">
 <p>The simplest way to create a multi-valued option is to declare an annotated field whose type is an array, collection or a map.</p>
 </div>
@@ -1291,6 +1356,9 @@ For example:</p>
 <div class="paragraph">
 <p>Each value is appended to the array or collection.</p>
 </div>
+</div>
+<div class="sect3">
+<h4 id="_multiple_positional_parameters">4.1.2. Multiple Positional Parameters</h4>
 <div class="paragraph">
 <p>Similarly for multi-valued positional parameters:</p>
 </div>
@@ -1310,6 +1378,31 @@ For example:</p>
 </div>
 <div class="paragraph">
 <p>Again, each value is appended to the array or collection.</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_repeated_boolean_options">4.1.3. Repeated Boolean Options</h4>
+<div class="paragraph">
+<p>Boolean options with multiple values are supported from picocli v2.1.0.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="java"><span class="annotation">@Option</span>(names = <span class="string"><span class="delimiter">&quot;</span><span class="content">-v</span><span class="delimiter">&quot;</span></span>, description = { <span class="string"><span class="delimiter">&quot;</span><span class="content">Specify multiple -v options to increase verbosity.</span><span class="delimiter">&quot;</span></span>,
+                                      <span class="string"><span class="delimiter">&quot;</span><span class="content">For example, `-v -v -v` or `-vvv`</span><span class="delimiter">&quot;</span></span>})
+<span class="type">boolean</span><span class="type">[]</span> verbosity;</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Users may specify multiple boolean flag options without parameters. For example:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre>&lt;command&gt; -v -v -v -vvv</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The above example results in six <code>true</code> values being added to the <code>verbosity</code> array.</p>
+</div>
 </div>
 </div>
 <div class="sect2">
@@ -3287,7 +3380,7 @@ The script body is executed if the user input was valid and did not request usag
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="CodeRay highlight"><code data-lang="groovy"><span class="annotation">@Grab</span>(<span class="string"><span class="delimiter">'</span><span class="content">info.picocli:picocli:2.0.3</span><span class="delimiter">'</span></span>)
+<pre class="CodeRay highlight"><code data-lang="groovy"><span class="annotation">@Grab</span>(<span class="string"><span class="delimiter">'</span><span class="content">info.picocli:picocli:2.1.0</span><span class="delimiter">'</span></span>)
 <span class="annotation">@Command</span>(name = <span class="string"><span class="delimiter">&quot;</span><span class="content">myCommand</span><span class="delimiter">&quot;</span></span>,
   description = <span class="string"><span class="delimiter">&quot;</span><span class="content">@|bold Groovy script|@ @|underline picocli|@ example</span><span class="delimiter">&quot;</span></span>)
 <span class="annotation">@picocli</span>.groovy.PicocliScript
@@ -3326,7 +3419,7 @@ When using a Groovy version older than 2.4.7, use this workaround for the <a hre
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="CodeRay highlight"><code data-lang="groovy"><span class="annotation">@Grab</span>(<span class="string"><span class="delimiter">'</span><span class="content">info.picocli:picocli:2.0.3</span><span class="delimiter">'</span></span>)
+<pre class="CodeRay highlight"><code data-lang="groovy"><span class="annotation">@Grab</span>(<span class="string"><span class="delimiter">'</span><span class="content">info.picocli:picocli:2.1.0</span><span class="delimiter">'</span></span>)
 <span class="annotation">@GrabExclude</span>(<span class="string"><span class="delimiter">'</span><span class="content">org.codehaus.groovy:groovy-all</span><span class="delimiter">'</span></span>) <span class="comment">// work around GROOVY-7613</span>
 ...</code></pre>
 </div>
@@ -3469,7 +3562,7 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
 <h3 id="_gradle">22.1. Gradle</h3>
 <div class="listingblock">
 <div class="content">
-<pre>compile 'info.picocli:picocli:2.0.3'</pre>
+<pre>compile 'info.picocli:picocli:2.1.0'</pre>
 </div>
 </div>
 </div>
@@ -3480,7 +3573,7 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
 <pre>&lt;dependency&gt;
   &lt;groupId&gt;info.picocli&lt;/groupId&gt;
   &lt;artifactId&gt;picocli&lt;/artifactId&gt;
-  &lt;version&gt;2.0.3&lt;/version&gt;
+  &lt;version&gt;2.1.0&lt;/version&gt;
 &lt;/dependency&gt;</pre>
 </div>
 </div>
@@ -3489,7 +3582,7 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
 <h3 id="_scala_sbt">22.3. Scala SBT</h3>
 <div class="listingblock">
 <div class="content">
-<pre>libraryDependencies += "info.picocli" % "picocli" % "2.0.3"</pre>
+<pre>libraryDependencies += "info.picocli" % "picocli" % "2.1.0"</pre>
 </div>
 </div>
 </div>
@@ -3497,7 +3590,7 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
 <h3 id="_ivy">22.4. Ivy</h3>
 <div class="listingblock">
 <div class="content">
-<pre>&lt;dependency org="info.picocli" name="picocli" rev="2.0.3" /&gt;</pre>
+<pre>&lt;dependency org="info.picocli" name="picocli" rev="2.1.0" /&gt;</pre>
 </div>
 </div>
 </div>
@@ -3523,7 +3616,10 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
 <span class="keyword">package</span> <span class="namespace">picocli</span>;
 
 <span class="keyword">import</span> <span class="include">java.io.File</span>;
+<span class="keyword">import</span> <span class="include">java.io.FileReader</span>;
+<span class="keyword">import</span> <span class="include">java.io.LineNumberReader</span>;
 <span class="keyword">import</span> <span class="include">java.io.PrintStream</span>;
+<span class="keyword">import</span> <span class="include">java.io.StreamTokenizer</span>;
 <span class="keyword">import</span> <span class="include">java.lang.annotation.ElementType</span>;
 <span class="keyword">import</span> <span class="include">java.lang.annotation.Retention</span>;
 <span class="keyword">import</span> <span class="include">java.lang.annotation.RetentionPolicy</span>;
@@ -3531,6 +3627,7 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
 <span class="keyword">import</span> <span class="include">java.lang.reflect.Array</span>;
 <span class="keyword">import</span> <span class="include">java.lang.reflect.Constructor</span>;
 <span class="keyword">import</span> <span class="include">java.lang.reflect.Field</span>;
+<span class="keyword">import</span> <span class="include">java.lang.reflect.Modifier</span>;
 <span class="keyword">import</span> <span class="include">java.lang.reflect.ParameterizedType</span>;
 <span class="keyword">import</span> <span class="include">java.lang.reflect.Type</span>;
 <span class="keyword">import</span> <span class="include">java.lang.reflect.WildcardType</span>;
@@ -3636,14 +3733,15 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
  */</span>
 <span class="directive">public</span> <span class="type">class</span> <span class="class">CommandLine</span> {
     <span class="comment">/** This is picocli version {@value}. */</span>
-    <span class="directive">public</span> <span class="directive">static</span> <span class="directive">final</span> <span class="predefined-type">String</span> VERSION = <span class="string"><span class="delimiter">&quot;</span><span class="content">2.0.3</span><span class="delimiter">&quot;</span></span>;
+    <span class="directive">public</span> <span class="directive">static</span> <span class="directive">final</span> <span class="predefined-type">String</span> VERSION = <span class="string"><span class="delimiter">&quot;</span><span class="content">2.1.0</span><span class="delimiter">&quot;</span></span>;
 
     <span class="directive">private</span> <span class="directive">final</span> Tracer tracer = <span class="keyword">new</span> Tracer();
     <span class="directive">private</span> <span class="directive">final</span> Interpreter interpreter;
     <span class="directive">private</span> <span class="predefined-type">String</span> commandName = Help.DEFAULT_COMMAND_NAME;
     <span class="directive">private</span> <span class="type">boolean</span> overwrittenOptionsAllowed = <span class="predefined-constant">false</span>;
-    <span class="directive">private</span> <span class="type">boolean</span> unmatchedArgumentsAllowed = <span class="predefined-constant">false</span>;
+    <span class="directive">private</span> <span class="type">boolean</span> expandAtFiles = <span class="predefined-constant">true</span>;
     <span class="directive">private</span> <span class="predefined-type">List</span>&lt;<span class="predefined-type">String</span>&gt; unmatchedArguments = <span class="keyword">new</span> <span class="predefined-type">ArrayList</span>&lt;<span class="predefined-type">String</span>&gt;();
+    <span class="directive">private</span> <span class="type">boolean</span> unmatchedArgumentsAllowed = <span class="predefined-constant">false</span>;
     <span class="directive">private</span> CommandLine parent;
     <span class="directive">private</span> <span class="type">boolean</span> usageHelpRequested;
     <span class="directive">private</span> <span class="type">boolean</span> versionHelpRequested;
@@ -3951,13 +4049,13 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
                 ((<span class="predefined-type">Runnable</span>) command).run();
                 <span class="keyword">return</span> <span class="predefined-constant">null</span>;
             } <span class="keyword">catch</span> (<span class="exception">Exception</span> ex) {
-                <span class="keyword">throw</span> <span class="keyword">new</span> <span class="exception">ExecutionException</span>(parsed, <span class="string"><span class="delimiter">&quot;</span><span class="content">Error while running command (</span><span class="delimiter">&quot;</span></span> + command + <span class="string"><span class="delimiter">&quot;</span><span class="content">)</span><span class="delimiter">&quot;</span></span>, ex);
+                <span class="keyword">throw</span> <span class="keyword">new</span> <span class="exception">ExecutionException</span>(parsed, <span class="string"><span class="delimiter">&quot;</span><span class="content">Error while running command (</span><span class="delimiter">&quot;</span></span> + command + <span class="string"><span class="delimiter">&quot;</span><span class="content">): </span><span class="delimiter">&quot;</span></span> + ex, ex);
             }
         } <span class="keyword">else</span> <span class="keyword">if</span> (command <span class="keyword">instanceof</span> <span class="predefined-type">Callable</span>) {
             <span class="keyword">try</span> {
                 <span class="keyword">return</span> ((<span class="predefined-type">Callable</span>&lt;<span class="predefined-type">Object</span>&gt;) command).call();
             } <span class="keyword">catch</span> (<span class="exception">Exception</span> ex) {
-                <span class="keyword">throw</span> <span class="keyword">new</span> <span class="exception">ExecutionException</span>(parsed, <span class="string"><span class="delimiter">&quot;</span><span class="content">Error while calling command (</span><span class="delimiter">&quot;</span></span> + command + <span class="string"><span class="delimiter">&quot;</span><span class="content">)</span><span class="delimiter">&quot;</span></span>, ex);
+                <span class="keyword">throw</span> <span class="keyword">new</span> <span class="exception">ExecutionException</span>(parsed, <span class="string"><span class="delimiter">&quot;</span><span class="content">Error while calling command (</span><span class="delimiter">&quot;</span></span> + command + <span class="string"><span class="delimiter">&quot;</span><span class="content">): </span><span class="delimiter">&quot;</span></span> + ex, ex);
             }
         }
         <span class="keyword">throw</span> <span class="keyword">new</span> <span class="exception">ExecutionException</span>(parsed, <span class="string"><span class="delimiter">&quot;</span><span class="content">Parsed command (</span><span class="delimiter">&quot;</span></span> + command + <span class="string"><span class="delimiter">&quot;</span><span class="content">) is not Runnable or Callable</span><span class="delimiter">&quot;</span></span>);
@@ -4061,7 +4159,7 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
          */</span>
         <span class="directive">public</span> <span class="predefined-type">List</span>&lt;<span class="predefined-type">Object</span>&gt; handleParseResult(<span class="predefined-type">List</span>&lt;CommandLine&gt; parsedCommands, <span class="predefined-type">PrintStream</span> out, Help.Ansi ansi) {
             <span class="keyword">if</span> (printHelpIfRequested(parsedCommands, out, ansi)) {
-                <span class="keyword">return</span> <span class="predefined-constant">null</span>;
+                <span class="keyword">return</span> <span class="predefined-type">Collections</span>.emptyList();
             }
             <span class="predefined-type">List</span>&lt;<span class="predefined-type">Object</span>&gt; result = <span class="keyword">new</span> <span class="predefined-type">ArrayList</span>&lt;<span class="predefined-type">Object</span>&gt;();
             <span class="keyword">for</span> (CommandLine parsed : parsedCommands) {
@@ -4520,7 +4618,8 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
     }
 
     <span class="comment">/** Returns the command name (also called program name) displayed in the usage help synopsis. {@value Help#DEFAULT_COMMAND_NAME} by default.
-     * @return the command name (also called program name) displayed in the usage */</span>
+     * @return the command name (also called program name) displayed in the usage
+     * @since 2.0 */</span>
     <span class="directive">public</span> <span class="predefined-type">String</span> getCommandName() {
         <span class="keyword">return</span> commandName;
     }
@@ -4529,9 +4628,29 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
      * Note that this method only modifies the usage help message, it does not impact parsing behaviour.
      * The command name may also be set declaratively with the {@link CommandLine.Command#name()} annotation attribute.
      * @param commandName command name (also called program name) displayed in the usage help synopsis
-     * @return this {@code CommandLine} object, to allow method chaining */</span>
+     * @return this {@code CommandLine} object, to allow method chaining
+     * @since 2.0 */</span>
     <span class="directive">public</span> CommandLine setCommandName(<span class="predefined-type">String</span> commandName) {
         <span class="local-variable">this</span>.commandName = Assert.notNull(commandName, <span class="string"><span class="delimiter">&quot;</span><span class="content">commandName</span><span class="delimiter">&quot;</span></span>);
+        <span class="keyword">return</span> <span class="local-variable">this</span>;
+    }
+
+    <span class="comment">/** Returns whether arguments starting with {@code '@'} should be treated as the path to an argument file and its
+     * contents should be expanded into separate arguments for each line in the specified file.
+     * This property is {@code true} by default.
+     * @return whether &quot;argument files&quot; or {@code @files} should be expanded into their content
+     * @since 2.1 */</span>
+    <span class="directive">public</span> <span class="type">boolean</span> isExpandAtFiles() {
+        <span class="keyword">return</span> expandAtFiles;
+    }
+
+    <span class="comment">/** Sets whether arguments starting with {@code '@'} should be treated as the path to an argument file and its
+     * contents should be expanded into separate arguments for each line in the specified file. ({@code true} by default.)
+     * @param expandAtFiles whether &quot;argument files&quot; or {@code @files} should be expanded into their content
+     * @return this {@code CommandLine} object, to allow method chaining
+     * @since 2.1 */</span>
+    <span class="directive">public</span> CommandLine setExpandAtFiles(<span class="type">boolean</span> expandAtFiles) {
+        <span class="local-variable">this</span>.expandAtFiles = expandAtFiles;
         <span class="keyword">return</span> <span class="local-variable">this</span>;
     }
     <span class="directive">private</span> <span class="directive">static</span> <span class="type">boolean</span> empty(<span class="predefined-type">String</span> str) { <span class="keyword">return</span> str == <span class="predefined-constant">null</span> || str.trim().length() == <span class="integer">0</span>; }
@@ -5201,7 +5320,8 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
         <span class="directive">public</span> <span class="directive">static</span> Range defaultArity(<span class="predefined-type">Field</span> field) {
             <span class="predefined-type">Class</span>&lt;?&gt; type = field.getType();
             <span class="keyword">if</span> (field.isAnnotationPresent(<span class="predefined-type">Option</span>.class)) {
-                <span class="keyword">return</span> defaultArity(type);
+                <span class="type">boolean</span> zeroArgs = isBoolean(type) || (isMultiValue(type) &amp;&amp; isBoolean(getTypeAttribute(field)[<span class="integer">0</span>]));
+                <span class="keyword">return</span> zeroArgs ? Range.valueOf(<span class="string"><span class="delimiter">&quot;</span><span class="content">0</span><span class="delimiter">&quot;</span></span>) : Range.valueOf(<span class="string"><span class="delimiter">&quot;</span><span class="content">1</span><span class="delimiter">&quot;</span></span>);
             }
             <span class="keyword">if</span> (isMultiValue(type)) {
                 <span class="keyword">return</span> Range.valueOf(<span class="string"><span class="delimiter">&quot;</span><span class="content">0..1</span><span class="delimiter">&quot;</span></span>);
@@ -5210,8 +5330,9 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
         }
         <span class="comment">/** Returns the default arity {@code Range} for {@link Option options}: booleans have arity 0, other types have arity 1.
          * @param type the type whose default arity to return
-         * @return a new {@code Range} indicating the default arity of the specified type */</span>
-        <span class="directive">public</span> <span class="directive">static</span> Range defaultArity(<span class="predefined-type">Class</span>&lt;?&gt; type) {
+         * @return a new {@code Range} indicating the default arity of the specified type
+         * @deprecated use {@link #defaultArity(Field)} instead */</span>
+        <span class="annotation">@Deprecated</span> <span class="directive">public</span> <span class="directive">static</span> Range defaultArity(<span class="predefined-type">Class</span>&lt;?&gt; type) {
             <span class="keyword">return</span> isBoolean(type) ? Range.valueOf(<span class="string"><span class="delimiter">&quot;</span><span class="content">0</span><span class="delimiter">&quot;</span></span>) : Range.valueOf(<span class="string"><span class="delimiter">&quot;</span><span class="content">1</span><span class="delimiter">&quot;</span></span>);
         }
         <span class="directive">private</span> <span class="type">int</span> size() { <span class="keyword">return</span> <span class="integer">1</span> + max - min; }
@@ -5299,8 +5420,19 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
                               <span class="predefined-type">List</span>&lt;<span class="predefined-type">Field</span>&gt; positionalParametersFields) {
         <span class="predefined-type">Field</span><span class="type">[]</span> declaredFields = cls.getDeclaredFields();
         <span class="keyword">for</span> (<span class="predefined-type">Field</span> field : declaredFields) {
+            <span class="type">boolean</span> isOption = field.isAnnotationPresent(<span class="predefined-type">Option</span>.class);
+            <span class="type">boolean</span> isPositional = field.isAnnotationPresent(Parameters.class);
+            <span class="keyword">if</span> (isOption &amp;&amp; isPositional) {
+                <span class="keyword">throw</span> <span class="keyword">new</span> DuplicateOptionAnnotationsException(<span class="string"><span class="delimiter">&quot;</span><span class="content">A field can be either @Option or @Parameters, but '</span><span class="delimiter">&quot;</span></span>
+                        + field + <span class="string"><span class="delimiter">&quot;</span><span class="content">' is both.</span><span class="delimiter">&quot;</span></span>);
+            }
+            <span class="keyword">if</span> (!isOption &amp;&amp; !isPositional) { <span class="keyword">continue</span>; }
+            <span class="keyword">if</span> (<span class="predefined-type">Modifier</span>.isFinal(field.getModifiers()) &amp;&amp; (field.getType().isPrimitive() || <span class="predefined-type">String</span>.class.isAssignableFrom(field.getType()))) {
+                <span class="keyword">throw</span> <span class="keyword">new</span> InitializationException(<span class="string"><span class="delimiter">&quot;</span><span class="content">Constant (final) primitive and String fields like </span><span class="delimiter">&quot;</span></span> + field + <span class="string"><span class="delimiter">&quot;</span><span class="content"> cannot be used as </span><span class="delimiter">&quot;</span></span> +
+                        (isOption ? <span class="string"><span class="delimiter">&quot;</span><span class="content">an @Option</span><span class="delimiter">&quot;</span></span> : <span class="string"><span class="delimiter">&quot;</span><span class="content">a @Parameter</span><span class="delimiter">&quot;</span></span>) + <span class="string"><span class="delimiter">&quot;</span><span class="content">: compile-time constant inlining may hide new values written to it.</span><span class="delimiter">&quot;</span></span>);
+            }
             field.setAccessible(<span class="predefined-constant">true</span>);
-            <span class="keyword">if</span> (field.isAnnotationPresent(<span class="predefined-type">Option</span>.class)) {
+            <span class="keyword">if</span> (isOption) {
                 <span class="predefined-type">Option</span> option = field.getAnnotation(<span class="predefined-type">Option</span>.class);
                 <span class="keyword">if</span> (option.required()) {
                     requiredFields.add(field);
@@ -5319,11 +5451,7 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
                     }
                 }
             }
-            <span class="keyword">if</span> (field.isAnnotationPresent(Parameters.class)) {
-                <span class="keyword">if</span> (field.isAnnotationPresent(<span class="predefined-type">Option</span>.class)) {
-                    <span class="keyword">throw</span> <span class="keyword">new</span> DuplicateOptionAnnotationsException(<span class="string"><span class="delimiter">&quot;</span><span class="content">A field can be either @Option or @Parameters, but '</span><span class="delimiter">&quot;</span></span>
-                            + field.getName() + <span class="string"><span class="delimiter">&quot;</span><span class="content">' is both.</span><span class="delimiter">&quot;</span></span>);
-                }
+            <span class="keyword">if</span> (isPositional) {
                 positionalParametersFields.add(field);
                 Range arity = Range.parameterArity(field);
                 <span class="keyword">if</span> (arity.min &gt; <span class="integer">0</span>) {
@@ -5347,6 +5475,10 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
     <span class="directive">private</span> <span class="directive">static</span> &lt;T&gt; <span class="predefined-type">Stack</span>&lt;T&gt; reverse(<span class="predefined-type">Stack</span>&lt;T&gt; stack) {
         <span class="predefined-type">Collections</span>.reverse(stack);
         <span class="keyword">return</span> stack;
+    }
+    <span class="directive">private</span> <span class="directive">static</span> &lt;T&gt; <span class="predefined-type">List</span>&lt;T&gt; reverseList(<span class="predefined-type">List</span>&lt;T&gt; list) {
+        <span class="predefined-type">Collections</span>.reverse(list);
+        <span class="keyword">return</span> list;
     }
     <span class="comment">/**
      * Helper class responsible for processing command line arguments.
@@ -5454,13 +5586,62 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
         <span class="predefined-type">List</span>&lt;CommandLine&gt; parse(<span class="predefined-type">String</span>... args) {
             Assert.notNull(args, <span class="string"><span class="delimiter">&quot;</span><span class="content">argument array</span><span class="delimiter">&quot;</span></span>);
             <span class="keyword">if</span> (tracer.isInfo()) {tracer.info(<span class="string"><span class="delimiter">&quot;</span><span class="content">Parsing %d command line args %s%n</span><span class="delimiter">&quot;</span></span>, args.length, <span class="predefined-type">Arrays</span>.toString(args));}
+            <span class="predefined-type">List</span>&lt;<span class="predefined-type">String</span>&gt; expanded = <span class="keyword">new</span> <span class="predefined-type">ArrayList</span>&lt;<span class="predefined-type">String</span>&gt;();
+            <span class="keyword">for</span> (<span class="predefined-type">String</span> arg : args) { addOrExpand(arg, expanded, <span class="keyword">new</span> <span class="predefined-type">LinkedHashSet</span>&lt;<span class="predefined-type">String</span>&gt;()); }
             <span class="predefined-type">Stack</span>&lt;<span class="predefined-type">String</span>&gt; arguments = <span class="keyword">new</span> <span class="predefined-type">Stack</span>&lt;<span class="predefined-type">String</span>&gt;();
-            <span class="keyword">for</span> (<span class="type">int</span> i = args.length - <span class="integer">1</span>; i &gt;= <span class="integer">0</span>; i--) {
-                arguments.push(args[i]);
-            }
+            arguments.addAll(reverseList(expanded));
             <span class="predefined-type">List</span>&lt;CommandLine&gt; result = <span class="keyword">new</span> <span class="predefined-type">ArrayList</span>&lt;CommandLine&gt;();
             parse(result, arguments, args);
             <span class="keyword">return</span> result;
+        }
+
+        <span class="directive">private</span> <span class="type">void</span> addOrExpand(<span class="predefined-type">String</span> arg, <span class="predefined-type">List</span>&lt;<span class="predefined-type">String</span>&gt; arguments, <span class="predefined-type">Set</span>&lt;<span class="predefined-type">String</span>&gt; visited) {
+            <span class="keyword">if</span> (expandAtFiles &amp;&amp; !arg.equals(<span class="string"><span class="delimiter">&quot;</span><span class="content">@</span><span class="delimiter">&quot;</span></span>) &amp;&amp; arg.startsWith(<span class="string"><span class="delimiter">&quot;</span><span class="content">@</span><span class="delimiter">&quot;</span></span>)) {
+                arg = arg.substring(<span class="integer">1</span>);
+                <span class="keyword">if</span> (arg.startsWith(<span class="string"><span class="delimiter">&quot;</span><span class="content">@</span><span class="delimiter">&quot;</span></span>)) {
+                    <span class="keyword">if</span> (tracer.isInfo()) { tracer.info(<span class="string"><span class="delimiter">&quot;</span><span class="content">Not expanding @-escaped argument %s (trimmed leading '@' char)%n</span><span class="delimiter">&quot;</span></span>, arg); }
+                } <span class="keyword">else</span> {
+                    <span class="keyword">if</span> (tracer.isInfo()) { tracer.info(<span class="string"><span class="delimiter">&quot;</span><span class="content">Expanding argument file @%s%n</span><span class="delimiter">&quot;</span></span>, arg); }
+                    expandArgumentFile(arg, arguments, visited);
+                    <span class="keyword">return</span>;
+                }
+            }
+            arguments.add(arg);
+        }
+        <span class="directive">private</span> <span class="type">void</span> expandArgumentFile(<span class="predefined-type">String</span> fileName, <span class="predefined-type">List</span>&lt;<span class="predefined-type">String</span>&gt; arguments, <span class="predefined-type">Set</span>&lt;<span class="predefined-type">String</span>&gt; visited) {
+            <span class="predefined-type">File</span> file = <span class="keyword">new</span> <span class="predefined-type">File</span>(fileName);
+            <span class="keyword">if</span> (!file.canRead()) {
+                <span class="keyword">if</span> (tracer.isInfo()) {tracer.info(<span class="string"><span class="delimiter">&quot;</span><span class="content">File %s does not exist or cannot be read; treating argument literally%n</span><span class="delimiter">&quot;</span></span>, fileName);}
+                arguments.add(<span class="string"><span class="delimiter">&quot;</span><span class="content">@</span><span class="delimiter">&quot;</span></span> + fileName);
+            } <span class="keyword">else</span> <span class="keyword">if</span> (visited.contains(file.getAbsolutePath())) {
+                <span class="keyword">if</span> (tracer.isInfo()) {tracer.info(<span class="string"><span class="delimiter">&quot;</span><span class="content">Already visited file %s; ignoring...%n</span><span class="delimiter">&quot;</span></span>, file.getAbsolutePath());}
+            } <span class="keyword">else</span> {
+                expandValidArgumentFile(fileName, file, arguments, visited);
+            }
+        }
+        <span class="directive">private</span> <span class="type">void</span> expandValidArgumentFile(<span class="predefined-type">String</span> fileName, <span class="predefined-type">File</span> file, <span class="predefined-type">List</span>&lt;<span class="predefined-type">String</span>&gt; arguments, <span class="predefined-type">Set</span>&lt;<span class="predefined-type">String</span>&gt; visited) {
+            visited.add(file.getAbsolutePath());
+            <span class="predefined-type">List</span>&lt;<span class="predefined-type">String</span>&gt; result = <span class="keyword">new</span> <span class="predefined-type">ArrayList</span>&lt;<span class="predefined-type">String</span>&gt;();
+            <span class="predefined-type">LineNumberReader</span> reader = <span class="predefined-constant">null</span>;
+            <span class="keyword">try</span> {
+                reader = <span class="keyword">new</span> <span class="predefined-type">LineNumberReader</span>(<span class="keyword">new</span> <span class="predefined-type">FileReader</span>(file));
+                <span class="predefined-type">StreamTokenizer</span> tok = <span class="keyword">new</span> <span class="predefined-type">StreamTokenizer</span>(reader);
+                tok.resetSyntax();
+                tok.wordChars(<span class="string"><span class="delimiter">'</span><span class="content"> </span><span class="delimiter">'</span></span>, <span class="integer">255</span>);
+                tok.whitespaceChars(<span class="integer">0</span>, <span class="string"><span class="delimiter">'</span><span class="content"> </span><span class="delimiter">'</span></span>);
+                tok.commentChar(<span class="string"><span class="delimiter">'</span><span class="content">#</span><span class="delimiter">'</span></span>);
+                tok.quoteChar(<span class="string"><span class="delimiter">'</span><span class="content">&quot;</span><span class="delimiter">'</span></span>);
+                tok.quoteChar(<span class="string"><span class="delimiter">'</span><span class="char">\'</span><span class="delimiter">'</span></span>);
+                <span class="keyword">while</span> (tok.nextToken() != <span class="predefined-type">StreamTokenizer</span>.TT_EOF) {
+                    addOrExpand(tok.sval, result, visited);
+                }
+            } <span class="keyword">catch</span> (<span class="exception">Exception</span> ex) {
+                <span class="keyword">throw</span> <span class="keyword">new</span> InitializationException(<span class="string"><span class="delimiter">&quot;</span><span class="content">Could not read argument file @</span><span class="delimiter">&quot;</span></span> + fileName, ex);
+            } <span class="keyword">finally</span> {
+                <span class="keyword">if</span> (reader != <span class="predefined-constant">null</span>) { <span class="keyword">try</span> {reader.close();} <span class="keyword">catch</span> (<span class="exception">Exception</span> ignored) {} }
+            }
+            <span class="keyword">if</span> (tracer.isInfo()) {tracer.info(<span class="string"><span class="delimiter">&quot;</span><span class="content">Expanded file @%s to arguments %s%n</span><span class="delimiter">&quot;</span></span>, fileName, result);}
+            arguments.addAll(result);
         }
 
         <span class="directive">private</span> <span class="type">void</span> parse(<span class="predefined-type">List</span>&lt;CommandLine&gt; parsedCommands, <span class="predefined-type">Stack</span>&lt;<span class="predefined-type">String</span>&gt; argumentStack, <span class="predefined-type">String</span><span class="type">[]</span> originalArgs) {
@@ -5527,7 +5708,7 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
 
                 <span class="comment">// if we find another command, we are done with the current command</span>
                 <span class="keyword">if</span> (commands.containsKey(arg)) {
-                    <span class="keyword">if</span> (!isHelpRequested &amp;&amp; !required.isEmpty()) { <span class="comment">// ensure current command portion is valid</span>
+                    <span class="keyword">if</span> (!isAnyHelpRequested() &amp;&amp; !required.isEmpty()) { <span class="comment">// ensure current command portion is valid</span>
                         <span class="keyword">throw</span> MissingParameterException.create(CommandLine.this, required, separator);
                     }
                     <span class="keyword">if</span> (tracer.isDebug()) {tracer.debug(<span class="string"><span class="delimiter">&quot;</span><span class="content">Found subcommand '%s' (%s)%n</span><span class="delimiter">&quot;</span></span>, arg, commands.get(arg).interpreter.command.getClass().getName());}
@@ -5668,11 +5849,12 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
                     <span class="comment">// arity &lt;= 0 &amp;&amp; !cluster.startsWith(separator)</span>
                     <span class="comment">// e.g., boolean @Option(&quot;-v&quot;, arity=0, varargs=true); arg &quot;-rvTRUE&quot;, remainder cluster=&quot;TRUE&quot;</span>
                     <span class="keyword">if</span> (!empty(cluster)) {
-                        args.push(cluster); <span class="comment">// interpret remainder as option parameter</span>
+                        args.push(cluster); <span class="comment">// interpret remainder as option parameter (CAUTION: may be empty string!)</span>
                     }
+                    <span class="type">int</span> argCount = args.size();
                     <span class="type">int</span> consumed = applyOption(field, <span class="predefined-type">Option</span>.class, arity, paramAttachedToOption, args, initialized, argDescription);
-                    <span class="comment">// only return if cluster (and maybe more) was consumed, otherwise continue do-while loop</span>
-                    <span class="keyword">if</span> (empty(cluster) || consumed &gt; <span class="integer">0</span> || args.isEmpty()) {
+                    <span class="comment">// if cluster was consumed as a parameter or if this field was the last in the cluster we're done; otherwise continue do-while loop</span>
+                    <span class="keyword">if</span> (empty(cluster) || args.isEmpty() || args.size() &lt; argCount) {
                         <span class="keyword">return</span>;
                     }
                     cluster = args.pop();
@@ -5927,10 +6109,13 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
             <span class="keyword">for</span> (<span class="type">int</span> i = arity.min; i &lt; arity.max &amp;&amp; !args.isEmpty(); i++) {
                 <span class="keyword">if</span> (annotation != Parameters.class) { <span class="comment">// for vararg Options, we stop if we encounter '--', a command, or another option</span>
                     <span class="keyword">if</span> (commands.containsKey(args.peek()) || isOption(args.peek())) {
-                        <span class="keyword">return</span> result;
+                        <span class="keyword">break</span>;
                     }
                 }
                 consumeOneArgument(field, arity, args, type, result, i, originalSize, argDescription);
+            }
+            <span class="keyword">if</span> (result.isEmpty() &amp;&amp; arity.min == <span class="integer">0</span> &amp;&amp; arity.max &lt;= <span class="integer">1</span> &amp;&amp; isBoolean(type)) {
+                <span class="keyword">return</span> <span class="predefined-type">Arrays</span>.asList((<span class="predefined-type">Object</span>) <span class="predefined-type">Boolean</span>.TRUE);
             }
             <span class="keyword">return</span> result;
         }
@@ -8276,8 +8461,8 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
 </div>
 <div id="footer">
 <div id="footer-text">
-Version 2.0.3<br>
-Last updated 2017-11-10 23:02:38 +09:00
+Version 2.1.0<br>
+Last updated 2017-11-30 00:30:31 +09:00
 </div>
 </div>
 </body>

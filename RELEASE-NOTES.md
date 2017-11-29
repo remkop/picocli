@@ -1,11 +1,17 @@
 # picocli Release Notes
 
-# <a name="2.1.0"></a> (UNRELEASED) Picocli 2.1.0
+# <a name="2.1.0"></a> Picocli 2.1.0
 
 This release contains bugfixes and new features.
 
-TODO: high-level overview
+Users sometimes run into system limitations on the length of a command line when creating a command line with lots of options or with long arguments for options.
 
+Starting from this release, picocli supports "argument files" or "@-files". Argument files are files that themselves contain arguments to the command. When picocli encounters an argument beginning with the character `@', it expands the contents of that file into the argument list.
+
+Secondly, this release adds support for multi-value boolean flags. A common use case where this is useful is to let users control the level of output verbosity by specifying more `-v` flags on the command line. For example, `-v` could give high-level output, `-vv` could show more detailed output, and `-vvv` could show debug-level information.
+
+Finally, thanks to [aadrian](https://github.com/aadrian) and [RobertZenz](https://github.com/RobertZenz), an `examples` subproject containing running examples has been added. (Your contributions are welcome!)
+ 
 This is the sixteenth public release.
 Picocli follows [semantic versioning](http://semver.org/).
 
@@ -19,7 +25,49 @@ Picocli follows [semantic versioning](http://semver.org/).
 
 ## <a name="2.1.0-new"></a> New and noteworthy
 
-TODO
+### Argument Files (`@`-files)
+An argument file can include options and positional parameters in any combination. The arguments within a file can be space-separated or newline-separated. If an argument contains embedded whitespace, put the whole argument in double or single quotes (`"-f=My Files\Stuff.java"`).
+
+Lines starting with `#` are comments and are ignored. The file may itself contain additional @-file arguments; any such arguments will be processed recursively.
+
+Multiple @-files may be specified on the command line.
+
+For example, suppose a file with arguments exists at `/home/foo/args`, with these contents:
+
+```
+# This line is a comment and is ignored.
+ABC -option=123
+'X Y Z'
+```
+
+A command may be invoked with the @file argument, like this:
+```
+java MyCommand @/home/foo/args
+```
+
+The above will be expanded to the contents of the file:
+```
+java MyCommand ABC -option=123 "X Y Z"
+```
+
+This feature is similar to the 'Command Line Argument File' processing supported by gcc, javadoc and javac.
+The documentation for these tools shows further examples.
+
+### Repeated Boolean Flags
+
+Multi-valued boolean options are now supported. For example:
+```
+@Option(names = "-v", description = { "Specify multiple -v options to increase verbosity.",
+                                      "For example, `-v -v -v` or `-vvv`"})
+boolean[] verbosity;
+```
+
+Users may specify multiple boolean flag options without parameters. For example:
+```
+<command> -v -v -v -vvv
+```
+The above example results in six `true` values being added to the `verbosity` array.
+
 
 ## <a name="2.1.0-promoted"></a> Promoted features
 Promoted features are features that were incubating in previous versions of picocli but are now supported and subject to backwards compatibility. 
@@ -29,14 +77,13 @@ No features have been promoted in this picocli release.
 ## <a name="2.1.0-fixes"></a> Fixed issues
 
 - [#126] New feature: Support expanding argument files, also called `@-files`.
-- [#241] New feature: Recursively process nested @-files; allow multiple arguments per line, allow quoted arguments with embedded whitespace.
+- [#241] New feature (enhancing [#126]): Recursively process nested @-files; allow multiple arguments per line, allow quoted arguments with embedded whitespace.
 - [#217] New feature: Support repeated boolean flag options captured in multi-valued fields.
 - [#223] New feature: Added `examples` subproject containing running examples.  Thanks to [aadrian](https://github.com/aadrian) and [RobertZenz](https://github.com/RobertZenz).
 - [#68]  Enhancement: Reject private final primitive fields annotated with @Option or @Parameters: because compile-time constants are inlined, updates by picocli to such fields would not be visible to the application.
 - [#239] Enhancement: Improve error message when Exception thrown from Runnable/Callable.
-- [#241] Enhancement: Recursively process nested @-files.
 - [#240] Bugfix: RunAll handler should return empty list, not null, when help is requested.
-- [#244] Fixed bug where parser only considered help options instead of any of help, usageHelp and versionHelp to determine if missing required options can be ignored when encountering a subcommand. Thanks to [mkavanagh](https://github.com/mkavanagh).
+- [#244] Bugfix: the parser only considered `help` options instead of any of `help`, `usageHelp` and `versionHelp` to determine if missing required options can be ignored when encountering a subcommand. Thanks to [mkavanagh](https://github.com/mkavanagh).
 
 ## <a name="2.1.0-deprecated"></a> Deprecations
 

@@ -99,7 +99,7 @@ public class CommandLineTest {
     }
     @Test
     public void testVersion() {
-        assertEquals("2.1.0-SNAPSHOT", CommandLine.VERSION);
+        assertEquals("2.1.0", CommandLine.VERSION);
     }
     @Test
     public void testArrayPositionalParametersAreAppendedNotReplaced() {
