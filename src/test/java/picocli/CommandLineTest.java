@@ -2981,6 +2981,77 @@ public class CommandLineTest {
     }
 
     @Test
+    public void testAtFileWithMultipleValuesPerLine() {
+        class App {
+            @Option(names = "-x")
+            private boolean xxx;
+
+            @Option(names = "-f")
+            private String[] fff;
+
+            @Option(names = "-v")
+            private boolean verbose;
+
+            @Parameters
+            private List<String> files;
+        }
+        File file = findFile("/argfile3-multipleValuesPerLine.txt");
+        App app = CommandLine.populateCommand(new App(), "-f", "fVal1", "@" + file.getAbsolutePath(), "-f", "fVal2");
+        assertTrue(app.verbose);
+        assertEquals(Arrays.asList("1111", "2222", "3333"), app.files);
+        assertTrue(app.xxx);
+        assertArrayEquals(new String[]{"fVal1", "FFFF", "F2F2F2", "fVal2"}, app.fff);
+    }
+
+    @Test
+    public void testAtFileWithQuotedValuesContainingWhitespace() {
+        class App {
+            @Option(names = "-x")
+            private boolean xxx;
+
+            @Option(names = "-f")
+            private String[] fff;
+
+            @Option(names = "-v")
+            private boolean verbose;
+
+            @Parameters
+            private List<String> files;
+        }
+        setTraceLevel("OFF");
+        File file = findFile("/argfile4-quotedValuesContainingWhitespace.txt");
+        App app = CommandLine.populateCommand(new App(), "-f", "fVal1", "@" + file.getAbsolutePath(), "-f", "fVal2");
+        assertTrue(app.verbose);
+        assertEquals(Arrays.asList("11 11", "22\n22", "3333"), app.files);
+        assertTrue(app.xxx);
+        assertArrayEquals(new String[]{"fVal1", "F F F F", "F2 F2 F2", "fVal2"}, app.fff);
+    }
+
+    @Test
+    public void testAtFileWithExcapedAtValues() {
+        class App {
+            @Parameters
+            private List<String> files;
+        }
+        setTraceLevel("OFF");
+        File file = findFile("/argfile5-escapedAtValues.txt");
+        App app = CommandLine.populateCommand(new App(), "aa", "@" + file.getAbsolutePath(), "bb");
+        assertEquals(Arrays.asList("aa", "@val1", "@argfile5-escapedAtValues.txt", "bb"), app.files);
+    }
+
+    @Test
+    public void testEscapedAtFileIsUnescapedButNotExpanded() {
+        class App {
+            @Parameters
+            private List<String> files;
+        }
+        setTraceLevel("OFF");
+        File file = findFile("/argfile1.txt");
+        App app = CommandLine.populateCommand(new App(), "aa", "@@" + file.getAbsolutePath(), "bb");
+        assertEquals(Arrays.asList("aa", "@" + file.getAbsolutePath(), "bb"), app.files);
+    }
+
+    @Test
     public void testMultipleAtFilesExpandedMixedWithOtherParams() {
         class App {
             @Option(names = "-x")
@@ -3042,6 +3113,38 @@ public class CommandLineTest {
     }
 
     @Test
+    public void testRecursiveNestedAtFileIgnored() throws IOException {
+        class App {
+            @Option(names = "-x")
+            private boolean xxx;
+
+            @Option(names = "-f")
+            private String[] fff;
+
+            @Option(names = "-v")
+            private boolean verbose;
+
+            @Parameters
+            private List<String> files;
+        }
+        File file = findFile("/argfile-with-recursive-at-file.txt");
+        File localCopy = new File("argfile-with-recursive-at-file.txt");
+        localCopy.delete();
+        assertFalse("does not exist yet", localCopy.exists());
+        copyFile(file, localCopy);
+
+        setTraceLevel("OFF");
+        App app = new App();
+        CommandLine commandLine = new CommandLine(app).setOverwrittenOptionsAllowed(true);
+        commandLine.parse("-f", "fVal1", "@" + localCopy.getAbsolutePath(),  "-f", "fVal2");
+        assertEquals(Arrays.asList("abc defg", "xyz"), app.files);
+        assertArrayEquals(new String[]{"fVal1", "fVal2"}, app.fff);
+        assertFalse("not invoked", app.verbose);
+        assertFalse("not invoked", app.xxx);
+        assertTrue("Deleted " + localCopy, localCopy.delete());
+    }
+
+    @Test
     public void testNestedAtFileNotFound() throws IOException {
         class App {
             @Option(names = "-x")
@@ -3065,10 +3168,10 @@ public class CommandLineTest {
         App app = new App();
         CommandLine commandLine = new CommandLine(app).setOverwrittenOptionsAllowed(true);
         commandLine.parse("-f", "fVal1", "@" + file.getAbsolutePath(),  "-f", "fVal2");
-        assertFalse("never invoked", app.verbose);
         assertEquals(Arrays.asList("abcdefg", "@" + nested.getName()), app.files);
-        assertFalse("never invoked", app.xxx);
         assertArrayEquals(new String[]{"fVal1", "fVal2"}, app.fff);
+        assertFalse("never invoked", app.verbose);
+        assertFalse("never invoked", app.xxx);
     }
 
     private void copyFile(File source, File destination) throws IOException {

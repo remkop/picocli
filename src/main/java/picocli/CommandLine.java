@@ -15,10 +15,11 @@
  */
 package picocli;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
+import java.io.LineNumberReader;
 import java.io.PrintStream;
+import java.io.StreamTokenizer;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -1985,39 +1986,54 @@ public class CommandLine {
         List<CommandLine> parse(String... args) {
             Assert.notNull(args, "argument array");
             if (tracer.isInfo()) {tracer.info("Parsing %d command line args %s%n", args.length, Arrays.toString(args));}
+            List<String> expanded = new ArrayList<String>();
+            for (String arg : args) { addOrExpand(arg, expanded, new LinkedHashSet<String>()); }
             Stack<String> arguments = new Stack<String>();
-            for (int i = args.length - 1; i >= 0; i--) {
-                if (expandAtFiles && args[i].startsWith("@")) {
-                    if (tracer.isInfo()) {tracer.info("Expanding argument file %s%n", args[i]);}
-                    arguments.addAll(reverseList(readFile(args[i].substring(1))));
-                } else {
-                    arguments.push(args[i]);
-                }
-            }
+            arguments.addAll(reverseList(expanded));
             List<CommandLine> result = new ArrayList<CommandLine>();
             parse(result, arguments, args);
             return result;
         }
 
-        private List<String> readFile(String fileName) {
+        private void addOrExpand(String arg, List<String> arguments, Set<String> visited) {
+            if (expandAtFiles && !arg.equals("@") && arg.startsWith("@")) {
+                arg = arg.substring(1);
+                if (arg.startsWith("@")) {
+                    if (tracer.isInfo()) { tracer.info("Not expanding @-escaped argument %s (trimmed leading '@' char)%n", arg); }
+                } else {
+                    if (tracer.isInfo()) { tracer.info("Expanding argument file @%s%n", arg); }
+                    expandArgumentFile(arg, arguments, visited);
+                    return;
+                }
+            }
+            arguments.add(arg);
+        }
+        private void expandArgumentFile(String fileName, List<String> arguments, Set<String> visited) {
             File file = new File(fileName);
             if (!file.canRead()) {
                 if (tracer.isInfo()) {tracer.info("File %s does not exist or cannot be read; treating argument literally%n", fileName);}
-                return Arrays.asList("@" + fileName);
+                arguments.add("@" + fileName);
+            } else if (visited.contains(file.getAbsolutePath())) {
+                if (tracer.isInfo()) {tracer.info("Already visited file %s; ignoring...%n", file.getAbsolutePath());}
+            } else {
+                expandValidArgumentFile(fileName, file, arguments, visited);
             }
+        }
+        private void expandValidArgumentFile(String fileName, File file, List<String> arguments, Set<String> visited) {
+            visited.add(file.getAbsolutePath());
             List<String> result = new ArrayList<String>();
-            BufferedReader reader = null;
+            LineNumberReader reader = null;
             try {
-                reader = new BufferedReader(new FileReader(file));
-                String line = null;
-                while ((line = reader.readLine()) != null) {
-                    if (line.length() > 0 && !line.trim().startsWith("#")) { // ignore comment lines
-                        if (line.startsWith("@")) {
-                            result.addAll(readFile(line.substring(1)));
-                        } else {
-                            result.add(line);
-                        }
-                    }
+                reader = new LineNumberReader(new FileReader(file));
+                StreamTokenizer tok = new StreamTokenizer(reader);
+                tok.resetSyntax();
+                tok.wordChars(' ', 255);
+                tok.whitespaceChars(0, ' ');
+                tok.commentChar('#');
+                tok.quoteChar('"');
+                tok.quoteChar('\'');
+                while (tok.nextToken() != StreamTokenizer.TT_EOF) {
+                    addOrExpand(tok.sval, result, visited);
                 }
             } catch (Exception ex) {
                 throw new InitializationException("Could not read argument file @" + fileName, ex);
@@ -2025,7 +2041,7 @@ public class CommandLine {
                 if (reader != null) { try {reader.close();} catch (Exception ignored) {} }
             }
             if (tracer.isInfo()) {tracer.info("Expanded file @%s to arguments %s%n", fileName, result);}
-            return result;
+            arguments.addAll(result);
         }
 
         private void parse(List<CommandLine> parsedCommands, Stack<String> argumentStack, String[] originalArgs) {

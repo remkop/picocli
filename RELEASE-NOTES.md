@@ -28,7 +28,8 @@ No features have been promoted in this picocli release.
 
 ## <a name="2.1.0-fixes"></a> Fixed issues
 
-- [#126] New feature: Support reading argument files, also called `@-files`.
+- [#126] New feature: Support expanding argument files, also called `@-files`.
+- [#241] New feature: Recursively process nested @-files; allow multiple arguments per line, allow quoted arguments with embedded whitespace.
 - [#217] New feature: Support repeated boolean flag options captured in multi-valued fields.
 - [#223] New feature: Added `examples` subproject containing running examples.  Thanks to [aadrian](https://github.com/aadrian) and [RobertZenz](https://github.com/RobertZenz).
 - [#68]  Enhancement: Reject private final primitive fields annotated with @Option or @Parameters: because compile-time constants are inlined, updates by picocli to such fields would not be visible to the application.

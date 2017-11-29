@@ -1,0 +1,4 @@
+# first comment
+"abc defg" xyz
+#another comment
+@argfile-with-recursive-at-file.txt
