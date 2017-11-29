@@ -36,7 +36,7 @@ interactively showing users what options and subcommands are available.
 <a id="picocli_demo"></a>
 ![Picocli Demo help message with ANSI colors](docs/images/picocli.Demo.png?raw=true)
 
-* [Releases](https://github.com/remkop/picocli/releases) - latest: 2.0.3
+* [Releases](https://github.com/remkop/picocli/releases) - latest: 2.1
 * [Picocli 2.0 Release Notes](https://github.com/remkop/picocli/releases/tag/v2.0.0) - including some [potential breaking changes](https://github.com/remkop/picocli/releases/tag/v2.0.0#2.0-breaking-changes)
 * [User manual: http://picocli.info](http://picocli.info)
 * [Command line autocompletion](http://picocli.info/autocomplete.html)
