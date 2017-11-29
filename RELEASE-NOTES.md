@@ -5,7 +5,6 @@
 This release contains bugfixes and new features.
 
 Users sometimes run into system limitations on the length of a command line when creating a command line with lots of options or with long arguments for options.
-
 Starting from this release, picocli supports "argument files" or "@-files". Argument files are files that themselves contain arguments to the command. When picocli encounters an argument beginning with the character `@', it expands the contents of that file into the argument list.
 
 Secondly, this release adds support for multi-value boolean flags. A common use case where this is useful is to let users control the level of output verbosity by specifying more `-v` flags on the command line. For example, `-v` could give high-level output, `-vv` could show more detailed output, and `-vvv` could show debug-level information.
