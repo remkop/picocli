@@ -19,18 +19,19 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Writer;
-import java.lang.reflect.Field;
 import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import picocli.CommandLine.ArgSpec;
 import picocli.CommandLine.Command;
+import picocli.CommandLine.CommandSpec;
 import picocli.CommandLine.Option;
+import picocli.CommandLine.OptionSpec;
 import picocli.CommandLine.Parameters;
 
 import static java.lang.String.*;
@@ -88,7 +89,7 @@ public class AutoComplete {
                 CommandLine commandLine = new CommandLine(cls.newInstance());
 
                 if (commandName == null) {
-                    commandName = new CommandLine.Help(commandLine.getCommand()).commandName;
+                    commandName = commandLine.getCommandName(); //new CommandLine.Help(commandLine.commandDescriptor).commandName;
                     if (CommandLine.Help.DEFAULT_COMMAND_NAME.equals(commandName)) {
                         commandName = cls.getSimpleName().toLowerCase();
                     }
@@ -158,14 +159,14 @@ public class AutoComplete {
     private static interface Predicate<T> {
         boolean test(T t);
     }
-    private static class BooleanFieldFilter implements Predicate<Field> {
-        public boolean test(Field f) {
-            return f.getType() == Boolean.TYPE || f.getType() == Boolean.class;
+    private static class BooleanArgFilter implements Predicate<ArgSpec> {
+        public boolean test(ArgSpec f) {
+            return f.propertyType() == Boolean.TYPE || f.propertyType() == Boolean.class;
         }
     }
-    private static class EnumFieldFilter implements Predicate<Field> {
-        public boolean test(Field f) {
-            return f.getType().isEnum();
+    private static class EnumArgFilter implements Predicate<ArgSpec> {
+        public boolean test(ArgSpec f) {
+            return f.propertyType().isEnum();
         }
     }
     private static <T> Predicate<T> negate(final Predicate<T> original) {
@@ -175,7 +176,7 @@ public class AutoComplete {
             }
         };
     }
-    private static <T> List<T> filter(List<T> list, Predicate<T> filter) {
+    private static <K, T extends K> List<T> filter(List<T> list, Predicate<K> filter) {
         List<T> result = new ArrayList<T>();
         for (T t : list) { if (filter.test(t)) { result.add(t); } }
         return result;
@@ -431,13 +432,11 @@ public class AutoComplete {
                 "}\n";
 
         // Get the fields annotated with @Option and @Parameters for the specified CommandLine.
-        List<Field> optionFields = new ArrayList<Field>();
-        List<Field> positionalFields = new ArrayList<Field>();
-        extractOptionsAndParameters(commandLine, optionFields, positionalFields);
+        CommandSpec commandSpec = commandLine.getCommandSpec();
 
         // Build a list of "flag" options that take no parameters and "arg" options that do take parameters, and subcommands.
-        String flagOptionNames = optionNames(filter(optionFields, new BooleanFieldFilter()));
-        List<Field> argOptionFields = filter(optionFields, negate(new BooleanFieldFilter()));
+        String flagOptionNames = optionNames(filter(commandSpec.getOptions(), new BooleanArgFilter()));
+        List<OptionSpec> argOptionFields = filter(commandSpec.getOptions(), negate(new BooleanArgFilter()));
         String argOptionNames = optionNames(argOptionFields);
         String commands = concat(" ", new ArrayList<String>(commandLine.getSubcommands().keySet())).trim();
 
@@ -448,12 +447,12 @@ public class AutoComplete {
 
         // Generate completion lists for options with a known set of valid values.
         // Starting with java enums.
-        List<Field> enumOptions = filter(optionFields, new EnumFieldFilter());
-        for (Field f : enumOptions) {
+        List<OptionSpec> enumOptions = filter(commandSpec.getOptions(), new EnumArgFilter());
+        for (OptionSpec f : enumOptions) {
             buff.append(format("  %s_OPTION_ARGS=\"%s\" # %s values\n",
-                    bashify(f.getName()),
-                    concat(" ", Arrays.asList((Enum[]) f.getType().getEnumConstants()), null, new EnumNameFunction()).trim(),
-                    f.getType().getSimpleName()));
+                    bashify(f.propertyName()),
+                    concat(" ", Arrays.asList((Enum[]) f.propertyType().getEnumConstants()), null, new EnumNameFunction()).trim(),
+                    f.propertyType().getSimpleName()));
         }
         // TODO generate completion lists for other option types:
         // Charset, Currency, Locale, TimeZone, ByteOrder,
@@ -469,39 +468,38 @@ public class AutoComplete {
         return buff.toString();
     }
 
-    private static String generateOptionsSwitch(List<Field> argOptionFields, List<Field> enumOptions) {
+    private static String generateOptionsSwitch(List<OptionSpec> argOptions, List<OptionSpec> enumOptions) {
         StringBuilder buff = new StringBuilder(1024);
         buff.append("\n");
         buff.append("  case ${CURR_WORD} in\n"); // outer case
-        String outerCases = generateOptionsCases(argOptionFields, enumOptions, "", "\"\"");
+        String outerCases = generateOptionsCases(argOptions, enumOptions, "", "\"\"");
         if (outerCases.length() == 0) {
             return "";
         }
         buff.append(outerCases);
         buff.append("    *)\n");
         buff.append("      case ${PREV_WORD} in\n"); // inner case
-        buff.append(generateOptionsCases(argOptionFields, enumOptions, "    ", "$CURR_WORD"));
+        buff.append(generateOptionsCases(argOptions, enumOptions, "    ", "$CURR_WORD"));
         buff.append("      esac\n"); // end inner case
         buff.append("  esac\n"); // end outer case
         return buff.toString();
     }
 
-    private static String generateOptionsCases(List<Field> argOptionFields, List<Field> enumOptions, String indent, String currWord) {
+    private static String generateOptionsCases(List<OptionSpec> argOptionFields, List<OptionSpec> enumOptions, String indent, String currWord) {
         StringBuilder buff = new StringBuilder(1024);
-        for (Field f : argOptionFields) {
-            Option option = f.getAnnotation(Option.class);
-            if (enumOptions.contains(f)) {
+        for (OptionSpec option : argOptionFields) {
+            if (enumOptions.contains(option)) {
                 buff.append(format("%s    %s)\n", indent, concat("|", option.names()))); // "    -u|--timeUnit)\n"
-                buff.append(format("%s      COMPREPLY=( $( compgen -W \"${%s_OPTION_ARGS}\" -- %s ) )\n", indent, f.getName(), currWord));
+                buff.append(format("%s      COMPREPLY=( $( compgen -W \"${%s_OPTION_ARGS}\" -- %s ) )\n", indent, option.propertyName(), currWord));
                 buff.append(format("%s      return $?\n", indent));
                 buff.append(format("%s      ;;\n", indent));
-            } else if (f.getType().equals(File.class) || "java.nio.file.Path".equals(f.getType().getName())) {
+            } else if (option.propertyType().equals(File.class) || "java.nio.file.Path".equals(option.propertyType().getName())) {
                 buff.append(format("%s    %s)\n", indent, concat("|", option.names()))); // "    -f|--file)\n"
                 buff.append(format("%s      compopt -o filenames\n", indent));
                 buff.append(format("%s      COMPREPLY=( $( compgen -f -- %s ) ) # files\n", indent, currWord));
                 buff.append(format("%s      return $?\n", indent));
                 buff.append(format("%s      ;;\n", indent));
-            } else if (f.getType().equals(InetAddress.class)) {
+            } else if (option.propertyType().equals(InetAddress.class)) {
                 buff.append(format("%s    %s)\n", indent, concat("|", option.names()))); // "    -h|--host)\n"
                 buff.append(format("%s      compopt -o filenames\n", indent));
                 buff.append(format("%s      COMPREPLY=( $( compgen -A hostname -- %s ) )\n", indent, currWord));
@@ -512,27 +510,11 @@ public class AutoComplete {
         return buff.toString();
     }
 
-    private static String optionNames(List<Field> optionFields) {
+    private static String optionNames(List<OptionSpec> options) {
         List<String> result = new ArrayList<String>();
-        for (Field f : optionFields) {
-            Option option = f.getAnnotation(Option.class);
+        for (OptionSpec option : options) {
             result.addAll(Arrays.asList(option.names()));
         }
         return concat(" ", result, "", new NullFunction()).trim();
-    }
-
-    private static void extractOptionsAndParameters(CommandLine commandLine,
-                                                    List<Field> optionFields,
-                                                    List<Field> positionalParameterFields) {
-
-        Map<String, Field> optionName2Field = new LinkedHashMap<String, Field>();
-        Class<?> cls = commandLine.getCommand().getClass();
-        while (cls != null) {
-            CommandLine.init(cls, new ArrayList<Field>(), optionName2Field, new HashMap<Character, Field>(), positionalParameterFields);
-            cls = cls.getSuperclass();
-        }
-        for (Field f : optionName2Field.values()) {
-            if (!optionFields.contains(f)) { optionFields.add(f); }
-        }
     }
 }

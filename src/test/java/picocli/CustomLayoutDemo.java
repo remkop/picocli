@@ -136,7 +136,7 @@ public class CustomLayoutDemo implements Runnable {
             }
 
             @Override
-            public void layout(Field field, Text[][] values) {
+            public void layout(ArgSpec arg, Text[][] values) {
                 Text[] columnValues = values[0]; // we know renderer creates a single row with two values
 
                 // We want to show two options on one row, next to each other,
@@ -172,7 +172,7 @@ public class CustomLayoutDemo implements Runnable {
         sb.append(help.description()); // show the first 6 lines, including copyright, description and usage
 
         // Note that we don't sort the options, so they appear in the order the fields are declared in the Zip class.
-        layout.addOptions(help.optionFields, help.parameterLabelRenderer);
+        layout.addOptions(help.options(), help.parameterLabelRenderer());
         sb.append(layout); // finally, copy the options details help text into the StringBuilder
 
         return sb.toString();
@@ -239,7 +239,7 @@ public class CustomLayoutDemo implements Runnable {
         }
         StringBuilder sb = new StringBuilder();
         Help help = new Help(new Netstat(), ansi);
-        help.synopsisHeading = "";
+        help.synopsisHeading("");
         sb.append(help.header()).append(help.detailedSynopsis(0, null, false));
         sb.append(System.getProperty("line.separator"));
 
@@ -252,8 +252,8 @@ public class CustomLayoutDemo implements Runnable {
                 textTable,
                 Help.createMinimalOptionRenderer(),
                 Help.createMinimalParameterRenderer());
-        layout.addOptions(help.optionFields, help.parameterLabelRenderer);
-        layout.addPositionalParameters(help.positionalParametersFields, Help.createMinimalParamLabelRenderer());
+        layout.addOptions(help.options(), help.parameterLabelRenderer());
+        layout.addPositionalParameters(help.positionalParameters(), Help.createMinimalParamLabelRenderer());
         sb.append(layout);
         return sb.toString();
     }

@@ -62,35 +62,10 @@ import static picocli.CommandLine.*;
 /**
  * Tests for the CommandLine argument parsing interpreter functionality.
  */
-// DONE arrays
-// DONE collection fields
-// DONE all built-in types
-// DONE private fields, public fields (TODO methods?)
-// DONE arity 2, 3
-// DONE arity -1, -2, -3
 // TODO arity ignored for single-value types (non-array, non-collection)
-// DONE positional arguments with '--' separator (where positional arguments look like options)
-// DONE positional arguments without '--' separator (based on arity of last option?)
-// DONE positional arguments based on arity of last option
-// TODO ambiguous options: writing --input ARG (as opposed to --input=ARG) is ambiguous,
-// meaning it is not possible to tell whether ARG is option's argument or a positional argument.
-// In usage patterns this will be interpreted as an option with argument only if a description (covered below)
-// for that option is provided.
-// Otherwise it will be interpreted as an option and separate positional argument.
-// TODO ambiguous short options: ambiguity with the -f FILE and -fFILE notation.
-// In the latter case it is not possible to tell whether it is a number of stacked short options,
-// or an option with an argument. These notations will be interpreted as an option with argument only if a
-// description for the option is provided.
-// DONE compact flags
-// DONE compact flags where last option has an argument, separate by space
-// DONE compact flags where last option has an argument attached to the option character
-// DONE long options with argument separate by space
-// DONE long options with argument separated by '=' (no spaces)
 // TODO document that if arity>1 and args="-opt=val1 val2", arity overrules the "=": both values are assigned
 // TODO test superclass bean and child class bean where child class field shadows super class and have same annotation Option name
 // TODO test superclass bean and child class bean where child class field shadows super class and have different annotation Option name
-// DONE -vrx, -vro outputFile, -vrooutputFile, -vro=outputFile, -vro:outputFile, -vro=, -vro:, -vro
-// DONE --out outputFile, --out=outputFile, --out:outputFile, --out=, --out:, --out
 public class CommandLineTest {
     @Before public void setUp() { System.clearProperty("picocli.trace"); }
     @After public void tearDown() { System.clearProperty("picocli.trace"); }
@@ -2460,7 +2435,7 @@ public class CommandLineTest {
             CommandLine.populateCommand(new App());
             fail("MissingParameterException expected");
         } catch (MissingParameterException ex) {
-            assertEquals("Missing required options [-o=OUT_FILE, params[*]=IN_FILE]", ex.getMessage());
+            assertEquals("Missing required options [-o=OUT_FILE, params[0..*]=IN_FILE]", ex.getMessage());
         }
     }
     @Test
@@ -2477,7 +2452,7 @@ public class CommandLineTest {
             CommandLine.populateCommand(new App());
             fail("MissingParameterException expected");
         } catch (MissingParameterException ex) {
-            assertEquals("Missing required options [-o=<String=String>, -x=KEY=VAL, params[*]=<Long=File>]", ex.getMessage());
+            assertEquals("Missing required options [-o=<String=String>, -x=KEY=VAL, params[0..*]=<Long=File>]", ex.getMessage());
         }
     }
     @Test
@@ -2696,7 +2671,7 @@ public class CommandLineTest {
             new CommandLine(new Example()).parse();
             fail("Expected MissingParameterException");
         } catch (MissingParameterException ex) {
-            assertEquals("Missing required options [-o=<outputDir>, params[*]=<inputFiles>]", ex.getMessage());
+            assertEquals("Missing required options [-o=<outputDir>, params[0..*]=<inputFiles>]", ex.getMessage());
         }
 
         // finally, let's test the success scenario
