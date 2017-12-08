@@ -843,6 +843,9 @@ public class CommandLineHelpTest {
         OptionSpec[] fields = options(new App(), "aaaa", "bbbb", "cccc"); // -tkc
         Arrays.sort(fields, new Help.SortByShortestOptionNameAlphabetically());
         OptionSpec[] expected = options(new App(), "cccc", "bbbb", "aaaa"); // -ckt
+        assertEquals(expected[0], fields[0]);
+        assertEquals(expected[1], fields[1]);
+        assertEquals(expected[2], fields[2]);
         assertArrayEquals(expected, fields);
     }
 
@@ -1128,8 +1131,10 @@ public class CommandLineHelpTest {
         }
         Help help = new Help(new Example());
         Help.IParamLabelRenderer equalSeparatedParameterRenderer = help.createDefaultParamLabelRenderer();
-        help.getCommandSpec().separator(" ");
-        Help.IParamLabelRenderer spaceSeparatedParameterRenderer = help.createDefaultParamLabelRenderer();
+
+        Help help2 = new Help(new Example());
+        help2.getCommandSpec().separator(" ");
+        Help.IParamLabelRenderer spaceSeparatedParameterRenderer = help2.createDefaultParamLabelRenderer();
 
         String[] expected = new String[] {
                 "<longField>",
@@ -1877,7 +1882,8 @@ public class CommandLineHelpTest {
         assertEquals(String.format("base%n"), help.detailedSynopsis(0,null, true));
         assertEquals("abcd", help.synopsisHeading());
         assertEquals("", help.commandList());
-        assertEquals("c o m m a n d s", help.commandListHeading());
+        assertEquals("", help.commandListHeading());
+        assertEquals("c o m m a n d s", help.getCommandSpec().commandListHeading());
         assertEquals(String.format("base description%n"), help.description());
         assertEquals("base descr heading", help.descriptionHeading());
         assertEquals(String.format("base footer%n"), help.footer());
@@ -1885,16 +1891,17 @@ public class CommandLineHelpTest {
         assertEquals(String.format("base header%n"), help.header());
         assertEquals("base header heading", help.headerHeading());
         assertEquals("", help.optionList());
-        assertEquals("base option heading", help.optionListHeading());
+        assertEquals("", help.optionListHeading());
+        assertEquals("base option heading", help.getCommandSpec().optionListHeading());
         assertEquals("", help.parameterList());
-        assertEquals("base param heading", help.parameterListHeading());
+        assertEquals("", help.parameterListHeading());
+        assertEquals("base param heading", help.getCommandSpec().parameterListHeading());
 
-        // these values NOT inherited!!
-        assertEquals("=", help.getCommandSpec().separator());
-        assertEquals(' ', help.getCommandSpec().requiredOptionMarker());
-        assertFalse(help.getCommandSpec().abbreviateSynopsis());
-        assertFalse(help.getCommandSpec().showDefaultValues());
-        assertTrue(help.getCommandSpec().sortOptions());
+        assertEquals(";", help.getCommandSpec().separator());
+        assertEquals('&', help.getCommandSpec().requiredOptionMarker());
+        assertTrue(help.getCommandSpec().abbreviateSynopsis());
+        assertTrue(help.getCommandSpec().showDefaultValues());
+        assertFalse(help.getCommandSpec().sortOptions());
     }
 
     @Test
@@ -1954,7 +1961,8 @@ public class CommandLineHelpTest {
         assertEquals(String.format("sub%n"), help.detailedSynopsis(0,null, true));
         assertEquals("xyz", help.synopsisHeading());
         assertEquals("", help.commandList());
-        assertEquals("subc o m m a n d s", help.commandListHeading());
+        assertEquals("", help.commandListHeading()); // empty: no commands
+        assertEquals("subc o m m a n d s", help.getCommandSpec().commandListHeading());
         assertEquals(String.format("sub description%n"), help.description());
         assertEquals("sub descr heading", help.descriptionHeading());
         assertEquals(String.format("sub footer%n"), help.footer());
@@ -1962,12 +1970,14 @@ public class CommandLineHelpTest {
         assertEquals(String.format("sub header%n"), help.header());
         assertEquals("sub header heading", help.headerHeading());
         assertEquals("", help.optionList());
-        assertEquals("sub option heading", help.optionListHeading());
+        assertEquals("", help.optionListHeading());
+        assertEquals("sub option heading", help.getCommandSpec().optionListHeading());
         assertEquals("", help.parameterList());
-        assertEquals("sub param heading", help.parameterListHeading());
-        assertFalse(help.getCommandSpec().abbreviateSynopsis());
-        assertFalse(help.getCommandSpec().showDefaultValues());
-        assertTrue(help.getCommandSpec().sortOptions());
+        assertEquals("", help.parameterListHeading());
+        assertEquals("sub param heading", help.getCommandSpec().parameterListHeading());
+        assertTrue(help.getCommandSpec().abbreviateSynopsis());
+        assertTrue(help.getCommandSpec().showDefaultValues());
+        assertFalse(help.getCommandSpec().sortOptions());
         assertEquals(":", help.getCommandSpec().separator());
         assertEquals('%', help.getCommandSpec().requiredOptionMarker());
     }

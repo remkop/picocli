@@ -1943,24 +1943,24 @@ public class CommandLine {
                     Command cmd = cls.getAnnotation(Command.class);
                     initSubcommands(commandLine, cmd, result);
 
-                    result.separator = nonEmpty(result.separator, cmd.separator());
-                    result.commandName = nonEmpty(result.commandName, cmd.name());
-                    result.version = nonEmpty(result.version, cmd.version());
-                    result.abbreviateSynopsis = nonNull(result.abbreviateSynopsis, cmd.abbreviateSynopsis());
-                    result.sortOptions = nonNull(result.sortOptions, cmd.sortOptions());
-                    result.requiredOptionMarker = nonNull(result.requiredOptionMarker, cmd.requiredOptionMarker());
-                    result.showDefaultValues = nonNull(result.showDefaultValues, cmd.showDefaultValues());
-                    result.customSynopsis = nonEmpty(result.customSynopsis, cmd.customSynopsis());
-                    result.description = nonEmpty(result.description, cmd.description());
-                    result.header = nonEmpty(result.header, cmd.header());
-                    result.footer = nonEmpty(result.footer, cmd.footer());
-                    result.headerHeading = nonEmpty(result.headerHeading, cmd.headerHeading());
-                    result.synopsisHeading = empty(result.synopsisHeading) || CommandSpec.DEFAULT_SYNOPSIS_HEADING.equals(result.synopsisHeading) ? cmd.synopsisHeading() : result.synopsisHeading;
-                    result.descriptionHeading = nonEmpty(result.descriptionHeading, cmd.descriptionHeading());
-                    result.parameterListHeading = nonEmpty(result.parameterListHeading, cmd.parameterListHeading());
-                    result.optionListHeading = nonEmpty(result.optionListHeading, cmd.optionListHeading());
+                    result.separator =          empty(result.separator) || CommandSpec.DEFAULT_SEPARATOR.equals(result.separator) ? cmd.separator() : result.separator;
+                    result.commandName =        empty(result.commandName) || CommandSpec.DEFAULT_COMMAND_NAME.equals(result.commandName) ? cmd.name() : result.commandName;
+                    result.synopsisHeading =    empty(result.synopsisHeading) || CommandSpec.DEFAULT_SYNOPSIS_HEADING.equals(result.synopsisHeading) ? cmd.synopsisHeading() : result.synopsisHeading;
                     result.commandListHeading = empty(result.commandListHeading) || CommandSpec.DEFAULT_COMMAND_LIST_HEADING.equals(result.commandListHeading) ? cmd.commandListHeading() : result.commandListHeading;
-                    result.footerHeading = nonEmpty(result.footerHeading, cmd.footerHeading());
+                    result.requiredOptionMarker = result.requiredOptionMarker == null || CommandSpec.DEFAULT_REQUIRED_OPTION_MARKER == result.requiredOptionMarker ? cmd.requiredOptionMarker() : result.requiredOptionMarker;
+                    result.abbreviateSynopsis =   result.abbreviateSynopsis == null && cmd.abbreviateSynopsis() ? Boolean.valueOf(cmd.abbreviateSynopsis()) : result.abbreviateSynopsis;
+                    result.sortOptions =          result.sortOptions == null        && !cmd.sortOptions()       ? Boolean.valueOf(cmd.sortOptions())        : result.sortOptions;
+                    result.showDefaultValues =    result.showDefaultValues == null  && cmd.showDefaultValues()  ? Boolean.valueOf(cmd.showDefaultValues())  : result.showDefaultValues;
+                    result.version =              nonEmpty(result.version, cmd.version());
+                    result.customSynopsis =       nonEmpty(result.customSynopsis, cmd.customSynopsis());
+                    result.description =          nonEmpty(result.description, cmd.description());
+                    result.header =               nonEmpty(result.header, cmd.header());
+                    result.footer =               nonEmpty(result.footer, cmd.footer());
+                    result.headerHeading =        nonEmpty(result.headerHeading, cmd.headerHeading());
+                    result.descriptionHeading =   nonEmpty(result.descriptionHeading, cmd.descriptionHeading());
+                    result.parameterListHeading = nonEmpty(result.parameterListHeading, cmd.parameterListHeading());
+                    result.optionListHeading =    nonEmpty(result.optionListHeading, cmd.optionListHeading());
+                    result.footerHeading =        nonEmpty(result.footerHeading, cmd.footerHeading());
                 }
                 cls = cls.getSuperclass();
             }
@@ -2062,7 +2062,7 @@ public class CommandLine {
             result.propertyType(field.getType()); // field type
             result.propertyName(field.getName());
             result.defaultValue(getDefaultValue(scope, field));
-            result.setToString(String.format("field '%s.%s'", field.getDeclaringClass().getSimpleName(), field.getName()));
+            result.setToString("field " + field.toGenericString());
             result.getter(new FieldGetter(scope, field));
             result.setter(new FieldSetter(scope, field));
             return result;
@@ -2124,7 +2124,7 @@ public class CommandLine {
             result.propertyType(field.getType());
             result.propertyName(field.getName());
             result.defaultValue(OptionSpecBuilder.getDefaultValue(scope, field));
-            result.setToString(String.format("field '%s.%s'", field.getDeclaringClass().getSimpleName(), field.getName()));
+            result.setToString("field " + field.toGenericString());
             result.getter(new FieldGetter(scope, field));
             result.setter(new FieldSetter(scope, field));
             return result;
@@ -2153,6 +2153,7 @@ public class CommandLine {
         protected static final String DEFAULT_COMMAND_NAME = "<main class>";
 
         /** Constant String holding the default string that separates options from option parameters: {@value} */
+        protected static final char DEFAULT_REQUIRED_OPTION_MARKER = ' ';
         protected static final String DEFAULT_SEPARATOR = "=";
         public static final String DEFAULT_SYNOPSIS_HEADING = "Usage: ";
         public static final String DEFAULT_COMMAND_LIST_HEADING = "Commands:%n";
@@ -2195,7 +2196,7 @@ public class CommandLine {
             validatePositionalParameters(positionalParametersProperties);
             sortOptions =          (sortOptions == null)          ? true : sortOptions;
             abbreviateSynopsis =   (abbreviateSynopsis == null)   ? false : abbreviateSynopsis;
-            requiredOptionMarker = (requiredOptionMarker == null) ? ' ' : requiredOptionMarker;
+            requiredOptionMarker = (requiredOptionMarker == null) ? DEFAULT_REQUIRED_OPTION_MARKER : requiredOptionMarker;
             showDefaultValues =    (showDefaultValues == null)    ? false : showDefaultValues;
             synopsisHeading =      (synopsisHeading == null)      ? DEFAULT_SYNOPSIS_HEADING : synopsisHeading;
             commandListHeading =   (commandListHeading == null)   ? DEFAULT_COMMAND_LIST_HEADING : commandListHeading;
@@ -2363,7 +2364,7 @@ public class CommandLine {
             if (obj == this) { return true; }
             if (!(obj instanceof ArgSpec)) { return false; }
             ArgSpec other = (ArgSpec) obj;
-            return Assert.equals(this.defaultValue, other.defaultValue)
+            boolean result = Assert.equals(this.defaultValue, other.defaultValue)
                     && Assert.equals(this.propertyType, other.propertyType)
                     && Assert.equals(this.arity, other.arity)
                     && Assert.equals(this.capacity, other.capacity)
@@ -2376,6 +2377,7 @@ public class CommandLine {
                     && Arrays.equals(this.description, other.description)
                     && Arrays.equals(this.types, other.types)
                     ;
+            return result;
         }
         public int hashCode()    {
             return 17
@@ -2419,11 +2421,12 @@ public class CommandLine {
                 return false;
             }
             OptionSpec other = (OptionSpec) obj;
-            return super.equals(obj)
+            boolean result = super.equals(obj)
                     && help == other.help
                     && usageHelp == other.usageHelp
                     && versionHelp == other.versionHelp
-                    && Arrays.equals(names, other.names);
+                    && new HashSet<String>(Arrays.asList(names)).equals(new HashSet<String>(Arrays.asList(other.names)));
+            return result;
         }
         public int hashCode() {
             return super.hashCode()
@@ -2910,7 +2913,7 @@ public class CommandLine {
             if (paramAttachedToKey) {
                 arity = arity.min(Math.max(1, arity.min)); // if key=value, minimum arity is at least 1
             }
-            if (tracer.isDebug()) {tracer.debug("Found option named '%s': field %s, arity=%s%n", arg, argSpec, arity);}
+            if (tracer.isDebug()) {tracer.debug("Found option named '%s': %s, arity=%s%n", arg, argSpec, arity);}
             applyOption(argSpec, arity, args, initialized, "option " + arg);
         }
 
@@ -2927,7 +2930,7 @@ public class CommandLine {
                     ArgSpec argSpec = commandSpec.getPosixOptionsMap().get(cluster.charAt(0));
                     Range arity = argSpec.arity();
                     String argDescription = "option " + prefix + cluster.charAt(0);
-                    if (tracer.isDebug()) {tracer.debug("Found option '%s%s' in %s: field %s, arity=%s%n", prefix, cluster.charAt(0), arg,
+                    if (tracer.isDebug()) {tracer.debug("Found option '%s%s' in %s: %s, arity=%s%n", prefix, cluster.charAt(0), arg,
                             argSpec, arity);}
                     required.remove(argSpec);
                     cluster = cluster.length() > 0 ? cluster.substring(1) : "";
@@ -3032,20 +3035,19 @@ public class CommandLine {
             Object newValue = tryConvert(argSpec, -1, converter, value, cls);
             Object oldValue = argSpec.getValue();
             TraceLevel level = TraceLevel.INFO;
-            String traceMessage = "Setting %s %s to '%4$s' (was '%3$s') for %5$s%n";
+            String traceMessage = "Setting %s to '%3$s' (was '%2$s') for %4$s%n";
             if (initialized != null) {
                 if (initialized.contains(argSpec)) {
                     if (!isOverwrittenOptionsAllowed()) {
                         throw new OverwrittenOptionException(CommandLine.this, optionDescription("", argSpec, 0) +  " should be specified only once");
                     }
                     level = TraceLevel.WARN;
-                    traceMessage = "Overwriting %s %s value '%s' with '%s' for %s%n";
+                    traceMessage = "Overwriting %s value '%s' with '%s' for %s%n";
                 }
                 initialized.add(argSpec);
             }
-            if (tracer.level.isEnabled(level)) { level.print(tracer, traceMessage, argSpec.propertyType().getSimpleName(),
-                        argSpec.toString(), String.valueOf(oldValue), String.valueOf(newValue), argDescription);
-            }
+            if (tracer.level.isEnabled(level)) { level.print(tracer, traceMessage, argSpec.toString(),
+                    String.valueOf(oldValue), String.valueOf(newValue), argDescription); }
             argSpec.setValue(newValue);
             return result;
         }
@@ -3223,13 +3225,7 @@ public class CommandLine {
             for (int j = 0; j < values.length; j++) {
                 result.add(tryConvert(argSpec, index, converter, values[j], type));
                 if (tracer.isInfo()) {
-                    if (argSpec.propertyType().isArray()) {
-                        tracer.info("Adding [%s] to %s[] %s for %s%n", String.valueOf(result.get(result.size() - 1)), type.getSimpleName(), argSpec
-                                .toString(), argDescription);
-                    } else {
-                        tracer.info("Adding [%s] to %s<%s> %s for %s%n", String.valueOf(result.get(result.size() - 1)), argSpec
-                                .propertyType().getSimpleName(), type.getSimpleName(), argSpec.toString(), argDescription);
-                    }
+                    tracer.info("Adding [%s] to %s for %s%n", String.valueOf(result.get(result.size() - 1)), argSpec.toString(), argDescription);
                 }
             }
             //checkMaxArityExceeded(arity, max, field, values);
@@ -4204,8 +4200,8 @@ public class CommandLine {
                 Text longOptionText = createLongOptionText(option, paramLabelRenderer, scheme, longOption);
 
                 boolean isBoolean = !option.isMultiValue() && isBoolean(option.types()[0]);
-                showDefault = commandSpec != null && !option.help() && !option.versionHelp() && !option.usageHelp() && !isBoolean;
                 Object defaultValue = option.defaultValue();
+                showDefault = commandSpec != null && commandSpec.showDefaultValues() && defaultValue != null && !option.help() && !option.versionHelp() && !option.usageHelp() && !isBoolean;
 
                 String requiredOption = option.required() ? requiredMarker : "";
                 return renderDescriptionLines(option, scheme, requiredOption, shortOption, longOptionText, defaultValue);
