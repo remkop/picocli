@@ -2221,20 +2221,20 @@ public class CommandLine {
         /** The String to use as the separator between options and option parameters. {@code "="} by default,
          * initialized from {@link Command#separator()} if defined.*/
         public String separator() { return separator; }
-        public CommandLineSpec separator(String separator) { this.separator = separator; return this; }
+        public CommandSpec separator(String separator) { this.separator = separator; return this; }
         public String[] version() { return version; }
-        public CommandLineSpec version(String[] version) { this.version = version; return this; }
+        public CommandSpec version(String[] version) { this.version = version; return this; }
 
         /** Optional heading preceding the header section. Initialized from {@link Command#headerHeading()}, or null. */
         public String headerHeading() { return headerHeading; }
-        public CommandLineSpec headerHeading(String headerHeading) { this.headerHeading = headerHeading; return this; }
+        public CommandSpec headerHeading(String headerHeading) { this.headerHeading = headerHeading; return this; }
 
         /** Optional header lines displayed at the top of the help message. For subcommands, the first header line is
          * displayed in the list of commands. Values are initialized from {@link Command#header()}
          * if the {@code Command} annotation is present, otherwise this is an empty array and the help message has no
          * header. Applications may programmatically set this field to create a custom help message. */
         public String[] header() { return header; }
-        public CommandLineSpec header(String[] header) { this.header = header; return this; }
+        public CommandSpec header(String[] header) { this.header = header; return this; }
 
         /** Optional heading preceding the synopsis. Initialized from {@link Command#synopsisHeading()}, {@code "Usage: "} by default. */
         public String synopsisHeading() { return synopsisHeading; }
@@ -2249,7 +2249,7 @@ public class CommandLine {
          * otherwise this is an empty array and the synopsis is generated.
          * Applications may programmatically set this field to create a custom help message. */
         public String[] customSynopsis() { return customSynopsis; }
-        public CommandLineSpec customSynopsis(String[] customSynopsis) { this.customSynopsis = customSynopsis; return this; }
+        public CommandSpec customSynopsis(String[] customSynopsis) { this.customSynopsis = customSynopsis; return this; }
 
         /** Optional heading preceding the description section. Initialized from {@link Command#descriptionHeading()}, or null. */
         public String descriptionHeading() { return descriptionHeading; }
@@ -2260,7 +2260,7 @@ public class CommandLine {
          * otherwise this is an empty array and the help message has no description.
          * Applications may programmatically set this field to create a custom help message. */
         public String[] description() { return description; }
-        public CommandLineSpec description(String[] description) { this.description = description; return this; }
+        public CommandSpec description(String[] description) { this.description = description; return this; }
 
         /** Optional heading preceding the parameter list. Initialized from {@link Command#parameterListHeading()}, or null. */
         public String parameterListHeading() { return parameterListHeading; }
@@ -2295,7 +2295,7 @@ public class CommandLine {
          * the help message has no footer.
          * Applications may programmatically set this field to create a custom help message. */
         public String[] footer() { return footer; }
-        public CommandLineSpec footer(String[] footer) { this.footer = footer; return this; }
+        public CommandSpec footer(String[] footer) { this.footer = footer; return this; }
 
         public String getCommandClassName() { return command.getClass().getName(); }
         public Map<String, OptionSpec> getOptionsMap() { return optionName2Property; }
