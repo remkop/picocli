@@ -29,9 +29,9 @@ class CommandLineTest {
         }
         String expected = String.format("" +
                 "[picocli INFO] Parsing 4 command line args [-o, anOption, A, B]%n" +
-                "[picocli INFO] Setting Object field 'Params.option' to 'anOption' (was 'null') for option -o%n" +
-                "[picocli INFO] Adding [A] to String[] field 'Params.positional' for args[0..*] at position 0%n" +
-                "[picocli INFO] Adding [B] to String[] field 'Params.positional' for args[0..*] at position 1%n")
+                "[picocli INFO] Setting field Object picocli.groovy.CommandLineTest\$Params.option to 'anOption' (was 'null') for option -o%n" +
+                "[picocli INFO] Adding [A] to field String[] picocli.groovy.CommandLineTest\$Params.positional for args[0..*] at position 0%n" +
+                "[picocli INFO] Adding [B] to field String[] picocli.groovy.CommandLineTest\$Params.positional for args[0..*] at position 1%n")
         String actual = new String(baos.toByteArray(), "UTF8")
         // println actual
         assertEquals(expected, actual)

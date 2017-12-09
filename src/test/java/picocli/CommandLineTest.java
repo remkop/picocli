@@ -1023,7 +1023,7 @@ public class CommandLineTest {
             CommandLine.populateCommand(new ChildOption(), "");
             fail("expected CommandLine$DuplicateOptionAnnotationsException");
         } catch (DuplicateOptionAnnotationsException ex) {
-            String expected = String.format("Option name '-p' is used by both field java.lang.String %s.path and field java.lang.String %s.text",
+            String expected = String.format("Option name '-p' is used by both field String %s.path and field String %s.text",
                     ParentOption.class.getName(), ChildOption.class.getName());
             assertEquals(expected, ex.getMessage());
         }
@@ -1508,7 +1508,7 @@ public class CommandLineTest {
         String expected = String.format("" +
                         "[picocli INFO] Parsing 8 command line args [--git-dir=/home/rpopma/picocli, commit, -m, \"Fixed typos\", --, src1.java, src2.java, src3.java]%n" +
                         "[picocli INFO] Setting field java.io.File picocli.Demo$Git.gitDir to '%s' (was 'null') for option --git-dir%n" +
-                        "[picocli INFO] Adding [Fixed typos] to field java.util.List<java.lang.String> picocli.Demo$GitCommit.message for option -m%n" +
+                        "[picocli INFO] Adding [Fixed typos] to field java.util.List<String> picocli.Demo$GitCommit.message for option -m%n" +
                         "[picocli INFO] Found end-of-options delimiter '--'. Treating remainder as positional parameters.%n" +
                         "[picocli INFO] Adding [src1.java] to field java.util.List<java.io.File> picocli.Demo$GitCommit.files for args[0..*] at position 0%n" +
                         "[picocli INFO] Adding [src2.java] to field java.util.List<java.io.File> picocli.Demo$GitCommit.files for args[0..*] at position 1%n" +
@@ -1564,8 +1564,8 @@ public class CommandLineTest {
                         "[picocli DEBUG] Initializing %1$s$GitCommit: 8 options, 1 positional parameters, 0 required, 0 subcommands.%n" +
                         "[picocli DEBUG] Processing argument '-m'. Remainder=[\"Fixed typos\", --, src1.java, src2.java, src3.java]%n" +
                         "[picocli DEBUG] '-m' cannot be separated into <option>=<option-parameter>%n" +
-                        "[picocli DEBUG] Found option named '-m': field java.util.List<java.lang.String> %1$s$GitCommit.message, arity=1%n" +
-                        "[picocli INFO] Adding [Fixed typos] to field java.util.List<java.lang.String> picocli.Demo$GitCommit.message for option -m%n" +
+                        "[picocli DEBUG] Found option named '-m': field java.util.List<String> %1$s$GitCommit.message, arity=1%n" +
+                        "[picocli INFO] Adding [Fixed typos] to field java.util.List<String> picocli.Demo$GitCommit.message for option -m%n" +
                         "[picocli DEBUG] Processing argument '--'. Remainder=[src1.java, src2.java, src3.java]%n" +
                         "[picocli INFO] Found end-of-options delimiter '--'. Treating remainder as positional parameters.%n" +
                         "[picocli DEBUG] Processing next arg as a positional parameter at index=0. Remainder=[src1.java, src2.java, src3.java]%n" +
@@ -1608,8 +1608,8 @@ public class CommandLineTest {
         System.setErr(originalErr);
 
         String expected = String.format("" +
-                        "[picocli WARN] Overwriting field java.lang.String %1$s.field value '111' with '222' for option -f%n" +
-                        "[picocli WARN] Overwriting field java.lang.String %1$s.field value '222' with '333' for option -f%n",
+                        "[picocli WARN] Overwriting field String %1$s.field value '111' with '222' for option -f%n" +
+                        "[picocli WARN] Overwriting field String %1$s.field value '222' with '333' for option -f%n",
                 App.class.getName());
         String actual = new String(baos.toByteArray(), "UTF8");
         assertEquals(expected, actual);
@@ -2259,7 +2259,7 @@ public class CommandLineTest {
         try {
             CommandLine.populateCommand(new App(), "-map=AAA=BBB");
         } catch (ParameterException ex) {
-            assertEquals("No TypeConverter registered for java.lang.Thread of field java.util.TreeMap<java.lang.String, java.lang.String> " +
+            assertEquals("No TypeConverter registered for java.lang.Thread of field java.util.TreeMap<String, String> " +
                     App.class.getName() + ".map", ex.getMessage());
         }
     }
