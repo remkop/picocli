@@ -38,7 +38,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.io.UnsupportedEncodingException;
-import java.lang.String;
 import java.lang.reflect.Field;
 import java.net.InetAddress;
 import java.net.URI;
@@ -50,7 +49,23 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
-import static java.lang.String.format;
+import org.junit.After;
+import org.junit.Ignore;
+import org.junit.Test;
+
+import picocli.CommandLine.Command;
+import picocli.CommandLine.Help;
+import picocli.CommandLine.Help.Ansi.IStyle;
+import picocli.CommandLine.Help.Ansi.Style;
+import picocli.CommandLine.Help.Ansi.Text;
+import picocli.CommandLine.Help.ColorScheme;
+import picocli.CommandLine.Help.TextTable;
+import picocli.CommandLine.Option;
+import picocli.CommandLine.OptionSpec;
+import picocli.CommandLine.Parameters;
+import picocli.CommandLine.PositionalParamSpec;
+
+import static java.lang.String.*;
 import static org.junit.Assert.*;
 
 /**
@@ -96,7 +111,7 @@ public class CommandLineHelpTest {
         return result;
     }
     private static OptionSpec option(Object obj, String fieldName) throws Exception {
-        return CommandLine.OptionSpecBuilder.build(obj, obj.getClass().getDeclaredField(fieldName));
+        return CommandLine.ArgSpecBuilder.buildOptionSpec(obj, obj.getClass().getDeclaredField(fieldName));
     }
     private static OptionSpec[] options(Object obj, String... fieldNames) throws Exception {
         OptionSpec[] result = new OptionSpec[fieldNames.length];
