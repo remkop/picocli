@@ -2426,14 +2426,20 @@ public class CommandLine {
         private ISetter setter;
 
         void validate() {
-            if (types == null) { types = new Class[0]; }
             if (description == null) { description = new String[0]; }
             if (splitRegex == null) { splitRegex = ""; }
             if (paramLabel == null) { paramLabel = ""; }
             if (propertyName == null) { propertyName = ""; }
 
-            if (propertyType == null && (types == null || types.length == 0)) {
-                propertyType = String.class;
+            if (propertyType == null) {
+                if (types == null || types.length == 0) {
+                    propertyType = String.class;
+                } else {
+                    propertyType = types[0];
+                }
+            }
+            if (types == null || types.length == 0) {
+                types = new Class[] {propertyType};
             }
         }
 
