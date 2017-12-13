@@ -1918,8 +1918,8 @@ public class CommandLine {
         for (PositionalParamSpec positional : positionalParametersFields) {
             Range index = positional.index();
             if (index.min > min) {
-                throw new ParameterIndexGapException("Missing positional parameter spec with index=" + min +
-                        ". Nearest positional parameter spec '" + positional.propertyName() + "' has index=" + index.min);
+                throw new ParameterIndexGapException("Missing positional parameter with index=" + min +
+                        ". Nearest positional parameter '" + positional.paramLabel() + "' has index=" + index.min);
             }
             min = Math.max(min, index.max);
             min = min == Integer.MAX_VALUE ? min : min + 1;
@@ -2062,12 +2062,24 @@ public class CommandLine {
             result.capacity(result.arity());
             result.required(option.required());
             result.description(option.description());
-            result.paramLabel(option.paramLabel());
             result.types(inferTypes(field.getType(), option.type(), field.getGenericType()));
+            result.paramLabel(inferLabel(option.paramLabel(), field.getName(), field.getType(), result.types()));
             result.splitRegex(option.split());
             result.hidden(option.hidden());
             initCommon(result, scope, field);
             return result;
+        }
+
+        private static String inferLabel(String label, String fieldName, Class<?> fieldType, Class<?>[] types) {
+            if (!empty(label)) { return label.trim(); }
+            String name = fieldName;
+            if (Map.class.isAssignableFrom(fieldType)) { // #195 better param labels for map fields
+                Class<?>[] paramTypes = types;
+                if (paramTypes.length < 2 || paramTypes[0] == null || paramTypes[1] == null) {
+                    name = "String=String";
+                } else { name = paramTypes[0].getSimpleName() + "=" + paramTypes[1].getSimpleName(); }
+            }
+            return "<" + name + ">";
         }
         static PositionalParamSpec buildPositionalParamSpec(final Object scope, final Field field) {
             Parameters parameters = field.getAnnotation(Parameters.class);
@@ -2078,8 +2090,8 @@ public class CommandLine {
             result.capacity(Range.parameterCapacity(field));
             result.required(result.arity().min > 0);
             result.description(parameters.description());
-            result.paramLabel(parameters.paramLabel());
             result.types(inferTypes(field.getType(), parameters.type(), field.getGenericType()));
+            result.paramLabel(inferLabel(parameters.paramLabel(), field.getName(), field.getType(), result.types()));
             result.splitRegex(parameters.split());
             result.hidden(parameters.hidden());
             initCommon(result, scope, field);
@@ -2087,7 +2099,6 @@ public class CommandLine {
         }
         private static void initCommon(ArgSpec result, Object scope, Field field) {
             result.propertyType(field.getType()); // field type
-            result.propertyName(field.getName());
             result.defaultValue(getDefaultValue(scope, field));
             result.setToString(abbreviate("field " + field.toGenericString()));
             result.getter(new FieldGetter(scope, field));
@@ -2429,7 +2440,6 @@ public class CommandLine {
         private String paramLabel;
         private String splitRegex;
         private boolean hidden;
-        private String propertyName;
         private Class<?> propertyType;
         private Class[] types;
         private Object defaultValue;
@@ -2444,8 +2454,7 @@ public class CommandLine {
         void validate() {
             if (description == null) { description = new String[0]; }
             if (splitRegex == null) { splitRegex = ""; }
-            if (paramLabel == null) { paramLabel = ""; }
-            if (propertyName == null) { propertyName = ""; }
+            if (empty(paramLabel)) { paramLabel = "PARAM"; }
 
             if (propertyType == null) {
                 if (types == null || types.length == 0) {
@@ -2489,7 +2498,6 @@ public class CommandLine {
         /** @see Option#hidden() */
         public boolean hidden()        { return hidden; }
         public Class<?> propertyType() { return propertyType; }
-        public String propertyName()   { return propertyName; }
         public Object defaultValue()   { return defaultValue; }
         public IGetter getter()         { return getter; }
         public ISetter setter()         { return setter; }
@@ -2514,7 +2522,6 @@ public class CommandLine {
         public <T extends ArgSpec> T splitRegex(String splitRegex)       { this.splitRegex = splitRegex; return (T) this; }
         public <T extends ArgSpec> T hidden(boolean hidden)              { this.hidden = hidden; return (T) this; }
         public <T extends ArgSpec> T propertyType(Class<?> propertyType) { this.propertyType = propertyType; return (T) this; }
-        public <T extends ArgSpec> T propertyName(String propertyName)   { this.propertyName = propertyName; return (T) this; }
         public <T extends ArgSpec> T defaultValue(Object defaultValue)   { this.defaultValue = defaultValue; return (T) this; }
         public <T extends ArgSpec> T getter(IGetter getter)               { this.getter = getter; return (T) this; }
         public <T extends ArgSpec> T setter(ISetter setter)               { this.setter = setter; return (T) this; }
@@ -2523,18 +2530,6 @@ public class CommandLine {
 
         private String[] splitValue(String value) {
             return splitRegex().length() == 0 ? new String[] {value} : value.split(splitRegex());
-        }
-
-        String getDerivedParameterName() {
-            if (!empty(paramLabel())) { return paramLabel().trim(); }
-            String name = propertyName();
-            if (Map.class.isAssignableFrom(propertyType())) { // #195 better param labels for map fields
-                Class<?>[] paramTypes = types();
-                if (paramTypes.length < 2 || paramTypes[0] == null || paramTypes[1] == null) {
-                    name = "String=String";
-                } else { name = paramTypes[0].getSimpleName() + "=" + paramTypes[1].getSimpleName(); }
-            }
-            return "<" + name + ">";
         }
         public boolean equals(Object obj) {
             if (obj == this) { return true; }
@@ -2547,7 +2542,6 @@ public class CommandLine {
                     && Assert.equals(this.index, other.index)
                     && Assert.equals(this.hidden, other.hidden)
                     && Assert.equals(this.paramLabel, other.paramLabel)
-                    && Assert.equals(this.propertyName, other.propertyName)
                     && Assert.equals(this.required, other.required)
                     && Assert.equals(this.splitRegex, other.splitRegex)
                     && Arrays.equals(this.description, other.description)
@@ -2564,7 +2558,6 @@ public class CommandLine {
                     + 37 * Assert.hashCode(index)
                     + 37 * Assert.hashCode(hidden)
                     + 37 * Assert.hashCode(paramLabel)
-                    + 37 * Assert.hashCode(propertyName)
                     + 37 * Assert.hashCode(required)
                     + 37 * Assert.hashCode(splitRegex)
                     + 37 * Arrays.hashCode(description)
@@ -3474,10 +3467,10 @@ public class CommandLine {
                     if (argSpec.arity().max > 1) {
                         desc += " at index " + index;
                     }
-                    desc += " (" + argSpec.getDerivedParameterName() + ")";
+                    desc += " (" + argSpec.paramLabel() + ")";
                 }
             } else {
-                desc = prefix + "positional parameter at index " + argSpec.index() + " (" + argSpec.getDerivedParameterName() + ")";
+                desc = prefix + "positional parameter at index " + argSpec.index() + " (" + argSpec.paramLabel() + ")";
             }
             return desc;
         }
@@ -3559,7 +3552,7 @@ public class CommandLine {
                     List<PositionalParamSpec> positionalParameters = commandSpec.getPositionalParameters();
                     for (int i = indexRange.min; i < positionalParameters.size(); i++) {
                         if (positionalParameters.get(i).arity().min > 0) {
-                            names += sep + positionalParameters.get(i).getDerivedParameterName();
+                            names += sep + positionalParameters.get(i).paramLabel();
                             sep = ", ";
                             count++;
                         }
@@ -4321,7 +4314,7 @@ public class CommandLine {
         public static IParamLabelRenderer createMinimalParamLabelRenderer() {
             return new IParamLabelRenderer() {
                 public Text renderParameterLabel(ArgSpec argSpec, Ansi ansi, List<IStyle> styles) {
-                    return ansi.apply(argSpec.getDerivedParameterName(), styles);
+                    return ansi.apply(argSpec.paramLabel(), styles);
                 }
                 public String separator() { return ""; }
             };
@@ -4557,7 +4550,7 @@ public class CommandLine {
             public Text renderParameterLabel(ArgSpec argSpec, Ansi ansi, List<IStyle> styles) {
                 Text result = ansi.new Text("");
                 String sep = argSpec.isOption() ? separator() : "";
-                Text paramName = ansi.apply(argSpec.getDerivedParameterName(), styles);
+                Text paramName = ansi.apply(argSpec.paramLabel(), styles);
                 if (!empty(argSpec.splitRegex())) { paramName = paramName.append("[" + argSpec.splitRegex()).append(paramName).append("]..."); } // #194
                 Range capacity = argSpec.capacity();
                 for (int i = 0; i < capacity.min; i++) {
@@ -5607,7 +5600,7 @@ public class CommandLine {
             String prefix = (argSpec.isOption())
                 ? ((OptionSpec) argSpec).names()[0] + separator
                 : "params[" + argSpec.index() + "]" + separator;
-            return prefix + argSpec.getDerivedParameterName();
+            return prefix + argSpec.paramLabel();
         }
     }
 

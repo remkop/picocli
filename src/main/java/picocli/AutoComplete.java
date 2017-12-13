@@ -450,7 +450,7 @@ public class AutoComplete {
         List<OptionSpec> enumOptions = filter(commandSpec.getOptions(), new EnumArgFilter());
         for (OptionSpec f : enumOptions) {
             buff.append(format("  %s_OPTION_ARGS=\"%s\" # %s values\n",
-                    bashify(f.propertyName()),
+                    bashify(f.paramLabel()),
                     concat(" ", Arrays.asList((Enum[]) f.propertyType().getEnumConstants()), null, new EnumNameFunction()).trim(),
                     f.propertyType().getSimpleName()));
         }
@@ -490,7 +490,7 @@ public class AutoComplete {
         for (OptionSpec option : argOptionFields) {
             if (enumOptions.contains(option)) {
                 buff.append(format("%s    %s)\n", indent, concat("|", option.names()))); // "    -u|--timeUnit)\n"
-                buff.append(format("%s      COMPREPLY=( $( compgen -W \"${%s_OPTION_ARGS}\" -- %s ) )\n", indent, option.propertyName(), currWord));
+                buff.append(format("%s      COMPREPLY=( $( compgen -W \"${%s_OPTION_ARGS}\" -- %s ) )\n", indent, bashify(option.paramLabel()), currWord));
                 buff.append(format("%s      return $?\n", indent));
                 buff.append(format("%s      ;;\n", indent));
             } else if (option.propertyType().equals(File.class) || "java.nio.file.Path".equals(option.propertyType().getName())) {
