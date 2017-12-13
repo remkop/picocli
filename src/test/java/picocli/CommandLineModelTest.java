@@ -18,11 +18,13 @@ package picocli;
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 import java.io.UnsupportedEncodingException;
+import java.util.Arrays;
 
 import org.junit.Test;
 
 import picocli.CommandLine.CommandSpec;
 import picocli.CommandLine.Help.Ansi;
+import picocli.CommandLine.OptionSpec;
 
 import static org.junit.Assert.assertEquals;
 
@@ -49,10 +51,47 @@ public class CommandLineModelTest {
     }
 
     @Test
-    public void testEmptyModel() throws Exception {
+    public void testEmptyModelHelp() throws Exception {
         CommandSpec spec = new CommandSpec(null);
         CommandLine commandLine = new CommandLine(spec);
         String actual = usageString(commandLine, Ansi.OFF);
         assertEquals(String.format("Usage: <main class>%n"), actual);
+    }
+
+    @Test
+    public void testEmptyModelParse() throws Exception {
+        System.setProperty("picocli.trace", "OFF");
+        CommandSpec spec = new CommandSpec(null);
+        CommandLine commandLine = new CommandLine(spec);
+        commandLine.setUnmatchedArgumentsAllowed(true);
+        commandLine.parse("-p", "123", "abc");
+        assertEquals(Arrays.asList("-p", "123", "abc"), commandLine.getUnmatchedArguments());
+    }
+
+    @Test
+    public void testModelHelp() throws Exception {
+        CommandSpec spec = new CommandSpec(null);
+        spec.add(new OptionSpec().names("-h", "--help").usageHelp(true).description("show help and exit"));
+        spec.add(new OptionSpec().names("-V", "--version").usageHelp(true).description("show help and exit"));
+        spec.add(new OptionSpec().names("-c", "--count").paramLabel("COUNT").arity("1").propertyType(int.class).description("number of times to execute"));
+        CommandLine commandLine = new CommandLine(spec);
+        String actual = usageString(commandLine, Ansi.OFF);
+        String expected = String.format("" +
+                "Usage: <main class> [-h] [-V] [-c=COUNT]%n" +
+                "  -c, --count=COUNT           number of times to execute%n" +
+                "  -h, --help                  show help and exit%n" +
+                "  -V, --version               show help and exit%n");
+        assertEquals(expected, actual);
+    }
+
+    @Test
+    public void testModelParse() throws Exception {
+        CommandSpec spec = new CommandSpec(null);
+        spec.add(new OptionSpec().names("-h", "--help").usageHelp(true).description("show help and exit"));
+        spec.add(new OptionSpec().names("-V", "--version").usageHelp(true).description("show help and exit"));
+        spec.add(new OptionSpec().names("-c", "--count").paramLabel("COUNT").arity("1").propertyType(int.class).description("number of times to execute"));
+        CommandLine commandLine = new CommandLine(spec);
+        commandLine.parse("-c", "33");
+        assertEquals(33, spec.getOptionsMap().get("-c").getValue());
     }
 }

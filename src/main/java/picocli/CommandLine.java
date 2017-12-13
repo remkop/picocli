@@ -2256,6 +2256,7 @@ public class CommandLine {
          * @return this CommandSpec for method chaining */
         public CommandSpec parent(CommandSpec parent) { this.parent = parent; return this; }
 
+        public CommandSpec add(ArgSpec arg) { return arg.isOption() ? add((OptionSpec) arg) : add((PositionalParamSpec) arg); }
         public CommandSpec add(OptionSpec option) {
             option.validate();
             options.add(option);
@@ -2409,6 +2410,17 @@ public class CommandLine {
     /** Models the shared attributes of {@link OptionSpec} and {@link PositionalParamSpec}.
      * @since 3.0 */
     public abstract static class ArgSpec {
+        private static class ObjectGetterSetter implements IGetter, ISetter {
+            private Object value;
+            public <T> T get() throws Exception {
+                return (T) value;
+            }
+            public <T> T set(T value) throws Exception {
+                T result = value;
+                this.value = value;
+                return result;
+            }
+        }
         private Range arity;
         private Range index;
         private Range capacity;
@@ -2425,6 +2437,10 @@ public class CommandLine {
         private IGetter getter;
         private ISetter setter;
 
+        public ArgSpec() {
+            getter = new ObjectGetterSetter();
+            setter = (ISetter) getter;
+        }
         void validate() {
             if (description == null) { description = new String[0]; }
             if (splitRegex == null) { splitRegex = ""; }
@@ -2454,14 +2470,23 @@ public class CommandLine {
             <T> T set(T value) throws Exception;
         }
 
+        /** @see Option#required() */
         public boolean required()      { return required; }
+        /** @see Option#description() {@link Parameters#description()} */
         public String[] description()  { return description; }
+        /** @see Parameters#index() */
         public Range index()           { return index; }
+        /** @see Option#arity() */
         public Range arity()           { return arity; }
+
         public Range capacity()        { return capacity; }
+        /** @see Option#paramLabel() {@link Parameters#paramLabel()} */
         public String paramLabel()     { return paramLabel; }
+        /** @see Option#type() */
         public Class<?>[] types()       { return types; }
+        /** @see Option#split() */
         public String splitRegex()     { return splitRegex; }
+        /** @see Option#hidden() */
         public boolean hidden()        { return hidden; }
         public Class<?> propertyType() { return propertyType; }
         public String propertyName()   { return propertyName; }
