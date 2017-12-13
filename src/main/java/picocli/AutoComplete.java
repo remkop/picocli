@@ -161,12 +161,12 @@ public class AutoComplete {
     }
     private static class BooleanArgFilter implements Predicate<ArgSpec> {
         public boolean test(ArgSpec f) {
-            return f.propertyType() == Boolean.TYPE || f.propertyType() == Boolean.class;
+            return f.type() == Boolean.TYPE || f.type() == Boolean.class;
         }
     }
     private static class EnumArgFilter implements Predicate<ArgSpec> {
         public boolean test(ArgSpec f) {
-            return f.propertyType().isEnum();
+            return f.type().isEnum();
         }
     }
     private static <T> Predicate<T> negate(final Predicate<T> original) {
@@ -451,8 +451,8 @@ public class AutoComplete {
         for (OptionSpec f : enumOptions) {
             buff.append(format("  %s_OPTION_ARGS=\"%s\" # %s values\n",
                     bashify(f.paramLabel()),
-                    concat(" ", Arrays.asList((Enum[]) f.propertyType().getEnumConstants()), null, new EnumNameFunction()).trim(),
-                    f.propertyType().getSimpleName()));
+                    concat(" ", Arrays.asList((Enum[]) f.type().getEnumConstants()), null, new EnumNameFunction()).trim(),
+                    f.type().getSimpleName()));
         }
         // TODO generate completion lists for other option types:
         // Charset, Currency, Locale, TimeZone, ByteOrder,
@@ -493,13 +493,13 @@ public class AutoComplete {
                 buff.append(format("%s      COMPREPLY=( $( compgen -W \"${%s_OPTION_ARGS}\" -- %s ) )\n", indent, bashify(option.paramLabel()), currWord));
                 buff.append(format("%s      return $?\n", indent));
                 buff.append(format("%s      ;;\n", indent));
-            } else if (option.propertyType().equals(File.class) || "java.nio.file.Path".equals(option.propertyType().getName())) {
+            } else if (option.type().equals(File.class) || "java.nio.file.Path".equals(option.type().getName())) {
                 buff.append(format("%s    %s)\n", indent, concat("|", option.names()))); // "    -f|--file)\n"
                 buff.append(format("%s      compopt -o filenames\n", indent));
                 buff.append(format("%s      COMPREPLY=( $( compgen -f -- %s ) ) # files\n", indent, currWord));
                 buff.append(format("%s      return $?\n", indent));
                 buff.append(format("%s      ;;\n", indent));
-            } else if (option.propertyType().equals(InetAddress.class)) {
+            } else if (option.type().equals(InetAddress.class)) {
                 buff.append(format("%s    %s)\n", indent, concat("|", option.names()))); // "    -h|--host)\n"
                 buff.append(format("%s      compopt -o filenames\n", indent));
                 buff.append(format("%s      COMPREPLY=( $( compgen -A hostname -- %s ) )\n", indent, currWord));

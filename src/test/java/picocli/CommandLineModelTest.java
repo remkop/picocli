@@ -73,7 +73,7 @@ public class CommandLineModelTest {
         CommandSpec spec = new CommandSpec(null);
         spec.add(new OptionSpec().names("-h", "--help").usageHelp(true).description("show help and exit"));
         spec.add(new OptionSpec().names("-V", "--version").usageHelp(true).description("show help and exit"));
-        spec.add(new OptionSpec().names("-c", "--count").paramLabel("COUNT").arity("1").propertyType(int.class).description("number of times to execute"));
+        spec.add(new OptionSpec().names("-c", "--count").paramLabel("COUNT").arity("1").type(int.class).description("number of times to execute"));
         CommandLine commandLine = new CommandLine(spec);
         String actual = usageString(commandLine, Ansi.OFF);
         String expected = String.format("" +
@@ -89,7 +89,7 @@ public class CommandLineModelTest {
         CommandSpec spec = new CommandSpec(null);
         spec.add(new OptionSpec().names("-h", "--help").usageHelp(true).description("show help and exit"));
         spec.add(new OptionSpec().names("-V", "--version").usageHelp(true).description("show help and exit"));
-        spec.add(new OptionSpec().names("-c", "--count").paramLabel("COUNT").arity("1").propertyType(int.class).description("number of times to execute"));
+        spec.add(new OptionSpec().names("-c", "--count").paramLabel("COUNT").arity("1").type(int.class).description("number of times to execute"));
         CommandLine commandLine = new CommandLine(spec);
         commandLine.parse("-c", "33");
         assertEquals(33, spec.getOptionsMap().get("-c").getValue());

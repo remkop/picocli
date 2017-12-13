@@ -2062,8 +2062,8 @@ public class CommandLine {
             result.capacity(result.arity());
             result.required(option.required());
             result.description(option.description());
-            result.types(inferTypes(field.getType(), option.type(), field.getGenericType()));
-            result.paramLabel(inferLabel(option.paramLabel(), field.getName(), field.getType(), result.types()));
+            result.auxiliaryTypes(inferTypes(field.getType(), option.type(), field.getGenericType()));
+            result.paramLabel(inferLabel(option.paramLabel(), field.getName(), field.getType(), result.auxiliaryTypes()));
             result.splitRegex(option.split());
             result.hidden(option.hidden());
             initCommon(result, scope, field);
@@ -2090,15 +2090,15 @@ public class CommandLine {
             result.capacity(Range.parameterCapacity(field));
             result.required(result.arity().min > 0);
             result.description(parameters.description());
-            result.types(inferTypes(field.getType(), parameters.type(), field.getGenericType()));
-            result.paramLabel(inferLabel(parameters.paramLabel(), field.getName(), field.getType(), result.types()));
+            result.auxiliaryTypes(inferTypes(field.getType(), parameters.type(), field.getGenericType()));
+            result.paramLabel(inferLabel(parameters.paramLabel(), field.getName(), field.getType(), result.auxiliaryTypes()));
             result.splitRegex(parameters.split());
             result.hidden(parameters.hidden());
             initCommon(result, scope, field);
             return result;
         }
         private static void initCommon(ArgSpec result, Object scope, Field field) {
-            result.propertyType(field.getType()); // field type
+            result.type(field.getType()); // field type
             result.defaultValue(getDefaultValue(scope, field));
             result.setToString(abbreviate("field " + field.toGenericString()));
             result.getter(new FieldGetter(scope, field));
@@ -2440,8 +2440,8 @@ public class CommandLine {
         private String paramLabel;
         private String splitRegex;
         private boolean hidden;
-        private Class<?> propertyType;
-        private Class[] types;
+        private Class<?> type;
+        private Class[] auxiliaryTypes;
         private Object defaultValue;
         private String toString;
         private IGetter getter;
@@ -2456,15 +2456,15 @@ public class CommandLine {
             if (splitRegex == null) { splitRegex = ""; }
             if (empty(paramLabel)) { paramLabel = "PARAM"; }
 
-            if (propertyType == null) {
-                if (types == null || types.length == 0) {
-                    propertyType = String.class;
+            if (type == null) {
+                if (auxiliaryTypes == null || auxiliaryTypes.length == 0) {
+                    type = String.class;
                 } else {
-                    propertyType = types[0];
+                    type = auxiliaryTypes[0];
                 }
             }
-            if (types == null || types.length == 0) {
-                types = new Class[] {propertyType};
+            if (auxiliaryTypes == null || auxiliaryTypes.length == 0) {
+                auxiliaryTypes = new Class[] {type};
             }
         }
 
@@ -2492,12 +2492,12 @@ public class CommandLine {
         /** @see Option#paramLabel() {@link Parameters#paramLabel()} */
         public String paramLabel()     { return paramLabel; }
         /** @see Option#type() */
-        public Class<?>[] types()       { return types; }
+        public Class<?>[] auxiliaryTypes() { return auxiliaryTypes; }
         /** @see Option#split() */
         public String splitRegex()     { return splitRegex; }
         /** @see Option#hidden() */
         public boolean hidden()        { return hidden; }
-        public Class<?> propertyType() { return propertyType; }
+        public Class<?> type()         { return type; }
         public Object defaultValue()   { return defaultValue; }
         public IGetter getter()         { return getter; }
         public ISetter setter()         { return setter; }
@@ -2505,7 +2505,7 @@ public class CommandLine {
         Object getValue()                throws Exception { return getter.get(); }
         Object setValue(Object newValue) throws Exception { return setter.set(newValue); }
 
-        boolean isMultiValue()     { return CommandLine.isMultiValue(propertyType()); }
+        boolean isMultiValue()     { return CommandLine.isMultiValue(type()); }
         public abstract boolean isOption();
         public abstract boolean isParameter();
 
@@ -2518,10 +2518,10 @@ public class CommandLine {
         public <T extends ArgSpec> T capacity(String range)              { return capacity(Range.valueOf(range)); }
         public <T extends ArgSpec> T capacity(Range capacity)            { this.capacity = capacity; return (T) this; }
         public <T extends ArgSpec> T paramLabel(String paramLabel)       { this.paramLabel = paramLabel; return (T) this; }
-        public <T extends ArgSpec> T types(Class<?>... types)            { this.types = types; return (T) this; }
+        public <T extends ArgSpec> T auxiliaryTypes(Class<?>... types)            { this.auxiliaryTypes = types; return (T) this; }
         public <T extends ArgSpec> T splitRegex(String splitRegex)       { this.splitRegex = splitRegex; return (T) this; }
         public <T extends ArgSpec> T hidden(boolean hidden)              { this.hidden = hidden; return (T) this; }
-        public <T extends ArgSpec> T propertyType(Class<?> propertyType) { this.propertyType = propertyType; return (T) this; }
+        public <T extends ArgSpec> T type(Class<?> propertyType) { this.type = propertyType; return (T) this; }
         public <T extends ArgSpec> T defaultValue(Object defaultValue)   { this.defaultValue = defaultValue; return (T) this; }
         public <T extends ArgSpec> T getter(IGetter getter)               { this.getter = getter; return (T) this; }
         public <T extends ArgSpec> T setter(ISetter setter)               { this.setter = setter; return (T) this; }
@@ -2536,7 +2536,7 @@ public class CommandLine {
             if (!(obj instanceof ArgSpec)) { return false; }
             ArgSpec other = (ArgSpec) obj;
             boolean result = Assert.equals(this.defaultValue, other.defaultValue)
-                    && Assert.equals(this.propertyType, other.propertyType)
+                    && Assert.equals(this.type, other.type)
                     && Assert.equals(this.arity, other.arity)
                     && Assert.equals(this.capacity, other.capacity)
                     && Assert.equals(this.index, other.index)
@@ -2545,14 +2545,14 @@ public class CommandLine {
                     && Assert.equals(this.required, other.required)
                     && Assert.equals(this.splitRegex, other.splitRegex)
                     && Arrays.equals(this.description, other.description)
-                    && Arrays.equals(this.types, other.types)
+                    && Arrays.equals(this.auxiliaryTypes, other.auxiliaryTypes)
                     ;
             return result;
         }
         public int hashCode() {
             return 17
                     + 37 * Assert.hashCode(defaultValue)
-                    + 37 * Assert.hashCode(propertyType)
+                    + 37 * Assert.hashCode(type)
                     + 37 * Assert.hashCode(arity)
                     + 37 * Assert.hashCode(capacity)
                     + 37 * Assert.hashCode(index)
@@ -2561,7 +2561,7 @@ public class CommandLine {
                     + 37 * Assert.hashCode(required)
                     + 37 * Assert.hashCode(splitRegex)
                     + 37 * Arrays.hashCode(description)
-                    + 37 * Arrays.hashCode(types)
+                    + 37 * Arrays.hashCode(auxiliaryTypes)
                     ;
         }
     }
@@ -3183,7 +3183,7 @@ public class CommandLine {
             updateHelpRequested(argSpec);
             assertNoMissingParameters(argSpec, arity.min, args);
 
-            Class<?> cls = argSpec.propertyType();
+            Class<?> cls = argSpec.type();
             if (cls.isArray()) {
                 return applyValuesToArrayField(argSpec, arity, args, cls, argDescription);
             }
@@ -3193,7 +3193,7 @@ public class CommandLine {
             if (Map.class.isAssignableFrom(cls)) {
                 return applyValuesToMapField(argSpec, arity, args, cls, argDescription);
             }
-            cls = argSpec.types()[0]; // field may be interface/abstract type, use annotation to get concrete type
+            cls = argSpec.auxiliaryTypes()[0]; // field may be interface/abstract type, use annotation to get concrete type
             return applyValueToSingleValuedField(argSpec, arity, args, cls, initialized, argDescription);
         }
 
@@ -3249,7 +3249,7 @@ public class CommandLine {
                                           Stack<String> args,
                                           Class<?> cls,
                                           String argDescription) throws Exception {
-            Class<?>[] classes = argSpec.types();
+            Class<?>[] classes = argSpec.auxiliaryTypes();
             if (classes.length < 2) { throw new ParameterException(CommandLine.this, argSpec.toString() + " needs two types (one for the map key, one for the value) but only has " + classes.length + " types configured."); }
             ITypeConverter<?> keyConverter   = getTypeConverter(classes[0], argSpec, 0);
             ITypeConverter<?> valueConverter = getTypeConverter(classes[1], argSpec, 1);
@@ -3332,7 +3332,7 @@ public class CommandLine {
                                             String argDescription) throws Exception {
             Object existing = argSpec.getValue();
             int length = existing == null ? 0 : Array.getLength(existing);
-            Class<?> type = argSpec.types()[0];
+            Class<?> type = argSpec.auxiliaryTypes()[0];
             List<Object> converted = consumeArguments(argSpec, arity, args, type, length, argDescription);
             List<Object> newValues = new ArrayList<Object>();
             for (int i = 0; i < length; i++) {
@@ -3360,7 +3360,7 @@ public class CommandLine {
                                                  Class<?> cls,
                                                  String argDescription) throws Exception {
             Collection<Object> collection = (Collection<Object>) argSpec.getValue();
-            Class<?> type = argSpec.types()[0];
+            Class<?> type = argSpec.auxiliaryTypes()[0];
             int length = collection == null ? 0 : collection.size();
             List<Object> converted = consumeArguments(argSpec, arity, args, type, length, argDescription);
             if (collection == null) {
@@ -3966,7 +3966,7 @@ public class CommandLine {
                 StringBuilder clusteredOptional = new StringBuilder("-");
                 for (OptionSpec option : options) {
                     if (option.hidden()) { continue; }
-                    if (option.propertyType() == boolean.class || option.propertyType() == Boolean.class) {
+                    if (option.type() == boolean.class || option.type() == Boolean.class) {
                         String shortestName = ShortestFirst.sort(option.names())[0];
                         if (shortestName.length() == 2 && shortestName.startsWith("-")) {
                             booleanOptions.add(option);
@@ -4392,7 +4392,7 @@ public class CommandLine {
                 String longOption = join(names, shortOptionCount, names.length - shortOptionCount, ", ");
                 Text longOptionText = createLongOptionText(option, paramLabelRenderer, scheme, longOption);
 
-                boolean isBoolean = !option.isMultiValue() && isBoolean(option.types()[0]);
+                boolean isBoolean = !option.isMultiValue() && isBoolean(option.auxiliaryTypes()[0]);
                 Object defaultValue = option.defaultValue();
                 showDefault = commandSpec != null && commandSpec.showDefaultValues() && defaultValue != null && !option.help() && !option.versionHelp() && !option.usageHelp() && !isBoolean;
 
