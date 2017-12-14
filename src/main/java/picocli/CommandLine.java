@@ -2058,8 +2058,6 @@ public class CommandLine {
             result.versionHelp(option.versionHelp());
 
             result.arity(Range.optionArity(field));
-            result.index(new Range(0, 0, false, true, "0"));
-            result.capacity(result.arity());
             result.required(option.required());
             result.description(option.description());
             result.auxiliaryTypes(inferTypes(field.getType(), option.type(), field.getGenericType()));
@@ -2087,7 +2085,7 @@ public class CommandLine {
             PositionalParamSpec result = new PositionalParamSpec();
             result.arity(Range.parameterArity(field));
             result.index(Range.parameterIndex(field));
-            result.capacity(Range.parameterCapacity(field));
+            result.capacity = Range.parameterCapacity(field);
             result.required(result.arity().min > 0);
             result.description(parameters.description());
             result.auxiliaryTypes(inferTypes(field.getType(), parameters.type(), field.getGenericType()));
@@ -2100,7 +2098,7 @@ public class CommandLine {
         private static void initCommon(ArgSpec result, Object scope, Field field) {
             result.type(field.getType()); // field type
             result.defaultValue(getDefaultValue(scope, field));
-            result.setToString(abbreviate("field " + field.toGenericString()));
+            result.toString(abbreviate("field " + field.toGenericString()));
             result.getter(new FieldGetter(scope, field));
             result.setter(new FieldSetter(scope, field));
         }
@@ -2168,8 +2166,8 @@ public class CommandLine {
             }
         }
     }
-    /** Models a command. Classes annotated with {@code &#064;Command} and classes containing {@code &#064;Option} and
-     * {@code &#064;Parameters} fields and methods are converted into instances of this model class.
+    /** Models a command. Classes annotated with {@code @Command} and classes containing {@code @Option} and
+     * {@code @Parameters} fields and methods are converted into instances of this model class.
      * Used internally by the picocli command line interpreter and help message generator.
      * JVM languages that don't support annotations may construct {@code CommandSpec} instances directly.
      * @since 3.0 */
@@ -2421,20 +2419,7 @@ public class CommandLine {
     /** Models the shared attributes of {@link OptionSpec} and {@link PositionalParamSpec}.
      * @since 3.0 */
     public abstract static class ArgSpec {
-        private static class ObjectGetterSetter implements IGetter, ISetter {
-            private Object value;
-            public <T> T get() throws Exception {
-                return (T) value;
-            }
-            public <T> T set(T value) throws Exception {
-                T result = value;
-                this.value = value;
-                return result;
-            }
-        }
         private Range arity;
-        private Range index;
-        private Range capacity;
         private String[] description;
         private boolean required;
         private String paramLabel;
@@ -2470,62 +2455,111 @@ public class CommandLine {
 
         /** Customizable getter for obtaining the current value of an option or positional parameter from the model.
          * @since 3.0 */
-        public static interface IGetter {
-            <T> T get() throws Exception;
-        }
+        public static interface IGetter { <T> T get() throws Exception; }
+
         /** Customizable setter for modifying the value of an option or positional parameter in the model.
          * @since 3.0 */
-        public static interface ISetter {
-            <T> T set(T value) throws Exception;
+        public static interface ISetter { <T> T set(T value) throws Exception; }
+
+        private static class ObjectGetterSetter implements IGetter, ISetter {
+            private Object value;
+            public <T> T get() throws Exception { return (T) value; }
+            public <T> T set(T value) throws Exception {
+                T result = value;
+                this.value = value;
+                return result;
+            }
         }
 
-        /** @see Option#required() */
+        /** Returns whether this is a required option or positional parameter.
+         * @see Option#required() */
         public boolean required()      { return required; }
-        /** @see Option#description() {@link Parameters#description()} */
+
+        /** Returns the description of this option, used when generating the usage documentation.
+         * @see Option#description() */
         public String[] description()  { return description; }
-        /** @see Parameters#index() */
-        public Range index()           { return index; }
-        /** @see Option#arity() */
+
+        /** Returns how many arguments this option or positional parameter requires.
+         * @see Option#arity() */
         public Range arity()           { return arity; }
 
-        public Range capacity()        { return capacity; }
-        /** @see Option#paramLabel() {@link Parameters#paramLabel()} */
+        /** Returns the name of the option or positional parameter used in the usage help message.
+         * @see Option#paramLabel() {@link Parameters#paramLabel()} */
         public String paramLabel()     { return paramLabel; }
-        /** @see Option#type() */
+
+        /** Returns auxiliary type information used when the {@link #type()} is an abstract class.
+         * @see Option#type() */
         public Class<?>[] auxiliaryTypes() { return auxiliaryTypes; }
-        /** @see Option#split() */
+
+        /** Returns a regular expression to split option parameter values or {@code ""} if the value should not be split.
+         * @see Option#split() */
         public String splitRegex()     { return splitRegex; }
-        /** @see Option#hidden() */
+
+        /** Returns whether this option should be excluded from the usage message.
+         * @see Option#hidden() */
         public boolean hidden()        { return hidden; }
+
+        /** Returns the type to convert the option or positional parameter to before {@linkplain #setValue(Object) setting} the value. */
         public Class<?> type()         { return type; }
+
+        /** Returns the default value of this option or positional parameter. */
         public Object defaultValue()   { return defaultValue; }
+
+        /** Returns the {@link IGetter} that is responsible for getting the value of this argument. */
         public IGetter getter()         { return getter; }
+        /** Returns the {@link ISetter} that is responsible for setting the value of this argument. */
         public ISetter setter()         { return setter; }
 
+        /** Returns the current value of this argument. */
         Object getValue()                throws Exception { return getter.get(); }
+        /** Sets the value of this argument to the specified value and returns the previous value. */
         Object setValue(Object newValue) throws Exception { return setter.set(newValue); }
 
+        /** Returns {@code true} if this argument's {@link #type()} is an array, a {@code Collection} or a {@code Map}, {@code false} otherwise. */
         boolean isMultiValue()     { return CommandLine.isMultiValue(type()); }
+        /** Returns {@code true} if this argument is a named option, {@code false} otherwise. */
         public abstract boolean isOption();
+        /** Returns {@code true} if this argument is a positional parameter, {@code false} otherwise. */
         public abstract boolean isParameter();
 
+        /** Sets whether this is a required option or positional parameter. */
         public <T extends ArgSpec> T required(boolean required)          { this.required = required; return (T) this; }
+
+        /** Sets the description of this option, used when generating the usage documentation. */
         public <T extends ArgSpec> T description(String... description)  { this.description = description; return (T) this; }
+
+        /** Sets how many arguments this option or positional parameter requires. */
         public <T extends ArgSpec> T arity(String range)                 { return arity(Range.valueOf(range)); }
+
+        /** Sets how many arguments this option or positional parameter requires. */
         public <T extends ArgSpec> T arity(Range arity)                  { this.arity = arity; return (T) this; }
-        public <T extends ArgSpec> T index(String range)                 { return index(Range.valueOf(range)); }
-        public <T extends ArgSpec> T index(Range index)                  { this.index = index; return (T) this; }
-        public <T extends ArgSpec> T capacity(String range)              { return capacity(Range.valueOf(range)); }
-        public <T extends ArgSpec> T capacity(Range capacity)            { this.capacity = capacity; return (T) this; }
+
+        /** Sets the name of the option or positional parameter used in the usage help message. */
         public <T extends ArgSpec> T paramLabel(String paramLabel)       { this.paramLabel = paramLabel; return (T) this; }
-        public <T extends ArgSpec> T auxiliaryTypes(Class<?>... types)            { this.auxiliaryTypes = types; return (T) this; }
+
+        /** Sets auxiliary type information used when the {@link #type()} is an abstract class. */
+        public <T extends ArgSpec> T auxiliaryTypes(Class<?>... types)   { this.auxiliaryTypes = types; return (T) this; }
+
+        /** Sets a regular expression to split option parameter values or {@code ""} if the value should not be split. */
         public <T extends ArgSpec> T splitRegex(String splitRegex)       { this.splitRegex = splitRegex; return (T) this; }
+
+        /** Sets whether this option should be excluded from the usage message. */
         public <T extends ArgSpec> T hidden(boolean hidden)              { this.hidden = hidden; return (T) this; }
-        public <T extends ArgSpec> T type(Class<?> propertyType) { this.type = propertyType; return (T) this; }
+
+        /** Sets the type to convert the option or positional parameter to before {@linkplain #setValue(Object) setting} the value. */
+        public <T extends ArgSpec> T type(Class<?> propertyType)         { this.type = propertyType; return (T) this; }
+
+        /** Sets the default value of this option or positional parameter to the specified value. */
         public <T extends ArgSpec> T defaultValue(Object defaultValue)   { this.defaultValue = defaultValue; return (T) this; }
-        public <T extends ArgSpec> T getter(IGetter getter)               { this.getter = getter; return (T) this; }
-        public <T extends ArgSpec> T setter(ISetter setter)               { this.setter = setter; return (T) this; }
-        public <T extends ArgSpec> T setToString(String toString)        { this.toString = toString; return (T) this; }
+
+        /** Sets the {@link IGetter} that is responsible for getting the value of this argument to the specified value. */
+        public <T extends ArgSpec> T getter(IGetter getter)              { this.getter = getter; return (T) this; }
+        /** Sets the {@link ISetter} that is responsible for setting the value of this argument to the specified value. */
+        public <T extends ArgSpec> T setter(ISetter setter)              { this.setter = setter; return (T) this; }
+
+        /** Sets the string respresentation of this option or positional parameter to the specified value. */
+        public <T extends ArgSpec> T toString(String toString)           { this.toString = toString; return (T) this; }
+        /** Returns a string respresentation of this option or positional parameter. */
         public String toString() { return toString; }
 
         private String[] splitValue(String value) {
@@ -2538,8 +2572,6 @@ public class CommandLine {
             boolean result = Assert.equals(this.defaultValue, other.defaultValue)
                     && Assert.equals(this.type, other.type)
                     && Assert.equals(this.arity, other.arity)
-                    && Assert.equals(this.capacity, other.capacity)
-                    && Assert.equals(this.index, other.index)
                     && Assert.equals(this.hidden, other.hidden)
                     && Assert.equals(this.paramLabel, other.paramLabel)
                     && Assert.equals(this.required, other.required)
@@ -2554,8 +2586,6 @@ public class CommandLine {
                     + 37 * Assert.hashCode(defaultValue)
                     + 37 * Assert.hashCode(type)
                     + 37 * Assert.hashCode(arity)
-                    + 37 * Assert.hashCode(capacity)
-                    + 37 * Assert.hashCode(index)
                     + 37 * Assert.hashCode(hidden)
                     + 37 * Assert.hashCode(paramLabel)
                     + 37 * Assert.hashCode(required)
@@ -2565,7 +2595,7 @@ public class CommandLine {
                     ;
         }
     }
-    /** Models a command line option. Fields and methods annotated with {@code &#064;Option} are converted into
+    /** Models a command line option. Fields and methods annotated with {@code @Option} are converted into
      * instances of this model class. Used internally by the picocli command line interpreter and help message generator.
      * JVM languages that don't support annotations may construct {@code OptionSpec} instances directly.
      * @since 3.0 */
@@ -2577,22 +2607,38 @@ public class CommandLine {
         public boolean isOption()     { return true; }
         public boolean isParameter()  { return false; }
 
+        /** Returns one or more option names. At least one option name is required.
+         * @see Option#names() */
         public String[] names()       { return names; }
+
+        /** Returns whether this option disables validation of the other arguments.
+         * @see Option#help()
+         * @deprecated Use {@link #usageHelp()} and {@link #versionHelp()} instead. */
         public boolean help()         { return help; }
+
+        /** Returns whether this option allows the user to request usage help.
+         * @see Option#usageHelp()  */
         public boolean usageHelp()    { return usageHelp; }
+
+        /** Returns whether this option allows the user to request version information.
+         * @see Option#versionHelp()  */
         public boolean versionHelp()  { return versionHelp; }
 
+        /** Replaces the option names with the specified values. At least one option name is required.
+         * @return this OptionSpec instance to provide a fluent interface */
         public OptionSpec names(String... names)           { this.names = names; return this; }
+
+        /** Sets whether this option disables validation of the other arguments. */
         public OptionSpec help(boolean help)               { this.help = help; return this; }
+
+        /** Sets whether this option allows the user to request usage help. */
         public OptionSpec usageHelp(boolean usageHelp)     { this.usageHelp = usageHelp; return this; }
+
+        /** Sets whether this option allows the user to request version information.*/
         public OptionSpec versionHelp(boolean versionHelp) { this.versionHelp = versionHelp; return this; }
         public boolean equals(Object obj) {
-            if (obj == this) {
-                return true;
-            }
-            if (!(obj instanceof OptionSpec)) {
-                return false;
-            }
+            if (obj == this) { return true; }
+            if (!(obj instanceof OptionSpec)) { return false; }
             OptionSpec other = (OptionSpec) obj;
             boolean result = super.equals(obj)
                     && help == other.help
@@ -2614,24 +2660,50 @@ public class CommandLine {
                 throw new InitializationException("Invalid names: " + Arrays.toString(names));
             }
             if (arity() == null) { arity("0"); }
-            if (index() == null) { index(new Range(0, 0, false, true, "0"));}
-            if (capacity() == null) { capacity(arity()); }
-            if (toString() == null) { setToString("option " + names[0]); }
+            if (toString() == null) { toString("option " + names[0]); }
         }
     }
-    /** Models a command line positional parameter. Fields and methods annotated with {@code &#064;Parameters} are
+    /** Models a command line positional parameter. Fields and methods annotated with {@code @Parameters} are
      * converted into instances of this model class. Used internally by the picocli command line interpreter and help
      * message generator. JVM languages that don't support annotations may construct {@code PositionalParamSpec} instances directly.
      * @since 3.0 */
     public static class PositionalParamSpec extends ArgSpec {
+        private Range index;
+        private Range capacity;
         public boolean isOption()        { return false; }
         public boolean isParameter()     { return true; }
+
+        /** Returns an index or range specifying which of the command line arguments should be assigned to this positional parameter.
+         * @see Parameters#index() */
+        public Range index()           { return index; }
+        private Range capacity()       { return capacity; }
+
+        /** Sets the index or range specifying which of the command line arguments should be assigned to this positional parameter. */
+        public <T extends ArgSpec> T index(String range)                 { return index(Range.valueOf(range)); }
+        /** Sets the index or range specifying which of the command line arguments should be assigned to this positional parameter. */
+        public <T extends ArgSpec> T index(Range index)                  { this.index = index; return (T) this; }
         void validate() {
             super.validate();
             if (arity() == null) { arity("1"); }
             if (index() == null) { index("*");}
-            if (capacity() == null) { capacity(Range.parameterCapacity(arity(), index())); }
-            if (toString() == null) { setToString("positional parameter[" + index() + "]"); }
+            if (capacity() == null) { capacity = Range.parameterCapacity(arity(), index()); }
+            if (toString() == null) { toString("positional parameter[" + index() + "]"); }
+        }
+        public int hashCode() {
+            return super.hashCode()
+                    + 37 * Assert.hashCode(capacity)
+                    + 37 * Assert.hashCode(index);
+        }
+        public boolean equals(Object obj) {
+            if (obj == this) {
+                return true;
+            }
+            if (!(obj instanceof PositionalParamSpec)) {
+                return false;
+            }
+            PositionalParamSpec other = (PositionalParamSpec) obj;
+            return Assert.equals(this.capacity, other.capacity)
+                    && Assert.equals(this.index, other.index);
         }
     }
     /**
@@ -3470,7 +3542,7 @@ public class CommandLine {
                     desc += " (" + argSpec.paramLabel() + ")";
                 }
             } else {
-                desc = prefix + "positional parameter at index " + argSpec.index() + " (" + argSpec.paramLabel() + ")";
+                desc = prefix + "positional parameter at index " + ((PositionalParamSpec) argSpec).index() + " (" + argSpec.paramLabel() + ")";
             }
             return desc;
         }
@@ -3545,7 +3617,7 @@ public class CommandLine {
                         throw new MissingParameterException(CommandLine.this, "Missing required parameter for " +
                                 optionDescription("", argSpec, 0));
                     }
-                    Range indexRange = argSpec.index();
+                    Range indexRange = ((PositionalParamSpec) argSpec).index();
                     String sep = "";
                     String names = "";
                     int count = 0;
@@ -3587,10 +3659,12 @@ public class CommandLine {
         }
     }
     private static class PositionalParametersSorter implements Comparator<ArgSpec> {
+        private static final Range OPTION_INDEX = new Range(0, 0, false, true, "0");
         public int compare(ArgSpec p1, ArgSpec p2) {
-            int result = p1.index().compareTo(p2.index());
+            int result = index(p1).compareTo(index(p2));
             return (result == 0) ? p1.arity().compareTo(p2.arity()) : result;
         }
+        private Range index(ArgSpec arg) { return arg.isOption() ? OPTION_INDEX : ((PositionalParamSpec) arg).index(); }
     }
     /**
      * Inner class to group the built-in {@link ITypeConverter} implementations.
@@ -4552,7 +4626,7 @@ public class CommandLine {
                 String sep = argSpec.isOption() ? separator() : "";
                 Text paramName = ansi.apply(argSpec.paramLabel(), styles);
                 if (!empty(argSpec.splitRegex())) { paramName = paramName.append("[" + argSpec.splitRegex()).append(paramName).append("]..."); } // #194
-                Range capacity = argSpec.capacity();
+                Range capacity = argSpec.isOption() ? argSpec.arity() : ((PositionalParamSpec)argSpec).capacity();
                 for (int i = 0; i < capacity.min; i++) {
                     result = result.append(sep).append(paramName);
                     sep = " ";
@@ -5599,7 +5673,7 @@ public class CommandLine {
         private static String describe(ArgSpec argSpec, String separator) {
             String prefix = (argSpec.isOption())
                 ? ((OptionSpec) argSpec).names()[0] + separator
-                : "params[" + argSpec.index() + "]" + separator;
+                : "params[" + ((PositionalParamSpec) argSpec).index() + "]" + separator;
             return prefix + argSpec.paramLabel();
         }
     }
