@@ -176,10 +176,14 @@ public class CommandLine {
     public CommandLine(Object command, IFactory factory) {
         interpreter = new Interpreter();
         commandSpec = command instanceof CommandSpec ? (CommandSpec) command : CommandSpecBuilder.build(command, factory);
-        commandSpec.setCommandLine(this);
+        commandSpec.commandLine(this);
         commandSpec.validate();
     }
 
+    /**
+     * Returns the {@code CommandSpec} model that this {@code CommandLine} was constructed with.
+     * @return the {@code CommandSpec} model
+     * @since 3.0 */
     CommandSpec getCommandSpec() { return commandSpec; }
 
     /** Registers a subcommand with the specified name. For example:
@@ -234,7 +238,7 @@ public class CommandLine {
      * @since 0.9.7
      */
     public Map<String, CommandLine> getSubcommands() {
-        return new LinkedHashMap<String, CommandLine>(commandSpec.getSubcommands());
+        return new LinkedHashMap<String, CommandLine>(commandSpec.subcommands());
     }
     /**
      * Returns the command that this is a subcommand of, or {@code null} if this is a top-level command.
@@ -245,10 +249,10 @@ public class CommandLine {
      */
     public CommandLine getParent() {
         CommandSpec parent = getCommandSpec().parent();
-        return parent == null ? null : parent.getCommandLine();
+        return parent == null ? null : parent.commandLine();
     }
 
-    /** Returns the annotated object that this {@code CommandLine} instance was constructed with.
+    /** Returns the annotated user object that this {@code CommandLine} instance was constructed with.
      * @param <T> the type of the variable that the return value is being assigned to
      * @return the annotated object that this {@code CommandLine} instance was constructed with
      * @since 0.9.7
@@ -288,7 +292,7 @@ public class CommandLine {
      */
     public CommandLine setOverwrittenOptionsAllowed(boolean newValue) {
         this.overwrittenOptionsAllowed = newValue;
-        for (CommandLine command : commandSpec.getSubcommands().values()) {
+        for (CommandLine command : commandSpec.subcommands().values()) {
             command.setOverwrittenOptionsAllowed(newValue);
         }
         return this;
@@ -317,7 +321,7 @@ public class CommandLine {
      */
     public CommandLine setUnmatchedArgumentsAllowed(boolean newValue) {
         this.unmatchedArgumentsAllowed = newValue;
-        for (CommandLine command : commandSpec.getSubcommands().values()) {
+        for (CommandLine command : commandSpec.subcommands().values()) {
             command.setUnmatchedArgumentsAllowed(newValue);
         }
         return this;
@@ -1913,7 +1917,7 @@ public class CommandLine {
             return (result == 0) ? max - other.max : result;
         }
     }
-    static void validatePositionalParameters(List<PositionalParamSpec> positionalParametersFields) {
+    private static void validatePositionalParameters(List<PositionalParamSpec> positionalParametersFields) {
         int min = 0;
         for (PositionalParamSpec positional : positionalParametersFields) {
             Range index = positional.index();
@@ -1935,6 +1939,7 @@ public class CommandLine {
     }
     private static class CommandSpecBuilder {
         static CommandSpec build(Object command) {
+            if (command instanceof CommandSpec) { return (CommandSpec) command; }
             Assert.notNull(command, "command");
             Class<?> cls                 = command.getClass();
             boolean hasCommandAnnotation = false;
@@ -2079,7 +2084,7 @@ public class CommandLine {
             }
             return "<" + name + ">";
         }
-        static PositionalParamSpec buildPositionalParamSpec(final Object scope, final Field field) {
+        static PositionalParamSpec buildPositionalParamSpec(Object scope, Field field) {
             Parameters parameters = field.getAnnotation(Parameters.class);
 
             PositionalParamSpec result = new PositionalParamSpec();
@@ -2238,10 +2243,10 @@ public class CommandLine {
         public Object userObject() { return userObject; }
 
         /** Returns the CommandLine constructed with this {@code CommandSpec} model. */
-        public CommandLine getCommandLine() { return commandLine;}
+        public CommandLine commandLine() { return commandLine;}
 
         /** Sets the CommandLine constructed with this {@code CommandSpec} model. */
-        protected CommandSpec setCommandLine(CommandLine commandLine) {
+        protected CommandSpec commandLine(CommandLine commandLine) {
             this.commandLine = commandLine;
             for (CommandLine sub : commands.values()) {
                 sub.getCommandSpec().parent(this);
@@ -2250,7 +2255,7 @@ public class CommandLine {
         }
 
         /** Returns a read-only view of the subcommand map. */
-        public Map<String, CommandLine> getSubcommands() { return Collections.unmodifiableMap(commands); }
+        public Map<String, CommandLine> subcommands() { return Collections.unmodifiableMap(commands); }
 
         public CommandSpec addSubcommand(String name, CommandLine commandLine) {
             commands.put(name, commandLine);
@@ -2283,11 +2288,11 @@ public class CommandLine {
             return this;
         }
 
-        public List<OptionSpec> getOptions() { return Collections.unmodifiableList(options); }
-        public List<PositionalParamSpec> getPositionalParameters() { return Collections.unmodifiableList(positionalParameters); }
-        public Map<String, OptionSpec> getOptionsMap() { return Collections.unmodifiableMap(optionsByNameMap); }
-        public Map<Character, OptionSpec> getPosixOptionsMap() { return Collections.unmodifiableMap(posixOptionsByKeyMap); }
-        public List<ArgSpec> getRequiredArgs() { return Collections.unmodifiableList(requiredArgs); }
+        public List<OptionSpec> options() { return Collections.unmodifiableList(options); }
+        public List<PositionalParamSpec> positionalParameters() { return Collections.unmodifiableList(positionalParameters); }
+        public Map<String, OptionSpec> optionsMap() { return Collections.unmodifiableMap(optionsByNameMap); }
+        public Map<Character, OptionSpec> posixOptionsMap() { return Collections.unmodifiableMap(posixOptionsByKeyMap); }
+        public List<ArgSpec> requiredArgs() { return Collections.unmodifiableList(requiredArgs); }
 
         /** Returns the String to use as the program name in the synopsis line of the help message.
          * {@link #DEFAULT_COMMAND_NAME} by default, initialized from {@link Command#name()} if defined. */
@@ -2520,7 +2525,7 @@ public class CommandLine {
         /** Returns {@code true} if this argument is a named option, {@code false} otherwise. */
         public abstract boolean isOption();
         /** Returns {@code true} if this argument is a positional parameter, {@code false} otherwise. */
-        public abstract boolean isParameter();
+        public abstract boolean isPositional();
 
         /** Sets whether this is a required option or positional parameter. */
         public <T extends ArgSpec> T required(boolean required)          { this.required = required; return (T) this; }
@@ -2605,7 +2610,7 @@ public class CommandLine {
         private boolean usageHelp;
         private boolean versionHelp;
         public boolean isOption()     { return true; }
-        public boolean isParameter()  { return false; }
+        public boolean isPositional() { return false; }
 
         /** Returns one or more option names. At least one option name is required.
          * @see Option#names() */
@@ -2671,7 +2676,7 @@ public class CommandLine {
         private Range index;
         private Range capacity;
         public boolean isOption()        { return false; }
-        public boolean isParameter()     { return true; }
+        public boolean isPositional()    { return true; }
 
         /** Returns an index or range specifying which of the command line arguments should be assigned to this positional parameter.
          * @see Parameters#index() */
@@ -3008,11 +3013,11 @@ public class CommandLine {
         private void parse(List<CommandLine> parsedCommands, Stack<String> argumentStack, String[] originalArgs) {
             clear(); // first reset any state in case this CommandLine instance is being reused
             if (tracer.isDebug()) {tracer.debug("Initializing %s: %d options, %d positional parameters, %d required, %d subcommands.%n",
-                    commandSpec.toString(), new HashSet<ArgSpec>(commandSpec.getOptionsMap().values()).size(),
-                    commandSpec.getPositionalParameters().size(), commandSpec.getRequiredArgs().size(), commandSpec
-                            .getSubcommands().size());}
+                    commandSpec.toString(), new HashSet<ArgSpec>(commandSpec.optionsMap().values()).size(),
+                    commandSpec.positionalParameters().size(), commandSpec.requiredArgs().size(), commandSpec
+                            .subcommands().size());}
             parsedCommands.add(CommandLine.this);
-            List<ArgSpec> required = new ArrayList<ArgSpec>(commandSpec.getRequiredArgs());
+            List<ArgSpec> required = new ArrayList<ArgSpec>(commandSpec.requiredArgs());
             Set<ArgSpec> initialized = new HashSet<ArgSpec>();
             Collections.sort(required, new PositionalParametersSorter());
             try {
@@ -3067,12 +3072,12 @@ public class CommandLine {
                 }
 
                 // if we find another command, we are done with the current command
-                if (commandSpec.getSubcommands().containsKey(arg)) {
+                if (commandSpec.subcommands().containsKey(arg)) {
                     if (!isAnyHelpRequested() && !required.isEmpty()) { // ensure current command portion is valid
                         throw MissingParameterException.create(CommandLine.this, required, separator);
                     }
-                    if (tracer.isDebug()) {tracer.debug("Found subcommand '%s' (%s)%n", arg, commandSpec.getSubcommands().get(arg).commandSpec.toString());}
-                    commandSpec.getSubcommands().get(arg).interpreter.parse(parsedCommands, args, originalArgs);
+                    if (tracer.isDebug()) {tracer.debug("Found subcommand '%s' (%s)%n", arg, commandSpec.subcommands().get(arg).commandSpec.toString());}
+                    commandSpec.subcommands().get(arg).interpreter.parse(parsedCommands, args, originalArgs);
                     return; // remainder done by the command
                 }
 
@@ -3085,7 +3090,7 @@ public class CommandLine {
                 if (separatorIndex > 0) {
                     String key = arg.substring(0, separatorIndex);
                     // be greedy. Consume the whole arg as an option if possible.
-                    if (commandSpec.getOptionsMap().containsKey(key) && !commandSpec.getOptionsMap().containsKey(arg)) {
+                    if (commandSpec.optionsMap().containsKey(key) && !commandSpec.optionsMap().containsKey(arg)) {
                         paramAttachedToOption = true;
                         String optionParam = arg.substring(separatorIndex + separator.length());
                         args.push(optionParam);
@@ -3097,7 +3102,7 @@ public class CommandLine {
                 } else {
                     if (tracer.isDebug()) {tracer.debug("'%s' cannot be separated into <option>%s<option-parameter>%n", arg, separator);}
                 }
-                if (commandSpec.getOptionsMap().containsKey(arg)) {
+                if (commandSpec.optionsMap().containsKey(arg)) {
                     processStandaloneOption(required, initialized, arg, args, paramAttachedToOption);
                 }
                 // Compact (single-letter) options can be grouped with other options or with an argument.
@@ -3119,14 +3124,14 @@ public class CommandLine {
         }
         private boolean resemblesOption(String arg) {
             int count = 0;
-            for (String optionName : commandSpec.getOptionsMap().keySet()) {
+            for (String optionName : commandSpec.optionsMap().keySet()) {
                 for (int i = 0; i < arg.length(); i++) {
                     if (optionName.length() > i && arg.charAt(i) == optionName.charAt(i)) { count++; } else { break; }
                 }
             }
-            boolean result = count > 0 && count * 10 >= commandSpec.getOptionsMap().size() * 9; // at least one prefix char in common with 9 out of 10 options
+            boolean result = count > 0 && count * 10 >= commandSpec.optionsMap().size() * 9; // at least one prefix char in common with 9 out of 10 options
             if (tracer.isDebug()) {tracer.debug("%s %s an option: %d matching prefix chars out of %d option names%n", arg, (result ? "resembles" : "doesn't resemble"), count, commandSpec
-                    .getOptionsMap().size());}
+                    .optionsMap().size());}
             return result;
         }
         private void handleUnmatchedArguments(String arg) {Stack<String> args = new Stack<String>(); args.add(arg); handleUnmatchedArguments(args);}
@@ -3142,7 +3147,7 @@ public class CommandLine {
         private void processPositionalParameter(Collection<ArgSpec> required, Set<ArgSpec> initialized, Stack<String> args) throws Exception {
             if (tracer.isDebug()) {tracer.debug("Processing next arg as a positional parameter at index=%d. Remainder=%s%n", position, reverse((Stack<String>) args.clone()));}
             int consumed = 0;
-            for (PositionalParamSpec positionalParam : commandSpec.getPositionalParameters()) {
+            for (PositionalParamSpec positionalParam : commandSpec.positionalParameters()) {
                 Range indexRange = positionalParam.index();
                 if (!indexRange.contains(position)) {
                     continue;
@@ -3172,7 +3177,7 @@ public class CommandLine {
                                              String arg,
                                              Stack<String> args,
                                              boolean paramAttachedToKey) throws Exception {
-            ArgSpec argSpec = commandSpec.getOptionsMap().get(arg);
+            ArgSpec argSpec = commandSpec.optionsMap().get(arg);
             required.remove(argSpec);
             Range arity = argSpec.arity();
             if (paramAttachedToKey) {
@@ -3191,8 +3196,8 @@ public class CommandLine {
             String cluster = arg.substring(1);
             boolean paramAttachedToOption = true;
             do {
-                if (cluster.length() > 0 && commandSpec.getPosixOptionsMap().containsKey(cluster.charAt(0))) {
-                    ArgSpec argSpec = commandSpec.getPosixOptionsMap().get(cluster.charAt(0));
+                if (cluster.length() > 0 && commandSpec.posixOptionsMap().containsKey(cluster.charAt(0))) {
+                    ArgSpec argSpec = commandSpec.posixOptionsMap().get(cluster.charAt(0));
                     Range arity = argSpec.arity();
                     String argDescription = "option " + prefix + cluster.charAt(0);
                     if (tracer.isDebug()) {tracer.debug("Found option '%s%s' in %s: %s, arity=%s%n", prefix, cluster.charAt(0), arg,
@@ -3350,7 +3355,7 @@ public class CommandLine {
             // now process the varargs if any
             for (int i = arity.min; i < arity.max && !args.isEmpty(); i++) {
                 if (argSpec.isOption()) {
-                    if (commandSpec.getSubcommands().containsKey(args.peek()) || isOption(args.peek())) {
+                    if (commandSpec.subcommands().containsKey(args.peek()) || isOption(args.peek())) {
                         return;
                     }
                 }
@@ -3464,7 +3469,7 @@ public class CommandLine {
             // now process the varargs if any
             for (int i = arity.min; i < arity.max && !args.isEmpty(); i++) {
                 if (argSpec.isOption()) { // for vararg Options, we stop if we encounter '--', a command, or another option
-                    if (commandSpec.getSubcommands().containsKey(args.peek()) || isOption(args.peek())) {
+                    if (commandSpec.subcommands().containsKey(args.peek()) || isOption(args.peek())) {
                         break;
                     }
                 }
@@ -3508,16 +3513,16 @@ public class CommandLine {
                 return true;
             }
             // not just arg prefix: we may be in the middle of parsing -xrvfFILE
-            if (commandSpec.getOptionsMap().containsKey(arg)) { // -v or -f or --file (not attached to param or other option)
+            if (commandSpec.optionsMap().containsKey(arg)) { // -v or -f or --file (not attached to param or other option)
                 return true;
             }
             int separatorIndex = arg.indexOf(commandSpec.separator());
             if (separatorIndex > 0) { // -f=FILE or --file==FILE (attached to param via separator)
-                if (commandSpec.getOptionsMap().containsKey(arg.substring(0, separatorIndex))) {
+                if (commandSpec.optionsMap().containsKey(arg.substring(0, separatorIndex))) {
                     return true;
                 }
             }
-            return (arg.length() > 2 && arg.startsWith("-") && commandSpec.getPosixOptionsMap().containsKey(arg.charAt(1)));
+            return (arg.length() > 2 && arg.startsWith("-") && commandSpec.posixOptionsMap().containsKey(arg.charAt(1)));
         }
         private Object tryConvert(ArgSpec argSpec, int index, ITypeConverter<?> converter, String value, Class<?> type)
                 throws Exception {
@@ -3621,7 +3626,7 @@ public class CommandLine {
                     String sep = "";
                     String names = "";
                     int count = 0;
-                    List<PositionalParamSpec> positionalParameters = commandSpec.getPositionalParameters();
+                    List<PositionalParamSpec> positionalParameters = commandSpec.positionalParameters();
                     for (int i = indexRange.min; i < positionalParameters.size(); i++) {
                         if (positionalParameters.get(i).arity().min > 0) {
                             names += sep + positionalParameters.get(i).paramLabel();
@@ -3904,7 +3909,9 @@ public class CommandLine {
         private final Map<String, Help> commands = new LinkedHashMap<String, Help>();
         final ColorScheme colorScheme;
 
-        CommandSpec getCommandSpec() { return commandSpec; }
+        /** Returns the {@code CommandSpec} model that this Help was constructed with.
+         * @since 3.0 */
+        CommandSpec commandSpec() { return commandSpec; }
 
         /** Option and positional parameter value label renderer used for the synopsis line(s) and the option list.
          * By default initialized to the result of {@link #createDefaultParamLabelRenderer()}, which takes a snapshot
@@ -3933,8 +3940,8 @@ public class CommandLine {
          * @param command the annotated object to create usage help for
          * @param colorScheme the color scheme to use */
         public Help(Object command, ColorScheme colorScheme) {
-            this.commandSpec = (command instanceof CommandSpec) ? (CommandSpec) command : CommandSpecBuilder.build(command);
-            this.addAllSubcommands(commandSpec.getSubcommands());
+            this.commandSpec = CommandSpecBuilder.build(command);
+            this.addAllSubcommands(commandSpec.subcommands());
             this.colorScheme = Assert.notNull(colorScheme, "colorScheme").applySystemProperties();
             parameterLabelRenderer = createDefaultParamLabelRenderer(); // uses help separator
         }
@@ -3969,8 +3976,8 @@ public class CommandLine {
             return this;
         }
 
-        List<OptionSpec> options() { return commandSpec.getOptions(); }
-        List<PositionalParamSpec> positionalParameters() { return commandSpec.getPositionalParameters(); }
+        List<OptionSpec> options() { return commandSpec.options(); }
+        List<PositionalParamSpec> positionalParameters() { return commandSpec.positionalParameters(); }
         String commandName() { return commandSpec.name(); }
 
         /** Returns a synopsis for the command without reserving space for the synopsis heading.
@@ -4000,11 +4007,11 @@ public class CommandLine {
          * @return a generic synopsis */
         public String abbreviatedSynopsis() {
             StringBuilder sb = new StringBuilder();
-            if (!commandSpec.getOptionsMap().isEmpty()) { // only show if annotated object actually has options
+            if (!commandSpec.optionsMap().isEmpty()) { // only show if annotated object actually has options
                 sb.append(" [OPTIONS]");
             }
             // sb.append(" [--] "); // implied
-            for (PositionalParamSpec positionalParam : commandSpec.getPositionalParameters()) {
+            for (PositionalParamSpec positionalParam : commandSpec.positionalParameters()) {
                 if (!positionalParam.hidden()) {
                     sb.append(' ').append(parameterLabelRenderer.renderParameterLabel(positionalParam, ansi(), colorScheme.parameterStyles));
                 }
@@ -4027,10 +4034,11 @@ public class CommandLine {
          * @param synopsisHeadingLength the length of the synopsis heading that will be displayed on the same line
          * @param optionSort comparator to sort options or {@code null} if options should not be sorted
          * @param clusterBooleanOptions {@code true} if boolean short options should be clustered into a single string
-         * @return a detailed synopsis */
+         * @return a detailed synopsis
+         * @since 3.0 */
         public String detailedSynopsis(int synopsisHeadingLength, Comparator<OptionSpec> optionSort, boolean clusterBooleanOptions) {
             Text optionText = ansi().new Text(0);
-            List<OptionSpec> options = new ArrayList<OptionSpec>(commandSpec.getOptions()); // iterate in declaration order
+            List<OptionSpec> options = new ArrayList<OptionSpec>(commandSpec.options()); // iterate in declaration order
             if (optionSort != null) {
                 Collections.sort(options, optionSort);// iterate in specified sort order
             }
@@ -4075,7 +4083,7 @@ public class CommandLine {
                     }
                 }
             }
-            for (PositionalParamSpec positionalParam : commandSpec.getPositionalParameters()) {
+            for (PositionalParamSpec positionalParam : commandSpec.positionalParameters()) {
                 if (!positionalParam.hidden()) {
                     optionText = optionText.append(" ");
                     Text label = parameterLabelRenderer.renderParameterLabel(positionalParam, colorScheme.ansi(), colorScheme.parameterStyles);
@@ -4134,9 +4142,9 @@ public class CommandLine {
          * @param optionSort determines in what order {@code Options} should be listed. Declared order if {@code null}
          * @param valueLabelRenderer used for options with a parameter
          * @return the fully formatted option list
-         */
+         * @since 3.0 */
         public String optionList(Layout layout, Comparator<OptionSpec> optionSort, IParamLabelRenderer valueLabelRenderer) {
-            List<OptionSpec> options = new ArrayList<OptionSpec>(commandSpec.getOptions()); // options are stored in order of declaration
+            List<OptionSpec> options = new ArrayList<OptionSpec>(commandSpec.options()); // options are stored in order of declaration
             if (optionSort != null) {
                 Collections.sort(options, optionSort); // default: sort options ABC
             }
@@ -4158,7 +4166,7 @@ public class CommandLine {
          * @return the section of the usage help message that lists the parameters
          */
         public String parameterList(Layout layout, IParamLabelRenderer paramLabelRenderer) {
-            layout.addPositionalParameters(commandSpec.getPositionalParameters(), paramLabelRenderer);
+            layout.addPositionalParameters(commandSpec.positionalParameters(), paramLabelRenderer);
             return layout.toString();
         }
 
@@ -4262,7 +4270,7 @@ public class CommandLine {
          * @param params the parameters to use to format the parameter list heading
          * @return the formatted parameter list heading */
         public String parameterListHeading(Object... params) {
-            return commandSpec.getPositionalParameters().isEmpty() ? "" : heading(ansi(), commandSpec.parameterListHeading(), params);
+            return commandSpec.positionalParameters().isEmpty() ? "" : heading(ansi(), commandSpec.parameterListHeading(), params);
         }
 
         /** Returns the text displayed before the option list; an empty string if there are no options,
@@ -4270,7 +4278,7 @@ public class CommandLine {
          * @param params the parameters to use to format the option list heading
          * @return the formatted option list heading */
         public String optionListHeading(Object... params) {
-            return commandSpec.getOptionsMap().isEmpty() ? "" : heading(ansi(), commandSpec.optionListHeading(), params);
+            return commandSpec.optionsMap().isEmpty() ? "" : heading(ansi(), commandSpec.optionListHeading(), params);
         }
 
         /** Returns the text displayed before the command list; an empty string if there are no commands,
@@ -4437,6 +4445,7 @@ public class CommandLine {
              * @param parameterLabelRenderer responsible for rendering option parameters to text
              * @param scheme color scheme for applying ansi color styles to options and option parameters
              * @return a 2-dimensional array of text values: one or more rows, each containing one or more columns
+             * @since 3.0
              */
             Text[][] render(OptionSpec option, IParamLabelRenderer parameterLabelRenderer, ColorScheme scheme);
         }
@@ -4554,6 +4563,7 @@ public class CommandLine {
              * @param parameterLabelRenderer responsible for rendering parameter labels to text
              * @param scheme color scheme for applying ansi color styles to positional parameters
              * @return a 2-dimensional array of text values: one or more rows, each containing one or more columns
+             * @since 3.0
              */
             Text[][] render(PositionalParamSpec param, IParamLabelRenderer parameterLabelRenderer, ColorScheme scheme);
         }
@@ -4601,7 +4611,8 @@ public class CommandLine {
              * @param argSpec the named or positional parameter with a parameter label
              * @param ansi determines whether ANSI escape codes should be emitted or not
              * @param styles the styles to apply to the parameter label
-             * @return a text rendering of the Option parameter or positional parameter */
+             * @return a text rendering of the Option parameter or positional parameter
+             * @since 3.0 */
             Text renderParameterLabel(ArgSpec argSpec, Ansi ansi, List<IStyle> styles);
 
             /** Returns the separator between option name and param label.
@@ -4699,7 +4710,7 @@ public class CommandLine {
              * <p>Subclasses may override.</p>
              * @param argSpec the Option or Parameters
              * @param cellValues the text values representing the Option/Parameters, to be displayed in tabular form
-             */
+             * @since 3.0 */
             public void layout(ArgSpec argSpec, Text[][] cellValues) {
                 for (Text[] oneRow : cellValues) {
                     table.addRowValues(oneRow);
@@ -4707,7 +4718,8 @@ public class CommandLine {
             }
             /** Calls {@link #addOption(CommandLine.OptionSpec, CommandLine.Help.IParamLabelRenderer)} for all non-hidden Options in the list.
              * @param options options to add usage descriptions for
-             * @param paramLabelRenderer object that knows how to render option parameters */
+             * @param paramLabelRenderer object that knows how to render option parameters
+             * @since 3.0 */
             public void addOptions(List<OptionSpec> options, IParamLabelRenderer paramLabelRenderer) {
                 for (OptionSpec option : options) {
                     if (!option.hidden()) {
@@ -4721,14 +4733,15 @@ public class CommandLine {
              * method to write these text values into the correct cells in the TextTable.
              * @param option the option argument
              * @param paramLabelRenderer knows how to render option parameters
-             */
+             * @since 3.0 */
             public void addOption(OptionSpec option, IParamLabelRenderer paramLabelRenderer) {
                 Text[][] values = optionRenderer.render(option, paramLabelRenderer, colorScheme);
                 layout(option, values);
             }
             /** Calls {@link #addPositionalParameter(CommandLine.PositionalParamSpec, CommandLine.Help.IParamLabelRenderer)} for all non-hidden Parameters in the list.
              * @param params positional parameters to add usage descriptions for
-             * @param paramLabelRenderer knows how to render option parameters */
+             * @param paramLabelRenderer knows how to render option parameters
+             * @since 3.0 */
             public void addPositionalParameters(List<PositionalParamSpec> params, IParamLabelRenderer paramLabelRenderer) {
                 for (PositionalParamSpec param : params) {
                     if (!param.hidden()) {
@@ -4742,7 +4755,7 @@ public class CommandLine {
              * {@link #layout(CommandLine.ArgSpec, CommandLine.Help.Ansi.Text[][])} to write these text values into the correct cells in the TextTable.
              * @param param the positional parameter
              * @param paramLabelRenderer knows how to render option parameters
-             */
+             * @since 3.0 */
             public void addPositionalParameter(PositionalParamSpec param, IParamLabelRenderer paramLabelRenderer) {
                 Text[][] values = parameterRenderer.render(param, paramLabelRenderer, colorScheme);
                 layout(param, values);

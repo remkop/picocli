@@ -435,8 +435,8 @@ public class AutoComplete {
         CommandSpec commandSpec = commandLine.getCommandSpec();
 
         // Build a list of "flag" options that take no parameters and "arg" options that do take parameters, and subcommands.
-        String flagOptionNames = optionNames(filter(commandSpec.getOptions(), new BooleanArgFilter()));
-        List<OptionSpec> argOptionFields = filter(commandSpec.getOptions(), negate(new BooleanArgFilter()));
+        String flagOptionNames = optionNames(filter(commandSpec.options(), new BooleanArgFilter()));
+        List<OptionSpec> argOptionFields = filter(commandSpec.options(), negate(new BooleanArgFilter()));
         String argOptionNames = optionNames(argOptionFields);
         String commands = concat(" ", new ArrayList<String>(commandLine.getSubcommands().keySet())).trim();
 
@@ -447,7 +447,7 @@ public class AutoComplete {
 
         // Generate completion lists for options with a known set of valid values.
         // Starting with java enums.
-        List<OptionSpec> enumOptions = filter(commandSpec.getOptions(), new EnumArgFilter());
+        List<OptionSpec> enumOptions = filter(commandSpec.options(), new EnumArgFilter());
         for (OptionSpec f : enumOptions) {
             buff.append(format("  %s_OPTION_ARGS=\"%s\" # %s values\n",
                     bashify(f.paramLabel()),

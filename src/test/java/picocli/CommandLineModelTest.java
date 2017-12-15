@@ -92,6 +92,6 @@ public class CommandLineModelTest {
         spec.add(new OptionSpec().names("-c", "--count").paramLabel("COUNT").arity("1").type(int.class).description("number of times to execute"));
         CommandLine commandLine = new CommandLine(spec);
         commandLine.parse("-c", "33");
-        assertEquals(33, spec.getOptionsMap().get("-c").getValue());
+        assertEquals(33, spec.optionsMap().get("-c").getValue());
     }
 }
