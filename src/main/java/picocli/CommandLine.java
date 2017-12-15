@@ -2441,14 +2441,19 @@ public class CommandLine {
             getter = new ObjectGetterSetter();
             setter = (ISetter) getter;
         }
-        void validate() {
+        <T extends ArgSpec> T validate() {
             if (description == null) { description = new String[0]; }
             if (splitRegex == null) { splitRegex = ""; }
             if (empty(paramLabel)) { paramLabel = "PARAM"; }
+            if (arity() == null) { if (isOption()) { arity("0"); } else { arity("1"); } }
 
             if (type == null) {
                 if (auxiliaryTypes == null || auxiliaryTypes.length == 0) {
-                    type = String.class;
+                    if (arity().isVariable || arity.max > 1) {
+                        type = isOption() ? boolean[].class : String[].class;
+                    } else {
+                        type = isOption() ? boolean.class : String.class;
+                    }
                 } else {
                     type = auxiliaryTypes[0];
                 }
@@ -2456,6 +2461,7 @@ public class CommandLine {
             if (auxiliaryTypes == null || auxiliaryTypes.length == 0) {
                 auxiliaryTypes = new Class[] {type};
             }
+            return (T) this;
         }
 
         /** Customizable getter for obtaining the current value of an option or positional parameter from the model.
@@ -2609,6 +2615,8 @@ public class CommandLine {
         private boolean help;
         private boolean usageHelp;
         private boolean versionHelp;
+
+        public OptionSpec(String... names) { this.names = Assert.notNull(names, "names"); }
         public boolean isOption()     { return true; }
         public boolean isPositional() { return false; }
 
@@ -2659,13 +2667,13 @@ public class CommandLine {
                     + 37 * Assert.hashCode(versionHelp)
                     + 37 * Arrays.hashCode(names);
         }
-        void validate() {
+        OptionSpec validate() {
             super.validate();
             if (names == null || names.length == 0 || Arrays.asList(names).contains("")) {
                 throw new InitializationException("Invalid names: " + Arrays.toString(names));
             }
-            if (arity() == null) { arity("0"); }
             if (toString() == null) { toString("option " + names[0]); }
+            return this;
         }
     }
     /** Models a command line positional parameter. Fields and methods annotated with {@code @Parameters} are
@@ -2687,12 +2695,12 @@ public class CommandLine {
         public <T extends ArgSpec> T index(String range)                 { return index(Range.valueOf(range)); }
         /** Sets the index or range specifying which of the command line arguments should be assigned to this positional parameter. */
         public <T extends ArgSpec> T index(Range index)                  { this.index = index; return (T) this; }
-        void validate() {
+        PositionalParamSpec validate() {
             super.validate();
-            if (arity() == null) { arity("1"); }
             if (index() == null) { index("*");}
             if (capacity() == null) { capacity = Range.parameterCapacity(arity(), index()); }
             if (toString() == null) { toString("positional parameter[" + index() + "]"); }
+            return this;
         }
         public int hashCode() {
             return super.hashCode()
