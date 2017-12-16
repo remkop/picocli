@@ -95,7 +95,9 @@ public class CommandLineModelTest {
         CommandLine commandLine = new CommandLine(spec);
         commandLine.parse("-c", "33");
         assertEquals(33, spec.optionsMap().get("-c").getValue());
-    }
+    } // TODO parse method should return an object offering only the options/positionals that were matched
+
+    // TODO tests that verify CommandSpec.validate()
 
     @Test
     public void testOptionDefaultTypeIsBoolean() throws Exception {
