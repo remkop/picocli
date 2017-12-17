@@ -1,11 +1,12 @@
 # picocli Release Notes
 
 
-# <a name="2.2.0"></a> Picocli 2.2.0
+# <a name="2.2.0"></a> Picocli 2.2.0 (UNRELEASED)
 
 This release contains bugfixes and new features.
 
-TODO
+In command line applications with subcommands, options of the parent command are often intended as "global" options that apply to all the subcommands. This release introduces a new `@ParentCommand` annotation that makes it easy for subcommands to access such parent command options: fields of the subcommand annotated with `@ParentCommand` are initialized with a reference to the parent command. 
+
 
 This is the seventeenth public release.
 Picocli follows [semantic versioning](http://semver.org/).
@@ -22,7 +23,37 @@ Picocli follows [semantic versioning](http://semver.org/).
 
 ### New `@ParentCommand` annotation 
 
-TODO
+In command line applications with subcommands, options of the parent command are often intended as "global" options that apply to all the subcommands. Prior to this release, subcommands had no easy way to access parent command options unless the parent command somehow made these values available in a shared data structure - essentially a global variable.
+
+The `@ParentCommand` annotation makes it easy for subcommands to access such parent command options: fields of the subcommand annotated with `@ParentCommand` are initialized with a reference to the parent command. For example:
+
+```
+    @Command(name = "top", subcommands = Sub.class)
+    static class Top implements Runnable {
+
+        @Option(names = {"-d", "--directory"}, description = "this option applies to all subcommands")
+        private File baseDirectory;
+
+        public void run() { System.out.println("Hello from top"); }
+    }
+
+    @Command(name = "sub")
+    static class Sub implements Runnable {
+
+        @ParentCommand
+        private Top parent;
+
+        @Parameters(description = "The number of times to print the result")
+        private int count;
+
+        @Override
+        public void run() {
+            for (int i = 0; i < count; i++) {
+                System.out.println("Subcommand: parent command 'directory' is " + parent.baseDirectory);
+            }
+        }
+    }
+```
 
 ## <a name="2.2.0-promoted"></a> Promoted features
 Promoted features are features that were incubating in previous versions of picocli but are now supported and subject to backwards compatibility. 
