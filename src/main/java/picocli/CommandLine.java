@@ -200,9 +200,10 @@ public class CommandLine {
      * @see Command#subcommands()
      */
     public CommandLine addSubcommand(String name, Object command) {
-        CommandLine commandLine = toCommandLine(command);
-        commandLine.parent = this;
-        interpreter.commands.put(name, commandLine);
+        CommandLine subcommandLine = toCommandLine(command);
+        subcommandLine.parent = this;
+        interpreter.commands.put(name, subcommandLine);
+        subcommandLine.interpreter.initParentCommand(this.interpreter.command);
         return this;
     }
     /** Returns a map with the subcommands {@linkplain #addSubcommand(String, Object) registered} on this instance.
@@ -1447,6 +1448,46 @@ public class CommandLine {
     }
 
     /**
+     * <p>
+     * Fields annotated with {@code @ParentCommand} will be initialized with the parent command of the current subcommand.
+     * If the current command does not have a parent command, this annotation has no effect.
+     * </p><p>
+     * Parent commands often define options that apply to all the subcommands.
+     * This annotation offers a convenient way to inject a reference to the parent command into a subcommand, so the
+     * subcommand can access its parent options. For example:
+     * </p><pre>
+     * &#064;Command(name = "top", subcommands = Sub.class)
+     * class Top implements Runnable {
+     *
+     *     &#064;Option(names = {"-d", "--directory"}, description = "this option applies to all subcommands")
+     *     private File baseDirectory;
+     *
+     *     public void run() { System.out.println("Hello from top"); }
+     * }
+     *
+     * &#064;Command(name = "sub")
+     * class Sub implements Runnable {
+     *
+     *     &#064;ParentCommand
+     *     private Top parent;
+     *
+     *     &#064;Parameters(description = "The number of times to print the result")
+     *     private int count;
+     *
+     *     public void run() {
+     *         for (int i = 0; i &lt; count; i++) {
+     *             System.out.println("Subcommand: parent command 'directory' is " + parent.baseDirectory);
+     *         }
+     *     }
+     * }
+     * </pre>
+     * @since 2.2
+     */
+    @Retention(RetentionPolicy.RUNTIME)
+    @Target(ElementType.FIELD)
+    public @interface ParentCommand { }
+
+    /**
      * <p>Annotate your class with {@code @Command} when you want more control over the format of the generated help
      * message.
      * </p><pre>
@@ -1954,6 +1995,7 @@ public class CommandLine {
                             CommandLine commandLine = toCommandLine(constructor.newInstance());
                             commandLine.parent = CommandLine.this;
                             commands.put(subCommand.name(), commandLine);
+                            commandLine.interpreter.initParentCommand(command);
                         }
                         catch (InitializationException ex) { throw ex; }
                         catch (NoSuchMethodException ex) { throw new InitializationException("Cannot instantiate subcommand " +
@@ -1974,6 +2016,23 @@ public class CommandLine {
             if (positionalParametersFields.isEmpty() && optionName2Field.isEmpty() && !hasCommandAnnotation) {
                 throw new InitializationException(command + " (" + command.getClass() +
                         ") is not a command: it has no @Command, @Option or @Parameters annotations");
+            }
+        }
+
+        private void initParentCommand(Object parent) {
+            try {
+                Class<?> cls = this.command.getClass();
+                while (cls != null) {
+                    for (Field f : cls.getDeclaredFields()) {
+                        if (f.isAnnotationPresent(ParentCommand.class)) {
+                            f.setAccessible(true);
+                            f.set(command, parent);
+                        }
+                    }
+                    cls = cls.getSuperclass();
+                }
+            } catch (Exception ex) {
+                throw new InitializationException("Unable to initialize @ParentCommand field: " + ex, ex);
             }
         }
 

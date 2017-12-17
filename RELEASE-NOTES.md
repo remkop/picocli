@@ -1,5 +1,46 @@
 # picocli Release Notes
 
+
+# <a name="2.2.0"></a> Picocli 2.2.0
+
+This release contains bugfixes and new features.
+
+TODO
+
+This is the seventeenth public release.
+Picocli follows [semantic versioning](http://semver.org/).
+
+## <a name="2.2.0-toc"></a> Table of Contents
+
+* [New and noteworthy](#2.2.0-new)
+* [Promoted features](#2.2.0-promoted)
+* [Fixed issues](#2.2.0-fixes)
+* [Deprecations](#2.2.0-deprecated)
+* [Potential breaking changes](#2.2.0-breaking-changes)
+
+## <a name="2.2.0-new"></a> New and noteworthy
+
+### New `@ParentCommand` annotation 
+
+TODO
+
+## <a name="2.2.0-promoted"></a> Promoted features
+Promoted features are features that were incubating in previous versions of picocli but are now supported and subject to backwards compatibility. 
+
+No features have been promoted in this picocli release.
+
+## <a name="2.2.0-fixes"></a> Fixed issues
+
+- [#247] New `@ParentCommand` annotation to inject a reference to the parent command into subcommand fields. Thanks to [michaelpj](https://github.com/michaelpj).
+
+## <a name="2.2.0-deprecated"></a> Deprecations
+
+This release has no additional deprecations.
+
+## <a name="2.2.0-breaking-changes"></a> Potential breaking changes
+
+This release has no breaking changes.
+
 # <a name="2.1.0"></a> Picocli 2.1.0
 
 This release contains bugfixes and new features.
