@@ -1574,6 +1574,53 @@ The usage help message for each subcommand is produced by calling `CommandLine.u
 For example, see <<Section Headings>> for an example subcommand (`git-commit`), which produces the help message shown
 in <<Expanded Example>>.
 
+=== `@ParentCommand` annotation
+In command line applications with subcommands, options of the top level command are often intended as "global" options that apply to all the subcommands. Prior to this release, subcommands had no easy way to access their parent command options unless the parent command somehow made these values available in a shared data structure - essentially a global variable.
+
+The `@ParentCommand` annotation introduced in picocli 2.2 makes it easy for subcommands to access their parent command options: fields of the subcommand annotated with `@ParentCommand` are initialized with a reference to the parent command. For example:
+
+[source,java]
+----
+@Command(name = "fileutils", subcommands = List.class)
+class FileUtils implements Runnable {
+
+    @Option(names = {"-d", "--directory"},
+            description = "this option applies to all subcommands")
+    private File baseDirectory;
+
+    public void run() { System.out.println("FileUtils: my dir is " + baseDirectory); }
+}
+
+@Command(name = "list")
+class List implements Runnable {
+
+    @ParentCommand
+    private FileUtils parent; // picocli injects reference to parent command
+
+    @Option(names = {"-r", "--recursive"}, description = "Recursively list subdirectories")
+    private boolean recursive;
+
+    @Override
+    public void run() {
+        list(new File(parent.baseDirectory, "."));
+    }
+
+    private void list(File dir) {
+        System.out.println(dir.getAbsolutePath());
+        if (dir.isDirectory()) {
+            for (File f : dir.listFiles()) {
+                if (f.isDirectory() && recursive) {
+                    list(f);
+                } else {
+                    System.out.println(f.getAbsolutePath());
+                }
+            }
+        }
+    }
+}
+----
+
+
 === Nested sub-subcommands
 The specified object can be an annotated object or a
 `CommandLine` instance with its own nested subcommands. For example:

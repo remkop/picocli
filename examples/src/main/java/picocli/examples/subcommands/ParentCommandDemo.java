@@ -20,38 +20,48 @@ import java.io.File;
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
-import picocli.CommandLine.Parameters;
 import picocli.CommandLine.ParentCommand;
 
 public class ParentCommandDemo {
 
-    @Command(name = "top", subcommands = Sub.class)
-    static class Top implements Runnable {
+    @Command(name = "fileutils", subcommands = List.class)
+    static class FileUtils implements Runnable {
 
         @Option(names = {"-d", "--directory"}, description = "this option applies to all subcommands")
         private File baseDirectory;
 
-        public void run() { System.out.println("Hello from top"); }
+        public void run() { System.out.println("FileUtils: my dir is " + baseDirectory); }
     }
 
-    @Command(name = "sub")
-    static class Sub implements Runnable {
+    @Command(name = "list")
+    static class List implements Runnable {
 
         @ParentCommand
-        private Top parent;
+        private FileUtils parent;
 
-        @Parameters(description = "The number of times to print the result")
-        private int count;
+        @Option(names = {"-r", "--recursive"}, description = "Recursively list subdirectories")
+        private boolean recursive;
 
         @Override
         public void run() {
-            for (int i = 0; i < count; i++) {
-                System.out.println("Subcommand: parent command 'directory' is " + parent.baseDirectory);
+            list(new File(parent.baseDirectory, "."));
+        }
+
+        private void list(File dir) {
+            System.out.println(dir.getAbsolutePath());
+            if (dir.isDirectory()) {
+                for (File f : dir.listFiles()) {
+                    if (f.isDirectory() && recursive) {
+                        list(f);
+                    } else {
+                        System.out.println(f.getAbsolutePath());
+                    }
+                }
             }
         }
     }
 
     public static void main(String[] args) {
-        CommandLine.run(new Top(), System.out, "--directory=/tmp/parentCommandDemo", "sub", "3");
+        CommandLine.run(new FileUtils(), System.out, "--directory=examples/src", "list", "-r");
     }
 }

@@ -23,36 +23,46 @@ Picocli follows [semantic versioning](http://semver.org/).
 
 ### New `@ParentCommand` annotation 
 
-In command line applications with subcommands, options of the parent command are often intended as "global" options that apply to all the subcommands. Prior to this release, subcommands had no easy way to access parent command options unless the parent command somehow made these values available in a shared data structure - essentially a global variable.
+In command line applications with subcommands, options of the top level command are often intended as "global" options that apply to all the subcommands. Prior to this release, subcommands had no easy way to access their parent command options unless the parent command somehow made these values available in a shared data structure - essentially a global variable.
 
-The `@ParentCommand` annotation makes it easy for subcommands to access such parent command options: fields of the subcommand annotated with `@ParentCommand` are initialized with a reference to the parent command. For example:
+The `@ParentCommand` annotation makes it easy for subcommands to access their parent command options: fields of the subcommand annotated with `@ParentCommand` are initialized with a reference to the parent command. For example:
 
 ```
-    @Command(name = "top", subcommands = Sub.class)
-    static class Top implements Runnable {
+@Command(name = "fileutils", subcommands = List.class)
+class FileUtils implements Runnable {
 
-        @Option(names = {"-d", "--directory"}, description = "this option applies to all subcommands")
-        private File baseDirectory;
+    @Option(names = {"-d", "--directory"}, description = "this option applies to all subcommands")
+    private File baseDirectory;
 
-        public void run() { System.out.println("Hello from top"); }
+    public void run() { System.out.println("FileUtils: my dir is " + baseDirectory); }
+}
+
+@Command(name = "list")
+class List implements Runnable {
+
+    @ParentCommand
+    private FileUtils parent; // picocli injects reference to parent command
+
+    @Option(names = {"-r", "--recursive"}, description = "Recursively list subdirectories")
+    private boolean recursive;
+
+    @Override
+    public void run() {
+        list(new File(parent.baseDirectory, "."));
     }
 
-    @Command(name = "sub")
-    static class Sub implements Runnable {
-
-        @ParentCommand
-        private Top parent;
-
-        @Parameters(description = "The number of times to print the result")
-        private int count;
-
-        @Override
-        public void run() {
-            for (int i = 0; i < count; i++) {
-                System.out.println("Subcommand: parent command 'directory' is " + parent.baseDirectory);
+    private void list(File dir) {
+        System.out.println(dir.getAbsolutePath());
+        if (dir.isDirectory()) {
+            for (File f : dir.listFiles()) {
+                System.out.println(f.getAbsolutePath());
+                if (f.isDirectory() && recursive) {
+                    list(f);
+                }
             }
         }
     }
+}
 ```
 
 ## <a name="2.2.0-promoted"></a> Promoted features
@@ -62,7 +72,7 @@ No features have been promoted in this picocli release.
 
 ## <a name="2.2.0-fixes"></a> Fixed issues
 
-- [#247] New `@ParentCommand` annotation to inject a reference to the parent command into subcommand fields. Thanks to [michaelpj](https://github.com/michaelpj).
+- [#247] New `@ParentCommand` annotation to inject a reference to the parent command into subcommand fields. Thanks to [michaelpj](https://github.com/michaelpj) for pushing for a solution for this.
 
 ## <a name="2.2.0-deprecated"></a> Deprecations
 
