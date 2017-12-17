@@ -23,18 +23,16 @@ Picocli follows [semantic versioning](http://semver.org/).
 
 ### New `@ParentCommand` annotation 
 
-In command line applications with subcommands, options of the top level command are often intended as "global" options that apply to all the subcommands. Prior to this release, subcommands had no easy way to access their parent command options unless the parent command somehow made these values available in a shared data structure - essentially a global variable.
+In command line applications with subcommands, options of the top level command are often intended as "global" options that apply to all the subcommands. Prior to this release, subcommands had no easy way to access their parent command options unless the parent command somehow made these values available in a global variable.
 
-The `@ParentCommand` annotation makes it easy for subcommands to access their parent command options: fields of the subcommand annotated with `@ParentCommand` are initialized with a reference to the parent command. For example:
+The `@ParentCommand` annotation makes it easy for subcommands to access their parent command options: subcommand fields annotated with `@ParentCommand` are initialized with a reference to the parent command. For example:
 
 ```
 @Command(name = "fileutils", subcommands = List.class)
-class FileUtils implements Runnable {
+class FileUtils {
 
     @Option(names = {"-d", "--directory"}, description = "this option applies to all subcommands")
-    private File baseDirectory;
-
-    public void run() { System.out.println("FileUtils: my dir is " + baseDirectory); }
+    File baseDirectory;
 }
 
 @Command(name = "list")
@@ -43,7 +41,8 @@ class List implements Runnable {
     @ParentCommand
     private FileUtils parent; // picocli injects reference to parent command
 
-    @Option(names = {"-r", "--recursive"}, description = "Recursively list subdirectories")
+    @Option(names = {"-r", "--recursive"}, 
+            description = "Recursively list subdirectories")
     private boolean recursive;
 
     @Override
