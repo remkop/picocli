@@ -27,6 +27,7 @@ import java.lang.annotation.Target;
 import java.lang.reflect.Array;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
@@ -41,7 +42,11 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.ByteOrder;
 import java.nio.charset.Charset;
+import java.sql.Connection;
+import java.sql.Driver;
+import java.sql.DriverManager;
 import java.sql.Time;
+import java.sql.Timestamp;
 import java.text.BreakIterator;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -1976,7 +1981,27 @@ public class CommandLine {
             converterRegistry.put(TimeZone.class,      new BuiltIn.TimeZoneConverter());
             converterRegistry.put(ByteOrder.class,     new BuiltIn.ByteOrderConverter());
             converterRegistry.put(Class.class,         new BuiltIn.ClassConverter());
+            converterRegistry.put(Connection.class,    new BuiltIn.ConnectionConverter());
+            converterRegistry.put(Driver.class,        new BuiltIn.DriverConverter());
+            converterRegistry.put(Timestamp.class,     new BuiltIn.TimestampConverter());
             converterRegistry.put(NetworkInterface.class, new BuiltIn.NetworkInterfaceConverter());
+
+            BuiltIn.registerIfAvailable(converterRegistry, tracer, "java.time.Duration", "parse", CharSequence.class);
+            BuiltIn.registerIfAvailable(converterRegistry, tracer, "java.time.Instant", "parse", CharSequence.class);
+            BuiltIn.registerIfAvailable(converterRegistry, tracer, "java.time.LocalDate", "parse", CharSequence.class);
+            BuiltIn.registerIfAvailable(converterRegistry, tracer, "java.time.LocalDateTime", "parse", CharSequence.class);
+            BuiltIn.registerIfAvailable(converterRegistry, tracer, "java.time.LocalTime", "parse", CharSequence.class);
+            BuiltIn.registerIfAvailable(converterRegistry, tracer, "java.time.MonthDay", "parse", CharSequence.class);
+            BuiltIn.registerIfAvailable(converterRegistry, tracer, "java.time.OffsetDateTime", "parse", CharSequence.class);
+            BuiltIn.registerIfAvailable(converterRegistry, tracer, "java.time.OffsetTime", "parse", CharSequence.class);
+            BuiltIn.registerIfAvailable(converterRegistry, tracer, "java.time.Period", "parse", CharSequence.class);
+            BuiltIn.registerIfAvailable(converterRegistry, tracer, "java.time.Year", "parse", CharSequence.class);
+            BuiltIn.registerIfAvailable(converterRegistry, tracer, "java.time.YearMonth", "parse", CharSequence.class);
+            BuiltIn.registerIfAvailable(converterRegistry, tracer, "java.time.ZonedDateTime", "parse", CharSequence.class);
+            BuiltIn.registerIfAvailable(converterRegistry, tracer, "java.time.ZoneId", "of", String.class);
+            BuiltIn.registerIfAvailable(converterRegistry, tracer, "java.time.ZoneOffset", "of", String.class);
+
+            BuiltIn.registerIfAvailable(converterRegistry, tracer, "java.nio.file.Paths", "get", String.class, String[].class);
 
             this.command                 = Assert.notNull(command, "command");
             Class<?> cls                 = command.getClass();
@@ -2923,6 +2948,36 @@ public class CommandLine {
                     } catch (Exception ex2) {
                         throw new TypeConversionException("'" + s + "' is not an InetAddress or NetworkInterface name");
                     }
+                }
+            }
+        }
+        static class ConnectionConverter implements ITypeConverter<Connection> {
+            public Connection convert(String s) throws Exception { return DriverManager.getConnection(s); }
+        }
+        static class DriverConverter implements ITypeConverter<Driver> {
+            public Driver convert(String s) throws Exception { return DriverManager.getDriver(s); }
+        }
+        static class TimestampConverter implements ITypeConverter<Timestamp> {
+            public Timestamp convert(String s) throws Exception { return Timestamp.valueOf(s); }
+        }
+        static void registerIfAvailable(Map<Class<?>, ITypeConverter<?>> registry, Tracer tracer, String fqcn, String methodName, Class<?>... paramTypes) {
+            try {
+                Class<?> cls = Class.forName(fqcn);
+                Method method = cls.getDeclaredMethod(methodName, paramTypes);
+                registry.put(cls, new ReflectionConverter(method));
+            } catch (Exception e) {
+                tracer.info("Could not register converter %s.%s: %s%n", fqcn, methodName, e.toString());
+            }
+        }
+        static class ReflectionConverter implements ITypeConverter<Object> {
+            private final Method method;
+            public ReflectionConverter(Method method) { this.method = Assert.notNull(method, "method"); }
+
+            public Object convert(String s) {
+                try {
+                    return method.invoke(null, s);
+                } catch (Exception e) {
+                    throw new TypeConversionException("Unable to convert " + s + " to " + method.getReturnType() + ": " + e.getMessage());
                 }
             }
         }

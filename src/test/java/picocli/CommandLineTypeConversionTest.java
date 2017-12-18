@@ -27,7 +27,11 @@ import java.net.URL;
 import java.net.UnknownHostException;
 import java.nio.ByteOrder;
 import java.nio.charset.Charset;
+import java.sql.Connection;
+import java.sql.Driver;
+import java.sql.DriverManager;
 import java.sql.Time;
+import java.sql.Timestamp;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -87,6 +91,9 @@ public class CommandLineTypeConversionTest {
         @Option(names = "-tz")            TimeZone aTimeZone;
         @Option(names = "-byteOrder")     ByteOrder aByteOrder;
         @Option(names = "-Class")         Class aClass;
+        @Option(names = "-Connection")    Connection aConnection;
+        @Option(names = "-Driver")        Driver aDriver;
+        @Option(names = "-Timestamp")     Timestamp aTimestamp;
         @Option(names = "-NetworkInterface") NetworkInterface aNetInterface;
     }
     @Test
@@ -127,6 +134,9 @@ public class CommandLineTypeConversionTest {
         assertEquals("ByteOrder", null, bean.aByteOrder);
         assertEquals("Class", null, bean.aClass);
         assertEquals("NetworkInterface", null, bean.aNetInterface);
+        assertEquals("Connection", null, bean.aConnection);
+        assertEquals("Driver", null, bean.aDriver);
+        assertEquals("Timestamp", null, bean.aTimestamp);
     }
     @Test
     public void testTypeConversionSucceedsForValidInput() throws Exception {
@@ -155,7 +165,11 @@ public class CommandLineTypeConversionTest {
                 "-tz", "Japan/Tokyo",
                 "-byteOrder", "LITTLE_ENDIAN",
                 "-Class", "java.lang.String",
-                "-NetworkInterface", "127.0.0.0"
+                "-NetworkInterface", "127.0.0.0",
+                "-Timestamp", "2017-12-13 13:59:59.123456789"
+//                ,
+//                "-Connection", "jdbc:derby:testDB;create=false",
+//                "-Driver", "org.apache.derby.jdbc.EmbeddedDriver"
         );
         assertEquals("boolean", true, bean.booleanField);
         assertEquals("Boolean", Boolean.TRUE, bean.aBooleanField);
@@ -193,6 +207,9 @@ public class CommandLineTypeConversionTest {
         assertEquals("ByteOrder", ByteOrder.LITTLE_ENDIAN, bean.aByteOrder);
         assertEquals("Class", String.class, bean.aClass);
         assertEquals("NetworkInterface", NetworkInterface.getByInetAddress(InetAddress.getByName("127.0.0.0")), bean.aNetInterface);
+        assertEquals("Timestamp", Timestamp.valueOf("2017-12-13 13:59:59.123456789"), bean.aTimestamp);
+//        assertEquals("Connection", DriverManager.getConnection("jdbc:derby:testDB;create=false"), bean.aConnection);
+//        assertEquals("Driver", DriverManager.getDriver("org.apache.derby.jdbc.EmbeddedDriver"), bean.aDriver);
     }
     @Test
     public void testByteFieldsAreDecimal() {
@@ -453,8 +470,9 @@ public class CommandLineTypeConversionTest {
         assertEquals(TimeZone.getTimeZone("GMT"), bean.aTimeZone);
     }
     @Test
-    public void testNetworkInterfaceConvertersInvalidError() {
-        //parseInvalidValue("-NetworkInterface", "127.127.127.127.127", ": java.lang.IllegalArgumentException");
+    public void testNetworkInterfaceConvertersInvalidNull() {
+        SupportedTypes bean = CommandLine.populateCommand(new SupportedTypes(), "-NetworkInterface", "no such interface");
+        assertNull(bean.aNetInterface);
     }
     @Test
     public void testRegexPatternConverterInvalidError() {
@@ -469,6 +487,18 @@ public class CommandLineTypeConversionTest {
     @Test
     public void testClassConvertersInvalidError() {
         parseInvalidValue("-Class", "aa", ": java.lang.ClassNotFoundException: aa");
+    }
+    @Test
+    public void testConnectionConvertersInvalidError() {
+        parseInvalidValue("-Connection", "aa", ": java.sql.SQLException: No suitable driver found for aa");
+    }
+    @Test
+    public void testDriverConvertersInvalidError() {
+        parseInvalidValue("-Driver", "aa", ": java.sql.SQLException: No suitable driver");
+    }
+    @Test
+    public void testTimestampConvertersInvalidError() {
+        parseInvalidValue("-Timestamp", "aa", ": java.lang.IllegalArgumentException: Timestamp format must be yyyy-mm-dd hh:mm:ss[.fffffffff]");
     }
 
     private void parseInvalidValue(String option, String value, String errorMessage) {
