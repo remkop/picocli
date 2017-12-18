@@ -24,14 +24,17 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.UnknownHostException;
+import java.nio.ByteOrder;
 import java.nio.charset.Charset;
 import java.sql.Time;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Currency;
 import java.util.Date;
 import java.util.List;
+import java.util.TimeZone;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
@@ -68,28 +71,21 @@ public class CommandLineTypeConversionTest {
         @Option(names = "-String")        String aStringField;
         @Option(names = "-StringBuilder") StringBuilder aStringBuilderField;
         @Option(names = "-CharSequence")  CharSequence aCharSequenceField;
-        @Option(names = "-File")
-        File aFileField;
-        @Option(names = "-URL")
-        URL anURLField;
-        @Option(names = "-URI")
-        URI anURIField;
-        @Option(names = "-Date")
-        Date aDateField;
-        @Option(names = "-Time")
-        Time aTimeField;
-        @Option(names = "-BigDecimal")
-        BigDecimal aBigDecimalField;
-        @Option(names = "-BigInteger")
-        BigInteger aBigIntegerField;
-        @Option(names = "-Charset")
-        Charset aCharsetField;
-        @Option(names = "-InetAddress")
-        InetAddress anInetAddressField;
-        @Option(names = "-Pattern")
-        Pattern aPatternField;
-        @Option(names = "-UUID")
-        UUID anUUIDField;
+        @Option(names = "-File")          File aFileField;
+        @Option(names = "-URL")           URL anURLField;
+        @Option(names = "-URI")           URI anURIField;
+        @Option(names = "-Date")          Date aDateField;
+        @Option(names = "-Time")          Time aTimeField;
+        @Option(names = "-BigDecimal")    BigDecimal aBigDecimalField;
+        @Option(names = "-BigInteger")    BigInteger aBigIntegerField;
+        @Option(names = "-Charset")       Charset aCharsetField;
+        @Option(names = "-InetAddress")   InetAddress anInetAddressField;
+        @Option(names = "-Pattern")       Pattern aPatternField;
+        @Option(names = "-UUID")          UUID anUUIDField;
+        @Option(names = "-Currency")      Currency aCurrencyField;
+        @Option(names = "-tz")            TimeZone aTimeZone;
+        @Option(names = "-byteOrder")     ByteOrder aByteOrder;
+        @Option(names = "-Class")         Class aClass;
     }
     @Test
     public void testDefaults() {
@@ -124,6 +120,10 @@ public class CommandLineTypeConversionTest {
         assertEquals("InetAddress", null, bean.anInetAddressField);
         assertEquals("Pattern", null, bean.aPatternField);
         assertEquals("UUID", null, bean.anUUIDField);
+        assertEquals("Currency", null, bean.aCurrencyField);
+        assertEquals("TimeZone", null, bean.aTimeZone);
+        assertEquals("ByteOrder", null, bean.aByteOrder);
+        assertEquals("Class", null, bean.aClass);
     }
     @Test
     public void testTypeConversionSucceedsForValidInput()
@@ -148,7 +148,11 @@ public class CommandLineTypeConversionTest {
                 "-Charset", "UTF8", //
                 "-InetAddress", InetAddress.getLocalHost().getHostName(), //
                 "-Pattern", "a*b", //
-                "-UUID", "c7d51423-bf9d-45dd-a30d-5b16fafe42e2"
+                "-UUID", "c7d51423-bf9d-45dd-a30d-5b16fafe42e2", //
+                "-Currency", "EUR",
+                "-tz", "Japan/Tokyo",
+                "-byteOrder", "LITTLE_ENDIAN",
+                "-Class", "java.lang.String"
         );
         assertEquals("boolean", true, bean.booleanField);
         assertEquals("Boolean", Boolean.TRUE, bean.aBooleanField);
@@ -181,6 +185,10 @@ public class CommandLineTypeConversionTest {
         assertEquals("InetAddress", InetAddress.getByName(InetAddress.getLocalHost().getHostName()), bean.anInetAddressField);
         assertEquals("Pattern", Pattern.compile("a*b").pattern(), bean.aPatternField.pattern());
         assertEquals("UUID", UUID.fromString("c7d51423-bf9d-45dd-a30d-5b16fafe42e2"), bean.anUUIDField);
+        assertEquals("Currency", Currency.getInstance("EUR"), bean.aCurrencyField);
+        assertEquals("TimeZone", TimeZone.getTimeZone("Japan/Tokyo"), bean.aTimeZone);
+        assertEquals("ByteOrder", ByteOrder.LITTLE_ENDIAN, bean.aByteOrder);
+        assertEquals("Class", String.class, bean.aClass);
     }
     @Test
     public void testByteFieldsAreDecimal() {
@@ -432,21 +440,39 @@ public class CommandLineTypeConversionTest {
         parseInvalidValue("-UUID", "aa", ": java.lang.IllegalArgumentException: Invalid UUID string: aa");
     }
     @Test
+    public void testCurrencyConvertersInvalidError() {
+        parseInvalidValue("-Currency", "aa", ": java.lang.IllegalArgumentException");
+    }
+    @Test
+    public void testTimeZoneConvertersInvalidError() {
+        SupportedTypes bean = CommandLine.populateCommand(new SupportedTypes(), "-tz", "Abc/Def");
+        assertEquals(TimeZone.getTimeZone("GMT"), bean.aTimeZone);
+    }
+    @Test
     public void testRegexPatternConverterInvalidError() {
         parseInvalidValue("-Pattern", "[[(aa", String.format(": java.util.regex.PatternSyntaxException: Unclosed character class near index 4%n" +
                 "[[(aa%n" +
                 "    ^"));
     }
+    @Test
+    public void testByteOrderConvertersInvalidError() {
+        parseInvalidValue("-byteOrder", "aa", "'aa' is not a valid ByteOrder for option '-byteOrder'");
+    }
+    @Test
+    public void testClassConvertersInvalidError() {
+        parseInvalidValue("-Class", "aa", ": java.lang.ClassNotFoundException: aa");
+    }
 
     private void parseInvalidValue(String option, String value, String errorMessage) {
         try {
-            CommandLine.populateCommand(new SupportedTypes(), option, value);
+            SupportedTypes bean = CommandLine.populateCommand(new SupportedTypes(), option, value);
             fail("Invalid format " + value + " was accepted for " + option);
         } catch (CommandLine.ParameterException actual) {
+            if (actual.getMessage().equals(errorMessage)) { return; } // that is okay also
             String type = option.substring(1);
             String expected = "Could not convert '" + value + "' to " + type + " for option '" + option + "'" + errorMessage;
             assertTrue("expected:<" + expected + "> but was:<" + actual.getMessage() + ">",
-                    actual.getMessage().startsWith(actual.getMessage()));
+                    actual.getMessage().startsWith(expected));
         }
     }
 

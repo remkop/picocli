@@ -38,6 +38,7 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.nio.ByteOrder;
 import java.nio.charset.Charset;
 import java.sql.Time;
 import java.text.BreakIterator;
@@ -48,6 +49,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Currency;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -60,6 +62,7 @@ import java.util.Queue;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.Stack;
+import java.util.TimeZone;
 import java.util.TreeSet;
 import java.util.UUID;
 import java.util.concurrent.Callable;
@@ -1968,6 +1971,10 @@ public class CommandLine {
             converterRegistry.put(InetAddress.class,   new BuiltIn.InetAddressConverter());
             converterRegistry.put(Pattern.class,       new BuiltIn.PatternConverter());
             converterRegistry.put(UUID.class,          new BuiltIn.UUIDConverter());
+            converterRegistry.put(Currency.class,      new BuiltIn.CurrencyConverter());
+            converterRegistry.put(TimeZone.class,      new BuiltIn.TimeZoneConverter());
+            converterRegistry.put(ByteOrder.class,     new BuiltIn.ByteOrderConverter());
+            converterRegistry.put(Class.class,         new BuiltIn.ClassConverter());
 
             this.command                 = Assert.notNull(command, "command");
             Class<?> cls                 = command.getClass();
@@ -2887,6 +2894,22 @@ public class CommandLine {
         }
         static class UUIDConverter implements ITypeConverter<UUID> {
             public UUID convert(String s) throws Exception { return UUID.fromString(s); }
+        }
+        static class CurrencyConverter implements ITypeConverter<Currency> {
+            public Currency convert(String s) throws Exception { return Currency.getInstance(s); }
+        }
+        static class TimeZoneConverter implements ITypeConverter<TimeZone> {
+            public TimeZone convert(String s) throws Exception { return TimeZone.getTimeZone(s); }
+        }
+        static class ByteOrderConverter implements ITypeConverter<ByteOrder> {
+            public ByteOrder convert(String s) throws Exception {
+                if (s.equalsIgnoreCase(ByteOrder.BIG_ENDIAN.toString())) { return ByteOrder.BIG_ENDIAN; }
+                if (s.equalsIgnoreCase(ByteOrder.LITTLE_ENDIAN.toString())) { return ByteOrder.LITTLE_ENDIAN; }
+                throw new TypeConversionException("'" + s + "' is not a valid ByteOrder");
+            }
+        }
+        static class ClassConverter implements ITypeConverter<Class> {
+            public Class<?> convert(String s) throws Exception { return Class.forName(s); }
         }
         private BuiltIn() {} // private constructor: never instantiate
     }
