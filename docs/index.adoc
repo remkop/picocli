@@ -324,16 +324,24 @@ Out of the box, picocli can convert command line argument strings to:
 
 * any Java primitive type or their wrapper
 * any `enum`
-* `BigDecimal`, `BigInteger`
-* `Charset`
-* `File`
-* `InetAddress`
-* regex `Pattern`
 * `String`, `StringBuilder`, `CharSequence`
+* `java.math.BigDecimal`, `java.math.BigInteger`
+* `java.nio.Charset`
+* `java.io.File`
+* `java.net.InetAddress`
+* `java.util.regex.Pattern`
 * `java.sql.Time` (for values in any of the `"HH:mm"`, `"HH:mm:ss"`, `"HH:mm:ss.SSS"`, or `"HH:mm:ss,SSS"` formats)
 * `java.util.Date` (for values in `"yyyy-MM-dd"` format)
-* `URL`, `URI`
-* `UUID`
+* `java.net.URL`, `java.net.URI`
+* `java.util.UUID`
+* `java.lang.Class` (from picocli 2.2)
+* `java.nio.ByteOrder` (from picocli 2.2)
+* `java.util.Currency` (from picocli 2.2)
+* `java.util.TimeZoneConverter` (from picocli 2.2)
+* `java.nio.file.Path` (from picocli 2.2, requires Java 7 or higher)
+* `java.time` value objects: `Duration`, `Instant`, `LocalDate`, `LocalDateTime`, `LocalTime`, `MonthDay`, `OffsetDateTime`, `OffsetTime`, `Period`, `Year`, `YearMonth`, `ZonedDateTime`, `ZoneId`, `ZoneOffset`  (from picocli 2.2, requires Java 8 or higher)
+
+
 
 === Custom Type Converters
 Register a custom type converter to handle data types other than the above built-in ones.
@@ -353,17 +361,15 @@ public interface ITypeConverter<K> {
 }
 ----
 
-Custom type converters can be registered with the `CommandLine.registerConverter(Class<K> cls, ITypeConverter<K> converter)`
-method.
+Custom type converters can be registered with the `CommandLine.registerConverter(Class<K> cls, ITypeConverter<K> converter)` method.
 
 
-NOTE: Picocli works with Java 5 and higher, so it does not have default converters for Java 8 types like `Path` or
-`Duration`. Lambdas make it easy to register custom converters for these types:
+NOTE: Picocli works with Java 5 and higher, but it does have some default converters for Java 7 types like `Path` and Java 8 types like `Duration`, etc. These converters are only available if the platform supports them. See the above list for details. In addition, Java 8 lambdas make it easy to register custom converters for additional types:
 
 [source,java]
 ----
-commandLine.registerConverter(java.nio.file.Path.class, s -> java.nio.file.Paths.get(s));
-commandLine.registerConverter(java.time.Duration.class, s -> java.time.Duration.parse(s));
+commandLine.registerConverter(Locale.class, s -> new Locale.Builder().setLanguageTag(s).build());
+commandLine.registerConverter(Cipher.class, s -> Cipher.getInstance(s));
 ----
 
 After registering custom converters, call the `parse(String...)` method on the `CommandLine` instance where the converters are registered. (The static `populateCommand` method cannot be used.) For example:
@@ -371,8 +377,8 @@ After registering custom converters, call the `parse(String...)` method on the `
 [source,java]
 ----
 class App {
-    @Parameters Path path;
-    @Option(names = "-d") Duration duration;
+    @Parameters java.util.Locale locale;
+    @Option(names = "-a") javax.crypto.Cipher cipher;
 }
 ----
 
@@ -380,12 +386,12 @@ class App {
 ----
 App app = new App();
 CommandLine commandLine = new CommandLine(app)
-        .registerConverter(Path.class,     s -> Paths.get(s))
-        .registerConverter(Duration.class, s -> Duration.parse(s));
+        .registerConverter(Locale.class, s -> Locale.Builder().setLanguageTag(s).build())
+        .registerConverter(Cipher.class, s -> Cipher.getInstance(s));
 
-commandLine.parse("-d", "PT15M", "file1.txt");
-assert app.path.equals(Paths.get("file1.txt"));
-assert app.duration.equals(Duration.parse("PT15M"));
+commandLine.parse("-a", "AES/CBC/NoPadding", "en-GB");
+assert app.locale.toLanguageTag().equals("en-GB");
+assert app.cipher.getAlgorithm().equals("AES/CBC/NoPadding"));
 ----
 
 CAUTION: _Note on subcommands:_ the specified converter will be registered with the `CommandLine` object
@@ -1475,40 +1481,111 @@ Custom type converters registered on a `CommandLine` instance will apply to all 
 
 
 === Parsing Subcommands
-The `CommandLine.parse` method returns a List with the recognized commands. The main command (`git` in this example) is always the first element in the returned list.
+For this example, we assume we created an alias `git` that invokes our Java application. This could also be a script or a function that calls our Java program:
+[source,bash]
+----
+alias git='java picocli.Demo$Git'
+----
+
+Next, we call our command with some arguments like this:
+
+[source,bash]
+----
+git --git-dir=/home/rpopma/picocli status -sb -uno
+----
+
+Where `git` (actually `java picocli.Demo$Git`) is the top-level command, followed by a global option and a subcommand `status` with its own options.
+
+Setting up the parser and parsing the command line could look like this:
+[source,java]
+----
+public static void main(String... args) {
+    // Set up the parser
+    CommandLine commandLine = new CommandLine(new Git());
+
+    // add subcommands programmatically (not necessary if the parent command
+    // declaratively registered the subcommands via annotation)
+    commandLine.addSubcommand("status",   new GitStatus())
+               .addSubcommand("commit",   new GitCommit())
+                ...
+
+    // Invoke the parse method to parse the arguments
+    List<CommandLine> parsed = commandLine.parse(args);
+    handleParseResult(parsed);
+}
+----
+
+The `CommandLine.parse` method returns a List with the recognized commands. The top-level command (the Java class invoked by `git` in this example) is always the first element in the returned list.
+
+The returned List also contains all matched subcommands. Your application needs to inspect this list to see what subcommand was invoked and take appropriate action. For example:
 
 [source,java]
 ----
-CommandLine commandLine = new CommandLine(new Git());
+private void handleParseResult(List<CommandLine> parsed) {
+    assert parsed.size() == 2 : "1 command and 1 subcommand found"
 
-// add subcommands (either programmatically or declaratively)
-commandLine.addSubcommand("status",   new GitStatus())
-           .addSubcommand("commit",   new GitCommit())
-            ...
+    assert parsed.get(0).getCommand().getClass() == Git.class       : "main command"
+    assert parsed.get(1).getCommand().getClass() == GitStatus.class : "subcommand"
 
-// use the parse method to get a List with matched commands
-String[] args = { "--git-dir=/home/rpopma/picocli", "status", "-sbuno"};
-List<CommandLine> parsed = commandLine.parse(args);
-assert parsed.size() == 2 : "1 command and 1 subcommand found"
+    Git git = (Git) parsed.get(0).getCommand();
+    assert git.gitDir.equals(new File("/home/rpopma/picocli"));
 
-assert parsed.get(0).getCommand().getClass() == Git.class       : "main command"
-assert parsed.get(1).getCommand().getClass() == GitStatus.class : "subcommand"
-----
-
-Your application needs to inspect this list to see what subcommand was invoked and take appropriate action. For example:
-[source,java]
-----
-Git git = (Git) parsed.get(0).getCommand();
-assert git.gitDir.equals(new File("/home/rpopma/picocli"));
-
-GitStatus gitstatus = (GitStatus) parsed.get(1).getCommand();
-assert  gitstatus.shortFormat              : "git status -s"
-assert  gitstatus.branchInfo               : "git status -b"
-assert !gitstatus.showIgnored              : "git status --showIgnored not specified"
-assert  gitstatus.mode == GitStatusMode.no : "git status -u=no"
+    GitStatus gitstatus = (GitStatus) parsed.get(1).getCommand();
+    assert  gitstatus.shortFormat              : "git status -s"
+    assert  gitstatus.branchInfo               : "git status -b"
+    assert !gitstatus.showIgnored              : "git status --showIgnored not specified"
+    assert  gitstatus.mode == GitStatusMode.no : "git status -u=no"
+}
 ----
 
 You may be interested in the <<Convenience Methods for Subcommands,convenience methods for subcommands>> to reduce error handling and other boilerplate code in your application.
+
+
+=== `@ParentCommand` annotation
+In command line applications with subcommands, options of the top level command are often intended as "global" options that apply to all the subcommands. Prior to picocli 2.2, subcommands had no easy way to access their parent command options unless the parent command made these values available in a global variable.
+
+The `@ParentCommand` annotation introduced in picocli 2.2 makes it easy for subcommands to access their parent command options: subcommand fields annotated with `@ParentCommand` are initialized with a reference to the parent command. For example:
+
+[source,java]
+----
+@Command(name = "fileutils", subcommands = List.class)
+class FileUtils {
+
+    @Option(names = {"-d", "--directory"},
+            description = "this option applies to all subcommands")
+    File baseDirectory;
+}
+
+@Command(name = "list")
+class List implements Runnable {
+
+    @ParentCommand
+    private FileUtils parent; // picocli injects reference to parent command
+
+    @Option(names = {"-r", "--recursive"},
+            description = "Recursively list subdirectories")
+    private boolean recursive;
+
+    @Override
+    public void run() {
+        list(new File(parent.baseDirectory, "."));
+    }
+
+    private void list(File dir) {
+        System.out.println(dir.getAbsolutePath());
+        if (dir.isDirectory()) {
+            for (File f : dir.listFiles()) {
+                if (f.isDirectory() && recursive) {
+                    list(f);
+                } else {
+                    System.out.println(f.getAbsolutePath());
+                }
+            }
+        }
+    }
+}
+----
+
 
 === Usage Help for Subcommands
 After registering subcommands, calling the `commandLine.usage` method will show a usage help message that includes all registered commands. For example:
@@ -1517,7 +1594,8 @@ After registering subcommands, calling the `commandLine.usage` method will show 
 ----
 CommandLine commandLine = new CommandLine(new Git());
 
-// add subcommands (either programmatically or declaratively)
+// add subcommands programmatically (not necessary if the parent command
+// declaratively registered the subcommands via annotation)
 commandLine.addSubcommand("status",   new GitStatus());
 ...
 commandLine.usage(System.out);
@@ -1573,52 +1651,6 @@ class Git {
 The usage help message for each subcommand is produced by calling `CommandLine.usage(new SubCommand(), out)`.
 For example, see <<Section Headings>> for an example subcommand (`git-commit`), which produces the help message shown
 in <<Expanded Example>>.
-
-=== `@ParentCommand` annotation
-In command line applications with subcommands, options of the top level command are often intended as "global" options that apply to all the subcommands. Prior to this release, subcommands had no easy way to access their parent command options unless the parent command somehow made these values available in a shared data structure - essentially a global variable.
-
-The `@ParentCommand` annotation introduced in picocli 2.2 makes it easy for subcommands to access their parent command options: fields of the subcommand annotated with `@ParentCommand` are initialized with a reference to the parent command. For example:
-
-[source,java]
-----
-@Command(name = "fileutils", subcommands = List.class)
-class FileUtils implements Runnable {
-
-    @Option(names = {"-d", "--directory"},
-            description = "this option applies to all subcommands")
-    private File baseDirectory;
-
-    public void run() { System.out.println("FileUtils: my dir is " + baseDirectory); }
-}
-
-@Command(name = "list")
-class List implements Runnable {
-
-    @ParentCommand
-    private FileUtils parent; // picocli injects reference to parent command
-
-    @Option(names = {"-r", "--recursive"}, description = "Recursively list subdirectories")
-    private boolean recursive;
-
-    @Override
-    public void run() {
-        list(new File(parent.baseDirectory, "."));
-    }
-
-    private void list(File dir) {
-        System.out.println(dir.getAbsolutePath());
-        if (dir.isDirectory()) {
-            for (File f : dir.listFiles()) {
-                if (f.isDirectory() && recursive) {
-                    list(f);
-                } else {
-                    System.out.println(f.getAbsolutePath());
-                }
-            }
-        }
-    }
-}
-----
 
 
 === Nested sub-subcommands
