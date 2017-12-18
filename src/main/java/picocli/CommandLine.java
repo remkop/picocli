@@ -35,6 +35,7 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.net.InetAddress;
 import java.net.MalformedURLException;
+import java.net.NetworkInterface;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -1975,6 +1976,7 @@ public class CommandLine {
             converterRegistry.put(TimeZone.class,      new BuiltIn.TimeZoneConverter());
             converterRegistry.put(ByteOrder.class,     new BuiltIn.ByteOrderConverter());
             converterRegistry.put(Class.class,         new BuiltIn.ClassConverter());
+            converterRegistry.put(NetworkInterface.class, new BuiltIn.NetworkInterfaceConverter());
 
             this.command                 = Assert.notNull(command, "command");
             Class<?> cls                 = command.getClass();
@@ -2910,6 +2912,19 @@ public class CommandLine {
         }
         static class ClassConverter implements ITypeConverter<Class> {
             public Class<?> convert(String s) throws Exception { return Class.forName(s); }
+        }
+        static class NetworkInterfaceConverter implements ITypeConverter<NetworkInterface> {
+            public NetworkInterface convert(String s) throws Exception {
+                try {
+                    InetAddress addr = new InetAddressConverter().convert(s);
+                    return NetworkInterface.getByInetAddress(addr);
+                } catch (Exception ex) {
+                    try { return NetworkInterface.getByName(s);
+                    } catch (Exception ex2) {
+                        throw new TypeConversionException("'" + s + "' is not an InetAddress or NetworkInterface name");
+                    }
+                }
+            }
         }
         private BuiltIn() {} // private constructor: never instantiate
     }

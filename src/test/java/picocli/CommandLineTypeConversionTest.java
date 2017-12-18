@@ -20,6 +20,7 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.net.InetAddress;
 import java.net.MalformedURLException;
+import java.net.NetworkInterface;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -86,6 +87,7 @@ public class CommandLineTypeConversionTest {
         @Option(names = "-tz")            TimeZone aTimeZone;
         @Option(names = "-byteOrder")     ByteOrder aByteOrder;
         @Option(names = "-Class")         Class aClass;
+        @Option(names = "-NetworkInterface") NetworkInterface aNetInterface;
     }
     @Test
     public void testDefaults() {
@@ -124,10 +126,10 @@ public class CommandLineTypeConversionTest {
         assertEquals("TimeZone", null, bean.aTimeZone);
         assertEquals("ByteOrder", null, bean.aByteOrder);
         assertEquals("Class", null, bean.aClass);
+        assertEquals("NetworkInterface", null, bean.aNetInterface);
     }
     @Test
-    public void testTypeConversionSucceedsForValidInput()
-            throws MalformedURLException, URISyntaxException, UnknownHostException, ParseException {
+    public void testTypeConversionSucceedsForValidInput() throws Exception {
         SupportedTypes bean = CommandLine.populateCommand(new SupportedTypes(),
                 "-boolean", "-Boolean", //
                 "-byte", "12", "-Byte", "23", //
@@ -152,7 +154,8 @@ public class CommandLineTypeConversionTest {
                 "-Currency", "EUR",
                 "-tz", "Japan/Tokyo",
                 "-byteOrder", "LITTLE_ENDIAN",
-                "-Class", "java.lang.String"
+                "-Class", "java.lang.String",
+                "-NetworkInterface", "127.0.0.0"
         );
         assertEquals("boolean", true, bean.booleanField);
         assertEquals("Boolean", Boolean.TRUE, bean.aBooleanField);
@@ -189,6 +192,7 @@ public class CommandLineTypeConversionTest {
         assertEquals("TimeZone", TimeZone.getTimeZone("Japan/Tokyo"), bean.aTimeZone);
         assertEquals("ByteOrder", ByteOrder.LITTLE_ENDIAN, bean.aByteOrder);
         assertEquals("Class", String.class, bean.aClass);
+        assertEquals("NetworkInterface", NetworkInterface.getByInetAddress(InetAddress.getByName("127.0.0.0")), bean.aNetInterface);
     }
     @Test
     public void testByteFieldsAreDecimal() {
@@ -447,6 +451,10 @@ public class CommandLineTypeConversionTest {
     public void testTimeZoneConvertersInvalidError() {
         SupportedTypes bean = CommandLine.populateCommand(new SupportedTypes(), "-tz", "Abc/Def");
         assertEquals(TimeZone.getTimeZone("GMT"), bean.aTimeZone);
+    }
+    @Test
+    public void testNetworkInterfaceConvertersInvalidError() {
+        //parseInvalidValue("-NetworkInterface", "127.127.127.127.127", ": java.lang.IllegalArgumentException");
     }
     @Test
     public void testRegexPatternConverterInvalidError() {
