@@ -1346,9 +1346,11 @@ public class CommandLine {
         /**
          * Optionally specify one or more {@link ITypeConverter} classes to use to convert the command line argument into
          * a strongly typed value or key-value pair. This is useful when a particular field should use a custom
-         * conversion that is different from the normal conversion for the field's type. For example, the
-         * {@code int} constants defined in {@link java.sql.Types}.
+         * conversion that is different from the normal conversion for the field's type. For example, you may want to
+         * convert the constant names defined in {@link java.sql.Types} to their {@code int} value for a specific field,
+         * but other {@code int} fields should simply parse the numeric values.
          * @return the type converter(s) to use to convert String values to strongly typed values for this field
+         * @see CommandLine#registerConverter(Class, ITypeConverter)
          */
         Class<? extends ITypeConverter<?>>[] converter() default {};
 
@@ -1464,9 +1466,11 @@ public class CommandLine {
         /**
          * Optionally specify one or more {@link ITypeConverter} classes to use to convert the command line argument into
          * a strongly typed value or key-value pair. This is useful when a particular field should use a custom
-         * conversion that is different from the normal conversion for the field's type. For example, the
-         * {@code int} constants defined in {@link java.sql.Types}.
+         * conversion that is different from the normal conversion for the field's type. For example, you may want to
+         * convert the constant names defined in {@link java.sql.Types} to their {@code int} value for a specific field,
+         * but other {@code int} fields should simply parse the numeric values.
          * @return the type converter(s) to use to convert String values to strongly typed values for this field
+         * @see CommandLine#registerConverter(Class, ITypeConverter)
          */
         Class<? extends ITypeConverter<?>>[] converter() default {};
 
