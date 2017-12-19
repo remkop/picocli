@@ -16,20 +16,17 @@
 package picocli;
 
 import java.io.File;
+import java.lang.reflect.Field;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.net.InetAddress;
-import java.net.MalformedURLException;
 import java.net.NetworkInterface;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.net.URL;
-import java.net.UnknownHostException;
 import java.nio.ByteOrder;
 import java.nio.charset.Charset;
 import java.sql.Connection;
 import java.sql.Driver;
-import java.sql.DriverManager;
 import java.sql.Time;
 import java.sql.Timestamp;
 import java.text.ParseException;
@@ -39,6 +36,7 @@ import java.util.Arrays;
 import java.util.Currency;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.TimeZone;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
@@ -140,6 +138,7 @@ public class CommandLineTypeConversionTest {
     }
     @Test
     public void testTypeConversionSucceedsForValidInput() throws Exception {
+        //Class.forName("org.apache.derby.jdbc.EmbeddedDriver");
         SupportedTypes bean = CommandLine.populateCommand(new SupportedTypes(),
                 "-boolean", "-Boolean", //
                 "-byte", "12", "-Byte", "23", //
@@ -627,4 +626,55 @@ public class CommandLineTypeConversionTest {
         assertEquals(Arrays.asList(SECONDS, MICROSECONDS, SECONDS), params.timeUnitList);
         assertSame(list, params.timeUnitList);
     }
+
+    @Test
+    public void testJava7Types() throws Exception {
+        if (System.getProperty("java.version").compareTo("1.7.0") < 0) {
+            System.out.println("Unable to verify Java 7 converters on " + System.getProperty("java.version"));
+            return;
+        }
+        CommandLine commandLine = new CommandLine(new EnumParams());
+        Map<Class<?>, ITypeConverter<?>> registry = extractRegistry(commandLine);
+
+        verifyReflectedConverter(registry, "java.nio.file.Path", "/tmp/some/directory", new File("/tmp/some/directory").toString());
+    }
+
+    @Test
+    public void testJava8Types() throws Exception {
+        CommandLine commandLine = new CommandLine(new EnumParams());
+        Map<Class<?>, ITypeConverter<?>> registry = extractRegistry(commandLine);
+
+        if (System.getProperty("java.version").compareTo("1.8.0") < 0) {
+            System.out.println("Unable to verify Java 8 converters on " + System.getProperty("java.version"));
+            return;
+        }
+        verifyReflectedConverter(registry, "java.time.Duration", "P2DT3H4M", "PT51H4M");
+        verifyReflectedConverter(registry, "java.time.Instant", "2007-12-03T10:15:30.00Z", "2007-12-03T10:15:30Z");
+        verifyReflectedConverter(registry, "java.time.LocalDate", "2007-12-03", "2007-12-03");
+        verifyReflectedConverter(registry, "java.time.LocalDateTime", "2007-12-03T10:15:30", "2007-12-03T10:15:30");
+        verifyReflectedConverter(registry, "java.time.LocalTime", "10:15", "10:15");
+        verifyReflectedConverter(registry, "java.time.MonthDay", "--12-03", "--12-03");
+        verifyReflectedConverter(registry, "java.time.OffsetDateTime", "2007-12-03T10:15:30+01:00", "2007-12-03T10:15:30+01:00");
+        verifyReflectedConverter(registry, "java.time.OffsetTime", "10:15:30+01:00", "10:15:30+01:00");
+        verifyReflectedConverter(registry, "java.time.Period", "P1Y2M3D", "P1Y2M3D");
+        verifyReflectedConverter(registry, "java.time.Year", "2007", "2007");
+        verifyReflectedConverter(registry, "java.time.YearMonth", "2007-12", "2007-12");
+        verifyReflectedConverter(registry, "java.time.ZonedDateTime", "2007-12-03T10:15:30+01:00[Europe/Paris]", "2007-12-03T10:15:30+01:00[Europe/Paris]");
+        verifyReflectedConverter(registry, "java.time.ZoneId", "Europe/Paris", "Europe/Paris");
+        verifyReflectedConverter(registry, "java.time.ZoneOffset", "+0800", "+08:00");
+    }
+
+    private void verifyReflectedConverter(Map<Class<?>, ITypeConverter<?>> registry, String cls, String value, String expectedToString) throws Exception {
+        Class<?> pathClass = Class.forName(cls);
+        ITypeConverter<?> converter = registry.get(pathClass);
+        Object path = converter.convert(value);
+        assertTrue("java.nio.file.Path", pathClass.isAssignableFrom(path.getClass()));
+        assertEquals(expectedToString, path.toString());
+    }
+
+    private Map<Class<?>, ITypeConverter<?>> extractRegistry(CommandLine commandLine) throws Exception {
+        Object interpreter = makeAccessible(CommandLine.class.getDeclaredField("interpreter")).get(commandLine);
+        return (Map<Class<?>, ITypeConverter<?>>) makeAccessible(interpreter.getClass().getDeclaredField("converterRegistry")).get(interpreter);
+    }
+    private static Field makeAccessible(Field f) { f.setAccessible(true); return f; }
 }
