@@ -1344,6 +1344,15 @@ public class CommandLine {
         Class<?>[] type() default {};
 
         /**
+         * Optionally specify one or more {@link ITypeConverter} classes to use to convert the command line argument into
+         * a strongly typed value or key-value pair. This is useful when a particular field should use a custom
+         * conversion that is different from the normal conversion for the field's type. For example, the
+         * {@code int} constants defined in {@link java.sql.Types}.
+         * @return the type converter(s) to use to convert String values to strongly typed values for this field
+         */
+        Class<? extends ITypeConverter<?>>[] converter() default {};
+
+        /**
          * Specify a regular expression to use to split option parameter values before applying them to the field.
          * All elements resulting from the split are added to the array or Collection. Ignored for single-value fields.
          * @return a regular expression to split option parameter values or {@code ""} if the value should not be split
@@ -1451,6 +1460,15 @@ public class CommandLine {
          * @return the type(s) to convert the raw String values
          */
         Class<?>[] type() default {};
+
+        /**
+         * Optionally specify one or more {@link ITypeConverter} classes to use to convert the command line argument into
+         * a strongly typed value or key-value pair. This is useful when a particular field should use a custom
+         * conversion that is different from the normal conversion for the field's type. For example, the
+         * {@code int} constants defined in {@link java.sql.Types}.
+         * @return the type converter(s) to use to convert String values to strongly typed values for this field
+         */
+        Class<? extends ITypeConverter<?>>[] converter() default {};
 
         /**
          * Specify a regular expression to use to split positional parameter values before applying them to the field.
@@ -2469,7 +2487,7 @@ public class CommandLine {
             if (noMoreValues && value == null) {
                 return 0;
             }
-            ITypeConverter<?> converter = getTypeConverter(cls, field);
+            ITypeConverter<?> converter = getTypeConverter(cls, field, 0);
             Object newValue = tryConvert(field, -1, converter, value, cls);
             Object oldValue = field.get(command);
             TraceLevel level = TraceLevel.INFO;
@@ -2498,8 +2516,8 @@ public class CommandLine {
                                           String argDescription) throws Exception {
             Class<?>[] classes = getTypeAttribute(field);
             if (classes.length < 2) { throw new ParameterException(CommandLine.this, "Field " + field + " needs two types (one for the map key, one for the value) but only has " + classes.length + " types configured."); }
-            ITypeConverter<?> keyConverter   = getTypeConverter(classes[0], field);
-            ITypeConverter<?> valueConverter = getTypeConverter(classes[1], field);
+            ITypeConverter<?> keyConverter   = getTypeConverter(classes[0], field, 0);
+            ITypeConverter<?> valueConverter = getTypeConverter(classes[1], field, 1);
             Map<Object, Object> result = (Map<Object, Object>) field.get(command);
             if (result == null) {
                 result = createMap(cls);
@@ -2661,7 +2679,7 @@ public class CommandLine {
                                        int originalSize,
                                        String argDescription) throws Exception {
             String[] values = split(trim(args.pop()), field);
-            ITypeConverter<?> converter = getTypeConverter(type, field);
+            ITypeConverter<?> converter = getTypeConverter(type, field, 0);
 
             for (int j = 0; j < values.length; j++) {
                 result.add(tryConvert(field, index, converter, values[j], type));
@@ -2777,7 +2795,16 @@ public class CommandLine {
             } catch (Exception ignored) {}
             return new LinkedHashMap<Object, Object>();
         }
-        private ITypeConverter<?> getTypeConverter(final Class<?> type, Field field) {
+        private ITypeConverter<?> getTypeConverter(final Class<?> type, Field field, int index) {
+            Class<? extends ITypeConverter<?>>[] specific = field.isAnnotationPresent(Option.class) ? field.getAnnotation(Option.class).converter()
+                    : field.isAnnotationPresent(Parameters.class) ? field.getAnnotation(Parameters.class).converter() : null;
+            if (specific.length > index) {
+                try {
+                    return (ITypeConverter<?>) factory.create(specific[index]);
+                } catch (Exception e) {
+                    throw new MissingTypeConverterException(CommandLine.this, "Could not instantiate " + specific[index] + ": " + e.toString());
+                }
+            }
             ITypeConverter<?> result = converterRegistry.get(type);
             if (result != null) {
                 return result;
