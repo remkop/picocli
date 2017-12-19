@@ -72,16 +72,16 @@ This release adds support for more built-in types, so applications don't need to
 
 Converters for the following types were added in this release:
 
-* `java.nio.file.Path` (from picocli 2.2, requires Java 7 or higher)
-* `java.time` value objects: `Duration`, `Instant`, `LocalDate`, `LocalDateTime`, `LocalTime`, `MonthDay`, `OffsetDateTime`, `OffsetTime`, `Period`, `Year`, `YearMonth`, `ZonedDateTime`, `ZoneId`, `ZoneOffset`  (from picocli 2.2, requires Java 8 or higher, invokes the `parse` method of these classes)
-* `java.lang.Class` (from picocli 2.2, for the fully qualified class name)
-* `java.nio.ByteOrder` (from picocli 2.2, for the Strings `"BIG_ENDIAN"` or `"LITTLE_ENDIAN"`)
-* `java.util.Currency` (from picocli 2.2, for the ISO 4217 code of the currency)
-* `java.net.NetworkInterface` (from picocli 2.2, for the InetAddress or name of the network interface)
-* `java.util.TimeZoneConverter` (from picocli 2.2, for the ID for a TimeZone)
-* `java.sql.Connection` (from picocli 2.2, for a database url of the form `jdbc:subprotocol:subname`)
-* `java.sql.Driver` (from picocli 2.2, for a database URL of the form `jdbc:subprotocol:subname`)
-* `java.sql.Timestamp` (from picocli 2.2, for values in the `"yyyy-MM-dd HH:mm:ss"` or `"yyyy-MM-dd HH:mm:ss.fffffffff"` formats)
+* `java.nio.file.Path` (requires Java 7 or higher)
+* `java.time` value objects: `Duration`, `Instant`, `LocalDate`, `LocalDateTime`, `LocalTime`, `MonthDay`, `OffsetDateTime`, `OffsetTime`, `Period`, `Year`, `YearMonth`, `ZonedDateTime`, `ZoneId`, `ZoneOffset`  (requires Java 8 or higher, invokes the `parse` method of these classes)
+* `java.lang.Class` (for the fully qualified class name)
+* `java.nio.ByteOrder` (for the Strings `"BIG_ENDIAN"` or `"LITTLE_ENDIAN"`)
+* `java.util.Currency` (for the ISO 4217 code of the currency)
+* `java.net.NetworkInterface` (for the InetAddress or name of the network interface)
+* `java.util.TimeZoneConverter` (for the ID for a TimeZone)
+* `java.sql.Connection` (for a database url of the form `jdbc:subprotocol:subname`)
+* `java.sql.Driver` (for a database URL of the form `jdbc:subprotocol:subname`)
+* `java.sql.Timestamp` (for values in the `"yyyy-MM-dd HH:mm:ss"` or `"yyyy-MM-dd HH:mm:ss.fffffffff"` formats)
 
 
 ## <a name="2.2.0-promoted"></a> Promoted features
