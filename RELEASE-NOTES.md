@@ -7,6 +7,7 @@ This release contains bugfixes and new features.
 
 In command line applications with subcommands, options of the parent command are often intended as "global" options that apply to all the subcommands. This release introduces a new `@ParentCommand` annotation that makes it easy for subcommands to access such parent command options: fields of the subcommand annotated with `@ParentCommand` are initialized with a reference to the parent command. 
 
+Furthermore, this release adds support for more built-in types, so applications don't need to register custom converters for common types. The new types include Java 7 classes like `java.nio.file.Path` and Java 8 classes like the value classes in the `java.time` package. These converters are loaded using reflection and are not available when running on Java 5 or Java 6.
 
 This is the seventeenth public release.
 Picocli follows [semantic versioning](http://semver.org/).
@@ -65,6 +66,24 @@ class List implements Runnable {
 }
 ```
 
+### More built-in types
+
+This release adds support for more built-in types, so applications don't need to register custom converters for common types. The new types include Java 7 classes like `java.nio.file.Path` and Java 8 classes like the value classes in the `java.time` package. These converters are loaded using reflection and are not available when running on Java 5 or Java 6.
+
+Converters for the following types were added in this release:
+
+* `java.nio.file.Path` (from picocli 2.2, requires Java 7 or higher)
+* `java.time` value objects: `Duration`, `Instant`, `LocalDate`, `LocalDateTime`, `LocalTime`, `MonthDay`, `OffsetDateTime`, `OffsetTime`, `Period`, `Year`, `YearMonth`, `ZonedDateTime`, `ZoneId`, `ZoneOffset`  (from picocli 2.2, requires Java 8 or higher, invokes the `parse` method of these classes)
+* `java.lang.Class` (from picocli 2.2, for the fully qualified class name)
+* `java.nio.ByteOrder` (from picocli 2.2, for the Strings `"BIG_ENDIAN"` or `"LITTLE_ENDIAN"`)
+* `java.util.Currency` (from picocli 2.2, for the ISO 4217 code of the currency)
+* `java.net.NetworkInterface` (from picocli 2.2, for the InetAddress or name of the network interface)
+* `java.util.TimeZoneConverter` (from picocli 2.2, for the ID for a TimeZone)
+* `java.sql.Connection` (from picocli 2.2, for a database url of the form `jdbc:subprotocol:subname`)
+* `java.sql.Driver` (from picocli 2.2, for a database URL of the form `jdbc:subprotocol:subname`)
+* `java.sql.Timestamp` (from picocli 2.2, for values in the `"yyyy-MM-dd HH:mm:ss"` or `"yyyy-MM-dd HH:mm:ss.fffffffff"` formats)
+
+
 ## <a name="2.2.0-promoted"></a> Promoted features
 Promoted features are features that were incubating in previous versions of picocli but are now supported and subject to backwards compatibility. 
 
@@ -73,6 +92,8 @@ No features have been promoted in this picocli release.
 ## <a name="2.2.0-fixes"></a> Fixed issues
 
 - [#247] New `@ParentCommand` annotation to inject a reference to the parent command into subcommand fields. Thanks to [michaelpj](https://github.com/michaelpj) for pushing for a solution for this.
+- [#83]  Add more built-in converters. Thanks to [garydgregory](https://github.com/garydgregory/jcommander-addons) for the inspiration.
+
 
 ## <a name="2.2.0-deprecated"></a> Deprecations
 

@@ -320,7 +320,9 @@ When command line options and positional parameters are mapped to the annotated 
 the text value is converted to the type of the annotated field.
 
 === Built-in Types
-Out of the box, picocli can convert command line argument strings to:
+Out of the box, picocli can convert command line argument strings to a number of common data types.
+
+Most of the built-in types work with Java 5, but picocli also has some default converters for Java 7 types like `Path` and Java 8 types like `Duration`, etc. These converters are only available when running on a Java version that supports them. See the below list for details.
 
 * any Java primitive type or their wrapper
 * any `enum`
@@ -328,18 +330,22 @@ Out of the box, picocli can convert command line argument strings to:
 * `java.math.BigDecimal`, `java.math.BigInteger`
 * `java.nio.Charset`
 * `java.io.File`
+* `java.nio.file.Path` (from picocli 2.2, requires Java 7 or higher)
 * `java.net.InetAddress`
 * `java.util.regex.Pattern`
-* `java.sql.Time` (for values in any of the `"HH:mm"`, `"HH:mm:ss"`, `"HH:mm:ss.SSS"`, or `"HH:mm:ss,SSS"` formats)
 * `java.util.Date` (for values in `"yyyy-MM-dd"` format)
+* `java.sql.Time` (for values in any of the `"HH:mm"`, `"HH:mm:ss"`, `"HH:mm:ss.SSS"`, or `"HH:mm:ss,SSS"` formats)
+* `java.sql.Timestamp` (from picocli 2.2, for values in the `"yyyy-MM-dd HH:mm:ss"` or `"yyyy-MM-dd HH:mm:ss.fffffffff"` formats)
 * `java.net.URL`, `java.net.URI`
 * `java.util.UUID`
-* `java.lang.Class` (from picocli 2.2)
-* `java.nio.ByteOrder` (from picocli 2.2)
-* `java.util.Currency` (from picocli 2.2)
-* `java.util.TimeZoneConverter` (from picocli 2.2)
-* `java.nio.file.Path` (from picocli 2.2, requires Java 7 or higher)
-* `java.time` value objects: `Duration`, `Instant`, `LocalDate`, `LocalDateTime`, `LocalTime`, `MonthDay`, `OffsetDateTime`, `OffsetTime`, `Period`, `Year`, `YearMonth`, `ZonedDateTime`, `ZoneId`, `ZoneOffset`  (from picocli 2.2, requires Java 8 or higher)
+* `java.time` value objects: `Duration`, `Instant`, `LocalDate`, `LocalDateTime`, `LocalTime`, `MonthDay`, `OffsetDateTime`, `OffsetTime`, `Period`, `Year`, `YearMonth`, `ZonedDateTime`, `ZoneId`, `ZoneOffset`  (from picocli 2.2, requires Java 8 or higher, invokes the `parse` method of these classes)
+* `java.lang.Class` (from picocli 2.2, for the fully qualified class name)
+* `java.nio.ByteOrder` (from picocli 2.2, for the Strings `"BIG_ENDIAN"` or `"LITTLE_ENDIAN"`)
+* `java.util.Currency` (from picocli 2.2, for the ISO 4217 code of the currency)
+* `java.net.NetworkInterface` (from picocli 2.2, for the InetAddress or name of the network interface)
+* `java.util.TimeZoneConverter` (from picocli 2.2, for the ID for a TimeZone)
+* `java.sql.Connection` (from picocli 2.2, for a database url of the form `jdbc:subprotocol:subname`)
+* `java.sql.Driver` (from picocli 2.2, for a database URL of the form `jdbc:subprotocol:subname`)
 
 
 
@@ -364,7 +370,7 @@ public interface ITypeConverter<K> {
 Custom type converters can be registered with the `CommandLine.registerConverter(Class<K> cls, ITypeConverter<K> converter)` method.
 
 
-NOTE: Picocli works with Java 5 and higher, but it does have some default converters for Java 7 types like `Path` and Java 8 types like `Duration`, etc. These converters are only available if the platform supports them. See the above list for details. In addition, Java 8 lambdas make it easy to register custom converters for additional types:
+NOTE: Java 8 lambdas make it easy to register custom converters for additional types:
 
 [source,java]
 ----
@@ -1504,7 +1510,7 @@ public static void main(String... args) {
     CommandLine commandLine = new CommandLine(new Git());
 
     // add subcommands programmatically (not necessary if the parent command
-    // declaratively registered the subcommands via annotation)
+    // declaratively registers the subcommands via annotation)
     commandLine.addSubcommand("status",   new GitStatus())
                .addSubcommand("commit",   new GitCommit())
                 ...
@@ -1595,7 +1601,7 @@ After registering subcommands, calling the `commandLine.usage` method will show 
 CommandLine commandLine = new CommandLine(new Git());
 
 // add subcommands programmatically (not necessary if the parent command
-// declaratively registered the subcommands via annotation)
+// declaratively registers the subcommands via annotation)
 commandLine.addSubcommand("status",   new GitStatus());
 ...
 commandLine.usage(System.out);
