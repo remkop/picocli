@@ -1459,6 +1459,8 @@ To ensure a custom type converter is available to all subcommands, register the 
 adding subcommands.
 
 === Registering Subcommands Declaratively
+
+==== Declaration Syntax
 From v0.9.8, picocli supports registering subcommands declaratively with the `@Command` annotation's `subcommands` attribute.
 
 [source,java]
@@ -1484,6 +1486,33 @@ The declared subcommands are automatically instantiated and added when the `new 
 Subcommands referenced in a `subcommands` attribute _must_ have a `@Command` annotation with a `name` attribute, or an exception is thrown from the `CommandLine` constructor. This name will be used both for generating usage help and for recognizing subcommands when parsing the command line.
 
 Custom type converters registered on a `CommandLine` instance will apply to all subcommands that were declared on the main command with the `subcommands` annotation.
+
+==== Subcommand Factory
+
+Declaratively registered subcommands must be instantiated somehow. From picocli 2.2, a custom factory can be specified when constructing a `CommandLine` instance. This allows full control over subcommand creation and opens possibilities for Inversion of Control and Depencency Injection. For example:
+
+[source,java]
+----
+IFactory mySubcommandFactory = getCustomFactory();
+CommandLine cmdLine = new CommandLine(new Git(), mySubcommandFactory);
+----
+
+Custom factories need to implement the `picocli.CommandLine.IFactory` interface:
+
+[source,java]
+----
+public interface IFactory {
+    /**
+     * Creates and returns an instance of the specified class.
+     * @param clazz the class to instantiate
+     * @return the new instance
+     * @throws Exception an exception detailing what went wrong when creating the instance
+     */
+    Object create(Class<?> clazz) throws Exception;
+}
+----
+
+If no factory is specified, a default factory is used. The default factory requires that subcommands have a public no-argument constructor: it instantiates subcommands by calling first calling `clazz.newInstance()`, and if that fails, `clazz.getDeclaredConstructor().newInstance()`.
 
 
 === Parsing Subcommands

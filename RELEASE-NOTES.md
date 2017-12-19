@@ -9,6 +9,8 @@ In command line applications with subcommands, options of the parent command are
 
 Furthermore, this release adds support for more built-in types, so applications don't need to register custom converters for common types. The new types include Java 7 classes like `java.nio.file.Path` and Java 8 classes like the value classes in the `java.time` package. These converters are loaded using reflection and are not available when running on Java 5 or Java 6.
 
+Applications may now specify a custom factory for instantiating subcommands.
+
 This is the seventeenth public release.
 Picocli follows [semantic versioning](http://semver.org/).
 
@@ -83,6 +85,14 @@ Converters for the following types were added in this release:
 * `java.sql.Driver` (for a database URL of the form `jdbc:subprotocol:subname`)
 * `java.sql.Timestamp` (for values in the `"yyyy-MM-dd HH:mm:ss"` or `"yyyy-MM-dd HH:mm:ss.fffffffff"` formats)
 
+### Subcommand factory
+Subcommands that are registered declaratively via annotations must be instantiated somehow. From this release, a custom factory can be specified when constructing a `CommandLine` instance. This allows full control over subcommand creation and opens possibilities for Inversion of Control and Depencency Injection. For example:
+
+```
+IFactory mySubcommandFactory = getCustomFactory();
+CommandLine cmdLine = new CommandLine(new Git(), mySubcommandFactory);
+```
+
 
 ## <a name="2.2.0-promoted"></a> Promoted features
 Promoted features are features that were incubating in previous versions of picocli but are now supported and subject to backwards compatibility. 
@@ -93,6 +103,7 @@ No features have been promoted in this picocli release.
 
 - [#247] New `@ParentCommand` annotation to inject a reference to the parent command into subcommand fields. Thanks to [michaelpj](https://github.com/michaelpj) for pushing for a solution for this.
 - [#83]  Add more built-in converters. Thanks to [garydgregory](https://github.com/garydgregory/jcommander-addons) for the inspiration.
+- [#169] Configurable factory to instantiate subcommands that are registered via annotation attributes. Thanks to [kakawait](https://github.com/kakawait) for the idea.
 
 
 ## <a name="2.2.0-deprecated"></a> Deprecations
