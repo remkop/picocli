@@ -2001,7 +2001,7 @@ public class CommandLine {
             BuiltIn.registerIfAvailable(converterRegistry, tracer, "java.time.ZoneId", "of", String.class);
             BuiltIn.registerIfAvailable(converterRegistry, tracer, "java.time.ZoneOffset", "of", String.class);
 
-            BuiltIn.registerIfAvailable(converterRegistry, tracer, "java.nio.file.Paths", "get", String.class, String[].class);
+            BuiltIn.registerIfAvailable(converterRegistry, tracer, "java.nio.file.Path", "java.nio.file.Paths", "get", String.class, String[].class);
 
             this.command                 = Assert.notNull(command, "command");
             Class<?> cls                 = command.getClass();
@@ -2960,22 +2960,35 @@ public class CommandLine {
         static class TimestampConverter implements ITypeConverter<Timestamp> {
             public Timestamp convert(String s) throws Exception { return Timestamp.valueOf(s); }
         }
-        static void registerIfAvailable(Map<Class<?>, ITypeConverter<?>> registry, Tracer tracer, String fqcn, String methodName, Class<?>... paramTypes) {
+        static void registerIfAvailable(Map<Class<?>, ITypeConverter<?>> registry, Tracer tracer, String fqcn, String factoryMethodName, Class<?>... paramTypes) {
+            registerIfAvailable(registry, tracer, fqcn, fqcn, factoryMethodName, paramTypes);
+        }
+        static void registerIfAvailable(Map<Class<?>, ITypeConverter<?>> registry, Tracer tracer, String fqcn, String factoryClass, String factoryMethodName, Class<?>... paramTypes) {
             try {
                 Class<?> cls = Class.forName(fqcn);
-                Method method = cls.getDeclaredMethod(methodName, paramTypes);
-                registry.put(cls, new ReflectionConverter(method));
+                Class<?> factory = Class.forName(factoryClass);
+                Method method = factory.getDeclaredMethod(factoryMethodName, paramTypes);
+                registry.put(cls, new ReflectionConverter(method, paramTypes));
             } catch (Exception e) {
-                tracer.info("Could not register converter %s.%s: %s%n", fqcn, methodName, e.toString());
+                tracer.info("Could not register converter for %s: %s%n", fqcn, e.toString());
             }
         }
         static class ReflectionConverter implements ITypeConverter<Object> {
             private final Method method;
-            public ReflectionConverter(Method method) { this.method = Assert.notNull(method, "method"); }
+            private Class<?>[] paramTypes;
+
+            public ReflectionConverter(Method method, Class<?>... paramTypes) {
+                this.method = Assert.notNull(method, "method");
+                this.paramTypes = Assert.notNull(paramTypes, "paramTypes");
+            }
 
             public Object convert(String s) {
                 try {
-                    return method.invoke(null, s);
+                    if (paramTypes.length > 1) {
+                        return method.invoke(null, s, new String[0]);
+                    } else {
+                        return method.invoke(null, s);
+                    }
                 } catch (Exception e) {
                     throw new TypeConversionException("Unable to convert " + s + " to " + method.getReturnType() + ": " + e.getMessage());
                 }
