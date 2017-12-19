@@ -664,11 +664,11 @@ public class CommandLineTypeConversionTest {
         verifyReflectedConverter(registry, "java.time.ZoneOffset", "+0800", "+08:00");
     }
 
-    private void verifyReflectedConverter(Map<Class<?>, ITypeConverter<?>> registry, String cls, String value, String expectedToString) throws Exception {
-        Class<?> pathClass = Class.forName(cls);
-        ITypeConverter<?> converter = registry.get(pathClass);
+    private void verifyReflectedConverter(Map<Class<?>, ITypeConverter<?>> registry, String clsName, String value, String expectedToString) throws Exception {
+        Class<?> cls = Class.forName(clsName);
+        ITypeConverter<?> converter = registry.get(cls);
         Object path = converter.convert(value);
-        assertTrue("java.nio.file.Path", pathClass.isAssignableFrom(path.getClass()));
+        assertTrue(clsName, cls.isAssignableFrom(path.getClass()));
         assertEquals(expectedToString, path.toString());
     }
 
