@@ -157,14 +157,25 @@ public class CommandLine {
     private List<String> versionLines = new ArrayList<String>();
 
     /**
-     * Constructs a new {@code CommandLine} interpreter with the specified annotated object.
+     * Constructs a new {@code CommandLine} interpreter with the specified annotated object and a default subcommand factory.
      * When the {@link #parse(String...)} method is called, fields of the specified object that are annotated
      * with {@code @Option} or {@code @Parameters} will be initialized based on command line arguments.
      * @param command the object to initialize from the command line arguments
      * @throws InitializationException if the specified command object does not have a {@link Command}, {@link Option} or {@link Parameters} annotation
      */
     public CommandLine(Object command) {
-        interpreter = new Interpreter(command);
+        this(command, new DefaultFactory());
+    }
+    /**
+     * Constructs a new {@code CommandLine} interpreter with the specified annotated object and object factory.
+     * When the {@link #parse(String...)} method is called, fields of the specified object that are annotated
+     * with {@code @Option} or {@code @Parameters} will be initialized based on command line arguments.
+     * @param command the object to initialize from the command line arguments
+     * @param factory the factory used to create instances of {@linkplain Command#subcommands() subcommands} that are registered declaratively with annotation attributes
+     * @throws InitializationException if the specified command object does not have a {@link Command}, {@link Option} or {@link Parameters} annotation
+     */
+    public CommandLine(Object command, IFactory factory) {
+        interpreter = new Interpreter(command, factory);
     }
 
     /** Registers a subcommand with the specified name. For example:
@@ -209,7 +220,7 @@ public class CommandLine {
      * @see Command#subcommands()
      */
     public CommandLine addSubcommand(String name, Object command) {
-        CommandLine subcommandLine = toCommandLine(command);
+        CommandLine subcommandLine = toCommandLine(command, interpreter.factory);
         subcommandLine.parent = this;
         interpreter.commands.put(name, subcommandLine);
         subcommandLine.interpreter.initParentCommand(this.interpreter.command);
@@ -338,7 +349,7 @@ public class CommandLine {
      * @since 0.9.7
      */
     public static <T> T populateCommand(T command, String... args) {
-        CommandLine cli = toCommandLine(command);
+        CommandLine cli = toCommandLine(command, new DefaultFactory());
         cli.parse(args);
         return command;
     }
@@ -675,7 +686,7 @@ public class CommandLine {
      * @throws IllegalArgumentException if the specified command object does not have a {@link Command}, {@link Option} or {@link Parameters} annotation
      */
     public static void usage(Object command, PrintStream out) {
-        toCommandLine(command).usage(out);
+        toCommandLine(command, new DefaultFactory()).usage(out);
     }
 
     /**
@@ -687,7 +698,7 @@ public class CommandLine {
      * @throws IllegalArgumentException if the specified command object does not have a {@link Command}, {@link Option} or {@link Parameters} annotation
      */
     public static void usage(Object command, PrintStream out, Help.Ansi ansi) {
-        toCommandLine(command).usage(out, ansi);
+        toCommandLine(command, new DefaultFactory()).usage(out, ansi);
     }
 
     /**
@@ -699,7 +710,7 @@ public class CommandLine {
      * @throws IllegalArgumentException if the specified command object does not have a {@link Command}, {@link Option} or {@link Parameters} annotation
      */
     public static void usage(Object command, PrintStream out, Help.ColorScheme colorScheme) {
-        toCommandLine(command).usage(out, colorScheme);
+        toCommandLine(command, new DefaultFactory()).usage(out, colorScheme);
     }
 
     /**
@@ -1068,7 +1079,7 @@ public class CommandLine {
     private static boolean empty(Text txt) { return txt == null || txt.plain.toString().trim().length() == 0; }
     private static String str(String[] arr, int i) { return (arr == null || arr.length == 0) ? "" : arr[i]; }
     private static boolean isBoolean(Class<?> type) { return type == Boolean.class || type == Boolean.TYPE; }
-    private static CommandLine toCommandLine(Object obj) { return obj instanceof CommandLine ? (CommandLine) obj : new CommandLine(obj);}
+    private static CommandLine toCommandLine(Object obj, IFactory factory) { return obj instanceof CommandLine ? (CommandLine) obj : new CommandLine(obj, factory);}
     private static boolean isMultiValue(Field field) {  return isMultiValue(field.getType()); }
     private static boolean isMultiValue(Class<?> cls) { return cls.isArray() || Collection.class.isAssignableFrom(cls) || Map.class.isAssignableFrom(cls); }
     private static Class<?>[] getTypeAttribute(Field field) {
@@ -1706,6 +1717,31 @@ public class CommandLine {
          */
         K convert(String value) throws Exception;
     }
+
+    /**
+     * Subcommands registered declaratively on a parent command with the {@link Command#subcommands()} annotation
+     * are instantiated by a factory.
+     */
+    public interface IFactory {
+        /**
+         * Creates and returns an instance of the specified class.
+         * @param cls the class to instantiate
+         * @return the new instance
+         * @throws Exception an exception detailing what went wrong when creating the instance
+         */
+        Object create(Class<?> cls) throws Exception;
+    }
+    private static class DefaultFactory implements IFactory {
+        public Object create(Class<?> cls) throws Exception {
+            try {
+                return cls.newInstance();
+            } catch (Exception ex) {
+                Constructor<?> constructor = cls.getDeclaredConstructor();
+                constructor.setAccessible(true);
+                return constructor.newInstance();
+            }
+        }
+    }
     /** Describes the number of parameters required and accepted by an option or a positional parameter.
      * @since 0.9.7
      */
@@ -1941,11 +1977,63 @@ public class CommandLine {
         private final List<Field> requiredFields                         = new ArrayList<Field>();
         private final List<Field> positionalParametersFields             = new ArrayList<Field>();
         private final Object command;
+        private final IFactory factory;
         private boolean isHelpRequested;
         private String separator = Help.DEFAULT_SEPARATOR;
         private int position;
 
-        Interpreter(Object command) {
+        Interpreter(Object command, IFactory factory) {
+            this.command                 = Assert.notNull(command, "command");
+            this.factory                 = Assert.notNull(factory, "factory");
+            Class<?> cls                 = command.getClass();
+            String declaredName          = null;
+            String declaredSeparator     = null;
+            boolean hasCommandAnnotation = false;
+            while (cls != null) {
+                init(cls, requiredFields, optionName2Field, singleCharOption2Field, positionalParametersFields);
+                if (cls.isAnnotationPresent(Command.class)) {
+                    hasCommandAnnotation = true;
+                    Command cmd = cls.getAnnotation(Command.class);
+                    declaredSeparator = (declaredSeparator == null) ? cmd.separator() : declaredSeparator;
+                    declaredName = (declaredName == null) ? cmd.name() : declaredName;
+                    CommandLine.this.versionLines.addAll(Arrays.asList(cmd.version()));
+
+                    for (Class<?> sub : cmd.subcommands()) {
+                        Command subCommand = sub.getAnnotation(Command.class);
+                        if (subCommand == null || Help.DEFAULT_COMMAND_NAME.equals(subCommand.name())) {
+                            throw new InitializationException("Subcommand " + sub.getName() +
+                                    " is missing the mandatory @Command annotation with a 'name' attribute");
+                        }
+                        try {
+                            CommandLine commandLine = toCommandLine(factory.create(sub), factory);
+                            commandLine.parent = CommandLine.this;
+                            commands.put(subCommand.name(), commandLine);
+                            commandLine.interpreter.initParentCommand(command);
+                        }
+                        catch (InitializationException ex) { throw ex; }
+                        catch (NoSuchMethodException ex) { throw new InitializationException("Cannot instantiate subcommand " +
+                                sub.getName() + ": the class has no constructor", ex); }
+                        catch (Exception ex) {
+                            throw new InitializationException("Could not instantiate and add subcommand " +
+                                    sub.getName() + ": " + ex, ex);
+                        }
+                    }
+                }
+                cls = cls.getSuperclass();
+            }
+            separator = declaredSeparator != null ? declaredSeparator : separator;
+            CommandLine.this.commandName = declaredName != null ? declaredName : CommandLine.this.commandName;
+            Collections.sort(positionalParametersFields, new PositionalParametersSorter());
+            validatePositionalParameters(positionalParametersFields);
+
+            if (positionalParametersFields.isEmpty() && optionName2Field.isEmpty() && !hasCommandAnnotation) {
+                throw new InitializationException(command + " (" + command.getClass() +
+                        ") is not a command: it has no @Command, @Option or @Parameters annotations");
+            }
+            registerBuiltInConverters();
+        }
+
+        private void registerBuiltInConverters() {
             converterRegistry.put(Object.class,        new BuiltIn.StringConverter());
             converterRegistry.put(String.class,        new BuiltIn.StringConverter());
             converterRegistry.put(StringBuilder.class, new BuiltIn.StringBuilderConverter());
@@ -2002,55 +2090,6 @@ public class CommandLine {
             BuiltIn.registerIfAvailable(converterRegistry, tracer, "java.time.ZoneOffset", "of", String.class);
 
             BuiltIn.registerIfAvailable(converterRegistry, tracer, "java.nio.file.Path", "java.nio.file.Paths", "get", String.class, String[].class);
-
-            this.command                 = Assert.notNull(command, "command");
-            Class<?> cls                 = command.getClass();
-            String declaredName          = null;
-            String declaredSeparator     = null;
-            boolean hasCommandAnnotation = false;
-            while (cls != null) {
-                init(cls, requiredFields, optionName2Field, singleCharOption2Field, positionalParametersFields);
-                if (cls.isAnnotationPresent(Command.class)) {
-                    hasCommandAnnotation = true;
-                    Command cmd = cls.getAnnotation(Command.class);
-                    declaredSeparator = (declaredSeparator == null) ? cmd.separator() : declaredSeparator;
-                    declaredName = (declaredName == null) ? cmd.name() : declaredName;
-                    CommandLine.this.versionLines.addAll(Arrays.asList(cmd.version()));
-
-                    for (Class<?> sub : cmd.subcommands()) {
-                        Command subCommand = sub.getAnnotation(Command.class);
-                        if (subCommand == null || Help.DEFAULT_COMMAND_NAME.equals(subCommand.name())) {
-                            throw new InitializationException("Subcommand " + sub.getName() +
-                                    " is missing the mandatory @Command annotation with a 'name' attribute");
-                        }
-                        try {
-                            Constructor<?> constructor = sub.getDeclaredConstructor();
-                            constructor.setAccessible(true);
-                            CommandLine commandLine = toCommandLine(constructor.newInstance());
-                            commandLine.parent = CommandLine.this;
-                            commands.put(subCommand.name(), commandLine);
-                            commandLine.interpreter.initParentCommand(command);
-                        }
-                        catch (InitializationException ex) { throw ex; }
-                        catch (NoSuchMethodException ex) { throw new InitializationException("Cannot instantiate subcommand " +
-                                sub.getName() + ": the class has no constructor", ex); }
-                        catch (Exception ex) {
-                            throw new InitializationException("Could not instantiate and add subcommand " +
-                                    sub.getName() + ": " + ex, ex);
-                        }
-                    }
-                }
-                cls = cls.getSuperclass();
-            }
-            separator = declaredSeparator != null ? declaredSeparator : separator;
-            CommandLine.this.commandName = declaredName != null ? declaredName : CommandLine.this.commandName;
-            Collections.sort(positionalParametersFields, new PositionalParametersSorter());
-            validatePositionalParameters(positionalParametersFields);
-
-            if (positionalParametersFields.isEmpty() && optionName2Field.isEmpty() && !hasCommandAnnotation) {
-                throw new InitializationException(command + " (" + command.getClass() +
-                        ") is not a command: it has no @Command, @Option or @Parameters annotations");
-            }
         }
 
         private void initParentCommand(Object parent) {
@@ -2970,9 +3009,13 @@ public class CommandLine {
                 Method method = factory.getDeclaredMethod(factoryMethodName, paramTypes);
                 registry.put(cls, new ReflectionConverter(method, paramTypes));
             } catch (Exception e) {
-                tracer.info("Could not register converter for %s: %s%n", fqcn, e.toString());
+                if (!traced.contains(fqcn)) {
+                    tracer.debug("Could not register converter for %s: %s%n", fqcn, e.toString());
+                }
+                traced.add(fqcn);
             }
         }
+        static Set<String> traced = new HashSet<String>();
         static class ReflectionConverter implements ITypeConverter<Object> {
             private final Method method;
             private Class<?>[] paramTypes;

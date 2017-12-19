@@ -24,6 +24,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.io.UnsupportedEncodingException;
+import java.lang.reflect.Field;
 import java.math.BigDecimal;
 import java.net.InetAddress;
 import java.net.Socket;
@@ -96,6 +97,52 @@ public class CommandLineTest {
 
     private static void setTraceLevel(String level) {
         System.setProperty("picocli.trace", level);
+    }
+
+    @Test(expected = NullPointerException.class)
+    public void testConstructorRejectsNullObject() {
+        new CommandLine(null);
+    }
+    @Test(expected = NullPointerException.class)
+    public void testConstructorRejectsNullFactory() {
+        new CommandLine(new CompactFields(), null);
+    }
+    @Test
+    public void testFactory() {
+        final Sub1_testDeclarativelyAddSubcommands sub1Command = new Sub1_testDeclarativelyAddSubcommands();
+        final SubSub1_testDeclarativelyAddSubcommands subsub1Command = new SubSub1_testDeclarativelyAddSubcommands();
+        IFactory factory = new IFactory() {
+            public Object create(Class<?> cls) throws Exception {
+                if (cls == Sub1_testDeclarativelyAddSubcommands.class) {
+                    return sub1Command;
+                }
+                if (cls == SubSub1_testDeclarativelyAddSubcommands.class) {
+                    return subsub1Command;
+                }
+                throw new IllegalStateException();
+            }
+        };
+        CommandLine commandLine = new CommandLine(new MainCommand_testDeclarativelyAddSubcommands(), factory);
+        CommandLine sub1 = commandLine.getSubcommands().get("sub1");
+        assertSame(sub1Command, sub1.getCommand());
+
+        CommandLine subsub1 = sub1.getSubcommands().get("subsub1");
+        assertSame(subsub1Command, subsub1.getCommand());
+    }
+    @Test
+    public void testFailingFactory() {
+        IFactory factory = new IFactory() {
+            public Object create(Class<?> cls) throws Exception {
+                throw new IllegalStateException("bad class");
+            }
+        };
+        try {
+            new CommandLine(new MainCommand_testDeclarativelyAddSubcommands(), factory);
+        } catch (InitializationException ex) {
+            assertEquals("Could not instantiate and add subcommand " +
+                    "picocli.CommandLineTest$Sub1_testDeclarativelyAddSubcommands: " +
+                    "java.lang.IllegalStateException: bad class", ex.getMessage());
+        }
     }
     @Test
     public void testVersion() {
@@ -566,8 +613,15 @@ public class CommandLineTest {
         verifyCompact(compact, false, false, "out", fileArray("-r", "-v", "p1", "p2"));
     }
 
+    private static void clearBuiltInTracingCache() throws Exception {
+        Field field = Class.forName("picocli.CommandLine$BuiltIn").getDeclaredField("traced");
+        field.setAccessible(true);
+        Collection<?> collection = (Collection<?>) field.get(null);
+        collection.clear();
+    }
     @Test
-    public void testDebugOutputForDoubleDashSeparatesPositionalParameters() throws UnsupportedEncodingException {
+    public void testDebugOutputForDoubleDashSeparatesPositionalParameters() throws Exception {
+        clearBuiltInTracingCache();
         PrintStream originalErr = System.err;
         ByteArrayOutputStream baos = new ByteArrayOutputStream(2500);
         System.setErr(new PrintStream(baos));
@@ -581,6 +635,23 @@ public class CommandLineTest {
         } else {
             System.setProperty(PROPERTY, old);
         }
+        String prefix8 = String.format("" +
+                "[picocli DEBUG] Could not register converter for java.time.Duration: java.lang.ClassNotFoundException: java.time.Duration%n" +
+                "[picocli DEBUG] Could not register converter for java.time.Instant: java.lang.ClassNotFoundException: java.time.Instant%n" +
+                "[picocli DEBUG] Could not register converter for java.time.LocalDate: java.lang.ClassNotFoundException: java.time.LocalDate%n" +
+                "[picocli DEBUG] Could not register converter for java.time.LocalDateTime: java.lang.ClassNotFoundException: java.time.LocalDateTime%n" +
+                "[picocli DEBUG] Could not register converter for java.time.LocalTime: java.lang.ClassNotFoundException: java.time.LocalTime%n" +
+                "[picocli DEBUG] Could not register converter for java.time.MonthDay: java.lang.ClassNotFoundException: java.time.MonthDay%n" +
+                "[picocli DEBUG] Could not register converter for java.time.OffsetDateTime: java.lang.ClassNotFoundException: java.time.OffsetDateTime%n" +
+                "[picocli DEBUG] Could not register converter for java.time.OffsetTime: java.lang.ClassNotFoundException: java.time.OffsetTime%n" +
+                "[picocli DEBUG] Could not register converter for java.time.Period: java.lang.ClassNotFoundException: java.time.Period%n" +
+                "[picocli DEBUG] Could not register converter for java.time.Year: java.lang.ClassNotFoundException: java.time.Year%n" +
+                "[picocli DEBUG] Could not register converter for java.time.YearMonth: java.lang.ClassNotFoundException: java.time.YearMonth%n" +
+                "[picocli DEBUG] Could not register converter for java.time.ZonedDateTime: java.lang.ClassNotFoundException: java.time.ZonedDateTime%n" +
+                "[picocli DEBUG] Could not register converter for java.time.ZoneId: java.lang.ClassNotFoundException: java.time.ZoneId%n" +
+                "[picocli DEBUG] Could not register converter for java.time.ZoneOffset: java.lang.ClassNotFoundException: java.time.ZoneOffset%n");
+        String prefix7 = String.format("" +
+                "[picocli DEBUG] Could not register converter for java.nio.file.Path: java.lang.ClassNotFoundException: java.nio.file.Path%n");
         String expected = String.format("" +
                         "[picocli INFO] Parsing 6 command line args [-oout, --, -r, -v, p1, p2]%n" +
                         "[picocli DEBUG] Initializing %1$s$CompactFields: 3 options, 1 positional parameters, 0 required, 0 subcommands.%n" +
@@ -611,6 +682,12 @@ public class CommandLineTest {
                 CommandLineTest.class.getName(), new File("/home/rpopma/picocli"));
         String actual = new String(baos.toByteArray(), "UTF8");
         //System.out.println(actual);
+        if (System.getProperty("java.version").compareTo("1.7.0") < 0) {
+            expected = prefix7 + expected;
+        }
+        if (System.getProperty("java.version").compareTo("1.8.0") < 0) {
+            expected = prefix8 + expected;
+        }
         assertEquals(expected, actual);
     }
 
@@ -1468,6 +1545,7 @@ public class CommandLineTest {
     }
     @Test
     public void testTracingDebugWithSubCommands() throws Exception {
+        clearBuiltInTracingCache();
         PrintStream originalErr = System.err;
         ByteArrayOutputStream baos = new ByteArrayOutputStream(2500);
         System.setErr(new PrintStream(baos));
@@ -1482,6 +1560,23 @@ public class CommandLineTest {
         } else {
             System.setProperty(PROPERTY, old);
         }
+        String prefix8 = String.format("" +
+                "[picocli DEBUG] Could not register converter for java.time.Duration: java.lang.ClassNotFoundException: java.time.Duration%n" +
+                "[picocli DEBUG] Could not register converter for java.time.Instant: java.lang.ClassNotFoundException: java.time.Instant%n" +
+                "[picocli DEBUG] Could not register converter for java.time.LocalDate: java.lang.ClassNotFoundException: java.time.LocalDate%n" +
+                "[picocli DEBUG] Could not register converter for java.time.LocalDateTime: java.lang.ClassNotFoundException: java.time.LocalDateTime%n" +
+                "[picocli DEBUG] Could not register converter for java.time.LocalTime: java.lang.ClassNotFoundException: java.time.LocalTime%n" +
+                "[picocli DEBUG] Could not register converter for java.time.MonthDay: java.lang.ClassNotFoundException: java.time.MonthDay%n" +
+                "[picocli DEBUG] Could not register converter for java.time.OffsetDateTime: java.lang.ClassNotFoundException: java.time.OffsetDateTime%n" +
+                "[picocli DEBUG] Could not register converter for java.time.OffsetTime: java.lang.ClassNotFoundException: java.time.OffsetTime%n" +
+                "[picocli DEBUG] Could not register converter for java.time.Period: java.lang.ClassNotFoundException: java.time.Period%n" +
+                "[picocli DEBUG] Could not register converter for java.time.Year: java.lang.ClassNotFoundException: java.time.Year%n" +
+                "[picocli DEBUG] Could not register converter for java.time.YearMonth: java.lang.ClassNotFoundException: java.time.YearMonth%n" +
+                "[picocli DEBUG] Could not register converter for java.time.ZonedDateTime: java.lang.ClassNotFoundException: java.time.ZonedDateTime%n" +
+                "[picocli DEBUG] Could not register converter for java.time.ZoneId: java.lang.ClassNotFoundException: java.time.ZoneId%n" +
+                "[picocli DEBUG] Could not register converter for java.time.ZoneOffset: java.lang.ClassNotFoundException: java.time.ZoneOffset%n");
+        String prefix7 = String.format("" +
+                "[picocli DEBUG] Could not register converter for java.nio.file.Path: java.lang.ClassNotFoundException: java.nio.file.Path%n");
         String expected = String.format("" +
                         "[picocli INFO] Parsing 8 command line args [--git-dir=/home/rpopma/picocli, commit, -m, \"Fixed typos\", --, src1.java, src2.java, src3.java]%n" +
                         "[picocli DEBUG] Initializing %1$s$Git: 3 options, 0 positional parameters, 0 required, 11 subcommands.%n" +
@@ -1513,6 +1608,12 @@ public class CommandLineTest {
                 Demo.class.getName(), new File("/home/rpopma/picocli"));
         String actual = new String(baos.toByteArray(), "UTF8");
         //System.out.println(actual);
+        if (System.getProperty("java.version").compareTo("1.7.0") < 0) {
+            expected = prefix7 + expected;
+        }
+        if (System.getProperty("java.version").compareTo("1.8.0") < 0) {
+            expected = prefix8 + expected;
+        }
         assertEquals(expected, actual);
     }
     @Test
