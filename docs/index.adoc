@@ -367,15 +367,16 @@ public interface ITypeConverter<K> {
 }
 ----
 
-Custom type converters can be registered with the `CommandLine.registerConverter(Class<K> cls, ITypeConverter<K> converter)` method.
+Custom type converters can be registered with the `CommandLine.registerConverter(Class<K> cls, ITypeConverter<K> converter)` method. All options and positional parameters with the specified type will be converted by the specified converter.
 
 
-NOTE: Java 8 lambdas make it easy to register custom converters for additional types:
+NOTE: Java 8 lambdas make it easy to register custom converters:
 
 [source,java]
 ----
-commandLine.registerConverter(Locale.class, s -> new Locale.Builder().setLanguageTag(s).build());
-commandLine.registerConverter(Cipher.class, s -> Cipher.getInstance(s));
+CommandLine cl = new CommandLine(app)
+cl.registerConverter(Locale.class, s -> new Locale.Builder().setLanguageTag(s).build());
+cl.registerConverter(Cipher.class, s -> Cipher.getInstance(s));
 ----
 
 After registering custom converters, call the `parse(String...)` method on the `CommandLine` instance where the converters are registered. (The static `populateCommand` method cannot be used.) For example:
@@ -392,8 +393,8 @@ class App {
 ----
 App app = new App();
 CommandLine commandLine = new CommandLine(app)
-        .registerConverter(Locale.class, s -> Locale.Builder().setLanguageTag(s).build())
-        .registerConverter(Cipher.class, s -> Cipher.getInstance(s));
+    .registerConverter(Locale.class, s -> new Locale.Builder().setLanguageTag(s).build())
+    .registerConverter(Cipher.class, s -> Cipher.getInstance(s));
 
 commandLine.parse("-a", "AES/CBC/NoPadding", "en-GB");
 assert app.locale.toLanguageTag().equals("en-GB");
@@ -404,6 +405,42 @@ CAUTION: _Note on subcommands:_ the specified converter will be registered with 
 and all subcommands (and nested sub-subcommands) that were added _before_ the converter was registered.
 Subcommands added later will not have the converter added automatically.
 To ensure a custom type converter is available to all subcommands, register the type converter last, after adding subcommands.
+
+=== Option-specific Type Converters
+Picocli 2.2 added a `converter` attribute to the `@Option` and `@Parameter` annotations. This allows a specific option or positional parameter to use a different converter than would be used by default based on the type of the field.
+
+For example, you may want to convert the constant names defined in https://docs.oracle.com/javase/9/docs/api/java/sql/Types.html[`java.sql.Types`] to their `int` value for a specific field, but this should not impact any other `int` fields: other `int` fields should continue to simply parse numeric values.
+
+Example usage:
+
+[source,java]
+----
+class App {
+    @Option(names = "--sqlType", converter = SqlTypeConverter.class)
+    int sqlType;
+}
+----
+
+Example implementation:
+[source,java]
+----
+class SqlTypeConverter implements ITypeConverter<Integer> {
+    public Integer convert(String value) throws Exception {
+        switch (value) {
+            case "ARRAY"  : return Types.ARRAY;
+            case "BIGINT" : return Types.BIGINT;
+            case "BINARY" : return Types.BINARY;
+            case "BIT"    : return Types.BIT;
+            case "BLOB"   : return Types.BLOB;
+            ...
+        }
+    }
+}
+----
+
+This may also be useful for applications that need a custom type converter but want to use the static convenience methods (`populateCommand`, `run`, `call`). The `converter` annotation does not require a `CommandLine` instance so it can be used with the static convenience methods.
+
+Type converters declared with the `converter` attribute need to have a public no-argument constructor to be instantiated, unless a <<Custom Factory>> is installed to instantiate classes.
 
 === Arrays, Collections, Maps
 NOTE: Starting from picocli v2.0, the `type` attribute is no longer necessary for `Collection` and `Map` fields:
@@ -1460,7 +1497,6 @@ adding subcommands.
 
 === Registering Subcommands Declaratively
 
-==== Declaration Syntax
 From v0.9.8, picocli supports registering subcommands declaratively with the `@Command` annotation's `subcommands` attribute.
 
 [source,java]
@@ -1487,32 +1523,7 @@ Subcommands referenced in a `subcommands` attribute _must_ have a `@Command` ann
 
 Custom type converters registered on a `CommandLine` instance will apply to all subcommands that were declared on the main command with the `subcommands` annotation.
 
-==== Subcommand Factory
-
-Declaratively registered subcommands must be instantiated somehow. From picocli 2.2, a custom factory can be specified when constructing a `CommandLine` instance. This allows full control over subcommand creation and opens possibilities for Inversion of Control and Depencency Injection. For example:
-
-[source,java]
-----
-IFactory mySubcommandFactory = getCustomFactory();
-CommandLine cmdLine = new CommandLine(new Git(), mySubcommandFactory);
-----
-
-Custom factories need to implement the `picocli.CommandLine.IFactory` interface:
-
-[source,java]
-----
-public interface IFactory {
-    /**
-     * Creates and returns an instance of the specified class.
-     * @param clazz the class to instantiate
-     * @return the new instance
-     * @throws Exception an exception detailing what went wrong when creating the instance
-     */
-    Object create(Class<?> clazz) throws Exception;
-}
-----
-
-If no factory is specified, a default factory is used. The default factory requires that subcommands have a public no-argument constructor: it instantiates subcommands by calling first calling `clazz.newInstance()`, and if that fails, `clazz.getDeclaredConstructor().newInstance()`.
+Subcommands referenced in a `subcommands` attribute need to have a public no-argument constructor to be instantiated, unless a <<Custom Factory>> is installed to instantiate classes.
 
 
 === Parsing Subcommands
@@ -1808,6 +1819,34 @@ Picocli provides some default `IParseResultHandler` implementations for common t
 * the `RunFirst` handler prints help if requested, and otherwise executes the top-level command as a `Runnable` or `Callable`
 * the `RunAll` handler prints help if requested, and otherwise executes all commands and subcommands that the user specified on the command line as `Runnable` or `Callable` tasks
 
+
+=== Custom Factory
+
+Declaratively registered <<Registering Subcommands Declaratively,subcommands>>, <<Option-specific Type Converters,type converters>> and version providers must be instantiated somehow. From picocli 2.2, a custom factory can be specified when constructing a `CommandLine` instance. This allows full control over object creation and opens possibilities for Inversion of Control and Depencency Injection. For example:
+
+[source,java]
+----
+IFactory myFactory = getCustomFactory();
+CommandLine cmdLine = new CommandLine(new Git(), myFactory);
+----
+
+Custom factories need to implement the `picocli.CommandLine.IFactory` interface:
+
+[source,java]
+----
+public interface IFactory {
+    /**
+     * Creates and returns an instance of the specified class.
+     * @param cls the class to instantiate
+     * @param <K> the type to instantiate
+     * @return the new instance
+     * @throws Exception an exception detailing what went wrong when creating the instance
+     */
+    <K> K create(Class<K> clazz) throws Exception;
+}
+----
+
+If no factory is specified, a default factory is used. The default factory requires that the classes to instantiate have a public no-argument constructor: it instantiates the class by calling first calling `clazz.newInstance()`, and if that fails, `clazz.getDeclaredConstructor().newInstance()`.
 
 
 === Boolean Options with Parameters

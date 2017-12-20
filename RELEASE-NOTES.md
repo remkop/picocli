@@ -5,13 +5,19 @@
 
 The picocli community is pleased to announce picocli 2.2.
 
-This release contains new features.
+This release contains new features, and could be considered a "Project Coin" release for picocli: small changes with large impact.
+
 
 In command line applications with subcommands, options of the parent command are often intended as "global" options that apply to all the subcommands. This release introduces a new `@ParentCommand` annotation that makes it easy for subcommands to access such parent command options: fields of the subcommand annotated with `@ParentCommand` are initialized with a reference to the parent command. 
 
 Furthermore, this release adds support for more built-in types, so applications don't need to register custom converters for common types. The new types include Java 7 classes like `java.nio.file.Path` and Java 8 classes like the value classes in the `java.time` package. These converters are loaded using reflection and are not available when running on Java 5 or Java 6.
 
-Applications may now specify a custom factory for instantiating subcommands.
+This release adds a `converter` attribute to the `@Option` and `@Parameter` annotations. This allows a specific option or positional parameter to use a different converter than would be used by default based on the type of the field.
+
+
+Applications may now specify a custom factory for instantiating classes that were configured as annotation attributes, like subcommands, type converters and version providers.
+
+
 
 This is the seventeenth public release.
 Picocli follows [semantic versioning](http://semver.org/).
@@ -87,12 +93,43 @@ Converters for the following types were added in this release:
 * `java.sql.Driver` (for a database URL of the form `jdbc:subprotocol:subname`)
 * `java.sql.Timestamp` (for values in the `"yyyy-MM-dd HH:mm:ss"` or `"yyyy-MM-dd HH:mm:ss.fffffffff"` formats)
 
-### Subcommand factory
-Subcommands that are registered declaratively via annotations must be instantiated somehow. From this release, a custom factory can be specified when constructing a `CommandLine` instance. This allows full control over subcommand creation and opens possibilities for Inversion of Control and Depencency Injection. For example:
+### Option-specific Type Converters
+This release adds a `converter` attribute to the `@Option` and `@Parameter` annotations. This allows a specific option or positional parameter to use a different converter than would be used by default based on the type of the field.
+
+For example, you may want to convert the constant names defined in [`java.sql.Types`](https://docs.oracle.com/javase/9/docs/api/java/sql/Types.html) to their `int` value for a specific field, but this should not impact any other `int` fields: other `int` fields should continue to simply parse numeric values.
+
+Example usage:
 
 ```
-IFactory mySubcommandFactory = getCustomFactory();
-CommandLine cmdLine = new CommandLine(new Git(), mySubcommandFactory);
+class App {
+    @Option(names = "--sqlType", converter = SqlTypeConverter.class)
+    int sqlType;
+}
+```
+
+Example implementation:
+
+```
+class SqlTypeConverter implements ITypeConverter<Integer> {
+    public Integer convert(String value) throws Exception {
+        switch (value) {
+            case "ARRAY"  : return Types.ARRAY;
+            case "BIGINT" : return Types.BIGINT;
+            case "BINARY" : return Types.BINARY;
+            case "BIT"    : return Types.BIT;
+            case "BLOB"   : return Types.BLOB;
+            ...
+        }
+    }
+}
+```
+
+### Custom factory
+Declaratively registered subcommands, type converters and version providers must be instantiated somehow. From this release, a custom factory can be specified when constructing a `CommandLine` instance. This allows full control over object creation and opens possibilities for Inversion of Control and Depencency Injection. For example:
+
+```
+IFactory myFactory = getCustomFactory();
+CommandLine cmdLine = new CommandLine(new Git(), myFactory);
 ```
 
 ## <a name="2.2.0-promoted"></a> Promoted features
