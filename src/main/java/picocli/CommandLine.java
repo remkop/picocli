@@ -1599,11 +1599,17 @@ public class CommandLine {
         /** Version information for this command, to print to the console when the user specifies an
          * {@linkplain Option#versionHelp() option} to request version help. This is not part of the usage help message.
          *
-         * @return a string or an array of strings with version information about this command.
+         * @return a string or an array of strings with version information about this command (each string in the array is displayed on a separate line).
          * @since 0.9.8
          * @see CommandLine#printVersionHelp(PrintStream)
          */
         String[] version() default {};
+
+        /** Class that can provide version information dynamically at runtime. An implementation may return version
+         * information obtained from the JAR manifest, a properties file or some other source.
+         * @return a Class that can provide version information dynamically at runtime
+         */
+        Class<? extends IVersionProvider> versionProvider() default NoVersionProvider.class;
 
         /** Set the heading preceding the header section. May contain embedded {@linkplain java.util.Formatter format specifiers}.
          * @return the heading preceding the header section
@@ -1741,24 +1747,41 @@ public class CommandLine {
     }
 
     /**
-     * Subcommands registered declaratively on a parent command with the {@link Command#subcommands()} annotation
-     * are instantiated by a factory.
+     * Provides version information for a command. Commands may configure a provider with the
+     * {@link Command#versionProvider()} annotation attribute.
+     */
+    public interface IVersionProvider {
+        /**
+         * Returns version information for a command.
+         * @return version information (each string in the array is displayed on a separate line)
+         * @throws Exception an exception detailing what went wrong when obtaining version information
+         */
+        String[] getVersion() throws Exception;
+    }
+    private static class NoVersionProvider implements IVersionProvider {
+        public String[] getVersion() throws Exception { throw new UnsupportedOperationException(); }
+    }
+
+    /**
+     * Factory for instantiating classes that are registered declaratively with annotation attributes, like
+     * {@link Command#subcommands()}, {@link Option#converter()}, {@link Parameters#converter()} and {@link Command#versionProvider()}.
      */
     public interface IFactory {
         /**
          * Creates and returns an instance of the specified class.
          * @param cls the class to instantiate
+         * @param <K> the type to instantiate
          * @return the new instance
          * @throws Exception an exception detailing what went wrong when creating the instance
          */
-        Object create(Class<?> cls) throws Exception;
+        <K> K create(Class<K> cls) throws Exception;
     }
     private static class DefaultFactory implements IFactory {
-        public Object create(Class<?> cls) throws Exception {
+        public <T> T create(Class<T> cls) throws Exception {
             try {
                 return cls.newInstance();
             } catch (Exception ex) {
-                Constructor<?> constructor = cls.getDeclaredConstructor();
+                Constructor<T> constructor = cls.getDeclaredConstructor();
                 constructor.setAccessible(true);
                 return constructor.newInstance();
             }
@@ -2018,7 +2041,19 @@ public class CommandLine {
                     Command cmd = cls.getAnnotation(Command.class);
                     declaredSeparator = (declaredSeparator == null) ? cmd.separator() : declaredSeparator;
                     declaredName = (declaredName == null) ? cmd.name() : declaredName;
-                    CommandLine.this.versionLines.addAll(Arrays.asList(cmd.version()));
+
+                    if (cmd.versionProvider() != null && cmd.versionProvider() != NoVersionProvider.class) {
+                        try {
+                            IVersionProvider provider = factory.create(cmd.versionProvider());
+                            CommandLine.this.versionLines.addAll(Arrays.asList(provider.getVersion()));
+                        } catch (InitializationException ex) {
+                            throw ex;
+                        } catch (Exception ex) {
+                            throw new InitializationException("Could not get version info from " + cmd.versionProvider() + ": " + ex, ex);
+                        }
+                    } else {
+                        CommandLine.this.versionLines.addAll(Arrays.asList(cmd.version()));
+                    }
 
                     for (Class<?> sub : cmd.subcommands()) {
                         Command subCommand = sub.getAnnotation(Command.class);

@@ -24,6 +24,8 @@ import picocli.CommandLine.Help.Ansi.Style;
 import picocli.CommandLine.Help.Ansi.Text;
 import picocli.CommandLine.Help.ColorScheme;
 import picocli.CommandLine.Help.TextTable;
+import picocli.CommandLine.IVersionProvider;
+import picocli.CommandLine.InitializationException;
 import picocli.CommandLine.Option;
 import picocli.CommandLine.Parameters;
 import picocli.CommandLine.Command;
@@ -38,7 +40,6 @@ import java.lang.reflect.Field;
 import java.net.InetAddress;
 import java.net.URI;
 import java.net.URL;
-import java.nio.charset.Charset;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -2459,15 +2460,55 @@ public class CommandLineHelpTest {
                 "@|blue Build 12345|@%1$s",
                 "@|red,bg(white) (c) 2017|@%2$s" })
         class Versioned {}
+
+        CommandLine commandLine = new CommandLine(new Versioned());
+        verifyVersionWithMarkup(commandLine);
+    }
+
+    static class MarkupVersionProvider implements IVersionProvider {
+        public String[] getVersion() {
+            return new String[] {
+                    "@|yellow Versioned Command 1.0|@",
+                    "@|blue Build 12345|@%1$s",
+                    "@|red,bg(white) (c) 2017|@%2$s" };
+        }
+    }
+
+    @Test
+    public void testCommandLine_printVersionInfo_fromAnnotation_withMarkupAndParameterContainingMarkup() throws Exception {
+        @Command(versionProvider = MarkupVersionProvider.class)
+        class Versioned {}
+
+        CommandLine commandLine = new CommandLine(new Versioned());
+        verifyVersionWithMarkup(commandLine);
+    }
+
+    private void verifyVersionWithMarkup(CommandLine commandLine) throws UnsupportedEncodingException {
         String[] args = {"@|bold VALUE1|@", "@|underline VALUE2|@", "VALUE3"};
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         PrintStream ps = new PrintStream(baos, true, "UTF8");
-        new CommandLine(new Versioned()).printVersionHelp(ps, Help.Ansi.ON, (Object[]) args);
+        commandLine.printVersionHelp(ps, Help.Ansi.ON, (Object[]) args);
         String result = baos.toString("UTF8");
         assertEquals(String.format("" +
                 "\u001B[33mVersioned Command 1.0\u001B[39m\u001B[0m%n" +
                 "\u001B[34mBuild 12345\u001B[39m\u001B[0m\u001B[1mVALUE1\u001B[21m\u001B[0m%n" +
                 "\u001B[31m\u001B[47m(c) 2017\u001B[49m\u001B[39m\u001B[0m\u001B[4mVALUE2\u001B[24m\u001B[0m%n"), result);
+    }
+
+    static class FailingVersionProvider implements IVersionProvider {
+        public String[] getVersion() throws Exception {
+            throw new IllegalStateException("sorry can't give you a version");
+        }
+    }
+    @Test
+    public void testFailingVersionProvider() {
+        @Command(versionProvider = FailingVersionProvider.class)
+        class App {}
+        try {
+            new CommandLine(new App());
+        } catch (InitializationException ex) {
+            assertEquals("Could not get version info from class picocli.CommandLineHelpTest$FailingVersionProvider: java.lang.IllegalStateException: sorry can't give you a version", ex.getMessage());
+        }
     }
 
     @Test
