@@ -14,6 +14,7 @@ Furthermore, this release adds support for more built-in types, so applications 
 
 This release adds a `converter` attribute to the `@Option` and `@Parameter` annotations. This allows a specific option or positional parameter to use a different converter than would be used by default based on the type of the field.
 
+From this release, the `@Command` annotation supports a `versionProvider` attribute. This is useful when the version of an application should be detected dynamically at runtime. For example, an implementation may return version information obtained from the JAR manifest, a properties file or some other source.
 
 Applications may now specify a custom factory for instantiating classes that were configured as annotation attributes, like subcommands, type converters and version providers.
 
@@ -124,6 +125,25 @@ class SqlTypeConverter implements ITypeConverter<Integer> {
 }
 ```
 
+### Dynamic Version Information
+From this release, the `@Command` annotation supports a `versionProvider` attribute. Applications may specify a `IVersionProvider` implementation in this attribute, and picocli will instantiate this class
+and invoke it to collect version information.
+
+This is useful when the version of an application should be detected dynamically at runtime. For example, an implementation may return version information obtained from the JAR manifest, a properties file or some other source.
+
+Custom version providers need to implement the `picocli.CommandLine.IVersionProvider` interface:
+
+```
+public interface IVersionProvider {
+    /**
+     * Returns version information for a command.
+     * @return version information (each string in the array is displayed on a separate line)
+     * @throws Exception an exception detailing what went wrong when obtaining version information
+     */
+    String[] getVersion() throws Exception;
+}
+```
+
 ### Custom factory
 Declaratively registered subcommands, type converters and version providers must be instantiated somehow. From this release, a custom factory can be specified when constructing a `CommandLine` instance. This allows full control over object creation and opens possibilities for Inversion of Control and Depencency Injection. For example:
 
@@ -139,9 +159,11 @@ No features have been promoted in this picocli release.
 
 ## <a name="2.2.0-fixes"></a> Fixed issues
 
-- [#247] New `@ParentCommand` annotation to inject a reference to the parent command into subcommand fields. Thanks to [michaelpj](https://github.com/michaelpj) for pushing for a solution for this.
+- [#247] New `@ParentCommand` annotation to inject a reference to the parent command into subcommand fields. Thanks to [michaelpj](https://github.com/michaelpj) for the request.
 - [#83]  Add more built-in converters. Thanks to [garydgregory](https://github.com/garydgregory/jcommander-addons) for the inspiration.
-- [#169] Configurable factory to instantiate subcommands that are registered via annotation attributes. Thanks to [kakawait](https://github.com/kakawait) for the idea.
+- [#237] Option and Positional Parameter-specific type converters. Thanks to [godzsa](https://github.com/godzsa) for the request.
+- [#236] Allow obtaining version information dynamically at runtime. Thanks to [kcris](https://github.com/kcris) for the request.
+- [#169] Configurable factory to instantiate subcommands that are registered via annotation attributes. Thanks to [kakawait](https://github.com/kakawait) for the request.
 
 
 ## <a name="2.2.0-deprecated"></a> Deprecations
