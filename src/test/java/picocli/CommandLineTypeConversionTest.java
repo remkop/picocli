@@ -29,6 +29,7 @@ import java.sql.Connection;
 import java.sql.Driver;
 import java.sql.Time;
 import java.sql.Timestamp;
+import java.sql.Types;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -514,7 +515,7 @@ public class CommandLineTypeConversionTest {
     }
 
     @Test
-    public void testCustomConverter() {
+    public void testRegisterCustomConverter() {
         class Glob {
             public final String glob;
             public Glob(String glob) { this.glob = glob; }
@@ -537,6 +538,106 @@ public class CommandLineTypeConversionTest {
         assertEquals(args[0], app.globField.glob);
     }
 
+    static class MyGlobConverter implements ITypeConverter<MyGlob> {
+        public MyGlob convert(String value) { return new MyGlob(value); }
+    }
+    static class MyGlob {
+        public final String glob;
+        public MyGlob(String glob) { this.glob = glob; }
+    }
+    @Test
+    public void testAnnotateCustomConverter() {
+        class App {
+            @Parameters(converter = MyGlobConverter.class)
+            MyGlob globField;
+        }
+        CommandLine commandLine = new CommandLine(new App());
+
+        String[] args = {"a*glob*pattern"};
+        List<CommandLine> parsed = commandLine.parse(args);
+        assertEquals("not empty", 1, parsed.size());
+        assertTrue(parsed.get(0).getCommand() instanceof App);
+        App app = (App) parsed.get(0).getCommand();
+        assertEquals(args[0], app.globField.glob);
+    }
+
+    static class SqlTypeConverter implements ITypeConverter<Integer> {
+        public Integer convert(String value) {
+            if ("ARRAY".equals(value))   { return Types.ARRAY; }
+            if ("BIGINT".equals(value))  { return Types.BIGINT; }
+            if ("BINARY".equals(value))  { return Types.BINARY; }
+            if ("BIT".equals(value))     { return Types.BIT; }
+            if ("BLOB".equals(value))    { return Types.BLOB; }
+            if ("BOOLEAN".equals(value)) { return Types.BOOLEAN; }
+            if ("CHAR".equals(value))    { return Types.CHAR; }
+            if ("CLOB".equals(value))    { return Types.CLOB; }
+            return Types.OTHER;
+        }
+    }
+    @Test
+    public void testAnnotatedCustomConverterDoesNotConflictWithExistingType() {
+        class App {
+            @Parameters(index = "0", converter = SqlTypeConverter.class)
+            int sqlTypeParam;
+
+            @Parameters(index = "1")
+            int normalIntParam;
+
+            @Option(names = "-t", converter = SqlTypeConverter.class)
+            int sqlTypeOption;
+
+            @Option(names = "-x")
+            int normalIntOption;
+        }
+        App app = new App();
+        CommandLine commandLine = new CommandLine(app);
+
+        String[] args = {"-x", "1234", "-t", "BLOB", "CLOB", "5678"};
+        commandLine.parse(args);
+        assertEquals(1234, app.normalIntOption);
+        assertEquals(Types.BLOB, app.sqlTypeOption);
+        assertEquals(Types.CLOB, app.sqlTypeParam);
+        assertEquals(5678, app.normalIntParam);
+    }
+
+    static class ErrorConverter implements ITypeConverter<Integer> {
+        public Integer convert(String value) throws Exception {
+            throw new IllegalStateException("bad converter");
+        }
+    }
+    @Test
+    public void testAnnotatedCustomConverterErrorHandling() {
+        class App {
+            @Parameters(converter = ErrorConverter.class)
+            int sqlTypeParam;
+        }
+        CommandLine commandLine = new CommandLine(new App());
+        try {
+            commandLine.parse("anything");
+        } catch (CommandLine.ParameterException ex) {
+            assertEquals("Could not convert 'anything' to int for positional parameter at index 0..* (<sqlTypeParam>): java.lang.IllegalStateException: bad converter", ex.getMessage());
+        }
+    }
+    static class CustomConverter implements ITypeConverter<Integer> {
+        public Integer convert(String value) { return Integer.parseInt(value); }
+    }
+    static class Plus23Converter implements ITypeConverter<Integer> {
+        public Integer convert(String value) { return Integer.parseInt(value) + 23; }
+    }
+    static class Plus23ConverterFactory implements CommandLine.IFactory {
+        public <T> T create(Class<T> cls) { return (T) new Plus23Converter(); }
+    }
+    @Test
+    public void testAnnotatedCustomConverterFactory() {
+        class App {
+            @Parameters(converter = CustomConverter.class)
+            int converted;
+        }
+        App app = new App();
+        CommandLine commandLine = new CommandLine(app, new Plus23ConverterFactory());
+        commandLine.parse("100");
+        assertEquals(123, app.converted);
+    }
     private static class EnumParams {
         @Option(names = "-timeUnit")
         TimeUnit timeUnit;
