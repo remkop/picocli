@@ -2483,6 +2483,15 @@ public class CommandLineHelpTest {
         verifyVersionWithMarkup(commandLine);
     }
 
+    @Test
+    public void testCommandLine_printVersionInfo_usesProviderIfBothProviderAndStaticVersionInfoExist() throws Exception {
+        @Command(versionProvider = MarkupVersionProvider.class, version = "static version is ignored")
+        class Versioned {}
+
+        CommandLine commandLine = new CommandLine(new Versioned());
+        verifyVersionWithMarkup(commandLine);
+    }
+
     private void verifyVersionWithMarkup(CommandLine commandLine) throws UnsupportedEncodingException {
         String[] args = {"@|bold VALUE1|@", "@|underline VALUE2|@", "VALUE3"};
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
