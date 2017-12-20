@@ -112,12 +112,12 @@ public class CommandLineTest {
         final Sub1_testDeclarativelyAddSubcommands sub1Command = new Sub1_testDeclarativelyAddSubcommands();
         final SubSub1_testDeclarativelyAddSubcommands subsub1Command = new SubSub1_testDeclarativelyAddSubcommands();
         IFactory factory = new IFactory() {
-            public Object create(Class<?> cls) throws Exception {
+            public <T> T create(Class<T> cls) throws Exception {
                 if (cls == Sub1_testDeclarativelyAddSubcommands.class) {
-                    return sub1Command;
+                    return (T) sub1Command;
                 }
                 if (cls == SubSub1_testDeclarativelyAddSubcommands.class) {
-                    return subsub1Command;
+                    return (T) subsub1Command;
                 }
                 throw new IllegalStateException();
             }
@@ -132,7 +132,7 @@ public class CommandLineTest {
     @Test
     public void testFailingFactory() {
         IFactory factory = new IFactory() {
-            public Object create(Class<?> cls) throws Exception {
+            public <T> T create(Class<T> cls) throws Exception {
                 throw new IllegalStateException("bad class");
             }
         };
