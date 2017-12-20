@@ -1847,7 +1847,7 @@ Picocli provides some default `IParseResultHandler` implementations for common t
 
 === Custom Factory
 
-Declaratively registered <<Registering Subcommands Declaratively,subcommands>>, <<Option-specific Type Converters,type converters>> and <<Dynamic Version Information,version providers>> must be instantiated somehow. From picocli 2.2, a custom factory can be specified when constructing a `CommandLine` instance. This allows full control over object creation and opens possibilities for Inversion of Control and Depencency Injection. For example:
+Declaratively registered <<Registering Subcommands Declaratively,subcommands>>, <<Option-specific Type Converters,type converters>> and <<Dynamic Version Information,version providers>> must be instantiated somehow. From picocli 2.2, a custom factory can be specified when constructing a `CommandLine` instance. This allows full control over object creation and opens possibilities for Inversion of Control and Dependency Injection. For example:
 
 [source,java]
 ----
