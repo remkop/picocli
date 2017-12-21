@@ -37,8 +37,8 @@ interactively showing users what options and subcommands are available.
 ![Picocli Demo help message with ANSI colors](docs/images/picocli.Demo.png?raw=true)
 
 #### Releases
-* [Releases](https://github.com/remkop/picocli/releases) - latest: 2.1
-* [Picocli 2.0 Release Notes](https://github.com/remkop/picocli/releases/tag/v2.0.0) - including some [potential breaking changes](https://github.com/remkop/picocli/releases/tag/v2.0.0#2.0-breaking-changes)
+* [Releases](https://github.com/remkop/picocli/releases) - latest: 2.2
+* [Picocli 2.0 Release Notes](https://github.com/remkop/picocli/releases/tag/v2.0.0) - note there are some [potential breaking changes](https://github.com/remkop/picocli/releases/tag/v2.0.0#2.0-breaking-changes)
 
 #### Documentation
 * [User manual: http://picocli.info](http://picocli.info)
@@ -60,13 +60,15 @@ interactively showing users what options and subcommands are available.
 Annotate fields with the command line parameter names and description.
 
 ```java
+import picocli.CommandLine;
 import picocli.CommandLine.Option;
 import picocli.CommandLine.Parameters;
 import java.io.File;
 
-public class Example {
-    @Option(names = { "-v", "--verbose" }, description = "Be verbose.")
-    private boolean verbose = false;
+public class Example implements Runnable {
+    @Option(names = { "-v", "--verbose" }, description = "Verbose mode. Helpful for troubleshooting. " +
+                                                         "Multiple -v options increase the verbosity.")
+    private boolean[] verbose = new boolean[0];
 
     @Option(names = { "-h", "--help" }, usageHelp = true,
             description = "Displays this help message and quits.")
@@ -74,25 +76,41 @@ public class Example {
 
     @Parameters(arity = "1..*", paramLabel = "FILE", description = "File(s) to process.")
     private File[] inputFiles;
-    ...
+    
+    public void run() {
+        if (verbose.length > 0) {
+            System.out.println(inputFiles.length + " files to process...");
+        }
+        if (verbose.length > 1) {
+            for (File f : inputFiles) {
+                System.out.println(f.getAbsolutePath());
+            }
+        }
+    }
+    
+    public static void main(String[] args) {
+        CommandLine.run(new Example(), System.out, args);
+    }
 }
 ```
 
-Then invoke `CommandLine.populateCommand` with the command line parameters and an object you want to initialize.
+All that is necessary to run the program is to invoke the `CommandLine.run` method with the command line parameters and the object you want to initialize.
 
-```java
-String[] args = { "-v", "inputFile1", "inputFile2" };
-Example app = CommandLine.populateCommand(new Example(), args);
-
-assert !app.helpRequested;
-assert  app.verbose;
-assert  app.inputFiles != null && app.inputFiles.length == 2;
+```bash
+$ java Example -v inputFile1 inputFile2
 ```
 
-Invoke `CommandLine.usage` if the user requested help or the input was invalid and a `ParameterException` was thrown.
+The `CommandLine.run` method automatically prints the usage help message if the user requested help or when the input was invalid.
 
-```java
-CommandLine.usage(new Example(), System.out);
+```bash
+$ java Example
+
+Missing required parameters at positions 0..*: FILE
+Usage: <main class> [-h] [-v]... FILE...
+      FILE...                 File(s) to process.
+  -h, --help                  Displays this help message and quits.
+  -v, --verbose               Verbose mode. Helpful for troubleshooting.
+                                Multiple -v options increase the verbosity.
 ```
 
 ![Usage help message with ANSI colors](docs/images/ExampleUsageANSI.png?raw=true)
