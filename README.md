@@ -38,7 +38,7 @@ interactively showing users what options and subcommands are available.
 
 #### Releases
 * [Releases](https://github.com/remkop/picocli/releases) - latest: 2.2
-* [Picocli 2.0 Release Notes](https://github.com/remkop/picocli/releases/tag/v2.0.0) - note there are some [potential breaking changes](https://github.com/remkop/picocli/releases/tag/v2.0.0#2.0-breaking-changes)
+* [Picocli 2.0 Release Notes](https://github.com/remkop/picocli/releases/tag/v2.0.0) - note there are some [potential breaking changes](https://github.com/remkop/picocli/releases/tag/v2.0.0#2.0-breaking-changes) from prior versions
 
 #### Documentation
 * [User manual: http://picocli.info](http://picocli.info)
@@ -57,7 +57,8 @@ interactively showing users what options and subcommands are available.
 
 ## Example
 
-Annotate fields with the command line parameter names and description.
+Annotate fields with the command line parameter names and description. Optionally implement `Runnable` or `Callable` to delegate error handling and requests for usage help or version help to picocli. For example:
+
 
 ```java
 import picocli.CommandLine;
@@ -94,26 +95,19 @@ public class Example implements Runnable {
 }
 ```
 
-All that is necessary to run the program is to invoke the `CommandLine.run` method with the command line parameters and the object you want to initialize.
+If your command implements `Runnable`, all the code that is necessary to parse the command line and execute the command is a call to `CommandLine.run` with the command line parameters and the `Runnable` command. When the program is run on the command line, the command line arguments are converted to Java objects and assigned to the annotated fields. After the arguments are successfully parsed, picocli calls the command's `run` method.
 
 ```bash
 $ java Example -v inputFile1 inputFile2
+
+2 files to process...
 ```
 
-The `CommandLine.run` method automatically prints the usage help message if the user requested help or when the input was invalid.
-
-```bash
-$ java Example
-
-Missing required parameters at positions 0..*: FILE
-Usage: <main class> [-h] [-v]... FILE...
-      FILE...                 File(s) to process.
-  -h, --help                  Displays this help message and quits.
-  -v, --verbose               Verbose mode. Helpful for troubleshooting.
-                                Multiple -v options increase the verbosity.
-```
+The `CommandLine.run` convenience method automatically prints the usage help message if the user requested help or when the input was invalid.
 
 ![Usage help message with ANSI colors](docs/images/ExampleUsageANSI.png?raw=true)
+
+If you want more control, you may be interested in the `CommandLine.parse` or `CommandLine.parseWithHandlers` methods. See the user manual for details.
 
 ## Usage Help with ANSI Colors and Styles
 
