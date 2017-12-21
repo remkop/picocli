@@ -409,7 +409,7 @@ To ensure a custom type converter is available to all subcommands, register the 
 === Option-specific Type Converters
 Picocli 2.2 added a `converter` attribute to the `@Option` and `@Parameter` annotations. This allows a specific option or positional parameter to use a different converter than would be used by default based on the type of the field.
 
-For example, you may want to convert the constant names defined in https://docs.oracle.com/javase/9/docs/api/java/sql/Types.html[`java.sql.Types`] to their `int` value for a specific field, but this should not impact any other `int` fields: other `int` fields should continue to simply parse numeric values.
+For example, for a specific field you may want to use a converter that maps the constant names defined in https://docs.oracle.com/javase/9/docs/api/java/sql/Types.html[`java.sql.Types`] to the `int` value of these constants, but any other `int` fields should not be affected by this and should continue to use the standard int converter that parses numeric values.
 
 Example usage:
 
