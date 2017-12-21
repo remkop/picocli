@@ -39,7 +39,7 @@ In command line applications with subcommands, options of the top level command 
 
 The `@ParentCommand` annotation makes it easy for subcommands to access their parent command options: subcommand fields annotated with `@ParentCommand` are initialized with a reference to the parent command. For example:
 
-```
+```java
 @Command(name = "fileutils", subcommands = List.class)
 class FileUtils {
 
@@ -101,7 +101,7 @@ For example, you may want to convert the constant names defined in [`java.sql.Ty
 
 Example usage:
 
-```
+```java
 class App {
     @Option(names = "--sqlType", converter = SqlTypeConverter.class)
     int sqlType;
@@ -110,7 +110,7 @@ class App {
 
 Example implementation:
 
-```
+```java
 class SqlTypeConverter implements ITypeConverter<Integer> {
     public Integer convert(String value) throws Exception {
         switch (value) {
@@ -119,7 +119,7 @@ class SqlTypeConverter implements ITypeConverter<Integer> {
             case "BINARY" : return Types.BINARY;
             case "BIT"    : return Types.BIT;
             case "BLOB"   : return Types.BLOB;
-            ...
+            //...
         }
     }
 }
@@ -133,7 +133,7 @@ This is useful when the version of an application should be detected dynamically
 
 Custom version providers need to implement the `picocli.CommandLine.IVersionProvider` interface:
 
-```
+```java
 public interface IVersionProvider {
     /**
      * Returns version information for a command.
@@ -149,7 +149,7 @@ The GitHub project has a manifest file-based [example](https://github.com/remkop
 ### Custom factory
 Declaratively registered subcommands, type converters and version providers must be instantiated somehow. From this release, a custom factory can be specified when constructing a `CommandLine` instance. This allows full control over object creation and opens possibilities for Inversion of Control and Dependency Injection. For example:
 
-```
+```jshelllanguage
 IFactory myFactory = getCustomFactory();
 CommandLine cmdLine = new CommandLine(new Git(), myFactory);
 ```
@@ -211,19 +211,19 @@ Multiple @-files may be specified on the command line.
 
 For example, suppose a file with arguments exists at `/home/foo/args`, with these contents:
 
-```
+```text
 # This line is a comment and is ignored.
 ABC -option=123
 'X Y Z'
 ```
 
 A command may be invoked with the @file argument, like this:
-```
+```bash
 java MyCommand @/home/foo/args
 ```
 
 The above will be expanded to the contents of the file:
-```
+```bash
 java MyCommand ABC -option=123 "X Y Z"
 ```
 
@@ -233,14 +233,14 @@ The documentation for these tools shows further examples.
 ### Repeated Boolean Flags
 
 Multi-valued boolean options are now supported. For example:
-```
+```jshelllanguage
 @Option(names = "-v", description = { "Specify multiple -v options to increase verbosity.",
                                       "For example, `-v -v -v` or `-vvv`"})
 boolean[] verbosity;
 ```
 
 Users may specify multiple boolean flag options without parameters. For example:
-```
+```bash
 <command> -v -v -v -vvv
 ```
 The above example results in six `true` values being added to the `verbosity` array.
@@ -454,7 +454,7 @@ Before the script body is executed, the `PicocliBaseScript` base class parses th
 `@Field` variables annotated with `@Option` or `@Parameters`.
 The script body is executed if the user input was valid and did not request usage help or version information.
 
-```
+```groovy
 // exampleScript.groovy
 @Grab('info.picocli:picocli:2.0.0')
 @Command(name = "myCommand", description = "does something special")
@@ -581,7 +581,7 @@ was inconsistent with most Unix tools,
 and prevented supporting mixing options with positional arguments on the command line.
 
 To illustrate the new non-greedy behaviour, consider this example program:
-```
+```java
 class MixDemo {
   @Option(names="-o") List<String> options;
   @Parameters         List<String> positionalParams;
@@ -598,13 +598,13 @@ class MixDemo {
 ```
 We run this program as below, where the option is followed by multiple values:
 
-```
+```bash
 $ java MixDemo -o 1 2 3
 ```
 
 Previously, the arguments following `-o` would all end up in the `options` list. Running the above command with picocli 1.0 would print out the following:
 
-```
+```bash
 # (Previously, in picocli-1.0.1)
 $ java MixDemo -o 1 2 3
 
@@ -614,7 +614,7 @@ options   : [1, 2, 3]
 
 From picocli 2.0, only the first argument following `-o` is added to the `options` list, the remainder is parsed as positional parameters:
 
-```
+```bash
 # (Currently, in picocli-2.0)
 $ java MixDemo -o 1 2 3
 
@@ -623,7 +623,7 @@ options   : [1]
 ```
 
 To put multiple values in the options list in picocli 2.0, users can specify the `-o` option multiple times:
-```
+```bash
 $ java MixDemo -o 1 -o 2 -o 3
 
 positional: null
@@ -631,7 +631,7 @@ options   : [1, 2, 3]
 ```
 
 Alternatively, application authors can make a multi-value option greedy in picocli v2.0 by explicitly setting a variable arity:
-```
+```java
 class Args {
     @Option(names = "-o", arity = "1..*") List<String> options;
 }
