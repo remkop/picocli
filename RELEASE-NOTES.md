@@ -5,7 +5,7 @@
 
 The picocli community is pleased to announce picocli 2.2.
 
-This release contains new features, and could be considered a "Project Coin" release for picocli: small changes with large impact.
+This release is a "Project Coin"-like release for picocli: small changes with a nice pay-off.
 
 
 In command line applications with subcommands, options of the parent command are often intended as "global" options that apply to all the subcommands. This release introduces a new `@ParentCommand` annotation that makes it easy for subcommands to access such parent command options: fields of the subcommand annotated with `@ParentCommand` are initialized with a reference to the parent command. 
