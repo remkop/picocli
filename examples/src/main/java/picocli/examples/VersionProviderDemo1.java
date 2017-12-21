@@ -25,17 +25,17 @@ import java.util.Properties;
 
 /**
  * Demonstrates a {@link IVersionProvider} implementation that reads version information from a
- * {@code /version.txt } file that is expected to be in the root of the classpath.
+ * {@code /version.txt} file that is expected to be in the root of the classpath.
  * <p>
  * The following gradle build snippet can be used to generate such a version.txt file and include it in the generated jar:
  * </p>
  * <pre>
  * def generatedResources = "$buildDir/generated-resources/main"
  * sourceSets {
- * main {
- *     //register an output folder on the main SourceSet:
- *     output.dir(generatedResources, builtBy: 'generateVersionTxt')
- *     //it is now a part of the 'main' classpath and will be a part of the jar
+ *     main {
+ *         //register an output folder on the main SourceSet:
+ *         output.dir(generatedResources, builtBy: 'generateVersionTxt')
+ *         //it is now a part of the 'main' classpath and will be a part of the jar
  *     }
  * }
  *
@@ -69,7 +69,7 @@ public class VersionProviderDemo1 implements Runnable {
     }
 
     /**
-     * {@link IVersionProvider} implementation that returns version information from a {@code /version.txt } file in the classpath.
+     * {@link IVersionProvider} implementation that returns version information from a {@code /version.txt} file in the classpath.
      */
     static class PropertiesVersionProvider implements IVersionProvider {
         public String[] getVersion() throws Exception {

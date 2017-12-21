@@ -23,7 +23,6 @@ import picocli.CommandLine.Option;
 import java.io.IOException;
 import java.net.URL;
 import java.util.Enumeration;
-import java.util.Properties;
 import java.util.jar.Attributes;
 import java.util.jar.Manifest;
 
@@ -56,8 +55,9 @@ public class VersionProviderDemo2 implements Runnable {
                 try {
                     Manifest manifest = new Manifest(url.openStream());
                     if (isApplicableManifest(manifest)) {
-                        Attributes attributes = manifest.getMainAttributes();
-                        return new String[] { attributes.get(key("Implementation-Title")) + " version \"" + attributes.get(key("Implementation-Version")) + "\"" };
+                        Attributes attr = manifest.getMainAttributes();
+                        return new String[] { get(attr, "Implementation-Title") + " version \"" +
+                                get(attr, "Implementation-Version") + "\"" };
                     }
                 } catch (IOException ex) {
                     return new String[] { "Unable to read from " + url + ": " + ex };
@@ -68,8 +68,11 @@ public class VersionProviderDemo2 implements Runnable {
 
         private boolean isApplicableManifest(Manifest manifest) {
             Attributes attributes = manifest.getMainAttributes();
-            return "picocli".equals(attributes.get(key("Implementation-Title")));
+            return "picocli".equals(get(attributes, "Implementation-Title"));
         }
-        private static Attributes.Name key(String key) { return new Attributes.Name(key); }
+
+        private static Object get(Attributes attributes, String key) {
+            return attributes.get(new Attributes.Name(key));
+        }
     }
 }
