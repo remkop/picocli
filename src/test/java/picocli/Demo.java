@@ -16,6 +16,7 @@
 package picocli;
 
 import picocli.CommandLine.Command;
+import picocli.CommandLine.IVersionProvider;
 import picocli.CommandLine.Option;
 import picocli.CommandLine.Parameters;
 
@@ -25,10 +26,16 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.io.UnsupportedEncodingException;
+import java.net.URL;
 import java.security.MessageDigest;
 import java.util.ArrayList;
+import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.Callable;
+import java.util.jar.Attributes;
+import java.util.jar.Manifest;
 
 /**
  * Demonstrates picocli subcommands.
@@ -49,6 +56,7 @@ import java.util.concurrent.Callable;
         description = {
                 "",
                 "Demonstrates picocli subcommands parsing and usage help.", },
+        versionProvider = Demo.ManifestVersionProvider.class,
         optionListHeading = "@|bold %nOptions|@:%n",
         footer = {
                 "",
@@ -174,6 +182,9 @@ public class Demo implements Runnable {
 
     @Option(names = {"-t", "--tests"}, description = "Runs all tests in this class")
     private boolean runTests;
+
+    @Option(names = {"-V", "--version" }, versionHelp = true, description = "Show version information and exit")
+    boolean versionHelpRequested;
 
     public void run() {
         if (!runTests &&
@@ -718,4 +729,29 @@ public class Demo implements Runnable {
         }
     }
     // end::CheckSum[]
+
+    static class ManifestVersionProvider implements IVersionProvider {
+        public String[] getVersion() throws Exception {
+            Enumeration<URL> resources = CommandLine.class.getClassLoader().getResources("META-INF/MANIFEST.MF");
+            while (resources.hasMoreElements()) {
+                URL url = resources.nextElement();
+                try {
+                    Manifest manifest = new Manifest(url.openStream());
+                    if (isApplicableManifest(manifest)) {
+                        Attributes attributes = manifest.getMainAttributes();
+                        return new String[] { attributes.get(key("Implementation-Title")) + " version \"" + attributes.get(key("Implementation-Version")) + "\"" };
+                    }
+                } catch (IOException ex) {
+                    return new String[] { "Unable to read from " + url + ": " + ex };
+                }
+            }
+            return new String[0];
+        }
+
+        private boolean isApplicableManifest(Manifest manifest) {
+            Attributes attributes = manifest.getMainAttributes();
+            return "picocli".equals(attributes.get(key("Implementation-Title")));
+        }
+        private static Attributes.Name key(String key) { return new Attributes.Name(key); }
+    }
 }

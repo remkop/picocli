@@ -46,10 +46,32 @@ allprojects {
         groovyClasspath += configurations.ivy
     }
 }
-project(':examples') {
+project('examples') {
     dependencies {
         compile rootProject
         compile 'org.apache.ivy:ivy:2.4.0' // for Intelli/J
+    }
+    def generatedResources = "$buildDir/generated-resources/main"
+    sourceSets {
+        main {
+            //register an output folder on the main SourceSet:
+            output.dir(generatedResources, builtBy: 'generateVersionTxt')
+            //it is now a part of the 'main' classpath and will be a part of the jar
+        }
+    }
+
+    //a task that generates the resources for the example VersionProviderDemo1:
+    task generateVersionTxt {
+        description 'Creates a version.txt file with build info that is added to the root of the examples jar'
+        doLast {
+            new File(generatedResources).mkdirs()
+            def generated = new File(generatedResources, "version.txt")
+            generated.text = """
+Version: $rootProject.version
+Buildtime: ${new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date())}
+Application-name: $rootProject.name $project.name
+"""
+        }
     }
 }
 apply plugin: 'org.asciidoctor.convert'
@@ -63,7 +85,7 @@ jar {
         attributes 'Implementation-Title'  : 'picocli',
                    'Implementation-Vendor' : 'Remko Popma',
                    'Implementation-Version': version,
-                   'Main-Class'              : 'picocli.AutoComplete',
+                   'Main-Class'            : 'picocli.AutoComplete',
                    'Automatic-Module-Name' : 'info.picocli'
     }
 }
