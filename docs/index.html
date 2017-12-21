@@ -513,8 +513,8 @@ table.CodeRay td.code>pre{padding:0}
 <div id="header">
 <h1>picocli - a mighty tiny command line interface</h1>
 <div class="details">
-<span id="revnumber">version 2.1.0,</span>
-<span id="revdate">2017-11-30</span>
+<span id="revnumber">version 2.2.0,</span>
+<span id="revdate">2017-12-21</span>
 </div>
 <div id="toc" class="toc2">
 <div id="toctitle">Features</div>
@@ -534,8 +534,9 @@ table.CodeRay td.code>pre{padding:0}
 <ul class="sectlevel2">
 <li><a href="#_built_in_types">3.1. Built-in Types</a></li>
 <li><a href="#_custom_type_converters">3.2. Custom Type Converters</a></li>
-<li><a href="#_arrays_collections_maps">3.3. Arrays, Collections, Maps</a></li>
-<li><a href="#_abstract_field_types">3.4. Abstract Field Types</a></li>
+<li><a href="#_option_specific_type_converters">3.3. Option-specific Type Converters</a></li>
+<li><a href="#_arrays_collections_maps">3.4. Arrays, Collections, Maps</a></li>
+<li><a href="#_abstract_field_types">3.5. Abstract Field Types</a></li>
 </ul>
 </li>
 <li><a href="#_multiple_values">4. Multiple Values</a>
@@ -560,7 +561,12 @@ table.CodeRay td.code>pre{padding:0}
 </ul>
 </li>
 <li><a href="#_help_options">7. Help Options</a></li>
-<li><a href="#_version_help">8. Version Help</a></li>
+<li><a href="#_version_help">8. Version Help</a>
+<ul class="sectlevel2">
+<li><a href="#_static_version_information">8.1. Static Version Information</a></li>
+<li><a href="#_dynamic_version_information">8.2. Dynamic Version Information</a></li>
+</ul>
+</li>
 <li><a href="#_usage_help">9. Usage Help</a>
 <ul class="sectlevel2">
 <li><a href="#_compact_example">9.1. Compact Example</a></li>
@@ -599,19 +605,21 @@ table.CodeRay td.code>pre{padding:0}
 <li><a href="#_registering_subcommands_programmatically">12.1. Registering Subcommands Programmatically</a></li>
 <li><a href="#_registering_subcommands_declaratively">12.2. Registering Subcommands Declaratively</a></li>
 <li><a href="#_parsing_subcommands">12.3. Parsing Subcommands</a></li>
-<li><a href="#_usage_help_for_subcommands">12.4. Usage Help for Subcommands</a></li>
-<li><a href="#_nested_sub_subcommands">12.5. Nested sub-subcommands</a></li>
+<li><a href="#__code_parentcommand_code_annotation">12.4. <code>@ParentCommand</code> annotation</a></li>
+<li><a href="#_usage_help_for_subcommands">12.5. Usage Help for Subcommands</a></li>
+<li><a href="#_nested_sub_subcommands">12.6. Nested sub-subcommands</a></li>
 </ul>
 </li>
 <li><a href="#_tips_tricks">13. Tips &amp; Tricks</a>
 <ul class="sectlevel2">
 <li><a href="#_less_boilerplate">13.1. Less Boilerplate</a></li>
 <li><a href="#_convenience_methods_for_subcommands">13.2. Convenience Methods for Subcommands</a></li>
-<li><a href="#_boolean_options_with_parameters">13.3. Boolean Options with Parameters</a></li>
-<li><a href="#_hexadecimal_values">13.4. Hexadecimal Values</a></li>
-<li><a href="#_option_parameter_separators_2">13.5. Option-Parameter Separators</a></li>
-<li><a href="#_subclassing_for_reuse">13.6. Subclassing for Reuse</a></li>
-<li><a href="#_best_practices_for_command_line_interfaces">13.7. Best Practices for Command Line Interfaces</a></li>
+<li><a href="#_custom_factory">13.3. Custom Factory</a></li>
+<li><a href="#_boolean_options_with_parameters">13.4. Boolean Options with Parameters</a></li>
+<li><a href="#_hexadecimal_values">13.5. Hexadecimal Values</a></li>
+<li><a href="#_option_parameter_separators_2">13.6. Option-Parameter Separators</a></li>
+<li><a href="#_subclassing_for_reuse">13.7. Subclassing for Reuse</a></li>
+<li><a href="#_best_practices_for_command_line_interfaces">13.8. Best Practices for Command Line Interfaces</a></li>
 </ul>
 </li>
 <li><a href="#_tracing">14. Tracing</a></li>
@@ -1036,7 +1044,10 @@ the text value is converted to the type of the annotated field.</p>
 <div class="sect2">
 <h3 id="_built_in_types">3.1. Built-in Types</h3>
 <div class="paragraph">
-<p>Out of the box, picocli can convert command line argument strings to:</p>
+<p>Out of the box, picocli can convert command line argument strings to a number of common data types.</p>
+</div>
+<div class="paragraph">
+<p>Most of the built-in types work with Java 5, but picocli also has some default converters for Java 7 types like <code>Path</code> and Java 8 types like <code>Duration</code>, etc. These converters are only available when running on a Java version that supports them. See the below list for details.</p>
 </div>
 <div class="ulist">
 <ul>
@@ -1047,34 +1058,64 @@ the text value is converted to the type of the annotated field.</p>
 <p>any <code>enum</code></p>
 </li>
 <li>
-<p><code>BigDecimal</code>, <code>BigInteger</code></p>
-</li>
-<li>
-<p><code>Charset</code></p>
-</li>
-<li>
-<p><code>File</code></p>
-</li>
-<li>
-<p><code>InetAddress</code></p>
-</li>
-<li>
-<p>regex <code>Pattern</code></p>
-</li>
-<li>
 <p><code>String</code>, <code>StringBuilder</code>, <code>CharSequence</code></p>
 </li>
 <li>
-<p><code>java.sql.Time</code> (for values in any of the <code>"HH:mm"</code>, <code>"HH:mm:ss"</code>, <code>"HH:mm:ss.SSS"</code>, or <code>"HH:mm:ss,SSS"</code> formats)</p>
+<p><code>java.math.BigDecimal</code>, <code>java.math.BigInteger</code></p>
+</li>
+<li>
+<p><code>java.nio.Charset</code></p>
+</li>
+<li>
+<p><code>java.io.File</code></p>
+</li>
+<li>
+<p><code>java.nio.file.Path</code> (from picocli 2.2, requires Java 7 or higher)</p>
+</li>
+<li>
+<p><code>java.net.InetAddress</code></p>
+</li>
+<li>
+<p><code>java.util.regex.Pattern</code></p>
 </li>
 <li>
 <p><code>java.util.Date</code> (for values in <code>"yyyy-MM-dd"</code> format)</p>
 </li>
 <li>
-<p><code>URL</code>, <code>URI</code></p>
+<p><code>java.sql.Time</code> (for values in any of the <code>"HH:mm"</code>, <code>"HH:mm:ss"</code>, <code>"HH:mm:ss.SSS"</code>, or <code>"HH:mm:ss,SSS"</code> formats)</p>
 </li>
 <li>
-<p><code>UUID</code></p>
+<p><code>java.sql.Timestamp</code> (from picocli 2.2, for values in the <code>"yyyy-MM-dd HH:mm:ss"</code> or <code>"yyyy-MM-dd HH:mm:ss.fffffffff"</code> formats)</p>
+</li>
+<li>
+<p><code>java.net.URL</code>, <code>java.net.URI</code></p>
+</li>
+<li>
+<p><code>java.util.UUID</code></p>
+</li>
+<li>
+<p><code>java.time</code> value objects: <code>Duration</code>, <code>Instant</code>, <code>LocalDate</code>, <code>LocalDateTime</code>, <code>LocalTime</code>, <code>MonthDay</code>, <code>OffsetDateTime</code>, <code>OffsetTime</code>, <code>Period</code>, <code>Year</code>, <code>YearMonth</code>, <code>ZonedDateTime</code>, <code>ZoneId</code>, <code>ZoneOffset</code>  (from picocli 2.2, requires Java 8 or higher, invokes the <code>parse</code> method of these classes)</p>
+</li>
+<li>
+<p><code>java.lang.Class</code> (from picocli 2.2, for the fully qualified class name)</p>
+</li>
+<li>
+<p><code>java.nio.ByteOrder</code> (from picocli 2.2, for the Strings <code>"BIG_ENDIAN"</code> or <code>"LITTLE_ENDIAN"</code>)</p>
+</li>
+<li>
+<p><code>java.util.Currency</code> (from picocli 2.2, for the ISO 4217 code of the currency)</p>
+</li>
+<li>
+<p><code>java.net.NetworkInterface</code> (from picocli 2.2, for the InetAddress or name of the network interface)</p>
+</li>
+<li>
+<p><code>java.util.TimeZoneConverter</code> (from picocli 2.2, for the ID for a TimeZone)</p>
+</li>
+<li>
+<p><code>java.sql.Connection</code> (from picocli 2.2, for a database url of the form <code>jdbc:subprotocol:subname</code>)</p>
+</li>
+<li>
+<p><code>java.sql.Driver</code> (from picocli 2.2, for a database URL of the form <code>jdbc:subprotocol:subname</code>)</p>
 </li>
 </ul>
 </div>
@@ -1101,8 +1142,7 @@ the text value is converted to the type of the annotated field.</p>
 </div>
 </div>
 <div class="paragraph">
-<p>Custom type converters can be registered with the <code>CommandLine.registerConverter(Class&lt;K&gt; cls, ITypeConverter&lt;K&gt; converter)</code>
-method.</p>
+<p>Custom type converters can be registered with the <code>CommandLine.registerConverter(Class&lt;K&gt; cls, ITypeConverter&lt;K&gt; converter)</code> method. All options and positional parameters with the specified type will be converted by the specified converter.</p>
 </div>
 <div class="admonitionblock note">
 <table>
@@ -1111,16 +1151,16 @@ method.</p>
 <i class="fa icon-note" title="Note"></i>
 </td>
 <td class="content">
-Picocli works with Java 5 and higher, so it does not have default converters for Java 8 types like <code>Path</code> or
-<code>Duration</code>. Lambdas make it easy to register custom converters for these types:
+Java 8 lambdas make it easy to register custom converters:
 </td>
 </tr>
 </table>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="CodeRay highlight"><code data-lang="java">commandLine.registerConverter(java.nio.file.Path.class, s -&gt; java.nio.file.Paths.get(s));
-commandLine.registerConverter(java.time.Duration.class, s -&gt; java.time.Duration.parse(s));</code></pre>
+<pre class="CodeRay highlight"><code data-lang="java">CommandLine cl = <span class="keyword">new</span> CommandLine(app)
+cl.registerConverter(<span class="predefined-type">Locale</span>.class, s -&gt; <span class="keyword">new</span> <span class="predefined-type">Locale</span>.Builder().setLanguageTag(s).build());
+cl.registerConverter(<span class="predefined-type">Cipher</span>.class, s -&gt; <span class="predefined-type">Cipher</span>.getInstance(s));</code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -1129,8 +1169,8 @@ commandLine.registerConverter(java.time.Duration.class, s -&gt; java.time.Durati
 <div class="listingblock">
 <div class="content">
 <pre class="CodeRay highlight"><code data-lang="java"><span class="type">class</span> <span class="class">App</span> {
-    <span class="annotation">@Parameters</span> Path path;
-    <span class="annotation">@Option</span>(names = <span class="string"><span class="delimiter">&quot;</span><span class="content">-d</span><span class="delimiter">&quot;</span></span>) <span class="predefined-type">Duration</span> duration;
+    <span class="annotation">@Parameters</span> java.util.Locale locale;
+    <span class="annotation">@Option</span>(names = <span class="string"><span class="delimiter">&quot;</span><span class="content">-a</span><span class="delimiter">&quot;</span></span>) javax.crypto.Cipher cipher;
 }</code></pre>
 </div>
 </div>
@@ -1138,12 +1178,12 @@ commandLine.registerConverter(java.time.Duration.class, s -&gt; java.time.Durati
 <div class="content">
 <pre class="CodeRay highlight"><code data-lang="java">App app = <span class="keyword">new</span> App();
 CommandLine commandLine = <span class="keyword">new</span> CommandLine(app)
-        .registerConverter(Path.class,     s -&gt; Paths.get(s))
-        .registerConverter(<span class="predefined-type">Duration</span>.class, s -&gt; <span class="predefined-type">Duration</span>.parse(s));
+    .registerConverter(<span class="predefined-type">Locale</span>.class, s -&gt; <span class="keyword">new</span> <span class="predefined-type">Locale</span>.Builder().setLanguageTag(s).build())
+    .registerConverter(<span class="predefined-type">Cipher</span>.class, s -&gt; <span class="predefined-type">Cipher</span>.getInstance(s));
 
-commandLine.parse(<span class="string"><span class="delimiter">&quot;</span><span class="content">-d</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">PT15M</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">file1.txt</span><span class="delimiter">&quot;</span></span>);
-<span class="keyword">assert</span> app.path.equals(Paths.get(<span class="string"><span class="delimiter">&quot;</span><span class="content">file1.txt</span><span class="delimiter">&quot;</span></span>));
-<span class="keyword">assert</span> app.duration.equals(<span class="predefined-type">Duration</span>.parse(<span class="string"><span class="delimiter">&quot;</span><span class="content">PT15M</span><span class="delimiter">&quot;</span></span>));</code></pre>
+commandLine.parse(<span class="string"><span class="delimiter">&quot;</span><span class="content">-a</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">AES/CBC/NoPadding</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">en-GB</span><span class="delimiter">&quot;</span></span>);
+<span class="keyword">assert</span> app.locale.toLanguageTag().equals(<span class="string"><span class="delimiter">&quot;</span><span class="content">en-GB</span><span class="delimiter">&quot;</span></span>);
+<span class="keyword">assert</span> app.cipher.getAlgorithm().equals(<span class="string"><span class="delimiter">&quot;</span><span class="content">AES/CBC/NoPadding</span><span class="delimiter">&quot;</span></span>));</code></pre>
 </div>
 </div>
 <div class="admonitionblock caution">
@@ -1163,7 +1203,52 @@ To ensure a custom type converter is available to all subcommands, register the 
 </div>
 </div>
 <div class="sect2">
-<h3 id="_arrays_collections_maps">3.3. Arrays, Collections, Maps</h3>
+<h3 id="_option_specific_type_converters">3.3. Option-specific Type Converters</h3>
+<div class="paragraph">
+<p>Picocli 2.2 added a <code>converter</code> attribute to the <code>@Option</code> and <code>@Parameter</code> annotations. This allows a specific option or positional parameter to use a different converter than would be used by default based on the type of the field.</p>
+</div>
+<div class="paragraph">
+<p>For example, for a specific field you may want to use a converter that maps the constant names defined in <a href="https://docs.oracle.com/javase/9/docs/api/java/sql/Types.html"><code>java.sql.Types</code></a> to the <code>int</code> value of these constants, but any other <code>int</code> fields should not be affected by this and should continue to use the standard int converter that parses numeric values.</p>
+</div>
+<div class="paragraph">
+<p>Example usage:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="java"><span class="type">class</span> <span class="class">App</span> {
+    <span class="annotation">@Option</span>(names = <span class="string"><span class="delimiter">&quot;</span><span class="content">--sqlType</span><span class="delimiter">&quot;</span></span>, converter = SqlTypeConverter.class)
+    <span class="type">int</span> sqlType;
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Example implementation:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="java"><span class="type">class</span> <span class="class">SqlTypeConverter</span> <span class="directive">implements</span> ITypeConverter&lt;<span class="predefined-type">Integer</span>&gt; {
+    <span class="directive">public</span> <span class="predefined-type">Integer</span> convert(<span class="predefined-type">String</span> value) <span class="directive">throws</span> <span class="exception">Exception</span> {
+        <span class="keyword">switch</span> (value) {
+            <span class="keyword">case</span> <span class="string"><span class="delimiter">&quot;</span><span class="content">ARRAY</span><span class="delimiter">&quot;</span></span>  : <span class="keyword">return</span> <span class="predefined-type">Types</span>.ARRAY;
+            <span class="keyword">case</span> <span class="string"><span class="delimiter">&quot;</span><span class="content">BIGINT</span><span class="delimiter">&quot;</span></span> : <span class="keyword">return</span> <span class="predefined-type">Types</span>.BIGINT;
+            <span class="keyword">case</span> <span class="string"><span class="delimiter">&quot;</span><span class="content">BINARY</span><span class="delimiter">&quot;</span></span> : <span class="keyword">return</span> <span class="predefined-type">Types</span>.BINARY;
+            <span class="keyword">case</span> <span class="string"><span class="delimiter">&quot;</span><span class="content">BIT</span><span class="delimiter">&quot;</span></span>    : <span class="keyword">return</span> <span class="predefined-type">Types</span>.BIT;
+            <span class="keyword">case</span> <span class="string"><span class="delimiter">&quot;</span><span class="content">BLOB</span><span class="delimiter">&quot;</span></span>   : <span class="keyword">return</span> <span class="predefined-type">Types</span>.BLOB;
+            ...
+        }
+    }
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>This may also be useful for applications that need a custom type converter but want to use the static convenience methods (<code>populateCommand</code>, <code>run</code>, <code>call</code>). The <code>converter</code> annotation does not require a <code>CommandLine</code> instance so it can be used with the static convenience methods.</p>
+</div>
+<div class="paragraph">
+<p>Type converters declared with the <code>converter</code> attribute need to have a public no-argument constructor to be instantiated, unless a <a href="#_custom_factory">Custom Factory</a> is installed to instantiate classes.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_arrays_collections_maps">3.4. Arrays, Collections, Maps</h3>
 <div class="admonitionblock note">
 <table>
 <tr>
@@ -1179,7 +1264,7 @@ picocli will infer the collection element type from the generic type.
 </table>
 </div>
 <div class="sect3">
-<h4 id="_arrays_and_collections">3.3.1. Arrays and Collections</h4>
+<h4 id="_arrays_and_collections">3.4.1. Arrays and Collections</h4>
 <div class="paragraph">
 <p>Multiple parameters can be captured together in a single array or <code>Collection</code> field.
 The array or collection elements can be any type for which a <a href="#_strongly_typed_everything">converter</a> is registered.
@@ -1227,7 +1312,7 @@ make a best effort to instantiate it based on the field type: <code>List &#8594;
 </div>
 </div>
 <div class="sect3">
-<h4 id="_maps">3.3.2. Maps</h4>
+<h4 id="_maps">3.4.2. Maps</h4>
 <div class="paragraph">
 <p>Picocli v1.0 introduced support for <code>Map</code> fields similar to Java&#8217;s system properties <code>-Dkey=value</code> or Gradle&#8217;s project properties <code>-Pmyprop=myvalue</code>.</p>
 </div>
@@ -1280,7 +1365,7 @@ On the command line, the key and the value must be separated by a <code>=</code>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_abstract_field_types">3.4. Abstract Field Types</h3>
+<h3 id="_abstract_field_types">3.5. Abstract Field Types</h3>
 <div class="paragraph">
 <p>The field&#8217;s type can be an interface or an abstract class.
 The <code>type</code> attribute can be used to control for each field what concrete class the string value should be converted to.
@@ -1301,7 +1386,7 @@ For example:</p>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_maps_and_collections_with_abstract_elements">3.4.1. Maps and Collections with Abstract Elements</h4>
+<h4 id="_maps_and_collections_with_abstract_elements">3.5.1. Maps and Collections with Abstract Elements</h4>
 <div class="paragraph">
 <p>For raw maps and collections, or when using generics with unbounded wildcards like <code>Map&lt;?, ?&gt;</code>, or when the type parameters are themselves abstract classes like <code>List&lt;CharSequence&gt;</code> or <code>Map&lt;? extends Number, ? super Number&gt;</code>, there is not enough information to convert to a stronger type. By default, the raw String values are added as is to such collections.</p>
 </div>
@@ -1878,6 +1963,8 @@ commandLine.parse(args);
 <div class="sect1">
 <h2 id="_version_help">8. Version Help</h2>
 <div class="sectionbody">
+<div class="sect2">
+<h3 id="_static_version_information">8.1. Static Version Information</h3>
 <div class="paragraph">
 <p>Since v0.9.8, applications can specify version information in the <code>version</code> attribute of the <code>@Command</code> annotation.</p>
 </div>
@@ -1962,6 +2049,43 @@ Build 12345
 <pre class="CodeRay highlight"><code data-lang="java"><span class="predefined-type">String</span><span class="type">[]</span> args = {<span class="string"><span class="delimiter">&quot;</span><span class="content">1234</span><span class="delimiter">&quot;</span></span>, <span class="predefined-type">System</span>.getProperty(<span class="string"><span class="delimiter">&quot;</span><span class="content">user.name</span><span class="delimiter">&quot;</span></span>)};
 <span class="keyword">new</span> CommandLine(<span class="keyword">new</span> VersionedCommand())
     .printVersionHelp(<span class="predefined-type">System</span>.err, Help.Ansi.AUTO, args);</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_dynamic_version_information">8.2. Dynamic Version Information</h3>
+<div class="paragraph">
+<p>From picocli 2.2, the <code>@Command</code> annotation supports a <code>versionProvider</code> attribute.
+Applications may specify a <code>IVersionProvider</code> implementation in this attribute, and picocli will instantiate this class
+and invoke it to collect version information.</p>
+</div>
+<div class="paragraph">
+<p>This is useful when the version of an application should be detected dynamically at runtime.
+For example, an implementation may return version information obtained from the JAR manifest, a properties file or some other source.</p>
+</div>
+<div class="paragraph">
+<p>Custom version providers need to implement the <code>picocli.CommandLine.IVersionProvider</code> interface:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="java"><span class="directive">public</span> <span class="type">interface</span> <span class="class">IVersionProvider</span> {
+    <span class="comment">/**
+     * Returns version information for a command.
+     * @return version information (each string in the array is displayed on a separate line)
+     * @throws Exception an exception detailing what went wrong when obtaining version information
+     */</span>
+    <span class="predefined-type">String</span><span class="type">[]</span> getVersion() <span class="directive">throws</span> <span class="exception">Exception</span>;
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Version providers declared with the <code>versionProvider</code> attribute need to have a public no-argument constructor to be instantiated, unless a <a href="#_custom_factory">Custom Factory</a> is installed to instantiate classes.</p>
+</div>
+<div class="paragraph">
+<p>The GitHub project has a manifest file-based
+<a href="https://github.com/remkop/picocli/blob/master/examples/src/main/java/picocli/examples/VersionProviderDemo2.java">example</a>
+and a build-generated version properties file-based
+<a href="https://github.com/remkop/picocli/blob/master/examples/src/main/java/picocli/examples/VersionProviderDemo1.java">example</a> version provider implementation.</p>
 </div>
 </div>
 </div>
@@ -2781,43 +2905,75 @@ adding subcommands.
 <div class="paragraph">
 <p>Custom type converters registered on a <code>CommandLine</code> instance will apply to all subcommands that were declared on the main command with the <code>subcommands</code> annotation.</p>
 </div>
+<div class="paragraph">
+<p>Subcommands referenced in a <code>subcommands</code> attribute need to have a public no-argument constructor to be instantiated, unless a <a href="#_custom_factory">Custom Factory</a> is installed to instantiate classes.</p>
+</div>
 </div>
 <div class="sect2">
 <h3 id="_parsing_subcommands">12.3. Parsing Subcommands</h3>
 <div class="paragraph">
-<p>The <code>CommandLine.parse</code> method returns a List with the recognized commands. The main command (<code>git</code> in this example) is always the first element in the returned list.</p>
+<p>For this example, we assume we created an alias <code>git</code> that invokes our Java application. This could also be a script or a function that calls our Java program:</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="CodeRay highlight"><code data-lang="java">CommandLine commandLine = <span class="keyword">new</span> CommandLine(<span class="keyword">new</span> Git());
-
-<span class="comment">// add subcommands (either programmatically or declaratively)</span>
-commandLine.addSubcommand(<span class="string"><span class="delimiter">&quot;</span><span class="content">status</span><span class="delimiter">&quot;</span></span>,   <span class="keyword">new</span> GitStatus())
-           .addSubcommand(<span class="string"><span class="delimiter">&quot;</span><span class="content">commit</span><span class="delimiter">&quot;</span></span>,   <span class="keyword">new</span> GitCommit())
-            ...
-
-<span class="comment">// use the parse method to get a List with matched commands</span>
-String<span class="type">[]</span> args = { <span class="string"><span class="delimiter">&quot;</span><span class="content">--git-dir=/home/rpopma/picocli</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">status</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">-sbuno</span><span class="delimiter">&quot;</span></span>};
-<span class="predefined-type">List</span>&lt;CommandLine&gt; parsed = commandLine.parse(args);
-<span class="keyword">assert</span> parsed.size() == <span class="integer">2</span> : <span class="string"><span class="delimiter">&quot;</span><span class="content">1 command and 1 subcommand found</span><span class="delimiter">&quot;</span></span>
-
-<span class="keyword">assert</span> parsed.get(<span class="integer">0</span>).getCommand().getClass() == Git.class       : <span class="string"><span class="delimiter">&quot;</span><span class="content">main command</span><span class="delimiter">&quot;</span></span>
-<span class="keyword">assert</span> parsed.get(<span class="integer">1</span>).getCommand().getClass() == GitStatus.class : <span class="string"><span class="delimiter">&quot;</span><span class="content">subcommand</span><span class="delimiter">&quot;</span></span></code></pre>
+<pre class="CodeRay highlight"><code data-lang="bash">alias git='java picocli.Demo$Git'</code></pre>
 </div>
 </div>
 <div class="paragraph">
-<p>Your application needs to inspect this list to see what subcommand was invoked and take appropriate action. For example:</p>
+<p>Next, we call our command with some arguments like this:</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="CodeRay highlight"><code data-lang="java">Git git = (Git) parsed.get(<span class="integer">0</span>).getCommand();
-<span class="keyword">assert</span> git.gitDir.equals(<span class="keyword">new</span> <span class="predefined-type">File</span>(<span class="string"><span class="delimiter">&quot;</span><span class="content">/home/rpopma/picocli</span><span class="delimiter">&quot;</span></span>));
+<pre class="CodeRay highlight"><code data-lang="bash">git --git-dir=/home/rpopma/picocli status -sb -uno</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Where <code>git</code> (actually <code>java picocli.Demo$Git</code>) is the top-level command, followed by a global option and a subcommand <code>status</code> with its own options.</p>
+</div>
+<div class="paragraph">
+<p>Setting up the parser and parsing the command line could look like this:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="java"><span class="directive">public</span> <span class="directive">static</span> <span class="type">void</span> main(<span class="predefined-type">String</span>... args) {
+    <span class="comment">// Set up the parser</span>
+    CommandLine commandLine = <span class="keyword">new</span> CommandLine(<span class="keyword">new</span> Git());
 
-GitStatus gitstatus = (GitStatus) parsed.get(<span class="integer">1</span>).getCommand();
-<span class="keyword">assert</span>  gitstatus.shortFormat              : <span class="string"><span class="delimiter">&quot;</span><span class="content">git status -s</span><span class="delimiter">&quot;</span></span>
-<span class="keyword">assert</span>  gitstatus.branchInfo               : <span class="string"><span class="delimiter">&quot;</span><span class="content">git status -b</span><span class="delimiter">&quot;</span></span>
-<span class="keyword">assert</span> !gitstatus.showIgnored              : <span class="string"><span class="delimiter">&quot;</span><span class="content">git status --showIgnored not specified</span><span class="delimiter">&quot;</span></span>
-<span class="keyword">assert</span>  gitstatus.mode == GitStatusMode.no : <span class="string"><span class="delimiter">&quot;</span><span class="content">git status -u=no</span><span class="delimiter">&quot;</span></span></code></pre>
+    <span class="comment">// add subcommands programmatically (not necessary if the parent command</span>
+    <span class="comment">// declaratively registers the subcommands via annotation)</span>
+    commandLine.addSubcommand(<span class="string"><span class="delimiter">&quot;</span><span class="content">status</span><span class="delimiter">&quot;</span></span>,   <span class="keyword">new</span> GitStatus())
+               .addSubcommand(<span class="string"><span class="delimiter">&quot;</span><span class="content">commit</span><span class="delimiter">&quot;</span></span>,   <span class="keyword">new</span> GitCommit())
+                ...
+
+    <span class="comment">// Invoke the parse method to parse the arguments</span>
+    List&lt;CommandLine&gt; parsed = commandLine.parse(args);
+    handleParseResult(parsed);
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The <code>CommandLine.parse</code> method returns a List with the recognized commands. The top-level command (the Java class invoked by <code>git</code> in this example) is always the first element in the returned list.</p>
+</div>
+<div class="paragraph">
+<p>The returned List also contains all matched subcommands. Your application needs to inspect this list to see what subcommand was invoked and take appropriate action. For example:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="java"><span class="directive">private</span> <span class="type">void</span> handleParseResult(<span class="predefined-type">List</span>&lt;CommandLine&gt; parsed) {
+    <span class="keyword">assert</span> parsed.size() == <span class="integer">2</span> : <span class="string"><span class="delimiter">&quot;</span><span class="content">1 command and 1 subcommand found</span><span class="delimiter">&quot;</span></span>
+
+    <span class="keyword">assert</span> parsed.get(<span class="integer">0</span>).getCommand().getClass() == Git.class       : <span class="string"><span class="delimiter">&quot;</span><span class="content">main command</span><span class="delimiter">&quot;</span></span>
+    <span class="keyword">assert</span> parsed.get(<span class="integer">1</span>).getCommand().getClass() == GitStatus.class : <span class="string"><span class="delimiter">&quot;</span><span class="content">subcommand</span><span class="delimiter">&quot;</span></span>
+
+    Git git = (Git) parsed.get(<span class="integer">0</span>).getCommand();
+    <span class="keyword">assert</span> git.gitDir.equals(<span class="keyword">new</span> <span class="predefined-type">File</span>(<span class="string"><span class="delimiter">&quot;</span><span class="content">/home/rpopma/picocli</span><span class="delimiter">&quot;</span></span>));
+
+    GitStatus gitstatus = (GitStatus) parsed.get(<span class="integer">1</span>).getCommand();
+    <span class="keyword">assert</span>  gitstatus.shortFormat              : <span class="string"><span class="delimiter">&quot;</span><span class="content">git status -s</span><span class="delimiter">&quot;</span></span>
+    <span class="keyword">assert</span>  gitstatus.branchInfo               : <span class="string"><span class="delimiter">&quot;</span><span class="content">git status -b</span><span class="delimiter">&quot;</span></span>
+    <span class="keyword">assert</span> !gitstatus.showIgnored              : <span class="string"><span class="delimiter">&quot;</span><span class="content">git status --showIgnored not specified</span><span class="delimiter">&quot;</span></span>
+    <span class="keyword">assert</span>  gitstatus.mode == GitStatusMode.no : <span class="string"><span class="delimiter">&quot;</span><span class="content">git status -u=no</span><span class="delimiter">&quot;</span></span>
+}</code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -2825,7 +2981,56 @@ GitStatus gitstatus = (GitStatus) parsed.get(<span class="integer">1</span>).get
 </div>
 </div>
 <div class="sect2">
-<h3 id="_usage_help_for_subcommands">12.4. Usage Help for Subcommands</h3>
+<h3 id="__code_parentcommand_code_annotation">12.4. <code>@ParentCommand</code> annotation</h3>
+<div class="paragraph">
+<p>In command line applications with subcommands, options of the top level command are often intended as "global" options that apply to all the subcommands. Prior to picocli 2.2, subcommands had no easy way to access their parent command options unless the parent command made these values available in a global variable.</p>
+</div>
+<div class="paragraph">
+<p>The <code>@ParentCommand</code> annotation introduced in picocli 2.2 makes it easy for subcommands to access their parent command options: subcommand fields annotated with <code>@ParentCommand</code> are initialized with a reference to the parent command. For example:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="java"><span class="annotation">@Command</span>(name = <span class="string"><span class="delimiter">&quot;</span><span class="content">fileutils</span><span class="delimiter">&quot;</span></span>, subcommands = <span class="predefined-type">List</span>.class)
+<span class="type">class</span> <span class="class">FileUtils</span> {
+
+    <span class="annotation">@Option</span>(names = {<span class="string"><span class="delimiter">&quot;</span><span class="content">-d</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">--directory</span><span class="delimiter">&quot;</span></span>},
+            description = <span class="string"><span class="delimiter">&quot;</span><span class="content">this option applies to all subcommands</span><span class="delimiter">&quot;</span></span>)
+    <span class="predefined-type">File</span> baseDirectory;
+}
+
+<span class="annotation">@Command</span>(name = <span class="string"><span class="delimiter">&quot;</span><span class="content">list</span><span class="delimiter">&quot;</span></span>)
+<span class="type">class</span> <span class="class">List</span> <span class="directive">implements</span> <span class="predefined-type">Runnable</span> {
+
+    <span class="annotation">@ParentCommand</span>
+    <span class="directive">private</span> FileUtils parent; <span class="comment">// picocli injects reference to parent command</span>
+
+    <span class="annotation">@Option</span>(names = {<span class="string"><span class="delimiter">&quot;</span><span class="content">-r</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">--recursive</span><span class="delimiter">&quot;</span></span>},
+            description = <span class="string"><span class="delimiter">&quot;</span><span class="content">Recursively list subdirectories</span><span class="delimiter">&quot;</span></span>)
+    <span class="directive">private</span> <span class="type">boolean</span> recursive;
+
+    <span class="annotation">@Override</span>
+    <span class="directive">public</span> <span class="type">void</span> run() {
+        list(<span class="keyword">new</span> <span class="predefined-type">File</span>(parent.baseDirectory, <span class="string"><span class="delimiter">&quot;</span><span class="content">.</span><span class="delimiter">&quot;</span></span>));
+    }
+
+    <span class="directive">private</span> <span class="type">void</span> list(<span class="predefined-type">File</span> dir) {
+        <span class="predefined-type">System</span>.out.println(dir.getAbsolutePath());
+        <span class="keyword">if</span> (dir.isDirectory()) {
+            <span class="keyword">for</span> (<span class="predefined-type">File</span> f : dir.listFiles()) {
+                <span class="keyword">if</span> (f.isDirectory() &amp;&amp; recursive) {
+                    list(f);
+                } <span class="keyword">else</span> {
+                    <span class="predefined-type">System</span>.out.println(f.getAbsolutePath());
+                }
+            }
+        }
+    }
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_usage_help_for_subcommands">12.5. Usage Help for Subcommands</h3>
 <div class="paragraph">
 <p>After registering subcommands, calling the <code>commandLine.usage</code> method will show a usage help message that includes all registered commands. For example:</p>
 </div>
@@ -2833,7 +3038,8 @@ GitStatus gitstatus = (GitStatus) parsed.get(<span class="integer">1</span>).get
 <div class="content">
 <pre class="CodeRay highlight"><code data-lang="java">CommandLine commandLine = <span class="keyword">new</span> CommandLine(<span class="keyword">new</span> Git());
 
-<span class="comment">// add subcommands (either programmatically or declaratively)</span>
+<span class="comment">// add subcommands programmatically (not necessary if the parent command</span>
+<span class="comment">// declaratively registers the subcommands via annotation)</span>
 commandLine.addSubcommand(<span class="string"><span class="delimiter">&quot;</span><span class="content">status</span><span class="delimiter">&quot;</span></span>,   <span class="keyword">new</span> GitStatus());
 ...
 commandLine.usage(<span class="predefined-type">System</span>.out);</code></pre>
@@ -2899,7 +3105,7 @@ in <a href="#_expanded_example">Expanded Example</a>.</p>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_nested_sub_subcommands">12.5. Nested sub-subcommands</h3>
+<h3 id="_nested_sub_subcommands">12.6. Nested sub-subcommands</h3>
 <div class="paragraph">
 <p>The specified object can be an annotated object or a
 <code>CommandLine</code> instance with its own nested subcommands. For example:</p>
@@ -3059,7 +3265,39 @@ These methods are intended to offer the same ease of use as the <code>run</code>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_boolean_options_with_parameters">13.3. Boolean Options with Parameters</h3>
+<h3 id="_custom_factory">13.3. Custom Factory</h3>
+<div class="paragraph">
+<p>Declaratively registered <a href="#_registering_subcommands_declaratively">subcommands</a>, <a href="#_option_specific_type_converters">type converters</a> and <a href="#_dynamic_version_information">version providers</a> must be instantiated somehow. From picocli 2.2, a custom factory can be specified when constructing a <code>CommandLine</code> instance. This allows full control over object creation and opens possibilities for Inversion of Control and Dependency Injection. For example:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="java">IFactory myFactory = getCustomFactory();
+CommandLine cmdLine = <span class="keyword">new</span> CommandLine(<span class="keyword">new</span> Git(), myFactory);</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Custom factories need to implement the <code>picocli.CommandLine.IFactory</code> interface:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="java"><span class="directive">public</span> <span class="type">interface</span> <span class="class">IFactory</span> {
+    <span class="comment">/**
+     * Creates and returns an instance of the specified class.
+     * @param cls the class to instantiate
+     * @param &lt;K&gt; the type to instantiate
+     * @return the new instance
+     * @throws Exception an exception detailing what went wrong when creating the instance
+     */</span>
+    &lt;K&gt; K create(<span class="predefined-type">Class</span>&lt;K&gt; clazz) <span class="directive">throws</span> <span class="exception">Exception</span>;
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>If no factory is specified, a default factory is used. The default factory requires that the classes to instantiate have a public no-argument constructor: it instantiates the class by calling first calling <code>clazz.newInstance()</code>, and if that fails, <code>clazz.getDeclaredConstructor().newInstance()</code>.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_boolean_options_with_parameters">13.4. Boolean Options with Parameters</h3>
 <div class="paragraph">
 <p>By default the value of a boolean field is toggled to its logical negative when the field&#8217;s option is specified on the command line.</p>
 </div>
@@ -3093,7 +3331,7 @@ These methods are intended to offer the same ease of use as the <code>run</code>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_hexadecimal_values">13.4. Hexadecimal Values</h3>
+<h3 id="_hexadecimal_values">13.5. Hexadecimal Values</h3>
 <div class="paragraph">
 <p>Numeric values are interpreted as decimal numbers by default. If you want picocli to be more flexible, you can
 register a custom type converter that delegates to the <a href="https://docs.oracle.com/javase/8/docs/api/java/lang/Integer.html#decode-java.lang.String-">decode</a> method to convert strings to numbers.</p>
@@ -3145,9 +3383,9 @@ commandLine.registerConverter(<span class="predefined-type">Integer</span>.TYPE,
 </div>
 </div>
 <div class="sect2">
-<h3 id="_option_parameter_separators_2">13.5. Option-Parameter Separators</h3>
+<h3 id="_option_parameter_separators_2">13.6. Option-Parameter Separators</h3>
 <div class="sect3">
-<h4 id="_default_separators">13.5.1. Default Separators</h4>
+<h4 id="_default_separators">13.6.1. Default Separators</h4>
 <div class="paragraph">
 <p>Options may take an <em>option parameter</em> (also called <em>option-argument</em>).
 For POSIX-style short options (like <code>-f</code> or <code>-c</code>), the option parameter may be attached to the option,
@@ -3177,7 +3415,7 @@ That is, all of the below are equivalent:</p>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_custom_separators">13.5.2. Custom Separators</h4>
+<h4 id="_custom_separators">13.6.2. Custom Separators</h4>
 <div class="paragraph">
 <p>The separator string can be customized programmatically or declaratively.</p>
 </div>
@@ -3215,7 +3453,7 @@ commandLine.parse(<span class="string"><span class="delimiter">&quot;</span><spa
 </div>
 </div>
 <div class="sect2">
-<h3 id="_subclassing_for_reuse">13.6. Subclassing for Reuse</h3>
+<h3 id="_subclassing_for_reuse">13.7. Subclassing for Reuse</h3>
 <div class="paragraph">
 <p>Picocli will walk the class hierarchy to check for annotations, so you can declare common @Options and @Command attributes on a superclass and override these fields or attributes on a subclass.</p>
 </div>
@@ -3262,7 +3500,7 @@ commandLine.parse(<span class="string"><span class="delimiter">&quot;</span><spa
 </div>
 </div>
 <div class="sect2">
-<h3 id="_best_practices_for_command_line_interfaces">13.7. Best Practices for Command Line Interfaces</h3>
+<h3 id="_best_practices_for_command_line_interfaces">13.8. Best Practices for Command Line Interfaces</h3>
 <div class="paragraph">
 <p>When designing your command line application,
 the <a href="https://www.gnu.org/prep/standards/html_node/Command_002dLine-Interfaces.html#Command_002dLine-Interfaces">GNU recommendations</a> for command line interfaces and <a href="http://pubs.opengroup.org/onlinepubs/9699919799/basedefs/V1_chap12.html#tag_12_02">POSIX Utility Guidelines</a> may be useful.</p>
@@ -3380,7 +3618,7 @@ The script body is executed if the user input was valid and did not request usag
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="CodeRay highlight"><code data-lang="groovy"><span class="annotation">@Grab</span>(<span class="string"><span class="delimiter">'</span><span class="content">info.picocli:picocli:2.1.0</span><span class="delimiter">'</span></span>)
+<pre class="CodeRay highlight"><code data-lang="groovy"><span class="annotation">@Grab</span>(<span class="string"><span class="delimiter">'</span><span class="content">info.picocli:picocli:2.2.0</span><span class="delimiter">'</span></span>)
 <span class="annotation">@Command</span>(name = <span class="string"><span class="delimiter">&quot;</span><span class="content">myCommand</span><span class="delimiter">&quot;</span></span>,
   description = <span class="string"><span class="delimiter">&quot;</span><span class="content">@|bold Groovy script|@ @|underline picocli|@ example</span><span class="delimiter">&quot;</span></span>)
 <span class="annotation">@picocli</span>.groovy.PicocliScript
@@ -3419,7 +3657,7 @@ When using a Groovy version older than 2.4.7, use this workaround for the <a hre
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="CodeRay highlight"><code data-lang="groovy"><span class="annotation">@Grab</span>(<span class="string"><span class="delimiter">'</span><span class="content">info.picocli:picocli:2.1.0</span><span class="delimiter">'</span></span>)
+<pre class="CodeRay highlight"><code data-lang="groovy"><span class="annotation">@Grab</span>(<span class="string"><span class="delimiter">'</span><span class="content">info.picocli:picocli:2.2.0</span><span class="delimiter">'</span></span>)
 <span class="annotation">@GrabExclude</span>(<span class="string"><span class="delimiter">'</span><span class="content">org.codehaus.groovy:groovy-all</span><span class="delimiter">'</span></span>) <span class="comment">// work around GROOVY-7613</span>
 ...</code></pre>
 </div>
@@ -3562,7 +3800,7 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
 <h3 id="_gradle">22.1. Gradle</h3>
 <div class="listingblock">
 <div class="content">
-<pre>compile 'info.picocli:picocli:2.1.0'</pre>
+<pre>compile 'info.picocli:picocli:2.2.0'</pre>
 </div>
 </div>
 </div>
@@ -3573,7 +3811,7 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
 <pre>&lt;dependency&gt;
   &lt;groupId&gt;info.picocli&lt;/groupId&gt;
   &lt;artifactId&gt;picocli&lt;/artifactId&gt;
-  &lt;version&gt;2.1.0&lt;/version&gt;
+  &lt;version&gt;2.2.0&lt;/version&gt;
 &lt;/dependency&gt;</pre>
 </div>
 </div>
@@ -3582,7 +3820,7 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
 <h3 id="_scala_sbt">22.3. Scala SBT</h3>
 <div class="listingblock">
 <div class="content">
-<pre>libraryDependencies += "info.picocli" % "picocli" % "2.1.0"</pre>
+<pre>libraryDependencies += "info.picocli" % "picocli" % "2.2.0"</pre>
 </div>
 </div>
 </div>
@@ -3590,7 +3828,7 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
 <h3 id="_ivy">22.4. Ivy</h3>
 <div class="listingblock">
 <div class="content">
-<pre>&lt;dependency org="info.picocli" name="picocli" rev="2.1.0" /&gt;</pre>
+<pre>&lt;dependency org="info.picocli" name="picocli" rev="2.2.0" /&gt;</pre>
 </div>
 </div>
 </div>
@@ -3627,6 +3865,7 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
 <span class="keyword">import</span> <span class="include">java.lang.reflect.Array</span>;
 <span class="keyword">import</span> <span class="include">java.lang.reflect.Constructor</span>;
 <span class="keyword">import</span> <span class="include">java.lang.reflect.Field</span>;
+<span class="keyword">import</span> <span class="include">java.lang.reflect.Method</span>;
 <span class="keyword">import</span> <span class="include">java.lang.reflect.Modifier</span>;
 <span class="keyword">import</span> <span class="include">java.lang.reflect.ParameterizedType</span>;
 <span class="keyword">import</span> <span class="include">java.lang.reflect.Type</span>;
@@ -3635,11 +3874,17 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
 <span class="keyword">import</span> <span class="include">java.math.BigInteger</span>;
 <span class="keyword">import</span> <span class="include">java.net.InetAddress</span>;
 <span class="keyword">import</span> <span class="include">java.net.MalformedURLException</span>;
+<span class="keyword">import</span> <span class="include">java.net.NetworkInterface</span>;
 <span class="keyword">import</span> <span class="include">java.net.URI</span>;
 <span class="keyword">import</span> <span class="include">java.net.URISyntaxException</span>;
 <span class="keyword">import</span> <span class="include">java.net.URL</span>;
+<span class="keyword">import</span> <span class="include">java.nio.ByteOrder</span>;
 <span class="keyword">import</span> <span class="include">java.nio.charset.Charset</span>;
+<span class="keyword">import</span> <span class="include">java.sql.Connection</span>;
+<span class="keyword">import</span> <span class="include">java.sql.Driver</span>;
+<span class="keyword">import</span> <span class="include">java.sql.DriverManager</span>;
 <span class="keyword">import</span> <span class="include">java.sql.Time</span>;
+<span class="keyword">import</span> <span class="include">java.sql.Timestamp</span>;
 <span class="keyword">import</span> <span class="include">java.text.BreakIterator</span>;
 <span class="keyword">import</span> <span class="include">java.text.ParseException</span>;
 <span class="keyword">import</span> <span class="include">java.text.SimpleDateFormat</span>;
@@ -3648,6 +3893,7 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
 <span class="keyword">import</span> <span class="include">java.util.Collection</span>;
 <span class="keyword">import</span> <span class="include">java.util.Collections</span>;
 <span class="keyword">import</span> <span class="include">java.util.Comparator</span>;
+<span class="keyword">import</span> <span class="include">java.util.Currency</span>;
 <span class="keyword">import</span> <span class="include">java.util.Date</span>;
 <span class="keyword">import</span> <span class="include">java.util.HashMap</span>;
 <span class="keyword">import</span> <span class="include">java.util.HashSet</span>;
@@ -3660,6 +3906,7 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
 <span class="keyword">import</span> <span class="include">java.util.Set</span>;
 <span class="keyword">import</span> <span class="include">java.util.SortedSet</span>;
 <span class="keyword">import</span> <span class="include">java.util.Stack</span>;
+<span class="keyword">import</span> <span class="include">java.util.TimeZone</span>;
 <span class="keyword">import</span> <span class="include">java.util.TreeSet</span>;
 <span class="keyword">import</span> <span class="include">java.util.UUID</span>;
 <span class="keyword">import</span> <span class="include">java.util.concurrent.Callable</span>;
@@ -3733,7 +3980,7 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
  */</span>
 <span class="directive">public</span> <span class="type">class</span> <span class="class">CommandLine</span> {
     <span class="comment">/** This is picocli version {@value}. */</span>
-    <span class="directive">public</span> <span class="directive">static</span> <span class="directive">final</span> <span class="predefined-type">String</span> VERSION = <span class="string"><span class="delimiter">&quot;</span><span class="content">2.1.0</span><span class="delimiter">&quot;</span></span>;
+    <span class="directive">public</span> <span class="directive">static</span> <span class="directive">final</span> <span class="predefined-type">String</span> VERSION = <span class="string"><span class="delimiter">&quot;</span><span class="content">2.2.0</span><span class="delimiter">&quot;</span></span>;
 
     <span class="directive">private</span> <span class="directive">final</span> Tracer tracer = <span class="keyword">new</span> Tracer();
     <span class="directive">private</span> <span class="directive">final</span> Interpreter interpreter;
@@ -3748,14 +3995,25 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
     <span class="directive">private</span> <span class="predefined-type">List</span>&lt;<span class="predefined-type">String</span>&gt; versionLines = <span class="keyword">new</span> <span class="predefined-type">ArrayList</span>&lt;<span class="predefined-type">String</span>&gt;();
 
     <span class="comment">/**
-     * Constructs a new {@code CommandLine} interpreter with the specified annotated object.
+     * Constructs a new {@code CommandLine} interpreter with the specified annotated object and a default subcommand factory.
      * When the {@link #parse(String...)} method is called, fields of the specified object that are annotated
      * with {@code @Option} or {@code @Parameters} will be initialized based on command line arguments.
      * @param command the object to initialize from the command line arguments
      * @throws InitializationException if the specified command object does not have a {@link Command}, {@link Option} or {@link Parameters} annotation
      */</span>
     <span class="directive">public</span> CommandLine(<span class="predefined-type">Object</span> command) {
-        interpreter = <span class="keyword">new</span> Interpreter(command);
+        <span class="local-variable">this</span>(command, <span class="keyword">new</span> DefaultFactory());
+    }
+    <span class="comment">/**
+     * Constructs a new {@code CommandLine} interpreter with the specified annotated object and object factory.
+     * When the {@link #parse(String...)} method is called, fields of the specified object that are annotated
+     * with {@code @Option} or {@code @Parameters} will be initialized based on command line arguments.
+     * @param command the object to initialize from the command line arguments
+     * @param factory the factory used to create instances of {@linkplain Command#subcommands() subcommands} that are registered declaratively with annotation attributes
+     * @throws InitializationException if the specified command object does not have a {@link Command}, {@link Option} or {@link Parameters} annotation
+     */</span>
+    <span class="directive">public</span> CommandLine(<span class="predefined-type">Object</span> command, IFactory factory) {
+        interpreter = <span class="keyword">new</span> Interpreter(command, factory);
     }
 
     <span class="comment">/** Registers a subcommand with the specified name. For example:
@@ -3800,9 +4058,10 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
      * @see Command#subcommands()
      */</span>
     <span class="directive">public</span> CommandLine addSubcommand(<span class="predefined-type">String</span> name, <span class="predefined-type">Object</span> command) {
-        CommandLine commandLine = toCommandLine(command);
-        commandLine.parent = <span class="local-variable">this</span>;
-        interpreter.commands.put(name, commandLine);
+        CommandLine subcommandLine = toCommandLine(command, interpreter.factory);
+        subcommandLine.parent = <span class="local-variable">this</span>;
+        interpreter.commands.put(name, subcommandLine);
+        subcommandLine.interpreter.initParentCommand(<span class="local-variable">this</span>.interpreter.command);
         <span class="keyword">return</span> <span class="local-variable">this</span>;
     }
     <span class="comment">/** Returns a map with the subcommands {@linkplain #addSubcommand(String, Object) registered} on this instance.
@@ -3928,7 +4187,7 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
      * @since 0.9.7
      */</span>
     <span class="directive">public</span> <span class="directive">static</span> &lt;T&gt; T populateCommand(T command, <span class="predefined-type">String</span>... args) {
-        CommandLine cli = toCommandLine(command);
+        CommandLine cli = toCommandLine(command, <span class="keyword">new</span> DefaultFactory());
         cli.parse(args);
         <span class="keyword">return</span> command;
     }
@@ -4265,7 +4524,7 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
      * @throws IllegalArgumentException if the specified command object does not have a {@link Command}, {@link Option} or {@link Parameters} annotation
      */</span>
     <span class="directive">public</span> <span class="directive">static</span> <span class="type">void</span> usage(<span class="predefined-type">Object</span> command, <span class="predefined-type">PrintStream</span> out) {
-        toCommandLine(command).usage(out);
+        toCommandLine(command, <span class="keyword">new</span> DefaultFactory()).usage(out);
     }
 
     <span class="comment">/**
@@ -4277,7 +4536,7 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
      * @throws IllegalArgumentException if the specified command object does not have a {@link Command}, {@link Option} or {@link Parameters} annotation
      */</span>
     <span class="directive">public</span> <span class="directive">static</span> <span class="type">void</span> usage(<span class="predefined-type">Object</span> command, <span class="predefined-type">PrintStream</span> out, Help.Ansi ansi) {
-        toCommandLine(command).usage(out, ansi);
+        toCommandLine(command, <span class="keyword">new</span> DefaultFactory()).usage(out, ansi);
     }
 
     <span class="comment">/**
@@ -4289,7 +4548,7 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
      * @throws IllegalArgumentException if the specified command object does not have a {@link Command}, {@link Option} or {@link Parameters} annotation
      */</span>
     <span class="directive">public</span> <span class="directive">static</span> <span class="type">void</span> usage(<span class="predefined-type">Object</span> command, <span class="predefined-type">PrintStream</span> out, Help.ColorScheme colorScheme) {
-        toCommandLine(command).usage(out, colorScheme);
+        toCommandLine(command, <span class="keyword">new</span> DefaultFactory()).usage(out, colorScheme);
     }
 
     <span class="comment">/**
@@ -4658,7 +4917,7 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
     <span class="directive">private</span> <span class="directive">static</span> <span class="type">boolean</span> empty(Text txt) { <span class="keyword">return</span> txt == <span class="predefined-constant">null</span> || txt.plain.toString().trim().length() == <span class="integer">0</span>; }
     <span class="directive">private</span> <span class="directive">static</span> <span class="predefined-type">String</span> str(<span class="predefined-type">String</span><span class="type">[]</span> arr, <span class="type">int</span> i) { <span class="keyword">return</span> (arr == <span class="predefined-constant">null</span> || arr.length == <span class="integer">0</span>) ? <span class="string"><span class="delimiter">&quot;</span><span class="delimiter">&quot;</span></span> : arr[i]; }
     <span class="directive">private</span> <span class="directive">static</span> <span class="type">boolean</span> isBoolean(<span class="predefined-type">Class</span>&lt;?&gt; type) { <span class="keyword">return</span> type == <span class="predefined-type">Boolean</span>.class || type == <span class="predefined-type">Boolean</span>.TYPE; }
-    <span class="directive">private</span> <span class="directive">static</span> CommandLine toCommandLine(<span class="predefined-type">Object</span> obj) { <span class="keyword">return</span> obj <span class="keyword">instanceof</span> CommandLine ? (CommandLine) obj : <span class="keyword">new</span> CommandLine(obj);}
+    <span class="directive">private</span> <span class="directive">static</span> CommandLine toCommandLine(<span class="predefined-type">Object</span> obj, IFactory factory) { <span class="keyword">return</span> obj <span class="keyword">instanceof</span> CommandLine ? (CommandLine) obj : <span class="keyword">new</span> CommandLine(obj, factory);}
     <span class="directive">private</span> <span class="directive">static</span> <span class="type">boolean</span> isMultiValue(<span class="predefined-type">Field</span> field) {  <span class="keyword">return</span> isMultiValue(field.getType()); }
     <span class="directive">private</span> <span class="directive">static</span> <span class="type">boolean</span> isMultiValue(<span class="predefined-type">Class</span>&lt;?&gt; cls) { <span class="keyword">return</span> cls.isArray() || <span class="predefined-type">Collection</span>.class.isAssignableFrom(cls) || <span class="predefined-type">Map</span>.class.isAssignableFrom(cls); }
     <span class="directive">private</span> <span class="directive">static</span> <span class="predefined-type">Class</span>&lt;?&gt;<span class="type">[]</span> getTypeAttribute(<span class="predefined-type">Field</span> field) {
@@ -4695,23 +4954,21 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
      * &lt;/p&gt;&lt;p&gt;
      * For example:
      * &lt;/p&gt;
-     * &lt;pre&gt;import static picocli.CommandLine.*;
+     * &lt;pre&gt;
+     * import static picocli.CommandLine.*;
      *
      * public class MyClass {
-     *     &amp;#064;Parameters(type = File.class, description = &quot;Any number of input files&quot;)
+     *     &amp;#064;Parameters(description = &quot;Any number of input files&quot;)
      *     private List&amp;lt;File&amp;gt; files = new ArrayList&amp;lt;File&amp;gt;();
      *
      *     &amp;#064;Option(names = { &quot;-o&quot;, &quot;--out&quot; }, description = &quot;Output file (default: print to console)&quot;)
      *     private File outputFile;
      *
-     *     &amp;#064;Option(names = { &quot;-v&quot;, &quot;--verbose&quot;}, description = &quot;Verbosely list files processed&quot;)
-     *     private boolean verbose;
+     *     &amp;#064;Option(names = { &quot;-v&quot;, &quot;--verbose&quot;}, description = &quot;Verbose mode. Helpful for troubleshooting. Multiple -v options increase the verbosity.&quot;)
+     *     private boolean[] verbose;
      *
      *     &amp;#064;Option(names = { &quot;-h&quot;, &quot;--help&quot;, &quot;-?&quot;, &quot;-help&quot;}, usageHelp = true, description = &quot;Display this help and exit&quot;)
      *     private boolean help;
-     *
-     *     &amp;#064;Option(names = { &quot;-V&quot;, &quot;--version&quot;}, versionHelp = true, description = &quot;Display version information and exit&quot;)
-     *     private boolean version;
      * }
      * &lt;/pre&gt;
      * &lt;p&gt;
@@ -4923,6 +5180,18 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
         <span class="predefined-type">Class</span>&lt;?&gt;<span class="type">[]</span> type() <span class="keyword">default</span> {};
 
         <span class="comment">/**
+         * Optionally specify one or more {@link ITypeConverter} classes to use to convert the command line argument into
+         * a strongly typed value (or key-value pair for map fields). This is useful when a particular field should
+         * use a custom conversion that is different from the normal conversion for the field's type.
+         * &lt;p&gt;For example, for a specific field you may want to use a converter that maps the constant names defined
+         * in {@link java.sql.Types java.sql.Types} to the {@code int} value of these constants, but any other {@code int} fields should
+         * not be affected by this and should continue to use the standard int converter that parses numeric values.&lt;/p&gt;
+         * @return the type converter(s) to use to convert String values to strongly typed values for this field
+         * @see CommandLine#registerConverter(Class, ITypeConverter)
+         */</span>
+        <span class="predefined-type">Class</span>&lt;? <span class="directive">extends</span> ITypeConverter&lt;?&gt;&gt;<span class="type">[]</span> converter() <span class="keyword">default</span> {};
+
+        <span class="comment">/**
          * Specify a regular expression to use to split option parameter values before applying them to the field.
          * All elements resulting from the split are added to the array or Collection. Ignored for single-value fields.
          * @return a regular expression to split option parameter values or {@code &quot;&quot;} if the value should not be split
@@ -4939,22 +5208,19 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
     <span class="comment">/**
      * &lt;p&gt;
      * Fields annotated with {@code @Parameters} will be initialized with positional parameters. By specifying the
-     * {@link #index()} attribute you can pick which (or what range) of the positional parameters to apply. If no index
-     * is specified, the field will get all positional parameters (so it should be an array or a collection).
-     * &lt;/p&gt;&lt;p&gt;
-     * When parsing the command line arguments, picocli first tries to match arguments to {@link Option Options}.
-     * Positional parameters are the arguments that follow the options, or the arguments that follow a &quot;--&quot; (double
-     * dash) argument on the command line.
+     * {@link #index()} attribute you can pick the exact position or a range of positional parameters to apply. If no
+     * index is specified, the field will get all positional parameters (and so it should be an array or a collection).
      * &lt;/p&gt;&lt;p&gt;
      * For example:
      * &lt;/p&gt;
-     * &lt;pre&gt;import static picocli.CommandLine.*;
+     * &lt;pre&gt;
+     * import static picocli.CommandLine.*;
      *
      * public class MyCalcParameters {
-     *     &amp;#064;Parameters(type = BigDecimal.class, description = &quot;Any number of input numbers&quot;)
+     *     &amp;#064;Parameters(description = &quot;Any number of input numbers&quot;)
      *     private List&amp;lt;BigDecimal&amp;gt; files = new ArrayList&amp;lt;BigDecimal&amp;gt;();
      *
-     *     &amp;#064;Option(names = { &quot;-h&quot;, &quot;--help&quot;, &quot;-?&quot;, &quot;-help&quot;}, help = true, description = &quot;Display this help and exit&quot;)
+     *     &amp;#064;Option(names = { &quot;-h&quot;, &quot;--help&quot; }, usageHelp = true, description = &quot;Display this help and exit&quot;)
      *     private boolean help;
      * }
      * &lt;/pre&gt;&lt;p&gt;
@@ -5032,6 +5298,18 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
         <span class="predefined-type">Class</span>&lt;?&gt;<span class="type">[]</span> type() <span class="keyword">default</span> {};
 
         <span class="comment">/**
+         * Optionally specify one or more {@link ITypeConverter} classes to use to convert the command line argument into
+         * a strongly typed value (or key-value pair for map fields). This is useful when a particular field should
+         * use a custom conversion that is different from the normal conversion for the field's type.
+         * &lt;p&gt;For example, for a specific field you may want to use a converter that maps the constant names defined
+         * in {@link java.sql.Types java.sql.Types} to the {@code int} value of these constants, but any other {@code int} fields should
+         * not be affected by this and should continue to use the standard int converter that parses numeric values.&lt;/p&gt;
+         * @return the type converter(s) to use to convert String values to strongly typed values for this field
+         * @see CommandLine#registerConverter(Class, ITypeConverter)
+         */</span>
+        <span class="predefined-type">Class</span>&lt;? <span class="directive">extends</span> ITypeConverter&lt;?&gt;&gt;<span class="type">[]</span> converter() <span class="keyword">default</span> {};
+
+        <span class="comment">/**
          * Specify a regular expression to use to split positional parameter values before applying them to the field.
          * All elements resulting from the split are added to the array or Collection. Ignored for single-value fields.
          * @return a regular expression to split operand values or {@code &quot;&quot;} if the value should not be split
@@ -5047,18 +5325,63 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
     }
 
     <span class="comment">/**
+     * &lt;p&gt;
+     * Fields annotated with {@code @ParentCommand} will be initialized with the parent command of the current subcommand.
+     * If the current command does not have a parent command, this annotation has no effect.
+     * &lt;/p&gt;&lt;p&gt;
+     * Parent commands often define options that apply to all the subcommands.
+     * This annotation offers a convenient way to inject a reference to the parent command into a subcommand, so the
+     * subcommand can access its parent options. For example:
+     * &lt;/p&gt;&lt;pre&gt;
+     * &amp;#064;Command(name = &quot;top&quot;, subcommands = Sub.class)
+     * class Top implements Runnable {
+     *
+     *     &amp;#064;Option(names = {&quot;-d&quot;, &quot;--directory&quot;}, description = &quot;this option applies to all subcommands&quot;)
+     *     File baseDirectory;
+     *
+     *     public void run() { System.out.println(&quot;Hello from top&quot;); }
+     * }
+     *
+     * &amp;#064;Command(name = &quot;sub&quot;)
+     * class Sub implements Runnable {
+     *
+     *     &amp;#064;ParentCommand
+     *     private Top parent;
+     *
+     *     public void run() {
+     *         System.out.println(&quot;Subcommand: parent command 'directory' is &quot; + parent.baseDirectory);
+     *     }
+     * }
+     * &lt;/pre&gt;
+     * @since 2.2
+     */</span>
+    <span class="annotation">@Retention</span>(<span class="predefined-type">RetentionPolicy</span>.RUNTIME)
+    <span class="annotation">@Target</span>(<span class="predefined-type">ElementType</span>.FIELD)
+    <span class="directive">public</span> <span class="annotation">@interface</span> ParentCommand { }
+
+    <span class="comment">/**
      * &lt;p&gt;Annotate your class with {@code @Command} when you want more control over the format of the generated help
      * message.
      * &lt;/p&gt;&lt;pre&gt;
      * &amp;#064;Command(name      = &quot;Encrypt&quot;,
      *        description = &quot;Encrypt FILE(s), or standard input, to standard output or to the output file.&quot;,
+     *        version     = &quot;Encrypt version 1.0&quot;,
      *        footer      = &quot;Copyright (c) 2017&quot;)
      * public class Encrypt {
-     *     &amp;#064;Parameters(paramLabel = &quot;FILE&quot;, type = File.class, description = &quot;Any number of input files&quot;)
-     *     private List&amp;lt;File&amp;gt; files     = new ArrayList&amp;lt;File&amp;gt;();
+     *     &amp;#064;Parameters(paramLabel = &quot;FILE&quot;, description = &quot;Any number of input files&quot;)
+     *     private List&amp;lt;File&amp;gt; files = new ArrayList&amp;lt;File&amp;gt;();
      *
      *     &amp;#064;Option(names = { &quot;-o&quot;, &quot;--out&quot; }, description = &quot;Output file (default: print to console)&quot;)
      *     private File outputFile;
+     *
+     *     &amp;#064;Option(names = { &quot;-v&quot;, &quot;--verbose&quot;}, description = &quot;Verbose mode. Helpful for troubleshooting. Multiple -v options increase the verbosity.&quot;)
+     *     private boolean[] verbose;
+     *
+     *     &amp;#064;Option(names = { &quot;-h&quot;, &quot;--help&quot; }, usageHelp = true, description = &quot;Display this help and exit&quot;)
+     *     private boolean help;
+     *
+     *     &amp;#064;Option(names = { &quot;-V&quot;, &quot;--version&quot;}, versionHelp = true, description = &quot;Display version information and exit&quot;)
+     *     private boolean version;
      * }&lt;/pre&gt;
      * &lt;p&gt;
      * The structure of a help message looks like this:
@@ -5116,11 +5439,17 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
         <span class="comment">/** Version information for this command, to print to the console when the user specifies an
          * {@linkplain Option#versionHelp() option} to request version help. This is not part of the usage help message.
          *
-         * @return a string or an array of strings with version information about this command.
+         * @return a string or an array of strings with version information about this command (each string in the array is displayed on a separate line).
          * @since 0.9.8
          * @see CommandLine#printVersionHelp(PrintStream)
          */</span>
         <span class="predefined-type">String</span><span class="type">[]</span> version() <span class="keyword">default</span> {};
+
+        <span class="comment">/** Class that can provide version information dynamically at runtime. An implementation may return version
+         * information obtained from the JAR manifest, a properties file or some other source.
+         * @return a Class that can provide version information dynamically at runtime
+         */</span>
+        <span class="predefined-type">Class</span>&lt;? <span class="directive">extends</span> IVersionProvider&gt; versionProvider() <span class="keyword">default</span> NoVersionProvider.class;
 
         <span class="comment">/** Set the heading preceding the header section. May contain embedded {@linkplain java.util.Formatter format specifiers}.
          * @return the heading preceding the header section
@@ -5255,6 +5584,48 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
          * @throws Exception an exception detailing what went wrong during the conversion
          */</span>
         K convert(<span class="predefined-type">String</span> value) <span class="directive">throws</span> <span class="exception">Exception</span>;
+    }
+
+    <span class="comment">/**
+     * Provides version information for a command. Commands may configure a provider with the
+     * {@link Command#versionProvider()} annotation attribute.
+     */</span>
+    <span class="directive">public</span> <span class="type">interface</span> <span class="class">IVersionProvider</span> {
+        <span class="comment">/**
+         * Returns version information for a command.
+         * @return version information (each string in the array is displayed on a separate line)
+         * @throws Exception an exception detailing what went wrong when obtaining version information
+         */</span>
+        <span class="predefined-type">String</span><span class="type">[]</span> getVersion() <span class="directive">throws</span> <span class="exception">Exception</span>;
+    }
+    <span class="directive">private</span> <span class="directive">static</span> <span class="type">class</span> <span class="class">NoVersionProvider</span> <span class="directive">implements</span> IVersionProvider {
+        <span class="directive">public</span> <span class="predefined-type">String</span><span class="type">[]</span> getVersion() <span class="directive">throws</span> <span class="exception">Exception</span> { <span class="keyword">throw</span> <span class="keyword">new</span> <span class="exception">UnsupportedOperationException</span>(); }
+    }
+
+    <span class="comment">/**
+     * Factory for instantiating classes that are registered declaratively with annotation attributes, like
+     * {@link Command#subcommands()}, {@link Option#converter()}, {@link Parameters#converter()} and {@link Command#versionProvider()}.
+     */</span>
+    <span class="directive">public</span> <span class="type">interface</span> <span class="class">IFactory</span> {
+        <span class="comment">/**
+         * Creates and returns an instance of the specified class.
+         * @param cls the class to instantiate
+         * @param &lt;K&gt; the type to instantiate
+         * @return the new instance
+         * @throws Exception an exception detailing what went wrong when creating the instance
+         */</span>
+        &lt;K&gt; K create(<span class="predefined-type">Class</span>&lt;K&gt; cls) <span class="directive">throws</span> <span class="exception">Exception</span>;
+    }
+    <span class="directive">private</span> <span class="directive">static</span> <span class="type">class</span> <span class="class">DefaultFactory</span> <span class="directive">implements</span> IFactory {
+        <span class="directive">public</span> &lt;T&gt; T create(<span class="predefined-type">Class</span>&lt;T&gt; cls) <span class="directive">throws</span> <span class="exception">Exception</span> {
+            <span class="keyword">try</span> {
+                <span class="keyword">return</span> cls.newInstance();
+            } <span class="keyword">catch</span> (<span class="exception">Exception</span> ex) {
+                <span class="predefined-type">Constructor</span>&lt;T&gt; constructor = cls.getDeclaredConstructor();
+                constructor.setAccessible(<span class="predefined-constant">true</span>);
+                <span class="keyword">return</span> constructor.newInstance();
+            }
+        }
     }
     <span class="comment">/** Describes the number of parameters required and accepted by an option or a positional parameter.
      * @since 0.9.7
@@ -5491,11 +5862,75 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
         <span class="directive">private</span> <span class="directive">final</span> <span class="predefined-type">List</span>&lt;<span class="predefined-type">Field</span>&gt; requiredFields                         = <span class="keyword">new</span> <span class="predefined-type">ArrayList</span>&lt;<span class="predefined-type">Field</span>&gt;();
         <span class="directive">private</span> <span class="directive">final</span> <span class="predefined-type">List</span>&lt;<span class="predefined-type">Field</span>&gt; positionalParametersFields             = <span class="keyword">new</span> <span class="predefined-type">ArrayList</span>&lt;<span class="predefined-type">Field</span>&gt;();
         <span class="directive">private</span> <span class="directive">final</span> <span class="predefined-type">Object</span> command;
+        <span class="directive">private</span> <span class="directive">final</span> IFactory factory;
         <span class="directive">private</span> <span class="type">boolean</span> isHelpRequested;
         <span class="directive">private</span> <span class="predefined-type">String</span> separator = Help.DEFAULT_SEPARATOR;
         <span class="directive">private</span> <span class="type">int</span> position;
 
-        Interpreter(<span class="predefined-type">Object</span> command) {
+        Interpreter(<span class="predefined-type">Object</span> command, IFactory factory) {
+            <span class="local-variable">this</span>.command                 = Assert.notNull(command, <span class="string"><span class="delimiter">&quot;</span><span class="content">command</span><span class="delimiter">&quot;</span></span>);
+            <span class="local-variable">this</span>.factory                 = Assert.notNull(factory, <span class="string"><span class="delimiter">&quot;</span><span class="content">factory</span><span class="delimiter">&quot;</span></span>);
+            <span class="predefined-type">Class</span>&lt;?&gt; cls                 = command.getClass();
+            <span class="predefined-type">String</span> declaredName          = <span class="predefined-constant">null</span>;
+            <span class="predefined-type">String</span> declaredSeparator     = <span class="predefined-constant">null</span>;
+            <span class="type">boolean</span> hasCommandAnnotation = <span class="predefined-constant">false</span>;
+            <span class="keyword">while</span> (cls != <span class="predefined-constant">null</span>) {
+                init(cls, requiredFields, optionName2Field, singleCharOption2Field, positionalParametersFields);
+                <span class="keyword">if</span> (cls.isAnnotationPresent(Command.class)) {
+                    hasCommandAnnotation = <span class="predefined-constant">true</span>;
+                    Command cmd = cls.getAnnotation(Command.class);
+                    declaredSeparator = (declaredSeparator == <span class="predefined-constant">null</span>) ? cmd.separator() : declaredSeparator;
+                    declaredName = (declaredName == <span class="predefined-constant">null</span>) ? cmd.name() : declaredName;
+
+                    <span class="keyword">if</span> (cmd.versionProvider() != <span class="predefined-constant">null</span> &amp;&amp; cmd.versionProvider() != NoVersionProvider.class) {
+                        <span class="keyword">try</span> {
+                            IVersionProvider provider = factory.create(cmd.versionProvider());
+                            CommandLine.this.versionLines.addAll(<span class="predefined-type">Arrays</span>.asList(provider.getVersion()));
+                        } <span class="keyword">catch</span> (InitializationException ex) {
+                            <span class="keyword">throw</span> ex;
+                        } <span class="keyword">catch</span> (<span class="exception">Exception</span> ex) {
+                            <span class="keyword">throw</span> <span class="keyword">new</span> InitializationException(<span class="string"><span class="delimiter">&quot;</span><span class="content">Could not get version info from </span><span class="delimiter">&quot;</span></span> + cmd.versionProvider() + <span class="string"><span class="delimiter">&quot;</span><span class="content">: </span><span class="delimiter">&quot;</span></span> + ex, ex);
+                        }
+                    } <span class="keyword">else</span> {
+                        CommandLine.this.versionLines.addAll(<span class="predefined-type">Arrays</span>.asList(cmd.version()));
+                    }
+
+                    <span class="keyword">for</span> (<span class="predefined-type">Class</span>&lt;?&gt; sub : cmd.subcommands()) {
+                        Command subCommand = sub.getAnnotation(Command.class);
+                        <span class="keyword">if</span> (subCommand == <span class="predefined-constant">null</span> || Help.DEFAULT_COMMAND_NAME.equals(subCommand.name())) {
+                            <span class="keyword">throw</span> <span class="keyword">new</span> InitializationException(<span class="string"><span class="delimiter">&quot;</span><span class="content">Subcommand </span><span class="delimiter">&quot;</span></span> + sub.getName() +
+                                    <span class="string"><span class="delimiter">&quot;</span><span class="content"> is missing the mandatory @Command annotation with a 'name' attribute</span><span class="delimiter">&quot;</span></span>);
+                        }
+                        <span class="keyword">try</span> {
+                            CommandLine commandLine = toCommandLine(factory.create(sub), factory);
+                            commandLine.parent = CommandLine.this;
+                            commands.put(subCommand.name(), commandLine);
+                            commandLine.interpreter.initParentCommand(command);
+                        }
+                        <span class="keyword">catch</span> (InitializationException ex) { <span class="keyword">throw</span> ex; }
+                        <span class="keyword">catch</span> (<span class="exception">NoSuchMethodException</span> ex) { <span class="keyword">throw</span> <span class="keyword">new</span> InitializationException(<span class="string"><span class="delimiter">&quot;</span><span class="content">Cannot instantiate subcommand </span><span class="delimiter">&quot;</span></span> +
+                                sub.getName() + <span class="string"><span class="delimiter">&quot;</span><span class="content">: the class has no constructor</span><span class="delimiter">&quot;</span></span>, ex); }
+                        <span class="keyword">catch</span> (<span class="exception">Exception</span> ex) {
+                            <span class="keyword">throw</span> <span class="keyword">new</span> InitializationException(<span class="string"><span class="delimiter">&quot;</span><span class="content">Could not instantiate and add subcommand </span><span class="delimiter">&quot;</span></span> +
+                                    sub.getName() + <span class="string"><span class="delimiter">&quot;</span><span class="content">: </span><span class="delimiter">&quot;</span></span> + ex, ex);
+                        }
+                    }
+                }
+                cls = cls.getSuperclass();
+            }
+            separator = declaredSeparator != <span class="predefined-constant">null</span> ? declaredSeparator : separator;
+            CommandLine.this.commandName = declaredName != <span class="predefined-constant">null</span> ? declaredName : CommandLine.this.commandName;
+            <span class="predefined-type">Collections</span>.sort(positionalParametersFields, <span class="keyword">new</span> PositionalParametersSorter());
+            validatePositionalParameters(positionalParametersFields);
+
+            <span class="keyword">if</span> (positionalParametersFields.isEmpty() &amp;&amp; optionName2Field.isEmpty() &amp;&amp; !hasCommandAnnotation) {
+                <span class="keyword">throw</span> <span class="keyword">new</span> InitializationException(command + <span class="string"><span class="delimiter">&quot;</span><span class="content"> (</span><span class="delimiter">&quot;</span></span> + command.getClass() +
+                        <span class="string"><span class="delimiter">&quot;</span><span class="content">) is not a command: it has no @Command, @Option or @Parameters annotations</span><span class="delimiter">&quot;</span></span>);
+            }
+            registerBuiltInConverters();
+        }
+
+        <span class="directive">private</span> <span class="type">void</span> registerBuiltInConverters() {
             converterRegistry.put(<span class="predefined-type">Object</span>.class,        <span class="keyword">new</span> BuiltIn.StringConverter());
             converterRegistry.put(<span class="predefined-type">String</span>.class,        <span class="keyword">new</span> BuiltIn.StringConverter());
             converterRegistry.put(<span class="predefined-type">StringBuilder</span>.class, <span class="keyword">new</span> BuiltIn.StringBuilderConverter());
@@ -5527,53 +5962,47 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
             converterRegistry.put(<span class="predefined-type">InetAddress</span>.class,   <span class="keyword">new</span> BuiltIn.InetAddressConverter());
             converterRegistry.put(<span class="predefined-type">Pattern</span>.class,       <span class="keyword">new</span> BuiltIn.PatternConverter());
             converterRegistry.put(<span class="predefined-type">UUID</span>.class,          <span class="keyword">new</span> BuiltIn.UUIDConverter());
+            converterRegistry.put(<span class="predefined-type">Currency</span>.class,      <span class="keyword">new</span> BuiltIn.CurrencyConverter());
+            converterRegistry.put(<span class="predefined-type">TimeZone</span>.class,      <span class="keyword">new</span> BuiltIn.TimeZoneConverter());
+            converterRegistry.put(<span class="predefined-type">ByteOrder</span>.class,     <span class="keyword">new</span> BuiltIn.ByteOrderConverter());
+            converterRegistry.put(<span class="predefined-type">Class</span>.class,         <span class="keyword">new</span> BuiltIn.ClassConverter());
+            converterRegistry.put(<span class="predefined-type">Connection</span>.class,    <span class="keyword">new</span> BuiltIn.ConnectionConverter());
+            converterRegistry.put(<span class="predefined-type">Driver</span>.class,        <span class="keyword">new</span> BuiltIn.DriverConverter());
+            converterRegistry.put(<span class="predefined-type">Timestamp</span>.class,     <span class="keyword">new</span> BuiltIn.TimestampConverter());
+            converterRegistry.put(<span class="predefined-type">NetworkInterface</span>.class, <span class="keyword">new</span> BuiltIn.NetworkInterfaceConverter());
 
-            <span class="local-variable">this</span>.command                 = Assert.notNull(command, <span class="string"><span class="delimiter">&quot;</span><span class="content">command</span><span class="delimiter">&quot;</span></span>);
-            <span class="predefined-type">Class</span>&lt;?&gt; cls                 = command.getClass();
-            <span class="predefined-type">String</span> declaredName          = <span class="predefined-constant">null</span>;
-            <span class="predefined-type">String</span> declaredSeparator     = <span class="predefined-constant">null</span>;
-            <span class="type">boolean</span> hasCommandAnnotation = <span class="predefined-constant">false</span>;
-            <span class="keyword">while</span> (cls != <span class="predefined-constant">null</span>) {
-                init(cls, requiredFields, optionName2Field, singleCharOption2Field, positionalParametersFields);
-                <span class="keyword">if</span> (cls.isAnnotationPresent(Command.class)) {
-                    hasCommandAnnotation = <span class="predefined-constant">true</span>;
-                    Command cmd = cls.getAnnotation(Command.class);
-                    declaredSeparator = (declaredSeparator == <span class="predefined-constant">null</span>) ? cmd.separator() : declaredSeparator;
-                    declaredName = (declaredName == <span class="predefined-constant">null</span>) ? cmd.name() : declaredName;
-                    CommandLine.this.versionLines.addAll(<span class="predefined-type">Arrays</span>.asList(cmd.version()));
+            BuiltIn.registerIfAvailable(converterRegistry, tracer, <span class="string"><span class="delimiter">&quot;</span><span class="content">java.time.Duration</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">parse</span><span class="delimiter">&quot;</span></span>, <span class="predefined-type">CharSequence</span>.class);
+            BuiltIn.registerIfAvailable(converterRegistry, tracer, <span class="string"><span class="delimiter">&quot;</span><span class="content">java.time.Instant</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">parse</span><span class="delimiter">&quot;</span></span>, <span class="predefined-type">CharSequence</span>.class);
+            BuiltIn.registerIfAvailable(converterRegistry, tracer, <span class="string"><span class="delimiter">&quot;</span><span class="content">java.time.LocalDate</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">parse</span><span class="delimiter">&quot;</span></span>, <span class="predefined-type">CharSequence</span>.class);
+            BuiltIn.registerIfAvailable(converterRegistry, tracer, <span class="string"><span class="delimiter">&quot;</span><span class="content">java.time.LocalDateTime</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">parse</span><span class="delimiter">&quot;</span></span>, <span class="predefined-type">CharSequence</span>.class);
+            BuiltIn.registerIfAvailable(converterRegistry, tracer, <span class="string"><span class="delimiter">&quot;</span><span class="content">java.time.LocalTime</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">parse</span><span class="delimiter">&quot;</span></span>, <span class="predefined-type">CharSequence</span>.class);
+            BuiltIn.registerIfAvailable(converterRegistry, tracer, <span class="string"><span class="delimiter">&quot;</span><span class="content">java.time.MonthDay</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">parse</span><span class="delimiter">&quot;</span></span>, <span class="predefined-type">CharSequence</span>.class);
+            BuiltIn.registerIfAvailable(converterRegistry, tracer, <span class="string"><span class="delimiter">&quot;</span><span class="content">java.time.OffsetDateTime</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">parse</span><span class="delimiter">&quot;</span></span>, <span class="predefined-type">CharSequence</span>.class);
+            BuiltIn.registerIfAvailable(converterRegistry, tracer, <span class="string"><span class="delimiter">&quot;</span><span class="content">java.time.OffsetTime</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">parse</span><span class="delimiter">&quot;</span></span>, <span class="predefined-type">CharSequence</span>.class);
+            BuiltIn.registerIfAvailable(converterRegistry, tracer, <span class="string"><span class="delimiter">&quot;</span><span class="content">java.time.Period</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">parse</span><span class="delimiter">&quot;</span></span>, <span class="predefined-type">CharSequence</span>.class);
+            BuiltIn.registerIfAvailable(converterRegistry, tracer, <span class="string"><span class="delimiter">&quot;</span><span class="content">java.time.Year</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">parse</span><span class="delimiter">&quot;</span></span>, <span class="predefined-type">CharSequence</span>.class);
+            BuiltIn.registerIfAvailable(converterRegistry, tracer, <span class="string"><span class="delimiter">&quot;</span><span class="content">java.time.YearMonth</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">parse</span><span class="delimiter">&quot;</span></span>, <span class="predefined-type">CharSequence</span>.class);
+            BuiltIn.registerIfAvailable(converterRegistry, tracer, <span class="string"><span class="delimiter">&quot;</span><span class="content">java.time.ZonedDateTime</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">parse</span><span class="delimiter">&quot;</span></span>, <span class="predefined-type">CharSequence</span>.class);
+            BuiltIn.registerIfAvailable(converterRegistry, tracer, <span class="string"><span class="delimiter">&quot;</span><span class="content">java.time.ZoneId</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">of</span><span class="delimiter">&quot;</span></span>, <span class="predefined-type">String</span>.class);
+            BuiltIn.registerIfAvailable(converterRegistry, tracer, <span class="string"><span class="delimiter">&quot;</span><span class="content">java.time.ZoneOffset</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">of</span><span class="delimiter">&quot;</span></span>, <span class="predefined-type">String</span>.class);
 
-                    <span class="keyword">for</span> (<span class="predefined-type">Class</span>&lt;?&gt; sub : cmd.subcommands()) {
-                        Command subCommand = sub.getAnnotation(Command.class);
-                        <span class="keyword">if</span> (subCommand == <span class="predefined-constant">null</span> || Help.DEFAULT_COMMAND_NAME.equals(subCommand.name())) {
-                            <span class="keyword">throw</span> <span class="keyword">new</span> InitializationException(<span class="string"><span class="delimiter">&quot;</span><span class="content">Subcommand </span><span class="delimiter">&quot;</span></span> + sub.getName() +
-                                    <span class="string"><span class="delimiter">&quot;</span><span class="content"> is missing the mandatory @Command annotation with a 'name' attribute</span><span class="delimiter">&quot;</span></span>);
-                        }
-                        <span class="keyword">try</span> {
-                            <span class="predefined-type">Constructor</span>&lt;?&gt; constructor = sub.getDeclaredConstructor();
-                            constructor.setAccessible(<span class="predefined-constant">true</span>);
-                            CommandLine commandLine = toCommandLine(constructor.newInstance());
-                            commandLine.parent = CommandLine.this;
-                            commands.put(subCommand.name(), commandLine);
-                        }
-                        <span class="keyword">catch</span> (InitializationException ex) { <span class="keyword">throw</span> ex; }
-                        <span class="keyword">catch</span> (<span class="exception">NoSuchMethodException</span> ex) { <span class="keyword">throw</span> <span class="keyword">new</span> InitializationException(<span class="string"><span class="delimiter">&quot;</span><span class="content">Cannot instantiate subcommand </span><span class="delimiter">&quot;</span></span> +
-                                sub.getName() + <span class="string"><span class="delimiter">&quot;</span><span class="content">: the class has no constructor</span><span class="delimiter">&quot;</span></span>, ex); }
-                        <span class="keyword">catch</span> (<span class="exception">Exception</span> ex) {
-                            <span class="keyword">throw</span> <span class="keyword">new</span> InitializationException(<span class="string"><span class="delimiter">&quot;</span><span class="content">Could not instantiate and add subcommand </span><span class="delimiter">&quot;</span></span> +
-                                    sub.getName() + <span class="string"><span class="delimiter">&quot;</span><span class="content">: </span><span class="delimiter">&quot;</span></span> + ex, ex);
+            BuiltIn.registerIfAvailable(converterRegistry, tracer, <span class="string"><span class="delimiter">&quot;</span><span class="content">java.nio.file.Path</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">java.nio.file.Paths</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">get</span><span class="delimiter">&quot;</span></span>, <span class="predefined-type">String</span>.class, <span class="predefined-type">String</span><span class="type">[]</span>.class);
+        }
+
+        <span class="directive">private</span> <span class="type">void</span> initParentCommand(<span class="predefined-type">Object</span> parent) {
+            <span class="keyword">try</span> {
+                <span class="predefined-type">Class</span>&lt;?&gt; cls = <span class="local-variable">this</span>.command.getClass();
+                <span class="keyword">while</span> (cls != <span class="predefined-constant">null</span>) {
+                    <span class="keyword">for</span> (<span class="predefined-type">Field</span> f : cls.getDeclaredFields()) {
+                        <span class="keyword">if</span> (f.isAnnotationPresent(ParentCommand.class)) {
+                            f.setAccessible(<span class="predefined-constant">true</span>);
+                            f.set(command, parent);
                         }
                     }
+                    cls = cls.getSuperclass();
                 }
-                cls = cls.getSuperclass();
-            }
-            separator = declaredSeparator != <span class="predefined-constant">null</span> ? declaredSeparator : separator;
-            CommandLine.this.commandName = declaredName != <span class="predefined-constant">null</span> ? declaredName : CommandLine.this.commandName;
-            <span class="predefined-type">Collections</span>.sort(positionalParametersFields, <span class="keyword">new</span> PositionalParametersSorter());
-            validatePositionalParameters(positionalParametersFields);
-
-            <span class="keyword">if</span> (positionalParametersFields.isEmpty() &amp;&amp; optionName2Field.isEmpty() &amp;&amp; !hasCommandAnnotation) {
-                <span class="keyword">throw</span> <span class="keyword">new</span> InitializationException(command + <span class="string"><span class="delimiter">&quot;</span><span class="content"> (</span><span class="delimiter">&quot;</span></span> + command.getClass() +
-                        <span class="string"><span class="delimiter">&quot;</span><span class="content">) is not a command: it has no @Command, @Option or @Parameters annotations</span><span class="delimiter">&quot;</span></span>);
+            } <span class="keyword">catch</span> (<span class="exception">Exception</span> ex) {
+                <span class="keyword">throw</span> <span class="keyword">new</span> InitializationException(<span class="string"><span class="delimiter">&quot;</span><span class="content">Unable to initialize @ParentCommand field: </span><span class="delimiter">&quot;</span></span> + ex, ex);
             }
         }
 
@@ -5937,7 +6366,7 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
             <span class="keyword">if</span> (noMoreValues &amp;&amp; value == <span class="predefined-constant">null</span>) {
                 <span class="keyword">return</span> <span class="integer">0</span>;
             }
-            ITypeConverter&lt;?&gt; converter = getTypeConverter(cls, field);
+            ITypeConverter&lt;?&gt; converter = getTypeConverter(cls, field, <span class="integer">0</span>);
             <span class="predefined-type">Object</span> newValue = tryConvert(field, -<span class="integer">1</span>, converter, value, cls);
             <span class="predefined-type">Object</span> oldValue = field.get(command);
             TraceLevel level = TraceLevel.INFO;
@@ -5966,8 +6395,8 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
                                           <span class="predefined-type">String</span> argDescription) <span class="directive">throws</span> <span class="exception">Exception</span> {
             <span class="predefined-type">Class</span>&lt;?&gt;<span class="type">[]</span> classes = getTypeAttribute(field);
             <span class="keyword">if</span> (classes.length &lt; <span class="integer">2</span>) { <span class="keyword">throw</span> <span class="keyword">new</span> ParameterException(CommandLine.this, <span class="string"><span class="delimiter">&quot;</span><span class="content">Field </span><span class="delimiter">&quot;</span></span> + field + <span class="string"><span class="delimiter">&quot;</span><span class="content"> needs two types (one for the map key, one for the value) but only has </span><span class="delimiter">&quot;</span></span> + classes.length + <span class="string"><span class="delimiter">&quot;</span><span class="content"> types configured.</span><span class="delimiter">&quot;</span></span>); }
-            ITypeConverter&lt;?&gt; keyConverter   = getTypeConverter(classes[<span class="integer">0</span>], field);
-            ITypeConverter&lt;?&gt; valueConverter = getTypeConverter(classes[<span class="integer">1</span>], field);
+            ITypeConverter&lt;?&gt; keyConverter   = getTypeConverter(classes[<span class="integer">0</span>], field, <span class="integer">0</span>);
+            ITypeConverter&lt;?&gt; valueConverter = getTypeConverter(classes[<span class="integer">1</span>], field, <span class="integer">1</span>);
             <span class="predefined-type">Map</span>&lt;<span class="predefined-type">Object</span>, <span class="predefined-type">Object</span>&gt; result = (<span class="predefined-type">Map</span>&lt;<span class="predefined-type">Object</span>, <span class="predefined-type">Object</span>&gt;) field.get(command);
             <span class="keyword">if</span> (result == <span class="predefined-constant">null</span>) {
                 result = createMap(cls);
@@ -6129,7 +6558,7 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
                                        <span class="type">int</span> originalSize,
                                        <span class="predefined-type">String</span> argDescription) <span class="directive">throws</span> <span class="exception">Exception</span> {
             <span class="predefined-type">String</span><span class="type">[]</span> values = split(trim(args.pop()), field);
-            ITypeConverter&lt;?&gt; converter = getTypeConverter(type, field);
+            ITypeConverter&lt;?&gt; converter = getTypeConverter(type, field, <span class="integer">0</span>);
 
             <span class="keyword">for</span> (<span class="type">int</span> j = <span class="integer">0</span>; j &lt; values.length; j++) {
                 result.add(tryConvert(field, index, converter, values[j], type));
@@ -6245,7 +6674,16 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
             } <span class="keyword">catch</span> (<span class="exception">Exception</span> ignored) {}
             <span class="keyword">return</span> <span class="keyword">new</span> <span class="predefined-type">LinkedHashMap</span>&lt;<span class="predefined-type">Object</span>, <span class="predefined-type">Object</span>&gt;();
         }
-        <span class="directive">private</span> ITypeConverter&lt;?&gt; getTypeConverter(<span class="directive">final</span> <span class="predefined-type">Class</span>&lt;?&gt; type, <span class="predefined-type">Field</span> field) {
+        <span class="directive">private</span> ITypeConverter&lt;?&gt; getTypeConverter(<span class="directive">final</span> <span class="predefined-type">Class</span>&lt;?&gt; type, <span class="predefined-type">Field</span> field, <span class="type">int</span> index) {
+            <span class="predefined-type">Class</span>&lt;? <span class="directive">extends</span> ITypeConverter&lt;?&gt;&gt;<span class="type">[]</span> specific = field.isAnnotationPresent(<span class="predefined-type">Option</span>.class) ? field.getAnnotation(<span class="predefined-type">Option</span>.class).converter()
+                    : field.isAnnotationPresent(Parameters.class) ? field.getAnnotation(Parameters.class).converter() : <span class="predefined-constant">null</span>;
+            <span class="keyword">if</span> (specific.length &gt; index) {
+                <span class="keyword">try</span> {
+                    <span class="keyword">return</span> (ITypeConverter&lt;?&gt;) factory.create(specific[index]);
+                } <span class="keyword">catch</span> (<span class="exception">Exception</span> e) {
+                    <span class="keyword">throw</span> <span class="keyword">new</span> MissingTypeConverterException(CommandLine.this, <span class="string"><span class="delimiter">&quot;</span><span class="content">Could not instantiate </span><span class="delimiter">&quot;</span></span> + specific[index] + <span class="string"><span class="delimiter">&quot;</span><span class="content">: </span><span class="delimiter">&quot;</span></span> + e.toString());
+                }
+            }
             ITypeConverter&lt;?&gt; result = converterRegistry.get(type);
             <span class="keyword">if</span> (result != <span class="predefined-constant">null</span>) {
                 <span class="keyword">return</span> result;
@@ -6428,6 +6866,82 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
         }
         <span class="directive">static</span> <span class="type">class</span> <span class="class">UUIDConverter</span> <span class="directive">implements</span> ITypeConverter&lt;<span class="predefined-type">UUID</span>&gt; {
             <span class="directive">public</span> <span class="predefined-type">UUID</span> convert(<span class="predefined-type">String</span> s) <span class="directive">throws</span> <span class="exception">Exception</span> { <span class="keyword">return</span> <span class="predefined-type">UUID</span>.fromString(s); }
+        }
+        <span class="directive">static</span> <span class="type">class</span> <span class="class">CurrencyConverter</span> <span class="directive">implements</span> ITypeConverter&lt;<span class="predefined-type">Currency</span>&gt; {
+            <span class="directive">public</span> <span class="predefined-type">Currency</span> convert(<span class="predefined-type">String</span> s) <span class="directive">throws</span> <span class="exception">Exception</span> { <span class="keyword">return</span> <span class="predefined-type">Currency</span>.getInstance(s); }
+        }
+        <span class="directive">static</span> <span class="type">class</span> <span class="class">TimeZoneConverter</span> <span class="directive">implements</span> ITypeConverter&lt;<span class="predefined-type">TimeZone</span>&gt; {
+            <span class="directive">public</span> <span class="predefined-type">TimeZone</span> convert(<span class="predefined-type">String</span> s) <span class="directive">throws</span> <span class="exception">Exception</span> { <span class="keyword">return</span> <span class="predefined-type">TimeZone</span>.getTimeZone(s); }
+        }
+        <span class="directive">static</span> <span class="type">class</span> <span class="class">ByteOrderConverter</span> <span class="directive">implements</span> ITypeConverter&lt;<span class="predefined-type">ByteOrder</span>&gt; {
+            <span class="directive">public</span> <span class="predefined-type">ByteOrder</span> convert(<span class="predefined-type">String</span> s) <span class="directive">throws</span> <span class="exception">Exception</span> {
+                <span class="keyword">if</span> (s.equalsIgnoreCase(<span class="predefined-type">ByteOrder</span>.BIG_ENDIAN.toString())) { <span class="keyword">return</span> <span class="predefined-type">ByteOrder</span>.BIG_ENDIAN; }
+                <span class="keyword">if</span> (s.equalsIgnoreCase(<span class="predefined-type">ByteOrder</span>.LITTLE_ENDIAN.toString())) { <span class="keyword">return</span> <span class="predefined-type">ByteOrder</span>.LITTLE_ENDIAN; }
+                <span class="keyword">throw</span> <span class="keyword">new</span> TypeConversionException(<span class="string"><span class="delimiter">&quot;</span><span class="content">'</span><span class="delimiter">&quot;</span></span> + s + <span class="string"><span class="delimiter">&quot;</span><span class="content">' is not a valid ByteOrder</span><span class="delimiter">&quot;</span></span>);
+            }
+        }
+        <span class="directive">static</span> <span class="type">class</span> <span class="class">ClassConverter</span> <span class="directive">implements</span> ITypeConverter&lt;<span class="predefined-type">Class</span>&gt; {
+            <span class="directive">public</span> <span class="predefined-type">Class</span>&lt;?&gt; convert(<span class="predefined-type">String</span> s) <span class="directive">throws</span> <span class="exception">Exception</span> { <span class="keyword">return</span> <span class="predefined-type">Class</span>.forName(s); }
+        }
+        <span class="directive">static</span> <span class="type">class</span> <span class="class">NetworkInterfaceConverter</span> <span class="directive">implements</span> ITypeConverter&lt;<span class="predefined-type">NetworkInterface</span>&gt; {
+            <span class="directive">public</span> <span class="predefined-type">NetworkInterface</span> convert(<span class="predefined-type">String</span> s) <span class="directive">throws</span> <span class="exception">Exception</span> {
+                <span class="keyword">try</span> {
+                    <span class="predefined-type">InetAddress</span> addr = <span class="keyword">new</span> InetAddressConverter().convert(s);
+                    <span class="keyword">return</span> <span class="predefined-type">NetworkInterface</span>.getByInetAddress(addr);
+                } <span class="keyword">catch</span> (<span class="exception">Exception</span> ex) {
+                    <span class="keyword">try</span> { <span class="keyword">return</span> <span class="predefined-type">NetworkInterface</span>.getByName(s);
+                    } <span class="keyword">catch</span> (<span class="exception">Exception</span> ex2) {
+                        <span class="keyword">throw</span> <span class="keyword">new</span> TypeConversionException(<span class="string"><span class="delimiter">&quot;</span><span class="content">'</span><span class="delimiter">&quot;</span></span> + s + <span class="string"><span class="delimiter">&quot;</span><span class="content">' is not an InetAddress or NetworkInterface name</span><span class="delimiter">&quot;</span></span>);
+                    }
+                }
+            }
+        }
+        <span class="directive">static</span> <span class="type">class</span> <span class="class">ConnectionConverter</span> <span class="directive">implements</span> ITypeConverter&lt;<span class="predefined-type">Connection</span>&gt; {
+            <span class="directive">public</span> <span class="predefined-type">Connection</span> convert(<span class="predefined-type">String</span> s) <span class="directive">throws</span> <span class="exception">Exception</span> { <span class="keyword">return</span> <span class="predefined-type">DriverManager</span>.getConnection(s); }
+        }
+        <span class="directive">static</span> <span class="type">class</span> <span class="class">DriverConverter</span> <span class="directive">implements</span> ITypeConverter&lt;<span class="predefined-type">Driver</span>&gt; {
+            <span class="directive">public</span> <span class="predefined-type">Driver</span> convert(<span class="predefined-type">String</span> s) <span class="directive">throws</span> <span class="exception">Exception</span> { <span class="keyword">return</span> <span class="predefined-type">DriverManager</span>.getDriver(s); }
+        }
+        <span class="directive">static</span> <span class="type">class</span> <span class="class">TimestampConverter</span> <span class="directive">implements</span> ITypeConverter&lt;<span class="predefined-type">Timestamp</span>&gt; {
+            <span class="directive">public</span> <span class="predefined-type">Timestamp</span> convert(<span class="predefined-type">String</span> s) <span class="directive">throws</span> <span class="exception">Exception</span> { <span class="keyword">return</span> <span class="predefined-type">Timestamp</span>.valueOf(s); }
+        }
+        <span class="directive">static</span> <span class="type">void</span> registerIfAvailable(<span class="predefined-type">Map</span>&lt;<span class="predefined-type">Class</span>&lt;?&gt;, ITypeConverter&lt;?&gt;&gt; registry, Tracer tracer, <span class="predefined-type">String</span> fqcn, <span class="predefined-type">String</span> factoryMethodName, <span class="predefined-type">Class</span>&lt;?&gt;... paramTypes) {
+            registerIfAvailable(registry, tracer, fqcn, fqcn, factoryMethodName, paramTypes);
+        }
+        <span class="directive">static</span> <span class="type">void</span> registerIfAvailable(<span class="predefined-type">Map</span>&lt;<span class="predefined-type">Class</span>&lt;?&gt;, ITypeConverter&lt;?&gt;&gt; registry, Tracer tracer, <span class="predefined-type">String</span> fqcn, <span class="predefined-type">String</span> factoryClass, <span class="predefined-type">String</span> factoryMethodName, <span class="predefined-type">Class</span>&lt;?&gt;... paramTypes) {
+            <span class="keyword">try</span> {
+                <span class="predefined-type">Class</span>&lt;?&gt; cls = <span class="predefined-type">Class</span>.forName(fqcn);
+                <span class="predefined-type">Class</span>&lt;?&gt; factory = <span class="predefined-type">Class</span>.forName(factoryClass);
+                <span class="predefined-type">Method</span> method = factory.getDeclaredMethod(factoryMethodName, paramTypes);
+                registry.put(cls, <span class="keyword">new</span> ReflectionConverter(method, paramTypes));
+            } <span class="keyword">catch</span> (<span class="exception">Exception</span> e) {
+                <span class="keyword">if</span> (!traced.contains(fqcn)) {
+                    tracer.debug(<span class="string"><span class="delimiter">&quot;</span><span class="content">Could not register converter for %s: %s%n</span><span class="delimiter">&quot;</span></span>, fqcn, e.toString());
+                }
+                traced.add(fqcn);
+            }
+        }
+        <span class="directive">static</span> <span class="predefined-type">Set</span>&lt;<span class="predefined-type">String</span>&gt; traced = <span class="keyword">new</span> <span class="predefined-type">HashSet</span>&lt;<span class="predefined-type">String</span>&gt;();
+        <span class="directive">static</span> <span class="type">class</span> <span class="class">ReflectionConverter</span> <span class="directive">implements</span> ITypeConverter&lt;<span class="predefined-type">Object</span>&gt; {
+            <span class="directive">private</span> <span class="directive">final</span> <span class="predefined-type">Method</span> method;
+            <span class="directive">private</span> <span class="predefined-type">Class</span>&lt;?&gt;<span class="type">[]</span> paramTypes;
+
+            <span class="directive">public</span> ReflectionConverter(<span class="predefined-type">Method</span> method, <span class="predefined-type">Class</span>&lt;?&gt;... paramTypes) {
+                <span class="local-variable">this</span>.method = Assert.notNull(method, <span class="string"><span class="delimiter">&quot;</span><span class="content">method</span><span class="delimiter">&quot;</span></span>);
+                <span class="local-variable">this</span>.paramTypes = Assert.notNull(paramTypes, <span class="string"><span class="delimiter">&quot;</span><span class="content">paramTypes</span><span class="delimiter">&quot;</span></span>);
+            }
+
+            <span class="directive">public</span> <span class="predefined-type">Object</span> convert(<span class="predefined-type">String</span> s) {
+                <span class="keyword">try</span> {
+                    <span class="keyword">if</span> (paramTypes.length &gt; <span class="integer">1</span>) {
+                        <span class="keyword">return</span> method.invoke(<span class="predefined-constant">null</span>, s, <span class="keyword">new</span> <span class="predefined-type">String</span>[<span class="integer">0</span>]);
+                    } <span class="keyword">else</span> {
+                        <span class="keyword">return</span> method.invoke(<span class="predefined-constant">null</span>, s);
+                    }
+                } <span class="keyword">catch</span> (<span class="exception">Exception</span> e) {
+                    <span class="keyword">throw</span> <span class="keyword">new</span> TypeConversionException(<span class="string"><span class="delimiter">&quot;</span><span class="content">Unable to convert </span><span class="delimiter">&quot;</span></span> + s + <span class="string"><span class="delimiter">&quot;</span><span class="content"> to </span><span class="delimiter">&quot;</span></span> + method.getReturnType() + <span class="string"><span class="delimiter">&quot;</span><span class="content">: </span><span class="delimiter">&quot;</span></span> + e.getMessage());
+                }
+            }
         }
         <span class="directive">private</span> BuiltIn() {} <span class="comment">// private constructor: never instantiate</span>
     }
@@ -8461,8 +8975,8 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
 </div>
 <div id="footer">
 <div id="footer-text">
-Version 2.1.0<br>
-Last updated 2017-11-30 00:30:31 +09:00
+Version 2.2.0<br>
+Last updated 2017-12-21 21:04:30 +09:00
 </div>
 </div>
 </body>

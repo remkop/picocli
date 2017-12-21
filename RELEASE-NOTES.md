@@ -1,7 +1,7 @@
 # picocli Release Notes
 
 
-# <a name="2.2.0"></a> Picocli 2.2.0 (UNRELEASED)
+# <a name="2.2.0"></a> Picocli 2.2.0
 
 The picocli community is pleased to announce picocli 2.2.
 
