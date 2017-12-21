@@ -1116,23 +1116,21 @@ public class CommandLine {
      * </p><p>
      * For example:
      * </p>
-     * <pre>import static picocli.CommandLine.*;
+     * <pre>
+     * import static picocli.CommandLine.*;
      *
      * public class MyClass {
-     *     &#064;Parameters(type = File.class, description = "Any number of input files")
+     *     &#064;Parameters(description = "Any number of input files")
      *     private List&lt;File&gt; files = new ArrayList&lt;File&gt;();
      *
      *     &#064;Option(names = { "-o", "--out" }, description = "Output file (default: print to console)")
      *     private File outputFile;
      *
-     *     &#064;Option(names = { "-v", "--verbose"}, description = "Verbosely list files processed")
-     *     private boolean verbose;
+     *     &#064;Option(names = { "-v", "--verbose"}, description = "Verbose mode. Helpful for troubleshooting. Multiple -v options increase the verbosity.")
+     *     private boolean[] verbose;
      *
      *     &#064;Option(names = { "-h", "--help", "-?", "-help"}, usageHelp = true, description = "Display this help and exit")
      *     private boolean help;
-     *
-     *     &#064;Option(names = { "-V", "--version"}, versionHelp = true, description = "Display version information and exit")
-     *     private boolean version;
      * }
      * </pre>
      * <p>
@@ -1345,10 +1343,11 @@ public class CommandLine {
 
         /**
          * Optionally specify one or more {@link ITypeConverter} classes to use to convert the command line argument into
-         * a strongly typed value or key-value pair. This is useful when a particular field should use a custom
-         * conversion that is different from the normal conversion for the field's type. For example, you may want to
-         * convert the constant names defined in {@link java.sql.Types} to their {@code int} value for a specific field,
-         * but other {@code int} fields should simply parse the numeric values.
+         * a strongly typed value (or key-value pair for map fields). This is useful when a particular field should
+         * use a custom conversion that is different from the normal conversion for the field's type.
+         * <p>For example, for a specific field you may want to use a converter that maps the constant names defined
+         * in {@link java.sql.Types java.sql.Types} to the {@code int} value of these constants, but any other {@code int} fields should
+         * not be affected by this and should continue to use the standard int converter that parses numeric values.</p>
          * @return the type converter(s) to use to convert String values to strongly typed values for this field
          * @see CommandLine#registerConverter(Class, ITypeConverter)
          */
@@ -1371,22 +1370,19 @@ public class CommandLine {
     /**
      * <p>
      * Fields annotated with {@code @Parameters} will be initialized with positional parameters. By specifying the
-     * {@link #index()} attribute you can pick which (or what range) of the positional parameters to apply. If no index
-     * is specified, the field will get all positional parameters (so it should be an array or a collection).
-     * </p><p>
-     * When parsing the command line arguments, picocli first tries to match arguments to {@link Option Options}.
-     * Positional parameters are the arguments that follow the options, or the arguments that follow a "--" (double
-     * dash) argument on the command line.
+     * {@link #index()} attribute you can pick the exact position or a range of positional parameters to apply. If no
+     * index is specified, the field will get all positional parameters (and so it should be an array or a collection).
      * </p><p>
      * For example:
      * </p>
-     * <pre>import static picocli.CommandLine.*;
+     * <pre>
+     * import static picocli.CommandLine.*;
      *
      * public class MyCalcParameters {
-     *     &#064;Parameters(type = BigDecimal.class, description = "Any number of input numbers")
+     *     &#064;Parameters(description = "Any number of input numbers")
      *     private List&lt;BigDecimal&gt; files = new ArrayList&lt;BigDecimal&gt;();
      *
-     *     &#064;Option(names = { "-h", "--help", "-?", "-help"}, help = true, description = "Display this help and exit")
+     *     &#064;Option(names = { "-h", "--help" }, usageHelp = true, description = "Display this help and exit")
      *     private boolean help;
      * }
      * </pre><p>
@@ -1465,10 +1461,11 @@ public class CommandLine {
 
         /**
          * Optionally specify one or more {@link ITypeConverter} classes to use to convert the command line argument into
-         * a strongly typed value or key-value pair. This is useful when a particular field should use a custom
-         * conversion that is different from the normal conversion for the field's type. For example, you may want to
-         * convert the constant names defined in {@link java.sql.Types} to their {@code int} value for a specific field,
-         * but other {@code int} fields should simply parse the numeric values.
+         * a strongly typed value (or key-value pair for map fields). This is useful when a particular field should
+         * use a custom conversion that is different from the normal conversion for the field's type.
+         * <p>For example, for a specific field you may want to use a converter that maps the constant names defined
+         * in {@link java.sql.Types java.sql.Types} to the {@code int} value of these constants, but any other {@code int} fields should
+         * not be affected by this and should continue to use the standard int converter that parses numeric values.</p>
          * @return the type converter(s) to use to convert String values to strongly typed values for this field
          * @see CommandLine#registerConverter(Class, ITypeConverter)
          */
@@ -1502,7 +1499,7 @@ public class CommandLine {
      * class Top implements Runnable {
      *
      *     &#064;Option(names = {"-d", "--directory"}, description = "this option applies to all subcommands")
-     *     private File baseDirectory;
+     *     File baseDirectory;
      *
      *     public void run() { System.out.println("Hello from top"); }
      * }
@@ -1513,13 +1510,8 @@ public class CommandLine {
      *     &#064;ParentCommand
      *     private Top parent;
      *
-     *     &#064;Parameters(description = "The number of times to print the result")
-     *     private int count;
-     *
      *     public void run() {
-     *         for (int i = 0; i &lt; count; i++) {
-     *             System.out.println("Subcommand: parent command 'directory' is " + parent.baseDirectory);
-     *         }
+     *         System.out.println("Subcommand: parent command 'directory' is " + parent.baseDirectory);
      *     }
      * }
      * </pre>
@@ -1535,13 +1527,23 @@ public class CommandLine {
      * </p><pre>
      * &#064;Command(name      = "Encrypt",
      *        description = "Encrypt FILE(s), or standard input, to standard output or to the output file.",
+     *        version     = "Encrypt version 1.0",
      *        footer      = "Copyright (c) 2017")
      * public class Encrypt {
-     *     &#064;Parameters(paramLabel = "FILE", type = File.class, description = "Any number of input files")
-     *     private List&lt;File&gt; files     = new ArrayList&lt;File&gt;();
+     *     &#064;Parameters(paramLabel = "FILE", description = "Any number of input files")
+     *     private List&lt;File&gt; files = new ArrayList&lt;File&gt;();
      *
      *     &#064;Option(names = { "-o", "--out" }, description = "Output file (default: print to console)")
      *     private File outputFile;
+     *
+     *     &#064;Option(names = { "-v", "--verbose"}, description = "Verbose mode. Helpful for troubleshooting. Multiple -v options increase the verbosity.")
+     *     private boolean[] verbose;
+     *
+     *     &#064;Option(names = { "-h", "--help" }, usageHelp = true, description = "Display this help and exit")
+     *     private boolean help;
+     *
+     *     &#064;Option(names = { "-V", "--version"}, versionHelp = true, description = "Display version information and exit")
+     *     private boolean version;
      * }</pre>
      * <p>
      * The structure of a help message looks like this:
