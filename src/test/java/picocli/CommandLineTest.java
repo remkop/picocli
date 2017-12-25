@@ -24,6 +24,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.io.UnsupportedEncodingException;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.math.BigDecimal;
 import java.net.InetAddress;
@@ -72,6 +73,20 @@ public class CommandLineTest {
 
     private static void setTraceLevel(String level) {
         System.setProperty("picocli.trace", level);
+    }
+
+    public static class InnerClassFactory implements IFactory{
+        private final Object outer;
+        public InnerClassFactory(Object outer) { this.outer = outer; }
+
+        public <K> K create(final Class<K> cls) throws Exception {
+            try {
+                Constructor<K> constructor = cls.getDeclaredConstructor(outer.getClass());
+                return constructor.newInstance(outer);
+            } catch (Exception ex) {
+                throw new InitializationException("Could not instantiate " + cls.getName() + ": " + ex, ex);
+            }
+        }
     }
 
     @Test(expected = NullPointerException.class)
@@ -2086,8 +2101,9 @@ public class CommandLineTest {
 
         assertEquals(expectedOutput, content);
     }
+    /** Subcommand with default constructor */
     @Command(name = "subsub1")
-    static class SubSub1_testDeclarativelyAddSubcommands {private SubSub1_testDeclarativelyAddSubcommands(){}}
+    static class SubSub1_testDeclarativelyAddSubcommands {}
 
     @Command(name = "sub1", subcommands = {SubSub1_testDeclarativelyAddSubcommands.class})
     static class Sub1_testDeclarativelyAddSubcommands {public Sub1_testDeclarativelyAddSubcommands(){}}
@@ -2136,24 +2152,39 @@ public class CommandLineTest {
         assertNull(new CommandLine(new Top()).getParent());
     }
     @Test
+    public void testDeclarativelyAddSubcommandsSucceedsWithDefaultConstructorForDefaultFactory() {
+        @Command(subcommands = {SubSub1_testDeclarativelyAddSubcommands.class}) class MainCommand {}
+        CommandLine cmdLine = new CommandLine(new MainCommand());
+        assertEquals(SubSub1_testDeclarativelyAddSubcommands.class.getName(), cmdLine.getSubcommands().get("subsub1").getCommand().getClass().getName());
+    }
+    @Test
     public void testDeclarativelyAddSubcommandsFailsWithoutNoArgConstructor() {
-        @Command(name = "sub1") class ABC {}
+        @Command(name = "sub1") class ABC { public ABC(String constructorParam) {} }
         @Command(subcommands = {ABC.class}) class MainCommand {}
         try {
-            new CommandLine(new MainCommand());
+            new CommandLine(new MainCommand(), new InnerClassFactory(this));
+            fail("Expected exception");
         } catch (InitializationException ex) {
-            String expected = String.format("Cannot instantiate subcommand %s: the class has no constructor", ABC.class.getName());
+            String expected = String.format("Could not instantiate %1$s: java.lang.NoSuchMethodException: %1$s.<init>(picocli.CommandLineTest)", ABC.class.getName());
             assertEquals(expected, ex.getMessage());
         }
+    }
+    @Test
+    public void testDeclarativelyAddSubcommandsSucceedsWithDefaultConstructor() {
+        @Command(name = "sub1") class ABCD {}
+        @Command(subcommands = {ABCD.class}) class MainCommand {}
+        CommandLine cmdLine = new CommandLine(new MainCommand(), new InnerClassFactory(this));
+        assertEquals("picocli.CommandLineTest$1ABCD", cmdLine.getSubcommands().get("sub1").getCommand().getClass().getName());
     }
     @Test
     public void testDeclarativelyAddSubcommandsFailsWithoutAnnotation() {
         class MissingCommandAnnotation { public MissingCommandAnnotation() {} }
         @Command(subcommands = {MissingCommandAnnotation.class}) class MainCommand {}
         try {
-            new CommandLine(new MainCommand());
+            new CommandLine(new MainCommand(), new InnerClassFactory(this));
+            fail("Expected exception");
         } catch (InitializationException ex) {
-            String expected = String.format("Subcommand %s is missing the mandatory @Command annotation with a 'name' attribute", MissingCommandAnnotation.class.getName());
+            String expected = String.format("%s is not a command: it has no @Command, @Option or @Parameters annotations", MissingCommandAnnotation.class.getName());
             assertEquals(expected, ex.getMessage());
         }
     }
@@ -2162,7 +2193,8 @@ public class CommandLineTest {
         @Command class MissingNameAttribute{ public MissingNameAttribute() {} }
         @Command(subcommands = {MissingNameAttribute.class}) class MainCommand {}
         try {
-            new CommandLine(new MainCommand());
+            new CommandLine(new MainCommand(), new InnerClassFactory(this));
+            fail("Expected exception");
         } catch (InitializationException ex) {
             String expected = String.format("Subcommand %s is missing the mandatory @Command annotation with a 'name' attribute", MissingNameAttribute.class.getName());
             assertEquals(expected, ex.getMessage());

@@ -147,6 +147,8 @@ public class CommandLine {
     private final Tracer tracer = new Tracer();
     private final CommandSpec commandSpec;
     private final Interpreter interpreter;
+    private final IFactory factory;
+
     private boolean overwrittenOptionsAllowed = false;
     private boolean unmatchedArgumentsAllowed = false;
     private boolean expandAtFiles = true;
@@ -174,8 +176,9 @@ public class CommandLine {
      * @throws InitializationException if the specified command object does not have a {@link Command}, {@link Option} or {@link Parameters} annotation
      */
     public CommandLine(Object command, IFactory factory) {
+        this.factory = Assert.notNull(factory, "factory");
         interpreter = new Interpreter();
-        commandSpec = command instanceof CommandSpec ? (CommandSpec) command : CommandSpecBuilder.build(command, factory);
+        commandSpec = CommandSpecBuilder.build(command, factory);
         commandSpec.commandLine(this);
         commandSpec.validate();
     }
@@ -228,9 +231,9 @@ public class CommandLine {
      * @see Command#subcommands()
      */
     public CommandLine addSubcommand(String name, Object command) {
-        CommandLine commandLine = toCommandLine(command, interpreter.factory);
-        commandSpec.addSubcommand(name, commandLine);
-        subcommandLine.interpreter.initParentCommand(this.interpreter.command);
+        CommandLine subcommandLine = toCommandLine(command, factory);
+        commandSpec.addSubcommand(name, subcommandLine);
+        CommandSpecBuilder.initParentCommand(subcommandLine.getCommandSpec().userObject(), commandSpec.userObject());
         return this;
     }
     /** Returns a map with the subcommands {@linkplain #addSubcommand(String, Object) registered} on this instance.
@@ -1744,6 +1747,8 @@ public class CommandLine {
          */
         <K> K create(Class<K> cls) throws Exception;
     }
+    /** Returns a default {@link IFactory} implementation. Package-protected for testing purposes. */
+    static IFactory defaultFactory() { return new DefaultFactory(); }
     private static class DefaultFactory implements IFactory {
         public <T> T create(Class<T> cls) throws Exception {
             try {
@@ -1753,6 +1758,17 @@ public class CommandLine {
                 constructor.setAccessible(true);
                 return constructor.newInstance();
             }
+        }
+        private static ITypeConverter<?>[] create(IFactory factory, Class<? extends ITypeConverter<?>>[] classes) {
+            ITypeConverter<?>[] result = new ITypeConverter[classes.length];
+            for (int i = 0; i < classes.length; i++) {
+                try {
+                    result[i] = factory.create(classes[i]);
+                } catch (Exception ex) {
+                    throw new InitializationException("Could not instantiate " + classes[i] + ": " + ex, ex);
+                }
+            }
+            return result;
         }
     }
     /** Describes the number of parameters required and accepted by an option or a positional parameter.
@@ -1938,31 +1954,31 @@ public class CommandLine {
         return list;
     }
     private static class CommandSpecBuilder {
-        static CommandSpec build(Object command) {
+        static CommandSpec build(Object command, IFactory factory) {
             if (command instanceof CommandSpec) { return (CommandSpec) command; }
-            Assert.notNull(command, "command");
-            Class<?> cls                 = command.getClass();
-            boolean hasCommandAnnotation = false;
-            CommandSpec result = new CommandSpec(command);
-            result.toString(command.getClass().getName());
+            CommandSpec result = new CommandSpec(Assert.notNull(command, "command"));
+            Class<?> cls       = command.getClass();
+            result.toString(cls.getName());
 
+            boolean hasCommandAnnotation = false;
             while (cls != null) {
-                init(command, cls, result);
+                initOptionsAndPositionalParams(command, cls, result, factory);
                 // superclass values should not overwrite values if both class and superclass have a @Command annotation
                 if (cls.isAnnotationPresent(Command.class)) {
                     hasCommandAnnotation = true;
                     Command cmd = cls.getAnnotation(Command.class);
-                    initSubcommands(cmd, result);
+                    initSubcommands(cmd, result, factory);
 
-                    result.separator =          empty(result.separator) || CommandSpec.DEFAULT_SEPARATOR.equals(result.separator) ? cmd.separator() : result.separator;
-                    result.name =        empty(result.name) || CommandSpec.DEFAULT_COMMAND_NAME.equals(result.name) ? cmd.name() : result.name;
-                    result.synopsisHeading =    empty(result.synopsisHeading) || CommandSpec.DEFAULT_SYNOPSIS_HEADING.equals(result.synopsisHeading) ? cmd.synopsisHeading() : result.synopsisHeading;
-                    result.commandListHeading = empty(result.commandListHeading) || CommandSpec.DEFAULT_COMMAND_LIST_HEADING.equals(result.commandListHeading) ? cmd.commandListHeading() : result.commandListHeading;
+                    result.separator =            empty(result.separator)          || CommandSpec.DEFAULT_SEPARATOR.equals(result.separator)                     ? cmd.separator()          : result.separator;
+                    result.name =                 empty(result.name)               || CommandSpec.DEFAULT_COMMAND_NAME.equals(result.name)                       ? cmd.name()               : result.name;
+                    result.synopsisHeading =      empty(result.synopsisHeading)    || CommandSpec.DEFAULT_SYNOPSIS_HEADING.equals(result.synopsisHeading)        ? cmd.synopsisHeading()    : result.synopsisHeading;
+                    result.commandListHeading =   empty(result.commandListHeading) || CommandSpec.DEFAULT_COMMAND_LIST_HEADING.equals(result.commandListHeading) ? cmd.commandListHeading() : result.commandListHeading;
                     result.requiredOptionMarker = result.requiredOptionMarker == null || CommandSpec.DEFAULT_REQUIRED_OPTION_MARKER == result.requiredOptionMarker ? cmd.requiredOptionMarker() : result.requiredOptionMarker;
                     result.abbreviateSynopsis =   result.abbreviateSynopsis == null && cmd.abbreviateSynopsis() ? Boolean.valueOf(cmd.abbreviateSynopsis()) : result.abbreviateSynopsis;
                     result.sortOptions =          result.sortOptions == null        && !cmd.sortOptions()       ? Boolean.valueOf(cmd.sortOptions())        : result.sortOptions;
                     result.showDefaultValues =    result.showDefaultValues == null  && cmd.showDefaultValues()  ? Boolean.valueOf(cmd.showDefaultValues())  : result.showDefaultValues;
-                    result.version =              nonEmpty(result.version, cmd.version());
+                    result.version =              nonEmpty(result.version, generateVersionStrings(cmd.versionProvider(), factory));
+                    result.version =              nonEmpty(result.version, cmd.version()); // only if no dynamic version
                     result.customSynopsis =       nonEmpty(result.customSynopsis, cmd.customSynopsis());
                     result.description =          nonEmpty(result.description, cmd.description());
                     result.header =               nonEmpty(result.header, cmd.header());
@@ -1976,28 +1992,33 @@ public class CommandLine {
                 cls = cls.getSuperclass();
             }
             if (result.positionalParameters.isEmpty() && result.optionsByNameMap.isEmpty() && !hasCommandAnnotation) {
-                throw new InitializationException(command + " (" + command.getClass() +
-                        ") is not a command: it has no @Command, @Option or @Parameters annotations");
+                throw new InitializationException(command.getClass().getName() + " is not a command: it has no @Command, @Option or @Parameters annotations");
             }
             result.validate();
             return result;
+        }
+
+        private static String[] generateVersionStrings(Class<? extends IVersionProvider> cls, IFactory factory) {
+            if (cls == null || cls == NoVersionProvider.class) { return new String[0]; }
+            try {
+                String[] result = factory.create(cls).getVersion();
+                return result == null ? new String[0] : result;
+            } catch (InitializationException ex) { throw ex;
+            } catch (Exception ex) {
+                throw new InitializationException("Could not get version info from " + cls + ": " + ex, ex);
+            }
         }
         private static String[] nonEmpty(String[] left, String[] right) { return empty(left) ? right : left; }
         private static String nonEmpty(String left, String right) { return empty(left) ? right : left; }
         private static Boolean nonNull(Boolean left, Boolean right) { return left == null ? right : left; }
         private static Character nonNull(Character left, Character right) { return left == null ? right : left; }
 
-        private static void initSubcommands(Command cmd, CommandSpec spec) {
+        private static void initSubcommands(Command cmd, CommandSpec parent, IFactory factory) {
             for (Class<?> sub : cmd.subcommands()) {
-                Command subCommand = sub.getAnnotation(Command.class);
-                if (subCommand == null || Help.DEFAULT_COMMAND_NAME.equals(subCommand.name())) {
-                    throw new InitializationException("Subcommand " + sub.getName() +
-                            " is missing the mandatory @Command annotation with a 'name' attribute");
-                }
                 try {
-                    Constructor<?> constructor = sub.getDeclaredConstructor();
-                    constructor.setAccessible(true);
-                    spec.addSubcommand(subCommand.name(), toCommandLine(constructor.newInstance()));
+                    CommandLine subcommandLine = toCommandLine(factory.create(sub), factory);
+                    parent.addSubcommand(subCommandName(sub), subcommandLine);
+                    initParentCommand(subcommandLine.getCommandSpec().userObject(), parent.userObject());
                 }
                 catch (InitializationException ex) { throw ex; }
                 catch (NoSuchMethodException ex) { throw new InitializationException("Cannot instantiate subcommand " +
@@ -2008,23 +2029,38 @@ public class CommandLine {
                 }
             }
         }
+        static void initParentCommand(Object subcommand, Object parent) {
+            try {
+                Class<?> cls = subcommand.getClass();
+                while (cls != null) {
+                    for (Field f : cls.getDeclaredFields()) {
+                        if (f.isAnnotationPresent(ParentCommand.class)) {
+                            f.setAccessible(true);
+                            f.set(subcommand, parent);
+                        }
+                    }
+                    cls = cls.getSuperclass();
+                }
+            } catch (Exception ex) {
+                throw new InitializationException("Unable to initialize @ParentCommand field: " + ex, ex);
+            }
+        }
+        private static String subCommandName(Class<?> sub) {
+            Command subCommand = sub.getAnnotation(Command.class);
+            if (subCommand == null || Help.DEFAULT_COMMAND_NAME.equals(subCommand.name())) {
+                throw new InitializationException("Subcommand " + sub.getName() +
+                        " is missing the mandatory @Command annotation with a 'name' attribute");
+            }
+            return subCommand.name();
+        }
 
-        private static void init(Object scope,
-                                 Class<?> cls,
-                                 CommandSpec commandSpec) {
+        private static void initOptionsAndPositionalParams(Object scope, Class<?> cls, CommandSpec commandSpec, IFactory factory) {
             Field[] declaredFields = cls.getDeclaredFields();
             for (Field field : declaredFields) {
                 if (!isProperty(field)) { continue; }
-                if (isOption(field) && isParameter(field)) {
-                    throw new DuplicateOptionAnnotationsException("A field can be either @Option or @Parameters, but '"
-                            + field + "' is both.");
-                }
-                if (Modifier.isFinal(field.getModifiers()) && (field.getType().isPrimitive() || String.class.isAssignableFrom(field.getType()))) {
-                    throw new InitializationException("Constant (final) primitive and String fields like " + field + " cannot be used as " +
-                            (isOption(field) ? "an @Option" : "a @Parameter") + ": compile-time constant inlining may hide new values written to it.");
-                }
+                validateArgSpecField(field);
                 if (isOption(field)) {
-                    OptionSpec option = ArgSpecBuilder.buildOptionSpec(scope, field);
+                    OptionSpec option = ArgSpecBuilder.buildOptionSpec(scope, field, factory);
                     commandSpec.options.add(option);
                     for (String name : option.names()) { // cannot be null or empty
                         ArgSpec existing = commandSpec.optionsByNameMap.put(name, option);
@@ -2035,17 +2071,28 @@ public class CommandLine {
                             commandSpec.posixOptionsByKeyMap.put(name.charAt(1), option);
                         }
                     }
-                    if (option.required())    { commandSpec.requiredArgs.add(option); }
+                    if (option.required()) { commandSpec.requiredArgs.add(option); }
                 }
                 if (isParameter(field)) {
-                    PositionalParamSpec positional = ArgSpecBuilder.buildPositionalParamSpec(scope, field);
+                    PositionalParamSpec positional = ArgSpecBuilder.buildPositionalParamSpec(scope, field, factory);
                     commandSpec.positionalParameters.add(positional);
-                    if (positional.required())    { commandSpec.requiredArgs.add(positional); }
+                    if (positional.required()) { commandSpec.requiredArgs.add(positional); }
                 }
                 field.setAccessible(true);
             }
         }
-        static boolean isProperty(Field f)   { return isOption(f) || isParameter(f); }
+
+        private static void validateArgSpecField(final Field field) {
+            if (isOption(field) && isParameter(field)) {
+                throw new DuplicateOptionAnnotationsException("A field can be either @Option or @Parameters, but '" + field + "' is both.");
+            }
+            if (Modifier.isFinal(field.getModifiers()) && (field.getType().isPrimitive() || String.class.isAssignableFrom(field.getType()))) {
+                throw new InitializationException("Constant (final) primitive and String fields like " + field + " cannot be used as " +
+                        (isOption(field) ? "an @Option" : "a @Parameter") + ": compile-time constant inlining may hide new values written to it.");
+            }
+        }
+
+        static boolean isProperty(Field f)  { return isOption(f) || isParameter(f); }
         static boolean isOption(Field f)    { return f.isAnnotationPresent(Option.class); }
         static boolean isParameter(Field f) { return f.isAnnotationPresent(Parameters.class); }
     }
@@ -2053,7 +2100,7 @@ public class CommandLine {
     /** Helper class to reflectively create OptionSpec and PositionalParamSpec objects from annotated elements.
      * Package protected for testing. CONSIDER THIS CLASS PRIVATE.  */
     static class ArgSpecBuilder {
-        static OptionSpec buildOptionSpec(Object scope, Field field) {
+        static OptionSpec buildOptionSpec(Object scope, Field field, IFactory factory) {
             Option option = field.getAnnotation(Option.class);
 
             OptionSpec result = new OptionSpec();
@@ -2069,6 +2116,7 @@ public class CommandLine {
             result.paramLabel(inferLabel(option.paramLabel(), field.getName(), field.getType(), result.auxiliaryTypes()));
             result.splitRegex(option.split());
             result.hidden(option.hidden());
+            result.converters(DefaultFactory.create(factory, option.converter()));
             initCommon(result, scope, field);
             return result;
         }
@@ -2084,7 +2132,7 @@ public class CommandLine {
             }
             return "<" + name + ">";
         }
-        static PositionalParamSpec buildPositionalParamSpec(Object scope, Field field) {
+        static PositionalParamSpec buildPositionalParamSpec(Object scope, Field field, IFactory factory) {
             Parameters parameters = field.getAnnotation(Parameters.class);
 
             PositionalParamSpec result = new PositionalParamSpec();
@@ -2097,6 +2145,7 @@ public class CommandLine {
             result.paramLabel(inferLabel(parameters.paramLabel(), field.getName(), field.getType(), result.auxiliaryTypes()));
             result.splitRegex(parameters.split());
             result.hidden(parameters.hidden());
+            result.converters(DefaultFactory.create(factory, parameters.converter()));
             initCommon(result, scope, field);
             return result;
         }
@@ -2223,7 +2272,10 @@ public class CommandLine {
         private String footerHeading;
         private String toString;
 
-        public CommandSpec(Object userObject) { this.userObject = userObject; }
+        public CommandSpec() { this(null); }
+        public CommandSpec(Object userObject) {
+            this.userObject = userObject; // may be null
+        }
         void validate() {
             sortOptions =          (sortOptions == null)          ? true : sortOptions;
             abbreviateSynopsis =   (abbreviateSynopsis == null)   ? false : abbreviateSynopsis;
@@ -2432,6 +2484,7 @@ public class CommandLine {
         private boolean hidden;
         private Class<?> type;
         private Class[] auxiliaryTypes;
+        private ITypeConverter<?>[] converters;
         private Object defaultValue;
         private String toString;
         private IGetter getter;
@@ -2461,6 +2514,7 @@ public class CommandLine {
             if (auxiliaryTypes == null || auxiliaryTypes.length == 0) {
                 auxiliaryTypes = new Class[] {type};
             }
+            if (converters == null) { converters = new ITypeConverter[0]; }
             return (T) this;
         }
 
@@ -2501,6 +2555,12 @@ public class CommandLine {
         /** Returns auxiliary type information used when the {@link #type()} is an abstract class.
          * @see Option#type() */
         public Class<?>[] auxiliaryTypes() { return auxiliaryTypes; }
+
+        /** Returns one or more {@link CommandLine.ITypeConverter type converters} to use to convert the command line
+         * argument into a strongly typed value (or key-value pair for map fields). This is useful when a particular
+         * option or positional parameter should use a custom conversion that is different from the normal conversion for the arg spec's type.
+         * @see Option#converter() */
+        public ITypeConverter<?>[] converters() { return converters; }
 
         /** Returns a regular expression to split option parameter values or {@code ""} if the value should not be split.
          * @see Option#split() */
@@ -2550,6 +2610,9 @@ public class CommandLine {
 
         /** Sets auxiliary type information used when the {@link #type()} is an abstract class. */
         public <T extends ArgSpec> T auxiliaryTypes(Class<?>... types)   { this.auxiliaryTypes = types; return (T) this; }
+
+        /** Sets option/positional param-specific converter (or converters for Maps) . */
+        public <T extends ArgSpec> T converters(ITypeConverter<?>... cs) { this.converters = cs; return (T) this; }
 
         /** Sets a regular expression to split option parameter values or {@code ""} if the value should not be split. */
         public <T extends ArgSpec> T splitRegex(String splitRegex)       { this.splitRegex = splitRegex; return (T) this; }
@@ -2726,70 +2789,8 @@ public class CommandLine {
         private final Map<Class<?>, ITypeConverter<?>> converterRegistry = new HashMap<Class<?>, ITypeConverter<?>>();
         private boolean isHelpRequested;
         private int position;
-        private final IFactory factory;
 
-        Interpreter(Object command, IFactory factory) {
-            this.command                 = Assert.notNull(command, "command");
-            this.factory                 = Assert.notNull(factory, "factory");
-            Class<?> cls                 = command.getClass();
-            String declaredName          = null;
-            String declaredSeparator     = null;
-            boolean hasCommandAnnotation = false;
-            while (cls != null) {
-                init(cls, requiredFields, optionName2Field, singleCharOption2Field, positionalParametersFields);
-                if (cls.isAnnotationPresent(Command.class)) {
-                    hasCommandAnnotation = true;
-                    Command cmd = cls.getAnnotation(Command.class);
-                    declaredSeparator = (declaredSeparator == null) ? cmd.separator() : declaredSeparator;
-                    declaredName = (declaredName == null) ? cmd.name() : declaredName;
-
-                    if (cmd.versionProvider() != null && cmd.versionProvider() != NoVersionProvider.class) {
-                        try {
-                            IVersionProvider provider = factory.create(cmd.versionProvider());
-                            CommandLine.this.versionLines.addAll(Arrays.asList(provider.getVersion()));
-                        } catch (InitializationException ex) {
-                            throw ex;
-                        } catch (Exception ex) {
-                            throw new InitializationException("Could not get version info from " + cmd.versionProvider() + ": " + ex, ex);
-                        }
-                    } else {
-                        CommandLine.this.versionLines.addAll(Arrays.asList(cmd.version()));
-                    }
-
-                    for (Class<?> sub : cmd.subcommands()) {
-                        Command subCommand = sub.getAnnotation(Command.class);
-                        if (subCommand == null || Help.DEFAULT_COMMAND_NAME.equals(subCommand.name())) {
-                            throw new InitializationException("Subcommand " + sub.getName() +
-                                    " is missing the mandatory @Command annotation with a 'name' attribute");
-                        }
-                        try {
-                            CommandLine commandLine = toCommandLine(factory.create(sub), factory);
-                            commandLine.parent = CommandLine.this;
-                            commands.put(subCommand.name(), commandLine);
-                            commandLine.interpreter.initParentCommand(command);
-                        }
-                        catch (InitializationException ex) { throw ex; }
-                        catch (NoSuchMethodException ex) { throw new InitializationException("Cannot instantiate subcommand " +
-                                sub.getName() + ": the class has no constructor", ex); }
-                        catch (Exception ex) {
-                            throw new InitializationException("Could not instantiate and add subcommand " +
-                                    sub.getName() + ": " + ex, ex);
-                        }
-                    }
-                }
-                cls = cls.getSuperclass();
-            }
-            separator = declaredSeparator != null ? declaredSeparator : separator;
-            CommandLine.this.commandName = declaredName != null ? declaredName : CommandLine.this.commandName;
-            Collections.sort(positionalParametersFields, new PositionalParametersSorter());
-            validatePositionalParameters(positionalParametersFields);
-
-            if (positionalParametersFields.isEmpty() && optionName2Field.isEmpty() && !hasCommandAnnotation) {
-                throw new InitializationException(command + " (" + command.getClass() +
-                        ") is not a command: it has no @Command, @Option or @Parameters annotations");
-            }
-            registerBuiltInConverters();
-        }
+        Interpreter() { registerBuiltInConverters(); }
 
         private void registerBuiltInConverters() {
             converterRegistry.put(Object.class,        new BuiltIn.StringConverter());
@@ -2848,99 +2849,6 @@ public class CommandLine {
             BuiltIn.registerIfAvailable(converterRegistry, tracer, "java.time.ZoneOffset", "of", String.class);
 
             BuiltIn.registerIfAvailable(converterRegistry, tracer, "java.nio.file.Path", "java.nio.file.Paths", "get", String.class, String[].class);
-        }
-
-        private void initParentCommand(Object parent) {
-            try {
-                Class<?> cls = this.command.getClass();
-                while (cls != null) {
-                    for (Field f : cls.getDeclaredFields()) {
-                        if (f.isAnnotationPresent(ParentCommand.class)) {
-                            f.setAccessible(true);
-                            f.set(command, parent);
-                        }
-                    }
-                    cls = cls.getSuperclass();
-                }
-            } catch (Exception ex) {
-                throw new InitializationException("Unable to initialize @ParentCommand field: " + ex, ex);
-            }
-        }
-
-        private void registerBuiltInConverters() {
-            converterRegistry.put(Object.class,        new BuiltIn.StringConverter());
-            converterRegistry.put(String.class,        new BuiltIn.StringConverter());
-            converterRegistry.put(StringBuilder.class, new BuiltIn.StringBuilderConverter());
-            converterRegistry.put(CharSequence.class,  new BuiltIn.CharSequenceConverter());
-            converterRegistry.put(Byte.class,          new BuiltIn.ByteConverter());
-            converterRegistry.put(Byte.TYPE,           new BuiltIn.ByteConverter());
-            converterRegistry.put(Boolean.class,       new BuiltIn.BooleanConverter());
-            converterRegistry.put(Boolean.TYPE,        new BuiltIn.BooleanConverter());
-            converterRegistry.put(Character.class,     new BuiltIn.CharacterConverter());
-            converterRegistry.put(Character.TYPE,      new BuiltIn.CharacterConverter());
-            converterRegistry.put(Short.class,         new BuiltIn.ShortConverter());
-            converterRegistry.put(Short.TYPE,          new BuiltIn.ShortConverter());
-            converterRegistry.put(Integer.class,       new BuiltIn.IntegerConverter());
-            converterRegistry.put(Integer.TYPE,        new BuiltIn.IntegerConverter());
-            converterRegistry.put(Long.class,          new BuiltIn.LongConverter());
-            converterRegistry.put(Long.TYPE,           new BuiltIn.LongConverter());
-            converterRegistry.put(Float.class,         new BuiltIn.FloatConverter());
-            converterRegistry.put(Float.TYPE,          new BuiltIn.FloatConverter());
-            converterRegistry.put(Double.class,        new BuiltIn.DoubleConverter());
-            converterRegistry.put(Double.TYPE,         new BuiltIn.DoubleConverter());
-            converterRegistry.put(File.class,          new BuiltIn.FileConverter());
-            converterRegistry.put(URI.class,           new BuiltIn.URIConverter());
-            converterRegistry.put(URL.class,           new BuiltIn.URLConverter());
-            converterRegistry.put(Date.class,          new BuiltIn.ISO8601DateConverter());
-            converterRegistry.put(Time.class,          new BuiltIn.ISO8601TimeConverter());
-            converterRegistry.put(BigDecimal.class,    new BuiltIn.BigDecimalConverter());
-            converterRegistry.put(BigInteger.class,    new BuiltIn.BigIntegerConverter());
-            converterRegistry.put(Charset.class,       new BuiltIn.CharsetConverter());
-            converterRegistry.put(InetAddress.class,   new BuiltIn.InetAddressConverter());
-            converterRegistry.put(Pattern.class,       new BuiltIn.PatternConverter());
-            converterRegistry.put(UUID.class,          new BuiltIn.UUIDConverter());
-            converterRegistry.put(Currency.class,      new BuiltIn.CurrencyConverter());
-            converterRegistry.put(TimeZone.class,      new BuiltIn.TimeZoneConverter());
-            converterRegistry.put(ByteOrder.class,     new BuiltIn.ByteOrderConverter());
-            converterRegistry.put(Class.class,         new BuiltIn.ClassConverter());
-            converterRegistry.put(Connection.class,    new BuiltIn.ConnectionConverter());
-            converterRegistry.put(Driver.class,        new BuiltIn.DriverConverter());
-            converterRegistry.put(Timestamp.class,     new BuiltIn.TimestampConverter());
-            converterRegistry.put(NetworkInterface.class, new BuiltIn.NetworkInterfaceConverter());
-
-            BuiltIn.registerIfAvailable(converterRegistry, tracer, "java.time.Duration", "parse", CharSequence.class);
-            BuiltIn.registerIfAvailable(converterRegistry, tracer, "java.time.Instant", "parse", CharSequence.class);
-            BuiltIn.registerIfAvailable(converterRegistry, tracer, "java.time.LocalDate", "parse", CharSequence.class);
-            BuiltIn.registerIfAvailable(converterRegistry, tracer, "java.time.LocalDateTime", "parse", CharSequence.class);
-            BuiltIn.registerIfAvailable(converterRegistry, tracer, "java.time.LocalTime", "parse", CharSequence.class);
-            BuiltIn.registerIfAvailable(converterRegistry, tracer, "java.time.MonthDay", "parse", CharSequence.class);
-            BuiltIn.registerIfAvailable(converterRegistry, tracer, "java.time.OffsetDateTime", "parse", CharSequence.class);
-            BuiltIn.registerIfAvailable(converterRegistry, tracer, "java.time.OffsetTime", "parse", CharSequence.class);
-            BuiltIn.registerIfAvailable(converterRegistry, tracer, "java.time.Period", "parse", CharSequence.class);
-            BuiltIn.registerIfAvailable(converterRegistry, tracer, "java.time.Year", "parse", CharSequence.class);
-            BuiltIn.registerIfAvailable(converterRegistry, tracer, "java.time.YearMonth", "parse", CharSequence.class);
-            BuiltIn.registerIfAvailable(converterRegistry, tracer, "java.time.ZonedDateTime", "parse", CharSequence.class);
-            BuiltIn.registerIfAvailable(converterRegistry, tracer, "java.time.ZoneId", "of", String.class);
-            BuiltIn.registerIfAvailable(converterRegistry, tracer, "java.time.ZoneOffset", "of", String.class);
-
-            BuiltIn.registerIfAvailable(converterRegistry, tracer, "java.nio.file.Path", "java.nio.file.Paths", "get", String.class, String[].class);
-        }
-
-        private void initParentCommand(Object parent) {
-            try {
-                Class<?> cls = this.command.getClass();
-                while (cls != null) {
-                    for (Field f : cls.getDeclaredFields()) {
-                        if (f.isAnnotationPresent(ParentCommand.class)) {
-                            f.setAccessible(true);
-                            f.set(command, parent);
-                        }
-                    }
-                    cls = cls.getSuperclass();
-                }
-            } catch (Exception ex) {
-                throw new InitializationException("Unable to initialize @ParentCommand field: " + ex, ex);
-            }
         }
 
         /**
@@ -3598,19 +3506,8 @@ public class CommandLine {
             return new LinkedHashMap<Object, Object>();
         }
         private ITypeConverter<?> getTypeConverter(final Class<?> type, ArgSpec argSpec, int index) {
-            Class<? extends ITypeConverter<?>>[] specific = field.isAnnotationPresent(Option.class) ? field.getAnnotation(Option.class).converter()
-                    : field.isAnnotationPresent(Parameters.class) ? field.getAnnotation(Parameters.class).converter() : new Class[0];
-            if (specific.length > index) {
-                try {
-                    return (ITypeConverter<?>) factory.create(specific[index]);
-                } catch (Exception e) {
-                    throw new MissingTypeConverterException(CommandLine.this, "Could not instantiate " + specific[index] + ": " + e.toString());
-                }
-            }
-            ITypeConverter<?> result = converterRegistry.get(type);
-            if (result != null) {
-                return result;
-            }
+            if (argSpec.converters().length > index) { return argSpec.converters()[index]; }
+            if (converterRegistry.containsKey(type)) { return converterRegistry.get(type); }
             if (type.isEnum()) {
                 return new ITypeConverter<Object>() {
                     @SuppressWarnings("unchecked")
@@ -3619,8 +3516,7 @@ public class CommandLine {
                     }
                 };
             }
-            throw new MissingTypeConverterException(CommandLine.this, "No TypeConverter registered for " + type.getName() + " of " + argSpec
-                    .toString());
+            throw new MissingTypeConverterException(CommandLine.this, "No TypeConverter registered for " + type.getName() + " of " + argSpec);
         }
 
         private void assertNoMissingParameters(ArgSpec argSpec, int arity, Stack<String> args) {
@@ -3942,13 +3838,20 @@ public class CommandLine {
         public Help(Object command, Ansi ansi) {
             this(command, defaultColorScheme(ansi));
         }
-
         /** Constructs a new {@code Help} instance with the specified color scheme, initialized from annotatations
          * on the specified class and superclasses.
          * @param command the annotated object to create usage help for
-         * @param colorScheme the color scheme to use */
+         * @param colorScheme the color scheme to use
+         * @deprecated use {@link Help(CommandSpec, ColorScheme} */
         public Help(Object command, ColorScheme colorScheme) {
-            this.commandSpec = CommandSpecBuilder.build(command);
+            this(CommandSpecBuilder.build(command, new DefaultFactory()), colorScheme);
+        }
+        /** Constructs a new {@code Help} instance with the specified color scheme, initialized from annotatations
+         * on the specified class and superclasses.
+         * @param commandSpec the command model to create usage help for
+         * @param colorScheme the color scheme to use */
+        public Help(CommandSpec commandSpec, ColorScheme colorScheme) {
+            this.commandSpec = Assert.notNull(commandSpec, "commandSpec");
             this.addAllSubcommands(commandSpec.subcommands());
             this.colorScheme = Assert.notNull(colorScheme, "colorScheme").applySystemProperties();
             parameterLabelRenderer = createDefaultParamLabelRenderer(); // uses help separator
@@ -3980,7 +3883,7 @@ public class CommandLine {
          * @deprecated
          */
         public Help addSubcommand(String commandName, Object command) {
-            commands.put(commandName, new Help(command instanceof CommandSpec ? (CommandSpec) command : CommandSpecBuilder.build(command)));
+            commands.put(commandName, new Help(command instanceof CommandSpec ? (CommandSpec) command : CommandSpecBuilder.build(command, commandSpec.commandLine().factory)));
             return this;
         }
 

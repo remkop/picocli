@@ -54,7 +54,7 @@ public class CommandLineModelTest {
 
     @Test
     public void testEmptyModelHelp() throws Exception {
-        CommandSpec spec = new CommandSpec(null);
+        CommandSpec spec = new CommandSpec();
         CommandLine commandLine = new CommandLine(spec);
         String actual = usageString(commandLine, Ansi.OFF);
         assertEquals(String.format("Usage: <main class>%n"), actual);
@@ -63,7 +63,7 @@ public class CommandLineModelTest {
     @Test
     public void testEmptyModelParse() throws Exception {
         System.setProperty("picocli.trace", "OFF");
-        CommandSpec spec = new CommandSpec(null);
+        CommandSpec spec = new CommandSpec();
         CommandLine commandLine = new CommandLine(spec);
         commandLine.setUnmatchedArgumentsAllowed(true);
         commandLine.parse("-p", "123", "abc");
@@ -72,7 +72,7 @@ public class CommandLineModelTest {
 
     @Test
     public void testModelHelp() throws Exception {
-        CommandSpec spec = new CommandSpec(null);
+        CommandSpec spec = new CommandSpec();
         spec.add(new OptionSpec().names("-h", "--help").usageHelp(true).description("show help and exit"));
         spec.add(new OptionSpec().names("-V", "--version").usageHelp(true).description("show help and exit"));
         spec.add(new OptionSpec().names("-c", "--count").paramLabel("COUNT").arity("1").type(int.class).description("number of times to execute"));
@@ -88,7 +88,7 @@ public class CommandLineModelTest {
 
     @Test
     public void testModelParse() throws Exception {
-        CommandSpec spec = new CommandSpec(null);
+        CommandSpec spec = new CommandSpec();
         spec.add(new OptionSpec().names("-h", "--help").usageHelp(true).description("show help and exit"));
         spec.add(new OptionSpec().names("-V", "--version").usageHelp(true).description("show help and exit"));
         spec.add(new OptionSpec().names("-c", "--count").paramLabel("COUNT").arity("1").type(int.class).description("number of times to execute"));

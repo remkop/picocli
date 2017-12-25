@@ -22,6 +22,7 @@ import org.junit.Test;
 import static org.junit.Assert.*;
 
 import picocli.CommandLine.Command;
+import picocli.CommandLine.InitializationException;
 import picocli.CommandLine.Option;
 import picocli.CommandLine.Parameters;
 import picocli.CommandLine.ParentCommand;
@@ -106,11 +107,10 @@ public class ParentCommandTest {
         try {
             new CommandLine(top1).addSubcommand("sub1", sub1);
             fail("expected failure");
-        } catch (CommandLine.InitializationException ex) {
-            String expected = "Unable to initialize @ParentCommand field: " +
-                    "java.lang.IllegalArgumentException: " +
-                    "Can not set java.lang.String field " +
-                    sub1.getClass().getName() + ".parent to " + top1.getClass().getName();
+        } catch (InitializationException ex) {
+            String prefix = "Unable to initialize @ParentCommand field: java.lang.IllegalArgumentException";
+            if (prefix.equals(ex.getMessage())) { return; }
+            String expected = prefix + ": Can not set java.lang.String field " + sub1.getClass().getName() + ".parent to " + top1.getClass().getName();
             assertEquals(expected, ex.getMessage());
         }
     }

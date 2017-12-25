@@ -25,6 +25,7 @@ import picocli.CommandLine.Help.Ansi.Style;
 import picocli.CommandLine.Help.Ansi.Text;
 import picocli.CommandLine.Help.ColorScheme;
 import picocli.CommandLine.Help.TextTable;
+import picocli.CommandLine.IFactory;
 import picocli.CommandLine.IVersionProvider;
 import picocli.CommandLine.InitializationException;
 import picocli.CommandLine.Option;
@@ -111,7 +112,10 @@ public class CommandLineHelpTest {
         return result;
     }
     private static OptionSpec option(Object obj, String fieldName) throws Exception {
-        return CommandLine.ArgSpecBuilder.buildOptionSpec(obj, obj.getClass().getDeclaredField(fieldName));
+        return option(obj, fieldName, CommandLine.defaultFactory());
+    }
+    private static OptionSpec option(Object obj, String fieldName, IFactory factory) throws Exception {
+        return CommandLine.ArgSpecBuilder.buildOptionSpec(obj, obj.getClass().getDeclaredField(fieldName), factory);
     }
     private static OptionSpec[] options(Object obj, String... fieldNames) throws Exception {
         OptionSpec[] result = new OptionSpec[fieldNames.length];
