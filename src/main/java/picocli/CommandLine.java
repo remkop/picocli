@@ -1027,7 +1027,7 @@ public class CommandLine {
         return this;
     }
 
-    /** Returns the String that separates option names from option values when parsing command line options. {@value Help#DEFAULT_SEPARATOR} by default.
+    /** Returns the String that separates option names from option values when parsing command line options. {@value CommandLine.CommandSpec#DEFAULT_SEPARATOR} by default.
      * @return the String the parser uses to separate option names from option values */
     public String getSeparator() {
         return commandSpec.separator;
@@ -1042,7 +1042,7 @@ public class CommandLine {
         return this;
     }
 
-    /** Returns the command name (also called program name) displayed in the usage help synopsis. {@value Help#DEFAULT_COMMAND_NAME} by default.
+    /** Returns the command name (also called program name) displayed in the usage help synopsis. {@value CommandLine.CommandSpec#DEFAULT_COMMAND_NAME} by default.
      * @return the command name (also called program name) displayed in the usage
      * @since 2.0 */
     public String getCommandName() {
@@ -3842,7 +3842,7 @@ public class CommandLine {
          * on the specified class and superclasses.
          * @param command the annotated object to create usage help for
          * @param colorScheme the color scheme to use
-         * @deprecated use {@link Help(CommandSpec, ColorScheme} */
+         * @deprecated use {@link picocli.CommandLine.Help#Help(picocli.CommandLine.CommandSpec, picocli.CommandLine.Help.ColorScheme)}  */
         public Help(Object command, ColorScheme colorScheme) {
             this(CommandSpecBuilder.build(command, new DefaultFactory()), colorScheme);
         }
