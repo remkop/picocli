@@ -953,13 +953,13 @@ public class CommandLineHelpTest {
         Help.IOptionRenderer renderer = help.createDefaultOptionRenderer();
         Help.IParamLabelRenderer parameterRenderer = help.createDefaultParamLabelRenderer();
         OptionSpec option = help.options().get(0);
-        Text[][] row1 = renderer.render(option, parameterRenderer, help.colorScheme);
+        Text[][] row1 = renderer.render(option, parameterRenderer, help.colorScheme());
         assertEquals(1, row1.length);
         assertArrayEquals(Arrays.toString(row1[0]), textArray(help, "", "-L", ",", "---long=<longField>", "long description"), row1[0]);
         //assertArrayEquals(Arrays.toString(row1[1]), textArray(help, "", "", "", "", "  Default: null"), row1[1]); // #201 don't show null defaults
 
         option = help.options().get(1);
-        Text[][] row2 = renderer.render(option, parameterRenderer, help.colorScheme);
+        Text[][] row2 = renderer.render(option, parameterRenderer, help.colorScheme());
         assertEquals(2, row2.length);
         assertArrayEquals(Arrays.toString(row2[0]), textArray(help, "", "-b", ",", "-a, --alpha=<otherField>", "other"), row2[0]);
         assertArrayEquals(Arrays.toString(row2[1]), textArray(help, "", "", "", "", "  Default: abc"), row2[1]);
@@ -975,7 +975,7 @@ public class CommandLineHelpTest {
         Help.IOptionRenderer renderer = help.createDefaultOptionRenderer();
         Help.IParamLabelRenderer parameterRenderer = help.createDefaultParamLabelRenderer();
         OptionSpec option = help.options().get(0);
-        Text[][] row = renderer.render(option, parameterRenderer, help.colorScheme);
+        Text[][] row = renderer.render(option, parameterRenderer, help.colorScheme());
         assertEquals(2, row.length);
         assertArrayEquals(Arrays.toString(row[0]), textArray(help, "*", "-b", ",", "-a, --alpha=<otherField>", "other"), row[0]);
         assertArrayEquals(Arrays.toString(row[1]), textArray(help, "", "", "", "", "  Default: abc"), row[1]);
@@ -991,7 +991,7 @@ public class CommandLineHelpTest {
         Help.IOptionRenderer renderer = help.createDefaultOptionRenderer();
         Help.IParamLabelRenderer parameterRenderer = help.createDefaultParamLabelRenderer();
         OptionSpec option = help.options().get(0);
-        Text[][] row = renderer.render(option, parameterRenderer, help.colorScheme);
+        Text[][] row = renderer.render(option, parameterRenderer, help.colorScheme());
         assertEquals(1, row.length);
         assertArrayEquals(Arrays.toString(row[0]), textArray(help, "*", "-b", ",", "-a, --alpha=<otherField>", "other"), row[0]);
     }
@@ -1005,7 +1005,7 @@ public class CommandLineHelpTest {
         Help.IOptionRenderer renderer = help.createDefaultOptionRenderer();
         Help.IParamLabelRenderer parameterRenderer = help.createDefaultParamLabelRenderer();
         OptionSpec option = help.options().get(0);
-        Text[][] row = renderer.render(option, parameterRenderer, help.colorScheme);
+        Text[][] row = renderer.render(option, parameterRenderer, help.colorScheme());
         assertEquals(1, row.length);
         assertArrayEquals(Arrays.toString(row[0]), textArray(help, " ", "-b", ",", "-a, --alpha=<otherField>", "other"), row[0]);
     }
@@ -1021,7 +1021,7 @@ public class CommandLineHelpTest {
         Help.IOptionRenderer renderer = help.createDefaultOptionRenderer();
         Help.IParamLabelRenderer parameterRenderer = help.createDefaultParamLabelRenderer();
         OptionSpec option = help.options().get(0);
-        Text[][] row = renderer.render(option, parameterRenderer, help.colorScheme);
+        Text[][] row = renderer.render(option, parameterRenderer, help.colorScheme());
         assertEquals(1, row.length);
         assertArrayEquals(Arrays.toString(row[0]), textArray(help, " ", "-b", ",", "-a, --alpha=<otherField>", "other"), row[0]);
         // assertArrayEquals(Arrays.toString(row[1]), textArray(help, "",    "", "",  "", "  Default: null"), row[1]); // #201 don't show null defaults
@@ -1036,7 +1036,7 @@ public class CommandLineHelpTest {
         Help.IParameterRenderer renderer = help.createDefaultParameterRenderer();
         Help.IParamLabelRenderer parameterRenderer = Help.createMinimalParamLabelRenderer();
         PositionalParamSpec param = help.positionalParameters().get(0);
-        Text[][] row1 = renderer.render(param, parameterRenderer, help.colorScheme);
+        Text[][] row1 = renderer.render(param, parameterRenderer, help.colorScheme());
         assertEquals(1, row1.length);
         assertArrayEquals(Arrays.toString(row1[0]), textArray(help, " ", "", "", "<required>", "required"), row1[0]);
     }
@@ -1051,7 +1051,7 @@ public class CommandLineHelpTest {
         Help.IParameterRenderer renderer = help.createDefaultParameterRenderer();
         Help.IParamLabelRenderer parameterRenderer = Help.createMinimalParamLabelRenderer();
         PositionalParamSpec param = help.positionalParameters().get(0);
-        Text[][] row1 = renderer.render(param, parameterRenderer, help.colorScheme);
+        Text[][] row1 = renderer.render(param, parameterRenderer, help.colorScheme());
         assertEquals(1, row1.length);
         assertArrayEquals(Arrays.toString(row1[0]), textArray(help, "*", "", "", "<required>", "required"), row1[0]);
     }
@@ -1066,7 +1066,7 @@ public class CommandLineHelpTest {
         Help.IParameterRenderer renderer = help.createDefaultParameterRenderer();
         Help.IParamLabelRenderer parameterRenderer = Help.createMinimalParamLabelRenderer();
         PositionalParamSpec param = help.positionalParameters().get(0);
-        Text[][] row1 = renderer.render(param, parameterRenderer, help.colorScheme);
+        Text[][] row1 = renderer.render(param, parameterRenderer, help.colorScheme());
         assertEquals(1, row1.length);
         assertArrayEquals(Arrays.toString(row1[0]), textArray(help, "", "", "", "<optional>", "optional"), row1[0]);
     }
@@ -1096,7 +1096,7 @@ public class CommandLineHelpTest {
         };
         int i = -1;
         for (OptionSpec option : help.options()) {
-            Text[][] row = renderer.render(option, parameterRenderer, help.colorScheme);
+            Text[][] row = renderer.render(option, parameterRenderer, help.colorScheme());
             assertEquals(1, row.length);
             assertArrayEquals(Arrays.toString(row[0]), textArray(help, expected[++i]), row[0]);
         }
@@ -1130,7 +1130,7 @@ public class CommandLineHelpTest {
         int i = -1;
         int rowIndex = 0;
         for (OptionSpec option : help.options()) {
-            Text[][] row = renderer.render(option, parameterRenderer, help.colorScheme);
+            Text[][] row = renderer.render(option, parameterRenderer, help.colorScheme());
             assertEquals(rowCount[++i], row.length);
             assertArrayEquals(Arrays.toString(row[0]), textArray(help, expected[rowIndex]), row[0]);
             rowIndex += rowCount[i];
