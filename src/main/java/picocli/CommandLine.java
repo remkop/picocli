@@ -1027,36 +1027,36 @@ public class CommandLine {
         return this;
     }
 
-    /** Returns the String that separates option names from option values when parsing command line options. {@value CommandLine.CommandSpec#DEFAULT_SEPARATOR} by default.
-     * @return the String the parser uses to separate option names from option values */
-    public String getSeparator() {
-        return commandSpec.separator;
-    }
+    /** Returns the String that separates option names from option values when parsing command line options.
+     * @return the String the parser uses to separate option names from option values
+     * @see CommandSpec#separator() */
+    public String getSeparator() { return commandSpec.separator(); }
 
     /** Sets the String the parser uses to separate option names from option values to the specified value.
      * The separator may also be set declaratively with the {@link CommandLine.Command#separator()} annotation attribute.
      * @param separator the String that separates option names from option values
+     * @see CommandSpec#separator(String)
      * @return this {@code CommandLine} object, to allow method chaining */
     public CommandLine setSeparator(String separator) {
-        commandSpec.separator = Assert.notNull(separator, "separator");
+        commandSpec.separator(Assert.notNull(separator, "separator"));
         return this;
     }
 
-    /** Returns the command name (also called program name) displayed in the usage help synopsis. {@value CommandLine.CommandSpec#DEFAULT_COMMAND_NAME} by default.
+    /** Returns the command name (also called program name) displayed in the usage help synopsis.
      * @return the command name (also called program name) displayed in the usage
+     * @see CommandSpec#name()
      * @since 2.0 */
-    public String getCommandName() {
-        return commandSpec.name;
-    }
+    public String getCommandName() { return commandSpec.name(); }
 
     /** Sets the command name (also called program name) displayed in the usage help synopsis to the specified value.
      * Note that this method only modifies the usage help message, it does not impact parsing behaviour.
      * The command name may also be set declaratively with the {@link CommandLine.Command#name()} annotation attribute.
      * @param commandName command name (also called program name) displayed in the usage help synopsis
      * @return this {@code CommandLine} object, to allow method chaining
+     * @see CommandSpec#name(String)
      * @since 2.0 */
     public CommandLine setCommandName(String commandName) {
-        commandSpec.name = Assert.notNull(commandName, "commandName");
+        commandSpec.name(Assert.notNull(commandName, "commandName"));
         return this;
     }
 
@@ -1065,9 +1065,7 @@ public class CommandLine {
      * This property is {@code true} by default.
      * @return whether "argument files" or {@code @files} should be expanded into their content
      * @since 2.1 */
-    public boolean isExpandAtFiles() {
-        return expandAtFiles;
-    }
+    public boolean isExpandAtFiles() { return expandAtFiles; }
 
     /** Sets whether arguments starting with {@code '@'} should be treated as the path to an argument file and its
      * contents should be expanded into separate arguments for each line in the specified file. ({@code true} by default.)
