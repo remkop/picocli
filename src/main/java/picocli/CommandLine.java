@@ -2226,19 +2226,19 @@ public class CommandLine {
      * JVM languages that don't support annotations may construct {@code CommandSpec} instances directly.
      * @since 3.0 */
     public static class CommandSpec {
-        /** Constant String holding the default synopsis heading: {@code {@value} }*/
+        /** Constant String holding the default synopsis heading: <code>{@value}</code>. */
         public static final String DEFAULT_SYNOPSIS_HEADING = "Usage: ";
 
-        /** Constant String holding the default command list heading: {@code {@value} }*/
+        /** Constant String holding the default command list heading: <code>{@value}</code>. */
         public static final String DEFAULT_COMMAND_LIST_HEADING = "Commands:%n";
 
-        /** Constant String holding the default program name: {@code {@value} }*/
+        /** Constant String holding the default program name: {@code "<main class>" }. */
         protected static final String DEFAULT_COMMAND_NAME = "<main class>";
 
-        /** Constant String holding the default string that separates options from option parameters: {@value} */
+        /** Constant String holding the default string that separates options from option parameters: {@code ' '} ({@value}). */
         protected static final char DEFAULT_REQUIRED_OPTION_MARKER = ' ';
 
-        /** Constant String holding the default separator between options and option parameters: {@code {@value} }*/
+        /** Constant String holding the default separator between options and option parameters: <code>{@value}</code>.*/
         protected static final String DEFAULT_SEPARATOR = "=";
 
         private final Map<String, CommandLine> commands = new LinkedHashMap<String, CommandLine>();
@@ -2272,10 +2272,15 @@ public class CommandLine {
         private String footerHeading;
         private String toString;
 
+        /** Constructs a new {@code CommandSpec} without an associated user object. */
         public CommandSpec() { this(null); }
-        public CommandSpec(Object userObject) {
-            this.userObject = userObject; // may be null
-        }
+
+        /** Constructs a new {@code CommandSpec} without the specified associated user object.
+         * @param userObject the associated user object - often this is the object annotated with {@code @Command}. May be {@code null}.
+         */
+        public CommandSpec(Object userObject) { this.userObject = userObject; }
+
+        /** Ensures all attributes of this {@code CommandSpec} have a valid value; throws an {@link InitializationException} if this cannot be achieved. */
         void validate() {
             sortOptions =          (sortOptions == null)          ? true : sortOptions;
             abbreviateSynopsis =   (abbreviateSynopsis == null)   ? false : abbreviateSynopsis;
@@ -2309,6 +2314,10 @@ public class CommandLine {
         /** Returns a read-only view of the subcommand map. */
         public Map<String, CommandLine> subcommands() { return Collections.unmodifiableMap(commands); }
 
+        /** Adds the specified subcommand with the specified name.
+         * @param name subcommand name - when this String is encountered in the command line arguments the subcommand is invoked
+         * @param commandLine the subcommand to envoke when the name is encountered on the command line
+         * @return this {@code CommandLine} object for method chaining */
         public CommandSpec addSubcommand(String name, CommandLine commandLine) {
             commands.put(name, commandLine);
             commandLine.getCommandSpec().parent(this);
@@ -2322,7 +2331,14 @@ public class CommandLine {
          * @return this CommandSpec for method chaining */
         public CommandSpec parent(CommandSpec parent) { this.parent = parent; return this; }
 
+        /** Adds the specified option spec or positional parameter spec to the list of configured arguments to expect.
+         * @param arg the option spec or positional parameter spec to add
+         * @return this CommandSpec for method chaining */
         public CommandSpec add(ArgSpec arg) { return arg.isOption() ? add((OptionSpec) arg) : add((PositionalParamSpec) arg); }
+
+        /** Adds the specified option spec to the list of configured arguments to expect.
+         * @param option the option spec to add
+         * @return this CommandSpec for method chaining */
         public CommandSpec add(OptionSpec option) {
             option.validate();
             options.add(option);
@@ -2333,6 +2349,9 @@ public class CommandLine {
             if (option.required()) { requiredArgs.add(option); }
             return this;
         }
+        /** Adds the specified positional parameter spec to the list of configured arguments to expect.
+         * @param positional the positional parameter spec to add
+         * @return this CommandSpec for method chaining */
         public CommandSpec add(PositionalParamSpec positional) {
             positional.validate();
             positionalParameters.add(positional);
@@ -2340,24 +2359,40 @@ public class CommandLine {
             return this;
         }
 
+        /** Returns the list of options configured for this command.
+         * @return an immutable list of options that this command recognizes. */
         public List<OptionSpec> options() { return Collections.unmodifiableList(options); }
+
+        /** Returns the list of positional parameters configured for this command.
+         * @return an immutable list of positional parameters that this command recognizes. */
         public List<PositionalParamSpec> positionalParameters() { return Collections.unmodifiableList(positionalParameters); }
+
+        /** Returns a map of the option names to option spec objects configured for this command.
+         * @return an immutable map of options that this command recognizes. */
         public Map<String, OptionSpec> optionsMap() { return Collections.unmodifiableMap(optionsByNameMap); }
+
+        /** Returns a map of the short (single character) option names to option spec objects configured for this command.
+         * @return an immutable map of options that this command recognizes. */
         public Map<Character, OptionSpec> posixOptionsMap() { return Collections.unmodifiableMap(posixOptionsByKeyMap); }
+
+        /** Returns the list of required options and positional parameters configured for this command.
+         * @return an immutable list of the required options and positional parameters for this command. */
         public List<ArgSpec> requiredArgs() { return Collections.unmodifiableList(requiredArgs); }
 
         /** Returns the String to use as the program name in the synopsis line of the help message.
          * {@link #DEFAULT_COMMAND_NAME} by default, initialized from {@link Command#name()} if defined. */
         public String name() { return name; }
 
-        /** Sets the String to use as the program name in the synopsis line of the help message. */
+        /** Sets the String to use as the program name in the synopsis line of the help message.
+         * @return this CommandSpec for method chaining */
         public CommandSpec name(String name) { this.name = name; return this; }
 
         /** Returns the String to use as the separator between options and option parameters. {@code "="} by default,
          * initialized from {@link Command#separator()} if defined.*/
         public String separator() { return separator; }
 
-        /** Sets the String to use as the separator between options and option parameters. */
+        /** Sets the String to use as the separator between options and option parameters.
+         * @return this CommandSpec for method chaining */
         public CommandSpec separator(String separator) { this.separator = separator; return this; }
 
         /** Returns version information for this command, to print to the console when the user specifies an
@@ -2365,13 +2400,15 @@ public class CommandLine {
         public String[] version() { return version; }
 
         /** Sets version information for this command, to print to the console when the user specifies an
-         * {@linkplain OptionSpec#versionHelp() option} to request version help. */
+         * {@linkplain OptionSpec#versionHelp() option} to request version help.
+         * @return this CommandSpec for method chaining */
         public CommandSpec version(String... version) { this.version = version; return this; }
 
         /** Returns the optional heading preceding the header section. Initialized from {@link Command#headerHeading()}, or null. */
         public String headerHeading() { return headerHeading; }
 
-        /** Sets the heading preceding the header section. Initialized from {@link Command#headerHeading()}, or null. */
+        /** Sets the heading preceding the header section. Initialized from {@link Command#headerHeading()}, or null.
+         * @return this CommandSpec for method chaining */
         public CommandSpec headerHeading(String headerHeading) { this.headerHeading = headerHeading; return this; }
 
         /** Returns the optional header lines displayed at the top of the help message. For subcommands, the first header line is
@@ -2381,34 +2418,39 @@ public class CommandLine {
         public String[] header() { return header; }
 
         /** Sets the optional header lines displayed at the top of the help message. For subcommands, the first header line is
-         * displayed in the list of commands.  */
+         * displayed in the list of commands.
+         * @return this CommandSpec for method chaining */
         public CommandSpec header(String... header) { this.header = header; return this; }
 
         /** Returns the optional heading preceding the synopsis. Initialized from {@link Command#synopsisHeading()}, {@code "Usage: "} by default. */
         public String synopsisHeading() { return synopsisHeading; }
 
-        /** Sets the optional heading preceding the synopsis. */
+        /** Sets the optional heading preceding the synopsis.
+         * @return this CommandSpec for method chaining */
         public CommandSpec synopsisHeading(String newValue) {synopsisHeading = newValue; return this;}
 
         /** Returns whether the synopsis line(s) should show an abbreviated synopsis without detailed option names. */
         public boolean abbreviateSynopsis() { return abbreviateSynopsis; }
 
-        /** Sets whether the synopsis line(s) should show an abbreviated synopsis without detailed option names. */
+        /** Sets whether the synopsis line(s) should show an abbreviated synopsis without detailed option names.
+         * @return this CommandSpec for method chaining */
         public CommandSpec abbreviateSynopsis(boolean newValue) {abbreviateSynopsis = newValue; return this;}
 
-        /** Optional custom synopsis lines to use instead of the auto-generated synopsis.
+        /** Returns the optional custom synopsis lines to use instead of the auto-generated synopsis.
          * Initialized from {@link Command#customSynopsis()} if the {@code Command} annotation is present,
          * otherwise this is an empty array and the synopsis is generated.
          * Applications may programmatically set this field to create a custom help message. */
         public String[] customSynopsis() { return customSynopsis; }
 
-        /** Optional custom synopsis lines to use instead of the auto-generated synopsis. */
+        /** Sets the optional custom synopsis lines to use instead of the auto-generated synopsis.
+         * @return this CommandSpec for method chaining */
         public CommandSpec customSynopsis(String... customSynopsis) { this.customSynopsis = customSynopsis; return this; }
 
-        /** Optional heading preceding the description section. Initialized from {@link Command#descriptionHeading()}, or null. */
+        /** Returns the optional heading preceding the description section. Initialized from {@link Command#descriptionHeading()}, or null. */
         public String descriptionHeading() { return descriptionHeading; }
 
-        /** Sets the heading preceding the description section. */
+        /** Sets the heading preceding the description section.
+         * @return this CommandSpec for method chaining */
         public CommandSpec descriptionHeading(String newValue) {descriptionHeading = newValue; return this;}
 
         /** Returns the optional text lines to use as the description of the help message, displayed between the synopsis and the
@@ -2418,47 +2460,57 @@ public class CommandLine {
         public String[] description() { return description; }
 
         /** Sets the optional text lines to use as the description of the help message, displayed between the synopsis and the
-         * options list. */
+         * options list.
+         * @return this CommandSpec for method chaining */
         public CommandSpec description(String... description) { this.description = description; return this; }
 
-        /** Optional heading preceding the parameter list. Initialized from {@link Command#parameterListHeading()}, or null. */
+        /** Returns the optional heading preceding the parameter list. Initialized from {@link Command#parameterListHeading()}, or null. */
         public String parameterListHeading() { return parameterListHeading; }
+
+        /** Sets the optional heading preceding the parameter list.
+         * @return this CommandSpec for method chaining */
         public CommandSpec parameterListHeading(String newValue) {parameterListHeading = newValue; return this;}
 
         /** Returns the optional heading preceding the options list. Initialized from {@link Command#optionListHeading()}, or null. */
         public String optionListHeading() { return optionListHeading; }
 
-        /** Sets the heading preceding the options list. */
+        /** Sets the heading preceding the options list.
+         * @return this CommandSpec for method chaining */
         public CommandSpec optionListHeading(String newValue) {optionListHeading = newValue; return this;}
 
         /** Returns whether the options list in the usage help message should be sorted alphabetically. */
         public boolean sortOptions() { return sortOptions; }
 
-        /** Sets whether the options list in the usage help message should be sorted alphabetically. */
+        /** Sets whether the options list in the usage help message should be sorted alphabetically.
+         * @return this CommandSpec for method chaining */
         public CommandSpec sortOptions(boolean newValue) {sortOptions = newValue; return this;}
 
         /** Returns the character used to prefix required options in the options list. */
         public char requiredOptionMarker() { return requiredOptionMarker; }
 
-        /** Sets the character used to prefix required options in the options list. */
+        /** Sets the character used to prefix required options in the options list.
+         * @return this CommandSpec for method chaining */
         public CommandSpec requiredOptionMarker(char newValue) {requiredOptionMarker = newValue; return this;}
 
         /** Returns whether the options list in the usage help message should show default values for all non-boolean options. */
         public boolean showDefaultValues() { return showDefaultValues; }
 
-        /** Sets whether the options list in the usage help message should show default values for all non-boolean options. */
+        /** Sets whether the options list in the usage help message should show default values for all non-boolean options.
+         * @return this CommandSpec for method chaining */
         public CommandSpec showDefaultValues(boolean newValue) {showDefaultValues = newValue; return this;}
 
         /** Returns the optional heading preceding the subcommand list. Initialized from {@link Command#commandListHeading()}. {@code "Commands:%n"} by default. */
         public String commandListHeading() { return commandListHeading; }
 
-        /** Sets the optional heading preceding the subcommand list. */
+        /** Sets the optional heading preceding the subcommand list.
+         * @return this CommandSpec for method chaining */
         public CommandSpec commandListHeading(String newValue) {commandListHeading = newValue; return this;}
 
         /** Returns the optional heading preceding the footer section. Initialized from {@link Command#footerHeading()}, or null. */
         public String footerHeading() { return footerHeading; }
 
-        /** Sets the optional heading preceding the footer section. */
+        /** Sets the optional heading preceding the footer section.
+         * @return this CommandSpec for method chaining */
         public CommandSpec footerHeading(String newValue) {footerHeading = newValue; return this;}
 
         /** Returns the optional footer text lines displayed at the bottom of the help message. Initialized from
@@ -2467,10 +2519,16 @@ public class CommandLine {
          * Applications may programmatically set this field to create a custom help message. */
         public String[] footer() { return footer; }
 
-        /** Sets the optional footer text lines displayed at the bottom of the help message. */
+        /** Sets the optional footer text lines displayed at the bottom of the help message.
+         * @return this CommandSpec for method chaining */
         public CommandSpec footer(String... footer) { this.footer = footer; return this; }
 
+        /** Returns a string representation of this command, used in error messages and trace messages. */
         public String toString() { return toString; }
+
+        /** Sets the string representation of this command, used in error messages and trace messages.
+         * @param newValue the string representation
+         * @return this CommandSpec for method chaining */
         public CommandSpec toString(String newValue) { this.toString = newValue; return this; }
     }
     /** Models the shared attributes of {@link OptionSpec} and {@link PositionalParamSpec}.
@@ -2490,10 +2548,12 @@ public class CommandLine {
         private IGetter getter;
         private ISetter setter;
 
+        /** Constructs a new {@code ArgSpec}. */
         public ArgSpec() {
             getter = new ObjectGetterSetter();
             setter = (ISetter) getter;
         }
+        /** Ensures all attributes of this {@code ArgSpec} have a valid value; throws an {@link InitializationException} if this cannot be achieved. */
         <T extends ArgSpec> T validate() {
             if (description == null) { description = new String[0]; }
             if (splitRegex == null) { splitRegex = ""; }
@@ -2633,6 +2693,7 @@ public class CommandLine {
 
         /** Sets the string respresentation of this option or positional parameter to the specified value. */
         public <T extends ArgSpec> T toString(String toString)           { this.toString = toString; return (T) this; }
+
         /** Returns a string respresentation of this option or positional parameter. */
         public String toString() { return toString; }
 
@@ -2680,6 +2741,16 @@ public class CommandLine {
         private boolean versionHelp;
 
         public OptionSpec(String... names) { this.names = Assert.notNull(names, "names"); }
+
+        /** Ensures all attributes of this {@code OptionSpec} have a valid value; throws an {@link InitializationException} if this cannot be achieved. */
+        OptionSpec validate() {
+            super.validate();
+            if (names == null || names.length == 0 || Arrays.asList(names).contains("")) {
+                throw new InitializationException("Invalid names: " + Arrays.toString(names));
+            }
+            if (toString() == null) { toString("option " + names[0]); }
+            return this;
+        }
         public boolean isOption()     { return true; }
         public boolean isPositional() { return false; }
 
@@ -2730,14 +2801,6 @@ public class CommandLine {
                     + 37 * Assert.hashCode(versionHelp)
                     + 37 * Arrays.hashCode(names);
         }
-        OptionSpec validate() {
-            super.validate();
-            if (names == null || names.length == 0 || Arrays.asList(names).contains("")) {
-                throw new InitializationException("Invalid names: " + Arrays.toString(names));
-            }
-            if (toString() == null) { toString("option " + names[0]); }
-            return this;
-        }
     }
     /** Models a command line positional parameter. Fields and methods annotated with {@code @Parameters} are
      * converted into instances of this model class. Used internally by the picocli command line interpreter and help
@@ -2746,6 +2809,15 @@ public class CommandLine {
     public static class PositionalParamSpec extends ArgSpec {
         private Range index;
         private Range capacity;
+
+        /** Ensures all attributes of this {@code PositionalParamSpec} have a valid value; throws an {@link InitializationException} if this cannot be achieved. */
+        PositionalParamSpec validate() {
+            super.validate();
+            if (index() == null)    { index("*");}
+            if (capacity() == null) { capacity = Range.parameterCapacity(arity(), index()); }
+            if (toString() == null) { toString("positional parameter[" + index() + "]"); }
+            return this;
+        }
         public boolean isOption()        { return false; }
         public boolean isPositional()    { return true; }
 
@@ -2756,15 +2828,10 @@ public class CommandLine {
 
         /** Sets the index or range specifying which of the command line arguments should be assigned to this positional parameter. */
         public <T extends ArgSpec> T index(String range)                 { return index(Range.valueOf(range)); }
+
         /** Sets the index or range specifying which of the command line arguments should be assigned to this positional parameter. */
         public <T extends ArgSpec> T index(Range index)                  { this.index = index; return (T) this; }
-        PositionalParamSpec validate() {
-            super.validate();
-            if (index() == null) { index("*");}
-            if (capacity() == null) { capacity = Range.parameterCapacity(arity(), index()); }
-            if (toString() == null) { toString("positional parameter[" + index() + "]"); }
-            return this;
-        }
+
         public int hashCode() {
             return super.hashCode()
                     + 37 * Assert.hashCode(capacity)
@@ -3801,28 +3868,19 @@ public class CommandLine {
      * unaware of the embedded ANSI escape codes.</p>
      */
     public static class Help {
-        /** Constant String holding the default program name: {@value} */
+        /** Constant String holding the default program name, value defined in {@link CommandSpec#DEFAULT_COMMAND_NAME}. */
         protected static final String DEFAULT_COMMAND_NAME = CommandSpec.DEFAULT_COMMAND_NAME;
 
-        /** Constant String holding the default string that separates options from option parameters: {@value} */
+        /** Constant String holding the default string that separates options from option parameters, value defined in {@link CommandSpec#DEFAULT_SEPARATOR}. */
         protected static final String DEFAULT_SEPARATOR = CommandSpec.DEFAULT_SEPARATOR;
 
         private final static int usageHelpWidth = 80;
         private final static int optionsColumnWidth = 2 + 2 + 1 + 24;
         private final CommandSpec commandSpec;
+        private final ColorScheme colorScheme;
         private final Map<String, Help> commands = new LinkedHashMap<String, Help>();
-        final ColorScheme colorScheme;
 
-        /** Returns the {@code CommandSpec} model that this Help was constructed with.
-         * @since 3.0 */
-        CommandSpec commandSpec() { return commandSpec; }
-
-        /** Option and positional parameter value label renderer used for the synopsis line(s) and the option list.
-         * By default initialized to the result of {@link #createDefaultParamLabelRenderer()}, which takes a snapshot
-         * of the {@link CommandSpec#separator()} at construction time. If the separator is modified after Help construction, you
-         * may need to re-initialize this field by calling {@link #createDefaultParamLabelRenderer()} again. */
         private IParamLabelRenderer parameterLabelRenderer;
-        public IParamLabelRenderer parameterLabelRenderer() {return parameterLabelRenderer;};
 
         /** Constructs a new {@code Help} instance with a default color scheme, initialized from annotatations
          * on the specified class and superclasses.
@@ -3857,6 +3915,20 @@ public class CommandLine {
             parameterLabelRenderer = createDefaultParamLabelRenderer(); // uses help separator
         }
 
+        /** Returns the {@code CommandSpec} model that this Help was constructed with.
+         * @since 3.0 */
+        CommandSpec commandSpec() { return commandSpec; }
+
+        /** Returns the {@code ColorScheme} model that this Help was constructed with.
+         * @since 3.0 */
+        public ColorScheme colorScheme() { return colorScheme; }
+
+        /** Option and positional parameter value label renderer used for the synopsis line(s) and the option list.
+         * By default initialized to the result of {@link #createDefaultParamLabelRenderer()}, which takes a snapshot
+         * of the {@link CommandSpec#separator()} at construction time. If the separator is modified after Help construction, you
+         * may need to re-initialize this field by calling {@link #createDefaultParamLabelRenderer()} again. */
+        public IParamLabelRenderer parameterLabelRenderer() {return parameterLabelRenderer;}
+
         /** Registers all specified subcommands with this Help.
          * @param commands maps the command names to the associated CommandLine object
          * @return this Help instance (for method chaining)
@@ -3871,6 +3943,10 @@ public class CommandLine {
             return this;
         }
 
+        /** Registers the specified subcommand with this Help.
+         * @param commandName the name of the subcommand to display in the usage message
+         * @param commandLine the {@code CommandLine} object to get more information from
+         * @return this Help instance (for method chaining) */
         Help addSubcommand(String commandName, CommandLine commandLine) {
             commands.put(commandName, new Help(commandLine.commandSpec));
             return this;
@@ -3878,12 +3954,12 @@ public class CommandLine {
 
         /** Registers the specified subcommand with this Help.
          * @param commandName the name of the subcommand to display in the usage message
-         * @param command the annotated object to get more information from
+         * @param command the {@code CommandSpec} or {@code @Command} annotated object to get more information from
          * @return this Help instance (for method chaining)
          * @deprecated
          */
         public Help addSubcommand(String commandName, Object command) {
-            commands.put(commandName, new Help(command instanceof CommandSpec ? (CommandSpec) command : CommandSpecBuilder.build(command, commandSpec.commandLine().factory)));
+            commands.put(commandName, new Help(CommandSpecBuilder.build(command, commandSpec.commandLine().factory)));
             return this;
         }
 
@@ -3924,7 +4000,7 @@ public class CommandLine {
             // sb.append(" [--] "); // implied
             for (PositionalParamSpec positionalParam : commandSpec.positionalParameters()) {
                 if (!positionalParam.hidden()) {
-                    sb.append(' ').append(parameterLabelRenderer.renderParameterLabel(positionalParam, ansi(), colorScheme.parameterStyles));
+                    sb.append(' ').append(parameterLabelRenderer().renderParameterLabel(positionalParam, ansi(), colorScheme.parameterStyles));
                 }
             }
             return colorScheme.commandText(commandSpec.name()).toString()
@@ -3997,7 +4073,7 @@ public class CommandLine {
             for (PositionalParamSpec positionalParam : commandSpec.positionalParameters()) {
                 if (!positionalParam.hidden()) {
                     optionText = optionText.append(" ");
-                    Text label = parameterLabelRenderer.renderParameterLabel(positionalParam, colorScheme.ansi(), colorScheme.parameterStyles);
+                    Text label = parameterLabelRenderer().renderParameterLabel(positionalParam, colorScheme.ansi(), colorScheme.parameterStyles);
                     optionText = optionText.append(label);
                 }
             }
@@ -4016,7 +4092,7 @@ public class CommandLine {
         }
 
         private Text appendOptionSynopsis(Text optionText, OptionSpec option, String optionName, String prefix, String suffix) {
-            Text optionParamText = parameterLabelRenderer.renderParameterLabel(option, colorScheme.ansi(), colorScheme.optionParamStyles);
+            Text optionParamText = parameterLabelRenderer().renderParameterLabel(option, colorScheme.ansi(), colorScheme.optionParamStyles);
             return optionText.append(prefix)
                     .append(colorScheme.optionText(optionName))
                     .append(optionParamText)
@@ -4043,7 +4119,7 @@ public class CommandLine {
             Comparator<OptionSpec> sortOrder = commandSpec.sortOptions()
                     ? createShortOptionNameComparator()
                     : null;
-            return optionList(createDefaultLayout(), sortOrder, parameterLabelRenderer);
+            return optionList(createDefaultLayout(), sortOrder, parameterLabelRenderer());
         }
 
         /** Sorts all {@code Options} with the specified {@code comparator} (if the comparator is non-{@code null}),
@@ -4068,7 +4144,7 @@ public class CommandLine {
          * @return the section of the usage help message that lists the parameters
          */
         public String parameterList() {
-            return parameterList(createDefaultLayout(), parameterLabelRenderer);
+            return parameterList(createDefaultLayout(), parameterLabelRenderer());
         }
         /**
          * Returns the section of the usage help message that lists the parameters with their descriptions.
@@ -4248,17 +4324,17 @@ public class CommandLine {
         public Layout createDefaultLayout() {
             return new Layout(colorScheme, new TextTable(colorScheme.ansi()), createDefaultOptionRenderer(), createDefaultParameterRenderer());
         }
-        /** Returns a new default OptionRenderer which converts {@link Option Options} to five columns of text to match
+        /** Returns a new default OptionRenderer which converts {@link OptionSpec Options} to five columns of text to match
          *  the default {@linkplain TextTable TextTable} column layout. The first row of values looks like this:
          * <ol>
          * <li>the required option marker</li>
          * <li>2-character short option name (or empty string if no short option exists)</li>
          * <li>comma separator (only if both short option and long option exist, empty string otherwise)</li>
          * <li>comma-separated string with long option name(s)</li>
-         * <li>first element of the {@link Option#description()} array</li>
+         * <li>first element of the {@link OptionSpec#description()} array</li>
          * </ol>
          * <p>Following this, there will be one row for each of the remaining elements of the {@link
-         *   Option#description()} array, and these rows look like {@code {"", "", "", "", option.description()[i]}}.</p>
+         *   OptionSpec#description()} array, and these rows look like {@code {"", "", "", "", option.description()[i]}}.</p>
          * <p>If configured, this option renderer adds an additional row to display the default field value.</p>
          * @return a new default OptionRenderer
          */
@@ -4270,23 +4346,23 @@ public class CommandLine {
             }
             return result;
         }
-        /** Returns a new minimal OptionRenderer which converts {@link Option Options} to a single row with two columns
+        /** Returns a new minimal OptionRenderer which converts {@link OptionSpec Options} to a single row with two columns
          * of text: an option name and a description. If multiple names or descriptions exist, the first value is used.
          * @return a new minimal OptionRenderer */
         public static IOptionRenderer createMinimalOptionRenderer() {
             return new MinimalOptionRenderer();
         }
 
-        /** Returns a new default ParameterRenderer which converts {@link Parameters Parameters} to four columns of
+        /** Returns a new default ParameterRenderer which converts {@linkplain PositionalParamSpec positional parameters} to four columns of
          * text to match the default {@linkplain TextTable TextTable} column layout. The first row of values looks like this:
          * <ol>
          * <li>empty string </li>
          * <li>empty string </li>
          * <li>parameter(s) label as rendered by the {@link IParamLabelRenderer}</li>
-         * <li>first element of the {@link Parameters#description()} array</li>
+         * <li>first element of the {@link PositionalParamSpec#description()} array</li>
          * </ol>
          * <p>Following this, there will be one row for each of the remaining elements of the {@link
-         *   Parameters#description()} array, and these rows look like {@code {"", "", "", param.description()[i]}}.</p>
+         *   PositionalParamSpec#description()} array, and these rows look like {@code {"", "", "", param.description()[i]}}.</p>
          * <p>If configured, this parameter renderer adds an additional row to display the default field value.</p>
          * @return a new default ParameterRenderer
          */
@@ -4295,8 +4371,8 @@ public class CommandLine {
             result.requiredMarker = String.valueOf(commandSpec.requiredOptionMarker());
             return result;
         }
-        /** Returns a new minimal ParameterRenderer which converts {@link Parameters Parameters} to a single row with
-         * two columns of text: an option name and a description. If multiple descriptions exist, the first value is used.
+        /** Returns a new minimal ParameterRenderer which converts {@linkplain PositionalParamSpec positional parameters}
+         * to a single row with two columns of text: an option name and a description. If multiple descriptions exist, the first value is used.
          * @return a new minimal ParameterRenderer */
         public static IParameterRenderer createMinimalParameterRenderer() {
             return new MinimalParameterRenderer();
@@ -4312,46 +4388,42 @@ public class CommandLine {
                 public String separator() { return ""; }
             };
         }
-        /** Returns a new default value renderer that separates option parameters from their {@linkplain Option
-         * options} with the specified separator string, surrounds optional parameters with {@code '['} and {@code ']'}
+        /** Returns a new default value renderer that separates option parameters from their option name
+         * with the specified separator string, surrounds optional parameters with {@code '['} and {@code ']'}
          * characters and uses ellipses ("...") to indicate that any number of a parameter are allowed.
          * @return a new default ParamLabelRenderer
          */
         public IParamLabelRenderer createDefaultParamLabelRenderer() {
             return new DefaultParamLabelRenderer(commandSpec);
         }
-        /** Sorts Fields annotated with {@code Option} by their option name in case-insensitive alphabetic order. If an
-         * Option has multiple names, the shortest name is used for the sorting. Help options follow non-help options.
-         * @return a comparator that sorts fields by their option name in case-insensitive alphabetic order */
+        /** Sorts {@link OptionSpec OptionSpecs} by their option name in case-insensitive alphabetic order. If an
+         * option has multiple names, the shortest name is used for the sorting. Help options follow non-help options.
+         * @return a comparator that sorts OptionSpecs by their option name in case-insensitive alphabetic order */
         public static Comparator<OptionSpec> createShortOptionNameComparator() {
             return new SortByShortestOptionNameAlphabetically();
         }
-        /** Sorts Fields annotated with {@code Option} by their option {@linkplain Range#max max arity} first, by
+        /** Sorts {@link OptionSpec OptionSpecs} by their option {@linkplain Range#max max arity} first, by
          * {@linkplain Range#min min arity} next, and by {@linkplain #createShortOptionNameComparator() option name} last.
-         * @return a comparator that sorts fields by arity first, then their option name */
+         * @return a comparator that sorts OptionSpecs by arity first, then their option name */
         public static Comparator<OptionSpec> createShortOptionArityAndNameComparator() {
             return new SortByOptionArityAndNameAlphabetically();
         }
         /** Sorts short strings before longer strings.
          * @return a comparators that sorts short strings before longer strings */
-        public static Comparator<String> shortestFirst() {
-            return new ShortestFirst();
-        }
+        public static Comparator<String> shortestFirst() { return new ShortestFirst(); }
 
         /** Returns whether ANSI escape codes are enabled or not.
          * @return whether ANSI escape codes are enabled or not
          */
-        public Ansi ansi() {
-            return colorScheme.ansi;
-        }
+        public Ansi ansi() { return colorScheme.ansi; }
 
-        /** When customizing online help for {@link Option Option} details, a custom {@code IOptionRenderer} can be
+        /** When customizing online help for {@link OptionSpec Option} details, a custom {@code IOptionRenderer} can be
          * used to create textual representation of an Option in a tabular format: one or more rows, each containing
          * one or more columns. The {@link Layout Layout} is responsible for placing these text values in the
          * {@link TextTable TextTable}. */
         public interface IOptionRenderer {
             /**
-             * Returns a text representation of the specified Option and the Field that captures the option value.
+             * Returns a text representation of the specified option and its parameter(s) if any.
              * @param option the command line option to show online usage help for
              * @param parameterLabelRenderer responsible for rendering option parameters to text
              * @param scheme color scheme for applying ansi color styles to options and option parameters
@@ -4360,17 +4432,17 @@ public class CommandLine {
              */
             Text[][] render(OptionSpec option, IParamLabelRenderer parameterLabelRenderer, ColorScheme scheme);
         }
-        /** The DefaultOptionRenderer converts {@link Option Options} to five columns of text to match the default
+        /** The DefaultOptionRenderer converts {@link OptionSpec Options} to five columns of text to match the default
          * {@linkplain TextTable TextTable} column layout. The first row of values looks like this:
          * <ol>
          * <li>the required option marker (if the option is required)</li>
          * <li>2-character short option name (or empty string if no short option exists)</li>
          * <li>comma separator (only if both short option and long option exist, empty string otherwise)</li>
          * <li>comma-separated string with long option name(s)</li>
-         * <li>first element of the {@link Option#description()} array</li>
+         * <li>first element of the {@link OptionSpec#description()} array</li>
          * </ol>
          * <p>Following this, there will be one row for each of the remaining elements of the {@link
-         *   Option#description()} array, and these rows look like {@code {"", "", "", option.description()[i]}}.</p>
+         *   OptionSpec#description()} array, and these rows look like {@code {"", "", "", option.description()[i]}}.</p>
          */
         static class DefaultOptionRenderer implements IOptionRenderer {
             public String requiredMarker = " ";
@@ -4444,7 +4516,7 @@ public class CommandLine {
                 return result.toArray(new Text[result.size()][]);
             }
         }
-        /** The MinimalOptionRenderer converts {@link Option Options} to a single row with two columns of text: an
+        /** The MinimalOptionRenderer converts {@link OptionSpec Options} to a single row with two columns of text: an
          * option name and a description. If multiple names or description lines exist, the first value is used. */
         static class MinimalOptionRenderer implements IOptionRenderer {
             public Text[][] render(OptionSpec option, IParamLabelRenderer parameterLabelRenderer, ColorScheme scheme) {
@@ -4455,7 +4527,7 @@ public class CommandLine {
                                         scheme.ansi().new Text(option.description().length == 0 ? "" : option.description()[0]) }};
             }
         }
-        /** The MinimalParameterRenderer converts {@link Parameters Parameters} to a single row with two columns of
+        /** The MinimalParameterRenderer converts {@linkplain PositionalParamSpec positional parameters} to a single row with two columns of
          * text: the parameters label and a description. If multiple description lines exist, the first value is used. */
         static class MinimalParameterRenderer implements IParameterRenderer {
             public Text[][] render(PositionalParamSpec param, IParamLabelRenderer parameterLabelRenderer, ColorScheme scheme) {
@@ -4463,13 +4535,13 @@ public class CommandLine {
                         scheme.ansi().new Text(param.description().length == 0 ? "" : param.description()[0]) }};
             }
         }
-        /** When customizing online help for {@link Parameters Parameters} details, a custom {@code IParameterRenderer}
+        /** When customizing online help for {@linkplain PositionalParamSpec positional parameters} details, a custom {@code IParameterRenderer}
          * can be used to create textual representation of a Parameters field in a tabular format: one or more rows,
          * each containing one or more columns. The {@link Layout Layout} is responsible for placing these text
          * values in the {@link TextTable TextTable}. */
         public interface IParameterRenderer {
             /**
-             * Returns a text representation of the specified Parameters and the Field that captures the parameter values.
+             * Returns a text representation of the specified positional parameter.
              * @param param the positional parameter to show online usage help for
              * @param parameterLabelRenderer responsible for rendering parameter labels to text
              * @param scheme color scheme for applying ansi color styles to positional parameters
@@ -4478,17 +4550,17 @@ public class CommandLine {
              */
             Text[][] render(PositionalParamSpec param, IParamLabelRenderer parameterLabelRenderer, ColorScheme scheme);
         }
-        /** The DefaultParameterRenderer converts {@link Parameters Parameters} to five columns of text to match the
+        /** The DefaultParameterRenderer converts {@linkplain PositionalParamSpec positional parameters} to five columns of text to match the
          * default {@linkplain TextTable TextTable} column layout. The first row of values looks like this:
          * <ol>
          * <li>the required option marker (if the parameter's arity is to have at least one value)</li>
          * <li>empty string </li>
          * <li>empty string </li>
          * <li>parameter(s) label as rendered by the {@link IParamLabelRenderer}</li>
-         * <li>first element of the {@link Parameters#description()} array</li>
+         * <li>first element of the {@link PositionalParamSpec#description()} array</li>
          * </ol>
          * <p>Following this, there will be one row for each of the remaining elements of the {@link
-         *   Parameters#description()} array, and these rows look like {@code {"", "", "", param.description()[i]}}.</p>
+         *   PositionalParamSpec#description()} array, and these rows look like {@code {"", "", "", param.description()[i]}}.</p>
          */
         static class DefaultParameterRenderer implements IParameterRenderer {
             public String requiredMarker = " ";
@@ -4517,7 +4589,7 @@ public class CommandLine {
          * {@code IParamLabelRenderer} can be used to render the parameter name or label to a String. */
         public interface IParamLabelRenderer {
 
-            /** Returns a text rendering of the Option parameter or positional parameter; returns an empty string
+            /** Returns a text rendering of the option parameter or positional parameter; returns an empty string
              * {@code ""} if the option is a boolean and does not take a parameter.
              * @param argSpec the named or positional parameter with a parameter label
              * @param ansi determines whether ANSI escape codes should be emitted or not
@@ -4531,7 +4603,7 @@ public class CommandLine {
             String separator();
         }
         /**
-         * DefaultParamLabelRenderer separates option parameters from their {@linkplain Option options} with a
+         * DefaultParamLabelRenderer separates option parameters from their {@linkplain OptionSpec option names} with a
          * {@linkplain CommandLine.CommandSpec#separator() separator} string, surrounds optional values
          * with {@code '['} and {@code ']'} characters and uses ellipses ("...") to indicate that any number of
          * values is allowed for options or parameters with variable arity.
@@ -4640,7 +4712,7 @@ public class CommandLine {
             }
             /**
              * Delegates to the {@link #optionRenderer option renderer} of this layout to obtain
-             * text values for the specified {@link Option}, and then calls the {@link #layout(CommandLine.ArgSpec, CommandLine.Help.Ansi.Text[][])}
+             * text values for the specified {@link OptionSpec}, and then calls the {@link #layout(CommandLine.ArgSpec, CommandLine.Help.Ansi.Text[][])}
              * method to write these text values into the correct cells in the TextTable.
              * @param option the option argument
              * @param paramLabelRenderer knows how to render option parameters
@@ -4662,7 +4734,7 @@ public class CommandLine {
             }
             /**
              * Delegates to the {@link #parameterRenderer parameter renderer} of this layout
-             * to obtain text values for the specified {@link Parameters}, and then calls
+             * to obtain text values for the specified {@linkplain PositionalParamSpec positional parameter}, and then calls
              * {@link #layout(CommandLine.ArgSpec, CommandLine.Help.Ansi.Text[][])} to write these text values into the correct cells in the TextTable.
              * @param param the positional parameter
              * @param paramLabelRenderer knows how to render option parameters
@@ -4672,9 +4744,7 @@ public class CommandLine {
                 layout(param, values);
             }
             /** Returns the section of the usage help message accumulated in the TextTable owned by this layout. */
-            @Override public String toString() {
-                return table.toString();
-            }
+            @Override public String toString() { return table.toString(); }
         }
         /** Sorts short strings before longer strings. */
         static class ShortestFirst implements Comparator<String> {
@@ -4687,7 +4757,7 @@ public class CommandLine {
                 return names;
             }
         }
-        /** Sorts {@code Option} instances by their name in case-insensitive alphabetic order. If an Option has
+        /** Sorts {@code OptionSpec} instances by their name in case-insensitive alphabetic order. If an option has
          * multiple names, the shortest name is used for the sorting. Help options follow non-help options. */
         static class SortByShortestOptionNameAlphabetically implements Comparator<OptionSpec> {
             public int compare(OptionSpec o1, OptionSpec o2) {
@@ -4699,7 +4769,7 @@ public class CommandLine {
                 return o1.help() == o2.help() ? result : o2.help() ? -1 : 1; // help options come last
             }
         }
-        /** Sorts {@code Option} instances by their max arity first, then their min arity, then delegates to super class. */
+        /** Sorts {@code OptionSpec} instances by their max arity first, then their min arity, then delegates to super class. */
         static class SortByOptionArityAndNameAlphabetically extends SortByShortestOptionNameAlphabetically {
             public int compare(OptionSpec o1, OptionSpec o2) {
                 Range arity1 = o1.arity();
@@ -5059,9 +5129,7 @@ public class CommandLine {
                 return this;
             }
 
-            public Ansi ansi() {
-                return ansi;
-            }
+            public Ansi ansi() { return ansi; }
         }
 
         /** Creates and returns a new {@link ColorScheme} initialized with picocli default values: commands are bold,
