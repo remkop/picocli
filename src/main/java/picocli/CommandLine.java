@@ -2610,7 +2610,7 @@ public class CommandLine {
          * @see Option#paramLabel() {@link Parameters#paramLabel()} */
         public String paramLabel()     { return paramLabel; }
 
-        /** Returns auxiliary type information used when the {@link #type()} is an abstract class.
+        /** Returns auxiliary type information used when the {@link #type()} is a generic {@code Collection}, {@code Map} or an abstract class.
          * @see Option#type() */
         public Class<?>[] auxiliaryTypes() { return auxiliaryTypes; }
 
@@ -2666,7 +2666,7 @@ public class CommandLine {
         /** Sets the name of the option or positional parameter used in the usage help message. */
         public <T extends ArgSpec> T paramLabel(String paramLabel)       { this.paramLabel = paramLabel; return (T) this; }
 
-        /** Sets auxiliary type information used when the {@link #type()} is an abstract class. */
+        /** Sets auxiliary type information used when the {@link #type()} is a generic {@code Collection}, {@code Map} or an abstract class. */
         public <T extends ArgSpec> T auxiliaryTypes(Class<?>... types)   { this.auxiliaryTypes = types; return (T) this; }
 
         /** Sets option/positional param-specific converter (or converters for Maps) . */
