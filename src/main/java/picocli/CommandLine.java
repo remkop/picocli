@@ -2218,17 +2218,26 @@ public class CommandLine {
             }
         }
     }
-    /** Models a command. Classes annotated with {@code @Command} and classes containing {@code @Option} and
-     * {@code @Parameters} fields and methods are converted into instances of this model class.
-     * Used internally by the picocli command line interpreter and help message generator.
-     * JVM languages that don't support annotations may construct {@code CommandSpec} instances directly.
+    /** The {@code CommandSpec} class models a command specification, including the options, positional parameters and subcommands
+     * supported by the command, as well as attributes for the version help message and the usage help message of the command.
+     * <p>
+     * Picocli views a command line application as a hierarchy of commands: there is a top-level command (usually the Java
+     * class with the {@code main} method) with optionally a set of command line options, positional parameters and subcommands.
+     * Subcommands themselves can have options, positional parameters and nested sub-subcommands to any level of depth.
+     * </p><p>
+     * The object model has a corresponding hierarchy of {@code CommandSpec} objects, each with a set of {@link OptionSpec},
+     * {@link PositionalParamSpec} and {@linkplain CommandLine subcommands} associated with it.
+     * This object model is used by the picocli command line interpreter and help message generator.
+     * </p><p>Picocli can construct a {@code CommandSpec} automatically from classes with {@link Command @Command}, {@link Option @Option} and
+     * {@link Parameters @Parameters} annotations. Alternatively a {@code CommandSpec} can be constructed programmatically.
+     * </p>
      * @since 3.0 */
     public static class CommandSpec {
         /** Constant String holding the default synopsis heading: <code>{@value}</code>. */
-        public static final String DEFAULT_SYNOPSIS_HEADING = "Usage: ";
+        protected static final String DEFAULT_SYNOPSIS_HEADING = "Usage: ";
 
         /** Constant String holding the default command list heading: <code>{@value}</code>. */
-        public static final String DEFAULT_COMMAND_LIST_HEADING = "Commands:%n";
+        protected static final String DEFAULT_COMMAND_LIST_HEADING = "Commands:%n";
 
         /** Constant String holding the default program name: {@code "<main class>" }. */
         protected static final String DEFAULT_COMMAND_NAME = "<main class>";
@@ -2728,9 +2737,38 @@ public class CommandLine {
                     ;
         }
     }
-    /** Models a command line option. Fields and methods annotated with {@code @Option} are converted into
-     * instances of this model class. Used internally by the picocli command line interpreter and help message generator.
-     * JVM languages that don't support annotations may construct {@code OptionSpec} instances directly.
+    /** The {@code OptionSpec} class models aspects of a <em>named option</em> of a {@linkplain CommandSpec command}, including whether
+     * it is required or optional, the option parameters supported (or required) by the option,
+     * and attributes for the usage help message describing the option.
+     * <p>
+     * An option has one ore more names. The option is matched when the parser encounters one of the option names in the command line arguments.
+     * Depending on the option's {@link #arity() arity},
+     * the parser may expect it to have option parameters. The parser will call {@link #setValue(Object)} on
+     * the matched option for each of the option parameters encountered.
+     * For multi-value options, the {@code type} may be an array, a {@code Collection} or a {@code Map}. In this case
+     * the parser will get the data structure by calling {@link #getValue()} and modify the contents of this data structure.
+     * (In the case of arrays, the array is replaced with a new instance with additional elements.)
+     * </p><p>
+     * Before calling the setter, picocli converts the option parameter value from a String to the option parameter's type.
+     * </p>
+     * <ul>
+     *   <li>If a option-specific {@link #converters() converter} is configured, this will be used for type conversion.</li>
+     *   <li>Otherwise, the option's {@link #type()} is used to look up a converter in the list of
+     *   {@linkplain CommandLine#registerConverter(Class, ITypeConverter) registered converters}. For multi-value options,
+     *   the {@code type} may be an array, or a {@code Collection} or a {@code Map}. In that case the option's
+     *   {@link #auxiliaryTypes()} are used to look up the converters to use to convert the option parameter values.</li>
+     *   The {@code Map} may have different types for its keys and its values, so {@link #auxiliaryTypes()} and {@link #converters()} may contain multiple values.</li>
+     * </ul>
+     * <p>
+     * {@code OptionSpec} objects are used by the picocli command line interpreter and help message generator.
+     * Picocli can construct a {@code OptionSpec} automatically from fields and methods with {@link Option @Option}
+     * annotations. Alternatively an {@code OptionSpec} can be constructed programmatically.
+     * When an {@code OptionSpec} is created from an {@link Option @Option} -annotated field or method, this field is
+     * set (or the method is invoked) when the option is matched and {@link #setValue(Object)} is called.
+     * Programmatically constructed {@code OptionSpec} instances will remember the value passed to the
+     * {@link #setValue(Object)} method so it can be retrieved with the {@link #getValue()} method.
+     * This behaviour can be customized by installing a custom {@link IGetter} and {@link ISetter} on the {@code OptionSpec}.
+     * </p>
      * @since 3.0 */
     public static class OptionSpec extends ArgSpec {
         private String[] names;
@@ -2800,9 +2838,40 @@ public class CommandLine {
                     + 37 * Arrays.hashCode(names);
         }
     }
-    /** Models a command line positional parameter. Fields and methods annotated with {@code @Parameters} are
-     * converted into instances of this model class. Used internally by the picocli command line interpreter and help
-     * message generator. JVM languages that don't support annotations may construct {@code PositionalParamSpec} instances directly.
+    /** The {@code PositionalParamSpec} class models aspects of a <em>positional parameter</em> of a {@linkplain CommandSpec command}, including whether
+     * it is required or optional, and attributes for the usage help message describing the positional parameter.
+     * <p>
+     * Positional parameters have an {@link #index() index} (or a range of indices). A positional parameter is matched when the parser
+     * encounters a command line argument at that index. Named options and their parameters do not change the index counter,
+     * so the command line can contain a mixture of positional parameters and named options.
+     * </p><p>
+     * Depending on the positional parameter's {@link #arity() arity}, the parser may consume multiple command line
+     * arguments starting from the current index. The parser will call {@link #setValue(Object)} on
+     * the {@code PositionalParamSpec} for each of the parameters encountered.
+     * For multi-value positional parameters, the {@code type} may be an array, a {@code Collection} or a {@code Map}. In this case
+     * the parser will get the data structure by calling {@link #getValue()} and modify the contents of this data structure.
+     * (In the case of arrays, the array is replaced with a new instance with additional elements.)
+     * </p><p>
+     * Before calling the setter, picocli converts the positional parameter value from a String to the parameter's type.
+     * </p>
+     * <ul>
+     *   <li>If a positional parameter-specific {@link #converters() converter} is configured, this will be used for type conversion.</li>
+     *   <li>Otherwise, the positional parameter's {@link #type()} is used to look up a converter in the list of
+     *   {@linkplain CommandLine#registerConverter(Class, ITypeConverter) registered converters}. For multi-value positional parameters,
+     *   the {@code type} may be an array, or a {@code Collection} or a {@code Map}. In that case the positional parameter's
+     *   {@link #auxiliaryTypes()} are used to look up the converters to use to convert the parameter values.
+     *   The {@code Map} may have different types for its keys and its values, so {@link #auxiliaryTypes()} and {@link #converters()} may contain multiple values.</li>
+     * </ul>
+     * <p>
+     * {@code PositionalParamSpec} objects are used by the picocli command line interpreter and help message generator.
+     * Picocli can construct a {@code PositionalParamSpec} automatically from fields and methods with {@link Parameters @Parameters}
+     * annotations. Alternatively an {@code PositionalParamSpec} can be constructed programmatically.
+     * When an {@code PositionalParamSpec} is created from an {@link Parameters @Parameters} -annotated field or method, this field is
+     * set (or the method is invoked) when the position is matched and {@link #setValue(Object)} is called.
+     * Programmatically constructed {@code PositionalParamSpec} instances will remember the value passed to the
+     * {@link #setValue(Object)} method so it can be retrieved with the {@link #getValue()} method.
+     * This behaviour can be customized by installing a custom {@link IGetter} and {@link ISetter} on the {@code PositionalParamSpec}.
+     * </p>
      * @since 3.0 */
     public static class PositionalParamSpec extends ArgSpec {
         private Range index;
