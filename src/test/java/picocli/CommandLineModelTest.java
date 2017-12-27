@@ -275,6 +275,25 @@ public class CommandLineModelTest {
     }
 
     @Test
+    public void testPositionalDefaultArityIsZeroIfUntyped() throws Exception {
+        assertEquals(Range.valueOf("1"), new PositionalParamSpec().validate().arity());
+    }
+
+    @Test
+    public void testPositionalDefaultArityIsZeroIfTypeBoolean() throws Exception {
+        assertEquals(Range.valueOf("1"), new PositionalParamSpec().type(boolean.class).validate().arity());
+        assertEquals(Range.valueOf("1"), new PositionalParamSpec().type(Boolean.class).validate().arity());
+    }
+
+    @Test
+    public void testPositionalDefaultArityIsOneIfTypeNonBoolean() throws Exception {
+        assertEquals(Range.valueOf("1"), new PositionalParamSpec().type(int.class).validate().arity());
+        assertEquals(Range.valueOf("1"), new PositionalParamSpec().type(Integer.class).validate().arity());
+        assertEquals(Range.valueOf("1"), new PositionalParamSpec().type(Byte.class).validate().arity());
+        assertEquals(Range.valueOf("1"), new PositionalParamSpec().type(String.class).validate().arity());
+    }
+
+    @Test
     public void testOptionDefaultSplitRegexIsEmptyString() throws Exception {
         assertEquals("", new OptionSpec("-x").validate().splitRegex());
     }
