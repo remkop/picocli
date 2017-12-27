@@ -2565,7 +2565,13 @@ public class CommandLine {
             if (description == null) { description = new String[0]; }
             if (splitRegex == null) { splitRegex = ""; }
             if (empty(paramLabel)) { paramLabel = "PARAM"; }
-            if (arity() == null) { if (isOption()) { arity("0"); } else { arity("1"); } }
+            if (arity() == null) {
+                if (isOption()) {
+                    if (type == null || isBoolean(type)) { arity("0"); } else { arity("1"); }
+                } else {
+                    arity("1");
+                }
+            }
 
             if (type == null) {
                 if (auxiliaryTypes == null || auxiliaryTypes.length == 0) {
@@ -2579,7 +2585,15 @@ public class CommandLine {
                 }
             }
             if (auxiliaryTypes == null || auxiliaryTypes.length == 0) {
-                auxiliaryTypes = new Class[] {type};
+                if (type.isArray()) {
+                    auxiliaryTypes = new Class[]{type.getComponentType()};
+                } else if (Collection.class.isAssignableFrom(type)) { // type is a collection but element type is unspecified
+                    auxiliaryTypes = new Class[] {String.class}; // use String elements
+                } else if (Map.class.isAssignableFrom(type)) { // type is a map but element type is unspecified
+                    auxiliaryTypes = new Class[] {String.class, String.class}; // use String keys and String values
+                } else {
+                    auxiliaryTypes = new Class[] {type};
+                }
             }
             if (converters == null) { converters = new ITypeConverter[0]; }
             return (T) this;
@@ -2756,7 +2770,7 @@ public class CommandLine {
      *   <li>Otherwise, the option's {@link #type()} is used to look up a converter in the list of
      *   {@linkplain CommandLine#registerConverter(Class, ITypeConverter) registered converters}. For multi-value options,
      *   the {@code type} may be an array, or a {@code Collection} or a {@code Map}. In that case the option's
-     *   {@link #auxiliaryTypes()} are used to look up the converters to use to convert the option parameter values.</li>
+     *   {@link #auxiliaryTypes()} are used to look up the converters to use to convert the option parameter values.
      *   The {@code Map} may have different types for its keys and its values, so {@link #auxiliaryTypes()} and {@link #converters()} may contain multiple values.</li>
      * </ul>
      * <p>

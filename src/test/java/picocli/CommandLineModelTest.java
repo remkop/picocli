@@ -19,14 +19,19 @@ import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 import java.io.UnsupportedEncodingException;
 import java.util.Arrays;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 
 import org.junit.Test;
 
 import picocli.CommandLine.CommandSpec;
 import picocli.CommandLine.Help.Ansi;
+import picocli.CommandLine.ITypeConverter;
 import picocli.CommandLine.OptionSpec;
 import picocli.CommandLine.PositionalParamSpec;
 import picocli.CommandLine.Range;
+import picocli.CommandLine.UnmatchedArgumentException;
 
 import static org.junit.Assert.*;
 
@@ -74,7 +79,7 @@ public class CommandLineModelTest {
     public void testModelHelp() throws Exception {
         CommandSpec spec = new CommandSpec();
         spec.add(new OptionSpec().names("-h", "--help").usageHelp(true).description("show help and exit"));
-        spec.add(new OptionSpec().names("-V", "--version").usageHelp(true).description("show help and exit"));
+        spec.add(new OptionSpec().names("-V", "--version").versionHelp(true).description("show help and exit"));
         spec.add(new OptionSpec().names("-c", "--count").paramLabel("COUNT").arity("1").type(int.class).description("number of times to execute"));
         CommandLine commandLine = new CommandLine(spec);
         String actual = usageString(commandLine, Ansi.OFF);
@@ -90,12 +95,158 @@ public class CommandLineModelTest {
     public void testModelParse() throws Exception {
         CommandSpec spec = new CommandSpec();
         spec.add(new OptionSpec().names("-h", "--help").usageHelp(true).description("show help and exit"));
-        spec.add(new OptionSpec().names("-V", "--version").usageHelp(true).description("show help and exit"));
+        spec.add(new OptionSpec().names("-V", "--version").versionHelp(true).description("show help and exit"));
         spec.add(new OptionSpec().names("-c", "--count").paramLabel("COUNT").arity("1").type(int.class).description("number of times to execute"));
         CommandLine commandLine = new CommandLine(spec);
         commandLine.parse("-c", "33");
         assertEquals(33, spec.optionsMap().get("-c").getValue());
     } // TODO parse method should return an object offering only the options/positionals that were matched
+
+    @Test
+    public void testMultiValueOptionArityAloneIsInsufficient() throws Exception {
+        CommandSpec spec = new CommandSpec();
+        spec.add(new OptionSpec().names("-c", "--count").arity("3").type(int.class));
+        CommandLine commandLine = new CommandLine(spec);
+        try {
+            commandLine.parse("-c", "1", "2", "3");
+            fail("Expected exception");
+        } catch (UnmatchedArgumentException ex) {
+            assertEquals("Unmatched arguments [2, 3]", ex.getMessage());
+        }
+    }
+
+    @Test
+    public void testMultiValuePositionalParamArityAloneIsInsufficient() throws Exception {
+        CommandSpec spec = new CommandSpec();
+        spec.add(new PositionalParamSpec().index("0").arity("3").type(int.class));
+        CommandLine commandLine = new CommandLine(spec);
+        try {
+            commandLine.parse("1", "2", "3");
+            fail("Expected exception");
+        } catch (UnmatchedArgumentException ex) {
+            assertEquals("Unmatched arguments [2, 3]", ex.getMessage());
+        }
+    }
+
+    @Test
+    public void testMultiValueOptionWithArray() throws Exception {
+        CommandSpec spec = new CommandSpec();
+        spec.add(new OptionSpec().names("-c", "--count").arity("3").type(int[].class));
+        CommandLine commandLine = new CommandLine(spec);
+        commandLine.parse("-c", "1", "2", "3");
+        assertArrayEquals(new int[] {1, 2, 3}, (int[]) spec.optionsMap().get("-c").getValue());
+    }
+
+    @Test
+    public void testMultiValuePositionalParamWithArray() throws Exception {
+        CommandSpec spec = new CommandSpec();
+        spec.add(new PositionalParamSpec().index("0").arity("3").type(int[].class));
+        CommandLine commandLine = new CommandLine(spec);
+        commandLine.parse("1", "2", "3");
+        assertArrayEquals(new int[] {1, 2, 3}, (int[]) spec.positionalParameters().get(0).getValue());
+    }
+
+    @Test
+    public void testMultiValueOptionWithListAndAuxTypes() throws Exception {
+        CommandSpec spec = new CommandSpec();
+        spec.add(new OptionSpec().names("-c", "--count").arity("3").type(List.class).auxiliaryTypes(Integer.class));
+        CommandLine commandLine = new CommandLine(spec);
+        commandLine.parse("-c", "1", "2", "3");
+        assertEquals(Arrays.asList(1, 2, 3), spec.optionsMap().get("-c").getValue());
+    }
+
+    @Test
+    public void testMultiValuePositionalParamWithListAndAuxTypes() throws Exception {
+        CommandSpec spec = new CommandSpec();
+        spec.add(new PositionalParamSpec().index("0").arity("3").type(List.class).auxiliaryTypes(Integer.class));
+        CommandLine commandLine = new CommandLine(spec);
+        commandLine.parse("1", "2", "3");
+        assertEquals(Arrays.asList(1, 2, 3), spec.positionalParameters().get(0).getValue());
+    }
+
+    @Test
+    public void testMultiValueOptionWithListWithoutAuxTypes() throws Exception {
+        CommandSpec spec = new CommandSpec();
+        spec.add(new OptionSpec().names("-c", "--count").arity("3").type(List.class));
+        CommandLine commandLine = new CommandLine(spec);
+        commandLine.parse("-c", "1", "2", "3");
+        assertEquals(Arrays.asList("1", "2", "3"), spec.optionsMap().get("-c").getValue());
+    }
+
+    @Test
+    public void testMultiValuePositionalParamWithListWithoutAuxTypes() throws Exception {
+        CommandSpec spec = new CommandSpec();
+        spec.add(new PositionalParamSpec().index("0").arity("3").type(List.class));
+        CommandLine commandLine = new CommandLine(spec);
+        commandLine.parse("1", "2", "3");
+        assertEquals(Arrays.asList("1", "2", "3"), spec.positionalParameters().get(0).getValue());
+    }
+
+    @Test
+    public void testMultiValueOptionWithMapAndAuxTypes() throws Exception {
+        CommandSpec spec = new CommandSpec();
+        spec.add(new OptionSpec().names("-c", "--count").arity("3").type(Map.class).auxiliaryTypes(Integer.class, Double.class));
+        CommandLine commandLine = new CommandLine(spec);
+        commandLine.parse("-c", "1=1.0", "2=2.0", "3=3.0");
+        Map<Integer, Double> expected = new LinkedHashMap<Integer, Double>();
+        expected.put(1, 1.0);
+        expected.put(2, 2.0);
+        expected.put(3, 3.0);
+        assertEquals(expected, spec.optionsMap().get("-c").getValue());
+    }
+
+    @Test
+    public void testMultiValuePositionalParamWithMapAndAuxTypes() throws Exception {
+        CommandSpec spec = new CommandSpec();
+        spec.add(new PositionalParamSpec().index("0").arity("3").type(Map.class).auxiliaryTypes(Integer.class, Double.class));
+        CommandLine commandLine = new CommandLine(spec);
+        commandLine.parse("1=1.0", "2=2.0", "3=3.0");
+        Map<Integer, Double> expected = new LinkedHashMap<Integer, Double>();
+        expected.put(1, 1.0);
+        expected.put(2, 2.0);
+        expected.put(3, 3.0);
+        assertEquals(expected, spec.positionalParameters().get(0).getValue());
+    }
+
+    @Test
+    public void testMultiValueOptionWithMapWithoutAuxTypes() throws Exception {
+        CommandSpec spec = new CommandSpec();
+        spec.add(new OptionSpec().names("-c", "--count").arity("3").type(Map.class));
+        CommandLine commandLine = new CommandLine(spec);
+        commandLine.parse("-c", "1=1.0", "2=2.0", "3=3.0");
+        Map<String, String> expected = new LinkedHashMap<String, String>();
+        expected.put("1", "1.0");
+        expected.put("2", "2.0");
+        expected.put("3", "3.0");
+        assertEquals(expected, spec.optionsMap().get("-c").getValue());
+    }
+
+    @Test
+    public void testMultiValuePositionalParamWithMapWithoutAuxTypes() throws Exception {
+        CommandSpec spec = new CommandSpec();
+        spec.add(new PositionalParamSpec().index("0").arity("3").type(Map.class));
+        CommandLine commandLine = new CommandLine(spec);
+        commandLine.parse("1=1.0", "2=2.0", "3=3.0");
+        Map<String, String> expected = new LinkedHashMap<String, String>();
+        expected.put("1", "1.0");
+        expected.put("2", "2.0");
+        expected.put("3", "3.0");
+        assertEquals(expected, spec.positionalParameters().get(0).getValue());
+    }
+
+
+    @Test
+    public void testArityAloneDoesNotMakePositionalParamMultiValue() throws Exception {
+        CommandSpec spec = new CommandSpec();
+        spec.add(new PositionalParamSpec().index("0").arity("3").type(int.class));
+        CommandLine commandLine = new CommandLine(spec);
+        try {
+            commandLine.parse("1", "2", "3");
+            fail("Expected exception");
+        } catch (UnmatchedArgumentException ex) {
+            assertEquals("Unmatched arguments [2, 3]", ex.getMessage());
+        }
+    }
 
     // TODO tests that verify CommandSpec.validate()
 
@@ -105,8 +256,22 @@ public class CommandLineModelTest {
     }
 
     @Test
-    public void testOptionDefaultArityIsZero() throws Exception {
+    public void testOptionDefaultArityIsZeroIfUntyped() throws Exception {
         assertEquals(Range.valueOf("0"), new OptionSpec("-x").validate().arity());
+    }
+
+    @Test
+    public void testOptionDefaultArityIsZeroIfTypeBoolean() throws Exception {
+        assertEquals(Range.valueOf("0"), new OptionSpec("-x").type(boolean.class).validate().arity());
+        assertEquals(Range.valueOf("0"), new OptionSpec("-x").type(Boolean.class).validate().arity());
+    }
+
+    @Test
+    public void testOptionDefaultArityIsOneIfTypeNonBoolean() throws Exception {
+        assertEquals(Range.valueOf("1"), new OptionSpec("-x").type(int.class).validate().arity());
+        assertEquals(Range.valueOf("1"), new OptionSpec("-x").type(Integer.class).validate().arity());
+        assertEquals(Range.valueOf("1"), new OptionSpec("-x").type(Byte.class).validate().arity());
+        assertEquals(Range.valueOf("1"), new OptionSpec("-x").type(String.class).validate().arity());
     }
 
     @Test
@@ -137,12 +302,12 @@ public class CommandLineModelTest {
     }
 
     @Test
-    public void testOptionDefaultAuxiliaryTypesIsType() throws Exception {
+    public void testOptionDefaultAuxiliaryTypesIsDerivedFromType() throws Exception {
         assertArrayEquals(new Class[] {boolean.class}, new OptionSpec("-x").validate().auxiliaryTypes());
         assertArrayEquals(new Class[] {int.class}, new OptionSpec("-x").type(int.class).validate().auxiliaryTypes());
     }
     @Test
-    public void testPositionalDefaultAuxiliaryTypesIsType() throws Exception {
+    public void testPositionalDefaultAuxiliaryTypesIsDerivedFromType() throws Exception {
         assertArrayEquals(new Class[] {String.class}, new PositionalParamSpec().validate().auxiliaryTypes());
         assertArrayEquals(new Class[] {int.class}, new PositionalParamSpec().type(int.class).validate().auxiliaryTypes());
     }
@@ -202,5 +367,14 @@ public class CommandLineModelTest {
         assertEquals(int.class, new PositionalParamSpec().arity("2").auxiliaryTypes(int.class).validate().type());
         assertEquals(int.class, new PositionalParamSpec().arity("0..2").auxiliaryTypes(int.class).validate().type());
         assertEquals(int.class, new PositionalParamSpec().arity("*").auxiliaryTypes(int.class).validate().type());
+    }
+
+    @Test
+    public void testOptionDefaultConvertersIsEmpty() throws Exception {
+        assertArrayEquals(new ITypeConverter[0], new OptionSpec("-x").validate().converters());
+    }
+    @Test
+    public void testPositionalDefaultConvertersIsEmpty() throws Exception {
+        assertArrayEquals(new ITypeConverter[0], new PositionalParamSpec().validate().converters());
     }
 }
