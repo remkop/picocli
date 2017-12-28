@@ -1951,6 +1951,15 @@ public class CommandLine {
         Collections.reverse(list);
         return list;
     }
+    private static <T> T[] copy(T[] array, Class<T> cls) {
+        try {
+            T[] result = (T[]) Array.newInstance(cls, array.length);
+            System.arraycopy(array, 0, result, 0, result.length);
+            return result;
+        } catch (Exception ex) {
+            throw new InitializationException("Could not copy array :" + ex, ex);
+        }
+    }
     private static class CommandSpecBuilder {
         static CommandSpec build(Object command, IFactory factory) {
             if (command instanceof CommandSpec) { return (CommandSpec) command; }
@@ -2101,8 +2110,7 @@ public class CommandLine {
         static OptionSpec buildOptionSpec(Object scope, Field field, IFactory factory) {
             Option option = field.getAnnotation(Option.class);
 
-            OptionSpec result = new OptionSpec();
-            result.names(option.names());
+            OptionSpec result = new OptionSpec(option.names());
             result.help(option.help());
             result.usageHelp(option.usageHelp());
             result.versionHelp(option.versionHelp());
@@ -2540,7 +2548,7 @@ public class CommandLine {
     }
     /** Models the shared attributes of {@link OptionSpec} and {@link PositionalParamSpec}.
      * @since 3.0 */
-    public abstract static class ArgSpec {
+    public abstract static class ArgSpec<T extends ArgSpec> {
         private Range arity;
         private String[] description;
         private boolean required;
@@ -2560,8 +2568,10 @@ public class CommandLine {
             getter = new ObjectGetterSetter();
             setter = (ISetter) getter;
         }
+        protected T self() { return (T) this; }
+
         /** Ensures all attributes of this {@code ArgSpec} have a valid value; throws an {@link InitializationException} if this cannot be achieved. */
-        <T extends ArgSpec> T validate() {
+        T validate() {
             if (description == null) { description = new String[0]; }
             if (splitRegex == null) { splitRegex = ""; }
             if (empty(paramLabel)) { paramLabel = "PARAM"; }
@@ -2596,22 +2606,22 @@ public class CommandLine {
                 }
             }
             if (converters == null) { converters = new ITypeConverter[0]; }
-            return (T) this;
+            return self();
         }
 
         /** Customizable getter for obtaining the current value of an option or positional parameter from the model.
          * @since 3.0 */
-        public static interface IGetter { <T> T get() throws Exception; }
+        public static interface IGetter { <K> K get() throws Exception; }
 
         /** Customizable setter for modifying the value of an option or positional parameter in the model.
          * @since 3.0 */
-        public static interface ISetter { <T> T set(T value) throws Exception; }
+        public static interface ISetter { <K> K set(K value) throws Exception; }
 
         private static class ObjectGetterSetter implements IGetter, ISetter {
             private Object value;
-            public <T> T get() throws Exception { return (T) value; }
-            public <T> T set(T value) throws Exception {
-                T result = value;
+            public <K> K get() throws Exception { return (K) value; }
+            public <K> K set(K value) throws Exception {
+                K result = value;
                 this.value = value;
                 return result;
             }
@@ -2675,45 +2685,45 @@ public class CommandLine {
         public abstract boolean isPositional();
 
         /** Sets whether this is a required option or positional parameter. */
-        public <T extends ArgSpec> T required(boolean required)          { this.required = required; return (T) this; }
+        public T required(boolean required)          { this.required = required; return self(); }
 
         /** Sets the description of this option, used when generating the usage documentation. */
-        public <T extends ArgSpec> T description(String... description)  { this.description = description; return (T) this; }
+        public T description(String... description)  { this.description = description; return self(); }
 
         /** Sets how many arguments this option or positional parameter requires. */
-        public <T extends ArgSpec> T arity(String range)                 { return arity(Range.valueOf(range)); }
+        public T arity(String range)                 { return arity(Range.valueOf(range)); }
 
         /** Sets how many arguments this option or positional parameter requires. */
-        public <T extends ArgSpec> T arity(Range arity)                  { this.arity = arity; return (T) this; }
+        public T arity(Range arity)                  { this.arity = arity; return self(); }
 
         /** Sets the name of the option or positional parameter used in the usage help message. */
-        public <T extends ArgSpec> T paramLabel(String paramLabel)       { this.paramLabel = paramLabel; return (T) this; }
+        public T paramLabel(String paramLabel)       { this.paramLabel = paramLabel; return self(); }
 
         /** Sets auxiliary type information used when the {@link #type()} is a generic {@code Collection}, {@code Map} or an abstract class. */
-        public <T extends ArgSpec> T auxiliaryTypes(Class<?>... types)   { this.auxiliaryTypes = types; return (T) this; }
+        public T auxiliaryTypes(Class<?>... types)   { this.auxiliaryTypes = types; return self(); }
 
         /** Sets option/positional param-specific converter (or converters for Maps) . */
-        public <T extends ArgSpec> T converters(ITypeConverter<?>... cs) { this.converters = cs; return (T) this; }
+        public T converters(ITypeConverter<?>... cs) { this.converters = cs; return self(); }
 
         /** Sets a regular expression to split option parameter values or {@code ""} if the value should not be split. */
-        public <T extends ArgSpec> T splitRegex(String splitRegex)       { this.splitRegex = splitRegex; return (T) this; }
+        public T splitRegex(String splitRegex)       { this.splitRegex = splitRegex; return self(); }
 
         /** Sets whether this option should be excluded from the usage message. */
-        public <T extends ArgSpec> T hidden(boolean hidden)              { this.hidden = hidden; return (T) this; }
+        public T hidden(boolean hidden)              { this.hidden = hidden; return self(); }
 
         /** Sets the type to convert the option or positional parameter to before {@linkplain #setValue(Object) setting} the value. */
-        public <T extends ArgSpec> T type(Class<?> propertyType)         { this.type = propertyType; return (T) this; }
+        public T type(Class<?> propertyType)         { this.type = propertyType; return self(); }
 
         /** Sets the default value of this option or positional parameter to the specified value. */
-        public <T extends ArgSpec> T defaultValue(Object defaultValue)   { this.defaultValue = defaultValue; return (T) this; }
+        public T defaultValue(Object defaultValue)   { this.defaultValue = defaultValue; return self(); }
 
         /** Sets the {@link IGetter} that is responsible for getting the value of this argument to the specified value. */
-        public <T extends ArgSpec> T getter(IGetter getter)              { this.getter = getter; return (T) this; }
+        public T getter(IGetter getter)              { this.getter = getter; return self(); }
         /** Sets the {@link ISetter} that is responsible for setting the value of this argument to the specified value. */
-        public <T extends ArgSpec> T setter(ISetter setter)              { this.setter = setter; return (T) this; }
+        public T setter(ISetter setter)              { this.setter = setter; return self(); }
 
         /** Sets the string respresentation of this option or positional parameter to the specified value. */
-        public <T extends ArgSpec> T toString(String toString)           { this.toString = toString; return (T) this; }
+        public T toString(String toString)           { this.toString = toString; return self(); }
 
         /** Returns a string respresentation of this option or positional parameter. */
         public String toString() { return toString; }
@@ -2784,13 +2794,19 @@ public class CommandLine {
      * This behaviour can be customized by installing a custom {@link IGetter} and {@link ISetter} on the {@code OptionSpec}.
      * </p>
      * @since 3.0 */
-    public static class OptionSpec extends ArgSpec {
+    public static class OptionSpec extends ArgSpec<OptionSpec> {
         private String[] names;
         private boolean help;
         private boolean usageHelp;
         private boolean versionHelp;
 
-        public OptionSpec(String... names) { this.names = Assert.notNull(names, "names"); }
+        public OptionSpec(String name, String... names) {
+            this.names = new String[Assert.notNull(names, "names").length + 1];
+            this.names[0] = Assert.notNull(name, "name");
+            System.arraycopy(names, 0, this.names, 1, names.length);
+        }
+        public OptionSpec(String[] names) { this.names = copy(Assert.notNull(names, "names"), String.class); }
+        protected OptionSpec self() { return this; }
 
         /** Ensures all attributes of this {@code OptionSpec} have a valid value; throws an {@link InitializationException} if this cannot be achieved. */
         OptionSpec validate() {
@@ -2823,16 +2839,16 @@ public class CommandLine {
 
         /** Replaces the option names with the specified values. At least one option name is required.
          * @return this OptionSpec instance to provide a fluent interface */
-        public OptionSpec names(String... names)           { this.names = names; return this; }
+        public OptionSpec names(String... names)           { this.names = names; return self(); }
 
         /** Sets whether this option disables validation of the other arguments. */
-        public OptionSpec help(boolean help)               { this.help = help; return this; }
+        public OptionSpec help(boolean help)               { this.help = help; return self(); }
 
         /** Sets whether this option allows the user to request usage help. */
-        public OptionSpec usageHelp(boolean usageHelp)     { this.usageHelp = usageHelp; return this; }
+        public OptionSpec usageHelp(boolean usageHelp)     { this.usageHelp = usageHelp; return self(); }
 
         /** Sets whether this option allows the user to request version information.*/
-        public OptionSpec versionHelp(boolean versionHelp) { this.versionHelp = versionHelp; return this; }
+        public OptionSpec versionHelp(boolean versionHelp) { this.versionHelp = versionHelp; return self(); }
         public boolean equals(Object obj) {
             if (obj == this) { return true; }
             if (!(obj instanceof OptionSpec)) { return false; }
@@ -2887,7 +2903,7 @@ public class CommandLine {
      * This behaviour can be customized by installing a custom {@link IGetter} and {@link ISetter} on the {@code PositionalParamSpec}.
      * </p>
      * @since 3.0 */
-    public static class PositionalParamSpec extends ArgSpec {
+    public static class PositionalParamSpec extends ArgSpec<PositionalParamSpec> {
         private Range index;
         private Range capacity;
 
@@ -2908,10 +2924,10 @@ public class CommandLine {
         private Range capacity()       { return capacity; }
 
         /** Sets the index or range specifying which of the command line arguments should be assigned to this positional parameter. */
-        public <T extends ArgSpec> T index(String range)                 { return index(Range.valueOf(range)); }
+        public PositionalParamSpec index(String range)                 { return index(Range.valueOf(range)); }
 
         /** Sets the index or range specifying which of the command line arguments should be assigned to this positional parameter. */
-        public <T extends ArgSpec> T index(Range index)                  { this.index = index; return (T) this; }
+        public PositionalParamSpec index(Range index)                  { this.index = index; return self(); }
 
         public int hashCode() {
             return super.hashCode()
