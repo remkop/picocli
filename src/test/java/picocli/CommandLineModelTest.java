@@ -18,6 +18,7 @@ package picocli;
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 import java.io.UnsupportedEncodingException;
+import java.sql.Types;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -28,6 +29,7 @@ import org.junit.Test;
 import picocli.CommandLine.CommandSpec;
 import picocli.CommandLine.Help.Ansi;
 import picocli.CommandLine.ITypeConverter;
+import picocli.CommandLine.InitializationException;
 import picocli.CommandLine.OptionSpec;
 import picocli.CommandLine.PositionalParamSpec;
 import picocli.CommandLine.Range;
@@ -78,9 +80,9 @@ public class CommandLineModelTest {
     @Test
     public void testModelHelp() throws Exception {
         CommandSpec spec = new CommandSpec();
-        spec.add(new OptionSpec().names("-h", "--help").usageHelp(true).description("show help and exit"));
-        spec.add(new OptionSpec().names("-V", "--version").versionHelp(true).description("show help and exit"));
-        spec.add(new OptionSpec().names("-c", "--count").paramLabel("COUNT").arity("1").type(int.class).description("number of times to execute"));
+        spec.add(new OptionSpec("-h", "--help").usageHelp(true).description("show help and exit"));
+        spec.add(new OptionSpec("-V", "--version").versionHelp(true).description("show help and exit"));
+        spec.add(new OptionSpec("-c", "--count").paramLabel("COUNT").arity("1").type(int.class).description("number of times to execute"));
         CommandLine commandLine = new CommandLine(spec);
         String actual = usageString(commandLine, Ansi.OFF);
         String expected = String.format("" +
@@ -94,9 +96,9 @@ public class CommandLineModelTest {
     @Test
     public void testModelParse() throws Exception {
         CommandSpec spec = new CommandSpec();
-        spec.add(new OptionSpec().names("-h", "--help").usageHelp(true).description("show help and exit"));
-        spec.add(new OptionSpec().names("-V", "--version").versionHelp(true).description("show help and exit"));
-        spec.add(new OptionSpec().names("-c", "--count").paramLabel("COUNT").arity("1").type(int.class).description("number of times to execute"));
+        spec.add(new OptionSpec("-h", "--help").usageHelp(true).description("show help and exit"));
+        spec.add(new OptionSpec("-V", "--version").versionHelp(true).description("show help and exit"));
+        spec.add(new OptionSpec("-c", "--count").paramLabel("COUNT").arity("1").type(int.class).description("number of times to execute"));
         CommandLine commandLine = new CommandLine(spec);
         commandLine.parse("-c", "33");
         assertEquals(33, spec.optionsMap().get("-c").getValue());
@@ -105,7 +107,7 @@ public class CommandLineModelTest {
     @Test
     public void testMultiValueOptionArityAloneIsInsufficient() throws Exception {
         CommandSpec spec = new CommandSpec();
-        spec.add(new OptionSpec().names("-c", "--count").arity("3").type(int.class));
+        spec.add(new OptionSpec("-c", "--count").arity("3").type(int.class));
         CommandLine commandLine = new CommandLine(spec);
         try {
             commandLine.parse("-c", "1", "2", "3");
@@ -131,7 +133,7 @@ public class CommandLineModelTest {
     @Test
     public void testMultiValueOptionWithArray() throws Exception {
         CommandSpec spec = new CommandSpec();
-        spec.add(new OptionSpec().names("-c", "--count").arity("3").type(int[].class));
+        spec.add(new OptionSpec("-c", "--count").arity("3").type(int[].class));
         CommandLine commandLine = new CommandLine(spec);
         commandLine.parse("-c", "1", "2", "3");
         assertArrayEquals(new int[] {1, 2, 3}, (int[]) spec.optionsMap().get("-c").getValue());
@@ -149,7 +151,7 @@ public class CommandLineModelTest {
     @Test
     public void testMultiValueOptionWithListAndAuxTypes() throws Exception {
         CommandSpec spec = new CommandSpec();
-        spec.add(new OptionSpec().names("-c", "--count").arity("3").type(List.class).auxiliaryTypes(Integer.class));
+        spec.add(new OptionSpec("-c", "--count").arity("3").type(List.class).auxiliaryTypes(Integer.class));
         CommandLine commandLine = new CommandLine(spec);
         commandLine.parse("-c", "1", "2", "3");
         assertEquals(Arrays.asList(1, 2, 3), spec.optionsMap().get("-c").getValue());
@@ -167,7 +169,7 @@ public class CommandLineModelTest {
     @Test
     public void testMultiValueOptionWithListWithoutAuxTypes() throws Exception {
         CommandSpec spec = new CommandSpec();
-        spec.add(new OptionSpec().names("-c", "--count").arity("3").type(List.class));
+        spec.add(new OptionSpec("-c", "--count").arity("3").type(List.class));
         CommandLine commandLine = new CommandLine(spec);
         commandLine.parse("-c", "1", "2", "3");
         assertEquals(Arrays.asList("1", "2", "3"), spec.optionsMap().get("-c").getValue());
@@ -185,7 +187,7 @@ public class CommandLineModelTest {
     @Test
     public void testMultiValueOptionWithMapAndAuxTypes() throws Exception {
         CommandSpec spec = new CommandSpec();
-        spec.add(new OptionSpec().names("-c", "--count").arity("3").type(Map.class).auxiliaryTypes(Integer.class, Double.class));
+        spec.add(new OptionSpec("-c", "--count").arity("3").type(Map.class).auxiliaryTypes(Integer.class, Double.class));
         CommandLine commandLine = new CommandLine(spec);
         commandLine.parse("-c", "1=1.0", "2=2.0", "3=3.0");
         Map<Integer, Double> expected = new LinkedHashMap<Integer, Double>();
@@ -211,7 +213,7 @@ public class CommandLineModelTest {
     @Test
     public void testMultiValueOptionWithMapWithoutAuxTypes() throws Exception {
         CommandSpec spec = new CommandSpec();
-        spec.add(new OptionSpec().names("-c", "--count").arity("3").type(Map.class));
+        spec.add(new OptionSpec("-c", "--count").arity("3").type(Map.class));
         CommandLine commandLine = new CommandLine(spec);
         commandLine.parse("-c", "1=1.0", "2=2.0", "3=3.0");
         Map<String, String> expected = new LinkedHashMap<String, String>();
@@ -395,5 +397,39 @@ public class CommandLineModelTest {
     @Test
     public void testPositionalDefaultConvertersIsEmpty() throws Exception {
         assertArrayEquals(new ITypeConverter[0], new PositionalParamSpec().validate().converters());
+    }
+
+    @Test
+    public void testOptionConvertersOverridesRegisteredTypeConverter() throws Exception {
+        CommandSpec spec = new CommandSpec();
+        spec.add(new OptionSpec("-c", "--count").paramLabel("COUNT").arity("1").type(int.class).description("number of times to execute"));
+        spec.add(new OptionSpec("-s", "--sql").paramLabel("SQLTYPE").type(int.class).converters(
+                new CommandLineTypeConversionTest.SqlTypeConverter()).description("sql type converter"));
+        CommandLine commandLine = new CommandLine(spec);
+        commandLine.parse("-c", "33", "-s", "BLOB");
+        assertEquals(33, spec.optionsMap().get("-c").getValue());
+        assertEquals(Types.BLOB, spec.optionsMap().get("-s").getValue());
+    }
+    @Test
+    public void testPositionalConvertersOverridesRegisteredTypeConverter() throws Exception {
+        CommandSpec spec = new CommandSpec();
+        spec.add(new PositionalParamSpec().paramLabel("COUNT").index("0").type(int.class).description("number of times to execute"));
+        spec.add(new PositionalParamSpec().paramLabel("SQLTYPE").index("1").type(int.class).converters(
+                new CommandLineTypeConversionTest.SqlTypeConverter()).description("sql type converter"));
+        CommandLine commandLine = new CommandLine(spec);
+        commandLine.parse("33", "BLOB");
+        assertEquals(33, spec.positionalParameters().get(0).getValue());
+        assertEquals(Types.BLOB, spec.positionalParameters().get(1).getValue());
+    }
+
+    // TODO split CommandSpecTest, OptionSpecTest and PositionalParamSpecTest into separate classes?
+    @Test
+    public void testOptionSpecRequiresAtLeastOneName() throws Exception {
+        try {
+            new OptionSpec(new String[0]).validate();
+            fail("Expected exception");
+        } catch (InitializationException ex) {
+            assertEquals("Invalid names: []", ex.getMessage());
+        }
     }
 }
