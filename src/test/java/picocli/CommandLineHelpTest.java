@@ -2641,4 +2641,48 @@ public class CommandLineHelpTest {
         assertTrue(list.get(1).getCommand() instanceof Sub);
         assertTrue(((Top) list.get(0).getCommand()).isUsageHelpRequested);
     }
+
+    @Test
+    public void testDemoUsage() throws Exception {
+        String expected = String.format("" +
+                "       .__                    .__  .__%n" +
+                "______ |__| ____  ____   ____ |  | |__|%n" +
+                "\\____ \\|  |/ ___\\/  _ \\_/ ___\\|  | |  |%n" +
+                "|  |_> >  \\  \\__(  <_> )  \\___|  |_|  |%n" +
+                "|   __/|__|\\___  >____/ \\___  >____/__|%n" +
+                "|__|           \\/           \\/%n" +
+                "%n" +
+                "Usage: picocli.Demo [-123airtV] [--simple]%n" +
+                "%n" +
+                "Demonstrates picocli subcommands parsing and usage help.%n" +
+                "%n" +
+                "Options:%n" +
+                "  -a, --autocomplete          Generate sample autocomplete script for git%n" +
+                "  -1, --showUsageForSubcommandGitCommit%n" +
+                "                              Shows usage help for the git-commit subcommand%n" +
+                "  -2, --showUsageForMainCommand%n" +
+                "                              Shows usage help for a command with subcommands%n" +
+                "  -3, --showUsageForSubcommandGitStatus%n" +
+                "                              Shows usage help for the git-status subcommand%n" +
+                "      --simple                Show help for the first simple Example in the%n" +
+                "                                manual%n" +
+                "  -i, --index                 Show 256 color palette index values%n" +
+                "  -r, --rgb                   Show 256 color palette RGB component values%n" +
+                "  -t, --tests                 Runs all tests in this class%n" +
+                "  -V, --version               Show version information and exit%n" +
+                "%n" +
+                "VM Options:%n" +
+                "Run with -ea to enable assertions used in the tests.%n" +
+                "Run with -Dpicocli.ansi=true to force picocli to use ansi codes,%n" +
+                " or with -Dpicocli.ansi=false to force picocli to NOT use ansi codes.%n" +
+                "(By default picocli will use ansi codes if the platform supports it.)%n" +
+                "%n" +
+                "If you would like to contribute or report an issue%n" +
+                "go to github: https://github.com/remkop/picocli%n" +
+                "%n" +
+                "If you like the project star it on github and follow me on twitter!%n" +
+                "This project is created and maintained by Remko Popma (@remkopopma)%n" +
+                "%n");
+        assertEquals(expected, usageString(new Demo(), Help.Ansi.OFF));
+    }
 }

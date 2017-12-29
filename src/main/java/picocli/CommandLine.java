@@ -3877,7 +3877,7 @@ public class CommandLine {
                 Text EMPTY = Ansi.EMPTY_TEXT;
                 List<Text[]> result = new ArrayList<Text[]>();
                 Text[] descriptionFirstLines = scheme.ansi().new Text(str(option.description(), 0)).splitLines();
-                if (descriptionFirstLines.length == 0) {
+                if (descriptionFirstLines.length == 0 || (descriptionFirstLines.length == 1 && descriptionFirstLines[0].plain.length() == 0)) {
                     if (showDefault) {
                         descriptionFirstLines = new Text[]{scheme.ansi().new Text("  Default: " + defaultValue)};
                         showDefault = false; // don't show the default value twice
@@ -4820,7 +4820,7 @@ public class CommandLine {
 
                 public Text[] splitLines() {
                     List<Text> result = new ArrayList<Text>();
-                    boolean trailingEmptyString = false;
+                    boolean trailingEmptyString = plain.length() == 0;
                     int start = 0, end = 0;
                     for (int i = 0; i < plain.length(); i++, end = i) {
                         char c = plain.charAt(i);
