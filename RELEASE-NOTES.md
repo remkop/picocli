@@ -1,5 +1,46 @@
 # picocli Release Notes
 
+# <a name="2.2.1"></a> Picocli 2.2.1
+The picocli community is pleased to announce picocli 2.2.1.
+
+This is a bugfix release.
+
+
+This is the eighteenth public release.
+Picocli follows [semantic versioning](http://semver.org/).
+
+## <a name="2.2.1-toc"></a> Table of Contents
+
+* [New and noteworthy](#2.2.1-new)
+* [Promoted features](#2.2.1-promoted)
+* [Fixed issues](#2.2.1-fixes)
+* [Deprecations](#2.2.1-deprecated)
+* [Potential breaking changes](#2.2.1-breaking-changes)
+
+## <a name="2.2.1-new"></a> New and noteworthy
+
+This is a bugfix release and does not include any new features.
+
+## <a name="2.2.1-promoted"></a> Promoted features
+Promoted features are features that were incubating in previous versions of picocli but are now supported and subject to backwards compatibility. 
+
+No features have been promoted in this picocli release.
+
+## <a name="2.2.1-fixes"></a> Fixed issues
+
+- [#254] Bugfix: Starting from 2.0.3, usage help didn't render empty lines in multi-line descriptions.
+
+
+## <a name="2.2.1-deprecated"></a> Deprecations
+
+This release has no additional deprecations.
+
+## <a name="2.2.1-breaking-changes"></a> Potential breaking changes
+
+This release has no breaking changes.
+
+
+
 
 # <a name="2.2.0"></a> Picocli 2.2.0
 
