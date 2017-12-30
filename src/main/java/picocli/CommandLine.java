@@ -3412,7 +3412,7 @@ public class CommandLine {
         private int applyValuesToMapField(ArgSpec argSpec,
                                           Range arity,
                                           Stack<String> args,
-                                          Class<?> cls,
+                                          Class<?> mapClass,
                                           String argDescription) throws Exception {
             Class<?>[] classes = argSpec.auxiliaryTypes();
             if (classes.length < 2) { throw new ParameterException(CommandLine.this, argSpec.toString() + " needs two types (one for the map key, one for the value) but only has " + classes.length + " types configured."); }
@@ -3420,7 +3420,7 @@ public class CommandLine {
             ITypeConverter<?> valueConverter = getTypeConverter(classes[1], argSpec, 1);
             Map<Object, Object> result = (Map<Object, Object>) argSpec.getValue();
             if (result == null) {
-                result = createMap(cls);
+                result = createMap(mapClass);
                 argSpec.setValue(result);
             }
             int originalSize = result.size();
@@ -3498,7 +3498,7 @@ public class CommandLine {
             Object existing = argSpec.getValue();
             int length = existing == null ? 0 : Array.getLength(existing);
             Class<?> type = argSpec.auxiliaryTypes()[0];
-            List<Object> converted = consumeArguments(argSpec, arity, args, type, length, argDescription);
+            List<Object> converted = consumeArguments(argSpec, arity, args, type, argDescription);
             List<Object> newValues = new ArrayList<Object>();
             for (int i = 0; i < length; i++) {
                 newValues.add(Array.get(existing, i));
@@ -3522,14 +3522,13 @@ public class CommandLine {
         private int applyValuesToCollectionField(ArgSpec argSpec,
                                                  Range arity,
                                                  Stack<String> args,
-                                                 Class<?> cls,
+                                                 Class<?> collectionType,
                                                  String argDescription) throws Exception {
             Collection<Object> collection = (Collection<Object>) argSpec.getValue();
             Class<?> type = argSpec.auxiliaryTypes()[0];
-            int length = collection == null ? 0 : collection.size();
-            List<Object> converted = consumeArguments(argSpec, arity, args, type, length, argDescription);
+            List<Object> converted = consumeArguments(argSpec, arity, args, type, argDescription);
             if (collection == null) {
-                collection = createCollection(cls);
+                collection = createCollection(collectionType);
                 argSpec.setValue(collection);
             }
             for (Object element : converted) {
@@ -3546,13 +3545,12 @@ public class CommandLine {
                                               Range arity,
                                               Stack<String> args,
                                               Class<?> type,
-                                              int originalSize,
                                               String argDescription) throws Exception {
             List<Object> result = new ArrayList<Object>();
 
             // first do the arity.min mandatory parameters
             for (int i = 0; i < arity.min; i++) {
-                consumeOneArgument(argSpec, arity, args, type, result, i, originalSize, argDescription);
+                consumeOneArgument(argSpec, arity, args, type, result, i, argDescription);
             }
             // now process the varargs if any
             for (int i = arity.min; i < arity.max && !args.isEmpty(); i++) {
@@ -3561,7 +3559,7 @@ public class CommandLine {
                         break;
                     }
                 }
-                consumeOneArgument(argSpec, arity, args, type, result, i, originalSize, argDescription);
+                consumeOneArgument(argSpec, arity, args, type, result, i, argDescription);
             }
             if (result.isEmpty() && arity.min == 0 && arity.max <= 1 && isBoolean(type)) {
                 return Arrays.asList((Object) Boolean.TRUE);
@@ -3575,7 +3573,6 @@ public class CommandLine {
                                        Class<?> type,
                                        List<Object> result,
                                        int index,
-                                       int originalSize,
                                        String argDescription) throws Exception {
             String[] values = argSpec.splitValue(trim(args.pop()));
             ITypeConverter<?> converter = getTypeConverter(type, argSpec, 0);
