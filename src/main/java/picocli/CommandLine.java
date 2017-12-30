@@ -2767,30 +2767,34 @@ public class CommandLine {
      * <p>
      * An option has one ore more names. The option is matched when the parser encounters one of the option names in the command line arguments.
      * Depending on the option's {@link #arity() arity},
-     * the parser may expect it to have option parameters. The parser will call {@link #setValue(Object)} on
+     * the parser may expect it to have option parameters. The parser will call {@link #setValue(Object) setValue} on
      * the matched option for each of the option parameters encountered.
      * For multi-value options, the {@code type} may be an array, a {@code Collection} or a {@code Map}. In this case
-     * the parser will get the data structure by calling {@link #getValue()} and modify the contents of this data structure.
+     * the parser will get the data structure by calling {@link #getValue() getValue} and modify the contents of this data structure.
      * (In the case of arrays, the array is replaced with a new instance with additional elements.)
      * </p><p>
      * Before calling the setter, picocli converts the option parameter value from a String to the option parameter's type.
      * </p>
      * <ul>
-     *   <li>If a option-specific {@link #converters() converter} is configured, this will be used for type conversion.</li>
-     *   <li>Otherwise, the option's {@link #type()} is used to look up a converter in the list of
+     *   <li>If a option-specific {@link #converters() converter} is configured, this will be used for type conversion.
+     *   If the option's type is a {@code Map}, the map may have different types for its keys and its values, so
+     *   {@link #converters() converters} should provide two converters: one for the map keys and one for the map values.</li>
+     *   <li>Otherwise, the option's {@link #type() type} is used to look up a converter in the list of
      *   {@linkplain CommandLine#registerConverter(Class, ITypeConverter) registered converters}. For multi-value options,
-     *   the {@code type} may be an array, or a {@code Collection} or a {@code Map}. In that case the option's
-     *   {@link #auxiliaryTypes()} are used to look up the converters to use to convert the option parameter values.
-     *   The {@code Map} may have different types for its keys and its values, so {@link #auxiliaryTypes()} and {@link #converters()} may contain multiple values.</li>
+     *   the {@code type} may be an array, or a {@code Collection} or a {@code Map}. In that case the elements are converted
+     *   based on the option's {@link #auxiliaryTypes() auxiliaryTypes}. The auxiliaryType is used to look up
+     *   the converter(s) to use to convert the individual parameter values.
+     *   Maps may have different types for its keys and its values, so {@link #auxiliaryTypes() auxiliaryTypes}
+     *   should provide two types: one for the map keys and one for the map values.</li>
      * </ul>
      * <p>
      * {@code OptionSpec} objects are used by the picocli command line interpreter and help message generator.
      * Picocli can construct a {@code OptionSpec} automatically from fields and methods with {@link Option @Option}
      * annotations. Alternatively an {@code OptionSpec} can be constructed programmatically.
      * When an {@code OptionSpec} is created from an {@link Option @Option} -annotated field or method, this field is
-     * set (or the method is invoked) when the option is matched and {@link #setValue(Object)} is called.
+     * set (or the method is invoked) when the option is matched and {@link #setValue(Object) setValue} is called.
      * Programmatically constructed {@code OptionSpec} instances will remember the value passed to the
-     * {@link #setValue(Object)} method so it can be retrieved with the {@link #getValue()} method.
+     * {@link #setValue(Object) setValue} method so it can be retrieved with the {@link #getValue() getValue} method.
      * This behaviour can be customized by installing a custom {@link IGetter} and {@link ISetter} on the {@code OptionSpec}.
      * </p>
      * @since 3.0 */
@@ -2876,30 +2880,34 @@ public class CommandLine {
      * so the command line can contain a mixture of positional parameters and named options.
      * </p><p>
      * Depending on the positional parameter's {@link #arity() arity}, the parser may consume multiple command line
-     * arguments starting from the current index. The parser will call {@link #setValue(Object)} on
+     * arguments starting from the current index. The parser will call {@link #setValue(Object) setValue} on
      * the {@code PositionalParamSpec} for each of the parameters encountered.
      * For multi-value positional parameters, the {@code type} may be an array, a {@code Collection} or a {@code Map}. In this case
-     * the parser will get the data structure by calling {@link #getValue()} and modify the contents of this data structure.
+     * the parser will get the data structure by calling {@link #getValue() getValue} and modify the contents of this data structure.
      * (In the case of arrays, the array is replaced with a new instance with additional elements.)
      * </p><p>
      * Before calling the setter, picocli converts the positional parameter value from a String to the parameter's type.
      * </p>
      * <ul>
-     *   <li>If a positional parameter-specific {@link #converters() converter} is configured, this will be used for type conversion.</li>
-     *   <li>Otherwise, the positional parameter's {@link #type()} is used to look up a converter in the list of
+     *   <li>If a positional parameter-specific {@link #converters() converter} is configured, this will be used for type conversion.
+     *   If the positional parameter's type is a {@code Map}, the map may have different types for its keys and its values, so
+     *   {@link #converters() converters} should provide two converters: one for the map keys and one for the map values.</li>
+     *   <li>Otherwise, the positional parameter's {@link #type() type} is used to look up a converter in the list of
      *   {@linkplain CommandLine#registerConverter(Class, ITypeConverter) registered converters}. For multi-value positional parameters,
-     *   the {@code type} may be an array, or a {@code Collection} or a {@code Map}. In that case the positional parameter's
-     *   {@link #auxiliaryTypes()} are used to look up the converters to use to convert the parameter values.
-     *   The {@code Map} may have different types for its keys and its values, so {@link #auxiliaryTypes()} and {@link #converters()} may contain multiple values.</li>
+     *   the {@code type} may be an array, or a {@code Collection} or a {@code Map}. In that case the elements are converted
+     *   based on the positional parameter's {@link #auxiliaryTypes() auxiliaryTypes}. The auxiliaryType is used to look up
+     *   the converter(s) to use to convert the individual parameter values.
+     *   Maps may have different types for its keys and its values, so {@link #auxiliaryTypes() auxiliaryTypes}
+     *   should provide two types: one for the map keys and one for the map values.</li>
      * </ul>
      * <p>
      * {@code PositionalParamSpec} objects are used by the picocli command line interpreter and help message generator.
      * Picocli can construct a {@code PositionalParamSpec} automatically from fields and methods with {@link Parameters @Parameters}
      * annotations. Alternatively an {@code PositionalParamSpec} can be constructed programmatically.
      * When an {@code PositionalParamSpec} is created from an {@link Parameters @Parameters} -annotated field or method, this field is
-     * set (or the method is invoked) when the position is matched and {@link #setValue(Object)} is called.
+     * set (or the method is invoked) when the position is matched and {@link #setValue(Object) setValue} is called.
      * Programmatically constructed {@code PositionalParamSpec} instances will remember the value passed to the
-     * {@link #setValue(Object)} method so it can be retrieved with the {@link #getValue()} method.
+     * {@link #setValue(Object) setValue} method so it can be retrieved with the {@link #getValue() getValue} method.
      * This behaviour can be customized by installing a custom {@link IGetter} and {@link ISetter} on the {@code PositionalParamSpec}.
      * </p>
      * @since 3.0 */
