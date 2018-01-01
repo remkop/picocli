@@ -68,6 +68,9 @@ import picocli.CommandLine.PositionalParamSpec;
 
 import static java.lang.String.*;
 import static org.junit.Assert.*;
+import static picocli.HelpTestUtil.textArray;
+import static picocli.HelpTestUtil.usageString;
+import static picocli.ModelTestUtil.options;
 
 /**
  * Tests for picoCLI's "Usage" help functionality.
@@ -81,48 +84,6 @@ public class CommandLineHelpTest {
         System.getProperties().remove("picocli.color.options");
         System.getProperties().remove("picocli.color.parameters");
         System.getProperties().remove("picocli.color.optionParams");
-    }
-    private static String usageString(Object annotatedObject, Help.Ansi ansi) throws UnsupportedEncodingException {
-        return usageString(new CommandLine(annotatedObject), ansi);
-    }
-    private static String usageString(CommandLine commandLine, Help.Ansi ansi) throws UnsupportedEncodingException {
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        commandLine.usage(new PrintStream(baos, true, "UTF8"), ansi);
-        String result = baos.toString("UTF8");
-
-        if (ansi == Help.Ansi.AUTO) {
-            baos.reset();
-            commandLine.usage(new PrintStream(baos, true, "UTF8"));
-            assertEquals(result, baos.toString("UTF8"));
-        } else if (ansi == Help.Ansi.ON) {
-            baos.reset();
-            commandLine.usage(new PrintStream(baos, true, "UTF8"), Help.defaultColorScheme(Help.Ansi.ON));
-            assertEquals(result, baos.toString("UTF8"));
-        }
-        return result;
-    }
-    private static Field field(Class<?> cls, String fieldName) throws NoSuchFieldException {
-        return cls.getDeclaredField(fieldName);
-    }
-    private static Field[] fields(Class<?> cls, String... fieldNames) throws NoSuchFieldException {
-        Field[] result = new Field[fieldNames.length];
-        for (int i = 0; i < fieldNames.length; i++) {
-            result[i] = cls.getDeclaredField(fieldNames[i]);
-        }
-        return result;
-    }
-    private static OptionSpec option(Object obj, String fieldName) throws Exception {
-        return option(obj, fieldName, CommandLine.defaultFactory());
-    }
-    private static OptionSpec option(Object obj, String fieldName, IFactory factory) throws Exception {
-        return CommandLine.ArgSpecBuilder.buildOptionSpec(obj, obj.getClass().getDeclaredField(fieldName), factory);
-    }
-    private static OptionSpec[] options(Object obj, String... fieldNames) throws Exception {
-        OptionSpec[] result = new OptionSpec[fieldNames.length];
-        for (int i = 0; i < fieldNames.length; i++) {
-            result[i] = option(obj, fieldNames[i]);
-        }
-        return result;
     }
 
     @Test
@@ -929,17 +890,6 @@ public class CommandLineHelpTest {
     @Test
     public void testCreateDefaultOptionRenderer_ReturnsDefaultOptionRenderer() {
         assertEquals(Help.DefaultOptionRenderer.class, new Help(new UsageDemo()).createDefaultOptionRenderer().getClass());
-    }
-
-    private static Text[] textArray(Help help, String... str) {
-        return textArray(help.ansi(), str);
-    }
-    private static Text[] textArray(Help.Ansi ansi, String... str) {
-        Text[] result = new Text[str.length];
-        for (int i = 0; i < str.length; i++) {
-            result[i] = str[i] == null ? Help.Ansi.EMPTY_TEXT : ansi.new Text(str[i]);
-        }
-        return result;
     }
 
     @Test

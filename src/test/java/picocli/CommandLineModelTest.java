@@ -15,9 +15,6 @@
  */
 package picocli;
 
-import java.io.ByteArrayOutputStream;
-import java.io.PrintStream;
-import java.io.UnsupportedEncodingException;
 import java.sql.Types;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
@@ -36,29 +33,9 @@ import picocli.CommandLine.Range;
 import picocli.CommandLine.UnmatchedArgumentException;
 
 import static org.junit.Assert.*;
+import static picocli.HelpTestUtil.usageString;
 
 public class CommandLineModelTest {
-    private static String usageString(Object annotatedObject, Ansi ansi) throws
-            UnsupportedEncodingException {
-        return usageString(new CommandLine(annotatedObject), ansi);
-    }
-    private static String usageString(CommandLine commandLine, Ansi ansi) throws UnsupportedEncodingException {
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        commandLine.usage(new PrintStream(baos, true, "UTF8"), ansi);
-        String result = baos.toString("UTF8");
-
-        if (ansi == Ansi.AUTO) {
-            baos.reset();
-            commandLine.usage(new PrintStream(baos, true, "UTF8"));
-            assertEquals(result, baos.toString("UTF8"));
-        } else if (ansi == Ansi.ON) {
-            baos.reset();
-            commandLine.usage(new PrintStream(baos, true, "UTF8"), CommandLine.Help.defaultColorScheme(Ansi.ON));
-            assertEquals(result, baos.toString("UTF8"));
-        }
-        return result;
-    }
-
     @Test
     public void testEmptyModelHelp() throws Exception {
         CommandSpec spec = new CommandSpec();

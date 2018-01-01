@@ -24,7 +24,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.io.UnsupportedEncodingException;
-import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.math.BigDecimal;
 import java.net.InetAddress;
@@ -59,6 +58,7 @@ import org.junit.Test;
 
 import static org.junit.Assert.*;
 import static picocli.CommandLine.*;
+import static picocli.HelpTestUtil.setTraceLevel;
 
 /**
  * Tests for the CommandLine argument parsing interpreter functionality.
@@ -70,24 +70,6 @@ import static picocli.CommandLine.*;
 public class CommandLineTest {
     @Before public void setUp() { System.clearProperty("picocli.trace"); }
     @After public void tearDown() { System.clearProperty("picocli.trace"); }
-
-    private static void setTraceLevel(String level) {
-        System.setProperty("picocli.trace", level);
-    }
-
-    public static class InnerClassFactory implements IFactory{
-        private final Object outer;
-        public InnerClassFactory(Object outer) { this.outer = outer; }
-
-        public <K> K create(final Class<K> cls) throws Exception {
-            try {
-                Constructor<K> constructor = cls.getDeclaredConstructor(outer.getClass());
-                return constructor.newInstance(outer);
-            } catch (Exception ex) {
-                throw new InitializationException("Could not instantiate " + cls.getName() + ": " + ex, ex);
-            }
-        }
-    }
 
     @Test(expected = NullPointerException.class)
     public void testConstructorRejectsNullObject() {

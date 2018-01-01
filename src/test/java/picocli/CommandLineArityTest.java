@@ -33,14 +33,12 @@ import picocli.CommandLine.Range;
 import picocli.CommandLine.UnmatchedArgumentException;
 
 import static org.junit.Assert.*;
+import static picocli.HelpTestUtil.setTraceLevel;
 
 public class CommandLineArityTest {
     @Before public void setUp() { System.clearProperty("picocli.trace"); }
     @After public void tearDown() { System.clearProperty("picocli.trace"); }
 
-    private static void setTraceLevel(String level) {
-        System.setProperty("picocli.trace", level);
-    }
     @Test
     public void testArityConstructor_fixedRange() {
         Range arity = new Range(1, 23, false, false, null);
