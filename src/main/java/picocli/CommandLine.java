@@ -79,6 +79,7 @@ import picocli.CommandLine.Help.Ansi.Style;
 import picocli.CommandLine.Help.Ansi.Text;
 
 import static java.util.Locale.ENGLISH;
+import static picocli.CommandLine.ArgSpecBuilder.abbreviate;
 import static picocli.CommandLine.Help.Column.Overflow.SPAN;
 import static picocli.CommandLine.Help.Column.Overflow.TRUNCATE;
 import static picocli.CommandLine.Help.Column.Overflow.WRAP;
@@ -158,21 +159,31 @@ public class CommandLine {
     private boolean versionHelpRequested;
 
     /**
-     * Constructs a new {@code CommandLine} interpreter with the specified annotated object and a default subcommand factory.
-     * When the {@link #parse(String...)} method is called, fields of the specified object that are annotated
-     * with {@code @Option} or {@code @Parameters} will be initialized based on command line arguments.
-     * @param command the object to initialize from the command line arguments
+     * Constructs a new {@code CommandLine} interpreter with the specified object and a default subcommand factory.
+     * <p>The specified object may be a {@link CommandSpec CommandSpec} object, or it may be a {@code @Command}-annotated
+     * user object with {@code @Option} and {@code @Parameters}-annotated fields, in which case picocli automatically
+     * constructs a {@code CommandSpec} from this user object.
+     * </p><p>
+     * When the {@link #parse(String...)} method is called, the {@link CommandSpec CommandSpec} object will be
+     * initialized based on command line arguments. If the commandSpec is created from an annotated user object, this
+     * user object will be initialized based on the command line arguments.</p>
+     * @param command an annotated user object or a {@code CommandSpec} object to initialize from the command line arguments
      * @throws InitializationException if the specified command object does not have a {@link Command}, {@link Option} or {@link Parameters} annotation
      */
     public CommandLine(Object command) {
         this(command, new DefaultFactory());
     }
     /**
-     * Constructs a new {@code CommandLine} interpreter with the specified annotated object and object factory.
-     * When the {@link #parse(String...)} method is called, fields of the specified object that are annotated
-     * with {@code @Option} or {@code @Parameters} will be initialized based on command line arguments.
-     * @param command the object to initialize from the command line arguments
-     * @param factory the factory used to create instances of {@linkplain Command#subcommands() subcommands} that are registered declaratively with annotation attributes
+     * Constructs a new {@code CommandLine} interpreter with the specified object and object factory.
+     * <p>The specified object may be a {@link CommandSpec CommandSpec} object, or it may be a {@code @Command}-annotated
+     * user object with {@code @Option} and {@code @Parameters}-annotated fields, in which case picocli automatically
+     * constructs a {@code CommandSpec} from this user object.
+     * </p><p>
+     * When the {@link #parse(String...)} method is called, the {@link CommandSpec CommandSpec} object will be
+     * initialized based on command line arguments. If the commandSpec is created from an annotated user object, this
+     * user object will be initialized based on the command line arguments.</p>
+     * @param command an annotated user object or a {@code CommandSpec} object to initialize from the command line arguments
+     * @param factory the factory used to create instances of {@linkplain Command#subcommands() subcommands}, {@linkplain Option#converter() converters}, etc., that are registered declaratively with annotation attributes
      * @throws InitializationException if the specified command object does not have a {@link Command}, {@link Option} or {@link Parameters} annotation
      */
     public CommandLine(Object command, IFactory factory) {
@@ -187,7 +198,34 @@ public class CommandLine {
      * Returns the {@code CommandSpec} model that this {@code CommandLine} was constructed with.
      * @return the {@code CommandSpec} model
      * @since 3.0 */
-    CommandSpec getCommandSpec() { return commandSpec; }
+    public CommandSpec getCommandSpec() { return commandSpec; }
+
+    /**
+     * Adds the options and positional parameters in the specified mixin to this command.
+     * <p>The specified object may be a {@link CommandSpec CommandSpec} object, or it may be a user object with
+     * {@code @Option} and {@code @Parameters}-annotated fields, in which case picocli automatically
+     * constructs a {@code CommandSpec} from this user object.
+     * </p>
+     * @param name the name by which the mixin object may later be retrieved
+     * @param mixin an annotated user object or a {@link CommandSpec CommandSpec} object whose options and positional parameters to add to this command
+     * @return this CommandLine object, to allow method chaining
+     * @since 3.0 */
+    public CommandLine addMixin(String name, Object mixin) {
+        getCommandSpec().addMixin(name, CommandSpecBuilder.build(mixin, factory));
+        return this;
+    }
+
+    /**
+     * Returns a map of user objects whose options and positional parameters were added to ("mixed in" with) this command.
+     * @return a new Map containing the user objects mixed in with this command. If {@code CommandSpec} objects without
+     *          user objects were programmatically added, use the {@link CommandSpec#mixins() underlying model} directly.
+     * @since 3.0 */
+    public Map<String, Object> getMixins() {
+        Map<String, CommandSpec> mixins = getCommandSpec().mixins();
+        Map<String, Object> result = new LinkedHashMap<String, Object>();
+        for (String name : mixins.keySet()) { result.put(name, mixins.get(name).userObject); }
+        return result;
+    }
 
     /** Registers a subcommand with the specified name. For example:
      * <pre>
@@ -232,8 +270,8 @@ public class CommandLine {
      */
     public CommandLine addSubcommand(String name, Object command) {
         CommandLine subcommandLine = toCommandLine(command, factory);
-        commandSpec.addSubcommand(name, subcommandLine);
-        CommandSpecBuilder.initParentCommand(subcommandLine.getCommandSpec().userObject(), commandSpec.userObject());
+        getCommandSpec().addSubcommand(name, subcommandLine);
+        CommandSpecBuilder.initParentCommand(subcommandLine.getCommandSpec().userObject(), getCommandSpec().userObject());
         return this;
     }
     /** Returns a map with the subcommands {@linkplain #addSubcommand(String, Object) registered} on this instance.
@@ -241,7 +279,7 @@ public class CommandLine {
      * @since 0.9.7
      */
     public Map<String, CommandLine> getSubcommands() {
-        return new LinkedHashMap<String, CommandLine>(commandSpec.subcommands());
+        return new LinkedHashMap<String, CommandLine>(getCommandSpec().subcommands());
     }
     /**
      * Returns the command that this is a subcommand of, or {@code null} if this is a top-level command.
@@ -261,7 +299,7 @@ public class CommandLine {
      * @since 0.9.7
      */
     public <T> T getCommand() {
-        return (T) commandSpec.userObject();
+        return (T) getCommandSpec().userObject();
     }
 
     /** Returns {@code true} if an option annotated with {@link Option#usageHelp()} was specified on the command line.
@@ -295,7 +333,7 @@ public class CommandLine {
      */
     public CommandLine setOverwrittenOptionsAllowed(boolean newValue) {
         this.overwrittenOptionsAllowed = newValue;
-        for (CommandLine command : commandSpec.subcommands().values()) {
+        for (CommandLine command : getCommandSpec().subcommands().values()) {
             command.setOverwrittenOptionsAllowed(newValue);
         }
         return this;
@@ -324,7 +362,7 @@ public class CommandLine {
      */
     public CommandLine setUnmatchedArgumentsAllowed(boolean newValue) {
         this.unmatchedArgumentsAllowed = newValue;
-        for (CommandLine command : commandSpec.subcommands().values()) {
+        for (CommandLine command : getCommandSpec().subcommands().values()) {
             command.setUnmatchedArgumentsAllowed(newValue);
         }
         return this;
@@ -775,7 +813,7 @@ public class CommandLine {
      * @param colorScheme the {@code ColorScheme} defining the styles for options, parameters and commands when ANSI is enabled
      */
     public void usage(PrintStream out, Help.ColorScheme colorScheme) {
-        Help help = new Help(commandSpec, colorScheme);
+        Help help = new Help(getCommandSpec(), colorScheme);
         StringBuilder sb = new StringBuilder()
                 .append(help.headerHeading())
                 .append(help.header())
@@ -814,7 +852,7 @@ public class CommandLine {
      * @since 0.9.8
      */
     public void printVersionHelp(PrintStream out, Help.Ansi ansi) {
-        for (String versionInfo : commandSpec.version()) {
+        for (String versionInfo : getCommandSpec().version()) {
             out.println(ansi.new Text(versionInfo));
         }
     }
@@ -832,7 +870,7 @@ public class CommandLine {
      * @since 1.0.0
      */
     public void printVersionHelp(PrintStream out, Help.Ansi ansi, Object... params) {
-        for (String versionInfo : commandSpec.version()) {
+        for (String versionInfo : getCommandSpec().version()) {
             out.println(ansi.new Text(String.format(versionInfo, params)));
         }
     }
@@ -1021,7 +1059,7 @@ public class CommandLine {
      */
     public <K> CommandLine registerConverter(Class<K> cls, ITypeConverter<K> converter) {
         interpreter.converterRegistry.put(Assert.notNull(cls, "class"), Assert.notNull(converter, "converter"));
-        for (CommandLine command : commandSpec.commands.values()) {
+        for (CommandLine command : getCommandSpec().commands.values()) {
             command.registerConverter(cls, converter);
         }
         return this;
@@ -1030,7 +1068,7 @@ public class CommandLine {
     /** Returns the String that separates option names from option values when parsing command line options.
      * @return the String the parser uses to separate option names from option values
      * @see CommandSpec#separator() */
-    public String getSeparator() { return commandSpec.separator(); }
+    public String getSeparator() { return getCommandSpec().separator(); }
 
     /** Sets the String the parser uses to separate option names from option values to the specified value.
      * The separator may also be set declaratively with the {@link CommandLine.Command#separator()} annotation attribute.
@@ -1038,7 +1076,7 @@ public class CommandLine {
      * @see CommandSpec#separator(String)
      * @return this {@code CommandLine} object, to allow method chaining */
     public CommandLine setSeparator(String separator) {
-        commandSpec.separator(Assert.notNull(separator, "separator"));
+        getCommandSpec().separator(Assert.notNull(separator, "separator"));
         return this;
     }
 
@@ -1046,7 +1084,7 @@ public class CommandLine {
      * @return the command name (also called program name) displayed in the usage
      * @see CommandSpec#name()
      * @since 2.0 */
-    public String getCommandName() { return commandSpec.name(); }
+    public String getCommandName() { return getCommandSpec().name(); }
 
     /** Sets the command name (also called program name) displayed in the usage help synopsis to the specified value.
      * Note that this method only modifies the usage help message, it does not impact parsing behaviour.
@@ -1056,7 +1094,7 @@ public class CommandLine {
      * @see CommandSpec#name(String)
      * @since 2.0 */
     public CommandLine setCommandName(String commandName) {
-        commandSpec.name(Assert.notNull(commandName, "commandName"));
+        getCommandSpec().name(Assert.notNull(commandName, "commandName"));
         return this;
     }
 
@@ -1497,6 +1535,48 @@ public class CommandLine {
     public @interface ParentCommand { }
 
     /**
+     * <p>
+     * Fields annotated with {@code @Mixin} are "expanded" into the current command: {@link Option @Option} and
+     * {@link Parameters @Parameters} in the mixin class are added to the options and positional parameters of this command.
+     * A {@link DuplicateOptionAnnotationsException} is thrown if any of the options in the mixin has the same name as
+     * an option in this command.
+     * </p><p>
+     * The {@code Mixin} annotation provides a way to reuse common options and parameters without subclassing. For example:
+     * </p><pre>
+     * class HelloWorld implements Runnable {
+     *
+     *     // adds the --help and --version options to this command
+     *     &#064;Mixin
+     *     private HelpOptions = new HelpOptions();
+     *
+     *     &#064;Option(names = {"-u", "--userName"}, required = true, description = "The user name")
+     *     String userName;
+     *
+     *     public void run() { System.out.println("Hello, " + userName); }
+     * }
+     *
+     * // Common reusable help options.
+     * class HelpOptions {
+     *
+     *     &#064;Option(names = { "-h", "--help"}, usageHelp = true, description = "Display this help and exit")
+     *     private boolean help;
+     *
+     *     &#064;Option(names = { "-V", "--version"}, versionHelp = true, description = "Display version info and exit")
+     *     private boolean versionHelp;
+     * }
+     * </pre>
+     * @since 3.0
+     */
+    @Retention(RetentionPolicy.RUNTIME)
+    @Target(ElementType.FIELD)
+    public @interface Mixin {
+        /** Optionally specify a name that the mixin object can be retrieved with from the {@code CommandSpec}.
+         * If not specified the name of the annotated field is used.
+         * @return a String to register the mixin object with, or an empty String if the name of the annotated field should be used */
+        String name() default "";
+    }
+
+    /**
      * <p>Annotate your class with {@code @Command} when you want more control over the format of the generated help
      * message.
      * </p><pre>
@@ -1537,7 +1617,8 @@ public class CommandLine {
          * For {@linkplain #subcommands() declaratively added} subcommands, this attribute is also used
          * by the parser to recognize subcommands in the command line arguments.
          * @return the program name to show in the synopsis
-         * @see Help#commandName */
+         * @see CommandSpec#name()
+         * @see Help#commandName() */
         String name() default "<main class>";
 
         /** A list of classes to instantiate and register as subcommands. When registering subcommands declaratively
@@ -1589,12 +1670,13 @@ public class CommandLine {
 
         /** Set the heading preceding the header section. May contain embedded {@linkplain java.util.Formatter format specifiers}.
          * @return the heading preceding the header section
+         * @see CommandSpec#headerHeading()
          * @see Help#headerHeading(Object...)  */
         String headerHeading() default "";
 
         /** Optional summary description of the command, shown before the synopsis.
          * @return summary description of the command
-         * @see Help#header
+         * @see CommandSpec#header()
          * @see Help#header(Object...)  */
         String[] header() default {};
 
@@ -1757,7 +1839,7 @@ public class CommandLine {
                 return constructor.newInstance();
             }
         }
-        private static ITypeConverter<?>[] create(IFactory factory, Class<? extends ITypeConverter<?>>[] classes) {
+        private static ITypeConverter<?>[] createConverter(IFactory factory, Class<? extends ITypeConverter<?>>[] classes) {
             ITypeConverter<?>[] result = new ITypeConverter[classes.length];
             for (int i = 0; i < classes.length; i++) {
                 try {
@@ -1767,6 +1849,10 @@ public class CommandLine {
                 }
             }
             return result;
+        }
+        public static IVersionProvider createVersionProvider(IFactory factory, Class<? extends IVersionProvider> cls) {
+            try { return factory.create(cls); }
+            catch (Exception ex) { throw new InitializationException("Could not instantiate " + cls + ": " + ex, ex); }
         }
     }
     /** Describes the number of parameters required and accepted by an option or a positional parameter.
@@ -1963,48 +2049,51 @@ public class CommandLine {
     private static class CommandSpecBuilder {
         static CommandSpec build(Object command, IFactory factory) {
             if (command instanceof CommandSpec) { return (CommandSpec) command; }
-            CommandSpec result = new CommandSpec(Assert.notNull(command, "command"));
-            Class<?> cls       = command.getClass();
-            result.toString(cls.getName());
 
+            CommandSpec result = new CommandSpec(Assert.notNull(command, "command"));
+
+            Class<?> cls = command.getClass();
             boolean hasCommandAnnotation = false;
             while (cls != null) {
-                initOptionsAndPositionalParams(command, cls, result, factory);
-                // superclass values should not overwrite values if both class and superclass have a @Command annotation
-                if (cls.isAnnotationPresent(Command.class)) {
-                    hasCommandAnnotation = true;
-                    Command cmd = cls.getAnnotation(Command.class);
-                    initSubcommands(cmd, result, factory);
-
-                    result.separator =            empty(result.separator)          || CommandSpec.DEFAULT_SEPARATOR.equals(result.separator)                     ? cmd.separator()          : result.separator;
-                    result.name =                 empty(result.name)               || CommandSpec.DEFAULT_COMMAND_NAME.equals(result.name)                       ? cmd.name()               : result.name;
-                    result.synopsisHeading =      empty(result.synopsisHeading)    || CommandSpec.DEFAULT_SYNOPSIS_HEADING.equals(result.synopsisHeading)        ? cmd.synopsisHeading()    : result.synopsisHeading;
-                    result.commandListHeading =   empty(result.commandListHeading) || CommandSpec.DEFAULT_COMMAND_LIST_HEADING.equals(result.commandListHeading) ? cmd.commandListHeading() : result.commandListHeading;
-                    result.requiredOptionMarker = result.requiredOptionMarker == null || CommandSpec.DEFAULT_REQUIRED_OPTION_MARKER == result.requiredOptionMarker ? cmd.requiredOptionMarker() : result.requiredOptionMarker;
-                    result.abbreviateSynopsis =   result.abbreviateSynopsis == null && cmd.abbreviateSynopsis() ? Boolean.valueOf(cmd.abbreviateSynopsis()) : result.abbreviateSynopsis;
-                    result.sortOptions =          result.sortOptions == null        && !cmd.sortOptions()       ? Boolean.valueOf(cmd.sortOptions())        : result.sortOptions;
-                    result.showDefaultValues =    result.showDefaultValues == null  && cmd.showDefaultValues()  ? Boolean.valueOf(cmd.showDefaultValues())  : result.showDefaultValues;
-                    result.version =              nonEmpty(result.version, generateVersionStrings(cmd.versionProvider(), factory));
-                    result.version =              nonEmpty(result.version, cmd.version()); // only if no dynamic version
-                    result.customSynopsis =       nonEmpty(result.customSynopsis, cmd.customSynopsis());
-                    result.description =          nonEmpty(result.description, cmd.description());
-                    result.header =               nonEmpty(result.header, cmd.header());
-                    result.footer =               nonEmpty(result.footer, cmd.footer());
-                    result.headerHeading =        nonEmpty(result.headerHeading, cmd.headerHeading());
-                    result.descriptionHeading =   nonEmpty(result.descriptionHeading, cmd.descriptionHeading());
-                    result.parameterListHeading = nonEmpty(result.parameterListHeading, cmd.parameterListHeading());
-                    result.optionListHeading =    nonEmpty(result.optionListHeading, cmd.optionListHeading());
-                    result.footerHeading =        nonEmpty(result.footerHeading, cmd.footerHeading());
-                }
+                hasCommandAnnotation |= updateCommandAttributes(cls, result, factory);
+                initFromAnnotatedFields(command, cls, result, factory);
                 cls = cls.getSuperclass();
             }
-            if (result.positionalParameters.isEmpty() && result.optionsByNameMap.isEmpty() && !hasCommandAnnotation) {
-                throw new InitializationException(command.getClass().getName() + " is not a command: it has no @Command, @Option or @Parameters annotations");
-            }
-            result.validate();
+            validateCommandSpec(result, hasCommandAnnotation, command);
+            result.withToString(command.getClass().getName()).validate();
             return result;
         }
 
+        private static boolean updateCommandAttributes(Class<?> cls, CommandSpec commandSpec, IFactory factory) {
+            // superclass values should not overwrite values if both class and superclass have a @Command annotation
+            if (!cls.isAnnotationPresent(Command.class)) { return false; }
+
+            Command cmd = cls.getAnnotation(Command.class);
+            initSubcommands(cmd, commandSpec, factory);
+
+            if (!commandSpec.isSeparatorInitialized())            { commandSpec.separator(cmd.separator()); }
+            if (!commandSpec.isNameInitialized())                 { commandSpec.name(cmd.name()); }
+            if (!commandSpec.isSynopsisHeadingInitialized())      { commandSpec.synopsisHeading(cmd.synopsisHeading()); }
+            if (!commandSpec.isCommandListHeadingInitialized())   { commandSpec.commandListHeading(cmd.commandListHeading()); }
+            if (!commandSpec.isRequiredOptionMarkerInitialized()) { commandSpec.requiredOptionMarker(cmd.requiredOptionMarker()); }
+            if (!commandSpec.isVersionInitialized())              { commandSpec.version(cmd.version()); } // only if no dynamic version
+            if (!commandSpec.isCustomSynopsisInitialized())       { commandSpec.customSynopsis(cmd.customSynopsis()); }
+            if (!commandSpec.isDescriptionInitialized())          { commandSpec.description(cmd.description()); }
+            if (!commandSpec.isDescriptionHeadingInitialized())   { commandSpec.descriptionHeading(cmd.descriptionHeading()); }
+            if (!commandSpec.isHeaderInitialized())               { commandSpec.header(cmd.header()); }
+            if (!commandSpec.isHeaderHeadingInitialized())        { commandSpec.headerHeading(cmd.headerHeading()); }
+            if (!commandSpec.isFooterInitialized())               { commandSpec.footer(cmd.footer()); }
+            if (!commandSpec.isFooterHeadingInitialized())        { commandSpec.footerHeading(cmd.footerHeading()); }
+            if (!commandSpec.isParameterListHeadingInitialized()) { commandSpec.parameterListHeading(cmd.parameterListHeading()); }
+            if (!commandSpec.isOptionListHeadingInitialized())    { commandSpec.optionListHeading(cmd.optionListHeading()); }
+            if (!commandSpec.isAbbreviateSynopsisInitialized() && cmd.abbreviateSynopsis()) { commandSpec.abbreviateSynopsis(cmd.abbreviateSynopsis()); }
+            if (!commandSpec.isSortOptionsInitialized()        && !cmd.sortOptions())       { commandSpec.sortOptions(cmd.sortOptions()); }
+            if (!commandSpec.isShowDefaultValuesInitialized()  && cmd.showDefaultValues())  { commandSpec.showDefaultValues(cmd.showDefaultValues()); }
+            if (!commandSpec.isVersionProviderInitialized()    && cmd.versionProvider() != NoVersionProvider.class) {
+                commandSpec.versionProvider(DefaultFactory.createVersionProvider(factory, cmd.versionProvider()));
+            }
+            return true;
+        }
         private static String[] generateVersionStrings(Class<? extends IVersionProvider> cls, IFactory factory) {
             if (cls == null || cls == NoVersionProvider.class) { return new String[0]; }
             try {
@@ -2060,48 +2149,60 @@ public class CommandLine {
             }
             return subCommand.name();
         }
-
-        private static void initOptionsAndPositionalParams(Object scope, Class<?> cls, CommandSpec commandSpec, IFactory factory) {
-            Field[] declaredFields = cls.getDeclaredFields();
-            for (Field field : declaredFields) {
-                if (!isProperty(field)) { continue; }
-                validateArgSpecField(field);
-                if (isOption(field)) {
-                    OptionSpec option = ArgSpecBuilder.buildOptionSpec(scope, field, factory);
-                    commandSpec.options.add(option);
-                    for (String name : option.names()) { // cannot be null or empty
-                        ArgSpec existing = commandSpec.optionsByNameMap.put(name, option);
-                        if (existing != null && !existing.equals(option)) {
-                            throw DuplicateOptionAnnotationsException.create(name, option, existing);
-                        }
-                        if (name.length() == 2 && name.startsWith("-")) {
-                            commandSpec.posixOptionsByKeyMap.put(name.charAt(1), option);
-                        }
-                    }
-                    if (option.required()) { commandSpec.requiredArgs.add(option); }
+        private static void initFromAnnotatedFields(Object scope, Class<?> cls, CommandSpec receiver, IFactory factory) {
+            for (Field field : cls.getDeclaredFields()) {
+                if (isMixin(field))    {
+                    receiver.addMixin(mixinName(field), buildMixinForField(field, scope, factory));
                 }
-                if (isParameter(field)) {
-                    PositionalParamSpec positional = ArgSpecBuilder.buildPositionalParamSpec(scope, field, factory);
-                    commandSpec.positionalParameters.add(positional);
-                    if (positional.required()) { commandSpec.requiredArgs.add(positional); }
+                if (isArgSpec(field)) {
+                    validateArgSpecField(field);
+                    if (isOption(field))    { receiver.add(ArgSpecBuilder.buildOptionSpec(scope, field, factory)); }
+                    if (isParameter(field)) { receiver.add(ArgSpecBuilder.buildPositionalParamSpec(scope, field, factory)); }
                 }
-                field.setAccessible(true);
             }
         }
+        private static String mixinName(Field field) {
+            String annotationName = field.getAnnotation(Mixin.class).name();
+            return empty(annotationName) ? field.getName() : annotationName;
+        }
 
-        private static void validateArgSpecField(final Field field) {
+        private static void validateArgSpecField(Field field) {
             if (isOption(field) && isParameter(field)) {
                 throw new DuplicateOptionAnnotationsException("A field can be either @Option or @Parameters, but '" + field + "' is both.");
+            }
+            if (isMixin(field) && (isOption(field) || isParameter(field))) {
+                throw new DuplicateOptionAnnotationsException("A field cannot be both a @Mixin command and an @Option or @Parameters, but '" + field + "' is both.");
             }
             if (Modifier.isFinal(field.getModifiers()) && (field.getType().isPrimitive() || String.class.isAssignableFrom(field.getType()))) {
                 throw new InitializationException("Constant (final) primitive and String fields like " + field + " cannot be used as " +
                         (isOption(field) ? "an @Option" : "a @Parameter") + ": compile-time constant inlining may hide new values written to it.");
             }
         }
-
-        static boolean isProperty(Field f)  { return isOption(f) || isParameter(f); }
+        private static void validateCommandSpec(CommandSpec result, boolean hasCommandAnnotation, Object command) {
+            if (!hasCommandAnnotation && result.positionalParameters.isEmpty() && result.optionsByNameMap.isEmpty()) {
+                throw new InitializationException(command.getClass().getName() + " is not a command: it has no @Command, @Option or @Parameters annotations");
+            }
+        }
+        private static CommandSpec buildMixinForField(Field field, Object scope, IFactory factory) {
+            try {
+                field.setAccessible(true);
+                Object userObject = field.get(scope);
+                if (userObject == null) {
+                    userObject = factory.create(field.getType());
+                    field.set(scope, userObject);
+                }
+                CommandSpec result = build(userObject, factory);
+                return result.withToString(abbreviate("mixin from field " + field.toGenericString()));
+            } catch (InitializationException ex) {
+                throw ex;
+            } catch (Exception ex) {
+                throw new InitializationException("Could not access or modify mixin field " + field + ": " + ex, ex);
+            }
+        }
+        static boolean isArgSpec(Field f)   { return isOption(f) || isParameter(f); }
         static boolean isOption(Field f)    { return f.isAnnotationPresent(Option.class); }
         static boolean isParameter(Field f) { return f.isAnnotationPresent(Parameters.class); }
+        static boolean isMixin(Field f)     { return f.isAnnotationPresent(Mixin.class); }
     }
 
     /** Helper class to reflectively create OptionSpec and PositionalParamSpec objects from annotated elements.
@@ -2122,7 +2223,7 @@ public class CommandLine {
             result.paramLabel(inferLabel(option.paramLabel(), field.getName(), field.getType(), result.auxiliaryTypes()));
             result.splitRegex(option.split());
             result.hidden(option.hidden());
-            result.converters(DefaultFactory.create(factory, option.converter()));
+            result.converters(DefaultFactory.createConverter(factory, option.converter()));
             initCommon(result, scope, field);
             return result;
         }
@@ -2151,18 +2252,19 @@ public class CommandLine {
             result.paramLabel(inferLabel(parameters.paramLabel(), field.getName(), field.getType(), result.auxiliaryTypes()));
             result.splitRegex(parameters.split());
             result.hidden(parameters.hidden());
-            result.converters(DefaultFactory.create(factory, parameters.converter()));
+            result.converters(DefaultFactory.createConverter(factory, parameters.converter()));
             initCommon(result, scope, field);
             return result;
         }
         private static void initCommon(ArgSpec result, Object scope, Field field) {
+            field.setAccessible(true);
             result.type(field.getType()); // field type
             result.defaultValue(getDefaultValue(scope, field));
-            result.toString(abbreviate("field " + field.toGenericString()));
+            result.withToString(abbreviate("field " + field.toGenericString()));
             result.getter(new FieldGetter(scope, field));
             result.setter(new FieldSetter(scope, field));
         }
-        private static String abbreviate(String text) {
+        static String abbreviate(String text) {
             return text.replace("field private ", "field ")
                     .replace("field protected ", "field ")
                     .replace("field public ", "field ")
@@ -2257,8 +2359,9 @@ public class CommandLine {
         protected static final String DEFAULT_SEPARATOR = "=";
 
         private final Map<String, CommandLine> commands = new LinkedHashMap<String, CommandLine>();
-        private final Map<String, OptionSpec> optionsByNameMap = new HashMap<String, OptionSpec>();
-        private final Map<Character, OptionSpec> posixOptionsByKeyMap = new HashMap<Character, OptionSpec>();
+        private final Map<String, OptionSpec> optionsByNameMap = new LinkedHashMap<String, OptionSpec>();
+        private final Map<Character, OptionSpec> posixOptionsByKeyMap = new LinkedHashMap<Character, OptionSpec>();
+        private final Map<String, CommandSpec> mixins = new LinkedHashMap<String, CommandSpec>();
         private final List<ArgSpec> requiredArgs = new ArrayList<ArgSpec>();
         private final List<OptionSpec> options = new ArrayList<OptionSpec>();
         private final List<PositionalParamSpec> positionalParameters = new ArrayList<PositionalParamSpec>();
@@ -2269,6 +2372,7 @@ public class CommandLine {
 
         private String separator;
         private String name;
+        private IVersionProvider versionProvider;
         private String[] version = {};
         private String[] description = {};
         private String[] customSynopsis = {};
@@ -2311,7 +2415,8 @@ public class CommandLine {
             for (PositionalParamSpec positional : positionalParameters) { positional.validate(); }
         }
 
-        /** Returns the user object associated with this command. */
+        /** Returns the user object associated with this command.
+         * @see CommandLine#getCommand() */
         public Object userObject() { return userObject; }
 
         /** Returns the CommandLine constructed with this {@code CommandSpec} model. */
@@ -2353,13 +2458,17 @@ public class CommandLine {
 
         /** Adds the specified option spec to the list of configured arguments to expect.
          * @param option the option spec to add
-         * @return this CommandSpec for method chaining */
+         * @return this CommandSpec for method chaining
+         * @throws DuplicateOptionAnnotationsException if any of the names of the specified option is the same as the name of another option */
         public CommandSpec add(OptionSpec option) {
             option.validate();
             options.add(option);
-            for (String name : option.names()) {
-                optionsByNameMap.put(name, option);
-                if (name.startsWith("-") && name.length() == 2) { posixOptionsByKeyMap.put(name.charAt(1), option); }
+            for (String name : option.names()) { // cannot be null or empty
+                ArgSpec existing = optionsByNameMap.put(name, option);
+                if (existing != null && !existing.equals(option)) {
+                    throw DuplicateOptionAnnotationsException.create(name, option, existing);
+                }
+                if (name.length() == 2 && name.startsWith("-")) { posixOptionsByKeyMap.put(name.charAt(1), option); }
             }
             if (option.required()) { requiredArgs.add(option); }
             return this;
@@ -2373,6 +2482,45 @@ public class CommandLine {
             if (positional.required()) { requiredArgs.add(positional); }
             return this;
         }
+
+        /** Adds the specified mixin {@code CommandSpec} object to the map of mixins for this command.
+         * @param name the name that can be used to later retrieve the mixin
+         * @param mixin the mixin whose options and positional parameters and other attributes to add to this command
+         * @return this CommandSpec for method chaining */
+        public CommandSpec addMixin(String name, CommandSpec mixin) {
+            mixins.put(name, mixin);
+
+            if (!isSeparatorInitialized())            { separator(mixin.separator()); }
+            if (!isNameInitialized())                 { name(mixin.name()); }
+            if (!isSynopsisHeadingInitialized())      { synopsisHeading(mixin.synopsisHeading()); }
+            if (!isCommandListHeadingInitialized())   { commandListHeading(mixin.commandListHeading()); }
+            if (!isRequiredOptionMarkerInitialized()) { requiredOptionMarker(mixin.requiredOptionMarker()); }
+            if (!isVersionProviderInitialized())      { versionProvider(mixin.versionProvider()); }
+            if (!isVersionInitialized())              { version(mixin.version()); } // only if no dynamic version
+            if (!isCustomSynopsisInitialized())       { customSynopsis(mixin.customSynopsis()); }
+            if (!isDescriptionInitialized())          { description(mixin.description()); }
+            if (!isDescriptionHeadingInitialized())   { descriptionHeading(mixin.descriptionHeading()); }
+            if (!isHeaderInitialized())               { header(mixin.header()); }
+            if (!isHeaderHeadingInitialized())        { headerHeading(mixin.headerHeading()); }
+            if (!isFooterInitialized())               { footer(mixin.footer()); }
+            if (!isFooterHeadingInitialized())        { footerHeading(mixin.footerHeading()); }
+            if (!isParameterListHeadingInitialized()) { parameterListHeading(mixin.parameterListHeading()); }
+            if (!isOptionListHeadingInitialized())    { optionListHeading(mixin.optionListHeading()); }
+            if (!isAbbreviateSynopsisInitialized() && mixin.abbreviateSynopsis()) { abbreviateSynopsis(mixin.abbreviateSynopsis()); }
+            if (!isSortOptionsInitialized()        && !mixin.sortOptions())       { sortOptions(mixin.sortOptions()); }
+            if (!isShowDefaultValuesInitialized()  && mixin.showDefaultValues())  { showDefaultValues(mixin.showDefaultValues()); }
+
+            for (Map.Entry<String, CommandLine> entry : mixin.subcommands().entrySet()) {
+                addSubcommand(entry.getKey(), entry.getValue());
+            }
+            for (OptionSpec optionSpec         : mixin.options())              { add(optionSpec); }
+            for (PositionalParamSpec paramSpec : mixin.positionalParameters()) { add(paramSpec); }
+            return this;
+        }
+
+        /** Returns a map of the mixin names to mixin {@code CommandSpec} objects configured for this command.
+         * @return an immutable map of mixins added to this command. */
+        public Map<String, CommandSpec> mixins() { return Collections.unmodifiableMap(mixins); }
 
         /** Returns the list of options configured for this command.
          * @return an immutable list of options that this command recognizes. */
@@ -2411,13 +2559,33 @@ public class CommandLine {
         public CommandSpec separator(String separator) { this.separator = separator; return this; }
 
         /** Returns version information for this command, to print to the console when the user specifies an
-         * {@linkplain OptionSpec#versionHelp() option} to request version help. This is not part of the usage help message.*/
-        public String[] version() { return version; }
+         * {@linkplain OptionSpec#versionHelp() option} to request version help. This is not part of the usage help message.
+         * @return the version strings generated by the {@link #versionProvider() version provider} if one is set, otherwise the {@linkplain #version(String...) version literals}*/
+        public String[] version() {
+            if (versionProvider != null) {
+                try {
+                    return versionProvider.getVersion();
+                } catch (Exception ex) {
+                    String msg = "Could not get version info from " + versionProvider + ": " + ex;
+                    throw new ExecutionException(this.commandLine, msg, ex);
+                }
+            }
+            return version;
+        }
 
-        /** Sets version information for this command, to print to the console when the user specifies an
-         * {@linkplain OptionSpec#versionHelp() option} to request version help.
+        /** Sets version information literals for this command, to print to the console when the user specifies an
+         * {@linkplain OptionSpec#versionHelp() option} to request version help. Only used if no {@link #versionProvider() versionProvider} is set.
          * @return this CommandSpec for method chaining */
         public CommandSpec version(String... version) { this.version = version; return this; }
+
+        /** Returns the version provider for this command, to generate the {@link #version()} strings.
+         * @return the version provider or {@code null} if the version strings should be returned from the {@linkplain #version(String...) version literals}.*/
+        public IVersionProvider versionProvider() { return versionProvider; }
+
+        /** Sets version provider for this command, to generate the {@link #version()} strings.
+         * @param versionProvider the version provider to use to generate the version strings, or {@code null} if the {@linkplain #version(String...) version literals} should be used.
+         * @return this CommandSpec for method chaining */
+        public CommandSpec versionProvider(IVersionProvider versionProvider) { this.versionProvider = versionProvider; return this; }
 
         /** Returns the optional heading preceding the header section. Initialized from {@link Command#headerHeading()}, or null. */
         public String headerHeading() { return headerHeading; }
@@ -2544,7 +2712,27 @@ public class CommandLine {
         /** Sets the string representation of this command, used in error messages and trace messages.
          * @param newValue the string representation
          * @return this CommandSpec for method chaining */
-        public CommandSpec toString(String newValue) { this.toString = newValue; return this; }
+        public CommandSpec withToString(String newValue) { this.toString = newValue; return this; }
+
+        boolean isSeparatorInitialized()            { return !empty(separator)            && !CommandSpec.DEFAULT_SEPARATOR.equals(separator); }
+        boolean isNameInitialized()                 { return !empty(name)                 && !CommandSpec.DEFAULT_COMMAND_NAME.equals(name); }
+        boolean isSynopsisHeadingInitialized()      { return !empty(synopsisHeading)      && !CommandSpec.DEFAULT_SYNOPSIS_HEADING.equals(synopsisHeading); }
+        boolean isCommandListHeadingInitialized()   { return !empty(commandListHeading)   && !CommandSpec.DEFAULT_COMMAND_LIST_HEADING.equals(commandListHeading); }
+        boolean isRequiredOptionMarkerInitialized() { return requiredOptionMarker != null && CommandSpec.DEFAULT_REQUIRED_OPTION_MARKER != requiredOptionMarker; }
+        boolean isAbbreviateSynopsisInitialized()   { return abbreviateSynopsis   != null; }
+        boolean isSortOptionsInitialized()          { return sortOptions          != null; }
+        boolean isShowDefaultValuesInitialized()    { return showDefaultValues    != null; }
+        boolean isVersionProviderInitialized()      { return versionProvider      != null && !(versionProvider instanceof NoVersionProvider);}
+        boolean isVersionInitialized()              { return !empty(version); }
+        boolean isCustomSynopsisInitialized()       { return !empty(customSynopsis); }
+        boolean isDescriptionInitialized()          { return !empty(description); }
+        boolean isDescriptionHeadingInitialized()   { return !empty(descriptionHeading); }
+        boolean isHeaderInitialized()               { return !empty(header); }
+        boolean isHeaderHeadingInitialized()        { return !empty(headerHeading); }
+        boolean isFooterInitialized()               { return !empty(footer); }
+        boolean isFooterHeadingInitialized()        { return !empty(footerHeading); }
+        boolean isParameterListHeadingInitialized() { return !empty(parameterListHeading); }
+        boolean isOptionListHeadingInitialized()    { return !empty(optionListHeading); }
     }
     /** Models the shared attributes of {@link OptionSpec} and {@link PositionalParamSpec}.
      * @since 3.0 */
@@ -2723,7 +2911,7 @@ public class CommandLine {
         public T setter(ISetter setter)              { this.setter = setter; return self(); }
 
         /** Sets the string respresentation of this option or positional parameter to the specified value. */
-        public T toString(String toString)           { this.toString = toString; return self(); }
+        public T withToString(String toString)       { this.toString = toString; return self(); }
 
         /** Returns a string respresentation of this option or positional parameter. */
         public String toString() { return toString; }
@@ -2818,7 +3006,7 @@ public class CommandLine {
             if (names == null || names.length == 0 || Arrays.asList(names).contains("")) {
                 throw new InitializationException("Invalid names: " + Arrays.toString(names));
             }
-            if (toString() == null) { toString("option " + names[0]); }
+            if (toString() == null) { withToString("option " + names[0]); }
             return this;
         }
         public boolean isOption()     { return true; }
@@ -2920,7 +3108,7 @@ public class CommandLine {
             super.validate();
             if (index() == null)    { index("*");}
             if (capacity() == null) { capacity = Range.parameterCapacity(arity(), index()); }
-            if (toString() == null) { toString("positional parameter[" + index() + "]"); }
+            if (toString() == null) { withToString("positional parameter[" + index() + "]"); }
             return this;
         }
         public boolean isOption()        { return false; }
