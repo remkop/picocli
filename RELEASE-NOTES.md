@@ -29,7 +29,7 @@ No features have been promoted in this picocli release.
 ## <a name="2.2.1-fixes"></a> Fixed issues
 
 - [#254] Bugfix: Starting from 2.0.3, usage help didn't render empty lines in multi-line descriptions.
-- [#255] Documentation: Update Kotlin example in user manual for the new 1.2 array literal syntax in annotations.
+- [#255] Documentation: Update Kotlin example in user manual for the new Kotlin 1.2 array literal syntax in annotations.
 
 ## <a name="2.2.1-deprecated"></a> Deprecations
 
