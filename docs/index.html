@@ -513,8 +513,8 @@ table.CodeRay td.code>pre{padding:0}
 <div id="header">
 <h1>picocli - a mighty tiny command line interface</h1>
 <div class="details">
-<span id="revnumber">version 2.2.0,</span>
-<span id="revdate">2017-12-21</span>
+<span id="revnumber">version 2.2.1,</span>
+<span id="revdate">2018-01-03</span>
 </div>
 <div id="toc" class="toc2">
 <div id="toctitle">Features</div>
@@ -3618,7 +3618,7 @@ The script body is executed if the user input was valid and did not request usag
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="CodeRay highlight"><code data-lang="groovy"><span class="annotation">@Grab</span>(<span class="string"><span class="delimiter">'</span><span class="content">info.picocli:picocli:2.2.0</span><span class="delimiter">'</span></span>)
+<pre class="CodeRay highlight"><code data-lang="groovy"><span class="annotation">@Grab</span>(<span class="string"><span class="delimiter">'</span><span class="content">info.picocli:picocli:2.2.1</span><span class="delimiter">'</span></span>)
 <span class="annotation">@Command</span>(name = <span class="string"><span class="delimiter">&quot;</span><span class="content">myCommand</span><span class="delimiter">&quot;</span></span>,
   description = <span class="string"><span class="delimiter">&quot;</span><span class="content">@|bold Groovy script|@ @|underline picocli|@ example</span><span class="delimiter">&quot;</span></span>)
 <span class="annotation">@picocli</span>.groovy.PicocliScript
@@ -3657,7 +3657,7 @@ When using a Groovy version older than 2.4.7, use this workaround for the <a hre
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="CodeRay highlight"><code data-lang="groovy"><span class="annotation">@Grab</span>(<span class="string"><span class="delimiter">'</span><span class="content">info.picocli:picocli:2.2.0</span><span class="delimiter">'</span></span>)
+<pre class="CodeRay highlight"><code data-lang="groovy"><span class="annotation">@Grab</span>(<span class="string"><span class="delimiter">'</span><span class="content">info.picocli:picocli:2.2.1</span><span class="delimiter">'</span></span>)
 <span class="annotation">@GrabExclude</span>(<span class="string"><span class="delimiter">'</span><span class="content">org.codehaus.groovy:groovy-all</span><span class="delimiter">'</span></span>) <span class="comment">// work around GROOVY-7613</span>
 ...</code></pre>
 </div>
@@ -3666,16 +3666,45 @@ When using a Groovy version older than 2.4.7, use this workaround for the <a hre
 <div class="sect2">
 <h3 id="_kotlin">16.2. Kotlin</h3>
 <div class="paragraph">
-<p>Kotlin does not allow specifying an array <a href="https://kotlinlang.org/docs/reference/annotations.html">annotation</a>
- attribute as a single value,
-so be aware that you will have to write <code>arrayOf(&#8230;&#8203;)</code> for the <code>names</code>, <code>description</code> and <code>type</code> attributes.</p>
-</div>
-<div class="paragraph">
-<p>(Kotlin <a href="https://blog.jetbrains.com/kotlin/2017/06/early-access-program-for-kotlin-1-2-has-been-started/">1.2 may support</a> array literals like <code>names = ["-h", "--help"]</code> in annotations.)</p>
+<p>Kotlin 1.2 (released Nov 28, 2017) officially supports <a href="http://kotlinlang.org/docs/reference/whatsnew12.html#array-literals-in-annotations">array literals in annotations</a>, allowing a more compact notation:</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="CodeRay highlight"><code data-lang="kotlin">@Command(name = &quot;MyApp&quot;, version = arrayOf(&quot;Kotlin picocli demo v1.0&quot;),
+<pre class="CodeRay highlight"><code data-lang="kotlin">@Command(name = &quot;MyApp&quot;, version = [&quot;Kotlin picocli demo v1.0&quot;],
+        description = [&quot;@|bold Kotlin|@ @|underline picocli|@ example&quot;])
+class MyApp : Runnable {
+
+    @Option(names = [&quot;-c&quot;, &quot;--count&quot;], paramLabel = &quot;COUNT&quot;,
+            description = [&quot;the count&quot;])
+    private val count: Int = 0
+
+    @Option(names = [&quot;-h&quot;, &quot;--help&quot;], usageHelp = true,
+            description = [&quot;print this help and exit&quot;])
+    private val helpRequested: Boolean = false
+
+    @Option(names = [&quot;-V&quot;, &quot;--version&quot;], versionHelp = true,
+            description = [&quot;print version info and exit&quot;])
+    private val versionRequested: Boolean = false
+
+    override fun run() {
+        for (i in 0 until count) {
+            println(&quot;hello world $i...&quot;)
+        }
+    }
+    companion object {
+        @JvmStatic fun main(args: Array&lt;String&gt;) {
+            CommandLine.run(MyApp(), System.err, *args)
+        }
+    }
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Kotlin versions prior to 1.2 did not allow the <a href="https://kotlinlang.org/docs/reference/annotations.html">array literal syntax in annotations</a>, so with older versions of Kotlin you will have to write <code>arrayOf(&#8230;&#8203;)</code> for the <code>names</code>, <code>description</code> and <code>type</code> attributes.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="kotlin">@Command(name = &quot;MyApp&quot;, version = arrayOf(&quot;picocli demo for Kotlin v1.0 and Kotlin v1.1&quot;),
         description = arrayOf(&quot;@|bold Kotlin|@ @|underline picocli|@ example&quot;))
 class MyApp : Runnable {
 
@@ -3800,7 +3829,7 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
 <h3 id="_gradle">22.1. Gradle</h3>
 <div class="listingblock">
 <div class="content">
-<pre>compile 'info.picocli:picocli:2.2.0'</pre>
+<pre>compile 'info.picocli:picocli:2.2.1'</pre>
 </div>
 </div>
 </div>
@@ -3811,7 +3840,7 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
 <pre>&lt;dependency&gt;
   &lt;groupId&gt;info.picocli&lt;/groupId&gt;
   &lt;artifactId&gt;picocli&lt;/artifactId&gt;
-  &lt;version&gt;2.2.0&lt;/version&gt;
+  &lt;version&gt;2.2.1&lt;/version&gt;
 &lt;/dependency&gt;</pre>
 </div>
 </div>
@@ -3820,7 +3849,7 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
 <h3 id="_scala_sbt">22.3. Scala SBT</h3>
 <div class="listingblock">
 <div class="content">
-<pre>libraryDependencies += "info.picocli" % "picocli" % "2.2.0"</pre>
+<pre>libraryDependencies += "info.picocli" % "picocli" % "2.2.1"</pre>
 </div>
 </div>
 </div>
@@ -3828,7 +3857,7 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
 <h3 id="_ivy">22.4. Ivy</h3>
 <div class="listingblock">
 <div class="content">
-<pre>&lt;dependency org="info.picocli" name="picocli" rev="2.2.0" /&gt;</pre>
+<pre>&lt;dependency org="info.picocli" name="picocli" rev="2.2.1" /&gt;</pre>
 </div>
 </div>
 </div>
@@ -3980,7 +4009,7 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
  */</span>
 <span class="directive">public</span> <span class="type">class</span> <span class="class">CommandLine</span> {
     <span class="comment">/** This is picocli version {@value}. */</span>
-    <span class="directive">public</span> <span class="directive">static</span> <span class="directive">final</span> <span class="predefined-type">String</span> VERSION = <span class="string"><span class="delimiter">&quot;</span><span class="content">2.2.0</span><span class="delimiter">&quot;</span></span>;
+    <span class="directive">public</span> <span class="directive">static</span> <span class="directive">final</span> <span class="predefined-type">String</span> VERSION = <span class="string"><span class="delimiter">&quot;</span><span class="content">2.2.1</span><span class="delimiter">&quot;</span></span>;
 
     <span class="directive">private</span> <span class="directive">final</span> Tracer tracer = <span class="keyword">new</span> Tracer();
     <span class="directive">private</span> <span class="directive">final</span> Interpreter interpreter;
@@ -7715,7 +7744,7 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
                 Text EMPTY = Ansi.EMPTY_TEXT;
                 <span class="predefined-type">List</span>&lt;Text<span class="type">[]</span>&gt; result = <span class="keyword">new</span> <span class="predefined-type">ArrayList</span>&lt;Text<span class="type">[]</span>&gt;();
                 Text<span class="type">[]</span> descriptionFirstLines = scheme.ansi().new Text(str(option.description(), <span class="integer">0</span>)).splitLines();
-                <span class="keyword">if</span> (descriptionFirstLines.length == <span class="integer">0</span>) {
+                <span class="keyword">if</span> (descriptionFirstLines.length == <span class="integer">0</span> || (descriptionFirstLines.length == <span class="integer">1</span> &amp;&amp; descriptionFirstLines[<span class="integer">0</span>].plain.length() == <span class="integer">0</span>)) {
                     <span class="keyword">if</span> (showDefault) {
                         descriptionFirstLines = <span class="keyword">new</span> Text<span class="type">[]</span>{scheme.ansi().new Text(<span class="string"><span class="delimiter">&quot;</span><span class="content">  Default: </span><span class="delimiter">&quot;</span></span> + defaultValue)};
                         showDefault = <span class="predefined-constant">false</span>; <span class="comment">// don't show the default value twice</span>
@@ -8658,7 +8687,7 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
 
                 <span class="directive">public</span> Text<span class="type">[]</span> splitLines() {
                     <span class="predefined-type">List</span>&lt;Text&gt; result = <span class="keyword">new</span> <span class="predefined-type">ArrayList</span>&lt;Text&gt;();
-                    <span class="type">boolean</span> trailingEmptyString = <span class="predefined-constant">false</span>;
+                    <span class="type">boolean</span> trailingEmptyString = plain.length() == <span class="integer">0</span>;
                     <span class="type">int</span> start = <span class="integer">0</span>, end = <span class="integer">0</span>;
                     <span class="keyword">for</span> (<span class="type">int</span> i = <span class="integer">0</span>; i &lt; plain.length(); i++, end = i) {
                         <span class="type">char</span> c = plain.charAt(i);
@@ -8975,8 +9004,8 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
 </div>
 <div id="footer">
 <div id="footer-text">
-Version 2.2.0<br>
-Last updated 2017-12-21 21:04:30 +09:00
+Version 2.2.1<br>
+Last updated 2018-01-03 01:28:05 +09:00
 </div>
 </div>
 </body>
