@@ -2155,15 +2155,45 @@ CAUTION: When using a Groovy version older than 2.4.7, use this workaround for t
 ----
 
 === Kotlin
-Kotlin does not allow specifying an array https://kotlinlang.org/docs/reference/annotations.html[annotation]
- attribute as a single value,
-so be aware that you will have to write `arrayOf(...)` for the `names`, `description` and `type` attributes.
 
-(Kotlin https://blog.jetbrains.com/kotlin/2017/06/early-access-program-for-kotlin-1-2-has-been-started/[1.2 may support] array literals like `names = ["-h", "--help"]` in annotations.)
+Kotlin 1.2 (released Nov 28, 2017) officially supports http://kotlinlang.org/docs/reference/whatsnew12.html#array-literals-in-annotations[array literals in annotations], allowing a more compact notation:
 
 [source,kotlin]
 ----
-@Command(name = "MyApp", version = arrayOf("Kotlin picocli demo v1.0"),
+@Command(name = "MyApp", version = ["Kotlin picocli demo v1.0"],
+        description = ["@|bold Kotlin|@ @|underline picocli|@ example"])
+class MyApp : Runnable {
+
+    @Option(names = ["-c", "--count"], paramLabel = "COUNT",
+            description = ["the count"])
+    private val count: Int = 0
+
+    @Option(names = ["-h", "--help"], usageHelp = true,
+            description = ["print this help and exit"])
+    private val helpRequested: Boolean = false
+
+    @Option(names = ["-V", "--version"], versionHelp = true,
+            description = ["print version info and exit"])
+    private val versionRequested: Boolean = false
+
+    override fun run() {
+        for (i in 0 until count) {
+            println("hello world $i...")
+        }
+    }
+    companion object {
+        @JvmStatic fun main(args: Array<String>) {
+            CommandLine.run(MyApp(), System.err, *args)
+        }
+    }
+}
+----
+
+Kotlin versions prior to 1.2 did not allow the https://kotlinlang.org/docs/reference/annotations.html[array literal syntax in annotations], so with older versions of Kotlin you will have to write `arrayOf(...)` for the `names`, `description` and `type` attributes.
+
+[source,kotlin]
+----
+@Command(name = "MyApp", version = arrayOf("picocli demo for Kotlin v1.0 and Kotlin v1.1"),
         description = arrayOf("@|bold Kotlin|@ @|underline picocli|@ example"))
 class MyApp : Runnable {
 
