@@ -2056,7 +2056,7 @@ public class CommandLine {
             boolean hasCommandAnnotation = false;
             while (cls != null) {
                 hasCommandAnnotation |= updateCommandAttributes(cls, result, factory);
-                initFromAnnotatedFields(command, cls, result, factory);
+                hasCommandAnnotation |= initFromAnnotatedFields(command, cls, result, factory);
                 cls = cls.getSuperclass();
             }
             validateCommandSpec(result, hasCommandAnnotation, command);
@@ -2149,10 +2149,12 @@ public class CommandLine {
             }
             return subCommand.name();
         }
-        private static void initFromAnnotatedFields(Object scope, Class<?> cls, CommandSpec receiver, IFactory factory) {
+        private static boolean initFromAnnotatedFields(Object scope, Class<?> cls, CommandSpec receiver, IFactory factory) {
+            boolean result = false;
             for (Field field : cls.getDeclaredFields()) {
                 if (isMixin(field))    {
                     receiver.addMixin(mixinName(field), buildMixinForField(field, scope, factory));
+                    result = true;
                 }
                 if (isArgSpec(field)) {
                     validateArgSpecField(field);
@@ -2160,6 +2162,7 @@ public class CommandLine {
                     if (isParameter(field)) { receiver.add(ArgSpecBuilder.buildPositionalParamSpec(scope, field, factory)); }
                 }
             }
+            return result;
         }
         private static String mixinName(Field field) {
             String annotationName = field.getAnnotation(Mixin.class).name();
