@@ -101,8 +101,8 @@ import static picocli.CommandLine.Help.Column.Overflow.WRAP;
  *     &#064;Option(names = { "-o", "--out" }, description = "Output file (default: print to console)")
  *     private File outputFile;
  *
- *     &#064;Option(names = { "-v", "--verbose"}, description = "Verbosely list files processed")
- *     private boolean verbose;
+ *     &#064;Option(names = { "-v", "--verbose"}, description = "Verbose mode. Helpful for troubleshooting. Multiple -v options increase the verbosity.")
+ *     private boolean[] verbose;
  *
  *     &#064;Option(names = { "-h", "--help", "-?", "-help"}, usageHelp = true, description = "Display this help and exit")
  *     private boolean help;
