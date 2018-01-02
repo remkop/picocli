@@ -2347,19 +2347,28 @@ public class CommandLine {
      * @since 3.0 */
     public static class CommandSpec {
         /** Constant String holding the default synopsis heading: <code>{@value}</code>. */
-        protected static final String DEFAULT_SYNOPSIS_HEADING = "Usage: ";
+        static final String DEFAULT_SYNOPSIS_HEADING = "Usage: ";
 
         /** Constant String holding the default command list heading: <code>{@value}</code>. */
-        protected static final String DEFAULT_COMMAND_LIST_HEADING = "Commands:%n";
+        static final String DEFAULT_COMMAND_LIST_HEADING = "Commands:%n";
 
         /** Constant String holding the default program name: {@code "<main class>" }. */
-        protected static final String DEFAULT_COMMAND_NAME = "<main class>";
+        static final String DEFAULT_COMMAND_NAME = "<main class>";
 
         /** Constant String holding the default string that separates options from option parameters: {@code ' '} ({@value}). */
-        protected static final char DEFAULT_REQUIRED_OPTION_MARKER = ' ';
+        static final char DEFAULT_REQUIRED_OPTION_MARKER = ' ';
 
         /** Constant String holding the default separator between options and option parameters: <code>{@value}</code>.*/
-        protected static final String DEFAULT_SEPARATOR = "=";
+        static final String DEFAULT_SEPARATOR = "=";
+
+        /** Constant Boolean holding the default setting for whether to abbreviate the synopsis: <code>{@value}</code>.*/
+        static final Boolean DEFAULT_ABBREVIATE_SYNOPSIS = Boolean.FALSE;
+
+        /** Constant Boolean holding the default setting for whether to sort the options alphabetically: <code>{@value}</code>.*/
+        static final Boolean DEFAULT_SORT_OPTIONS = Boolean.TRUE;
+
+        /** Constant Boolean holding the default setting for whether to show default values in the usage help message: <code>{@value}</code>.*/
+        static final Boolean DEFAULT_SHOW_DEFAULT_VALUES = Boolean.FALSE;
 
         private final Map<String, CommandLine> commands = new LinkedHashMap<String, CommandLine>();
         private final Map<String, OptionSpec> optionsByNameMap = new LinkedHashMap<String, OptionSpec>();
@@ -2722,9 +2731,9 @@ public class CommandLine {
         boolean isSynopsisHeadingInitialized()      { return !empty(synopsisHeading)      && !CommandSpec.DEFAULT_SYNOPSIS_HEADING.equals(synopsisHeading); }
         boolean isCommandListHeadingInitialized()   { return !empty(commandListHeading)   && !CommandSpec.DEFAULT_COMMAND_LIST_HEADING.equals(commandListHeading); }
         boolean isRequiredOptionMarkerInitialized() { return requiredOptionMarker != null && CommandSpec.DEFAULT_REQUIRED_OPTION_MARKER != requiredOptionMarker; }
-        boolean isAbbreviateSynopsisInitialized()   { return abbreviateSynopsis   != null; }
-        boolean isSortOptionsInitialized()          { return sortOptions          != null; }
-        boolean isShowDefaultValuesInitialized()    { return showDefaultValues    != null; }
+        boolean isAbbreviateSynopsisInitialized()   { return abbreviateSynopsis   != null && !CommandSpec.DEFAULT_ABBREVIATE_SYNOPSIS.equals(abbreviateSynopsis); }
+        boolean isSortOptionsInitialized()          { return sortOptions          != null && !CommandSpec.DEFAULT_SORT_OPTIONS.equals(sortOptions); }
+        boolean isShowDefaultValuesInitialized()    { return showDefaultValues    != null && !CommandSpec.DEFAULT_SHOW_DEFAULT_VALUES.equals(showDefaultValues); }
         boolean isVersionProviderInitialized()      { return versionProvider      != null && !(versionProvider instanceof NoVersionProvider);}
         boolean isVersionInitialized()              { return !empty(version); }
         boolean isCustomSynopsisInitialized()       { return !empty(customSynopsis); }
