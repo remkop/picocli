@@ -960,6 +960,12 @@ From picocli 2.2, the `@Command` annotation supports a `versionProvider` attribu
 Applications may specify a `IVersionProvider` implementation in this attribute, and picocli will instantiate this class
 and invoke it to collect version information.
 
+[source,java]
+----
+@Command(versionProvider = com.my.custom.ManifestVersionProvider.class)
+class App { ... }
+----
+
 This is useful when the version of an application should be detected dynamically at runtime.
 For example, an implementation may return version information obtained from the JAR manifest, a properties file or some other source.
 
