@@ -33,6 +33,7 @@ import picocli.CommandLine.Range;
 import picocli.CommandLine.UnmatchedArgumentException;
 
 import static org.junit.Assert.*;
+import static picocli.HelpTestUtil.setTraceLevel;
 import static picocli.HelpTestUtil.usageString;
 
 public class CommandLineModelTest {
@@ -46,7 +47,7 @@ public class CommandLineModelTest {
 
     @Test
     public void testEmptyModelParse() throws Exception {
-        System.setProperty("picocli.trace", "OFF");
+        setTraceLevel("OFF");
         CommandSpec spec = new CommandSpec();
         CommandLine commandLine = new CommandLine(spec);
         commandLine.setUnmatchedArgumentsAllowed(true);
@@ -84,7 +85,10 @@ public class CommandLineModelTest {
     @Test
     public void testMultiValueOptionArityAloneIsInsufficient() throws Exception {
         CommandSpec spec = new CommandSpec();
-        spec.add(new OptionSpec("-c", "--count").arity("3").type(int.class));
+        OptionSpec option = new OptionSpec("-c", "--count").arity("3").type(int.class);
+        assertFalse(option.isMultiValue());
+
+        spec.add(option);
         CommandLine commandLine = new CommandLine(spec);
         try {
             commandLine.parse("-c", "1", "2", "3");
@@ -97,7 +101,10 @@ public class CommandLineModelTest {
     @Test
     public void testMultiValuePositionalParamArityAloneIsInsufficient() throws Exception {
         CommandSpec spec = new CommandSpec();
-        spec.add(new PositionalParamSpec().index("0").arity("3").type(int.class));
+        PositionalParamSpec positional = new PositionalParamSpec().index("0").arity("3").type(int.class);
+        assertFalse(positional.isMultiValue());
+
+        spec.add(positional);
         CommandLine commandLine = new CommandLine(spec);
         try {
             commandLine.parse("1", "2", "3");
@@ -110,7 +117,10 @@ public class CommandLineModelTest {
     @Test
     public void testMultiValueOptionWithArray() throws Exception {
         CommandSpec spec = new CommandSpec();
-        spec.add(new OptionSpec("-c", "--count").arity("3").type(int[].class));
+        OptionSpec option = new OptionSpec("-c", "--count").arity("3").type(int[].class);
+        assertTrue(option.isMultiValue());
+
+        spec.add(option);
         CommandLine commandLine = new CommandLine(spec);
         commandLine.parse("-c", "1", "2", "3");
         assertArrayEquals(new int[] {1, 2, 3}, (int[]) spec.optionsMap().get("-c").getValue());
@@ -119,7 +129,10 @@ public class CommandLineModelTest {
     @Test
     public void testMultiValuePositionalParamWithArray() throws Exception {
         CommandSpec spec = new CommandSpec();
-        spec.add(new PositionalParamSpec().index("0").arity("3").type(int[].class));
+        PositionalParamSpec positional = new PositionalParamSpec().index("0").arity("3").type(int[].class);
+        assertTrue(positional.isMultiValue());
+
+        spec.add(positional);
         CommandLine commandLine = new CommandLine(spec);
         commandLine.parse("1", "2", "3");
         assertArrayEquals(new int[] {1, 2, 3}, (int[]) spec.positionalParameters().get(0).getValue());
@@ -128,7 +141,10 @@ public class CommandLineModelTest {
     @Test
     public void testMultiValueOptionWithListAndAuxTypes() throws Exception {
         CommandSpec spec = new CommandSpec();
-        spec.add(new OptionSpec("-c", "--count").arity("3").type(List.class).auxiliaryTypes(Integer.class));
+        OptionSpec option = new OptionSpec("-c", "--count").arity("3").type(List.class).auxiliaryTypes(Integer.class);
+        assertTrue(option.isMultiValue());
+
+        spec.add(option);
         CommandLine commandLine = new CommandLine(spec);
         commandLine.parse("-c", "1", "2", "3");
         assertEquals(Arrays.asList(1, 2, 3), spec.optionsMap().get("-c").getValue());
@@ -137,7 +153,10 @@ public class CommandLineModelTest {
     @Test
     public void testMultiValuePositionalParamWithListAndAuxTypes() throws Exception {
         CommandSpec spec = new CommandSpec();
-        spec.add(new PositionalParamSpec().index("0").arity("3").type(List.class).auxiliaryTypes(Integer.class));
+        PositionalParamSpec positional = new PositionalParamSpec().index("0").arity("3").type(List.class).auxiliaryTypes(Integer.class);
+        assertTrue(positional.isMultiValue());
+
+        spec.add(positional);
         CommandLine commandLine = new CommandLine(spec);
         commandLine.parse("1", "2", "3");
         assertEquals(Arrays.asList(1, 2, 3), spec.positionalParameters().get(0).getValue());
@@ -146,7 +165,10 @@ public class CommandLineModelTest {
     @Test
     public void testMultiValueOptionWithListWithoutAuxTypes() throws Exception {
         CommandSpec spec = new CommandSpec();
-        spec.add(new OptionSpec("-c", "--count").arity("3").type(List.class));
+        OptionSpec option = new OptionSpec("-c", "--count").arity("3").type(List.class);
+        assertTrue(option.isMultiValue());
+
+        spec.add(option);
         CommandLine commandLine = new CommandLine(spec);
         commandLine.parse("-c", "1", "2", "3");
         assertEquals(Arrays.asList("1", "2", "3"), spec.optionsMap().get("-c").getValue());
@@ -155,7 +177,10 @@ public class CommandLineModelTest {
     @Test
     public void testMultiValuePositionalParamWithListWithoutAuxTypes() throws Exception {
         CommandSpec spec = new CommandSpec();
-        spec.add(new PositionalParamSpec().index("0").arity("3").type(List.class));
+        PositionalParamSpec positional = new PositionalParamSpec().index("0").arity("3").type(List.class);
+        assertTrue(positional.isMultiValue());
+
+        spec.add(positional);
         CommandLine commandLine = new CommandLine(spec);
         commandLine.parse("1", "2", "3");
         assertEquals(Arrays.asList("1", "2", "3"), spec.positionalParameters().get(0).getValue());
@@ -164,7 +189,10 @@ public class CommandLineModelTest {
     @Test
     public void testMultiValueOptionWithMapAndAuxTypes() throws Exception {
         CommandSpec spec = new CommandSpec();
-        spec.add(new OptionSpec("-c", "--count").arity("3").type(Map.class).auxiliaryTypes(Integer.class, Double.class));
+        OptionSpec option = new OptionSpec("-c", "--count").arity("3").type(Map.class).auxiliaryTypes(Integer.class, Double.class);
+        assertTrue(option.isMultiValue());
+
+        spec.add(option);
         CommandLine commandLine = new CommandLine(spec);
         commandLine.parse("-c", "1=1.0", "2=2.0", "3=3.0");
         Map<Integer, Double> expected = new LinkedHashMap<Integer, Double>();
@@ -177,7 +205,10 @@ public class CommandLineModelTest {
     @Test
     public void testMultiValuePositionalParamWithMapAndAuxTypes() throws Exception {
         CommandSpec spec = new CommandSpec();
-        spec.add(new PositionalParamSpec().index("0").arity("3").type(Map.class).auxiliaryTypes(Integer.class, Double.class));
+        PositionalParamSpec positional = new PositionalParamSpec().index("0").arity("3").type(Map.class).auxiliaryTypes(Integer.class, Double.class);
+        assertTrue(positional.isMultiValue());
+
+        spec.add(positional);
         CommandLine commandLine = new CommandLine(spec);
         commandLine.parse("1=1.0", "2=2.0", "3=3.0");
         Map<Integer, Double> expected = new LinkedHashMap<Integer, Double>();
@@ -190,7 +221,10 @@ public class CommandLineModelTest {
     @Test
     public void testMultiValueOptionWithMapWithoutAuxTypes() throws Exception {
         CommandSpec spec = new CommandSpec();
-        spec.add(new OptionSpec("-c", "--count").arity("3").type(Map.class));
+        OptionSpec option = new OptionSpec("-c", "--count").arity("3").type(Map.class);
+        assertTrue(option.isMultiValue());
+
+        spec.add(option);
         CommandLine commandLine = new CommandLine(spec);
         commandLine.parse("-c", "1=1.0", "2=2.0", "3=3.0");
         Map<String, String> expected = new LinkedHashMap<String, String>();
@@ -203,7 +237,10 @@ public class CommandLineModelTest {
     @Test
     public void testMultiValuePositionalParamWithMapWithoutAuxTypes() throws Exception {
         CommandSpec spec = new CommandSpec();
-        spec.add(new PositionalParamSpec().index("0").arity("3").type(Map.class));
+        PositionalParamSpec positional = new PositionalParamSpec().index("0").arity("3").type(Map.class);
+        assertTrue(positional.isMultiValue());
+
+        spec.add(positional);
         CommandLine commandLine = new CommandLine(spec);
         commandLine.parse("1=1.0", "2=2.0", "3=3.0");
         Map<String, String> expected = new LinkedHashMap<String, String>();
@@ -213,40 +250,201 @@ public class CommandLineModelTest {
         assertEquals(expected, spec.positionalParameters().get(0).getValue());
     }
 
-
     @Test
-    public void testArityAloneDoesNotMakePositionalParamMultiValue() throws Exception {
-        CommandSpec spec = new CommandSpec();
-        spec.add(new PositionalParamSpec().index("0").arity("3").type(int.class));
-        CommandLine commandLine = new CommandLine(spec);
-        try {
-            commandLine.parse("1", "2", "3");
-            fail("Expected exception");
-        } catch (UnmatchedArgumentException ex) {
-            assertEquals("Unmatched arguments [2, 3]", ex.getMessage());
-        }
+    public void testOptionIsOption() throws Exception {
+        assertTrue(new OptionSpec("-x").isOption());
     }
 
-    // TODO tests that verify CommandSpec.validate()
+    @Test
+    public void testOptionIsNotPositional() throws Exception {
+        assertFalse(new OptionSpec("-x").isPositional());
+    }
 
     @Test
-    public void testOptionDefaultTypeIsBoolean() throws Exception {
+    public void testPositionalParamSpecIsNotOption() throws Exception {
+        assertFalse(new PositionalParamSpec().isOption());
+    }
+
+    @Test
+    public void testPositionalParamSpecIsPositional() throws Exception {
+        assertTrue(new PositionalParamSpec().isPositional());
+    }
+
+    @Test
+    public void testOptionAfterValidateDefaultUsageHelpIsFalse() throws Exception {
+        assertFalse(new OptionSpec("-x").validate().usageHelp());
+    }
+    @Test
+    public void testOptionAfterValidateDefaultVersionHelpIsFalse() throws Exception {
+        assertFalse(new OptionSpec("-x").validate().versionHelp());
+    }
+    @Deprecated
+    @Test
+    public void testOptionAfterValidateDefaultHelpIsFalse() throws Exception {
+        assertFalse(new OptionSpec("-x").validate().help());
+    }
+    @Test
+    public void testOptionAfterValidateDefaultHiddenIsFalse() throws Exception {
+        assertFalse(new OptionSpec("-x").validate().hidden());
+    }
+    @Test
+    public void testPositionalAfterValidateDefaultHiddenIsFalse() throws Exception {
+        assertFalse(new PositionalParamSpec().validate().hidden());
+    }
+    @Test
+    public void testOptionAfterValidateDefaultRequiredIsFalse() throws Exception {
+        assertFalse(new OptionSpec("-x").validate().required());
+    }
+    @Test
+    public void testPositionalAfterValidateDefaultRequiredIsFalse() throws Exception {
+        assertFalse(new PositionalParamSpec().validate().required());
+    }
+
+    @Test
+    public void testOptionBeforeValidateDefaultTypeIsNull() throws Exception {
+        assertNull(new OptionSpec("-x").type());
+    }
+
+    @Test
+    public void testOptionBeforeValidateDefaultAuxiliaryTypesIsNull() throws Exception {
+        assertNull(new OptionSpec("-x").auxiliaryTypes());
+    }
+
+    @Test
+    public void testOptionBeforeValidateDefaultArityIsNull() throws Exception {
+        assertNull(new OptionSpec("-x").arity());
+    }
+
+    @Test
+    public void testOptionBeforeValidateDefaultParamLabelIsNull() throws Exception {
+        assertNull(new OptionSpec("-x").paramLabel());
+    }
+
+    @Test
+    public void testOptionBeforeValidateDefaultToStringIsNull() throws Exception {
+        assertNull(new OptionSpec("-x").toString());
+    }
+
+    @Test
+    public void testOptionBeforeValidateDefaultSplitRegexIsNull() throws Exception {
+        assertNull(new OptionSpec("-x").splitRegex());
+    }
+
+    @Test
+    public void testOptionBeforeValidateDefaultConvertersIsNull() throws Exception {
+        assertNull(new OptionSpec("-x").converters());
+    }
+
+    @Test
+    public void testOptionBeforeValidateDefaultDescriptionIsNull() throws Exception {
+        assertNull(new OptionSpec("-x").description());
+    }
+
+    @Test
+    public void testOptionBeforeValidateDefaultGetterIsObjectGetterSetter() throws Exception {
+        assertEquals("picocli.CommandLine$ArgSpec$ObjectGetterSetter", new OptionSpec("-x").getter().getClass().getName());
+    }
+
+    @Test
+    public void testOptionBeforeValidateDefaultSetterIsObjectGetterSetter() throws Exception {
+        assertEquals("picocli.CommandLine$ArgSpec$ObjectGetterSetter", new OptionSpec("-x").setter().getClass().getName());
+    }
+
+    @Test
+    public void testOptionBeforeValidateDefaultDefaultValueIsNull() throws Exception {
+        assertNull(new OptionSpec("-x").defaultValue());
+    }
+
+    @Test
+    public void testOptionBeforeValidateDefaultGetValueIsNull() throws Exception {
+        assertNull(new OptionSpec("-x").getValue());
+    }
+
+
+    @Test
+    public void testPositionalBeforeValidateDefaultTypeIsNull() throws Exception {
+        assertNull(new PositionalParamSpec().type());
+    }
+
+    @Test
+    public void testPositionalBeforeValidateDefaultAuxiliaryTypesIsNull() throws Exception {
+        assertNull(new PositionalParamSpec().auxiliaryTypes());
+    }
+
+    @Test
+    public void testPositionalBeforeValidateDefaultArityIsNull() throws Exception {
+        assertNull(new PositionalParamSpec().arity());
+    }
+
+    @Test
+    public void testPositionalBeforeValidateDefaultParamLabelIsNull() throws Exception {
+        assertNull(new PositionalParamSpec().paramLabel());
+    }
+
+    @Test
+    public void testPositionalBeforeValidateDefaultToStringIsNull() throws Exception {
+        assertNull(new PositionalParamSpec().toString());
+    }
+
+    @Test
+    public void testPositionalBeforeValidateDefaultSplitRegexIsNull() throws Exception {
+        assertNull(new PositionalParamSpec().splitRegex());
+    }
+
+    @Test
+    public void testPositionalBeforeValidateDefaultConvertersIsNull() throws Exception {
+        assertNull(new PositionalParamSpec().converters());
+    }
+
+    @Test
+    public void testPositionalBeforeValidateDefaultDescriptionIsNull() throws Exception {
+        assertNull(new PositionalParamSpec().description());
+    }
+
+    @Test
+    public void testPositionalBeforeValidateDefaultGetterIsObjectGetterSetter() throws Exception {
+        assertEquals("picocli.CommandLine$ArgSpec$ObjectGetterSetter", new PositionalParamSpec().getter().getClass().getName());
+    }
+
+    @Test
+    public void testPositionalBeforeValidateDefaultSetterIsObjectGetterSetter() throws Exception {
+        assertEquals("picocli.CommandLine$ArgSpec$ObjectGetterSetter", new PositionalParamSpec().setter().getClass().getName());
+    }
+
+    @Test
+    public void testPositionalBeforeValidateDefaultDefaultValueIsNull() throws Exception {
+        assertNull(new PositionalParamSpec().defaultValue());
+    }
+
+    @Test
+    public void testPositionalBeforeValidateDefaultGetValueIsNull() throws Exception {
+        assertNull(new PositionalParamSpec().getValue());
+    }
+
+    @Test
+    public void testPositionalBeforeValidateDefaultIndexIsNull() throws Exception {
+        assertNull(new PositionalParamSpec().index());
+    }
+
+
+    @Test
+    public void testOptionAfterValidateDefaultTypeIsBoolean() throws Exception {
         assertEquals(boolean.class, new OptionSpec("-x").validate().type());
     }
 
     @Test
-    public void testOptionDefaultArityIsZeroIfUntyped() throws Exception {
+    public void testOptionAfterValidateDefaultArityIsZeroIfUntyped() throws Exception {
         assertEquals(Range.valueOf("0"), new OptionSpec("-x").validate().arity());
     }
 
     @Test
-    public void testOptionDefaultArityIsZeroIfTypeBoolean() throws Exception {
+    public void testOptionAfterValidateDefaultArityIsZeroIfTypeBoolean() throws Exception {
         assertEquals(Range.valueOf("0"), new OptionSpec("-x").type(boolean.class).validate().arity());
         assertEquals(Range.valueOf("0"), new OptionSpec("-x").type(Boolean.class).validate().arity());
     }
 
     @Test
-    public void testOptionDefaultArityIsOneIfTypeNonBoolean() throws Exception {
+    public void testOptionAfterValidateDefaultArityIsOneIfTypeNonBoolean() throws Exception {
         assertEquals(Range.valueOf("1"), new OptionSpec("-x").type(int.class).validate().arity());
         assertEquals(Range.valueOf("1"), new OptionSpec("-x").type(Integer.class).validate().arity());
         assertEquals(Range.valueOf("1"), new OptionSpec("-x").type(Byte.class).validate().arity());
@@ -254,18 +452,18 @@ public class CommandLineModelTest {
     }
 
     @Test
-    public void testPositionalDefaultArityIsZeroIfUntyped() throws Exception {
+    public void testPositionalAfterValidateDefaultArityIsZeroIfUntyped() throws Exception {
         assertEquals(Range.valueOf("1"), new PositionalParamSpec().validate().arity());
     }
 
     @Test
-    public void testPositionalDefaultArityIsZeroIfTypeBoolean() throws Exception {
+    public void testPositionalAfterValidateDefaultArityIsZeroIfTypeBoolean() throws Exception {
         assertEquals(Range.valueOf("1"), new PositionalParamSpec().type(boolean.class).validate().arity());
         assertEquals(Range.valueOf("1"), new PositionalParamSpec().type(Boolean.class).validate().arity());
     }
 
     @Test
-    public void testPositionalDefaultArityIsOneIfTypeNonBoolean() throws Exception {
+    public void testPositionalAfterValidateDefaultArityIsOneIfTypeNonBoolean() throws Exception {
         assertEquals(Range.valueOf("1"), new PositionalParamSpec().type(int.class).validate().arity());
         assertEquals(Range.valueOf("1"), new PositionalParamSpec().type(Integer.class).validate().arity());
         assertEquals(Range.valueOf("1"), new PositionalParamSpec().type(Byte.class).validate().arity());
@@ -273,45 +471,45 @@ public class CommandLineModelTest {
     }
 
     @Test
-    public void testOptionDefaultSplitRegexIsEmptyString() throws Exception {
+    public void testOptionAfterValidateDefaultSplitRegexIsEmptyString() throws Exception {
         assertEquals("", new OptionSpec("-x").validate().splitRegex());
     }
     @Test
-    public void testPositionalDefaultSplitRegexIsEmptyString() throws Exception {
+    public void testPositionalAfterValidateDefaultSplitRegexIsEmptyString() throws Exception {
         assertEquals("", new PositionalParamSpec().validate().splitRegex());
     }
 
     @Test
-    public void testOptionDefaultDescriptionIsEmptyArray() throws Exception {
+    public void testOptionAfterValidateDefaultDescriptionIsEmptyArray() throws Exception {
         assertArrayEquals(new String[0], new OptionSpec("-x").validate().description());
     }
     @Test
-    public void testPositionalDefaultDescriptionIsEmptyArray() throws Exception {
+    public void testPositionalAfterValidateDefaultDescriptionIsEmptyArray() throws Exception {
         assertArrayEquals(new String[0], new PositionalParamSpec().validate().description());
     }
 
     @Test
-    public void testOptionDefaultParamLabel() throws Exception {
+    public void testOptionAfterValidateDefaultParamLabel() throws Exception {
         assertEquals("PARAM", new OptionSpec("-x").validate().paramLabel());
     }
     @Test
-    public void testPositionalDefaultParamLabel() throws Exception {
+    public void testPositionalAfterValidateDefaultParamLabel() throws Exception {
         assertEquals("PARAM", new PositionalParamSpec().validate().paramLabel());
     }
 
     @Test
-    public void testOptionDefaultAuxiliaryTypesIsDerivedFromType() throws Exception {
+    public void testOptionAfterValidateDefaultAuxiliaryTypesIsDerivedFromType() throws Exception {
         assertArrayEquals(new Class[] {boolean.class}, new OptionSpec("-x").validate().auxiliaryTypes());
         assertArrayEquals(new Class[] {int.class}, new OptionSpec("-x").type(int.class).validate().auxiliaryTypes());
     }
     @Test
-    public void testPositionalDefaultAuxiliaryTypesIsDerivedFromType() throws Exception {
+    public void testPositionalAfterValidateDefaultAuxiliaryTypesIsDerivedFromType() throws Exception {
         assertArrayEquals(new Class[] {String.class}, new PositionalParamSpec().validate().auxiliaryTypes());
         assertArrayEquals(new Class[] {int.class}, new PositionalParamSpec().type(int.class).validate().auxiliaryTypes());
     }
 
     @Test
-    public void testOptionWithArityHasDefaultTypeBoolean() throws Exception {
+    public void testOptionAfterValidateWithArityHasDefaultTypeBoolean() throws Exception {
         assertEquals(boolean.class, new OptionSpec("-x").arity("0").validate().type());
         assertEquals(boolean.class, new OptionSpec("-x").arity("1").validate().type());
         assertEquals(boolean.class, new OptionSpec("-x").arity("0..1").validate().type());
@@ -321,7 +519,7 @@ public class CommandLineModelTest {
     }
 
     @Test
-    public void testOptionAuxiliaryTypeOverridesDefaultType() throws Exception {
+    public void testOptionAfterValidateAuxiliaryTypeOverridesDefaultType() throws Exception {
         assertEquals(int.class, new OptionSpec("-x").auxiliaryTypes(int.class).validate().type());
         assertEquals(int.class, new OptionSpec("-x").arity("0").auxiliaryTypes(int.class).validate().type());
         assertEquals(int.class, new OptionSpec("-x").arity("1").auxiliaryTypes(int.class).validate().type());
@@ -332,22 +530,22 @@ public class CommandLineModelTest {
     }
 
     @Test
-    public void testPositionalDefaultTypeIsString() throws Exception {
+    public void testPositionalAfterValidateDefaultTypeIsString() throws Exception {
         assertEquals(String.class, new PositionalParamSpec().validate().type());
     }
 
     @Test
-    public void testPositionalDefaultIndexIsAll() throws Exception {
+    public void testPositionalAfterValidateDefaultIndexIsAll() throws Exception {
         assertEquals(Range.valueOf("*"), new PositionalParamSpec().validate().index());
     }
 
     @Test
-    public void testPositionalDefaultArityIsOne() throws Exception {
+    public void testPositionalAfterValidateDefaultArityIsOne() throws Exception {
         assertEquals(Range.valueOf("1"), new PositionalParamSpec().validate().arity());
     }
 
     @Test
-    public void testPositionalWithArityHasDefaultTypeString() throws Exception {
+    public void testPositionalAfterValidateWithArityHasDefaultTypeString() throws Exception {
         assertEquals(String.class, new PositionalParamSpec().arity("0").validate().type());
         assertEquals(String.class, new PositionalParamSpec().arity("1").validate().type());
         assertEquals(String.class, new PositionalParamSpec().arity("0..1").validate().type());
@@ -357,7 +555,7 @@ public class CommandLineModelTest {
     }
 
     @Test
-    public void testPositionalAuxiliaryTypeOverridesDefaultType() throws Exception {
+    public void testPositionalAfterValidateAuxiliaryTypeOverridesDefaultType() throws Exception {
         assertEquals(int.class, new PositionalParamSpec().auxiliaryTypes(int.class).validate().type());
         assertEquals(int.class, new PositionalParamSpec().arity("0").auxiliaryTypes(int.class).validate().type());
         assertEquals(int.class, new PositionalParamSpec().arity("1").auxiliaryTypes(int.class).validate().type());
@@ -368,11 +566,11 @@ public class CommandLineModelTest {
     }
 
     @Test
-    public void testOptionDefaultConvertersIsEmpty() throws Exception {
+    public void testOptionAfterValidateDefaultConvertersIsEmpty() throws Exception {
         assertArrayEquals(new ITypeConverter[0], new OptionSpec("-x").validate().converters());
     }
     @Test
-    public void testPositionalDefaultConvertersIsEmpty() throws Exception {
+    public void testPositionalAfterValidateDefaultConvertersIsEmpty() throws Exception {
         assertArrayEquals(new ITypeConverter[0], new PositionalParamSpec().validate().converters());
     }
 
@@ -399,7 +597,6 @@ public class CommandLineModelTest {
         assertEquals(Types.BLOB, spec.positionalParameters().get(1).getValue());
     }
 
-    // TODO split CommandSpecTest, OptionSpecTest and PositionalParamSpecTest into separate classes?
     @Test
     public void testOptionSpecRequiresAtLeastOneName() throws Exception {
         try {
@@ -408,5 +605,10 @@ public class CommandLineModelTest {
         } catch (InitializationException ex) {
             assertEquals("Invalid names: []", ex.getMessage());
         }
+    }
+
+    @Test
+    public void testConversion() {
+        // TODO convertion with aux types (abstract field types, generic map with and without explicit type attribute etc)
     }
 }
