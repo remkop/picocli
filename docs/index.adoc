@@ -843,7 +843,7 @@ Use these attributes for options that request the usage help message or version 
 ----
 App app = CommandLine.populateCommand(new App(), args);
 if (app.usageHelpRequested) {
-   CommandLine.usage(new App(), System.err);
+   CommandLine.usage(new App(), System.out);
    return;
 }
 ----
@@ -859,10 +859,10 @@ usage help or version information was requested (without inspecting the annotate
 CommandLine commandLine = new CommandLine(new App());
 commandLine.parse(args);
 if (commandLine.isUsageHelpRequested()) {
-   commandLine.usage(System.err);
+   commandLine.usage(System.out);
    return;
 } else if (commandLine.isVersionHelpRequested()) {
-   commandLine.printVersionHelp(System.err);
+   commandLine.printVersionHelp(System.out);
    return;
 }
 ----
@@ -902,7 +902,7 @@ annotation and prints it to the specified `PrintStream`.
 CommandLine commandLine = new CommandLine(new VersionedCommand());
 commandLine.parse(args);
 if (commandLine.isVersionHelpRequested()) {
-    commandLine.printVersionHelp(System.err);
+    commandLine.printVersionHelp(System.out);
     return;
 }
 ----
@@ -952,7 +952,7 @@ Format argument values can be passed to the `printVersionHelp` method:
 ----
 String[] args = {"1234", System.getProperty("user.name")};
 new CommandLine(new VersionedCommand())
-    .printVersionHelp(System.err, Help.Ansi.AUTO, args);
+    .printVersionHelp(System.out, Help.Ansi.AUTO, args);
 ----
 
 === Dynamic Version Information
@@ -1791,10 +1791,10 @@ CommandLine cmd = new CommandLine(callable);
 try {
     cmd.parse(args);
     if (cmd.isUsageHelpRequested()) {
-        cmd.usage(System.err);
+        cmd.usage(System.out);
         return null;
     } else if (cmd.isVersionHelpRequested()) {
-        cmd.printVersionHelp(System.err);
+        cmd.printVersionHelp(System.out);
         return null;
     }
     return callable.call();
@@ -2141,7 +2141,7 @@ import static picocli.CommandLine.*
 @Field boolean helpRequested;
 
 //if (helpRequested) { // not necessary: PicocliBaseScript takes care of this
-//    CommandLine.usage(this, System.err); return 0;
+//    CommandLine.usage(this, System.out); return 0;
 //}
 count.times {
    println "hi"
