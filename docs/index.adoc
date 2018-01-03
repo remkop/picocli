@@ -1637,7 +1637,13 @@ class FileUtils {
             description = "this option applies to all subcommands")
     File baseDirectory;
 }
+----
 
+The above top-level command has a `--directory` option that applies to its subcommands.
+The `List` subcommand can use the `@ParentCommand` annotation to get a reference to the parent command, so it can easily access the parent command options.
+
+[source,java]
+----
 @Command(name = "list")
 class List implements Runnable {
 
