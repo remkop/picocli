@@ -27,12 +27,90 @@ import static picocli.HelpTestUtil.usageString;
 public class CommandLineMixinTest {
 
     @Test
-    public void testMixinAnnotationIsSufficientToBeRecognizedAsCommand() {
-        @Command class MixMeIn {}
+    public void testMixinAnnotationMustBeValidCommand_CommandAnnotation() {
+        @Command class ValidMixin {} // valid command because it has @Command annotation
 
-        // note: the only annotation in this class is @Mixin
+        class Receiver { // valid command because it has @Mixin annotated field
+            @Mixin ValidMixin mixMeIn;
+        }
+        new CommandLine(new Receiver(), new InnerClassFactory(this)); // no exception
+    }
+
+    @Test
+    public void testMixinAnnotationMustBeValidCommand_OptionAnnotatedField() {
+        class ValidMixin { // valid command because it has @Option annotation
+            @Option(names = "-a") int a;
+        }
+
+        class Receiver { // valid command because it has @Mixin annotated field
+            @Mixin ValidMixin mixMeIn;
+        }
+        new CommandLine(new Receiver(), new InnerClassFactory(this)); // no exception
+    }
+
+    @Test
+    public void testMixinAnnotationMustBeValidCommand_ParametersAnnotatedField() {
+        class ValidMixin { // valid command because it has @Parameters annotation
+            @Parameters int a;
+        }
+
+        class Receiver { // valid command because it has @Mixin annotated field
+            @Mixin ValidMixin mixMeIn;
+        }
+        new CommandLine(new Receiver(), new InnerClassFactory(this)); // no exception
+    }
+
+    @Test
+    public void testAddMixinMustBeValidCommand_CommandAnnotation() {
+        @Command class ValidMixin {} // valid command because it has @Command annotation
+        @Command class Receiver {}
+        CommandLine commandLine = new CommandLine(new Receiver());
+        commandLine.addMixin("valid", new ValidMixin()); // no exception
+    }
+
+    @Test
+    public void testAddMixinMustBeValidCommand_OptionAnnotatedField() {
+        class ValidMixin { // valid command because it has @Option annotation
+            @Option(names = "-a") int a;
+        }
+        @Command class Receiver {}
+        CommandLine commandLine = new CommandLine(new Receiver());
+        commandLine.addMixin("valid", new ValidMixin()); // no exception
+    }
+
+    @Test
+    public void testAddMixinMustBeValidCommand_ParametersAnnotatedField() {
+        class ValidMixin { // valid command because it has @Parameters annotation
+            @Parameters int a;
+        }
+        @Command class Receiver {}
+        CommandLine commandLine = new CommandLine(new Receiver());
+        commandLine.addMixin("valid", new ValidMixin()); // no exception
+    }
+
+    @Test
+    public void testMixinAnnotationRejectedIfNotAValidCommand() {
+        class Invalid {}
         class Receiver {
-            @Mixin MixMeIn mixMeIn;
+            @Mixin Invalid mixMeIn;
+        }
+        try {
+            new CommandLine(new Receiver(), new InnerClassFactory(this));
+        } catch (InitializationException ex) {
+            assertEquals(Invalid.class.getName() + " is not a command: it has no @Command, @Option or @Parameters annotations", ex.getMessage());
+        }
+    }
+
+    @Test
+    public void testAddMixinRejectedIfNotAValidCommand() {
+        class Invalid {}
+        @Command class Receiver {}
+
+        CommandLine commandLine = new CommandLine(new Receiver());
+        try {
+            commandLine.addMixin("invalid", new Invalid());
+        } catch (InitializationException ex) {
+            assertEquals(Invalid.class.getName() + " is not a command: it has no @Command, @Option or @Parameters annotations", ex.getMessage());
         }
     }
 
