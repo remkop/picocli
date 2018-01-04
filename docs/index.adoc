@@ -1782,6 +1782,102 @@ class GrandChild3Command3 { }
 ...
 ----
 
+== Reuse
+Your application may have options or usage help attributes that are common to all commands.
+To reduce duplication you may want to reuse such options and attributes. Picocli supports both inheritance and composition for reuse.
+
+Let's take some example options and attributes and see how to reuse them. For example:
+
+[source,java]
+----
+@Command(synopsisHeading      = "%nUsage:%n%n",
+         descriptionHeading   = "%nDescription:%n%n",
+         parameterListHeading = "%nParameters:%n%n",
+         optionListHeading    = "%nOptions:%n%n",
+         commandListHeading   = "%nCommands:%n%n")
+public class ReusableOptions {
+
+    @Option(names = { "-h", "-?", "--help" }, usageHelp = true,
+            description = "give this help list")
+    protected boolean helpRequested;
+
+    @Option(names = { "-V", "--version" }, versionHelp = true,
+            description = "print program version")
+    protected boolean versionRequested;
+}
+----
+
+=== Subclassing
+Picocli will walk the class hierarchy to check for annotations, so @Options, @Parameters and @Command attributes declared on a superclass are available in all subclasses.
+
+All commands that extend `ReusableOptions` support the `--help` and `--version` options, and generate a usage help message in the same spacious style. For example:
+
+[source,java]
+----
+@Command(name = "zip", description = "Example reuse by subclassing")
+public class MyCommand extends ReusableOptions { ... }
+----
+
+=== Programmatic Mixin
+Picocli 3.0 introduces the concept of "mixins". Mixins are a convenient alternative to subclassing. Common options, common positional parameters or common usage help attributes can be defined in a separate class. This class can be reused in many other commands, either programmatically with the `CommandLine.addMixin` method, or declaratively with the `@Mixin` annotation.
+
+The below example shows how a mixin can be added programmatically with the `CommandLine.addMixin` method:
+
+[source,java]
+----
+CommandLine commandLine = new CommandLine(new MyCommand());
+
+CommonOptionsAndAttributes mixin = new ReusableOptions();
+commandline.addMixin("myMixin", mixin);
+----
+
+Programmatically added mixins can be accessed via the map returned by `CommandLine.getMixins`. Continuing from the previous example:
+
+[source,java]
+----
+assert mixin == commandLine.getMixins().get("myMixin");
+
+// the options defined in ReusableOptions have been added to the zip command
+commandLine.parse("--help");
+assert commandLine.isUsageHelpRequested();
+assert mixin.helpRequested;
+----
+
+=== `@Mixin` Annotation
+A command can include a mixin by annotating a field with `@Mixin`. All picocli annotations of the mixin are added to the command that declares a `@Mixin` field. For example:
+
+[source,java]
+----
+@Command(name = "zip", description = "Example reuse with @Mixin annotation.")
+public class MyCommand {
+
+    // adds the options defined in ReusableOptions to this command
+    @Mixin
+    private ReusableOptions myMixin;
+    ...
+}
+----
+When using the `@Mixin` annotation, the command can reference the mixed-in object directly (for example, the `MyCommand` can reference its `myMixin` field to access the `ReusableOptions` object.
+
+Mixins added with the `@Mixin` annotation can also be accessed via the map returned by `CommandLine.getMixins`.
+
+
+=== Reuse Combinations
+
+Mixins can be nested. There is no limitation to how deeply mixins can be nested. A mixin may also inherit options, positional parameters and command attributes from a super class.
+
+An option with the same name should not be defined multiple times or a `DuplicateOptionAnnotationsException` is thrown during initialization. Positional parameters for the same position may be defined multiple times, they can co-exist.
+
+Command attributes may be defined multiple times, but only one value is preserved. In order of priority:
+
+. @Command attributes of the command itself
+. Attributes on the @Mixin commands
+. Attributes on nested @Mixin of another @Mixin
+. Attributes on superclass of nested @Mixin
+. Attributes on superclass of @Mixin
+. Attributes on superclass of the command
+. Attributes on programmatically added mixins
+
 
 == Tips & Tricks
 
@@ -2006,49 +2102,6 @@ CommandLine commandLine = new CommandLine(optionArg);
 commandLine.setSeparator(":"); // programmatically set a separator
 commandLine.parse("-f:output.txt");
 assert optionArg.file.equals("output.txt");
-----
-
-
-=== Subclassing for Reuse
-Picocli will walk the class hierarchy to check for annotations, so you can declare common @Options and @Command attributes on a superclass and override these fields or attributes on a subclass.
-
-The below example shows how common options like `help` and `version` can be declared as fields in a superclass so they are available in all subclasses. Similarly, annotating the superclass with default `@Command` attributes means subclasses won't need to set these attributes.
-
-[source,java]
-----
-@Command(synopsisHeading      = "%nUsage:%n%n",
-         descriptionHeading   = "%nDescription:%n%n",
-         parameterListHeading = "%nParameters:%n%n",
-         optionListHeading    = "%nOptions:%n%n",
-         commandListHeading   = "%nCommands:%n%n")
-public abstract class AbstractCommand {
-
-    @Option(names = { "-h", "-?", "--help" }, usageHelp = true,
-            description = "give this help list")
-    protected boolean helpRequested;
-
-    @Option(names = { "-V", "--version" }, versionHelp = true,
-            description = "print program version")
-    protected boolean versionRequested;
-}
-----
-
-All commands that extend `AbstractCommand` support the `--help` and `--version` options, and generate a usage help message in the same spacious style. For example:
-
-[source,java]
-----
-@Command(name        = "zip",
-         header      = "Compresses the specified FILE(s).",
-         description = "The default action is to add or replace zipfile entries from list, " +
-                       "which can include the special name - to compress standard input.",
-         footer      = "Copyright (c) 1990-2008 Info-ZIP - Type 'zip "-L"' for software license.")
-public class ZipCommand extends AbstractCommand {
-    @Option(names = { "-o", "--output" }, description = "output file to write to")
-    private File output;
-
-    @Parameter(paramLabel = "FILE", description = "FILEs to compress")
-    private File[] files;
-}
 ----
 
 
