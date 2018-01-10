@@ -52,7 +52,16 @@ public class InnerClassFactory implements IFactory {
             Constructor<K> constructor = cls.getDeclaredConstructor(outer.getClass());
             return constructor.newInstance(outer);
         } catch (Exception ex) {
-            throw new InitializationException("Could not instantiate " + cls.getName() + ": " + ex, ex);
+            try {
+                return cls.newInstance();
+            } catch (Exception ex2) {
+                try {
+                    Constructor<K> constructor = cls.getDeclaredConstructor();
+                    return constructor.newInstance();
+                } catch (Exception ex3) {
+                    throw new InitializationException("Could not instantiate " + cls.getName() + " either with or without construction parameter " + outer + ": " + ex, ex);
+                }
+            }
         }
     }
 }
