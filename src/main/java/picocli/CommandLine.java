@@ -143,7 +143,7 @@ import static picocli.CommandLine.Help.Column.Overflow.WRAP;
  */
 public class CommandLine {
     /** This is picocli version {@value}. */
-    public static final String VERSION = "3.0.0-alpha1-SNAPSHOT";
+    public static final String VERSION = "3.0.0-alpha-1-SNAPSHOT";
 
     private final Tracer tracer = new Tracer();
     private final CommandSpec commandSpec;
@@ -185,7 +185,7 @@ public class CommandLine {
      * @param command an annotated user object or a {@code CommandSpec} object to initialize from the command line arguments
      * @param factory the factory used to create instances of {@linkplain Command#subcommands() subcommands}, {@linkplain Option#converter() converters}, etc., that are registered declaratively with annotation attributes
      * @throws InitializationException if the specified command object does not have a {@link Command}, {@link Option} or {@link Parameters} annotation
-     */
+     * @since 2.2 */
     public CommandLine(Object command, IFactory factory) {
         this.factory = Assert.notNull(factory, "factory");
         interpreter = new Interpreter();
@@ -501,12 +501,29 @@ public class CommandLine {
      * @return {@code true} if help was printed, {@code false} otherwise
      * @since 2.0 */
     public static boolean printHelpIfRequested(List<CommandLine> parsedCommands, PrintStream out, Help.Ansi ansi) {
-        for (CommandLine parsed : parsedCommands) {
+        for (int i = 0; i < parsedCommands.size(); i++) {
+            CommandLine parsed = parsedCommands.get(i);
             if (parsed.isUsageHelpRequested()) {
                 parsed.usage(out, ansi);
                 return true;
             } else if (parsed.isVersionHelpRequested()) {
                 parsed.printVersionHelp(out, ansi);
+                return true;
+            } else if (i > 0 && parsed.getCommand() instanceof AutoHelpMixin.HelpCommand) {
+                CommandLine main = parsedCommands.get(i - 1);
+                AutoHelpMixin.HelpCommand helpCommand = parsed.getCommand();
+                CommandLine subcommand = null;
+                if (helpCommand.commands.length > 0) {
+                    subcommand = main.getSubcommands().get(helpCommand.commands[0]);
+                    if (subcommand != null) {
+                        subcommand.usage(out, ansi);
+                    } else {
+                        out.println("Unknown subcommand '" + helpCommand.commands[0] + "'.");
+                        main.usage(out, ansi);
+                    }
+                } else {
+                    main.usage(out, ansi);
+                }
                 return true;
             }
         }
@@ -1665,8 +1682,18 @@ public class CommandLine {
         /** Class that can provide version information dynamically at runtime. An implementation may return version
          * information obtained from the JAR manifest, a properties file or some other source.
          * @return a Class that can provide version information dynamically at runtime
-         */
+         * @since 2.2 */
         Class<? extends IVersionProvider> versionProvider() default NoVersionProvider.class;
+
+        /**
+         * Add the auto-help mixin to this command, which adds the {@code -h} and {@code --help} {@linkplain Option#usageHelp() usageHelp} options and the
+         * {@code -V} and {@code --version} {@linkplain Option#versionHelp() versionHelp} options to the options of this command.
+         * Note that if no {@link #version()} or {@link #versionProvider()} is specified, the {@code --version} option will not print anything.
+         * Additionally, this registers a {@code help} subcommand that will print help for the subcommand following it, or for this command
+         * in case no subcommand is specified.
+         * @return whether the auto-help mixin should be added to this command
+         * @since 3.0 */
+        boolean autoHelp() default false;
 
         /** Set the heading preceding the header section. May contain embedded {@linkplain java.util.Formatter format specifiers}.
          * @return the heading preceding the header section
@@ -1800,7 +1827,7 @@ public class CommandLine {
     /**
      * Provides version information for a command. Commands may configure a provider with the
      * {@link Command#versionProvider()} annotation attribute.
-     */
+     * @since 2.2 */
     public interface IVersionProvider {
         /**
          * Returns version information for a command.
@@ -1816,7 +1843,7 @@ public class CommandLine {
     /**
      * Factory for instantiating classes that are registered declaratively with annotation attributes, like
      * {@link Command#subcommands()}, {@link Option#converter()}, {@link Parameters#converter()} and {@link Command#versionProvider()}.
-     */
+     * @since 2.2 */
     public interface IFactory {
         /**
          * Creates and returns an instance of the specified class.
@@ -2092,6 +2119,7 @@ public class CommandLine {
             if (!commandSpec.isVersionProviderInitialized()    && cmd.versionProvider() != NoVersionProvider.class) {
                 commandSpec.versionProvider(DefaultFactory.createVersionProvider(factory, cmd.versionProvider()));
             }
+            if (cmd.autoHelp()) { commandSpec.addMixin("autoHelp", build(new AutoHelpMixin(), factory)); }
             return true;
         }
         private static String[] generateVersionStrings(Class<? extends IVersionProvider> cls, IFactory factory) {
@@ -4134,6 +4162,31 @@ public class CommandLine {
             }
         }
         private BuiltIn() {} // private constructor: never instantiate
+    }
+
+    @Command(subcommands = AutoHelpMixin.HelpCommand.class)
+    static class AutoHelpMixin {
+
+        @Option(names = {"-h", "--help"}, usageHelp = true, description = "Show this help message and exit.")
+        private boolean helpRequested;
+
+        @Option(names = {"-V", "--version"}, versionHelp = true, description = "Print version information and exit.")
+        private boolean versionRequested;
+
+        @Command(name = "help", header = "Displays help information about the specified command",
+                synopsisHeading = "%nUsage: ",
+                description = {"%nWhen no COMMAND is given, the usage help for the main command is displayed.",
+                                "If a COMMAND is specified, the help for that command is shown.%n"})
+        static class HelpCommand implements Runnable {
+
+            @Option(names = {"-h", "--help"}, usageHelp = true, description = "Show usage help for the help command and exit.")
+            private boolean helpRequested;
+
+            @Parameters(paramLabel = "COMMAND", description = "The COMMAND to display the usage help message for.")
+            private String[] commands = new String[0];
+
+            public void run() { }
+        }
     }
 
     /**

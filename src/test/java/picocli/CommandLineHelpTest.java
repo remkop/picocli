@@ -1892,7 +1892,7 @@ public class CommandLineHelpTest {
         assertEquals(String.format("base%n"), help.abbreviatedSynopsis());
         assertEquals(String.format("base%n"), help.detailedSynopsis(0, null, true));
         assertEquals("abcd", help.synopsisHeading());
-        assertEquals(String.format("  sub%n"), help.commandList());
+        assertEquals(String.format("  sub  This is a subcommand%n"), help.commandList());
         assertEquals("c o m m a n d s", help.commandListHeading());
         assertEquals(String.format("base description%n"), help.description());
         assertEquals("base descr heading", help.descriptionHeading());
@@ -2625,7 +2625,7 @@ public class CommandLineHelpTest {
         @Option(names = "-o", required = true) String mandatory;
         @Option(names = "-h", usageHelp = true) boolean isUsageHelpRequested;
     }
-    @Command(name = "sub") static class Sub {}
+    @Command(name = "sub", description = "This is a subcommand") static class Sub {}
 
     @Test
     public void test244SubcommandsNotParsed() {
@@ -2678,5 +2678,226 @@ public class CommandLineHelpTest {
                 "This project is created and maintained by Remko Popma (@remkopopma)%n" +
                 "%n");
         assertEquals(expected, usageString(new Demo(), Help.Ansi.OFF));
+    }
+
+    @Test
+    public void testAutoHelpMixinUsageHelpOption() throws Exception {
+        @Command(autoHelp = true) class App {}
+
+        String[] helpOptions = {"-h", "--help"};
+        for (String option : helpOptions) {
+            List<CommandLine> list = new CommandLine(new App()).parse(option);
+            assertTrue(list.get(0).isUsageHelpRequested());
+
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            assertTrue(CommandLine.printHelpIfRequested(list, new PrintStream(baos), Help.Ansi.OFF));
+
+            String expected = String.format("" +
+                    "Usage: <main class> [-hV]%n" +
+                    "  -h, --help                  Show this help message and exit.%n" +
+                    "  -V, --version               Print version information and exit.%n" +
+                    "Commands:%n" +
+                    "  help  Displays help information about the specified command%n");
+            assertEquals(expected, new String(baos.toByteArray(), "UTF-8"));
+        }
+    }
+
+    @Test
+    public void testAutoHelpMixinVersionHelpOption() throws Exception {
+        @Command(autoHelp = true, version = "1.2.3") class App {}
+
+        String[] versionOptions = {"-V", "--version"};
+        for (String option : versionOptions) {
+            List<CommandLine> list = new CommandLine(new App()).parse(option);
+            assertTrue(list.get(0).isVersionHelpRequested());
+
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            assertTrue(CommandLine.printHelpIfRequested(list, new PrintStream(baos), Help.Ansi.OFF));
+
+            String expected = String.format("1.2.3%n");
+            assertEquals(expected, new String(baos.toByteArray(), "UTF-8"));
+        }
+    }
+
+    @Test
+    public void testAutoHelpMixinUsageHelpSubcommandOnAppWithoutSubcommands() throws Exception {
+        @Command(autoHelp = true) class App {}
+
+        List<CommandLine> list = new CommandLine(new App()).parse("help");
+
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        assertTrue(CommandLine.printHelpIfRequested(list, new PrintStream(baos), Help.Ansi.OFF));
+
+        String expected = String.format("" +
+                "Usage: <main class> [-hV]%n" +
+                "  -h, --help                  Show this help message and exit.%n" +
+                "  -V, --version               Print version information and exit.%n" +
+                "Commands:%n" +
+                "  help  Displays help information about the specified command%n");
+        assertEquals(expected, new String(baos.toByteArray(), "UTF-8"));
+    }
+
+    @Test
+    public void testAutoHelpMixinRunHelpSubcommandOnAppWithoutSubcommands() throws Exception {
+        @Command(autoHelp = true) class App implements Runnable{ public void run(){}}
+
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        CommandLine.run(new App(), new PrintStream(baos), Help.Ansi.OFF, "help");
+
+        String expected = String.format("" +
+                "Usage: <main class> [-hV]%n" +
+                "  -h, --help                  Show this help message and exit.%n" +
+                "  -V, --version               Print version information and exit.%n" +
+                "Commands:%n" +
+                "  help  Displays help information about the specified command%n");
+        assertEquals(expected, new String(baos.toByteArray(), "UTF-8"));
+    }
+
+    @Test
+    public void testAutoHelpMixinUsageHelpSubcommandWithValidCommand() throws Exception {
+        @Command(name = "sub", description = "This is a subcommand") class Sub {}
+        @Command(autoHelp = true, subcommands = Sub.class) class App {}
+
+        List<CommandLine> list = new CommandLine(new App(), new InnerClassFactory(this)).parse("help", "sub");
+
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        assertTrue(CommandLine.printHelpIfRequested(list, new PrintStream(baos), Help.Ansi.OFF));
+
+        String expected = String.format("" +
+                "Usage: sub%n" +
+                "This is a subcommand%n");
+        assertEquals(expected, new String(baos.toByteArray(), "UTF-8"));
+    }
+
+    @Test
+    public void testAutoHelpMixinRunHelpSubcommandWithValidCommand() throws Exception {
+        @Command(autoHelp = true, subcommands = Sub.class) class App implements Runnable{ public void run(){}}
+
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        CommandLine.run(new App(), new PrintStream(baos), Help.Ansi.OFF, "help", "sub");
+
+        String expected = String.format("" +
+                "Usage: sub%n" +
+                "This is a subcommand%n");
+        assertEquals(expected, new String(baos.toByteArray(), "UTF-8"));
+    }
+
+    @Test
+    public void testAutoHelpMixinUsageHelpSubcommandWithInvalidCommand() throws Exception {
+        @Command(name = "sub", description = "This is a subcommand") class Sub {}
+        @Command(autoHelp = true, subcommands = Sub.class) class App {}
+
+        List<CommandLine> list = new CommandLine(new App(), new InnerClassFactory(this)).parse("help", "abcd");
+
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        assertTrue(CommandLine.printHelpIfRequested(list, new PrintStream(baos), Help.Ansi.OFF));
+
+        String expected = String.format("" +
+                "Unknown subcommand 'abcd'.%n" +
+                "Usage: <main class> [-hV]%n" +
+                "  -h, --help                  Show this help message and exit.%n" +
+                "  -V, --version               Print version information and exit.%n" +
+                "Commands:%n" +
+                "  sub   This is a subcommand%n" +
+                "  help  Displays help information about the specified command%n");
+        assertEquals(expected, new String(baos.toByteArray(), "UTF-8"));
+    }
+
+    @Test
+    public void testAutoHelpMixinRunHelpSubcommandWithInvalidCommand() throws Exception {
+        @Command(autoHelp = true, subcommands = Sub.class) class App implements Runnable{ public void run(){}}
+
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        CommandLine.run(new App(), new PrintStream(baos), Help.Ansi.OFF, "help", "abcd");
+
+        String expected = String.format("" +
+                "Unknown subcommand 'abcd'.%n" +
+                "Usage: <main class> [-hV]%n" +
+                "  -h, --help                  Show this help message and exit.%n" +
+                "  -V, --version               Print version information and exit.%n" +
+                "Commands:%n" +
+                "  sub   This is a subcommand%n" +
+                "  help  Displays help information about the specified command%n");
+        assertEquals(expected, new String(baos.toByteArray(), "UTF-8"));
+    }
+
+    @Test
+    public void testAutoHelpMixinUsageHelpSubcommandWithHelpOption() throws Exception {
+        @Command(name = "sub", description = "This is a subcommand") class Sub {}
+        @Command(autoHelp = true, subcommands = Sub.class) class App {}
+
+        List<CommandLine> list = new CommandLine(new App(), new InnerClassFactory(this)).parse("help", "--help");
+
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        assertTrue(CommandLine.printHelpIfRequested(list, new PrintStream(baos), Help.Ansi.OFF));
+
+        String expected = String.format("" +
+                "Displays help information about the specified command%n" +
+                "%n" +
+                "Usage: help [-h] [COMMAND]...%n" +
+                "%n" +
+                "When no COMMAND is given, the usage help for the main command is displayed.%n" +
+                "If a COMMAND is specified, the help for that command is shown.%n" +
+                "%n" +
+                "      [COMMAND]...            The COMMAND to display the usage help message for.%n" +
+                "  -h, --help                  Show usage help for the help command and exit.%n");
+        assertEquals(expected, new String(baos.toByteArray(), "UTF-8"));
+    }
+
+    @Test
+    public void testAutoHelpMixinRunHelpSubcommandWithHelpOption() throws Exception {
+        @Command(autoHelp = true, subcommands = Sub.class) class App implements Runnable{ public void run(){}}
+
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        CommandLine.run(new App(), new PrintStream(baos), Help.Ansi.OFF, "help", "-h");
+
+        String expected = String.format("" +
+                "Displays help information about the specified command%n" +
+                "%n" +
+                "Usage: help [-h] [COMMAND]...%n" +
+                "%n" +
+                "When no COMMAND is given, the usage help for the main command is displayed.%n" +
+                "If a COMMAND is specified, the help for that command is shown.%n" +
+                "%n" +
+                "      [COMMAND]...            The COMMAND to display the usage help message for.%n" +
+                "  -h, --help                  Show usage help for the help command and exit.%n");
+        assertEquals(expected, new String(baos.toByteArray(), "UTF-8"));
+    }
+
+    @Test
+    public void testAutoHelpMixinUsageHelpSubcommandWithoutCommand() throws Exception {
+        @Command(name = "sub", description = "This is a subcommand") class Sub {}
+        @Command(autoHelp = true, subcommands = Sub.class) class App {}
+
+        List<CommandLine> list = new CommandLine(new App(), new InnerClassFactory(this)).parse("help");
+
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        assertTrue(CommandLine.printHelpIfRequested(list, new PrintStream(baos), Help.Ansi.OFF));
+
+        String expected = String.format("" +
+                "Usage: <main class> [-hV]%n" +
+                "  -h, --help                  Show this help message and exit.%n" +
+                "  -V, --version               Print version information and exit.%n" +
+                "Commands:%n" +
+                "  sub   This is a subcommand%n" +
+                "  help  Displays help information about the specified command%n");
+        assertEquals(expected, new String(baos.toByteArray(), "UTF-8"));
+    }
+
+    @Test
+    public void testAutoHelpMixinRunHelpSubcommandWithoutCommand() throws Exception {
+        @Command(autoHelp = true, subcommands = Sub.class) class App implements Runnable{ public void run(){}}
+
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        CommandLine.run(new App(), new PrintStream(baos), Help.Ansi.OFF, "help");
+
+        String expected = String.format("" +
+                "Usage: <main class> [-hV]%n" +
+                "  -h, --help                  Show this help message and exit.%n" +
+                "  -V, --version               Print version information and exit.%n" +
+                "Commands:%n" +
+                "  sub   This is a subcommand%n" +
+                "  help  Displays help information about the specified command%n");
+        assertEquals(expected, new String(baos.toByteArray(), "UTF-8"));
     }
 }

@@ -2147,8 +2147,11 @@ public class CommandLineTest {
             new CommandLine(new MainCommand(), new InnerClassFactory(this));
             fail("Expected exception");
         } catch (InitializationException ex) {
-            String expected = String.format("Could not instantiate %1$s: java.lang.NoSuchMethodException: %1$s.<init>(picocli.CommandLineTest)", ABC.class.getName());
-            assertEquals(expected, ex.getMessage());
+            String prefix = String.format("Could not instantiate %s either with or without construction parameter picocli.CommandLineTest@", ABC.class.getName());
+            String suffix = String.format("java.lang.NoSuchMethodException: %s.<init>(picocli.CommandLineTest)", ABC.class.getName());
+
+            assertTrue(ex.getMessage(), ex.getMessage().startsWith(prefix));
+            assertTrue(ex.getMessage(), ex.getMessage().endsWith(suffix));
         }
     }
     @Test

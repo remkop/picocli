@@ -1,5 +1,108 @@
 # picocli Release Notes
 
+# <a name="3.0.0-alpha-1"></a> Picocli 3.0.0-alpha-1 (UNRELEASED)
+The picocli community is pleased to announce picocli 3.0.0-alpha-1.
+
+This release offers a programmatic API for creating command line applications, as an alternative to annotations. This allows dynamic applications to create command line options on the fly, and also makes it possible to use picocli in other JVM languages that don't support annotations.
+
+Furthermore, the new Mixin feature allows you to reuse common options, parameters and command attributes in multiple applications without copy-and-paste duplication.
+
+Third, the `@Command(autohelp = true)` attribute installs a mixin with the common `--help` and `--version` options, as well as a `help` subcommand.  
+
+This is the nineteenth public release.
+Picocli follows [semantic versioning](http://semver.org/).
+
+## <a name="3.0.0-alpha-1-toc"></a> Table of Contents
+
+* [New and noteworthy](#3.0.0-alpha-1-new)
+* [Promoted features](#3.0.0-alpha-1-promoted)
+* [Fixed issues](#3.0.0-alpha-1-fixes)
+* [Deprecations](#3.0.0-alpha-1-deprecated)
+* [Potential breaking changes](#3.0.0-alpha-1-breaking-changes)
+
+## <a name="3.0.0-alpha-1-new"></a> New and noteworthy
+
+### Programmatic API
+TODO.
+
+### Mixins for Reuse
+TODO.
+
+### Autohelp
+The `@Command(autohelp = true, version = "x.x.x")` attribute installs a mixin with the common `--help` and `--version` options, as well as a `help` subcommand. 
+
+The `version` or `versionProvider` attribute is mandatory if `autohelp = true` is specified on a command.
+
+Following a `git`-like convention, the `help` subcommand prints help for the last specified command, which may precede or follow the `help` subcommand.
+
+For example:
+
+```text
+# print help for the `git` command
+git help
+
+# print help for the `git-add` command
+git help add
+``` 
+
+Combined with the `CommandLine.run`, `CommandLine.call` or `CommandLine.handleParseResult` methods, this is *all* you need to do to give your appplication usage help and version help:
+
+* No need to declare fields annotated with `@Option(names = "--help")` or `@Option(names = "--version")`: these options are added automatically via the built-in AutoHelp mixin.
+* No need to verify if the user requested help or version information: picocli does this automatically.
+* (TODO) User-requested usage help and version information is printed to stdout, error messages for invalid input are printed to stderr.
+
+
+## <a name="3.0.0-alpha-1-promoted"></a> Promoted features
+Promoted features are features that were incubating in previous versions of picocli but are now supported and subject to backwards compatibility. 
+
+No features have been promoted in this picocli release.
+
+## <a name="3.0.0-alpha-1-fixes"></a> Fixed issues
+
+- [#245] API Change: From 3.0, picocli offers an API for programmatic configuration.
+- [#144] API Change: Support for mixins for reusing common options, parameters and command attributes.
+- [#175] New Feature: `autohelp` attribute to conveniently activate fully automatic help including a help subcommand.
+
+## <a name="3.0.0-alpha-1-deprecated"></a> Deprecations
+
+The `picocli.CommandLine.Help::Help(Object, CommandLine.Help.ColorScheme)` constructor has been deprecated. Use the `picocli.CommandLine.Help::Help(CommandLine.CommandSpec, CommandLine.Help.ColorScheme)` constructor instead. 
+
+## <a name="3.0.0-alpha-1-breaking-changes"></a> Potential breaking changes
+
+### Help API Changes
+The following public fields were removed from the `picocli.CommandLine.Help` class. Instead, set these attributes on a `CommandLine.CommandSpec` object passed to any of the `Help` constructors.
+
+* abbreviateSynopsis 
+* commandListHeading 
+* commandName 
+* customSynopsis 
+* description 
+* descriptionHeading 
+* footer 
+* footerHeading 
+* header 
+* headerHeading 
+* optionFields 
+* optionListHeading 
+* parameterLabelRenderer - replaced with the `Help.parameterLabelRenderer()` method
+* parameterListHeading 
+* requiredOptionMarker
+* separator 
+* showDefaultValues 
+* sortOptions 
+* synopsisHeading 
+
+Method signature changes on inner classes and interfaces of the `Help` class:
+
+* Interface method `CommandLine.Help.IOptionRenderer::render` signature changed: `CommandLine.Option` and `Field` parameters are replaced with a single `CommandLine.OptionSpec` parameter.
+* Interface method `CommandLine.Help.IParameterRenderer::render` signature changed: `CommandLine.Parameters` and `Field` parameters are replaced with a single `CommandLine.PositionalParamSpec` parameter.
+* Interface method `CommandLine.Help.IParamLabelRenderer::renderParameterLabel` signature changed: `Field` parameter replaced with `CommandLine.ArgSpec` parameter.
+* Class `CommandLine.Help.Layout` all methods changed: `Field` parameters replaced by `CommandLine.ArgSpec`, `CommandLine.OptionSpec` and `CommandLine.PositionalParamSpec` parameters.
+
+
+TBD: should `Help.Ansi.Text::append` modify the specified `Text` instance instead of returning a new `Text` instance like it currently does?
+
+
 # <a name="2.2.1"></a> Picocli 2.2.1
 The picocli community is pleased to announce picocli 2.2.1.
 
