@@ -66,12 +66,14 @@ assert  app.inputFiles != null && app.inputFiles.length == 2;
 ----
 
 Here is a small example application that uses the `CommandLine.call` <<Less Boilerplate,convenience method>>
-to do parsing and error handling in one line of code.
+to do parsing and error handling in one line of code. The <<Fully Automatic Help,autoHelp>> attribute is all
+that is needed to give your application usage help and version help.
 
 [[CheckSum-application]]
 [source,java]
 ----
-@Command(name = "checksum", description = "Prints the checksum (MD5 by default) of a file to STDOUT.")
+@Command(description = "Prints the checksum (MD5 by default) of a file to STDOUT.",
+         name = "checksum", autoHelp = true, version = "checksum 3.0")
 class CheckSum implements Callable<Void> {
 
     @Parameters(index = "0", description = "The file whose checksum to calculate.")
@@ -79,9 +81,6 @@ class CheckSum implements Callable<Void> {
 
     @Option(names = {"-a", "--algorithm"}, description = "MD5, SHA-1, SHA-256, ...")
     private String algorithm = "MD5";
-
-    @Option(names = {"-h", "--help"}, usageHelp = true, description = "Show this help message and exit.")
-    private boolean helpRequested;
 
     public static void main(String[] args) throws Exception {
         // CheckSum implements Callable, so parsing, error handling and handling user
@@ -767,12 +766,14 @@ an option or positional parameter. For example:
 
 [source,java]
 ----
-@Parameters(arity = "3") String[] values;
+class OnlyThree {
+    @Parameters(arity = "3") String[] values;
+}
 ----
 The command has only one annotated field, `values`, and it expects exactly three arguments,
 so the following input results in an `UnmatchedArgumentException`:
 ----
-<command> 1 2 3 4 5
+java OnlyThree 1 2 3 4 5
 ----
 
 Applications can change this by calling `CommandLine.setUnmatchedArgumentsAllowed(true)` before parsing the input.
@@ -823,11 +824,12 @@ Use the <<Double dash (`--`),end-of-options delimiter>> (`--`) to ensure that ar
 Everything following the `--` end-of-options delimiter is treated as positional parameters by the parser, so
 the above input is treated as three positional parameters.
 
-== Help Options
+== Help
+=== Help Options
 Options with the attribute `versionHelp = true`, `usageHelp = true` or `help = true` are special:
 if one of the command line arguments is a "help" option, picocli will stop parsing the remaining arguments and will not check for required options.
 
-Picocli v0.9.8 introduced two new option attributes, `versionHelp` and `usageHelp`, and from v2.0, the `help` attribute is deprecated.
+For example:
 
 [source,java]
 ----
@@ -848,7 +850,7 @@ if (app.usageHelpRequested) {
 }
 ----
 
-Since v0.9.8, the `CommandLine` class offers two methods that allow external components to detect whether
+The `CommandLine` class offers two methods that allow external components to detect whether
 usage help or version information was requested (without inspecting the annotated domain object):
 
 * `CommandLine.isUsageHelpRequested()` returns `true` if the parser matched an option annotated with `usageHelp=true`
@@ -867,7 +869,9 @@ if (commandLine.isUsageHelpRequested()) {
 }
 ----
 
-From picocli v2.0, the <<Less Boilerplate,convenience methods>> will automatically print usage help and version information when requested with the `versionHelp` and `usageHelp` option attributes (but not for the `help` attribute).
+From picocli v2.0, the <<Less Boilerplate,convenience methods>> will automatically print usage help and version information
+when requested with the `versionHelp` and `usageHelp` option attributes (but not for the `help` attribute).
+From v2.0, the `help` attribute is deprecated.
 
 Methods that automatically print help:
 
@@ -880,6 +884,59 @@ Methods that *do not* automatically print help:
 
 * `CommandLine::parse`
 * `CommandLine::populateCommand`
+
+=== Fully Automatic Help
+Picocli 3.0 introduced the `autoHelp` command attribute. When this attribute is set to `true`, picocli adds a <<Mixins,mixin>> to the
+command that adds <<Help Options,`usageHelp`>> and <<Help Options,`versionHelp`>> options to the command. For example:
+
+[source,java]
+----
+@Command(autoHelp = true, version = "auto help demo - picocli 3.0")
+class AutoHelpDemo implements Runnable {
+
+    @Option(names = "--option", description = "Some option.")
+    String option;
+
+    @Override public void run() { ... }
+}
+----
+
+Commands with `autoHelp` do not need to explicitly declare `usageHelp` or `versionHelp` options any more.
+The usage help message for the above example looks like this:
+----
+Usage: <main class> [-hV] [--option=<option>]
+      --option=<option>       Some option.
+  -h, --help                  Show this help message and exit.
+  -V, --version               Print version information and exit.
+Commands:
+  help  Displays help information about the specified command
+----
+
+Auto-help also registers a `help` <<Usage Help for Subcommands,subcommand>> that will print help for the subcommand following it, or for this command in case no subcommand is specified. For example:
+
+[source,bash]
+----
+# two ways to get usage help for a subcommand:
+maincommand help subcommand
+maincommand subcommand --help
+
+# two ways to get usage help for the main command:
+maincommand help
+maincommand --help
+----
+
+The `autoHelp` attribute is useful in combination with the <<Less Boilerplate,convenience methods>> that automatically print help:
+
+* `CommandLine::call`
+* `CommandLine::run`
+* `CommandLine::parseWithHandler` (with the built-in `Run...` handlers)
+* `CommandLine::parseWithHandlers` (with the built-in `Run...` handlers)
+
+The following methods *do not* automatically print help:
+
+* `CommandLine::parse`
+* `CommandLine::populateCommand`
+
 
 == Version Help
 === Static Version Information
@@ -1685,6 +1742,7 @@ CommandLine commandLine = new CommandLine(new Git());
 // add subcommands programmatically (not necessary if the parent command
 // declaratively registers the subcommands via annotation)
 commandLine.addSubcommand("status",   new GitStatus());
+commandLine.addSubcommand("commit",   new GitCommit());
 ...
 commandLine.usage(System.out);
 ----
@@ -1694,13 +1752,14 @@ Usage: git [-hV] [--git-dir=<gitDir>]
 Git is a fast, scalable, distributed revision control system with an unusually
 rich command set that provides both high-level operations and full access to
 internals.
-  -V, --version               Prints version information and exits
-  -h, --help                  Prints this help message and exits
-      --git-dir=<gitDir>      Set the path to the repository
+      --git-dir=<gitDir>      Set the path to the repository.
+  -h, --help                  Show this help message and exit.
+  -V, --version               Print version information and exit.
 
 Commands:
 
 The most commonly used git commands are:
+  help      Displays help information about the specified command
   status    Show the working tree status.
   commit    Record changes to the repository.
   add       Add file contents to the index.
@@ -1717,24 +1776,20 @@ The most commonly used git commands are:
 The above usage help message is produced from the annotations on the class below:
 [source,java]
 ----
-@Command(name = "git", sortOptions = false,
+@Command(name = "git", autoHelp = true, version = "subcommand demo - picocli 3.0",
         description = "Git is a fast, scalable, distributed revision control " +
                       "system with an unusually rich command set that provides both " +
                       "high-level operations and full access to internals.",
         commandListHeading = "%nCommands:%n%nThe most commonly used git commands are:%n")
 class Git {
-  @Option(names = {"-V", "--version"}, versionHelp = true,
-          description = "Prints version information and exits")
-  private boolean versionRequested;
 
-  @Option(names = {"-h", "--help"}, usageHelp = true,
-          description = "Prints this help message and exits")
-  private boolean helpRequested;
-
-  @Option(names = "--git-dir", description = "Set the path to the repository")
+  @Option(names = "--git-dir", description = "Set the path to the repository.")
   private File gitDir;
 }
 ----
+
+The above example uses the <<Fully Automatic Help,autoHelp>> attribute to mix in
+<<Help Options,`usageHelp`>> and <<Help Options,`versionHelp`>> options and register a `help` subcommand.
 
 The usage help message for each subcommand is produced by calling `CommandLine.usage(new SubCommand(), out)`.
 For example, see <<Section Headings>> for an example subcommand (`git-commit`), which produces the help message shown
@@ -1784,9 +1839,9 @@ class GrandChild3Command3 { }
 
 == Reuse
 You may find yourself defining the same options, parameters or command attributes in many command line applications.
-To reduce duplication, picocli supports both inheritance and composition as ways to reuse such options and attributes.
+To reduce duplication, picocli supports both subclassing and mixins as ways to reuse such options and attributes.
 
-Let's take a look at an example for how both mechanisms for reuse work. The first step is to extract these options, parameters and command attributes into a separate class. For example:
+For both mechanisms, the first step is to extract these options, parameters and command attributes into a separate class. Below is an example class, `ReusableOptions`, that we will use in example scenarios in this chapter:
 
 [source,java]
 ----
@@ -1807,9 +1862,9 @@ This defines some usage help attributes that give a spacious layout, and a `verb
 
 
 === Subclassing
-One way to reuse the above option and attributes is to extend the class. Picocli will walk the class hierarchy to check for annotations, so @Options, @Parameters and @Command attributes declared on a superclass are available in all subclasses.
+One way to reuse the above option and attributes is to extend the class. Picocli will walk the class hierarchy to check for annotations, so `@Options`, `@Parameters` and `@Command` attributes declared on a superclass are available in all subclasses.
 
-All commands that extend `ReusableOptions` support the `--verbose` option, and generate a usage help message in the same spacious style. For example:
+For example, all commands that extend the <<Reuse,above sample>> `ReusableOptions` class will inherit the `--verbose` option, and generate a usage help message in the same spacious style. Example code:
 
 [source,java]
 ----
@@ -1817,10 +1872,19 @@ All commands that extend `ReusableOptions` support the `--verbose` option, and g
 public class MyCommand extends ReusableOptions { ... }
 ----
 
-=== Programmatic Mixin
-Picocli 3.0 introduces the concept of "mixins". Mixins are a convenient alternative to subclassing. Common options, positional parameters or command attributes defined in a separate class can be reused in other commands, either programmatically with the `CommandLine.addMixin` method, or declaratively with the `@Mixin` annotation.
+=== Mixins
+Picocli 3.0 introduces the concept of "mixins". Mixins are a convenient alternative to subclassing:
+picocli annotations from _any_ class can be added to ("mixed in" with) another command.
+This includes options, positional parameters, subcommands and command attributes.
+Picocli <<Fully Automatic Help,autoHelp>> internally uses a mixin.
 
-The below example shows how a mixin can be added programmatically with the `CommandLine.addMixin` method:
+A mixin is a separate class with options, positional parameters, subcommands and command attributes
+that you want to reuse in other commands.
+Mixins can be installed by calling the `CommandLine.addMixin` method with an object of this class, or annotating a field in your command with `@Mixin`.
+
+==== Programmatic Mixins
+The below example shows how a mixin can be added programmatically with the `CommandLine.addMixin` method.
+We use the sample `ReusableOptions` class <<Reuse,defined above>> as the mixin:
 
 [source,java]
 ----
@@ -1834,15 +1898,16 @@ Programmatically added mixins can be accessed via the map returned by `CommandLi
 
 [source,java]
 ----
-assert mixin == commandLine.getMixins().get("myMixin");
+commandLine.parse("-vvv");
 
 // the options defined in ReusableOptions have been added to the zip command
-commandLine.parse("-vvv");
+assert mixin == commandLine.getMixins().get("myMixin");
 assert mixin.verbosity.length == 3;
 ----
 
-=== `@Mixin` Annotation
-From picocli 3.0, a command can include a mixin by annotating a field with `@Mixin`. All picocli annotations found in the mixin class are added to the command that has a field annotated with `@Mixin`. For example:
+==== `@Mixin` Annotation
+A command can also include a mixin by annotating a field with `@Mixin`. All picocli annotations found in the mixin class
+are added to the command that has a field annotated with `@Mixin`. For example, again using the sample `ReusableOptions` class <<Reuse,defined above>>:
 
 [source,java]
 ----
@@ -1855,15 +1920,16 @@ public class MyCommand {
     ...
 }
 ----
-When using the `@Mixin` annotation, the command can reference the mixed-in object directly (for example, the `MyCommand` can reference its `myMixin` field to access the `ReusableOptions` object.
+In addition to adding the options, subcommands and command attributes of the mixed-in object to the command,
+the mixed-in object is also injected into the field annotated with `@Mixin`, making it trival for the command to reference the mixed-in object if necessary.
 
 [source,java]
 ----
 MyCommand zip = new MyCommand();
 CommandLine commandLine = new CommandLine(zip);
+commandLine.parse("-vvv");
 
 // the options defined in ReusableOptions have been added to the zip command
-commandLine.parse("-vvv");
 assert zip.myMixin.verbosity.length == 3;
 ----
 
@@ -1876,11 +1942,11 @@ The above mechanisms can be combined in any way. Mixins can be nested, and there
 
 An option with the same name should not be defined multiple times or a `DuplicateOptionAnnotationsException` is thrown during initialization. Positional parameters for the same position may be defined multiple times, they can co-exist.
 
-Command attributes may be defined multiple times, but only one value is preserved. In order of priority:
+Command attributes may be defined multiple times, but only one value is preserved. In case a command attribute is defined multiple times, the definition earlier in the following list takes priority over later in the list:
 
 . @Command attributes of the command itself
 . Attributes on the @Mixin commands
-. Attributes on nested @Mixin of another @Mixin
+. Attributes on a @Mixin nested in a @Mixin of the command
 . Attributes on superclass of nested @Mixin
 . Attributes on superclass of @Mixin
 . Attributes on superclass of the command

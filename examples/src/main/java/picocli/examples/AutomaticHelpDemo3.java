@@ -16,39 +16,26 @@
 package picocli.examples;
 
 import picocli.CommandLine;
+
 import static picocli.CommandLine.*;
 
-@Command(version = "Help demo for picocli v2.0", header = "%nAutomatic Help Demo%n",
+@Command(version = "Help demo for picocli v3.0", header = "%nFully Automatic Help Demo%n",
         description = "Prints usage help and version help when requested.%n",
-        footer = "See AutomaticHelpDemo3 for the more compact syntax supported by picocli 3.0.")
-public class AutomaticHelpDemo implements Runnable {
+        autoHelp = true)
+public class AutomaticHelpDemo3 implements Runnable {
 
     @Option(names = "--count", description = "The number of times to repeat.")
     int count;
 
-    @Option(names = {"-h", "--help"}, usageHelp = true,
-            description = "Print usage help and exit.")
-    boolean usageHelpRequested;
-
-    @Option(names = {"-V", "--version"}, versionHelp = true,
-            description = "Print version information and exit.")
-    boolean versionHelpRequested;
-
     public void run() {
-        // NOTE: code like below is no longer required:
-        //
-        // if (usageHelpRequested) {
-        //     new CommandLine(this).usage(System.err);
-        // } else if (versionHelpRequested) {
-        //     new CommandLine(this).printVersionHelp(System.err);
-        // } else { ... the business logic
-
         for (int i = 0; i < count; i++) {
             System.out.println("Hello world");
         }
     }
 
+    // to run, execute:
+    // java picocli.examples.AutomaticHelpDemo3 help
     public static void main(String... args) {
-        CommandLine.run(new AutomaticHelpDemo(), System.err, args);
+        CommandLine.run(new AutomaticHelpDemo3(), System.out, args);
     }
 }

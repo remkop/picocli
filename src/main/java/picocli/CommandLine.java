@@ -1686,11 +1686,23 @@ public class CommandLine {
         Class<? extends IVersionProvider> versionProvider() default NoVersionProvider.class;
 
         /**
-         * Add the auto-help mixin to this command, which adds the {@code -h} and {@code --help} {@linkplain Option#usageHelp() usageHelp} options and the
-         * {@code -V} and {@code --version} {@linkplain Option#versionHelp() versionHelp} options to the options of this command.
+         * Add the auto-help mixin to this command, which adds {@code -h} and {@code --help} {@linkplain Option#usageHelp() usageHelp}
+         * options and {@code -V} and {@code --version} {@linkplain Option#versionHelp() versionHelp} options to the options
+         * of this command, as well as a {@code help} subcommand (more information below).
+         * <p>
          * Note that if no {@link #version()} or {@link #versionProvider()} is specified, the {@code --version} option will not print anything.
-         * Additionally, this registers a {@code help} subcommand that will print help for the subcommand following it, or for this command
-         * in case no subcommand is specified.
+         * </p><p>
+         * Auto-help also registers a {@code help} subcommand that will print help for the subcommand following it, or
+         * for this command in case no subcommand is specified. For example:
+         * </p><pre>
+         * # two ways to get usage help for a subcommand:
+         * maincommand help subcommand
+         * maincommand subcommand --help
+         *
+         * # two ways to get usage help for the main command:
+         * maincommand help
+         * maincommand --help
+         * </pre>
          * @return whether the auto-help mixin should be added to this command
          * @since 3.0 */
         boolean autoHelp() default false;

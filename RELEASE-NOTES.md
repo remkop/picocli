@@ -3,11 +3,11 @@
 # <a name="3.0.0-alpha-1"></a> Picocli 3.0.0-alpha-1 (UNRELEASED)
 The picocli community is pleased to announce picocli 3.0.0-alpha-1.
 
-This release offers a programmatic API for creating command line applications, as an alternative to annotations. This allows dynamic applications to create command line options on the fly, and also makes it possible to use picocli in other JVM languages that don't support annotations.
+This release offers a programmatic API for creating command line applications, as an alternative to annotations. This allows applications to dynamically create command line options on the fly, and also makes it possible to create idiomatic domain-specific languages for using picocli in other JVM languages.
 
-Furthermore, the new Mixin feature allows you to reuse common options, parameters and command attributes in multiple applications without copy-and-paste duplication.
+This release also introduces Mixins as a new feature that allows reusing common options, parameters and command attributes in multiple applications without copy-and-paste duplication.
 
-Third, the `@Command(autohelp = true)` attribute installs a mixin with the common `--help` and `--version` options, as well as a `help` subcommand.  
+Third, the `@Command(autoHelp = true)` attribute adds `--help` and `--version` options and a `help` subcommand to your command.
 
 This is the nineteenth public release.
 Picocli follows [semantic versioning](http://semver.org/).
@@ -25,30 +25,30 @@ Picocli follows [semantic versioning](http://semver.org/).
 ### Programmatic API
 TODO.
 
+Note that the programmatic API is incubating and the API may change in subsequent releases.
+
 ### Mixins for Reuse
 TODO.
 
 ### Autohelp
-The `@Command(autohelp = true, version = "x.x.x")` attribute installs a mixin with the common `--help` and `--version` options, as well as a `help` subcommand. 
-
-The `version` or `versionProvider` attribute is mandatory if `autohelp = true` is specified on a command.
+The `@Command(autoHelp = true)` attribute installs a mixin with the common `--help` and `--version` options, as well as a `help` subcommand. 
 
 Following a `git`-like convention, the `help` subcommand prints help for the last specified command, which may precede or follow the `help` subcommand.
 
 For example:
 
 ```text
-# print help for the `git` command
-git help
+# print help for the `maincommand` command
+maincommand help
 
-# print help for the `git-add` command
-git help add
+# print help for the `subcommand` command
+maincommand help subcommand
 ``` 
 
-Combined with the `CommandLine.run`, `CommandLine.call` or `CommandLine.handleParseResult` methods, this is *all* you need to do to give your appplication usage help and version help:
+Combined with the `CommandLine.run`, `CommandLine.call` or `CommandLine.handleParseResult` methods, this is *all* you need to do to give your application usage help and version help:
 
 * No need to declare fields annotated with `@Option(names = "--help")` or `@Option(names = "--version")`: these options are added automatically via the built-in AutoHelp mixin.
-* No need to verify if the user requested help or version information: picocli does this automatically.
+* No need to verify if the user requested help or version information: picocli does this automatically in the convenience methods.
 * (TODO) User-requested usage help and version information is printed to stdout, error messages for invalid input are printed to stderr.
 
 
@@ -60,8 +60,8 @@ No features have been promoted in this picocli release.
 ## <a name="3.0.0-alpha-1-fixes"></a> Fixed issues
 
 - [#245] API Change: From 3.0, picocli offers an API for programmatic configuration.
-- [#144] API Change: Support for mixins for reusing common options, parameters and command attributes.
-- [#175] New Feature: `autohelp` attribute to conveniently activate fully automatic help including a help subcommand.
+- [#144] API Change: Added suupport for mixins to allow reusing common options, positional parameters, subcommands and command attributes from any object.
+- [#175] New Feature: `autoHelp` attribute to conveniently activate fully automatic help.
 
 ## <a name="3.0.0-alpha-1-deprecated"></a> Deprecations
 

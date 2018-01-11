@@ -307,17 +307,12 @@ public class Demo implements Runnable {
     static
     // tag::Git[]
     // tag::Git-declaration[]
-    @Command(name = "git", sortOptions = false,
+    @Command(name = "git", autoHelp = true, version = "subcommand demo 3.0",
             description = "Git is a fast, scalable, distributed revision control " +
                           "system with an unusually rich command set that provides both " +
                           "high-level operations and full access to internals.",
             commandListHeading = "%nCommands:%n%nThe most commonly used git commands are:%n")
     class Git { // end::Git-declaration[]
-        @Option(names = {"-V", "--version"}, help = true, description = "Prints version information and exits")
-        boolean isVersionRequested;
-
-        @Option(names = {"-h", "--help"}, help = true, description = "Prints this help message and exits")
-        boolean isHelpRequested;
 
         @Option(names = "--git-dir", description = "Set the path to the repository")
         File gitDir;
@@ -478,13 +473,14 @@ public class Demo implements Runnable {
             "Git is a fast, scalable, distributed revision control system with an unusually%n" +
             "rich command set that provides both high-level operations and full access to%n" +
             "internals.%n" +
-            "  -V, --version               Prints version information and exits%n" +
-            "  -h, --help                  Prints this help message and exits%n" +
             "      --git-dir=<gitDir>      Set the path to the repository%n" +
+            "  -h, --help                  Show this help message and exit.%n" +
+            "  -V, --version               Print version information and exit.%n" +
             "%n" +
             "Commands:%n" +
             "%n" +
             "The most commonly used git commands are:%n" +
+            "  help      Displays help information about the specified command%n" +
             "  status    Show the working tree status.%n" +
             "  commit    Record changes to the repository.%n" +
             "  add       Add file contents to the index.%n" +
@@ -497,28 +493,29 @@ public class Demo implements Runnable {
             "  rebase    Forward-port local commits to the updated upstream head.%n" +
             "  tag       Create, list, delete or verify a tag object signed with GPG.%n";
 
-    static final String EXPECTED_USAGE_MAIN_ANSI = "Usage: @|bold git|@ [@|yellow -hV|@] [@|yellow --git-dir|@=@|italic <gitDir>|@]%n" +
+    static final String EXPECTED_USAGE_MAIN_ANSI = "Usage: \u001B[1mgit\u001B[21m\u001B[0m [\u001B[33m-hV\u001B[39m\u001B[0m] [\u001B[33m--git-dir\u001B[39m\u001B[0m=\u001B[3m<gitDir>\u001B[23m\u001B[0m]%n" +
             "Git is a fast, scalable, distributed revision control system with an unusually%n" +
             "rich command set that provides both high-level operations and full access to%n" +
             "internals.%n" +
-            "  @|yellow -V|@, @|yellow --version|@               Prints version information and exits%n" +
-            "  @|yellow -h|@, @|yellow --help|@                  Prints this help message and exits%n" +
-            "      @|yellow --git-dir|@=@|italic <gitDir>|@      Set the path to the repository%n" +
+            "      \u001B[33m--git-dir\u001B[39m\u001B[0m=\u001B[3m<gitDir>\u001B[23m\u001B[0m      Set the path to the repository%n" +
+            "  \u001B[33m-h\u001B[39m\u001B[0m, \u001B[33m--help\u001B[39m\u001B[0m                  Show this help message and exit.%n" +
+            "  \u001B[33m-V\u001B[39m\u001B[0m, \u001B[33m--version\u001B[39m\u001B[0m               Print version information and exit.%n" +
             "%n" +
             "Commands:%n" +
             "%n" +
             "The most commonly used git commands are:%n" +
-            "  @|bold status|@    Show the working tree status.%n" +
-            "  @|bold commit|@    Record changes to the repository.%n" +
-            "  @|bold add|@       Add file contents to the index.%n" +
-            "  @|bold branch|@    List, create, or delete branches.%n" +
-            "  @|bold checkout|@  Checkout a branch or paths to the working tree.%n" +
-            "  @|bold clone|@     Clone a repository into a new directory.%n" +
-            "  @|bold diff|@      Show changes between commits, commit and working tree, etc.%n" +
-            "  @|bold merge|@     Join two or more development histories together.%n" +
-            "  @|bold push|@      Update remote refs along with associated objects.%n" +
-            "  @|bold rebase|@    Forward-port local commits to the updated upstream head.%n" +
-            "  @|bold tag|@       Create, list, delete or verify a tag object signed with GPG.%n";
+            "  \u001B[1mhelp\u001B[21m\u001B[0m      Displays help information about the specified command%n" +
+            "  \u001B[1mstatus\u001B[21m\u001B[0m    Show the working tree status.%n" +
+            "  \u001B[1mcommit\u001B[21m\u001B[0m    Record changes to the repository.%n" +
+            "  \u001B[1madd\u001B[21m\u001B[0m       Add file contents to the index.%n" +
+            "  \u001B[1mbranch\u001B[21m\u001B[0m    List, create, or delete branches.%n" +
+            "  \u001B[1mcheckout\u001B[21m\u001B[0m  Checkout a branch or paths to the working tree.%n" +
+            "  \u001B[1mclone\u001B[21m\u001B[0m     Clone a repository into a new directory.%n" +
+            "  \u001B[1mdiff\u001B[21m\u001B[0m      Show changes between commits, commit and working tree, etc.%n" +
+            "  \u001B[1mmerge\u001B[21m\u001B[0m     Join two or more development histories together.%n" +
+            "  \u001B[1mpush\u001B[21m\u001B[0m      Update remote refs along with associated objects.%n" +
+            "  \u001B[1mrebase\u001B[21m\u001B[0m    Forward-port local commits to the updated upstream head.%n" +
+            "  \u001B[1mtag\u001B[21m\u001B[0m       Create, list, delete or verify a tag object signed with GPG.%n";
 
     public void testUsageSubCommandStatus() {
         try {
