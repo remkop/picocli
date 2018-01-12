@@ -3,11 +3,11 @@
 # <a name="3.0.0-alpha-1"></a> Picocli 3.0.0-alpha-1 (UNRELEASED)
 The picocli community is pleased to announce picocli 3.0.0-alpha-1.
 
-This release offers a programmatic API for creating command line applications, as an alternative to annotations. This allows applications to dynamically create command line options on the fly, and also makes it possible to create idiomatic domain-specific languages for using picocli in other JVM languages.
+This release offers a programmatic API for creating command line applications, as an alternative to annotations. A programmatic API allows applications to dynamically create command line options on the fly, and also makes it possible to create idiomatic domain-specific languages for using picocli in other JVM languages.
 
-This release also introduces Mixins as a new feature that allows reusing common options, parameters and command attributes in multiple applications without copy-and-paste duplication.
+Another new feature in this release are Mixins. Mixins allow reusing common options, parameters and command attributes in multiple applications without copy-and-paste duplication.
 
-Third, the `@Command(autoHelp = true)` attribute adds `--help` and `--version` options and a `help` subcommand to your command.
+Third, there is a new `autoHelp` command attribute that adds `usageHelp` and `versionHelp` options and a `help` subcommand to your command.
 
 This is the nineteenth public release.
 Picocli follows [semantic versioning](http://semver.org/).
@@ -28,14 +28,66 @@ TODO.
 Note that the programmatic API is incubating and the API may change in subsequent releases.
 
 ### Mixins for Reuse
-TODO.
+Mixins are a convenient alternative to subclassing: picocli annotations from _any_ class can be added to ("mixed in" with) another command. This includes options, positional parameters, subcommands and command attributes. Picocli [autoHelp](#3.0.0-alpha-1-autohelp) internally uses a mixin.
 
-### Autohelp
-The `@Command(autoHelp = true)` attribute installs a mixin with the common `--help` and `--version` options, as well as a `help` subcommand. 
+A mixin is a separate class with options, positional parameters, subcommands and command attributes that can be reused in other commands. Mixins can be installed by calling the `CommandLine.addMixin` method with an object of this class, or annotating a field in your command with `@Mixin`. Here is an example mixin class:
 
-Following a `git`-like convention, the `help` subcommand prints help for the last specified command, which may precede or follow the `help` subcommand.
+```java
+public class ReusableOptions {
 
-For example:
+    @Option(names = { "-v", "--verbose" }, description = {
+        "Specify multiple -v options to increase verbosity.", "For example, `-v -v -v` or `-vvv`" })
+    protected boolean[] verbosity = new boolean[0];
+}
+```
+
+#### Programmatic Mixins
+The below example shows how a mixin can be added programmatically with the `CommandLine.addMixin` method.
+
+```java
+CommandLine commandLine = new CommandLine(new MyCommand());
+commandline.addMixin("myMixin", new ReusableOptions());
+```
+#### `@Mixin` Annotation
+A command can also include mixins by annotating fields with `@Mixin`. All picocli annotations found in the mixin class
+are added to the command that has a field annotated with `@Mixin`. For example:
+
+```java
+@Command(name = "zip", description = "Example reuse with @Mixin annotation.")
+public class MyCommand {
+
+    // adds the options defined in ReusableOptions to this command
+    @Mixin
+    private ReusableOptions myMixin;
+}
+```
+
+
+### <a name="3.0.0-alpha-1-autohelp"></a> AutoHelp
+This release introduces the `autoHelp` command attribute. When this attribute is set to `true`, picocli adds a mixin to the command that adds `usageHelp` and `versionHelp` options to the command. For example:
+
+```java
+@Command(autoHelp = true, version = "auto help demo - picocli 3.0")
+class AutoHelpDemo implements Runnable {
+
+    @Option(names = "--option", description = "Some option.")
+    String option;
+
+    @Override public void run() { }
+}
+```
+
+Commands with `autoHelp` do not need to explicitly declare `usageHelp` or `versionHelp` options any more. The usage help message for the above example looks like this:
+```text
+Usage: <main class> [-hV] [--option=<option>]
+      --option=<option>       Some option.
+  -h, --help                  Show this help message and exit.
+  -V, --version               Print version information and exit.
+Commands:
+  help  Displays help information about the specified command
+```
+
+Auto-help also registers a `help` subcommand that will print help for the subcommand following it, or for this command in case no subcommand is specified. For example:
 
 ```text
 # print help for the `maincommand` command
@@ -45,11 +97,7 @@ maincommand help
 maincommand help subcommand
 ``` 
 
-Combined with the `CommandLine.run`, `CommandLine.call` or `CommandLine.handleParseResult` methods, this is *all* you need to do to give your application usage help and version help:
-
-* No need to declare fields annotated with `@Option(names = "--help")` or `@Option(names = "--version")`: these options are added automatically via the built-in AutoHelp mixin.
-* No need to verify if the user requested help or version information: picocli does this automatically in the convenience methods.
-* (TODO) User-requested usage help and version information is printed to stdout, error messages for invalid input are printed to stderr.
+Combined with the `CommandLine.run`, `CommandLine.call` or `CommandLine.handleParseResult` methods, this is *all* you need to do to give your application usage help and version help.
 
 
 ## <a name="3.0.0-alpha-1-promoted"></a> Promoted features
