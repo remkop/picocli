@@ -2900,4 +2900,18 @@ public class CommandLineHelpTest {
                 "  help  Displays help information about the specified command%n");
         assertEquals(expected, new String(baos.toByteArray(), "UTF-8"));
     }
+
+    @Test
+    public void testMaskDefaultOption() throws UnsupportedEncodingException {
+        @CommandLine.Command(showDefaultValues = true)
+        class Params {
+            @Option(names = {"-p"}, description = "password",defaultValueMask = "*********")
+            String password = "mypassword";
+        }
+        String result = usageString(new Params(), Help.Ansi.OFF);
+        assertEquals(format("" +
+                "Usage: <main class> [-p=<password>]%n" +
+                "  -p= <password>              password%n" +
+                "                                Default: *********%n"), result);
+    }
 }
