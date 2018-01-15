@@ -3267,6 +3267,17 @@ public class CommandLineTest {
         assertFalse("never invoked", app.xxx);
     }
 
+    @Test
+    public void testIgnoreRequired() {
+        class App {
+            @Option(names = "-x",required = true)
+            private boolean xxx;
+        }
+        App app = new App();
+        CommandLine commandLine = new CommandLine(app).setIgnoreRequired(true);
+        commandLine.parse();
+    }
+
     private void copyFile(File source, File destination) throws IOException {
         InputStream in = null;
         OutputStream out = null;
