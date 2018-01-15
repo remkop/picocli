@@ -2192,6 +2192,11 @@ public class CommandLine {
         private static boolean initFromAnnotatedFields(Object scope, Class<?> cls, CommandSpec receiver, IFactory factory) {
             boolean result = false;
             for (Field field : cls.getDeclaredFields()) {
+                try {
+                    field.setAccessible(true);
+                } catch (SecurityException e) {
+                    //
+                }
                 if (isMixin(field))    {
                     receiver.addMixin(mixinName(field), buildMixinForField(field, scope, factory));
                     result = true;
