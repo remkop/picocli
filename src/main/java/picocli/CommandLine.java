@@ -293,6 +293,31 @@ public class CommandLine {
         return parent == null ? null : parent.commandLine();
     }
 
+    public void refreshDefaultValues() {
+        CommandSpec commandSpec = getCommandSpec();
+        for (OptionSpec optionSpec : commandSpec.options()) {
+            try {
+                Object newDefaultValue = optionSpec.getter().get();
+                Object oldDefaultValue = optionSpec.defaultValue();
+                if( newDefaultValue != null && oldDefaultValue == null && Boolean.TRUE.equals(commandSpec.notRequiredWithDefault()) ) {
+                    optionSpec.required(false);
+                    optionSpec.requiredCancelledByDefaultValue(true);
+                    commandSpec.requiredArgs.remove(optionSpec);
+                } else if( newDefaultValue == null && oldDefaultValue != null && optionSpec.requiredCancelledByDefaultValue() ) {
+                    optionSpec.required(true);
+                    optionSpec.requiredCancelledByDefaultValue(false);
+                    commandSpec.requiredArgs.add(optionSpec);
+                }
+                optionSpec.defaultValue(newDefaultValue);
+            } catch (Exception e) {
+                tracer.warn("Error while refreshing default values %s%n",e.getMessage());
+            }
+        }
+        for (CommandLine commandLine : getSubcommands().values()) {
+            commandLine.refreshDefaultValues();
+        }
+    }
+
     /** Returns the annotated user object that this {@code CommandLine} instance was constructed with.
      * @param <T> the type of the variable that the return value is being assigned to
      * @return the annotated object that this {@code CommandLine} instance was constructed with
@@ -2532,7 +2557,8 @@ public class CommandLine {
                 }
                 if (name.length() == 2 && name.startsWith("-")) { posixOptionsByKeyMap.put(name.charAt(1), option); }
             }
-            if( Boolean.TRUE.equals(notRequiredWithDefault) && option.defaultValue() != null ) {
+            if( option.required() && Boolean.TRUE.equals(notRequiredWithDefault) && option.defaultValue() != null ) {
+                option.requiredCancelledByDefaultValue(true);
                 option.required(false);
             }
             if (option.required()) { requiredArgs.add(option); }
@@ -2812,6 +2838,7 @@ public class CommandLine {
     public abstract static class ArgSpec<T extends ArgSpec> {
         private Range arity;
         private String[] description;
+        private boolean requiredCancelledByDefaultValue;
         private boolean required;
         private String paramLabel;
         private String splitRegex;
@@ -2983,7 +3010,13 @@ public class CommandLine {
         /** Sets the {@link ISetter} that is responsible for setting the value of this argument to the specified value. */
         public T setter(ISetter setter)              { this.setter = setter; return self(); }
 
-        /** Sets the string respresentation of this option or positional parameter to the specified value. */
+        /** Returns indicates if the required field was switch to false because of a default value combined with {@link Command#notRequiredWithDefault()} */
+        public boolean requiredCancelledByDefaultValue() { return requiredCancelledByDefaultValue; }
+
+        /** Sets if the required field was switch to false because of a default value combined with {@link Command#notRequiredWithDefault()} */
+        public void requiredCancelledByDefaultValue(boolean requiredCancelledByDefaultValue) { this.requiredCancelledByDefaultValue = requiredCancelledByDefaultValue; }
+
+        /** Sets the string representation of this option or positional parameter to the specified value. */
         public T withToString(String toString)       { this.toString = toString; return self(); }
 
         /** Returns a string respresentation of this option or positional parameter. */

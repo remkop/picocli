@@ -2914,4 +2914,96 @@ public class CommandLineHelpTest {
                 "  -f, --file=<file>           the file to use%n" +
                 "                                Default: theDefault.txt%n"), result);
     }
+
+    @Test
+    public void testNotRequiredWithDefaultRefreshedAddRequired() throws Exception {
+        @CommandLine.Command(showDefaultValues = true, notRequiredWithDefault = true)
+        class Params {
+            @Option(names = {"-f", "--file"}, required = true, description = "the file to use")
+            File file;
+        }
+        Params command = new Params();
+        CommandLine commandLine = new CommandLine(command);
+        String result = usageString(commandLine, Help.Ansi.OFF);
+        assertEquals(format("" +
+                "Usage: <main class> -f=<file>%n" +
+                "  -f, --file=<file>           the file to use%n"), result);
+        try {
+            commandLine.parse();
+            fail("should have failed with MissingParameterException");
+        } catch (CommandLine.MissingParameterException e) {
+            // ok
+        }
+        command.file = new File("theDefault.txt");
+        commandLine.refreshDefaultValues();
+        result = usageString(commandLine, Help.Ansi.OFF);
+        assertEquals(format("" +
+                "Usage: <main class> [-f=<file>]%n" +
+                "  -f, --file=<file>           the file to use%n" +
+                "                                Default: theDefault.txt%n"), result);
+        commandLine.parse();
+    }
+
+    @Test
+    public void testRequiredNotRemovedAfterRefresh() throws Exception {
+        @CommandLine.Command(showDefaultValues = true)
+        class Params {
+            @Option(names = {"-f", "--file"}, required = true, description = "the file to use")
+            File file;
+        }
+        Params command = new Params();
+        CommandLine commandLine = new CommandLine(command);
+        String result = usageString(commandLine, Help.Ansi.OFF);
+        assertEquals(format("" +
+                "Usage: <main class> -f=<file>%n" +
+                "  -f, --file=<file>           the file to use%n"), result);
+        try {
+            commandLine.parse();
+            fail("should have failed with MissingParameterException");
+        } catch (CommandLine.MissingParameterException e) {
+            // ok
+        }
+        command.file = new File("theDefault.txt");
+        commandLine.refreshDefaultValues();
+        result = usageString(commandLine, Help.Ansi.OFF);
+        assertEquals(format("" +
+                "Usage: <main class> -f=<file>%n" +
+                "  -f, --file=<file>           the file to use%n" +
+                "                                Default: theDefault.txt%n"), result);
+        try {
+            commandLine.parse();
+            fail("should have failed with MissingParameterException");
+        } catch (CommandLine.MissingParameterException e) {
+            // ok
+        }
+    }
+
+    @Test
+    public void testNotRequiredWithDefaultRefreshedRemoveRequired() throws Exception {
+        @CommandLine.Command(showDefaultValues = true, notRequiredWithDefault = true)
+        class Params {
+            @Option(names = {"-f", "--file"}, required = true, description = "the file to use")
+            File file = new File("theDefault.txt");
+        }
+        Params command = new Params();
+        CommandLine commandLine = new CommandLine(command);
+        String result = usageString(commandLine, Help.Ansi.OFF);
+        assertEquals(format("" +
+                "Usage: <main class> [-f=<file>]%n" +
+                "  -f, --file=<file>           the file to use%n" +
+                "                                Default: theDefault.txt%n"), result);
+        commandLine.parse();
+        command.file = null;
+        commandLine.refreshDefaultValues();
+        result = usageString(commandLine, Help.Ansi.OFF);
+        assertEquals(format("" +
+                "Usage: <main class> -f=<file>%n" +
+                "  -f, --file=<file>           the file to use%n"), result);
+        try {
+            commandLine.parse();
+            fail("should have failed with MissingParameterException");
+        } catch (CommandLine.MissingParameterException e) {
+            // ok
+        }
+    }
 }
