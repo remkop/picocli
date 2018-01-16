@@ -2902,20 +2902,6 @@ public class CommandLineHelpTest {
     }
 
     @Test
-    public void testMaskDefaultOption() throws UnsupportedEncodingException {
-        @CommandLine.Command(showDefaultValues = true)
-        class Params {
-            @Option(names = {"-p"}, description = "password",defaultValueMask = "*********")
-            String password = "mypassword";
-        }
-        String result = usageString(new Params(), Help.Ansi.OFF);
-        assertEquals(format("" +
-                "Usage: <main class> [-p=<password>]%n" +
-                "  -p= <password>              password%n" +
-                "                                Default: *********%n"), result);
-    }
-
-    @Test
     public void testNotRequiredWithDefault() throws Exception {
         @CommandLine.Command(showDefaultValues = true, notRequiredWithDefault = true)
         class Params {
@@ -3019,20 +3005,6 @@ public class CommandLineHelpTest {
         } catch (CommandLine.MissingParameterException e) {
             // ok
         }
-    }
-
-    @Test
-    public void testMaskDefaultOption() throws UnsupportedEncodingException {
-        @CommandLine.Command(showDefaultValues = true)
-        class Params {
-            @Option(names = {"-p"}, description = "password", defaultValueMask = "*********")
-            String password = "mypassword";
-        }
-        String result = usageString(new Params(), Help.Ansi.OFF);
-        assertEquals(format("" +
-                "Usage: <main class> [-p=<password>]%n" +
-                "  -p= <password>              password%n" +
-                "                                Default: *********%n"), result);
     }
 
     @Test

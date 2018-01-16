@@ -2320,7 +2320,6 @@ public class CommandLine {
             result.hidden(option.hidden());
             result.converters(DefaultFactory.createConverter(factory, option.converter()));
             result.defaultValueMask(option.defaultValueMask());
-            result.defaultValue(getDefaultValue(scope, field));
             initCommon(result, scope, field);
             return result;
         }
@@ -2350,13 +2349,13 @@ public class CommandLine {
             result.splitRegex(parameters.split());
             result.hidden(parameters.hidden());
             result.converters(DefaultFactory.createConverter(factory, parameters.converter()));
-            result.defaultValue(getDefaultValue(scope, field));
             initCommon(result, scope, field);
             return result;
         }
         private static void initCommon(ArgSpec result, Object scope, Field field) {
             field.setAccessible(true);
             result.type(field.getType()); // field type
+            result.defaultValue(getDefaultValue(scope, field));
             result.withToString(abbreviate("field " + field.toGenericString()));
             result.getter(new FieldGetter(scope, field));
             result.setter(new FieldSetter(scope, field));
