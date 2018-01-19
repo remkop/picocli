@@ -103,12 +103,12 @@ public class CommandLineHelpTest {
     public void testShowDefaultValues() throws Exception {
         @CommandLine.Command(showDefaultValues = true)
         class Params {
-            @Option(names = {"-f", "--file"}, required = true, description = "the file to use")
+            @Option(names = {"-f", "--file"}, description = "the file to use")
             File file = new File("theDefault.txt");
         }
         String result = usageString(new Params(), Help.Ansi.OFF);
         assertEquals(format("" +
-                "Usage: <main class> -f=<file>%n" +
+                "Usage: <main class> [-f=<file>]%n" +
                 "  -f, --file=<file>           the file to use%n" +
                 "                                Default: theDefault.txt%n"), result);
     }
@@ -131,11 +131,11 @@ public class CommandLineHelpTest {
     public void testUsageSeparatorWithoutDefault() throws Exception {
         @Command()
         class Params {
-            @Option(names = {"-f", "--file"}, required = true, description = "the file to use") File file = new File("def.txt");
+            @Option(names = {"-f", "--file"}, description = "the file to use") File file = new File("def.txt");
         }
         String result = usageString(new Params(), Help.Ansi.OFF);
         assertEquals(format("" +
-                        "Usage: <main class> -f=<file>%n" +
+                        "Usage: <main class> [-f=<file>]%n" +
                         "  -f, --file=<file>           the file to use%n",
                 ""), result);
     }
@@ -148,7 +148,7 @@ public class CommandLineHelpTest {
         }
         String result = usageString(new Params(), Help.Ansi.OFF);
         assertEquals(format("" +
-                        "Usage: <main class> -f=<file>%n" +
+                        "Usage: <main class> [-f=<file>]%n" +
                         "  -f, --file=<file>           the file to use%n" +
                         "                                Default: def.txt%n",
                 ""), result);
@@ -919,23 +919,22 @@ public class CommandLineHelpTest {
     public void testDefaultOptionRenderer_rendersSpecifiedMarkerForRequiredOptionsWithDefault() {
         @Command(requiredOptionMarker = '*', showDefaultValues = true)
         class Example {
-            @Option(names = {"-b", "-a", "--alpha"}, required = true, description = "other") String otherField ="abc";
+            @Option(names = {"-b", "-a", "--alpha"}, required = true, description = "other") String otherField;
         }
         Help help = new Help(new Example());
         Help.IOptionRenderer renderer = help.createDefaultOptionRenderer();
         Help.IParamLabelRenderer parameterRenderer = help.createDefaultParamLabelRenderer();
         OptionSpec option = help.options().get(0);
         Text[][] row = renderer.render(option, parameterRenderer, help.colorScheme());
-        assertEquals(2, row.length);
+        assertEquals(1, row.length);
         assertArrayEquals(Arrays.toString(row[0]), textArray(help, "*", "-b", ",", "-a, --alpha=<otherField>", "other"), row[0]);
-        assertArrayEquals(Arrays.toString(row[1]), textArray(help, "", "", "", "", "  Default: abc"), row[1]);
     }
 
     @Test
     public void testDefaultOptionRenderer_rendersSpecifiedMarkerForRequiredOptionsWithoutDefault() {
         @Command(requiredOptionMarker = '*')
         class Example {
-            @Option(names = {"-b", "-a", "--alpha"}, required = true, description = "other") String otherField ="abc";
+            @Option(names = {"-b", "-a", "--alpha"}, required = true, description = "other") String otherField;
         }
         Help help = new Help(new Example());
         Help.IOptionRenderer renderer = help.createDefaultOptionRenderer();
@@ -1329,7 +1328,7 @@ public class CommandLineHelpTest {
     public void testSynopsis_requiredOptionWithSeparator() {
         @Command() class App {
             @Option(names = {"--verbose", "-v"}) boolean verbose;
-            @Option(names = {"--count", "-c"}, required = true) int count;
+            @Option(names = {"--count", "-c"}, required = true) Integer count;
             @Option(names = {"--help", "-h"}, hidden = true) boolean helpRequested;
         }
         Help help = new Help(new App(), Help.Ansi.OFF);
@@ -1340,7 +1339,7 @@ public class CommandLineHelpTest {
     public void testSynopsis_requiredOptionWithSeparator_ANSI() {
         @Command() class App {
             @Option(names = {"--verbose", "-v"}) boolean verbose;
-            @Option(names = {"--count", "-c"}, required = true) int count;
+            @Option(names = {"--count", "-c"}, required = true) Integer count;
             @Option(names = {"--help", "-h"}, hidden = true) boolean helpRequested;
         }
         Help help = new Help(new App(), Help.defaultColorScheme(Help.Ansi.ON));
@@ -1500,8 +1499,8 @@ public class CommandLineHelpTest {
     @Test
     public void testSynopsis_clustersRequiredBooleanOptions() {
         @CommandLine.Command(separator = "=") class App {
-            @Option(names = {"--verbose", "-v"}, required = true) boolean verbose;
-            @Option(names = {"--aaaa", "-a"}, required = true) boolean aBoolean;
+            @Option(names = {"--verbose", "-v"}, required = true) Boolean verbose;
+            @Option(names = {"--aaaa", "-a"}, required = true) Boolean aBoolean;
             @Option(names = {"--xxxx", "-x"}, required = true) Boolean xBoolean;
             @Option(names = {"--count", "-c"}, paramLabel = "COUNT") int count;
         }
@@ -1515,8 +1514,8 @@ public class CommandLineHelpTest {
             @Option(names = {"--verbose", "-v"}) boolean verbose;
             @Option(names = {"--aaaa", "-a"}) boolean aBoolean;
             @Option(names = {"--xxxx", "-x"}) Boolean xBoolean;
-            @Option(names = {"--Verbose", "-V"}, required = true) boolean requiredVerbose;
-            @Option(names = {"--Aaaa", "-A"}, required = true) boolean requiredABoolean;
+            @Option(names = {"--Verbose", "-V"}, required = true) Boolean requiredVerbose;
+            @Option(names = {"--Aaaa", "-A"}, required = true) Boolean requiredABoolean;
             @Option(names = {"--Xxxx", "-X"}, required = true) Boolean requiredXBoolean;
             @Option(names = {"--count", "-c"}, paramLabel = "COUNT") int count;
         }
@@ -1530,8 +1529,8 @@ public class CommandLineHelpTest {
             @Option(names = {"--verbose", "-v"}) boolean verbose;
             @Option(names = {"--aaaa", "-a"}) boolean aBoolean;
             @Option(names = {"--xxxx", "-x"}) Boolean xBoolean;
-            @Option(names = {"--Verbose", "-V"}, required = true) boolean requiredVerbose;
-            @Option(names = {"--Aaaa", "-A"}, required = true) boolean requiredABoolean;
+            @Option(names = {"--Verbose", "-V"}, required = true) Boolean requiredVerbose;
+            @Option(names = {"--Aaaa", "-A"}, required = true) Boolean requiredABoolean;
             @Option(names = {"--Xxxx", "-X"}, required = true) Boolean requiredXBoolean;
             @Option(names = {"--count", "-c"}, paramLabel = "COUNT") int count;
         }
@@ -2903,7 +2902,7 @@ public class CommandLineHelpTest {
 
     @Test
     public void testNotRequiredWithDefault() throws Exception {
-        @CommandLine.Command(showDefaultValues = true, notRequiredWithDefault = true)
+        @CommandLine.Command(showDefaultValues = true)
         class Params {
             @Option(names = {"-f", "--file"}, required = true, description = "the file to use")
             File file = new File("theDefault.txt");
@@ -2917,7 +2916,7 @@ public class CommandLineHelpTest {
 
     @Test
     public void testNotRequiredWithDefaultRefreshedAddRequired() throws Exception {
-        @CommandLine.Command(showDefaultValues = true, notRequiredWithDefault = true)
+        @CommandLine.Command(showDefaultValues = true)
         class Params {
             @Option(names = {"-f", "--file"}, required = true, description = "the file to use")
             File file;
@@ -2945,42 +2944,8 @@ public class CommandLineHelpTest {
     }
 
     @Test
-    public void testRequiredNotRemovedAfterRefresh() throws Exception {
-        @CommandLine.Command(showDefaultValues = true)
-        class Params {
-            @Option(names = {"-f", "--file"}, required = true, description = "the file to use")
-            File file;
-        }
-        Params command = new Params();
-        CommandLine commandLine = new CommandLine(command);
-        String result = usageString(commandLine, Help.Ansi.OFF);
-        assertEquals(format("" +
-                "Usage: <main class> -f=<file>%n" +
-                "  -f, --file=<file>           the file to use%n"), result);
-        try {
-            commandLine.parse();
-            fail("should have failed with MissingParameterException");
-        } catch (CommandLine.MissingParameterException e) {
-            // ok
-        }
-        command.file = new File("theDefault.txt");
-        commandLine.refreshDefaultValues();
-        result = usageString(commandLine, Help.Ansi.OFF);
-        assertEquals(format("" +
-                "Usage: <main class> -f=<file>%n" +
-                "  -f, --file=<file>           the file to use%n" +
-                "                                Default: theDefault.txt%n"), result);
-        try {
-            commandLine.parse();
-            fail("should have failed with MissingParameterException");
-        } catch (CommandLine.MissingParameterException e) {
-            // ok
-        }
-    }
-
-    @Test
     public void testNotRequiredWithDefaultRefreshedRemoveRequired() throws Exception {
-        @CommandLine.Command(showDefaultValues = true, notRequiredWithDefault = true)
+        @CommandLine.Command(showDefaultValues = true)
         class Params {
             @Option(names = {"-f", "--file"}, required = true, description = "the file to use")
             File file = new File("theDefault.txt");
