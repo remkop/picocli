@@ -2016,7 +2016,7 @@ CommandLine cmd = new CommandLine(MyTopLevelCommand())
         .addSubcommand("status",   new GitStatus())
         .addSubcommand("commit",   new GitCommit())
         .addSubcommand("add",      new GitAdd());
-List<Object result = cmd.parseWithHandler(new RunAll(), System.err, args);
+List<Object> result = cmd.parseWithHandler(new RunAll(), System.err, args);
 ----
 
 The `CommandLine::parseWithHandler` method will take care of the following:
