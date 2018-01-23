@@ -3228,7 +3228,7 @@ These methods are intended to offer the same ease of use as the <code>run</code>
         .addSubcommand(<span class="string"><span class="delimiter">&quot;</span><span class="content">status</span><span class="delimiter">&quot;</span></span>,   <span class="keyword">new</span> GitStatus())
         .addSubcommand(<span class="string"><span class="delimiter">&quot;</span><span class="content">commit</span><span class="delimiter">&quot;</span></span>,   <span class="keyword">new</span> GitCommit())
         .addSubcommand(<span class="string"><span class="delimiter">&quot;</span><span class="content">add</span><span class="delimiter">&quot;</span></span>,      <span class="keyword">new</span> GitAdd());
-<span class="predefined-type">List</span>&lt;<span class="predefined-type">Object</span> result = cmd.parseWithHandler(<span class="keyword">new</span> RunAll(), <span class="predefined-type">System</span>.err, args);</code></pre>
+<span class="predefined-type">List</span>&lt;<span class="predefined-type">Object</span>&gt; result = cmd.parseWithHandler(<span class="keyword">new</span> RunAll(), <span class="predefined-type">System</span>.err, args);</code></pre>
 </div>
 </div>
 <div class="paragraph">
