@@ -2900,4 +2900,156 @@ public class CommandLineHelpTest {
                 "  help  Displays help information about the specified command%n");
         assertEquals(expected, new String(baos.toByteArray(), "UTF-8"));
     }
+
+    @Test
+    public void testNotRequiredWithDefault() throws Exception {
+        @CommandLine.Command(showDefaultValues = true, notRequiredWithDefault = true)
+        class Params {
+            @Option(names = {"-f", "--file"}, required = true, description = "the file to use")
+            File file = new File("theDefault.txt");
+        }
+        String result = usageString(new Params(), Help.Ansi.OFF);
+        assertEquals(format("" +
+                "Usage: <main class> [-f=<file>]%n" +
+                "  -f, --file=<file>           the file to use%n" +
+                "                                Default: theDefault.txt%n"), result);
+    }
+
+    @Test
+    public void testNotRequiredWithDefaultRefreshedAddRequired() throws Exception {
+        @CommandLine.Command(showDefaultValues = true, notRequiredWithDefault = true)
+        class Params {
+            @Option(names = {"-f", "--file"}, required = true, description = "the file to use")
+            File file;
+        }
+        Params command = new Params();
+        CommandLine commandLine = new CommandLine(command);
+        String result = usageString(commandLine, Help.Ansi.OFF);
+        assertEquals(format("" +
+                "Usage: <main class> -f=<file>%n" +
+                "  -f, --file=<file>           the file to use%n"), result);
+        try {
+            commandLine.parse();
+            fail("should have failed with MissingParameterException");
+        } catch (CommandLine.MissingParameterException e) {
+            // ok
+        }
+        command.file = new File("theDefault.txt");
+        commandLine.refreshDefaultValues();
+        result = usageString(commandLine, Help.Ansi.OFF);
+        assertEquals(format("" +
+                "Usage: <main class> [-f=<file>]%n" +
+                "  -f, --file=<file>           the file to use%n" +
+                "                                Default: theDefault.txt%n"), result);
+        commandLine.parse();
+    }
+
+    @Test
+    public void testRequiredNotRemovedAfterRefresh() throws Exception {
+        @CommandLine.Command(showDefaultValues = true)
+        class Params {
+            @Option(names = {"-f", "--file"}, required = true, description = "the file to use")
+            File file;
+        }
+        Params command = new Params();
+        CommandLine commandLine = new CommandLine(command);
+        String result = usageString(commandLine, Help.Ansi.OFF);
+        assertEquals(format("" +
+                "Usage: <main class> -f=<file>%n" +
+                "  -f, --file=<file>           the file to use%n"), result);
+        try {
+            commandLine.parse();
+            fail("should have failed with MissingParameterException");
+        } catch (CommandLine.MissingParameterException e) {
+            // ok
+        }
+        command.file = new File("theDefault.txt");
+        commandLine.refreshDefaultValues();
+        result = usageString(commandLine, Help.Ansi.OFF);
+        assertEquals(format("" +
+                "Usage: <main class> -f=<file>%n" +
+                "  -f, --file=<file>           the file to use%n" +
+                "                                Default: theDefault.txt%n"), result);
+        try {
+            commandLine.parse();
+            fail("should have failed with MissingParameterException");
+        } catch (CommandLine.MissingParameterException e) {
+            // ok
+        }
+    }
+
+    @Test
+    public void testNotRequiredWithDefaultRefreshedRemoveRequired() throws Exception {
+        @CommandLine.Command(showDefaultValues = true, notRequiredWithDefault = true)
+        class Params {
+            @Option(names = {"-f", "--file"}, required = true, description = "the file to use")
+            File file = new File("theDefault.txt");
+        }
+        Params command = new Params();
+        CommandLine commandLine = new CommandLine(command);
+        String result = usageString(commandLine, Help.Ansi.OFF);
+        assertEquals(format("" +
+                "Usage: <main class> [-f=<file>]%n" +
+                "  -f, --file=<file>           the file to use%n" +
+                "                                Default: theDefault.txt%n"), result);
+        commandLine.parse();
+        command.file = null;
+        commandLine.refreshDefaultValues();
+        result = usageString(commandLine, Help.Ansi.OFF);
+        assertEquals(format("" +
+                "Usage: <main class> -f=<file>%n" +
+                "  -f, --file=<file>           the file to use%n"), result);
+        try {
+            commandLine.parse();
+            fail("should have failed with MissingParameterException");
+        } catch (CommandLine.MissingParameterException e) {
+            // ok
+        }
+    }
+
+    @Test
+    public void testMaskDefaultOptionStillMaskedAfterRefresh() throws UnsupportedEncodingException {
+        @CommandLine.Command(name = "cmd",showDefaultValues = true)
+        class Params {
+            @Option(names = {"-p"}, description = "password", defaultValueMask = "PASSWORDMASK")
+            String password = "mypassword";
+        }
+        @CommandLine.Command(name = "subcmd",showDefaultValues = true)
+        class SubParams {
+            @Option(names = {"-k"}, description = "key", defaultValueMask = "KEYMASK")
+            String key = "mykey";
+        }
+        CommandLine commandLine = new CommandLine(new Params());
+        CommandLine subCommandLine = new CommandLine(new SubParams());
+        commandLine.addSubcommand("subcmd", subCommandLine);
+        String expectedCmdUsage = format("" +
+                "Usage: cmd [-p=<password>]%n" +
+                "  -p= <password>              password%n" +
+                "                                Default: PASSWORDMASK%n" +
+                "Commands:%n" +
+                "  subcmd%n");
+        String expectedSubCmdUsage = format("" +
+                "Usage: subcmd [-k=<key>]%n" +
+                "  -k= <key>                   key%n" +
+                "                                Default: KEYMASK%n");
+        assertEquals(expectedCmdUsage, usageString(commandLine, Help.Ansi.OFF));
+        assertEquals(expectedSubCmdUsage, usageString(subCommandLine, Help.Ansi.OFF));
+        commandLine.refreshDefaultValues();
+        assertEquals(expectedCmdUsage, usageString(commandLine, Help.Ansi.OFF));
+        assertEquals(expectedSubCmdUsage, usageString(subCommandLine, Help.Ansi.OFF));
+    }
+
+    @Test
+    public void testMaskDefaultOption() throws UnsupportedEncodingException {
+        @CommandLine.Command(showDefaultValues = true)
+        class Params {
+            @Option(names = {"-p"}, description = "password",defaultValueMask = "*********")
+            String password = "mypassword";
+        }
+        String result = usageString(new Params(), Help.Ansi.OFF);
+        assertEquals(format("" +
+                "Usage: <main class> [-p=<password>]%n" +
+                "  -p= <password>              password%n" +
+                "                                Default: *********%n"), result);
+    }
 }
