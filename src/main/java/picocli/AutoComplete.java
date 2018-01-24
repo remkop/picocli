@@ -159,13 +159,13 @@ public class AutoComplete {
     private static interface Predicate<T> {
         boolean test(T t);
     }
-    private static class BooleanArgFilter implements Predicate<ArgSpec> {
-        public boolean test(ArgSpec f) {
+    private static class BooleanArgFilter implements Predicate<ArgSpec<?>> {
+        public boolean test(ArgSpec<?> f) {
             return f.type() == Boolean.TYPE || f.type() == Boolean.class;
         }
     }
-    private static class EnumArgFilter implements Predicate<ArgSpec> {
-        public boolean test(ArgSpec f) {
+    private static class EnumArgFilter implements Predicate<ArgSpec<?>> {
+        public boolean test(ArgSpec<?> f) {
             return f.type().isEnum();
         }
     }

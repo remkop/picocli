@@ -298,6 +298,7 @@ public class CommandLine {
      * @return the annotated object that this {@code CommandLine} instance was constructed with
      * @since 0.9.7
      */
+    @SuppressWarnings("unchecked")
     public <T> T getCommand() {
         return (T) getCommandSpec().userObject();
     }
@@ -540,7 +541,8 @@ public class CommandLine {
             }
         } else if (command instanceof Callable) {
             try {
-                return ((Callable<Object>) command).call();
+                @SuppressWarnings("unchecked") Callable<Object> callable = (Callable<Object>) command;
+                return callable.call();
             } catch (Exception ex) {
                 throw new ExecutionException(parsed, "Error while calling command (" + command + "): " + ex, ex);
             }
@@ -961,7 +963,8 @@ public class CommandLine {
     public static <C extends Callable<T>, T> T call(C callable, PrintStream out, Help.Ansi ansi, String... args) {
         CommandLine cmd = new CommandLine(callable); // validate command outside of try-catch
         List<Object> results = cmd.parseWithHandlers(new RunLast(), out, ansi, new DefaultExceptionHandler(), args);
-        return results == null || results.isEmpty() ? null : (T) results.get(0);
+        @SuppressWarnings("unchecked") T result = results == null || results.isEmpty() ? null : (T) results.get(0);
+        return result;
     }
 
     /**
@@ -1239,7 +1242,7 @@ public class CommandLine {
          * @return whether this option disables validation of the other arguments
          * @deprecated Use {@link #usageHelp()} and {@link #versionHelp()} instead. See {@link #printHelpIfRequested(List, PrintStream, CommandLine.Help.Ansi)}
          */
-        boolean help() default false;
+        @Deprecated boolean help() default false;
 
         /**
          * Set {@code usageHelp=true} if this option allows the user to request usage help. If this option is
@@ -1879,7 +1882,7 @@ public class CommandLine {
             }
         }
         private static ITypeConverter<?>[] createConverter(IFactory factory, Class<? extends ITypeConverter<?>>[] classes) {
-            ITypeConverter<?>[] result = new ITypeConverter[classes.length];
+            ITypeConverter<?>[] result = new ITypeConverter<?>[classes.length];
             for (int i = 0; i < classes.length; i++) {
                 try {
                     result[i] = factory.create(classes[i]);
@@ -2068,6 +2071,7 @@ public class CommandLine {
             min = min == Integer.MAX_VALUE ? min : min + 1;
         }
     }
+    @SuppressWarnings("unchecked") private static Stack<String> copy(Stack<String> stack) { return (Stack<String>) stack.clone(); }
     private static <T> Stack<T> reverse(Stack<T> stack) {
         Collections.reverse(stack);
         return stack;
@@ -2078,7 +2082,7 @@ public class CommandLine {
     }
     private static <T> T[] copy(T[] array, Class<T> cls) {
         try {
-            T[] result = (T[]) Array.newInstance(cls, array.length);
+            @SuppressWarnings("unchecked") T[] result = (T[]) Array.newInstance(cls, array.length);
             System.arraycopy(array, 0, result, 0, result.length);
             return result;
         } catch (Exception ex) {
@@ -2192,7 +2196,7 @@ public class CommandLine {
         private static boolean initFromAnnotatedFields(Object scope, Class<?> cls, CommandSpec receiver, IFactory factory) {
             boolean result = false;
             for (Field field : cls.getDeclaredFields()) {
-                if (isMixin(field))    {
+                if (isMixin(field)) {
                     receiver.addMixin(mixinName(field), buildMixinForField(field, scope, factory));
                     result = true;
                 }
@@ -2299,7 +2303,7 @@ public class CommandLine {
             initCommon(result, scope, field);
             return result;
         }
-        private static void initCommon(ArgSpec result, Object scope, Field field) {
+        private static void initCommon(ArgSpec<?> result, Object scope, Field field) {
             field.setAccessible(true);
             result.type(field.getType()); // field type
             result.defaultValue(getDefaultValue(scope, field));
@@ -2356,7 +2360,7 @@ public class CommandLine {
             private final Object scope;
             private final Field field;
             public FieldGetter(Object scope, Field field) { this.scope = scope; this.field = field; }
-            public <T> T get() throws Exception {
+            @SuppressWarnings("unchecked") public <T> T get() throws Exception {
                 return (T) field.get(scope);
             }
         }
@@ -2365,7 +2369,7 @@ public class CommandLine {
             private final Field field;
             public FieldSetter(Object scope, Field field) { this.scope = scope; this.field = field; }
             public <T> T set(T value) throws Exception {
-                T result = (T) field.get(scope);
+                @SuppressWarnings("unchecked") T result = (T) field.get(scope);
                 field.set(scope, value);
                 return result;
             }
@@ -2414,7 +2418,7 @@ public class CommandLine {
         private final Map<String, OptionSpec> optionsByNameMap = new LinkedHashMap<String, OptionSpec>();
         private final Map<Character, OptionSpec> posixOptionsByKeyMap = new LinkedHashMap<Character, OptionSpec>();
         private final Map<String, CommandSpec> mixins = new LinkedHashMap<String, CommandSpec>();
-        private final List<ArgSpec> requiredArgs = new ArrayList<ArgSpec>();
+        private final List<ArgSpec<?>> requiredArgs = new ArrayList<ArgSpec<?>>();
         private final List<OptionSpec> options = new ArrayList<OptionSpec>();
         private final List<PositionalParamSpec> positionalParameters = new ArrayList<PositionalParamSpec>();
 
@@ -2506,7 +2510,7 @@ public class CommandLine {
         /** Adds the specified option spec or positional parameter spec to the list of configured arguments to expect.
          * @param arg the option spec or positional parameter spec to add
          * @return this CommandSpec for method chaining */
-        public CommandSpec add(ArgSpec arg) { return arg.isOption() ? add((OptionSpec) arg) : add((PositionalParamSpec) arg); }
+        public CommandSpec add(ArgSpec<?> arg) { return arg.isOption() ? add((OptionSpec) arg) : add((PositionalParamSpec) arg); }
 
         /** Adds the specified option spec to the list of configured arguments to expect.
          * @param option the option spec to add
@@ -2516,7 +2520,7 @@ public class CommandLine {
             option.validate();
             options.add(option);
             for (String name : option.names()) { // cannot be null or empty
-                ArgSpec existing = optionsByNameMap.put(name, option);
+                OptionSpec existing = optionsByNameMap.put(name, option);
                 if (existing != null && !existing.equals(option)) {
                     throw DuplicateOptionAnnotationsException.create(name, option, existing);
                 }
@@ -2592,7 +2596,7 @@ public class CommandLine {
 
         /** Returns the list of required options and positional parameters configured for this command.
          * @return an immutable list of the required options and positional parameters for this command. */
-        public List<ArgSpec> requiredArgs() { return Collections.unmodifiableList(requiredArgs); }
+        public List<ArgSpec<?>> requiredArgs() { return Collections.unmodifiableList(requiredArgs); }
 
         /** Returns the String to use as the program name in the synopsis line of the help message.
          * {@link #DEFAULT_COMMAND_NAME} by default, initialized from {@link Command#name()} if defined. */
@@ -2788,7 +2792,7 @@ public class CommandLine {
     }
     /** Models the shared attributes of {@link OptionSpec} and {@link PositionalParamSpec}.
      * @since 3.0 */
-    public abstract static class ArgSpec<T extends ArgSpec> {
+    public abstract static class ArgSpec<T extends ArgSpec<T>> {
         private Range arity;
         private String[] description;
         private boolean required;
@@ -2796,7 +2800,7 @@ public class CommandLine {
         private String splitRegex;
         private boolean hidden;
         private Class<?> type;
-        private Class[] auxiliaryTypes;
+        private Class<?>[] auxiliaryTypes;
         private ITypeConverter<?>[] converters;
         private Object defaultValue;
         private String toString;
@@ -2808,7 +2812,7 @@ public class CommandLine {
             getter = new ObjectGetterSetter();
             setter = (ISetter) getter;
         }
-        protected T self() { return (T) this; }
+        @SuppressWarnings("unchecked") protected T self() { return (T) this; }
 
         /** Ensures all attributes of this {@code ArgSpec} have a valid value; throws an {@link InitializationException} if this cannot be achieved. */
         T validate() {
@@ -2836,16 +2840,16 @@ public class CommandLine {
             }
             if (auxiliaryTypes == null || auxiliaryTypes.length == 0) {
                 if (type.isArray()) {
-                    auxiliaryTypes = new Class[]{type.getComponentType()};
+                    auxiliaryTypes = new Class<?>[]{type.getComponentType()};
                 } else if (Collection.class.isAssignableFrom(type)) { // type is a collection but element type is unspecified
-                    auxiliaryTypes = new Class[] {String.class}; // use String elements
+                    auxiliaryTypes = new Class<?>[] {String.class}; // use String elements
                 } else if (Map.class.isAssignableFrom(type)) { // type is a map but element type is unspecified
-                    auxiliaryTypes = new Class[] {String.class, String.class}; // use String keys and String values
+                    auxiliaryTypes = new Class<?>[] {String.class, String.class}; // use String keys and String values
                 } else {
-                    auxiliaryTypes = new Class[] {type};
+                    auxiliaryTypes = new Class<?>[] {type};
                 }
             }
-            if (converters == null) { converters = new ITypeConverter[0]; }
+            if (converters == null) { converters = new ITypeConverter<?>[0]; }
             return self();
         }
 
@@ -2859,9 +2863,9 @@ public class CommandLine {
 
         private static class ObjectGetterSetter implements IGetter, ISetter {
             private Object value;
-            public <K> K get() throws Exception { return (K) value; }
+            @SuppressWarnings("unchecked") public <K> K get() throws Exception { return (K) value; }
             public <K> K set(K value) throws Exception {
-                K result = value;
+                @SuppressWarnings("unchecked") K result = value;
                 this.value = value;
                 return result;
             }
@@ -2974,7 +2978,7 @@ public class CommandLine {
         public boolean equals(Object obj) {
             if (obj == this) { return true; }
             if (!(obj instanceof ArgSpec)) { return false; }
-            ArgSpec other = (ArgSpec) obj;
+            ArgSpec<?> other = (ArgSpec<?>) obj;
             boolean result = Assert.equals(this.defaultValue, other.defaultValue)
                     && Assert.equals(this.type, other.type)
                     && Assert.equals(this.arity, other.arity)
@@ -3071,7 +3075,7 @@ public class CommandLine {
         /** Returns whether this option disables validation of the other arguments.
          * @see Option#help()
          * @deprecated Use {@link #usageHelp()} and {@link #versionHelp()} instead. */
-        public boolean help()         { return help; }
+        @Deprecated public boolean help() { return help; }
 
         /** Returns whether this option allows the user to request usage help.
          * @see Option#usageHelp()  */
@@ -3341,12 +3345,12 @@ public class CommandLine {
         private void parse(List<CommandLine> parsedCommands, Stack<String> argumentStack, String[] originalArgs) {
             clear(); // first reset any state in case this CommandLine instance is being reused
             if (tracer.isDebug()) {tracer.debug("Initializing %s: %d options, %d positional parameters, %d required, %d subcommands.%n",
-                    commandSpec.toString(), new HashSet<ArgSpec>(commandSpec.optionsMap().values()).size(),
+                    commandSpec.toString(), new HashSet<ArgSpec<?>>(commandSpec.optionsMap().values()).size(),
                     commandSpec.positionalParameters().size(), commandSpec.requiredArgs().size(), commandSpec
                             .subcommands().size());}
             parsedCommands.add(CommandLine.this);
-            List<ArgSpec> required = new ArrayList<ArgSpec>(commandSpec.requiredArgs());
-            Set<ArgSpec> initialized = new HashSet<ArgSpec>();
+            List<ArgSpec<?>> required = new ArrayList<ArgSpec<?>>(commandSpec.requiredArgs());
+            Set<ArgSpec<?>> initialized = new HashSet<ArgSpec<?>>();
             Collections.sort(required, new PositionalParametersSorter());
             try {
                 processArguments(parsedCommands, argumentStack, required, initialized, originalArgs);
@@ -3358,7 +3362,7 @@ public class CommandLine {
                 throw ParameterException.create(CommandLine.this, ex, arg, offendingArgIndex, originalArgs);
             }
             if (!isAnyHelpRequested() && !required.isEmpty()) {
-                for (ArgSpec missing : required) {
+                for (ArgSpec<?> missing : required) {
                     if (missing.isOption()) {
                         throw MissingParameterException.create(CommandLine.this, required, commandSpec.separator());
                     } else {
@@ -3374,8 +3378,8 @@ public class CommandLine {
 
         private void processArguments(List<CommandLine> parsedCommands,
                                       Stack<String> args,
-                                      Collection<ArgSpec> required,
-                                      Set<ArgSpec> initialized,
+                                      Collection<ArgSpec<?>> required,
+                                      Set<ArgSpec<?>> initialized,
                                       String[] originalArgs) throws Exception {
             // arg must be one of:
             // 1. the "--" double dash separating options from positional arguments
@@ -3389,7 +3393,7 @@ public class CommandLine {
             String separator = commandSpec.separator();
             while (!args.isEmpty()) {
                 String arg = args.pop();
-                if (tracer.isDebug()) {tracer.debug("Processing argument '%s'. Remainder=%s%n", arg, reverse((Stack<String>) args.clone()));}
+                if (tracer.isDebug()) {tracer.debug("Processing argument '%s'. Remainder=%s%n", arg, reverse(copy(args)));}
 
                 // Double-dash separates options from positional arguments.
                 // If found, then interpret the remaining args as positional parameters.
@@ -3467,21 +3471,20 @@ public class CommandLine {
             while (!args.isEmpty()) { unmatchedArguments.add(args.pop()); } // addAll would give args in reverse order
         }
 
-        private void processRemainderAsPositionalParameters(Collection<ArgSpec> required, Set<ArgSpec> initialized, Stack<String> args) throws Exception {
+        private void processRemainderAsPositionalParameters(Collection<ArgSpec<?>> required, Set<ArgSpec<?>> initialized, Stack<String> args) throws Exception {
             while (!args.empty()) {
                 processPositionalParameter(required, initialized, args);
             }
         }
-        private void processPositionalParameter(Collection<ArgSpec> required, Set<ArgSpec> initialized, Stack<String> args) throws Exception {
-            if (tracer.isDebug()) {tracer.debug("Processing next arg as a positional parameter at index=%d. Remainder=%s%n", position, reverse((Stack<String>) args.clone()));}
+        private void processPositionalParameter(Collection<ArgSpec<?>> required, Set<ArgSpec<?>> initialized, Stack<String> args) throws Exception {
+            if (tracer.isDebug()) {tracer.debug("Processing next arg as a positional parameter at index=%d. Remainder=%s%n", position, reverse(copy(args)));}
             int consumed = 0;
             for (PositionalParamSpec positionalParam : commandSpec.positionalParameters()) {
                 Range indexRange = positionalParam.index();
                 if (!indexRange.contains(position)) {
                     continue;
                 }
-                @SuppressWarnings("unchecked")
-                Stack<String> argsCopy = (Stack<String>) args.clone();
+                Stack<String> argsCopy = copy(args);
                 Range arity = positionalParam.arity();
                 if (tracer.isDebug()) {tracer.debug("Position %d is in index range %s. Trying to assign args to %s, arity=%s%n", position, indexRange, positionalParam, arity);}
                 assertNoMissingParameters(positionalParam, arity.min, argsCopy);
@@ -3500,12 +3503,12 @@ public class CommandLine {
             }
         }
 
-        private void processStandaloneOption(Collection<ArgSpec> required,
-                                             Set<ArgSpec> initialized,
+        private void processStandaloneOption(Collection<ArgSpec<?>> required,
+                                             Set<ArgSpec<?>> initialized,
                                              String arg,
                                              Stack<String> args,
                                              boolean paramAttachedToKey) throws Exception {
-            ArgSpec argSpec = commandSpec.optionsMap().get(arg);
+            ArgSpec<?> argSpec = commandSpec.optionsMap().get(arg);
             required.remove(argSpec);
             Range arity = argSpec.arity();
             if (paramAttachedToKey) {
@@ -3515,8 +3518,8 @@ public class CommandLine {
             applyOption(argSpec, arity, args, initialized, "option " + arg);
         }
 
-        private void processClusteredShortOptions(Collection<ArgSpec> required,
-                                                  Set<ArgSpec> initialized,
+        private void processClusteredShortOptions(Collection<ArgSpec<?>> required,
+                                                  Set<ArgSpec<?>> initialized,
                                                   String arg,
                                                   Stack<String> args)
                 throws Exception {
@@ -3525,7 +3528,7 @@ public class CommandLine {
             boolean paramAttachedToOption = true;
             do {
                 if (cluster.length() > 0 && commandSpec.posixOptionsMap().containsKey(cluster.charAt(0))) {
-                    ArgSpec argSpec = commandSpec.posixOptionsMap().get(cluster.charAt(0));
+                    ArgSpec<?> argSpec = commandSpec.posixOptionsMap().get(cluster.charAt(0));
                     Range arity = argSpec.arity();
                     String argDescription = "option " + prefix + cluster.charAt(0);
                     if (tracer.isDebug()) {tracer.debug("Found option '%s%s' in %s: %s, arity=%s%n", prefix, cluster.charAt(0), arg,
@@ -3580,10 +3583,10 @@ public class CommandLine {
             } while (true);
         }
 
-        private int applyOption(ArgSpec argSpec,
+        private int applyOption(ArgSpec<?> argSpec,
                                 Range arity,
                                 Stack<String> args,
-                                Set<ArgSpec> initialized,
+                                Set<ArgSpec<?>> initialized,
                                 String argDescription) throws Exception {
             updateHelpRequested(argSpec);
             assertNoMissingParameters(argSpec, arity.min, args);
@@ -3602,11 +3605,11 @@ public class CommandLine {
             return applyValueToSingleValuedField(argSpec, arity, args, cls, initialized, argDescription);
         }
 
-        private int applyValueToSingleValuedField(ArgSpec argSpec,
+        private int applyValueToSingleValuedField(ArgSpec<?> argSpec,
                                                   Range arity,
                                                   Stack<String> args,
                                                   Class<?> cls,
-                                                  Set<ArgSpec> initialized,
+                                                  Set<ArgSpec<?>> initialized,
                                                   String argDescription) throws Exception {
             boolean noMoreValues = args.isEmpty();
             String value = args.isEmpty() ? null : trim(args.pop()); // unquote the value
@@ -3649,7 +3652,7 @@ public class CommandLine {
             argSpec.setValue(newValue);
             return result;
         }
-        private int applyValuesToMapField(ArgSpec argSpec,
+        private int applyValuesToMapField(ArgSpec<?> argSpec,
                                           Range arity,
                                           Stack<String> args,
                                           Class<?> mapClass,
@@ -3658,7 +3661,7 @@ public class CommandLine {
             if (classes.length < 2) { throw new ParameterException(CommandLine.this, argSpec.toString() + " needs two types (one for the map key, one for the value) but only has " + classes.length + " types configured."); }
             ITypeConverter<?> keyConverter   = getTypeConverter(classes[0], argSpec, 0);
             ITypeConverter<?> valueConverter = getTypeConverter(classes[1], argSpec, 1);
-            Map<Object, Object> result = (Map<Object, Object>) argSpec.getValue();
+            @SuppressWarnings("unchecked") Map<Object, Object> result = (Map<Object, Object>) argSpec.getValue();
             if (result == null) {
                 result = createMap(mapClass);
                 argSpec.setValue(result);
@@ -3668,7 +3671,7 @@ public class CommandLine {
             return result.size() - originalSize;
         }
 
-        private void consumeMapArguments(ArgSpec argSpec,
+        private void consumeMapArguments(ArgSpec<?> argSpec,
                                          Range arity,
                                          Stack<String> args,
                                          Class<?>[] classes,
@@ -3691,7 +3694,7 @@ public class CommandLine {
             }
         }
 
-        private void consumeOneMapArgument(ArgSpec argSpec,
+        private void consumeOneMapArgument(ArgSpec<?> argSpec,
                                            Stack<String> args,
                                            Class<?>[] classes,
                                            ITypeConverter<?> keyConverter, ITypeConverter<?> valueConverter,
@@ -3722,7 +3725,7 @@ public class CommandLine {
             }
         }
 
-        private void checkMaxArityExceeded(Range arity, int remainder, ArgSpec argSpec, String[] values) {
+        private void checkMaxArityExceeded(Range arity, int remainder, ArgSpec<?> argSpec, String[] values) {
             if (values.length <= remainder) { return; }
             String desc = arity.max == remainder ? "" + remainder : arity + ", remainder=" + remainder;
             throw new MaxValuesforFieldExceededException(CommandLine.this, optionDescription("", argSpec, -1) +
@@ -3730,7 +3733,7 @@ public class CommandLine {
                     values.length + " values were specified: " + Arrays.toString(values));
         }
 
-        private int applyValuesToArrayField(ArgSpec argSpec,
+        private int applyValuesToArrayField(ArgSpec<?> argSpec,
                                             Range arity,
                                             Stack<String> args,
                                             Class<?> cls,
@@ -3759,7 +3762,7 @@ public class CommandLine {
         }
 
         @SuppressWarnings("unchecked")
-        private int applyValuesToCollectionField(ArgSpec argSpec,
+        private int applyValuesToCollectionField(ArgSpec<?> argSpec,
                                                  Range arity,
                                                  Stack<String> args,
                                                  Class<?> collectionType,
@@ -3781,7 +3784,7 @@ public class CommandLine {
             return converted.size();
         }
 
-        private List<Object> consumeArguments(ArgSpec argSpec,
+        private List<Object> consumeArguments(ArgSpec<?> argSpec,
                                               Range arity,
                                               Stack<String> args,
                                               Class<?> type,
@@ -3807,7 +3810,7 @@ public class CommandLine {
             return result;
         }
 
-        private int consumeOneArgument(ArgSpec argSpec,
+        private int consumeOneArgument(ArgSpec<?> argSpec,
                                        Range arity,
                                        Stack<String> args,
                                        Class<?> type,
@@ -3849,7 +3852,7 @@ public class CommandLine {
             }
             return (arg.length() > 2 && arg.startsWith("-") && commandSpec.posixOptionsMap().containsKey(arg.charAt(1)));
         }
-        private Object tryConvert(ArgSpec argSpec, int index, ITypeConverter<?> converter, String value, Class<?> type)
+        private Object tryConvert(ArgSpec<?> argSpec, int index, ITypeConverter<?> converter, String value, Class<?> type)
                 throws Exception {
             try {
                 return converter.convert(value);
@@ -3861,7 +3864,7 @@ public class CommandLine {
             }
         }
 
-        private String optionDescription(String prefix, ArgSpec argSpec, int index) {
+        private String optionDescription(String prefix, ArgSpec<?> argSpec, int index) {
             String desc = "";
             if (argSpec.isOption()) {
                 desc = prefix + "option '" + ((OptionSpec) argSpec).names()[0] + "'";
@@ -3879,7 +3882,7 @@ public class CommandLine {
 
         private boolean isAnyHelpRequested() { return isHelpRequested || versionHelpRequested || usageHelpRequested; }
 
-        private void updateHelpRequested(ArgSpec argSpec) {
+        private void updateHelpRequested(ArgSpec<?> argSpec) {
             if (argSpec.isOption()) {
                 OptionSpec option = (OptionSpec) argSpec;
                 isHelpRequested                       |= is(argSpec, "help", option.help());
@@ -3887,7 +3890,7 @@ public class CommandLine {
                 CommandLine.this.usageHelpRequested   |= is(argSpec, "usageHelp", option.usageHelp());
             }
         }
-        private boolean is(ArgSpec p, String attribute, boolean value) {
+        private boolean is(ArgSpec<?> p, String attribute, boolean value) {
             if (value) { if (tracer.isInfo()) {tracer.info("%s has '%s' annotation: not validating required fields%n", p.toString(), attribute); }}
             return value;
         }
@@ -3908,13 +3911,13 @@ public class CommandLine {
             // custom Collection implementation class must have default constructor
             return (Collection<Object>) collectionClass.newInstance();
         }
-        private Map<Object, Object> createMap(Class<?> mapClass) throws Exception {
+        @SuppressWarnings("unchecked") private Map<Object, Object> createMap(Class<?> mapClass) throws Exception {
             try { // if it is an implementation class, instantiate it
                 return (Map<Object, Object>) mapClass.getDeclaredConstructor().newInstance();
             } catch (Exception ignored) {}
             return new LinkedHashMap<Object, Object>();
         }
-        private ITypeConverter<?> getTypeConverter(final Class<?> type, ArgSpec argSpec, int index) {
+        private ITypeConverter<?> getTypeConverter(final Class<?> type, ArgSpec<?> argSpec, int index) {
             if (argSpec.converters().length > index) { return argSpec.converters()[index]; }
             if (converterRegistry.containsKey(type)) { return converterRegistry.get(type); }
             if (type.isEnum()) {
@@ -3928,7 +3931,7 @@ public class CommandLine {
             throw new MissingTypeConverterException(CommandLine.this, "No TypeConverter registered for " + type.getName() + " of " + argSpec);
         }
 
-        private void assertNoMissingParameters(ArgSpec argSpec, int arity, Stack<String> args) {
+        private void assertNoMissingParameters(ArgSpec<?> argSpec, int arity, Stack<String> args) {
             if (arity > args.size()) {
                 if (arity == 1) {
                     if (argSpec.isOption()) {
@@ -3976,13 +3979,13 @@ public class CommandLine {
                         : value;
         }
     }
-    private static class PositionalParametersSorter implements Comparator<ArgSpec> {
+    private static class PositionalParametersSorter implements Comparator<ArgSpec<?>> {
         private static final Range OPTION_INDEX = new Range(0, 0, false, true, "0");
-        public int compare(ArgSpec p1, ArgSpec p2) {
+        public int compare(ArgSpec<?> p1, ArgSpec<?> p2) {
             int result = index(p1).compareTo(index(p2));
             return (result == 0) ? p1.arity().compareTo(p2.arity()) : result;
         }
-        private Range index(ArgSpec arg) { return arg.isOption() ? OPTION_INDEX : ((PositionalParamSpec) arg).index(); }
+        private Range index(ArgSpec<?> arg) { return arg.isOption() ? OPTION_INDEX : ((PositionalParamSpec) arg).index(); }
     }
     /**
      * Inner class to group the built-in {@link ITypeConverter} implementations.
@@ -4110,7 +4113,7 @@ public class CommandLine {
                 throw new TypeConversionException("'" + s + "' is not a valid ByteOrder");
             }
         }
-        static class ClassConverter implements ITypeConverter<Class> {
+        static class ClassConverter implements ITypeConverter<Class<?>> {
             public Class<?> convert(String s) throws Exception { return Class.forName(s); }
         }
         static class NetworkInterfaceConverter implements ITypeConverter<NetworkInterface> {
@@ -4268,7 +4271,7 @@ public class CommandLine {
          * @param command the annotated object to create usage help for
          * @param colorScheme the color scheme to use
          * @deprecated use {@link picocli.CommandLine.Help#Help(picocli.CommandLine.CommandSpec, picocli.CommandLine.Help.ColorScheme)}  */
-        public Help(Object command, ColorScheme colorScheme) {
+        @Deprecated public Help(Object command, ColorScheme colorScheme) {
             this(CommandSpecBuilder.build(command, new DefaultFactory()), colorScheme);
         }
         /** Constructs a new {@code Help} instance with the specified color scheme, initialized from annotatations
@@ -4325,7 +4328,7 @@ public class CommandLine {
          * @return this Help instance (for method chaining)
          * @deprecated
          */
-        public Help addSubcommand(String commandName, Object command) {
+        @Deprecated public Help addSubcommand(String commandName, Object command) {
             commands.put(commandName, new Help(CommandSpecBuilder.build(command, commandSpec.commandLine().factory)));
             return this;
         }
@@ -4340,7 +4343,7 @@ public class CommandLine {
          * @see #detailedSynopsis(Comparator, boolean)
          * @deprecated use {@link #synopsis(int)} instead
          */
-        public String synopsis() { return synopsis(0); }
+        @Deprecated public String synopsis() { return synopsis(0); }
 
         /**
          * Returns a synopsis for the command, reserving the specified space for the synopsis heading.
@@ -4379,7 +4382,7 @@ public class CommandLine {
          * @param clusterBooleanOptions {@code true} if boolean short options should be clustered into a single string
          * @return a detailed synopsis
          * @deprecated use {@link #detailedSynopsis(int, Comparator, boolean)} instead. */
-        public String detailedSynopsis(Comparator<OptionSpec> optionSort, boolean clusterBooleanOptions) {
+        @Deprecated public String detailedSynopsis(Comparator<OptionSpec> optionSort, boolean clusterBooleanOptions) {
             return detailedSynopsis(0, optionSort, clusterBooleanOptions);
         }
 
@@ -4749,7 +4752,7 @@ public class CommandLine {
          * @return a new minimal ParamLabelRenderer */
         public static IParamLabelRenderer createMinimalParamLabelRenderer() {
             return new IParamLabelRenderer() {
-                public Text renderParameterLabel(ArgSpec argSpec, Ansi ansi, List<IStyle> styles) {
+                public Text renderParameterLabel(ArgSpec<?> argSpec, Ansi ansi, List<IStyle> styles) {
                     return ansi.apply(argSpec.paramLabel(), styles);
                 }
                 public String separator() { return ""; }
@@ -4963,7 +4966,7 @@ public class CommandLine {
              * @param styles the styles to apply to the parameter label
              * @return a text rendering of the Option parameter or positional parameter
              * @since 3.0 */
-            Text renderParameterLabel(ArgSpec argSpec, Ansi ansi, List<IStyle> styles);
+            Text renderParameterLabel(ArgSpec<?> argSpec, Ansi ansi, List<IStyle> styles);
 
             /** Returns the separator between option name and param label.
              * @return the separator between option name and param label */
@@ -4982,7 +4985,7 @@ public class CommandLine {
                 this.commandSpec = Assert.notNull(commandSpec, "commandSpec");
             }
             public String separator() { return commandSpec.separator(); }
-            public Text renderParameterLabel(ArgSpec argSpec, Ansi ansi, List<IStyle> styles) {
+            public Text renderParameterLabel(ArgSpec<?> argSpec, Ansi ansi, List<IStyle> styles) {
                 Text result = ansi.new Text("");
                 String sep = argSpec.isOption() ? separator() : "";
                 Text paramName = ansi.apply(argSpec.paramLabel(), styles);
@@ -5061,7 +5064,7 @@ public class CommandLine {
              * @param argSpec the Option or Parameters
              * @param cellValues the text values representing the Option/Parameters, to be displayed in tabular form
              * @since 3.0 */
-            public void layout(ArgSpec argSpec, Text[][] cellValues) {
+            public void layout(ArgSpec<?> argSpec, Text[][] cellValues) {
                 for (Text[] oneRow : cellValues) {
                     table.addRowValues(oneRow);
                 }
@@ -5237,7 +5240,7 @@ public class CommandLine {
              * @param col the column of the cell whose Text to return
              * @return the Text object at the specified row and column
              * @deprecated use {@link #textAt(int, int)} instead */
-            public Text cellAt(int row, int col) { return textAt(row, col); }
+            @Deprecated public Text cellAt(int row, int col) { return textAt(row, col); }
 
             /** Returns the current number of rows of this {@code TextTable}.
              * @return the current number of rows in this TextTable */
@@ -6018,18 +6021,18 @@ public class CommandLine {
             super(commandLine, msg);
         }
 
-        private static MissingParameterException create(CommandLine cmd, Collection<ArgSpec> missing, String separator) {
+        private static MissingParameterException create(CommandLine cmd, Collection<ArgSpec<?>> missing, String separator) {
             if (missing.size() == 1) {
                 return new MissingParameterException(cmd, "Missing required option '"
                         + describe(missing.iterator().next(), separator) + "'");
             }
             List<String> names = new ArrayList<String>(missing.size());
-            for (ArgSpec argSpec : missing) {
+            for (ArgSpec<?> argSpec : missing) {
                 names.add(describe(argSpec, separator));
             }
             return new MissingParameterException(cmd, "Missing required options " + names.toString());
         }
-        private static String describe(ArgSpec argSpec, String separator) {
+        private static String describe(ArgSpec<?> argSpec, String separator) {
             String prefix = (argSpec.isOption())
                 ? ((OptionSpec) argSpec).names()[0] + separator
                 : "params[" + ((PositionalParamSpec) argSpec).index() + "]" + separator;
@@ -6044,7 +6047,7 @@ public class CommandLine {
         private static final long serialVersionUID = -3355128012575075641L;
         public DuplicateOptionAnnotationsException(String msg) { super(msg); }
 
-        private static DuplicateOptionAnnotationsException create(String name, ArgSpec argSpec1, ArgSpec argSpec2) {
+        private static DuplicateOptionAnnotationsException create(String name, ArgSpec<?> argSpec1, ArgSpec<?> argSpec2) {
             return new DuplicateOptionAnnotationsException("Option name '" + name + "' is used by both " +
                     argSpec1.toString() + " and " + argSpec2.toString());
         }
