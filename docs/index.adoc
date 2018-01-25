@@ -2305,15 +2305,15 @@ class MyApp : Runnable {
 
     @Option(names = ["-c", "--count"], paramLabel = "COUNT",
             description = ["the count"])
-    private val count: Int = 0
+    private var count: Int = 0
 
     @Option(names = ["-h", "--help"], usageHelp = true,
             description = ["print this help and exit"])
-    private val helpRequested: Boolean = false
+    private var helpRequested: Boolean = false
 
     @Option(names = ["-V", "--version"], versionHelp = true,
             description = ["print version info and exit"])
-    private val versionRequested: Boolean = false
+    private var versionRequested: Boolean = false
 
     override fun run() {
         for (i in 0 until count) {
@@ -2338,15 +2338,15 @@ class MyApp : Runnable {
 
     @Option(names = arrayOf("-c", "--count"), paramLabel = "COUNT",
             description = arrayOf("the count"))
-    private val count: Int = 0
+    private var count: Int = 0
 
     @Option(names = arrayOf("-h", "--help"), usageHelp = true,
             description = arrayOf("print this help and exit"))
-    private val helpRequested: Boolean = false
+    private var helpRequested: Boolean = false
 
     @Option(names = arrayOf("-V", "--version"), versionHelp = true,
             description = arrayOf("print version info and exit"))
-    private val versionRequested: Boolean = false
+    private var versionRequested: Boolean = false
 
     override fun run() {
         for (i in 0 until count) {
