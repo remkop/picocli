@@ -3676,15 +3676,15 @@ class MyApp : Runnable {
 
     @Option(names = [&quot;-c&quot;, &quot;--count&quot;], paramLabel = &quot;COUNT&quot;,
             description = [&quot;the count&quot;])
-    private val count: Int = 0
+    private var count: Int = 0
 
     @Option(names = [&quot;-h&quot;, &quot;--help&quot;], usageHelp = true,
             description = [&quot;print this help and exit&quot;])
-    private val helpRequested: Boolean = false
+    private var helpRequested: Boolean = false
 
     @Option(names = [&quot;-V&quot;, &quot;--version&quot;], versionHelp = true,
             description = [&quot;print version info and exit&quot;])
-    private val versionRequested: Boolean = false
+    private var versionRequested: Boolean = false
 
     override fun run() {
         for (i in 0 until count) {
