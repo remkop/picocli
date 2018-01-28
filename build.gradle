@@ -7,6 +7,9 @@ def oldVersion = '3\\.0\\.0-alpha1-SNAPSHOT'
 def oldRevdate = '2018\\-01\\-03'
 def revDate    = '2018-01-03'
 
+// for bumpReadmeVersion task
+def previousReleaseVersion = '2.2.1'
+
 buildscript {
     repositories {
         jcenter()
@@ -131,6 +134,14 @@ artifacts {
     archives testSourcesJar
     archives testJar
     archives jar
+}
+task bumpReadmeVersion {
+    doLast {
+        // README.md
+        ant.replaceregexp(match: "$previousReleaseVersion", replace: "$version", flags: 'g', byline: true, encoding: 'UTF8') {
+            fileset(dir: '.', includes: 'README.md')
+        }
+    }
 }
 task bumpVersion {
     doLast {

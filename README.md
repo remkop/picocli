@@ -131,3 +131,41 @@ For example, your application can generate help like this with a custom layout:
 
 See the [source code](https://github.com/remkop/picocli/blob/master/src/test/java/picocli/CustomLayoutDemo.java#L61).
 
+## Download
+You can add picocli as an external dependency to your project, or you can include it as source.
+See the [source code](https://github.com/remkop/picocli/blob/master/src/main/java/picocli/CommandLine.java). Copy and paste it into a file called `CommandLine.java`, add it to your project, and enjoy!
+
+### Gradle
+```
+compile 'info.picocli:picocli:2.2.1'
+```
+### Maven
+```
+<dependency>
+  <groupId>info.picocli</groupId>
+  <artifactId>picocli</artifactId>
+  <version>2.2.1</version>
+</dependency>
+```
+### Scala SBT
+```
+libraryDependencies += "info.picocli" % "picocli" % "2.2.1"
+```
+### Ivy
+```
+<dependency org="info.picocli" name="picocli" rev="2.2.1" />
+```
+### Grape
+```groovy
+@Grapes(
+    @Grab(group='info.picocli', module='picocli', version='2.2.1')
+)
+```
+### Leiningen
+```
+[info.picocli/picocli "2.2.1"]
+```
+### Buildr
+```
+'info.picocli:picocli:jar:2.2.1'
+```
