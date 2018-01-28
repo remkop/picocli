@@ -1142,6 +1142,7 @@ public class CommandLine {
     private static CommandLine toCommandLine(Object obj, IFactory factory) { return obj instanceof CommandLine ? (CommandLine) obj : new CommandLine(obj, factory);}
     private static boolean isMultiValue(Field field) {  return isMultiValue(field.getType()); }
     private static boolean isMultiValue(Class<?> cls) { return cls.isArray() || Collection.class.isAssignableFrom(cls) || Map.class.isAssignableFrom(cls); }
+
     /**
      * <p>
      * Annotate fields in your class with {@code @Option} and picocli will initialize these fields when matching
@@ -1399,6 +1400,14 @@ public class CommandLine {
          * @return whether this option should be excluded from the usage message
          */
         boolean hidden() default false;
+
+        /** Use this attribute to control for a specific option whether its default value should be shown in the usage
+         * help message. If not specified, the default value is only shown when the {@link Command#showDefaultValues()}
+         * is set {@code true} on the command. Use this attribute to specify whether the default value
+         * for this specific option should always be shown or never be shown, regardless of the command setting.
+         * @return whether this option's default value should be shown in the usage help message
+         */
+        Help.Visibility showDefaultValue() default Help.Visibility.ON_DEMAND;
     }
     /**
      * <p>
@@ -1517,6 +1526,14 @@ public class CommandLine {
          * @return whether this parameter should be excluded from the usage message
          */
         boolean hidden() default false;
+
+        /** Use this attribute to control for a specific positional parameter whether its default value should be shown in the usage
+         * help message. If not specified, the default value is only shown when the {@link Command#showDefaultValues()}
+         * is set {@code true} on the command. Use this attribute to specify whether the default value
+         * for this specific positional parameter should always be shown or never be shown, regardless of the command setting.
+         * @return whether this positional parameter's default value should be shown in the usage help message
+         */
+        Help.Visibility showDefaultValue() default Help.Visibility.ON_DEMAND;
     }
 
     /**
@@ -2257,11 +2274,13 @@ public class CommandLine {
     static class ArgSpecBuilder {
         static OptionSpec buildOptionSpec(Object scope, Field field, IFactory factory) {
             Option option = field.getAnnotation(Option.class);
-
             OptionSpec result = new OptionSpec(option.names());
+            initCommon(result, scope, field);
+
             result.help(option.help());
             result.usageHelp(option.usageHelp());
             result.versionHelp(option.versionHelp());
+            result.showDefaultValue(option.showDefaultValue());
 
             result.arity(Range.optionArity(field));
             result.required(option.required());
@@ -2271,7 +2290,6 @@ public class CommandLine {
             result.splitRegex(option.split());
             result.hidden(option.hidden());
             result.converters(DefaultFactory.createConverter(factory, option.converter()));
-            initCommon(result, scope, field);
             return result;
         }
 
@@ -2287,20 +2305,21 @@ public class CommandLine {
             return "<" + name + ">";
         }
         static PositionalParamSpec buildPositionalParamSpec(Object scope, Field field, IFactory factory) {
-            Parameters parameters = field.getAnnotation(Parameters.class);
-
             PositionalParamSpec result = new PositionalParamSpec();
+            initCommon(result, scope, field);
             result.arity(Range.parameterArity(field));
             result.index(Range.parameterIndex(field));
             result.capacity = Range.parameterCapacity(field);
             result.required(result.arity().min > 0);
+
+            Parameters parameters = field.getAnnotation(Parameters.class);
             result.description(parameters.description());
             result.auxiliaryTypes(inferTypes(field.getType(), parameters.type(), field.getGenericType()));
             result.paramLabel(inferLabel(parameters.paramLabel(), field.getName(), field.getType(), result.auxiliaryTypes()));
             result.splitRegex(parameters.split());
             result.hidden(parameters.hidden());
             result.converters(DefaultFactory.createConverter(factory, parameters.converter()));
-            initCommon(result, scope, field);
+            result.showDefaultValue(parameters.showDefaultValue());
             return result;
         }
         private static void initCommon(ArgSpec<?> result, Object scope, Field field) {
@@ -2803,6 +2822,7 @@ public class CommandLine {
         private Class<?>[] auxiliaryTypes;
         private ITypeConverter<?>[] converters;
         private Object defaultValue;
+        private Help.Visibility showDefaultValue;
         private String toString;
         private IGetter getter;
         private ISetter setter;
@@ -2850,6 +2870,7 @@ public class CommandLine {
                 }
             }
             if (converters == null) { converters = new ITypeConverter<?>[0]; }
+            if (showDefaultValue == null) { showDefaultValue = Help.Visibility.ON_DEMAND; }
             return self();
         }
 
@@ -2911,6 +2932,12 @@ public class CommandLine {
         /** Returns the default value of this option or positional parameter. */
         public Object defaultValue()   { return defaultValue; }
 
+        /** Returns whether this option or positional parameter's default value should be shown in the usage help. */
+        public Help.Visibility showDefaultValue() { return showDefaultValue; }
+
+        /** Sets whether this option or positional parameter's default value should be shown in the usage help. */
+        public T showDefaultValue(Help.Visibility visibility) { showDefaultValue = Assert.notNull(visibility, "visibility"); return self(); }
+
         /** Returns the {@link IGetter} that is responsible for getting the value of this argument. */
         public IGetter getter()         { return getter; }
         /** Returns the {@link ISetter} that is responsible for setting the value of this argument. */
@@ -2932,16 +2959,16 @@ public class CommandLine {
         public T required(boolean required)          { this.required = required; return self(); }
 
         /** Sets the description of this option, used when generating the usage documentation. */
-        public T description(String... description)  { this.description = description; return self(); }
+        public T description(String... description)  { this.description = Assert.notNull(description, "description"); return self(); }
 
         /** Sets how many arguments this option or positional parameter requires. */
         public T arity(String range)                 { return arity(Range.valueOf(range)); }
 
         /** Sets how many arguments this option or positional parameter requires. */
-        public T arity(Range arity)                  { this.arity = arity; return self(); }
+        public T arity(Range arity)                  { this.arity = Assert.notNull(arity, "arity"); return self(); }
 
         /** Sets the name of the option or positional parameter used in the usage help message. */
-        public T paramLabel(String paramLabel)       { this.paramLabel = paramLabel; return self(); }
+        public T paramLabel(String paramLabel)       { this.paramLabel = Assert.notNull(paramLabel, "paramLabel"); return self(); }
 
         /** Sets auxiliary type information used when the {@link #type()} is a generic {@code Collection}, {@code Map} or an abstract class. */
         public T auxiliaryTypes(Class<?>... types)   { this.auxiliaryTypes = types; return self(); }
@@ -3072,6 +3099,13 @@ public class CommandLine {
          * @see Option#names() */
         public String[] names()       { return names; }
 
+        private boolean showDefaultValue(CommandSpec commandSpec) {
+            if (showDefaultValue() == Help.Visibility.ALWAYS) { return true; }
+            if (showDefaultValue() == Help.Visibility.NEVER)  { return false; }
+            boolean isBoolean = !isMultiValue() && isBoolean(auxiliaryTypes()[0]);
+            return commandSpec != null && commandSpec.showDefaultValues() && defaultValue() != null && !help() && !versionHelp() && !usageHelp() && !isBoolean;
+        }
+
         /** Returns whether this option disables validation of the other arguments.
          * @see Option#help()
          * @deprecated Use {@link #usageHelp()} and {@link #versionHelp()} instead. */
@@ -3180,6 +3214,13 @@ public class CommandLine {
 
         /** Sets the index or range specifying which of the command line arguments should be assigned to this positional parameter. */
         public PositionalParamSpec index(Range index)                  { this.index = index; return self(); }
+
+        private boolean showDefaultValue(CommandSpec commandSpec) {
+            if (showDefaultValue() == Help.Visibility.ALWAYS) { return true; }
+            if (showDefaultValue() == Help.Visibility.NEVER)  { return false; }
+            boolean isBoolean = !isMultiValue() && isBoolean(auxiliaryTypes()[0]);
+            return commandSpec != null && commandSpec.showDefaultValues() && defaultValue() != null && !isBoolean;
+        }
 
         public int hashCode() {
             return super.hashCode()
@@ -4787,6 +4828,9 @@ public class CommandLine {
          */
         public Ansi ansi() { return colorScheme.ansi; }
 
+        /** Controls the visibility of certain aspects of the usage help message. */
+        public enum Visibility { ALWAYS, NEVER, ON_DEMAND }
+
         /** When customizing online help for {@link OptionSpec Option} details, a custom {@code IOptionRenderer} can be
          * used to create textual representation of an Option in a tabular format: one or more rows, each containing
          * one or more columns. The {@link Layout Layout} is responsible for placing these text values in the
@@ -4828,12 +4872,10 @@ public class CommandLine {
                 String longOption = join(names, shortOptionCount, names.length - shortOptionCount, ", ");
                 Text longOptionText = createLongOptionText(option, paramLabelRenderer, scheme, longOption);
 
-                boolean isBoolean = !option.isMultiValue() && isBoolean(option.auxiliaryTypes()[0]);
-                Object defaultValue = option.defaultValue();
-                showDefault = commandSpec != null && commandSpec.showDefaultValues() && defaultValue != null && !option.help() && !option.versionHelp() && !option.usageHelp() && !isBoolean;
+                showDefault = option.showDefaultValue(commandSpec);
 
                 String requiredOption = option.required() ? requiredMarker : "";
-                return renderDescriptionLines(option, scheme, requiredOption, shortOption, longOptionText, defaultValue);
+                return renderDescriptionLines(option, scheme, requiredOption, shortOption, longOptionText, option.defaultValue());
             }
 
             private Text createLongOptionText(OptionSpec option, IParamLabelRenderer renderer, ColorScheme scheme, String longOption) {

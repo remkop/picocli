@@ -1287,7 +1287,7 @@ Usage: <main class> <host> <port> [<files>...]
 ----
 
 === Show Default Values
-Use the `showDefaultValues = true` attribute to append the default value of the options and positional parameters to the description column. Picocli uses reflection to get the default values from the annotated fields. For example:
+Use the `@Command(showDefaultValues = true)` attribute to append the default value of all non-`null` options and positional parameters to the description column. Picocli uses reflection to get the default values from the annotated fields. For example:
 
 [source,java]
 ----
@@ -1303,7 +1303,47 @@ This produces the following usage help:
 ----
 Usage: <main class> -f=<file>
   -f, --file=<file>           the file to use
-                              Default: config.xml
+                                Default: config.xml
+----
+
+Picocli 3.0 gives more fine-grained control and adds a `showDefaultValue` attribute to the `@Option` and `@Parameters` annotation.
+This allows you to specify for each individual option and positional parameter whether its default value should be shown in the usage help.
+This attribute accepts three values:
+
+* `ALWAYS` - always display the default value of this option or positional parameter, even `null` values, regardless what value of `showDefaultValues` was specified on the command
+* `NEVER` - don't show the default value for this option or positional parameter, regardless what value of `showDefaultValues` was specified on the command
+* `ON_DEMAND` - (this is the default) only show the default value for this option or positional parameter if `showDefaultValues` was specified on the command
+
+The `NEVER` value is useful for security sensitive command line arguments like passwords. The `ALWAYS` value is useful when you only want to show the default value for a few arguments but not for all (in combination with `@Command(showDefaultValues = false)`).
+[source,java]
+----
+import static picocli.CommandLine.Help.Visibility.*;
+
+@Command(showDefaultValues = true)
+class FineGrainedDefaults {
+    @Option(names = "-a", description = "ALWAYS shown even if null", showDefaultValue = ALWAYS)
+    String optionA;
+
+    @Option(names = "-b", description = "NEVER shown", showDefaultValue = NEVER)
+    String optionB = "xyz";
+
+    @Option(names = "-c", description = "ON_DEMAND hides null", showDefaultValue = ON_DEMAND)
+    String optionC;
+
+    @Option(names = "-d", description = "ON_DEMAND shows non-null", showDefaultValue = ON_DEMAND)
+    String optionD = "abc";
+}
+CommandLine.usage(new FineGrainedDefaults(), System.out);
+----
+This produces the following usage help:
+----
+Usage: <main class> [-a=<optionA>] [-b=<optionB>] [-c=<optionC>] [-d=<optionD>]
+  -a= <optionA>               ALWAYS shown even if null
+                                Default: null
+  -b= <optionB>               NEVER shown
+  -c= <optionC>               ON_DEMAND hides null
+  -d= <optionD>               ON_DEMAND shows non-null
+                                Default: abc
 ----
 
 === Required-Option Marker

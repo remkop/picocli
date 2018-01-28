@@ -9,6 +9,8 @@ Another new feature in this release are Mixins. Mixins allow reusing common opti
 
 Third, there is a new `autoHelp` command attribute that adds `usageHelp` and `versionHelp` options and a `help` subcommand to your command.
 
+Furthermore, this release adds a `showDefaultValue` attribute to the `@Option` and `@Parameters` annotation.
+
 This is the nineteenth public release.
 Picocli follows [semantic versioning](http://semver.org/).
 
@@ -99,6 +101,18 @@ maincommand help subcommand
 
 Combined with the `CommandLine.run`, `CommandLine.call` or `CommandLine.handleParseResult` methods, this is *all* you need to do to give your application usage help and version help.
 
+### Fine-grained ShowDefault
+
+This release adds a `showDefaultValue` attribute to the `@Option` and `@Parameters` annotation. This allows you to specify for each individual option and positional parameter whether its default value should be shown in the usage help.
+
+This attribute accepts three values:
+
+* `ALWAYS` - always display the default value of this option or positional parameter, even `null` values, regardless what value of `showDefaultValues` was specified on the command
+* `NEVER` - don't show the default value for this option or positional parameter, regardless what value of `showDefaultValues` was specified on the command
+* `ON_DEMAND` - (this is the default) only show the default value for this option or positional parameter if `showDefaultValues` was specified on the command
+
+The `NEVER` value is useful for security sensitive command line arguments like passwords. The `ALWAYS` value is useful when you only want to show the default value for a few arguments but not for all (in combination with `@Command(showDefaultValues = false)`).
+
 
 ## <a name="3.0.0-alpha-1-promoted"></a> Promoted features
 Promoted features are features that were incubating in previous versions of picocli but are now supported and subject to backwards compatibility. 
@@ -108,8 +122,9 @@ No features have been promoted in this picocli release.
 ## <a name="3.0.0-alpha-1-fixes"></a> Fixed issues
 
 - [#245] API Change: From 3.0, picocli offers an API for programmatic configuration.
-- [#144] API Change: Added suupport for mixins to allow reusing common options, positional parameters, subcommands and command attributes from any object.
+- [#144] API Change: Added support for mixins to allow reusing common options, positional parameters, subcommands and command attributes from any object.
 - [#175] New Feature: `autoHelp` attribute to conveniently activate fully automatic help.
+- [#262] API Change: new `showDefaultValue` attribute on `@Option` and `@Parameters` gives fine-grained control over which default values to show or hide.
 
 ## <a name="3.0.0-alpha-1-deprecated"></a> Deprecations
 

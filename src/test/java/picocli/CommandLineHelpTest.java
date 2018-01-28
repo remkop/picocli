@@ -18,62 +18,30 @@ package picocli;
 import org.junit.After;
 import org.junit.Ignore;
 import org.junit.Test;
-
-import picocli.CommandLine.Help;
+import picocli.CommandLine.*;
 import picocli.CommandLine.Help.Ansi.IStyle;
 import picocli.CommandLine.Help.Ansi.Style;
 import picocli.CommandLine.Help.Ansi.Text;
 import picocli.CommandLine.Help.ColorScheme;
 import picocli.CommandLine.Help.TextTable;
-import picocli.CommandLine.IFactory;
-import picocli.CommandLine.IVersionProvider;
-import picocli.CommandLine.InitializationException;
-import picocli.CommandLine.Option;
-import picocli.CommandLine.OptionSpec;
-import picocli.CommandLine.PositionalParamSpec;
-import picocli.CommandLine.Parameters;
-import picocli.CommandLine.Command;
 
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.IOException;
-import java.io.PrintStream;
-import java.io.UnsupportedEncodingException;
+import java.io.*;
 import java.lang.reflect.Field;
 import java.net.InetAddress;
 import java.net.URI;
 import java.net.URL;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
-import org.junit.After;
-import org.junit.Ignore;
-import org.junit.Test;
-
-import picocli.CommandLine.Command;
-import picocli.CommandLine.Help;
-import picocli.CommandLine.Help.Ansi.IStyle;
-import picocli.CommandLine.Help.Ansi.Style;
-import picocli.CommandLine.Help.Ansi.Text;
-import picocli.CommandLine.Help.ColorScheme;
-import picocli.CommandLine.Help.TextTable;
-import picocli.CommandLine.Option;
-import picocli.CommandLine.OptionSpec;
-import picocli.CommandLine.Parameters;
-import picocli.CommandLine.PositionalParamSpec;
-
-import static java.lang.String.*;
+import static java.lang.String.format;
 import static org.junit.Assert.*;
+import static picocli.CommandLine.Help.Visibility.*;
 import static picocli.HelpTestUtil.textArray;
 import static picocli.HelpTestUtil.usageString;
 import static picocli.ModelTestUtil.options;
 
 /**
- * Tests for picoCLI's "Usage" help functionality.
+ * Tests for picocli's "Usage" help functionality.
  */
 public class CommandLineHelpTest {
     private static final String LINESEP = System.getProperty("line.separator");
@@ -87,44 +55,234 @@ public class CommandLineHelpTest {
     }
 
     @Test
-    public void testWithoutShowDefaultValues() throws Exception {
-        @CommandLine.Command()
-        class Params {
-            @Option(names = {"-f", "--file"}, required = true, description = "the file to use") File file;
+    public void testShowDefaultValuesDemo() throws Exception {
+        @Command(showDefaultValues = true)
+        class FineGrainedDefaults {
+            @Option(names = "-a", description = "ALWAYS shown even if null", showDefaultValue = ALWAYS)
+            String optionA;
+
+            @Option(names = "-b", description = "NEVER shown", showDefaultValue = NEVER)
+            String optionB = "xyz";
+
+            @Option(names = "-c", description = "ON_DEMAND hides null", showDefaultValue = ON_DEMAND)
+            String optionC;
+
+            @Option(names = "-d", description = "ON_DEMAND shows non-null", showDefaultValue = ON_DEMAND)
+            String optionD = "abc";
         }
-        String result = usageString(new Params(), Help.Ansi.OFF);
+        String result = usageString(new FineGrainedDefaults(), Help.Ansi.OFF);
         assertEquals(format("" +
-                        "Usage: <main class> -f=<file>%n" +
-                        "  -f, --file=<file>           the file to use%n",
-                ""), result);
+                "Usage: <main class> [-a=<optionA>] [-b=<optionB>] [-c=<optionC>] [-d=<optionD>]%n" +
+                "  -a= <optionA>               ALWAYS shown even if null%n" +
+                "                                Default: null%n" +
+                "  -b= <optionB>               NEVER shown%n" +
+                "  -c= <optionC>               ON_DEMAND hides null%n" +
+                "  -d= <optionD>               ON_DEMAND shows non-null%n" +
+                "                                Default: abc%n"), result);
     }
 
     @Test
-    public void testShowDefaultValues() throws Exception {
-        @CommandLine.Command(showDefaultValues = true)
+    public void testCommandWithoutShowDefaultValuesOptionOnDemandNullValue_hidesDefault() throws Exception {
+        @Command()
         class Params {
-            @Option(names = {"-f", "--file"}, required = true, description = "the file to use")
-            File file = new File("theDefault.txt");
+            @Option(names = {"-f", "--file"}, required = true, description = "the file to use") File file;
+            @Option(names = {"-o", "--opt"},  required = true, description = "another option", showDefaultValue = Help.Visibility.ON_DEMAND) File other;
+        }
+        String result = usageString(new Params(), Help.Ansi.OFF);
+        assertEquals(format("" +
+                "Usage: <main class> -f=<file> -o=<other>%n" +
+                "  -f, --file=<file>           the file to use%n" +
+                "  -o, --opt=<other>           another option%n"), result);
+    }
+
+    @Test
+    public void testCommandWithoutShowDefaultValuesOptionOnDemandNonNullValue_hidesDefault() throws Exception {
+        @Command()
+        class Params {
+            @Option(names = {"-f", "--file"}, required = true, description = "the file to use") File file = new File("/tmp/file");
+            @Option(names = {"-o", "--opt"},  required = true, description = "another option", showDefaultValue = Help.Visibility.ON_DEMAND) File other = new File("/tmp/other");
+        }
+        String result = usageString(new Params(), Help.Ansi.OFF);
+        assertEquals(format("" +
+                "Usage: <main class> -f=<file> -o=<other>%n" +
+                "  -f, --file=<file>           the file to use%n" +
+                "  -o, --opt=<other>           another option%n"), result);
+    }
+
+    @Test
+    public void testCommandWithoutShowDefaultValuesOptionAlwaysNullValue_showsNullDefault() throws Exception {
+        @Command()
+        class Params {
+            @Option(names = {"-f", "--file"}, required = true, description = "the file to use", showDefaultValue = Help.Visibility.ALWAYS)
+            File file;
         }
         String result = usageString(new Params(), Help.Ansi.OFF);
         assertEquals(format("" +
                 "Usage: <main class> -f=<file>%n" +
                 "  -f, --file=<file>           the file to use%n" +
-                "                                Default: theDefault.txt%n"), result);
+                "                                Default: null%n"), result);
     }
 
     @Test
-    public void testShowDefaultValuesArrayField() throws Exception {
-        @CommandLine.Command(showDefaultValues = true)
+    public void testCommandWithoutShowDefaultValuesOptionAlwaysNonNullValue_showsDefault() throws Exception {
+        @Command()
         class Params {
-            @Option(names = {"-x", "--array"}, required = true, description = "the array")
-            int[] array = {1, 5, 11, 23};
+            @Option(names = {"-f", "--file"}, required = true, description = "the file to use", showDefaultValue = Help.Visibility.ALWAYS)
+            File file = new File("/tmp/file");
         }
         String result = usageString(new Params(), Help.Ansi.OFF);
         assertEquals(format("" +
-                "Usage: <main class> -x=<array> [-x=<array>]...%n" +
+                "Usage: <main class> -f=<file>%n" +
+                "  -f, --file=<file>           the file to use%n" +
+                "                                Default: %s%n", new File("/tmp/file")), result);
+    }
+
+    @Test
+    public void testCommandShowDefaultValuesOptionOnDemandNullValue_hidesDefault() throws Exception {
+        @Command(showDefaultValues = true)
+        class Params {
+            @Option(names = {"-f", "--file"}, required = true, description = "the file to use") File file;
+            @Option(names = {"-o", "--opt"},  required = true, description = "another option", showDefaultValue = Help.Visibility.ON_DEMAND) File other;
+        }
+        String result = usageString(new Params(), Help.Ansi.OFF);
+        assertEquals(format("" +
+                "Usage: <main class> -f=<file> -o=<other>%n" +
+                "  -f, --file=<file>           the file to use%n" +
+                "  -o, --opt=<other>           another option%n"), result);
+    }
+
+    @Test
+    public void testCommandShowDefaultValuesOptionNeverNullValue_hidesDefault() throws Exception {
+        @Command(showDefaultValues = true)
+        class Params {
+            @Option(names = {"-f", "--file"}, required = true, description = "the file to use") File file;
+            @Option(names = {"-o", "--opt"},  required = true, description = "another option", showDefaultValue = Help.Visibility.NEVER) File other;
+        }
+        String result = usageString(new Params(), Help.Ansi.OFF);
+        assertEquals(format("" +
+                "Usage: <main class> -f=<file> -o=<other>%n" +
+                "  -f, --file=<file>           the file to use%n" +
+                "  -o, --opt=<other>           another option%n"), result);
+    }
+
+    @Test
+    public void testCommandShowDefaultValuesOptionAlwaysNullValue_showsNullDefault() throws Exception {
+        @Command(showDefaultValues = true)
+        class Params {
+            @Option(names = {"-f", "--file"}, required = true, description = "the file to use") File file;
+            @Option(names = {"-o", "--opt"},  required = true, description = "another option", showDefaultValue = Help.Visibility.ALWAYS) File other;
+        }
+        String result = usageString(new Params(), Help.Ansi.OFF);
+        assertEquals(format("" +
+                "Usage: <main class> -f=<file> -o=<other>%n" +
+                "  -f, --file=<file>           the file to use%n" +
+                "  -o, --opt=<other>           another option%n" +
+                "                                Default: null%n"), result);
+    }
+
+    @Test
+    public void testCommandShowDefaultValuesOptionOnDemandNonNullValue_showsDefault() throws Exception {
+        @Command(showDefaultValues = true)
+        class Params {
+            @Option(names = {"-f", "--file"}, required = true, description = "the file to use")
+            File file = new File("theDefault.txt");
+            @Option(names = {"-o", "--opt"},  required = true, description = "another option", showDefaultValue = Help.Visibility.ON_DEMAND)
+            File other = new File("other.txt");
+        }
+        String result = usageString(new Params(), Help.Ansi.OFF);
+        assertEquals(format("" +
+                "Usage: <main class> -f=<file> -o=<other>%n" +
+                "  -f, --file=<file>           the file to use%n" +
+                "                                Default: theDefault.txt%n" +
+                "  -o, --opt=<other>           another option%n" +
+                "                                Default: other.txt%n"), result);
+    }
+
+    @Test
+    public void testCommandShowDefaultValuesOptionNeverNonNullValue_hidesDefault() throws Exception {
+        @Command(showDefaultValues = true)
+        class Params {
+            @Option(names = {"-f", "--file"}, required = true, description = "the file to use")
+            File file = new File("theDefault.txt");
+            @Option(names = {"-o", "--opt"},  required = true, description = "another option", showDefaultValue = Help.Visibility.NEVER)
+            File other = new File("other.txt");
+        }
+        String result = usageString(new Params(), Help.Ansi.OFF);
+        assertEquals(format("" +
+                "Usage: <main class> -f=<file> -o=<other>%n" +
+                "  -f, --file=<file>           the file to use%n" +
+                "                                Default: theDefault.txt%n" +
+                "  -o, --opt=<other>           another option%n"), result);
+    }
+
+    @Test
+    public void testCommandShowDefaultValuesOptionAlwaysNonNullValue_hidesDefault() throws Exception {
+        @Command(showDefaultValues = true)
+        class Params {
+            @Option(names = {"-f", "--file"}, required = true, description = "the file to use")
+            File file = new File("theDefault.txt");
+            @Option(names = {"-o", "--opt"},  required = true, description = "another option", showDefaultValue = Help.Visibility.ALWAYS)
+            File other = new File("other.txt");
+        }
+        String result = usageString(new Params(), Help.Ansi.OFF);
+        assertEquals(format("" +
+                "Usage: <main class> -f=<file> -o=<other>%n" +
+                "  -f, --file=<file>           the file to use%n" +
+                "                                Default: theDefault.txt%n" +
+                "  -o, --opt=<other>           another option%n" +
+                "                                Default: other.txt%n"), result);
+    }
+
+    @Test
+    public void testCommandShowDefaultValuesOptionOnDemandArrayField() throws Exception {
+        @Command(showDefaultValues = true)
+        class Params {
+            @Option(names = {"-x", "--array"}, required = true, description = "the array")
+            int[] array = {1, 5, 11, 23};
+            @Option(names = {"-y", "--other"}, required = true, description = "the other", showDefaultValue = Help.Visibility.ON_DEMAND)
+            int[] other = {1, 5, 11, 23};
+        }
+        String result = usageString(new Params(), Help.Ansi.OFF);
+        assertEquals(format("" +
+                "Usage: <main class> -x=<array> [-x=<array>]... -y=<other> [-y=<other>]...%n" +
                 "  -x, --array=<array>         the array%n" +
+                "                                Default: [1, 5, 11, 23]%n" +
+                "  -y, --other=<other>         the other%n" +
                 "                                Default: [1, 5, 11, 23]%n"), result);
+    }
+
+    @Test
+    public void testCommandShowDefaultValuesOptionNeverArrayField_hidesDefault() throws Exception {
+        @Command(showDefaultValues = true)
+        class Params {
+            @Option(names = {"-x", "--array"}, required = true, description = "the array")
+            int[] array = {1, 5, 11, 23};
+            @Option(names = {"-y", "--other"}, required = true, description = "the other", showDefaultValue = Help.Visibility.NEVER)
+            int[] other = {1, 5, 11, 23};
+        }
+        String result = usageString(new Params(), Help.Ansi.OFF);
+        assertEquals(format("" +
+                "Usage: <main class> -x=<array> [-x=<array>]... -y=<other> [-y=<other>]...%n" +
+                "  -x, --array=<array>         the array%n" +
+                "                                Default: [1, 5, 11, 23]%n" +
+                "  -y, --other=<other>         the other%n"), result);
+    }
+
+    @Test
+    public void testCommandShowDefaultValuesOptionAlwaysNullArrayField_showsNull() throws Exception {
+        @Command(showDefaultValues = true)
+        class Params {
+            @Option(names = {"-x", "--array"}, required = true, description = "the array")
+            int[] array;
+            @Option(names = {"-y", "--other"}, required = true, description = "the other", showDefaultValue = Help.Visibility.ALWAYS)
+            int[] other;
+        }
+        String result = usageString(new Params(), Help.Ansi.OFF);
+        assertEquals(format("" +
+                "Usage: <main class> -x=<array> [-x=<array>]... -y=<other> [-y=<other>]...%n" +
+                "  -x, --array=<array>         the array%n" +
+                "  -y, --other=<other>         the other%n" +
+                "                                Default: null%n"), result);
     }
 
     @Test
@@ -136,8 +294,7 @@ public class CommandLineHelpTest {
         String result = usageString(new Params(), Help.Ansi.OFF);
         assertEquals(format("" +
                         "Usage: <main class> -f=<file>%n" +
-                        "  -f, --file=<file>           the file to use%n",
-                ""), result);
+                        "  -f, --file=<file>           the file to use%n"), result);
     }
 
     @Test
@@ -150,8 +307,7 @@ public class CommandLineHelpTest {
         assertEquals(format("" +
                         "Usage: <main class> -f=<file>%n" +
                         "  -f, --file=<file>           the file to use%n" +
-                        "                                Default: def.txt%n",
-                ""), result);
+                        "                                Default: def.txt%n"), result);
     }
 
     @Test
@@ -172,8 +328,7 @@ public class CommandLineHelpTest {
                         "      <host>                  the host parameter%n" +
                         "  -f= FILE                    files%n" +
                         "  -n= <number>                a number option%n" +
-                        "  -P= KEY=VALUE               Project properties (key-value pairs)%n",
-                ""), result);
+                        "  -P= KEY=VALUE               Project properties (key-value pairs)%n"), result);
     }
 
     @Test
@@ -195,8 +350,7 @@ public class CommandLineHelpTest {
                         "      <host>                  the host parameter%n" +
                         "  -f= FILE                    a file%n" +
                         "  -n= <number>                a number option%n" +
-                        "  -P, --properties=KEY=VALUE  Project properties (key-value pairs)%n",
-                ""), result);
+                        "  -P, --properties=KEY=VALUE  Project properties (key-value pairs)%n"), result);
     }
 
     // ---------------
@@ -1161,7 +1315,7 @@ public class CommandLineHelpTest {
 
     @Test
     public void testAbreviatedSynopsis_withoutParameters() {
-        @CommandLine.Command(abbreviateSynopsis = true)
+        @Command(abbreviateSynopsis = true)
         class App {
             @Option(names = {"--verbose", "-v"}) boolean verbose;
             @Option(names = {"--count", "-c"}) int count;
@@ -1173,7 +1327,7 @@ public class CommandLineHelpTest {
 
     @Test
     public void testAbreviatedSynopsis_withoutParameters_ANSI() {
-        @CommandLine.Command(abbreviateSynopsis = true)
+        @Command(abbreviateSynopsis = true)
         class App {
             @Option(names = {"--verbose", "-v"}) boolean verbose;
             @Option(names = {"--count", "-c"}) int count;
@@ -1185,7 +1339,7 @@ public class CommandLineHelpTest {
 
     @Test
     public void testAbreviatedSynopsis_withParameters() {
-        @CommandLine.Command(abbreviateSynopsis = true)
+        @Command(abbreviateSynopsis = true)
         class App {
             @Option(names = {"--verbose", "-v"}) boolean verbose;
             @Option(names = {"--count", "-c"}) int count;
@@ -1198,7 +1352,7 @@ public class CommandLineHelpTest {
 
     @Test
     public void testAbreviatedSynopsis_withParameters_ANSI() {
-        @CommandLine.Command(abbreviateSynopsis = true)
+        @Command(abbreviateSynopsis = true)
         class App {
             @Option(names = {"--verbose", "-v"}) boolean verbose;
             @Option(names = {"--count", "-c"}) int count;
@@ -1211,7 +1365,7 @@ public class CommandLineHelpTest {
 
     @Test
     public void testAbreviatedSynopsis_commandNameCustomizableDeclaratively() throws UnsupportedEncodingException {
-        @CommandLine.Command(abbreviateSynopsis = true, name = "aprogram")
+        @Command(abbreviateSynopsis = true, name = "aprogram")
         class App {
             @Option(names = {"--verbose", "-v"}) boolean verbose;
             @Option(names = {"--count", "-c"}) int count;
@@ -1229,7 +1383,7 @@ public class CommandLineHelpTest {
 
     @Test
     public void testAbreviatedSynopsis_commandNameCustomizableProgrammatically() throws UnsupportedEncodingException {
-        @CommandLine.Command(abbreviateSynopsis = true)
+        @Command(abbreviateSynopsis = true)
         class App {
             @Option(names = {"--verbose", "-v"}) boolean verbose;
             @Option(names = {"--count", "-c"}) int count;
@@ -1247,7 +1401,7 @@ public class CommandLineHelpTest {
 
     @Test
     public void testSynopsis_commandNameCustomizableDeclaratively() throws UnsupportedEncodingException {
-        @CommandLine.Command(name = "aprogram")
+        @Command(name = "aprogram")
         class App {
             @Option(names = {"--verbose", "-v"}) boolean verbose;
             @Option(names = {"--count", "-c"}) int count;
@@ -1305,7 +1459,7 @@ public class CommandLineHelpTest {
 
     @Test
     public void testSynopsis_optionalOptionArity0_1_withSpaceSeparator() {
-        @CommandLine.Command(separator = " ") class App {
+        @Command(separator = " ") class App {
             @Option(names = {"--verbose", "-v"}) boolean verbose;
             @Option(names = {"--count", "-c"}, arity = "0..1") int count;
             @Option(names = {"--help", "-h"}, hidden = true) boolean helpRequested;
@@ -1316,7 +1470,7 @@ public class CommandLineHelpTest {
 
     @Test
     public void testSynopsis_optionalOptionArity0_1_withSpaceSeparator_ANSI() {
-        @CommandLine.Command(separator = " ") class App {
+        @Command(separator = " ") class App {
             @Option(names = {"--verbose", "-v"}) boolean verbose;
             @Option(names = {"--count", "-c"}, arity = "0..1") int count;
             @Option(names = {"--help", "-h"}, hidden = true) boolean helpRequested;
@@ -1349,7 +1503,7 @@ public class CommandLineHelpTest {
 
     @Test
     public void testSynopsis_optionalOption_withSpaceSeparator() {
-        @CommandLine.Command(separator = " ") class App {
+        @Command(separator = " ") class App {
             @Option(names = {"--verbose", "-v"}) boolean verbose;
             @Option(names = {"--count", "-c"}) int count;
             @Option(names = {"--help", "-h"}, hidden = true) boolean helpRequested;
@@ -1371,7 +1525,7 @@ public class CommandLineHelpTest {
 
     @Test
     public void testSynopsis_optionalOptionArity0_n__withSeparator() {
-        @CommandLine.Command(separator = "=") class App {
+        @Command(separator = "=") class App {
             @Option(names = {"--verbose", "-v"}) boolean verbose;
             @Option(names = {"--count", "-c"}, arity = "0..*") int count;
             @Option(names = {"--help", "-h"}, hidden = true) boolean helpRequested;
@@ -1383,7 +1537,7 @@ public class CommandLineHelpTest {
 
     @Test
     public void testSynopsis_optionalOptionArity1_n__withSeparator() {
-        @CommandLine.Command(separator = "=") class App {
+        @Command(separator = "=") class App {
             @Option(names = {"--verbose", "-v"}) boolean verbose;
             @Option(names = {"--count", "-c"}, arity = "1..*") int count;
             @Option(names = {"--help", "-h"}, hidden = true) boolean helpRequested;
@@ -1412,7 +1566,7 @@ public class CommandLineHelpTest {
 
     @Test
     public void testSynopsis_withSeparator_withParameters() {
-        @CommandLine.Command(separator = ":") class App {
+        @Command(separator = ":") class App {
             @Option(names = {"--verbose", "-v"}) boolean verbose;
             @Option(names = {"--count", "-c"}) int count;
             @Option(names = {"--help", "-h"}, hidden = true) boolean helpRequested;
@@ -1424,7 +1578,7 @@ public class CommandLineHelpTest {
 
     @Test
     public void testSynopsis_withSeparator_withParameters_ANSI() {
-        @CommandLine.Command(separator = ":") class App {
+        @Command(separator = ":") class App {
             @Option(names = {"--verbose", "-v"}) boolean verbose;
             @Option(names = {"--count", "-c"}) int count;
             @Option(names = {"--help", "-h"}, hidden = true) boolean helpRequested;
@@ -1462,7 +1616,7 @@ public class CommandLineHelpTest {
 
     @Test
     public void testSynopsis_withSeparator_withLabeledRequiredParameters() {
-        @CommandLine.Command(separator = "=") class App {
+        @Command(separator = "=") class App {
             @Option(names = {"--verbose", "-v"}) boolean verbose;
             @Option(names = {"--count", "-c"}) int count;
             @Option(names = {"--help", "-h"}, hidden = true) boolean helpRequested;
@@ -1474,7 +1628,7 @@ public class CommandLineHelpTest {
 
     @Test
     public void testSynopsis_withSeparator_withLabeledRequiredParameters_ANSI() {
-        @CommandLine.Command(separator = "=") class App {
+        @Command(separator = "=") class App {
             @Option(names = {"--verbose", "-v"}) boolean verbose;
             @Option(names = {"--count", "-c"}) int count;
             @Option(names = {"--help", "-h"}, hidden = true) boolean helpRequested;
@@ -1499,7 +1653,7 @@ public class CommandLineHelpTest {
 
     @Test
     public void testSynopsis_clustersRequiredBooleanOptions() {
-        @CommandLine.Command(separator = "=") class App {
+        @Command(separator = "=") class App {
             @Option(names = {"--verbose", "-v"}, required = true) boolean verbose;
             @Option(names = {"--aaaa", "-a"}, required = true) boolean aBoolean;
             @Option(names = {"--xxxx", "-x"}, required = true) Boolean xBoolean;
@@ -1511,7 +1665,7 @@ public class CommandLineHelpTest {
 
     @Test
     public void testSynopsis_clustersRequiredBooleanOptionsSeparately() {
-        @CommandLine.Command(separator = "=") class App {
+        @Command(separator = "=") class App {
             @Option(names = {"--verbose", "-v"}) boolean verbose;
             @Option(names = {"--aaaa", "-a"}) boolean aBoolean;
             @Option(names = {"--xxxx", "-x"}) Boolean xBoolean;
@@ -1526,7 +1680,7 @@ public class CommandLineHelpTest {
 
     @Test
     public void testSynopsis_clustersRequiredBooleanOptionsSeparately_ANSI() {
-        @CommandLine.Command(separator = "=") class App {
+        @Command(separator = "=") class App {
             @Option(names = {"--verbose", "-v"}) boolean verbose;
             @Option(names = {"--aaaa", "-a"}) boolean aBoolean;
             @Option(names = {"--xxxx", "-x"}) Boolean xBoolean;
@@ -1545,7 +1699,7 @@ public class CommandLineHelpTest {
         //Usage: small-test-program [-acorv!?] [--version] [-h <number>] [-p <file>|<folder>] [-d
 //                 <folder> [<folder>]] [-i <includePattern>
 //                 [<includePattern>...]]
-        @CommandLine.Command(name="small-test-program", sortOptions = false, separator = " ")
+        @Command(name="small-test-program", sortOptions = false, separator = " ")
         class App {
             @Option(names = "-a") boolean a;
             @Option(names = "-c") boolean c;
@@ -2350,7 +2504,7 @@ public class CommandLineHelpTest {
 
     @Test
     public void testSystemPropertiesOverrideDefaultColorScheme() {
-        @CommandLine.Command(separator = "=") class App {
+        @Command(separator = "=") class App {
             @Option(names = {"--verbose", "-v"}) boolean verbose;
             @Option(names = {"--count", "-c"}) int count;
             @Option(names = {"--help", "-h"}, hidden = true) boolean helpRequested;
@@ -2371,7 +2525,7 @@ public class CommandLineHelpTest {
 
     @Test
     public void testSystemPropertiesOverrideExplicitColorScheme() {
-        @CommandLine.Command(separator = "=") class App {
+        @Command(separator = "=") class App {
             @Option(names = {"--verbose", "-v"}) boolean verbose;
             @Option(names = {"--count", "-c"}) int count;
             @Option(names = {"--help", "-h"}, hidden = true) boolean helpRequested;
