@@ -3054,4 +3054,23 @@ public class CommandLineHelpTest {
                 "  help  Displays help information about the specified command%n");
         assertEquals(expected, new String(baos.toByteArray(), "UTF-8"));
     }
+
+    @Test
+    public void testUsageTextWithHiddenSubcommand() throws Exception {
+        @Command(name = "foo", description = "This is a foo sub-command") class Foo { }
+        @Command(name = "bar", description = "This is a foo sub-command", hidden = true) class Bar { }
+        @Command(name = "app", abbreviateSynopsis = true) class App { }
+
+        CommandLine app = new CommandLine(new App())
+                .addSubcommand("foo", new Foo())
+                .addSubcommand("bar", new Bar());
+
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        app.usage(new PrintStream(baos));
+
+        String expected = "Usage: app\n" +
+                          "Commands:\n" +
+                          "  foo  This is a foo sub-command\n";
+        assertEquals(expected, new String(baos.toByteArray(), "UTF-8"));
+    }
 }
