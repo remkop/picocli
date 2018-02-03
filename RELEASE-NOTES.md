@@ -124,7 +124,8 @@ No features have been promoted in this picocli release.
 - [#245] API Change: From 3.0, picocli offers an API for programmatic configuration.
 - [#144] API Change: Added support for mixins to allow reusing common options, positional parameters, subcommands and command attributes from any object.
 - [#175] New Feature: `autoHelp` attribute to conveniently activate fully automatic help.
-- [#262] API Change: new `showDefaultValue` attribute on `@Option` and `@Parameters` gives fine-grained control over which default values to show or hide.
+- [#262] API Change: new `showDefaultValue` attribute on `@Option` and `@Parameters` gives fine-grained control over which default values to show or hide. Thanks to [ymenager](https://github.com/ymenager) for the request.
+- [#268] subcommands can now be annotated with @Command(isHelpCommand = true). If the parser detects this subcommand on the command line, it will not validate the required options or positional parameters of the parent command. Thanks to [ymenager](https://github.com/ymenager) for the request.
 
 ## <a name="3.0.0-alpha-1-deprecated"></a> Deprecations
 

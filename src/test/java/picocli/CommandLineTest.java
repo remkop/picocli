@@ -3283,4 +3283,43 @@ public class CommandLineTest {
             if (out != null) { try { out.close(); } catch (Exception ignored) {} }
         }
     }
+
+    @Test
+    public void testAnyHelpCommandMakesRequiredOptionsOptional() {
+        @Command(name = "help", isHelpCommand = true)
+        class HelpCommand {
+            @Option(names = "-o")
+            String option;
+        }
+        @Command(subcommands = HelpCommand.class)
+        class Parent {
+            @Option(names = "-m", required = true)
+            String mandatory;
+        }
+        CommandLine commandLine = new CommandLine(new Parent(), new InnerClassFactory(this));
+        commandLine.parse("help");
+    }
+
+    @Test
+    public void testBuiltInHelpCommandMakesRequiredOptionsOptional() {
+        @Command(autoHelp = true)
+        class Parent {
+            @Option(names = "-m", required = true)
+            String mandatory;
+        }
+        CommandLine commandLine = new CommandLine(new Parent(), new InnerClassFactory(this));
+        commandLine.parse("help");
+    }
+
+    @Test
+    public void testBuiltInHelpCommandHelpOptionMakesRequiredOptionsOptional() {
+        @Command(autoHelp = true)
+        class Parent {
+            @Option(names = "-m", required = true)
+            String mandatory;
+        }
+        CommandLine commandLine = new CommandLine(new Parent(), new InnerClassFactory(this));
+        commandLine.parse("--help");
+        assertTrue("No exceptions", true);
+    }
 }

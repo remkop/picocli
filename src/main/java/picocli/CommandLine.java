@@ -490,7 +490,9 @@ public class CommandLine {
      * {@linkplain #parse(String...) parsing} command line arguments. This method prints out
      * {@linkplain #usage(PrintStream, Help.Ansi) usage help} if {@linkplain #isUsageHelpRequested() requested}
      * or {@linkplain #printVersionHelp(PrintStream, Help.Ansi) version help} if {@linkplain #isVersionHelpRequested() requested}
-     * and returns {@code true}. Otherwise, if none of the specified {@code CommandLine} objects have help requested,
+     * and returns {@code true}. If the command is a {@link Command#isHelpCommand()} and {@code runnable} or {@code callable},
+     * that command is executed and this method returns {@code true}.
+     * Otherwise, if none of the specified {@code CommandLine} objects have help requested,
      * this method returns {@code false}.
      * <p>
      * Note that this method <em>only</em> looks at the {@link Option#usageHelp() usageHelp} and
@@ -510,6 +512,9 @@ public class CommandLine {
             } else if (parsed.isVersionHelpRequested()) {
                 parsed.printVersionHelp(out, ansi);
                 return true;
+//            } else if (parsed.getCommandSpec().helpCommand()) {
+//                execute(parsed);
+//                return true;
             } else if (i > 0 && parsed.getCommand() instanceof AutoHelpMixin.HelpCommand) {
                 CommandLine main = parsedCommands.get(i - 1);
                 AutoHelpMixin.HelpCommand helpCommand = parsed.getCommand();
@@ -1727,6 +1732,15 @@ public class CommandLine {
          * @since 3.0 */
         boolean autoHelp() default false;
 
+        /** Set this attribute to {@code true} if this subcommand is a help command, and required options and positional
+         * parameters of the parent command should not be validated. If a subcommand marked as {@code isHelpCommand} is
+         * specified on the command line, picocli will not validate the parent arguments (so no "missing required
+         * option" errors) and the {@link CommandLine#printHelpIfRequested(List, PrintStream, Help.Ansi)} method will return {@code true}.
+         * @return {@code true} if this subcommand is a help command and picocli should not check for missing required
+         *      options and positional parameters on the parent command
+         * @since 3.0 */
+        boolean isHelpCommand() default false;
+
         /** Set the heading preceding the header section. May contain embedded {@linkplain java.util.Formatter format specifiers}.
          * @return the heading preceding the header section
          * @see CommandSpec#headerHeading()
@@ -2149,6 +2163,7 @@ public class CommandLine {
             if (!commandSpec.isAbbreviateSynopsisInitialized() && cmd.abbreviateSynopsis()) { commandSpec.abbreviateSynopsis(cmd.abbreviateSynopsis()); }
             if (!commandSpec.isSortOptionsInitialized()        && !cmd.sortOptions())       { commandSpec.sortOptions(cmd.sortOptions()); }
             if (!commandSpec.isShowDefaultValuesInitialized()  && cmd.showDefaultValues())  { commandSpec.showDefaultValues(cmd.showDefaultValues()); }
+            if (!commandSpec.isIsHelpCommandInitialized()      && cmd.isHelpCommand())      { commandSpec.setHelpCommand(cmd.isHelpCommand()); }
             if (!commandSpec.isVersionProviderInitialized()    && cmd.versionProvider() != NoVersionProvider.class) {
                 commandSpec.versionProvider(DefaultFactory.createVersionProvider(factory, cmd.versionProvider()));
             }
@@ -2433,6 +2448,9 @@ public class CommandLine {
         /** Constant Boolean holding the default setting for whether to show default values in the usage help message: <code>{@value}</code>.*/
         static final Boolean DEFAULT_SHOW_DEFAULT_VALUES = Boolean.FALSE;
 
+        /** Constant Boolean holding the default setting for whether this is a help command: <code>{@value}</code>.*/
+        static final Boolean DEFAULT_IS_HELP_COMMAND = Boolean.FALSE;
+
         private final Map<String, CommandLine> commands = new LinkedHashMap<String, CommandLine>();
         private final Map<String, OptionSpec> optionsByNameMap = new LinkedHashMap<String, OptionSpec>();
         private final Map<Character, OptionSpec> posixOptionsByKeyMap = new LinkedHashMap<Character, OptionSpec>();
@@ -2456,6 +2474,7 @@ public class CommandLine {
         private Boolean abbreviateSynopsis;
         private Boolean sortOptions;
         private Boolean showDefaultValues;
+        private Boolean isHelpCommand;
         private Character requiredOptionMarker;
         private String headerHeading;
         private String synopsisHeading;
@@ -2476,6 +2495,7 @@ public class CommandLine {
 
         /** Ensures all attributes of this {@code CommandSpec} have a valid value; throws an {@link InitializationException} if this cannot be achieved. */
         void validate() {
+            isHelpCommand =        (isHelpCommand == null)        ? false : isHelpCommand;
             sortOptions =          (sortOptions == null)          ? true : sortOptions;
             abbreviateSynopsis =   (abbreviateSynopsis == null)   ? false : abbreviateSynopsis;
             requiredOptionMarker = (requiredOptionMarker == null) ? DEFAULT_REQUIRED_OPTION_MARKER : requiredOptionMarker;
@@ -2584,6 +2604,7 @@ public class CommandLine {
             if (!isAbbreviateSynopsisInitialized() && mixin.abbreviateSynopsis()) { abbreviateSynopsis(mixin.abbreviateSynopsis()); }
             if (!isSortOptionsInitialized()        && !mixin.sortOptions())       { sortOptions(mixin.sortOptions()); }
             if (!isShowDefaultValuesInitialized()  && mixin.showDefaultValues())  { showDefaultValues(mixin.showDefaultValues()); }
+            if (!isIsHelpCommandInitialized()      && mixin.isHelpCommand())      { setHelpCommand(mixin.isHelpCommand()); }
 
             for (Map.Entry<String, CommandLine> entry : mixin.subcommands().entrySet()) {
                 addSubcommand(entry.getKey(), entry.getValue());
@@ -2757,6 +2778,18 @@ public class CommandLine {
          * @return this CommandSpec for method chaining */
         public CommandSpec showDefaultValues(boolean newValue) {showDefaultValues = newValue; return this;}
 
+        /** Returns whether this subcommand is a help command, and required options and positional
+         * parameters of the parent command should not be validated.
+         * @return {@code true} if this subcommand is a help command and picocli should not check for missing required
+         *      options and positional parameters on the parent command
+         * @see Command#isHelpCommand() */
+        public boolean isHelpCommand() { return isHelpCommand; }
+
+        /** Sets whether this is a help command and required parameter checking should be suspended.
+         * @return this CommandSpec for method chaining
+         * @see Command#isHelpCommand() */
+        public CommandSpec setHelpCommand(boolean newValue) {isHelpCommand = newValue; return this;}
+
         /** Returns the optional heading preceding the subcommand list. Initialized from {@link Command#commandListHeading()}. {@code "Commands:%n"} by default. */
         public String commandListHeading() { return commandListHeading; }
 
@@ -2797,6 +2830,7 @@ public class CommandLine {
         boolean isAbbreviateSynopsisInitialized()   { return abbreviateSynopsis   != null && !CommandSpec.DEFAULT_ABBREVIATE_SYNOPSIS.equals(abbreviateSynopsis); }
         boolean isSortOptionsInitialized()          { return sortOptions          != null && !CommandSpec.DEFAULT_SORT_OPTIONS.equals(sortOptions); }
         boolean isShowDefaultValuesInitialized()    { return showDefaultValues    != null && !CommandSpec.DEFAULT_SHOW_DEFAULT_VALUES.equals(showDefaultValues); }
+        boolean isIsHelpCommandInitialized()        { return isHelpCommand        != null && !CommandSpec.DEFAULT_IS_HELP_COMMAND.equals(isHelpCommand); }
         boolean isVersionProviderInitialized()      { return versionProvider      != null && !(versionProvider instanceof NoVersionProvider);}
         boolean isVersionInitialized()              { return !empty(version); }
         boolean isCustomSynopsisInitialized()       { return !empty(customSynopsis); }
@@ -3446,11 +3480,13 @@ public class CommandLine {
 
                 // if we find another command, we are done with the current command
                 if (commandSpec.subcommands().containsKey(arg)) {
+                    CommandLine subcommand = commandSpec.subcommands().get(arg);
+                    updateHelpRequested(subcommand.commandSpec);
                     if (!isAnyHelpRequested() && !required.isEmpty()) { // ensure current command portion is valid
                         throw MissingParameterException.create(CommandLine.this, required, separator);
                     }
-                    if (tracer.isDebug()) {tracer.debug("Found subcommand '%s' (%s)%n", arg, commandSpec.subcommands().get(arg).commandSpec.toString());}
-                    commandSpec.subcommands().get(arg).interpreter.parse(parsedCommands, args, originalArgs);
+                    if (tracer.isDebug()) {tracer.debug("Found subcommand '%s' (%s)%n", arg, subcommand.commandSpec.toString());}
+                    subcommand.interpreter.parse(parsedCommands, args, originalArgs);
                     return; // remainder done by the command
                 }
 
@@ -3923,6 +3959,9 @@ public class CommandLine {
 
         private boolean isAnyHelpRequested() { return isHelpRequested || versionHelpRequested || usageHelpRequested; }
 
+        private void updateHelpRequested(CommandSpec command) {
+            isHelpRequested |= command.isHelpCommand();
+        }
         private void updateHelpRequested(ArgSpec<?> argSpec) {
             if (argSpec.isOption()) {
                 OptionSpec option = (OptionSpec) argSpec;
@@ -4230,7 +4269,7 @@ public class CommandLine {
         private boolean versionRequested;
 
         @Command(name = "help", header = "Displays help information about the specified command",
-                synopsisHeading = "%nUsage: ",
+                synopsisHeading = "%nUsage: ", isHelpCommand = true,
                 description = {"%nWhen no COMMAND is given, the usage help for the main command is displayed.",
                                 "If a COMMAND is specified, the help for that command is shown.%n"})
         static class HelpCommand implements Runnable {
@@ -4241,7 +4280,28 @@ public class CommandLine {
             @Parameters(paramLabel = "COMMAND", description = "The COMMAND to display the usage help message for.")
             private String[] commands = new String[0];
 
-            public void run() { }
+            //@ParentCommandLine
+            private CommandLine parent;
+
+            private PrintStream out = System.out;
+            private PrintStream err = System.err;
+            private Help.Ansi ansi = Help.Ansi.AUTO;
+
+            public void run() {
+                if (parent == null) { return; }
+                CommandLine subcommand = null;
+                if (commands.length > 0) {
+                    subcommand = parent.getSubcommands().get(commands[0]);
+                    if (subcommand != null) {
+                        subcommand.usage(out, ansi);
+                    } else {
+                        err.println("Unknown subcommand '" + commands[0] + "'.");
+                        parent.usage(err, ansi);
+                    }
+                } else {
+                    parent.usage(out, ansi);
+                }
+            }
         }
     }
 
