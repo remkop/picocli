@@ -1731,13 +1731,13 @@ public class CommandLine {
         boolean autoHelp() default false;
 
         /** Set this attribute to {@code true} if this subcommand is a help command, and required options and positional
-         * parameters of the parent command should not be validated. If a subcommand marked as {@code isHelpCommand} is
+         * parameters of the parent command should not be validated. If a subcommand marked as {@code helpCommand} is
          * specified on the command line, picocli will not validate the parent arguments (so no "missing required
          * option" errors) and the {@link CommandLine#printHelpIfRequested(List, PrintStream, Help.Ansi)} method will return {@code true}.
          * @return {@code true} if this subcommand is a help command and picocli should not check for missing required
          *      options and positional parameters on the parent command
          * @since 3.0 */
-        boolean isHelpCommand() default false;
+        boolean helpCommand() default false;
 
         /** Set the heading preceding the header section. May contain embedded {@linkplain java.util.Formatter format specifiers}.
          * @return the heading preceding the header section
@@ -2168,7 +2168,7 @@ public class CommandLine {
             if (!commandSpec.isAbbreviateSynopsisInitialized() && cmd.abbreviateSynopsis()) { commandSpec.abbreviateSynopsis(cmd.abbreviateSynopsis()); }
             if (!commandSpec.isSortOptionsInitialized()        && !cmd.sortOptions())       { commandSpec.sortOptions(cmd.sortOptions()); }
             if (!commandSpec.isShowDefaultValuesInitialized()  && cmd.showDefaultValues())  { commandSpec.showDefaultValues(cmd.showDefaultValues()); }
-            if (!commandSpec.isIsHelpCommandInitialized()      && cmd.isHelpCommand())      { commandSpec.setHelpCommand(cmd.isHelpCommand()); }
+            if (!commandSpec.isHelpCommandInitialized()        && cmd.helpCommand())        { commandSpec.helpCommand(cmd.helpCommand()); }
             if (!commandSpec.isHiddenInitialized()             && cmd.hidden() )            { commandSpec.hidden(cmd.hidden()); }
             if (!commandSpec.isVersionProviderInitialized()    && cmd.versionProvider() != NoVersionProvider.class) {
                 commandSpec.versionProvider(DefaultFactory.createVersionProvider(factory, cmd.versionProvider()));
@@ -2623,7 +2623,7 @@ public class CommandLine {
             if (!isAbbreviateSynopsisInitialized() && mixin.abbreviateSynopsis()) { abbreviateSynopsis(mixin.abbreviateSynopsis()); }
             if (!isSortOptionsInitialized()        && !mixin.sortOptions())       { sortOptions(mixin.sortOptions()); }
             if (!isShowDefaultValuesInitialized()  && mixin.showDefaultValues())  { showDefaultValues(mixin.showDefaultValues()); }
-            if (!isIsHelpCommandInitialized()      && mixin.isHelpCommand())      { setHelpCommand(mixin.isHelpCommand()); }
+            if (!isHelpCommandInitialized()        && mixin.helpCommand())        { helpCommand(mixin.helpCommand()); }
             if (!isHiddenInitialized()             && mixin.hidden())             { hidden(mixin.hidden()); }
 
             for (Map.Entry<String, CommandLine> entry : mixin.subcommands().entrySet()) {
@@ -2802,13 +2802,13 @@ public class CommandLine {
          * parameters of the parent command should not be validated.
          * @return {@code true} if this subcommand is a help command and picocli should not check for missing required
          *      options and positional parameters on the parent command
-         * @see Command#isHelpCommand() */
-        public boolean isHelpCommand() { return isHelpCommand; }
+         * @see Command#helpCommand() */
+        public boolean helpCommand() { return isHelpCommand; }
 
         /** Sets whether this is a help command and required parameter checking should be suspended.
          * @return this CommandSpec for method chaining
-         * @see Command#isHelpCommand() */
-        public CommandSpec setHelpCommand(boolean newValue) {isHelpCommand = newValue; return this;}
+         * @see Command#helpCommand() */
+        public CommandSpec helpCommand(boolean newValue) {isHelpCommand = newValue; return this;}
 
         /**
          * Returns whether this command should be hidden from the usage help message of the parent command.
@@ -2863,7 +2863,7 @@ public class CommandLine {
         boolean isAbbreviateSynopsisInitialized()   { return abbreviateSynopsis   != null && !CommandSpec.DEFAULT_ABBREVIATE_SYNOPSIS.equals(abbreviateSynopsis); }
         boolean isSortOptionsInitialized()          { return sortOptions          != null && !CommandSpec.DEFAULT_SORT_OPTIONS.equals(sortOptions); }
         boolean isShowDefaultValuesInitialized()    { return showDefaultValues    != null && !CommandSpec.DEFAULT_SHOW_DEFAULT_VALUES.equals(showDefaultValues); }
-        boolean isIsHelpCommandInitialized()        { return isHelpCommand        != null && !CommandSpec.DEFAULT_IS_HELP_COMMAND.equals(isHelpCommand); }
+        boolean isHelpCommandInitialized()          { return isHelpCommand        != null && !CommandSpec.DEFAULT_IS_HELP_COMMAND.equals(isHelpCommand); }
         boolean isHiddenInitialized()               { return hidden               != null && !CommandSpec.DEFAULT_HIDDEN.equals(hidden); }
         boolean isVersionProviderInitialized()      { return versionProvider      != null && !(versionProvider instanceof NoVersionProvider);}
         boolean isVersionInitialized()              { return !empty(version); }
@@ -3994,7 +3994,7 @@ public class CommandLine {
         private boolean isAnyHelpRequested() { return isHelpRequested || versionHelpRequested || usageHelpRequested; }
 
         private void updateHelpRequested(CommandSpec command) {
-            isHelpRequested |= command.isHelpCommand();
+            isHelpRequested |= command.helpCommand();
         }
         private void updateHelpRequested(ArgSpec<?> argSpec) {
             if (argSpec.isOption()) {
@@ -4303,7 +4303,7 @@ public class CommandLine {
         private boolean versionRequested;
 
         @Command(name = "help", header = "Displays help information about the specified command",
-                synopsisHeading = "%nUsage: ", isHelpCommand = true,
+                synopsisHeading = "%nUsage: ", helpCommand = true,
                 description = {"%nWhen no COMMAND is given, the usage help for the main command is displayed.",
                                 "If a COMMAND is specified, the help for that command is shown.%n"})
         static class HelpCommand implements Runnable {

@@ -3286,7 +3286,7 @@ public class CommandLineTest {
 
     @Test
     public void testAnyHelpCommandMakesRequiredOptionsOptional() {
-        @Command(name = "help", isHelpCommand = true)
+        @Command(name = "help", helpCommand = true)
         class HelpCommand {
             @Option(names = "-o")
             String option;

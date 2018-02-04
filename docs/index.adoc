@@ -828,6 +828,7 @@ the above input is treated as three positional parameters.
 === Help Options
 Options with the attribute `versionHelp = true`, `usageHelp = true` or `help = true` are special:
 if one of the command line arguments is a "help" option, picocli will stop parsing the remaining arguments and will not check for required options.
+Subcommands can be marked as <<Help subcommands,help commands>> to achieve the same.
 
 For example:
 
@@ -1141,7 +1142,7 @@ Usage: <main class> [OPTIONS] [<files>...]
 Note that the positional parameters are not abbreviated.
 [source,java]
 ----
-@CommandLine.Command(abbreviateSynopsis = true)
+@Command(abbreviateSynopsis = true)
 class App {
     @Parameters File[] files;
     @Option(names = {"--count", "-c"}) int count;
@@ -1182,7 +1183,7 @@ The `headerHeading` and `footerHeading` may contain format specifiers. See <<Sec
 Section headers can be used to make usage message layout appear more spacious. Section headings may contain embedded line separator (`%n`) format specifiers:
 [source,java]
 ----
-@CommandLine.Command(name = "git-commit",
+@Command(name = "git-commit",
         sortOptions = false,
         headerHeading = "Usage:%n%n",
         synopsisHeading = "%n",
@@ -1414,7 +1415,7 @@ The example below shows how this markup can be used to add colors and styles to 
 
 [source,java]
 ----
-@CommandLine.Command(name = "git-commit",
+@Command(name = "git-commit",
         sortOptions = false,
         headerHeading = "@|bold,underline Usage|@:%n%n",
         synopsisHeading = "%n",
@@ -1857,6 +1858,17 @@ The usage help message for `App` looks like the below. Note that the `bar` subco
 Usage: app
 Commands:
   foo  This is a visible subcommand
+----
+
+=== Help subcommands
+
+Commands with the `helpCommand` attribute set to `true` are treated as help commands.
+When picocli encounters a help command on the command line, required options and required positional parameters of the parent command
+are not validated (similar to <<Help Options,help options>>).
+
+[source,java]
+----
+@Command(helpCommand = true)
 ----
 
 === Nested sub-subcommands
