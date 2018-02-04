@@ -1823,8 +1823,9 @@ public class CommandLine {
         String[] footer() default {};
 
         /**
-         * Set {@code hidden=true} if this command should not be included in the usage documentation.
+         * Set {@code hidden=true} if this command should not be included in the list of commands in the usage help of the parent command.
          * @return whether this command should be excluded from the usage message
+         * @since 3.0
          */
         boolean hidden() default false;
     }
@@ -2170,7 +2171,7 @@ public class CommandLine {
             if (!commandSpec.isSortOptionsInitialized()        && !cmd.sortOptions())       { commandSpec.sortOptions(cmd.sortOptions()); }
             if (!commandSpec.isShowDefaultValuesInitialized()  && cmd.showDefaultValues())  { commandSpec.showDefaultValues(cmd.showDefaultValues()); }
             if (!commandSpec.isIsHelpCommandInitialized()      && cmd.isHelpCommand())      { commandSpec.setHelpCommand(cmd.isHelpCommand()); }
-            if (!commandSpec.isIsHiddenInitialized()           && cmd.hidden() )            { commandSpec.setHidden(cmd.hidden()); }
+            if (!commandSpec.isHiddenInitialized()             && cmd.hidden() )            { commandSpec.hidden(cmd.hidden()); }
             if (!commandSpec.isVersionProviderInitialized()    && cmd.versionProvider() != NoVersionProvider.class) {
                 commandSpec.versionProvider(DefaultFactory.createVersionProvider(factory, cmd.versionProvider()));
             }
@@ -2458,6 +2459,9 @@ public class CommandLine {
         /** Constant Boolean holding the default setting for whether this is a help command: <code>{@value}</code>.*/
         static final Boolean DEFAULT_IS_HELP_COMMAND = Boolean.FALSE;
 
+        /** Constant Boolean holding the default setting for whether this command should be listed in the usage help of the parent command: <code>{@value}</code>.*/
+        static final Boolean DEFAULT_HIDDEN = Boolean.FALSE;
+
         private final Map<String, CommandLine> commands = new LinkedHashMap<String, CommandLine>();
         private final Map<String, OptionSpec> optionsByNameMap = new LinkedHashMap<String, OptionSpec>();
         private final Map<Character, OptionSpec> posixOptionsByKeyMap = new LinkedHashMap<Character, OptionSpec>();
@@ -2482,7 +2486,7 @@ public class CommandLine {
         private Boolean sortOptions;
         private Boolean showDefaultValues;
         private Boolean isHelpCommand;
-        private Boolean isHidden;
+        private Boolean hidden;
         private Character requiredOptionMarker;
         private String headerHeading;
         private String synopsisHeading;
@@ -2503,6 +2507,7 @@ public class CommandLine {
 
         /** Ensures all attributes of this {@code CommandSpec} have a valid value; throws an {@link InitializationException} if this cannot be achieved. */
         void validate() {
+            hidden =               (hidden == null)               ? false : hidden;
             isHelpCommand =        (isHelpCommand == null)        ? false : isHelpCommand;
             sortOptions =          (sortOptions == null)          ? true : sortOptions;
             abbreviateSynopsis =   (abbreviateSynopsis == null)   ? false : abbreviateSynopsis;
@@ -2613,6 +2618,7 @@ public class CommandLine {
             if (!isSortOptionsInitialized()        && !mixin.sortOptions())       { sortOptions(mixin.sortOptions()); }
             if (!isShowDefaultValuesInitialized()  && mixin.showDefaultValues())  { showDefaultValues(mixin.showDefaultValues()); }
             if (!isIsHelpCommandInitialized()      && mixin.isHelpCommand())      { setHelpCommand(mixin.isHelpCommand()); }
+            if (!isHiddenInitialized()             && mixin.hidden())             { hidden(mixin.hidden()); }
 
             for (Map.Entry<String, CommandLine> entry : mixin.subcommands().entrySet()) {
                 addSubcommand(entry.getKey(), entry.getValue());
@@ -2799,18 +2805,17 @@ public class CommandLine {
         public CommandSpec setHelpCommand(boolean newValue) {isHelpCommand = newValue; return this;}
 
         /**
-         * @return  {@code true} when the command is annotated with a {@link Command#hidden} attribute, {@code false} otherwise.o
+         * Returns whether this command should be hidden from the usage help message of the parent command.
+         * @return {@code true} if this command should not appear in the usage help message of the parent command
          */
-        public boolean isHidden() { return isHidden != null ? isHidden : false; }
+        public boolean hidden() { return hidden; }
 
         /**
-         * Set the hidden flag on this command to prevent to add in the help usage text.
+         * Set the hidden flag on this command to control whether to show or hide it in the help usage text of the parent command.
          * @param value enable or disable the hidden flag
-         * @see {@link Command#hidden()}
-         */
-        public void setHidden( boolean value ) {
-            isHidden = value;
-        }
+         * @return this CommandSpec for method chaining
+         * @see Command#hidden() */
+        public CommandSpec hidden(boolean value) { hidden = value; return this; }
 
         /** Returns the optional heading preceding the subcommand list. Initialized from {@link Command#commandListHeading()}. {@code "Commands:%n"} by default. */
         public String commandListHeading() { return commandListHeading; }
@@ -2853,6 +2858,7 @@ public class CommandLine {
         boolean isSortOptionsInitialized()          { return sortOptions          != null && !CommandSpec.DEFAULT_SORT_OPTIONS.equals(sortOptions); }
         boolean isShowDefaultValuesInitialized()    { return showDefaultValues    != null && !CommandSpec.DEFAULT_SHOW_DEFAULT_VALUES.equals(showDefaultValues); }
         boolean isIsHelpCommandInitialized()        { return isHelpCommand        != null && !CommandSpec.DEFAULT_IS_HELP_COMMAND.equals(isHelpCommand); }
+        boolean isHiddenInitialized()               { return hidden               != null && !CommandSpec.DEFAULT_HIDDEN.equals(hidden); }
         boolean isVersionProviderInitialized()      { return versionProvider      != null && !(versionProvider instanceof NoVersionProvider);}
         boolean isVersionInitialized()              { return !empty(version); }
         boolean isCustomSynopsisInitialized()       { return !empty(customSynopsis); }
@@ -2864,7 +2870,6 @@ public class CommandLine {
         boolean isFooterHeadingInitialized()        { return !empty(footerHeading); }
         boolean isParameterListHeadingInitialized() { return !empty(parameterListHeading); }
         boolean isOptionListHeadingInitialized()    { return !empty(optionListHeading); }
-        boolean isIsHiddenInitialized()             { return isHidden != null; }
     }
     /** Models the shared attributes of {@link OptionSpec} and {@link PositionalParamSpec}.
      * @since 3.0 */
@@ -4431,8 +4436,11 @@ public class CommandLine {
         public Help addAllSubcommands(Map<String, CommandLine> commands) {
             if (commands != null) {
                 for (Map.Entry<String, CommandLine> entry : commands.entrySet()) {
-                    if( entry.getValue().getCommandSpec().isHidden() ) continue;
-                    addSubcommand(entry.getKey(), entry.getValue());
+                    // not registering hidden commands is easier than suppressing display in Help.commandList():
+                    // if all subcommands are hidden, help should not show command list header
+                    if (!entry.getValue().getCommandSpec().hidden()) {
+                        addSubcommand(entry.getKey(), entry.getValue());
+                    }
                 }
             }
             return this;

@@ -126,6 +126,7 @@ No features have been promoted in this picocli release.
 - [#175] New Feature: `autoHelp` attribute to conveniently activate fully automatic help.
 - [#262] API Change: new `showDefaultValue` attribute on `@Option` and `@Parameters` gives fine-grained control over which default values to show or hide. Thanks to [ymenager](https://github.com/ymenager) for the request.
 - [#268] subcommands can now be annotated with @Command(isHelpCommand = true). If the parser detects this subcommand on the command line, it will not validate the required options or positional parameters of the parent command. Thanks to [ymenager](https://github.com/ymenager) for the request.
+- [#277] subcommands can now be hidden in the usage help message 
 
 ## <a name="3.0.0-alpha-1-deprecated"></a> Deprecations
 
