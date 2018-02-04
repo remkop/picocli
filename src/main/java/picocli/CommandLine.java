@@ -490,7 +490,7 @@ public class CommandLine {
      * {@linkplain #parse(String...) parsing} command line arguments. This method prints out
      * {@linkplain #usage(PrintStream, Help.Ansi) usage help} if {@linkplain #isUsageHelpRequested() requested}
      * or {@linkplain #printVersionHelp(PrintStream, Help.Ansi) version help} if {@linkplain #isVersionHelpRequested() requested}
-     * and returns {@code true}. If the command is a {@link Command#isHelpCommand()} and {@code runnable} or {@code callable},
+     * and returns {@code true}. If the command is a {@link Command#helpCommand()} and {@code runnable} or {@code callable},
      * that command is executed and this method returns {@code true}.
      * Otherwise, if none of the specified {@code CommandLine} objects have help requested,
      * this method returns {@code false}.
