@@ -3057,21 +3057,18 @@ public class CommandLineHelpTest {
 
     @Test
     public void testUsageTextWithHiddenSubcommand() throws Exception {
-        @Command(name = "foo", description = "This is a foo sub-command") class Foo { }
-        @Command(name = "bar", description = "This is a foo sub-command", hidden = true) class Bar { }
-        @Command(name = "app", abbreviateSynopsis = true) class App { }
+        @Command(name = "foo", description = "This is a visible subcommand") class Foo { }
+        @Command(name = "bar", description = "This is a hidden subcommand", hidden = true) class Bar { }
+        @Command(name = "app", subcommands = {Foo.class, Bar.class}) class App { }
 
-        CommandLine app = new CommandLine(new App())
-                .addSubcommand("foo", new Foo())
-                .addSubcommand("bar", new Bar());
-
+        CommandLine app = new CommandLine(new App(), new InnerClassFactory(this));
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         app.usage(new PrintStream(baos));
 
         String expected = format("" +
                 "Usage: app%n" +
                 "Commands:%n" +
-                "  foo  This is a foo sub-command%n");
+                "  foo  This is a visible subcommand%n");
         assertEquals(expected, new String(baos.toByteArray(), "UTF-8"));
     }
 

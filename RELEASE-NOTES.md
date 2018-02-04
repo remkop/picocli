@@ -121,12 +121,12 @@ No features have been promoted in this picocli release.
 
 ## <a name="3.0.0-alpha-1-fixes"></a> Fixed issues
 
-- [#245] API Change: From 3.0, picocli offers an API for programmatic configuration.
-- [#144] API Change: Added support for mixins to allow reusing common options, positional parameters, subcommands and command attributes from any object.
+- [#245] New Feature: From 3.0, picocli offers an API for programmatic configuration.
+- [#144] New Feature: Added support for mixins to allow reusing common options, positional parameters, subcommands and command attributes from any object.
 - [#175] New Feature: `autoHelp` attribute to conveniently activate fully automatic help.
-- [#262] API Change: new `showDefaultValue` attribute on `@Option` and `@Parameters` gives fine-grained control over which default values to show or hide. Thanks to [ymenager](https://github.com/ymenager) for the request.
-- [#268] subcommands can now be annotated with @Command(isHelpCommand = true). If the parser detects this subcommand on the command line, it will not validate the required options or positional parameters of the parent command. Thanks to [ymenager](https://github.com/ymenager) for the request.
-- [#277] subcommands can now be hidden in the usage help message 
+- [#262] New Feature: new `showDefaultValue` attribute on `@Option` and `@Parameters` gives fine-grained control over which default values to show or hide. Thanks to [ymenager](https://github.com/ymenager) for the request.
+- [#268] New Feature: new `isHelpCommand` attribute on `@Command`: if the parser detects this subcommand on the command line, it will not validate the required options or positional parameters of the parent command. Thanks to [ymenager](https://github.com/ymenager) for the request.
+- [#277] New Feature: new `hidden` attribute on `@Command` to omit the specified subcommand from the usage help message command list of the parent command. Thanks to [pditommaso](https://github.com/pditommaso).
 
 ## <a name="3.0.0-alpha-1-deprecated"></a> Deprecations
 
