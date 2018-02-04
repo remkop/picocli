@@ -1257,11 +1257,10 @@ public class CommandLine {
          * <p>
          * This attribute is useful for special options like help ({@code -h} and {@code --help} on unix,
          * {@code -?} and {@code -Help} on Windows).
-         * </p>
-         * <p>
-         * Note that the {@link #parse(String...)} method will not print usage help documentation. It will only set
-         * the value of the annotated field. It is the responsibility of the caller to inspect the annotated fields
-         * and take the appropriate action.
+         * </p><p>
+         * Note that the {@link #parse(String...)} method will not print usage help documentation, but only sets
+         * the value of the annotated field. Usage help is automatically printed when using any of the {@link #run(Runnable, PrintStream, String...)},
+         * {@link #call(Callable, PrintStream, String...)} or {@link #parseWithHandler(IParseResultHandler, PrintStream, String...)} methods.
          * </p>
          * @return whether this option allows the user to request usage help
          * @since 0.9.8
@@ -1275,11 +1274,10 @@ public class CommandLine {
          * <p>
          * This attribute is useful for special options like version ({@code -V} and {@code --version} on unix,
          * {@code -Version} on Windows).
-         * </p>
-         * <p>
-         * Note that the {@link #parse(String...)} method will not print version information. It will only set
-         * the value of the annotated field. It is the responsibility of the caller to inspect the annotated fields
-         * and take the appropriate action.
+         * </p><p>
+         * Note that the {@link #parse(String...)} method will not print version help information, but only sets
+         * the value of the annotated field. Version help is automatically printed when using any of the {@link #run(Runnable, PrintStream, String...)},
+         * {@link #call(Callable, PrintStream, String...)} or {@link #parseWithHandler(IParseResultHandler, PrintStream, String...)} methods.
          * </p>
          * @return whether this option allows the user to request version information
          * @since 0.9.8
@@ -2544,8 +2542,16 @@ public class CommandLine {
 
         /** Adds the specified subcommand with the specified name.
          * @param name subcommand name - when this String is encountered in the command line arguments the subcommand is invoked
+         * @param subcommand describes the subcommand to envoke when the name is encountered on the command line
+         * @return this {@code CommandSpec} object for method chaining */
+        public CommandSpec addSubcommand(String name, CommandSpec subcommand) {
+            return addSubcommand(name, new CommandLine(subcommand));
+        }
+
+        /** Adds the specified subcommand with the specified name.
+         * @param name subcommand name - when this String is encountered in the command line arguments the subcommand is invoked
          * @param commandLine the subcommand to envoke when the name is encountered on the command line
-         * @return this {@code CommandLine} object for method chaining */
+         * @return this {@code CommandSpec} object for method chaining */
         public CommandSpec addSubcommand(String name, CommandLine commandLine) {
             commands.put(name, commandLine);
             commandLine.getCommandSpec().parent(this);
