@@ -65,8 +65,8 @@ public class MyCommand {
 ```
 
 
-### <a name="3.0.0-alpha-1-autohelp"></a> AutoHelp
-This release introduces the `autoHelp` command attribute. When this attribute is set to `true`, picocli adds a mixin to the command that adds `usageHelp` and `versionHelp` options to the command. For example:
+### <a name="3.0.0-alpha-1-mixinStandardHelpOptions"></a> Help Options
+This release introduces the `mixinStandardHelpOptions` command attribute. When this attribute is set to `true`, picocli adds a mixin to the command that adds `usageHelp` and `versionHelp` options to the command. For example:
 
 ```java
 @Command(autoHelp = true, version = "auto help demo - picocli 3.0")
@@ -85,11 +85,22 @@ Usage: <main class> [-hV] [--option=<option>]
       --option=<option>       Some option.
   -h, --help                  Show this help message and exit.
   -V, --version               Print version information and exit.
-Commands:
-  help  Displays help information about the specified command
 ```
 
-Auto-help also registers a `help` subcommand that will print help for the subcommand following it, or for this command in case no subcommand is specified. For example:
+### <a name="3.0.0-alpha-1-HelpCommand"></a> Help Command
+
+From this release, picocli provides a `help` subcommand that will print help for the subcommand following it, or for this command in case no subcommand is specified. For example:
+```java
+@Command(subcommands = HelpCommand, version = "auto help demo - picocli 3.0")
+class AutoHelpDemo implements Runnable {
+
+    @Option(names = "--option", description = "Some option.")
+    String option;
+
+    @Override public void run() { }
+}
+```
+
 
 ```text
 # print help for the `maincommand` command
@@ -123,7 +134,7 @@ No features have been promoted in this picocli release.
 
 - [#245] New Feature: From 3.0, picocli offers an API for programmatic configuration.
 - [#144] New Feature: Added support for mixins to allow reusing common options, positional parameters, subcommands and command attributes from any object.
-- [#175] New Feature: `autoHelp` attribute to conveniently activate fully automatic help.
+- [#175] New Feature: `mixinStandardHelpOptions` attribute to conveniently activate fully automatic help.
 - [#262] New Feature: new `showDefaultValue` attribute on `@Option` and `@Parameters` gives fine-grained control over which default values to show or hide. Thanks to [ymenager](https://github.com/ymenager) for the request.
 - [#268] New Feature: new `helpCommand` attribute on `@Command`: if the command line arguments contain a subcommand annotated with `helpCommand`, the parser will not validate the required options or positional parameters of the parent command. Thanks to [ymenager](https://github.com/ymenager) for the request.
 - [#277] New Feature: new `hidden` attribute on `@Command` to omit the specified subcommand from the usage help message command list of the parent command. Thanks to [pditommaso](https://github.com/pditommaso).

@@ -307,7 +307,7 @@ public class Demo implements Runnable {
     static
     // tag::Git[]
     // tag::Git-declaration[]
-    @Command(name = "git", autoHelp = true, version = "subcommand demo 3.0",
+    @Command(name = "git", mixinStandardHelpOptions = true, version = "subcommand demo 3.0",
             description = "Git is a fast, scalable, distributed revision control " +
                           "system with an unusually rich command set that provides both " +
                           "high-level operations and full access to internals.",
@@ -443,6 +443,7 @@ public class Demo implements Runnable {
 
     static CommandLine mainCommand() {
         CommandLine commandLine = new CommandLine(new Git());
+        commandLine.addSubcommand("help", new CommandLine.HelpCommand());
         commandLine.addSubcommand("status", new GitStatus());
         commandLine.addSubcommand("commit", new GitCommit());
         commandLine.addSubcommand("add", new GitAdd());

@@ -21,7 +21,7 @@ import static picocli.CommandLine.*;
 
 @Command(version = "Help demo for picocli v3.0", header = "%nFully Automatic Help Demo%n",
         description = "Prints usage help and version help when requested.%n",
-        autoHelp = true)
+        mixinStandardHelpOptions = true)
 public class AutomaticHelpDemo3 implements Runnable {
 
     @Option(names = "--count", description = "The number of times to repeat.")

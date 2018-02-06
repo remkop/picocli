@@ -515,21 +515,25 @@ public class CommandLine {
 //            } else if (parsed.getCommandSpec().helpCommand()) {
 //                execute(parsed);
 //                return true;
-            } else if (i > 0 && parsed.getCommand() instanceof AutoHelpMixin.HelpCommand) {
-                CommandLine main = parsedCommands.get(i - 1);
-                AutoHelpMixin.HelpCommand helpCommand = parsed.getCommand();
-                CommandLine subcommand = null;
-                if (helpCommand.commands.length > 0) {
-                    subcommand = main.getSubcommands().get(helpCommand.commands[0]);
-                    if (subcommand != null) {
-                        subcommand.usage(out, ansi);
-                    } else {
-                        out.println("Unknown subcommand '" + helpCommand.commands[0] + "'.");
-                        main.usage(out, ansi);
-                    }
-                } else {
-                    main.usage(out, ansi);
-                }
+            } else if (i > 0 && parsed.getCommand() instanceof HelpCommand) {
+                HelpCommand helpCommand = parsed.getCommand();
+                helpCommand.parent = parsedCommands.get(i - 1);
+                helpCommand.ansi = ansi;
+                helpCommand.out = out;
+                helpCommand.err = out;
+                execute(parsed);
+//                CommandLine subcommand = null;
+//                if (helpCommand.commands.length > 0) {
+//                    subcommand = main.getSubcommands().get(helpCommand.commands[0]);
+//                    if (subcommand != null) {
+//                        subcommand.usage(out, ansi);
+//                    } else {
+//                        out.println("Unknown subcommand '" + helpCommand.commands[0] + "'.");
+//                        main.usage(out, ansi);
+//                    }
+//                } else {
+//                    main.usage(out, ansi);
+//                }
                 return true;
             }
         }
@@ -1711,24 +1715,13 @@ public class CommandLine {
         /**
          * Add the auto-help mixin to this command, which adds {@code -h} and {@code --help} {@linkplain Option#usageHelp() usageHelp}
          * options and {@code -V} and {@code --version} {@linkplain Option#versionHelp() versionHelp} options to the options
-         * of this command, as well as a {@code help} subcommand (more information below).
+         * of this command).
          * <p>
          * Note that if no {@link #version()} or {@link #versionProvider()} is specified, the {@code --version} option will not print anything.
-         * </p><p>
-         * Auto-help also registers a {@code help} subcommand that will print help for the subcommand following it, or
-         * for this command in case no subcommand is specified. For example:
-         * </p><pre>
-         * # two ways to get usage help for a subcommand:
-         * maincommand help subcommand
-         * maincommand subcommand --help
-         *
-         * # two ways to get usage help for the main command:
-         * maincommand help
-         * maincommand --help
-         * </pre>
+         * </p>
          * @return whether the auto-help mixin should be added to this command
          * @since 3.0 */
-        boolean autoHelp() default false;
+        boolean mixinStandardHelpOptions() default false;
 
         /** Set this attribute to {@code true} if this subcommand is a help command, and required options and positional
          * parameters of the parent command should not be validated. If a subcommand marked as {@code helpCommand} is
@@ -2173,7 +2166,7 @@ public class CommandLine {
             if (!commandSpec.isVersionProviderInitialized()    && cmd.versionProvider() != NoVersionProvider.class) {
                 commandSpec.versionProvider(DefaultFactory.createVersionProvider(factory, cmd.versionProvider()));
             }
-            if (cmd.autoHelp()) { commandSpec.addMixin("autoHelp", build(new AutoHelpMixin(), factory)); }
+            if (cmd.mixinStandardHelpOptions()) { commandSpec.addMixin("mixinStandardHelpOptions", build(new AutoHelpMixin(), factory)); }
             return true;
         }
         private static String[] generateVersionStrings(Class<? extends IVersionProvider> cls, IFactory factory) {
@@ -2194,6 +2187,7 @@ public class CommandLine {
         private static void initSubcommands(Command cmd, CommandSpec parent, IFactory factory) {
             for (Class<?> sub : cmd.subcommands()) {
                 try {
+                    if (Help.class == sub) { throw new InitializationException(Help.class.getName() + " is not a valid subcommand. Did you mean " + HelpCommand.class.getName() + "?"); }
                     CommandLine subcommandLine = toCommandLine(factory.create(sub), factory);
                     parent.addSubcommand(subCommandName(sub), subcommandLine);
                     initParentCommand(subcommandLine.getCommandSpec().userObject(), parent.userObject());
@@ -4293,7 +4287,6 @@ public class CommandLine {
         private BuiltIn() {} // private constructor: never instantiate
     }
 
-    @Command(subcommands = AutoHelpMixin.HelpCommand.class)
     static class AutoHelpMixin {
 
         @Option(names = {"-h", "--help"}, usageHelp = true, description = "Show this help message and exit.")
@@ -4301,40 +4294,54 @@ public class CommandLine {
 
         @Option(names = {"-V", "--version"}, versionHelp = true, description = "Print version information and exit.")
         private boolean versionRequested;
+    }
 
-        @Command(name = "help", header = "Displays help information about the specified command",
-                synopsisHeading = "%nUsage: ", helpCommand = true,
-                description = {"%nWhen no COMMAND is given, the usage help for the main command is displayed.",
-                                "If a COMMAND is specified, the help for that command is shown.%n"})
-        static class HelpCommand implements Runnable {
+    /** Help command that can be installed as a subcommand on all application commands. When invoked with a subcommand
+     * argument, it prints usage help for the specified subcommand. For example:<pre>
+     *
+     * // print help for subcommand
+     * command help subcommand
+     * </pre><p>
+     * When invoked without additional parameters, it prints usage help for the parent command. For example:
+     * </p><pre>
+     *
+     * // print help for command
+     * command help
+     * </pre>
+     * @since 3.0
+     */
+    @Command(name = "help", header = "Displays help information about the specified command",
+            synopsisHeading = "%nUsage: ", helpCommand = true,
+            description = {"%nWhen no COMMAND is given, the usage help for the main command is displayed.",
+                    "If a COMMAND is specified, the help for that command is shown.%n"})
+    public static final class HelpCommand implements Runnable {
 
-            @Option(names = {"-h", "--help"}, usageHelp = true, description = "Show usage help for the help command and exit.")
-            private boolean helpRequested;
+        @Option(names = {"-h", "--help"}, usageHelp = true, description = "Show usage help for the help command and exit.")
+        private boolean helpRequested;
 
-            @Parameters(paramLabel = "COMMAND", description = "The COMMAND to display the usage help message for.")
-            private String[] commands = new String[0];
+        @Parameters(paramLabel = "COMMAND", description = "The COMMAND to display the usage help message for.")
+        private String[] commands = new String[0];
 
-            //@ParentCommandLine
-            private CommandLine parent;
+        //@Inject
+        private CommandLine parent;
 
-            private PrintStream out = System.out;
-            private PrintStream err = System.err;
-            private Help.Ansi ansi = Help.Ansi.AUTO;
+        private PrintStream out = System.out;
+        private PrintStream err = System.err;
+        private Help.Ansi ansi = Help.Ansi.AUTO;
 
-            public void run() {
-                if (parent == null) { return; }
-                CommandLine subcommand = null;
-                if (commands.length > 0) {
-                    subcommand = parent.getSubcommands().get(commands[0]);
-                    if (subcommand != null) {
-                        subcommand.usage(out, ansi);
-                    } else {
-                        err.println("Unknown subcommand '" + commands[0] + "'.");
-                        parent.usage(err, ansi);
-                    }
+        public void run() {
+            if (parent == null) { return; }
+            CommandLine subcommand = null;
+            if (commands.length > 0) {
+                subcommand = parent.getSubcommands().get(commands[0]);
+                if (subcommand != null) {
+                    subcommand.usage(out, ansi);
                 } else {
-                    parent.usage(out, ansi);
+                    err.println("Unknown subcommand '" + commands[0] + "'.");
+                    parent.usage(err, ansi);
                 }
+            } else {
+                parent.usage(out, ansi);
             }
         }
     }

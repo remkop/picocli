@@ -2835,8 +2835,17 @@ public class CommandLineHelpTest {
     }
 
     @Test
+    public void testHelpCannotBeAddedAsSubcommand() {
+        @Command(subcommands = Help.class) class App{}
+        try {
+            new CommandLine(new App(), new InnerClassFactory(this));
+        } catch (InitializationException ex) {
+            assertEquals("picocli.CommandLine$Help is not a valid subcommand. Did you mean picocli.CommandLine$HelpCommand?", ex.getMessage());
+        }
+    }
+    @Test
     public void testAutoHelpMixinUsageHelpOption() throws Exception {
-        @Command(autoHelp = true) class App {}
+        @Command(mixinStandardHelpOptions = true) class App {}
 
         String[] helpOptions = {"-h", "--help"};
         for (String option : helpOptions) {
@@ -2849,16 +2858,14 @@ public class CommandLineHelpTest {
             String expected = String.format("" +
                     "Usage: <main class> [-hV]%n" +
                     "  -h, --help                  Show this help message and exit.%n" +
-                    "  -V, --version               Print version information and exit.%n" +
-                    "Commands:%n" +
-                    "  help  Displays help information about the specified command%n");
+                    "  -V, --version               Print version information and exit.%n");
             assertEquals(expected, new String(baos.toByteArray(), "UTF-8"));
         }
     }
 
     @Test
     public void testAutoHelpMixinVersionHelpOption() throws Exception {
-        @Command(autoHelp = true, version = "1.2.3") class App {}
+        @Command(mixinStandardHelpOptions = true, version = "1.2.3") class App {}
 
         String[] versionOptions = {"-V", "--version"};
         for (String option : versionOptions) {
@@ -2875,7 +2882,7 @@ public class CommandLineHelpTest {
 
     @Test
     public void testAutoHelpMixinUsageHelpSubcommandOnAppWithoutSubcommands() throws Exception {
-        @Command(autoHelp = true) class App {}
+        @Command(mixinStandardHelpOptions = true, subcommands = HelpCommand.class) class App {}
 
         List<CommandLine> list = new CommandLine(new App()).parse("help");
 
@@ -2893,7 +2900,8 @@ public class CommandLineHelpTest {
 
     @Test
     public void testAutoHelpMixinRunHelpSubcommandOnAppWithoutSubcommands() throws Exception {
-        @Command(autoHelp = true) class App implements Runnable{ public void run(){}}
+        @Command(mixinStandardHelpOptions = true, subcommands = HelpCommand.class)
+        class App implements Runnable{ public void run(){}}
 
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         CommandLine.run(new App(), new PrintStream(baos), Help.Ansi.OFF, "help");
@@ -2906,26 +2914,9 @@ public class CommandLineHelpTest {
                 "  help  Displays help information about the specified command%n");
         assertEquals(expected, new String(baos.toByteArray(), "UTF-8"));
     }
-
     @Test
-    public void testAutoHelpMixinUsageHelpSubcommandWithValidCommand() throws Exception {
-        @Command(name = "sub", description = "This is a subcommand") class Sub {}
-        @Command(autoHelp = true, subcommands = Sub.class) class App {}
-
-        List<CommandLine> list = new CommandLine(new App(), new InnerClassFactory(this)).parse("help", "sub");
-
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        assertTrue(CommandLine.printHelpIfRequested(list, new PrintStream(baos), Help.Ansi.OFF));
-
-        String expected = String.format("" +
-                "Usage: sub%n" +
-                "This is a subcommand%n");
-        assertEquals(expected, new String(baos.toByteArray(), "UTF-8"));
-    }
-
-    @Test
-    public void testAutoHelpMixinRunHelpSubcommandWithValidCommand() throws Exception {
-        @Command(autoHelp = true, subcommands = Sub.class) class App implements Runnable{ public void run(){}}
+    public void testHelpSubcommandWithValidCommand() throws Exception {
+        @Command(subcommands = {Sub.class, HelpCommand.class}) class App implements Runnable{ public void run(){}}
 
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         CommandLine.run(new App(), new PrintStream(baos), Help.Ansi.OFF, "help", "sub");
@@ -2937,29 +2928,9 @@ public class CommandLineHelpTest {
     }
 
     @Test
-    public void testAutoHelpMixinUsageHelpSubcommandWithInvalidCommand() throws Exception {
-        @Command(name = "sub", description = "This is a subcommand") class Sub {}
-        @Command(autoHelp = true, subcommands = Sub.class) class App {}
-
-        List<CommandLine> list = new CommandLine(new App(), new InnerClassFactory(this)).parse("help", "abcd");
-
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        assertTrue(CommandLine.printHelpIfRequested(list, new PrintStream(baos), Help.Ansi.OFF));
-
-        String expected = String.format("" +
-                "Unknown subcommand 'abcd'.%n" +
-                "Usage: <main class> [-hV]%n" +
-                "  -h, --help                  Show this help message and exit.%n" +
-                "  -V, --version               Print version information and exit.%n" +
-                "Commands:%n" +
-                "  sub   This is a subcommand%n" +
-                "  help  Displays help information about the specified command%n");
-        assertEquals(expected, new String(baos.toByteArray(), "UTF-8"));
-    }
-
-    @Test
-    public void testAutoHelpMixinRunHelpSubcommandWithInvalidCommand() throws Exception {
-        @Command(autoHelp = true, subcommands = Sub.class) class App implements Runnable{ public void run(){}}
+    public void testHelpSubcommandWithInvalidCommand() throws Exception {
+        @Command(mixinStandardHelpOptions = true, subcommands = {Sub.class, HelpCommand.class})
+        class App implements Runnable{ public void run(){}}
 
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         CommandLine.run(new App(), new PrintStream(baos), Help.Ansi.OFF, "help", "abcd");
@@ -2976,31 +2947,9 @@ public class CommandLineHelpTest {
     }
 
     @Test
-    public void testAutoHelpMixinUsageHelpSubcommandWithHelpOption() throws Exception {
-        @Command(name = "sub", description = "This is a subcommand") class Sub {}
-        @Command(autoHelp = true, subcommands = Sub.class) class App {}
-
-        List<CommandLine> list = new CommandLine(new App(), new InnerClassFactory(this)).parse("help", "--help");
-
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        assertTrue(CommandLine.printHelpIfRequested(list, new PrintStream(baos), Help.Ansi.OFF));
-
-        String expected = String.format("" +
-                "Displays help information about the specified command%n" +
-                "%n" +
-                "Usage: help [-h] [COMMAND]...%n" +
-                "%n" +
-                "When no COMMAND is given, the usage help for the main command is displayed.%n" +
-                "If a COMMAND is specified, the help for that command is shown.%n" +
-                "%n" +
-                "      [COMMAND]...            The COMMAND to display the usage help message for.%n" +
-                "  -h, --help                  Show usage help for the help command and exit.%n");
-        assertEquals(expected, new String(baos.toByteArray(), "UTF-8"));
-    }
-
-    @Test
-    public void testAutoHelpMixinRunHelpSubcommandWithHelpOption() throws Exception {
-        @Command(autoHelp = true, subcommands = Sub.class) class App implements Runnable{ public void run(){}}
+    public void testHelpSubcommandWithHelpOption() throws Exception {
+        @Command(subcommands = {Sub.class, HelpCommand.class})
+        class App implements Runnable{ public void run(){}}
 
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         CommandLine.run(new App(), new PrintStream(baos), Help.Ansi.OFF, "help", "-h");
@@ -3019,28 +2968,9 @@ public class CommandLineHelpTest {
     }
 
     @Test
-    public void testAutoHelpMixinUsageHelpSubcommandWithoutCommand() throws Exception {
-        @Command(name = "sub", description = "This is a subcommand") class Sub {}
-        @Command(autoHelp = true, subcommands = Sub.class) class App {}
-
-        List<CommandLine> list = new CommandLine(new App(), new InnerClassFactory(this)).parse("help");
-
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        assertTrue(CommandLine.printHelpIfRequested(list, new PrintStream(baos), Help.Ansi.OFF));
-
-        String expected = String.format("" +
-                "Usage: <main class> [-hV]%n" +
-                "  -h, --help                  Show this help message and exit.%n" +
-                "  -V, --version               Print version information and exit.%n" +
-                "Commands:%n" +
-                "  sub   This is a subcommand%n" +
-                "  help  Displays help information about the specified command%n");
-        assertEquals(expected, new String(baos.toByteArray(), "UTF-8"));
-    }
-
-    @Test
-    public void testAutoHelpMixinRunHelpSubcommandWithoutCommand() throws Exception {
-        @Command(autoHelp = true, subcommands = Sub.class) class App implements Runnable{ public void run(){}}
+    public void testHelpSubcommandWithoutCommand() throws Exception {
+        @Command(mixinStandardHelpOptions = true, subcommands = {Sub.class, HelpCommand.class})
+        class App implements Runnable{ public void run(){}}
 
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         CommandLine.run(new App(), new PrintStream(baos), Help.Ansi.OFF, "help");

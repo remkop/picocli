@@ -24,7 +24,7 @@ import picocli.CommandLine.Option;
  */
 public class UserManualExamples {
 
-    @Command(autoHelp = true, version = "1.0")
+    @Command(mixinStandardHelpOptions = true, version = "1.0")
     static class AutoHelpDemo implements Runnable {
 
         @Option(names = "--option", description = "Some option.")

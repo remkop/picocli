@@ -3287,11 +3287,11 @@ public class CommandLineTest {
     @Test
     public void testAnyHelpCommandMakesRequiredOptionsOptional() {
         @Command(name = "help", helpCommand = true)
-        class HelpCommand {
+        class MyHelpCommand {
             @Option(names = "-o")
             String option;
         }
-        @Command(subcommands = HelpCommand.class)
+        @Command(subcommands = MyHelpCommand.class)
         class Parent {
             @Option(names = "-m", required = true)
             String mandatory;
@@ -3302,7 +3302,7 @@ public class CommandLineTest {
 
     @Test
     public void testBuiltInHelpCommandMakesRequiredOptionsOptional() {
-        @Command(autoHelp = true)
+        @Command(subcommands = HelpCommand.class)
         class Parent {
             @Option(names = "-m", required = true)
             String mandatory;
@@ -3312,8 +3312,8 @@ public class CommandLineTest {
     }
 
     @Test
-    public void testBuiltInHelpCommandHelpOptionMakesRequiredOptionsOptional() {
-        @Command(autoHelp = true)
+    public void testAutoHelpOptionMakesRequiredOptionsOptional() {
+        @Command(mixinStandardHelpOptions = true)
         class Parent {
             @Option(names = "-m", required = true)
             String mandatory;
