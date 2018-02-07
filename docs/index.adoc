@@ -767,12 +767,14 @@ an option or positional parameter. For example:
 
 [source,java]
 ----
-@Parameters(arity = "3") String[] values;
+class OnlyThree {
+    @Parameters(arity = "3") String[] values;
+}
 ----
 The command has only one annotated field, `values`, and it expects exactly three arguments,
 so the following input results in an `UnmatchedArgumentException`:
 ----
-<command> 1 2 3 4 5
+java OnlyThree 1 2 3 4 5
 ----
 
 Applications can change this by calling `CommandLine.setUnmatchedArgumentsAllowed(true)` before parsing the input.
@@ -843,7 +845,7 @@ Use these attributes for options that request the usage help message or version 
 ----
 App app = CommandLine.populateCommand(new App(), args);
 if (app.usageHelpRequested) {
-   CommandLine.usage(new App(), System.err);
+   CommandLine.usage(new App(), System.out);
    return;
 }
 ----
@@ -859,15 +861,17 @@ usage help or version information was requested (without inspecting the annotate
 CommandLine commandLine = new CommandLine(new App());
 commandLine.parse(args);
 if (commandLine.isUsageHelpRequested()) {
-   commandLine.usage(System.err);
+   commandLine.usage(System.out);
    return;
 } else if (commandLine.isVersionHelpRequested()) {
-   commandLine.printVersionHelp(System.err);
+   commandLine.printVersionHelp(System.out);
    return;
 }
 ----
 
-From picocli v2.0, the <<Less Boilerplate,convenience methods>> will automatically print usage help and version information when requested with the `versionHelp` and `usageHelp` option attributes (but not for the `help` attribute).
+From picocli v2.0, the <<Less Boilerplate,convenience methods>> will automatically print usage help and version information
+when requested with the `versionHelp` and `usageHelp` option attributes (but not for the `help` attribute).
+From v2.0, the `help` attribute is deprecated.
 
 Methods that automatically print help:
 
@@ -902,7 +906,7 @@ annotation and prints it to the specified `PrintStream`.
 CommandLine commandLine = new CommandLine(new VersionedCommand());
 commandLine.parse(args);
 if (commandLine.isVersionHelpRequested()) {
-    commandLine.printVersionHelp(System.err);
+    commandLine.printVersionHelp(System.out);
     return;
 }
 ----
@@ -952,13 +956,19 @@ Format argument values can be passed to the `printVersionHelp` method:
 ----
 String[] args = {"1234", System.getProperty("user.name")};
 new CommandLine(new VersionedCommand())
-    .printVersionHelp(System.err, Help.Ansi.AUTO, args);
+    .printVersionHelp(System.out, Help.Ansi.AUTO, args);
 ----
 
 === Dynamic Version Information
 From picocli 2.2, the `@Command` annotation supports a `versionProvider` attribute.
 Applications may specify a `IVersionProvider` implementation in this attribute, and picocli will instantiate this class
 and invoke it to collect version information.
+
+[source,java]
+----
+@Command(versionProvider = com.my.custom.ManifestVersionProvider.class)
+class App { ... }
+----
 
 This is useful when the version of an application should be detected dynamically at runtime.
 For example, an implementation may return version information obtained from the JAR manifest, a properties file or some other source.
@@ -1078,7 +1088,7 @@ Usage: <main class> [OPTIONS] [<files>...]
 Note that the positional parameters are not abbreviated.
 [source,java]
 ----
-@CommandLine.Command(abbreviateSynopsis = true)
+@Command(abbreviateSynopsis = true)
 class App {
     @Parameters File[] files;
     @Option(names = {"--count", "-c"}) int count;
@@ -1119,7 +1129,7 @@ The `headerHeading` and `footerHeading` may contain format specifiers. See <<Sec
 Section headers can be used to make usage message layout appear more spacious. Section headings may contain embedded line separator (`%n`) format specifiers:
 [source,java]
 ----
-@CommandLine.Command(name = "git-commit",
+@Command(name = "git-commit",
         sortOptions = false,
         headerHeading = "Usage:%n%n",
         synopsisHeading = "%n",
@@ -1631,7 +1641,13 @@ class FileUtils {
             description = "this option applies to all subcommands")
     File baseDirectory;
 }
+----
 
+The above top-level command has a `--directory` option that applies to its subcommands.
+The `List` subcommand can use the `@ParentCommand` annotation to get a reference to the parent command, so it can easily access the parent command options.
+
+[source,java]
+----
 @Command(name = "list")
 class List implements Runnable {
 
@@ -1673,6 +1689,7 @@ CommandLine commandLine = new CommandLine(new Git());
 // add subcommands programmatically (not necessary if the parent command
 // declaratively registers the subcommands via annotation)
 commandLine.addSubcommand("status",   new GitStatus());
+commandLine.addSubcommand("commit",   new GitCommit());
 ...
 commandLine.usage(System.out);
 ----
@@ -1785,10 +1802,10 @@ CommandLine cmd = new CommandLine(callable);
 try {
     cmd.parse(args);
     if (cmd.isUsageHelpRequested()) {
-        cmd.usage(System.err);
+        cmd.usage(System.out);
         return null;
     } else if (cmd.isVersionHelpRequested()) {
-        cmd.printVersionHelp(System.err);
+        cmd.printVersionHelp(System.out);
         return null;
     }
     return callable.call();
@@ -1834,7 +1851,7 @@ CommandLine cmd = new CommandLine(MyTopLevelCommand())
         .addSubcommand("status",   new GitStatus())
         .addSubcommand("commit",   new GitCommit())
         .addSubcommand("add",      new GitAdd());
-List<Object result = cmd.parseWithHandler(new RunAll(), System.err, args);
+List<Object> result = cmd.parseWithHandler(new RunAll(), System.err, args);
 ----
 
 The `CommandLine::parseWithHandler` method will take care of the following:
@@ -2135,7 +2152,7 @@ import static picocli.CommandLine.*
 @Field boolean helpRequested;
 
 //if (helpRequested) { // not necessary: PicocliBaseScript takes care of this
-//    CommandLine.usage(this, System.err); return 0;
+//    CommandLine.usage(this, System.out); return 0;
 //}
 count.times {
    println "hi"
@@ -2166,15 +2183,15 @@ class MyApp : Runnable {
 
     @Option(names = ["-c", "--count"], paramLabel = "COUNT",
             description = ["the count"])
-    private val count: Int = 0
+    private var count: Int = 0
 
     @Option(names = ["-h", "--help"], usageHelp = true,
             description = ["print this help and exit"])
-    private val helpRequested: Boolean = false
+    private var helpRequested: Boolean = false
 
     @Option(names = ["-V", "--version"], versionHelp = true,
             description = ["print version info and exit"])
-    private val versionRequested: Boolean = false
+    private var versionRequested: Boolean = false
 
     override fun run() {
         for (i in 0 until count) {
@@ -2199,15 +2216,15 @@ class MyApp : Runnable {
 
     @Option(names = arrayOf("-c", "--count"), paramLabel = "COUNT",
             description = arrayOf("the count"))
-    private val count: Int = 0
+    private var count: Int = 0
 
     @Option(names = arrayOf("-h", "--help"), usageHelp = true,
             description = arrayOf("print this help and exit"))
-    private val helpRequested: Boolean = false
+    private var helpRequested: Boolean = false
 
     @Option(names = arrayOf("-V", "--version"), versionHelp = true,
             description = arrayOf("print version info and exit"))
-    private val versionRequested: Boolean = false
+    private var versionRequested: Boolean = false
 
     override fun run() {
         for (i in 0 until count) {
