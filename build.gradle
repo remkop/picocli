@@ -263,7 +263,8 @@ Release procedure:
 4. gradlew clean build
 5. gradlew copyDocs
 6. update RELEASE-NOTES.md
-7. update README.md (latest version, release notes)
+7. gradlew bumpReadmeVersion
+7a update README.md (latest version, release notes)
 8. commit -m "Release picocli version ..."
 9. tag v$version
 10. gradlew publishPluginPublicationToBintrayRepository
