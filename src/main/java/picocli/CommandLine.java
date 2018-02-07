@@ -92,7 +92,7 @@ import static picocli.CommandLine.Help.Column.Overflow.WRAP;
  * <pre>import static picocli.CommandLine.*;
  *
  * &#064;Command(header = "Encrypt FILE(s), or standard input, to standard output or to the output file.",
- *          version = "v1.2.3")
+ *          version = "v1.2.3", mixinStandardHelpOptions = true)
  * public class Encrypt {
  *
  *     &#064;Parameters(type = File.class, description = "Any number of input files")
@@ -103,12 +103,6 @@ import static picocli.CommandLine.Help.Column.Overflow.WRAP;
  *
  *     &#064;Option(names = { "-v", "--verbose"}, description = "Verbose mode. Helpful for troubleshooting. Multiple -v options increase the verbosity.")
  *     private boolean[] verbose;
- *
- *     &#064;Option(names = { "-h", "--help", "-?", "-help"}, usageHelp = true, description = "Display this help and exit")
- *     private boolean help;
- *
- *     &#064;Option(names = { "-V", "--version"}, versionHelp = true, description = "Display version info and exit")
- *     private boolean versionHelp;
  * }
  * </pre>
  * <p>
@@ -118,7 +112,7 @@ import static picocli.CommandLine.Help.Column.Overflow.WRAP;
  *     Encrypt encrypt = new Encrypt();
  *     try {
  *         List&lt;CommandLine&gt; parsedCommands = new CommandLine(encrypt).parse(args);
- *         if (!CommandLine.printHelpIfRequested(parsedCommands, System.err, Help.Ansi.AUTO)) {
+ *         if (!CommandLine.printHelpIfRequested(parsedCommands, System.out, Help.Ansi.AUTO)) {
  *             runProgram(encrypt);
  *         }
  *     } catch (ParameterException ex) { // command line arguments could not be parsed
@@ -1624,7 +1618,7 @@ public class CommandLine {
      * <p>Annotate your class with {@code @Command} when you want more control over the format of the generated help
      * message.
      * </p><pre>
-     * &#064;Command(name      = "Encrypt",
+     * &#064;Command(name      = "Encrypt", mixinStandardHelpOptions = true,
      *        description = "Encrypt FILE(s), or standard input, to standard output or to the output file.",
      *        version     = "Encrypt version 1.0",
      *        footer      = "Copyright (c) 2017")
@@ -1637,12 +1631,6 @@ public class CommandLine {
      *
      *     &#064;Option(names = { "-v", "--verbose"}, description = "Verbose mode. Helpful for troubleshooting. Multiple -v options increase the verbosity.")
      *     private boolean[] verbose;
-     *
-     *     &#064;Option(names = { "-h", "--help" }, usageHelp = true, description = "Display this help and exit")
-     *     private boolean help;
-     *
-     *     &#064;Option(names = { "-V", "--version"}, versionHelp = true, description = "Display version information and exit")
-     *     private boolean version;
      * }</pre>
      * <p>
      * The structure of a help message looks like this:
@@ -1688,6 +1676,7 @@ public class CommandLine {
          * </pre>
          * @return the declaratively registered subcommands of this command, or an empty array if none
          * @see CommandLine#addSubcommand(String, Object)
+         * @see HelpCommand
          * @since 0.9.8
          */
         Class<?>[] subcommands() default {};
@@ -1713,9 +1702,8 @@ public class CommandLine {
         Class<? extends IVersionProvider> versionProvider() default NoVersionProvider.class;
 
         /**
-         * Add the auto-help mixin to this command, which adds {@code -h} and {@code --help} {@linkplain Option#usageHelp() usageHelp}
-         * options and {@code -V} and {@code --version} {@linkplain Option#versionHelp() versionHelp} options to the options
-         * of this command).
+         * Adds the standard {@code -h} and {@code --help} {@linkplain Option#usageHelp() usageHelp} options and {@code -V}
+         * and {@code --version} {@linkplain Option#versionHelp() versionHelp} options to the options of this command.
          * <p>
          * Note that if no {@link #version()} or {@link #versionProvider()} is specified, the {@code --version} option will not print anything.
          * </p>
