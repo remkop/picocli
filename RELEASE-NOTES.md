@@ -1,5 +1,45 @@
 # picocli Release Notes
 
+# <a name="2.2.2"></a> Picocli 2.2.2
+The picocli community is pleased to announce picocli 2.2.2.
+
+This is a bugfix release.
+
+
+This is the nineteenth public release.
+Picocli follows [semantic versioning](http://semver.org/).
+
+## <a name="2.2.2-toc"></a> Table of Contents
+
+* [New and noteworthy](#2.2.2-new)
+* [Promoted features](#2.2.2-promoted)
+* [Fixed issues](#2.2.2-fixes)
+* [Deprecations](#2.2.2-deprecated)
+* [Potential breaking changes](#2.2.2-breaking-changes)
+
+## <a name="2.2.2-new"></a> New and noteworthy
+
+This is a bugfix release and does not include any new features.
+
+## <a name="2.2.2-promoted"></a> Promoted features
+Promoted features are features that were incubating in previous versions of picocli but are now supported and subject to backwards compatibility. 
+
+No features have been promoted in this picocli release.
+
+## <a name="2.2.2-fixes"></a> Fixed issues
+
+- [#282] Bugfix: unmatched option heuristic did not work when there were no options to compare against.
+
+## <a name="2.2.2-deprecated"></a> Deprecations
+
+This release has no additional deprecations.
+
+## <a name="2.2.2-breaking-changes"></a> Potential breaking changes
+
+This release has no breaking changes.
+
+
+
 # <a name="2.2.1"></a> Picocli 2.2.1
 The picocli community is pleased to announce picocli 2.2.1.
 

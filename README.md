@@ -37,7 +37,7 @@ interactively showing users what options and subcommands are available.
 ![Picocli Demo help message with ANSI colors](docs/images/picocli.Demo.png?raw=true)
 
 #### Releases
-* [Releases](https://github.com/remkop/picocli/releases) - latest: 2.2.1
+* [Releases](https://github.com/remkop/picocli/releases) - latest: 2.2.2
 * [Picocli 2.0 Release Notes](https://github.com/remkop/picocli/releases/tag/v2.0.0) - note there are some [potential breaking changes](https://github.com/remkop/picocli/releases/tag/v2.0.0#2.0-breaking-changes) from prior versions
 
 #### Documentation
@@ -131,3 +131,41 @@ For example, your application can generate help like this with a custom layout:
 
 See the [source code](https://github.com/remkop/picocli/blob/master/src/test/java/picocli/CustomLayoutDemo.java#L61).
 
+## Download
+You can add picocli as an external dependency to your project, or you can include it as source.
+See the [source code](https://github.com/remkop/picocli/blob/master/src/main/java/picocli/CommandLine.java). Copy and paste it into a file called `CommandLine.java`, add it to your project, and enjoy!
+
+### Gradle
+```
+compile 'info.picocli:picocli:2.2.2'
+```
+### Maven
+```
+<dependency>
+  <groupId>info.picocli</groupId>
+  <artifactId>picocli</artifactId>
+  <version>2.2.2</version>
+</dependency>
+```
+### Scala SBT
+```
+libraryDependencies += "info.picocli" % "picocli" % "2.2.2"
+```
+### Ivy
+```
+<dependency org="info.picocli" name="picocli" rev="2.2.2" />
+```
+### Grape
+```groovy
+@Grapes(
+    @Grab(group='info.picocli', module='picocli', version='2.2.2')
+)
+```
+### Leiningen
+```
+[info.picocli/picocli "2.2.2"]
+```
+### Buildr
+```
+'info.picocli:picocli:jar:2.2.2'
+```

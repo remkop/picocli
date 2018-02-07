@@ -1,11 +1,14 @@
 group 'info.picocli'
 description 'Annotation-based Java command line parser. Usage help with ANSI styles and colors. Autocomplete. Nested subcommands. Easily included as source to avoid adding a dependency.'
-version '2.2.2-SNAPSHOT'
+version '2.2.2'
 
 // for bumpVersion task
-def oldVersion = '2\\.2\\.1'
+def oldVersion = '2\\.2\\.2-SNAPSHOT'
 def oldRevdate = '2018\\-01\\-03'
-def revDate    = '2018-01-03'
+def revDate    = '2018-02-07'
+
+// for bumpReadmeVersion task
+def previousReleaseVersion = '2.2.1'
 
 buildscript {
     repositories {
@@ -132,6 +135,14 @@ artifacts {
     archives testJar
     archives jar
 }
+task bumpReadmeVersion {
+    doLast {
+        // README.md
+        ant.replaceregexp(match: "$previousReleaseVersion", replace: "$version", flags: 'g', byline: true, encoding: 'UTF8') {
+            fileset(dir: '.', includes: 'README.md')
+        }
+    }
+}
 task bumpVersion {
     doLast {
         ant.replaceregexp(match: "\"$oldVersion\"", replace: "\"$version\"", flags: 'g', byline: true, encoding: 'UTF8') {
@@ -252,7 +263,8 @@ Release procedure:
 4. gradlew clean build
 5. gradlew copyDocs
 6. update RELEASE-NOTES.md
-7. update README.md (latest version, release notes)
+7. gradlew bumpReadmeVersion
+7a update README.md (latest version, release notes)
 8. commit -m "Release picocli version ..."
 9. tag v$version
 10. gradlew publishPluginPublicationToBintrayRepository
