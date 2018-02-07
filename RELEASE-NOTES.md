@@ -28,7 +28,7 @@ No features have been promoted in this picocli release.
 
 ## <a name="2.2.2-fixes"></a> Fixed issues
 
-- [#282] Bugfix: unmatched option heuristic did not work when there were no options to compare against.
+- [#282] Bugfix: unmatched option heuristic did not work when there were no options to compare against. Thanks to [jcapsule](https://github.com/jcapsule).
 
 ## <a name="2.2.2-deprecated"></a> Deprecations
 
