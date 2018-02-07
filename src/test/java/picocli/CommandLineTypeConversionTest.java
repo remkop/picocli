@@ -490,7 +490,7 @@ public class CommandLineTypeConversionTest {
     }
     @Test
     public void testConnectionConvertersInvalidError() {
-        parseInvalidValue("-Connection", "aa", ": java.sql.SQLException: No suitable driver found for aa");
+        parseInvalidValue("-Connection", "aa", ": java.sql.SQLException: No suitable driver");
     }
     @Test
     public void testDriverConvertersInvalidError() {
@@ -498,19 +498,25 @@ public class CommandLineTypeConversionTest {
     }
     @Test
     public void testTimestampConvertersInvalidError() {
-        parseInvalidValue("-Timestamp", "aa", ": java.lang.IllegalArgumentException: Timestamp format must be yyyy-mm-dd hh:mm:ss[.fffffffff]");
+        parseInvalidValue("-Timestamp", "aa", ": java.lang.IllegalArgumentException: Timestamp format must be yyyy-mm-dd hh:mm:ss[.fffffffff]", ": java.lang.IllegalArgumentException: Timestamp format must be yyyy-mm-dd hh:mm:ss.fffffffff");
     }
 
-    private void parseInvalidValue(String option, String value, String errorMessage) {
+    private void parseInvalidValue(String option, String value, String... errorMessages) {
         try {
             SupportedTypes bean = CommandLine.populateCommand(new SupportedTypes(), option, value);
             fail("Invalid format " + value + " was accepted for " + option);
         } catch (CommandLine.ParameterException actual) {
-            if (actual.getMessage().equals(errorMessage)) { return; } // that is okay also
-            String type = option.substring(1);
-            String expected = "Could not convert '" + value + "' to " + type + " for option '" + option + "'" + errorMessage;
-            assertTrue("expected:<" + expected + "> but was:<" + actual.getMessage() + ">",
-                    actual.getMessage().startsWith(expected));
+            for (String errorMessage : errorMessages) {
+                if (actual.getMessage().equals(errorMessage)) {
+                    return;
+                } // that is okay also
+                String type = option.substring(1);
+                String expected = "Could not convert '" + value + "' to " + type + " for option '" + option + "'" + errorMessage;
+                if (actual.getMessage().startsWith(expected)) {
+                    return;
+                }
+            }
+            fail(actual.getMessage() + " does not match any of " + Arrays.toString(errorMessages));
         }
     }
 

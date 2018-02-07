@@ -52,7 +52,7 @@ import static java.lang.String.format;
 import static org.junit.Assert.*;
 
 /**
- * Tests for picoCLI's "Usage" help functionality.
+ * Tests for picocli's "Usage" help functionality.
  */
 public class CommandLineHelpTest {
     private static final String LINESEP = System.getProperty("line.separator");
