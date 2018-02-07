@@ -3019,4 +3019,46 @@ public class CommandLineHelpTest {
                 "Usage: app%n");
         assertEquals(expected, new String(baos.toByteArray(), "UTF-8"));
     }
+
+    @Test
+    public void test282BrokenValidationWhenNoOptionsToCompareWith() throws Exception {
+        class App implements Runnable {
+            @Parameters(paramLabel = "FILES", arity = "1..*", description = "List of files")
+            private List<File> files = new ArrayList<File>();
+
+            public void run() { }
+        }
+        String[] args = new String[] {"-unknown"};
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        CommandLine.run(new App(), new PrintStream(baos), args);
+
+        String expected = format("" +
+                "Missing required parameters at positions 0..*: FILES%n" +
+                "Usage: <main class> FILES...%n" +
+                "      FILES...                List of files%n");
+        assertEquals(expected, new String(baos.toByteArray(), "UTF-8"));
+    }
+
+    @Test
+    public void test282ValidationWorksWhenOptionToCompareWithExists() throws Exception {
+        class App implements Runnable {
+            @Parameters(paramLabel = "FILES", arity = "1..*", description = "List of files")
+            private List<File> files = new ArrayList<File>();
+
+            @CommandLine.Option(names = {"-v"}, description = "Print output")
+            private boolean verbose;
+
+            public void run() { }
+        }
+        String[] args = new String[] {"-unknown"};
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        CommandLine.run(new App(), new PrintStream(baos), args);
+
+        String expected = format("" +
+                "Missing required parameters at positions 0..*: FILES%n" +
+                "Usage: <main class> [-v] FILES...%n" +
+                "      FILES...                List of files%n" +
+                "  -v                          Print output%n");
+        assertEquals(expected, new String(baos.toByteArray(), "UTF-8"));
+    }
 }

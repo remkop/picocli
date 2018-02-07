@@ -3548,6 +3548,11 @@ public class CommandLine {
             }
         }
         private boolean resemblesOption(String arg) {
+            if (commandSpec.options().isEmpty()) {
+                boolean result = arg.startsWith("-");
+                if (tracer.isDebug()) {tracer.debug("%s %s an option%n", arg, (result ? "resembles" : "doesn't resemble"));}
+                return result;
+            }
             int count = 0;
             for (String optionName : commandSpec.optionsMap().keySet()) {
                 for (int i = 0; i < arg.length(); i++) {
