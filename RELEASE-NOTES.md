@@ -7,7 +7,7 @@ This release offers a programmatic API for creating command line applications, a
 
 Another new feature in this release are Mixins. Mixins allow reusing common options, parameters and command attributes in multiple applications without copy-and-paste duplication.
 
-Third, there is a new `autoHelp` command attribute that adds `usageHelp` and `versionHelp` options and a `help` subcommand to your command.
+Third, this release aims to reduce boilerplate code in user applications even further with the new `mixinStandardHelpOptions` command attribute. Picocli adds standard `usageHelp` and `versionHelp` options to commands with this attribute. Additionally picocli now offers a `HelpCommand` command that is a useful subcommand for user applications.
 
 Furthermore, this release adds a `showDefaultValue` attribute to the `@Option` and `@Parameters` annotation.
 
@@ -69,7 +69,7 @@ public class MyCommand {
 This release introduces the `mixinStandardHelpOptions` command attribute. When this attribute is set to `true`, picocli adds a mixin to the command that adds `usageHelp` and `versionHelp` options to the command. For example:
 
 ```java
-@Command(autoHelp = true, version = "auto help demo - picocli 3.0")
+@Command(mixinStandardHelpOptions = true, version = "auto help demo - picocli 3.0")
 class AutoHelpDemo implements Runnable {
 
     @Option(names = "--option", description = "Some option.")
@@ -79,7 +79,7 @@ class AutoHelpDemo implements Runnable {
 }
 ```
 
-Commands with `autoHelp` do not need to explicitly declare `usageHelp` or `versionHelp` options any more. The usage help message for the above example looks like this:
+Commands with `mixinStandardHelpOptions` do not need to explicitly declare `usageHelp` or `versionHelp` options any more. The usage help message for the above example looks like this:
 ```text
 Usage: <main class> [-hV] [--option=<option>]
       --option=<option>       Some option.
@@ -89,9 +89,9 @@ Usage: <main class> [-hV] [--option=<option>]
 
 ### <a name="3.0.0-alpha-1-HelpCommand"></a> Help Command
 
-From this release, picocli provides a `help` subcommand that will print help for the subcommand following it, or for this command in case no subcommand is specified. For example:
+From this release, picocli provides a `help` subcommand (`picocli.CommandLine.HelpCommand`) that will print help for the subcommand following it, or for the top-level command in case no subcommand is specified. For example:
 ```java
-@Command(subcommands = HelpCommand, version = "auto help demo - picocli 3.0")
+@Command(subcommands = HelpCommand.class)
 class AutoHelpDemo implements Runnable {
 
     @Option(names = "--option", description = "Some option.")
