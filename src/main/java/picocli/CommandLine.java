@@ -2382,18 +2382,26 @@ public class CommandLine {
             private final Object scope;
             private final Field field;
             public FieldGetter(Object scope, Field field) { this.scope = scope; this.field = field; }
-            @SuppressWarnings("unchecked") public <T> T get() throws Exception {
-                return (T) field.get(scope);
+            @SuppressWarnings("unchecked") public <T> T get() throws PicocliException {
+                try {
+                    return (T) field.get(scope);
+                } catch (Exception ex) {
+                    throw new PicocliException("Could not get value for field " + field, ex);
+                }
             }
         }
         private static class FieldSetter implements ArgSpec.ISetter {
             private final Object scope;
             private final Field field;
             public FieldSetter(Object scope, Field field) { this.scope = scope; this.field = field; }
-            public <T> T set(T value) throws Exception {
-                @SuppressWarnings("unchecked") T result = (T) field.get(scope);
-                field.set(scope, value);
-                return result;
+            public <T> T set(T value) throws PicocliException {
+                try {
+                    @SuppressWarnings("unchecked") T result = (T) field.get(scope);
+                    field.set(scope, value);
+                    return result;
+                } catch (Exception ex) {
+                    throw new PicocliException("Could not set value for field " + field + " to " + value, ex);
+                }
             }
         }
     }
@@ -2876,6 +2884,7 @@ public class CommandLine {
         private String toString;
         private IGetter getter;
         private ISetter setter;
+        private List<String> rawStringValues = new ArrayList<String>();
 
         /** Constructs a new {@code ArgSpec}. */
         public ArgSpec() {
@@ -2926,16 +2935,16 @@ public class CommandLine {
 
         /** Customizable getter for obtaining the current value of an option or positional parameter from the model.
          * @since 3.0 */
-        public static interface IGetter { <K> K get() throws Exception; }
+        public static interface IGetter { <K> K get() throws PicocliException; }
 
         /** Customizable setter for modifying the value of an option or positional parameter in the model.
          * @since 3.0 */
-        public static interface ISetter { <K> K set(K value) throws Exception; }
+        public static interface ISetter { <K> K set(K value) throws PicocliException; }
 
         private static class ObjectGetterSetter implements IGetter, ISetter {
             private Object value;
-            @SuppressWarnings("unchecked") public <K> K get() throws Exception { return (K) value; }
-            public <K> K set(K value) throws Exception {
+            @SuppressWarnings("unchecked") public <K> K get() { return (K) value; }
+            public <K> K set(K value) {
                 @SuppressWarnings("unchecked") K result = value;
                 this.value = value;
                 return result;
@@ -2994,9 +3003,9 @@ public class CommandLine {
         public ISetter setter()         { return setter; }
 
         /** Returns the current value of this argument. */
-        Object getValue()                throws Exception { return getter.get(); }
+        Object getValue()                throws PicocliException { return getter.get(); }
         /** Sets the value of this argument to the specified value and returns the previous value. */
-        Object setValue(Object newValue) throws Exception { return setter.set(newValue); }
+        Object setValue(Object newValue) throws PicocliException { return setter.set(newValue); }
 
         /** Returns {@code true} if this argument's {@link #type()} is an array, a {@code Collection} or a {@code Map}, {@code false} otherwise. */
         boolean isMultiValue()     { return CommandLine.isMultiValue(type()); }
@@ -3004,6 +3013,10 @@ public class CommandLine {
         public abstract boolean isOption();
         /** Returns {@code true} if this argument is a positional parameter, {@code false} otherwise. */
         public abstract boolean isPositional();
+
+        /** Returns the command line arguments matched by this option or positional parameter spec.
+         * @return the matched arguments as found on the command line: empty Strings for options without value, the values have not been {@linkplain #splitRegex() split}, and for map properties values may look like {@code "key=value"}*/
+        public List<String> rawStringValues() { return Collections.unmodifiableList(rawStringValues); }
 
         /** Sets whether this is a required option or positional parameter. */
         public T required(boolean required)          { this.required = required; return self(); }
@@ -3690,17 +3703,18 @@ public class CommandLine {
             assertNoMissingParameters(argSpec, arity.min, args);
 
             Class<?> cls = argSpec.type();
+            int result;
             if (cls.isArray()) {
-                return applyValuesToArrayField(argSpec, arity, args, cls, argDescription);
+                result = applyValuesToArrayField(argSpec, arity, args, cls, argDescription);
+            } else if (Collection.class.isAssignableFrom(cls)) {
+                result = applyValuesToCollectionField(argSpec, arity, args, cls, argDescription);
+            } else if (Map.class.isAssignableFrom(cls)) {
+                result = applyValuesToMapField(argSpec, arity, args, cls, argDescription);
+            } else {
+                cls = argSpec.auxiliaryTypes()[0]; // field may be interface/abstract type, use annotation to get concrete type
+                result = applyValueToSingleValuedField(argSpec, arity, args, cls, initialized, argDescription);
             }
-            if (Collection.class.isAssignableFrom(cls)) {
-                return applyValuesToCollectionField(argSpec, arity, args, cls, argDescription);
-            }
-            if (Map.class.isAssignableFrom(cls)) {
-                return applyValuesToMapField(argSpec, arity, args, cls, argDescription);
-            }
-            cls = argSpec.auxiliaryTypes()[0]; // field may be interface/abstract type, use annotation to get concrete type
-            return applyValueToSingleValuedField(argSpec, arity, args, cls, initialized, argDescription);
+            return result;
         }
 
         private int applyValueToSingleValuedField(ArgSpec<?> argSpec,
@@ -3713,18 +3727,28 @@ public class CommandLine {
             String value = args.isEmpty() ? null : trim(args.pop()); // unquote the value
             int result = arity.min; // the number or args we need to consume
 
-            // special logic for booleans: BooleanConverter accepts only "true" or "false".
-            if ((cls == Boolean.class || cls == Boolean.TYPE) && arity.min <= 0) {
+            if (arity.min <= 0) { // value is optional
 
-                // boolean option with arity = 0..1 or 0..*: value MAY be a param
-                if (arity.max > 0 && ("true".equalsIgnoreCase(value) || "false".equalsIgnoreCase(value))) {
-                    result = 1;            // if it is a varargs we only consume 1 argument if it is a boolean value
-                } else {
-                    if (value != null) {
-                        args.push(value); // we don't consume the value
+                // special logic for booleans: BooleanConverter accepts only "true" or "false".
+                if (cls == Boolean.class || cls == Boolean.TYPE) {
+
+                    // boolean option with arity = 0..1 or 0..*: value MAY be a param
+                    if (arity.max > 0 && ("true".equalsIgnoreCase(value) || "false".equalsIgnoreCase(value))) {
+                        result = 1;            // if it is a varargs we only consume 1 argument if it is a boolean value
+                    } else {
+                        if (value != null) {
+                            args.push(value); // we don't consume the value
+                        }
+                        Boolean currentValue = (Boolean) argSpec.getValue();
+                        value = String.valueOf(currentValue == null || !currentValue); // #147 toggle existing boolean value
                     }
-                    Boolean currentValue = (Boolean) argSpec.getValue();
-                    value = String.valueOf(currentValue == null ? true : !currentValue); // #147 toggle existing boolean value
+                } else if (CharSequence.class.isAssignableFrom(cls)) { // String option with optional value
+                    if (isOption(value)) {
+                        args.push(value); // we don't consume the value
+                        value = "";
+                    } else if (value == null) {
+                        value = "";
+                    }
                 }
             }
             if (noMoreValues && value == null) {
@@ -3748,6 +3772,7 @@ public class CommandLine {
             if (tracer.level.isEnabled(level)) { level.print(tracer, traceMessage, argSpec.toString(),
                     String.valueOf(oldValue), String.valueOf(newValue), argDescription); }
             argSpec.setValue(newValue);
+            argSpec.rawStringValues.add(value); // #279 track empty string value if no command line argument was consumed
             return result;
         }
         private int applyValuesToMapField(ArgSpec<?> argSpec,
@@ -3759,14 +3784,14 @@ public class CommandLine {
             if (classes.length < 2) { throw new ParameterException(CommandLine.this, argSpec.toString() + " needs two types (one for the map key, one for the value) but only has " + classes.length + " types configured."); }
             ITypeConverter<?> keyConverter   = getTypeConverter(classes[0], argSpec, 0);
             ITypeConverter<?> valueConverter = getTypeConverter(classes[1], argSpec, 1);
-            @SuppressWarnings("unchecked") Map<Object, Object> result = (Map<Object, Object>) argSpec.getValue();
-            if (result == null) {
-                result = createMap(mapClass);
-                argSpec.setValue(result);
+            @SuppressWarnings("unchecked") Map<Object, Object> map = (Map<Object, Object>) argSpec.getValue();
+            if (map == null) {
+                map = createMap(mapClass);
+                argSpec.setValue(map);
             }
-            int originalSize = result.size();
-            consumeMapArguments(argSpec, arity, args, classes, keyConverter, valueConverter, result, argDescription);
-            return result.size() - originalSize;
+            int originalSize = map.size();
+            consumeMapArguments(argSpec, arity, args, classes, keyConverter, valueConverter, map, argDescription);
+            return map.size() - originalSize;
         }
 
         private void consumeMapArguments(ArgSpec<?> argSpec,
@@ -3799,7 +3824,8 @@ public class CommandLine {
                                            Map<Object, Object> result,
                                            int index,
                                            String argDescription) throws Exception {
-            String[] values = argSpec.splitValue(trim(args.pop()));
+            String raw = trim(args.pop());
+            String[] values = argSpec.splitValue(raw);
             for (String value : values) {
                 String[] keyValue = value.split("=");
                 if (keyValue.length < 2) {
@@ -3821,6 +3847,7 @@ public class CommandLine {
                         result.getClass().getSimpleName(), classes[0].getSimpleName(), classes[1].getSimpleName(), argSpec
                                 .toString(), argDescription);}
             }
+            argSpec.rawStringValues.add(raw);
         }
 
         private void checkMaxArityExceeded(Range arity, int remainder, ArgSpec<?> argSpec, String[] values) {
@@ -3915,7 +3942,8 @@ public class CommandLine {
                                        List<Object> result,
                                        int index,
                                        String argDescription) throws Exception {
-            String[] values = argSpec.splitValue(trim(args.pop()));
+            String raw = trim(args.pop());
+            String[] values = argSpec.splitValue(raw);
             ITypeConverter<?> converter = getTypeConverter(type, argSpec, 0);
 
             for (int j = 0; j < values.length; j++) {
@@ -3924,7 +3952,7 @@ public class CommandLine {
                     tracer.info("Adding [%s] to %s for %s%n", String.valueOf(result.get(result.size() - 1)), argSpec.toString(), argDescription);
                 }
             }
-            //checkMaxArityExceeded(arity, max, field, values);
+            argSpec.rawStringValues.add(raw);
             return ++index;
         }
 
@@ -3935,9 +3963,9 @@ public class CommandLine {
          * @return true if it is an option, false otherwise
          */
         private boolean isOption(String arg) {
-            if ("--".equals(arg)) {
-                return true;
-            }
+            if (arg == null)      { return false; }
+            if ("--".equals(arg)) { return true; }
+
             // not just arg prefix: we may be in the middle of parsing -xrvfFILE
             if (commandSpec.optionsMap().containsKey(arg)) { // -v or -f or --file (not attached to param or other option)
                 return true;
