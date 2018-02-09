@@ -26,11 +26,7 @@ import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import picocli.CommandLine.MissingParameterException;
-import picocli.CommandLine.Option;
-import picocli.CommandLine.Parameters;
-import picocli.CommandLine.Range;
-import picocli.CommandLine.UnmatchedArgumentException;
+import picocli.CommandLine.*;
 
 import static org.junit.Assert.*;
 import static picocli.HelpTestUtil.setTraceLevel;
@@ -541,6 +537,22 @@ public class CommandLineArityTest {
                     ": java.lang.NumberFormatException: For input string: \"-boolean\"", ex.getMessage());
         }
     }
+    /** see <a href="https://github.com/remkop/picocli/issues/279">issue #279</a>  */
+    @Test
+    public void testSingleValueFieldWithOptionalParameter_279() {
+        @Command(name="sample")
+        class Sample {
+            @Option(names="--foo", arity="0..1") String foo;
+        }
+        Sample sample1 = CommandLine.populateCommand(new Sample()); // not specified
+        assertNull("optional option is null when option not specified", sample1.foo);
+
+        Sample sample2 = CommandLine.populateCommand(new Sample(), "--foo"); // no arguments
+        assertEquals("optional option is empty string when specified without args", "", sample2.foo);
+
+        Sample sample3 = CommandLine.populateCommand(new Sample(), "--foo", "value"); // no arguments
+        assertEquals("optional option has value when specified", "value", sample3.foo);
+    }
 
     @Test
     public void testIntOptionArity1_nConsumes1Argument() { // ignores varargs
@@ -863,7 +875,7 @@ public class CommandLineArityTest {
 
     @Test
     public void test130MixPositionalParamsWithOptions() {
-        @CommandLine.Command(name = "test-command", description = "tests help from a command script")
+        @Command(name = "test-command", description = "tests help from a command script")
         class Arg {
 
             @Parameters(description = "some parameters")

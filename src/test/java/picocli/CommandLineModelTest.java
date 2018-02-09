@@ -23,14 +23,8 @@ import java.util.Map;
 
 import org.junit.Test;
 
-import picocli.CommandLine.CommandSpec;
+import picocli.CommandLine.*;
 import picocli.CommandLine.Help.Ansi;
-import picocli.CommandLine.ITypeConverter;
-import picocli.CommandLine.InitializationException;
-import picocli.CommandLine.OptionSpec;
-import picocli.CommandLine.PositionalParamSpec;
-import picocli.CommandLine.Range;
-import picocli.CommandLine.UnmatchedArgumentException;
 
 import static org.junit.Assert.*;
 import static picocli.HelpTestUtil.setTraceLevel;
@@ -611,4 +605,28 @@ public class CommandLineModelTest {
     public void testConversion() {
         // TODO convertion with aux types (abstract field types, generic map with and without explicit type attribute etc)
     }
+
+    /** see <a href="https://github.com/remkop/picocli/issues/279">issue #279</a>  */
+    @Test
+    public void testSingleValueFieldWithOptionalParameter_279() {
+        @Command(name="sample")
+        class Sample {
+            @Option(names="--foo", arity="0..1") String foo;
+        }
+        List<CommandLine> parsed1 = new CommandLine(new Sample()).parse();// not specified
+        OptionSpec option1 = parsed1.get(0).getCommandSpec().optionsMap().get("--foo");
+        assertNull("optional option is null when option not specified", option1.getValue());
+        assertTrue("optional option has no raw string value when option not specified", option1.rawStringValues().isEmpty());
+
+        List<CommandLine> parsed2 = new CommandLine(new Sample()).parse("--foo");// specified without value
+        OptionSpec option2 = parsed2.get(0).getCommandSpec().optionsMap().get("--foo");
+        assertEquals("optional option is empty string when specified without args", "", option2.getValue());
+        assertEquals("optional option raw string value when specified without args", "", option2.rawStringValues().get(0));
+
+        List<CommandLine> parsed3 = new CommandLine(new Sample()).parse("--foo", "value");// specified with value
+        OptionSpec option3 = parsed3.get(0).getCommandSpec().optionsMap().get("--foo");
+        assertEquals("optional option is empty string when specified without args", "value", option3.getValue());
+        assertEquals("optional option raw string value when specified without args", "value", option3.rawStringValues().get(0));
+    }
+
 }
