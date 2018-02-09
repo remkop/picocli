@@ -3702,31 +3702,27 @@ public class CommandLine {
             updateHelpRequested(argSpec);
             assertNoMissingParameters(argSpec, arity.min, args);
 
-            Class<?> cls = argSpec.type();
-            int result;
-            if (cls.isArray()) {
-                result = applyValuesToArrayField(argSpec, arity, args, cls, argDescription);
-            } else if (Collection.class.isAssignableFrom(cls)) {
-                result = applyValuesToCollectionField(argSpec, arity, args, cls, argDescription);
-            } else if (Map.class.isAssignableFrom(cls)) {
-                result = applyValuesToMapField(argSpec, arity, args, cls, argDescription);
+            if (argSpec.type().isArray()) {
+                return applyValuesToArrayField(argSpec, arity, args, argDescription);
+            } else if (Collection.class.isAssignableFrom(argSpec.type())) {
+                return applyValuesToCollectionField(argSpec, arity, args, argDescription);
+            } else if (Map.class.isAssignableFrom(argSpec.type())) {
+                return applyValuesToMapField(argSpec, arity, args, argDescription);
             } else {
-                cls = argSpec.auxiliaryTypes()[0]; // field may be interface/abstract type, use annotation to get concrete type
-                result = applyValueToSingleValuedField(argSpec, arity, args, cls, initialized, argDescription);
+                return applyValueToSingleValuedField(argSpec, arity, args, initialized, argDescription);
             }
-            return result;
         }
 
         private int applyValueToSingleValuedField(ArgSpec<?> argSpec,
                                                   Range arity,
                                                   Stack<String> args,
-                                                  Class<?> cls,
                                                   Set<ArgSpec<?>> initialized,
                                                   String argDescription) throws Exception {
             boolean noMoreValues = args.isEmpty();
             String value = args.isEmpty() ? null : trim(args.pop()); // unquote the value
             int result = arity.min; // the number or args we need to consume
 
+            Class<?> cls = argSpec.auxiliaryTypes()[0]; // field may be interface/abstract type, use annotation to get concrete type
             if (arity.min <= 0) { // value is optional
 
                 // special logic for booleans: BooleanConverter accepts only "true" or "false".
@@ -3778,7 +3774,6 @@ public class CommandLine {
         private int applyValuesToMapField(ArgSpec<?> argSpec,
                                           Range arity,
                                           Stack<String> args,
-                                          Class<?> mapClass,
                                           String argDescription) throws Exception {
             Class<?>[] classes = argSpec.auxiliaryTypes();
             if (classes.length < 2) { throw new ParameterException(CommandLine.this, argSpec.toString() + " needs two types (one for the map key, one for the value) but only has " + classes.length + " types configured."); }
@@ -3786,7 +3781,7 @@ public class CommandLine {
             ITypeConverter<?> valueConverter = getTypeConverter(classes[1], argSpec, 1);
             @SuppressWarnings("unchecked") Map<Object, Object> map = (Map<Object, Object>) argSpec.getValue();
             if (map == null) {
-                map = createMap(mapClass);
+                map = createMap(argSpec.type()); // map class
                 argSpec.setValue(map);
             }
             int originalSize = map.size();
@@ -3861,7 +3856,6 @@ public class CommandLine {
         private int applyValuesToArrayField(ArgSpec<?> argSpec,
                                             Range arity,
                                             Stack<String> args,
-                                            Class<?> cls,
                                             String argDescription) throws Exception {
             Object existing = argSpec.getValue();
             int length = existing == null ? 0 : Array.getLength(existing);
@@ -3890,13 +3884,12 @@ public class CommandLine {
         private int applyValuesToCollectionField(ArgSpec<?> argSpec,
                                                  Range arity,
                                                  Stack<String> args,
-                                                 Class<?> collectionType,
                                                  String argDescription) throws Exception {
             Collection<Object> collection = (Collection<Object>) argSpec.getValue();
             Class<?> type = argSpec.auxiliaryTypes()[0];
             List<Object> converted = consumeArguments(argSpec, arity, args, type, argDescription);
             if (collection == null) {
-                collection = createCollection(collectionType);
+                collection = createCollection(argSpec.type()); // collection type
                 argSpec.setValue(collection);
             }
             for (Object element : converted) {
