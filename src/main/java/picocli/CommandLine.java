@@ -2236,14 +2236,17 @@ public class CommandLine {
             arguments.addAll(result);
         }
 
-        private void parse(List<CommandLine> parsedCommands, Stack<String> argumentStack, String[] originalArgs) {
-            // first reset any state in case this CommandLine instance is being reused
+        private void clear() {
             position = 0;
             endOfOptions = false;
             isHelpRequested = false;
             CommandLine.this.versionHelpRequested = false;
             CommandLine.this.usageHelpRequested = false;
+            CommandLine.this.unmatchedArguments.clear();
+        }
 
+        private void parse(List<CommandLine> parsedCommands, Stack<String> argumentStack, String[] originalArgs) {
+            clear(); // first reset any state in case this CommandLine instance is being reused
             Class<?> cmdClass = this.command.getClass();
             if (tracer.isDebug()) {tracer.debug("Initializing %s: %d options, %d positional parameters, %d required, %d subcommands.%n", cmdClass.getName(), new HashSet<Field>(optionName2Field.values()).size(), positionalParametersFields.size(), requiredFields.size(), commands.size());}
             parsedCommands.add(CommandLine.this);
@@ -2520,18 +2523,29 @@ public class CommandLine {
             String value = args.isEmpty() ? null : trim(args.pop()); // unquote the value
             int result = arity.min; // the number or args we need to consume
 
-            // special logic for booleans: BooleanConverter accepts only "true" or "false".
-            if ((cls == Boolean.class || cls == Boolean.TYPE) && arity.min <= 0) {
+            if (arity.min <= 0) { // value is optional
 
-                // boolean option with arity = 0..1 or 0..*: value MAY be a param
-                if (arity.max > 0 && ("true".equalsIgnoreCase(value) || "false".equalsIgnoreCase(value))) {
-                    result = 1;            // if it is a varargs we only consume 1 argument if it is a boolean value
-                } else {
-                    if (value != null) {
-                        args.push(value); // we don't consume the value
+                // special logic for booleans: BooleanConverter accepts only "true" or "false".
+                if (cls == Boolean.class || cls == Boolean.TYPE) {
+
+                    // boolean option with arity = 0..1 or 0..*: value MAY be a param
+                    if (arity.max > 0 && ("true".equalsIgnoreCase(value) || "false".equalsIgnoreCase(value))) {
+                        result = 1;            // if it is a varargs we only consume 1 argument if it is a boolean value
+                    } else {
+                        if (value != null) {
+                            args.push(value); // we don't consume the value
+                        }
+                        Boolean currentValue = (Boolean) field.get(command);
+                        value = String.valueOf(currentValue == null ? true : !currentValue); // #147 toggle existing boolean value
                     }
-                    Boolean currentValue = (Boolean) field.get(command);
-                    value = String.valueOf(currentValue == null ? true : !currentValue); // #147 toggle existing boolean value
+                } else if (CharSequence.class.isAssignableFrom(cls)) { // String option with optional value
+                    // #279 track empty string value if no command line argumen
+                    if (isOption(value)) {
+                        args.push(value); // we don't consume the value
+                        value = "";
+                    } else if (value == null) {
+                        value = "";
+                    }
                 }
             }
             if (noMoreValues && value == null) {
@@ -2767,9 +2781,9 @@ public class CommandLine {
          * @return true if it is an option, false otherwise
          */
         private boolean isOption(String arg) {
-            if ("--".equals(arg)) {
-                return true;
-            }
+            if (arg == null)      { return false; }
+            if ("--".equals(arg)) { return true; }
+
             // not just arg prefix: we may be in the middle of parsing -xrvfFILE
             if (optionName2Field.containsKey(arg)) { // -v or -f or --file (not attached to param or other option)
                 return true;

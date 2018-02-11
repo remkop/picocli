@@ -3,7 +3,9 @@
 # <a name="2.3.0"></a> Picocli 2.3.0
 The picocli community is pleased to announce picocli 2.3.0.
 
-This is a bugfix release.
+This release contains bugfixes and new features.
+
+This release offers better support for options with optional values, allowing applications to distinguish between cases where the option was not specified at all, and cases where the option was specified without a value.
 
 
 This is the twentieth public release.
@@ -19,7 +21,33 @@ Picocli follows [semantic versioning](http://semver.org/).
 
 ## <a name="2.3.0-new"></a> New and noteworthy
 
-This is a bugfix release and does not include any new features.
+### Optional Values
+If an option is defined with `arity = "0..1"`, it may or not have a parameter value. If such an option is specified without a value on the command line, it is assigned an empty String. If the option is not specified, it keeps its default value. For example:
+
+```java
+class OptionalValueDemo implements Runnable {
+    @Option(names = "-x", arity = "0..1", description = "optional parameter")
+    String x;
+
+    public void run() { System.out.printf("x = '%s'%n", x); }
+
+    public static void main(String... args) {
+       CommandLine.run(new OptionalValueDemo(), System.out, args);
+    }
+}
+```
+Gives the following results:
+```bash
+java OptionalValueDemo -x value
+x = 'value'
+
+java OptionalValueDemo -x
+x = ''
+
+java OptionalValueDemo
+x = 'null'
+```
+
 
 ## <a name="2.3.0-promoted"></a> Promoted features
 Promoted features are features that were incubating in previous versions of picocli but are now supported and subject to backwards compatibility. 
@@ -28,6 +56,7 @@ No features have been promoted in this picocli release.
 
 ## <a name="2.3.0-fixes"></a> Fixed issues
 
+- [#279] Enhancement: assign empty String when String option was specified without value. Thanks to [pditommaso](https://github.com/pditommaso) for the request.
 - [#285] Bugfix: Vararg positional parameters should not consume options.
 
 ## <a name="2.3.0-deprecated"></a> Deprecations
