@@ -2028,6 +2028,7 @@ public class CommandLine {
         private boolean isHelpRequested;
         private String separator = Help.DEFAULT_SEPARATOR;
         private int position;
+        private boolean endOfOptions;
 
         Interpreter(Object command, IFactory factory) {
             this.command                 = Assert.notNull(command, "command");
@@ -2237,6 +2238,8 @@ public class CommandLine {
 
         private void parse(List<CommandLine> parsedCommands, Stack<String> argumentStack, String[] originalArgs) {
             // first reset any state in case this CommandLine instance is being reused
+            position = 0;
+            endOfOptions = false;
             isHelpRequested = false;
             CommandLine.this.versionHelpRequested = false;
             CommandLine.this.usageHelpRequested = false;
@@ -2293,6 +2296,7 @@ public class CommandLine {
                 // If found, then interpret the remaining args as positional parameters.
                 if ("--".equals(arg)) {
                     tracer.info("Found end-of-options delimiter '--'. Treating remainder as positional parameters.%n");
+                    endOfOptions = true;
                     processRemainderAsPositionalParameters(required, initialized, args);
                     return; // we are done
                 }
@@ -2588,10 +2592,8 @@ public class CommandLine {
             }
             // now process the varargs if any
             for (int i = arity.min; i < arity.max && !args.isEmpty(); i++) {
-                if (!field.isAnnotationPresent(Parameters.class)) {
-                    if (commands.containsKey(args.peek()) || isOption(args.peek())) {
-                        return;
-                    }
+                if (!varargCanConsumeNextValue(field, args.peek())) {
+                    break;
                 }
                 consumeOneMapArgument(field, arity, args, classes, keyConverter, valueConverter, result, i, argDescription);
             }
@@ -2703,10 +2705,8 @@ public class CommandLine {
             }
             // now process the varargs if any
             for (int i = arity.min; i < arity.max && !args.isEmpty(); i++) {
-                if (annotation != Parameters.class) { // for vararg Options, we stop if we encounter '--', a command, or another option
-                    if (commands.containsKey(args.peek()) || isOption(args.peek())) {
-                        break;
-                    }
+                if (!varargCanConsumeNextValue(field, args.peek())) {
+                    break;
                 }
                 consumeOneArgument(field, arity, args, type, result, i, originalSize, argDescription);
             }
@@ -2748,7 +2748,16 @@ public class CommandLine {
         }
         private String[] split(String value, Field field) {
             String regex = splitRegex(field);
-            return regex.length() == 0 ? new String[] {value} : value.split(regex);
+            return regex.length() == 0 ? new String[]{value} : value.split(regex);
+        }
+        /** Returns whether the next argument can be assigned to a vararg option/positional parameter.
+         * <p>
+         * Usually, we stop if we encounter '--', a command, or another option.
+         * However, if end-of-options has been reached, positional parameters may consume all remaining arguments. </p>*/
+        private boolean varargCanConsumeNextValue(Field field, String nextValue) {
+            if (endOfOptions && field.isAnnotationPresent(Parameters.class)) { return true; }
+            boolean isCommand = commands.containsKey(nextValue);
+            return !isCommand && !isOption(nextValue);
         }
 
         /**

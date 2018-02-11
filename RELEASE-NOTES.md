@@ -1,5 +1,44 @@
 # picocli Release Notes
 
+# <a name="2.3.0"></a> Picocli 2.3.0
+The picocli community is pleased to announce picocli 2.3.0.
+
+This is a bugfix release.
+
+
+This is the twentieth public release.
+Picocli follows [semantic versioning](http://semver.org/).
+
+## <a name="2.3.0-toc"></a> Table of Contents
+
+* [New and noteworthy](#2.3.0-new)
+* [Promoted features](#2.3.0-promoted)
+* [Fixed issues](#2.3.0-fixes)
+* [Deprecations](#2.3.0-deprecated)
+* [Potential breaking changes](#2.3.0-breaking-changes)
+
+## <a name="2.3.0-new"></a> New and noteworthy
+
+This is a bugfix release and does not include any new features.
+
+## <a name="2.3.0-promoted"></a> Promoted features
+Promoted features are features that were incubating in previous versions of picocli but are now supported and subject to backwards compatibility. 
+
+No features have been promoted in this picocli release.
+
+## <a name="2.3.0-fixes"></a> Fixed issues
+
+- [#285] Bugfix: Vararg positional parameters should not consume options.
+
+## <a name="2.3.0-deprecated"></a> Deprecations
+
+This release has no additional deprecations.
+
+## <a name="2.3.0-breaking-changes"></a> Potential breaking changes
+
+This release has no breaking changes.
+
+
 # <a name="2.2.2"></a> Picocli 2.2.2
 The picocli community is pleased to announce picocli 2.2.2.
 
