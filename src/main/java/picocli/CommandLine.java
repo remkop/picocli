@@ -147,6 +147,7 @@ public class CommandLine {
     private final Tracer tracer = new Tracer();
     private final Interpreter interpreter;
     private String commandName = Help.DEFAULT_COMMAND_NAME;
+    private boolean stopAtPositional = false;
     private boolean overwrittenOptionsAllowed = false;
     private boolean expandAtFiles = true;
     private List<String> unmatchedArguments = new ArrayList<String>();
@@ -286,6 +287,33 @@ public class CommandLine {
         this.overwrittenOptionsAllowed = newValue;
         for (CommandLine command : interpreter.commands.values()) {
             command.setOverwrittenOptionsAllowed(newValue);
+        }
+        return this;
+    }
+
+    /** Returns whether the parser interprets the first positional parameter as "end of options" so the remaining
+     * arguments are all treated as positional parameters. The default is {@code false}.
+     * @return {@code true} if all values following the first positional parameter should be treated as positional parameters, {@code false} otherwise
+     * @since 2.3
+     */
+    public boolean isStopAtPositional() {
+        return stopAtPositional;
+    }
+
+    /** Sets whether the parser interprets the first positional parameter as "end of options" so the remaining
+     * arguments are all treated as positional parameters. The default is {@code false}.
+     * <p>The specified setting will be registered with this {@code CommandLine} and the full hierarchy of its
+     * subcommands and nested sub-subcommands <em>at the moment this method is called</em>. Subcommands added
+     * later will have the default setting. To ensure a setting is applied to all
+     * subcommands, call the setter last, after adding subcommands.</p>
+     * @param newValue {@code true} if all values following the first positional parameter should be treated as positional parameters, {@code false} otherwise
+     * @return this {@code CommandLine} object, to allow method chaining
+     * @since 2.3
+     */
+    public CommandLine setStopAtPositional(boolean newValue) {
+        this.stopAtPositional = newValue;
+        for (CommandLine command : interpreter.commands.values()) {
+            command.setStopAtPositional(newValue);
         }
         return this;
     }
@@ -2292,6 +2320,10 @@ public class CommandLine {
             // 5. a combination of stand-alone options and one option with an argument, like "-vxrffile"
 
             while (!args.isEmpty()) {
+                if (endOfOptions) {
+                    processRemainderAsPositionalParameters(required, initialized, args);
+                    return;
+                }
                 String arg = args.pop();
                 if (tracer.isDebug()) {tracer.debug("Processing argument '%s'. Remainder=%s%n", arg, reverse((Stack<String>) args.clone()));}
 
@@ -2383,6 +2415,10 @@ public class CommandLine {
         }
         private void processPositionalParameter(Collection<Field> required, Set<Field> initialized, Stack<String> args) throws Exception {
             if (tracer.isDebug()) {tracer.debug("Processing next arg as a positional parameter at index=%d. Remainder=%s%n", position, reverse((Stack<String>) args.clone()));}
+            if (stopAtPositional) {
+                if (!endOfOptions && tracer.isDebug()) {tracer.debug("Parser was configured with stopAtPositional=true, treating remaining arguments as positional parameters.%n");}
+                endOfOptions = true;
+            }
             int consumed = 0;
             for (Field positionalParam : positionalParametersFields) {
                 Range indexRange = Range.parameterIndex(positionalParam);

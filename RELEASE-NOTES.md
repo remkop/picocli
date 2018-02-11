@@ -5,6 +5,8 @@ The picocli community is pleased to announce picocli 2.3.0.
 
 This release contains bugfixes and new features.
 
+This release introduces a new parser flag `stopAtPositional` to treat the first positional parameter as end-of-options.
+
 This release offers better support for options with optional values, allowing applications to distinguish between cases where the option was not specified at all, and cases where the option was specified without a value.
 
 
@@ -20,6 +22,12 @@ Picocli follows [semantic versioning](http://semver.org/).
 * [Potential breaking changes](#2.3.0-breaking-changes)
 
 ## <a name="2.3.0-new"></a> New and noteworthy
+
+### Stop At Positional
+By default, positional parameters can be mixed with options on the command line, but this is not always desirable. From picocli 2.3, applications can call `CommandLine.setStopAtPositional(true)` to force the parser to treat all values following the first positional parameter as positional parameters.
+
+When this flag is set, the first positional parameter effectively serves as an "end of options" marker, without requiring a separate `--` argument.
+
 
 ### Optional Values
 If an option is defined with `arity = "0..1"`, it may or not have a parameter value. If such an option is specified without a value on the command line, it is assigned an empty String. If the option is not specified, it keeps its default value. For example:
@@ -56,6 +64,7 @@ No features have been promoted in this picocli release.
 
 ## <a name="2.3.0-fixes"></a> Fixed issues
 
+- [#284] API: `stopAtPositional` flag to treat first positional parameter as end-of-options. Thanks to [defnull](https://github.com/defnull) and [pditommaso](https://github.com/pditommaso) for the request.
 - [#279] Enhancement: assign empty String when String option was specified without value. Thanks to [pditommaso](https://github.com/pditommaso) for the request.
 - [#285] Bugfix: Vararg positional parameters should not consume options.
 
