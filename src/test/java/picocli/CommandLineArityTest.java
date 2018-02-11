@@ -921,7 +921,7 @@ public class CommandLineArityTest {
     }
 
     @Test
-    public void test284VarargPositionalShouldNotConsumeOptions() {
+    public void test285VarargPositionalShouldNotConsumeOptions() {
         class Cmd {
             @Option(names = "--alpha") String alpha;
             @Parameters(index = "0", arity = "1") String foo;
@@ -934,7 +934,7 @@ public class CommandLineArityTest {
     }
 
     @Test
-    public void test284VarargPositionalShouldConsumeOptionsAfterDoubleDash() {
+    public void test285VarargPositionalShouldConsumeOptionsAfterDoubleDash() {
         class Cmd {
             @Option(names = "--alpha") String alpha;
             @Parameters(index = "0", arity = "1") String foo;
@@ -962,5 +962,33 @@ public class CommandLineArityTest {
         }
         Cmd cmd = CommandLine.populateCommand(new Cmd(), "foo", "--", "--", "--");
         assertEquals(Arrays.asList("foo", "--", "--"), cmd.params);
+    }
+
+    @Test
+    public void testIfStopAtPositional_VarargPositionalShouldConsumeOptions() {
+        class Cmd {
+            @Option(names = "--alpha") String alpha;
+            @Parameters(index = "0", arity = "1") String foo;
+            @Parameters(index = "1..*", arity = "*") List<String> params;
+        }
+        Cmd cmd = new Cmd();
+        new CommandLine(cmd).setStopAtPositional(true).parse("foo", "xx", "--alpha", "--beta");
+        assertEquals("foo", cmd.foo);
+        assertEquals(null, cmd.alpha);
+        assertEquals(Arrays.asList("xx", "--alpha", "--beta"), cmd.params);
+    }
+
+    @Test
+    public void testIfStopAtPositional_PositionalShouldConsumeOptions() {
+        class Cmd {
+            @Option(names = "--alpha") String alpha;
+            @Parameters(index = "0") String foo;
+            @Parameters(index = "1..*") List<String> params;
+        }
+        Cmd cmd = new Cmd();
+        new CommandLine(cmd).setStopAtPositional(true).parse("foo", "xx", "--alpha", "--beta");
+        assertEquals("foo", cmd.foo);
+        assertEquals(null, cmd.alpha);
+        assertEquals(Arrays.asList("xx", "--alpha", "--beta"), cmd.params);
     }
 }
