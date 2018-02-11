@@ -3309,6 +3309,7 @@ public class CommandLine {
         private final Map<Class<?>, ITypeConverter<?>> converterRegistry = new HashMap<Class<?>, ITypeConverter<?>>();
         private boolean isHelpRequested;
         private int position;
+        private boolean endOfOptions;
 
         Interpreter() { registerBuiltInConverters(); }
 
@@ -3440,6 +3441,7 @@ public class CommandLine {
 
         private void clear() {
             position = 0;
+            endOfOptions = false;
             isHelpRequested = false;
             CommandLine.this.versionHelpRequested = false;
             CommandLine.this.usageHelpRequested = false;
@@ -3503,6 +3505,7 @@ public class CommandLine {
                 // If found, then interpret the remaining args as positional parameters.
                 if ("--".equals(arg)) {
                     tracer.info("Found end-of-options delimiter '--'. Treating remainder as positional parameters.%n");
+                    endOfOptions = true;
                     processRemainderAsPositionalParameters(required, initialized, args);
                     return; // we are done
                 }
@@ -3803,10 +3806,8 @@ public class CommandLine {
             }
             // now process the varargs if any
             for (int i = arity.min; i < arity.max && !args.isEmpty(); i++) {
-                if (argSpec.isOption()) {
-                    if (commandSpec.subcommands().containsKey(args.peek()) || isOption(args.peek())) {
-                        return;
-                    }
+                if (!varargCanConsumeNextValue(argSpec, args.peek())) {
+                    break;
                 }
                 consumeOneMapArgument(argSpec, args, classes, keyConverter, valueConverter, result, i, argDescription);
             }
@@ -3915,10 +3916,8 @@ public class CommandLine {
             }
             // now process the varargs if any
             for (int i = arity.min; i < arity.max && !args.isEmpty(); i++) {
-                if (argSpec.isOption()) { // for vararg Options, we stop if we encounter '--', a command, or another option
-                    if (commandSpec.subcommands().containsKey(args.peek()) || isOption(args.peek())) {
-                        break;
-                    }
+                if (!varargCanConsumeNextValue(argSpec, args.peek())) {
+                    break;
                 }
                 consumeOneArgument(argSpec, arity, args, type, result, i, argDescription);
             }
@@ -3947,6 +3946,16 @@ public class CommandLine {
             }
             argSpec.rawStringValues.add(raw);
             return ++index;
+        }
+
+        /** Returns whether the next argument can be assigned to a vararg option/positional parameter.
+         * <p>
+         * Usually, we stop if we encounter '--', a command, or another option.
+         * However, if end-of-options has been reached, positional parameters may consume all remaining arguments. </p>*/
+        private boolean varargCanConsumeNextValue(ArgSpec<?> argSpec, String nextValue) {
+            if (endOfOptions && argSpec.isPositional()) { return true; }
+            boolean isCommand = commandSpec.subcommands().containsKey(nextValue);
+            return !isCommand && !isOption(nextValue);
         }
 
         /**

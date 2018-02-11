@@ -15,18 +15,16 @@
  */
 package picocli;
 
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import picocli.CommandLine.*;
+
 import java.io.File;
 import java.net.InetAddress;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
-
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
-
-import picocli.CommandLine.*;
 
 import static org.junit.Assert.*;
 import static picocli.HelpTestUtil.setTraceLevel;
@@ -852,18 +850,18 @@ public class CommandLineArityTest {
         }
     }
     @Test
-    public void testMixPositionalParamsWithOptions_ParamsUnboundedArity_isGreedy() {
+    public void testMixPositionalParamsWithOptions_ParamsUnboundedArity() {
         class Arg {
             @Parameters(arity = "1..*") List<String> parameters;
             @Option(names = "-o")    List<String> options;
         }
         Arg result = CommandLine.populateCommand(new Arg(), "-o", "v1", "p1", "p2", "-o", "v2", "p3", "p4");
-        assertEquals(Arrays.asList("p1", "p2", "-o", "v2", "p3", "p4"), result.parameters);
-        assertEquals(Arrays.asList("v1"), result.options);
+        assertEquals(Arrays.asList("p1", "p2", "p3", "p4"), result.parameters);
+        assertEquals(Arrays.asList("v1", "v2"), result.options);
 
         Arg result2 = CommandLine.populateCommand(new Arg(), "-o", "v1", "p1", "-o", "v2", "p3");
-        assertEquals(Arrays.asList("p1", "-o", "v2", "p3"), result2.parameters);
-        assertEquals(Arrays.asList("v1"), result2.options);
+        assertEquals(Arrays.asList("p1", "p3"), result2.parameters);
+        assertEquals(Arrays.asList("v1", "v2"), result2.options);
 
         try {
             CommandLine.populateCommand(new Arg(), "-o", "v1", "-o", "v2");
@@ -920,5 +918,49 @@ public class CommandLineArityTest {
         } catch (MissingParameterException ex) {
             assertEquals("positional parameter at index 0..* (<parameters>) requires at least 2 values, but only 1 were specified: [p3]", ex.getMessage());
         }
+    }
+
+    @Test
+    public void test284VarargPositionalShouldNotConsumeOptions() {
+        class Cmd {
+            @Option(names = "--alpha") String alpha;
+            @Parameters(index = "0", arity = "1") String foo;
+            @Parameters(index = "1..*", arity = "*") List<String> params;
+        }
+        Cmd cmd = CommandLine.populateCommand(new Cmd(), "foo", "xx", "--alpha", "--beta");
+        assertEquals("foo", cmd.foo);
+        assertEquals("--beta", cmd.alpha);
+        assertEquals(Arrays.asList("xx"), cmd.params);
+    }
+
+    @Test
+    public void test284VarargPositionalShouldConsumeOptionsAfterDoubleDash() {
+        class Cmd {
+            @Option(names = "--alpha") String alpha;
+            @Parameters(index = "0", arity = "1") String foo;
+            @Parameters(index = "1..*", arity = "*") List<String> params;
+        }
+        Cmd cmd = CommandLine.populateCommand(new Cmd(), "foo", "--", "xx", "--alpha", "--beta");
+        assertEquals("foo", cmd.foo);
+        assertEquals(null, cmd.alpha);
+        assertEquals(Arrays.asList("xx", "--alpha", "--beta"), cmd.params);
+    }
+
+    @Test
+    public void testPositionalShouldCaptureDoubleDashAfterDoubleDash() {
+        class Cmd {
+            @Parameters List<String> params;
+        }
+        Cmd cmd = CommandLine.populateCommand(new Cmd(), "foo", "--", "--", "--");
+        assertEquals(Arrays.asList("foo", "--", "--"), cmd.params);
+    }
+
+    @Test
+    public void testVarargPositionalShouldCaptureDoubleDashAfterDoubleDash() {
+        class Cmd {
+            @Parameters(index = "0..*", arity = "*") List<String> params;
+        }
+        Cmd cmd = CommandLine.populateCommand(new Cmd(), "foo", "--", "--", "--");
+        assertEquals(Arrays.asList("foo", "--", "--"), cmd.params);
     }
 }
