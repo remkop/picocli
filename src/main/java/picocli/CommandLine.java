@@ -356,7 +356,7 @@ public class CommandLine {
      */
     public CommandLine setStopAtPositional(boolean newValue) {
         this.stopAtPositional = newValue;
-        for (CommandLine command : interpreter.commands.values()) {
+        for (CommandLine command : getCommandSpec().subcommands().values()) {
             command.setStopAtPositional(newValue);
         }
         return this;
