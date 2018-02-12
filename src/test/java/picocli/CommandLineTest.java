@@ -3163,4 +3163,14 @@ public class CommandLineTest {
         assertFalse(options.overwriteOutput);
         assertTrue(options.verbose);
     }
+
+    @Test
+    public void testUsageHelpWidth() {
+       int defaultWidth = CommandLine.getUsageWidth();
+       // set a new width and check it   
+       CommandLine.setUsageWidth(999);
+       assertEquals(999, CommandLine.getUsageWidth());
+       // set the default back 
+       CommandLine.setUsageWidth(defaultWidth);
+    }
 }

@@ -303,6 +303,22 @@ public class CommandLine {
     }
 
     /**
+     * Set the usage help width 
+     * @param width the max usage text with 
+     */
+    public static void setUsageWidth(int width){
+        Help.usageHelpWidth=width;
+    }
+
+    /** 
+     * @return the current usage text width value
+     */
+    public static int getUsageWidth() {
+        return Help.usageHelpWidth;
+    }
+
+
+    /**
      * <p>
      * Convenience method that initializes the specified annotated object from the specified command line arguments.
      * </p><p>
@@ -2780,7 +2796,7 @@ public class CommandLine {
         /** Constant String holding the default string that separates options from option parameters: {@value} */
         protected static final String DEFAULT_SEPARATOR = "=";
 
-        private final static int usageHelpWidth = 80;
+        private static int usageHelpWidth = 80;
         private final static int optionsColumnWidth = 2 + 2 + 1 + 24;
         private final Object command;
         private final Map<String, Help> commands = new LinkedHashMap<String, Help>();
