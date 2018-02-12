@@ -760,6 +760,13 @@ Applications can change this by calling `CommandLine.setOverwrittenOptionsAllowe
 When overwritten options are allowed, the last specified value takes effect (the above input will set the `port` field to `8080`)
 and a WARN level message is printed to the console. (See <<Tracing>> for how to switch off the warnings.)
 
+=== Stop At Positional
+By default, positional parameters can be mixed with options on the command line, but this is not always desirable.
+From picocli 2.3, applications can call `CommandLine.setStopAtPositional(true)`
+to force the parser to treat all values following the first positional parameter as positional parameters.
+
+When this flag is set, the first positional parameter effectively serves as an "<<Double dash (`--`),end of options>>" marker.
+
 === Unmatched Input
 By default, an `UnmatchedArgumentException` is thrown when a command line argument cannot be assigned to
 an option or positional parameter. For example:
