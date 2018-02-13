@@ -2582,6 +2582,57 @@ public class CommandLineTest {
     }
 
     @Test
+    public void testIsStopAtUnmatched_FalseByDefault() {
+        @Command class A {}
+        assertFalse(new CommandLine(new A()).isStopAtUnmatched());
+    }
+
+    @Test
+    public void testSetStopAtUnmatched_True_SetsUnmatchedOptionsAllowedToTrue() {
+        @Command class A {}
+        CommandLine commandLine = new CommandLine(new A());
+        assertFalse(commandLine.isUnmatchedArgumentsAllowed());
+        commandLine.setStopAtUnmatched(true);
+        assertTrue(commandLine.isUnmatchedArgumentsAllowed());
+    }
+
+    @Test
+    public void testSetStopAtUnmatched_False_LeavesUnmatchedOptionsAllowedUnchanged() {
+        @Command class A {}
+        CommandLine commandLine = new CommandLine(new A());
+        assertFalse(commandLine.isUnmatchedArgumentsAllowed());
+        commandLine.setStopAtUnmatched(false);
+        assertFalse(commandLine.isUnmatchedArgumentsAllowed());
+    }
+
+    @Test
+    public void testStopAtUnmatched_UnmatchedOption() {
+        class App {
+            @Option(names = "-a") String first;
+            @Parameters String[] positional;
+        }
+        App cmd1 = new App();
+        CommandLine commandLine1 = new CommandLine(cmd1).setStopAtUnmatched(true);
+        commandLine1.parse("--y", "-a=abc", "positional");
+        assertEquals(Arrays.asList("--y", "-a=abc", "positional"), commandLine1.getUnmatchedArguments());
+        assertNull(cmd1.first);
+        assertNull(cmd1.positional);
+
+        try {
+            // StopAtUnmatched=false, UnmatchedArgumentsAllowed=false
+            new CommandLine(new App()).parse("--y", "-a=abc", "positional");
+        } catch (UnmatchedArgumentException ex) {
+            assertEquals("Unmatched argument [--y]", ex.getMessage());
+        }
+        App cmd2 = new App();
+        CommandLine commandLine2 = new CommandLine(cmd2).setStopAtUnmatched(false).setUnmatchedArgumentsAllowed(true);
+        commandLine2.parse("--y", "-a=abc", "positional");
+        assertEquals(Arrays.asList("--y"), commandLine2.getUnmatchedArguments());
+        assertEquals("abc", cmd2.first);
+        assertEquals(new String[]{"positional"}, cmd2.positional);
+    }
+
+    @Test
     public void test176OptionModifier() {
         class Args {
             @Option(names = "-option", description = "the option value")
