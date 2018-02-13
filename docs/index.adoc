@@ -695,7 +695,7 @@ When a `@Parameters` field is applied (because its index matches the index of th
 
 === Optional Values
 If an option is defined with `arity = "0..1"`, it may or not have a parameter value.
-If such an option is specified without a value on the command line, it is assigned an empty String.
+If such an option is specified without a value on the command line, it is assigned an empty String (starting from picocli 2.3).
 If the option is not specified, it keeps its default value. For example:
 
 [source, java]
