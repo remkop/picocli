@@ -477,9 +477,9 @@ Convert convert = CommandLine.populateCommand(new Convert(), args);
 
 NOTE: If a collection is returned from a type converter, the _contents_ of the collection are added to the field, not the collection itself.
 
-If the field is `null`, picocli will instantiate it. If the `Collection` type is not a concrete class, picocli will
-make a best effort to instantiate it based on the field type: `List -> ArrayList`, `OrderedSet -> TreeSet`,
-`Set -> LinkedHashSet`, `Queue -> LinkedList`, otherwise, `ArrayList`.
+If the field is `null`, picocli will instantiate it when the option or positional parameter is matched.
+If the `Collection` type is not a concrete class, picocli will make a best effort to instantiate it based on the field type:
+`List -> ArrayList`, `OrderedSet -> TreeSet`, `Set -> LinkedHashSet`, `Queue -> LinkedList`, otherwise, `ArrayList`.
 
 ==== Maps
 Picocli v1.0 introduced support for `Map` fields similar to Java's system properties `-Dkey=value` or Gradle's project properties `-Pmyprop=myvalue`.
@@ -510,8 +510,8 @@ Map options may be specified multiple times with different key-value pairs. (See
 <command> -p HTTP=123.123.123.123 --proxyHost SOCKS=212.212.212.212
 <command> -uDAYS=3 -u HOURS=23 -u=MINUTES=59 --timeUnit=SECONDS=13
 ----
-If the field is `null`, picocli will instantiate it. If the type is not a concrete class, picocli will
-instantiate a `LinkedHashMap` to preserve the input ordering.
+If the field is `null`, picocli will instantiate it when the option or positional parameter is matched.
+If the type is not a concrete class, picocli will instantiate a `LinkedHashMap` to preserve the input ordering.
 
 NOTE: On the command line, the key and the value must be separated by a `=` character.
 
