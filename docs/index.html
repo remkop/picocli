@@ -513,8 +513,8 @@ table.CodeRay td.code>pre{padding:0}
 <div id="header">
 <h1>picocli - a mighty tiny command line interface</h1>
 <div class="details">
-<span id="revnumber">version 2.2.2,</span>
-<span id="revdate">2018-02-07</span>
+<span id="revnumber">version 2.3.0,</span>
+<span id="revdate">2018-02-13</span>
 </div>
 <div id="toc" class="toc2">
 <div id="toctitle">Features</div>
@@ -545,6 +545,7 @@ table.CodeRay td.code>pre{padding:0}
 <li><a href="#_split_regex">4.2. Split Regex</a></li>
 <li><a href="#_arity">4.3. Arity</a></li>
 <li><a href="#_default_arity">4.4. Default Arity</a></li>
+<li><a href="#_optional_values">4.5. Optional Values</a></li>
 </ul>
 </li>
 <li><a href="#_required_arguments">5. Required Arguments</a>
@@ -556,8 +557,10 @@ table.CodeRay td.code>pre{padding:0}
 <li><a href="#_strict_or_lenient_parsing">6. Strict or Lenient Parsing</a>
 <ul class="sectlevel2">
 <li><a href="#_too_many_values">6.1. Too Many Values</a></li>
-<li><a href="#_unmatched_input">6.2. Unmatched Input</a></li>
-<li><a href="#_unknown_options">6.3. Unknown Options</a></li>
+<li><a href="#_stop_at_positional">6.2. Stop At Positional</a></li>
+<li><a href="#_unmatched_input">6.3. Unmatched Input</a></li>
+<li><a href="#_unknown_options">6.4. Unknown Options</a></li>
+<li><a href="#_stop_at_unmatched">6.5. Stop At Unmatched</a></li>
 </ul>
 </li>
 <li><a href="#_help_options">7. Help Options</a></li>
@@ -1306,9 +1309,9 @@ If a collection is returned from a type converter, the <em>contents</em> of the 
 </table>
 </div>
 <div class="paragraph">
-<p>If the field is <code>null</code>, picocli will instantiate it. If the <code>Collection</code> type is not a concrete class, picocli will
-make a best effort to instantiate it based on the field type: <code>List &#8594; ArrayList</code>, <code>OrderedSet &#8594; TreeSet</code>,
-<code>Set &#8594; LinkedHashSet</code>, <code>Queue &#8594; LinkedList</code>, otherwise, <code>ArrayList</code>.</p>
+<p>If the field is <code>null</code>, picocli will instantiate it when the option or positional parameter is matched.
+If the <code>Collection</code> type is not a concrete class, picocli will make a best effort to instantiate it based on the field type:
+<code>List &#8594; ArrayList</code>, <code>OrderedSet &#8594; TreeSet</code>, <code>Set &#8594; LinkedHashSet</code>, <code>Queue &#8594; LinkedList</code>, otherwise, <code>ArrayList</code>.</p>
 </div>
 </div>
 <div class="sect3">
@@ -1347,8 +1350,8 @@ For example:</p>
 </div>
 </div>
 <div class="paragraph">
-<p>If the field is <code>null</code>, picocli will instantiate it. If the type is not a concrete class, picocli will
-instantiate a <code>LinkedHashMap</code> to preserve the input ordering.</p>
+<p>If the field is <code>null</code>, picocli will instantiate it when the option or positional parameter is matched.
+If the type is not a concrete class, picocli will instantiate a <code>LinkedHashMap</code> to preserve the input ordering.</p>
 </div>
 <div class="admonitionblock note">
 <table>
@@ -1668,6 +1671,43 @@ A <code>@Parameters</code> field with <code>index = "*"</code> is applied multip
 </div>
 </div>
 </div>
+<div class="sect2">
+<h3 id="_optional_values">4.5. Optional Values</h3>
+<div class="paragraph">
+<p>If an option is defined with <code>arity = "0..1"</code>, it may or not have a parameter value.
+If such an option is specified without a value on the command line, it is assigned an empty String (starting from picocli 2.3).
+If the option is not specified, it keeps its default value. For example:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="java"><span class="type">class</span> <span class="class">OptionalValueDemo</span> <span class="directive">implements</span> <span class="predefined-type">Runnable</span> {
+    <span class="annotation">@Option</span>(names = <span class="string"><span class="delimiter">&quot;</span><span class="content">-x</span><span class="delimiter">&quot;</span></span>, arity = <span class="string"><span class="delimiter">&quot;</span><span class="content">0..1</span><span class="delimiter">&quot;</span></span>, description = <span class="string"><span class="delimiter">&quot;</span><span class="content">optional parameter</span><span class="delimiter">&quot;</span></span>)
+    <span class="predefined-type">String</span> x;
+
+    <span class="directive">public</span> <span class="type">void</span> run() { <span class="predefined-type">System</span>.out.printf(<span class="string"><span class="delimiter">&quot;</span><span class="content">x = '%s'%n</span><span class="delimiter">&quot;</span></span>, x); }
+
+    <span class="directive">public</span> <span class="directive">static</span> <span class="type">void</span> main(<span class="predefined-type">String</span>... args) {
+       CommandLine.run(<span class="keyword">new</span> OptionalValueDemo(), <span class="predefined-type">System</span>.out, args);
+    }
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Gives the following results:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="bash">java OptionalValueDemo -x value
+x = 'value'
+
+java OptionalValueDemo -x
+x = ''
+
+java OptionalValueDemo
+x = 'null'</code></pre>
+</div>
+</div>
+</div>
 </div>
 </div>
 <div class="sect1">
@@ -1774,14 +1814,27 @@ and a WARN level message is printed to the console. (See <a href="#_tracing">Tra
 </div>
 </div>
 <div class="sect2">
-<h3 id="_unmatched_input">6.2. Unmatched Input</h3>
+<h3 id="_stop_at_positional">6.2. Stop At Positional</h3>
+<div class="paragraph">
+<p>By default, positional parameters can be mixed with options on the command line, but this is not always desirable.
+From picocli 2.3, applications can call <code>CommandLine.setStopAtPositional(true)</code>
+to force the parser to treat all values following the first positional parameter as positional parameters.</p>
+</div>
+<div class="paragraph">
+<p>When this flag is set, the first positional parameter effectively serves as an "<a href="#_double_dash_code_code">end of options</a>" marker.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_unmatched_input">6.3. Unmatched Input</h3>
 <div class="paragraph">
 <p>By default, an <code>UnmatchedArgumentException</code> is thrown when a command line argument cannot be assigned to
 an option or positional parameter. For example:</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="CodeRay highlight"><code data-lang="java"><span class="annotation">@Parameters</span>(arity = <span class="string"><span class="delimiter">&quot;</span><span class="content">3</span><span class="delimiter">&quot;</span></span>) <span class="predefined-type">String</span><span class="type">[]</span> values;</code></pre>
+<pre class="CodeRay highlight"><code data-lang="java"><span class="type">class</span> <span class="class">OnlyThree</span> {
+    <span class="annotation">@Parameters</span>(arity = <span class="string"><span class="delimiter">&quot;</span><span class="content">3</span><span class="delimiter">&quot;</span></span>) <span class="predefined-type">String</span><span class="type">[]</span> values;
+}</code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -1790,7 +1843,7 @@ so the following input results in an <code>UnmatchedArgumentException</code>:</p
 </div>
 <div class="listingblock">
 <div class="content">
-<pre>&lt;command&gt; 1 2 3 4 5</pre>
+<pre>java OnlyThree 1 2 3 4 5</pre>
 </div>
 </div>
 <div class="paragraph">
@@ -1803,7 +1856,7 @@ When unmatched arguments are allowed, the above input will be accepted and a WAR
 </div>
 </div>
 <div class="sect2">
-<h3 id="_unknown_options">6.3. Unknown Options</h3>
+<h3 id="_unknown_options">6.4. Unknown Options</h3>
 <div class="paragraph">
 <p>A special case of unmatched input are arguments that look like options but don&#8217;t match any of the defined options.
 For example:</p>
@@ -1863,6 +1916,17 @@ display a WARN-level message on the console.</p>
 the above input is treated as three positional parameters.</p>
 </div>
 </div>
+<div class="sect2">
+<h3 id="_stop_at_unmatched">6.5. Stop At Unmatched</h3>
+<div class="paragraph">
+<p>From picocli 2.3, applications can call <code>CommandLine.setStopAtUnmatched(true)</code> to force the parser to stop interpreting
+options and positional parameters as soon as it encounters an unmatched argument.</p>
+</div>
+<div class="paragraph">
+<p>When this flag is set, the first unmatched argument and all subsequent command line arguments are added to the
+unmatched arguments list returned by <code>CommandLine.getUnmatchedArguments()</code>.</p>
+</div>
+</div>
 </div>
 </div>
 <div class="sect1">
@@ -1891,7 +1955,7 @@ if one of the command line arguments is a "help" option, picocli will stop parsi
 <div class="content">
 <pre class="CodeRay highlight"><code data-lang="java">App app = CommandLine.populateCommand(<span class="keyword">new</span> App(), args);
 <span class="keyword">if</span> (app.usageHelpRequested) {
-   CommandLine.usage(<span class="keyword">new</span> App(), <span class="predefined-type">System</span>.err);
+   CommandLine.usage(<span class="keyword">new</span> App(), <span class="predefined-type">System</span>.out);
    <span class="keyword">return</span>;
 }</code></pre>
 </div>
@@ -1915,16 +1979,18 @@ usage help or version information was requested (without inspecting the annotate
 <pre class="CodeRay highlight"><code data-lang="java">CommandLine commandLine = <span class="keyword">new</span> CommandLine(<span class="keyword">new</span> App());
 commandLine.parse(args);
 <span class="keyword">if</span> (commandLine.isUsageHelpRequested()) {
-   commandLine.usage(<span class="predefined-type">System</span>.err);
+   commandLine.usage(<span class="predefined-type">System</span>.out);
    <span class="keyword">return</span>;
 } <span class="keyword">else</span> <span class="keyword">if</span> (commandLine.isVersionHelpRequested()) {
-   commandLine.printVersionHelp(<span class="predefined-type">System</span>.err);
+   commandLine.printVersionHelp(<span class="predefined-type">System</span>.out);
    <span class="keyword">return</span>;
 }</code></pre>
 </div>
 </div>
 <div class="paragraph">
-<p>From picocli v2.0, the <a href="#_less_boilerplate">convenience methods</a> will automatically print usage help and version information when requested with the <code>versionHelp</code> and <code>usageHelp</code> option attributes (but not for the <code>help</code> attribute).</p>
+<p>From picocli v2.0, the <a href="#_less_boilerplate">convenience methods</a> will automatically print usage help and version information
+when requested with the <code>versionHelp</code> and <code>usageHelp</code> option attributes (but not for the <code>help</code> attribute).
+From v2.0, the <code>help</code> attribute is deprecated.</p>
 </div>
 <div class="paragraph">
 <p>Methods that automatically print help:</p>
@@ -1987,7 +2053,7 @@ annotation and prints it to the specified <code>PrintStream</code>.</p>
 <pre class="CodeRay highlight"><code data-lang="java">CommandLine commandLine = <span class="keyword">new</span> CommandLine(<span class="keyword">new</span> VersionedCommand());
 commandLine.parse(args);
 <span class="keyword">if</span> (commandLine.isVersionHelpRequested()) {
-    commandLine.printVersionHelp(<span class="predefined-type">System</span>.err);
+    commandLine.printVersionHelp(<span class="predefined-type">System</span>.out);
     <span class="keyword">return</span>;
 }</code></pre>
 </div>
@@ -2048,7 +2114,7 @@ Build 12345
 <div class="content">
 <pre class="CodeRay highlight"><code data-lang="java"><span class="predefined-type">String</span><span class="type">[]</span> args = {<span class="string"><span class="delimiter">&quot;</span><span class="content">1234</span><span class="delimiter">&quot;</span></span>, <span class="predefined-type">System</span>.getProperty(<span class="string"><span class="delimiter">&quot;</span><span class="content">user.name</span><span class="delimiter">&quot;</span></span>)};
 <span class="keyword">new</span> CommandLine(<span class="keyword">new</span> VersionedCommand())
-    .printVersionHelp(<span class="predefined-type">System</span>.err, Help.Ansi.AUTO, args);</code></pre>
+    .printVersionHelp(<span class="predefined-type">System</span>.out, Help.Ansi.AUTO, args);</code></pre>
 </div>
 </div>
 </div>
@@ -2058,6 +2124,12 @@ Build 12345
 <p>From picocli 2.2, the <code>@Command</code> annotation supports a <code>versionProvider</code> attribute.
 Applications may specify a <code>IVersionProvider</code> implementation in this attribute, and picocli will instantiate this class
 and invoke it to collect version information.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="java"><span class="annotation">@Command</span>(versionProvider = com.my.custom.ManifestVersionProvider.class)
+<span class="type">class</span> <span class="class">App</span> { ... }</code></pre>
+</div>
 </div>
 <div class="paragraph">
 <p>This is useful when the version of an application should be detected dynamically at runtime.
@@ -2230,7 +2302,7 @@ For demonstration purposes the above example mixes the all-uppercase (e.g., <cod
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="CodeRay highlight"><code data-lang="java"><span class="annotation">@CommandLine</span>.Command(abbreviateSynopsis = <span class="predefined-constant">true</span>)
+<pre class="CodeRay highlight"><code data-lang="java"><span class="annotation">@Command</span>(abbreviateSynopsis = <span class="predefined-constant">true</span>)
 <span class="type">class</span> <span class="class">App</span> {
     <span class="annotation">@Parameters</span> <span class="predefined-type">File</span><span class="type">[]</span> files;
     <span class="annotation">@Option</span>(names = {<span class="string"><span class="delimiter">&quot;</span><span class="content">--count</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">-c</span><span class="delimiter">&quot;</span></span>}) <span class="type">int</span> count;
@@ -2287,7 +2359,7 @@ Each element of the attribute String array is displayed on a separate line.</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="CodeRay highlight"><code data-lang="java"><span class="annotation">@CommandLine</span>.Command(name = <span class="string"><span class="delimiter">&quot;</span><span class="content">git-commit</span><span class="delimiter">&quot;</span></span>,
+<pre class="CodeRay highlight"><code data-lang="java"><span class="annotation">@Command</span>(name = <span class="string"><span class="delimiter">&quot;</span><span class="content">git-commit</span><span class="delimiter">&quot;</span></span>,
         sortOptions = <span class="predefined-constant">false</span>,
         headerHeading = <span class="string"><span class="delimiter">&quot;</span><span class="content">Usage:%n%n</span><span class="delimiter">&quot;</span></span>,
         synopsisHeading = <span class="string"><span class="delimiter">&quot;</span><span class="content">%n</span><span class="delimiter">&quot;</span></span>,
@@ -2996,9 +3068,16 @@ adding subcommands.
     <span class="annotation">@Option</span>(names = {<span class="string"><span class="delimiter">&quot;</span><span class="content">-d</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">--directory</span><span class="delimiter">&quot;</span></span>},
             description = <span class="string"><span class="delimiter">&quot;</span><span class="content">this option applies to all subcommands</span><span class="delimiter">&quot;</span></span>)
     <span class="predefined-type">File</span> baseDirectory;
-}
-
-<span class="annotation">@Command</span>(name = <span class="string"><span class="delimiter">&quot;</span><span class="content">list</span><span class="delimiter">&quot;</span></span>)
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The above top-level command has a <code>--directory</code> option that applies to its subcommands.
+The <code>List</code> subcommand can use the <code>@ParentCommand</code> annotation to get a reference to the parent command, so it can easily access the parent command options.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="java"><span class="annotation">@Command</span>(name = <span class="string"><span class="delimiter">&quot;</span><span class="content">list</span><span class="delimiter">&quot;</span></span>)
 <span class="type">class</span> <span class="class">List</span> <span class="directive">implements</span> <span class="predefined-type">Runnable</span> {
 
     <span class="annotation">@ParentCommand</span>
@@ -3041,6 +3120,7 @@ adding subcommands.
 <span class="comment">// add subcommands programmatically (not necessary if the parent command</span>
 <span class="comment">// declaratively registers the subcommands via annotation)</span>
 commandLine.addSubcommand(<span class="string"><span class="delimiter">&quot;</span><span class="content">status</span><span class="delimiter">&quot;</span></span>,   <span class="keyword">new</span> GitStatus());
+commandLine.addSubcommand(<span class="string"><span class="delimiter">&quot;</span><span class="content">commit</span><span class="delimiter">&quot;</span></span>,   <span class="keyword">new</span> GitCommit());
 ...
 commandLine.usage(<span class="predefined-type">System</span>.out);</code></pre>
 </div>
@@ -3168,10 +3248,10 @@ CommandLine cmd = <span class="keyword">new</span> CommandLine(callable);
 <span class="keyword">try</span> {
     cmd.parse(args);
     <span class="keyword">if</span> (cmd.isUsageHelpRequested()) {
-        cmd.usage(<span class="predefined-type">System</span>.err);
+        cmd.usage(<span class="predefined-type">System</span>.out);
         <span class="keyword">return</span> <span class="predefined-constant">null</span>;
     } <span class="keyword">else</span> <span class="keyword">if</span> (cmd.isVersionHelpRequested()) {
-        cmd.printVersionHelp(<span class="predefined-type">System</span>.err);
+        cmd.printVersionHelp(<span class="predefined-type">System</span>.out);
         <span class="keyword">return</span> <span class="predefined-constant">null</span>;
     }
     <span class="keyword">return</span> callable.call();
@@ -3228,7 +3308,7 @@ These methods are intended to offer the same ease of use as the <code>run</code>
         .addSubcommand(<span class="string"><span class="delimiter">&quot;</span><span class="content">status</span><span class="delimiter">&quot;</span></span>,   <span class="keyword">new</span> GitStatus())
         .addSubcommand(<span class="string"><span class="delimiter">&quot;</span><span class="content">commit</span><span class="delimiter">&quot;</span></span>,   <span class="keyword">new</span> GitCommit())
         .addSubcommand(<span class="string"><span class="delimiter">&quot;</span><span class="content">add</span><span class="delimiter">&quot;</span></span>,      <span class="keyword">new</span> GitAdd());
-<span class="predefined-type">List</span>&lt;<span class="predefined-type">Object</span> result = cmd.parseWithHandler(<span class="keyword">new</span> RunAll(), <span class="predefined-type">System</span>.err, args);</code></pre>
+<span class="predefined-type">List</span>&lt;<span class="predefined-type">Object</span>&gt; result = cmd.parseWithHandler(<span class="keyword">new</span> RunAll(), <span class="predefined-type">System</span>.err, args);</code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -3618,7 +3698,7 @@ The script body is executed if the user input was valid and did not request usag
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="CodeRay highlight"><code data-lang="groovy"><span class="annotation">@Grab</span>(<span class="string"><span class="delimiter">'</span><span class="content">info.picocli:picocli:2.2.2</span><span class="delimiter">'</span></span>)
+<pre class="CodeRay highlight"><code data-lang="groovy"><span class="annotation">@Grab</span>(<span class="string"><span class="delimiter">'</span><span class="content">info.picocli:picocli:2.3.0</span><span class="delimiter">'</span></span>)
 <span class="annotation">@Command</span>(name = <span class="string"><span class="delimiter">&quot;</span><span class="content">myCommand</span><span class="delimiter">&quot;</span></span>,
   description = <span class="string"><span class="delimiter">&quot;</span><span class="content">@|bold Groovy script|@ @|underline picocli|@ example</span><span class="delimiter">&quot;</span></span>)
 <span class="annotation">@picocli</span>.groovy.PicocliScript
@@ -3633,7 +3713,7 @@ The script body is executed if the user input was valid and did not request usag
 <span class="annotation">@Field</span> <span class="type">boolean</span> helpRequested;
 
 <span class="comment">//if (helpRequested) { // not necessary: PicocliBaseScript takes care of this</span>
-<span class="comment">//    CommandLine.usage(this, System.err); return 0;</span>
+<span class="comment">//    CommandLine.usage(this, System.out); return 0;</span>
 <span class="comment">//}</span>
 count.times {
    println <span class="string"><span class="delimiter">&quot;</span><span class="content">hi</span><span class="delimiter">&quot;</span></span>
@@ -3657,7 +3737,7 @@ When using a Groovy version older than 2.4.7, use this workaround for the <a hre
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="CodeRay highlight"><code data-lang="groovy"><span class="annotation">@Grab</span>(<span class="string"><span class="delimiter">'</span><span class="content">info.picocli:picocli:2.2.2</span><span class="delimiter">'</span></span>)
+<pre class="CodeRay highlight"><code data-lang="groovy"><span class="annotation">@Grab</span>(<span class="string"><span class="delimiter">'</span><span class="content">info.picocli:picocli:2.3.0</span><span class="delimiter">'</span></span>)
 <span class="annotation">@GrabExclude</span>(<span class="string"><span class="delimiter">'</span><span class="content">org.codehaus.groovy:groovy-all</span><span class="delimiter">'</span></span>) <span class="comment">// work around GROOVY-7613</span>
 ...</code></pre>
 </div>
@@ -3676,15 +3756,15 @@ class MyApp : Runnable {
 
     @Option(names = [&quot;-c&quot;, &quot;--count&quot;], paramLabel = &quot;COUNT&quot;,
             description = [&quot;the count&quot;])
-    private val count: Int = 0
+    private var count: Int = 0
 
     @Option(names = [&quot;-h&quot;, &quot;--help&quot;], usageHelp = true,
             description = [&quot;print this help and exit&quot;])
-    private val helpRequested: Boolean = false
+    private var helpRequested: Boolean = false
 
     @Option(names = [&quot;-V&quot;, &quot;--version&quot;], versionHelp = true,
             description = [&quot;print version info and exit&quot;])
-    private val versionRequested: Boolean = false
+    private var versionRequested: Boolean = false
 
     override fun run() {
         for (i in 0 until count) {
@@ -3710,15 +3790,15 @@ class MyApp : Runnable {
 
     @Option(names = arrayOf(&quot;-c&quot;, &quot;--count&quot;), paramLabel = &quot;COUNT&quot;,
             description = arrayOf(&quot;the count&quot;))
-    private val count: Int = 0
+    private var count: Int = 0
 
     @Option(names = arrayOf(&quot;-h&quot;, &quot;--help&quot;), usageHelp = true,
             description = arrayOf(&quot;print this help and exit&quot;))
-    private val helpRequested: Boolean = false
+    private var helpRequested: Boolean = false
 
     @Option(names = arrayOf(&quot;-V&quot;, &quot;--version&quot;), versionHelp = true,
             description = arrayOf(&quot;print version info and exit&quot;))
-    private val versionRequested: Boolean = false
+    private var versionRequested: Boolean = false
 
     override fun run() {
         for (i in 0 until count) {
@@ -3829,7 +3909,7 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
 <h3 id="_gradle">22.1. Gradle</h3>
 <div class="listingblock">
 <div class="content">
-<pre>compile 'info.picocli:picocli:2.2.2'</pre>
+<pre>compile 'info.picocli:picocli:2.3.0'</pre>
 </div>
 </div>
 </div>
@@ -3840,7 +3920,7 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
 <pre>&lt;dependency&gt;
   &lt;groupId&gt;info.picocli&lt;/groupId&gt;
   &lt;artifactId&gt;picocli&lt;/artifactId&gt;
-  &lt;version&gt;2.2.2&lt;/version&gt;
+  &lt;version&gt;2.3.0&lt;/version&gt;
 &lt;/dependency&gt;</pre>
 </div>
 </div>
@@ -3849,7 +3929,7 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
 <h3 id="_scala_sbt">22.3. Scala SBT</h3>
 <div class="listingblock">
 <div class="content">
-<pre>libraryDependencies += "info.picocli" % "picocli" % "2.2.2"</pre>
+<pre>libraryDependencies += "info.picocli" % "picocli" % "2.3.0"</pre>
 </div>
 </div>
 </div>
@@ -3857,7 +3937,7 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
 <h3 id="_ivy">22.4. Ivy</h3>
 <div class="listingblock">
 <div class="content">
-<pre>&lt;dependency org="info.picocli" name="picocli" rev="2.2.2" /&gt;</pre>
+<pre>&lt;dependency org="info.picocli" name="picocli" rev="2.3.0" /&gt;</pre>
 </div>
 </div>
 </div>
@@ -4009,11 +4089,13 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
  */</span>
 <span class="directive">public</span> <span class="type">class</span> <span class="class">CommandLine</span> {
     <span class="comment">/** This is picocli version {@value}. */</span>
-    <span class="directive">public</span> <span class="directive">static</span> <span class="directive">final</span> <span class="predefined-type">String</span> VERSION = <span class="string"><span class="delimiter">&quot;</span><span class="content">2.2.2</span><span class="delimiter">&quot;</span></span>;
+    <span class="directive">public</span> <span class="directive">static</span> <span class="directive">final</span> <span class="predefined-type">String</span> VERSION = <span class="string"><span class="delimiter">&quot;</span><span class="content">2.3.0</span><span class="delimiter">&quot;</span></span>;
 
     <span class="directive">private</span> <span class="directive">final</span> Tracer tracer = <span class="keyword">new</span> Tracer();
     <span class="directive">private</span> <span class="directive">final</span> Interpreter interpreter;
     <span class="directive">private</span> <span class="predefined-type">String</span> commandName = Help.DEFAULT_COMMAND_NAME;
+    <span class="directive">private</span> <span class="type">boolean</span> stopAtPositional = <span class="predefined-constant">false</span>;
+    <span class="directive">private</span> <span class="type">boolean</span> stopAtUnmatched = <span class="predefined-constant">false</span>;
     <span class="directive">private</span> <span class="type">boolean</span> overwrittenOptionsAllowed = <span class="predefined-constant">false</span>;
     <span class="directive">private</span> <span class="type">boolean</span> expandAtFiles = <span class="predefined-constant">true</span>;
     <span class="directive">private</span> <span class="predefined-type">List</span>&lt;<span class="predefined-type">String</span>&gt; unmatchedArguments = <span class="keyword">new</span> <span class="predefined-type">ArrayList</span>&lt;<span class="predefined-type">String</span>&gt;();
@@ -4154,6 +4236,69 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
         <span class="keyword">for</span> (CommandLine command : interpreter.commands.values()) {
             command.setOverwrittenOptionsAllowed(newValue);
         }
+        <span class="keyword">return</span> <span class="local-variable">this</span>;
+    }
+
+    <span class="comment">/** Returns whether the parser interprets the first positional parameter as &quot;end of options&quot; so the remaining
+     * arguments are all treated as positional parameters. The default is {@code false}.
+     * @return {@code true} if all values following the first positional parameter should be treated as positional parameters, {@code false} otherwise
+     * @since 2.3
+     */</span>
+    <span class="directive">public</span> <span class="type">boolean</span> isStopAtPositional() {
+        <span class="keyword">return</span> stopAtPositional;
+    }
+
+    <span class="comment">/** Sets whether the parser interprets the first positional parameter as &quot;end of options&quot; so the remaining
+     * arguments are all treated as positional parameters. The default is {@code false}.
+     * &lt;p&gt;The specified setting will be registered with this {@code CommandLine} and the full hierarchy of its
+     * subcommands and nested sub-subcommands &lt;em&gt;at the moment this method is called&lt;/em&gt;. Subcommands added
+     * later will have the default setting. To ensure a setting is applied to all
+     * subcommands, call the setter last, after adding subcommands.&lt;/p&gt;
+     * @param newValue {@code true} if all values following the first positional parameter should be treated as positional parameters, {@code false} otherwise
+     * @return this {@code CommandLine} object, to allow method chaining
+     * @since 2.3
+     */</span>
+    <span class="directive">public</span> CommandLine setStopAtPositional(<span class="type">boolean</span> newValue) {
+        <span class="local-variable">this</span>.stopAtPositional = newValue;
+        <span class="keyword">for</span> (CommandLine command : interpreter.commands.values()) {
+            command.setStopAtPositional(newValue);
+        }
+        <span class="keyword">return</span> <span class="local-variable">this</span>;
+    }
+
+    <span class="comment">/** Returns whether the parser should stop interpreting options and positional parameters as soon as it encounters an
+     * unmatched option. Unmatched options are arguments that look like an option but are not one of the known options, or
+     * positional arguments for which there is no available slots (the command has no positional parameters or their size is limited).
+     * The default is {@code false}.
+     * &lt;p&gt;Setting this flag to {@code true} automatically sets the {@linkplain #isUnmatchedArgumentsAllowed() unmatchedArgumentsAllowed} flag to {@code true} also.&lt;/p&gt;
+     * @return {@code true} when an unmatched option should result in the remaining command line arguments to be added to the
+     *      {@linkplain #getUnmatchedArguments() unmatchedArguments list}
+     * @since 2.3
+     */</span>
+    <span class="directive">public</span> <span class="type">boolean</span> isStopAtUnmatched() {
+        <span class="keyword">return</span> stopAtUnmatched;
+    }
+
+    <span class="comment">/** Sets whether the parser should stop interpreting options and positional parameters as soon as it encounters an
+     * unmatched option. Unmatched options are arguments that look like an option but are not one of the known options, or
+     * positional arguments for which there is no available slots (the command has no positional parameters or their size is limited).
+     * The default is {@code false}.
+     * &lt;p&gt;Setting this flag to {@code true} automatically sets the {@linkplain #setUnmatchedArgumentsAllowed(boolean) unmatchedArgumentsAllowed} flag to {@code true} also.&lt;/p&gt;
+     * &lt;p&gt;The specified setting will be registered with this {@code CommandLine} and the full hierarchy of its
+     * subcommands and nested sub-subcommands &lt;em&gt;at the moment this method is called&lt;/em&gt;. Subcommands added
+     * later will have the default setting. To ensure a setting is applied to all
+     * subcommands, call the setter last, after adding subcommands.&lt;/p&gt;
+     * @param newValue {@code true} when an unmatched option should result in the remaining command line arguments to be added to the
+     *      {@linkplain #getUnmatchedArguments() unmatchedArguments list}
+     * @return this {@code CommandLine} object, to allow method chaining
+     * @since 2.3
+     */</span>
+    <span class="directive">public</span> CommandLine setStopAtUnmatched(<span class="type">boolean</span> newValue) {
+        <span class="local-variable">this</span>.stopAtUnmatched = newValue;
+        <span class="keyword">for</span> (CommandLine command : interpreter.commands.values()) {
+            command.setStopAtUnmatched(newValue);
+        }
+        <span class="keyword">if</span> (newValue) { setUnmatchedArgumentsAllowed(<span class="predefined-constant">true</span>); }
         <span class="keyword">return</span> <span class="local-variable">this</span>;
     }
 
@@ -5895,6 +6040,7 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
         <span class="directive">private</span> <span class="type">boolean</span> isHelpRequested;
         <span class="directive">private</span> <span class="predefined-type">String</span> separator = Help.DEFAULT_SEPARATOR;
         <span class="directive">private</span> <span class="type">int</span> position;
+        <span class="directive">private</span> <span class="type">boolean</span> endOfOptions;
 
         Interpreter(<span class="predefined-type">Object</span> command, IFactory factory) {
             <span class="local-variable">this</span>.command                 = Assert.notNull(command, <span class="string"><span class="delimiter">&quot;</span><span class="content">command</span><span class="delimiter">&quot;</span></span>);
@@ -6102,12 +6248,17 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
             arguments.addAll(result);
         }
 
-        <span class="directive">private</span> <span class="type">void</span> parse(<span class="predefined-type">List</span>&lt;CommandLine&gt; parsedCommands, <span class="predefined-type">Stack</span>&lt;<span class="predefined-type">String</span>&gt; argumentStack, <span class="predefined-type">String</span><span class="type">[]</span> originalArgs) {
-            <span class="comment">// first reset any state in case this CommandLine instance is being reused</span>
+        <span class="directive">private</span> <span class="type">void</span> clear() {
+            position = <span class="integer">0</span>;
+            endOfOptions = <span class="predefined-constant">false</span>;
             isHelpRequested = <span class="predefined-constant">false</span>;
             CommandLine.this.versionHelpRequested = <span class="predefined-constant">false</span>;
             CommandLine.this.usageHelpRequested = <span class="predefined-constant">false</span>;
+            CommandLine.this.unmatchedArguments.clear();
+        }
 
+        <span class="directive">private</span> <span class="type">void</span> parse(<span class="predefined-type">List</span>&lt;CommandLine&gt; parsedCommands, <span class="predefined-type">Stack</span>&lt;<span class="predefined-type">String</span>&gt; argumentStack, <span class="predefined-type">String</span><span class="type">[]</span> originalArgs) {
+            clear(); <span class="comment">// first reset any state in case this CommandLine instance is being reused</span>
             <span class="predefined-type">Class</span>&lt;?&gt; cmdClass = <span class="local-variable">this</span>.command.getClass();
             <span class="keyword">if</span> (tracer.isDebug()) {tracer.debug(<span class="string"><span class="delimiter">&quot;</span><span class="content">Initializing %s: %d options, %d positional parameters, %d required, %d subcommands.%n</span><span class="delimiter">&quot;</span></span>, cmdClass.getName(), <span class="keyword">new</span> <span class="predefined-type">HashSet</span>&lt;<span class="predefined-type">Field</span>&gt;(optionName2Field.values()).size(), positionalParametersFields.size(), requiredFields.size(), commands.size());}
             parsedCommands.add(CommandLine.this);
@@ -6153,6 +6304,10 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
             <span class="comment">// 5. a combination of stand-alone options and one option with an argument, like &quot;-vxrffile&quot;</span>
 
             <span class="keyword">while</span> (!args.isEmpty()) {
+                <span class="keyword">if</span> (endOfOptions) {
+                    processRemainderAsPositionalParameters(required, initialized, args);
+                    <span class="keyword">return</span>;
+                }
                 <span class="predefined-type">String</span> arg = args.pop();
                 <span class="keyword">if</span> (tracer.isDebug()) {tracer.debug(<span class="string"><span class="delimiter">&quot;</span><span class="content">Processing argument '%s'. Remainder=%s%n</span><span class="delimiter">&quot;</span></span>, arg, reverse((<span class="predefined-type">Stack</span>&lt;<span class="predefined-type">String</span>&gt;) args.clone()));}
 
@@ -6160,6 +6315,7 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
                 <span class="comment">// If found, then interpret the remaining args as positional parameters.</span>
                 <span class="keyword">if</span> (<span class="string"><span class="delimiter">&quot;</span><span class="content">--</span><span class="delimiter">&quot;</span></span>.equals(arg)) {
                     tracer.info(<span class="string"><span class="delimiter">&quot;</span><span class="content">Found end-of-options delimiter '--'. Treating remainder as positional parameters.%n</span><span class="delimiter">&quot;</span></span>);
+                    endOfOptions = <span class="predefined-constant">true</span>;
                     processRemainderAsPositionalParameters(required, initialized, args);
                     <span class="keyword">return</span>; <span class="comment">// we are done</span>
                 }
@@ -6209,7 +6365,7 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
                 <span class="keyword">else</span> {
                     args.push(arg);
                     <span class="keyword">if</span> (tracer.isDebug()) {tracer.debug(<span class="string"><span class="delimiter">&quot;</span><span class="content">Could not find option '%s', deciding whether to treat as unmatched option or positional parameter...%n</span><span class="delimiter">&quot;</span></span>, arg);}
-                    <span class="keyword">if</span> (resemblesOption(arg)) { handleUnmatchedArguments(args.pop()); <span class="keyword">continue</span>; } <span class="comment">// #149</span>
+                    <span class="keyword">if</span> (resemblesOption(arg)) { handleUnmatchedArgument(args); <span class="keyword">continue</span>; } <span class="comment">// #149</span>
                     <span class="keyword">if</span> (tracer.isDebug()) {tracer.debug(<span class="string"><span class="delimiter">&quot;</span><span class="content">No option named '%s' found. Processing remainder as positional parameters%n</span><span class="delimiter">&quot;</span></span>, arg);}
                     processPositionalParameter(required, initialized, args);
                 }
@@ -6231,9 +6387,12 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
             <span class="keyword">if</span> (tracer.isDebug()) {tracer.debug(<span class="string"><span class="delimiter">&quot;</span><span class="content">%s %s an option: %d matching prefix chars out of %d option names%n</span><span class="delimiter">&quot;</span></span>, arg, (result ? <span class="string"><span class="delimiter">&quot;</span><span class="content">resembles</span><span class="delimiter">&quot;</span></span> : <span class="string"><span class="delimiter">&quot;</span><span class="content">doesn't resemble</span><span class="delimiter">&quot;</span></span>), count, optionName2Field.size());}
             <span class="keyword">return</span> result;
         }
-        <span class="directive">private</span> <span class="type">void</span> handleUnmatchedArguments(<span class="predefined-type">String</span> arg) {<span class="predefined-type">Stack</span>&lt;<span class="predefined-type">String</span>&gt; args = <span class="keyword">new</span> <span class="predefined-type">Stack</span>&lt;<span class="predefined-type">String</span>&gt;(); args.add(arg); handleUnmatchedArguments(args);}
-        <span class="directive">private</span> <span class="type">void</span> handleUnmatchedArguments(<span class="predefined-type">Stack</span>&lt;<span class="predefined-type">String</span>&gt; args) {
-            <span class="keyword">while</span> (!args.isEmpty()) { unmatchedArguments.add(args.pop()); } <span class="comment">// addAll would give args in reverse order</span>
+        <span class="directive">private</span> <span class="type">void</span> handleUnmatchedArgument(<span class="predefined-type">Stack</span>&lt;<span class="predefined-type">String</span>&gt; args) {
+            <span class="keyword">if</span> (!args.isEmpty()) { unmatchedArguments.add(args.pop()); }
+            <span class="keyword">if</span> (stopAtUnmatched) {
+                <span class="comment">// addAll would give args in reverse order</span>
+                <span class="keyword">while</span> (!args.isEmpty()) { unmatchedArguments.add(args.pop()); }
+            }
         }
 
         <span class="directive">private</span> <span class="type">void</span> processRemainderAsPositionalParameters(<span class="predefined-type">Collection</span>&lt;<span class="predefined-type">Field</span>&gt; required, <span class="predefined-type">Set</span>&lt;<span class="predefined-type">Field</span>&gt; initialized, <span class="predefined-type">Stack</span>&lt;<span class="predefined-type">String</span>&gt; args) <span class="directive">throws</span> <span class="exception">Exception</span> {
@@ -6243,6 +6402,10 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
         }
         <span class="directive">private</span> <span class="type">void</span> processPositionalParameter(<span class="predefined-type">Collection</span>&lt;<span class="predefined-type">Field</span>&gt; required, <span class="predefined-type">Set</span>&lt;<span class="predefined-type">Field</span>&gt; initialized, <span class="predefined-type">Stack</span>&lt;<span class="predefined-type">String</span>&gt; args) <span class="directive">throws</span> <span class="exception">Exception</span> {
             <span class="keyword">if</span> (tracer.isDebug()) {tracer.debug(<span class="string"><span class="delimiter">&quot;</span><span class="content">Processing next arg as a positional parameter at index=%d. Remainder=%s%n</span><span class="delimiter">&quot;</span></span>, position, reverse((<span class="predefined-type">Stack</span>&lt;<span class="predefined-type">String</span>&gt;) args.clone()));}
+            <span class="keyword">if</span> (stopAtPositional) {
+                <span class="keyword">if</span> (!endOfOptions &amp;&amp; tracer.isDebug()) {tracer.debug(<span class="string"><span class="delimiter">&quot;</span><span class="content">Parser was configured with stopAtPositional=true, treating remaining arguments as positional parameters.%n</span><span class="delimiter">&quot;</span></span>);}
+                endOfOptions = <span class="predefined-constant">true</span>;
+            }
             <span class="type">int</span> consumed = <span class="integer">0</span>;
             <span class="keyword">for</span> (<span class="predefined-type">Field</span> positionalParam : positionalParametersFields) {
                 Range indexRange = Range.parameterIndex(positionalParam);
@@ -6265,7 +6428,7 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
             position += consumed;
             <span class="keyword">if</span> (tracer.isDebug()) {tracer.debug(<span class="string"><span class="delimiter">&quot;</span><span class="content">Consumed %d arguments, moving position to index %d.%n</span><span class="delimiter">&quot;</span></span>, consumed, position);}
             <span class="keyword">if</span> (consumed == <span class="integer">0</span> &amp;&amp; !args.isEmpty()) {
-                handleUnmatchedArguments(args.pop());
+                handleUnmatchedArgument(args);
             }
         }
 
@@ -6331,13 +6494,13 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
                         args.push(paramAttachedToOption ? prefix + cluster : cluster);
                         <span class="keyword">if</span> (args.peek().equals(arg)) { <span class="comment">// #149 be consistent between unmatched short and long options</span>
                             <span class="keyword">if</span> (tracer.isDebug()) {tracer.debug(<span class="string"><span class="delimiter">&quot;</span><span class="content">Could not match any short options in %s, deciding whether to treat as unmatched option or positional parameter...%n</span><span class="delimiter">&quot;</span></span>, arg);}
-                            <span class="keyword">if</span> (resemblesOption(arg)) { handleUnmatchedArguments(args.pop()); <span class="keyword">return</span>; } <span class="comment">// #149</span>
+                            <span class="keyword">if</span> (resemblesOption(arg)) { handleUnmatchedArgument(args); <span class="keyword">return</span>; } <span class="comment">// #149</span>
                             processPositionalParameter(required, initialized, args);
                             <span class="keyword">return</span>;
                         }
                         <span class="comment">// remainder was part of a clustered group that could not be completely parsed</span>
                         <span class="keyword">if</span> (tracer.isDebug()) {tracer.debug(<span class="string"><span class="delimiter">&quot;</span><span class="content">No option found for %s in %s%n</span><span class="delimiter">&quot;</span></span>, cluster, arg);}
-                        handleUnmatchedArguments(args.pop());
+                        handleUnmatchedArgument(args);
                     } <span class="keyword">else</span> {
                         args.push(cluster);
                         <span class="keyword">if</span> (tracer.isDebug()) {tracer.debug(<span class="string"><span class="delimiter">&quot;</span><span class="content">%s is not an option parameter for %s%n</span><span class="delimiter">&quot;</span></span>, cluster, arg);}
@@ -6383,18 +6546,29 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
             <span class="predefined-type">String</span> value = args.isEmpty() ? <span class="predefined-constant">null</span> : trim(args.pop()); <span class="comment">// unquote the value</span>
             <span class="type">int</span> result = arity.min; <span class="comment">// the number or args we need to consume</span>
 
-            <span class="comment">// special logic for booleans: BooleanConverter accepts only &quot;true&quot; or &quot;false&quot;.</span>
-            <span class="keyword">if</span> ((cls == <span class="predefined-type">Boolean</span>.class || cls == <span class="predefined-type">Boolean</span>.TYPE) &amp;&amp; arity.min &lt;= <span class="integer">0</span>) {
+            <span class="keyword">if</span> (arity.min &lt;= <span class="integer">0</span>) { <span class="comment">// value is optional</span>
 
-                <span class="comment">// boolean option with arity = 0..1 or 0..*: value MAY be a param</span>
-                <span class="keyword">if</span> (arity.max &gt; <span class="integer">0</span> &amp;&amp; (<span class="string"><span class="delimiter">&quot;</span><span class="content">true</span><span class="delimiter">&quot;</span></span>.equalsIgnoreCase(value) || <span class="string"><span class="delimiter">&quot;</span><span class="content">false</span><span class="delimiter">&quot;</span></span>.equalsIgnoreCase(value))) {
-                    result = <span class="integer">1</span>;            <span class="comment">// if it is a varargs we only consume 1 argument if it is a boolean value</span>
-                } <span class="keyword">else</span> {
-                    <span class="keyword">if</span> (value != <span class="predefined-constant">null</span>) {
-                        args.push(value); <span class="comment">// we don't consume the value</span>
+                <span class="comment">// special logic for booleans: BooleanConverter accepts only &quot;true&quot; or &quot;false&quot;.</span>
+                <span class="keyword">if</span> (cls == <span class="predefined-type">Boolean</span>.class || cls == <span class="predefined-type">Boolean</span>.TYPE) {
+
+                    <span class="comment">// boolean option with arity = 0..1 or 0..*: value MAY be a param</span>
+                    <span class="keyword">if</span> (arity.max &gt; <span class="integer">0</span> &amp;&amp; (<span class="string"><span class="delimiter">&quot;</span><span class="content">true</span><span class="delimiter">&quot;</span></span>.equalsIgnoreCase(value) || <span class="string"><span class="delimiter">&quot;</span><span class="content">false</span><span class="delimiter">&quot;</span></span>.equalsIgnoreCase(value))) {
+                        result = <span class="integer">1</span>;            <span class="comment">// if it is a varargs we only consume 1 argument if it is a boolean value</span>
+                    } <span class="keyword">else</span> {
+                        <span class="keyword">if</span> (value != <span class="predefined-constant">null</span>) {
+                            args.push(value); <span class="comment">// we don't consume the value</span>
+                        }
+                        <span class="predefined-type">Boolean</span> currentValue = (<span class="predefined-type">Boolean</span>) field.get(command);
+                        value = <span class="predefined-type">String</span>.valueOf(currentValue == <span class="predefined-constant">null</span> ? <span class="predefined-constant">true</span> : !currentValue); <span class="comment">// #147 toggle existing boolean value</span>
                     }
-                    <span class="predefined-type">Boolean</span> currentValue = (<span class="predefined-type">Boolean</span>) field.get(command);
-                    value = <span class="predefined-type">String</span>.valueOf(currentValue == <span class="predefined-constant">null</span> ? <span class="predefined-constant">true</span> : !currentValue); <span class="comment">// #147 toggle existing boolean value</span>
+                } <span class="keyword">else</span> <span class="keyword">if</span> (<span class="predefined-type">CharSequence</span>.class.isAssignableFrom(cls)) { <span class="comment">// String option with optional value</span>
+                    <span class="comment">// #279 track empty string value if no command line argumen</span>
+                    <span class="keyword">if</span> (isOption(value)) {
+                        args.push(value); <span class="comment">// we don't consume the value</span>
+                        value = <span class="string"><span class="delimiter">&quot;</span><span class="delimiter">&quot;</span></span>;
+                    } <span class="keyword">else</span> <span class="keyword">if</span> (value == <span class="predefined-constant">null</span>) {
+                        value = <span class="string"><span class="delimiter">&quot;</span><span class="delimiter">&quot;</span></span>;
+                    }
                 }
             }
             <span class="keyword">if</span> (noMoreValues &amp;&amp; value == <span class="predefined-constant">null</span>) {
@@ -6455,10 +6629,8 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
             }
             <span class="comment">// now process the varargs if any</span>
             <span class="keyword">for</span> (<span class="type">int</span> i = arity.min; i &lt; arity.max &amp;&amp; !args.isEmpty(); i++) {
-                <span class="keyword">if</span> (!field.isAnnotationPresent(Parameters.class)) {
-                    <span class="keyword">if</span> (commands.containsKey(args.peek()) || isOption(args.peek())) {
-                        <span class="keyword">return</span>;
-                    }
+                <span class="keyword">if</span> (!varargCanConsumeNextValue(field, args.peek())) {
+                    <span class="keyword">break</span>;
                 }
                 consumeOneMapArgument(field, arity, args, classes, keyConverter, valueConverter, result, i, argDescription);
             }
@@ -6570,10 +6742,8 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
             }
             <span class="comment">// now process the varargs if any</span>
             <span class="keyword">for</span> (<span class="type">int</span> i = arity.min; i &lt; arity.max &amp;&amp; !args.isEmpty(); i++) {
-                <span class="keyword">if</span> (annotation != Parameters.class) { <span class="comment">// for vararg Options, we stop if we encounter '--', a command, or another option</span>
-                    <span class="keyword">if</span> (commands.containsKey(args.peek()) || isOption(args.peek())) {
-                        <span class="keyword">break</span>;
-                    }
+                <span class="keyword">if</span> (!varargCanConsumeNextValue(field, args.peek())) {
+                    <span class="keyword">break</span>;
                 }
                 consumeOneArgument(field, arity, args, type, result, i, originalSize, argDescription);
             }
@@ -6615,7 +6785,16 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
         }
         <span class="directive">private</span> <span class="predefined-type">String</span><span class="type">[]</span> split(<span class="predefined-type">String</span> value, <span class="predefined-type">Field</span> field) {
             <span class="predefined-type">String</span> regex = splitRegex(field);
-            <span class="keyword">return</span> regex.length() == <span class="integer">0</span> ? <span class="keyword">new</span> <span class="predefined-type">String</span><span class="type">[]</span> {value} : value.split(regex);
+            <span class="keyword">return</span> regex.length() == <span class="integer">0</span> ? <span class="keyword">new</span> <span class="predefined-type">String</span><span class="type">[]</span>{value} : value.split(regex);
+        }
+        <span class="comment">/** Returns whether the next argument can be assigned to a vararg option/positional parameter.
+         * &lt;p&gt;
+         * Usually, we stop if we encounter '--', a command, or another option.
+         * However, if end-of-options has been reached, positional parameters may consume all remaining arguments. &lt;/p&gt;*/</span>
+        <span class="directive">private</span> <span class="type">boolean</span> varargCanConsumeNextValue(<span class="predefined-type">Field</span> field, <span class="predefined-type">String</span> nextValue) {
+            <span class="keyword">if</span> (endOfOptions &amp;&amp; field.isAnnotationPresent(Parameters.class)) { <span class="keyword">return</span> <span class="predefined-constant">true</span>; }
+            <span class="type">boolean</span> isCommand = commands.containsKey(nextValue);
+            <span class="keyword">return</span> !isCommand &amp;&amp; !isOption(nextValue);
         }
 
         <span class="comment">/**
@@ -6625,9 +6804,9 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
          * @return true if it is an option, false otherwise
          */</span>
         <span class="directive">private</span> <span class="type">boolean</span> isOption(<span class="predefined-type">String</span> arg) {
-            <span class="keyword">if</span> (<span class="string"><span class="delimiter">&quot;</span><span class="content">--</span><span class="delimiter">&quot;</span></span>.equals(arg)) {
-                <span class="keyword">return</span> <span class="predefined-constant">true</span>;
-            }
+            <span class="keyword">if</span> (arg == <span class="predefined-constant">null</span>)      { <span class="keyword">return</span> <span class="predefined-constant">false</span>; }
+            <span class="keyword">if</span> (<span class="string"><span class="delimiter">&quot;</span><span class="content">--</span><span class="delimiter">&quot;</span></span>.equals(arg)) { <span class="keyword">return</span> <span class="predefined-constant">true</span>; }
+
             <span class="comment">// not just arg prefix: we may be in the middle of parsing -xrvfFILE</span>
             <span class="keyword">if</span> (optionName2Field.containsKey(arg)) { <span class="comment">// -v or -f or --file (not attached to param or other option)</span>
                 <span class="keyword">return</span> <span class="predefined-constant">true</span>;
@@ -9009,8 +9188,8 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
 </div>
 <div id="footer">
 <div id="footer-text">
-Version 2.2.2<br>
-Last updated 2018-02-07 22:19:43 JST
+Version 2.3.0<br>
+Last updated 2018-02-13 20:00:09 JST
 </div>
 </div>
 </body>
