@@ -692,6 +692,37 @@ A `@Parameters` field with `index = "*"` is applied multiple times: once for eac
 
 When a `@Parameters` field is applied (because its index matches the index of the positional parameter), the field may consume zero, one or more arguments, depending on its arity.
 
+=== Optional Values
+If an option is defined with `arity = "0..1"`, it may or not have a parameter value.
+If such an option is specified without a value on the command line, it is assigned an empty String (starting from picocli 2.3).
+If the option is not specified, it keeps its default value. For example:
+
+[source, java]
+----
+class OptionalValueDemo implements Runnable {
+    @Option(names = "-x", arity = "0..1", description = "optional parameter")
+    String x;
+
+    public void run() { System.out.printf("x = '%s'%n", x); }
+
+    public static void main(String... args) {
+       CommandLine.run(new OptionalValueDemo(), System.out, args);
+    }
+}
+----
+Gives the following results:
+[source, bash]
+----
+java OptionalValueDemo -x value
+x = 'value'
+
+java OptionalValueDemo -x
+x = ''
+
+java OptionalValueDemo
+x = 'null'
+----
+
 
 
 == Required Arguments
