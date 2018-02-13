@@ -37,7 +37,7 @@ interactively showing users what options and subcommands are available.
 ![Picocli Demo help message with ANSI colors](docs/images/picocli.Demo.png?raw=true)
 
 #### Releases
-* [Releases](https://github.com/remkop/picocli/releases) - latest: 2.2.2
+* [Releases](https://github.com/remkop/picocli/releases) - latest: 2.3.0
 * [Picocli 2.0 Release Notes](https://github.com/remkop/picocli/releases/tag/v2.0.0) - note there are some [potential breaking changes](https://github.com/remkop/picocli/releases/tag/v2.0.0#2.0-breaking-changes) from prior versions
 
 #### Documentation
@@ -137,35 +137,35 @@ See the [source code](https://github.com/remkop/picocli/blob/master/src/main/jav
 
 ### Gradle
 ```
-compile 'info.picocli:picocli:2.2.2'
+compile 'info.picocli:picocli:2.3.0'
 ```
 ### Maven
 ```
 <dependency>
   <groupId>info.picocli</groupId>
   <artifactId>picocli</artifactId>
-  <version>2.2.2</version>
+  <version>2.3.0</version>
 </dependency>
 ```
 ### Scala SBT
 ```
-libraryDependencies += "info.picocli" % "picocli" % "2.2.2"
+libraryDependencies += "info.picocli" % "picocli" % "2.3.0"
 ```
 ### Ivy
 ```
-<dependency org="info.picocli" name="picocli" rev="2.2.2" />
+<dependency org="info.picocli" name="picocli" rev="2.3.0" />
 ```
 ### Grape
 ```groovy
 @Grapes(
-    @Grab(group='info.picocli', module='picocli', version='2.2.2')
+    @Grab(group='info.picocli', module='picocli', version='2.3.0')
 )
 ```
 ### Leiningen
 ```
-[info.picocli/picocli "2.2.2"]
+[info.picocli/picocli "2.3.0"]
 ```
 ### Buildr
 ```
-'info.picocli:picocli:jar:2.2.2'
+'info.picocli:picocli:jar:2.3.0'
 ```

@@ -8,7 +8,7 @@ def oldRevdate = '2018\\-01\\-03'
 def revDate    = '2018-01-03'
 
 // for bumpReadmeVersion task
-def previousReleaseVersion = '2.2.1'
+def previousReleaseVersion = '2.3.0'
 
 buildscript {
     repositories {
@@ -285,4 +285,12 @@ Release procedure:
 22. On the version page, Release Notes tab, select GitHub File
 23. Publish artifacts to JCenter
 24. On the version page, Maven Central tab, sync to Maven (takes several minutes)
+
+(When releasing from branch)
+25. Switch to master
+26. Update RELEASE-NOTES.md (insert changes from branch)
+27. Update last release version in README
+28. Update `previousReleaseVersion` in build.gradle
+29. gradlew copyDocs
+30. commit -m "Update master for release x.x (from branch x.x)"
 */
