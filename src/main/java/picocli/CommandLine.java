@@ -148,6 +148,7 @@ public class CommandLine {
     private final Interpreter interpreter;
     private String commandName = Help.DEFAULT_COMMAND_NAME;
     private boolean stopAtPositional = false;
+    private boolean stopAtUnmatched = false;
     private boolean overwrittenOptionsAllowed = false;
     private boolean expandAtFiles = true;
     private List<String> unmatchedArguments = new ArrayList<String>();
@@ -315,6 +316,42 @@ public class CommandLine {
         for (CommandLine command : interpreter.commands.values()) {
             command.setStopAtPositional(newValue);
         }
+        return this;
+    }
+
+    /** Returns whether the parser should stop interpreting options and positional parameters as soon as it encounters an
+     * unmatched option. Unmatched options are arguments that look like an option but are not one of the known options, or
+     * positional arguments for which there is no available slots (the command has no positional parameters or their size is limited).
+     * The default is {@code false}.
+     * <p>Setting this flag to {@code true} automatically sets the {@linkplain #isUnmatchedArgumentsAllowed() unmatchedArgumentsAllowed} flag to {@code true} also.</p>
+     * @return {@code true} when an unmatched option should result in the remaining command line arguments to be added to the
+     *      {@linkplain #getUnmatchedArguments() unmatchedArguments list}
+     * @since 2.3
+     */
+    public boolean isStopAtUnmatched() {
+        return stopAtUnmatched;
+    }
+
+    /** Sets whether the parser should stop interpreting options and positional parameters as soon as it encounters an
+     * unmatched option. Unmatched options are arguments that look like an option but are not one of the known options, or
+     * positional arguments for which there is no available slots (the command has no positional parameters or their size is limited).
+     * The default is {@code false}.
+     * <p>Setting this flag to {@code true} automatically sets the {@linkplain #setUnmatchedArgumentsAllowed(boolean) unmatchedArgumentsAllowed} flag to {@code true} also.</p>
+     * <p>The specified setting will be registered with this {@code CommandLine} and the full hierarchy of its
+     * subcommands and nested sub-subcommands <em>at the moment this method is called</em>. Subcommands added
+     * later will have the default setting. To ensure a setting is applied to all
+     * subcommands, call the setter last, after adding subcommands.</p>
+     * @param newValue {@code true} when an unmatched option should result in the remaining command line arguments to be added to the
+     *      {@linkplain #getUnmatchedArguments() unmatchedArguments list}
+     * @return this {@code CommandLine} object, to allow method chaining
+     * @since 2.3
+     */
+    public CommandLine setStopAtUnmatched(boolean newValue) {
+        this.stopAtUnmatched = newValue;
+        for (CommandLine command : interpreter.commands.values()) {
+            command.setStopAtUnmatched(newValue);
+        }
+        if (newValue) { setUnmatchedArgumentsAllowed(true); }
         return this;
     }
 
@@ -2381,7 +2418,7 @@ public class CommandLine {
                 else {
                     args.push(arg);
                     if (tracer.isDebug()) {tracer.debug("Could not find option '%s', deciding whether to treat as unmatched option or positional parameter...%n", arg);}
-                    if (resemblesOption(arg)) { handleUnmatchedArguments(args.pop()); continue; } // #149
+                    if (resemblesOption(arg)) { handleUnmatchedArgument(args); continue; } // #149
                     if (tracer.isDebug()) {tracer.debug("No option named '%s' found. Processing remainder as positional parameters%n", arg);}
                     processPositionalParameter(required, initialized, args);
                 }
@@ -2403,9 +2440,12 @@ public class CommandLine {
             if (tracer.isDebug()) {tracer.debug("%s %s an option: %d matching prefix chars out of %d option names%n", arg, (result ? "resembles" : "doesn't resemble"), count, optionName2Field.size());}
             return result;
         }
-        private void handleUnmatchedArguments(String arg) {Stack<String> args = new Stack<String>(); args.add(arg); handleUnmatchedArguments(args);}
-        private void handleUnmatchedArguments(Stack<String> args) {
-            while (!args.isEmpty()) { unmatchedArguments.add(args.pop()); } // addAll would give args in reverse order
+        private void handleUnmatchedArgument(Stack<String> args) {
+            if (!args.isEmpty()) { unmatchedArguments.add(args.pop()); }
+            if (stopAtUnmatched) {
+                // addAll would give args in reverse order
+                while (!args.isEmpty()) { unmatchedArguments.add(args.pop()); }
+            }
         }
 
         private void processRemainderAsPositionalParameters(Collection<Field> required, Set<Field> initialized, Stack<String> args) throws Exception {
@@ -2441,7 +2481,7 @@ public class CommandLine {
             position += consumed;
             if (tracer.isDebug()) {tracer.debug("Consumed %d arguments, moving position to index %d.%n", consumed, position);}
             if (consumed == 0 && !args.isEmpty()) {
-                handleUnmatchedArguments(args.pop());
+                handleUnmatchedArgument(args);
             }
         }
 
@@ -2507,13 +2547,13 @@ public class CommandLine {
                         args.push(paramAttachedToOption ? prefix + cluster : cluster);
                         if (args.peek().equals(arg)) { // #149 be consistent between unmatched short and long options
                             if (tracer.isDebug()) {tracer.debug("Could not match any short options in %s, deciding whether to treat as unmatched option or positional parameter...%n", arg);}
-                            if (resemblesOption(arg)) { handleUnmatchedArguments(args.pop()); return; } // #149
+                            if (resemblesOption(arg)) { handleUnmatchedArgument(args); return; } // #149
                             processPositionalParameter(required, initialized, args);
                             return;
                         }
                         // remainder was part of a clustered group that could not be completely parsed
                         if (tracer.isDebug()) {tracer.debug("No option found for %s in %s%n", cluster, arg);}
-                        handleUnmatchedArguments(args.pop());
+                        handleUnmatchedArgument(args);
                     } else {
                         args.push(cluster);
                         if (tracer.isDebug()) {tracer.debug("%s is not an option parameter for %s%n", cluster, arg);}

@@ -863,6 +863,14 @@ Use the <<Double dash (`--`),end-of-options delimiter>> (`--`) to ensure that ar
 Everything following the `--` end-of-options delimiter is treated as positional parameters by the parser, so
 the above input is treated as three positional parameters.
 
+=== Stop At Unmatched
+From picocli 2.3, applications can call `CommandLine.setStopAtUnmatched(true)` to force the parser to stop interpreting
+options and positional parameters as soon as it encounters an unmatched argument.
+
+When this flag is set, the first unmatched argument and all subsequent command line arguments are added to the
+unmatched arguments list returned by `CommandLine.getUnmatchedArguments()`.
+
+
 == Help Options
 Options with the attribute `versionHelp = true`, `usageHelp = true` or `help = true` are special:
 if one of the command line arguments is a "help" option, picocli will stop parsing the remaining arguments and will not check for required options.
