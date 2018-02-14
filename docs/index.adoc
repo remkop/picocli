@@ -1411,6 +1411,11 @@ Usage: <main class> [OPTIONS]
 * -b, --beta=<beta>           mandatory beta
 ----
 
+=== Usage Width
+The default width of the usage help message is 80 characters.
+System property `picocli.usage.width` can be used to specify a custom width.
+The minimum width that can be configured is 55 characters.
+
 
 == ANSI Colors and Styles
 === Colorized Example

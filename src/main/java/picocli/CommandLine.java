@@ -4485,7 +4485,8 @@ public class CommandLine {
         /** Constant String holding the default string that separates options from option parameters, value defined in {@link CommandSpec#DEFAULT_SEPARATOR}. */
         protected static final String DEFAULT_SEPARATOR = CommandSpec.DEFAULT_SEPARATOR;
 
-        private final static int usageHelpWidth = 80;
+        private final static int MINIMUM_USAGE_WIDTH = 55;
+        private final static int DEFAULT_USAGE_WIDTH = 80;
         private final static int optionsColumnWidth = 2 + 2 + 1 + 24;
         private final CommandSpec commandSpec;
         private final ColorScheme colorScheme;
@@ -4697,7 +4698,7 @@ public class CommandLine {
             int firstColumnLength = commandName.length() + synopsisHeadingLength;
 
             // synopsis heading ("Usage: ") may be on the same line, so adjust column width
-            TextTable textTable = new TextTable(ansi(), firstColumnLength, usageHelpWidth - firstColumnLength);
+            TextTable textTable = new TextTable(ansi(), firstColumnLength, getUsageHelpWidth() - firstColumnLength);
             textTable.indentWrappedLines = 1; // don't worry about first line: options (2nd column) always start with a space
 
             // right-adjust the command name by length of synopsis heading
@@ -4772,6 +4773,28 @@ public class CommandLine {
             return layout.toString();
         }
 
+        /** CONSIDER THIS METHOD PRIVATE. IT IS PACKAGE PRIVATE FOR TESTING PURPOSES ONLY.
+         *
+         * @return the usage help width from the {@code picocli.usage.width} system property.
+         *  If not defined or an invalid value was specified, the default width (80) is used.
+         *  If a value less than the minimum width was specified, the minimum width (55) is used.
+         */
+        static int getUsageHelpWidth() {
+            String userValue = System.getProperty("picocli.usage.width");
+            if (userValue == null) { return DEFAULT_USAGE_WIDTH; }
+            try {
+                int width = Integer.parseInt(userValue);
+                if (width < MINIMUM_USAGE_WIDTH) {
+                    new Tracer().warn("Invalid picocli.usage.width value %d. Using minimum usage width %d.%n", width, MINIMUM_USAGE_WIDTH);
+                    return MINIMUM_USAGE_WIDTH;
+                }
+                return width;
+            } catch (NumberFormatException ex) {
+                new Tracer().warn("Invalid picocli.usage.width value '%s'. Using default usage width %d.%n", userValue, DEFAULT_USAGE_WIDTH);
+                return DEFAULT_USAGE_WIDTH;
+            }
+        }
+
         private static String heading(Ansi ansi, String values, Object... params) {
             StringBuilder sb = join(ansi, new String[] {values}, new StringBuilder(), params);
             String result = sb.toString();
@@ -4795,7 +4818,7 @@ public class CommandLine {
          * @return the specified StringBuilder */
         public static StringBuilder join(Ansi ansi, String[] values, StringBuilder sb, Object... params) {
             if (values != null) {
-                TextTable table = new TextTable(ansi, usageHelpWidth);
+                TextTable table = new TextTable(ansi, getUsageHelpWidth());
                 table.indentWrappedLines = 0;
                 for (String summaryLine : values) {
                     Text[] lines = ansi.new Text(format(summaryLine, params)).splitLines();
@@ -4904,7 +4927,7 @@ public class CommandLine {
             int commandLength = maxLength(commands.keySet());
             Help.TextTable textTable = new Help.TextTable(ansi(),
                     new Help.Column(commandLength + 2, 2, Help.Column.Overflow.SPAN),
-                    new Help.Column(usageHelpWidth - (commandLength + 2), 2, Help.Column.Overflow.WRAP));
+                    new Help.Column(getUsageHelpWidth() - (commandLength + 2), 2, Help.Column.Overflow.WRAP));
 
             for (Map.Entry<String, Help> entry : commands.entrySet()) {
                 Help help = entry.getValue();
@@ -5449,8 +5472,8 @@ public class CommandLine {
                             new Column(2,                                        0, TRUNCATE), // "*"
                             new Column(2,                                        0, TRUNCATE), // "-c"
                             new Column(1,                                        0, TRUNCATE), // ","
-                            new Column(optionsColumnWidth - 2 - 2 - 1       , 1, SPAN),  // " --create"
-                            new Column(usageHelpWidth - optionsColumnWidth, 1, WRAP) // " Creates a ..."
+                            new Column(optionsColumnWidth - 2 - 2 - 1,           1, SPAN),  // " --create"
+                            new Column(getUsageHelpWidth() - optionsColumnWidth, 1, WRAP) // " Creates a ..."
                     });
             }
 
@@ -5622,7 +5645,7 @@ public class CommandLine {
              * @return the specified StringBuilder object (to allow method chaining and a more fluid API) */
             public StringBuilder toString(StringBuilder text) {
                 int columnCount = this.columns.length;
-                StringBuilder row = new StringBuilder(usageHelpWidth);
+                StringBuilder row = new StringBuilder(getUsageHelpWidth());
                 for (int i = 0; i < columnValues.size(); i++) {
                     Text column = columnValues.get(i);
                     row.append(column.toString());
