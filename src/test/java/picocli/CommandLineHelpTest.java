@@ -2729,24 +2729,48 @@ public class CommandLineHelpTest {
         assertEquals(expected, new String(baos.toByteArray(), "UTF-8"));
     }
 
-
     @Test
-    public void testShouldGetUsageWithFromSystemProperties() {
-
+    public void testShouldGetUsageWidthFromSystemProperties() {
         int defaultWidth = Help.getUsageHelpWidth();
-
+        assertEquals(80, defaultWidth);
         try {
             System.setProperty("picocli.usage.width", "123");
             int width = Help.getUsageHelpWidth();
             assertEquals(123, width);
-        }
-        finally {
+        } finally {
             System.setProperty("picocli.usage.width", String.valueOf(defaultWidth));
         }
-
     }
 
+    @Test
+    public void testInvalidUsageWidthPropertyValue() throws UnsupportedEncodingException {
+        PrintStream originalErr = System.err;
+        ByteArrayOutputStream baos = new ByteArrayOutputStream(2500);
+        System.setErr(new PrintStream(baos));
 
+        System.setProperty("picocli.usage.width", "INVALID");
+        int actual = Help.getUsageHelpWidth();
+        System.setErr(originalErr);
+        System.clearProperty("picocli.usage.width");
+
+        assertEquals(80, actual);
+        assertEquals(format("[picocli WARN] Invalid picocli.usage.width value 'INVALID'. Using default usage width 80.%n"), baos.toString("UTF-8"));
+    }
+
+    @Test
+    public void testTooSmallUsageWidthPropertyValue() throws UnsupportedEncodingException {
+        PrintStream originalErr = System.err;
+        ByteArrayOutputStream baos = new ByteArrayOutputStream(2500);
+        System.setErr(new PrintStream(baos));
+
+        System.setProperty("picocli.usage.width", "54");
+        int actual = Help.getUsageHelpWidth();
+        System.setErr(originalErr);
+        System.clearProperty("picocli.usage.width");
+
+        assertEquals(55, actual);
+        assertEquals(format("[picocli WARN] Invalid picocli.usage.width value 54. Using minimum usage width 55.%n"), baos.toString("UTF-8"));
+    }
 
     @Test
     public void testTextTableWithLargeWidth() {
@@ -2759,11 +2783,10 @@ public class CommandLineHelpTest {
             table.addRowValues(textArray(Help.Ansi.OFF, "", "-p", null, null, "the quick brown fox jumped over the lazy dog. The quick brown fox jumped over the lazy doooooooooooooooog."));
 
             assertEquals(String.format(
-                            "  -v, --verbose               show what you're doing while you are doing it%n" +
-                            "  -p                          the quick brown fox jumped over the lazy dog. The quick brown fox jumped over the lazy doooooooooooooooog.%n"
-                    ,""), table.toString(new StringBuilder()).toString());
-        }
-        finally {
+                    "  -v, --verbose               show what you're doing while you are doing it%n" +
+                    "  -p                          the quick brown fox jumped over the lazy dog. The quick brown fox jumped over the lazy doooooooooooooooog.%n"
+                    ), table.toString(new StringBuilder()).toString());
+        }  finally {
             System.setProperty("picocli.usage.width", String.valueOf(defWidth));
         }
     }
@@ -2774,7 +2797,6 @@ public class CommandLineHelpTest {
         System.setProperty("picocli.usage.width", "200");
 
         try {
-
             @Command(name = "<best-app-ever>")
             class App {
                 @Option(names = "--long-option-name", paramLabel = "<long-option-value>") int a;
@@ -2787,11 +2809,38 @@ public class CommandLineHelpTest {
                     "<best-app-ever> [--another-long-option-name=<another-long-option-value>] [--fourth-long-option-name=<fourth-long-option-value>] [--long-option-name=<long-option-value>]%n" +
                             "                [--third-long-option-name=<third-long-option-value>]%n"),
                     help.synopsis(0));
-        }
-        finally {
+        } finally {
             System.setProperty("picocli.usage.width", String.valueOf(defWidth));
         }
     }
 
+    @Test
+    public void testWideUsage() throws Exception {
+        @Command(description = "The quick brown fox jumped over the lazy dog. The quick brown fox jumped over the lazy dog. The quick brown fox jumped over the lazy dog. The quick brown fox jumped over the lazy dog. The quick brown fox jumped over the lazy dog. The quick brown fox jumped over the lazy dog.")
+        class App {
+            @Option(names = "-s", description = "The quick brown fox jumped over the lazy dog. The quick brown fox jumped over the lazy dog. The quick brown fox jumped over the lazy dog. The quick brown fox jumped over the lazy dog.")
+            String shortOption;
 
+            @Option(names = "--very-very-very-looooooooooooooooong-option-name", description = "The quick brown fox jumped over the lazy dog. The quick brown fox jumped over the lazy dog. The quick brown fox jumped over the lazy dog. The quick brown fox jumped over the lazy dog.")
+            String lengthyOption;
+        }
+        System.setProperty("picocli.usage.width", String.valueOf(120));
+        try {
+            String actual = usageString(new App(), Help.Ansi.OFF);
+            String expected = format("Usage: <main class> [--very-very-very-looooooooooooooooong-option-name=<lengthyOption>] [-s=<shortOption>]%n" +
+                    "The quick brown fox jumped over the lazy dog. The quick brown fox jumped over the lazy dog. The quick brown fox jumped%n" +
+                    "over the lazy dog. The quick brown fox jumped over the lazy dog. The quick brown fox jumped over the lazy dog. The%n" +
+                    "quick brown fox jumped over the lazy dog.%n" +
+                    "      --very-very-very-looooooooooooooooong-option-name=<lengthyOption>%n" +
+                    "                              The quick brown fox jumped over the lazy dog. The quick brown fox jumped over the lazy%n" +
+                    "                                dog. The quick brown fox jumped over the lazy dog. The quick brown fox jumped over the%n" +
+                    "                                lazy dog.%n" +
+                    "  -s= <shortOption>           The quick brown fox jumped over the lazy dog. The quick brown fox jumped over the lazy%n" +
+                    "                                dog. The quick brown fox jumped over the lazy dog. The quick brown fox jumped over the%n" +
+                    "                                lazy dog.%n");
+            assertEquals(expected, actual);
+        } finally {
+            System.setProperty("picocli.usage.width", String.valueOf(80));
+        }
+    }
 }

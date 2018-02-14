@@ -3628,24 +3628,24 @@ public class CommandLine {
             return layout.toString();
         }
 
-        /**
-         * @return
-         *  Retrieve the usage help width from the {@code picocli.usage.width} system property,
-         *  If it's not defined or system property value is smaller than the minimum expected
-         *  it returns the default value defined by {@link #DEFAULT_USAGE_WIDTH}
+        /** CONSIDER THIS METHOD PRIVATE. IT IS PACKAGE PRIVATE FOR TESTING PURPOSES ONLY.
+         *
+         * @return the usage help width from the {@code picocli.usage.width} system property.
+         *  If not defined or an invalid value was specified, the default width (80) is used.
+         *  If a value less than the minimum width was specified, the minimum width (55) is used.
          */
         static int getUsageHelpWidth() {
+            String userValue = System.getProperty("picocli.usage.width");
+            if (userValue == null) { return DEFAULT_USAGE_WIDTH; }
             try {
-                int width = Integer.parseInt(System.getProperty("picocli.usage.width",String.valueOf(DEFAULT_USAGE_WIDTH)));
-                if( width < MINIMUM_USAGE_WIDTH ) {
-                    new Tracer().warn("Picocli usage help with cannot be smaller than %d", MINIMUM_USAGE_WIDTH);
-                    return DEFAULT_USAGE_WIDTH;
+                int width = Integer.parseInt(userValue);
+                if (width < MINIMUM_USAGE_WIDTH) {
+                    new Tracer().warn("Invalid picocli.usage.width value %d. Using minimum usage width %d.%n", width, MINIMUM_USAGE_WIDTH);
+                    return MINIMUM_USAGE_WIDTH;
                 }
-                else {
-                    return width;
-                }
-            }
-            catch( NumberFormatException e ) {
+                return width;
+            } catch (NumberFormatException ex) {
+                new Tracer().warn("Invalid picocli.usage.width value '%s'. Using default usage width %d.%n", userValue, DEFAULT_USAGE_WIDTH);
                 return DEFAULT_USAGE_WIDTH;
             }
         }
