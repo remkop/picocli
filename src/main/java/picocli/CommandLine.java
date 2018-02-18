@@ -2939,64 +2939,62 @@ public class CommandLine {
      * @since 3.0 */
     public abstract static class ArgSpec {
         // help-related fields
-        private boolean hidden;
-        private String paramLabel;
-        private String[] description;
-        private Help.Visibility showDefaultValue;
+        final boolean hidden;
+        final String paramLabel;
+        final String[] description;
+        final Help.Visibility showDefaultValue;
 
         // parser fields
-        private boolean required;
-        private String splitRegex;
-        private Class<?> type;
-        private Class<?>[] auxiliaryTypes;
-        private ITypeConverter<?>[] converters;
-        private Object defaultValue;
-        private IGetter getter;
-        private ISetter setter;
-        private List<String> rawStringValues = new ArrayList<String>();
-        Range arity;
+        final boolean required;
+        final String splitRegex;
+        final Class<?> type;
+        final Class<?>[] auxiliaryTypes;
+        final ITypeConverter<?>[] converters;
+        final Object defaultValue;
+        final IGetter getter;
+        final ISetter setter;
+        final List<String> rawStringValues = new ArrayList<String>();
+        final Range arity;
         String toString;
 
         /** Constructs a new {@code ArgSpec}. */
         private ArgSpec(Builder builder) {
-            arity = builder.arity;
-            description = builder.description;
+            description = builder.description == null ? new String[0] : builder.description;
+            splitRegex = builder.splitRegex == null ? "" : builder.splitRegex;
+            paramLabel = empty(builder.paramLabel) ? "PARAM" : builder.paramLabel;
+            converters = builder.converters == null ? new ITypeConverter<?>[0] : builder.converters;
+            showDefaultValue = builder.showDefaultValue == null ? Help.Visibility.ON_DEMAND : builder.showDefaultValue;
             required = builder.required;
-            paramLabel = builder.paramLabel;
-            splitRegex = builder.splitRegex;
             hidden = builder.hidden;
-            type = builder.type;
-            auxiliaryTypes = builder.auxiliaryTypes;
-            converters = builder.converters;
             defaultValue = builder.defaultValue;
-            showDefaultValue = builder.showDefaultValue;
             toString = builder.toString;
             getter = builder.getter;
             setter = builder.setter;
 
-            if (description == null) { description = new String[0]; }
-            if (splitRegex == null) { splitRegex = ""; }
-            if (empty(paramLabel)) { paramLabel = "PARAM"; }
-            if (arity() == null) {
+            Range tempArity = builder.arity;
+            if (tempArity == null) {
                 if (isOption()) {
-                    if (type == null || isBoolean(type)) { arity("0"); } else { arity("1"); }
+                    tempArity = (builder.type == null || isBoolean(builder.type)) ? Range.valueOf("0") : Range.valueOf("1");
                 } else {
-                    arity("1");
+                    tempArity = Range.valueOf("1");
                 }
             }
+            arity = tempArity;
 
-            if (type == null) {
-                if (auxiliaryTypes == null || auxiliaryTypes.length == 0) {
-                    if (arity().isVariable || arity.max > 1) {
+            if (builder.type == null) {
+                if (builder.auxiliaryTypes == null || builder.auxiliaryTypes.length == 0) {
+                    if (arity.isVariable || arity.max > 1) {
                         type = isOption() ? boolean[].class : String[].class;
                     } else {
                         type = isOption() ? boolean.class : String.class;
                     }
                 } else {
-                    type = auxiliaryTypes[0];
+                    type = builder.auxiliaryTypes[0];
                 }
+            } else {
+                type = builder.type;
             }
-            if (auxiliaryTypes == null || auxiliaryTypes.length == 0) {
+            if (builder.auxiliaryTypes == null || builder.auxiliaryTypes.length == 0) {
                 if (type.isArray()) {
                     auxiliaryTypes = new Class<?>[]{type.getComponentType()};
                 } else if (Collection.class.isAssignableFrom(type)) { // type is a collection but element type is unspecified
@@ -3006,11 +3004,10 @@ public class CommandLine {
                 } else {
                     auxiliaryTypes = new Class<?>[] {type};
                 }
+            } else {
+                auxiliaryTypes = builder.auxiliaryTypes;
             }
-            if (converters == null) { converters = new ITypeConverter<?>[0]; }
-            if (showDefaultValue == null) { showDefaultValue = Help.Visibility.ON_DEMAND; }
         }
-        private void arity(String range) {arity = Range.valueOf(range);}
 
         /** Customizable getter for obtaining the current value of an option or positional parameter from the model.
          * @since 3.0 */
@@ -3146,6 +3143,24 @@ public class CommandLine {
             private IGetter getter = new ObjectGetterSetter();
             private ISetter setter = (ISetter) getter;
 
+            Builder() {}
+            Builder(ArgSpec original) {
+                arity = original.arity;
+                auxiliaryTypes = original.auxiliaryTypes;
+                converters = original.converters;
+                defaultValue = original.defaultValue;
+                description = original.description;
+                getter = original.getter;
+                setter = original.setter;
+                hidden = original.hidden;
+                paramLabel = original.paramLabel;
+                required = original.required;
+                showDefaultValue = original.showDefaultValue;
+                splitRegex = original.splitRegex;
+                toString = original.toString;
+                type = original.type;
+            }
+
             public    abstract ArgSpec build();
             protected abstract T self(); // subclasses must override to return "this"
 
@@ -3164,8 +3179,9 @@ public class CommandLine {
             /** Sets the name of the option or positional parameter used in the usage help message. */
             public T paramLabel(String paramLabel)       { this.paramLabel = Assert.notNull(paramLabel, "paramLabel"); return self(); }
 
-            /** Sets auxiliary type information; specify the element type(s) when the {@link #type()} is a generic {@code Collection} or a {@code Map};
-             * specify the concrete type when the {@link #type()} is an abstract class. */
+            /** Sets auxiliary type information
+             * @param types  the element type(s) when the {@link #type()} is a generic {@code Collection} or a {@code Map};
+             * or the concrete type when the {@link #type()} is an abstract class. */
             public T auxiliaryTypes(Class<?>... types)   { this.auxiliaryTypes = Assert.notNull(types, "types").clone(); return self(); }
 
             /** Sets option/positional param-specific converter (or converters for Maps) . */
@@ -3181,7 +3197,7 @@ public class CommandLine {
             public T hidden(boolean hidden)              { this.hidden = hidden; return self(); }
 
             /** Sets the type to convert the option or positional parameter to before {@linkplain #setValue(Object) setting} the value.
-             * For multi-value options and positional parameters this can be an array, or a (sub-type of) Collection or Map. */
+             * @param propertyType the type of this option or parameter. For multi-value options and positional parameters this can be an array, or a (sub-type of) Collection or Map. */
             public T type(Class<?> propertyType)         { this.type = Assert.notNull(propertyType, "type"); return self(); }
 
             /** Sets the default value of this option or positional parameter to the specified value. */
@@ -3260,6 +3276,11 @@ public class CommandLine {
             }
             if (toString() == null) { toString = "option " + names[0]; }
         }
+
+        /** Returns a new Builder initialized with the attributes from this {@code OptionSpec}. Calling {@code build} immediately will return a copy of this {@code OptionSpec}.
+         * @return a builder that can create a copy of this spec
+         */
+        public Builder toBuilder()    { return new Builder(this); }
         public boolean isOption()     { return true; }
         public boolean isPositional() { return false; }
 
@@ -3305,6 +3326,9 @@ public class CommandLine {
                     + 37 * Arrays.hashCode(names);
         }
 
+        /** Builder responsible for creating valid {@code OptionSpec} objects.
+         * @since 3.0
+         */
         public static class Builder extends ArgSpec.Builder<Builder> {
             private String[] names;
             private boolean help;
@@ -3312,12 +3336,21 @@ public class CommandLine {
             private boolean versionHelp;
 
             private Builder(String[] names) { this.names = names.clone(); }
+            private Builder(OptionSpec original) {
+                super(original);
+                names = original.names;
+                help = original.help;
+                usageHelp = original.usageHelp;
+                versionHelp = original.versionHelp;
+            }
 
+            /** Returns a valid {@code OptionSpec} instance. */
             @Override public OptionSpec build() { return new OptionSpec(this); }
+            /** Returns this builder. */
             @Override protected Builder self() { return this; }
 
             /** Replaces the option names with the specified values. At least one option name is required.
-             * @return this OptionSpec instance to provide a fluent interface */
+             * @return this builder instance to provide a fluent interface */
             public Builder names(String... names)           { this.names = Assert.notNull(names, "names").clone(); return self(); }
 
             /** Sets whether this option disables validation of the other arguments. */
@@ -3380,13 +3413,17 @@ public class CommandLine {
             capacity = builder.capacity == null ? Range.parameterCapacity(arity, index) : builder.capacity;
             if (toString == null) { toString = "positional parameter[" + index() + "]"; }
         }
-        public boolean isOption()        { return false; }
-        public boolean isPositional()    { return true; }
+        /** Returns a new Builder initialized with the attributes from this {@code PositionalParamSpec}. Calling {@code build} immediately will return a copy of this {@code PositionalParamSpec}.
+         * @return a builder that can create a copy of this spec
+         */
+        public Builder toBuilder()    { return new Builder(this); }
+        public boolean isOption()     { return false; }
+        public boolean isPositional() { return true; }
 
         /** Returns an index or range specifying which of the command line arguments should be assigned to this positional parameter.
          * @see Parameters#index() */
-        public Range index()           { return index; }
-        private Range capacity()       { return capacity; }
+        public Range index()            { return index; }
+        private Range capacity()        { return capacity; }
         public static Builder builder() { return new Builder(); }
         
         private boolean showDefaultValue(CommandSpec commandSpec) {
@@ -3412,11 +3449,22 @@ public class CommandLine {
             return Assert.equals(this.capacity, other.capacity)
                     && Assert.equals(this.index, other.index);
         }
+
+        /** Builder responsible for creating valid {@code PositionalParamSpec} objects.
+         * @since 3.0
+         */
         public static class Builder extends ArgSpec.Builder<Builder> {
             private Range capacity;
             private Range index;
             private Builder() {}
+            private Builder(PositionalParamSpec original) {
+                super(original);
+                index = original.index;
+                capacity = original.capacity;
+            }
+            /** Returns a valid {@code PositionalParamSpec} instance. */
             @Override public PositionalParamSpec build() { return new PositionalParamSpec(this); }
+            /** Returns this builder. */
             @Override protected Builder self()  { return this; }
             /** Sets the index or range specifying which of the command line arguments should be assigned to this positional parameter. */
             public Builder index(String range)  { return index(Range.valueOf(range)); }
