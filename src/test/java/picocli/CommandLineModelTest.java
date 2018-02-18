@@ -33,7 +33,7 @@ import static picocli.HelpTestUtil.usageString;
 public class CommandLineModelTest {
     @Test
     public void testEmptyModelHelp() throws Exception {
-        CommandSpec spec = new CommandSpec();
+        CommandSpec spec = CommandSpec.create();
         CommandLine commandLine = new CommandLine(spec);
         String actual = usageString(commandLine, Ansi.OFF);
         assertEquals(String.format("Usage: <main class>%n"), actual);
@@ -42,7 +42,7 @@ public class CommandLineModelTest {
     @Test
     public void testEmptyModelParse() throws Exception {
         setTraceLevel("OFF");
-        CommandSpec spec = new CommandSpec();
+        CommandSpec spec = CommandSpec.create();
         CommandLine commandLine = new CommandLine(spec);
         commandLine.setUnmatchedArgumentsAllowed(true);
         commandLine.parse("-p", "123", "abc");
@@ -51,7 +51,7 @@ public class CommandLineModelTest {
 
     @Test
     public void testModelHelp() throws Exception {
-        CommandSpec spec = new CommandSpec();
+        CommandSpec spec = CommandSpec.create();
         spec.add(OptionSpec.builder("-h", "--help").usageHelp(true).description("show help and exit").build());
         spec.add(OptionSpec.builder("-V", "--version").versionHelp(true).description("show help and exit").build());
         spec.add(OptionSpec.builder("-c", "--count").paramLabel("COUNT").arity("1").type(int.class).description("number of times to execute").build());
@@ -67,7 +67,7 @@ public class CommandLineModelTest {
 
     @Test
     public void testModelParse() throws Exception {
-        CommandSpec spec = new CommandSpec();
+        CommandSpec spec = CommandSpec.create();
         spec.add(OptionSpec.builder("-h", "--help").usageHelp(true).description("show help and exit").build());
         spec.add(OptionSpec.builder("-V", "--version").versionHelp(true).description("show help and exit").build());
         spec.add(OptionSpec.builder("-c", "--count").paramLabel("COUNT").arity("1").type(int.class).description("number of times to execute").build());
@@ -78,7 +78,7 @@ public class CommandLineModelTest {
 
     @Test
     public void testMultiValueOptionArityAloneIsInsufficient() throws Exception {
-        CommandSpec spec = new CommandSpec();
+        CommandSpec spec = CommandSpec.create();
         OptionSpec option = OptionSpec.builder("-c", "--count").arity("3").type(int.class).build();
         assertFalse(option.isMultiValue());
 
@@ -94,7 +94,7 @@ public class CommandLineModelTest {
 
     @Test
     public void testMultiValuePositionalParamArityAloneIsInsufficient() throws Exception {
-        CommandSpec spec = new CommandSpec();
+        CommandSpec spec = CommandSpec.create();
         PositionalParamSpec positional = PositionalParamSpec.builder().index("0").arity("3").type(int.class).build();
         assertFalse(positional.isMultiValue());
 
@@ -110,7 +110,7 @@ public class CommandLineModelTest {
 
     @Test
     public void testMultiValueOptionWithArray() throws Exception {
-        CommandSpec spec = new CommandSpec();
+        CommandSpec spec = CommandSpec.create();
         OptionSpec option = OptionSpec.builder("-c", "--count").arity("3").type(int[].class).build();
         assertTrue(option.isMultiValue());
 
@@ -122,7 +122,7 @@ public class CommandLineModelTest {
 
     @Test
     public void testMultiValuePositionalParamWithArray() throws Exception {
-        CommandSpec spec = new CommandSpec();
+        CommandSpec spec = CommandSpec.create();
         PositionalParamSpec positional = PositionalParamSpec.builder().index("0").arity("3").type(int[].class).build();
         assertTrue(positional.isMultiValue());
 
@@ -134,7 +134,7 @@ public class CommandLineModelTest {
 
     @Test
     public void testMultiValueOptionWithListAndAuxTypes() throws Exception {
-        CommandSpec spec = new CommandSpec();
+        CommandSpec spec = CommandSpec.create();
         OptionSpec option = OptionSpec.builder("-c", "--count").arity("3").type(List.class).auxiliaryTypes(Integer.class).build();
         assertTrue(option.isMultiValue());
 
@@ -146,7 +146,7 @@ public class CommandLineModelTest {
 
     @Test
     public void testMultiValuePositionalParamWithListAndAuxTypes() throws Exception {
-        CommandSpec spec = new CommandSpec();
+        CommandSpec spec = CommandSpec.create();
         PositionalParamSpec positional = PositionalParamSpec.builder().index("0").arity("3").type(List.class).auxiliaryTypes(Integer.class).build();
         assertTrue(positional.isMultiValue());
 
@@ -158,7 +158,7 @@ public class CommandLineModelTest {
 
     @Test
     public void testMultiValueOptionWithListWithoutAuxTypes() throws Exception {
-        CommandSpec spec = new CommandSpec();
+        CommandSpec spec = CommandSpec.create();
         OptionSpec option = OptionSpec.builder("-c", "--count").arity("3").type(List.class).build();
         assertTrue(option.isMultiValue());
 
@@ -170,7 +170,7 @@ public class CommandLineModelTest {
 
     @Test
     public void testMultiValuePositionalParamWithListWithoutAuxTypes() throws Exception {
-        CommandSpec spec = new CommandSpec();
+        CommandSpec spec = CommandSpec.create();
         PositionalParamSpec positional = PositionalParamSpec.builder().index("0").arity("3").type(List.class).build();
         assertTrue(positional.isMultiValue());
 
@@ -182,7 +182,7 @@ public class CommandLineModelTest {
 
     @Test
     public void testMultiValueOptionWithMapAndAuxTypes() throws Exception {
-        CommandSpec spec = new CommandSpec();
+        CommandSpec spec = CommandSpec.create();
         OptionSpec option = OptionSpec.builder("-c", "--count").arity("3").type(Map.class).auxiliaryTypes(Integer.class, Double.class).build();
         assertTrue(option.isMultiValue());
 
@@ -198,7 +198,7 @@ public class CommandLineModelTest {
 
     @Test
     public void testMultiValuePositionalParamWithMapAndAuxTypes() throws Exception {
-        CommandSpec spec = new CommandSpec();
+        CommandSpec spec = CommandSpec.create();
         PositionalParamSpec positional = PositionalParamSpec.builder().index("0").arity("3").type(Map.class).auxiliaryTypes(Integer.class, Double.class).build();
         assertTrue(positional.isMultiValue());
 
@@ -214,7 +214,7 @@ public class CommandLineModelTest {
 
     @Test
     public void testMultiValueOptionWithMapWithoutAuxTypes() throws Exception {
-        CommandSpec spec = new CommandSpec();
+        CommandSpec spec = CommandSpec.create();
         OptionSpec option = OptionSpec.builder("-c", "--count").arity("3").type(Map.class).build();
         assertTrue(option.isMultiValue());
 
@@ -230,7 +230,7 @@ public class CommandLineModelTest {
 
     @Test
     public void testMultiValuePositionalParamWithMapWithoutAuxTypes() throws Exception {
-        CommandSpec spec = new CommandSpec();
+        CommandSpec spec = CommandSpec.create();
         PositionalParamSpec positional = PositionalParamSpec.builder().index("0").arity("3").type(Map.class).build();
         assertTrue(positional.isMultiValue());
 
@@ -443,7 +443,7 @@ public class CommandLineModelTest {
 
     @Test
     public void testOptionConvertersOverridesRegisteredTypeConverter() throws Exception {
-        CommandSpec spec = new CommandSpec();
+        CommandSpec spec = CommandSpec.create();
         spec.add(OptionSpec.builder("-c", "--count").paramLabel("COUNT").arity("1").type(int.class).description("number of times to execute").build());
         spec.add(OptionSpec.builder("-s", "--sql").paramLabel("SQLTYPE").type(int.class).converters(
                 new CommandLineTypeConversionTest.SqlTypeConverter()).description("sql type converter").build());
@@ -454,7 +454,7 @@ public class CommandLineModelTest {
     }
     @Test
     public void testPositionalConvertersOverridesRegisteredTypeConverter() throws Exception {
-        CommandSpec spec = new CommandSpec();
+        CommandSpec spec = CommandSpec.create();
         spec.add(PositionalParamSpec.builder().paramLabel("COUNT").index("0").type(int.class).description("number of times to execute").build());
         spec.add(PositionalParamSpec.builder().paramLabel("SQLTYPE").index("1").type(int.class).converters(
                 new CommandLineTypeConversionTest.SqlTypeConverter()).description("sql type converter").build());

@@ -2555,13 +2555,15 @@ public class CommandLine {
         private String footerHeading;
         private String toString;
 
-        /** Constructs a new {@code CommandSpec} without an associated user object. */
-        public CommandSpec() { this(null); }
+        private CommandSpec(Object userObject) { this.userObject = userObject; }
 
-        /** Constructs a new {@code CommandSpec} without the specified associated user object.
+        /** Creates and returns a new {@code CommandSpec} without any associated user object. */
+        public static CommandSpec create() { return new CommandSpec(null); }
+
+        /** Creates and returns a new {@code CommandSpec} with the specified associated user object.
          * @param userObject the associated user object - often this is the object annotated with {@code @Command}. May be {@code null}.
          */
-        public CommandSpec(Object userObject) { this.userObject = userObject; }
+        public static CommandSpec create(Object userObject) { return new CommandSpec(userObject); }
 
         /** Ensures all attributes of this {@code CommandSpec} have a valid value; throws an {@link InitializationException} if this cannot be achieved. */
         void validate() {
