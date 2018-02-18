@@ -22,7 +22,8 @@
     The full user manual is hosted at <a href="http://picocli.info/">http://picocli.info</a>.
 </p>
 <pre>
-&#064;Command(name = "checksum", description = "Prints the checksum (MD5 by default) of a file to STDOUT.")
+&#064;Command(name = "checksum", mixinStandardHelpOptions = true, version = "Checksum 2.0",
+    description = "Prints the checksum (MD5 by default) of a file to STDOUT.")
 class CheckSum implements Callable&lt;Void&gt; {
 
     &#064;Parameters(index = "0", description = "The file whose checksum to calculate.")
@@ -30,9 +31,6 @@ class CheckSum implements Callable&lt;Void&gt; {
 
     &#064;Option(names = {"-a", "--algorithm"}, description = "MD5, SHA-1, SHA-256, ...")
     private String algorithm = "MD5";
-
-    &#064;Option(names = {"-h", "--help"}, usageHelp = true, description = "Show this help message and exit.")
-    private boolean helpRequested;
 
     public static void main(String[] args) throws Exception {
         // CheckSum implements Callable, so parsing, error handling and handling user
