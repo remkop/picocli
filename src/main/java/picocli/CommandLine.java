@@ -3164,51 +3164,51 @@ public class CommandLine {
             public    abstract ArgSpec build();
             protected abstract T self(); // subclasses must override to return "this"
 
-            /** Sets whether this is a required option or positional parameter. */
+            /** Sets whether this is a required option or positional parameter, and returns this builder. */
             public T required(boolean required)          { this.required = required; return self(); }
 
-            /** Sets the description of this option, used when generating the usage documentation. */
+            /** Sets the description of this option, used when generating the usage documentation, and returns this builder. */
             public T description(String... description)  { this.description = Assert.notNull(description, "description").clone(); return self(); }
 
-            /** Sets how many arguments this option or positional parameter requires. */
+            /** Sets how many arguments this option or positional parameter requires, and returns this builder. */
             public T arity(String range)                 { return arity(Range.valueOf(range)); }
 
-            /** Sets how many arguments this option or positional parameter requires. */
+            /** Sets how many arguments this option or positional parameter requires, and returns this builder. */
             public T arity(Range arity)                  { this.arity = Assert.notNull(arity, "arity"); return self(); }
 
-            /** Sets the name of the option or positional parameter used in the usage help message. */
+            /** Sets the name of the option or positional parameter used in the usage help message, and returns this builder. */
             public T paramLabel(String paramLabel)       { this.paramLabel = Assert.notNull(paramLabel, "paramLabel"); return self(); }
 
-            /** Sets auxiliary type information
+            /** Sets auxiliary type information, and returns this builder.
              * @param types  the element type(s) when the {@link #type()} is a generic {@code Collection} or a {@code Map};
              * or the concrete type when the {@link #type()} is an abstract class. */
             public T auxiliaryTypes(Class<?>... types)   { this.auxiliaryTypes = Assert.notNull(types, "types").clone(); return self(); }
 
-            /** Sets option/positional param-specific converter (or converters for Maps) . */
+            /** Sets option/positional param-specific converter (or converters for Maps), and returns this builder. */
             public T converters(ITypeConverter<?>... cs) { this.converters = Assert.notNull(cs, "type converters").clone(); return self(); }
 
-            /** Sets a regular expression to split option parameter values or {@code ""} if the value should not be split. */
+            /** Sets a regular expression to split option parameter values or {@code ""} if the value should not be split, and returns this builder. */
             public T splitRegex(String splitRegex)       { this.splitRegex = Assert.notNull(splitRegex, "splitRegex"); return self(); }
 
-            /** Sets whether this option or positional parameter's default value should be shown in the usage help. */
+            /** Sets whether this option or positional parameter's default value should be shown in the usage help, and returns this builder. */
             public T showDefaultValue(Help.Visibility visibility) { showDefaultValue = Assert.notNull(visibility, "visibility"); return self(); }
 
-            /** Sets whether this option should be excluded from the usage message. */
+            /** Sets whether this option should be excluded from the usage message, and returns this builder. */
             public T hidden(boolean hidden)              { this.hidden = hidden; return self(); }
 
-            /** Sets the type to convert the option or positional parameter to before {@linkplain #setValue(Object) setting} the value.
+            /** Sets the type to convert the option or positional parameter to before {@linkplain #setValue(Object) setting} the value, and returns this builder.
              * @param propertyType the type of this option or parameter. For multi-value options and positional parameters this can be an array, or a (sub-type of) Collection or Map. */
             public T type(Class<?> propertyType)         { this.type = Assert.notNull(propertyType, "type"); return self(); }
 
-            /** Sets the default value of this option or positional parameter to the specified value. */
+            /** Sets the default value of this option or positional parameter to the specified value, and returns this builder. */
             public T defaultValue(Object defaultValue)   { this.defaultValue = defaultValue; return self(); }
 
-            /** Sets the {@link IGetter} that is responsible for getting the value of this argument to the specified value. */
+            /** Sets the {@link IGetter} that is responsible for getting the value of this argument to the specified value, and returns this builder. */
             public T getter(IGetter getter)              { this.getter = getter; return self(); }
-            /** Sets the {@link ISetter} that is responsible for setting the value of this argument to the specified value. */
+            /** Sets the {@link ISetter} that is responsible for setting the value of this argument to the specified value, and returns this builder. */
             public T setter(ISetter setter)              { this.setter = setter; return self(); }
 
-            /** Sets the string respresentation of this option or positional parameter to the specified value. */
+            /** Sets the string respresentation of this option or positional parameter to the specified value, and returns this builder. */
             public T withToString(String toString)       { this.toString = toString; return self(); }
         }
     }
@@ -3349,17 +3349,17 @@ public class CommandLine {
             /** Returns this builder. */
             @Override protected Builder self() { return this; }
 
-            /** Replaces the option names with the specified values. At least one option name is required.
+            /** Replaces the option names with the specified values. At least one option name is required, and returns this builder.
              * @return this builder instance to provide a fluent interface */
             public Builder names(String... names)           { this.names = Assert.notNull(names, "names").clone(); return self(); }
 
-            /** Sets whether this option disables validation of the other arguments. */
+            /** Sets whether this option disables validation of the other arguments, and returns this builder. */
             public Builder help(boolean help)               { this.help = help; return self(); }
 
-            /** Sets whether this option allows the user to request usage help. */
+            /** Sets whether this option allows the user to request usage help, and returns this builder. */
             public Builder usageHelp(boolean usageHelp)     { this.usageHelp = usageHelp; return self(); }
 
-            /** Sets whether this option allows the user to request version information.*/
+            /** Sets whether this option allows the user to request version information, and returns this builder.*/
             public Builder versionHelp(boolean versionHelp) { this.versionHelp = versionHelp; return self(); }
         }
     }
@@ -3466,10 +3466,10 @@ public class CommandLine {
             @Override public PositionalParamSpec build() { return new PositionalParamSpec(this); }
             /** Returns this builder. */
             @Override protected Builder self()  { return this; }
-            /** Sets the index or range specifying which of the command line arguments should be assigned to this positional parameter. */
+            /** Sets the index or range specifying which of the command line arguments should be assigned to this positional parameter, and returns this builder. */
             public Builder index(String range)  { return index(Range.valueOf(range)); }
 
-            /** Sets the index or range specifying which of the command line arguments should be assigned to this positional parameter. */
+            /** Sets the index or range specifying which of the command line arguments should be assigned to this positional parameter, and returns this builder. */
             public Builder index(Range index)   { this.index = index; return self(); }
 
             Builder capacity(Range capacity)   { this.capacity = capacity; return self(); }
