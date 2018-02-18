@@ -2196,29 +2196,28 @@ public class CommandLine {
             Command cmd = cls.getAnnotation(Command.class);
             initSubcommands(cmd, commandSpec, factory);
 
-            if (!commandSpec.isSeparatorInitialized())            { commandSpec.separator(cmd.separator()); }
-            if (!commandSpec.isNameInitialized())                 { commandSpec.name(cmd.name()); }
-            if (!commandSpec.isSynopsisHeadingInitialized())      { commandSpec.synopsisHeading(cmd.synopsisHeading()); }
-            if (!commandSpec.isCommandListHeadingInitialized())   { commandSpec.commandListHeading(cmd.commandListHeading()); }
-            if (!commandSpec.isRequiredOptionMarkerInitialized()) { commandSpec.requiredOptionMarker(cmd.requiredOptionMarker()); }
-            if (!commandSpec.isVersionInitialized())              { commandSpec.version(cmd.version()); } // only if no dynamic version
-            if (!commandSpec.isCustomSynopsisInitialized())       { commandSpec.customSynopsis(cmd.customSynopsis()); }
-            if (!commandSpec.isDescriptionInitialized())          { commandSpec.description(cmd.description()); }
-            if (!commandSpec.isDescriptionHeadingInitialized())   { commandSpec.descriptionHeading(cmd.descriptionHeading()); }
-            if (!commandSpec.isHeaderInitialized())               { commandSpec.header(cmd.header()); }
-            if (!commandSpec.isHeaderHeadingInitialized())        { commandSpec.headerHeading(cmd.headerHeading()); }
-            if (!commandSpec.isFooterInitialized())               { commandSpec.footer(cmd.footer()); }
-            if (!commandSpec.isFooterHeadingInitialized())        { commandSpec.footerHeading(cmd.footerHeading()); }
-            if (!commandSpec.isParameterListHeadingInitialized()) { commandSpec.parameterListHeading(cmd.parameterListHeading()); }
-            if (!commandSpec.isOptionListHeadingInitialized())    { commandSpec.optionListHeading(cmd.optionListHeading()); }
-            if (!commandSpec.isAbbreviateSynopsisInitialized() && cmd.abbreviateSynopsis()) { commandSpec.abbreviateSynopsis(cmd.abbreviateSynopsis()); }
-            if (!commandSpec.isSortOptionsInitialized()        && !cmd.sortOptions())       { commandSpec.sortOptions(cmd.sortOptions()); }
-            if (!commandSpec.isShowDefaultValuesInitialized()  && cmd.showDefaultValues())  { commandSpec.showDefaultValues(cmd.showDefaultValues()); }
-            if (!commandSpec.isHelpCommandInitialized()        && cmd.helpCommand())        { commandSpec.helpCommand(cmd.helpCommand()); }
-            if (!commandSpec.isHiddenInitialized()             && cmd.hidden() )            { commandSpec.hidden(cmd.hidden()); }
-            if (!commandSpec.isVersionProviderInitialized()    && cmd.versionProvider() != NoVersionProvider.class) {
-                commandSpec.versionProvider(DefaultFactory.createVersionProvider(factory, cmd.versionProvider()));
-            }
+            commandSpec.initSeparator(cmd.separator());
+            commandSpec.initName(cmd.name());
+            commandSpec.initSynopsisHeading(cmd.synopsisHeading());
+            commandSpec.initCommandListHeading(cmd.commandListHeading());
+            commandSpec.initRequiredOptionMarker(cmd.requiredOptionMarker());
+            commandSpec.initVersion(cmd.version());
+            commandSpec.initCustomSynopsis(cmd.customSynopsis());
+            commandSpec.initDescription(cmd.description());
+            commandSpec.initDescriptionHeading(cmd.descriptionHeading());
+            commandSpec.initHeader(cmd.header());
+            commandSpec.initHeaderHeading(cmd.headerHeading());
+            commandSpec.initFooter(cmd.footer());
+            commandSpec.initFooterHeading(cmd.footerHeading());
+            commandSpec.initParameterListHeading(cmd.parameterListHeading());
+            commandSpec.initOptionListHeading(cmd.optionListHeading());
+            commandSpec.initAbbreviateSynopsis(cmd.abbreviateSynopsis());
+            commandSpec.initSortOptions(cmd.sortOptions());
+            commandSpec.initShowDefaultValues(cmd.showDefaultValues());
+            commandSpec.initHelpCommand(cmd.helpCommand());
+            commandSpec.initHidden(cmd.hidden());
+            commandSpec.initVersionProvider(cmd.versionProvider(), factory);
+
             if (cmd.mixinStandardHelpOptions()) { commandSpec.addMixin("mixinStandardHelpOptions", build(new AutoHelpMixin(), factory)); }
             return true;
         }
@@ -2342,23 +2341,24 @@ public class CommandLine {
     static class ArgSpecBuilder {
         static OptionSpec buildOptionSpec(Object scope, Field field, IFactory factory) {
             Option option = field.getAnnotation(Option.class);
-            OptionSpec result = new OptionSpec(option.names());
-            initCommon(result, scope, field);
+            OptionSpec.Builder builder = OptionSpec.builder(option.names());
+            initCommon(builder, scope, field);
 
-            result.help(option.help());
-            result.usageHelp(option.usageHelp());
-            result.versionHelp(option.versionHelp());
-            result.showDefaultValue(option.showDefaultValue());
+            builder.help(option.help());
+            builder.usageHelp(option.usageHelp());
+            builder.versionHelp(option.versionHelp());
+            builder.showDefaultValue(option.showDefaultValue());
 
-            result.arity(Range.optionArity(field));
-            result.required(option.required());
-            result.description(option.description());
-            result.auxiliaryTypes(inferTypes(field.getType(), option.type(), field.getGenericType()));
-            result.paramLabel(inferLabel(option.paramLabel(), field.getName(), field.getType(), result.auxiliaryTypes()));
-            result.splitRegex(option.split());
-            result.hidden(option.hidden());
-            result.converters(DefaultFactory.createConverter(factory, option.converter()));
-            return result;
+            builder.arity(Range.optionArity(field));
+            builder.required(option.required());
+            builder.description(option.description());
+            Class<?>[] elementTypes = inferTypes(field.getType(), option.type(), field.getGenericType());
+            builder.auxiliaryTypes(elementTypes);
+            builder.paramLabel(inferLabel(option.paramLabel(), field.getName(), field.getType(), elementTypes));
+            builder.splitRegex(option.split());
+            builder.hidden(option.hidden());
+            builder.converters(DefaultFactory.createConverter(factory, option.converter()));
+            return builder.build();
         }
 
         private static String inferLabel(String label, String fieldName, Class<?> fieldType, Class<?>[] types) {
@@ -2373,30 +2373,32 @@ public class CommandLine {
             return "<" + name + ">";
         }
         static PositionalParamSpec buildPositionalParamSpec(Object scope, Field field, IFactory factory) {
-            PositionalParamSpec result = new PositionalParamSpec();
-            initCommon(result, scope, field);
-            result.arity(Range.parameterArity(field));
-            result.index(Range.parameterIndex(field));
-            result.capacity = Range.parameterCapacity(field);
-            result.required(result.arity().min > 0);
+            PositionalParamSpec.Builder builder = PositionalParamSpec.builder();
+            initCommon(builder, scope, field);
+            Range arity = Range.parameterArity(field);
+            builder.arity(arity);
+            builder.index(Range.parameterIndex(field));
+            builder.capacity(Range.parameterCapacity(field));
+            builder.required(arity.min > 0);
 
             Parameters parameters = field.getAnnotation(Parameters.class);
-            result.description(parameters.description());
-            result.auxiliaryTypes(inferTypes(field.getType(), parameters.type(), field.getGenericType()));
-            result.paramLabel(inferLabel(parameters.paramLabel(), field.getName(), field.getType(), result.auxiliaryTypes()));
-            result.splitRegex(parameters.split());
-            result.hidden(parameters.hidden());
-            result.converters(DefaultFactory.createConverter(factory, parameters.converter()));
-            result.showDefaultValue(parameters.showDefaultValue());
-            return result;
+            builder.description(parameters.description());
+            Class<?>[] elementTypes = inferTypes(field.getType(), parameters.type(), field.getGenericType());
+            builder.auxiliaryTypes(elementTypes);
+            builder.paramLabel(inferLabel(parameters.paramLabel(), field.getName(), field.getType(), elementTypes));
+            builder.splitRegex(parameters.split());
+            builder.hidden(parameters.hidden());
+            builder.converters(DefaultFactory.createConverter(factory, parameters.converter()));
+            builder.showDefaultValue(parameters.showDefaultValue());
+            return builder.build();
         }
-        private static void initCommon(ArgSpec<?> result, Object scope, Field field) {
+        private static void initCommon(ArgSpec.Builder<?> builder, Object scope, Field field) {
             field.setAccessible(true);
-            result.type(field.getType()); // field type
-            result.defaultValue(getDefaultValue(scope, field));
-            result.withToString(abbreviate("field " + field.toGenericString()));
-            result.getter(new FieldGetter(scope, field));
-            result.setter(new FieldSetter(scope, field));
+            builder.type(field.getType()); // field type
+            builder.defaultValue(getDefaultValue(scope, field));
+            builder.withToString(abbreviate("field " + field.toGenericString()));
+            builder.getter(new FieldGetter(scope, field));
+            builder.setter(new FieldSetter(scope, field));
         }
         static String abbreviate(String text) {
             return text.replace("field private ", "field ")
@@ -2515,11 +2517,14 @@ public class CommandLine {
         /** Constant Boolean holding the default setting for whether this command should be listed in the usage help of the parent command: <code>{@value}</code>.*/
         static final Boolean DEFAULT_HIDDEN = Boolean.FALSE;
 
+        static final String DEFAULT_SINGLE_VALUE = "";
+        static final String[] DEFAULT_MULTI_LINE = {};
+
         private final Map<String, CommandLine> commands = new LinkedHashMap<String, CommandLine>();
         private final Map<String, OptionSpec> optionsByNameMap = new LinkedHashMap<String, OptionSpec>();
         private final Map<Character, OptionSpec> posixOptionsByKeyMap = new LinkedHashMap<Character, OptionSpec>();
         private final Map<String, CommandSpec> mixins = new LinkedHashMap<String, CommandSpec>();
-        private final List<ArgSpec<?>> requiredArgs = new ArrayList<ArgSpec<?>>();
+        private final List<ArgSpec> requiredArgs = new ArrayList<ArgSpec>();
         private final List<OptionSpec> options = new ArrayList<OptionSpec>();
         private final List<PositionalParamSpec> positionalParameters = new ArrayList<PositionalParamSpec>();
 
@@ -2530,11 +2535,11 @@ public class CommandLine {
         private String separator;
         private String name;
         private IVersionProvider versionProvider;
-        private String[] version = {};
-        private String[] description = {};
-        private String[] customSynopsis = {};
-        private String[] header = {};
-        private String[] footer = {};
+        private String[] version;
+        private String[] description;
+        private String[] customSynopsis;
+        private String[] header;
+        private String[] footer;
         private Boolean abbreviateSynopsis;
         private Boolean sortOptions;
         private Boolean showDefaultValues;
@@ -2560,20 +2565,8 @@ public class CommandLine {
 
         /** Ensures all attributes of this {@code CommandSpec} have a valid value; throws an {@link InitializationException} if this cannot be achieved. */
         void validate() {
-            hidden =               (hidden == null)               ? false : hidden;
-            isHelpCommand =        (isHelpCommand == null)        ? false : isHelpCommand;
-            sortOptions =          (sortOptions == null)          ? true : sortOptions;
-            abbreviateSynopsis =   (abbreviateSynopsis == null)   ? false : abbreviateSynopsis;
-            requiredOptionMarker = (requiredOptionMarker == null) ? DEFAULT_REQUIRED_OPTION_MARKER : requiredOptionMarker;
-            showDefaultValues =    (showDefaultValues == null)    ? false : showDefaultValues;
-            synopsisHeading =      (synopsisHeading == null)      ? DEFAULT_SYNOPSIS_HEADING : synopsisHeading;
-            commandListHeading =   (commandListHeading == null)   ? DEFAULT_COMMAND_LIST_HEADING : commandListHeading;
-            separator =            (separator == null)            ? DEFAULT_SEPARATOR : separator;
-            name =                 (name == null)                 ? DEFAULT_COMMAND_NAME : name;
             Collections.sort(positionalParameters, new PositionalParametersSorter());
             validatePositionalParameters(positionalParameters);
-            for (OptionSpec option : options) { option.validate(); }
-            for (PositionalParamSpec positional : positionalParameters) { positional.validate(); }
         }
 
         /** Returns the user object associated with this command.
@@ -2623,14 +2616,13 @@ public class CommandLine {
         /** Adds the specified option spec or positional parameter spec to the list of configured arguments to expect.
          * @param arg the option spec or positional parameter spec to add
          * @return this CommandSpec for method chaining */
-        public CommandSpec add(ArgSpec<?> arg) { return arg.isOption() ? add((OptionSpec) arg) : add((PositionalParamSpec) arg); }
+        public CommandSpec add(ArgSpec arg) { return arg.isOption() ? add((OptionSpec) arg) : add((PositionalParamSpec) arg); }
 
         /** Adds the specified option spec to the list of configured arguments to expect.
          * @param option the option spec to add
          * @return this CommandSpec for method chaining
          * @throws DuplicateOptionAnnotationsException if any of the names of the specified option is the same as the name of another option */
         public CommandSpec add(OptionSpec option) {
-            option.validate();
             options.add(option);
             for (String name : option.names()) { // cannot be null or empty
                 OptionSpec existing = optionsByNameMap.put(name, option);
@@ -2646,7 +2638,6 @@ public class CommandLine {
          * @param positional the positional parameter spec to add
          * @return this CommandSpec for method chaining */
         public CommandSpec add(PositionalParamSpec positional) {
-            positional.validate();
             positionalParameters.add(positional);
             if (positional.required()) { requiredArgs.add(positional); }
             return this;
@@ -2659,27 +2650,27 @@ public class CommandLine {
         public CommandSpec addMixin(String name, CommandSpec mixin) {
             mixins.put(name, mixin);
 
-            if (!isSeparatorInitialized())            { separator(mixin.separator()); }
-            if (!isNameInitialized())                 { name(mixin.name()); }
-            if (!isSynopsisHeadingInitialized())      { synopsisHeading(mixin.synopsisHeading()); }
-            if (!isCommandListHeadingInitialized())   { commandListHeading(mixin.commandListHeading()); }
-            if (!isRequiredOptionMarkerInitialized()) { requiredOptionMarker(mixin.requiredOptionMarker()); }
-            if (!isVersionProviderInitialized())      { versionProvider(mixin.versionProvider()); }
-            if (!isVersionInitialized())              { version(mixin.version()); } // only if no dynamic version
-            if (!isCustomSynopsisInitialized())       { customSynopsis(mixin.customSynopsis()); }
-            if (!isDescriptionInitialized())          { description(mixin.description()); }
-            if (!isDescriptionHeadingInitialized())   { descriptionHeading(mixin.descriptionHeading()); }
-            if (!isHeaderInitialized())               { header(mixin.header()); }
-            if (!isHeaderHeadingInitialized())        { headerHeading(mixin.headerHeading()); }
-            if (!isFooterInitialized())               { footer(mixin.footer()); }
-            if (!isFooterHeadingInitialized())        { footerHeading(mixin.footerHeading()); }
-            if (!isParameterListHeadingInitialized()) { parameterListHeading(mixin.parameterListHeading()); }
-            if (!isOptionListHeadingInitialized())    { optionListHeading(mixin.optionListHeading()); }
-            if (!isAbbreviateSynopsisInitialized() && mixin.abbreviateSynopsis()) { abbreviateSynopsis(mixin.abbreviateSynopsis()); }
-            if (!isSortOptionsInitialized()        && !mixin.sortOptions())       { sortOptions(mixin.sortOptions()); }
-            if (!isShowDefaultValuesInitialized()  && mixin.showDefaultValues())  { showDefaultValues(mixin.showDefaultValues()); }
-            if (!isHelpCommandInitialized()        && mixin.helpCommand())        { helpCommand(mixin.helpCommand()); }
-            if (!isHiddenInitialized()             && mixin.hidden())             { hidden(mixin.hidden()); }
+            initSeparator(mixin.separator());
+            initName(mixin.name());
+            initSynopsisHeading(mixin.synopsisHeading());
+            initCommandListHeading(mixin.commandListHeading());
+            initRequiredOptionMarker(mixin.requiredOptionMarker());
+            initVersion(mixin.version());
+            initCustomSynopsis(mixin.customSynopsis());
+            initDescription(mixin.description());
+            initDescriptionHeading(mixin.descriptionHeading());
+            initHeader(mixin.header());
+            initHeaderHeading(mixin.headerHeading());
+            initFooter(mixin.footer());
+            initFooterHeading(mixin.footerHeading());
+            initParameterListHeading(mixin.parameterListHeading());
+            initOptionListHeading(mixin.optionListHeading());
+            initAbbreviateSynopsis(mixin.abbreviateSynopsis());
+            initSortOptions(mixin.sortOptions());
+            initShowDefaultValues(mixin.showDefaultValues());
+            initHelpCommand(mixin.helpCommand());
+            initHidden(mixin.hidden());
+            initVersionProvider(mixin.versionProvider());
 
             for (Map.Entry<String, CommandLine> entry : mixin.subcommands().entrySet()) {
                 addSubcommand(entry.getKey(), entry.getValue());
@@ -2711,23 +2702,15 @@ public class CommandLine {
 
         /** Returns the list of required options and positional parameters configured for this command.
          * @return an immutable list of the required options and positional parameters for this command. */
-        public List<ArgSpec<?>> requiredArgs() { return Collections.unmodifiableList(requiredArgs); }
+        public List<ArgSpec> requiredArgs() { return Collections.unmodifiableList(requiredArgs); }
 
         /** Returns the String to use as the program name in the synopsis line of the help message.
          * {@link #DEFAULT_COMMAND_NAME} by default, initialized from {@link Command#name()} if defined. */
-        public String name() { return name; }
-
-        /** Sets the String to use as the program name in the synopsis line of the help message.
-         * @return this CommandSpec for method chaining */
-        public CommandSpec name(String name) { this.name = name; return this; }
+        public String name() { return (name == null) ? DEFAULT_COMMAND_NAME : name; }
 
         /** Returns the String to use as the separator between options and option parameters. {@code "="} by default,
          * initialized from {@link Command#separator()} if defined.*/
-        public String separator() { return separator; }
-
-        /** Sets the String to use as the separator between options and option parameters.
-         * @return this CommandSpec for method chaining */
-        public CommandSpec separator(String separator) { this.separator = separator; return this; }
+        public String separator() { return (separator == null) ? DEFAULT_SEPARATOR : separator; }
 
         /** Returns version information for this command, to print to the console when the user specifies an
          * {@linkplain OptionSpec#versionHelp() option} to request version help. This is not part of the usage help message.
@@ -2741,135 +2724,159 @@ public class CommandLine {
                     throw new ExecutionException(this.commandLine, msg, ex);
                 }
             }
-            return version;
+            return version == null ? DEFAULT_MULTI_LINE : version;
         }
-
-        /** Sets version information literals for this command, to print to the console when the user specifies an
-         * {@linkplain OptionSpec#versionHelp() option} to request version help. Only used if no {@link #versionProvider() versionProvider} is set.
-         * @return this CommandSpec for method chaining */
-        public CommandSpec version(String... version) { this.version = version; return this; }
 
         /** Returns the version provider for this command, to generate the {@link #version()} strings.
          * @return the version provider or {@code null} if the version strings should be returned from the {@linkplain #version(String...) version literals}.*/
         public IVersionProvider versionProvider() { return versionProvider; }
 
-        /** Sets version provider for this command, to generate the {@link #version()} strings.
-         * @param versionProvider the version provider to use to generate the version strings, or {@code null} if the {@linkplain #version(String...) version literals} should be used.
-         * @return this CommandSpec for method chaining */
-        public CommandSpec versionProvider(IVersionProvider versionProvider) { this.versionProvider = versionProvider; return this; }
-
         /** Returns the optional heading preceding the header section. Initialized from {@link Command#headerHeading()}, or null. */
-        public String headerHeading() { return headerHeading; }
-
-        /** Sets the heading preceding the header section. Initialized from {@link Command#headerHeading()}, or null.
-         * @return this CommandSpec for method chaining */
-        public CommandSpec headerHeading(String headerHeading) { this.headerHeading = headerHeading; return this; }
+        public String headerHeading() { return headerHeading == null ? DEFAULT_SINGLE_VALUE : headerHeading; }
 
         /** Returns the optional header lines displayed at the top of the help message. For subcommands, the first header line is
          * displayed in the list of commands. Values are initialized from {@link Command#header()}
          * if the {@code Command} annotation is present, otherwise this is an empty array and the help message has no
          * header. Applications may programmatically set this field to create a custom help message. */
-        public String[] header() { return header; }
-
-        /** Sets the optional header lines displayed at the top of the help message. For subcommands, the first header line is
-         * displayed in the list of commands.
-         * @return this CommandSpec for method chaining */
-        public CommandSpec header(String... header) { this.header = header; return this; }
+        public String[] header() { return header == null ? DEFAULT_MULTI_LINE : header.clone(); }
 
         /** Returns the optional heading preceding the synopsis. Initialized from {@link Command#synopsisHeading()}, {@code "Usage: "} by default. */
-        public String synopsisHeading() { return synopsisHeading; }
-
-        /** Sets the optional heading preceding the synopsis.
-         * @return this CommandSpec for method chaining */
-        public CommandSpec synopsisHeading(String newValue) {synopsisHeading = newValue; return this;}
+        public String synopsisHeading() { return (synopsisHeading == null) ? DEFAULT_SYNOPSIS_HEADING : synopsisHeading; }
 
         /** Returns whether the synopsis line(s) should show an abbreviated synopsis without detailed option names. */
-        public boolean abbreviateSynopsis() { return abbreviateSynopsis; }
-
-        /** Sets whether the synopsis line(s) should show an abbreviated synopsis without detailed option names.
-         * @return this CommandSpec for method chaining */
-        public CommandSpec abbreviateSynopsis(boolean newValue) {abbreviateSynopsis = newValue; return this;}
+        public boolean abbreviateSynopsis() { return (abbreviateSynopsis == null) ? DEFAULT_ABBREVIATE_SYNOPSIS : abbreviateSynopsis; }
 
         /** Returns the optional custom synopsis lines to use instead of the auto-generated synopsis.
          * Initialized from {@link Command#customSynopsis()} if the {@code Command} annotation is present,
          * otherwise this is an empty array and the synopsis is generated.
          * Applications may programmatically set this field to create a custom help message. */
-        public String[] customSynopsis() { return customSynopsis; }
-
-        /** Sets the optional custom synopsis lines to use instead of the auto-generated synopsis.
-         * @return this CommandSpec for method chaining */
-        public CommandSpec customSynopsis(String... customSynopsis) { this.customSynopsis = customSynopsis; return this; }
+        public String[] customSynopsis() { return customSynopsis == null ? DEFAULT_MULTI_LINE : customSynopsis.clone(); }
 
         /** Returns the optional heading preceding the description section. Initialized from {@link Command#descriptionHeading()}, or null. */
-        public String descriptionHeading() { return descriptionHeading; }
-
-        /** Sets the heading preceding the description section.
-         * @return this CommandSpec for method chaining */
-        public CommandSpec descriptionHeading(String newValue) {descriptionHeading = newValue; return this;}
+        public String descriptionHeading() { return descriptionHeading == null ? DEFAULT_SINGLE_VALUE : descriptionHeading; }
 
         /** Returns the optional text lines to use as the description of the help message, displayed between the synopsis and the
          * options list. Initialized from {@link Command#description()} if the {@code Command} annotation is present,
          * otherwise this is an empty array and the help message has no description.
          * Applications may programmatically set this field to create a custom help message. */
-        public String[] description() { return description; }
-
-        /** Sets the optional text lines to use as the description of the help message, displayed between the synopsis and the
-         * options list.
-         * @return this CommandSpec for method chaining */
-        public CommandSpec description(String... description) { this.description = description; return this; }
+        public String[] description() { return description == null ? DEFAULT_MULTI_LINE : description.clone(); }
 
         /** Returns the optional heading preceding the parameter list. Initialized from {@link Command#parameterListHeading()}, or null. */
-        public String parameterListHeading() { return parameterListHeading; }
-
-        /** Sets the optional heading preceding the parameter list.
-         * @return this CommandSpec for method chaining */
-        public CommandSpec parameterListHeading(String newValue) {parameterListHeading = newValue; return this;}
+        public String parameterListHeading() { return parameterListHeading == null ? DEFAULT_SINGLE_VALUE : parameterListHeading; }
 
         /** Returns the optional heading preceding the options list. Initialized from {@link Command#optionListHeading()}, or null. */
-        public String optionListHeading() { return optionListHeading; }
-
-        /** Sets the heading preceding the options list.
-         * @return this CommandSpec for method chaining */
-        public CommandSpec optionListHeading(String newValue) {optionListHeading = newValue; return this;}
+        public String optionListHeading() { return optionListHeading == null ? DEFAULT_SINGLE_VALUE : optionListHeading; }
 
         /** Returns whether the options list in the usage help message should be sorted alphabetically. */
-        public boolean sortOptions() { return sortOptions; }
-
-        /** Sets whether the options list in the usage help message should be sorted alphabetically.
-         * @return this CommandSpec for method chaining */
-        public CommandSpec sortOptions(boolean newValue) {sortOptions = newValue; return this;}
+        public boolean sortOptions() { return (sortOptions == null) ? DEFAULT_SORT_OPTIONS : sortOptions; }
 
         /** Returns the character used to prefix required options in the options list. */
-        public char requiredOptionMarker() { return requiredOptionMarker; }
-
-        /** Sets the character used to prefix required options in the options list.
-         * @return this CommandSpec for method chaining */
-        public CommandSpec requiredOptionMarker(char newValue) {requiredOptionMarker = newValue; return this;}
+        public char requiredOptionMarker() { return (requiredOptionMarker == null) ? DEFAULT_REQUIRED_OPTION_MARKER : requiredOptionMarker; }
 
         /** Returns whether the options list in the usage help message should show default values for all non-boolean options. */
-        public boolean showDefaultValues() { return showDefaultValues; }
-
-        /** Sets whether the options list in the usage help message should show default values for all non-boolean options.
-         * @return this CommandSpec for method chaining */
-        public CommandSpec showDefaultValues(boolean newValue) {showDefaultValues = newValue; return this;}
+        public boolean showDefaultValues() { return (showDefaultValues == null) ? DEFAULT_SHOW_DEFAULT_VALUES : showDefaultValues; }
 
         /** Returns whether this subcommand is a help command, and required options and positional
          * parameters of the parent command should not be validated.
          * @return {@code true} if this subcommand is a help command and picocli should not check for missing required
          *      options and positional parameters on the parent command
          * @see Command#helpCommand() */
-        public boolean helpCommand() { return isHelpCommand; }
-
-        /** Sets whether this is a help command and required parameter checking should be suspended.
-         * @return this CommandSpec for method chaining
-         * @see Command#helpCommand() */
-        public CommandSpec helpCommand(boolean newValue) {isHelpCommand = newValue; return this;}
+        public boolean helpCommand() { return (isHelpCommand == null) ? DEFAULT_IS_HELP_COMMAND : isHelpCommand; }
 
         /**
          * Returns whether this command should be hidden from the usage help message of the parent command.
          * @return {@code true} if this command should not appear in the usage help message of the parent command
          */
-        public boolean hidden() { return hidden; }
+        public boolean hidden() { return (hidden == null) ? DEFAULT_HIDDEN : hidden; }
+
+        /** Returns the optional heading preceding the subcommand list. Initialized from {@link Command#commandListHeading()}. {@code "Commands:%n"} by default. */
+        public String commandListHeading() { return (commandListHeading == null) ? DEFAULT_COMMAND_LIST_HEADING : commandListHeading; }
+
+        /** Returns the optional heading preceding the footer section. Initialized from {@link Command#footerHeading()}, or null. */
+        public String footerHeading() { return footerHeading == null ? DEFAULT_SINGLE_VALUE : footerHeading; }
+
+        /** Returns the optional footer text lines displayed at the bottom of the help message. Initialized from
+         * {@link Command#footer()} if the {@code Command} annotation is present, otherwise this is an empty array and
+         * the help message has no footer.
+         * Applications may programmatically set this field to create a custom help message. */
+        public String[] footer() { return footer == null ? DEFAULT_MULTI_LINE : footer.clone(); }
+
+        /** Returns a string representation of this command, used in error messages and trace messages. */
+        public String toString() { return toString; }
+
+
+        /** Sets the String to use as the program name in the synopsis line of the help message.
+         * @return this CommandSpec for method chaining */
+        public CommandSpec name(String name) { this.name = name; return this; }
+
+        /** Sets the String to use as the separator between options and option parameters.
+         * @return this CommandSpec for method chaining */
+        public CommandSpec separator(String separator) { this.separator = separator; return this; }
+
+        /** Sets version information literals for this command, to print to the console when the user specifies an
+         * {@linkplain OptionSpec#versionHelp() option} to request version help. Only used if no {@link #versionProvider() versionProvider} is set.
+         * @return this CommandSpec for method chaining */
+        public CommandSpec version(String... version) { this.version = version; return this; }
+
+        /** Sets version provider for this command, to generate the {@link #version()} strings.
+         * @param versionProvider the version provider to use to generate the version strings, or {@code null} if the {@linkplain #version(String...) version literals} should be used.
+         * @return this CommandSpec for method chaining */
+        public CommandSpec versionProvider(IVersionProvider versionProvider) { this.versionProvider = versionProvider; return this; }
+
+        /** Sets the heading preceding the header section. Initialized from {@link Command#headerHeading()}, or null.
+         * @return this CommandSpec for method chaining */
+        public CommandSpec headerHeading(String headerHeading) { this.headerHeading = headerHeading; return this; }
+
+        /** Sets the optional header lines displayed at the top of the help message. For subcommands, the first header line is
+         * displayed in the list of commands.
+         * @return this CommandSpec for method chaining */
+        public CommandSpec header(String... header) { this.header = header; return this; }
+
+        /** Sets the optional heading preceding the synopsis.
+         * @return this CommandSpec for method chaining */
+        public CommandSpec synopsisHeading(String newValue) {synopsisHeading = newValue; return this;}
+
+        /** Sets whether the synopsis line(s) should show an abbreviated synopsis without detailed option names.
+         * @return this CommandSpec for method chaining */
+        public CommandSpec abbreviateSynopsis(boolean newValue) {abbreviateSynopsis = newValue; return this;}
+
+        /** Sets the optional custom synopsis lines to use instead of the auto-generated synopsis.
+         * @return this CommandSpec for method chaining */
+        public CommandSpec customSynopsis(String... customSynopsis) { this.customSynopsis = customSynopsis; return this; }
+
+        /** Sets the heading preceding the description section.
+         * @return this CommandSpec for method chaining */
+        public CommandSpec descriptionHeading(String newValue) {descriptionHeading = newValue; return this;}
+
+        /** Sets the optional text lines to use as the description of the help message, displayed between the synopsis and the
+         * options list.
+         * @return this CommandSpec for method chaining */
+        public CommandSpec description(String... description) { this.description = description; return this; }
+
+        /** Sets the optional heading preceding the parameter list.
+         * @return this CommandSpec for method chaining */
+        public CommandSpec parameterListHeading(String newValue) {parameterListHeading = newValue; return this;}
+
+        /** Sets the heading preceding the options list.
+         * @return this CommandSpec for method chaining */
+        public CommandSpec optionListHeading(String newValue) {optionListHeading = newValue; return this;}
+
+        /** Sets whether the options list in the usage help message should be sorted alphabetically.
+         * @return this CommandSpec for method chaining */
+        public CommandSpec sortOptions(boolean newValue) {sortOptions = newValue; return this;}
+
+        /** Sets the character used to prefix required options in the options list.
+         * @return this CommandSpec for method chaining */
+        public CommandSpec requiredOptionMarker(char newValue) {requiredOptionMarker = newValue; return this;}
+
+        /** Sets whether the options list in the usage help message should show default values for all non-boolean options.
+         * @return this CommandSpec for method chaining */
+        public CommandSpec showDefaultValues(boolean newValue) {showDefaultValues = newValue; return this;}
+
+        /** Sets whether this is a help command and required parameter checking should be suspended.
+         * @return this CommandSpec for method chaining
+         * @see Command#helpCommand() */
+        public CommandSpec helpCommand(boolean newValue) {isHelpCommand = newValue; return this;}
 
         /**
          * Set the hidden flag on this command to control whether to show or hide it in the help usage text of the parent command.
@@ -2878,88 +2885,93 @@ public class CommandLine {
          * @see Command#hidden() */
         public CommandSpec hidden(boolean value) { hidden = value; return this; }
 
-        /** Returns the optional heading preceding the subcommand list. Initialized from {@link Command#commandListHeading()}. {@code "Commands:%n"} by default. */
-        public String commandListHeading() { return commandListHeading; }
-
         /** Sets the optional heading preceding the subcommand list.
          * @return this CommandSpec for method chaining */
         public CommandSpec commandListHeading(String newValue) {commandListHeading = newValue; return this;}
-
-        /** Returns the optional heading preceding the footer section. Initialized from {@link Command#footerHeading()}, or null. */
-        public String footerHeading() { return footerHeading; }
 
         /** Sets the optional heading preceding the footer section.
          * @return this CommandSpec for method chaining */
         public CommandSpec footerHeading(String newValue) {footerHeading = newValue; return this;}
 
-        /** Returns the optional footer text lines displayed at the bottom of the help message. Initialized from
-         * {@link Command#footer()} if the {@code Command} annotation is present, otherwise this is an empty array and
-         * the help message has no footer.
-         * Applications may programmatically set this field to create a custom help message. */
-        public String[] footer() { return footer; }
-
         /** Sets the optional footer text lines displayed at the bottom of the help message.
          * @return this CommandSpec for method chaining */
         public CommandSpec footer(String... footer) { this.footer = footer; return this; }
-
-        /** Returns a string representation of this command, used in error messages and trace messages. */
-        public String toString() { return toString; }
 
         /** Sets the string representation of this command, used in error messages and trace messages.
          * @param newValue the string representation
          * @return this CommandSpec for method chaining */
         public CommandSpec withToString(String newValue) { this.toString = newValue; return this; }
 
-        boolean isSeparatorInitialized()            { return !empty(separator)            && !CommandSpec.DEFAULT_SEPARATOR.equals(separator); }
-        boolean isNameInitialized()                 { return !empty(name)                 && !CommandSpec.DEFAULT_COMMAND_NAME.equals(name); }
-        boolean isSynopsisHeadingInitialized()      { return !empty(synopsisHeading)      && !CommandSpec.DEFAULT_SYNOPSIS_HEADING.equals(synopsisHeading); }
-        boolean isCommandListHeadingInitialized()   { return !empty(commandListHeading)   && !CommandSpec.DEFAULT_COMMAND_LIST_HEADING.equals(commandListHeading); }
-        boolean isRequiredOptionMarkerInitialized() { return requiredOptionMarker != null && CommandSpec.DEFAULT_REQUIRED_OPTION_MARKER != requiredOptionMarker; }
-        boolean isAbbreviateSynopsisInitialized()   { return abbreviateSynopsis   != null && !CommandSpec.DEFAULT_ABBREVIATE_SYNOPSIS.equals(abbreviateSynopsis); }
-        boolean isSortOptionsInitialized()          { return sortOptions          != null && !CommandSpec.DEFAULT_SORT_OPTIONS.equals(sortOptions); }
-        boolean isShowDefaultValuesInitialized()    { return showDefaultValues    != null && !CommandSpec.DEFAULT_SHOW_DEFAULT_VALUES.equals(showDefaultValues); }
-        boolean isHelpCommandInitialized()          { return isHelpCommand        != null && !CommandSpec.DEFAULT_IS_HELP_COMMAND.equals(isHelpCommand); }
-        boolean isHiddenInitialized()               { return hidden               != null && !CommandSpec.DEFAULT_HIDDEN.equals(hidden); }
-        boolean isVersionProviderInitialized()      { return versionProvider      != null && !(versionProvider instanceof NoVersionProvider);}
-        boolean isVersionInitialized()              { return !empty(version); }
-        boolean isCustomSynopsisInitialized()       { return !empty(customSynopsis); }
-        boolean isDescriptionInitialized()          { return !empty(description); }
-        boolean isDescriptionHeadingInitialized()   { return !empty(descriptionHeading); }
-        boolean isHeaderInitialized()               { return !empty(header); }
-        boolean isHeaderHeadingInitialized()        { return !empty(headerHeading); }
-        boolean isFooterInitialized()               { return !empty(footer); }
-        boolean isFooterHeadingInitialized()        { return !empty(footerHeading); }
-        boolean isParameterListHeadingInitialized() { return !empty(parameterListHeading); }
-        boolean isOptionListHeadingInitialized()    { return !empty(optionListHeading); }
+        void initSeparator(String value)            { if (initializable(separator, value, DEFAULT_SEPARATOR))                         {separator = value;} }
+        void initName(String value)                 { if (initializable(name, value, DEFAULT_COMMAND_NAME))                           {name = value;} }
+        void initSynopsisHeading(String value)      { if (initializable(synopsisHeading, value, DEFAULT_SYNOPSIS_HEADING))            {synopsisHeading = value;} }
+        void initCommandListHeading(String value)   { if (initializable(commandListHeading, value, DEFAULT_COMMAND_LIST_HEADING))     {commandListHeading = value;} }
+        void initRequiredOptionMarker(char value)   { if (initializable(requiredOptionMarker, value, DEFAULT_REQUIRED_OPTION_MARKER)) {requiredOptionMarker = value;} }
+        void initAbbreviateSynopsis(boolean value)  { if (initializable(abbreviateSynopsis, value, DEFAULT_ABBREVIATE_SYNOPSIS))      {abbreviateSynopsis = value;} }
+        void initSortOptions(boolean value)         { if (initializable(sortOptions, value, DEFAULT_SORT_OPTIONS))                    {sortOptions = value;} }
+        void initShowDefaultValues(boolean value)   { if (initializable(showDefaultValues, value, DEFAULT_SHOW_DEFAULT_VALUES))       {showDefaultValues = value;} }
+        void initHelpCommand(boolean value)         { if (initializable(isHelpCommand, value, DEFAULT_IS_HELP_COMMAND))               {isHelpCommand = value;} }
+        void initHidden(boolean value)              { if (initializable(hidden, value, DEFAULT_HIDDEN))                               {hidden = value;} }
+        void initVersion(String[] value)            { if (initializable(version, value, DEFAULT_MULTI_LINE))                          {version = value.clone();} }
+        void initCustomSynopsis(String[] value)     { if (initializable(customSynopsis, value, DEFAULT_MULTI_LINE))                   {customSynopsis = value.clone();} }
+        void initDescription(String[] value)        { if (initializable(description, value, DEFAULT_MULTI_LINE))                      {description = value.clone();} }
+        void initDescriptionHeading(String value)   { if (initializable(descriptionHeading, value, DEFAULT_SINGLE_VALUE))             {descriptionHeading = value;} }
+        void initHeader(String[] value)             { if (initializable(header, value, DEFAULT_MULTI_LINE))                           {header = value.clone();} }
+        void initHeaderHeading(String value)        { if (initializable(headerHeading, value, DEFAULT_SINGLE_VALUE))                  {headerHeading = value;} }
+        void initFooter(String[] value)             { if (initializable(footer, value, DEFAULT_MULTI_LINE))                           {footer = value.clone();} }
+        void initFooterHeading(String value)        { if (initializable(footerHeading, value, DEFAULT_SINGLE_VALUE))                  {footerHeading = value;} }
+        void initParameterListHeading(String value) { if (initializable(parameterListHeading, value, DEFAULT_SINGLE_VALUE))           {parameterListHeading = value;} }
+        void initOptionListHeading(String value)    { if (initializable(optionListHeading, value, DEFAULT_SINGLE_VALUE))              {optionListHeading = value;} }
+        void initVersionProvider(IVersionProvider value) { if (versionProvider == null) { versionProvider = value; } }
+        void initVersionProvider(Class<? extends IVersionProvider> value, IFactory factory) {
+            if (initializable(versionProvider, value, NoVersionProvider.class)) { versionProvider = (DefaultFactory.createVersionProvider(factory, value)); }
+        }
+        private boolean initializable(Object current, Object candidate, Object defaultValue) {
+            return current == null && !Assert.notNull(defaultValue, "defaultValue").equals(candidate);
+        }
+        private boolean initializable(Object current, Object[] candidate, Object[] defaultValue) {
+            return current == null && !Arrays.equals(Assert.notNull(defaultValue, "defaultValue"), candidate);
+        }
     }
     /** Models the shared attributes of {@link OptionSpec} and {@link PositionalParamSpec}.
      * @since 3.0 */
-    public abstract static class ArgSpec<T extends ArgSpec<T>> {
-        private Range arity;
-        private String[] description;
-        private boolean required;
-        private String paramLabel;
-        private String splitRegex;
+    public abstract static class ArgSpec {
+        // help-related fields
         private boolean hidden;
+        private String paramLabel;
+        private String[] description;
+        private Help.Visibility showDefaultValue;
+
+        // parser fields
+        private boolean required;
+        private String splitRegex;
         private Class<?> type;
         private Class<?>[] auxiliaryTypes;
         private ITypeConverter<?>[] converters;
         private Object defaultValue;
-        private Help.Visibility showDefaultValue;
-        private String toString;
         private IGetter getter;
         private ISetter setter;
         private List<String> rawStringValues = new ArrayList<String>();
+        Range arity;
+        String toString;
 
         /** Constructs a new {@code ArgSpec}. */
-        public ArgSpec() {
-            getter = new ObjectGetterSetter();
-            setter = (ISetter) getter;
-        }
-        @SuppressWarnings("unchecked") protected T self() { return (T) this; }
+        private ArgSpec(Builder builder) {
+            arity = builder.arity;
+            description = builder.description;
+            required = builder.required;
+            paramLabel = builder.paramLabel;
+            splitRegex = builder.splitRegex;
+            hidden = builder.hidden;
+            type = builder.type;
+            auxiliaryTypes = builder.auxiliaryTypes;
+            converters = builder.converters;
+            defaultValue = builder.defaultValue;
+            showDefaultValue = builder.showDefaultValue;
+            toString = builder.toString;
+            getter = builder.getter;
+            setter = builder.setter;
 
-        /** Ensures all attributes of this {@code ArgSpec} have a valid value; throws an {@link InitializationException} if this cannot be achieved. */
-        T validate() {
             if (description == null) { description = new String[0]; }
             if (splitRegex == null) { splitRegex = ""; }
             if (empty(paramLabel)) { paramLabel = "PARAM"; }
@@ -2995,8 +3007,8 @@ public class CommandLine {
             }
             if (converters == null) { converters = new ITypeConverter<?>[0]; }
             if (showDefaultValue == null) { showDefaultValue = Help.Visibility.ON_DEMAND; }
-            return self();
         }
+        private void arity(String range) {arity = Range.valueOf(range);}
 
         /** Customizable getter for obtaining the current value of an option or positional parameter from the model.
          * @since 3.0 */
@@ -3022,7 +3034,7 @@ public class CommandLine {
 
         /** Returns the description of this option, used when generating the usage documentation.
          * @see Option#description() */
-        public String[] description()  { return description; }
+        public String[] description()  { return description.clone(); }
 
         /** Returns how many arguments this option or positional parameter requires.
          * @see Option#arity() */
@@ -3034,13 +3046,13 @@ public class CommandLine {
 
         /** Returns auxiliary type information used when the {@link #type()} is a generic {@code Collection}, {@code Map} or an abstract class.
          * @see Option#type() */
-        public Class<?>[] auxiliaryTypes() { return auxiliaryTypes; }
+        public Class<?>[] auxiliaryTypes() { return auxiliaryTypes.clone(); }
 
         /** Returns one or more {@link CommandLine.ITypeConverter type converters} to use to convert the command line
          * argument into a strongly typed value (or key-value pair for map fields). This is useful when a particular
          * option or positional parameter should use a custom conversion that is different from the normal conversion for the arg spec's type.
          * @see Option#converter() */
-        public ITypeConverter<?>[] converters() { return converters; }
+        public ITypeConverter<?>[] converters() { return converters.clone(); }
 
         /** Returns a regular expression to split option parameter values or {@code ""} if the value should not be split.
          * @see Option#split() */
@@ -3058,9 +3070,6 @@ public class CommandLine {
 
         /** Returns whether this option or positional parameter's default value should be shown in the usage help. */
         public Help.Visibility showDefaultValue() { return showDefaultValue; }
-
-        /** Sets whether this option or positional parameter's default value should be shown in the usage help. */
-        public T showDefaultValue(Help.Visibility visibility) { showDefaultValue = Assert.notNull(visibility, "visibility"); return self(); }
 
         /** Returns the {@link IGetter} that is responsible for getting the value of this argument. */
         public IGetter getter()         { return getter; }
@@ -3083,47 +3092,6 @@ public class CommandLine {
          * @return the matched arguments as found on the command line: empty Strings for options without value, the values have not been {@linkplain #splitRegex() split}, and for map properties values may look like {@code "key=value"}*/
         public List<String> rawStringValues() { return Collections.unmodifiableList(rawStringValues); }
 
-        /** Sets whether this is a required option or positional parameter. */
-        public T required(boolean required)          { this.required = required; return self(); }
-
-        /** Sets the description of this option, used when generating the usage documentation. */
-        public T description(String... description)  { this.description = Assert.notNull(description, "description"); return self(); }
-
-        /** Sets how many arguments this option or positional parameter requires. */
-        public T arity(String range)                 { return arity(Range.valueOf(range)); }
-
-        /** Sets how many arguments this option or positional parameter requires. */
-        public T arity(Range arity)                  { this.arity = Assert.notNull(arity, "arity"); return self(); }
-
-        /** Sets the name of the option or positional parameter used in the usage help message. */
-        public T paramLabel(String paramLabel)       { this.paramLabel = Assert.notNull(paramLabel, "paramLabel"); return self(); }
-
-        /** Sets auxiliary type information used when the {@link #type()} is a generic {@code Collection}, {@code Map} or an abstract class. */
-        public T auxiliaryTypes(Class<?>... types)   { this.auxiliaryTypes = types; return self(); }
-
-        /** Sets option/positional param-specific converter (or converters for Maps) . */
-        public T converters(ITypeConverter<?>... cs) { this.converters = cs; return self(); }
-
-        /** Sets a regular expression to split option parameter values or {@code ""} if the value should not be split. */
-        public T splitRegex(String splitRegex)       { this.splitRegex = splitRegex; return self(); }
-
-        /** Sets whether this option should be excluded from the usage message. */
-        public T hidden(boolean hidden)              { this.hidden = hidden; return self(); }
-
-        /** Sets the type to convert the option or positional parameter to before {@linkplain #setValue(Object) setting} the value. */
-        public T type(Class<?> propertyType)         { this.type = propertyType; return self(); }
-
-        /** Sets the default value of this option or positional parameter to the specified value. */
-        public T defaultValue(Object defaultValue)   { this.defaultValue = defaultValue; return self(); }
-
-        /** Sets the {@link IGetter} that is responsible for getting the value of this argument to the specified value. */
-        public T getter(IGetter getter)              { this.getter = getter; return self(); }
-        /** Sets the {@link ISetter} that is responsible for setting the value of this argument to the specified value. */
-        public T setter(ISetter setter)              { this.setter = setter; return self(); }
-
-        /** Sets the string respresentation of this option or positional parameter to the specified value. */
-        public T withToString(String toString)       { this.toString = toString; return self(); }
-
         /** Returns a string respresentation of this option or positional parameter. */
         public String toString() { return toString; }
 
@@ -3133,7 +3101,7 @@ public class CommandLine {
         public boolean equals(Object obj) {
             if (obj == this) { return true; }
             if (!(obj instanceof ArgSpec)) { return false; }
-            ArgSpec<?> other = (ArgSpec<?>) obj;
+            ArgSpec other = (ArgSpec) obj;
             boolean result = Assert.equals(this.defaultValue, other.defaultValue)
                     && Assert.equals(this.type, other.type)
                     && Assert.equals(this.arity, other.arity)
@@ -3158,6 +3126,72 @@ public class CommandLine {
                     + 37 * Arrays.hashCode(description)
                     + 37 * Arrays.hashCode(auxiliaryTypes)
                     ;
+        }
+
+        abstract static class Builder<T extends Builder<T>> {
+            private Range arity;
+            private String[] description;
+            private boolean required;
+            private String paramLabel;
+            private String splitRegex;
+            private boolean hidden;
+            private Class<?> type;
+            private Class<?>[] auxiliaryTypes;
+            private ITypeConverter<?>[] converters;
+            private Object defaultValue;
+            private Help.Visibility showDefaultValue;
+            private String toString;
+            private IGetter getter = new ObjectGetterSetter();
+            private ISetter setter = (ISetter) getter;
+
+            public    abstract ArgSpec build();
+            protected abstract T self(); // subclasses must override to return "this"
+
+            /** Sets whether this is a required option or positional parameter. */
+            public T required(boolean required)          { this.required = required; return self(); }
+
+            /** Sets the description of this option, used when generating the usage documentation. */
+            public T description(String... description)  { this.description = Assert.notNull(description, "description").clone(); return self(); }
+
+            /** Sets how many arguments this option or positional parameter requires. */
+            public T arity(String range)                 { return arity(Range.valueOf(range)); }
+
+            /** Sets how many arguments this option or positional parameter requires. */
+            public T arity(Range arity)                  { this.arity = Assert.notNull(arity, "arity"); return self(); }
+
+            /** Sets the name of the option or positional parameter used in the usage help message. */
+            public T paramLabel(String paramLabel)       { this.paramLabel = Assert.notNull(paramLabel, "paramLabel"); return self(); }
+
+            /** Sets auxiliary type information; specify the element type(s) when the {@link #type()} is a generic {@code Collection} or a {@code Map};
+             * specify the concrete type when the {@link #type()} is an abstract class. */
+            public T auxiliaryTypes(Class<?>... types)   { this.auxiliaryTypes = Assert.notNull(types, "types").clone(); return self(); }
+
+            /** Sets option/positional param-specific converter (or converters for Maps) . */
+            public T converters(ITypeConverter<?>... cs) { this.converters = Assert.notNull(cs, "type converters").clone(); return self(); }
+
+            /** Sets a regular expression to split option parameter values or {@code ""} if the value should not be split. */
+            public T splitRegex(String splitRegex)       { this.splitRegex = Assert.notNull(splitRegex, "splitRegex"); return self(); }
+
+            /** Sets whether this option or positional parameter's default value should be shown in the usage help. */
+            public T showDefaultValue(Help.Visibility visibility) { showDefaultValue = Assert.notNull(visibility, "visibility"); return self(); }
+
+            /** Sets whether this option should be excluded from the usage message. */
+            public T hidden(boolean hidden)              { this.hidden = hidden; return self(); }
+
+            /** Sets the type to convert the option or positional parameter to before {@linkplain #setValue(Object) setting} the value.
+             * For multi-value options and positional parameters this can be an array, or a (sub-type of) Collection or Map. */
+            public T type(Class<?> propertyType)         { this.type = Assert.notNull(propertyType, "type"); return self(); }
+
+            /** Sets the default value of this option or positional parameter to the specified value. */
+            public T defaultValue(Object defaultValue)   { this.defaultValue = defaultValue; return self(); }
+
+            /** Sets the {@link IGetter} that is responsible for getting the value of this argument to the specified value. */
+            public T getter(IGetter getter)              { this.getter = getter; return self(); }
+            /** Sets the {@link ISetter} that is responsible for setting the value of this argument to the specified value. */
+            public T setter(ISetter setter)              { this.setter = setter; return self(); }
+
+            /** Sets the string respresentation of this option or positional parameter to the specified value. */
+            public T withToString(String toString)       { this.toString = toString; return self(); }
         }
     }
     /** The {@code OptionSpec} class models aspects of a <em>named option</em> of a {@linkplain CommandSpec command}, including whether
@@ -3197,35 +3231,39 @@ public class CommandLine {
      * This behaviour can be customized by installing a custom {@link IGetter} and {@link ISetter} on the {@code OptionSpec}.
      * </p>
      * @since 3.0 */
-    public static class OptionSpec extends ArgSpec<OptionSpec> {
+    public static class OptionSpec extends ArgSpec {
         private String[] names;
         private boolean help;
         private boolean usageHelp;
         private boolean versionHelp;
 
-        public OptionSpec(String name, String... names) {
-            this.names = new String[Assert.notNull(names, "names").length + 1];
-            this.names[0] = Assert.notNull(name, "name");
-            System.arraycopy(names, 0, this.names, 1, names.length);
+        public static OptionSpec.Builder builder(String name, String... names) {
+            String[] copy = new String[Assert.notNull(names, "names").length + 1];
+            copy[0] = Assert.notNull(name, "name");
+            System.arraycopy(names, 0, copy, 1, names.length);
+            return new Builder(copy);
         }
-        public OptionSpec(String[] names) { this.names = copy(Assert.notNull(names, "names"), String.class); }
-        protected OptionSpec self() { return this; }
+        public static OptionSpec.Builder builder(String[] names) { return new Builder(names); }
 
         /** Ensures all attributes of this {@code OptionSpec} have a valid value; throws an {@link InitializationException} if this cannot be achieved. */
-        OptionSpec validate() {
-            super.validate();
+        private OptionSpec(Builder builder) {
+            super(builder);
+            names = builder.names;
+            help = builder.help;
+            usageHelp = builder.usageHelp;
+            versionHelp = builder.versionHelp;
+
             if (names == null || names.length == 0 || Arrays.asList(names).contains("")) {
                 throw new InitializationException("Invalid names: " + Arrays.toString(names));
             }
-            if (toString() == null) { withToString("option " + names[0]); }
-            return this;
+            if (toString() == null) { toString = "option " + names[0]; }
         }
         public boolean isOption()     { return true; }
         public boolean isPositional() { return false; }
 
         /** Returns one or more option names. At least one option name is required.
          * @see Option#names() */
-        public String[] names()       { return names; }
+        public String[] names()       { return names.clone(); }
 
         private boolean showDefaultValue(CommandSpec commandSpec) {
             if (showDefaultValue() == Help.Visibility.ALWAYS) { return true; }
@@ -3246,19 +3284,6 @@ public class CommandLine {
         /** Returns whether this option allows the user to request version information.
          * @see Option#versionHelp()  */
         public boolean versionHelp()  { return versionHelp; }
-
-        /** Replaces the option names with the specified values. At least one option name is required.
-         * @return this OptionSpec instance to provide a fluent interface */
-        public OptionSpec names(String... names)           { this.names = names; return self(); }
-
-        /** Sets whether this option disables validation of the other arguments. */
-        public OptionSpec help(boolean help)               { this.help = help; return self(); }
-
-        /** Sets whether this option allows the user to request usage help. */
-        public OptionSpec usageHelp(boolean usageHelp)     { this.usageHelp = usageHelp; return self(); }
-
-        /** Sets whether this option allows the user to request version information.*/
-        public OptionSpec versionHelp(boolean versionHelp) { this.versionHelp = versionHelp; return self(); }
         public boolean equals(Object obj) {
             if (obj == this) { return true; }
             if (!(obj instanceof OptionSpec)) { return false; }
@@ -3276,6 +3301,31 @@ public class CommandLine {
                     + 37 * Assert.hashCode(usageHelp)
                     + 37 * Assert.hashCode(versionHelp)
                     + 37 * Arrays.hashCode(names);
+        }
+
+        public static class Builder extends ArgSpec.Builder<Builder> {
+            private String[] names;
+            private boolean help;
+            private boolean usageHelp;
+            private boolean versionHelp;
+
+            private Builder(String[] names) { this.names = names.clone(); }
+
+            @Override public OptionSpec build() { return new OptionSpec(this); }
+            @Override protected Builder self() { return this; }
+
+            /** Replaces the option names with the specified values. At least one option name is required.
+             * @return this OptionSpec instance to provide a fluent interface */
+            public Builder names(String... names)           { this.names = Assert.notNull(names, "names").clone(); return self(); }
+
+            /** Sets whether this option disables validation of the other arguments. */
+            public Builder help(boolean help)               { this.help = help; return self(); }
+
+            /** Sets whether this option allows the user to request usage help. */
+            public Builder usageHelp(boolean usageHelp)     { this.usageHelp = usageHelp; return self(); }
+
+            /** Sets whether this option allows the user to request version information.*/
+            public Builder versionHelp(boolean versionHelp) { this.versionHelp = versionHelp; return self(); }
         }
     }
     /** The {@code PositionalParamSpec} class models aspects of a <em>positional parameter</em> of a {@linkplain CommandSpec command}, including whether
@@ -3317,17 +3367,16 @@ public class CommandLine {
      * This behaviour can be customized by installing a custom {@link IGetter} and {@link ISetter} on the {@code PositionalParamSpec}.
      * </p>
      * @since 3.0 */
-    public static class PositionalParamSpec extends ArgSpec<PositionalParamSpec> {
+    public static class PositionalParamSpec extends ArgSpec {
         private Range index;
         private Range capacity;
 
         /** Ensures all attributes of this {@code PositionalParamSpec} have a valid value; throws an {@link InitializationException} if this cannot be achieved. */
-        PositionalParamSpec validate() {
-            super.validate();
-            if (index() == null)    { index("*");}
-            if (capacity() == null) { capacity = Range.parameterCapacity(arity(), index()); }
-            if (toString() == null) { withToString("positional parameter[" + index() + "]"); }
-            return this;
+        private PositionalParamSpec(Builder builder) {
+            super(builder);
+            index = builder.index == null ? Range.valueOf("*") : builder.index; 
+            capacity = builder.capacity == null ? Range.parameterCapacity(arity, index) : builder.capacity;
+            if (toString == null) { toString = "positional parameter[" + index() + "]"; }
         }
         public boolean isOption()        { return false; }
         public boolean isPositional()    { return true; }
@@ -3336,13 +3385,8 @@ public class CommandLine {
          * @see Parameters#index() */
         public Range index()           { return index; }
         private Range capacity()       { return capacity; }
-
-        /** Sets the index or range specifying which of the command line arguments should be assigned to this positional parameter. */
-        public PositionalParamSpec index(String range)                 { return index(Range.valueOf(range)); }
-
-        /** Sets the index or range specifying which of the command line arguments should be assigned to this positional parameter. */
-        public PositionalParamSpec index(Range index)                  { this.index = index; return self(); }
-
+        public static Builder builder() { return new Builder(); }
+        
         private boolean showDefaultValue(CommandSpec commandSpec) {
             if (showDefaultValue() == Help.Visibility.ALWAYS) { return true; }
             if (showDefaultValue() == Help.Visibility.NEVER)  { return false; }
@@ -3365,6 +3409,20 @@ public class CommandLine {
             PositionalParamSpec other = (PositionalParamSpec) obj;
             return Assert.equals(this.capacity, other.capacity)
                     && Assert.equals(this.index, other.index);
+        }
+        public static class Builder extends ArgSpec.Builder<Builder> {
+            private Range capacity;
+            private Range index;
+            private Builder() {}
+            @Override public PositionalParamSpec build() { return new PositionalParamSpec(this); }
+            @Override protected Builder self()  { return this; }
+            /** Sets the index or range specifying which of the command line arguments should be assigned to this positional parameter. */
+            public Builder index(String range)  { return index(Range.valueOf(range)); }
+
+            /** Sets the index or range specifying which of the command line arguments should be assigned to this positional parameter. */
+            public Builder index(Range index)   { this.index = index; return self(); }
+
+            Builder capacity(Range capacity)   { this.capacity = capacity; return self(); }
         }
     }
     /**
@@ -3516,12 +3574,12 @@ public class CommandLine {
         private void parse(List<CommandLine> parsedCommands, Stack<String> argumentStack, String[] originalArgs) {
             clear(); // first reset any state in case this CommandLine instance is being reused
             if (tracer.isDebug()) {tracer.debug("Initializing %s: %d options, %d positional parameters, %d required, %d subcommands.%n",
-                    commandSpec.toString(), new HashSet<ArgSpec<?>>(commandSpec.optionsMap().values()).size(),
+                    commandSpec.toString(), new HashSet<ArgSpec>(commandSpec.optionsMap().values()).size(),
                     commandSpec.positionalParameters().size(), commandSpec.requiredArgs().size(), commandSpec
                             .subcommands().size());}
             parsedCommands.add(CommandLine.this);
-            List<ArgSpec<?>> required = new ArrayList<ArgSpec<?>>(commandSpec.requiredArgs());
-            Set<ArgSpec<?>> initialized = new HashSet<ArgSpec<?>>();
+            List<ArgSpec> required = new ArrayList<ArgSpec>(commandSpec.requiredArgs());
+            Set<ArgSpec> initialized = new HashSet<ArgSpec>();
             Collections.sort(required, new PositionalParametersSorter());
             try {
                 processArguments(parsedCommands, argumentStack, required, initialized, originalArgs);
@@ -3533,7 +3591,7 @@ public class CommandLine {
                 throw ParameterException.create(CommandLine.this, ex, arg, offendingArgIndex, originalArgs);
             }
             if (!isAnyHelpRequested() && !required.isEmpty()) {
-                for (ArgSpec<?> missing : required) {
+                for (ArgSpec missing : required) {
                     if (missing.isOption()) {
                         throw MissingParameterException.create(CommandLine.this, required, commandSpec.separator());
                     } else {
@@ -3549,8 +3607,8 @@ public class CommandLine {
 
         private void processArguments(List<CommandLine> parsedCommands,
                                       Stack<String> args,
-                                      Collection<ArgSpec<?>> required,
-                                      Set<ArgSpec<?>> initialized,
+                                      Collection<ArgSpec> required,
+                                      Set<ArgSpec> initialized,
                                       String[] originalArgs) throws Exception {
             // arg must be one of:
             // 1. the "--" double dash separating options from positional arguments
@@ -3657,12 +3715,12 @@ public class CommandLine {
             }
         }
 
-        private void processRemainderAsPositionalParameters(Collection<ArgSpec<?>> required, Set<ArgSpec<?>> initialized, Stack<String> args) throws Exception {
+        private void processRemainderAsPositionalParameters(Collection<ArgSpec> required, Set<ArgSpec> initialized, Stack<String> args) throws Exception {
             while (!args.empty()) {
                 processPositionalParameter(required, initialized, args);
             }
         }
-        private void processPositionalParameter(Collection<ArgSpec<?>> required, Set<ArgSpec<?>> initialized, Stack<String> args) throws Exception {
+        private void processPositionalParameter(Collection<ArgSpec> required, Set<ArgSpec> initialized, Stack<String> args) throws Exception {
             if (tracer.isDebug()) {tracer.debug("Processing next arg as a positional parameter at index=%d. Remainder=%s%n", position, reverse(copy(args)));}
             if (stopAtPositional) {
                 if (!endOfOptions && tracer.isDebug()) {tracer.debug("Parser was configured with stopAtPositional=true, treating remaining arguments as positional parameters.%n");}
@@ -3693,12 +3751,12 @@ public class CommandLine {
             }
         }
 
-        private void processStandaloneOption(Collection<ArgSpec<?>> required,
-                                             Set<ArgSpec<?>> initialized,
+        private void processStandaloneOption(Collection<ArgSpec> required,
+                                             Set<ArgSpec> initialized,
                                              String arg,
                                              Stack<String> args,
                                              boolean paramAttachedToKey) throws Exception {
-            ArgSpec<?> argSpec = commandSpec.optionsMap().get(arg);
+            ArgSpec argSpec = commandSpec.optionsMap().get(arg);
             required.remove(argSpec);
             Range arity = argSpec.arity();
             if (paramAttachedToKey) {
@@ -3708,8 +3766,8 @@ public class CommandLine {
             applyOption(argSpec, arity, args, initialized, "option " + arg);
         }
 
-        private void processClusteredShortOptions(Collection<ArgSpec<?>> required,
-                                                  Set<ArgSpec<?>> initialized,
+        private void processClusteredShortOptions(Collection<ArgSpec> required,
+                                                  Set<ArgSpec> initialized,
                                                   String arg,
                                                   Stack<String> args)
                 throws Exception {
@@ -3718,7 +3776,7 @@ public class CommandLine {
             boolean paramAttachedToOption = true;
             do {
                 if (cluster.length() > 0 && commandSpec.posixOptionsMap().containsKey(cluster.charAt(0))) {
-                    ArgSpec<?> argSpec = commandSpec.posixOptionsMap().get(cluster.charAt(0));
+                    ArgSpec argSpec = commandSpec.posixOptionsMap().get(cluster.charAt(0));
                     Range arity = argSpec.arity();
                     String argDescription = "option " + prefix + cluster.charAt(0);
                     if (tracer.isDebug()) {tracer.debug("Found option '%s%s' in %s: %s, arity=%s%n", prefix, cluster.charAt(0), arg,
@@ -3773,10 +3831,10 @@ public class CommandLine {
             } while (true);
         }
 
-        private int applyOption(ArgSpec<?> argSpec,
+        private int applyOption(ArgSpec argSpec,
                                 Range arity,
                                 Stack<String> args,
-                                Set<ArgSpec<?>> initialized,
+                                Set<ArgSpec> initialized,
                                 String argDescription) throws Exception {
             updateHelpRequested(argSpec);
             assertNoMissingParameters(argSpec, arity.min, args);
@@ -3792,10 +3850,10 @@ public class CommandLine {
             }
         }
 
-        private int applyValueToSingleValuedField(ArgSpec<?> argSpec,
+        private int applyValueToSingleValuedField(ArgSpec argSpec,
                                                   Range arity,
                                                   Stack<String> args,
-                                                  Set<ArgSpec<?>> initialized,
+                                                  Set<ArgSpec> initialized,
                                                   String argDescription) throws Exception {
             boolean noMoreValues = args.isEmpty();
             String value = args.isEmpty() ? null : trim(args.pop()); // unquote the value
@@ -3850,7 +3908,7 @@ public class CommandLine {
             argSpec.rawStringValues.add(value); // #279 track empty string value if no command line argument was consumed
             return result;
         }
-        private int applyValuesToMapField(ArgSpec<?> argSpec,
+        private int applyValuesToMapField(ArgSpec argSpec,
                                           Range arity,
                                           Stack<String> args,
                                           String argDescription) throws Exception {
@@ -3868,7 +3926,7 @@ public class CommandLine {
             return map.size() - originalSize;
         }
 
-        private void consumeMapArguments(ArgSpec<?> argSpec,
+        private void consumeMapArguments(ArgSpec argSpec,
                                          Range arity,
                                          Stack<String> args,
                                          Class<?>[] classes,
@@ -3889,7 +3947,7 @@ public class CommandLine {
             }
         }
 
-        private void consumeOneMapArgument(ArgSpec<?> argSpec,
+        private void consumeOneMapArgument(ArgSpec argSpec,
                                            Stack<String> args,
                                            Class<?>[] classes,
                                            ITypeConverter<?> keyConverter, ITypeConverter<?> valueConverter,
@@ -3922,7 +3980,7 @@ public class CommandLine {
             argSpec.rawStringValues.add(raw);
         }
 
-        private void checkMaxArityExceeded(Range arity, int remainder, ArgSpec<?> argSpec, String[] values) {
+        private void checkMaxArityExceeded(Range arity, int remainder, ArgSpec argSpec, String[] values) {
             if (values.length <= remainder) { return; }
             String desc = arity.max == remainder ? "" + remainder : arity + ", remainder=" + remainder;
             throw new MaxValuesforFieldExceededException(CommandLine.this, optionDescription("", argSpec, -1) +
@@ -3930,7 +3988,7 @@ public class CommandLine {
                     values.length + " values were specified: " + Arrays.toString(values));
         }
 
-        private int applyValuesToArrayField(ArgSpec<?> argSpec,
+        private int applyValuesToArrayField(ArgSpec argSpec,
                                             Range arity,
                                             Stack<String> args,
                                             String argDescription) throws Exception {
@@ -3958,7 +4016,7 @@ public class CommandLine {
         }
 
         @SuppressWarnings("unchecked")
-        private int applyValuesToCollectionField(ArgSpec<?> argSpec,
+        private int applyValuesToCollectionField(ArgSpec argSpec,
                                                  Range arity,
                                                  Stack<String> args,
                                                  String argDescription) throws Exception {
@@ -3979,7 +4037,7 @@ public class CommandLine {
             return converted.size();
         }
 
-        private List<Object> consumeArguments(ArgSpec<?> argSpec,
+        private List<Object> consumeArguments(ArgSpec argSpec,
                                               Range arity,
                                               Stack<String> args,
                                               Class<?> type,
@@ -4003,7 +4061,7 @@ public class CommandLine {
             return result;
         }
 
-        private int consumeOneArgument(ArgSpec<?> argSpec,
+        private int consumeOneArgument(ArgSpec argSpec,
                                        Range arity,
                                        Stack<String> args,
                                        Class<?> type,
@@ -4028,7 +4086,7 @@ public class CommandLine {
          * <p>
          * Usually, we stop if we encounter '--', a command, or another option.
          * However, if end-of-options has been reached, positional parameters may consume all remaining arguments. </p>*/
-        private boolean varargCanConsumeNextValue(ArgSpec<?> argSpec, String nextValue) {
+        private boolean varargCanConsumeNextValue(ArgSpec argSpec, String nextValue) {
             if (endOfOptions && argSpec.isPositional()) { return true; }
             boolean isCommand = commandSpec.subcommands().containsKey(nextValue);
             return !isCommand && !isOption(nextValue);
@@ -4056,7 +4114,7 @@ public class CommandLine {
             }
             return (arg.length() > 2 && arg.startsWith("-") && commandSpec.posixOptionsMap().containsKey(arg.charAt(1)));
         }
-        private Object tryConvert(ArgSpec<?> argSpec, int index, ITypeConverter<?> converter, String value, Class<?> type)
+        private Object tryConvert(ArgSpec argSpec, int index, ITypeConverter<?> converter, String value, Class<?> type)
                 throws Exception {
             try {
                 return converter.convert(value);
@@ -4068,7 +4126,7 @@ public class CommandLine {
             }
         }
 
-        private String optionDescription(String prefix, ArgSpec<?> argSpec, int index) {
+        private String optionDescription(String prefix, ArgSpec argSpec, int index) {
             String desc = "";
             if (argSpec.isOption()) {
                 desc = prefix + "option '" + ((OptionSpec) argSpec).names()[0] + "'";
@@ -4089,7 +4147,7 @@ public class CommandLine {
         private void updateHelpRequested(CommandSpec command) {
             isHelpRequested |= command.helpCommand();
         }
-        private void updateHelpRequested(ArgSpec<?> argSpec) {
+        private void updateHelpRequested(ArgSpec argSpec) {
             if (argSpec.isOption()) {
                 OptionSpec option = (OptionSpec) argSpec;
                 isHelpRequested                       |= is(argSpec, "help", option.help());
@@ -4097,7 +4155,7 @@ public class CommandLine {
                 CommandLine.this.usageHelpRequested   |= is(argSpec, "usageHelp", option.usageHelp());
             }
         }
-        private boolean is(ArgSpec<?> p, String attribute, boolean value) {
+        private boolean is(ArgSpec p, String attribute, boolean value) {
             if (value) { if (tracer.isInfo()) {tracer.info("%s has '%s' annotation: not validating required fields%n", p.toString(), attribute); }}
             return value;
         }
@@ -4124,7 +4182,7 @@ public class CommandLine {
             } catch (Exception ignored) {}
             return new LinkedHashMap<Object, Object>();
         }
-        private ITypeConverter<?> getTypeConverter(final Class<?> type, ArgSpec<?> argSpec, int index) {
+        private ITypeConverter<?> getTypeConverter(final Class<?> type, ArgSpec argSpec, int index) {
             if (argSpec.converters().length > index) { return argSpec.converters()[index]; }
             if (converterRegistry.containsKey(type)) { return converterRegistry.get(type); }
             if (type.isEnum()) {
@@ -4138,7 +4196,7 @@ public class CommandLine {
             throw new MissingTypeConverterException(CommandLine.this, "No TypeConverter registered for " + type.getName() + " of " + argSpec);
         }
 
-        private void assertNoMissingParameters(ArgSpec<?> argSpec, int arity, Stack<String> args) {
+        private void assertNoMissingParameters(ArgSpec argSpec, int arity, Stack<String> args) {
             if (arity > args.size()) {
                 if (arity == 1) {
                     if (argSpec.isOption()) {
@@ -4186,13 +4244,13 @@ public class CommandLine {
                         : value;
         }
     }
-    private static class PositionalParametersSorter implements Comparator<ArgSpec<?>> {
+    private static class PositionalParametersSorter implements Comparator<ArgSpec> {
         private static final Range OPTION_INDEX = new Range(0, 0, false, true, "0");
-        public int compare(ArgSpec<?> p1, ArgSpec<?> p2) {
+        public int compare(ArgSpec p1, ArgSpec p2) {
             int result = index(p1).compareTo(index(p2));
             return (result == 0) ? p1.arity().compareTo(p2.arity()) : result;
         }
-        private Range index(ArgSpec<?> arg) { return arg.isOption() ? OPTION_INDEX : ((PositionalParamSpec) arg).index(); }
+        private Range index(ArgSpec arg) { return arg.isOption() ? OPTION_INDEX : ((PositionalParamSpec) arg).index(); }
     }
     /**
      * Inner class to group the built-in {@link ITypeConverter} implementations.
@@ -5020,7 +5078,7 @@ public class CommandLine {
          * @return a new minimal ParamLabelRenderer */
         public static IParamLabelRenderer createMinimalParamLabelRenderer() {
             return new IParamLabelRenderer() {
-                public Text renderParameterLabel(ArgSpec<?> argSpec, Ansi ansi, List<IStyle> styles) {
+                public Text renderParameterLabel(ArgSpec argSpec, Ansi ansi, List<IStyle> styles) {
                     return ansi.apply(argSpec.paramLabel(), styles);
                 }
                 public String separator() { return ""; }
@@ -5235,7 +5293,7 @@ public class CommandLine {
              * @param styles the styles to apply to the parameter label
              * @return a text rendering of the Option parameter or positional parameter
              * @since 3.0 */
-            Text renderParameterLabel(ArgSpec<?> argSpec, Ansi ansi, List<IStyle> styles);
+            Text renderParameterLabel(ArgSpec argSpec, Ansi ansi, List<IStyle> styles);
 
             /** Returns the separator between option name and param label.
              * @return the separator between option name and param label */
@@ -5254,7 +5312,7 @@ public class CommandLine {
                 this.commandSpec = Assert.notNull(commandSpec, "commandSpec");
             }
             public String separator() { return commandSpec.separator(); }
-            public Text renderParameterLabel(ArgSpec<?> argSpec, Ansi ansi, List<IStyle> styles) {
+            public Text renderParameterLabel(ArgSpec argSpec, Ansi ansi, List<IStyle> styles) {
                 Text result = ansi.new Text("");
                 String sep = argSpec.isOption() ? separator() : "";
                 Text paramName = ansi.apply(argSpec.paramLabel(), styles);
@@ -5333,7 +5391,7 @@ public class CommandLine {
              * @param argSpec the Option or Parameters
              * @param cellValues the text values representing the Option/Parameters, to be displayed in tabular form
              * @since 3.0 */
-            public void layout(ArgSpec<?> argSpec, Text[][] cellValues) {
+            public void layout(ArgSpec argSpec, Text[][] cellValues) {
                 for (Text[] oneRow : cellValues) {
                     table.addRowValues(oneRow);
                 }
@@ -6290,18 +6348,18 @@ public class CommandLine {
             super(commandLine, msg);
         }
 
-        private static MissingParameterException create(CommandLine cmd, Collection<ArgSpec<?>> missing, String separator) {
+        private static MissingParameterException create(CommandLine cmd, Collection<ArgSpec> missing, String separator) {
             if (missing.size() == 1) {
                 return new MissingParameterException(cmd, "Missing required option '"
                         + describe(missing.iterator().next(), separator) + "'");
             }
             List<String> names = new ArrayList<String>(missing.size());
-            for (ArgSpec<?> argSpec : missing) {
+            for (ArgSpec argSpec : missing) {
                 names.add(describe(argSpec, separator));
             }
             return new MissingParameterException(cmd, "Missing required options " + names.toString());
         }
-        private static String describe(ArgSpec<?> argSpec, String separator) {
+        private static String describe(ArgSpec argSpec, String separator) {
             String prefix = (argSpec.isOption())
                 ? ((OptionSpec) argSpec).names()[0] + separator
                 : "params[" + ((PositionalParamSpec) argSpec).index() + "]" + separator;
@@ -6316,7 +6374,7 @@ public class CommandLine {
         private static final long serialVersionUID = -3355128012575075641L;
         public DuplicateOptionAnnotationsException(String msg) { super(msg); }
 
-        private static DuplicateOptionAnnotationsException create(String name, ArgSpec<?> argSpec1, ArgSpec<?> argSpec2) {
+        private static DuplicateOptionAnnotationsException create(String name, ArgSpec argSpec1, ArgSpec argSpec2) {
             return new DuplicateOptionAnnotationsException("Option name '" + name + "' is used by both " +
                     argSpec1.toString() + " and " + argSpec2.toString());
         }

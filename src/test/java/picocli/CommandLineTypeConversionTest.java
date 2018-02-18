@@ -89,7 +89,7 @@ public class CommandLineTypeConversionTest {
         @Option(names = "-Currency")      Currency aCurrencyField;
         @Option(names = "-tz")            TimeZone aTimeZone;
         @Option(names = "-byteOrder")     ByteOrder aByteOrder;
-        @Option(names = "-Class")         Class aClass;
+        @Option(names = "-Class")         Class<?> aClass;
         @Option(names = "-Connection")    Connection aConnection;
         @Option(names = "-Driver")        Driver aDriver;
         @Option(names = "-Timestamp")     Timestamp aTimestamp;
@@ -630,7 +630,7 @@ public class CommandLineTypeConversionTest {
         public Integer convert(String value) { return Integer.parseInt(value) + 23; }
     }
     static class Plus23ConverterFactory implements CommandLine.IFactory {
-        public <T> T create(Class<T> cls) { return (T) new Plus23Converter(); }
+        @SuppressWarnings("unchecked") public <T> T create(Class<T> cls) { return (T) new Plus23Converter(); }
     }
     @Test
     public void testAnnotatedCustomConverterFactory() {
@@ -778,6 +778,7 @@ public class CommandLineTypeConversionTest {
         assertEquals(expectedToString, path.toString());
     }
 
+    @SuppressWarnings("unchecked")
     private Map<Class<?>, ITypeConverter<?>> extractRegistry(CommandLine commandLine) throws Exception {
         Object interpreter = makeAccessible(CommandLine.class.getDeclaredField("interpreter")).get(commandLine);
         return (Map<Class<?>, ITypeConverter<?>>) makeAccessible(interpreter.getClass().getDeclaredField("converterRegistry")).get(interpreter);

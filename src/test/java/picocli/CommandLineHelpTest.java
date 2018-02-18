@@ -766,7 +766,7 @@ public class CommandLineHelpTest {
             Map<Short, Field> a;
             @Option(names = "-b", required = true, paramLabel = "KEY=VAL", arity = "0", description = "b description")
             @SuppressWarnings("unchecked")
-            Map b;
+            Map<?, ?> b;
             @Option(names = "-c", required = true, arity = "1", type = {Long.class, File.class}, description = "c description")
             Map<Long, File> c;
             @Option(names = "-d", required = true, arity = "2", type = {URI.class, URL.class}, description = "d description")
@@ -791,7 +791,7 @@ public class CommandLineHelpTest {
             Map<Short, Field> a;
             @Option(names = "-b", arity = "0", type = {UUID.class, Long.class}, description = "b description")
             @SuppressWarnings("unchecked")
-            Map b;
+            Map<?, ?> b;
             @Option(names = "-c", arity = "1", description = "c description")
             Map<Long, File> c;
             @Option(names = "-d", arity = "2", type = {URI.class, URL.class}, description = "d description")
@@ -935,7 +935,7 @@ public class CommandLineHelpTest {
             Map<Short, Field> a;
             @Parameters(index = "0", arity = "0", type = {UUID.class, Long.class}, description = "b description (arity=0)")
             @SuppressWarnings("unchecked")
-            Map b;
+            Map<?, ?> b;
             @Parameters(index = "1", arity = "1", description = "c description")
             Map<Long, File> c;
             @Parameters(index = "2", arity = "2", type = {URI.class, URL.class}, description = "d description")
@@ -2705,7 +2705,7 @@ public class CommandLineHelpTest {
             @Option(names = "-e") Map<? extends Integer, ? super Long> e;
             @Option(names = "-f", type = {Long.class, Float.class}) Map<? extends Number, ? super Number> f;
             @SuppressWarnings("unchecked")
-            @Option(names = "-g", type = {TimeUnit.class, Float.class}) Map g;
+            @Option(names = "-g", type = {TimeUnit.class, Float.class}) Map<?, ?> g;
         }
         String actual = usageString(new App(), Help.Ansi.OFF);
         String expected = String.format("" +
