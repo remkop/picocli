@@ -22,9 +22,8 @@ import picocli.CommandLine.Help.IParameterRenderer;
 import picocli.CommandLine.Help.Layout;
 import picocli.CommandLine.Help.TextTable;
 
-import java.lang.reflect.Field;
-
 import static picocli.CommandLine.*;
+import static picocli.CommandLine.Model.*;
 import static picocli.CommandLine.Help.Column.Overflow.*;
 
 /**

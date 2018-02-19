@@ -27,12 +27,12 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import picocli.CommandLine.ArgSpec;
 import picocli.CommandLine.Command;
-import picocli.CommandLine.CommandSpec;
 import picocli.CommandLine.Option;
-import picocli.CommandLine.OptionSpec;
 import picocli.CommandLine.Parameters;
+import picocli.CommandLine.Model.ArgSpec;
+import picocli.CommandLine.Model.CommandSpec;
+import picocli.CommandLine.Model.OptionSpec;
 
 import static java.lang.String.*;
 

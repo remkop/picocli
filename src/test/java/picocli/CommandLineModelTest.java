@@ -24,6 +24,7 @@ import java.util.Map;
 import org.junit.Test;
 
 import picocli.CommandLine.*;
+import picocli.CommandLine.Model.*;
 import picocli.CommandLine.Help.Ansi;
 
 import static org.junit.Assert.*;

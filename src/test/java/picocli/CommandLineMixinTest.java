@@ -17,6 +17,7 @@ package picocli;
 
 import org.junit.Test;
 import picocli.CommandLine.*;
+import picocli.CommandLine.Model.*;
 
 import java.io.File;
 import java.io.UnsupportedEncodingException;

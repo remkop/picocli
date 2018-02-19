@@ -16,6 +16,7 @@
 package picocli;
 
 import java.lang.reflect.Field;
+import picocli.CommandLine.Model.*;
 
 public class ModelTestUtil {
     public static Field field(Class<?> cls, String fieldName) throws NoSuchFieldException {
@@ -28,14 +29,14 @@ public class ModelTestUtil {
         }
         return result;
     }
-    public static CommandLine.OptionSpec option(Object obj, String fieldName) throws Exception {
+    public static OptionSpec option(Object obj, String fieldName) throws Exception {
         return option(obj, fieldName, CommandLine.defaultFactory());
     }
-    public static CommandLine.OptionSpec option(Object obj, String fieldName, CommandLine.IFactory factory) throws Exception {
-        return CommandLine.ArgSpecBuilder.buildOptionSpec(obj, obj.getClass().getDeclaredField(fieldName), factory);
+    public static OptionSpec option(Object obj, String fieldName, CommandLine.IFactory factory) throws Exception {
+        return ArgsReflection.extractOptionSpec(obj, obj.getClass().getDeclaredField(fieldName), factory);
     }
-    public static CommandLine.OptionSpec[] options(Object obj, String... fieldNames) throws Exception {
-        CommandLine.OptionSpec[] result = new CommandLine.OptionSpec[fieldNames.length];
+    public static OptionSpec[] options(Object obj, String... fieldNames) throws Exception {
+        OptionSpec[] result = new OptionSpec[fieldNames.length];
         for (int i = 0; i < fieldNames.length; i++) {
             result[i] = option(obj, fieldNames[i]);
         }

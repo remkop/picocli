@@ -19,6 +19,7 @@ import org.junit.After;
 import org.junit.Ignore;
 import org.junit.Test;
 import picocli.CommandLine.*;
+import picocli.CommandLine.Model.*;
 import picocli.CommandLine.Help.Ansi.IStyle;
 import picocli.CommandLine.Help.Ansi.Style;
 import picocli.CommandLine.Help.Ansi.Text;
