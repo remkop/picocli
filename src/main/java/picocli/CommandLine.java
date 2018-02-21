@@ -4607,7 +4607,7 @@ public class CommandLine {
         /** Constant String holding the default program name, value defined in {@link CommandSpec#DEFAULT_COMMAND_NAME}. */
         protected static final String DEFAULT_COMMAND_NAME = CommandSpec.DEFAULT_COMMAND_NAME;
 
-        /** Constant String holding the default string that separates options from option parameters, value defined in {@link CommandSpec#DEFAULT_SEPARATOR}. */
+        /** Constant String holding the default string that separates options from option parameters, value defined in {@link ParserSpec#DEFAULT_SEPARATOR}. */
         protected static final String DEFAULT_SEPARATOR = ParserSpec.DEFAULT_SEPARATOR;
 
         private final static int MINIMUM_USAGE_WIDTH = 55;
