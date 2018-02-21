@@ -161,22 +161,22 @@ public class CommandLineMixinTest {
         CommandSpec commandSpec = commandLine.getCommandSpec();
         assertEquals("mixmein", commandSpec.name());
         assertArrayEquals(new String[] {"Mixin 1.0"}, commandSpec.version());
-        assertEquals(":", commandSpec.separator());
-        assertArrayEquals(new String[] {"description from mixin"}, commandSpec.description());
-        assertEquals("Mixin Description Heading%n", commandSpec.descriptionHeading());
-        assertArrayEquals(new String[] {"Mixin Header"}, commandSpec.header());
-        assertEquals("Mixin Header Heading%n", commandSpec.headerHeading());
-        assertArrayEquals(new String[] {"Mixin Footer"}, commandSpec.footer());
-        assertEquals("Mixin Footer Heading%n", commandSpec.footerHeading());
-        assertEquals("Mixin Option List Heading%n", commandSpec.optionListHeading());
-        assertEquals("Mixin Parameter List Heading%n", commandSpec.parameterListHeading());
-        assertEquals("Mixin Command List Heading%n", commandSpec.commandListHeading());
-        assertEquals('%', commandSpec.requiredOptionMarker());
-        assertEquals("Mixin Synopsis Heading%n", commandSpec.synopsisHeading());
-        assertTrue("abbreviateSynopsis", commandSpec.abbreviateSynopsis());
-        assertArrayEquals(new String[] {"Mixin custom synopsis"}, commandSpec.customSynopsis());
-        assertTrue("showDefaultValues", commandSpec.showDefaultValues());
-        assertFalse("sortOptions", commandSpec.sortOptions());
+        assertEquals(":", commandSpec.parser().separator());
+        assertArrayEquals(new String[] {"description from mixin"}, commandSpec.usageMessage().description());
+        assertEquals("Mixin Description Heading%n", commandSpec.usageMessage().descriptionHeading());
+        assertArrayEquals(new String[] {"Mixin Header"}, commandSpec.usageMessage().header());
+        assertEquals("Mixin Header Heading%n", commandSpec.usageMessage().headerHeading());
+        assertArrayEquals(new String[] {"Mixin Footer"}, commandSpec.usageMessage().footer());
+        assertEquals("Mixin Footer Heading%n", commandSpec.usageMessage().footerHeading());
+        assertEquals("Mixin Option List Heading%n", commandSpec.usageMessage().optionListHeading());
+        assertEquals("Mixin Parameter List Heading%n", commandSpec.usageMessage().parameterListHeading());
+        assertEquals("Mixin Command List Heading%n", commandSpec.usageMessage().commandListHeading());
+        assertEquals('%', commandSpec.usageMessage().requiredOptionMarker());
+        assertEquals("Mixin Synopsis Heading%n", commandSpec.usageMessage().synopsisHeading());
+        assertTrue("abbreviateSynopsis", commandSpec.usageMessage().abbreviateSynopsis());
+        assertArrayEquals(new String[] {"Mixin custom synopsis"}, commandSpec.usageMessage().customSynopsis());
+        assertTrue("showDefaultValues", commandSpec.usageMessage().showDefaultValues());
+        assertFalse("sortOptions", commandSpec.usageMessage().sortOptions());
 
         String expected = String.format("" +
                 "Mixin Header Heading%n" +
@@ -267,19 +267,19 @@ public class CommandLineMixinTest {
         CommandSpec commandSpec = commandLine.getCommandSpec();
         assertEquals("receiver", commandSpec.name());
         assertArrayEquals(new String[] {"Receiver 1.0"}, commandSpec.version());
-        assertEquals("~", commandSpec.separator());
-        assertArrayEquals(new String[] {"Receiver description"}, commandSpec.description());
-        assertEquals("Receiver Description Heading%n", commandSpec.descriptionHeading());
-        assertArrayEquals(new String[] {"Receiver Header"}, commandSpec.header());
-        assertEquals("Receiver Header Heading%n", commandSpec.headerHeading());
-        assertArrayEquals(new String[] {"Receiver Footer"}, commandSpec.footer());
-        assertEquals("Receiver Footer Heading%n", commandSpec.footerHeading());
-        assertEquals("Receiver Option List Heading%n", commandSpec.optionListHeading());
-        assertEquals("Receiver Parameter List Heading%n", commandSpec.parameterListHeading());
-        assertEquals("Receiver Command List Heading%n", commandSpec.commandListHeading());
-        assertEquals('#', commandSpec.requiredOptionMarker());
-        assertEquals("Receiver Synopsis Heading%n", commandSpec.synopsisHeading());
-        assertArrayEquals(new String[] {"Receiver custom synopsis"}, commandSpec.customSynopsis());
+        assertEquals("~", commandSpec.parser().separator());
+        assertArrayEquals(new String[] {"Receiver description"}, commandSpec.usageMessage().description());
+        assertEquals("Receiver Description Heading%n", commandSpec.usageMessage().descriptionHeading());
+        assertArrayEquals(new String[] {"Receiver Header"}, commandSpec.usageMessage().header());
+        assertEquals("Receiver Header Heading%n", commandSpec.usageMessage().headerHeading());
+        assertArrayEquals(new String[] {"Receiver Footer"}, commandSpec.usageMessage().footer());
+        assertEquals("Receiver Footer Heading%n", commandSpec.usageMessage().footerHeading());
+        assertEquals("Receiver Option List Heading%n", commandSpec.usageMessage().optionListHeading());
+        assertEquals("Receiver Parameter List Heading%n", commandSpec.usageMessage().parameterListHeading());
+        assertEquals("Receiver Command List Heading%n", commandSpec.usageMessage().commandListHeading());
+        assertEquals('#', commandSpec.usageMessage().requiredOptionMarker());
+        assertEquals("Receiver Synopsis Heading%n", commandSpec.usageMessage().synopsisHeading());
+        assertArrayEquals(new String[] {"Receiver custom synopsis"}, commandSpec.usageMessage().customSynopsis());
 
         String expected = String.format("" +
                 "Receiver Header Heading%n" +
@@ -358,19 +358,19 @@ public class CommandLineMixinTest {
         CommandSpec commandSpec = commandLine.getCommandSpec();
         assertEquals("mixmeinSub", commandSpec.name());
         assertArrayEquals(new String[] {"MixinSub 1.0"}, commandSpec.version());
-        assertEquals("~", commandSpec.separator());
-        assertArrayEquals(new String[] {"description from mixinSub"}, commandSpec.description());
-        assertEquals("MixinSub Description Heading%n", commandSpec.descriptionHeading());
-        assertArrayEquals(new String[] {"MixinSub Header"}, commandSpec.header());
-        assertEquals("MixinSub Header Heading%n", commandSpec.headerHeading());
-        assertArrayEquals(new String[] {"MixinSub Footer"}, commandSpec.footer());
-        assertEquals("MixinSub Footer Heading%n", commandSpec.footerHeading());
-        assertEquals("MixinSub Option List Heading%n", commandSpec.optionListHeading());
-        assertEquals("MixinSub Parameter List Heading%n", commandSpec.parameterListHeading());
-        assertEquals("MixinSub Command List Heading%n", commandSpec.commandListHeading());
-        assertEquals('#', commandSpec.requiredOptionMarker());
-        assertEquals("MixinSub Synopsis Heading%n", commandSpec.synopsisHeading());
-        assertArrayEquals(new String[] {"MixinSub custom synopsis"}, commandSpec.customSynopsis());
+        assertEquals("~", commandSpec.parser().separator());
+        assertArrayEquals(new String[] {"description from mixinSub"}, commandSpec.usageMessage().description());
+        assertEquals("MixinSub Description Heading%n", commandSpec.usageMessage().descriptionHeading());
+        assertArrayEquals(new String[] {"MixinSub Header"}, commandSpec.usageMessage().header());
+        assertEquals("MixinSub Header Heading%n", commandSpec.usageMessage().headerHeading());
+        assertArrayEquals(new String[] {"MixinSub Footer"}, commandSpec.usageMessage().footer());
+        assertEquals("MixinSub Footer Heading%n", commandSpec.usageMessage().footerHeading());
+        assertEquals("MixinSub Option List Heading%n", commandSpec.usageMessage().optionListHeading());
+        assertEquals("MixinSub Parameter List Heading%n", commandSpec.usageMessage().parameterListHeading());
+        assertEquals("MixinSub Command List Heading%n", commandSpec.usageMessage().commandListHeading());
+        assertEquals('#', commandSpec.usageMessage().requiredOptionMarker());
+        assertEquals("MixinSub Synopsis Heading%n", commandSpec.usageMessage().synopsisHeading());
+        assertArrayEquals(new String[] {"MixinSub custom synopsis"}, commandSpec.usageMessage().customSynopsis());
 
         String expected = String.format("" +
                 "MixinSub Header Heading%n" +
@@ -474,22 +474,23 @@ public class CommandLineMixinTest {
         CommandSpec commandSpec = commandLine.getCommandSpec();
         assertEquals("superName", commandSpec.name());
         assertArrayEquals(new String[] {"MixMeInSuper 1.0"}, commandSpec.version());
-        assertEquals("$", commandSpec.separator());
+        assertEquals("$", commandSpec.parser().separator());
 
-        assertArrayEquals(new String[] {"description from mixinSub"}, commandSpec.description());
-        assertEquals("MixinSub Description Heading%n", commandSpec.descriptionHeading());
-        assertArrayEquals(new String[] {"MixinSub Header"}, commandSpec.header());
-        assertEquals("MixinSub Header Heading%n", commandSpec.headerHeading());
+        UsageMessageSpec usage = commandSpec.usageMessage();
+        assertArrayEquals(new String[] {"description from mixinSub"}, usage.description());
+        assertEquals("MixinSub Description Heading%n", usage.descriptionHeading());
+        assertArrayEquals(new String[] {"MixinSub Header"}, usage.header());
+        assertEquals("MixinSub Header Heading%n", usage.headerHeading());
 
-        assertArrayEquals(new String[] {"ReceiverSuper Footer"}, commandSpec.footer());
-        assertEquals("ReceiverSuper Footer Heading%n", commandSpec.footerHeading());
-        assertEquals("ReceiverSuper Option List Heading%n", commandSpec.optionListHeading());
+        assertArrayEquals(new String[] {"ReceiverSuper Footer"}, usage.footer());
+        assertEquals("ReceiverSuper Footer Heading%n", usage.footerHeading());
+        assertEquals("ReceiverSuper Option List Heading%n", usage.optionListHeading());
 
-        assertEquals("Receiver Parameter List Heading%n", commandSpec.parameterListHeading());
-        assertEquals("Receiver Command List Heading%n", commandSpec.commandListHeading());
-        assertEquals('#', commandSpec.requiredOptionMarker());
-        assertEquals("Receiver Synopsis Heading%n", commandSpec.synopsisHeading());
-        assertArrayEquals(new String[0], commandSpec.customSynopsis());
+        assertEquals("Receiver Parameter List Heading%n", usage.parameterListHeading());
+        assertEquals("Receiver Command List Heading%n", usage.commandListHeading());
+        assertEquals('#', usage.requiredOptionMarker());
+        assertEquals("Receiver Synopsis Heading%n", usage.synopsisHeading());
+        assertArrayEquals(new String[0], usage.customSynopsis());
 
         String expected = String.format("" +
                 "MixinSub Header Heading%n" +
