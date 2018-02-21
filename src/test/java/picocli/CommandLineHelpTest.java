@@ -951,6 +951,24 @@ public class CommandLineHelpTest {
         //CommandLine.usage(new Args(), System.out);
         assertEquals(expected, usageString(new Args(), Help.Ansi.OFF));
     }
+    @Test
+    public void testUsageWithCustomColorScheme() throws UnsupportedEncodingException {
+        Help.ColorScheme scheme = new Help.ColorScheme(Help.Ansi.ON)
+                .options(Style.bg_magenta).parameters(Style.bg_cyan).optionParams(Style.bg_yellow).commands(Style.reverse);
+        class Args {
+            @Parameters(description = "param desc") String[] params;
+            @Option(names = "-x", description = "option desc") String[] options;
+        }
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        CommandLine.usage(new Args(), new PrintStream(baos, true, "UTF8"), scheme);
+        String actual = baos.toString("UTF8");
+
+        String expected = String.format("" +
+                "Usage: @|reverse <main class>|@ [@|bg_magenta -x|@=@|bg_yellow <options>|@]... [@|bg_cyan <params>|@]...%n" +
+                "      [@|bg_cyan <params>|@]...           param desc%n" +
+                "  @|bg_magenta -x|@= @|bg_yellow <|@@|bg_yellow options>|@               option desc%n");
+        assertEquals(Help.Ansi.ON.new Text(expected).toString(), actual);
+    }
     //----------
     @Test
     public void testShortestFirstComparator_sortsShortestFirst() {

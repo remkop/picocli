@@ -116,6 +116,41 @@ public class CommandLineTest {
                     "java.lang.IllegalStateException: bad class", ex.getMessage());
         }
     }
+    static class BadConverter implements ITypeConverter<Long> {
+        public BadConverter() {
+            throw new IllegalStateException("bad class");
+        }
+        public Long convert(String value) throws Exception { return null; }
+    }
+    @Test
+    public void testFailingConverterWithDefaultFactory() {
+        class App {
+            @Option(names = "-x", converter = BadConverter.class) long bad;
+        }
+        try {
+            new CommandLine(new App());
+        } catch (InitializationException ex) {
+            assertEquals("Could not instantiate class " +
+                    "picocli.CommandLineTest$BadConverter: java.lang.reflect.InvocationTargetException", ex.getMessage());
+        }
+    }
+    static class BadVersionProvider implements IVersionProvider {
+        public BadVersionProvider() {
+            throw new IllegalStateException("bad class");
+        }
+        public String[] getVersion() throws Exception { return new String[0]; }
+    }
+    @Test
+    public void testFailingVersionProviderWithDefaultFactory() {
+        @Command(versionProvider = BadVersionProvider.class)
+        class App { }
+        try {
+            new CommandLine(new App());
+        } catch (InitializationException ex) {
+            assertEquals("Could not instantiate class " +
+                    "picocli.CommandLineTest$BadVersionProvider: java.lang.reflect.InvocationTargetException", ex.getMessage());
+        }
+    }
     @Test
     public void testVersion() {
         assertEquals("3.0.0-alpha-1-SNAPSHOT", CommandLine.VERSION);
@@ -2128,6 +2163,7 @@ public class CommandLineTest {
             }
         }
     }
+
     @Test
     public void testGetParentIsNullForTopLevelCommands() {
         @Command class Top {}
@@ -2605,6 +2641,53 @@ public class CommandLineTest {
         assertFalse(commandLine.isUnmatchedArgumentsAllowed());
     }
 
+
+    @Test
+    public void testSetStopAtUnmatched_BeforeSubcommandsAdded() {
+        @Command class TopLevel {}
+        CommandLine commandLine = new CommandLine(new TopLevel());
+        assertFalse(commandLine.isStopAtUnmatched());
+        commandLine.setStopAtUnmatched(true);
+        assertTrue(commandLine.isStopAtUnmatched());
+
+        int childCount = 0;
+        int grandChildCount = 0;
+        commandLine.addSubcommand("main", createNestedCommand());
+        for (CommandLine sub : commandLine.getSubcommands().values()) {
+            childCount++;
+            assertFalse("subcommand added afterwards is not impacted", sub.isStopAtUnmatched());
+            for (CommandLine subsub : sub.getSubcommands().values()) {
+                grandChildCount++;
+                assertFalse("subcommand added afterwards is not impacted", sub.isStopAtUnmatched());
+            }
+        }
+        assertTrue(childCount > 0);
+        assertTrue(grandChildCount > 0);
+    }
+
+    @Test
+    public void testSetStopAtUnmatched_AfterSubcommandsAdded() {
+        @Command class TopLevel {}
+        CommandLine commandLine = new CommandLine(new TopLevel());
+        commandLine.addSubcommand("main", createNestedCommand());
+        assertFalse(commandLine.isStopAtUnmatched());
+        commandLine.setStopAtUnmatched(true);
+        assertTrue(commandLine.isStopAtUnmatched());
+
+        int childCount = 0;
+        int grandChildCount = 0;
+        for (CommandLine sub : commandLine.getSubcommands().values()) {
+            childCount++;
+            assertTrue(sub.isStopAtUnmatched());
+            for (CommandLine subsub : sub.getSubcommands().values()) {
+                grandChildCount++;
+                assertTrue(sub.isStopAtUnmatched());
+            }
+        }
+        assertTrue(childCount > 0);
+        assertTrue(grandChildCount > 0);
+    }
+
     @Test
     public void testStopAtUnmatched_UnmatchedOption() {
         class App {
@@ -2630,6 +2713,80 @@ public class CommandLineTest {
         assertEquals(Arrays.asList("--y"), commandLine2.getUnmatchedArguments());
         assertEquals("abc", cmd2.first);
         assertEquals(new String[]{"positional"}, cmd2.positional);
+    }
+
+    @Test
+    public void testIsStopAtPositional_FalseByDefault() {
+        @Command class A {}
+        assertFalse(new CommandLine(new A()).isStopAtPositional());
+    }
+
+    @Test
+    public void testSetStopAtPositional_True_SetsStopAtPositionalToTrue() {
+        @Command class A {}
+        CommandLine commandLine = new CommandLine(new A());
+        assertFalse(commandLine.isStopAtPositional());
+        commandLine.setStopAtPositional(true);
+        assertTrue(commandLine.isStopAtPositional());
+    }
+
+    @Test
+    public void testSetStopAtPositional_BeforeSubcommandsAdded() {
+        @Command class TopLevel {}
+        CommandLine commandLine = new CommandLine(new TopLevel());
+        assertFalse(commandLine.isStopAtPositional());
+        commandLine.setStopAtPositional(true);
+        assertTrue(commandLine.isStopAtPositional());
+
+        int childCount = 0;
+        int grandChildCount = 0;
+        commandLine.addSubcommand("main", createNestedCommand());
+        for (CommandLine sub : commandLine.getSubcommands().values()) {
+            childCount++;
+            assertFalse("subcommand added afterwards is not impacted", sub.isStopAtPositional());
+            for (CommandLine subsub : sub.getSubcommands().values()) {
+                grandChildCount++;
+                assertFalse("subcommand added afterwards is not impacted", sub.isStopAtPositional());
+            }
+        }
+        assertTrue(childCount > 0);
+        assertTrue(grandChildCount > 0);
+    }
+
+    @Test
+    public void testSetStopAtPositional_AfterSubcommandsAdded() {
+        @Command class TopLevel {}
+        CommandLine commandLine = new CommandLine(new TopLevel());
+        commandLine.addSubcommand("main", createNestedCommand());
+        assertFalse(commandLine.isStopAtPositional());
+        commandLine.setStopAtPositional(true);
+        assertTrue(commandLine.isStopAtPositional());
+
+        int childCount = 0;
+        int grandChildCount = 0;
+        for (CommandLine sub : commandLine.getSubcommands().values()) {
+            childCount++;
+            assertTrue(sub.isStopAtPositional());
+            for (CommandLine subsub : sub.getSubcommands().values()) {
+                grandChildCount++;
+                assertTrue(sub.isStopAtPositional());
+            }
+        }
+        assertTrue(childCount > 0);
+        assertTrue(grandChildCount > 0);
+    }
+
+    @Test
+    public void testStopAtPositional_TreatsOptionsAfterPositionalAsPositional() {
+        class App {
+            @Option(names = "-a") String first;
+            @Parameters String[] positional;
+        }
+        App cmd1 = new App();
+        CommandLine commandLine1 = new CommandLine(cmd1).setStopAtPositional(true);
+        commandLine1.parse("positional", "-a=abc", "positional");
+        assertArrayEquals(new String[]{"positional", "-a=abc", "positional"}, cmd1.positional);
+        assertNull(cmd1.first);
     }
 
     @Test

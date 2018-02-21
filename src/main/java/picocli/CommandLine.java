@@ -1205,7 +1205,6 @@ public class CommandLine {
     }
     private static boolean empty(String str) { return str == null || str.trim().length() == 0; }
     private static boolean empty(Object[] array) { return array == null || array.length == 0; }
-    private static boolean empty(Text txt) { return txt == null || txt.plain.toString().trim().length() == 0; }
     private static String str(String[] arr, int i) { return (arr == null || arr.length == 0) ? "" : arr[i]; }
     private static boolean isBoolean(Class<?> type) { return type == Boolean.class || type == Boolean.TYPE; }
     private static CommandLine toCommandLine(Object obj, IFactory factory) { return obj instanceof CommandLine ? (CommandLine) obj : new CommandLine(obj, factory);}
@@ -2163,15 +2162,6 @@ public class CommandLine {
     private static <T> List<T> reverseList(List<T> list) {
         Collections.reverse(list);
         return list;
-    }
-    private static <T> T[] copy(T[] array, Class<T> cls) {
-        try {
-            @SuppressWarnings("unchecked") T[] result = (T[]) Array.newInstance(cls, array.length);
-            System.arraycopy(array, 0, result, 0, result.length);
-            return result;
-        } catch (Exception ex) {
-            throw new InitializationException("Could not copy array :" + ex, ex);
-        }
     }
 
     /** This class provides a namespace for classes and interfaces that model concepts and attributes of command line interfaces in picocli.
