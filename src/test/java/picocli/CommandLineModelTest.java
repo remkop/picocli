@@ -30,6 +30,7 @@ import picocli.CommandLine.Help.Ansi;
 import static org.junit.Assert.*;
 import static picocli.HelpTestUtil.setTraceLevel;
 import static picocli.HelpTestUtil.usageString;
+import static picocli.HelpTestUtil.versionString;
 
 public class CommandLineModelTest {
     @Test
@@ -105,6 +106,7 @@ public class CommandLineModelTest {
     @Test
     public void testUsageHelp_CustomizedUsageMessage() throws Exception {
         CommandSpec spec = CommandSpec.create().addMixin("auto", CommandSpec.forAnnotatedObject(new AutoHelpMixin()));
+        spec.name("the awesome util");
         spec.usageMessage()
                 .descriptionHeading("Description heading%n")
                 .description("description line 1", "description line 2")
@@ -121,7 +123,7 @@ public class CommandLineModelTest {
                 "Header heading%n" +
                 "header line 1%n" +
                 "header line 2%n" +
-                "Usage: <main class> [-hV] PARAM...%n" +
+                "Usage: the awesome util [-hV] PARAM...%n" +
                 "Description heading%n" +
                 "description line 1%n" +
                 "description line 2%n" +
@@ -134,6 +136,51 @@ public class CommandLineModelTest {
                 "footer line 1%n" +
                 "footer line 2%n");
         assertEquals(expected, actual);
+    }
+
+    @Test
+    public void testVersionHelp_basic() throws Exception {
+        CommandSpec spec = CommandSpec.create().version("1.0", "copyright etc");
+        CommandLine commandLine = new CommandLine(spec);
+        String actual = versionString(commandLine, Ansi.OFF);
+        String expected = String.format("" +
+                "1.0%n" +
+                "copyright etc%n");
+        assertEquals(expected, actual);
+    }
+
+    @Test
+    public void testVersionHelp_versionProvider() throws Exception {
+        IVersionProvider provider = new IVersionProvider() {
+            public String[] getVersion() throws Exception {
+                return new String[] {"2.0", "by provider"};
+            }
+        };
+        CommandSpec spec = CommandSpec.create().versionProvider(provider);
+        CommandLine commandLine = new CommandLine(spec);
+        String actual = versionString(commandLine, Ansi.OFF);
+        String expected = String.format("" +
+                "2.0%n" +
+                "by provider%n");
+        assertEquals(expected, actual);
+    }
+
+    @Test
+    public void testVersionHelp_helpCommand() {
+        CommandSpec helpCommand = CommandSpec.create().helpCommand(true);
+        assertTrue(helpCommand.helpCommand());
+
+        CommandSpec parent = CommandSpec.create().add(OptionSpec.builder("-x").required(true).build());
+        parent.addSubcommand("help", helpCommand);
+
+        CommandLine commandLine = new CommandLine(parent);
+        commandLine.parse("help"); // no missing param exception
+
+        try {
+            commandLine.parse();
+        } catch (MissingParameterException ex) {
+            assertEquals("Missing required option '-x=PARAM'", ex.getMessage());
+        }
     }
 
     @Test
@@ -601,6 +648,28 @@ public class CommandLineModelTest {
         OptionSpec option3 = parsed3.get(0).getCommandSpec().optionsMap().get("--foo");
         assertEquals("optional option is empty string when specified without args", "value", option3.getValue());
         assertEquals("optional option raw string value when specified without args", "value", option3.rawStringValues().get(0));
+    }
+
+    @Test
+    public void testOptionBuilderNamesOverwriteInitialValue() {
+        OptionSpec option = OptionSpec.builder("-a", "--aaa").names("-b", "--bbb").build();
+        assertArrayEquals(new String[] {"-b", "--bbb"}, option.names());
+    }
+
+    @Test
+    public void testOptionCopyBuilder() {
+        OptionSpec option = OptionSpec.builder("-a", "--aaa").arity("1").type(int.class).description("abc").paramLabel("ABC").build();
+        OptionSpec copy = option.toBuilder().build();
+        assertEquals(option, copy);
+        assertNotSame(option, copy);
+    }
+
+    @Test
+    public void testPositionalCopyBuilder() {
+        PositionalParamSpec option = PositionalParamSpec.builder().index("0..34").arity("1").type(int.class).description("abc").paramLabel("ABC").build();
+        PositionalParamSpec copy = option.toBuilder().build();
+        assertEquals(option, copy);
+        assertNotSame(option, copy);
     }
 
 }
