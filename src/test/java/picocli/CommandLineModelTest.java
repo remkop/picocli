@@ -15,6 +15,7 @@
  */
 package picocli;
 
+import java.io.UnsupportedEncodingException;
 import java.sql.Types;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
@@ -135,6 +136,34 @@ public class CommandLineModelTest {
                 "Footer heading%n" +
                 "footer line 1%n" +
                 "footer line 2%n");
+        assertEquals(expected, actual);
+    }
+
+    @Test
+    public void testUsageHelp_abbreviateSynopsisWithoutPositional() throws UnsupportedEncodingException {
+        CommandSpec spec = CommandSpec.create();
+        spec.usageMessage().abbreviateSynopsis(true).requiredOptionMarker('!').sortOptions(false);
+        spec.add(OptionSpec.builder("-x").required(true).description("required").build());
+        CommandLine commandLine = new CommandLine(spec);
+        String actual = usageString(commandLine, Ansi.OFF);
+        String expected = String.format("" +
+                "Usage: <main class> [OPTIONS]%n" +
+                "! -x                          required%n");
+        assertEquals(expected, actual);
+    }
+
+    @Test
+    public void testUsageHelp_abbreviateSynopsisWithPositional() throws UnsupportedEncodingException {
+        CommandSpec spec = CommandSpec.create();
+        spec.usageMessage().abbreviateSynopsis(true).requiredOptionMarker('!').sortOptions(false);
+        spec.add(OptionSpec.builder("-x").required(true).description("required").build());
+        spec.add(PositionalParamSpec.builder().arity("1").paramLabel("POSITIONAL").description("positional").build());
+        CommandLine commandLine = new CommandLine(spec);
+        String actual = usageString(commandLine, Ansi.OFF);
+        String expected = String.format("" +
+                "Usage: <main class> [OPTIONS] POSITIONAL...%n" +
+                "!     POSITIONAL...           positional%n" +
+                "! -x                          required%n");
         assertEquals(expected, actual);
     }
 
