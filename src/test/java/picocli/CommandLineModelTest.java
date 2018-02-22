@@ -33,7 +33,7 @@ import static picocli.HelpTestUtil.usageString;
 
 public class CommandLineModelTest {
     @Test
-    public void testEmptyModelHelp() throws Exception {
+    public void testEmptyModelUsageHelp() throws Exception {
         CommandSpec spec = CommandSpec.create();
         CommandLine commandLine = new CommandLine(spec);
         String actual = usageString(commandLine, Ansi.OFF);
@@ -51,7 +51,7 @@ public class CommandLineModelTest {
     }
 
     @Test
-    public void testModelHelp() throws Exception {
+    public void testModelUsageHelp() throws Exception {
         CommandSpec spec = CommandSpec.create();
         spec.add(OptionSpec.builder("-h", "--help").usageHelp(true).description("show help and exit").build());
         spec.add(OptionSpec.builder("-V", "--version").versionHelp(true).description("show help and exit").build());
@@ -63,6 +63,76 @@ public class CommandLineModelTest {
                 "  -c, --count=COUNT           number of times to execute%n" +
                 "  -h, --help                  show help and exit%n" +
                 "  -V, --version               show help and exit%n");
+        assertEquals(expected, actual);
+    }
+
+    @Test
+    public void testUsageHelpPositional_empty() throws Exception {
+        CommandSpec spec = CommandSpec.create();
+        spec.add(PositionalParamSpec.builder().build());
+        CommandLine commandLine = new CommandLine(spec);
+        String actual = usageString(commandLine, Ansi.OFF);
+        String expected = String.format("" +
+                "Usage: <main class> PARAM...%n" +
+                "      PARAM...%n");
+        assertEquals(expected, actual);
+    }
+
+    @Test
+    public void testUsageHelpPositional_withDescription() throws Exception {
+        CommandSpec spec = CommandSpec.create();
+        spec.add(PositionalParamSpec.builder().description("positional param").build());
+        CommandLine commandLine = new CommandLine(spec);
+        String actual = usageString(commandLine, Ansi.OFF);
+        String expected = String.format("" +
+                "Usage: <main class> PARAM...%n" +
+                "      PARAM...                positional param%n");
+        assertEquals(expected, actual);
+    }
+
+    @Test
+    public void testUsageHelp_emptyWithAutoHelpMixin() throws Exception {
+        CommandSpec spec = CommandSpec.create().addMixin("auto", CommandSpec.forAnnotatedObject(new AutoHelpMixin()));
+        CommandLine commandLine = new CommandLine(spec);
+        String actual = usageString(commandLine, Ansi.OFF);
+        String expected = String.format("" +
+                "Usage: <main class> [-hV]%n" +
+                "  -h, --help                  Show this help message and exit.%n" +
+                "  -V, --version               Print version information and exit.%n");
+        assertEquals(expected, actual);
+    }
+
+    @Test
+    public void testUsageHelp_CustomizedUsageMessage() throws Exception {
+        CommandSpec spec = CommandSpec.create().addMixin("auto", CommandSpec.forAnnotatedObject(new AutoHelpMixin()));
+        spec.usageMessage()
+                .descriptionHeading("Description heading%n")
+                .description("description line 1", "description line 2")
+                .footerHeading("Footer heading%n")
+                .footer("footer line 1", "footer line 2")
+                .headerHeading("Header heading%n")
+                .header("header line 1", "header line 2")
+                .optionListHeading("Options%n")
+                .parameterListHeading("Positional Parameters%n");
+        spec.add(PositionalParamSpec.builder().description("positional param").build());
+        CommandLine commandLine = new CommandLine(spec);
+        String actual = usageString(commandLine, Ansi.OFF);
+        String expected = String.format("" +
+                "Header heading%n" +
+                "header line 1%n" +
+                "header line 2%n" +
+                "Usage: <main class> [-hV] PARAM...%n" +
+                "Description heading%n" +
+                "description line 1%n" +
+                "description line 2%n" +
+                "Positional Parameters%n" +
+                "      PARAM...                positional param%n" +
+                "Options%n" +
+                "  -h, --help                  Show this help message and exit.%n" +
+                "  -V, --version               Print version information and exit.%n" +
+                "Footer heading%n" +
+                "footer line 1%n" +
+                "footer line 2%n");
         assertEquals(expected, actual);
     }
 
@@ -296,8 +366,96 @@ public class CommandLineModelTest {
     }
 
     @Test
-    public void testOptionDefaultTypeIsBoolean() throws Exception {
+    public void testOptionDefaultTypeIsBoolean_withDefaultArity() throws Exception {
         assertEquals(boolean.class, OptionSpec.builder("-x").build().type());
+    }
+
+    @Test
+    public void testOptionDefaultTypeIsBoolean_withArityZero() throws Exception {
+        assertEquals(boolean.class, OptionSpec.builder("-x").arity("0").build().type());
+    }
+
+    @Test
+    public void testOptionDefaultTypeIsString_withArityOne() throws Exception {
+        assertEquals(String.class, OptionSpec.builder("-x").arity("1").build().type());
+    }
+
+    @Test
+    public void testOptionDefaultTypeIsStringArray_withArityTwo() throws Exception {
+        assertEquals(String[].class, OptionSpec.builder("-x").arity("2").build().type());
+    }
+
+    @Test
+    public void testOptionDefaultAuxiliaryTypesIsDerivedFromType() throws Exception {
+        assertArrayEquals(new Class[] {boolean.class}, OptionSpec.builder("-x").build().auxiliaryTypes());
+        assertArrayEquals(new Class[] {int.class}, OptionSpec.builder("-x").type(int.class).build().auxiliaryTypes());
+    }
+
+    @Test
+    public void testOptionDefaultTypDependsOnArity() throws Exception {
+        assertEquals(boolean.class, OptionSpec.builder("-x").arity("0").build().type());
+        assertEquals(String.class, OptionSpec.builder("-x").arity("1").build().type());
+        assertEquals(String.class, OptionSpec.builder("-x").arity("0..1").build().type());
+        assertEquals(String[].class, OptionSpec.builder("-x").arity("2").build().type());
+        assertEquals(String[].class, OptionSpec.builder("-x").arity("0..2").build().type());
+        assertEquals(String[].class, OptionSpec.builder("-x").arity("*").build().type());
+    }
+
+    @Test
+    public void testOptionAuxiliaryTypeOverridesDefaultType() throws Exception {
+        assertEquals(int.class, OptionSpec.builder("-x").auxiliaryTypes(int.class).build().type());
+        assertEquals(int.class, OptionSpec.builder("-x").arity("0").auxiliaryTypes(int.class).build().type());
+        assertEquals(int.class, OptionSpec.builder("-x").arity("1").auxiliaryTypes(int.class).build().type());
+        assertEquals(int.class, OptionSpec.builder("-x").arity("0..1").auxiliaryTypes(int.class).build().type());
+        assertEquals(int.class, OptionSpec.builder("-x").arity("2").auxiliaryTypes(int.class).build().type());
+        assertEquals(int.class, OptionSpec.builder("-x").arity("0..2").auxiliaryTypes(int.class).build().type());
+        assertEquals(int.class, OptionSpec.builder("-x").arity("*").auxiliaryTypes(int.class).build().type());
+    }
+
+    @Test
+    public void testPositionalDefaultTypeIsString_withDefaultArity() throws Exception {
+        assertEquals(String.class, PositionalParamSpec.builder().build().type());
+    }
+
+    @Test
+    public void testPositionalDefaultTypeIsString_withArityZero() throws Exception {
+        assertEquals(String.class, PositionalParamSpec.builder().arity("0").build().type());
+    }
+
+    @Test
+    public void testPositionalDefaultTypeIsString_withArityOne() throws Exception {
+        assertEquals(String.class, PositionalParamSpec.builder().arity("1").build().type());
+    }
+
+    @Test
+    public void testPositionalDefaultTypeIsStringArray_withArityTwo() throws Exception {
+        assertEquals(String[].class, PositionalParamSpec.builder().arity("2").build().type());
+    }
+
+    @Test
+    public void testPositionalWithArityHasDefaultTypeString() throws Exception {
+        assertEquals(String.class, PositionalParamSpec.builder().arity("0").build().type());
+        assertEquals(String.class, PositionalParamSpec.builder().arity("1").build().type());
+        assertEquals(String.class, PositionalParamSpec.builder().arity("0..1").build().type());
+        assertEquals(String[].class, PositionalParamSpec.builder().arity("2").build().type());
+        assertEquals(String[].class, PositionalParamSpec.builder().arity("0..2").build().type());
+        assertEquals(String[].class, PositionalParamSpec.builder().arity("*").build().type());
+    }
+
+    @Test
+    public void testPositionalAuxiliaryTypeOverridesDefaultType() throws Exception {
+        assertEquals(int.class, PositionalParamSpec.builder().auxiliaryTypes(int.class).build().type());
+        assertEquals(int.class, PositionalParamSpec.builder().arity("0").auxiliaryTypes(int.class).build().type());
+        assertEquals(int.class, PositionalParamSpec.builder().arity("1").auxiliaryTypes(int.class).build().type());
+        assertEquals(int.class, PositionalParamSpec.builder().arity("0..1").auxiliaryTypes(int.class).build().type());
+        assertEquals(int.class, PositionalParamSpec.builder().arity("2").auxiliaryTypes(int.class).build().type());
+        assertEquals(int.class, PositionalParamSpec.builder().arity("0..2").auxiliaryTypes(int.class).build().type());
+        assertEquals(int.class, PositionalParamSpec.builder().arity("*").auxiliaryTypes(int.class).build().type());
+    }
+    @Test
+    public void testPositionalDefaultAuxiliaryTypesIsDerivedFromType() throws Exception {
+        assertArrayEquals(new Class[] {String.class}, PositionalParamSpec.builder().build().auxiliaryTypes());
+        assertArrayEquals(new Class[] {int.class}, PositionalParamSpec.builder().type(int.class).build().auxiliaryTypes());
     }
 
     @Test
@@ -320,12 +478,12 @@ public class CommandLineModelTest {
     }
 
     @Test
-    public void testPositionalDefaultArityIsZeroIfUntyped() throws Exception {
+    public void testPositionalDefaultArityIsOneIfUntyped() throws Exception {
         assertEquals(Range.valueOf("1"), PositionalParamSpec.builder().build().arity());
     }
 
     @Test
-    public void testPositionalDefaultArityIsZeroIfTypeBoolean() throws Exception {
+    public void testPositionalDefaultArityIsOneIfTypeBoolean() throws Exception {
         assertEquals(Range.valueOf("1"), PositionalParamSpec.builder().type(boolean.class).build().arity());
         assertEquals(Range.valueOf("1"), PositionalParamSpec.builder().type(Boolean.class).build().arity());
     }
@@ -366,43 +524,6 @@ public class CommandLineModelTest {
     }
 
     @Test
-    public void testOptionDefaultAuxiliaryTypesIsDerivedFromType() throws Exception {
-        assertArrayEquals(new Class[] {boolean.class}, OptionSpec.builder("-x").build().auxiliaryTypes());
-        assertArrayEquals(new Class[] {int.class}, OptionSpec.builder("-x").type(int.class).build().auxiliaryTypes());
-    }
-    @Test
-    public void testPositionalDefaultAuxiliaryTypesIsDerivedFromType() throws Exception {
-        assertArrayEquals(new Class[] {String.class}, PositionalParamSpec.builder().build().auxiliaryTypes());
-        assertArrayEquals(new Class[] {int.class}, PositionalParamSpec.builder().type(int.class).build().auxiliaryTypes());
-    }
-
-    @Test
-    public void testOptionWithArityHasDefaultTypeBoolean() throws Exception {
-        assertEquals(boolean.class, OptionSpec.builder("-x").arity("0").build().type());
-        assertEquals(boolean.class, OptionSpec.builder("-x").arity("1").build().type());
-        assertEquals(boolean.class, OptionSpec.builder("-x").arity("0..1").build().type());
-        assertEquals(boolean[].class, OptionSpec.builder("-x").arity("2").build().type());
-        assertEquals(boolean[].class, OptionSpec.builder("-x").arity("0..2").build().type());
-        assertEquals(boolean[].class, OptionSpec.builder("-x").arity("*").build().type());
-    }
-
-    @Test
-    public void testOptionAuxiliaryTypeOverridesDefaultType() throws Exception {
-        assertEquals(int.class, OptionSpec.builder("-x").auxiliaryTypes(int.class).build().type());
-        assertEquals(int.class, OptionSpec.builder("-x").arity("0").auxiliaryTypes(int.class).build().type());
-        assertEquals(int.class, OptionSpec.builder("-x").arity("1").auxiliaryTypes(int.class).build().type());
-        assertEquals(int.class, OptionSpec.builder("-x").arity("0..1").auxiliaryTypes(int.class).build().type());
-        assertEquals(int.class, OptionSpec.builder("-x").arity("2").auxiliaryTypes(int.class).build().type());
-        assertEquals(int.class, OptionSpec.builder("-x").arity("0..2").auxiliaryTypes(int.class).build().type());
-        assertEquals(int.class, OptionSpec.builder("-x").arity("*").auxiliaryTypes(int.class).build().type());
-    }
-
-    @Test
-    public void testPositionalDefaultTypeIsString() throws Exception {
-        assertEquals(String.class, PositionalParamSpec.builder().build().type());
-    }
-
-    @Test
     public void testPositionalDefaultIndexIsAll() throws Exception {
         assertEquals(Range.valueOf("*"), PositionalParamSpec.builder().build().index());
     }
@@ -410,27 +531,6 @@ public class CommandLineModelTest {
     @Test
     public void testPositionalDefaultArityIsOne() throws Exception {
         assertEquals(Range.valueOf("1"), PositionalParamSpec.builder().build().arity());
-    }
-
-    @Test
-    public void testPositionalWithArityHasDefaultTypeString() throws Exception {
-        assertEquals(String.class, PositionalParamSpec.builder().arity("0").build().type());
-        assertEquals(String.class, PositionalParamSpec.builder().arity("1").build().type());
-        assertEquals(String.class, PositionalParamSpec.builder().arity("0..1").build().type());
-        assertEquals(String[].class, PositionalParamSpec.builder().arity("2").build().type());
-        assertEquals(String[].class, PositionalParamSpec.builder().arity("0..2").build().type());
-        assertEquals(String[].class, PositionalParamSpec.builder().arity("*").build().type());
-    }
-
-    @Test
-    public void testPositionalAuxiliaryTypeOverridesDefaultType() throws Exception {
-        assertEquals(int.class, PositionalParamSpec.builder().auxiliaryTypes(int.class).build().type());
-        assertEquals(int.class, PositionalParamSpec.builder().arity("0").auxiliaryTypes(int.class).build().type());
-        assertEquals(int.class, PositionalParamSpec.builder().arity("1").auxiliaryTypes(int.class).build().type());
-        assertEquals(int.class, PositionalParamSpec.builder().arity("0..1").auxiliaryTypes(int.class).build().type());
-        assertEquals(int.class, PositionalParamSpec.builder().arity("2").auxiliaryTypes(int.class).build().type());
-        assertEquals(int.class, PositionalParamSpec.builder().arity("0..2").auxiliaryTypes(int.class).build().type());
-        assertEquals(int.class, PositionalParamSpec.builder().arity("*").auxiliaryTypes(int.class).build().type());
     }
 
     @Test

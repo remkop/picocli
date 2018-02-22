@@ -2213,13 +2213,27 @@ public class CommandLine {
             private CommandSpec(Object userObject) { this.userObject = userObject; }
     
             /** Creates and returns a new {@code CommandSpec} without any associated user object. */
-            public static CommandSpec create() { return new CommandSpec(null); }
+            public static CommandSpec create() { return wrapWithoutInspection(null); }
     
             /** Creates and returns a new {@code CommandSpec} with the specified associated user object.
-             * @param userObject the associated user object - often this is the object annotated with {@code @Command}. May be {@code null}.
+             * The specified user object is <em>not</em> inspected for annotations.
+             * @param userObject the associated user object. May be any object, may be {@code null}.
              */
-            public static CommandSpec create(Object userObject) { return new CommandSpec(userObject); }
-    
+            public static CommandSpec wrapWithoutInspection(Object userObject) { return new CommandSpec(userObject); }
+
+            /** Creates and returns a new {@code CommandSpec} initialized from the specified associated user object. The specified
+             * user object must have at least one {@link Command}, {@link Option} or {@link Parameters} annotation.
+             * @param userObject the user object annotated with {@link Command}, {@link Option} and/or {@link Parameters} annotations.
+             */
+            public static CommandSpec forAnnotatedObject(Object userObject) { return forAnnotatedObject(userObject, new DefaultFactory()); }
+
+            /** Creates and returns a new {@code CommandSpec} initialized from the specified associated user object. The specified
+             * user object must have at least one {@link Command}, {@link Option} or {@link Parameters} annotation.
+             * @param userObject the user object annotated with {@link Command}, {@link Option} and/or {@link Parameters} annotations.
+             * @param factory the factory used to create instances of {@linkplain Command#subcommands() subcommands}, {@linkplain Option#converter() converters}, etc., that are registered declaratively with annotation attributes
+             */
+            public static CommandSpec forAnnotatedObject(Object userObject, IFactory factory) { return CommandReflection.extractCommandSpec(userObject, factory); }
+
             /** Ensures all attributes of this {@code CommandSpec} have a valid value; throws an {@link InitializationException} if this cannot be achieved. */
             void validate() {
                 Collections.sort(positionalParameters, new PositionalParametersSorter());
@@ -2713,7 +2727,9 @@ public class CommandLine {
                 if (builder.type == null) {
                     if (builder.auxiliaryTypes == null || builder.auxiliaryTypes.length == 0) {
                         if (arity.isVariable || arity.max > 1) {
-                            type = isOption() ? boolean[].class : String[].class;
+                            type = String[].class;
+                        } else if (arity.max == 1) {
+                            type = String.class;
                         } else {
                             type = isOption() ? boolean.class : String.class;
                         }
@@ -3208,7 +3224,7 @@ public class CommandLine {
             static CommandSpec extractCommandSpec(Object command, IFactory factory) {
                 if (command instanceof CommandSpec) { return (CommandSpec) command; }
 
-                CommandSpec result = new CommandSpec(Assert.notNull(command, "command"));
+                CommandSpec result = CommandSpec.wrapWithoutInspection(Assert.notNull(command, "command"));
 
                 Class<?> cls = command.getClass();
                 boolean hasCommandAnnotation = false;
