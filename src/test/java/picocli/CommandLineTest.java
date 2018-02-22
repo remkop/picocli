@@ -569,6 +569,52 @@ public class CommandLineTest {
     }
 
     @Test
+    public void testSetSeparator_BeforeSubcommandsAdded() {
+        @Command class TopLevel {}
+        CommandLine commandLine = new CommandLine(new TopLevel());
+        assertEquals("=", commandLine.getSeparator());
+        commandLine.setSeparator(":");
+        assertEquals(":", commandLine.getSeparator());
+
+        int childCount = 0;
+        int grandChildCount = 0;
+        commandLine.addSubcommand("main", createNestedCommand());
+        for (CommandLine sub : commandLine.getSubcommands().values()) {
+            childCount++;
+            assertEquals("subcommand added afterwards is not impacted", "=", sub.getSeparator());
+            for (CommandLine subsub : sub.getSubcommands().values()) {
+                grandChildCount++;
+                assertEquals("subcommand added afterwards is not impacted", "=", subsub.getSeparator());
+            }
+        }
+        assertTrue(childCount > 0);
+        assertTrue(grandChildCount > 0);
+    }
+
+    @Test
+    public void testSetSeparator_AfterSubcommandsAdded() {
+        @Command class TopLevel {}
+        CommandLine commandLine = new CommandLine(new TopLevel());
+        commandLine.addSubcommand("main", createNestedCommand());
+        assertEquals("=", commandLine.getSeparator());
+        commandLine.setSeparator(":");
+        assertEquals(":", commandLine.getSeparator());
+
+        int childCount = 0;
+        int grandChildCount = 0;
+        for (CommandLine sub : commandLine.getSubcommands().values()) {
+            childCount++;
+            assertEquals("subcommand added before IS impacted", ":", sub.getSeparator());
+            for (CommandLine subsub : sub.getSubcommands().values()) {
+                grandChildCount++;
+                assertEquals("subsubcommand added before IS impacted", ":", sub.getSeparator());
+            }
+        }
+        assertTrue(childCount > 0);
+        assertTrue(grandChildCount > 0);
+    }
+
+    @Test
     public void testOptionsMixedWithParameters() {
         CompactFields compact = CommandLine.populateCommand(new CompactFields(), "-r -v p1 -o out p2".split(" "));
         verifyCompact(compact, true, true, "out", fileArray("p1", "p2"));
@@ -2615,6 +2661,7 @@ public class CommandLineTest {
                 "[picocli WARN] Unmatched arguments: [--y]%n");
         String actual = new String(baos.toByteArray(), "UTF8");
         assertEquals(expected, actual);
+        setTraceLevel("WARN");
     }
 
     @Test
@@ -2658,7 +2705,7 @@ public class CommandLineTest {
             assertFalse("subcommand added afterwards is not impacted", sub.isStopAtUnmatched());
             for (CommandLine subsub : sub.getSubcommands().values()) {
                 grandChildCount++;
-                assertFalse("subcommand added afterwards is not impacted", sub.isStopAtUnmatched());
+                assertFalse("subcommand added afterwards is not impacted", subsub.isStopAtUnmatched());
             }
         }
         assertTrue(childCount > 0);
@@ -2681,7 +2728,7 @@ public class CommandLineTest {
             assertTrue(sub.isStopAtUnmatched());
             for (CommandLine subsub : sub.getSubcommands().values()) {
                 grandChildCount++;
-                assertTrue(sub.isStopAtUnmatched());
+                assertTrue(subsub.isStopAtUnmatched());
             }
         }
         assertTrue(childCount > 0);
@@ -2690,6 +2737,7 @@ public class CommandLineTest {
 
     @Test
     public void testStopAtUnmatched_UnmatchedOption() {
+        setTraceLevel("OFF");
         class App {
             @Option(names = "-a") String first;
             @Parameters String[] positional;
@@ -2712,7 +2760,9 @@ public class CommandLineTest {
         commandLine2.parse("--y", "-a=abc", "positional");
         assertEquals(Arrays.asList("--y"), commandLine2.getUnmatchedArguments());
         assertEquals("abc", cmd2.first);
-        assertEquals(new String[]{"positional"}, cmd2.positional);
+        assertArrayEquals(new String[]{"positional"}, cmd2.positional);
+        setTraceLevel("WARN");
+
     }
 
     @Test
@@ -2746,7 +2796,7 @@ public class CommandLineTest {
             assertFalse("subcommand added afterwards is not impacted", sub.isStopAtPositional());
             for (CommandLine subsub : sub.getSubcommands().values()) {
                 grandChildCount++;
-                assertFalse("subcommand added afterwards is not impacted", sub.isStopAtPositional());
+                assertFalse("subcommand added afterwards is not impacted", subsub.isStopAtPositional());
             }
         }
         assertTrue(childCount > 0);
@@ -2769,7 +2819,7 @@ public class CommandLineTest {
             assertTrue(sub.isStopAtPositional());
             for (CommandLine subsub : sub.getSubcommands().values()) {
                 grandChildCount++;
-                assertTrue(sub.isStopAtPositional());
+                assertTrue(subsub.isStopAtPositional());
             }
         }
         assertTrue(childCount > 0);
