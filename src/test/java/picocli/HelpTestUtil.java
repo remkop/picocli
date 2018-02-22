@@ -52,6 +52,13 @@ public class HelpTestUtil {
         return result;
     }
 
+    public static String versionString(CommandLine commandLine, Ansi ansi, Object... params) throws UnsupportedEncodingException {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        commandLine.printVersionHelp(new PrintStream(baos, true, "UTF8"), ansi, params);
+        String result = baos.toString("UTF8");
+        return result;
+    }
+
     public static Text[] textArray(Help help, String... str) {
         return textArray(help.ansi(), str);
     }
