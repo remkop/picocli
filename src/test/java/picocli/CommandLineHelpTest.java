@@ -27,6 +27,7 @@ import picocli.CommandLine.Help.ColorScheme;
 import picocli.CommandLine.Help.TextTable;
 
 import java.io.*;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.net.InetAddress;
 import java.net.URI;
@@ -2684,6 +2685,28 @@ public class CommandLineHelpTest {
             new CommandLine(new App());
         } catch (InitializationException ex) {
             assertEquals("Could not get version info from class picocli.CommandLineHelpTest$FailingVersionProvider: java.lang.IllegalStateException: sorry can't give you a version", ex.getMessage());
+        }
+    }
+
+    @Test
+    public void testNoVersionProvider_errorWhenInvoked() {
+        try {
+            Class<?> cls = Class.forName("picocli.CommandLine$NoVersionProvider");
+            try {
+                Constructor<?> constructor = cls.getDeclaredConstructor(new Class[0]);
+                constructor.setAccessible(true);
+                IVersionProvider provider = (IVersionProvider) constructor.newInstance();
+                try {
+                    provider.getVersion();
+                    fail("expected an exception to be thrown here");
+                } catch (UnsupportedOperationException ex) {
+                    // expected
+                }
+            } catch (Exception e) {
+                fail(e.getMessage());
+            }
+        } catch (ClassNotFoundException e) {
+            fail(e.getMessage());
         }
     }
 
