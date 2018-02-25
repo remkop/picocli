@@ -145,10 +145,6 @@ public class CommandLine {
     private final Interpreter interpreter;
     private final IFactory factory;
 
-    private List<String> unmatchedArguments = new ArrayList<String>();
-    private boolean usageHelpRequested;
-    private boolean versionHelpRequested;
-
     /**
      * Constructs a new {@code CommandLine} interpreter with the specified object and a default subcommand factory.
      * <p>The specified object may be a {@link CommandSpec CommandSpec} object, or it may be a {@code @Command}-annotated
@@ -297,12 +293,12 @@ public class CommandLine {
     /** Returns {@code true} if an option annotated with {@link Option#usageHelp()} was specified on the command line.
      * @return whether the parser encountered an option annotated with {@link Option#usageHelp()}.
      * @since 0.9.8 */
-    public boolean isUsageHelpRequested() { return usageHelpRequested; }
+    public boolean isUsageHelpRequested() { return interpreter.parseResult != null && interpreter.parseResult.usageHelpRequested; }
 
     /** Returns {@code true} if an option annotated with {@link Option#versionHelp()} was specified on the command line.
      * @return whether the parser encountered an option annotated with {@link Option#versionHelp()}.
      * @since 0.9.8 */
-    public boolean isVersionHelpRequested() { return versionHelpRequested; }
+    public boolean isVersionHelpRequested() { return interpreter.parseResult != null && interpreter.parseResult.versionHelpRequested; }
 
     /** Returns whether options for single-value fields can be specified multiple times on the command line.
      * The default is {@code false} and a {@link OverwrittenOptionException} is thrown if this happens.
@@ -429,7 +425,7 @@ public class CommandLine {
      * @since 0.9.7
      */
     public List<String> getUnmatchedArguments() {
-        return unmatchedArguments;
+        return interpreter.parseResult == null ? Collections.<String>emptyList() : Collections.unmodifiableList(interpreter.parseResult.unmatched);
     }
 
     /**
@@ -475,6 +471,11 @@ public class CommandLine {
     public List<CommandLine> parse(String... args) {
         return interpreter.parse(args);
     }
+    public ParseResult parseArgs(String... args) {
+        interpreter.parse(args);
+        return interpreter.parseResult.build();
+    }
+    public ParseResult getParseResult() { return interpreter.parseResult == null ? null : interpreter.parseResult.build(); }
     /**
      * Represents a function that can process a List of {@code CommandLine} objects resulting from successfully
      * {@linkplain #parse(String...) parsing} the command line arguments. This is a
@@ -3508,6 +3509,121 @@ public class CommandLine {
             }
         }
     }
+    public static class ParseResult {
+        public static Builder builder(CommandSpec commandSpec) { return new Builder(commandSpec); }
+        public static class Builder {
+            private final CommandSpec commandSpec;
+            private final Set<OptionSpec> options = new LinkedHashSet<OptionSpec>();
+            private final Set<PositionalParamSpec> positionals = new LinkedHashSet<PositionalParamSpec>();
+            private final List<String> unmatched = new ArrayList<String>();
+            private final List<String> originalArgList = new ArrayList<String>();
+            private final List<List<PositionalParamSpec>> positionalParams = new ArrayList<List<PositionalParamSpec>>();
+            private ParseResult subcommand;
+            private boolean usageHelpRequested;
+            private boolean versionHelpRequested;
+
+            private Builder(CommandSpec spec) { commandSpec = Assert.notNull(spec, "commandSpec"); }
+            public ParseResult build() { return new ParseResult(this); }
+            public Builder add(ArgSpec arg, int position) {
+                if (arg.isOption()) { options.add((OptionSpec) arg); }
+                else { addPositionalParam((PositionalParamSpec) arg, position); }
+                return this;
+            }
+            public Builder addOption(OptionSpec option) { options.add(option); return this; }
+            public Builder addPositionalParam(PositionalParamSpec positionalParam, int position) {
+                positionals.add(positionalParam);
+                while (positionalParams.size() <= position) { positionalParams.add(new ArrayList<PositionalParamSpec>()); }
+                positionalParams.get(position).add(positionalParam);
+                return this;
+            }
+            public Builder addUnmatched(String arg) { unmatched.add(arg); return this; }
+            public Builder addUnmatched(Stack<String> args) { while (!args.isEmpty()) { addUnmatched(args.pop()); } return this; }
+            public Builder subcommand(ParseResult subcommand) { this.subcommand = subcommand; return this; }
+            public Builder originalArgs(String[] originalArgs) { originalArgList.addAll(Arrays.asList(originalArgs)); return this;}
+        }
+        private final CommandSpec commandSpec;
+        private final List<OptionSpec> options;
+        private final List<PositionalParamSpec> uniquePositionals;
+        private final List<String> originalArgs;
+        private final List<String> unmatched;
+        private final List<List<PositionalParamSpec>> positionalParams;
+        private final ParseResult subcommand;
+        private final boolean usageHelpRequested;
+        private final boolean versionHelpRequested;
+
+        private ParseResult(ParseResult.Builder builder) {
+            commandSpec = builder.commandSpec;
+            subcommand = builder.subcommand;
+            options = new ArrayList<OptionSpec>(builder.options);
+            unmatched = new ArrayList<String>(builder.unmatched);
+            originalArgs = new ArrayList<String>(builder.originalArgList);
+            uniquePositionals = new ArrayList<PositionalParamSpec>(builder.positionals);
+            positionalParams = new ArrayList<List<PositionalParamSpec>>(builder.positionalParams);
+            usageHelpRequested = builder.usageHelpRequested;
+            versionHelpRequested = builder.versionHelpRequested;
+        }
+        public OptionSpec option(char shortName) {
+            for (OptionSpec option : options) {
+                for (String name : option.names()) {
+                    if (name.length() == 2 && name.charAt(0) == '-' && name.charAt(1) == shortName) { return option; }
+                }
+            }
+            return null;
+        }
+        public OptionSpec option(String name) {
+            for (OptionSpec option : options) {
+                for (String prefixed : option.names()) {
+                    if (prefixed.equals(name) || stripPrefix(prefixed).equals(name)) { return option; }
+                }
+            }
+            return null;
+        }
+        private String stripPrefix(String prefixed) {
+            for (int i = 0; i < prefixed.length(); i++) {
+                if (Character.isJavaIdentifierPart(prefixed.charAt(i))) { return prefixed.substring(i); }
+            }
+            return "";
+        }
+        public PositionalParamSpec positional(int position) {
+            if (positionalParams.size() <= position || positionalParams.get(position).isEmpty()) { return null; }
+            return positionalParams.get(position).get(0);
+        }
+
+        public CommandSpec commandSpec()                    { return commandSpec; }
+        public boolean hasOption(char shortName)            { return option(shortName) != null; }
+        public boolean hasOption(String name)               { return option(name) != null; }
+        public boolean hasOption(OptionSpec option)         { return options.contains(option); }
+        public boolean hasPositional(int position)          { return positional(position) != null; }
+        public boolean hasPositional(PositionalParamSpec positional) { return uniquePositionals.contains(positional); }
+        public List<OptionSpec> options()                   { return Collections.unmodifiableList(options); }
+        public List<PositionalParamSpec> positionalParams() { return Collections.unmodifiableList(uniquePositionals); }
+        public List<String> unmatched()                     { return Collections.unmodifiableList(unmatched); }
+        public List<String> originalArgs()                  { return Collections.unmodifiableList(originalArgs); }
+        public String optionValue(char shortName)           { return optionValue(shortName, null); }
+        public String optionValue(String name)              { return optionValue(name, null); }
+        public String optionValue(OptionSpec option)        { return optionValue(option, null); }
+        public String optionValue(char shortName, String defaultValue)    { return optionValue(option(shortName), defaultValue); }
+        public String optionValue(String name, String defaultValue)       { return optionValue(option(name), defaultValue); }
+        public String optionValue(OptionSpec option, String defaultValue) { return option == null ? defaultValue : option.rawStringValues().get(0); }
+        public String positionalValue(int position)                       { return positionalValue(positional(position), position, null); }
+        public String positionalValue(int position, String defaultValue)  { return positionalValue(positional(position), position, defaultValue); }
+        private String positionalValue(PositionalParamSpec positional, int position, String defaultValue) { return positional == null ? defaultValue : positional.rawStringValues().get(position - positional.index().min); }
+        public List<String> optionValues(char shortName)    { return optionValues(option(shortName)); }
+        public List<String> optionValues(String name)       { return optionValues(option(name)); }
+        public List<String> optionValues(OptionSpec option) { return option == null ? Collections.<String>emptyList() : option.rawStringValues(); }
+        public <T> T typedOptionValue(char shortName)       { return typedOptionValue(option(shortName)); }
+        public <T> T typedOptionValue(String name)          { return typedOptionValue(option(name)); }
+        @SuppressWarnings("unchecked")
+        public <T> T typedOptionValue(OptionSpec option)    { return option == null ? null : (T) option.getValue(); }
+        public <T> T typedPositionalValue(int position)     { return typedPositionalValue(positional(position)); }
+        @SuppressWarnings("unchecked")
+        public <T> T typedPositionalValue(PositionalParamSpec positional) { return positional == null ? null : (T) positional.getValue(); }
+
+        public boolean hasSubcommand()          { return subcommand != null; }
+        public ParseResult subcommand()         { return subcommand; }
+        public boolean isUsageHelpRequested()   { return usageHelpRequested; }
+        public boolean isVersionHelpRequested() { return versionHelpRequested; }
+    }
     /**
      * Helper class responsible for processing command line arguments.
      */
@@ -3516,6 +3632,7 @@ public class CommandLine {
         private boolean isHelpRequested;
         private int position;
         private boolean endOfOptions;
+        private ParseResult.Builder parseResult;
 
         Interpreter() { registerBuiltInConverters(); }
 
@@ -3649,9 +3766,7 @@ public class CommandLine {
             position = 0;
             endOfOptions = false;
             isHelpRequested = false;
-            CommandLine.this.versionHelpRequested = false;
-            CommandLine.this.usageHelpRequested = false;
-            CommandLine.this.unmatchedArguments.clear();
+            parseResult = ParseResult.builder(getCommandSpec());
         }
 
         private void parse(List<CommandLine> parsedCommands, Stack<String> argumentStack, String[] originalArgs) {
@@ -3682,9 +3797,9 @@ public class CommandLine {
                     }
                 }
             }
-            if (!unmatchedArguments.isEmpty()) {
-                if (!isUnmatchedArgumentsAllowed()) { throw new UnmatchedArgumentException(CommandLine.this, unmatchedArguments); }
-                if (tracer.isWarn()) { tracer.warn("Unmatched arguments: %s%n", unmatchedArguments); }
+            if (!parseResult.unmatched.isEmpty()) {
+                if (!isUnmatchedArgumentsAllowed()) { throw new UnmatchedArgumentException(CommandLine.this, Collections.unmodifiableList(parseResult.unmatched)); }
+                if (tracer.isWarn()) { tracer.warn("Unmatched arguments: %s%n", parseResult.unmatched); }
             }
         }
 
@@ -3702,6 +3817,7 @@ public class CommandLine {
             // 4. a combination of stand-alone options, like "-vxr". Equivalent to "-v -x -r", "-v true -x true -r true"
             // 5. a combination of stand-alone options and one option with an argument, like "-vxrffile"
 
+            parseResult.originalArgs(originalArgs);
             String separator = config().separator();
             while (!args.isEmpty()) {
                 if (endOfOptions) {
@@ -3729,6 +3845,7 @@ public class CommandLine {
                     }
                     if (tracer.isDebug()) {tracer.debug("Found subcommand '%s' (%s)%n", arg, subcommand.commandSpec.toString());}
                     subcommand.interpreter.parse(parsedCommands, args, originalArgs);
+                    parseResult.subcommand(subcommand.interpreter.parseResult.build());
                     return; // remainder done by the command
                 }
 
@@ -3791,10 +3908,10 @@ public class CommandLine {
             return result;
         }
         private void handleUnmatchedArgument(Stack<String> args) {
-            if (!args.isEmpty()) { unmatchedArguments.add(args.pop()); }
+            if (!args.isEmpty()) { parseResult.unmatched.add(args.pop()); }
             if (config().stopAtUnmatched()) {
                 // addAll would give args in reverse order
-                while (!args.isEmpty()) { unmatchedArguments.add(args.pop()); }
+                while (!args.isEmpty()) { parseResult.unmatched.add(args.pop()); }
             }
         }
 
@@ -3852,8 +3969,7 @@ public class CommandLine {
         private void processClusteredShortOptions(Collection<ArgSpec> required,
                                                   Set<ArgSpec> initialized,
                                                   String arg,
-                                                  Stack<String> args)
-                throws Exception {
+                                                  Stack<String> args) throws Exception {
             String prefix = arg.substring(0, 1);
             String cluster = arg.substring(1);
             boolean paramAttachedToOption = true;
@@ -3989,6 +4105,7 @@ public class CommandLine {
                     String.valueOf(oldValue), String.valueOf(newValue), argDescription); }
             argSpec.setValue(newValue);
             argSpec.rawStringValues.add(value); // #279 track empty string value if no command line argument was consumed
+            parseResult.add(argSpec, position);
             return result;
         }
         private int applyValuesToMapField(ArgSpec argSpec,
@@ -4006,6 +4123,7 @@ public class CommandLine {
             }
             int originalSize = map.size();
             consumeMapArguments(argSpec, arity, args, classes, keyConverter, valueConverter, map, argDescription);
+            parseResult.add(argSpec, position);
             return map.size() - originalSize;
         }
 
@@ -4095,6 +4213,7 @@ public class CommandLine {
             for (int i = 0; i < newValues.size(); i++) {
                 Array.set(array, i, newValues.get(i));
             }
+            parseResult.add(argSpec, position);
             return converted.size(); // return how many args were consumed
         }
 
@@ -4117,6 +4236,7 @@ public class CommandLine {
                     collection.add(element);
                 }
             }
+            parseResult.add(argSpec, position);
             return converted.size();
         }
 
@@ -4225,7 +4345,7 @@ public class CommandLine {
             return desc;
         }
 
-        private boolean isAnyHelpRequested() { return isHelpRequested || versionHelpRequested || usageHelpRequested; }
+        private boolean isAnyHelpRequested() { return isHelpRequested || parseResult.versionHelpRequested || parseResult.usageHelpRequested; }
 
         private void updateHelpRequested(CommandSpec command) {
             isHelpRequested |= command.helpCommand();
@@ -4233,9 +4353,9 @@ public class CommandLine {
         private void updateHelpRequested(ArgSpec argSpec) {
             if (argSpec.isOption()) {
                 OptionSpec option = (OptionSpec) argSpec;
-                isHelpRequested                       |= is(argSpec, "help", option.help());
-                CommandLine.this.versionHelpRequested |= is(argSpec, "versionHelp", option.versionHelp());
-                CommandLine.this.usageHelpRequested   |= is(argSpec, "usageHelp", option.usageHelp());
+                isHelpRequested                  |= is(argSpec, "help", option.help());
+                parseResult.versionHelpRequested |= is(argSpec, "versionHelp", option.versionHelp());
+                parseResult.usageHelpRequested   |= is(argSpec, "usageHelp", option.usageHelp());
             }
         }
         private boolean is(ArgSpec p, String attribute, boolean value) {
