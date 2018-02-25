@@ -178,6 +178,7 @@ public class CommandLine {
      */
     public CommandLine(Object command, IFactory factory) {
         interpreter = new Interpreter(command, factory);
+        if (interpreter.unmatchedParametersFields.size() > 0) { setUnmatchedArgumentsAllowed(true); }
     }
 
     /** Registers a subcommand with the specified name. For example:
@@ -1148,7 +1149,7 @@ public class CommandLine {
     private static boolean isMultiValue(Field field) {  return isMultiValue(field.getType()); }
     private static boolean isMultiValue(Class<?> cls) { return cls.isArray() || Collection.class.isAssignableFrom(cls) || Map.class.isAssignableFrom(cls); }
     private static Class<?>[] getTypeAttribute(Field field) {
-        Class<?>[] explicit = field.isAnnotationPresent(Parameters.class) ? field.getAnnotation(Parameters.class).type() : field.getAnnotation(Option.class).type();
+        Class<?>[] explicit = field.isAnnotationPresent(Parameters.class) ? field.getAnnotation(Parameters.class).type() : field.isAnnotationPresent(Option.class) ? field.getAnnotation(Option.class).type() : new Class[0];
         if (explicit.length > 0) { return explicit; }
         if (field.getType().isArray()) { return new Class<?>[] { field.getType().getComponentType() }; }
         if (isMultiValue(field)) {
@@ -1587,6 +1588,16 @@ public class CommandLine {
     public @interface ParentCommand { }
 
     /**
+     * Fields annotated with {@code @Unmatched} will be initialized with the list of unmatched command line arguments, if any.
+     * If this annotation is found, picocli automatically sets {@linkplain CommandLine#setUnmatchedArgumentsAllowed(boolean) unmatchedArgumentsAllowed} to {@code true}.
+     * @see CommandLine#isUnmatchedArgumentsAllowed()
+     * @since 2.3
+     */
+    @Retention(RetentionPolicy.RUNTIME)
+    @Target(ElementType.FIELD)
+    public @interface Unmatched { }
+
+    /**
      * <p>Annotate your class with {@code @Command} when you want more control over the format of the generated help
      * message.
      * </p><pre>
@@ -2015,14 +2026,28 @@ public class CommandLine {
                               List<Field> requiredFields,
                               Map<String, Field> optionName2Field,
                               Map<Character, Field> singleCharOption2Field,
-                              List<Field> positionalParametersFields) {
+                              List<Field> positionalParametersFields,
+                              List<Field> unmatchedParametersFields) {
         Field[] declaredFields = cls.getDeclaredFields();
         for (Field field : declaredFields) {
             boolean isOption = field.isAnnotationPresent(Option.class);
             boolean isPositional = field.isAnnotationPresent(Parameters.class);
+            boolean isUnmatched = field.isAnnotationPresent(Unmatched.class);
             if (isOption && isPositional) {
                 throw new DuplicateOptionAnnotationsException("A field can be either @Option or @Parameters, but '"
                         + field + "' is both.");
+            }
+            if ((isOption && isUnmatched) || (isPositional && isUnmatched)) {
+                throw new DuplicateOptionAnnotationsException(field + " cannot be both @Unmatched and @Option or @Parameters.");
+            }
+            if (isUnmatched) {
+                if (!(field.getType().equals(String[].class) ||
+                        (List.class.isAssignableFrom(field.getType()) && field.getGenericType() instanceof ParameterizedType
+                        && ((ParameterizedType) field.getGenericType()).getActualTypeArguments()[0].equals(String.class)))) {
+                    throw new InitializationException("Invalid type for " + field + ": must be either String[] or List<String>");
+                }
+                unmatchedParametersFields.add(field);
+                continue;
             }
             if (!isOption && !isPositional) { continue; }
             if (Modifier.isFinal(field.getModifiers()) && (field.getType().isPrimitive() || String.class.isAssignableFrom(field.getType()))) {
@@ -2088,6 +2113,7 @@ public class CommandLine {
         private final Map<Character, Field> singleCharOption2Field       = new HashMap<Character, Field>();
         private final List<Field> requiredFields                         = new ArrayList<Field>();
         private final List<Field> positionalParametersFields             = new ArrayList<Field>();
+        private final List<Field> unmatchedParametersFields              = new ArrayList<Field>();
         private final Object command;
         private final IFactory factory;
         private boolean isHelpRequested;
@@ -2103,7 +2129,7 @@ public class CommandLine {
             String declaredSeparator     = null;
             boolean hasCommandAnnotation = false;
             while (cls != null) {
-                init(cls, requiredFields, optionName2Field, singleCharOption2Field, positionalParametersFields);
+                init(cls, requiredFields, optionName2Field, singleCharOption2Field, positionalParametersFields, unmatchedParametersFields);
                 if (cls.isAnnotationPresent(Command.class)) {
                     hasCommandAnnotation = true;
                     Command cmd = cls.getAnnotation(Command.class);
@@ -2440,12 +2466,22 @@ public class CommandLine {
             if (tracer.isDebug()) {tracer.debug("%s %s an option: %d matching prefix chars out of %d option names%n", arg, (result ? "resembles" : "doesn't resemble"), count, optionName2Field.size());}
             return result;
         }
-        private void handleUnmatchedArgument(Stack<String> args) {
-            if (!args.isEmpty()) { unmatchedArguments.add(args.pop()); }
+        private void handleUnmatchedArgument(Stack<String> args) throws Exception {
+            if (!args.isEmpty()) { handleUnmatchedArgument(args.pop()); }
             if (stopAtUnmatched) {
                 // addAll would give args in reverse order
-                while (!args.isEmpty()) { unmatchedArguments.add(args.pop()); }
+                while (!args.isEmpty()) { handleUnmatchedArgument(args.pop()); }
             }
+        }
+        private void handleUnmatchedArgument(String arg) throws Exception {
+            Stack<String> stack = new Stack<String>();
+            stack.push(arg);
+            Set<Field> initialized = new HashSet<Field>();
+            Range arity = Range.valueOf("*");
+            for (Field f : unmatchedParametersFields) {
+                applyOption(f, Unmatched.class, arity, false, (Stack<String>) stack.clone(), initialized, "unmatched arguments");
+            }
+            unmatchedArguments.add(arg);
         }
 
         private void processRemainderAsPositionalParameters(Collection<Field> required, Set<Field> initialized, Stack<String> args) throws Exception {
@@ -2943,7 +2979,7 @@ public class CommandLine {
         private ITypeConverter<?> getTypeConverter(final Class<?> type, Field field, int index) {
             Class<? extends ITypeConverter<?>>[] specific = field.isAnnotationPresent(Option.class) ? field.getAnnotation(Option.class).converter()
                     : field.isAnnotationPresent(Parameters.class) ? field.getAnnotation(Parameters.class).converter() : null;
-            if (specific.length > index) {
+            if (specific != null && specific.length > index) {
                 try {
                     return (ITypeConverter<?>) factory.create(specific[index]);
                 } catch (Exception e) {

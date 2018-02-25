@@ -3342,4 +3342,92 @@ public class CommandLineTest {
             if (out != null) { try { out.close(); } catch (Exception ignored) {} }
         }
     }
+
+    @Test
+    public void testUnmatchedAnnotationInstantiatesList() {
+        class App {
+            @Unmatched List<String> unmatched;
+            @Option(names = "-o") String option;
+        }
+        App app = new App();
+        CommandLine commandLine = new CommandLine(app);
+        commandLine.parse("-t", "-x", "abc");
+        assertEquals(Arrays.asList("-t", "-x", "abc"), commandLine.getUnmatchedArguments());
+        assertEquals(Arrays.asList("-t", "-x", "abc"), app.unmatched);
+    }
+
+    @Test
+    public void testUnmatchedAnnotationInstantiatesArray() {
+        class App {
+            @Unmatched String[] unmatched;
+            @Option(names = "-o") String option;
+        }
+        App app = new App();
+        CommandLine commandLine = new CommandLine(app);
+        commandLine.parse("-t", "-x", "abc");
+        assertEquals(Arrays.asList("-t", "-x", "abc"), commandLine.getUnmatchedArguments());
+        assertArrayEquals(new String[]{"-t", "-x", "abc"}, app.unmatched);
+    }
+
+    @Test
+    public void testMultipleUnmatchedAnnotations() {
+        class App {
+            @Unmatched String[] unmatched1;
+            @Unmatched String[] unmatched2;
+            @Unmatched List<String> unmatched3;
+            @Unmatched List<String> unmatched4;
+            @Option(names = "-o") String option;
+        }
+        App app = new App();
+        CommandLine commandLine = new CommandLine(app);
+        commandLine.parse("-t", "-x", "abc");
+        assertEquals(Arrays.asList("-t", "-x", "abc"), commandLine.getUnmatchedArguments());
+        assertArrayEquals(new String[]{"-t", "-x", "abc"}, app.unmatched1);
+        assertArrayEquals(new String[]{"-t", "-x", "abc"}, app.unmatched2);
+        assertEquals(Arrays.asList("-t", "-x", "abc"), app.unmatched3);
+        assertEquals(Arrays.asList("-t", "-x", "abc"), app.unmatched4);
+    }
+
+    @Test
+    public void testCommandRequiresMoreThanUnmatchedAnnotation() {
+        class App {
+            @Unmatched String[] unmatched;
+        }
+        try {
+            new CommandLine(new App());
+            fail("Expected exception");
+        } catch (InitializationException ex) {
+            assertTrue(ex.getMessage(), ex.getMessage().endsWith(" is not a command: it has no @Command, @Option or @Parameters annotations"));
+        }
+    }
+
+    @Test
+    public void testUnmatchedAnnotationWithInvalidType_ThrowsException() throws Exception {
+        @Command class App {
+            @Unmatched String unmatched;
+        }
+        try {
+            new CommandLine(new App());
+            fail("Expected exception");
+        } catch (InitializationException ex) {
+            String pattern = "Invalid type for %s: must be either String[] or List<String>";
+            Field f = App.class.getDeclaredField("unmatched");
+            assertEquals(String.format(pattern, f), ex.getMessage());
+        }
+    }
+
+    @Test
+    public void testUnmatchedAnnotationWithInvalidGenericType_ThrowsException() throws Exception {
+        @Command class App {
+            @Unmatched List<Object> unmatched;
+        }
+        try {
+            new CommandLine(new App());
+            fail("Expected exception");
+        } catch (InitializationException ex) {
+            String pattern = "Invalid type for %s: must be either String[] or List<String>";
+            Field f = App.class.getDeclaredField("unmatched");
+            assertEquals(String.format(pattern, f), ex.getMessage());
+        }
+    }
 }

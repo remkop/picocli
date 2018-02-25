@@ -528,7 +528,7 @@ public class AutoComplete {
         Map<String, Field> optionName2Field = new LinkedHashMap<String, Field>();
         Class<?> cls = commandLine.getCommand().getClass();
         while (cls != null) {
-            CommandLine.init(cls, new ArrayList<Field>(), optionName2Field, new HashMap<Character, Field>(), positionalParameterFields);
+            CommandLine.init(cls, new ArrayList<Field>(), optionName2Field, new HashMap<Character, Field>(), positionalParameterFields, new ArrayList<Field>());
             cls = cls.getSuperclass();
         }
         for (Field f : optionName2Field.values()) {
