@@ -98,7 +98,7 @@ public class CommandLineMixinTest {
         try {
             new CommandLine(new Receiver(), new InnerClassFactory(this));
         } catch (InitializationException ex) {
-            assertEquals(Invalid.class.getName() + " is not a command: it has no @Command, @Option or @Parameters annotations", ex.getMessage());
+            assertEquals(Invalid.class.getName() + " is not a command: it has no @Command, @Option, @Parameters or @Unmatched annotations", ex.getMessage());
         }
     }
 
@@ -111,7 +111,7 @@ public class CommandLineMixinTest {
         try {
             commandLine.addMixin("invalid", new Invalid());
         } catch (InitializationException ex) {
-            assertEquals(Invalid.class.getName() + " is not a command: it has no @Command, @Option or @Parameters annotations", ex.getMessage());
+            assertEquals(Invalid.class.getName() + " is not a command: it has no @Command, @Option, @Parameters or @Unmatched annotations", ex.getMessage());
         }
     }
 

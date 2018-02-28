@@ -179,6 +179,7 @@ public class CommandLine {
         commandSpec = CommandReflection.extractCommandSpec(command, factory);
         commandSpec.commandLine(this);
         commandSpec.validate();
+        if (commandSpec.unmatchedArgsBindings().size() > 0) { setUnmatchedArgumentsAllowed(true); }
     }
 
     /**
@@ -1640,6 +1641,16 @@ public class CommandLine {
     public @interface ParentCommand { }
 
     /**
+     * Fields annotated with {@code @Unmatched} will be initialized with the list of unmatched command line arguments, if any.
+     * If this annotation is found, picocli automatically sets {@linkplain CommandLine#setUnmatchedArgumentsAllowed(boolean) unmatchedArgumentsAllowed} to {@code true}.
+     * @see CommandLine#isUnmatchedArgumentsAllowed()
+     * @since 3.0
+     */
+    @Retention(RetentionPolicy.RUNTIME)
+    @Target(ElementType.FIELD)
+    public @interface Unmatched { }
+
+    /**
      * <p>
      * Fields annotated with {@code @Mixin} are "expanded" into the current command: {@link Option @Option} and
      * {@link Parameters @Parameters} in the mixin class are added to the options and positional parameters of this command.
@@ -2170,6 +2181,14 @@ public class CommandLine {
      * @since 3.0 */
     public static final class Model {
         private Model() {}
+
+        /** Customizable binding for obtaining and modifying the current value of an option or positional parameter from the model.
+         * @since 3.0 */
+        public static interface IBinding {
+            <T> T get() throws PicocliException;
+            <T> T set(T value) throws PicocliException;
+        }
+
         /** The {@code CommandSpec} class models a command specification, including the options, positional parameters and subcommands
          * supported by the command, as well as attributes for the version help message and the usage help message of the command.
          * <p>
@@ -2198,6 +2217,7 @@ public class CommandLine {
             private final List<ArgSpec> requiredArgs = new ArrayList<ArgSpec>();
             private final List<OptionSpec> options = new ArrayList<OptionSpec>();
             private final List<PositionalParamSpec> positionalParameters = new ArrayList<PositionalParamSpec>();
+            private final List<UnmatchedArgsBinding> unmatchedArgs = new ArrayList<UnmatchedArgsBinding>();
             private final ParserSpec parser = new ParserSpec();
             private final UsageMessageSpec usageMessage = new UsageMessageSpec();
 
@@ -2357,6 +2377,11 @@ public class CommandLine {
                 for (PositionalParamSpec paramSpec : mixin.positionalParameters()) { add(paramSpec); }
                 return this;
             }
+
+            /** Adds the specified {@code UnmatchedArgsBinding} to the list of model objects to capture unmatched arguments for this command.
+             * @param spec the unmatched arguments binding to capture unmatched arguments
+             * @return this CommandSpec for method chaining */
+            public CommandSpec addUnmatchedArgsBinding(UnmatchedArgsBinding spec) { unmatchedArgs.add(spec); parser().unmatchedArgumentsAllowed(true); return this; }
     
             /** Returns a map of the mixin names to mixin {@code CommandSpec} objects configured for this command.
              * @return an immutable map of mixins added to this command. */
@@ -2377,10 +2402,14 @@ public class CommandLine {
             /** Returns a map of the short (single character) option names to option spec objects configured for this command.
              * @return an immutable map of options that this command recognizes. */
             public Map<Character, OptionSpec> posixOptionsMap() { return Collections.unmodifiableMap(posixOptionsByKeyMap); }
-    
+
             /** Returns the list of required options and positional parameters configured for this command.
              * @return an immutable list of the required options and positional parameters for this command. */
             public List<ArgSpec> requiredArgs() { return Collections.unmodifiableList(requiredArgs); }
+
+            /** Returns the list of {@link UnmatchedArgsBinding UnmatchedArgumentsBindings} configured for this command;
+             * each {@code UnmatchedArgsBinding} captures the arguments that could not be matched to any options or positional parameters. */
+            public List<UnmatchedArgsBinding> unmatchedArgsBindings() { return Collections.unmodifiableList(unmatchedArgs); }
     
             /** Returns the String to use as the program name in the synopsis line of the help message.
              * {@link #DEFAULT_COMMAND_NAME} by default, initialized from {@link Command#name()} if defined. */
@@ -2695,8 +2724,7 @@ public class CommandLine {
             final Class<?>[] auxiliaryTypes;
             final ITypeConverter<?>[] converters;
             final Object defaultValue;
-            final IGetter getter;
-            final ISetter setter;
+            final IBinding binding;
             final List<String> rawStringValues = new ArrayList<String>();
             final Range arity;
             String toString;
@@ -2712,9 +2740,8 @@ public class CommandLine {
                 hidden = builder.hidden;
                 defaultValue = builder.defaultValue;
                 toString = builder.toString;
-                getter = builder.getter;
-                setter = builder.setter;
-    
+                binding = builder.binding;
+
                 Range tempArity = builder.arity;
                 if (tempArity == null) {
                     if (isOption()) {
@@ -2754,25 +2781,7 @@ public class CommandLine {
                     auxiliaryTypes = builder.auxiliaryTypes;
                 }
             }
-    
-            /** Customizable getter for obtaining the current value of an option or positional parameter from the model.
-             * @since 3.0 */
-            public static interface IGetter { <K> K get() throws PicocliException; }
-    
-            /** Customizable setter for modifying the value of an option or positional parameter in the model.
-             * @since 3.0 */
-            public static interface ISetter { <K> K set(K value) throws PicocliException; }
-    
-            private static class ObjectGetterSetter implements IGetter, ISetter {
-                private Object value;
-                @SuppressWarnings("unchecked") public <K> K get() { return (K) value; }
-                public <K> K set(K value) {
-                    @SuppressWarnings("unchecked") K result = value;
-                    this.value = value;
-                    return result;
-                }
-            }
-    
+
             /** Returns whether this is a required option or positional parameter.
              * @see Option#required() */
             public boolean required()      { return required; }
@@ -2816,15 +2825,13 @@ public class CommandLine {
             /** Returns whether this option or positional parameter's default value should be shown in the usage help. */
             public Help.Visibility showDefaultValue() { return showDefaultValue; }
     
-            /** Returns the {@link IGetter} that is responsible for getting the value of this argument. */
-            public IGetter getter()         { return getter; }
-            /** Returns the {@link ISetter} that is responsible for setting the value of this argument. */
-            public ISetter setter()         { return setter; }
-    
-            /** Returns the current value of this argument. */
-            Object getValue()                throws PicocliException { return getter.get(); }
-            /** Sets the value of this argument to the specified value and returns the previous value. */
-            Object setValue(Object newValue) throws PicocliException { return setter.set(newValue); }
+            /** Returns the {@link IBinding} that is responsible for getting and setting the value of this argument. */
+            public IBinding binding()   { return binding; }
+
+            /** Returns the current value of this argument. Delegates to the current {@link #binding()}. */
+            Object getValue()                throws PicocliException { return binding.get(); }
+            /** Sets the value of this argument to the specified value and returns the previous value. Delegates to the current {@link #binding()}. */
+            Object setValue(Object newValue) throws PicocliException { return binding.set(newValue); }
     
             /** Returns {@code true} if this argument's {@link #type()} is an array, a {@code Collection} or a {@code Map}, {@code false} otherwise. */
             boolean isMultiValue()     { return CommandLine.isMultiValue(type()); }
@@ -2886,9 +2893,8 @@ public class CommandLine {
                 private Object defaultValue;
                 private Help.Visibility showDefaultValue;
                 private String toString;
-                private IGetter getter = new ObjectGetterSetter();
-                private ISetter setter = (ISetter) getter;
-    
+                private IBinding binding = new ObjectBinding();
+
                 Builder() {}
                 Builder(ArgSpec original) {
                     arity = original.arity;
@@ -2896,8 +2902,7 @@ public class CommandLine {
                     converters = original.converters;
                     defaultValue = original.defaultValue;
                     description = original.description;
-                    getter = original.getter;
-                    setter = original.setter;
+                    binding = original.binding;
                     hidden = original.hidden;
                     paramLabel = original.paramLabel;
                     required = original.required;
@@ -2949,11 +2954,9 @@ public class CommandLine {
                 /** Sets the default value of this option or positional parameter to the specified value, and returns this builder. */
                 public T defaultValue(Object defaultValue)   { this.defaultValue = defaultValue; return self(); }
     
-                /** Sets the {@link IGetter} that is responsible for getting the value of this argument to the specified value, and returns this builder. */
-                public T getter(IGetter getter)              { this.getter = getter; return self(); }
-                /** Sets the {@link ISetter} that is responsible for setting the value of this argument to the specified value, and returns this builder. */
-                public T setter(ISetter setter)              { this.setter = setter; return self(); }
-    
+                /** Sets the {@link IBinding} that is responsible for getting and setting the value of this argument to the specified value, and returns this builder. */
+                public T binding(IBinding binding)              { this.binding = binding; return self(); }
+
                 /** Sets the string respresentation of this option or positional parameter to the specified value, and returns this builder. */
                 public T withToString(String toString)       { this.toString = toString; return self(); }
             }
@@ -2962,10 +2965,11 @@ public class CommandLine {
          * it is required or optional, the option parameters supported (or required) by the option,
          * and attributes for the usage help message describing the option.
          * <p>
-         * An option has one ore more names. The option is matched when the parser encounters one of the option names in the command line arguments.
+         * An option has one or more names. The option is matched when the parser encounters one of the option names in the command line arguments.
          * Depending on the option's {@link #arity() arity},
          * the parser may expect it to have option parameters. The parser will call {@link #setValue(Object) setValue} on
          * the matched option for each of the option parameters encountered.
+         * </p<p>
          * For multi-value options, the {@code type} may be an array, a {@code Collection} or a {@code Map}. In this case
          * the parser will get the data structure by calling {@link #getValue() getValue} and modify the contents of this data structure.
          * (In the case of arrays, the array is replaced with a new instance with additional elements.)
@@ -2977,7 +2981,8 @@ public class CommandLine {
          *   If the option's type is a {@code Map}, the map may have different types for its keys and its values, so
          *   {@link #converters() converters} should provide two converters: one for the map keys and one for the map values.</li>
          *   <li>Otherwise, the option's {@link #type() type} is used to look up a converter in the list of
-         *   {@linkplain CommandLine#registerConverter(Class, ITypeConverter) registered converters}. For multi-value options,
+         *   {@linkplain CommandLine#registerConverter(Class, ITypeConverter) registered converters}.
+         *   For multi-value options,
          *   the {@code type} may be an array, or a {@code Collection} or a {@code Map}. In that case the elements are converted
          *   based on the option's {@link #auxiliaryTypes() auxiliaryTypes}. The auxiliaryType is used to look up
          *   the converter(s) to use to convert the individual parameter values.
@@ -2986,13 +2991,15 @@ public class CommandLine {
          * </ul>
          * <p>
          * {@code OptionSpec} objects are used by the picocli command line interpreter and help message generator.
-         * Picocli can construct a {@code OptionSpec} automatically from fields and methods with {@link Option @Option}
+         * Picocli can construct an {@code OptionSpec} automatically from fields and methods with {@link Option @Option}
          * annotations. Alternatively an {@code OptionSpec} can be constructed programmatically.
-         * When an {@code OptionSpec} is created from an {@link Option @Option} -annotated field or method, this field is
-         * set (or the method is invoked) when the option is matched and {@link #setValue(Object) setValue} is called.
+         * </p<p>
+         * When an {@code OptionSpec} is created from an {@link Option @Option} -annotated field or method, it is "bound"
+         * to that field or method: this field is set (or the method is invoked) when the option is matched and
+         * {@link #setValue(Object) setValue} is called.
          * Programmatically constructed {@code OptionSpec} instances will remember the value passed to the
          * {@link #setValue(Object) setValue} method so it can be retrieved with the {@link #getValue() getValue} method.
-         * This behaviour can be customized by installing a custom {@link IGetter} and {@link ISetter} on the {@code OptionSpec}.
+         * This behaviour can be customized by installing a custom {@link IBinding} on the {@code OptionSpec}.
          * </p>
          * @since 3.0 */
         public static class OptionSpec extends ArgSpec {
@@ -3140,12 +3147,14 @@ public class CommandLine {
          * <p>
          * {@code PositionalParamSpec} objects are used by the picocli command line interpreter and help message generator.
          * Picocli can construct a {@code PositionalParamSpec} automatically from fields and methods with {@link Parameters @Parameters}
-         * annotations. Alternatively an {@code PositionalParamSpec} can be constructed programmatically.
-         * When an {@code PositionalParamSpec} is created from an {@link Parameters @Parameters} -annotated field or method, this field is
-         * set (or the method is invoked) when the position is matched and {@link #setValue(Object) setValue} is called.
+         * annotations. Alternatively a {@code PositionalParamSpec} can be constructed programmatically.
+         * </p<p>
+         * When a {@code PositionalParamSpec} is created from a {@link Parameters @Parameters} -annotated field or method,
+         * it is "bound" to that field or method: this field is set (or the method is invoked) when the position is matched
+         * and {@link #setValue(Object) setValue} is called.
          * Programmatically constructed {@code PositionalParamSpec} instances will remember the value passed to the
          * {@link #setValue(Object) setValue} method so it can be retrieved with the {@link #getValue() getValue} method.
-         * This behaviour can be customized by installing a custom {@link IGetter} and {@link ISetter} on the {@code PositionalParamSpec}.
+         * This behaviour can be customized by installing a custom {@link IBinding} on the {@code PositionalParamSpec}.
          * </p>
          * @since 3.0 */
         public static class PositionalParamSpec extends ArgSpec {
@@ -3219,6 +3228,52 @@ public class CommandLine {
                 public Builder index(Range index)   { this.index = index; return self(); }
     
                 Builder capacity(Range capacity)   { this.capacity = capacity; return self(); }
+            }
+        }
+
+        /** This class allows applications to specify a custom binding that will be invoked for unmatched arguments.
+         * The specified binding is responsible for deciding how to consume the unmatched arguments.
+         * @since 3.0 */
+        public static class UnmatchedArgsBinding {
+            private final Class<?> type;
+            private final IBinding binding;
+
+            /** Creates a {@code UnmatchedArgsBinding} for a binding that produces and consumes {@code String[]} objects.
+             * @param binding Each new unmatched argument is added to the String[] array returned by the specified binding: a new String[] array with one extra element is created and set on the binding. */
+            public static UnmatchedArgsBinding forStringArraySupplier(IBinding binding) { return new UnmatchedArgsBinding(String[].class, binding); }
+
+            /** Creates a {@code UnmatchedArgsBinding} for a binding that produces and consumes {@code List<String>} objects.
+             * @param binding Each new unmatched argument is added to the list returned by the specified binding. If the binding returns a {@code null} list, a new {@code ArrayList} is set on the binding. */
+            public static UnmatchedArgsBinding forStringListSupplier(IBinding binding) { return new UnmatchedArgsBinding(List.class, binding); }
+
+            /** Creates a {@code UnmatchedArgsBinding} for a binding that consumes {@code String} objects.
+             * @param binding For each new unmatched argument, the {@link IBinding#set(Object)} method is invoked on the specified binding with the unmatched argument. */
+            public static UnmatchedArgsBinding forStringConsumer(IBinding binding) { return new UnmatchedArgsBinding(String.class, binding); }
+            private UnmatchedArgsBinding(Class<?> type, IBinding binding) {
+                this.type = Assert.notNull(type, "type");
+                this.binding = Assert.notNull(binding, "binding");
+            }
+            /** Returns the binding responsible for consuming the unmatched arguments. */
+            public IBinding binding() { return binding; }
+            void addArg(String arg) {
+                if (type == String[].class) {
+                    String[] old = binding.get();
+                    String[] replacement = new String[old == null ? 1 : old.length + 1];
+                    if (old != null) { System.arraycopy(old, 0, replacement, 0, old.length); }
+                    replacement[replacement.length - 1] = arg;
+                    binding.set(replacement);
+                } else if (List.class.isAssignableFrom(type)) {
+                    List<String> list = binding.get();
+                    if (list == null) {
+                        list = new ArrayList<String>();
+                        binding.set(list);
+                    }
+                    list.add(arg);
+                } else if (type == String.class) {
+                    binding.set(arg);
+                } else {
+                    throw new IllegalStateException("Invalid type " + type + ": expected String, String[] or List<String>");
+                }
             }
         }
         private static class CommandReflection {
@@ -3316,15 +3371,18 @@ public class CommandLine {
                 boolean result = false;
                 for (Field field : cls.getDeclaredFields()) {
                     if (isMixin(field)) {
+                        validateMixin(field);
                         receiver.addMixin(mixinName(field), buildMixinForField(field, scope, factory));
                         result = true;
                     }
+                    if (isUnmatched(field)) {
+                        validateUnmatched(field);
+                        receiver.addUnmatchedArgsBinding(buildUnmatchedForField(field, scope));
+                    }
                     if (isArgSpec(field)) {
                         validateArgSpecField(field);
-                        if (isOption(field))    { receiver.add(
-                                ArgsReflection.extractOptionSpec(scope, field, factory)); }
-                        if (isParameter(field)) { receiver.add(
-                                ArgsReflection.extractPositionalParamSpec(scope, field, factory)); }
+                        if (isOption(field))    { receiver.add(ArgsReflection.extractOptionSpec(scope, field, factory)); }
+                        if (isParameter(field)) { receiver.add(ArgsReflection.extractPositionalParamSpec(scope, field, factory)); }
                     }
                 }
                 return result;
@@ -3333,7 +3391,19 @@ public class CommandLine {
                 String annotationName = field.getAnnotation(Mixin.class).name();
                 return empty(annotationName) ? field.getName() : annotationName;
             }
-
+            private static void validateMixin(Field field) {
+                if (isMixin(field) && (isOption(field) || isParameter(field))) {
+                    throw new DuplicateOptionAnnotationsException("A field cannot be both a @Mixin command and an @Option or @Parameters, but '" + field + "' is both.");
+                }
+                if (isMixin(field) && (isUnmatched(field))) {
+                    throw new DuplicateOptionAnnotationsException("A field cannot be both a @Mixin command and an @Unmatched but '" + field + "' is both.");
+                }
+            }
+            private static void validateUnmatched(Field field) {
+                if (isUnmatched(field) && (isOption(field) || isParameter(field))) {
+                    throw new DuplicateOptionAnnotationsException("A field cannot have both @Unmatched and @Option or @Parameters annotations, but '" + field + "' has both.");
+                }
+            }
             private static void validateArgSpecField(Field field) {
                 if (isOption(field) && isParameter(field)) {
                     throw new DuplicateOptionAnnotationsException("A field can be either @Option or @Parameters, but '" + field + "' is both.");
@@ -3347,8 +3417,8 @@ public class CommandLine {
                 }
             }
             private static void validateCommandSpec(CommandSpec result, boolean hasCommandAnnotation, Object command) {
-                if (!hasCommandAnnotation && result.positionalParameters.isEmpty() && result.optionsByNameMap.isEmpty()) {
-                    throw new InitializationException(command.getClass().getName() + " is not a command: it has no @Command, @Option or @Parameters annotations");
+                if (!hasCommandAnnotation && result.positionalParameters.isEmpty() && result.optionsByNameMap.isEmpty() && result.unmatchedArgs.isEmpty()) {
+                    throw new InitializationException(command.getClass().getName() + " is not a command: it has no @Command, @Option, @Parameters or @Unmatched annotations");
                 }
             }
             private static CommandSpec buildMixinForField(Field field, Object scope, IFactory factory) {
@@ -3367,10 +3437,24 @@ public class CommandLine {
                     throw new InitializationException("Could not access or modify mixin field " + field + ": " + ex, ex);
                 }
             }
+            private static UnmatchedArgsBinding buildUnmatchedForField(Field field, Object scope) {
+                if (!(field.getType().equals(String[].class) ||
+                        (List.class.isAssignableFrom(field.getType()) && field.getGenericType() instanceof ParameterizedType
+                                && ((ParameterizedType) field.getGenericType()).getActualTypeArguments()[0].equals(String.class)))) {
+                    throw new InitializationException("Invalid type for " + field + ": must be either String[] or List<String>");
+                }
+                field.setAccessible(true);
+                if (field.getType().equals(String[].class)) {
+                    return UnmatchedArgsBinding.forStringArraySupplier(new FieldBinding(scope, field));
+                } else {
+                    return UnmatchedArgsBinding.forStringListSupplier(new FieldBinding(scope, field));
+                }
+            }
             static boolean isArgSpec(Field f)   { return isOption(f) || isParameter(f); }
             static boolean isOption(Field f)    { return f.isAnnotationPresent(Option.class); }
             static boolean isParameter(Field f) { return f.isAnnotationPresent(Parameters.class); }
             static boolean isMixin(Field f)     { return f.isAnnotationPresent(Mixin.class); }
+            static boolean isUnmatched(Field f) { return f.isAnnotationPresent(Unmatched.class); }
         }
 
         /** Helper class to reflectively create OptionSpec and PositionalParamSpec objects from annotated elements.
@@ -3422,8 +3506,7 @@ public class CommandLine {
                 builder.type(field.getType()); // field type
                 builder.defaultValue(getDefaultValue(scope, field));
                 builder.withToString(abbreviate("field " + field.toGenericString()));
-                builder.getter(new FieldGetter(scope, field));
-                builder.setter(new FieldSetter(scope, field));
+                builder.binding(new FieldBinding(scope, field));
             }
             static String abbreviate(String text) {
                 return text.replace("field private ", "field ")
@@ -3481,31 +3564,36 @@ public class CommandLine {
                 } catch (Exception ex) { }
                 return defaultValue;
             }
-            private static class FieldGetter implements ArgSpec.IGetter {
-                private final Object scope;
-                private final Field field;
-                public FieldGetter(Object scope, Field field) { this.scope = scope; this.field = field; }
-                @SuppressWarnings("unchecked") public <T> T get() throws PicocliException {
-                    try {
-                        return (T) field.get(scope);
-                    } catch (Exception ex) {
-                        throw new PicocliException("Could not get value for field " + field, ex);
-                    }
+        }
+        private static class FieldBinding implements IBinding {
+            private final Object scope;
+            private final Field field;
+            FieldBinding(Object scope, Field field) { this.scope = scope; this.field = field; }
+            public <T> T get() throws PicocliException {
+                try {
+                    @SuppressWarnings("unchecked") T result = (T) field.get(scope);
+                    return result;
+                } catch (Exception ex) {
+                    throw new PicocliException("Could not get value for field " + field, ex);
                 }
             }
-            private static class FieldSetter implements ArgSpec.ISetter {
-                private final Object scope;
-                private final Field field;
-                public FieldSetter(Object scope, Field field) { this.scope = scope; this.field = field; }
-                public <T> T set(T value) throws PicocliException {
-                    try {
-                        @SuppressWarnings("unchecked") T result = (T) field.get(scope);
-                        field.set(scope, value);
-                        return result;
-                    } catch (Exception ex) {
-                        throw new PicocliException("Could not set value for field " + field + " to " + value, ex);
-                    }
+            public <T> T set(T value) throws PicocliException {
+                try {
+                    @SuppressWarnings("unchecked") T result = (T) field.get(scope);
+                    field.set(scope, value);
+                    return result;
+                } catch (Exception ex) {
+                    throw new PicocliException("Could not set value for field " + field + " to " + value, ex);
                 }
+            }
+        }
+        private static class ObjectBinding implements IBinding {
+            private Object value;
+            @SuppressWarnings("unchecked") public <T> T get() { return (T) value; }
+            public <T> T set(T value) {
+                @SuppressWarnings("unchecked") T result = (T) value;
+                this.value = value;
+                return result;
             }
         }
     }
@@ -3907,12 +3995,18 @@ public class CommandLine {
                     .optionsMap().size());}
             return result;
         }
-        private void handleUnmatchedArgument(Stack<String> args) {
-            if (!args.isEmpty()) { parseResult.unmatched.add(args.pop()); }
+        private void handleUnmatchedArgument(Stack<String> args) throws Exception {
+            if (!args.isEmpty()) { handleUnmatchedArgument(args.pop()); }
             if (config().stopAtUnmatched()) {
                 // addAll would give args in reverse order
-                while (!args.isEmpty()) { parseResult.unmatched.add(args.pop()); }
+                while (!args.isEmpty()) { handleUnmatchedArgument(args.pop()); }
             }
+        }
+        private void handleUnmatchedArgument(String arg) {
+            for (UnmatchedArgsBinding unmatchedArgsBinding : getCommandSpec().unmatchedArgsBindings()) {
+                unmatchedArgsBinding.addArg(arg);
+            }
+            parseResult.unmatched.add(arg);
         }
 
         private void processRemainderAsPositionalParameters(Collection<ArgSpec> required, Set<ArgSpec> initialized, Stack<String> args) throws Exception {

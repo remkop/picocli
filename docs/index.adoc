@@ -820,6 +820,13 @@ When unmatched arguments are allowed, the above input will be accepted and a WAR
 
 The unmatched argument values can be obtained with the `CommandLine.getUnmatchedArguments()` method.
 
+=== `@Unmatched` annotation
+From picocli 3.0, fields annotated with `@Unmatched` will be populated with the unmatched arguments.
+The field must be of type `String[]` or `List<String>`.
+
+If picocli finds a field annotated with `@Unmatched`, it automatically sets `unmatchedArgumentsAllowed` to `true`
+so no `UnmatchedArgumentException` is thrown when a command line argument cannot be assigned to an option or positional parameter.
+
 === Unknown Options
 A special case of unmatched input are arguments that look like options but don't match any of the defined options.
 For example:

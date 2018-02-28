@@ -17,10 +17,7 @@ package picocli;
 
 import java.io.UnsupportedEncodingException;
 import java.sql.Types;
-import java.util.Arrays;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import org.junit.Test;
 
@@ -701,4 +698,108 @@ public class CommandLineModelTest {
         assertNotSame(option, copy);
     }
 
+    @Test
+    public void testUnmatchedArgsBinding_forStringArraySupplier() {
+        class ArrayBinding implements IBinding {
+            String[] array;
+            public <T> T get() throws PicocliException {
+                return (T) array;
+            }
+            public <T> T set(T value) throws PicocliException {
+                T old = (T) array;
+                array = (String[]) value;
+                return old;
+            }
+        }
+        ArrayBinding binding = new ArrayBinding();
+        CommandSpec cmd = CommandSpec.create();
+        UnmatchedArgsBinding unmatched = UnmatchedArgsBinding.forStringArraySupplier(binding);
+        assertSame(binding, unmatched.binding());
+
+        cmd.addUnmatchedArgsBinding(unmatched);
+        cmd.add(OptionSpec.builder("-x").build());
+        ParseResult result = new CommandLine(cmd).parseArgs("-x", "a", "b", "c");
+
+        assertEquals(Arrays.asList("a", "b", "c"), result.unmatched());
+        assertArrayEquals(new String[]{"a", "b", "c"}, binding.array);
+        assertSame(unmatched, cmd.unmatchedArgsBindings().get(0));
+        assertEquals(1, cmd.unmatchedArgsBindings().size());
+    }
+
+    @Test
+    public void testUnmatchedArgsBinding_forStringListSupplier() {
+        class ArrayBinding implements IBinding {
+            List<String> list;
+            public <T> T get() throws PicocliException {
+                return (T) list;
+            }
+            public <T> T set(T value) throws PicocliException {
+                T old = (T) list;
+                list = (List<String>) value;
+                return old;
+            }
+        }
+        ArrayBinding binding = new ArrayBinding();
+        CommandSpec cmd = CommandSpec.create();
+        UnmatchedArgsBinding unmatched = UnmatchedArgsBinding.forStringListSupplier(binding);
+        assertSame(binding, unmatched.binding());
+
+        cmd.addUnmatchedArgsBinding(unmatched);
+        cmd.add(OptionSpec.builder("-x").build());
+        ParseResult result = new CommandLine(cmd).parseArgs("-x", "a", "b", "c");
+
+        assertEquals(Arrays.asList("a", "b", "c"), result.unmatched());
+        assertEquals(Arrays.asList("a", "b", "c"), binding.list);
+        assertSame(unmatched, cmd.unmatchedArgsBindings().get(0));
+        assertEquals(1, cmd.unmatchedArgsBindings().size());
+    }
+
+    @Test
+    public void testUnmatchedArgsBinding_forStringConsumer() {
+        class ArrayBinding implements IBinding {
+            List<String> list = new ArrayList<String>();
+            public <T> T get() throws PicocliException {
+                throw new UnsupportedOperationException();
+            }
+            public <T> T set(T value) throws PicocliException {
+                list.add((String) value);
+                return null;
+            }
+        }
+        ArrayBinding binding = new ArrayBinding();
+        CommandSpec cmd = CommandSpec.create();
+        UnmatchedArgsBinding unmatched = UnmatchedArgsBinding.forStringConsumer(binding);
+        assertSame(binding, unmatched.binding());
+
+        cmd.addUnmatchedArgsBinding(unmatched);
+        cmd.add(OptionSpec.builder("-x").build());
+        ParseResult result = new CommandLine(cmd).parseArgs("-x", "a", "b", "c");
+
+        assertEquals(Arrays.asList("a", "b", "c"), result.unmatched());
+        assertEquals(Arrays.asList("a", "b", "c"), binding.list);
+        assertSame(unmatched, cmd.unmatchedArgsBindings().get(0));
+        assertEquals(1, cmd.unmatchedArgsBindings().size());
+    }
+
+    @Test
+    public void testUnmatchedArgsBinding_forStringArraySupplier_withInvalidBinding() {
+        class ListBinding implements IBinding {
+            List<String> list = new ArrayList<String>();
+            public <T> T get() throws PicocliException {
+                return (T) list;
+            }
+            public <T> T set(T value) throws PicocliException {
+                T old = (T) list;
+                list = (List<String>) value;
+                return old;
+            }
+        }
+        CommandSpec cmd = CommandSpec.create();
+        cmd.addUnmatchedArgsBinding(UnmatchedArgsBinding.forStringArraySupplier(new ListBinding()));
+        try {
+            new CommandLine(cmd).parseArgs("-x", "a", "b", "c");
+        } catch (Exception ex) {
+            assertTrue(ex.getMessage().contains("while processing argument at or before arg[0] '-x' in [-x, a, b, c]: java.lang.ClassCastException: java.util.ArrayList"));
+        }
+    }
 }

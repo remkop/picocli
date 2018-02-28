@@ -3,11 +3,13 @@
 # <a name="3.0.0-alpha-1"></a> Picocli 3.0.0-alpha-1 (UNRELEASED)
 The picocli community is pleased to announce picocli 3.0.0-alpha-1.
 
-This release offers a programmatic API for creating command line applications, as an alternative to annotations. A programmatic API allows applications to dynamically create command line options on the fly, and also makes it possible to create idiomatic domain-specific languages for using picocli in other JVM languages.
+This release offers a programmatic API for creating command line applications, as an alternative to annotations. A programmatic API allows applications to dynamically create command line options on the fly, and also makes it possible to create idiomatic domain-specific languages for processing command line arguments, using picocli, in other JVM languages.
 
 Another new feature in this release are Mixins. Mixins allow reusing common options, parameters and command attributes in multiple applications without copy-and-paste duplication.
 
 Third, this release aims to reduce boilerplate code in user applications even further with the new `mixinStandardHelpOptions` command attribute. Picocli adds standard `usageHelp` and `versionHelp` options to commands with this attribute. Additionally picocli now offers a `HelpCommand` command that is a useful subcommand for user applications.
+
+Additionally, fields annotated with `@Unmatched` will be populated with the unmatched arguments.
 
 Furthermore, this release adds a `showDefaultValue` attribute to the `@Option` and `@Parameters` annotation.
 
@@ -112,6 +114,15 @@ maincommand help subcommand
 
 Combined with the `CommandLine.run`, `CommandLine.call` or `CommandLine.handleParseResult` methods, this is *all* you need to do to give your application usage help and version help.
 
+
+### <a name="3.0.0-alpha-1-Unmatched"></a> `@Unmatched` annotation
+From this release, fields annotated with `@Unmatched` will be populated with the unmatched arguments.
+The field must be of type `String[]` or `List<String>`.
+
+If picocli finds a field annotated with `@Unmatched`, it automatically sets `unmatchedArgumentsAllowed` to `true`
+so no `UnmatchedArgumentException` is thrown when a command line argument cannot be assigned to an option or positional parameter.
+
+
 ### Fine-grained ShowDefault
 
 This release adds a `showDefaultValue` attribute to the `@Option` and `@Parameters` annotation. This allows you to specify for each individual option and positional parameter whether its default value should be shown in the usage help.
@@ -134,6 +145,7 @@ No features have been promoted in this picocli release.
 
 - [#245] New Feature: From 3.0, picocli offers an API for programmatic configuration.
 - [#144] New Feature: Added support for mixins to allow reusing common options, positional parameters, subcommands and command attributes from any object.
+- [#253] New Feature: Added `@Unmatched` annotation for unmatched arguments.
 - [#175] New Feature: `mixinStandardHelpOptions` attribute to conveniently activate fully automatic help.
 - [#262] New Feature: new `showDefaultValue` attribute on `@Option` and `@Parameters` gives fine-grained control over which default values to show or hide. Thanks to [ymenager](https://github.com/ymenager) for the request.
 - [#268] New Feature: new `helpCommand` attribute on `@Command`: if the command line arguments contain a subcommand annotated with `helpCommand`, the parser will not validate the required options or positional parameters of the parent command. Thanks to [ymenager](https://github.com/ymenager) for the request.
