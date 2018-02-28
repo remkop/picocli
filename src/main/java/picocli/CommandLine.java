@@ -2969,7 +2969,7 @@ public class CommandLine {
          * Depending on the option's {@link #arity() arity},
          * the parser may expect it to have option parameters. The parser will call {@link #setValue(Object) setValue} on
          * the matched option for each of the option parameters encountered.
-         * </p<p>
+         * </p><p>
          * For multi-value options, the {@code type} may be an array, a {@code Collection} or a {@code Map}. In this case
          * the parser will get the data structure by calling {@link #getValue() getValue} and modify the contents of this data structure.
          * (In the case of arrays, the array is replaced with a new instance with additional elements.)
@@ -2993,7 +2993,7 @@ public class CommandLine {
          * {@code OptionSpec} objects are used by the picocli command line interpreter and help message generator.
          * Picocli can construct an {@code OptionSpec} automatically from fields and methods with {@link Option @Option}
          * annotations. Alternatively an {@code OptionSpec} can be constructed programmatically.
-         * </p<p>
+         * </p><p>
          * When an {@code OptionSpec} is created from an {@link Option @Option} -annotated field or method, it is "bound"
          * to that field or method: this field is set (or the method is invoked) when the option is matched and
          * {@link #setValue(Object) setValue} is called.
@@ -3148,7 +3148,7 @@ public class CommandLine {
          * {@code PositionalParamSpec} objects are used by the picocli command line interpreter and help message generator.
          * Picocli can construct a {@code PositionalParamSpec} automatically from fields and methods with {@link Parameters @Parameters}
          * annotations. Alternatively a {@code PositionalParamSpec} can be constructed programmatically.
-         * </p<p>
+         * </p><p>
          * When a {@code PositionalParamSpec} is created from a {@link Parameters @Parameters} -annotated field or method,
          * it is "bound" to that field or method: this field is set (or the method is invoked) when the position is matched
          * and {@link #setValue(Object) setValue} is called.
