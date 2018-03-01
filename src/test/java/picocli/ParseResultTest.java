@@ -84,4 +84,30 @@ public class ParseResultTest {
         }
         assertFalse(result.hasPositional(args.length));
     }
+
+    @Test
+    public void testOriginalArgsForSubcommands() {
+        class App {
+            @Option(names = "-x") String x;
+        }
+        class Sub {
+            @Parameters String[] all;
+        }
+        CommandLine cmd = new CommandLine(new App());
+        cmd.addSubcommand("sub", new Sub());
+        ParseResult parseResult = cmd.parseArgs("-x", "xval", "sub", "1", "2", "3");
+        assertEquals(Arrays.asList("-x", "xval", "sub", "1", "2", "3"), parseResult.originalArgs());
+
+        assertTrue(parseResult.hasOption("-x"));
+        assertEquals("xval", parseResult.optionValue("-x"));
+        assertEquals("xval", parseResult.typedOptionValue("-x"));
+        assertFalse(parseResult.hasPositional(0));
+
+        assertTrue(parseResult.hasSubcommand());
+        ParseResult subResult = parseResult.subcommand();
+        assertEquals(Arrays.asList("-x", "xval", "sub", "1", "2", "3"), subResult.originalArgs()); // TODO is this okay?
+        assertEquals("1", subResult.positionalValue(0));
+        assertEquals("2", subResult.positionalValue(1));
+        assertEquals("3", subResult.positionalValue(2));
+    }
 }
