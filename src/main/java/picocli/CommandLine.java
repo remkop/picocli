@@ -3603,7 +3603,7 @@ public class CommandLine {
     public static class ParseResult {
         /** Creates and returns a new {@code ParseResult.Builder} for the specified command spec. */
         public static Builder builder(CommandSpec commandSpec) { return new Builder(commandSpec); }
-        /** Builds immutable {@code Parseresult} instances. */
+        /** Builds immutable {@code ParseResult} instances. */
         public static class Builder {
             private final CommandSpec commandSpec;
             private final Set<OptionSpec> options = new LinkedHashSet<OptionSpec>();
@@ -3643,7 +3643,7 @@ public class CommandLine {
             }
             /** Adds the specified command line argument to the list of unmatched command line arguments. */
             public Builder addUnmatched(String arg) { unmatched.add(arg); return this; }
-            /** Adds all elements of the specified command line arguments stackto the list of unmatched command line arguments. */
+            /** Adds all elements of the specified command line arguments stack to the list of unmatched command line arguments. */
             public Builder addUnmatched(Stack<String> args) { while (!args.isEmpty()) { addUnmatched(args.pop()); } return this; }
             /** Sets the specified {@code ParseResult} for a subcommand that was matched on the command line. */
             public Builder subcommand(ParseResult subcommand) { this.subcommand = subcommand; return this; }
@@ -3772,9 +3772,9 @@ public class CommandLine {
         public boolean hasSubcommand()          { return subcommand != null; }
         /** Returns the {@code ParseResult} for the subcommand of this command that was matched on the command line, or {@code null} if no subcommand was matched. */
         public ParseResult subcommand()         { return subcommand; }
-        /** Returns {@code true} if one of the options that was matched on the command line is a {@link OptionSpec#usageHelp()} option. */
+        /** Returns {@code true} if one of the options that was matched on the command line is a {@link OptionSpec#usageHelp() usageHelp} option. */
         public boolean isUsageHelpRequested()   { return usageHelpRequested; }
-        /** Returns {@code true} if one of the options that was matched on the command line is a {@link OptionSpec#versionHelp()} option. */
+        /** Returns {@code true} if one of the options that was matched on the command line is a {@link OptionSpec#versionHelp() versionHelp} option. */
         public boolean isVersionHelpRequested() { return versionHelpRequested; }
     }
     /**
