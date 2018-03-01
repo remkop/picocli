@@ -2182,10 +2182,27 @@ public class CommandLine {
     public static final class Model {
         private Model() {}
 
-        /** Customizable binding for obtaining and modifying the current value of an option or positional parameter from the model.
+        /** Customizable binding for obtaining and modifying the current value of an option or positional parameter.
+         * When an option or positional parameter is matched on the command line, its binding is invoked to capture the value.
+         * For example, an option can be bound to a field or a method, and when the option is matched on the command line, the
+         * field's value is set or the method is invoked with the option parameter value.
          * @since 3.0 */
         public static interface IBinding {
+
+            /** Returns the current value of the binding. For multi-value options and positional parameters, this method returns an
+             * array, collection or map to add values to.
+             * @throws PicocliException if a problem occurred while obtaining the current value */
             <T> T get() throws PicocliException;
+
+            /** Sets the new value of the binding. For multi-value options and positional parameters, this method is used to
+             * set a new array instance that is one element larger than the previous instance, or to initialize the collection
+             * or map when the {@link #get() getter} returned {@code null}. For single-value options and positional parameters,
+             * this method simply sets the value.
+             *
+             * @param value the new value of the binding
+             * @param <T> type of the value
+             * @return the previous value of the binding (if supported by this binding)
+             * @throws PicocliException if a problem occurred while setting the new value */
             <T> T set(T value) throws PicocliException;
         }
 
