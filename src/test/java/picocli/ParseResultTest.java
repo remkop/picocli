@@ -110,4 +110,73 @@ public class ParseResultTest {
         assertEquals("2", subResult.positionalValue(1));
         assertEquals("3", subResult.positionalValue(2));
     }
+
+    @Test
+    public void testHasPositionalByPositionalSpec() {
+    }
+
+    @Test
+    public void testIsUsageHelpRequested() {
+
+    }
+
+    @Test
+    public void testIsVersionHelpRequested() {
+
+    }
+
+    @Test
+    public void testHasOptionByOptionSpec() {
+        // multiple option values
+    }
+
+    @Test
+    public void testHasOptionByShortName() {
+        // multiple option values
+    }
+
+    @Test
+    public void testHasOptionByNameWithStandardPrefix() {
+        // multiple option values
+    }
+
+    @Test
+    public void testHasOptionByNameWithoutStandardPrefix() {
+        // multiple option values
+    }
+
+    @Test
+    public void testHasOptionByNameWithCustomPrefix() {
+        // multiple option values
+    }
+
+    @Test
+    public void testHasOptionByNameWithoutCustomPrefix() {
+        // multiple option values
+    }
+
+    @Test
+    public void testOptionValue() {
+        // multiple option values
+    }
+
+    @Test
+    public void testOptionValueWithDefault() {
+        // multiple option values
+    }
+
+    @Test
+    public void testOptionValues() {
+        // multiple option values
+    }
+
+    @Test
+    public void testTypedOptionValue() {
+        // single and multiple option values
+    }
+
+    @Test
+    public void testTypedPositionalValue() {
+        // single and multiple values
+    }
 }
