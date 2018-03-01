@@ -30,6 +30,7 @@ import static picocli.HelpTestUtil.setTraceLevel;
 import static picocli.HelpTestUtil.usageString;
 import static picocli.HelpTestUtil.versionString;
 
+
 public class CommandLineModelTest {
     @Test
     public void testEmptyModelUsageHelp() throws Exception {
@@ -700,6 +701,7 @@ public class CommandLineModelTest {
 
     @Test
     public void testUnmatchedArgsBinding_forStringArraySupplier() {
+        setTraceLevel("OFF");
         class ArrayBinding implements IBinding {
             String[] array;
             public <T> T get() throws PicocliException {
@@ -728,6 +730,7 @@ public class CommandLineModelTest {
 
     @Test
     public void testUnmatchedArgsBinding_forStringListSupplier() {
+        setTraceLevel("OFF");
         class ArrayBinding implements IBinding {
             List<String> list;
             public <T> T get() throws PicocliException {
@@ -756,6 +759,7 @@ public class CommandLineModelTest {
 
     @Test
     public void testUnmatchedArgsBinding_forStringConsumer() {
+        setTraceLevel("OFF");
         class ArrayBinding implements IBinding {
             List<String> list = new ArrayList<String>();
             public <T> T get() throws PicocliException {
@@ -783,6 +787,7 @@ public class CommandLineModelTest {
 
     @Test
     public void testUnmatchedArgsBinding_forStringArraySupplier_withInvalidBinding() {
+        setTraceLevel("OFF");
         class ListBinding implements IBinding {
             List<String> list = new ArrayList<String>();
             public <T> T get() throws PicocliException {

@@ -3544,6 +3544,7 @@ public class CommandLineTest {
 
     @Test
     public void testUnmatchedAnnotationInstantiatesList() {
+        setTraceLevel("OFF");
         class App {
             @Unmatched List<String> unmatched;
             @Option(names = "-o") String option;
@@ -3557,6 +3558,7 @@ public class CommandLineTest {
 
     @Test
     public void testUnmatchedAnnotationInstantiatesArray() {
+        setTraceLevel("OFF");
         class App {
             @Unmatched String[] unmatched;
             @Option(names = "-o") String option;
@@ -3570,6 +3572,7 @@ public class CommandLineTest {
 
     @Test
     public void testMultipleUnmatchedAnnotations() {
+        setTraceLevel("OFF");
         class App {
             @Unmatched String[] unmatched1;
             @Unmatched String[] unmatched2;
@@ -3589,6 +3592,7 @@ public class CommandLineTest {
 
     @Test
     public void testCommandAllowsOnlyUnmatchedAnnotation() {
+        setTraceLevel("OFF");
         class App {
             @Unmatched String[] unmatched;
         }
@@ -3622,6 +3626,81 @@ public class CommandLineTest {
             fail("Expected exception");
         } catch (InitializationException ex) {
             String pattern = "Invalid type for %s: must be either String[] or List<String>";
+            Field f = App.class.getDeclaredField("unmatched");
+            assertEquals(String.format(pattern, f), ex.getMessage());
+        }
+    }
+
+    @Test
+    public void testUnmatchedAndOptionAnnotation_ThrowsException() throws Exception {
+        @Command class App {
+            @Unmatched @Option(names = "-x") List<Object> unmatched;
+        }
+        try {
+            new CommandLine(new App());
+            fail("Expected exception");
+        } catch (InitializationException ex) {
+            String pattern = "A field cannot have both @Unmatched and @Option or @Parameters annotations, but '%s' has both.";
+            Field f = App.class.getDeclaredField("unmatched");
+            assertEquals(String.format(pattern, f), ex.getMessage());
+        }
+    }
+
+    @Test
+    public void testUnmatchedAndParametersAnnotation_ThrowsException() throws Exception {
+        @Command class App {
+            @Unmatched @Parameters List<Object> unmatched;
+        }
+        try {
+            new CommandLine(new App());
+            fail("Expected exception");
+        } catch (InitializationException ex) {
+            String pattern = "A field cannot have both @Unmatched and @Option or @Parameters annotations, but '%s' has both.";
+            Field f = App.class.getDeclaredField("unmatched");
+            assertEquals(String.format(pattern, f), ex.getMessage());
+        }
+    }
+
+    @Test
+    public void testUnmatchedAndMixinAnnotation_ThrowsException() throws Exception {
+        @Command class App {
+            @Unmatched @Mixin List<Object> unmatched;
+        }
+        try {
+            new CommandLine(new App());
+            fail("Expected exception");
+        } catch (InitializationException ex) {
+            String pattern = "A field cannot be both a @Mixin command and an @Unmatched but '%s' is both.";
+            Field f = App.class.getDeclaredField("unmatched");
+            assertEquals(String.format(pattern, f), ex.getMessage());
+        }
+    }
+
+    @Test
+    public void testMixinAndOptionAnnotation_ThrowsException() throws Exception {
+        @Command class App {
+            @Mixin @Option(names = "-x") List<Object> unmatched;
+        }
+        try {
+            new CommandLine(new App());
+            fail("Expected exception");
+        } catch (InitializationException ex) {
+            String pattern = "A field cannot be both a @Mixin command and an @Option or @Parameters, but '%s' is both.";
+            Field f = App.class.getDeclaredField("unmatched");
+            assertEquals(String.format(pattern, f), ex.getMessage());
+        }
+    }
+
+    @Test
+    public void testMixinAndParametersAnnotation_ThrowsException() throws Exception {
+        @Command class App {
+            @Mixin @Parameters List<Object> unmatched;
+        }
+        try {
+            new CommandLine(new App());
+            fail("Expected exception");
+        } catch (InitializationException ex) {
+            String pattern = "A field cannot be both a @Mixin command and an @Option or @Parameters, but '%s' is both.";
             Field f = App.class.getDeclaredField("unmatched");
             assertEquals(String.format(pattern, f), ex.getMessage());
         }

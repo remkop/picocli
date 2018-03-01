@@ -2681,10 +2681,12 @@ public class CommandLineHelpTest {
     public void testFailingVersionProvider() {
         @Command(versionProvider = FailingVersionProvider.class)
         class App {}
+        CommandLine cmd = new CommandLine(new App());
         try {
-            new CommandLine(new App());
-        } catch (InitializationException ex) {
-            assertEquals("Could not get version info from class picocli.CommandLineHelpTest$FailingVersionProvider: java.lang.IllegalStateException: sorry can't give you a version", ex.getMessage());
+            cmd.printVersionHelp(System.out);
+            fail("Expected exception");
+        } catch (ExecutionException ex) {
+            assertEquals("Could not get version info from " + cmd.getCommandSpec().versionProvider() + ": java.lang.IllegalStateException: sorry can't give you a version", ex.getMessage());
         }
     }
 
