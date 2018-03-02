@@ -125,15 +125,16 @@ If picocli finds a field annotated with `@Unmatched`, it automatically sets `unm
 so no `UnmatchedArgumentException` is thrown when a command line argument cannot be assigned to an option or positional parameter.
 
 ### <a name="3.0.0-alpha-1-Inject"></a> `@Inject` annotation
-A new `@Inject` annotation is now available that injects the `CommandSpec` or `CommandLine` object into the application command field. 
+A new `@Inject` annotation is now available that injects the `CommandSpec`, `CommandLine` or `ParseResult` object into the application command field. 
 
 This is useful when a command needs to use the picocli API, for example to walk the command hierarchy and iterate over its sibling commands.
 This complements the `@ParentCommand` annotation;  the `@ParentCommand` annotation injects a user-defined command object, whereas this annotation injects a picocli class.
 
 ```java
 class InjectExample implements Runnable {
-   @Inject CommandLine commandLine; // usually you inject either the CommandLine
+   @Inject CommandLine commandLine; // you can inject any of the CommandLine
    @Inject CommandSpec commandSpec; // or the CommandSpec
+   @Inject ParseResult parseResult; // or the ParseResult for a command
    //...
    public void run() {
        // do something with the injected objects
@@ -172,7 +173,7 @@ No features have been promoted in this picocli release.
 - [#257] New Feature: new `ParseResult` class allows programmatic inspection of the result of parsing a sequence of command line arguments.
 - [#144] New Feature: Added support for mixins to allow reusing common options, positional parameters, subcommands and command attributes from any object.
 - [#253] New Feature: Added `@Unmatched` annotation for unmatched arguments.
-- [#259] New Feature: Added `@Inject` annotation to inject `CommandSpec` or `CommandLine` into application field. 
+- [#259] New Feature: Added `@Inject` annotation to inject `CommandSpec`, `CommandLine` or `ParseResult` into application field. 
 - [#175] New Feature: `mixinStandardHelpOptions` attribute to conveniently activate fully automatic help.
 - [#262] New Feature: new `showDefaultValue` attribute on `@Option` and `@Parameters` gives fine-grained control over which default values to show or hide. Thanks to [ymenager](https://github.com/ymenager) for the request.
 - [#268] New Feature: new `helpCommand` attribute on `@Command`: if the command line arguments contain a subcommand annotated with `helpCommand`, the parser will not validate the required options or positional parameters of the parent command. Thanks to [ymenager](https://github.com/ymenager) for the request.

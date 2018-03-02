@@ -2172,13 +2172,14 @@ Picocli 3.0 introduces an `@Inject` annotation for injecting picocli API objects
 This is useful when a command needs to use the picocli API, for example to walk the command hierarchy and iterate over its sibling commands.
 This complements the `@ParentCommand` annotation;  the `@ParentCommand` annotation injects a user-defined command object, whereas this annotation injects a picocli class.
 
-Currently only `CommandLine` and `CommandSpec` objects can be injected.
+Currently only `CommandLine`, `CommandSpec` and `ParseResult` objects can be injected.
 
 [source,java]
 ----
 class InjectExample implements Runnable {
-   @Inject CommandLine commandLine; // usually you inject either the CommandLine
+   @Inject CommandLine commandLine; // you can inject any of the CommandLine
    @Inject CommandSpec commandSpec; // or the CommandSpec
+   @Inject ParseResult parseResult; // or the ParseResult for a command
 
    //...
 
