@@ -3693,6 +3693,7 @@ public class CommandLine {
             for (OptionSpec option : options) {
                 for (String name : option.names()) {
                     if (name.length() == 2 && name.charAt(0) == '-' && name.charAt(1) == shortName) { return option; }
+                    if (name.length() == 1 && name.charAt(0) == shortName) { return option; }
                 }
             }
             return null;
@@ -3712,7 +3713,7 @@ public class CommandLine {
             for (int i = 0; i < prefixed.length(); i++) {
                 if (Character.isJavaIdentifierPart(prefixed.charAt(i))) { return prefixed.substring(i); }
             }
-            return "";
+            return prefixed;
         }
         /** Returns the {@code PositionalParamSpec} that was matched at the specified position, or {@code null} if no positional parameters were matched at that position. */
         public PositionalParamSpec positional(int position) {
@@ -3757,13 +3758,17 @@ public class CommandLine {
          *      The specified name may include option name prefix characters or not. */
         public String optionValue(String name, String defaultValue)       { return optionValue(option(name), defaultValue); }
         /** Returns the command line argument String value of the specified option, or the specified default value if the specified option is {@code null}. */
-        public String optionValue(OptionSpec option, String defaultValue) { return option == null ? defaultValue : option.rawStringValues().get(0); }
+        public String optionValue(OptionSpec option, String defaultValue) { return option == null || option.rawStringValues().isEmpty() ? defaultValue : option.rawStringValues().get(0); }
         /** Returns the command line argument String value of the positional parameter at the specified position, or {@code null} if no positional parameter was matched at that position. */
         public String positionalValue(int position)                       { return positionalValue(positional(position), position, null); }
         /** Returns the command line argument String value of the positional parameter at the specified position, or the specified default value if no positional parameter was matched at that position. */
         public String positionalValue(int position, String defaultValue)  { return positionalValue(positional(position), position, defaultValue); }
         /** Returns the command line argument String value of the specified {@code PositionalParamSpec} at the specified position, or the specified default value if the specified {@code PositionalParamSpec} is {@code null}. */
-        private String positionalValue(PositionalParamSpec positional, int position, String defaultValue) { return positional == null ? defaultValue : positional.rawStringValues().get(position - positional.index().min); }
+        private String positionalValue(PositionalParamSpec positional, int position, String defaultValue) {
+            if (positional == null) { return defaultValue; }
+            int pos = position - positional.index().min;
+            return positional.rawStringValues().size() <= pos ? defaultValue : positional.rawStringValues().get(pos);
+        }
         /** Returns all command line argument String values matched for the option with the specified name, or an empty list if no option with the specified name was matched. */
         public List<String> optionValues(char shortName)    { return optionValues(option(shortName)); }
         /** Returns all command line argument String values matched for the option with the specified name, or an empty list if no option with the specified name was matched.

@@ -122,6 +122,10 @@ The field must be of type `String[]` or `List<String>`.
 If picocli finds a field annotated with `@Unmatched`, it automatically sets `unmatchedArgumentsAllowed` to `true`
 so no `UnmatchedArgumentException` is thrown when a command line argument cannot be assigned to an option or positional parameter.
 
+### <a name="3.0.0-alpha-1-ParseResult"></a> `ParseResult` API
+A `ParseResult` class is now available that allows applications to inspect the result of parsing a sequence of command line arguments.
+
+This class provides methods to query whether the command line arguments included certain options or position parameters, and what the value or values of these options and positional parameters was. Both the original command line argument String value as well as a strongly typed value can be obtained.
 
 ### Fine-grained ShowDefault
 
@@ -144,6 +148,7 @@ No features have been promoted in this picocli release.
 ## <a name="3.0.0-alpha-1-fixes"></a> Fixed issues
 
 - [#245] New Feature: From 3.0, picocli offers an API for programmatic configuration.
+- [#257] New Feature: new `ParseResult` class allows programmatic inspection of the result of parsing a sequence of command line arguments.
 - [#144] New Feature: Added support for mixins to allow reusing common options, positional parameters, subcommands and command attributes from any object.
 - [#253] New Feature: Added `@Unmatched` annotation for unmatched arguments.
 - [#175] New Feature: `mixinStandardHelpOptions` attribute to conveniently activate fully automatic help.

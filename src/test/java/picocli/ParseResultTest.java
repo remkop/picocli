@@ -21,6 +21,10 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+
+import picocli.CommandLine.Model.OptionSpec;
+import picocli.CommandLine.Model.PositionalParamSpec;
 import picocli.CommandLine.ParseResult;
 
 import static org.junit.Assert.*;
@@ -28,6 +32,15 @@ import static picocli.CommandLine.*;
 import static picocli.HelpTestUtil.setTraceLevel;
 
 public class ParseResultTest {
+    @Test
+    public void testCommandSpec_IsCommandLineCommandSpec() {
+        class App {
+            @Parameters String[] positional;
+        }
+        CommandLine cmd = new CommandLine(new App());
+        ParseResult result = cmd.parseArgs("a", "b");
+        assertSame(cmd.getCommandSpec(), result.commandSpec());
+    }
     @Test
     public void testBasicUsage() {
         class App {
@@ -105,7 +118,12 @@ public class ParseResultTest {
 
         assertTrue(parseResult.hasSubcommand());
         ParseResult subResult = parseResult.subcommand();
-        assertEquals(Arrays.asList("-x", "xval", "sub", "1", "2", "3"), subResult.originalArgs()); // TODO is this okay?
+        assertEquals(Arrays.asList("-x", "xval", "sub", "1", "2", "3"), subResult.originalArgs()); // TODO should subresult.originalArgs include the args consumed by the parent?
+
+        assertTrue(subResult.hasPositional(0));
+        assertTrue(subResult.hasPositional(1));
+        assertTrue(subResult.hasPositional(2));
+        assertFalse(subResult.hasPositional(3));
         assertEquals("1", subResult.positionalValue(0));
         assertEquals("2", subResult.positionalValue(1));
         assertEquals("3", subResult.positionalValue(2));
@@ -113,70 +131,424 @@ public class ParseResultTest {
 
     @Test
     public void testHasPositionalByPositionalSpec() {
+        class App {
+            @Option(names = "-x") String x;
+            @Parameters(index = "0", arity = "0..1") int index0 = -1;
+            @Parameters(index = "1", arity = "0..1") int index1 = -1;
+            @Parameters(index = "2", arity = "0..1") int index2 = -1;
+        }
+        CommandLine cmd = new CommandLine(new App());
+        ParseResult parseResult = cmd.parseArgs("-x", "xval", "0", "1");
+
+        List<PositionalParamSpec> all = cmd.getCommandSpec().positionalParameters();
+        assertTrue(parseResult.hasPositional(all.get(0)));
+        assertTrue(parseResult.hasPositional(all.get(1)));
+        assertFalse(parseResult.hasPositional(all.get(2)));
     }
 
     @Test
-    public void testIsUsageHelpRequested() {
+    public void testPositionalParams_ReturnsOnlyMatchedPositionals() {
+        class App {
+            @Option(names = "-x") String x;
+            @Parameters(index = "0", arity = "0..1") int index0 = -1;
+            @Parameters(index = "1", arity = "0..1") int index1 = -1;
+            @Parameters(index = "2", arity = "0..1") int index2 = -1;
+        }
+        CommandLine cmd = new CommandLine(new App());
+        ParseResult parseResult = cmd.parseArgs("-x", "xval", "0", "1");
 
+        List<PositionalParamSpec> all = cmd.getCommandSpec().positionalParameters();
+        assertEquals(3, all.size());
+
+        List<PositionalParamSpec> found = parseResult.positionalParams();
+        assertEquals(2, found.size());
+        assertSame(all.get(0), found.get(0));
+        assertSame(all.get(1), found.get(1));
+
+        assertSame(parseResult.positional(0), found.get(0));
+        assertSame(parseResult.positional(1), found.get(1));
     }
 
     @Test
-    public void testIsVersionHelpRequested() {
+    public void testPositional_ReturnsNullForNonMatchedPosition() {
+        class App {
+            @Parameters(index = "0", arity = "0..1") int index0 = -1;
+            @Parameters(index = "1", arity = "0..1") int index1 = -1;
+            @Parameters(index = "2", arity = "0..1") int index2 = -1;
+        }
+        CommandLine cmd = new CommandLine(new App());
+        ParseResult parseResult = cmd.parseArgs("0", "1");
 
+        assertNotNull(parseResult.positional(0));
+        assertNotNull(parseResult.positional(1));
+
+        assertNull(parseResult.positional(2));
+        assertNull(parseResult.positional(3));
     }
 
     @Test
-    public void testHasOptionByOptionSpec() {
-        // multiple option values
+    public void testPositionalValue_ReturnsNullForNonMatchedPosition() {
+        class App {
+            @Parameters(index = "0", arity = "0..1") int index0 = -1;
+            @Parameters(index = "1", arity = "0..1") int index1 = -1;
+            @Parameters(index = "2", arity = "0..1") int index2 = -1;
+        }
+        CommandLine cmd = new CommandLine(new App());
+        ParseResult parseResult = cmd.parseArgs("0", "1");
+
+        assertEquals("0", parseResult.positionalValue(0));
+        assertEquals("1", parseResult.positionalValue(1));
+
+        assertNull(parseResult.positionalValue(2));
+        assertNull(parseResult.positionalValue(3));
     }
 
     @Test
-    public void testHasOptionByShortName() {
-        // multiple option values
-    }
+    public void testPositionalValueWithDefault_ReturnsDefaultForNonMatchedPosition() {
+        class App {
+            @Parameters(index = "0", arity = "0..1") int index0 = -1;
+            @Parameters(index = "1", arity = "0..1") int index1 = -1;
+            @Parameters(index = "2", arity = "0..1") int index2 = -1;
+        }
+        CommandLine cmd = new CommandLine(new App());
+        ParseResult parseResult = cmd.parseArgs("0", "1");
 
-    @Test
-    public void testHasOptionByNameWithStandardPrefix() {
-        // multiple option values
-    }
+        assertEquals("0", parseResult.positionalValue(0, "abc"));
+        assertEquals("1", parseResult.positionalValue(1, "def"));
 
-    @Test
-    public void testHasOptionByNameWithoutStandardPrefix() {
-        // multiple option values
-    }
-
-    @Test
-    public void testHasOptionByNameWithCustomPrefix() {
-        // multiple option values
-    }
-
-    @Test
-    public void testHasOptionByNameWithoutCustomPrefix() {
-        // multiple option values
-    }
-
-    @Test
-    public void testOptionValue() {
-        // multiple option values
-    }
-
-    @Test
-    public void testOptionValueWithDefault() {
-        // multiple option values
-    }
-
-    @Test
-    public void testOptionValues() {
-        // multiple option values
-    }
-
-    @Test
-    public void testTypedOptionValue() {
-        // single and multiple option values
+        assertEquals("ghi", parseResult.positionalValue(2, "ghi"));
+        assertEquals("xyz", parseResult.positionalValue(3, "xyz"));
     }
 
     @Test
     public void testTypedPositionalValue() {
-        // single and multiple values
+        class App {
+            @Parameters(index = "0", arity = "0..1") int index0 = -1;
+            @Parameters(index = "1", arity = "0..1") int index1 = -1;
+            @Parameters(index = "2", arity = "0..1") int index2 = -1;
+        }
+        App app = new App();
+        CommandLine cmd = new CommandLine(app);
+        ParseResult parseResult = cmd.parseArgs("0", "1");
+        assertEquals( 0, app.index0);
+        assertEquals( 1, app.index1);
+        assertEquals(-1, app.index2);
+
+        List<PositionalParamSpec> found = parseResult.positionalParams();
+        assertEquals(2, found.size());
+        assertEquals(Integer.valueOf(0), parseResult.typedPositionalValue(0));
+        assertEquals(Integer.valueOf(1), parseResult.typedPositionalValue(1));
+        assertNull(parseResult.typedPositionalValue(2));
+
+        List<PositionalParamSpec> all = cmd.getCommandSpec().positionalParameters();
+        assertEquals(3, all.size());
+        assertEquals(Integer.valueOf(0), parseResult.typedPositionalValue(all.get(0)));
+        assertEquals(Integer.valueOf(1), parseResult.typedPositionalValue(all.get(1)));
+        assertEquals(Integer.valueOf(-1), parseResult.typedPositionalValue(all.get(2)));
+        assertNull(parseResult.typedPositionalValue(null));
+    }
+
+    @Test
+    public void testIsUsageHelpRequested() {
+        @Command(mixinStandardHelpOptions = true)
+        class App {
+            @Option(names = "-x") String x;
+        }
+        CommandLine cmd = new CommandLine(new App());
+        ParseResult parseResult = cmd.parseArgs("-h");
+        assertTrue(parseResult.isUsageHelpRequested());
+        assertFalse(parseResult.isVersionHelpRequested());
+
+        assertSame(cmd.getCommandSpec().optionsMap().get("-h"), parseResult.option('h'));
+
+        assertTrue(parseResult.unmatched().isEmpty());
+        assertTrue(parseResult.positionalParams().isEmpty());
+    }
+
+    @Test
+    public void testIsVersionHelpRequested() {
+        @Command(mixinStandardHelpOptions = true)
+        class App {
+            @Option(names = "-x") String x;
+        }
+        CommandLine cmd = new CommandLine(new App());
+        ParseResult parseResult = cmd.parseArgs("--version");
+        assertFalse(parseResult.isUsageHelpRequested());
+        assertTrue(parseResult.isVersionHelpRequested());
+
+        assertSame(cmd.getCommandSpec().optionsMap().get("--version"), parseResult.option('V'));
+    }
+
+    @Test
+    public void testOptions_ReturnsOnlyMatchedOptions() {
+        class App {
+            @Option(names = "-a", arity = "0..1") String a;
+            @Option(names = "-b", arity = "0..1") String b;
+        }
+        CommandLine cmd = new CommandLine(new App());
+        ParseResult parseResult = cmd.parseArgs("-a");
+
+        List<OptionSpec> options = parseResult.options();
+        assertEquals(1, options.size());
+
+        Map<String, OptionSpec> optionsMap = cmd.getCommandSpec().optionsMap();
+        assertTrue(parseResult.hasOption(optionsMap.get("-a")));
+        assertFalse(parseResult.hasOption(optionsMap.get("-b")));
+    }
+
+    @Test
+    public void testOption_ReturnsOnlyMatchedOptions() {
+        class App {
+            @Option(names = "-a", arity = "0..1") String a;
+            @Option(names = "-b", arity = "0..1") String b;
+        }
+        CommandLine cmd = new CommandLine(new App());
+        ParseResult parseResult = cmd.parseArgs("-a");
+
+        assertNotNull(parseResult.option('a'));
+        assertNotNull(parseResult.option("a"));
+        assertNotNull(parseResult.option("-a"));
+
+        assertNull(parseResult.option('b'));
+        assertNull(parseResult.option("b"));
+        assertNull(parseResult.option("-b"));
+    }
+
+    @Test
+    public void testHasOptionByOptionSpec() {
+        class App {
+            @Option(names = "-x", arity = "0..1") String x;
+            @Option(names = "-y", arity = "0..1") String y;
+        }
+        CommandLine cmd = new CommandLine(new App());
+        ParseResult parseResult = cmd.parseArgs("-x");
+
+        Map<String, OptionSpec> optionsMap = cmd.getCommandSpec().optionsMap();
+        assertTrue(parseResult.hasOption(optionsMap.get("-x")));
+        assertFalse(parseResult.hasOption(optionsMap.get("-y")));
+    }
+
+    @Test
+    public void testHasOptionByShortName() {
+        class App {
+            @Option(names = "-x") String[] x;
+            @Option(names = "-y") String y;
+        }
+        CommandLine cmd = new CommandLine(new App());
+        ParseResult parseResult = cmd.parseArgs("-x", "value1", "-x", "value2");
+        assertTrue(parseResult.hasOption('x'));
+        assertFalse(parseResult.hasOption('y'));
+    }
+
+    @Test
+    public void testHasOptionByName_VariousPrefixes() {
+        class App {
+            @Option(names = {"-x", "++XX", "/XXX"}) String[] x;
+            @Option(names = "-y") String y;
+        }
+        CommandLine cmd = new CommandLine(new App());
+        ParseResult parseResult = cmd.parseArgs("-x", "value1", "-x", "value2");
+        assertTrue(parseResult.hasOption("x"));
+        assertTrue(parseResult.hasOption("-x"));
+        assertTrue(parseResult.hasOption("XX"));
+        assertTrue(parseResult.hasOption("++XX"));
+        assertTrue(parseResult.hasOption("XXX"));
+        assertTrue(parseResult.hasOption("/XXX"));
+
+        assertFalse(parseResult.hasOption("y"));
+        assertFalse(parseResult.hasOption("-y"));
+    }
+
+    @Test
+    public void testOptionValue() {
+        class App {
+            @Option(names = {"-x", "++XX", "/XXX"}) String[] x;
+            @Option(names = "-y") String y;
+        }
+        CommandLine cmd = new CommandLine(new App());
+        ParseResult parseResult = cmd.parseArgs("-x", "value1", "-x", "value2");
+        assertEquals("value1", parseResult.optionValue("x"));
+        assertEquals("value1", parseResult.optionValue("-x"));
+        assertEquals("value1", parseResult.optionValue("XX"));
+        assertEquals("value1", parseResult.optionValue("++XX"));
+        assertEquals("value1", parseResult.optionValue("XXX"));
+        assertEquals("value1", parseResult.optionValue("/XXX"));
+
+        assertEquals(null, parseResult.optionValue("y"));
+        assertEquals(null, parseResult.optionValue("-y"));
+    }
+
+    @Test
+    public void testOptionValue_ByOptionSpec() {
+        class App {
+            @Option(names = {"-x", "++XX", "/XXX"}) String[] x;
+            @Option(names = "-y") String y;
+        }
+        CommandLine cmd = new CommandLine(new App());
+        ParseResult parseResult = cmd.parseArgs("-x", "value1", "-x", "value2");
+
+        OptionSpec x = cmd.getCommandSpec().optionsMap().get("-x");
+        OptionSpec y = cmd.getCommandSpec().optionsMap().get("-y");
+
+        assertEquals("value1", parseResult.optionValue(x));
+
+        assertEquals(null, parseResult.optionValue(y));
+        assertEquals(null, parseResult.optionValue((OptionSpec) null));
+    }
+
+    @Test
+    public void testOptionValue_ByShortName() {
+        class App {
+            @Option(names = {"-x", "++XX", "/XXX"}) String[] x;
+            @Option(names = "-y") String y;
+        }
+        CommandLine cmd = new CommandLine(new App());
+        ParseResult parseResult = cmd.parseArgs("-x", "value1", "-x", "value2");
+        assertEquals("value1", parseResult.optionValue('x'));
+        assertEquals(null, parseResult.optionValue('y'));
+    }
+
+    @Test
+    public void testOptionValueWithDefault() {
+        class App {
+            @Option(names = {"-x", "++XX", "/XXX"}) String[] x;
+            @Option(names = "-y") String y;
+        }
+        CommandLine cmd = new CommandLine(new App());
+        ParseResult parseResult = cmd.parseArgs("-x", "value1", "-x", "value2");
+
+        String defaultValue = "DEFAULTVAL";
+        assertEquals(defaultValue, parseResult.optionValue("y", defaultValue));
+        assertEquals(defaultValue, parseResult.optionValue("-y", defaultValue));
+
+        assertEquals(defaultValue, parseResult.optionValue("z", defaultValue));
+        assertEquals(defaultValue, parseResult.optionValue("--non-existing", defaultValue));
+    }
+
+    @Test
+    public void testOptionValueWithDefault_ByShortName() {
+        class App {
+            @Option(names = {"-x", "++XX", "/XXX"}) String[] x;
+            @Option(names = "-y") String y;
+        }
+        CommandLine cmd = new CommandLine(new App());
+        ParseResult parseResult = cmd.parseArgs("-x", "value1", "-x", "value2");
+
+        String defaultValue = "DEFAULTVAL";
+        assertEquals(defaultValue, parseResult.optionValue('y', defaultValue));
+
+        assertEquals(defaultValue, parseResult.optionValue('z', defaultValue)); // non-existing option
+        assertEquals(defaultValue, parseResult.optionValue('%', defaultValue)); // non-existing option
+    }
+
+    @Test
+    public void testOptionValueWithDefault_returnsDefaultForNonMatched() {
+        class App {
+            @Option(names = "-y") String y;
+        }
+        CommandLine cmd = new CommandLine(new App());
+        ParseResult parseResult = cmd.parseArgs("-y", "value1");
+
+        String defaultValue = "DEFAULTVAL";
+        assertEquals(defaultValue, parseResult.optionValue("Z", defaultValue));
+        assertEquals(defaultValue, parseResult.optionValue("--non-existing", defaultValue));
+    }
+
+    @Test
+    public void testOptionValues() {
+        class App {
+            @Option(names = {"-x", "++XX", "/XXX"}) int[] x;
+            @Option(names = "-y") String y;
+        }
+        CommandLine cmd = new CommandLine(new App());
+        ParseResult parseResult = cmd.parseArgs("-x", "123", "-x", "456");
+        List<String> expected = Arrays.asList("123", "456");
+        assertEquals(expected, parseResult.optionValues("x"));
+        assertEquals(expected, parseResult.optionValues("-x"));
+        assertEquals(expected, parseResult.optionValues("XX"));
+        assertEquals(expected, parseResult.optionValues("++XX"));
+        assertEquals(expected, parseResult.optionValues("XXX"));
+        assertEquals(expected, parseResult.optionValues("/XXX"));
+
+        assertEquals(Collections.emptyList(), parseResult.optionValues("y"));
+        assertEquals(Collections.emptyList(), parseResult.optionValues("-y"));
+    }
+
+    @Test
+    public void testOptionValues_ByShortName() {
+        class App {
+            @Option(names = {"-x", "++XX", "/XXX"}) int[] x;
+            @Option(names = "-y") String y;
+        }
+        CommandLine cmd = new CommandLine(new App());
+        ParseResult parseResult = cmd.parseArgs("-x", "123", "-x", "456");
+        List<String> expected = Arrays.asList("123", "456");
+        assertEquals(expected, parseResult.optionValues('x'));
+
+        assertEquals(Collections.emptyList(), parseResult.optionValues('y'));
+        assertEquals(Collections.emptyList(), parseResult.optionValues('%')); // non-existing option
+    }
+
+    @Test
+    public void testTypedOptionValue() {
+        class App {
+            @Option(names = {"-x", "++XX", "/XXX"}) int[] x;
+            @Option(names = "-y") double y;
+        }
+        CommandLine cmd = new CommandLine(new App());
+        ParseResult parseResult = cmd.parseArgs("-x", "123", "-x", "456", "-y", "3.14");
+        int[] expected = {123, 456};
+        assertArrayEquals(expected, (int[]) parseResult.typedOptionValue("x"));
+        assertArrayEquals(expected, (int[]) parseResult.typedOptionValue("-x"));
+        assertArrayEquals(expected, (int[]) parseResult.typedOptionValue("XX"));
+        assertArrayEquals(expected, (int[]) parseResult.typedOptionValue("++XX"));
+        assertArrayEquals(expected, (int[]) parseResult.typedOptionValue("XXX"));
+        assertArrayEquals(expected, (int[]) parseResult.typedOptionValue("/XXX"));
+
+        assertEquals(Double.valueOf(3.14), parseResult.typedOptionValue("y"));
+        assertEquals(Double.valueOf(3.14), parseResult.typedOptionValue("-y"));
+    }
+
+    @Test
+    public void testTypedOptionValue_ByShortName() {
+        class App {
+            @Option(names = {"-x", "++XX", "/XXX"}) int[] x;
+            @Option(names = "-y") double y;
+        }
+        CommandLine cmd = new CommandLine(new App());
+        ParseResult parseResult = cmd.parseArgs("-x", "123", "-x", "456", "-y", "3.14");
+        int[] expected = {123, 456};
+        assertArrayEquals(expected, (int[]) parseResult.typedOptionValue('x'));
+        assertEquals(Double.valueOf(3.14), parseResult.typedOptionValue('y'));
+        assertNull(parseResult.typedOptionValue('%')); // non-existing option
+    }
+
+    @Test
+    public void testTypedOptionValue_NullIfNotMatched() {
+        class App {
+            @Option(names = "-y") String y = "initial";
+        }
+        CommandLine cmd = new CommandLine(new App());
+        ParseResult parseResult = cmd.parseArgs();
+
+        assertNull(parseResult.typedOptionValue("y"));
+        assertNull(parseResult.typedOptionValue("-y"));
+    }
+
+    @Test
+    public void testOptionWithNonJavaIdentifierName() {
+        class App {
+            @Option(names = "-") String dash;
+        }
+        CommandLine cmd = new CommandLine(new App());
+        ParseResult parseResult = cmd.parseArgs("-", "val");
+
+        assertEquals("val", parseResult.optionValue('-'));
+        assertEquals("val", parseResult.optionValue("-"));
+        assertEquals("val", parseResult.typedOptionValue('-'));
+        assertEquals("val", parseResult.typedOptionValue("-"));
+
+        assertNull("empty string should not match", parseResult.optionValue(""));
+        assertNull("empty string should not match", parseResult.typedOptionValue(""));
     }
 }
