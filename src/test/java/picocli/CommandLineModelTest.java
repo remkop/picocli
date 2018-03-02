@@ -699,20 +699,20 @@ public class CommandLineModelTest {
         assertNotSame(option, copy);
     }
 
+    static class ArrayBinding implements IBinding {
+        String[] array;
+        public <T> T get() throws PicocliException {
+            return (T) array;
+        }
+        public <T> T set(T value) throws PicocliException {
+            T old = (T) array;
+            array = (String[]) value;
+            return old;
+        }
+    }
     @Test
     public void testUnmatchedArgsBinding_forStringArraySupplier() {
         setTraceLevel("OFF");
-        class ArrayBinding implements IBinding {
-            String[] array;
-            public <T> T get() throws PicocliException {
-                return (T) array;
-            }
-            public <T> T set(T value) throws PicocliException {
-                T old = (T) array;
-                array = (String[]) value;
-                return old;
-            }
-        }
         ArrayBinding binding = new ArrayBinding();
         CommandSpec cmd = CommandSpec.create();
         UnmatchedArgsBinding unmatched = UnmatchedArgsBinding.forStringArraySupplier(binding);
@@ -731,18 +731,7 @@ public class CommandLineModelTest {
     @Test
     public void testUnmatchedArgsBinding_forStringListSupplier() {
         setTraceLevel("OFF");
-        class ArrayBinding implements IBinding {
-            List<String> list;
-            public <T> T get() throws PicocliException {
-                return (T) list;
-            }
-            public <T> T set(T value) throws PicocliException {
-                T old = (T) list;
-                list = (List<String>) value;
-                return old;
-            }
-        }
-        ArrayBinding binding = new ArrayBinding();
+        ListBinding binding = new ListBinding();
         CommandSpec cmd = CommandSpec.create();
         UnmatchedArgsBinding unmatched = UnmatchedArgsBinding.forStringListSupplier(binding);
         assertSame(binding, unmatched.binding());
@@ -760,7 +749,7 @@ public class CommandLineModelTest {
     @Test
     public void testUnmatchedArgsBinding_forStringConsumer() {
         setTraceLevel("OFF");
-        class ArrayBinding implements IBinding {
+        class WriteOnlyListBinding implements IBinding {
             List<String> list = new ArrayList<String>();
             public <T> T get() throws PicocliException {
                 throw new UnsupportedOperationException();
@@ -770,7 +759,7 @@ public class CommandLineModelTest {
                 return null;
             }
         }
-        ArrayBinding binding = new ArrayBinding();
+        WriteOnlyListBinding binding = new WriteOnlyListBinding();
         CommandSpec cmd = CommandSpec.create();
         UnmatchedArgsBinding unmatched = UnmatchedArgsBinding.forStringConsumer(binding);
         assertSame(binding, unmatched.binding());
@@ -785,20 +774,21 @@ public class CommandLineModelTest {
         assertEquals(1, cmd.unmatchedArgsBindings().size());
     }
 
+    static class ListBinding implements IBinding {
+        List<String> list = new ArrayList<String>();
+        public <T> T get() throws PicocliException {
+            return (T) list;
+        }
+        public <T> T set(T value) throws PicocliException {
+            T old = (T) list;
+            list = (List<String>) value;
+            return old;
+        }
+    }
+
     @Test
     public void testUnmatchedArgsBinding_forStringArraySupplier_withInvalidBinding() {
         setTraceLevel("OFF");
-        class ListBinding implements IBinding {
-            List<String> list = new ArrayList<String>();
-            public <T> T get() throws PicocliException {
-                return (T) list;
-            }
-            public <T> T set(T value) throws PicocliException {
-                T old = (T) list;
-                list = (List<String>) value;
-                return old;
-            }
-        }
         CommandSpec cmd = CommandSpec.create();
         cmd.addUnmatchedArgsBinding(UnmatchedArgsBinding.forStringArraySupplier(new ListBinding()));
         try {
@@ -806,5 +796,123 @@ public class CommandLineModelTest {
         } catch (Exception ex) {
             assertTrue(ex.getMessage().contains("while processing argument at or before arg[0] '-x' in [-x, a, b, c]: java.lang.ClassCastException: java.util.ArrayList"));
         }
+    }
+
+    @Test
+    public void testInject_AnnotatedFieldInjected() {
+        class Injected {
+            @Inject CommandLine commandLine;
+            @Inject CommandSpec commandSpec;
+            @Parameters String[] params;
+        }
+        Injected injected = new Injected();
+        CommandLine cmd = new CommandLine(injected);
+        assertNull(injected.commandLine);
+        assertNull(injected.commandSpec);
+
+        cmd.parse();
+
+        assertSame(cmd, injected.commandLine);
+        assertSame(cmd.getCommandSpec(), injected.commandSpec);
+    }
+
+    @Test
+    public void testInject_AnnotatedFieldInjectedForSubcommand() {
+        class Injected {
+            @Inject CommandLine commandLine;
+            @Inject CommandSpec commandSpec;
+            @Parameters String[] params;
+        }
+        Injected injected = new Injected();
+        CommandLine cmd = new CommandLine(injected);
+
+        Injected sub = new Injected();
+        CommandLine subcommand = new CommandLine(sub);
+        cmd.addSubcommand("sub", subcommand);
+
+        assertNull(injected.commandLine);
+        assertNull(injected.commandSpec);
+        assertNull(sub.commandLine);
+        assertNull(sub.commandSpec);
+
+        cmd.parse("sub");
+
+        assertSame(cmd, injected.commandLine);
+        assertSame(cmd.getCommandSpec(), injected.commandSpec);
+
+        assertSame(subcommand, sub.commandLine);
+        assertSame(subcommand.getCommandSpec(), sub.commandSpec);
+    }
+
+    @Test(expected = NullPointerException.class)
+    public void testInjectBinding_forType_RejectsNullType() {
+        InjectBinding.forType(null, new ListBinding());
+    }
+
+    @Test(expected = NullPointerException.class)
+    public void testInjectBinding_forType_RejectsNullBinding() {
+        InjectBinding.forType(String.class, null);
+    }
+
+    @Test
+    public void testInjectBinding_getType_ReturnsConstructorValue() {
+        InjectBinding<List> binding = InjectBinding.forType(List.class, new ListBinding());
+        assertEquals(List.class, binding.getType());
+    }
+
+    @Test
+    public void testInjectBinding_inject_InvokesBinding() {
+        ListBinding binding = new ListBinding();
+        InjectBinding<List> injector = InjectBinding.forType(List.class, binding);
+        assertTrue(binding.list.isEmpty());
+
+        List<String> injected = Arrays.asList("a", "b");
+        injector.inject(injected);
+
+        assertSame(injected, binding.list);
+        assertFalse(binding.list.isEmpty());
+    }
+
+    @Test
+    public void testAddInjectBinding_canBeRetrievedByType() {
+        ListBinding binding = new ListBinding();
+        InjectBinding<List> injector = InjectBinding.forType(List.class, binding);
+
+        // initially nothing to retrieve
+        CommandSpec commandSpec = CommandSpec.create();
+        assertTrue(commandSpec.findInjectBindingsFor(List.class).isEmpty());
+
+        // register
+        commandSpec.addInjectBinding(injector);
+
+        // now it can be retrieved
+        List<InjectBinding<List>> bindings = commandSpec.findInjectBindingsFor(List.class);
+
+        assertFalse(bindings.isEmpty());
+        assertEquals(1, bindings.size());
+        assertSame(injector, bindings.get(0));
+    }
+
+    @Test
+    public void testAnnotationInjectBinding_canBeRetrievedByType() {
+        class Injected {
+            @Inject CommandLine commandLine;
+            @Inject CommandSpec commandSpec;
+            @Parameters String[] params;
+        }
+        Injected injected = new Injected();
+        CommandLine cmd = new CommandLine(injected);
+
+        // now it can be retrieved
+        List<InjectBinding<CommandLine>> injectedCmdLines = cmd.getCommandSpec().findInjectBindingsFor(CommandLine.class);
+        List<InjectBinding<CommandSpec>> injectedCmdSpecs = cmd.getCommandSpec().findInjectBindingsFor(CommandSpec.class);
+
+        assertFalse(injectedCmdLines.isEmpty());
+        assertEquals(1, injectedCmdLines.size());
+        assertSame(CommandLine.class, injectedCmdLines.get(0).getType());
+
+        assertFalse(injectedCmdSpecs.isEmpty());
+        assertEquals(1, injectedCmdSpecs.size());
+        assertSame(CommandSpec.class, injectedCmdSpecs.get(0).getType());
     }
 }

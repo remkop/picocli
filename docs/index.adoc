@@ -2166,6 +2166,28 @@ Picocli provides some default `IParseResultHandler` implementations for common t
 * the `RunAll` handler prints help if requested, and otherwise executes all commands and subcommands that the user specified on the command line as `Runnable` or `Callable` tasks
 
 
+=== `@Inject` annotation
+Picocli 3.0 introduces an `@Inject` annotation for injecting picocli API objects into command fields.
+
+This is useful when a command needs to use the picocli API, for example to walk the command hierarchy and iterate over its sibling commands.
+This complements the `@ParentCommand` annotation;  the `@ParentCommand` annotation injects a user-defined command object, whereas this annotation injects a picocli class.
+
+Currently only `CommandLine` and `CommandSpec` objects can be injected.
+
+[source,java]
+----
+class InjectExample implements Runnable {
+   @Inject CommandLine commandLine; // usually you inject either the CommandLine
+   @Inject CommandSpec commandSpec; // or the CommandSpec
+
+   //...
+
+   public void run() {
+       // do something with the injected objects
+   }
+}
+----
+
 === Custom Factory
 
 Declaratively registered <<Registering Subcommands Declaratively,subcommands>>, <<Option-specific Type Converters,type converters>> and <<Dynamic Version Information,version providers>> must be instantiated somehow. From picocli 2.2, a custom factory can be specified when constructing a `CommandLine` instance. This allows full control over object creation and opens possibilities for Inversion of Control and Dependency Injection. For example:

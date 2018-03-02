@@ -7,9 +7,11 @@ This release offers a programmatic API for creating command line applications, a
 
 Another new feature in this release are Mixins. Mixins allow reusing common options, parameters and command attributes in multiple applications without copy-and-paste duplication.
 
-Third, this release aims to reduce boilerplate code in user applications even further with the new `mixinStandardHelpOptions` command attribute. Picocli adds standard `usageHelp` and `versionHelp` options to commands with this attribute. Additionally picocli now offers a `HelpCommand` command that is a useful subcommand for user applications.
+This release aims to reduce boilerplate code in user applications even further with the new `mixinStandardHelpOptions` command attribute. Picocli adds standard `usageHelp` and `versionHelp` options to commands with this attribute. Additionally picocli now offers a `HelpCommand` command that is a useful subcommand for user applications.
 
-Additionally, fields annotated with `@Unmatched` will be populated with the unmatched arguments.
+Apart from the `@Mixin` annotation, this release introduces an `@Unmatched` annotation. Fields annotated with `@Unmatched` will be populated with the unmatched arguments.
+
+Additionally, there is a new `@Inject` annotation for injecting picocli API objects into command fields. Currently `CommandLine` and `CommandSpec` objects can be injected.
 
 Furthermore, this release adds a `showDefaultValue` attribute to the `@Option` and `@Parameters` annotation.
 
@@ -122,6 +124,25 @@ The field must be of type `String[]` or `List<String>`.
 If picocli finds a field annotated with `@Unmatched`, it automatically sets `unmatchedArgumentsAllowed` to `true`
 so no `UnmatchedArgumentException` is thrown when a command line argument cannot be assigned to an option or positional parameter.
 
+### <a name="3.0.0-alpha-1-Inject"></a> `@Inject` annotation
+A new `@Inject` annotation is now available that injects the `CommandSpec` or `CommandLine` object into the application command field. 
+
+This is useful when a command needs to use the picocli API, for example to walk the command hierarchy and iterate over its sibling commands.
+This complements the `@ParentCommand` annotation;  the `@ParentCommand` annotation injects a user-defined command object, whereas this annotation injects a picocli class.
+
+```java
+class InjectExample implements Runnable {
+   @Inject CommandLine commandLine; // usually you inject either the CommandLine
+   @Inject CommandSpec commandSpec; // or the CommandSpec
+   //...
+   public void run() {
+       // do something with the injected objects
+   }
+}
+
+```
+
+
 ### <a name="3.0.0-alpha-1-ParseResult"></a> `ParseResult` API
 A `ParseResult` class is now available that allows applications to inspect the result of parsing a sequence of command line arguments.
 
@@ -151,6 +172,7 @@ No features have been promoted in this picocli release.
 - [#257] New Feature: new `ParseResult` class allows programmatic inspection of the result of parsing a sequence of command line arguments.
 - [#144] New Feature: Added support for mixins to allow reusing common options, positional parameters, subcommands and command attributes from any object.
 - [#253] New Feature: Added `@Unmatched` annotation for unmatched arguments.
+- [#259] New Feature: Added `@Inject` annotation to inject `CommandSpec` or `CommandLine` into application field. 
 - [#175] New Feature: `mixinStandardHelpOptions` attribute to conveniently activate fully automatic help.
 - [#262] New Feature: new `showDefaultValue` attribute on `@Option` and `@Parameters` gives fine-grained control over which default values to show or hide. Thanks to [ymenager](https://github.com/ymenager) for the request.
 - [#268] New Feature: new `helpCommand` attribute on `@Command`: if the command line arguments contain a subcommand annotated with `helpCommand`, the parser will not validate the required options or positional parameters of the parent command. Thanks to [ymenager](https://github.com/ymenager) for the request.
