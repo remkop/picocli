@@ -4050,7 +4050,6 @@ public class CommandLine {
             }
             for (InjectBinding<CommandLine> binding : commandSpec.findInjectBindingsFor(CommandLine.class)) { binding.inject(CommandLine.this); }
             for (InjectBinding<CommandSpec> binding : commandSpec.findInjectBindingsFor(CommandSpec.class)) { binding.inject(commandSpec); }
-            for (InjectBinding<ParseResult> binding : commandSpec.findInjectBindingsFor(ParseResult.class)) { binding.inject(parseResult.build()); }
         }
 
         private void processArguments(List<CommandLine> parsedCommands,
