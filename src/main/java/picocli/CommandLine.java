@@ -1651,24 +1651,6 @@ public class CommandLine {
     public @interface Unmatched { }
 
     /**
-     * Fields annotated with {@code @Inject} will be initialized with the {@code CommandLine} or {@code CommandSpec} for the command the field is part of. Example usage:
-     * <pre>
-     * class InjectExample implements Runnable {
-     *     &#064;Inject CommandLine commandLine; // usually you inject either the CommandLine
-     *     &#064;Inject CommandSpec commandSpec; // or the CommandSpec
-     *     //...
-     *     public void run() {
-     *         // do something with the injected objects
-     *     }
-     * }
-     * </pre>
-     * @since 3.0
-     */
-    @Retention(RetentionPolicy.RUNTIME)
-    @Target(ElementType.FIELD)
-    public @interface Inject { }
-
-    /**
      * <p>
      * Fields annotated with {@code @Mixin} are "expanded" into the current command: {@link Option @Option} and
      * {@link Parameters @Parameters} in the mixin class are added to the options and positional parameters of this command.
@@ -2253,7 +2235,6 @@ public class CommandLine {
             private final List<OptionSpec> options = new ArrayList<OptionSpec>();
             private final List<PositionalParamSpec> positionalParameters = new ArrayList<PositionalParamSpec>();
             private final List<UnmatchedArgsBinding> unmatchedArgs = new ArrayList<UnmatchedArgsBinding>();
-            private final List<InjectBinding<?>> injectBindings = new ArrayList<InjectBinding<?>>();
             private final ParserSpec parser = new ParserSpec();
             private final UsageMessageSpec usageMessage = new UsageMessageSpec();
 
@@ -2418,13 +2399,7 @@ public class CommandLine {
              * @param spec the unmatched arguments binding to capture unmatched arguments
              * @return this CommandSpec for method chaining */
             public CommandSpec addUnmatchedArgsBinding(UnmatchedArgsBinding spec) { unmatchedArgs.add(spec); parser().unmatchedArgumentsAllowed(true); return this; }
-
-            /** Adds the specified {@code InjectBinding} to this command spec. When the parser completes successfully, an object of
-             * the requested type is injected into the specified binding.
-             * @param injectBinding contains the type of object to inject and the binding to inject it into
-             * @return this CommandSpec for method chaining */
-            public CommandSpec addInjectBinding(InjectBinding<?> injectBinding) { injectBindings.add(injectBinding); return this; }
-
+    
             /** Returns a map of the mixin names to mixin {@code CommandSpec} objects configured for this command.
              * @return an immutable map of mixins added to this command. */
             public Map<String, CommandSpec> mixins() { return Collections.unmodifiableMap(mixins); }
@@ -2452,16 +2427,7 @@ public class CommandLine {
             /** Returns the list of {@link UnmatchedArgsBinding UnmatchedArgumentsBindings} configured for this command;
              * each {@code UnmatchedArgsBinding} captures the arguments that could not be matched to any options or positional parameters. */
             public List<UnmatchedArgsBinding> unmatchedArgsBindings() { return Collections.unmodifiableList(unmatchedArgs); }
-
-            /** Returns the list of {@link InjectBinding InjectBindings} for the specified type, configured for this command. */
-            public <T> List<InjectBinding<T>> findInjectBindingsFor(Class<T> type) {
-                List<InjectBinding<T>> result = new ArrayList<InjectBinding<T>>();
-                for (InjectBinding<?> binding : injectBindings) {
-                    if (Assert.notNull(type, "type").equals(binding.getType())) { @SuppressWarnings("unchecked") InjectBinding<T> b = (InjectBinding<T>) binding; result.add(b); }
-                }
-                return result;
-            }
-
+    
             /** Returns the String to use as the program name in the synopsis line of the help message.
              * {@link #DEFAULT_COMMAND_NAME} by default, initialized from {@link Command#name()} if defined. */
             public String name() { return (name == null) ? DEFAULT_COMMAND_NAME : name; }
@@ -3327,24 +3293,6 @@ public class CommandLine {
                 }
             }
         }
-
-        /** Models an {@link Inject @Inject} binding: the binding is responsible for consuming the injected object.
-         * @since 3.0 */
-        public static class InjectBinding<T> {
-            private final Class<T> type;
-            private final IBinding binding;
-
-            private InjectBinding(Class<T> type, IBinding binding) {
-                this.type = Assert.notNull(type, "type");
-                this.binding = Assert.notNull(binding, "binding");
-            }
-            /** Creates and returns a new {@code InjectBinding} for injecting objects of the specified type into the specified binding. */
-            public static <K> InjectBinding<K> forType(Class<K> type, IBinding binding) { return new InjectBinding<K>(type, binding); }
-            /** Returns the type of objects that can be injected. */
-            public Class<T> getType() { return  type; }
-            /** Invokes the {@linkplain IBinding binding's} {@link IBinding#set(Object) set} method with the specified injected object. */
-            public void inject(T value) { binding.set(value); }
-        }
         private static class CommandReflection {
             static CommandSpec extractCommandSpec(Object command, IFactory factory) {
                 if (command instanceof CommandSpec) { return (CommandSpec) command; }
@@ -3448,10 +3396,6 @@ public class CommandLine {
                         validateUnmatched(field);
                         receiver.addUnmatchedArgsBinding(buildUnmatchedForField(field, scope));
                     }
-                    if (isInject(field)) {
-                        validateInject(field);
-                        receiver.addInjectBinding(buildInjectForField(field, scope));
-                    }
                     if (isArgSpec(field)) {
                         validateArgSpecField(field);
                         if (isOption(field))    { receiver.add(ArgsReflection.extractOptionSpec(scope, field, factory)); }
@@ -3475,17 +3419,6 @@ public class CommandLine {
             private static void validateUnmatched(Field field) {
                 if (isUnmatched(field) && (isOption(field) || isParameter(field))) {
                     throw new DuplicateOptionAnnotationsException("A field cannot have both @Unmatched and @Option or @Parameters annotations, but '" + field + "' has both.");
-                }
-            }
-            private static void validateInject(Field field) {
-                if (isInject(field) && (isOption(field) || isParameter(field))) {
-                    throw new DuplicateOptionAnnotationsException("A field cannot have both @Inject and @Option or @Parameters annotations, but '" + field + "' has both.");
-                }
-                if (isInject(field) && isUnmatched(field)) {
-                    throw new DuplicateOptionAnnotationsException("A field cannot have both @Inject and @Unmatched annotations, but '" + field + "' has both.");
-                }
-                if (isInject(field) && isMixin(field)) {
-                    throw new DuplicateOptionAnnotationsException("A field cannot have both @Inject and @Mixin annotations, but '" + field + "' has both.");
                 }
             }
             private static void validateArgSpecField(Field field) {
@@ -3534,16 +3467,11 @@ public class CommandLine {
                     return UnmatchedArgsBinding.forStringListSupplier(new FieldBinding(scope, field));
                 }
             }
-            private static InjectBinding<?> buildInjectForField(Field field, Object scope) {
-                field.setAccessible(true);
-                return InjectBinding.forType(field.getType(), new FieldBinding(scope, field));
-            }
             static boolean isArgSpec(Field f)   { return isOption(f) || isParameter(f); }
             static boolean isOption(Field f)    { return f.isAnnotationPresent(Option.class); }
             static boolean isParameter(Field f) { return f.isAnnotationPresent(Parameters.class); }
             static boolean isMixin(Field f)     { return f.isAnnotationPresent(Mixin.class); }
             static boolean isUnmatched(Field f) { return f.isAnnotationPresent(Unmatched.class); }
-            static boolean isInject(Field f)    { return f.isAnnotationPresent(Inject.class); }
         }
 
         /** Helper class to reflectively create OptionSpec and PositionalParamSpec objects from annotated elements.
@@ -4048,8 +3976,6 @@ public class CommandLine {
                 if (!isUnmatchedArgumentsAllowed()) { throw new UnmatchedArgumentException(CommandLine.this, Collections.unmodifiableList(parseResult.unmatched)); }
                 if (tracer.isWarn()) { tracer.warn("Unmatched arguments: %s%n", parseResult.unmatched); }
             }
-            for (InjectBinding<CommandLine> binding : commandSpec.findInjectBindingsFor(CommandLine.class)) { binding.inject(CommandLine.this); }
-            for (InjectBinding<CommandSpec> binding : commandSpec.findInjectBindingsFor(CommandSpec.class)) { binding.inject(commandSpec); }
         }
 
         private void processArguments(List<CommandLine> parsedCommands,
