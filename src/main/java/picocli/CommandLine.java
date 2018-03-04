@@ -558,6 +558,7 @@ public class CommandLine {
      * @param out the {@code PrintStream} to print help to if requested
      * @param ansi for printing help messages using ANSI styles and colors
      * @return {@code true} if help was printed, {@code false} otherwise
+     * @see IHelpCommandInitializable
      * @since 2.0 */
     public static boolean printHelpIfRequested(List<CommandLine> parsedCommands, PrintStream out, Help.Ansi ansi) {
         for (int i = 0; i < parsedCommands.size(); i++) {
@@ -568,28 +569,11 @@ public class CommandLine {
             } else if (parsed.isVersionHelpRequested()) {
                 parsed.printVersionHelp(out, ansi);
                 return true;
-//            } else if (parsed.getCommandSpec().helpCommand()) {
-//                execute(parsed);
-//                return true;
-            } else if (i > 0 && parsed.getCommand() instanceof HelpCommand) {
-                HelpCommand helpCommand = parsed.getCommand();
-                helpCommand.parent = parsedCommands.get(i - 1);
-                helpCommand.ansi = ansi;
-                helpCommand.out = out;
-                helpCommand.err = out;
+            } else if (parsed.getCommandSpec().helpCommand()) {
+                if (parsed.getCommand() instanceof IHelpCommandInitializable) {
+                    ((IHelpCommandInitializable) parsed.getCommand()).init(parsed, ansi, out, out);
+                }
                 execute(parsed);
-//                CommandLine subcommand = null;
-//                if (helpCommand.commands.length > 0) {
-//                    subcommand = main.getSubcommands().get(helpCommand.commands[0]);
-//                    if (subcommand != null) {
-//                        subcommand.usage(out, ansi);
-//                    } else {
-//                        out.println("Unknown subcommand '" + helpCommand.commands[0] + "'.");
-//                        main.usage(out, ansi);
-//                    }
-//                } else {
-//                    main.usage(out, ansi);
-//                }
                 return true;
             }
         }
@@ -4855,7 +4839,7 @@ public class CommandLine {
             synopsisHeading = "%nUsage: ", helpCommand = true,
             description = {"%nWhen no COMMAND is given, the usage help for the main command is displayed.",
                     "If a COMMAND is specified, the help for that command is shown.%n"})
-    public static final class HelpCommand implements Runnable {
+    public static final class HelpCommand implements IHelpCommandInitializable, Runnable {
 
         @Option(names = {"-h", "--help"}, usageHelp = true, description = "Show usage help for the help command and exit.")
         private boolean helpRequested;
@@ -4863,18 +4847,17 @@ public class CommandLine {
         @Parameters(paramLabel = "COMMAND", description = "The COMMAND to display the usage help message for.")
         private String[] commands = new String[0];
 
-        //@Inject
-        private CommandLine parent;
+        private CommandLine self;
+        private PrintStream out;
+        private PrintStream err;
+        private Help.Ansi ansi;
 
-        private PrintStream out = System.out;
-        private PrintStream err = System.err;
-        private Help.Ansi ansi = Help.Ansi.AUTO;
-
+        /** Invokes {@link #usage(PrintStream, Help.Ansi) usage} for the specified command, or for the parent command. */
         public void run() {
+            CommandLine parent = self == null ? null : self.getParent();
             if (parent == null) { return; }
-            CommandLine subcommand = null;
             if (commands.length > 0) {
-                subcommand = parent.getSubcommands().get(commands[0]);
+                CommandLine subcommand = parent.getSubcommands().get(commands[0]);
                 if (subcommand != null) {
                     subcommand.usage(out, ansi);
                 } else {
@@ -4885,6 +4868,28 @@ public class CommandLine {
                 parent.usage(out, ansi);
             }
         }
+        /** {@inheritDoc} */
+        public void init(CommandLine helpCommandLine, Help.Ansi ansi, PrintStream out, PrintStream err) {
+            this.self = Assert.notNull(helpCommandLine, "helpCommandLine");
+            this.ansi = Assert.notNull(ansi, "ansi");
+            this.out  = Assert.notNull(out, "out");
+            this.err  = Assert.notNull(err, "err");
+        }
+    }
+
+    /** Help commands that provide usage help for other commands can implement this interface to be initialized with the information they need.
+     * <p>The {@link #printHelpIfRequested(List, PrintStream, Help.Ansi) CommandLine::printHelpIfRequested} method calls the
+     * {@link #init(CommandLine, picocli.CommandLine.Help.Ansi, PrintStream, PrintStream) init} method on commands marked as {@link Command#helpCommand() helpCommand}
+     * before the help command's {@code run} or {@code call} method is called.</p>
+     * @since 3.0 */
+    public static interface IHelpCommandInitializable {
+        /** Initializes this object with the information needed to implement a help command that provides usage help for other commands.
+         * @param helpCommandLine provides access to this command's parent and sibling commands
+         * @param ansi whether to use Ansi colors or not
+         * @param out the stream to print the usage help message to
+         * @param err the error stream to print any error messages to
+         */
+        void init(CommandLine helpCommandLine, Help.Ansi ansi, PrintStream out, PrintStream err);
     }
 
     /**
