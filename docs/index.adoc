@@ -921,6 +921,7 @@ if (commandLine.isUsageHelpRequested()) {
    commandLine.printVersionHelp(System.out);
    return;
 }
+// ... run App's business logic
 ----
 See also <<Printing Help Automatically>>.
 
@@ -952,7 +953,8 @@ Commands:
 ----
 
 === Built-in Help Subcommand
-From 3.0, picocli provides a `help` subcommand (`picocli.CommandLine.HelpCommand`) that can be installed as a subcommand on any application command to provide usage help for the parent command or sibling subcommands. For example:
+From 3.0, picocli provides a `help` subcommand (`picocli.CommandLine.HelpCommand`) that can be installed as a subcommand
+on any application command. It prints usage help for the parent command or sibling subcommands. For example:
 
 [source,java]
 ----
@@ -964,13 +966,13 @@ class MyCommand implements Runnable {
 }
 ----
 
-For example, to get usage help for a subcommand:
+For example, the following command prints usage help for a subcommand:
 [source,bash]
 ----
 myapp help subcommand
 ----
 
-To get usage help for the main command:
+To print usage help for the main command:
 [source,bash]
 ----
 myapp help
