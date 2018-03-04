@@ -7,7 +7,7 @@ This release offers a programmatic API for creating command line applications, a
 
 Another new feature in this release are Mixins. Mixins allow reusing common options, parameters and command attributes in multiple applications without copy-and-paste duplication.
 
-Third, this release aims to reduce boilerplate code in user applications even further with the new `mixinStandardHelpOptions` command attribute. Picocli adds standard `usageHelp` and `versionHelp` options to commands with this attribute. Additionally picocli now offers a `HelpCommand` command that is a useful subcommand for user applications.
+Third, this release aims to reduce boilerplate code in user applications even further with the new `mixinStandardHelpOptions` command attribute. Picocli adds standard `usageHelp` and `versionHelp` options to commands with this attribute. Additionally picocli now offers a `HelpCommand` that can be installed as a subcommand on any application command to provide usage help for the parent command or sibling subcommands.
 
 Additionally, fields annotated with `@Unmatched` will be populated with the unmatched arguments.
 
@@ -45,7 +45,7 @@ public class ReusableOptions {
 }
 ```
 
-#### Programmatic Mixins
+#### Adding Mixins Programmatically
 The below example shows how a mixin can be added programmatically with the `CommandLine.addMixin` method.
 
 ```java
@@ -67,7 +67,7 @@ public class MyCommand {
 ```
 
 
-### <a name="3.0.0-alpha-1-mixinStandardHelpOptions"></a> Help Options
+### <a name="3.0.0-alpha-1-mixinStandardHelpOptions"></a> Standard Help Options
 This release introduces the `mixinStandardHelpOptions` command attribute. When this attribute is set to `true`, picocli adds a mixin to the command that adds `usageHelp` and `versionHelp` options to the command. For example:
 
 ```java
@@ -81,7 +81,7 @@ class AutoHelpDemo implements Runnable {
 }
 ```
 
-Commands with `mixinStandardHelpOptions` do not need to explicitly declare `usageHelp` or `versionHelp` options any more. The usage help message for the above example looks like this:
+Commands with `mixinStandardHelpOptions` do not need to explicitly declare fields annotated with `@Option(usageHelp = true)` and `@Option(versionHelp = true)` any more. The usage help message for the above example looks like this:
 ```text
 Usage: <main class> [-hV] [--option=<option>]
       --option=<option>       Some option.
@@ -91,7 +91,8 @@ Usage: <main class> [-hV] [--option=<option>]
 
 ### <a name="3.0.0-alpha-1-HelpCommand"></a> Help Command
 
-From this release, picocli provides a `help` subcommand (`picocli.CommandLine.HelpCommand`) that will print help for the subcommand following it, or for the top-level command in case no subcommand is specified. For example:
+From this release, picocli provides a `help` subcommand (`picocli.CommandLine.HelpCommand`) that can be installed as a subcommand on any application command to provide usage help for the parent command or sibling subcommands. For example:
+
 ```java
 @Command(subcommands = HelpCommand.class)
 class AutoHelpDemo implements Runnable {
@@ -110,10 +111,9 @@ maincommand help
 
 # print help for the `subcommand` command
 maincommand help subcommand
-``` 
+```
 
-Combined with the `CommandLine.run`, `CommandLine.call` or `CommandLine.handleParseResult` methods, this is *all* you need to do to give your application usage help and version help.
-
+For applications that want to create a custom help command, this release also introduces a new interface `picocli.CommandLine.IHelpCommandInitializable` that provides custom help commands with the information they need: access to the parent command and sibling commands, whether to use Ansi colors or not, and the streams to print the usage help message to.
 
 ### <a name="3.0.0-alpha-1-Unmatched"></a> `@Unmatched` annotation
 From this release, fields annotated with `@Unmatched` will be populated with the unmatched arguments.
@@ -151,7 +151,9 @@ No features have been promoted in this picocli release.
 - [#257] New Feature: new `ParseResult` class allows programmatic inspection of the result of parsing a sequence of command line arguments.
 - [#144] New Feature: Added support for mixins to allow reusing common options, positional parameters, subcommands and command attributes from any object.
 - [#253] New Feature: Added `@Unmatched` annotation for unmatched arguments.
-- [#175] New Feature: `mixinStandardHelpOptions` attribute to conveniently activate fully automatic help.
+- [#175] New Feature: `mixinStandardHelpOptions` attribute to install the standard `--help` and `--version` options, obviating the need for fields annotated with `@Option(usageHelp = true)` and `@Option(versionHelp = true)`.
+- [#175] New Feature: Picocli now provides a `HelpCommand` that can be installed as a subcommand on any application command to provide usage help for the parent command or sibling subcommands.
+- [#175] New Feature: new `IHelpCommandInitializable` interface facilitates construction of custom help commands.
 - [#262] New Feature: new `showDefaultValue` attribute on `@Option` and `@Parameters` gives fine-grained control over which default values to show or hide. Thanks to [ymenager](https://github.com/ymenager) for the request.
 - [#268] New Feature: new `helpCommand` attribute on `@Command`: if the command line arguments contain a subcommand annotated with `helpCommand`, the parser will not validate the required options or positional parameters of the parent command. Thanks to [ymenager](https://github.com/ymenager) for the request.
 - [#277] New Feature: new `hidden` attribute on `@Command` to omit the specified subcommand from the usage help message command list of the parent command. Thanks to [pditommaso](https://github.com/pditommaso).

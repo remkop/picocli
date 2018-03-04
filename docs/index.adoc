@@ -878,10 +878,10 @@ unmatched arguments list returned by `CommandLine.getUnmatchedArguments()`.
 
 
 == Help
+
 === Help Options
-Options with the attribute `versionHelp = true`, `usageHelp = true` or `help = true` are special:
-if one of the command line arguments is a "help" option, picocli will stop parsing the remaining arguments and will not check for required options.
-Subcommands can be marked as <<Help subcommands,help commands>> to achieve the same.
+Applications can define help options by setting attribute `versionHelp = true`, `usageHelp = true` or `help = true`.
+If one of the arguments specified on the command line is a "help" option, picocli will not throw a `MissingParameterException` when required options are missing.
 
 For example:
 
@@ -922,24 +922,9 @@ if (commandLine.isUsageHelpRequested()) {
    return;
 }
 ----
+See also <<Printing Help Automatically>>.
 
-From picocli v2.0, the <<Less Boilerplate,convenience methods>> will automatically print usage help and version information
-when requested with the `versionHelp` and `usageHelp` option attributes (but not for the `help` attribute).
-From v2.0, the `help` attribute is deprecated.
-
-Methods that automatically print help:
-
-* `CommandLine::call`
-* `CommandLine::run`
-* `CommandLine::parseWithHandler` (with the built-in `Run...` handlers)
-* `CommandLine::parseWithHandlers` (with the built-in `Run...` handlers)
-
-Methods that *do not* automatically print help:
-
-* `CommandLine::parse`
-* `CommandLine::populateCommand`
-
-=== Fully Automatic Help
+=== Mixin Standard Help Options
 Picocli 3.0 introduced the `mixinStandardHelpOptions` command attribute. When this attribute is set to `true`, picocli adds a <<Mixins,mixin>> to the
 command that adds <<Help Options,`usageHelp`>> and <<Help Options,`versionHelp`>> options to the command. For example:
 
@@ -955,7 +940,7 @@ class AutoHelpDemo implements Runnable {
 }
 ----
 
-Commands with `mixinStandardHelpOptions` do not need to explicitly declare `usageHelp` or `versionHelp` options any more.
+Commands with `mixinStandardHelpOptions` do not need to explicitly declare fields annotated with `@Option(usageHelp = true)` and `@Option(versionHelp = true)` any more.
 The usage help message for the above example looks like this:
 ----
 Usage: <main class> [-hV] [--option=<option>]
@@ -966,20 +951,66 @@ Commands:
   help  Displays help information about the specified command
 ----
 
-From 3.0, picocli provides a `help` subcommand (`picocli.CommandLine.HelpCommand`) that will print help for the subcommand following it, or for the top-level command in case no subcommand is specified. For example:
+=== Built-in Help Subcommand
+From 3.0, picocli provides a `help` subcommand (`picocli.CommandLine.HelpCommand`) that can be installed as a subcommand on any application command to provide usage help for the parent command or sibling subcommands. For example:
 
+[source,java]
+----
+import picocli.CommandLine.HelpCommand;
+
+@Command(name = "myapp", subcommands = {HelpCommand.class, Subcommand.class})
+class MyCommand implements Runnable {
+    // ...
+}
+----
+
+For example, to get usage help for a subcommand:
 [source,bash]
 ----
-# two ways to get usage help for a subcommand:
-maincommand help subcommand
-maincommand subcommand --help
-
-# two ways to get usage help for the main command:
-maincommand help
-maincommand --help
+myapp help subcommand
 ----
 
-The `mixinStandardHelpOptions` attribute is useful in combination with the <<Less Boilerplate,convenience methods>> that automatically print help:
+To get usage help for the main command:
+[source,bash]
+----
+myapp help
+----
+
+=== Custom Help Subcommands
+Custom help subcommands should mark themselves as a <<Help subcommands,help command>> to tell picocli not to throw a `MissingParameterException` when required options are missing.
+
+[source,java]
+----
+@Command(helpCommand = true)
+----
+
+Picocli 3.0 introduced a new interface `picocli.CommandLine.IHelpCommandInitializable` that provides custom help
+commands with access to the parent command and sibling commands, whether to use Ansi colors or not, and the streams to print the usage help message to.
+
+[source,java]
+----
+public interface IHelpCommandInitializable {
+    /**
+     * Initializes this object with the information needed to implement a help command that
+     * provides usage help for other commands.
+     *
+     * @param helpCommandLine provides access to this command's parent and sibling commands
+     * @param ansi whether to use Ansi colors or not
+     * @param out the stream to print the usage help message to
+     * @param err the error stream to print any error messages to
+     */
+    void init(CommandLine helpCommandLine, Help.Ansi ansi, PrintStream out, PrintStream err);
+}
+----
+
+=== Printing Help Automatically
+
+From picocli v2.0, the <<Less Boilerplate,convenience methods>> will automatically print usage help and version information
+when a help option was specified on the command line (options annotated with the `versionHelp` or `usageHelp` attribute - but not the `help` attribute).
+
+The same holds for the `mixinStandardHelpOptions` attribute, the built-in `HelpCommand` and any custom help subcommands marked as a <<Help subcommands,help command>>.
+
+The following <<Less Boilerplate,convenience methods>> automatically print help:
 
 * `CommandLine::call`
 * `CommandLine::run`
@@ -989,8 +1020,11 @@ The `mixinStandardHelpOptions` attribute is useful in combination with the <<Les
 The following methods *do not* automatically print help:
 
 * `CommandLine::parse`
+* `CommandLine::parseArgs`
 * `CommandLine::populateCommand`
 
+When using the last three methods, applications need to query the parse result to detect whether usage help or version help
+was requested, and invoke `CommandLine::usage` or `CommandLine::printVersionHelp` to actually print the requested help message.
 
 == Version Help
 === Static Version Information
@@ -1925,6 +1959,8 @@ Commands with the `helpCommand` attribute set to `true` are treated as help comm
 When picocli encounters a help command on the command line, required options and required positional parameters of the parent command
 are not validated (similar to <<Help Options,help options>>).
 
+See <<Custom Help Subcommands>> for more details on creating help subcommands.
+
 [source,java]
 ----
 @Command(helpCommand = true)
@@ -2016,7 +2052,7 @@ A mixin is a separate class with options, positional parameters, subcommands and
 that you want to reuse in other commands.
 Mixins can be installed by calling the `CommandLine.addMixin` method with an object of this class, or annotating a field in your command with `@Mixin`.
 
-==== Programmatic Mixins
+==== Adding Mixins Programmatically
 The below example shows how a mixin can be added programmatically with the `CommandLine.addMixin` method.
 We use the sample `ReusableOptions` class <<Reuse,defined above>> as the mixin:
 
