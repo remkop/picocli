@@ -2977,7 +2977,7 @@ public class CommandLineHelpTest {
         class App implements Runnable{ public void run(){}}
 
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        CommandLine.run(new App(), new PrintStream(baos), Help.Ansi.OFF, "help", "abcd");
+        CommandLine.run(new App(), System.out, new PrintStream(baos), Help.Ansi.OFF, "help", "abcd");
 
         String expected = String.format("" +
                 "Unknown subcommand 'abcd'.%n" +
@@ -3074,7 +3074,7 @@ public class CommandLineHelpTest {
         }
         String[] args = new String[] {"-unknown"};
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        CommandLine.run(new App(), new PrintStream(baos), args);
+        CommandLine.run(new App(), System.out, new PrintStream(baos), Help.Ansi.OFF, args);
 
         String expected = format("" +
                 "Missing required parameters at positions 0..*: FILES%n" +
@@ -3096,7 +3096,7 @@ public class CommandLineHelpTest {
         }
         String[] args = new String[] {"-unknown"};
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        CommandLine.run(new App(), new PrintStream(baos), args);
+        CommandLine.run(new App(), System.out, new PrintStream(baos), Help.Ansi.OFF, args);
 
         String expected = format("" +
                 "Missing required parameters at positions 0..*: FILES%n" +
