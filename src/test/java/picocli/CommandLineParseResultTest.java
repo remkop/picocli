@@ -31,7 +31,7 @@ import static org.junit.Assert.*;
 import static picocli.CommandLine.*;
 import static picocli.HelpTestUtil.setTraceLevel;
 
-public class ParseResultTest {
+public class CommandLineParseResultTest {
     @Test
     public void testCommandSpec_IsCommandLineCommandSpec() {
         class App {
