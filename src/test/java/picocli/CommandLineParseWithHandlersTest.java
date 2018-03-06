@@ -34,10 +34,10 @@ import static picocli.HelpTestUtil.setTraceLevel;
 
 public class CommandLineParseWithHandlersTest {
     @Rule
-    public final SystemErrRule systemErrRule = new SystemErrRule().enableLog();
+    public final SystemErrRule systemErrRule = new SystemErrRule().enableLog().muteForSuccessfulTests();
 
     @Rule
-    public final SystemOutRule systemOutRule = new SystemOutRule().enableLog();
+    public final SystemOutRule systemOutRule = new SystemOutRule().enableLog().muteForSuccessfulTests();
 
     @Rule
     public final ExpectedSystemExit exit = ExpectedSystemExit.none();
@@ -245,13 +245,25 @@ public class CommandLineParseWithHandlersTest {
     }
 
     @Test
-    public void testExitCode() {
+    public void testExitCodeFromParseResultHandler() {
         @Command class App implements Runnable {
             public void run() {
             }
         }
         exit.expectSystemExitWithStatus(23);
         new CommandLine(new App()).parseWithHandler(new RunFirst().andExit(23));
+    }
+
+    @Test
+    public void testExitCodeFromExceptionHandler() {
+        @Command class App implements Runnable {
+            public void run() {
+                throw new ParameterException(new CommandLine(this), "blah");
+            }
+        }
+        exit.expectSystemExitWithStatus(25);
+        new CommandLine(new App()).parseWithHandlers(new RunFirst().andExit(23),
+                                                    new DefaultExceptionHandler().andExit(25));
     }
 
 }
