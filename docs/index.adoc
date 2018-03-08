@@ -2159,7 +2159,7 @@ try {
 
 [source,java]
 ----
-Object result = CommandLine.call(new MyCallable(), System.err, args);
+Object result = CommandLine.call(new MyCallable(), args);
 ----
 The `CommandLine.call` method returns the result of the `Callable`, or `null` if the command line options were invalid. An error message and a usage help message are printed when the command line options were invalid. Exceptions thrown from the `Callable.call` method are caught, wrapped in an `ExecutionException` and rethrown.
 
@@ -2167,7 +2167,7 @@ The `CommandLine.call` method returns the result of the `Callable`, or `null` if
 When the annotated object implements `Runnable`, use the `run` method. For example:
 [source,java]
 ----
-CommandLine.run(new MyRunnable(), System.err, args);
+CommandLine.run(new MyRunnable(), args);
 ----
 
 If the command class has subcommands, the `CommandLine::call` and `CommandLine::run` convenience methods will execute the most specific subcommand on the command line. For example:
@@ -2188,20 +2188,77 @@ CommandLine cmd = new CommandLine(MyTopLevelCommand())
         .addSubcommand("status",   new GitStatus())
         .addSubcommand("commit",   new GitCommit())
         .addSubcommand("add",      new GitAdd());
-List<Object> result = cmd.parseWithHandler(new RunAll(), System.err, args);
+List<Object> result = cmd.parseWithHandler(new RunAll(), args);
 ----
 
 The `CommandLine::parseWithHandler` method will take care of the following:
 
 * parse the specified command line arguments
 * if the input was invalid, delegate to `DefaultExceptionHandler`, which will print the error message followed by the usage help message
-* otherwise, if the command line arguments were parsed successfully, let the specified `IParseResultHandler` handle the parse result
+* otherwise, if the command line arguments were parsed successfully, let the specified `IParseResultHandler2` handle the parse result
 
-Picocli provides some default `IParseResultHandler` implementations for common tasks:
+Picocli provides some default `IParseResultHandler2` implementations for common tasks:
 
 * the `RunLast` handler prints help if requested, and otherwise gets the last specified command or subcommand and tries to execute it as a `Runnable` or `Callable`
 * the `RunFirst` handler prints help if requested, and otherwise executes the top-level command as a `Runnable` or `Callable`
 * the `RunAll` handler prints help if requested, and otherwise executes all commands and subcommands that the user specified on the command line as `Runnable` or `Callable` tasks
+
+
+=== Stdout or Stderr
+From picocli v3.0, the `run` and `call` convenience methods follow unix conventions:
+print to stdout when the user requested help, and print to stderr when the input was invalid or an unexpected error occurred.
+
+Custom handlers can extend `AbstractHandler` to facilitate following this convention.
+`AbstractHandler` also provides `useOut` and `useErr` methods to allow customizing the target output streams,
+and `useAnsi` to customize the Ansi style to use:
+
+[source,java]
+----
+@Command class CustomizeTargetStreamsDemo implements Runnable {
+    public void run() { ... }
+
+    public static void main(String... args) {
+        CommandLine cmd = new CommandLine(new CustomizeTargetStreamsDemo());
+
+        PrintStream myOut = getOutputPrintStream(); // custom stream to send command output to
+        PrintStream myErr = getErrorPrintStream();  // custom stream for error messages
+
+        cmd.parseWithHandlers(
+                new RunLast().useOut(myOut).useAnsi(Help.Ansi.ON),
+                new DefaultExceptionHandler().useErr(myErr).useAnsi(Help.Ansi.OFF),
+                args);
+    }
+}
+----
+
+=== Exit Code
+From picocli v3.0, the built-in parse result handlers (`RunFirst`, `RunLast` and `RunAll`) and exception handler
+(`DefaultExceptionHandler`) can specify an exit code.
+If an exit code was specified, the handler terminates the JVM with the specified status code when finished.
+
+[source,java]
+----
+@Command class ExitCodeDemo implements Runnable {
+    public void run() { throw new ParameterException(new CommandLine(this), "exit code demo"); }
+
+    public static void main(String... args) {
+        CommandLine cmd = new CommandLine(new ExitCodeDemo());
+        cmd.parseWithHandlers(
+                new RunLast().andExit(123),
+                new DefaultExceptionHandler().andExit(456),
+                args);
+    }
+}
+----
+Running this command prints the following to stderr and exits the JVM with status code `456`.
+
+[source,bash]
+----
+exit code demo
+Usage: <main class>
+----
+
+Custom handlers can extend `AbstractHandler` to inherit this behaviour.
 
 
 === Custom Factory

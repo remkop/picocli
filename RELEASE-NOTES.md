@@ -9,6 +9,10 @@ Another new feature in this release are Mixins. Mixins allow reusing common opti
 
 Third, this release aims to reduce boilerplate code in user applications even further with the new `mixinStandardHelpOptions` command attribute. Picocli adds standard `usageHelp` and `versionHelp` options to commands with this attribute. Additionally picocli now offers a `HelpCommand` that can be installed as a subcommand on any application command to provide usage help for the parent command or sibling subcommands.
 
+From this release, picocli is better at following unix conventions: print to stdout when the user requested help, and print to stderr when the input was invalid or an unexpected error occurred.
+
+Also, this release gives better control over the process exit code.
+
 Additionally, fields annotated with `@Unmatched` will be populated with the unmatched arguments.
 
 Furthermore, this release adds a `showDefaultValue` attribute to the `@Option` and `@Parameters` annotation.
@@ -24,7 +28,7 @@ Picocli follows [semantic versioning](http://semver.org/).
 * [Deprecations](#3.0.0-alpha-1-deprecated)
 * [Potential breaking changes](#3.0.0-alpha-1-breaking-changes)
 
-## <a name="3.0.0-alpha-1-new"></a> New and noteworthy
+## <a name="3.0.0-alpha-1-new"></a> New and Noteworthy
 
 ### Programmatic API
 TODO.
@@ -115,7 +119,7 @@ maincommand help subcommand
 
 For applications that want to create a custom help command, this release also introduces a new interface `picocli.CommandLine.IHelpCommandInitializable` that provides custom help commands with the information they need: access to the parent command and sibling commands, whether to use Ansi colors or not, and the streams to print the usage help message to.
 
-### <a name="3.0.0-alpha-1-Unmatched"></a> `@Unmatched` annotation
+### <a name="3.0.0-alpha-1-Unmatched"></a> `@Unmatched` Annotation
 From this release, fields annotated with `@Unmatched` will be populated with the unmatched arguments.
 The field must be of type `String[]` or `List<String>`.
 
@@ -126,6 +130,61 @@ so no `UnmatchedArgumentException` is thrown when a command line argument cannot
 A `ParseResult` class is now available that allows applications to inspect the result of parsing a sequence of command line arguments.
 
 This class provides methods to query whether the command line arguments included certain options or position parameters, and what the value or values of these options and positional parameters was. Both the original command line argument String value as well as a strongly typed value can be obtained.
+
+### <a name="3.0.0-alpha-1-std"></a> Stdout or Stderr
+From picocli v3.0, the `run` and `call` convenience methods follow unix conventions:
+print to stdout when the user requested help, and print to stderr when the input was invalid or an unexpected error occurred.
+
+Custom handlers can extend `AbstractHandler` to facilitate following this convention.
+`AbstractHandler` also provides `useOut` and `useErr` methods to allow customizing the target output streams,
+and `useAnsi` to customize the Ansi style to use:
+
+```java
+@Command class CustomizeTargetStreamsDemo implements Runnable {
+    public void run() { ... }
+
+    public static void main(String... args) {
+        CommandLine cmd = new CommandLine(new CustomizeTargetStreamsDemo());
+
+        PrintStream myOut = getOutputPrintStream(); // custom stream to send command output to
+        PrintStream myErr = getErrorPrintStream();  // custom stream for error messages
+
+        cmd.parseWithHandlers(
+                new RunLast().useOut(myOut).useAnsi(Help.Ansi.ON),
+                new DefaultExceptionHandler().useErr(myErr).useAnsi(Help.Ansi.OFF),
+                args);
+    }
+}
+```
+
+### <a name="3.0.0-alpha-1-exit-code"></a> Exit Code Support
+From picocli v3.0, the built-in parse result handlers (`RunFirst`, `RunLast` and `RunAll`) and exception handler
+(`DefaultExceptionHandler`) can specify an exit code.
+If an exit code was specified, the handler terminates the JVM with the specified status code when finished.
+
+```java
+@Command class ExitCodeDemo implements Runnable {
+    public void run() { throw new ParameterException(new CommandLine(this), "exit code demo"); }
+
+    public static void main(String... args) {
+        CommandLine cmd = new CommandLine(new ExitCodeDemo());
+        cmd.parseWithHandlers(
+                new RunLast().andExit(123),
+                new DefaultExceptionHandler().andExit(456),
+                args);
+    }
+}
+```
+Running this command prints the following to stderr and exits the JVM with status code `456`.
+
+[source,bash]
+----
+exit code demo
+Usage: <main class>
+----
+
+Custom handlers can extend `AbstractHandler` to inherit this behaviour.
+
 
 ### Fine-grained ShowDefault
 
