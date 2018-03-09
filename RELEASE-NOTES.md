@@ -177,11 +177,10 @@ If an exit code was specified, the handler terminates the JVM with the specified
 ```
 Running this command prints the following to stderr and exits the JVM with status code `456`.
 
-[source,bash]
-----
+```
 exit code demo
 Usage: <main class>
-----
+```
 
 Custom handlers can extend `AbstractHandler` to inherit this behaviour.
 
