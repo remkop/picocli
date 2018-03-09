@@ -146,7 +146,7 @@ public class CommandLine {
     private final IFactory factory;
 
     /**
-     * Constructs a new {@code CommandLine} interpreter with the specified object and a default subcommand factory.
+     * Constructs a new {@code CommandLine} interpreter with the specified object (which may be an annotated user object or a {@link CommandSpec CommandSpec}) and a default subcommand factory.
      * <p>The specified object may be a {@link CommandSpec CommandSpec} object, or it may be a {@code @Command}-annotated
      * user object with {@code @Option} and {@code @Parameters}-annotated fields, in which case picocli automatically
      * constructs a {@code CommandSpec} from this user object.
@@ -161,7 +161,7 @@ public class CommandLine {
         this(command, new DefaultFactory());
     }
     /**
-     * Constructs a new {@code CommandLine} interpreter with the specified object and object factory.
+     * Constructs a new {@code CommandLine} interpreter with the specified object (which may be an annotated user object or a {@link CommandSpec CommandSpec}) and object factory.
      * <p>The specified object may be a {@link CommandSpec CommandSpec} object, or it may be a {@code @Command}-annotated
      * user object with {@code @Option} and {@code @Parameters}-annotated fields, in which case picocli automatically
      * constructs a {@code CommandSpec} from this user object.
