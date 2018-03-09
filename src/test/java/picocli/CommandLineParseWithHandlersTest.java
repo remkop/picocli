@@ -18,6 +18,7 @@ package picocli;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.contrib.java.lang.system.ExpectedSystemExit;
+import org.junit.contrib.java.lang.system.ProvideSystemProperty;
 import org.junit.contrib.java.lang.system.SystemErrRule;
 import org.junit.contrib.java.lang.system.SystemOutRule;
 
@@ -28,11 +29,14 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.concurrent.Callable;
 
+import static java.lang.String.format;
 import static org.junit.Assert.*;
 import static picocli.CommandLine.*;
-import static picocli.HelpTestUtil.setTraceLevel;
 
 public class CommandLineParseWithHandlersTest {
+    @Rule
+    public final ProvideSystemProperty ansiOFF = new ProvideSystemProperty("picocli.ansi", "false");
+    
     @Rule
     public final SystemErrRule systemErrRule = new SystemErrRule().enableLog().muteForSuccessfulTests();
 
@@ -109,8 +113,8 @@ public class CommandLineParseWithHandlersTest {
         CommandLineFactory factory = new CommandLineFactory() {
             public CommandLine create() {return new CommandLine(new App());}
         };
-        verifyReturnValue(factory, Collections.emptyList(), new String[] {"-h"});
-        verifyReturnValue(factory, Collections.emptyList(), new String[] {"-V"});
+        verifyReturnValueForBuiltInHandlers(factory, Collections.emptyList(), new String[] {"-h"});
+        verifyReturnValueForBuiltInHandlers(factory, Collections.emptyList(), new String[] {"-V"});
     }
 
     @Test
@@ -122,14 +126,14 @@ public class CommandLineParseWithHandlersTest {
         CommandLineFactory factory = new CommandLineFactory() {
             public CommandLine create() {return new CommandLine(new App());}
         };
-        verifyReturnValue(factory, Arrays.asList("RETURN VALUE"), new String[0]);
+        verifyReturnValueForBuiltInHandlers(factory, Arrays.asList("RETURN VALUE"), new String[0]);
     }
 
     interface CommandLineFactory {
         CommandLine create();
     }
 
-    private void verifyReturnValue(CommandLineFactory factory, Object expected, String[] args) {
+    private void verifyReturnValueForBuiltInHandlers(CommandLineFactory factory, Object expected, String[] args) {
         IParseResultHandler[] handlers = new IParseResultHandler[] {
                 new RunFirst(), new RunLast(), new RunAll()
         };
@@ -137,6 +141,45 @@ public class CommandLineParseWithHandlersTest {
         for (IParseResultHandler handler : handlers) {
             String descr = handler.getClass().getSimpleName();
             Object actual = factory.create().parseWithHandler(handler, out, args);
+            assertEquals(descr + ": return value", expected, actual);
+        }
+    }
+
+    @Test
+    public void testParseWithHandler2RunXxxReturnsEmptyListIfHelpRequested() {
+        @Command(version = "abc 1.3.4")
+        class App implements Callable<Object> {
+            @Option(names = "-h", usageHelp = true) boolean requestHelp;
+            @Option(names = "-V", versionHelp = true) boolean requestVersion;
+            public Object call() { return "RETURN VALUE"; }
+        }
+        CommandLineFactory factory = new CommandLineFactory() {
+            public CommandLine create() {return new CommandLine(new App());}
+        };
+        verifyReturnValueForBuiltInHandlers2(factory, Collections.emptyList(), new String[] {"-h"});
+        verifyReturnValueForBuiltInHandlers2(factory, Collections.emptyList(), new String[] {"-V"});
+    }
+
+    @Test
+    public void testParseWithHandle2rRunXxxReturnsCallableResult() {
+        @Command
+        class App implements Callable<Object> {
+            public Object call() { return "RETURN VALUE"; }
+        }
+        CommandLineFactory factory = new CommandLineFactory() {
+            public CommandLine create() {return new CommandLine(new App());}
+        };
+        verifyReturnValueForBuiltInHandlers2(factory, Arrays.asList("RETURN VALUE"), new String[0]);
+    }
+
+    private void verifyReturnValueForBuiltInHandlers2(CommandLineFactory factory, Object expected, String[] args) {
+        IParseResultHandler2[] handlers = new IParseResultHandler2[] {
+                new RunFirst(), new RunLast(), new RunAll()
+        };
+        PrintStream out = new PrintStream(new ByteArrayOutputStream());
+        for (IParseResultHandler2 handler : handlers) {
+            String descr = handler.getClass().getSimpleName();
+            Object actual = factory.create().parseWithHandler(handler, args);
             assertEquals(descr + ": return value", expected, actual);
         }
     }
@@ -164,6 +207,30 @@ public class CommandLineParseWithHandlersTest {
         Object actual3 = factory.create().parseWithHandler(new RunAll(), out, new String[] {"sub"});
         assertEquals("RunAll: return value", Arrays.asList("RETURN VALUE", "SUB RETURN VALUE"), actual3);
     }
+    @Test
+    public void testParseWithHandler2RunXxxReturnsCallableResultWithSubcommand() {
+        @Command
+        class App implements Callable<Object> {
+            public Object call() { return "RETURN VALUE"; }
+        }
+        @Command(name = "sub")
+        class Sub implements Callable<Object> {
+            public Object call() { return "SUB RETURN VALUE"; }
+        }
+        CommandLineFactory factory = new CommandLineFactory() {
+            public CommandLine create() {return new CommandLine(new App()).addSubcommand("sub", new Sub());}
+        };
+        PrintStream out = new PrintStream(new ByteArrayOutputStream());
+
+        Object actual1 = factory.create().parseWithHandler(new RunFirst(), new String[] {"sub"});
+        assertEquals("RunFirst: return value", Arrays.asList("RETURN VALUE"), actual1);
+
+        Object actual2 = factory.create().parseWithHandler(new RunLast(), new String[] {"sub"});
+        assertEquals("RunLast: return value", Arrays.asList("SUB RETURN VALUE"), actual2);
+
+        Object actual3 = factory.create().parseWithHandler(new RunAll(), new String[] {"sub"});
+        assertEquals("RunAll: return value", Arrays.asList("RETURN VALUE", "SUB RETURN VALUE"), actual3);
+    }
 
     @Test
     public void testRunCallsRunnableIfParseSucceeds() {
@@ -187,17 +254,16 @@ public class CommandLineParseWithHandlersTest {
             }
         }
         PrintStream oldErr = System.err;
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        System.setErr(new PrintStream(baos, true, "UTF8"));
+        StringPrintStream sps = new StringPrintStream();
+        System.setErr(sps.stream());
         CommandLine.run(new App(), System.err, "-number", "not a number");
         System.setErr(oldErr);
 
-        String result = baos.toString("UTF8");
         assertFalse(runWasCalled[0]);
         assertEquals(String.format(
                 "Could not convert 'not a number' to int for option '-number': java.lang.NumberFormatException: For input string: \"not a number\"%n" +
                         "Usage: <main class> [-number=<number>]%n" +
-                        "      -number=<number>%n"), result);
+                        "      -number=<number>%n"), sps.toString());
     }
 
     @Test(expected = InitializationException.class)
@@ -223,17 +289,16 @@ public class CommandLineParseWithHandlersTest {
             public Boolean call() { return true; }
         }
         PrintStream oldErr = System.err;
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        System.setErr(new PrintStream(baos, true, "UTF8"));
+        StringPrintStream sps = new StringPrintStream();
+        System.setErr(sps.stream());
         Boolean callResult = CommandLine.call(new App(), System.err, "-number", "not a number");
         System.setErr(oldErr);
 
-        String result = baos.toString("UTF8");
         assertNull(callResult);
         assertEquals(String.format(
                 "Could not convert 'not a number' to int for option '-number': java.lang.NumberFormatException: For input string: \"not a number\"%n" +
                         "Usage: <main class> [-number=<number>]%n" +
-                        "      -number=<number>%n"), result);
+                        "      -number=<number>%n"), sps.toString());
     }
 
     @Test(expected = InitializationException.class)
@@ -264,6 +329,266 @@ public class CommandLineParseWithHandlersTest {
         exit.expectSystemExitWithStatus(25);
         new CommandLine(new App()).parseWithHandlers(new RunFirst().andExit(23),
                                                     new DefaultExceptionHandler().andExit(25));
+        assertEquals(format("" +
+                "blah%n",
+                "<main command>"), systemErrRule.getLog());
+    }
+
+    @Test(expected = RuntimeException.class)
+    public void testNoSystemExitForOtherExceptions() {
+        @Command class App implements Runnable {
+            public void run() {
+                throw new RuntimeException("blah");
+            }
+        }
+        new CommandLine(new App()).parseWithHandlers(new RunFirst().andExit(23),
+                new DefaultExceptionHandler().andExit(25));
+    }
+
+    @Test(expected = InternalError.class)
+    public void testNoSystemExitForErrors() {
+        @Command class App implements Runnable {
+            public void run() {
+                throw new InternalError("blah");
+            }
+        }
+        new CommandLine(new App()).parseWithHandlers(new RunFirst().andExit(23),
+                new DefaultExceptionHandler().andExit(25));
+    }
+
+    @Command(name = "mycmd", mixinStandardHelpOptions = true)
+    static class MyCallable implements Callable<Object> {
+        @Option(names = "-x", description = "this is an option")
+        String option;
+        public Object call() { throw new IllegalStateException("this is a test"); }
+    }
+
+    @Command(name = "mycmd", mixinStandardHelpOptions = true)
+    static class MyRunnable implements Runnable {
+        @Option(names = "-x", description = "this is an option")
+        String option;
+        public void run() { throw new IllegalStateException("this is a test"); }
+    }
+    private static final String MYCALLABLE_USAGE = format("" +
+            "Usage: mycmd [-hV] [-x=<option>]%n" +
+            "  -h, --help                  Show this help message and exit.%n" +
+            "  -V, --version               Print version information and exit.%n" +
+            "  -x= <option>                this is an option%n");
+
+    private static final String INVALID_INPUT = format("" +
+            "Unmatched argument [invalid input]%n");
+
+    private static final String MYCALLABLE_INVALID_INPUT = INVALID_INPUT + MYCALLABLE_USAGE;
+
+    private static final String MYCALLABLE_USAGE_ANSI = Help.Ansi.ON.new Text(format("" +
+            "Usage: @|bold mycmd|@ [@|yellow -hV|@] [@|yellow -x|@=@|italic <option>|@]%n" +
+            "  @|yellow -h|@, @|yellow --help|@                  Show this help message and exit.%n" +
+            "  @|yellow -V|@, @|yellow --version|@               Print version information and exit.%n" +
+            "  @|yellow -x|@= @|italic <|@@|italic option>|@                this is an option%n")).toString();
+
+    @Test
+    public void testCall1WithInvalidInput() {
+        CommandLine.call(new MyCallable(), "invalid input");
+        assertEquals(MYCALLABLE_INVALID_INPUT, systemErrRule.getLog());
+        assertEquals("", systemOutRule.getLog());
+    }
+
+    @Test
+    public void testCall2WithInvalidInput() {
+        CommandLine.call(new MyCallable(), System.out, "invalid input");
+        assertEquals(MYCALLABLE_INVALID_INPUT, systemErrRule.getLog());
+        assertEquals("", systemOutRule.getLog());
+    }
+
+    @Test
+    public void testCall3WithInvalidInput() {
+        CommandLine.call(new MyCallable(), System.out, Help.Ansi.ON, "invalid input");
+        assertEquals(INVALID_INPUT + MYCALLABLE_USAGE_ANSI, systemErrRule.getLog());
+        assertEquals("", systemOutRule.getLog());
+    }
+
+    @Test
+    public void testCall4WithInvalidInput() {
+        CommandLine.call(new MyCallable(), System.out, System.err, Help.Ansi.ON, "invalid input");
+        assertEquals(INVALID_INPUT + MYCALLABLE_USAGE_ANSI, systemErrRule.getLog());
+        assertEquals("", systemOutRule.getLog());
+    }
+
+    @Test
+    public void testCall4WithInvalidInput_ToStdout() {
+        CommandLine.call(new MyCallable(), System.out, System.out, Help.Ansi.ON, "invalid input");
+        assertEquals("", systemErrRule.getLog());
+        assertEquals(INVALID_INPUT + MYCALLABLE_USAGE_ANSI, systemOutRule.getLog());
+    }
+
+    @Test
+    public void testCall1DefaultExceptionHandlerRethrows() {
+        try {
+            CommandLine.call(new MyCallable(), "-x abc");
+        } catch (ExecutionException ex) {
+            String cmd = ex.getCommandLine().getCommand().toString();
+            String msg = "Error while calling command (" + cmd + "): java.lang.IllegalStateException: this is a test";
+            assertEquals(msg, ex.getMessage());
+        }
+        assertEquals("", systemErrRule.getLog());
+        assertEquals("", systemOutRule.getLog());
+    }
+
+
+    @Test
+    public void testCall1WithHelpRequest() {
+        CommandLine.call(new MyCallable(), "--help");
+        assertEquals("", systemErrRule.getLog());
+        assertEquals(MYCALLABLE_USAGE, systemOutRule.getLog());
+    }
+
+    @Test
+    public void testCall2WithHelpRequest() {
+        CommandLine.call(new MyCallable(), System.out, "--help");
+        assertEquals("", systemErrRule.getLog());
+        assertEquals(MYCALLABLE_USAGE, systemOutRule.getLog());
+    }
+
+    @Test
+    public void testCall3WithHelpRequest() {
+        CommandLine.call(new MyCallable(), System.out, Help.Ansi.ON, "--help");
+        assertEquals("", systemErrRule.getLog());
+        assertEquals(MYCALLABLE_USAGE_ANSI, systemOutRule.getLog());
+    }
+
+    @Test
+    public void testCall3WithHelpRequest_ToStderr() {
+        CommandLine.call(new MyCallable(), System.err, Help.Ansi.ON, "--help");
+        assertEquals(MYCALLABLE_USAGE_ANSI, systemErrRule.getLog());
+        assertEquals("", systemOutRule.getLog());
+    }
+
+    @Test
+    public void testCall3WithHelpRequest_ToCustomStream() {
+        StringPrintStream sps = new StringPrintStream();
+        CommandLine.call(new MyCallable(), sps.stream(), Help.Ansi.ON, "--help");
+        assertEquals(MYCALLABLE_USAGE_ANSI, sps.toString());
+        assertEquals("", systemErrRule.getLog());
+        assertEquals("", systemOutRule.getLog());
+    }
+
+    @Test
+    public void testCall4WithHelpRequest() {
+        CommandLine.call(new MyCallable(), System.out, System.err, Help.Ansi.ON, "--help");
+        assertEquals("", systemErrRule.getLog());
+        assertEquals(MYCALLABLE_USAGE_ANSI, systemOutRule.getLog());
+    }
+
+    @Test
+    public void testCall4WithHelpRequest_ToStderr() {
+        CommandLine.call(new MyCallable(), System.err, System.out, Help.Ansi.ON, "--help");
+        assertEquals(MYCALLABLE_USAGE_ANSI, systemErrRule.getLog());
+        assertEquals("", systemOutRule.getLog());
+    }
+
+    @Test
+    public void testCall4WithHelpRequest_ToCustomStream() {
+        StringPrintStream sps = new StringPrintStream();
+        CommandLine.call(new MyCallable(), sps.stream(), System.out, Help.Ansi.ON, "--help");
+        assertEquals(MYCALLABLE_USAGE_ANSI, sps.toString());
+        assertEquals("", systemErrRule.getLog());
+        assertEquals("", systemOutRule.getLog());
+    }
+    //---
+
+    @Test
+    public void testRun1WithInvalidInput() {
+        CommandLine.run(new MyRunnable(), "invalid input");
+        assertEquals(MYCALLABLE_INVALID_INPUT, systemErrRule.getLog());
+        assertEquals("", systemOutRule.getLog());
+    }
+
+    @Test
+    public void testRun2WithInvalidInput() {
+        CommandLine.run(new MyRunnable(), System.out, "invalid input");
+        assertEquals(MYCALLABLE_INVALID_INPUT, systemErrRule.getLog());
+        assertEquals("", systemOutRule.getLog());
+    }
+
+    @Test
+    public void testRun3WithInvalidInput() {
+        CommandLine.run(new MyRunnable(), System.out, Help.Ansi.ON, "invalid input");
+        assertEquals(INVALID_INPUT + MYCALLABLE_USAGE_ANSI, systemErrRule.getLog());
+        assertEquals("", systemOutRule.getLog());
+    }
+
+    @Test
+    public void testRun4WithInvalidInput() {
+        CommandLine.run(new MyRunnable(), System.out, System.err, Help.Ansi.ON, "invalid input");
+        assertEquals(INVALID_INPUT + MYCALLABLE_USAGE_ANSI, systemErrRule.getLog());
+        assertEquals("", systemOutRule.getLog());
+    }
+
+    @Test
+    public void testRun4WithInvalidInput_ToStdout() {
+        CommandLine.run(new MyRunnable(), System.out, System.out, Help.Ansi.ON, "invalid input");
+        assertEquals("", systemErrRule.getLog());
+        assertEquals(INVALID_INPUT + MYCALLABLE_USAGE_ANSI, systemOutRule.getLog());
+    }
+
+    @Test
+    public void testRun1WithHelpRequest() {
+        CommandLine.run(new MyRunnable(), "--help");
+        assertEquals("", systemErrRule.getLog());
+        assertEquals(MYCALLABLE_USAGE, systemOutRule.getLog());
+    }
+
+    @Test
+    public void testRun2WithHelpRequest() {
+        CommandLine.run(new MyRunnable(), System.out, "--help");
+        assertEquals("", systemErrRule.getLog());
+        assertEquals(MYCALLABLE_USAGE, systemOutRule.getLog());
+    }
+
+    @Test
+    public void testRun3WithHelpRequest() {
+        CommandLine.run(new MyRunnable(), System.out, Help.Ansi.ON, "--help");
+        assertEquals("", systemErrRule.getLog());
+        assertEquals(MYCALLABLE_USAGE_ANSI, systemOutRule.getLog());
+    }
+
+    @Test
+    public void testRun3WithHelpRequest_ToStderr() {
+        CommandLine.run(new MyRunnable(), System.err, Help.Ansi.ON, "--help");
+        assertEquals(MYCALLABLE_USAGE_ANSI, systemErrRule.getLog());
+        assertEquals("", systemOutRule.getLog());
+    }
+
+    @Test
+    public void testRun3WithHelpRequest_ToCustomStream() {
+        StringPrintStream sps = new StringPrintStream();
+        CommandLine.run(new MyRunnable(), sps.stream(), Help.Ansi.ON, "--help");
+        assertEquals(MYCALLABLE_USAGE_ANSI, sps.toString());
+        assertEquals("", systemErrRule.getLog());
+        assertEquals("", systemOutRule.getLog());
+    }
+
+    @Test
+    public void testRun4WithHelpRequest() {
+        CommandLine.run(new MyRunnable(), System.out, System.err, Help.Ansi.ON, "--help");
+        assertEquals("", systemErrRule.getLog());
+        assertEquals(MYCALLABLE_USAGE_ANSI, systemOutRule.getLog());
+    }
+
+    @Test
+    public void testRun4WithHelpRequest_ToStderr() {
+        CommandLine.run(new MyRunnable(), System.err, System.out, Help.Ansi.ON, "--help");
+        assertEquals(MYCALLABLE_USAGE_ANSI, systemErrRule.getLog());
+        assertEquals("", systemOutRule.getLog());
+    }
+
+    @Test
+    public void testRun4WithHelpRequest_ToCustomStream() {
+        StringPrintStream sps = new StringPrintStream();
+        CommandLine.run(new MyRunnable(), sps.stream(), System.out, Help.Ansi.ON, "--help");
+        assertEquals(MYCALLABLE_USAGE_ANSI, sps.toString());
+        assertEquals("", systemErrRule.getLog());
+        assertEquals("", systemOutRule.getLog());
     }
 
 }
