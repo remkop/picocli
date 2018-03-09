@@ -540,7 +540,7 @@ public class CommandLine {
      * <a href="https://docs.oracle.com/javase/8/docs/api/java/util/function/package-summary.html">functional interface</a>
      * whose functional method is {@link #handleException(CommandLine.ParameterException, PrintStream, CommandLine.Help.Ansi, String...)}.
      * <p>
-     * Implementations of this functions can be passed to the {@link #parseWithHandlers(IParseResultHandler, PrintStream, Help.Ansi, IExceptionHandler, String...) CommandLine::parseWithHandler}
+     * Implementations of this function can be passed to the {@link #parseWithHandlers(IParseResultHandler, PrintStream, Help.Ansi, IExceptionHandler, String...) CommandLine::parseWithHandler}
      * methods to handle situations when the command line could not be parsed.
      * </p>
      * @deprecated Use {@link IExceptionHandler2} instead.
@@ -559,16 +559,13 @@ public class CommandLine {
         List<Object> handleException(ParameterException ex, PrintStream out, Help.Ansi ansi, String... args);
     }
     /**
-     * Represents a function that can handle a {@code ParameterException} that occurred while
-     * {@linkplain #parseArgs(String...) parsing} the command line arguments. This is a
-     * <a href="https://docs.oracle.com/javase/8/docs/api/java/util/function/package-summary.html">functional interface</a>
-     * whose functional method is {@link #handleException(CommandLine.ParameterException, String...)}.
+     * Classes implementing this interface know how to handle {@code ParameterExceptions} (usually from invalid user input)
+     * and {@code ExecutionExceptions} that occurred while executing the {@code Runnable} or {@code Callable} command.
      * <p>
-     * Implementations of this functions can be passed to the {@link #parseWithHandlers(IParseResultHandler2, IExceptionHandler2, String...) CommandLine::parseWithHandler}
-     * methods to handle situations when the command line could not be parsed.
+     * Implementations of this interface can be passed to the
+     * {@link #parseWithHandlers(IParseResultHandler2, IExceptionHandler2, String...) CommandLine::parseWithHandler} method.
      * </p><p>
-     * This interface replaces the {@link IParseResultHandler} interface; it has the freedom to select the {@link Help.Ansi} style
-     * to use and what {@code PrintStreams} to print to.
+     * This interface replaces the {@link IParseResultHandler} interface.
      * </p>
      * @see DefaultExceptionHandler
      * @since 3.0 */
@@ -580,7 +577,15 @@ public class CommandLine {
          * @param args the command line arguments that could not be parsed
          * @return a list of results, or an empty list if there are no results
          */
-        List<Object> handleException(ParameterException ex, String... args);
+        List<Object> handleParseException(ParameterException ex, String... args);
+        /** Handles a {@code ExecutionException} that occurred while executing the {@code Runnable} or
+         * {@code Callable} command and optionally returns a list of results.
+         * @param ex the ExecutionException describing the problem that occurred while executing the {@code Runnable} or
+         *          {@code Callable} command, and the CommandLine representing the command or subcommand that was being executed
+         * @param parseResult the result of parsing the command line arguments
+         * @return a list of results, or an empty list if there are no results
+         */
+        List<Object> handleExecutionException(ExecutionException ex, ParseResult parseResult);
     }
 
     /** Abstract superclass for {@link IParseResultHandler2} and {@link IExceptionHandler2} implementations.
@@ -647,14 +652,15 @@ public class CommandLine {
     }
 
     /**
-     * Default exception handler that prints the exception message, followed by the usage message for the command or
-     * subcommand whose input was invalid, to the specified error {@code PrintStream}.
-     * <p>Implementation roughly looks like this:</p>
+     * Default exception handler that handles invalid user input by printing the exception message, followed by the usage
+     * message for the command or subcommand whose input was invalid.
+     * <p>{@code ParameterExceptions} (invalid user input) is handled like this:</p>
      * <pre>
      *     err().println(paramException.getMessage());
      *     paramException.getCommandLine().usage(err(), ansi());
      *     if (hasExitCode()) System.exit(exitCode()); else return Collections.emptyList();
      * </pre>
+     * <p>{@code ExecutionExceptions} that occurred while executing the {@code Runnable} or {@code Callable} command are simply rethrown and not handled.</p>
      * @since 2.0 */
     @SuppressWarnings("deprecation")
     public static class DefaultExceptionHandler extends AbstractHandler<DefaultExceptionHandler> implements IExceptionHandler, IExceptionHandler2 {
@@ -671,11 +677,15 @@ public class CommandLine {
          * @param args the command line arguments that could not be parsed
          * @return the empty list
          * @since 3.0 */
-        public List<Object> handleException(ParameterException ex, String... args) {
-            err().println(ex.getMessage());
-            ex.getCommandLine().usage(err(), ansi());
-            return returnResultOrExit(Collections.emptyList());
-        }
+        public List<Object> handleParseException(ParameterException ex, String... args) { return handleException(ex, err(), ansi(), args); }
+
+        /** This implementation always simply rethrows the specified exception.
+         * @param ex the ExecutionException describing the problem that occurred while executing the {@code Runnable} or {@code Callable} command
+         * @param parseResult the result of parsing the command line arguments
+         * @return nothing: this method always rethrows the specified exception
+         * @throws ExecutionException always rethrows the specified exception
+         * @since 3.0 */
+        public List<Object> handleExecutionException(ExecutionException ex, ParseResult parseResult) { throw ex; }
         @Override protected DefaultExceptionHandler self() { return this; }
     }
 
@@ -998,11 +1008,14 @@ public class CommandLine {
      * </p>
      * <p>Calling this method roughly expands to:</p>
      * <pre>
+     * ParseResult parseResult = null;
      * try {
-     *     ParseResult parseResult = parseArgs(args);
+     *     parseResult = parseArgs(args);
      *     return handler.handleParseResult(parseResult);
      * } catch (ParameterException ex) {
-     *     return exceptionHandler.handleException(ex, args);
+     *     return exceptionHandler.handleParseException(ex, args);
+     * } catch (ExecutionException ex) {
+     *     return exceptionHandler.handleExecutionException(ex, parseResult);
      * }
      * </pre>
      * <p>
@@ -1027,11 +1040,14 @@ public class CommandLine {
      * @see DefaultExceptionHandler
      * @since 3.0 */
     public List<Object> parseWithHandlers(IParseResultHandler2 handler, IExceptionHandler2 exceptionHandler, String... args) {
+        ParseResult parseResult = null;
         try {
-            ParseResult parseResult = parseArgs(args);
+            parseResult = parseArgs(args);
             return handler.handleParseResult(parseResult);
         } catch (ParameterException ex) {
-            return exceptionHandler.handleException(ex, args);
+            return exceptionHandler.handleParseException(ex, args);
+        } catch (ExecutionException ex) {
+            return exceptionHandler.handleExecutionException(ex, parseResult);
         }
     }
     /**
@@ -1182,7 +1198,8 @@ public class CommandLine {
     }
 
     /**
-     * Delegates to {@link #call(Callable, PrintStream, PrintStream, Help.Ansi, String...)} with {@code System.out}, {@code System.err}, and {@link Help.Ansi#AUTO}.
+     * Delegates to {@link #call(Callable, PrintStream, PrintStream, Help.Ansi, String...)} with {@code System.out} for
+     * requested usage help messages, {@code System.err} for diagnostic error messages, and {@link Help.Ansi#AUTO}.
      * @param callable the command to call when {@linkplain #parseArgs(String...) parsing} succeeds.
      * @param args the command line arguments to parse
      * @param <C> the annotated object must implement Callable
@@ -1199,9 +1216,10 @@ public class CommandLine {
     }
 
     /**
-     * Delegates to {@link #call(Callable, PrintStream, PrintStream, Help.Ansi, String...)} with {@code System.err} and {@link Help.Ansi#AUTO}.
+     * Delegates to {@link #call(Callable, PrintStream, PrintStream, Help.Ansi, String...)} with {@code System.err} for
+     * diagnostic error messages and {@link Help.Ansi#AUTO}.
      * @param callable the command to call when {@linkplain #parseArgs(String...) parsing} succeeds.
-     * @param out the printStream to print to
+     * @param out the printStream to print the usage help message to when the user requested help
      * @param args the command line arguments to parse
      * @param <C> the annotated object must implement Callable
      * @param <T> the return type of the most specific command (must implement {@code Callable})
@@ -1216,9 +1234,10 @@ public class CommandLine {
         return call(callable, out, System.err, Help.Ansi.AUTO, args);
     }
     /**
-     * Delegates to {@link #call(Callable, PrintStream, PrintStream, Help.Ansi, String...)} with {@code System.err} and {@link Help.Ansi#AUTO}.
+     * Delegates to {@link #call(Callable, PrintStream, PrintStream, Help.Ansi, String...)} with {@code System.err} for diagnostic error messages.
      * @param callable the command to call when {@linkplain #parseArgs(String...) parsing} succeeds.
-     * @param out the printStream to print to
+     * @param out the printStream to print the usage help message to when the user requested help
+     * @param ansi the ANSI style to use
      * @param args the command line arguments to parse
      * @param <C> the annotated object must implement Callable
      * @param <T> the return type of the most specific command (must implement {@code Callable})
@@ -1238,7 +1257,7 @@ public class CommandLine {
      * <pre>{@code
      * CommandLine cmd = new CommandLine(callable);
      * List<Object> results = cmd.parseWithHandlers(new RunLast().useOut(out).useAnsi(ansi),
-     *                                              new DefaultExceptionHandler().useErr(err),
+     *                                              new DefaultExceptionHandler().useErr(err).useAnsi(ansi),
      *                                              args);
      * T result = results == null || results.isEmpty() ? null : (T) results.get(0);
      * return result;
@@ -1250,7 +1269,7 @@ public class CommandLine {
      * method with the {@link RunAll} handler or a custom handler.
      * </p>
      * @param callable the command to call when {@linkplain #parse(String...) parsing} succeeds.
-     * @param out the printStream to print command output to
+     * @param out the printStream to print the usage help message to when the user requested help
      * @param err the printStream to print diagnostic messages to
      * @param ansi whether the usage message should include ANSI escape codes or not
      * @param args the command line arguments to parse
@@ -1265,13 +1284,14 @@ public class CommandLine {
      */
     public static <C extends Callable<T>, T> T call(C callable, PrintStream out, PrintStream err, Help.Ansi ansi, String... args) {
         CommandLine cmd = new CommandLine(callable);
-        List<Object> results = cmd.parseWithHandlers(new RunLast().useOut(out).useAnsi(ansi), new DefaultExceptionHandler().useErr(err), args);
+        List<Object> results = cmd.parseWithHandlers(new RunLast().useOut(out).useAnsi(ansi), new DefaultExceptionHandler().useErr(err).useAnsi(ansi), args);
         @SuppressWarnings("unchecked") T result = results == null || results.isEmpty() ? null : (T) results.get(0);
         return result;
     }
 
     /**
-     * Delegates to {@link #run(Runnable, PrintStream, PrintStream, Help.Ansi, String...)} with {@code System.out}, {@code System.err}, and {@link Help.Ansi#AUTO}.
+     * Delegates to {@link #run(Runnable, PrintStream, PrintStream, Help.Ansi, String...)} with {@code System.out} for
+     * requested usage help messages, {@code System.err} for diagnostic error messages, and {@link Help.Ansi#AUTO}.
      * @param runnable the command to run when {@linkplain #parseArgs(String...) parsing} succeeds.
      * @param args the command line arguments to parse
      * @param <R> the annotated object must implement Runnable
@@ -1287,9 +1307,9 @@ public class CommandLine {
     }
 
     /**
-     * Delegates to {@link #run(Runnable, PrintStream, PrintStream, Help.Ansi, String...)} with {@code System.err} and {@link Help.Ansi#AUTO}.
+     * Delegates to {@link #run(Runnable, PrintStream, PrintStream, Help.Ansi, String...)} with {@code System.err} for diagnostic error messages and {@link Help.Ansi#AUTO}.
      * @param runnable the command to run when {@linkplain #parseArgs(String...) parsing} succeeds.
-     * @param out the printStream to print to
+     * @param out the printStream to print the usage help message to when the user requested help
      * @param args the command line arguments to parse
      * @param <R> the annotated object must implement Runnable
      * @see #run(Runnable, PrintStream, PrintStream, Help.Ansi, String...)
@@ -1302,9 +1322,10 @@ public class CommandLine {
         run(runnable, out, System.err, Help.Ansi.AUTO, args);
     }
     /**
-     * Delegates to {@link #run(Runnable, PrintStream, PrintStream, Help.Ansi, String...)} with {@code System.err} and {@link Help.Ansi#AUTO}.
+     * Delegates to {@link #run(Runnable, PrintStream, PrintStream, Help.Ansi, String...)} with {@code System.err} for diagnostic error messages.
      * @param runnable the command to run when {@linkplain #parseArgs(String...) parsing} succeeds.
-     * @param out the printStream to print to
+     * @param out the printStream to print the usage help message to when the user requested help
+     * @param ansi whether the usage message should include ANSI escape codes or not
      * @param args the command line arguments to parse
      * @param <R> the annotated object must implement Runnable
      * @see #run(Runnable, PrintStream, PrintStream, Help.Ansi, String...)
@@ -1322,7 +1343,7 @@ public class CommandLine {
      * <pre>{@code
      * CommandLine cmd = new CommandLine(runnable);
      * cmd.parseWithHandlers(new RunLast().useOut(out).useAnsi(ansi),
-     *                       new DefaultExceptionHandler().useErr(err),
+     *                       new DefaultExceptionHandler().useErr(err).useAnsi(ansi),
      *                       args);
      * }</pre>
      * <p>
@@ -1335,7 +1356,7 @@ public class CommandLine {
      * and any exceptions thrown by the {@code Runnable} are caught and rethrown wrapped in an {@code ExecutionException}.
      * </p>
      * @param runnable the command to run when {@linkplain #parse(String...) parsing} succeeds.
-     * @param out the printStream to print command output to
+     * @param out the printStream to print the usage help message to when the user requested help
      * @param err the printStream to print diagnostic messages to
      * @param ansi whether the usage message should include ANSI escape codes or not
      * @param args the command line arguments to parse
@@ -1348,7 +1369,7 @@ public class CommandLine {
      */
     public static <R extends Runnable> void run(R runnable, PrintStream out, PrintStream err, Help.Ansi ansi, String... args) {
         CommandLine cmd = new CommandLine(runnable);
-        cmd.parseWithHandlers(new RunLast().useOut(out).useAnsi(ansi), new DefaultExceptionHandler().useErr(err), args);
+        cmd.parseWithHandlers(new RunLast().useOut(out).useAnsi(ansi), new DefaultExceptionHandler().useErr(err).useAnsi(ansi), args);
     }
 
     /**
