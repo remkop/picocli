@@ -2731,6 +2731,9 @@ public class CommandLine {
              * @see Command#helpCommand() */
             public boolean helpCommand() { return (isHelpCommand == null) ? DEFAULT_IS_HELP_COMMAND : isHelpCommand; }
 
+            /** Returns {@code true} if the standard help options have been mixed in with this command, {@code false} otherwise. */
+            public boolean mixinStandardHelpOptions() { return mixins.containsKey(AutoHelpMixin.KEY); }
+
             /** Returns a string representation of this command, used in error messages and trace messages. */
             public String toString() { return toString; }
     
@@ -2753,6 +2756,15 @@ public class CommandLine {
              * @return this CommandSpec for method chaining
              * @see Command#helpCommand() */
             public CommandSpec helpCommand(boolean newValue) {isHelpCommand = newValue; return this;}
+
+            /** Sets whether the standard help options should be mixed in with this command.
+             * @return this CommandSpec for method chaining
+             * @see Command#mixinStandardHelpOptions() */
+            public CommandSpec mixinStandardHelpOptions(boolean newValue) {
+                if (newValue) { addMixin(AutoHelpMixin.KEY, CommandReflection.extractCommandSpec(new AutoHelpMixin(), new DefaultFactory())); }
+                else          { mixins.remove(AutoHelpMixin.KEY); }
+                return this;
+            }
 
             /** Sets the string representation of this command, used in error messages and trace messages.
              * @param newValue the string representation
@@ -3596,6 +3608,7 @@ public class CommandLine {
                 commandSpec.initVersion(cmd.version());
                 commandSpec.initHelpCommand(cmd.helpCommand());
                 commandSpec.initVersionProvider(cmd.versionProvider(), factory);
+                commandSpec.mixinStandardHelpOptions(cmd.mixinStandardHelpOptions());
                 commandSpec.usageMessage().initSynopsisHeading(cmd.synopsisHeading());
                 commandSpec.usageMessage().initCommandListHeading(cmd.commandListHeading());
                 commandSpec.usageMessage().initRequiredOptionMarker(cmd.requiredOptionMarker());
@@ -3612,8 +3625,6 @@ public class CommandLine {
                 commandSpec.usageMessage().initSortOptions(cmd.sortOptions());
                 commandSpec.usageMessage().initShowDefaultValues(cmd.showDefaultValues());
                 commandSpec.usageMessage().initHidden(cmd.hidden());
-
-                if (cmd.mixinStandardHelpOptions()) { commandSpec.addMixin("mixinStandardHelpOptions", extractCommandSpec(new AutoHelpMixin(), factory)); }
                 return true;
             }
             private static void initSubcommands(Command cmd, CommandSpec parent, IFactory factory) {
@@ -5108,6 +5119,7 @@ public class CommandLine {
     }
 
     static class AutoHelpMixin {
+        private static final String KEY = "mixinStandardHelpOptions";
 
         @Option(names = {"-h", "--help"}, usageHelp = true, description = "Show this help message and exit.")
         private boolean helpRequested;
