@@ -807,4 +807,59 @@ public class CommandLineModelTest {
             assertTrue(ex.getMessage().contains("while processing argument at or before arg[0] '-x' in [-x, a, b, c]: java.lang.ClassCastException: java.util.ArrayList"));
         }
     }
+
+    @Test
+    public void testMixinStandardHelpOptions_FalseByDefault() {
+        CommandSpec spec = CommandSpec.create();
+        assertFalse(spec.mixinStandardHelpOptions());
+    }
+
+    @Test
+    public void testMixinStandardHelpOptions_SettingToTrueAddsHelpOptions() {
+        CommandSpec spec = CommandSpec.create();
+        assertTrue(spec.mixins().isEmpty());
+        assertTrue(spec.optionsMap().isEmpty());
+        assertTrue(spec.posixOptionsMap().isEmpty());
+        assertTrue(spec.options().isEmpty());
+
+        spec.mixinStandardHelpOptions(true);
+        assertFalse(spec.mixins().isEmpty());
+        assertFalse(spec.optionsMap().isEmpty());
+        assertFalse(spec.posixOptionsMap().isEmpty());
+        assertFalse(spec.options().isEmpty());
+        assertTrue(spec.mixinStandardHelpOptions());
+
+        OptionSpec usageHelp = spec.posixOptionsMap().get('h');
+        assertSame(usageHelp, spec.optionsMap().get("--help"));
+        assertTrue(usageHelp.usageHelp());
+
+        OptionSpec versionHelp = spec.posixOptionsMap().get('V');
+        assertSame(versionHelp, spec.optionsMap().get("--version"));
+        assertTrue(versionHelp.versionHelp());
+    }
+
+    @Test
+    public void testMixinStandardHelpOptions_SettingToFalseRemovesHelpOptions() {
+        CommandSpec spec = CommandSpec.create();
+
+        spec.mixinStandardHelpOptions(true);
+        assertFalse(spec.mixins().isEmpty());
+        assertFalse(spec.optionsMap().isEmpty());
+        assertFalse(spec.posixOptionsMap().isEmpty());
+        assertFalse(spec.options().isEmpty());
+        assertTrue(spec.mixinStandardHelpOptions());
+
+        assertNotNull(spec.posixOptionsMap().get('h'));
+        assertNotNull(spec.optionsMap().get("--help"));
+
+        assertNotNull(spec.posixOptionsMap().get('V'));
+        assertNotNull(spec.optionsMap().get("--version"));
+
+        spec.mixinStandardHelpOptions(false);
+        assertTrue(spec.mixins().isEmpty());
+        assertTrue(spec.optionsMap().isEmpty());
+        assertTrue(spec.posixOptionsMap().isEmpty());
+        assertTrue(spec.options().isEmpty());
+        assertFalse(spec.mixinStandardHelpOptions());
+    }
 }

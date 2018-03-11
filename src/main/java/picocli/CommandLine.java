@@ -2762,7 +2762,18 @@ public class CommandLine {
              * @see Command#mixinStandardHelpOptions() */
             public CommandSpec mixinStandardHelpOptions(boolean newValue) {
                 if (newValue) { addMixin(AutoHelpMixin.KEY, CommandReflection.extractCommandSpec(new AutoHelpMixin(), new DefaultFactory())); }
-                else          { mixins.remove(AutoHelpMixin.KEY); }
+                else {
+                    CommandSpec helpMixin = mixins.remove(AutoHelpMixin.KEY);
+                    if (helpMixin != null) {
+                        options.removeAll(helpMixin.options);
+                        for (OptionSpec option : helpMixin.options()) {
+                            for (String name : option.names) {
+                                optionsByNameMap.remove(name);
+                                if (name.length() == 2 && name.startsWith("-")) { posixOptionsByKeyMap.remove(name.charAt(1)); }
+                            }
+                        }
+                    }
+                }
                 return this;
             }
 
