@@ -772,7 +772,7 @@ public class CommandLine {
     }
     /** Command line parse result handler that prints help if requested, and otherwise calls {@link #process(CommandLine.ParseResult)}
      * with the parse result. Facilitates implementation of the {@link IParseResultHandler2} interface.
-     * An example subclass can look like this:</p>
+     * <p>An example subclass can look like this:</p>
      * <pre>{@code
      * class MyResultHandler extends AbstractParseResultHandler {
      *     public List<Object> process(ParseResult parseResult) throws ExecutionException { ... }
