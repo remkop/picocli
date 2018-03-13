@@ -1067,9 +1067,9 @@ public class CommandLine {
      * <pre>
      * try {
      *     ParseResult parseResult = parseArgs(args);
-     *     return handler.handleParseResult(parseResult);
+     *     return handler.handleParseResult(parseResult, prototypeReturnValue);
      * } catch (ParameterException ex) {
-     *     return new DefaultExceptionHandler().handleException(ex, args);
+     *     return new DefaultExceptionHandler<R>().handleParseException(ex, prototypeReturnValue, args);
      * }
      * </pre>
      * <p>
@@ -1106,7 +1106,7 @@ public class CommandLine {
      *     ParseResult parseResult = parseArgs(args);
      *     handler.handleParseResult(parseResult);
      * } catch (ParameterException ex) {
-     *     new DefaultExceptionHandler<Void>().handleException(ex, null, (String[]) args);
+     *     new DefaultExceptionHandler<Void>().handleParseException(ex, null, (String[]) args);
      * }
      * </pre>
      * @param handler the function that will process the result of successfully parsing the command line arguments
