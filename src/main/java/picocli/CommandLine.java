@@ -92,8 +92,8 @@ import static picocli.CommandLine.Help.Column.Overflow.WRAP;
  * </p><h2>Example</h2>
  * <pre>import static picocli.CommandLine.*;
  *
- * &#064;Command(header = "Encrypt FILE(s), or standard input, to standard output or to the output file.",
- *          version = "v1.2.3", mixinStandardHelpOptions = true)
+ * &#064;Command(mixinStandardHelpOptions = true, version = "v3.0.0",
+ *         header = "Encrypt FILE(s), or standard input, to standard output or to the output file.")
  * public class Encrypt {
  *
  *     &#064;Parameters(type = File.class, description = "Any number of input files")
@@ -112,8 +112,8 @@ import static picocli.CommandLine.Help.Column.Overflow.WRAP;
  * public static void main(String... args) {
  *     Encrypt encrypt = new Encrypt();
  *     try {
- *         List&lt;CommandLine&gt; parsedCommands = new CommandLine(encrypt).parse(args);
- *         if (!CommandLine.printHelpIfRequested(parsedCommands, System.out, Help.Ansi.AUTO)) {
+ *         ParseResult parseResult = new CommandLine(encrypt).parseArgs(args);
+ *         if (!CommandLine.printHelpIfRequested(parseResult)) {
  *             runProgram(encrypt);
  *         }
  *     } catch (ParameterException ex) { // command line arguments could not be parsed
@@ -472,6 +472,15 @@ public class CommandLine {
     public List<CommandLine> parse(String... args) {
         return interpreter.parse(args);
     }
+    /** Parses the specified command line arguments and returns a list of {@code ParseResult} with the options, positional
+     * parameters, and subcommands (if any) that were recognized and initialized during the parsing process.
+     * <p>If parsing fails, a {@link ParameterException} is thrown.</p>
+     *
+     * @param args the command line arguments to parse
+     * @return a list with the top-level command and any subcommands initialized by this method
+     * @throws ParameterException if the specified command line arguments are invalid; use
+     *      {@link ParameterException#getCommandLine()} to get the command or subcommand whose user input was invalid
+     */
     public ParseResult parseArgs(String... args) {
         interpreter.parse(args);
         return interpreter.parseResult.build();
@@ -505,34 +514,39 @@ public class CommandLine {
          */
         List<Object> handleParseResult(List<CommandLine> parsedCommands, PrintStream out, Help.Ansi ansi) throws ExecutionException;
     }
+
     /**
      * Represents a function that can process the {@code ParseResult} object resulting from successfully
      * {@linkplain #parseArgs(String...) parsing} the command line arguments. This is a
      * <a href="https://docs.oracle.com/javase/8/docs/api/java/util/function/package-summary.html">functional interface</a>
-     * whose functional method is {@link IParseResultHandler2#handleParseResult(CommandLine.ParseResult)}.
+     * whose functional method is {@link IParseResultHandler2#handleParseResult(CommandLine.ParseResult, Object)}.
      * <p>
-     * Implementations of this functions can be passed to the {@link #parseWithHandlers(IParseResultHandler2, IExceptionHandler2, String...) CommandLine::parseWithHandler}
+     * Implementations of this function can be passed to the {@link #parseWithHandlers(IParseResultHandler2, Object, IExceptionHandler2, String...) CommandLine::parseWithHandlers}
      * methods to take some next step after the command line was successfully parsed.
      * </p><p>
      * This interface replaces the {@link IParseResultHandler} interface; it takes the parse result as a {@code ParseResult}
      * object instead of a List of {@code CommandLine} objects, and it has the freedom to select the {@link Help.Ansi} style
      * to use and what {@code PrintStreams} to print to.
      * </p>
+     * @param <R> the return type of this handler
      * @see RunFirst
      * @see RunLast
      * @see RunAll
      * @since 3.0 */
-    public static interface IParseResultHandler2 {
+    public static interface IParseResultHandler2<R> {
         /** Processes the {@code ParseResult} object resulting from successfully
-         * {@linkplain CommandLine#parseArgs(String...) parsing} the command line arguments and optionally returns a list of results.
+         * {@linkplain CommandLine#parseArgs(String...) parsing} the command line arguments and returns a return value.
          * @param parseResult the {@code ParseResult} that resulted from successfully parsing the command line arguments
-         * @return a list of results, or an empty list if there are no results
+         * @param prototypeReturnValue prototype return value, may be returned as is when the user requested help for example,
+         *                               or may be used to collect results from multiple subcommands, or may be used by the
+         *                               handler for internal processing and a completely different object is returned
+         * @return an object resulting from handling the parse result
          * @throws ParameterException if a help command was invoked for an unknown subcommand. Any {@code ParameterExceptions}
          *      thrown from this method are treated as if this exception was thrown during parsing and passed to the {@link IExceptionHandler2}
          * @throws ExecutionException if a problem occurred while processing the parse results; use
          *      {@link ExecutionException#getCommandLine()} to get the command or subcommand where processing failed
          */
-        List<Object> handleParseResult(ParseResult parseResult) throws ExecutionException;
+        R handleParseResult(ParseResult parseResult, R prototypeReturnValue) throws ExecutionException;
     }
     /**
      * Represents a function that can handle a {@code ParameterException} that occurred while
@@ -540,7 +554,7 @@ public class CommandLine {
      * <a href="https://docs.oracle.com/javase/8/docs/api/java/util/function/package-summary.html">functional interface</a>
      * whose functional method is {@link #handleException(CommandLine.ParameterException, PrintStream, CommandLine.Help.Ansi, String...)}.
      * <p>
-     * Implementations of this function can be passed to the {@link #parseWithHandlers(IParseResultHandler, PrintStream, Help.Ansi, IExceptionHandler, String...) CommandLine::parseWithHandler}
+     * Implementations of this function can be passed to the {@link #parseWithHandlers(IParseResultHandler, PrintStream, Help.Ansi, IExceptionHandler, String...) CommandLine::parseWithHandlers}
      * methods to handle situations when the command line could not be parsed.
      * </p>
      * @deprecated Use {@link IExceptionHandler2} instead.
@@ -563,45 +577,51 @@ public class CommandLine {
      * and {@code ExecutionExceptions} that occurred while executing the {@code Runnable} or {@code Callable} command.
      * <p>
      * Implementations of this interface can be passed to the
-     * {@link #parseWithHandlers(IParseResultHandler2, IExceptionHandler2, String...) CommandLine::parseWithHandler} method.
+     * {@link #parseWithHandlers(IParseResultHandler2, Object, IExceptionHandler2, String...) CommandLine::parseWithHandlers} method.
      * </p><p>
      * This interface replaces the {@link IParseResultHandler} interface.
      * </p>
+     * @param <R> the return type of this handler
      * @see DefaultExceptionHandler
      * @since 3.0 */
-    public static interface IExceptionHandler2 {
+    public static interface IExceptionHandler2<R> {
         /** Handles a {@code ParameterException} that occurred while {@linkplain #parseArgs(String...) parsing} the command
          * line arguments and optionally returns a list of results.
          * @param ex the ParameterException describing the problem that occurred while parsing the command line arguments,
          *           and the CommandLine representing the command or subcommand whose input was invalid
+         * @param prototypeReturnValue prototype return value, may be returned as is or may be used by the
+         *                               handler for internal processing and a completely different object is returned
          * @param args the command line arguments that could not be parsed
-         * @return a list of results, or an empty list if there are no results
+         * @return an object resulting from handling the exception
          */
-        List<Object> handleParseException(ParameterException ex, String... args);
+        R handleParseException(ParameterException ex, R prototypeReturnValue, String[] args);
         /** Handles a {@code ExecutionException} that occurred while executing the {@code Runnable} or
          * {@code Callable} command and optionally returns a list of results.
          * @param ex the ExecutionException describing the problem that occurred while executing the {@code Runnable} or
          *          {@code Callable} command, and the CommandLine representing the command or subcommand that was being executed
+         * @param prototypeReturnValue prototype return value, may be returned as is or may be used by the
+         *                               handler for internal processing and a completely different object is returned
          * @param parseResult the result of parsing the command line arguments
-         * @return a list of results, or an empty list if there are no results
+         * @return an object resulting from handling the exception
          */
-        List<Object> handleExecutionException(ExecutionException ex, ParseResult parseResult);
+        R handleExecutionException(ExecutionException ex, R prototypeReturnValue, ParseResult parseResult);
     }
 
     /** Abstract superclass for {@link IParseResultHandler2} and {@link IExceptionHandler2} implementations.
      * <p>Note that {@code AbstractHandler} is a generic type. This, along with the abstract {@code self} method,
      * allows method chaining to work properly in subclasses, without the need for casts. An example subclass can look like this:</p>
      * <pre>{@code
-     * class MyResultHandler extends AbstractHandler<MyResultHandler> implements IParseResultHandler2 {
+     * class MyResultHandler extends AbstractHandler<MyReturnType, MyResultHandler> implements IParseResultHandler2<MyReturnType> {
+     *
+     *     public MyReturnType handleParseResult(ParseResult parseResult, MyReturnType prototypeReturnValue) { ... }
      *
      *     protected MyResultHandler self() { return this; }
-     *
-     *     public List<Object> handleParseResult(ParseResult parseResult) { ... }
      * }
      * }</pre>
+     * @param <R> the return type of this handler
      * @param <T> The type of the handler subclass; for fluent API method chaining
      * @since 3.0 */
-    public static abstract class AbstractHandler<T extends AbstractHandler> {
+    public static abstract class AbstractHandler<R, T extends AbstractHandler<R, T>> {
         private Help.Ansi ansi = Help.Ansi.AUTO;
         private Integer exitCode;
         private PrintStream out = System.out;
@@ -627,10 +647,10 @@ public class CommandLine {
          * the handler should not call {@link System#exit(int)} after processing completes. */
         public boolean hasExitCode() { return exitCode != null; }
 
-        /** Convenience method for subclasses that returns the specified list of result objects if no exit code was set,
+        /** Convenience method for subclasses that returns the specified result object if no exit code was set,
          * or otherwise, if an exit code {@linkplain #andExit(int) was set}, calls {@code System.exit} with the configured
          * exit code to terminate the currently running Java virtual machine. */
-        protected List<Object> returnResultOrExit(List<Object> result) {
+        protected R returnResultOrExit(R result) {
             if (hasExitCode()) { System.exit(exitCode()); }
             return result;
         }
@@ -658,40 +678,45 @@ public class CommandLine {
      * <pre>
      *     err().println(paramException.getMessage());
      *     paramException.getCommandLine().usage(err(), ansi());
-     *     if (hasExitCode()) System.exit(exitCode()); else return Collections.emptyList();
+     *     if (hasExitCode()) System.exit(exitCode()); else return prototypeReturnValue;
      * </pre>
      * <p>{@code ExecutionExceptions} that occurred while executing the {@code Runnable} or {@code Callable} command are simply rethrown and not handled.</p>
      * @since 2.0 */
     @SuppressWarnings("deprecation")
-    public static class DefaultExceptionHandler extends AbstractHandler<DefaultExceptionHandler> implements IExceptionHandler, IExceptionHandler2 {
+    public static class DefaultExceptionHandler<R> extends AbstractHandler<R, DefaultExceptionHandler<R>> implements IExceptionHandler, IExceptionHandler2<R> {
         public List<Object> handleException(ParameterException ex, PrintStream out, Help.Ansi ansi, String... args) {
-            out.println(ex.getMessage());
-            ex.getCommandLine().usage(out, ansi);
-            return returnResultOrExit(Collections.emptyList());
-        }
+            internalHandleParseException(ex, out, ansi, args); return Collections.<Object>emptyList(); }
 
         /** Prints the message of the specified exception, followed by the usage message for the command or subcommand
          * whose input was invalid, to the stream returned by {@link #err()}.
          * @param ex the ParameterException describing the problem that occurred while parsing the command line arguments,
          *           and the CommandLine representing the command or subcommand whose input was invalid
+         * @param prototypeReturnValue prototype return value, returned as is unless an exit code is set
          * @param args the command line arguments that could not be parsed
          * @return the empty list
          * @since 3.0 */
-        public List<Object> handleParseException(ParameterException ex, String... args) { return handleException(ex, err(), ansi(), args); }
+        public R handleParseException(ParameterException ex, R prototypeReturnValue, String[] args) {
+            internalHandleParseException(ex, err(), ansi(), args); return returnResultOrExit(prototypeReturnValue); }
+
+        private void internalHandleParseException(ParameterException ex, PrintStream out, Help.Ansi ansi, String[] args) {
+            out.println(ex.getMessage());
+            ex.getCommandLine().usage(out, ansi);
+        }
 
         /** This implementation always simply rethrows the specified exception.
          * @param ex the ExecutionException describing the problem that occurred while executing the {@code Runnable} or {@code Callable} command
+         * @param prototypeReturnValue ignored
          * @param parseResult the result of parsing the command line arguments
          * @return nothing: this method always rethrows the specified exception
          * @throws ExecutionException always rethrows the specified exception
          * @since 3.0 */
-        public List<Object> handleExecutionException(ExecutionException ex, ParseResult parseResult) { throw ex; }
-        @Override protected DefaultExceptionHandler self() { return this; }
+        public R handleExecutionException(ExecutionException ex, R prototypeReturnValue, ParseResult parseResult) { throw ex; }
+        @Override protected DefaultExceptionHandler<R> self() { return this; }
     }
 
     /** @deprecated use {@link #printHelpIfRequested(List, PrintStream, PrintStream, Help.Ansi)} instead
      * @since 2.0 */
-    public static boolean printHelpIfRequested(List<CommandLine> parsedCommands, PrintStream out, Help.Ansi ansi) {
+    @Deprecated public static boolean printHelpIfRequested(List<CommandLine> parsedCommands, PrintStream out, Help.Ansi ansi) {
         return printHelpIfRequested(parsedCommands, out, out, ansi);
     }
 
@@ -737,18 +762,19 @@ public class CommandLine {
                 if (parsed.getCommand() instanceof IHelpCommandInitializable) {
                     ((IHelpCommandInitializable) parsed.getCommand()).init(parsed, ansi, out, err);
                 }
-                execute(parsed);
+                execute(parsed, new ArrayList<Object>());
                 return true;
             }
         }
         return false;
     }
-    private static Object execute(CommandLine parsed) {
+    private static List<Object> execute(CommandLine parsed, List<Object> executionResult) {
         Object command = parsed.getCommand();
         if (command instanceof Runnable) {
             try {
                 ((Runnable) command).run();
-                return null;
+                executionResult.add(null); // for compatibility with picocli 2.x
+                return executionResult;
             } catch (ParameterException ex) {
                 throw ex;
             } catch (ExecutionException ex) {
@@ -759,7 +785,8 @@ public class CommandLine {
         } else if (command instanceof Callable) {
             try {
                 @SuppressWarnings("unchecked") Callable<Object> callable = (Callable<Object>) command;
-                return callable.call();
+                executionResult.add(callable.call());
+                return executionResult;
             } catch (ParameterException ex) {
                 throw ex;
             } catch (ExecutionException ex) {
@@ -770,31 +797,38 @@ public class CommandLine {
         }
         throw new ExecutionException(parsed, "Parsed command (" + command + ") is not Runnable or Callable");
     }
-    /** Command line parse result handler that prints help if requested, and otherwise calls {@link #process(CommandLine.ParseResult)}
-     * with the parse result. Facilitates implementation of the {@link IParseResultHandler2} interface.
-     * <p>An example subclass can look like this:</p>
+    /** Command line parse result handler that returns a value. This handler prints help if requested, and otherwise calls
+     * {@link #process(CommandLine.ParseResult, R)} with the parse result. Facilitates implementation of the {@link IParseResultHandler2} interface.
+     * <p>Note that {@code AbstractParseResultHandler} is a generic type. This, along with the abstract {@code self} method,
+     * allows method chaining to work properly in subclasses, without the need for casts. An example subclass can look like this:</p>
      * <pre>{@code
-     * class MyResultHandler extends AbstractParseResultHandler {
-     *     public List<Object> process(ParseResult parseResult) throws ExecutionException { ... }
+     * class MyResultHandler extends AbstractParseResultHandler<MyReturnType> {
+     *
+     *     protected MyReturnType process(ParseResult parseResult, MyReturnType prototypeReturnValue) throws ExecutionException { ... }
+     *
+     *     protected MyResultHandler self() { return this; }
      * }
      * }</pre>
      * @since 3.0 */
-    public abstract static class AbstractParseResultHandler extends AbstractHandler<AbstractParseResultHandler> implements IParseResultHandler2 {
-        /** Prints help if requested, and otherwise calls {@link #process(CommandLine.ParseResult)}.
+    public abstract static class AbstractParseResultHandler<R> extends AbstractHandler<R, AbstractParseResultHandler<R>> implements IParseResultHandler2<R> {
+        /** Prints help if requested, and otherwise calls {@link #process(CommandLine.ParseResult, R)}.
          * Finally, either a list of result objects is returned, or the JVM is terminated if an exit code {@linkplain #andExit(int) was set}.
          *
          * @param parseResult the {@code ParseResult} that resulted from successfully parsing the command line arguments
-         * @return an empty list if help was requested, or a list containing the execution results
+         * @param prototypeReturnValue prototype return value, may be returned as is when the user requested help for example,
+         *                               or may be used to collect results from multiple subcommands, or may be used by the
+         *                               handler for internal processing and a completely different object is returned
+         * @return the result of processing parse results, may be the specified prototype or some other object
          * @throws ParameterException if the {@link HelpCommand HelpCommand} was invoked for an unknown subcommand. Any {@code ParameterExceptions}
          *      thrown from this method are treated as if this exception was thrown during parsing and passed to the {@link IExceptionHandler2}
          * @throws ExecutionException if a problem occurred while processing the parse results; client code can use
          *      {@link ExecutionException#getCommandLine()} to get the command or subcommand where processing failed
          */
-        public List<Object> handleParseResult(ParseResult parseResult) throws ExecutionException {
+        public R handleParseResult(ParseResult parseResult, R prototypeReturnValue) throws ExecutionException {
             if (printHelpIfRequested(parseResult.asCommandLineList(), out(), err(), ansi())) {
-                return returnResultOrExit(Collections.<Object>emptyList());
+                return returnResultOrExit(prototypeReturnValue);
             }
-            return returnResultOrExit(process(parseResult));
+            return returnResultOrExit(process(parseResult, prototypeReturnValue));
         }
 
         /** Processes the specified {@code ParseResult} and returns the result as a list of objects.
@@ -802,20 +836,61 @@ public class CommandLine {
          * rethrowing an {@code ExecutionException} that details the problem and captures the offending {@code CommandLine} object.
          *
          * @param parseResult the {@code ParseResult} that resulted from successfully parsing the command line arguments
-         * @return the result of processing parse results, may be an empty list but not {@code null}
+         * @param prototypeReturnValue prototype return value, may be returned as is when the user requested help for example,
+         *                               or may be used to collect results from multiple subcommands, or may be used by the
+         *                               handler for internal processing and a completely different object is returned
+         * @return the result of processing parse results, may be the specified prototype or some other object
          * @throws ExecutionException if a problem occurred while processing the parse results; client code can use
          *      {@link ExecutionException#getCommandLine()} to get the command or subcommand where processing failed
          */
-        protected abstract List<Object> process(ParseResult parseResult) throws ExecutionException;
-        @Override protected AbstractParseResultHandler self() { return this; }
+        protected abstract R process(ParseResult parseResult, R prototypeReturnValue) throws ExecutionException;
+    }
+    /** Command line parse result handler that does not return a result. Prints help if requested, and otherwise calls
+     * {@link #process(CommandLine.ParseResult)} with the parse result. Facilitates implementation of the {@link IParseResultHandler2} interface.
+     * <p>An example subclass can look like this:</p>
+     * <pre>{@code
+     * class MyResultHandler extends AbstractSimpleParseResultHandler {
+     *     protected void process(ParseResult parseResult) throws ExecutionException { ... }
+     * }
+     * }</pre>
+     * @since 3.0 */
+    public abstract static class AbstractSimpleParseResultHandler extends AbstractHandler<Void, AbstractSimpleParseResultHandler> implements IParseResultHandler2<Void> {
+        /** Prints help if requested, and otherwise calls {@link #process(CommandLine.ParseResult)}.
+         * Finally, either a list of result objects is returned, or the JVM is terminated if an exit code {@linkplain #andExit(int) was set}.
+         *
+         * @param parseResult the {@code ParseResult} that resulted from successfully parsing the command line arguments
+         * @param ignored value returned as is
+         * @return the specified return value
+         * @throws ParameterException if the {@link HelpCommand HelpCommand} was invoked for an unknown subcommand. Any {@code ParameterExceptions}
+         *      thrown from this method are treated as if this exception was thrown during parsing and passed to the {@link IExceptionHandler2}
+         * @throws ExecutionException if a problem occurred while processing the parse results; client code can use
+         *      {@link ExecutionException#getCommandLine()} to get the command or subcommand where processing failed
+         */
+        public Void handleParseResult(ParseResult parseResult, Void ignored) throws ExecutionException {
+            if (printHelpIfRequested(parseResult.asCommandLineList(), out(), err(), ansi())) {
+                return returnResultOrExit(ignored);
+            }
+            process(parseResult);
+            return returnResultOrExit(ignored);
+        }
+        /** Processes the specified {@code ParseResult}.
+         * Implementations are responsible for catching any exceptions thrown in the {@code process} method, and
+         * rethrowing an {@code ExecutionException} that details the problem and captures the offending {@code CommandLine} object.
+         *
+         * @param parseResult the {@code ParseResult} that resulted from successfully parsing the command line arguments
+         * @throws ExecutionException if a problem occurred while processing the parse results; client code can use
+         *      {@link ExecutionException#getCommandLine()} to get the command or subcommand where processing failed
+         */
+        protected abstract void process(ParseResult parseResult) throws ExecutionException;
+        @Override protected AbstractSimpleParseResultHandler self() { return this; }
     }
 
     /**
      * Command line parse result handler that prints help if requested, and otherwise executes the top-level
      * {@code Runnable} or {@code Callable} command.
-     * For use in the {@link #parseWithHandlers(IParseResultHandler2, IExceptionHandler2, String...) parseWithHandler} methods.
+     * For use in the {@link #parseWithHandlers(IParseResultHandler2, Object, IExceptionHandler2, String...) parseWithHandler} methods.
      * @since 2.0 */
-    public static class RunFirst extends AbstractParseResultHandler implements IParseResultHandler {
+    public static class RunFirst extends AbstractParseResultHandler<List<Object>> implements IParseResultHandler {
         /** Prints help if requested, and otherwise executes the top-level {@code Runnable} or {@code Callable} command.
          * Finally, either a list of result objects is returned, or the JVM is terminated if an exit code {@linkplain #andExit(int) was set}.
          * If the top-level command does not implement either {@code Runnable} or {@code Callable}, an {@code ExecutionException}
@@ -833,7 +908,7 @@ public class CommandLine {
          */
         public List<Object> handleParseResult(List<CommandLine> parsedCommands, PrintStream out, Help.Ansi ansi) {
             if (printHelpIfRequested(parsedCommands, out, err(), ansi)) { return returnResultOrExit(Collections.emptyList()); }
-            return returnResultOrExit(Arrays.asList(execute(parsedCommands.get(0))));
+            return returnResultOrExit(execute(parsedCommands.get(0), new ArrayList<Object>()));
         }
         /** Executes the top-level {@code Runnable} or {@code Callable} subcommand.
          * If the top-level command does not implement either {@code Runnable} or {@code Callable}, an {@code ExecutionException}
@@ -845,14 +920,15 @@ public class CommandLine {
          * @throws ExecutionException if a problem occurred while processing the parse results; use
          *      {@link ExecutionException#getCommandLine()} to get the command or subcommand where processing failed
          * @since 3.0 */
-        protected List<Object> process(ParseResult parseResult) throws ExecutionException {
-            return Arrays.asList(execute(parseResult.commandSpec().commandLine())); // first
+        protected List<Object> process(ParseResult parseResult, List<Object> prototypeResult) throws ExecutionException {
+            return execute(parseResult.commandSpec().commandLine(), new ArrayList<Object>()); // first
         }
+        @Override protected RunFirst self() { return this; }
     }
     /**
      * Command line parse result handler that prints help if requested, and otherwise executes the most specific
      * {@code Runnable} or {@code Callable} subcommand.
-     * For use in the {@link #parseWithHandlers(IParseResultHandler2, IExceptionHandler2, String...) parseWithHandler} methods.
+     * For use in the {@link #parseWithHandlers(IParseResultHandler2, Object, IExceptionHandler2, String...) parseWithHandler} methods.
      * <p>
      * Something like this:</p>
      * <pre>{@code
@@ -887,7 +963,7 @@ public class CommandLine {
      * and {@link #call(Callable, PrintStream, PrintStream, Help.Ansi, String...) call} convenience methods.
      * </p>
      * @since 2.0 */
-    public static class RunLast extends AbstractParseResultHandler implements IParseResultHandler {
+    public static class RunLast extends AbstractParseResultHandler<List<Object>> implements IParseResultHandler {
         /** Prints help if requested, and otherwise executes the most specific {@code Runnable} or {@code Callable} subcommand.
          * Finally, either a list of result objects is returned, or the JVM is terminated if an exit code {@linkplain #andExit(int) was set}.
          * If the last (sub)command does not implement either {@code Runnable} or {@code Callable}, an {@code ExecutionException}
@@ -905,7 +981,7 @@ public class CommandLine {
          */
         public List<Object> handleParseResult(List<CommandLine> parsedCommands, PrintStream out, Help.Ansi ansi) {
             if (printHelpIfRequested(parsedCommands, out, err(), ansi)) { return returnResultOrExit(Collections.emptyList()); }
-            return returnResultOrExit(Arrays.asList(execute(parsedCommands.get(parsedCommands.size() - 1))));
+            return returnResultOrExit(execute(parsedCommands.get(parsedCommands.size() - 1), new ArrayList<Object>()));
         }
         /** Executes the most specific {@code Runnable} or {@code Callable} subcommand.
          * If the last (sub)command does not implement either {@code Runnable} or {@code Callable}, an {@code ExecutionException}
@@ -917,17 +993,18 @@ public class CommandLine {
          * @throws ExecutionException if a problem occurred while processing the parse results; use
          *      {@link ExecutionException#getCommandLine()} to get the command or subcommand where processing failed
          * @since 3.0 */
-        protected List<Object> process(ParseResult parseResult) throws ExecutionException {
+        protected List<Object> process(ParseResult parseResult, List<Object> prototypeResult) throws ExecutionException {
             List<CommandLine> parsedCommands = parseResult.asCommandLineList();
-            return Arrays.asList(execute(parsedCommands.get(parsedCommands.size() - 1)));
+            return execute(parsedCommands.get(parsedCommands.size() - 1), prototypeResult);
         }
+        @Override protected RunLast self() { return this; }
     }
     /**
      * Command line parse result handler that prints help if requested, and otherwise executes the top-level command and
      * all subcommands as {@code Runnable} or {@code Callable}.
-     * For use in the {@link #parseWithHandlers(IParseResultHandler2, IExceptionHandler2, String...) parseWithHandler} methods.
+     * For use in the {@link #parseWithHandlers(IParseResultHandler2, Object, IExceptionHandler2, String...) parseWithHandler} methods.
      * @since 2.0 */
-    public static class RunAll extends AbstractParseResultHandler implements IParseResultHandler {
+    public static class RunAll extends AbstractParseResultHandler<List<Object>> implements IParseResultHandler {
         /** Prints help if requested, and otherwise executes the top-level command and all subcommands as {@code Runnable}
          * or {@code Callable}. Finally, either a list of result objects is returned, or the JVM is terminated if an exit
          * code {@linkplain #andExit(int) was set}. If any of the {@code CommandLine} commands does not implement either
@@ -948,7 +1025,7 @@ public class CommandLine {
             if (printHelpIfRequested(parsedCommands, out, err(), ansi)) { return returnResultOrExit(Collections.emptyList()); }
             List<Object> result = new ArrayList<Object>();
             for (CommandLine parsed : parsedCommands) {
-                result.add(execute(parsed));
+                execute(parsed, result);
             }
             return returnResultOrExit(result);
         }
@@ -962,24 +1039,24 @@ public class CommandLine {
          * @throws ExecutionException if a problem occurred while processing the parse results; use
          *      {@link ExecutionException#getCommandLine()} to get the command or subcommand where processing failed
          * @since 3.0 */
-        protected List<Object> process(ParseResult parseResult) throws ExecutionException {
-            List<Object> result = new ArrayList<Object>();
-            result.add(execute(parseResult.commandSpec().commandLine()));
+        protected List<Object> process(ParseResult parseResult, List<Object> prototypeResult) throws ExecutionException {
+            execute(parseResult.commandSpec().commandLine(), prototypeResult);
             while (parseResult.hasSubcommand()) {
                 parseResult = parseResult.subcommand();
-                result.add(execute(parseResult.commandSpec().commandLine()));
+                execute(parseResult.commandSpec().commandLine(), prototypeResult);
             }
-            return returnResultOrExit(result);
+            return returnResultOrExit(prototypeResult);
         }
+        @Override protected RunAll self() { return this; }
     }
 
-    /** @deprecated use {@link #parseWithHandler(IParseResultHandler2, String...)} instead
+    /** @deprecated use {@link #parseWithHandler(IParseResultHandler2, Object, String[])} instead
      * @since 2.0 */
     @Deprecated public List<Object> parseWithHandler(IParseResultHandler handler, PrintStream out, String... args) {
         return parseWithHandlers(handler, out, Help.Ansi.AUTO, new DefaultExceptionHandler(), args);
     }
     /**
-     * Returns the result of calling {@link #parseWithHandlers(IParseResultHandler2, IExceptionHandler2, String...)} with
+     * Returns the result of calling {@link #parseWithHandlers(IParseResultHandler2, Object, IExceptionHandler2, String...)} with
      * a new {@link DefaultExceptionHandler} in addition to the specified parse result handler and the specified command line arguments.
      * <p>
      * This is a convenience method intended to offer the same ease of use as the {@link #run(Runnable, PrintStream, PrintStream, Help.Ansi, String...) run}
@@ -990,7 +1067,7 @@ public class CommandLine {
      * <pre>
      * try {
      *     ParseResult parseResult = parseArgs(args);
-     *     return handler.handleParseResult(parsedCommands);
+     *     return handler.handleParseResult(parseResult);
      * } catch (ParameterException ex) {
      *     return new DefaultExceptionHandler().handleException(ex, args);
      * }
@@ -1005,19 +1082,43 @@ public class CommandLine {
      *   <li>{@link RunAll} handler prints help if requested, and otherwise executes all recognized commands and subcommands as {@code Runnable} or {@code Callable} tasks.</li>
      *   <li>{@link DefaultExceptionHandler} prints the error message followed by usage help</li>
      * </ul>
+     * @param <R> the return type of this handler
      * @param handler the function that will process the result of successfully parsing the command line arguments
+     * @param prototypeReturnValue prototype return value, may be returned as is when the user requested help for example,
+     *                               or may be used to collect results from multiple subcommands, or may be used by the
+     *                               handler for internal processing and a completely different object is returned
      * @param args the command line arguments
-     * @return a list of results, or an empty list if there are no results
+     * @return an object resulting from handling the parse result or the exception that occurred while parsing the input
      * @throws ExecutionException if the command line arguments were parsed successfully but a problem occurred while processing the
      *      parse results; use {@link ExecutionException#getCommandLine()} to get the command or subcommand where processing failed
      * @see RunLast
      * @see RunAll
      * @since 3.0 */
-    public List<Object> parseWithHandler(IParseResultHandler2 handler, String... args) {
-        return parseWithHandlers(handler, new DefaultExceptionHandler(), args);
+    public <R> R parseWithHandler(IParseResultHandler2<R> handler, R prototypeReturnValue, String[] args) {
+        return parseWithHandlers(handler, prototypeReturnValue, new DefaultExceptionHandler<R>(), args);
+    }
+    /**
+     * Calls {@link #parseWithSimpleHandlers(AbstractSimpleParseResultHandler, IExceptionHandler2, String...)} with
+     * a new {@link DefaultExceptionHandler} in addition to the specified parse result handler and the specified command line arguments.
+     * <p>Calling this method roughly expands to:</p>
+     * <pre>
+     * try {
+     *     ParseResult parseResult = parseArgs(args);
+     *     handler.handleParseResult(parseResult);
+     * } catch (ParameterException ex) {
+     *     new DefaultExceptionHandler<Void>().handleException(ex, null, (String[]) args);
+     * }
+     * </pre>
+     * @param handler the function that will process the result of successfully parsing the command line arguments
+     * @param args the command line arguments
+     * @throws ExecutionException if the command line arguments were parsed successfully but a problem occurred while processing the
+     *      parse results; use {@link ExecutionException#getCommandLine()} to get the command or subcommand where processing failed
+     * @since 3.0 */
+    public void parseWithSimpleHandler(AbstractSimpleParseResultHandler handler, String... args) {
+        parseWithSimpleHandlers(handler, new DefaultExceptionHandler<Void>(), args);
     }
 
-    /** @deprecated use {@link #parseWithHandlers(IParseResultHandler2, IExceptionHandler2, String...)} instead
+    /** @deprecated use {@link #parseWithHandlers(IParseResultHandler2, Object, IExceptionHandler2, String...)} instead
      * @since 2.0 */
     @Deprecated public List<Object> parseWithHandlers(IParseResultHandler handler, PrintStream out, Help.Ansi ansi, IExceptionHandler exceptionHandler, String... args) {
         try {
@@ -1042,11 +1143,11 @@ public class CommandLine {
      * ParseResult parseResult = null;
      * try {
      *     parseResult = parseArgs(args);
-     *     return handler.handleParseResult(parseResult);
+     *     return handler.handleParseResult(parseResult, prototypeReturnValue);
      * } catch (ParameterException ex) {
-     *     return exceptionHandler.handleParseException(ex, args);
+     *     return exceptionHandler.handleParseException(ex, prototypeReturnValue, (String[]) args);
      * } catch (ExecutionException ex) {
-     *     return exceptionHandler.handleExecutionException(ex, parseResult);
+     *     return exceptionHandler.handleExecutionException(ex, prototypeReturnValue, parseResult);
      * }
      * </pre>
      * <p>
@@ -1061,24 +1162,64 @@ public class CommandLine {
      * </ul>
      *
      * @param handler the function that will process the result of successfully parsing the command line arguments
+     * @param prototypeReturnValue prototype return value, may be returned as is when the user requested help for example,
+     *                               or may be used to collect results from multiple subcommands, or may be used by the
+     *                               handler for internal processing and a completely different object is returned
      * @param exceptionHandler the function that can handle the {@code ParameterException} thrown when the command line arguments are invalid
      * @param args the command line arguments
-     * @return a list of results produced by the {@code IParseResultHandler2} or the {@code IExceptionHandler2}, or an empty list if there are no results
+     * @return an object resulting from handling the parse result or the exception that occurred while parsing the input
      * @throws ExecutionException if the command line arguments were parsed successfully but a problem occurred while processing the parse
      *      result {@code ParseResult} object; use {@link ExecutionException#getCommandLine()} to get the command or subcommand where processing failed
+     * @param <R> the return type of the result handler and exception handler
      * @see RunLast
      * @see RunAll
      * @see DefaultExceptionHandler
      * @since 3.0 */
-    public List<Object> parseWithHandlers(IParseResultHandler2 handler, IExceptionHandler2 exceptionHandler, String... args) {
+    public <R> R parseWithHandlers(IParseResultHandler2<R> handler, R prototypeReturnValue, IExceptionHandler2<R> exceptionHandler, String... args) {
         ParseResult parseResult = null;
         try {
             parseResult = parseArgs(args);
-            return handler.handleParseResult(parseResult);
+            return handler.handleParseResult(parseResult, prototypeReturnValue);
         } catch (ParameterException ex) {
-            return exceptionHandler.handleParseException(ex, args);
+            return exceptionHandler.handleParseException(ex, prototypeReturnValue, (String[]) args);
         } catch (ExecutionException ex) {
-            return exceptionHandler.handleExecutionException(ex, parseResult);
+            return exceptionHandler.handleExecutionException(ex, prototypeReturnValue, parseResult);
+        }
+    }
+    /**
+     * Tries to {@linkplain #parseArgs(String...) parse} the specified command line arguments, and if successful, delegates
+     * the processing of the resulting {@code ParseResult} object to the specified {@linkplain AbstractSimpleParseResultHandler handler}.
+     * If the command line arguments were invalid, the {@code ParameterException} thrown from the {@code parse} method
+     * is caught and passed to the specified {@link IExceptionHandler2}.
+     * <p>Calling this method roughly expands to:</p>
+     * <pre>
+     * ParseResult parseResult = null;
+     * try {
+     *     parseResult = parseArgs(args);
+     *     handleParseResult(parseResult);
+     * } catch (ParameterException ex) {
+     *     exceptionHandler.handleParseException(ex, null, (String[]) args);
+     * } catch (ExecutionException ex) {
+     *     exceptionHandler.handleExecutionException(ex, null, parseResult);
+     * }
+     * </pre>
+     *
+     * @param handler the function that will process the result of successfully parsing the command line arguments
+     * @param exceptionHandler the function that can handle the {@code ParameterException} thrown when the command line arguments are invalid
+     * @param args the command line arguments
+     * @throws ExecutionException if the command line arguments were parsed successfully but a problem occurred while processing the parse
+     *      result {@code ParseResult} object; use {@link ExecutionException#getCommandLine()} to get the command or subcommand where processing failed
+     * @see DefaultExceptionHandler
+     * @since 3.0 */
+    public void parseWithSimpleHandlers(AbstractSimpleParseResultHandler handler, IExceptionHandler2<Void> exceptionHandler, String... args) {
+        ParseResult parseResult = null;
+        try {
+            parseResult = parseArgs(args);
+            handler.handleParseResult(parseResult, null);
+        } catch (ParameterException ex) {
+            exceptionHandler.handleParseException(ex, null, (String[]) args);
+        } catch (ExecutionException ex) {
+            exceptionHandler.handleExecutionException(ex, null, parseResult);
         }
     }
     /**
@@ -1239,7 +1380,7 @@ public class CommandLine {
      * @throws InitializationException if the specified command object does not have a {@link Command}, {@link Option} or {@link Parameters} annotation
      * @throws ExecutionException if the Callable throws an exception
      * @return {@code null} if an error occurred while parsing the command line options, otherwise returns the result of calling the Callable
-     * @see #parseWithHandlers(IParseResultHandler2, IExceptionHandler2, String...)
+     * @see #parseWithHandlers(IParseResultHandler2, Object, IExceptionHandler2, String...)
      * @since 3.0
      */
     public static <C extends Callable<T>, T> T call(C callable, String... args) {
@@ -1258,7 +1399,7 @@ public class CommandLine {
      * @throws InitializationException if the specified command object does not have a {@link Command}, {@link Option} or {@link Parameters} annotation
      * @throws ExecutionException if the Callable throws an exception
      * @return {@code null} if an error occurred while parsing the command line options, otherwise returns the result of calling the Callable
-     * @see #parseWithHandlers(IParseResultHandler2, IExceptionHandler2, String...)
+     * @see #parseWithHandlers(IParseResultHandler2, Object, IExceptionHandler2, String...)
      * @see RunLast
      */
     public static <C extends Callable<T>, T> T call(C callable, PrintStream out, String... args) {
@@ -1276,7 +1417,7 @@ public class CommandLine {
      * @throws InitializationException if the specified command object does not have a {@link Command}, {@link Option} or {@link Parameters} annotation
      * @throws ExecutionException if the Callable throws an exception
      * @return {@code null} if an error occurred while parsing the command line options, otherwise returns the result of calling the Callable
-     * @see #parseWithHandlers(IParseResultHandler2, IExceptionHandler2, String...)
+     * @see #parseWithHandlers(IParseResultHandler2, Object, IExceptionHandler2, String...)
      * @see RunLast
      */
     public static <C extends Callable<T>, T> T call(C callable, PrintStream out, Help.Ansi ansi, String... args) {
@@ -1296,7 +1437,7 @@ public class CommandLine {
      * <p>
      * If the specified Callable command has subcommands, the {@linkplain RunLast last} subcommand specified on the
      * command line is executed.
-     * Commands with subcommands may be interested in calling the {@link #parseWithHandler(IParseResultHandler2, String...) parseWithHandler}
+     * Commands with subcommands may be interested in calling the {@link #parseWithHandler(IParseResultHandler2, Object, String[]) parseWithHandler}
      * method with the {@link RunAll} handler or a custom handler.
      * </p>
      * @param callable the command to call when {@linkplain #parse(String...) parsing} succeeds.
@@ -1309,13 +1450,13 @@ public class CommandLine {
      * @throws InitializationException if the specified command object does not have a {@link Command}, {@link Option} or {@link Parameters} annotation
      * @throws ExecutionException if the Callable throws an exception
      * @return {@code null} if an error occurred while parsing the command line options, or if help was requested and printed. Otherwise returns the result of calling the Callable
-     * @see #parseWithHandlers(IParseResultHandler2, IExceptionHandler2, String...)
+     * @see #parseWithHandlers(IParseResultHandler2, Object, IExceptionHandler2, String...)
      * @see RunLast
      * @since 3.0
      */
     public static <C extends Callable<T>, T> T call(C callable, PrintStream out, PrintStream err, Help.Ansi ansi, String... args) {
         CommandLine cmd = new CommandLine(callable);
-        List<Object> results = cmd.parseWithHandlers(new RunLast().useOut(out).useAnsi(ansi), new DefaultExceptionHandler().useErr(err).useAnsi(ansi), args);
+        List<Object> results = cmd.parseWithHandlers(new RunLast().useOut(out).useAnsi(ansi), new ArrayList<Object>(), new DefaultExceptionHandler<List<Object>>().useErr(err).useAnsi(ansi), args);
         @SuppressWarnings("unchecked") T result = results == null || results.isEmpty() ? null : (T) results.get(0);
         return result;
     }
@@ -1329,7 +1470,7 @@ public class CommandLine {
      * @see #run(Runnable, PrintStream, PrintStream, Help.Ansi, String...)
      * @throws InitializationException if the specified command object does not have a {@link Command}, {@link Option} or {@link Parameters} annotation
      * @throws ExecutionException if the Runnable throws an exception
-     * @see #parseWithHandlers(IParseResultHandler2, IExceptionHandler2, String...)
+     * @see #parseWithHandlers(IParseResultHandler2, Object, IExceptionHandler2, String...)
      * @see RunLast
      * @since 3.0
      */
@@ -1346,7 +1487,7 @@ public class CommandLine {
      * @see #run(Runnable, PrintStream, PrintStream, Help.Ansi, String...)
      * @throws InitializationException if the specified command object does not have a {@link Command}, {@link Option} or {@link Parameters} annotation
      * @throws ExecutionException if the Runnable throws an exception
-     * @see #parseWithHandlers(IParseResultHandler2, IExceptionHandler2, String...)
+     * @see #parseWithHandler(IParseResultHandler2, Object, String[])
      * @see RunLast
      */
     public static <R extends Runnable> void run(R runnable, PrintStream out, String... args) {
@@ -1362,7 +1503,7 @@ public class CommandLine {
      * @see #run(Runnable, PrintStream, PrintStream, Help.Ansi, String...)
      * @throws InitializationException if the specified command object does not have a {@link Command}, {@link Option} or {@link Parameters} annotation
      * @throws ExecutionException if the Runnable throws an exception
-     * @see #parseWithHandlers(IParseResultHandler2, IExceptionHandler2, String...)
+     * @see #parseWithHandlers(IParseResultHandler2, Object, IExceptionHandler2, String...)
      * @see RunLast
      */
     public static <R extends Runnable> void run(R runnable, PrintStream out, Help.Ansi ansi, String... args) {
@@ -1380,7 +1521,7 @@ public class CommandLine {
      * <p>
      * If the specified Runnable command has subcommands, the {@linkplain RunLast last} subcommand specified on the
      * command line is executed.
-     * Commands with subcommands may be interested in calling the {@link #parseWithHandler(IParseResultHandler2, String...) parseWithHandler}
+     * Commands with subcommands may be interested in calling the {@link #parseWithHandler(IParseResultHandler2, Object, String[]) parseWithHandler}
      * method with the {@link RunAll} handler or a custom handler.
      * </p><p>
      * From picocli v2.0, this method prints usage help or version help if {@linkplain #printHelpIfRequested(List, PrintStream, PrintStream, Help.Ansi) requested},
@@ -1394,13 +1535,13 @@ public class CommandLine {
      * @param <R> the annotated object must implement Runnable
      * @throws InitializationException if the specified command object does not have a {@link Command}, {@link Option} or {@link Parameters} annotation
      * @throws ExecutionException if the Runnable throws an exception
-     * @see #parseWithHandlers(IParseResultHandler2, IExceptionHandler2, String...)
+     * @see #parseWithHandlers(IParseResultHandler2, Object, IExceptionHandler2, String...)
      * @see RunLast
      * @since 3.0
      */
     public static <R extends Runnable> void run(R runnable, PrintStream out, PrintStream err, Help.Ansi ansi, String... args) {
         CommandLine cmd = new CommandLine(runnable);
-        cmd.parseWithHandlers(new RunLast().useOut(out).useAnsi(ansi), new DefaultExceptionHandler().useErr(err).useAnsi(ansi), args);
+        cmd.parseWithHandlers(new RunLast().useOut(out).useAnsi(ansi), new ArrayList<Object>(), new DefaultExceptionHandler<List<Object>>().useErr(err).useAnsi(ansi), args);
     }
 
     /**
