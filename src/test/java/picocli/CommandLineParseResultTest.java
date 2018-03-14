@@ -185,7 +185,7 @@ public class CommandLineParseResultTest {
     }
 
     @Test
-    public void testPositionalValue_ReturnsNullForNonMatchedPosition() {
+    public void testRawPositionalValue_ReturnsNullForNonMatchedPosition() {
         class App {
             @Parameters(index = "0", arity = "0..1") int index0 = -1;
             @Parameters(index = "1", arity = "0..1") int index1 = -1;
@@ -202,7 +202,7 @@ public class CommandLineParseResultTest {
     }
 
     @Test
-    public void testPositionalValueWithDefault_ReturnsDefaultForNonMatchedPosition() {
+    public void testRawPositionalValueWithDefault_ReturnsDefaultForNonMatchedPosition() {
         class App {
             @Parameters(index = "0", arity = "0..1") int index0 = -1;
             @Parameters(index = "1", arity = "0..1") int index1 = -1;
@@ -219,7 +219,7 @@ public class CommandLineParseResultTest {
     }
 
     @Test
-    public void testTypedPositionalValue() {
+    public void testPositionalValue() {
         class App {
             @Parameters(index = "0", arity = "0..1") int index0 = -1;
             @Parameters(index = "1", arity = "0..1") int index1 = -1;
@@ -358,7 +358,7 @@ public class CommandLineParseResultTest {
     }
 
     @Test
-    public void testOptionValue() {
+    public void testRawOptionValue() {
         class App {
             @Option(names = {"-x", "++XX", "/XXX"}) String[] x;
             @Option(names = "-y") String y;
@@ -377,7 +377,7 @@ public class CommandLineParseResultTest {
     }
 
     @Test
-    public void testOptionValue_ByOptionSpec() {
+    public void testRawOptionValue_ByOptionSpec() {
         class App {
             @Option(names = {"-x", "++XX", "/XXX"}) String[] x;
             @Option(names = "-y") String y;
@@ -395,7 +395,7 @@ public class CommandLineParseResultTest {
     }
 
     @Test
-    public void testOptionValue_ByShortName() {
+    public void testRawOptionValue_ByShortName() {
         class App {
             @Option(names = {"-x", "++XX", "/XXX"}) String[] x;
             @Option(names = "-y") String y;
@@ -407,7 +407,7 @@ public class CommandLineParseResultTest {
     }
 
     @Test
-    public void testOptionValueWithDefault() {
+    public void testRawOptionValueWithDefault() {
         class App {
             @Option(names = {"-x", "++XX", "/XXX"}) String[] x;
             @Option(names = "-y") String y;
@@ -424,7 +424,7 @@ public class CommandLineParseResultTest {
     }
 
     @Test
-    public void testOptionValueWithDefault_ByShortName() {
+    public void testRawOptionValueWithDefault_ByShortName() {
         class App {
             @Option(names = {"-x", "++XX", "/XXX"}) String[] x;
             @Option(names = "-y") String y;
@@ -440,7 +440,7 @@ public class CommandLineParseResultTest {
     }
 
     @Test
-    public void testOptionValueWithDefault_returnsDefaultForNonMatched() {
+    public void testRawOptionValueWithDefault_returnsDefaultForNonMatched() {
         class App {
             @Option(names = "-y") String y;
         }
@@ -453,7 +453,7 @@ public class CommandLineParseResultTest {
     }
 
     @Test
-    public void testOptionValues() {
+    public void testRawOptionValues() {
         class App {
             @Option(names = {"-x", "++XX", "/XXX"}) int[] x;
             @Option(names = "-y") String y;
@@ -473,7 +473,7 @@ public class CommandLineParseResultTest {
     }
 
     @Test
-    public void testOptionValues_ByShortName() {
+    public void testRawOptionValues_ByShortName() {
         class App {
             @Option(names = {"-x", "++XX", "/XXX"}) int[] x;
             @Option(names = "-y") String y;
@@ -488,7 +488,7 @@ public class CommandLineParseResultTest {
     }
 
     @Test
-    public void testTypedOptionValue() {
+    public void testOptionValue() {
         class App {
             @Option(names = {"-x", "++XX", "/XXX"}) int[] x;
             @Option(names = "-y") double y;
@@ -507,8 +507,19 @@ public class CommandLineParseResultTest {
         assertEquals(Double.valueOf(3.14), parseResult.optionValue("-y", 3.14));
     }
 
+    @Test(expected = ClassCastException.class)
+    public void testOptionValueWrongType() {
+        class App {
+            @Option(names = "-x") int[] x;
+        }
+        CommandLine cmd = new CommandLine(new App());
+        ParseResult parseResult = cmd.parseArgs("-x", "123", "-x", "456");
+        long[] wrongType = {123L, 456L};
+        assertArrayEquals(wrongType, parseResult.optionValue("x", wrongType));
+    }
+
     @Test
-    public void testTypedOptionValue_ByShortName() {
+    public void testOptionValue_ByShortName() {
         class App {
             @Option(names = {"-x", "++XX", "/XXX"}) int[] x;
             @Option(names = "-y") double y;
@@ -522,7 +533,7 @@ public class CommandLineParseResultTest {
     }
 
     @Test
-    public void testTypedOptionValue_NullIfNotMatched() {
+    public void testOptionValue_NullIfNotMatched() {
         class App {
             @Option(names = "-y") String y = "initial";
         }
