@@ -4211,51 +4211,51 @@ public class CommandLine {
         /** Returns the command line arguments that were parsed. */
         public List<String> originalArgs()                  { return Collections.unmodifiableList(originalArgs); }
         /** Returns the command line argument String value of the option with the specified name, or {@code null} if no option with the specified name was matched. */
-        public String optionValue(char shortName)           { return optionValue(shortName, null); }
+        public String rawOptionValue(char shortName)        { return rawOptionValue(shortName, null); }
         /** Returns the command line argument String value of the option with the specified name, or {@code null} if no option with the specified name was matched.
          * @param name used to search the matched options. May be an alias of the option name that was actually specified on the command line.
          *      The specified name may include option name prefix characters or not. */
-        public String optionValue(String name)              { return optionValue(name, null); }
+        public String rawOptionValue(String name)           { return rawOptionValue(name, null); }
         /** Returns the command line argument String value of the specified option, or {@code null} if the specified option is {@code null}. */
-        public String optionValue(OptionSpec option)        { return optionValue(option, null); }
+        public String rawOptionValue(OptionSpec option)     { return rawOptionValue(option, null); }
         /** Returns the command line argument String value of the option with the specified name, or the specified default value if no option with the specified name was matched. */
-        public String optionValue(char shortName, String defaultValue)    { return optionValue(option(shortName), defaultValue); }
+        public String rawOptionValue(char shortName, String defaultValue)    { return rawOptionValue(option(shortName), defaultValue); }
         /** Returns the command line argument String value of the option with the specified name, or the specified default value if no option with the specified name was matched.
          * @param name used to search the matched options. May be an alias of the option name that was actually specified on the command line.
          *      The specified name may include option name prefix characters or not. */
-        public String optionValue(String name, String defaultValue)       { return optionValue(option(name), defaultValue); }
+        public String rawOptionValue(String name, String defaultValue)       { return rawOptionValue(option(name), defaultValue); }
         /** Returns the command line argument String value of the specified option, or the specified default value if the specified option is {@code null}. */
-        public String optionValue(OptionSpec option, String defaultValue) { return option == null || option.rawStringValues().isEmpty() ? defaultValue : option.rawStringValues().get(0); }
+        public String rawOptionValue(OptionSpec option, String defaultValue) { return option == null || option.rawStringValues().isEmpty() ? defaultValue : option.rawStringValues().get(0); }
         /** Returns the command line argument String value of the positional parameter at the specified position, or {@code null} if no positional parameter was matched at that position. */
-        public String positionalValue(int position)                       { return positionalValue(positional(position), position, null); }
+        public String rawPositionalValue(int position)                       { return rawPositionalValue(positional(position), position, null); }
         /** Returns the command line argument String value of the positional parameter at the specified position, or the specified default value if no positional parameter was matched at that position. */
-        public String positionalValue(int position, String defaultValue)  { return positionalValue(positional(position), position, defaultValue); }
+        public String rawPositionalValue(int position, String defaultValue)  { return rawPositionalValue(positional(position), position, defaultValue); }
         /** Returns the command line argument String value of the specified {@code PositionalParamSpec} at the specified position, or the specified default value if the specified {@code PositionalParamSpec} is {@code null}. */
-        private String positionalValue(PositionalParamSpec positional, int position, String defaultValue) {
+        private String rawPositionalValue(PositionalParamSpec positional, int position, String defaultValue) {
             if (positional == null) { return defaultValue; }
             int pos = position - positional.index().min;
             return positional.rawStringValues().size() <= pos ? defaultValue : positional.rawStringValues().get(pos);
         }
         /** Returns all command line argument String values matched for the option with the specified name, or an empty list if no option with the specified name was matched. */
-        public List<String> optionValues(char shortName)    { return optionValues(option(shortName)); }
+        public List<String> rawOptionValues(char shortName)    { return rawOptionValues(option(shortName)); }
         /** Returns all command line argument String values matched for the option with the specified name, or an empty list if no option with the specified name was matched.
          * @param name used to search the matched options. May be an alias of the option name that was actually specified on the command line.
          *      The specified name may include option name prefix characters or not. */
-        public List<String> optionValues(String name)       { return optionValues(option(name)); }
+        public List<String> rawOptionValues(String name)       { return rawOptionValues(option(name)); }
         /** Returns all command line argument String values matched for the specified option, or an empty list if the specified option is {@code null}. */
-        public List<String> optionValues(OptionSpec option) { return option == null ? Collections.<String>emptyList() : option.rawStringValues(); }
+        public List<String> rawOptionValues(OptionSpec option) { return option == null ? Collections.<String>emptyList() : option.rawStringValues(); }
         /** Returns the command line argument value of the option with the specified name, converted to the {@linkplain OptionSpec#type() type} of the option, or {@code null} if no option with the specified name was matched. */
-        public <T> T typedOptionValue(char shortName, T defaultValue)    { return typedOptionValue(option(shortName), defaultValue); }
+        public <T> T optionValue(char shortName, T defaultValue)    { return optionValue(option(shortName), defaultValue); }
         /** Returns the command line argument value of the option with the specified name, converted to the {@linkplain OptionSpec#type() type} of the option, or {@code null} if no option with the specified name was matched. */
-        public <T> T typedOptionValue(String name, T defaultValue)       { return typedOptionValue(option(name), defaultValue); }
+        public <T> T optionValue(String name, T defaultValue)       { return optionValue(option(name), defaultValue); }
         /** Returns the command line argument value of the specified option, converted to the {@linkplain OptionSpec#type() type} of the option, or {@code null} if the specified option is {@code null}. */
         @SuppressWarnings("unchecked")
-        public <T> T typedOptionValue(OptionSpec option, T defaultValue) { return option == null ? defaultValue : (T) option.getValue(); }
+        public <T> T optionValue(OptionSpec option, T defaultValue) { return option == null ? defaultValue : (T) option.getValue(); }
         /** Returns the command line argument value of the positional parameter at the specified position, converted to the {@linkplain PositionalParamSpec#type() type} of the positional parameter, or {@code null} if no positional parameter was matched at that position. */
-        public <T> T typedPositionalValue(int position, T defaultValue)  { return typedPositionalValue(positional(position), defaultValue); }
+        public <T> T positionalValue(int position, T defaultValue)  { return positionalValue(positional(position), defaultValue); }
         /** Returns the command line argument value of the specified positional parameter, converted to the {@linkplain PositionalParamSpec#type() type} of the positional parameter, or {@code null} if the specified positional parameter is {@code null}. */
         @SuppressWarnings("unchecked")
-        public <T> T typedPositionalValue(PositionalParamSpec positional, T defaultValue) { return positional == null ? defaultValue : (T) positional.getValue(); }
+        public <T> T positionalValue(PositionalParamSpec positional, T defaultValue) { return positional == null ? defaultValue : (T) positional.getValue(); }
 
         /** Returns {@code true} if a subcommand was matched on the command line, {@code false} otherwise. */
         public boolean hasSubcommand()          { return subcommand != null; }
@@ -4265,6 +4265,7 @@ public class CommandLine {
         public boolean isUsageHelpRequested()   { return usageHelpRequested; }
         /** Returns {@code true} if one of the options that was matched on the command line is a {@link OptionSpec#versionHelp() versionHelp} option. */
         public boolean isVersionHelpRequested() { return versionHelpRequested; }
+        /** Returns this {@code ParseResult} as a list of {@code CommandLine} objects, one for each matched command/subcommand. */
         public List<CommandLine> asCommandLineList() {
             List<CommandLine> result = new ArrayList<CommandLine>();
             ParseResult pr = this;
