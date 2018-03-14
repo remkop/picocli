@@ -4244,16 +4244,16 @@ public class CommandLine {
         public List<String> rawOptionValues(String name)       { return rawOptionValues(option(name)); }
         /** Returns all command line argument String values matched for the specified option, or an empty list if the specified option is {@code null}. */
         public List<String> rawOptionValues(OptionSpec option) { return option == null ? Collections.<String>emptyList() : option.rawStringValues(); }
-        /** Returns the command line argument value of the option with the specified name, converted to the {@linkplain OptionSpec#type() type} of the option, or {@code null} if no option with the specified name was matched. */
+        /** Returns the command line argument value of the option with the specified name, converted to the {@linkplain OptionSpec#type() type} of the option, or the specified default value if no option with the specified name was matched. */
         public <T> T optionValue(char shortName, T defaultValue)    { return optionValue(option(shortName), defaultValue); }
-        /** Returns the command line argument value of the option with the specified name, converted to the {@linkplain OptionSpec#type() type} of the option, or {@code null} if no option with the specified name was matched. */
+        /** Returns the command line argument value of the option with the specified name, converted to the {@linkplain OptionSpec#type() type} of the option, or the specified default value if no option with the specified name was matched. */
         public <T> T optionValue(String name, T defaultValue)       { return optionValue(option(name), defaultValue); }
-        /** Returns the command line argument value of the specified option, converted to the {@linkplain OptionSpec#type() type} of the option, or {@code null} if the specified option is {@code null}. */
+        /** Returns the command line argument value of the specified option, converted to the {@linkplain OptionSpec#type() type} of the option, or the specified default value if the specified option is {@code null}. */
         @SuppressWarnings("unchecked")
         public <T> T optionValue(OptionSpec option, T defaultValue) { return option == null ? defaultValue : (T) option.getValue(); }
-        /** Returns the command line argument value of the positional parameter at the specified position, converted to the {@linkplain PositionalParamSpec#type() type} of the positional parameter, or {@code null} if no positional parameter was matched at that position. */
+        /** Returns the command line argument value of the positional parameter at the specified position, converted to the {@linkplain PositionalParamSpec#type() type} of the positional parameter, or the specified default value if no positional parameter was matched at that position. */
         public <T> T positionalValue(int position, T defaultValue)  { return positionalValue(positional(position), defaultValue); }
-        /** Returns the command line argument value of the specified positional parameter, converted to the {@linkplain PositionalParamSpec#type() type} of the positional parameter, or {@code null} if the specified positional parameter is {@code null}. */
+        /** Returns the command line argument value of the specified positional parameter, converted to the {@linkplain PositionalParamSpec#type() type} of the positional parameter, or the specified default value if the specified positional parameter is {@code null}. */
         @SuppressWarnings("unchecked")
         public <T> T positionalValue(PositionalParamSpec positional, T defaultValue) { return positional == null ? defaultValue : (T) positional.getValue(); }
 
