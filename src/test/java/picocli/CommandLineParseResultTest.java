@@ -577,4 +577,61 @@ public class CommandLineParseResultTest {
         assertNull("empty string should not match", parseResult.rawOptionValue(""));
         assertNull("empty string should not match", parseResult.optionValue("", null));
     }
+
+    @Test
+    public void testRawOptionValueReturnsFirstValue() {
+        CommandSpec spec = CommandSpec.create();
+        spec.add(OptionSpec.builder("-V", "--verbose").build());
+        spec.add(OptionSpec.builder("-f", "--file")
+                .paramLabel("FILES")
+                .type(List.class)
+                .auxiliaryTypes(File.class) // List<File>
+                .description("The files to process").build());
+        CommandLine commandLine = new CommandLine(spec);
+
+        String[] args = { "--verbose", "-f", "file1", "--file=file2" };
+        ParseResult pr = commandLine.parseArgs(args);
+
+        assertEquals(Arrays.asList(args), pr.originalArgs());
+
+        assertEquals("file1", pr.rawOptionValue('f'));
+        assertEquals("file1", pr.rawOptionValue("-f"));
+        assertEquals("file1", pr.rawOptionValue("--file"));
+
+        // for examples in Programmatic API wiki page
+        assert "file1".equals(pr.rawOptionValue('f'));
+        assert "file1".equals(pr.rawOptionValue("-f"));
+        assert "file1".equals(pr.rawOptionValue("--file"));
+
+        List<String> expected = Arrays.asList("file1", "file2");
+        assertEquals(expected, pr.rawOptionValues('f'));
+        assertEquals(expected, pr.rawOptionValues("file"));
+
+        // for examples in Programmatic API wiki page
+        assert expected.equals(pr.rawOptionValues('f'));
+        assert expected.equals(pr.rawOptionValues("file"));
+    }
+
+    @Test
+    public void testOptionValueReturnsAllValuesConvertedToType() {
+        CommandSpec spec = CommandSpec.create();
+        spec.add(OptionSpec.builder("-V", "--verbose").build());
+        spec.add(OptionSpec.builder("-f", "--file")
+                .paramLabel("FILES")
+                .type(List.class)
+                .auxiliaryTypes(File.class) // List<File>
+                .description("The files to process").build());
+        CommandLine commandLine = new CommandLine(spec);
+
+        String[] args = { "--verbose", "-f", "file1", "--file=file2" };
+        ParseResult pr = commandLine.parseArgs(args);
+
+        List<File> expected = Arrays.asList(new File("file1"), new File("file2"));
+        assertEquals(expected, pr.optionValue('f', Collections.<File>emptyList()));
+        assertEquals(expected, pr.optionValue("--file", Collections.<File>emptyList()));
+
+        // for examples in Programmatic API wiki page
+        assert expected.equals(pr.optionValue('f', Collections.<File>emptyList()));
+        assert expected.equals(pr.optionValue("--file", Collections.<File>emptyList()));
+    }
 }
