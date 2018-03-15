@@ -811,7 +811,7 @@ public class CommandLine {
      * }</pre>
      * @since 3.0 */
     public abstract static class AbstractParseResultHandler<R> extends AbstractHandler<R, AbstractParseResultHandler<R>> implements IParseResultHandler2<R> {
-        /** Prints help if requested, and otherwise calls {@link #process(CommandLine.ParseResult, R)}.
+        /** Prints help if requested, and otherwise calls {@link #process(CommandLine.ParseResult, Object)}.
          * Finally, either a list of result objects is returned, or the JVM is terminated if an exit code {@linkplain #andExit(int) was set}.
          *
          * @param parseResult the {@code ParseResult} that resulted from successfully parsing the command line arguments
