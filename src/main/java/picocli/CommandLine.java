@@ -1064,14 +1064,14 @@ public class CommandLine {
      * support for nested subcommands.
      * </p>
      * <p>Calling this method roughly expands to:</p>
-     * <pre>
+     * <pre>{@code
      * try {
      *     ParseResult parseResult = parseArgs(args);
      *     return handler.handleParseResult(parseResult, prototypeReturnValue);
      * } catch (ParameterException ex) {
      *     return new DefaultExceptionHandler<R>().handleParseException(ex, prototypeReturnValue, args);
      * }
-     * </pre>
+     * }</pre>
      * <p>
      * Picocli provides some default handlers that allow you to accomplish some common tasks with very little code.
      * The following handlers are available:</p>
@@ -1101,14 +1101,14 @@ public class CommandLine {
      * Calls {@link #parseWithSimpleHandlers(AbstractSimpleParseResultHandler, IExceptionHandler2, String...)} with
      * a new {@link DefaultExceptionHandler} in addition to the specified parse result handler and the specified command line arguments.
      * <p>Calling this method roughly expands to:</p>
-     * <pre>
+     * <pre>{@code
      * try {
      *     ParseResult parseResult = parseArgs(args);
      *     handler.handleParseResult(parseResult);
      * } catch (ParameterException ex) {
      *     new DefaultExceptionHandler<Void>().handleParseException(ex, null, (String[]) args);
      * }
-     * </pre>
+     * }</pre>
      * @param handler the function that will process the result of successfully parsing the command line arguments
      * @param args the command line arguments
      * @throws ExecutionException if the command line arguments were parsed successfully but a problem occurred while processing the
