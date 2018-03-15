@@ -17,11 +17,13 @@ package picocli;
 
 import org.junit.Test;
 
+import java.io.File;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
+import picocli.CommandLine.Model.CommandSpec;
 import picocli.CommandLine.Model.OptionSpec;
 import picocli.CommandLine.Model.PositionalParamSpec;
 import picocli.CommandLine.ParseResult;
@@ -310,6 +312,21 @@ public class CommandLineParseResultTest {
         assertNull(parseResult.option('b'));
         assertNull(parseResult.option("b"));
         assertNull(parseResult.option("-b"));
+    }
+    @Test
+    public void testRawOptionValueForBooleanOptions_ReturnsStringTrue() {
+        CommandSpec spec = CommandSpec.create();
+        spec.add(OptionSpec.builder("-V", "--verbose").build());
+        CommandLine commandLine = new CommandLine(spec);
+
+        ParseResult pr = commandLine.parseArgs("--verbose");
+
+        assertTrue(pr.hasOption("--verbose")); // as specified on command line
+        assertTrue(pr.hasOption('V'));     // single-character alias works too
+        assertTrue(pr.hasOption("verbose"));   // command name without hyphens
+
+        assertTrue(pr.optionValue("verbose", Boolean.FALSE));
+        assertEquals("true", pr.rawOptionValue("verbose"));
     }
 
     @Test
