@@ -20,11 +20,11 @@ Picocli 3.0 offers a programmatic API for creating command line applications, in
 ----
 CommandSpec spec = CommandSpec.create();
 spec.mixinStandardHelpOptions(true); // usageHelp and versionHelp options
-spec.add(OptionSpec.builder("-c", "--count")
+spec.addOption(OptionSpec.builder("-c", "--count")
         .paramLabel("COUNT")
         .type(int.class)
         .description("number of times to execute").build());
-spec.add(PositionalParamSpec.builder()
+spec.addPositional(PositionalParamSpec.builder()
         .paramLabel("FILES")
         .type(List.class)
         .auxiliaryTypes(File.class) // List<File>
@@ -94,10 +94,10 @@ cmd.parser()
 [source,java]
 ----
 CommandSpec standardHelpOptions = CommandSpec.create()
-    .add(OptionSpec.builder("-h", "--help")
+    .addOption(OptionSpec.builder("-h", "--help")
         .usageHelp(true)
         .description("Show this help message and exit.").build())
-    .add(OptionSpec.builder("-V", "--version")
+    .addOption(OptionSpec.builder("-V", "--version")
         .versionHelp(true)
         .description("Print version information and exit.").build());
 
@@ -181,8 +181,8 @@ For the below examples, we use the following parser configuration:
 [source,java]
 ----
 CommandSpec spec = CommandSpec.create();
-spec.add(OptionSpec.builder("-V", "--verbose").build());
-spec.add(OptionSpec.builder("-f", "--file")
+spec.addOption(OptionSpec.builder("-V", "--verbose").build());
+spec.addOption(OptionSpec.builder("-f", "--file")
         .paramLabel("FILES")
         .type(List.class)
         .auxiliaryTypes(File.class) // so, this option is of type List<File>
@@ -190,7 +190,7 @@ spec.add(OptionSpec.builder("-f", "--file")
 CommandLine commandLine = new CommandLine(spec);
 ----
 
-=== Query for Options
+=== Querying for Options
 
 The `CommandLine::parseArgs` method returns a `ParseResult` object that allows client code to query which options and positional parameters were matched for a given command.
 
@@ -208,7 +208,7 @@ assert pr.hasOption('V');         // single-character alias works too
 assert pr.hasOption("verbose");   // and, command name without hyphens
 ----
 
-=== Typed Option Value
+=== Typed Option Values
 
 The `optionValue` method returns the command line value or values, converted to the option's type. This method requires a default value, which will be returned in case the option was not specified on the command line. In the above example, we defined the `--file` option to be of type `List<File>`, so we pass in an empty list as the default value:
 
@@ -223,7 +223,7 @@ assert expected.equals(pr.optionValue('f', defaultValue));
 assert expected.equals(pr.optionValue("--file", defaultValue));
 ----
 
-=== Untyped Option Value
+=== Untyped Option Values
 
 The `rawOptionValue` method returns the String argument specified on the command line. If the command line contains multiple arguments for this option, the first value is returned. Use the `rawOptionValues` method to get a list of all values specified on the command line for an option.
 

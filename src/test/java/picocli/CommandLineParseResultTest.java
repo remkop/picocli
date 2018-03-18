@@ -316,7 +316,7 @@ public class CommandLineParseResultTest {
     @Test
     public void testRawOptionValueForBooleanOptions_ReturnsStringTrue() {
         CommandSpec spec = CommandSpec.create();
-        spec.add(OptionSpec.builder("-V", "--verbose").build());
+        spec.addOption(OptionSpec.builder("-V", "--verbose").build());
         CommandLine commandLine = new CommandLine(spec);
 
         ParseResult pr = commandLine.parseArgs("--verbose");
@@ -581,8 +581,8 @@ public class CommandLineParseResultTest {
     @Test
     public void testRawOptionValueReturnsFirstValue() {
         CommandSpec spec = CommandSpec.create();
-        spec.add(OptionSpec.builder("-V", "--verbose").build());
-        spec.add(OptionSpec.builder("-f", "--file")
+        spec.addOption(OptionSpec.builder("-V", "--verbose").build());
+        spec.addOption(OptionSpec.builder("-f", "--file")
                 .paramLabel("FILES")
                 .type(List.class)
                 .auxiliaryTypes(File.class) // List<File>
@@ -615,8 +615,8 @@ public class CommandLineParseResultTest {
     @Test
     public void testOptionValueReturnsAllValuesConvertedToType() {
         CommandSpec spec = CommandSpec.create();
-        spec.add(OptionSpec.builder("-V", "--verbose").build());
-        spec.add(OptionSpec.builder("-f", "--file")
+        spec.addOption(OptionSpec.builder("-V", "--verbose").build());
+        spec.addOption(OptionSpec.builder("-f", "--file")
                 .paramLabel("FILES")
                 .type(List.class)
                 .auxiliaryTypes(File.class) // List<File>

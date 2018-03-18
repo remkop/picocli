@@ -53,9 +53,9 @@ public class CommandLineModelTest {
     @Test
     public void testModelUsageHelp() throws Exception {
         CommandSpec spec = CommandSpec.create();
-        spec.add(OptionSpec.builder("-h", "--help").usageHelp(true).description("show help and exit").build());
-        spec.add(OptionSpec.builder("-V", "--version").versionHelp(true).description("show help and exit").build());
-        spec.add(OptionSpec.builder("-c", "--count").paramLabel("COUNT").arity("1").type(int.class).description("number of times to execute").build());
+        spec.addOption(OptionSpec.builder("-h", "--help").usageHelp(true).description("show help and exit").build());
+        spec.addOption(OptionSpec.builder("-V", "--version").versionHelp(true).description("show help and exit").build());
+        spec.addOption(OptionSpec.builder("-c", "--count").paramLabel("COUNT").arity("1").type(int.class).description("number of times to execute").build());
         CommandLine commandLine = new CommandLine(spec);
         String actual = usageString(commandLine, Ansi.OFF);
         String expected = String.format("" +
@@ -69,7 +69,7 @@ public class CommandLineModelTest {
     @Test
     public void testUsageHelpPositional_empty() throws Exception {
         CommandSpec spec = CommandSpec.create();
-        spec.add(PositionalParamSpec.builder().build());
+        spec.addPositional(PositionalParamSpec.builder().build());
         CommandLine commandLine = new CommandLine(spec);
         String actual = usageString(commandLine, Ansi.OFF);
         String expected = String.format("" +
@@ -81,7 +81,7 @@ public class CommandLineModelTest {
     @Test
     public void testUsageHelpPositional_withDescription() throws Exception {
         CommandSpec spec = CommandSpec.create();
-        spec.add(PositionalParamSpec.builder().description("positional param").build());
+        spec.addPositional(PositionalParamSpec.builder().description("positional param").build());
         CommandLine commandLine = new CommandLine(spec);
         String actual = usageString(commandLine, Ansi.OFF);
         String expected = String.format("" +
@@ -115,7 +115,7 @@ public class CommandLineModelTest {
                 .header("header line 1", "header line 2")
                 .optionListHeading("Options%n")
                 .parameterListHeading("Positional Parameters%n");
-        spec.add(PositionalParamSpec.builder().description("positional param").build());
+        spec.addPositional(PositionalParamSpec.builder().description("positional param").build());
         CommandLine commandLine = new CommandLine(spec);
         String actual = usageString(commandLine, Ansi.OFF);
         String expected = String.format("" +
@@ -141,7 +141,7 @@ public class CommandLineModelTest {
     public void testUsageHelp_abbreviateSynopsisWithoutPositional() throws UnsupportedEncodingException {
         CommandSpec spec = CommandSpec.create();
         spec.usageMessage().abbreviateSynopsis(true).requiredOptionMarker('!').sortOptions(false);
-        spec.add(OptionSpec.builder("-x").required(true).description("required").build());
+        spec.addOption(OptionSpec.builder("-x").required(true).description("required").build());
         CommandLine commandLine = new CommandLine(spec);
         String actual = usageString(commandLine, Ansi.OFF);
         String expected = String.format("" +
@@ -154,8 +154,8 @@ public class CommandLineModelTest {
     public void testUsageHelp_abbreviateSynopsisWithPositional() throws UnsupportedEncodingException {
         CommandSpec spec = CommandSpec.create();
         spec.usageMessage().abbreviateSynopsis(true).requiredOptionMarker('!').sortOptions(false);
-        spec.add(OptionSpec.builder("-x").required(true).description("required").build());
-        spec.add(PositionalParamSpec.builder().arity("1").paramLabel("POSITIONAL").description("positional").build());
+        spec.addOption(OptionSpec.builder("-x").required(true).description("required").build());
+        spec.addPositional(PositionalParamSpec.builder().arity("1").paramLabel("POSITIONAL").description("positional").build());
         CommandLine commandLine = new CommandLine(spec);
         String actual = usageString(commandLine, Ansi.OFF);
         String expected = String.format("" +
@@ -197,7 +197,7 @@ public class CommandLineModelTest {
         CommandSpec helpCommand = CommandSpec.create().helpCommand(true);
         assertTrue(helpCommand.helpCommand());
 
-        CommandSpec parent = CommandSpec.create().add(OptionSpec.builder("-x").required(true).build());
+        CommandSpec parent = CommandSpec.create().addOption(OptionSpec.builder("-x").required(true).build());
         parent.addSubcommand("help", helpCommand);
 
         CommandLine commandLine = new CommandLine(parent);
@@ -213,9 +213,9 @@ public class CommandLineModelTest {
     @Test
     public void testModelParse() throws Exception {
         CommandSpec spec = CommandSpec.create();
-        spec.add(OptionSpec.builder("-h", "--help").usageHelp(true).description("show help and exit").build());
-        spec.add(OptionSpec.builder("-V", "--version").versionHelp(true).description("show help and exit").build());
-        spec.add(OptionSpec.builder("-c", "--count").paramLabel("COUNT").arity("1").type(int.class).description("number of times to execute").build());
+        spec.addOption(OptionSpec.builder("-h", "--help").usageHelp(true).description("show help and exit").build());
+        spec.addOption(OptionSpec.builder("-V", "--version").versionHelp(true).description("show help and exit").build());
+        spec.addOption(OptionSpec.builder("-c", "--count").paramLabel("COUNT").arity("1").type(int.class).description("number of times to execute").build());
         CommandLine commandLine = new CommandLine(spec);
         commandLine.parse("-c", "33");
         assertEquals(33, spec.optionsMap().get("-c").getValue());
@@ -227,7 +227,7 @@ public class CommandLineModelTest {
         OptionSpec option = OptionSpec.builder("-c", "--count").arity("3").type(int.class).build();
         assertFalse(option.isMultiValue());
 
-        spec.add(option);
+        spec.addOption(option);
         CommandLine commandLine = new CommandLine(spec);
         try {
             commandLine.parse("-c", "1", "2", "3");
@@ -243,7 +243,7 @@ public class CommandLineModelTest {
         PositionalParamSpec positional = PositionalParamSpec.builder().index("0").arity("3").type(int.class).build();
         assertFalse(positional.isMultiValue());
 
-        spec.add(positional);
+        spec.addPositional(positional);
         CommandLine commandLine = new CommandLine(spec);
         try {
             commandLine.parse("1", "2", "3");
@@ -259,7 +259,7 @@ public class CommandLineModelTest {
         OptionSpec option = OptionSpec.builder("-c", "--count").arity("3").type(int[].class).build();
         assertTrue(option.isMultiValue());
 
-        spec.add(option);
+        spec.addOption(option);
         CommandLine commandLine = new CommandLine(spec);
         commandLine.parse("-c", "1", "2", "3");
         assertArrayEquals(new int[] {1, 2, 3}, (int[]) spec.optionsMap().get("-c").getValue());
@@ -271,7 +271,7 @@ public class CommandLineModelTest {
         PositionalParamSpec positional = PositionalParamSpec.builder().index("0").arity("3").type(int[].class).build();
         assertTrue(positional.isMultiValue());
 
-        spec.add(positional);
+        spec.addPositional(positional);
         CommandLine commandLine = new CommandLine(spec);
         commandLine.parse("1", "2", "3");
         assertArrayEquals(new int[] {1, 2, 3}, (int[]) spec.positionalParameters().get(0).getValue());
@@ -283,7 +283,7 @@ public class CommandLineModelTest {
         OptionSpec option = OptionSpec.builder("-c", "--count").arity("3").type(List.class).auxiliaryTypes(Integer.class).build();
         assertTrue(option.isMultiValue());
 
-        spec.add(option);
+        spec.addOption(option);
         CommandLine commandLine = new CommandLine(spec);
         commandLine.parse("-c", "1", "2", "3");
         assertEquals(Arrays.asList(1, 2, 3), spec.optionsMap().get("-c").getValue());
@@ -295,7 +295,7 @@ public class CommandLineModelTest {
         PositionalParamSpec positional = PositionalParamSpec.builder().index("0").arity("3").type(List.class).auxiliaryTypes(Integer.class).build();
         assertTrue(positional.isMultiValue());
 
-        spec.add(positional);
+        spec.addPositional(positional);
         CommandLine commandLine = new CommandLine(spec);
         commandLine.parse("1", "2", "3");
         assertEquals(Arrays.asList(1, 2, 3), spec.positionalParameters().get(0).getValue());
@@ -307,7 +307,7 @@ public class CommandLineModelTest {
         OptionSpec option = OptionSpec.builder("-c", "--count").arity("3").type(List.class).build();
         assertTrue(option.isMultiValue());
 
-        spec.add(option);
+        spec.addOption(option);
         CommandLine commandLine = new CommandLine(spec);
         commandLine.parse("-c", "1", "2", "3");
         assertEquals(Arrays.asList("1", "2", "3"), spec.optionsMap().get("-c").getValue());
@@ -319,7 +319,7 @@ public class CommandLineModelTest {
         PositionalParamSpec positional = PositionalParamSpec.builder().index("0").arity("3").type(List.class).build();
         assertTrue(positional.isMultiValue());
 
-        spec.add(positional);
+        spec.addPositional(positional);
         CommandLine commandLine = new CommandLine(spec);
         commandLine.parse("1", "2", "3");
         assertEquals(Arrays.asList("1", "2", "3"), spec.positionalParameters().get(0).getValue());
@@ -331,7 +331,7 @@ public class CommandLineModelTest {
         OptionSpec option = OptionSpec.builder("-c", "--count").arity("3").type(Map.class).auxiliaryTypes(Integer.class, Double.class).build();
         assertTrue(option.isMultiValue());
 
-        spec.add(option);
+        spec.addOption(option);
         CommandLine commandLine = new CommandLine(spec);
         commandLine.parse("-c", "1=1.0", "2=2.0", "3=3.0");
         Map<Integer, Double> expected = new LinkedHashMap<Integer, Double>();
@@ -347,7 +347,7 @@ public class CommandLineModelTest {
         PositionalParamSpec positional = PositionalParamSpec.builder().index("0").arity("3").type(Map.class).auxiliaryTypes(Integer.class, Double.class).build();
         assertTrue(positional.isMultiValue());
 
-        spec.add(positional);
+        spec.addPositional(positional);
         CommandLine commandLine = new CommandLine(spec);
         commandLine.parse("1=1.0", "2=2.0", "3=3.0");
         Map<Integer, Double> expected = new LinkedHashMap<Integer, Double>();
@@ -363,7 +363,7 @@ public class CommandLineModelTest {
         OptionSpec option = OptionSpec.builder("-c", "--count").arity("3").type(Map.class).build();
         assertTrue(option.isMultiValue());
 
-        spec.add(option);
+        spec.addOption(option);
         CommandLine commandLine = new CommandLine(spec);
         commandLine.parse("-c", "1=1.0", "2=2.0", "3=3.0");
         Map<String, String> expected = new LinkedHashMap<String, String>();
@@ -379,7 +379,7 @@ public class CommandLineModelTest {
         PositionalParamSpec positional = PositionalParamSpec.builder().index("0").arity("3").type(Map.class).build();
         assertTrue(positional.isMultiValue());
 
-        spec.add(positional);
+        spec.addPositional(positional);
         CommandLine commandLine = new CommandLine(spec);
         commandLine.parse("1=1.0", "2=2.0", "3=3.0");
         Map<String, String> expected = new LinkedHashMap<String, String>();
@@ -619,8 +619,8 @@ public class CommandLineModelTest {
     @Test
     public void testOptionConvertersOverridesRegisteredTypeConverter() throws Exception {
         CommandSpec spec = CommandSpec.create();
-        spec.add(OptionSpec.builder("-c", "--count").paramLabel("COUNT").arity("1").type(int.class).description("number of times to execute").build());
-        spec.add(OptionSpec.builder("-s", "--sql").paramLabel("SQLTYPE").type(int.class).converters(
+        spec.addOption(OptionSpec.builder("-c", "--count").paramLabel("COUNT").arity("1").type(int.class).description("number of times to execute").build());
+        spec.addOption(OptionSpec.builder("-s", "--sql").paramLabel("SQLTYPE").type(int.class).converters(
                 new CommandLineTypeConversionTest.SqlTypeConverter()).description("sql type converter").build());
         CommandLine commandLine = new CommandLine(spec);
         commandLine.parse("-c", "33", "-s", "BLOB");
@@ -630,8 +630,8 @@ public class CommandLineModelTest {
     @Test
     public void testPositionalConvertersOverridesRegisteredTypeConverter() throws Exception {
         CommandSpec spec = CommandSpec.create();
-        spec.add(PositionalParamSpec.builder().paramLabel("COUNT").index("0").type(int.class).description("number of times to execute").build());
-        spec.add(PositionalParamSpec.builder().paramLabel("SQLTYPE").index("1").type(int.class).converters(
+        spec.addPositional(PositionalParamSpec.builder().paramLabel("COUNT").index("0").type(int.class).description("number of times to execute").build());
+        spec.addPositional(PositionalParamSpec.builder().paramLabel("SQLTYPE").index("1").type(int.class).converters(
                 new CommandLineTypeConversionTest.SqlTypeConverter()).description("sql type converter").build());
         CommandLine commandLine = new CommandLine(spec);
         commandLine.parse("33", "BLOB");
@@ -719,7 +719,7 @@ public class CommandLineModelTest {
         assertSame(binding, unmatched.binding());
 
         cmd.addUnmatchedArgsBinding(unmatched);
-        cmd.add(OptionSpec.builder("-x").build());
+        cmd.addOption(OptionSpec.builder("-x").build());
         ParseResult result = new CommandLine(cmd).parseArgs("-x", "a", "b", "c");
 
         assertEquals(Arrays.asList("a", "b", "c"), result.unmatched());
@@ -748,7 +748,7 @@ public class CommandLineModelTest {
         assertSame(binding, unmatched.binding());
 
         cmd.addUnmatchedArgsBinding(unmatched);
-        cmd.add(OptionSpec.builder("-x").build());
+        cmd.addOption(OptionSpec.builder("-x").build());
         ParseResult result = new CommandLine(cmd).parseArgs("-x", "a", "b", "c");
 
         assertEquals(Arrays.asList("a", "b", "c"), result.unmatched());
@@ -776,7 +776,7 @@ public class CommandLineModelTest {
         assertSame(binding, unmatched.binding());
 
         cmd.addUnmatchedArgsBinding(unmatched);
-        cmd.add(OptionSpec.builder("-x").build());
+        cmd.addOption(OptionSpec.builder("-x").build());
         ParseResult result = new CommandLine(cmd).parseArgs("-x", "a", "b", "c");
 
         assertEquals(Arrays.asList("a", "b", "c"), result.unmatched());

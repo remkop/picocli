@@ -2776,13 +2776,13 @@ public class CommandLine {
             /** Adds the specified option spec or positional parameter spec to the list of configured arguments to expect.
              * @param arg the option spec or positional parameter spec to add
              * @return this CommandSpec for method chaining */
-            public CommandSpec add(ArgSpec arg) { return arg.isOption() ? add((OptionSpec) arg) : add((PositionalParamSpec) arg); }
+            public CommandSpec add(ArgSpec arg) { return arg.isOption() ? addOption((OptionSpec) arg) : addPositional((PositionalParamSpec) arg); }
     
             /** Adds the specified option spec to the list of configured arguments to expect.
              * @param option the option spec to add
              * @return this CommandSpec for method chaining
              * @throws DuplicateOptionAnnotationsException if any of the names of the specified option is the same as the name of another option */
-            public CommandSpec add(OptionSpec option) {
+            public CommandSpec addOption(OptionSpec option) {
                 options.add(option);
                 for (String name : option.names()) { // cannot be null or empty
                     OptionSpec existing = optionsByNameMap.put(name, option);
@@ -2797,7 +2797,7 @@ public class CommandLine {
             /** Adds the specified positional parameter spec to the list of configured arguments to expect.
              * @param positional the positional parameter spec to add
              * @return this CommandSpec for method chaining */
-            public CommandSpec add(PositionalParamSpec positional) {
+            public CommandSpec addPositional(PositionalParamSpec positional) {
                 positionalParameters.add(positional);
                 if (positional.required()) { requiredArgs.add(positional); }
                 return this;
@@ -2835,8 +2835,8 @@ public class CommandLine {
                 for (Map.Entry<String, CommandLine> entry : mixin.subcommands().entrySet()) {
                     addSubcommand(entry.getKey(), entry.getValue());
                 }
-                for (OptionSpec optionSpec         : mixin.options())              { add(optionSpec); }
-                for (PositionalParamSpec paramSpec : mixin.positionalParameters()) { add(paramSpec); }
+                for (OptionSpec optionSpec         : mixin.options())              { addOption(optionSpec); }
+                for (PositionalParamSpec paramSpec : mixin.positionalParameters()) { addPositional(paramSpec); }
                 return this;
             }
 
@@ -3865,8 +3865,8 @@ public class CommandLine {
                     }
                     if (isArgSpec(field)) {
                         validateArgSpecField(field);
-                        if (isOption(field))    { receiver.add(ArgsReflection.extractOptionSpec(scope, field, factory)); }
-                        if (isParameter(field)) { receiver.add(ArgsReflection.extractPositionalParamSpec(scope, field, factory)); }
+                        if (isOption(field))    { receiver.addOption(ArgsReflection.extractOptionSpec(scope, field, factory)); }
+                        if (isParameter(field)) { receiver.addPositional(ArgsReflection.extractPositionalParamSpec(scope, field, factory)); }
                     }
                 }
                 return result;

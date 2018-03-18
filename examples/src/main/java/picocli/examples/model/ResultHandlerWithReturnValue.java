@@ -31,11 +31,11 @@ public class ResultHandlerWithReturnValue {
 
         CommandSpec spec = CommandSpec.create();
         spec.mixinStandardHelpOptions(true);
-        spec.add(OptionSpec.builder("-c", "--count")
+        spec.addOption(OptionSpec.builder("-c", "--count")
                 .paramLabel("COUNT")
                 .type(int.class)
                 .description("number of times to execute").build());
-        spec.add(PositionalParamSpec.builder()
+        spec.addPositional(PositionalParamSpec.builder()
                 .paramLabel("FILES")
                 .type(List.class)
                 .auxiliaryTypes(File.class)
