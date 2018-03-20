@@ -3,7 +3,7 @@
 # <a name="3.0.0-alpha-1"></a> Picocli 3.0.0-alpha-1 (UNRELEASED)
 The picocli community is pleased to announce picocli 3.0.0-alpha-1.
 
-This release offers a programmatic API for creating command line applications, as an alternative to annotations. A programmatic API allows applications to dynamically create command line options on the fly, and also makes it possible to create idiomatic domain-specific languages for processing command line arguments, using picocli, in other JVM languages.
+This release offers a programmatic API for creating command line applications, in addition to annotations. The programmatic API allows applications to dynamically create command line options on the fly, and also makes it possible to create idiomatic domain-specific languages for processing command line arguments, using picocli, in other JVM languages.
 
 Another new feature in this release are Mixins. Mixins allow reusing common options, parameters and command attributes in multiple applications without copy-and-paste duplication.
 
@@ -17,7 +17,7 @@ Additionally, fields annotated with `@Unmatched` will be populated with the unma
 
 Furthermore, this release adds a `showDefaultValue` attribute to the `@Option` and `@Parameters` annotation.
 
-This is the nineteenth public release.
+This is the twenty-first public release.
 Picocli follows [semantic versioning](http://semver.org/).
 
 ## <a name="3.0.0-alpha-1-toc"></a> Table of Contents
@@ -30,10 +30,56 @@ Picocli follows [semantic versioning](http://semver.org/).
 
 ## <a name="3.0.0-alpha-1-new"></a> New and Noteworthy
 
-### Programmatic API
-TODO.
+### <a name="3.0.0-alpha-1-Programmatic-API"></a> Programmatic API (INCUBATING)
+This release offers a programmatic API for creating command line applications, in addition to annotations. The programmatic API allows applications to dynamically create command line options on the fly, and also makes it possible to create idiomatic domain-specific languages for processing command line arguments, using picocli, in other JVM languages.
 
-Note that the programmatic API is incubating and the API may change in subsequent releases.
+Note that the programmatic API is incubating and the API may change in subsequent releases. _If you have suggestions for improving the programmatic API, please raise a ticket on GitHub!_
+
+#### Example
+```java
+CommandSpec spec = CommandSpec.create();
+spec.mixinStandardHelpOptions(true); // usageHelp and versionHelp options
+spec.addOption(OptionSpec.builder("-c", "--count")
+        .paramLabel("COUNT")
+        .type(int.class)
+        .description("number of times to execute").build());
+spec.addPositional(PositionalParamSpec.builder()
+        .paramLabel("FILES")
+        .type(List.class)
+        .auxiliaryTypes(File.class) // List<File>
+        .description("The files to process").build());
+CommandLine commandLine = new CommandLine(spec);
+
+commandLine.parseWithSimpleHandlers(new AbstractSimpleParseResultHandler() {
+    public void handle(ParseResult pr) {
+        int count = pr.optionValue('c', 1);
+        List<File> files = pr.positionalValue(0, Collections.<File>emptyList());
+        for (int i = 0; i < count; i++) {
+            for (File f : files) {
+                System.out.printf("%d: %s%n", i, f);
+            }
+        }
+    }
+}, args);
+```
+
+#### CommandSpec (INCUBATING)
+`CommandSpec` models a command. It is the programmatic variant of the `@Command` annotation. It has a name and a version, both of which may be empty.  It also has a `UsageMessageSpec` to configure aspects of the usage help message and a `ParserSpec` that can be used to control the behaviour of the parser.
+
+#### OptionSpec and PositionalParamSpec (INCUBATING)
+`OptionSpec` models a named option, and `PositionalParamSpec` models one or more positional parameters. They are the programmatic variant of the `@Option` and `@Parameters` annotations, respectively.
+
+An `OptionSpec` must have at least one name, which is used during parsing to match command line arguments. Other attributes can be left empty and picocli will give them a reasonable default value. This defaulting is why `OptionSpec` objects are created with a builder: this allows you to specify only some attributes and let picocli initialise the other attributes. For example, if only the option’s name is specified, picocli assumes the option takes no parameters (arity = 0), and is of type `boolean`. Another example, if arity is larger than `1`, picocli sets the type to `List` and the `auxiliary type` to `String`.
+
+`PositionalParamSpec` objects don’t have names, but have an index range instead. A single `PositionalParamSpec` object can capture multiple positional parameters. The default index range is set to `0..*` (all indices). A command may have multiple `PositionalParamSpec` objects to capture positional parameters at different index ranges. This can be useful if positional parameters at different index ranges have different data types.
+
+Similar to `OptionSpec` objects, Once a `PositionalParamSpec` is constructed, its configuration becomes immutable, but its `value` can still be modified. Usually the value is set during command line parsing when a non-option command line argument is encountered at a position in its index range.
+
+#### <a name="3.0.0-alpha-1-ParseResult"></a> ParseResult (INCUBATING)
+A `ParseResult` class is now available that allows applications to inspect the result of parsing a sequence of command line arguments.
+
+This class provides methods to query whether the command line arguments included certain options or position parameters, and what the value or values of these options and positional parameters was. Both the original command line argument String value as well as a strongly typed value can be obtained.
+
 
 ### Mixins for Reuse
 Mixins are a convenient alternative to subclassing: picocli annotations from _any_ class can be added to ("mixed in" with) another command. This includes options, positional parameters, subcommands and command attributes. Picocli [autoHelp](#3.0.0-alpha-1-autohelp) internally uses a mixin.
@@ -125,11 +171,6 @@ The field must be of type `String[]` or `List<String>`.
 
 If picocli finds a field annotated with `@Unmatched`, it automatically sets `unmatchedArgumentsAllowed` to `true`
 so no `UnmatchedArgumentException` is thrown when a command line argument cannot be assigned to an option or positional parameter.
-
-### <a name="3.0.0-alpha-1-ParseResult"></a> `ParseResult` API
-A `ParseResult` class is now available that allows applications to inspect the result of parsing a sequence of command line arguments.
-
-This class provides methods to query whether the command line arguments included certain options or position parameters, and what the value or values of these options and positional parameters was. Both the original command line argument String value as well as a strongly typed value can be obtained.
 
 ### <a name="3.0.0-alpha-1-std"></a> Stdout or Stderr
 From picocli v3.0, the `run` and `call` convenience methods follow unix conventions:
