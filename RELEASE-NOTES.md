@@ -1,6 +1,6 @@
 # picocli Release Notes
 
-# <a name="3.0.0-alpha-1"></a> Picocli 3.0.0-alpha-1 (UNRELEASED)
+# <a name="3.0.0-alpha-1"></a> Picocli 3.0.0-alpha-1
 The picocli community is pleased to announce picocli 3.0.0-alpha-1.
 
 This release offers a programmatic API for creating command line applications, in addition to annotations. The programmatic API allows applications to dynamically create command line options on the fly, and also makes it possible to create idiomatic domain-specific languages for processing command line arguments, using picocli, in other JVM languages.
@@ -263,6 +263,10 @@ No features have been promoted in this picocli release.
 ## <a name="3.0.0-alpha-1-deprecated"></a> Deprecations
 
 The `picocli.CommandLine.Help::Help(Object, CommandLine.Help.ColorScheme)` constructor has been deprecated. Use the `picocli.CommandLine.Help::Help(CommandLine.CommandSpec, CommandLine.Help.ColorScheme)` constructor instead. 
+
+The `picocli.CommandLine.IParseResultHandler` interface has been deprecated. Use the `picocli.CommandLine.IParseResultHandler2` interface instead.
+
+The `picocli.CommandLine.IExceptionHandler` interface has been deprecated. Use the `picocli.CommandLine.IExceptionHandler2` interface instead.
 
 ## <a name="3.0.0-alpha-1-breaking-changes"></a> Potential breaking changes
 

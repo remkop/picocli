@@ -1,11 +1,11 @@
 group 'info.picocli'
 description 'Annotation-based Java command line parser. Usage help with ANSI styles and colors. Autocomplete. Nested subcommands. Easily included as source to avoid adding a dependency.'
-version '3.0.0-alpha-1-SNAPSHOT'
+version '3.0.0-alpha-1'
 
 // for bumpVersion task
-def oldVersion = '3\\.0\\.0-alpha1-SNAPSHOT'
+def oldVersion = '3\\.0\\.0-alpha-1-SNAPSHOT'
 def oldRevdate = '2018\\-01\\-03'
-def revDate    = '2018-01-03'
+def revDate    = '2018-03-21'
 
 // for bumpReadmeVersion task
 def previousReleaseVersion = '2.3.0'
@@ -183,9 +183,8 @@ task bumpVersion {
     }
 }
 task copyDocs(type: Copy) {
-    from 'build/docs/html5/index.html'
-    from 'build/docs/html5/autocomplete.html'
-    from('build/docs/') { exclude 'html5'}
+    from('build/docs/html5/') { include '*.html' }
+    from('build/docs/')       { exclude 'html5'}
     into 'docs'
 }
 

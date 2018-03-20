@@ -791,7 +791,7 @@ when the user specifies an option annotated with the <code>versionHelp</code> or
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="CodeRay highlight nowrap"><code data-lang="java"><span class="directive">public</span> <span class="directive">static</span> <span class="type">void</span> main() {
+<pre class="CodeRay highlight nowrap"><code data-lang="java"><span class="directive">public</span> <span class="directive">static</span> <span class="type">void</span> main(<span class="predefined-type">String</span>... args) {
     <span class="comment">// 1. parse the command line</span>
     CommandLine top = <span class="keyword">new</span> CommandLine(<span class="keyword">new</span> YourApp());
     <span class="predefined-type">List</span>&lt;CommandLine&gt; parsedCommands;
@@ -831,7 +831,7 @@ when the user specifies an option annotated with the <code>versionHelp</code> or
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="CodeRay highlight nowrap"><code data-lang="java"><span class="directive">public</span> <span class="directive">static</span> <span class="type">void</span> main() {
+<pre class="CodeRay highlight nowrap"><code data-lang="java"><span class="directive">public</span> <span class="directive">static</span> <span class="type">void</span> main(<span class="predefined-type">String</span>... args) {
     <span class="comment">// This handles all of the above in one line:</span>
     <span class="comment">// 1. parse the command line</span>
     <span class="comment">// 2. handle incorrect user input for one of the subcommands</span>
@@ -899,7 +899,7 @@ If you haven&#8217;t used picocli before, I hope the above made you interested t
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2017-11-16 00:04:59 +09:00
+Last updated 2017-12-28 22:53:34 +09:00
 </div>
 </div>
 </body>

@@ -37,13 +37,15 @@ interactively showing users what options and subcommands are available.
 ![Picocli Demo help message with ANSI colors](docs/images/picocli.Demo.png?raw=true)
 
 #### Releases
-* [Releases](https://github.com/remkop/picocli/releases) - latest: 2.3.0
+* [Releases](https://github.com/remkop/picocli/releases) - latest: 3.0.0-alpha-1
 * [Picocli 2.0 Release Notes](https://github.com/remkop/picocli/releases/tag/v2.0.0) - note there are some [potential breaking changes](https://github.com/remkop/picocli/releases/tag/v2.0.0#2.0-breaking-changes) from prior versions
 
 #### Documentation
-* [User manual: http://picocli.info](http://picocli.info)
+* [3.x User manual: http://picocli.info](http://picocli.info)
+* [2.x User manual](http://picocli.info/man/2.x)
 * [Command line autocompletion](http://picocli.info/autocomplete.html)
 * [API Javadoc](http://picocli.info/apidocs/)
+* [3.0 Programmatic API](http://picocli.info/picocli-3.0-programmatic-api.html)
 * [FAQ](https://github.com/remkop/picocli/wiki/FAQ)
 
 #### Articles
@@ -68,14 +70,11 @@ import picocli.CommandLine.Option;
 import picocli.CommandLine.Parameters;
 import java.io.File;
 
+@Command(name = "example", mixinStandardHelpOptions = true, version = "Picocli example 3.0")
 public class Example implements Runnable {
     @Option(names = { "-v", "--verbose" }, description = "Verbose mode. Helpful for troubleshooting. " +
                                                          "Multiple -v options increase the verbosity.")
     private boolean[] verbose = new boolean[0];
-
-    @Option(names = { "-h", "--help" }, usageHelp = true,
-            description = "Displays this help message and quits.")
-    private boolean helpRequested = false;
 
     @Parameters(arity = "1..*", paramLabel = "FILE", description = "File(s) to process.")
     private File[] inputFiles;
@@ -139,35 +138,35 @@ See the [source code](https://github.com/remkop/picocli/blob/master/src/main/jav
 
 ### Gradle
 ```
-compile 'info.picocli:picocli:2.3.0'
+compile 'info.picocli:picocli:3.0.0-alpha-1'
 ```
 ### Maven
 ```
 <dependency>
   <groupId>info.picocli</groupId>
   <artifactId>picocli</artifactId>
-  <version>2.3.0</version>
+  <version>3.0.0-alpha-1</version>
 </dependency>
 ```
 ### Scala SBT
 ```
-libraryDependencies += "info.picocli" % "picocli" % "2.3.0"
+libraryDependencies += "info.picocli" % "picocli" % "3.0.0-alpha-1"
 ```
 ### Ivy
 ```
-<dependency org="info.picocli" name="picocli" rev="2.3.0" />
+<dependency org="info.picocli" name="picocli" rev="3.0.0-alpha-1" />
 ```
 ### Grape
 ```groovy
 @Grapes(
-    @Grab(group='info.picocli', module='picocli', version='2.3.0')
+    @Grab(group='info.picocli', module='picocli', version='3.0.0-alpha-1')
 )
 ```
 ### Leiningen
 ```
-[info.picocli/picocli "2.3.0"]
+[info.picocli/picocli "3.0.0-alpha-1"]
 ```
 ### Buildr
 ```
-'info.picocli:picocli:jar:2.3.0'
+'info.picocli:picocli:jar:3.0.0-alpha-1'
 ```
