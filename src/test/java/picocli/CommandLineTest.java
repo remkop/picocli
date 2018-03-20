@@ -153,7 +153,7 @@ public class CommandLineTest {
     }
     @Test
     public void testVersion() {
-        assertEquals("3.0.0-alpha-1", CommandLine.VERSION);
+        assertEquals("3.0.0-alpha-2-SNAPSHOT", CommandLine.VERSION);
     }
     @Test
     public void testArrayPositionalParametersAreAppendedNotReplaced() {
