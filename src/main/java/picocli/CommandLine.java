@@ -15,11 +15,7 @@
  */
 package picocli;
 
-import java.io.File;
-import java.io.FileReader;
-import java.io.LineNumberReader;
-import java.io.PrintStream;
-import java.io.StreamTokenizer;
+import java.io.*;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -1261,9 +1257,13 @@ public class CommandLine {
      * @param out the printStream to print to
      * @see #usage(PrintStream, Help.ColorScheme)
      */
-    public void usage(PrintStream out) {
-        usage(out, Help.Ansi.AUTO);
-    }
+    public void usage(PrintStream out) { usage(out, Help.Ansi.AUTO); }
+    /**
+     * Delegates to {@link #usage(PrintWriter, Help.Ansi)} with the {@linkplain Help.Ansi#AUTO platform default}.
+     * @param writer the PrintWriter to print to
+     * @see #usage(PrintWriter, Help.ColorScheme)
+     * @since 3.0 */
+    public void usage(PrintWriter writer) { usage(writer, Help.Ansi.AUTO); }
 
     /**
      * Delegates to {@link #usage(PrintStream, Help.ColorScheme)} with the {@linkplain Help#defaultColorScheme(CommandLine.Help.Ansi) default color scheme}.
@@ -1271,9 +1271,11 @@ public class CommandLine {
      * @param ansi whether the usage message should include ANSI escape codes or not
      * @see #usage(PrintStream, Help.ColorScheme)
      */
-    public void usage(PrintStream out, Help.Ansi ansi) {
-        usage(out, Help.defaultColorScheme(ansi));
-    }
+    public void usage(PrintStream out, Help.Ansi ansi) { usage(out, Help.defaultColorScheme(ansi)); }
+    /** Similar to {@link #usage(PrintStream, Help.Ansi)} but with the specified {@code PrintWriter} instead of a {@code PrintStream}.
+     * @since 3.0 */
+    public void usage(PrintWriter writer, Help.Ansi ansi) { usage(writer, Help.defaultColorScheme(ansi)); }
+
     /**
      * Prints a usage help message for the annotated command class to the specified {@code PrintStream}.
      * Delegates construction of the usage help message to the {@link Help} inner class and is equivalent to:
@@ -1307,9 +1309,15 @@ public class CommandLine {
      * @param colorScheme the {@code ColorScheme} defining the styles for options, parameters and commands when ANSI is enabled
      */
     public void usage(PrintStream out, Help.ColorScheme colorScheme) {
-        Help help = new Help(getCommandSpec(), colorScheme);
-        StringBuilder sb = new StringBuilder()
-                .append(help.headerHeading())
+        out.print(usage(new StringBuilder(), new Help(getCommandSpec(), colorScheme)));
+    }
+    /** Similar to {@link #usage(PrintStream, Help.ColorScheme)}, but with the specified {@code PrintWriter} instead of a {@code PrintStream}.
+     * @since 3.0 */
+    public void usage(PrintWriter writer, Help.ColorScheme colorScheme) {
+        writer.print(usage(new StringBuilder(), new Help(getCommandSpec(), colorScheme)));
+    }
+    private static StringBuilder usage(StringBuilder sb, Help help) {
+        return sb.append(help.headerHeading())
                 .append(help.header())
                 .append(help.synopsisHeading())      //e.g. Usage:
                 .append(help.synopsis(help.synopsisHeadingLength())) //e.g. &lt;main class&gt; [OPTIONS] &lt;command&gt; [COMMAND-OPTIONS] [ARGUMENTS]
@@ -1323,7 +1331,6 @@ public class CommandLine {
                 .append(help.commandList())          //e.g.    add       adds the frup to the frooble
                 .append(help.footerHeading())
                 .append(help.footer());
-        out.print(sb);
     }
 
     /**

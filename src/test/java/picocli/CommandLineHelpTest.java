@@ -2788,7 +2788,7 @@ public class CommandLineHelpTest {
         String expected = String.format("" +
                 "Usage: <main class> [-h]%n" +
                 "  -h%n");
-        assertEquals(expected, new String(baos.toByteArray(), "UTF-8"));
+        assertEquals(expected, baos.toString());
     }
 
     @Test
@@ -2802,7 +2802,7 @@ public class CommandLineHelpTest {
         assertTrue(CommandLine.printHelpIfRequested(list, new PrintStream(baos), Help.Ansi.OFF));
 
         String expected = String.format("abc 1.2.3 myversion%n");
-        assertEquals(expected, new String(baos.toByteArray(), "UTF-8"));
+        assertEquals(expected, baos.toString());
     }
 
     @Test
@@ -2815,7 +2815,7 @@ public class CommandLineHelpTest {
         assertFalse(CommandLine.printHelpIfRequested(list, new PrintStream(baos), Help.Ansi.OFF));
 
         String expected = "";
-        assertEquals(expected, new String(baos.toByteArray(), "UTF-8"));
+        assertEquals(expected, baos.toString());
     }
 
     @Command(name = "top", subcommands = {Sub.class})
@@ -2903,7 +2903,7 @@ public class CommandLineHelpTest {
                     "Usage: <main class> [-hV]%n" +
                     "  -h, --help                  Show this help message and exit.%n" +
                     "  -V, --version               Print version information and exit.%n");
-            assertEquals(expected, new String(baos.toByteArray(), "UTF-8"));
+            assertEquals(expected, baos.toString());
         }
     }
 
@@ -2920,7 +2920,7 @@ public class CommandLineHelpTest {
             assertTrue(CommandLine.printHelpIfRequested(list, new PrintStream(baos), Help.Ansi.OFF));
 
             String expected = String.format("1.2.3%n");
-            assertEquals(expected, new String(baos.toByteArray(), "UTF-8"));
+            assertEquals(expected, baos.toString());
         }
     }
 
@@ -2939,7 +2939,7 @@ public class CommandLineHelpTest {
                 "  -V, --version               Print version information and exit.%n" +
                 "Commands:%n" +
                 "  help  Displays help information about the specified command%n");
-        assertEquals(expected, new String(baos.toByteArray(), "UTF-8"));
+        assertEquals(expected, baos.toString());
     }
 
     @Test
@@ -2956,7 +2956,7 @@ public class CommandLineHelpTest {
                 "  -V, --version               Print version information and exit.%n" +
                 "Commands:%n" +
                 "  help  Displays help information about the specified command%n");
-        assertEquals(expected, new String(baos.toByteArray(), "UTF-8"));
+        assertEquals(expected, baos.toString());
     }
     @Test
     public void testHelpSubcommandWithValidCommand() throws Exception {
@@ -2968,7 +2968,7 @@ public class CommandLineHelpTest {
         String expected = String.format("" +
                 "Usage: sub%n" +
                 "This is a subcommand%n");
-        assertEquals(expected, new String(baos.toByteArray(), "UTF-8"));
+        assertEquals(expected, baos.toString());
     }
 
     @Test
@@ -2987,7 +2987,7 @@ public class CommandLineHelpTest {
                 "Commands:%n" +
                 "  sub   This is a subcommand%n" +
                 "  help  Displays help information about the specified command%n");
-        assertEquals(expected, new String(baos.toByteArray(), "UTF-8"));
+        assertEquals(expected, baos.toString());
     }
 
     @Test
@@ -3008,7 +3008,11 @@ public class CommandLineHelpTest {
                 "%n" +
                 "      [COMMAND]...            The COMMAND to display the usage help message for.%n" +
                 "  -h, --help                  Show usage help for the help command and exit.%n");
-        assertEquals(expected, new String(baos.toByteArray(), "UTF-8"));
+        assertEquals(expected, baos.toString());
+
+        StringWriter sw = new StringWriter();
+        new CommandLine(new App()).getSubcommands().get("help").usage(new PrintWriter(sw));
+        assertEquals(expected, sw.toString());
     }
 
     @Test
@@ -3026,7 +3030,11 @@ public class CommandLineHelpTest {
                 "Commands:%n" +
                 "  sub   This is a subcommand%n" +
                 "  help  Displays help information about the specified command%n");
-        assertEquals(expected, new String(baos.toByteArray(), "UTF-8"));
+        assertEquals(expected, baos.toString());
+
+        StringWriter sw = new StringWriter();
+        new CommandLine(new App()).usage(new PrintWriter(sw));
+        assertEquals(expected, sw.toString());
     }
 
     @Test
@@ -3043,7 +3051,7 @@ public class CommandLineHelpTest {
                 "Usage: app%n" +
                 "Commands:%n" +
                 "  foo  This is a visible subcommand%n");
-        assertEquals(expected, new String(baos.toByteArray(), "UTF-8"));
+        assertEquals(expected, baos.toString());
     }
 
     @Test
@@ -3061,7 +3069,7 @@ public class CommandLineHelpTest {
 
         String expected = format("" +
                 "Usage: app%n");
-        assertEquals(expected, new String(baos.toByteArray(), "UTF-8"));
+        assertEquals(expected, baos.toString());
     }
 
     @Test
@@ -3080,7 +3088,7 @@ public class CommandLineHelpTest {
                 "Missing required parameters at positions 0..*: FILES%n" +
                 "Usage: <main class> FILES...%n" +
                 "      FILES...                List of files%n");
-        assertEquals(expected, new String(baos.toByteArray(), "UTF-8"));
+        assertEquals(expected, baos.toString());
     }
 
     @Test
@@ -3103,7 +3111,7 @@ public class CommandLineHelpTest {
                 "Usage: <main class> [-v] FILES...%n" +
                 "      FILES...                List of files%n" +
                 "  -v                          Print output%n");
-        assertEquals(expected, new String(baos.toByteArray(), "UTF-8"));
+        assertEquals(expected, baos.toString());
     }
 
     @Test

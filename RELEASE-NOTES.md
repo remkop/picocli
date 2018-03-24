@@ -1,5 +1,16 @@
 # picocli Release Notes
 
+# <a name="3.0.0-alpha-2"></a> Picocli 3.0.0-alpha-2 (UNRELEASED)
+## <a name="3.0.0-alpha-2-fixes"></a> Fixed issues
+
+- [#307] Enhancement: Provide CommandLine.usage(PrintWriter) method for testing and to facilitate migration from commons-cli to picocli.
+
+## <a name="3.0.0-alpha-2-deprecated"></a> Deprecations
+See [3.0.0-alpha-1]()#3.0.0-alpha-1-deprecated)
+
+## <a name="3.0.0-alpha-2-breaking-changes"></a> Potential breaking changes
+See [3.0.0-alpha-1]()#3.0.0-alpha-1-breaking-changes)
+
 # <a name="3.0.0-alpha-1"></a> Picocli 3.0.0-alpha-1
 The picocli community is pleased to announce picocli 3.0.0-alpha-1.
 
