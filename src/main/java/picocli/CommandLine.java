@@ -3179,16 +3179,18 @@ public class CommandLine {
             private boolean overwrittenOptionsAllowed = false;
             private boolean unmatchedArgumentsAllowed = false;
             private boolean expandAtFiles = true;
+            private boolean posixClusteredShortOptionsAllowed = true;
 
             /** Returns the String to use as the separator between options and option parameters. {@code "="} by default,
              * initialized from {@link Command#separator()} if defined.*/
             public String separator() { return (separator == null) ? DEFAULT_SEPARATOR : separator; }
 
-            public boolean stopAtUnmatched()           { return stopAtUnmatched; }
-            public boolean stopAtPositional()          { return stopAtPositional; }
-            public boolean overwrittenOptionsAllowed() { return overwrittenOptionsAllowed; }
-            public boolean unmatchedArgumentsAllowed() { return unmatchedArgumentsAllowed; }
-            public boolean expandAtFiles()             { return expandAtFiles; }
+            public boolean stopAtUnmatched()                   { return stopAtUnmatched; }
+            public boolean stopAtPositional()                  { return stopAtPositional; }
+            public boolean overwrittenOptionsAllowed()         { return overwrittenOptionsAllowed; }
+            public boolean unmatchedArgumentsAllowed()         { return unmatchedArgumentsAllowed; }
+            public boolean expandAtFiles()                     { return expandAtFiles; }
+            public boolean posixClusteredShortOptionsAllowed() { return posixClusteredShortOptionsAllowed; }
 
             /** Sets the String to use as the separator between options and option parameters.
              * @return this ParserSpec for method chaining */
@@ -3198,7 +3200,12 @@ public class CommandLine {
             public ParserSpec overwrittenOptionsAllowed(boolean overwrittenOptionsAllowed) { this.overwrittenOptionsAllowed = overwrittenOptionsAllowed; return this; }
             public ParserSpec unmatchedArgumentsAllowed(boolean unmatchedArgumentsAllowed) { this.unmatchedArgumentsAllowed = unmatchedArgumentsAllowed; return this; }
             public ParserSpec expandAtFiles(boolean expandAtFiles)                         { this.expandAtFiles = expandAtFiles; return this; }
-            void initSeparator(String value)            { if (initializable(separator, value, DEFAULT_SEPARATOR))                         {separator = value;} }
+            public ParserSpec posixClusteredShortOptionsAllowed(boolean posixClusteredShortOptionsAllowed) { this.posixClusteredShortOptionsAllowed = posixClusteredShortOptionsAllowed; return this; }
+            void initSeparator(String value) { if (initializable(separator, value, DEFAULT_SEPARATOR)) {separator = value;} }
+            public String toString() {
+                return String.format("posixClusteredShortOptionsAllowed=%s, stopAtPositional=%s, stopAtUnmatched=%s, separator=%s, overwrittenOptionsAllowed=%s, unmatchedArgumentsAllowed=%s, expandAtFiles=%s",
+                        posixClusteredShortOptionsAllowed, stopAtPositional, stopAtUnmatched, separator, overwrittenOptionsAllowed, unmatchedArgumentsAllowed, expandAtFiles);
+            }
         }
         /** Models the shared attributes of {@link OptionSpec} and {@link PositionalParamSpec}.
          * @since 3.0 */
@@ -4360,6 +4367,7 @@ public class CommandLine {
         List<CommandLine> parse(String... args) {
             Assert.notNull(args, "argument array");
             if (tracer.isInfo()) {tracer.info("Parsing %d command line args %s%n", args.length, Arrays.toString(args));}
+            if (tracer.isDebug()){tracer.debug("Parser configuration: %s%n", config());}
             List<String> expanded = new ArrayList<String>();
             for (String arg : args) { addOrExpand(arg, expanded, new LinkedHashSet<String>()); }
             Stack<String> arguments = new Stack<String>();
@@ -4531,7 +4539,7 @@ public class CommandLine {
                 }
                 // Compact (single-letter) options can be grouped with other options or with an argument.
                 // only single-letter options can be combined with other options or with an argument
-                else if (arg.length() > 2 && arg.startsWith("-")) {
+                else if (config().posixClusteredShortOptionsAllowed() && arg.length() > 2 && arg.startsWith("-")) {
                     if (tracer.isDebug()) {tracer.debug("Trying to process '%s' as clustered short options%n", arg, args);}
                     processClusteredShortOptions(required, initialized, arg, args);
                 }

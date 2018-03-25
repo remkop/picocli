@@ -659,6 +659,48 @@ public class CommandLineTest {
         CompactFields compact = CommandLine.populateCommand(new CompactFields(), "-rvo=\"\"".split(" "));
         verifyCompact(compact, true, true, "", null);
     }
+    @Test
+    public void testParserPosixClustedShortOptions_false_resultsInShortClusteredOptionsNotRecognized() {
+        CompactFields compact = CommandLine.populateCommand(new CompactFields(), "-rvoFILE");
+        verifyCompact(compact, true, true, "FILE", null);
+
+        CommandLine cmd = new CommandLine(new CompactFields());
+        cmd.getCommandSpec().parser().posixClusteredShortOptionsAllowed(false);
+        try {
+            cmd.parse("-rvoFILE");
+            fail("Expected exception");
+        } catch (UnmatchedArgumentException ex) {
+            assertEquals("Unmatched argument [-rvoFILE]", ex.getMessage());
+        }
+    }
+    @Test
+    public void testParserPosixClustedShortOptions_false_disallowsShortOptionsAttachedToOptionParam() {
+        String[] args = {"-oFILE"};
+        CompactFields compact = CommandLine.populateCommand(new CompactFields(), args);
+        verifyCompact(compact, false, false, "FILE", null);
+
+        CompactFields unclustered = new CompactFields();
+        CommandLine cmd = new CommandLine(unclustered);
+        cmd.getCommandSpec().parser().posixClusteredShortOptionsAllowed(false);
+        try {
+            cmd.parse(args);
+            fail("Expected exception");
+        } catch (UnmatchedArgumentException ex) {
+            assertEquals("Unmatched argument [-oFILE]", ex.getMessage());
+        }
+    }
+    @Test
+    public void testParserPosixClustedShortOptions_false_allowsUnclusteredShortOptions() {
+        String[] args = "-r -v -o FILE".split(" ");
+        CompactFields compact = CommandLine.populateCommand(new CompactFields(), args);
+        verifyCompact(compact, true, true, "FILE", null);
+
+        CompactFields unclustered = new CompactFields();
+        CommandLine cmd = new CommandLine(unclustered);
+        cmd.getCommandSpec().parser().posixClusteredShortOptionsAllowed(false);
+        cmd.parse(args);
+        verifyCompact(unclustered, true, true, "FILE", null);
+    }
 
     @Test
     public void testDoubleDashSeparatesPositionalParameters() {
@@ -707,6 +749,7 @@ public class CommandLineTest {
                 "[picocli DEBUG] Could not register converter for java.nio.file.Path: java.lang.ClassNotFoundException: java.nio.file.Path%n");
         String expected = String.format("" +
                         "[picocli INFO] Parsing 6 command line args [-oout, --, -r, -v, p1, p2]%n" +
+                        "[picocli DEBUG] Parser configuration: posixClusteredShortOptionsAllowed=true, stopAtPositional=false, stopAtUnmatched=false, separator=null, overwrittenOptionsAllowed=false, unmatchedArgumentsAllowed=false, expandAtFiles=true%n" +
                         "[picocli DEBUG] Initializing %1$s$CompactFields: 3 options, 1 positional parameters, 0 required, 0 subcommands.%n" +
                         "[picocli DEBUG] Processing argument '-oout'. Remainder=[--, -r, -v, p1, p2]%n" +
                         "[picocli DEBUG] '-oout' cannot be separated into <option>=<option-parameter>%n" +
@@ -1632,6 +1675,7 @@ public class CommandLineTest {
                 "[picocli DEBUG] Could not register converter for java.nio.file.Path: java.lang.ClassNotFoundException: java.nio.file.Path%n");
         String expected = String.format("" +
                         "[picocli INFO] Parsing 8 command line args [--git-dir=/home/rpopma/picocli, commit, -m, \"Fixed typos\", --, src1.java, src2.java, src3.java]%n" +
+                        "[picocli DEBUG] Parser configuration: posixClusteredShortOptionsAllowed=true, stopAtPositional=false, stopAtUnmatched=false, separator=null, overwrittenOptionsAllowed=false, unmatchedArgumentsAllowed=false, expandAtFiles=true%n" +
                         "[picocli DEBUG] Initializing %1$s$Git: 3 options, 0 positional parameters, 0 required, 12 subcommands.%n" +
                         "[picocli DEBUG] Processing argument '--git-dir=/home/rpopma/picocli'. Remainder=[commit, -m, \"Fixed typos\", --, src1.java, src2.java, src3.java]%n" +
                         "[picocli DEBUG] Separated '--git-dir' option from '/home/rpopma/picocli' option parameter%n" +
