@@ -4,6 +4,7 @@
 ## <a name="3.0.0-alpha-2-fixes"></a> Fixed issues
 
 - [#307] Enhancement: Provide CommandLine.usage(PrintWriter) method for testing and to facilitate migration from commons-cli to picocli.
+- [#306] Enhancement: Support generating autocompletion scripts for non-public @Command classes. Thanks to [cbeams](https://github.com/cbeams) for the request.
 
 ## <a name="3.0.0-alpha-2-deprecated"></a> Deprecations
 See [3.0.0-alpha-1]()#3.0.0-alpha-1-deprecated)

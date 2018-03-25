@@ -86,7 +86,8 @@ public class AutoComplete {
         public void run() {
             try {
                 Class<?> cls = Class.forName(commandLineFQCN);
-                CommandLine commandLine = new CommandLine(cls.newInstance());
+                Object instance = CommandLine.defaultFactory().create(cls);
+                CommandLine commandLine = new CommandLine(instance);
 
                 if (commandName == null) {
                     commandName = commandLine.getCommandName(); //new CommandLine.Help(commandLine.commandDescriptor).commandName;
