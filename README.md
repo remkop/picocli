@@ -37,7 +37,8 @@ interactively showing users what options and subcommands are available.
 ![Picocli Demo help message with ANSI colors](docs/images/picocli.Demo.png?raw=true)
 
 #### Releases
-* [Releases](https://github.com/remkop/picocli/releases) - latest: 3.0.0-alpha-1
+* [Releases](https://github.com/remkop/picocli/releases) - latest: 3.0.0-alpha-2
+* [Picocli 3.0.0-alpha-1 Release Notes](https://github.com/remkop/picocli/releases/tag/v3.0.0-alpha-1) - note there are some [potential breaking changes](https://github.com/remkop/picocli/releases/tag/v3.0.0-alpha-1#3.0.0-alpha-1-breaking-changes) from prior versions
 * [Picocli 2.0 Release Notes](https://github.com/remkop/picocli/releases/tag/v2.0.0) - note there are some [potential breaking changes](https://github.com/remkop/picocli/releases/tag/v2.0.0#2.0-breaking-changes) from prior versions
 
 #### Documentation
@@ -138,35 +139,35 @@ See the [source code](https://github.com/remkop/picocli/blob/master/src/main/jav
 
 ### Gradle
 ```
-compile 'info.picocli:picocli:3.0.0-alpha-1'
+compile 'info.picocli:picocli:3.0.0-alpha-2'
 ```
 ### Maven
 ```
 <dependency>
   <groupId>info.picocli</groupId>
   <artifactId>picocli</artifactId>
-  <version>3.0.0-alpha-1</version>
+  <version>3.0.0-alpha-2</version>
 </dependency>
 ```
 ### Scala SBT
 ```
-libraryDependencies += "info.picocli" % "picocli" % "3.0.0-alpha-1"
+libraryDependencies += "info.picocli" % "picocli" % "3.0.0-alpha-2"
 ```
 ### Ivy
 ```
-<dependency org="info.picocli" name="picocli" rev="3.0.0-alpha-1" />
+<dependency org="info.picocli" name="picocli" rev="3.0.0-alpha-2" />
 ```
 ### Grape
 ```groovy
 @Grapes(
-    @Grab(group='info.picocli', module='picocli', version='3.0.0-alpha-1')
+    @Grab(group='info.picocli', module='picocli', version='3.0.0-alpha-2')
 )
 ```
 ### Leiningen
 ```
-[info.picocli/picocli "3.0.0-alpha-1"]
+[info.picocli/picocli "3.0.0-alpha-2"]
 ```
 ### Buildr
 ```
-'info.picocli:picocli:jar:3.0.0-alpha-1'
+'info.picocli:picocli:jar:3.0.0-alpha-2'
 ```

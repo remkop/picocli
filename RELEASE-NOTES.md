@@ -1,6 +1,6 @@
 # picocli Release Notes
 
-# <a name="3.0.0-alpha-2"></a> Picocli 3.0.0-alpha-2 (UNRELEASED)
+# <a name="3.0.0-alpha-2"></a> Picocli 3.0.0-alpha-2
 The picocli community is pleased to announce picocli 3.0.0-alpha-2.
 
 This release includes some bug fixes and small enhancements. See [3.0.0-alpha-1](#3.0.0-alpha-1) for recent functional changes.

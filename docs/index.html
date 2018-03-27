@@ -513,8 +513,8 @@ table.CodeRay td.code>pre{padding:0}
 <div id="header">
 <h1>picocli - a mighty tiny command line interface</h1>
 <div class="details">
-<span id="revnumber">version 3.0.0-alpha-1,</span>
-<span id="revdate">2018-03-21</span>
+<span id="revnumber">version 3.0.0-alpha-2,</span>
+<span id="revdate">2018-03-27</span>
 </div>
 <div id="toc" class="toc2">
 <div id="toctitle">Features</div>
@@ -562,6 +562,7 @@ table.CodeRay td.code>pre{padding:0}
 <li><a href="#__code_unmatched_code_annotation">6.4. <code>@Unmatched</code> annotation</a></li>
 <li><a href="#_unknown_options">6.5. Unknown Options</a></li>
 <li><a href="#_stop_at_unmatched">6.6. Stop At Unmatched</a></li>
+<li><a href="#_disallowing_posix_clustered_short_options">6.7. Disallowing POSIX Clustered Short Options</a></li>
 </ul>
 </li>
 <li><a href="#_help">7. Help</a>
@@ -1955,6 +1956,13 @@ options and positional parameters as soon as it encounters an unmatched argument
 <div class="paragraph">
 <p>When this flag is set, the first unmatched argument and all subsequent command line arguments are added to the
 unmatched arguments list returned by <code>CommandLine.getUnmatchedArguments()</code>.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_disallowing_posix_clustered_short_options">6.7. Disallowing POSIX Clustered Short Options</h3>
+<div class="paragraph">
+<p>By default, the picocli parser allows POSIX clustered short options, so short options like <code>-x -v -f SomeFile</code> can be clustered together like <code>-xvfSomeFile</code>.
+From picocli 3.0, applications can call <code>CommandLine.setPosixClusteredShortOptionsAllowed(false)</code> to enforce that options must be separated with whitespace on the command line.</p>
 </div>
 </div>
 </div>
@@ -3784,7 +3792,7 @@ and <code>useAnsi</code> to customize the Ansi style to use:</p>
 
         cmd.parseWithHandlers(
                 <span class="keyword">new</span> RunLast().useOut(myOut).useAnsi(Help.Ansi.ON),
-                <span class="keyword">new</span> DefaultExceptionHandler().useErr(myErr).useAnsi(Help.Ansi.OFF),
+                CommandLine.defaultExceptionHandler().useErr(myErr).useAnsi(Help.Ansi.OFF),
                 args);
     }
 }</code></pre>
@@ -3807,7 +3815,7 @@ If an exit code was specified, the handler terminates the JVM with the specified
         CommandLine cmd = <span class="keyword">new</span> CommandLine(<span class="keyword">new</span> ExitCodeDemo());
         cmd.parseWithHandlers(
                 <span class="keyword">new</span> RunLast().andExit(<span class="integer">123</span>),
-                <span class="keyword">new</span> DefaultExceptionHandler().andExit(<span class="integer">456</span>),
+                CommandLine.defaultExceptionHandler().andExit(<span class="integer">456</span>),
                 args);
     }
 }</code></pre>
@@ -4133,7 +4141,7 @@ The script body is executed if the user input was valid and did not request usag
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="CodeRay highlight"><code data-lang="groovy"><span class="annotation">@Grab</span>(<span class="string"><span class="delimiter">'</span><span class="content">info.picocli:picocli:3.0.0-alpha-1</span><span class="delimiter">'</span></span>)
+<pre class="CodeRay highlight"><code data-lang="groovy"><span class="annotation">@Grab</span>(<span class="string"><span class="delimiter">'</span><span class="content">info.picocli:picocli:3.0.0-alpha-2</span><span class="delimiter">'</span></span>)
 <span class="annotation">@Command</span>(name = <span class="string"><span class="delimiter">&quot;</span><span class="content">myCommand</span><span class="delimiter">&quot;</span></span>,
   description = <span class="string"><span class="delimiter">&quot;</span><span class="content">@|bold Groovy script|@ @|underline picocli|@ example</span><span class="delimiter">&quot;</span></span>)
 <span class="annotation">@picocli</span>.groovy.PicocliScript
@@ -4172,7 +4180,7 @@ When using a Groovy version older than 2.4.7, use this workaround for the <a hre
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="CodeRay highlight"><code data-lang="groovy"><span class="annotation">@Grab</span>(<span class="string"><span class="delimiter">'</span><span class="content">info.picocli:picocli:3.0.0-alpha-1</span><span class="delimiter">'</span></span>)
+<pre class="CodeRay highlight"><code data-lang="groovy"><span class="annotation">@Grab</span>(<span class="string"><span class="delimiter">'</span><span class="content">info.picocli:picocli:3.0.0-alpha-2</span><span class="delimiter">'</span></span>)
 <span class="annotation">@GrabExclude</span>(<span class="string"><span class="delimiter">'</span><span class="content">org.codehaus.groovy:groovy-all</span><span class="delimiter">'</span></span>) <span class="comment">// work around GROOVY-7613</span>
 ...</code></pre>
 </div>
@@ -4344,7 +4352,7 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
 <h3 id="_gradle">23.1. Gradle</h3>
 <div class="listingblock">
 <div class="content">
-<pre>compile 'info.picocli:picocli:3.0.0-alpha-1'</pre>
+<pre>compile 'info.picocli:picocli:3.0.0-alpha-2'</pre>
 </div>
 </div>
 </div>
@@ -4355,7 +4363,7 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
 <pre>&lt;dependency&gt;
   &lt;groupId&gt;info.picocli&lt;/groupId&gt;
   &lt;artifactId&gt;picocli&lt;/artifactId&gt;
-  &lt;version&gt;3.0.0-alpha-1&lt;/version&gt;
+  &lt;version&gt;3.0.0-alpha-2&lt;/version&gt;
 &lt;/dependency&gt;</pre>
 </div>
 </div>
@@ -4364,7 +4372,7 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
 <h3 id="_scala_sbt">23.3. Scala SBT</h3>
 <div class="listingblock">
 <div class="content">
-<pre>libraryDependencies += "info.picocli" % "picocli" % "3.0.0-alpha-1"</pre>
+<pre>libraryDependencies += "info.picocli" % "picocli" % "3.0.0-alpha-2"</pre>
 </div>
 </div>
 </div>
@@ -4372,7 +4380,7 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
 <h3 id="_ivy">23.4. Ivy</h3>
 <div class="listingblock">
 <div class="content">
-<pre>&lt;dependency org="info.picocli" name="picocli" rev="3.0.0-alpha-1" /&gt;</pre>
+<pre>&lt;dependency org="info.picocli" name="picocli" rev="3.0.0-alpha-2" /&gt;</pre>
 </div>
 </div>
 </div>
@@ -4397,11 +4405,7 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
  */</span>
 <span class="keyword">package</span> <span class="namespace">picocli</span>;
 
-<span class="keyword">import</span> <span class="include">java.io.File</span>;
-<span class="keyword">import</span> <span class="include">java.io.FileReader</span>;
-<span class="keyword">import</span> <span class="include">java.io.LineNumberReader</span>;
-<span class="keyword">import</span> <span class="include">java.io.PrintStream</span>;
-<span class="keyword">import</span> <span class="include">java.io.StreamTokenizer</span>;
+<span class="keyword">import</span> <span class="include">java.io</span>.*;
 <span class="keyword">import</span> <span class="include">java.lang.annotation.ElementType</span>;
 <span class="keyword">import</span> <span class="include">java.lang.annotation.Retention</span>;
 <span class="keyword">import</span> <span class="include">java.lang.annotation.RetentionPolicy</span>;
@@ -4520,7 +4524,7 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
  */</span>
 <span class="directive">public</span> <span class="type">class</span> <span class="class">CommandLine</span> {
     <span class="comment">/** This is picocli version {@value}. */</span>
-    <span class="directive">public</span> <span class="directive">static</span> <span class="directive">final</span> <span class="predefined-type">String</span> VERSION = <span class="string"><span class="delimiter">&quot;</span><span class="content">3.0.0-alpha-1</span><span class="delimiter">&quot;</span></span>;
+    <span class="directive">public</span> <span class="directive">static</span> <span class="directive">final</span> <span class="predefined-type">String</span> VERSION = <span class="string"><span class="delimiter">&quot;</span><span class="content">3.0.0-alpha-2</span><span class="delimiter">&quot;</span></span>;
 
     <span class="directive">private</span> <span class="directive">final</span> Tracer tracer = <span class="keyword">new</span> Tracer();
     <span class="directive">private</span> <span class="directive">final</span> CommandSpec commandSpec;
@@ -4706,6 +4710,28 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
         getCommandSpec().parser().overwrittenOptionsAllowed(newValue);
         <span class="keyword">for</span> (CommandLine command : getCommandSpec().subcommands().values()) {
             command.setOverwrittenOptionsAllowed(newValue);
+        }
+        <span class="keyword">return</span> <span class="local-variable">this</span>;
+    }
+
+    <span class="comment">/** Returns whether the parser accepts clustered short options. The default is {@code true}.
+     * @return {@code true} if short options like {@code -x -v -f SomeFile} can be clustered together like {@code -xvfSomeFile}, {@code false} otherwise
+     * @since 3.0 */</span>
+    <span class="directive">public</span> <span class="type">boolean</span> isPosixClusteredShortOptionsAllowed() { <span class="keyword">return</span> getCommandSpec().parser().posixClusteredShortOptionsAllowed(); }
+
+    <span class="comment">/** Sets whether short options like {@code -x -v -f SomeFile} can be clustered together like {@code -xvfSomeFile}.
+     * &lt;p&gt;The specified setting will be registered with this {@code CommandLine} and the full hierarchy of its
+     * subcommands and nested sub-subcommands &lt;em&gt;at the moment this method is called&lt;/em&gt;. Subcommands added
+     * later will have the default setting. To ensure a setting is applied to all
+     * subcommands, call the setter last, after adding subcommands.&lt;/p&gt;
+     * @param newValue the new setting
+     * @return this {@code CommandLine} object, to allow method chaining
+     * @since 3.0
+     */</span>
+    <span class="directive">public</span> CommandLine setPosixClusteredShortOptionsAllowed(<span class="type">boolean</span> newValue) {
+        getCommandSpec().parser().posixClusteredShortOptionsAllowed(newValue);
+        <span class="keyword">for</span> (CommandLine command : getCommandSpec().subcommands().values()) {
+            command.setPosixClusteredShortOptionsAllowed(newValue);
         }
         <span class="keyword">return</span> <span class="local-variable">this</span>;
     }
@@ -4901,9 +4927,9 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
      * Represents a function that can process the {@code ParseResult} object resulting from successfully
      * {@linkplain #parseArgs(String...) parsing} the command line arguments. This is a
      * &lt;a href=&quot;https://docs.oracle.com/javase/8/docs/api/java/util/function/package-summary.html&quot;&gt;functional interface&lt;/a&gt;
-     * whose functional method is {@link IParseResultHandler2#handleParseResult(CommandLine.ParseResult, Object)}.
+     * whose functional method is {@link IParseResultHandler2#handleParseResult(CommandLine.ParseResult)}.
      * &lt;p&gt;
-     * Implementations of this function can be passed to the {@link #parseWithHandlers(IParseResultHandler2, Object, IExceptionHandler2, String...) CommandLine::parseWithHandlers}
+     * Implementations of this function can be passed to the {@link #parseWithHandlers(IParseResultHandler2,  IExceptionHandler2, String...) CommandLine::parseWithHandlers}
      * methods to take some next step after the command line was successfully parsed.
      * &lt;/p&gt;&lt;p&gt;
      * This interface replaces the {@link IParseResultHandler} interface; it takes the parse result as a {@code ParseResult}
@@ -4919,16 +4945,12 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
         <span class="comment">/** Processes the {@code ParseResult} object resulting from successfully
          * {@linkplain CommandLine#parseArgs(String...) parsing} the command line arguments and returns a return value.
          * @param parseResult the {@code ParseResult} that resulted from successfully parsing the command line arguments
-         * @param prototypeReturnValue prototype return value, may be returned as is when the user requested help for example,
-         *                               or may be used to collect results from multiple subcommands, or may be used by the
-         *                               handler for internal processing and a completely different object is returned
-         * @return an object resulting from handling the parse result
          * @throws ParameterException if a help command was invoked for an unknown subcommand. Any {@code ParameterExceptions}
          *      thrown from this method are treated as if this exception was thrown during parsing and passed to the {@link IExceptionHandler2}
          * @throws ExecutionException if a problem occurred while processing the parse results; use
          *      {@link ExecutionException#getCommandLine()} to get the command or subcommand where processing failed
          */</span>
-        R handleParseResult(ParseResult parseResult, R prototypeReturnValue) <span class="directive">throws</span> <span class="exception">ExecutionException</span>;
+        R handleParseResult(ParseResult parseResult) <span class="directive">throws</span> <span class="exception">ExecutionException</span>;
     }
     <span class="comment">/**
      * Represents a function that can handle a {@code ParameterException} that occurred while
@@ -4959,7 +4981,7 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
      * and {@code ExecutionExceptions} that occurred while executing the {@code Runnable} or {@code Callable} command.
      * &lt;p&gt;
      * Implementations of this interface can be passed to the
-     * {@link #parseWithHandlers(IParseResultHandler2, Object, IExceptionHandler2, String...) CommandLine::parseWithHandlers} method.
+     * {@link #parseWithHandlers(IParseResultHandler2,  IExceptionHandler2, String...) CommandLine::parseWithHandlers} method.
      * &lt;/p&gt;&lt;p&gt;
      * This interface replaces the {@link IParseResultHandler} interface.
      * &lt;/p&gt;
@@ -4971,22 +4993,18 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
          * line arguments and optionally returns a list of results.
          * @param ex the ParameterException describing the problem that occurred while parsing the command line arguments,
          *           and the CommandLine representing the command or subcommand whose input was invalid
-         * @param prototypeReturnValue prototype return value, may be returned as is or may be used by the
-         *                               handler for internal processing and a completely different object is returned
          * @param args the command line arguments that could not be parsed
          * @return an object resulting from handling the exception
          */</span>
-        R handleParseException(ParameterException ex, R prototypeReturnValue, <span class="predefined-type">String</span><span class="type">[]</span> args);
+        R handleParseException(ParameterException ex, <span class="predefined-type">String</span><span class="type">[]</span> args);
         <span class="comment">/** Handles a {@code ExecutionException} that occurred while executing the {@code Runnable} or
          * {@code Callable} command and optionally returns a list of results.
          * @param ex the ExecutionException describing the problem that occurred while executing the {@code Runnable} or
          *          {@code Callable} command, and the CommandLine representing the command or subcommand that was being executed
-         * @param prototypeReturnValue prototype return value, may be returned as is or may be used by the
-         *                               handler for internal processing and a completely different object is returned
          * @param parseResult the result of parsing the command line arguments
          * @return an object resulting from handling the exception
          */</span>
-        R handleExecutionException(<span class="exception">ExecutionException</span> ex, R prototypeReturnValue, ParseResult parseResult);
+        R handleExecutionException(<span class="exception">ExecutionException</span> ex, ParseResult parseResult);
     }
 
     <span class="comment">/** Abstract superclass for {@link IParseResultHandler2} and {@link IExceptionHandler2} implementations.
@@ -5073,12 +5091,11 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
          * whose input was invalid, to the stream returned by {@link #err()}.
          * @param ex the ParameterException describing the problem that occurred while parsing the command line arguments,
          *           and the CommandLine representing the command or subcommand whose input was invalid
-         * @param prototypeReturnValue prototype return value, returned as is unless an exit code is set
          * @param args the command line arguments that could not be parsed
          * @return the empty list
          * @since 3.0 */</span>
-        <span class="directive">public</span> R handleParseException(ParameterException ex, R prototypeReturnValue, <span class="predefined-type">String</span><span class="type">[]</span> args) {
-            internalHandleParseException(ex, err(), ansi(), args); <span class="keyword">return</span> returnResultOrExit(prototypeReturnValue); }
+        <span class="directive">public</span> R handleParseException(ParameterException ex, <span class="predefined-type">String</span><span class="type">[]</span> args) {
+            internalHandleParseException(ex, err(), ansi(), args); <span class="keyword">return</span> returnResultOrExit(<span class="predefined-constant">null</span>); }
 
         <span class="directive">private</span> <span class="type">void</span> internalHandleParseException(ParameterException ex, <span class="predefined-type">PrintStream</span> out, Help.Ansi ansi, <span class="predefined-type">String</span><span class="type">[]</span> args) {
             out.println(ex.getMessage());
@@ -5087,14 +5104,15 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
 
         <span class="comment">/** This implementation always simply rethrows the specified exception.
          * @param ex the ExecutionException describing the problem that occurred while executing the {@code Runnable} or {@code Callable} command
-         * @param prototypeReturnValue ignored
          * @param parseResult the result of parsing the command line arguments
          * @return nothing: this method always rethrows the specified exception
          * @throws ExecutionException always rethrows the specified exception
          * @since 3.0 */</span>
-        <span class="directive">public</span> R handleExecutionException(<span class="exception">ExecutionException</span> ex, R prototypeReturnValue, ParseResult parseResult) { <span class="keyword">throw</span> ex; }
+        <span class="directive">public</span> R handleExecutionException(<span class="exception">ExecutionException</span> ex, ParseResult parseResult) { <span class="keyword">throw</span> ex; }
         <span class="annotation">@Override</span> <span class="directive">protected</span> DefaultExceptionHandler&lt;R&gt; self() { <span class="keyword">return</span> <span class="local-variable">this</span>; }
     }
+    <span class="comment">/** Convenience method that returns {@code new DefaultExceptionHandler&lt;List&lt;Object&gt;&gt;()}. */</span>
+    <span class="directive">public</span> <span class="directive">static</span> DefaultExceptionHandler&lt;<span class="predefined-type">List</span>&lt;<span class="predefined-type">Object</span>&gt;&gt; defaultExceptionHandler() { <span class="keyword">return</span> <span class="keyword">new</span> DefaultExceptionHandler&lt;<span class="predefined-type">List</span>&lt;<span class="predefined-type">Object</span>&gt;&gt;(); }
 
     <span class="comment">/** @deprecated use {@link #printHelpIfRequested(List, PrintStream, PrintStream, Help.Ansi)} instead
      * @since 2.0 */</span>
@@ -5180,7 +5198,7 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
         <span class="keyword">throw</span> <span class="keyword">new</span> <span class="exception">ExecutionException</span>(parsed, <span class="string"><span class="delimiter">&quot;</span><span class="content">Parsed command (</span><span class="delimiter">&quot;</span></span> + command + <span class="string"><span class="delimiter">&quot;</span><span class="content">) is not Runnable or Callable</span><span class="delimiter">&quot;</span></span>);
     }
     <span class="comment">/** Command line parse result handler that returns a value. This handler prints help if requested, and otherwise calls
-     * {@link #handle(CommandLine.ParseResult, Object)} with the parse result. Facilitates implementation of the {@link IParseResultHandler2} interface.
+     * {@link #handle(CommandLine.ParseResult)} with the parse result. Facilitates implementation of the {@link IParseResultHandler2} interface.
      * &lt;p&gt;Note that {@code AbstractParseResultHandler} is a generic type. This, along with the abstract {@code self} method,
      * allows method chaining to work properly in subclasses, without the need for casts. An example subclass can look like this:&lt;/p&gt;
      * &lt;pre&gt;{@code
@@ -5193,24 +5211,21 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
      * }&lt;/pre&gt;
      * @since 3.0 */</span>
     <span class="directive">public</span> <span class="directive">abstract</span> <span class="directive">static</span> <span class="type">class</span> <span class="class">AbstractParseResultHandler</span>&lt;R&gt; <span class="directive">extends</span> AbstractHandler&lt;R, AbstractParseResultHandler&lt;R&gt;&gt; <span class="directive">implements</span> IParseResultHandler2&lt;R&gt; {
-        <span class="comment">/** Prints help if requested, and otherwise calls {@link #handle(CommandLine.ParseResult, Object)}.
+        <span class="comment">/** Prints help if requested, and otherwise calls {@link #handle(CommandLine.ParseResult)}.
          * Finally, either a list of result objects is returned, or the JVM is terminated if an exit code {@linkplain #andExit(int) was set}.
          *
          * @param parseResult the {@code ParseResult} that resulted from successfully parsing the command line arguments
-         * @param prototypeReturnValue prototype return value, may be returned as is when the user requested help for example,
-         *                               or may be used to collect results from multiple subcommands, or may be used by the
-         *                               handler for internal processing and a completely different object is returned
          * @return the result of processing parse results, may be the specified prototype or some other object
          * @throws ParameterException if the {@link HelpCommand HelpCommand} was invoked for an unknown subcommand. Any {@code ParameterExceptions}
          *      thrown from this method are treated as if this exception was thrown during parsing and passed to the {@link IExceptionHandler2}
          * @throws ExecutionException if a problem occurred while processing the parse results; client code can use
          *      {@link ExecutionException#getCommandLine()} to get the command or subcommand where processing failed
          */</span>
-        <span class="directive">public</span> R handleParseResult(ParseResult parseResult, R prototypeReturnValue) <span class="directive">throws</span> <span class="exception">ExecutionException</span> {
+        <span class="directive">public</span> R handleParseResult(ParseResult parseResult) <span class="directive">throws</span> <span class="exception">ExecutionException</span> {
             <span class="keyword">if</span> (printHelpIfRequested(parseResult.asCommandLineList(), out(), err(), ansi())) {
-                <span class="keyword">return</span> returnResultOrExit(prototypeReturnValue);
+                <span class="keyword">return</span> returnResultOrExit(<span class="predefined-constant">null</span>);
             }
-            <span class="keyword">return</span> returnResultOrExit(handle(parseResult, prototypeReturnValue));
+            <span class="keyword">return</span> returnResultOrExit(handle(parseResult));
         }
 
         <span class="comment">/** Processes the specified {@code ParseResult} and returns the result as a list of objects.
@@ -5218,59 +5233,16 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
          * rethrowing an {@code ExecutionException} that details the problem and captures the offending {@code CommandLine} object.
          *
          * @param parseResult the {@code ParseResult} that resulted from successfully parsing the command line arguments
-         * @param prototypeReturnValue prototype return value, may be returned as is when the user requested help for example,
-         *                               or may be used to collect results from multiple subcommands, or may be used by the
-         *                               handler for internal processing and a completely different object is returned
          * @return the result of processing parse results, may be the specified prototype or some other object
          * @throws ExecutionException if a problem occurred while processing the parse results; client code can use
          *      {@link ExecutionException#getCommandLine()} to get the command or subcommand where processing failed
          */</span>
-        <span class="directive">protected</span> <span class="directive">abstract</span> R handle(ParseResult parseResult, R prototypeReturnValue) <span class="directive">throws</span> <span class="exception">ExecutionException</span>;
+        <span class="directive">protected</span> <span class="directive">abstract</span> R handle(ParseResult parseResult) <span class="directive">throws</span> <span class="exception">ExecutionException</span>;
     }
-    <span class="comment">/** Command line parse result handler that does not return a result. Prints help if requested, and otherwise calls
-     * {@link #handle(CommandLine.ParseResult)} with the parse result. Facilitates implementation of the {@link IParseResultHandler2} interface.
-     * &lt;p&gt;An example subclass can look like this:&lt;/p&gt;
-     * &lt;pre&gt;{@code
-     * class MyResultHandler extends AbstractSimpleParseResultHandler {
-     *     protected void handle(ParseResult parseResult) throws ExecutionException { ... }
-     * }
-     * }&lt;/pre&gt;
-     * @since 3.0 */</span>
-    <span class="directive">public</span> <span class="directive">abstract</span> <span class="directive">static</span> <span class="type">class</span> <span class="class">AbstractSimpleParseResultHandler</span> <span class="directive">extends</span> AbstractHandler&lt;<span class="predefined-type">Void</span>, AbstractSimpleParseResultHandler&gt; <span class="directive">implements</span> IParseResultHandler2&lt;<span class="predefined-type">Void</span>&gt; {
-        <span class="comment">/** Prints help if requested, and otherwise calls {@link #handle(CommandLine.ParseResult)}.
-         * Finally, either a list of result objects is returned, or the JVM is terminated if an exit code {@linkplain #andExit(int) was set}.
-         *
-         * @param parseResult the {@code ParseResult} that resulted from successfully parsing the command line arguments
-         * @param ignored value returned as is
-         * @return the specified return value
-         * @throws ParameterException if the {@link HelpCommand HelpCommand} was invoked for an unknown subcommand. Any {@code ParameterExceptions}
-         *      thrown from this method are treated as if this exception was thrown during parsing and passed to the {@link IExceptionHandler2}
-         * @throws ExecutionException if a problem occurred while processing the parse results; client code can use
-         *      {@link ExecutionException#getCommandLine()} to get the command or subcommand where processing failed
-         */</span>
-        <span class="directive">public</span> <span class="predefined-type">Void</span> handleParseResult(ParseResult parseResult, <span class="predefined-type">Void</span> ignored) <span class="directive">throws</span> <span class="exception">ExecutionException</span> {
-            <span class="keyword">if</span> (printHelpIfRequested(parseResult.asCommandLineList(), out(), err(), ansi())) {
-                <span class="keyword">return</span> returnResultOrExit(ignored);
-            }
-            handle(parseResult);
-            <span class="keyword">return</span> returnResultOrExit(ignored);
-        }
-        <span class="comment">/** Processes the specified {@code ParseResult}.
-         * Implementations are responsible for catching any exceptions thrown in the {@code handle} method, and
-         * rethrowing an {@code ExecutionException} that details the problem and captures the offending {@code CommandLine} object.
-         *
-         * @param parseResult the {@code ParseResult} that resulted from successfully parsing the command line arguments
-         * @throws ExecutionException if a problem occurred while processing the parse results; client code can use
-         *      {@link ExecutionException#getCommandLine()} to get the command or subcommand where processing failed
-         */</span>
-        <span class="directive">protected</span> <span class="directive">abstract</span> <span class="type">void</span> handle(ParseResult parseResult) <span class="directive">throws</span> <span class="exception">ExecutionException</span>;
-        <span class="annotation">@Override</span> <span class="directive">protected</span> AbstractSimpleParseResultHandler self() { <span class="keyword">return</span> <span class="local-variable">this</span>; }
-    }
-
     <span class="comment">/**
      * Command line parse result handler that prints help if requested, and otherwise executes the top-level
      * {@code Runnable} or {@code Callable} command.
-     * For use in the {@link #parseWithHandlers(IParseResultHandler2, Object, IExceptionHandler2, String...) parseWithHandler} methods.
+     * For use in the {@link #parseWithHandlers(IParseResultHandler2, IExceptionHandler2, String...) parseWithHandler} methods.
      * @since 2.0 */</span>
     <span class="directive">public</span> <span class="directive">static</span> <span class="type">class</span> <span class="class">RunFirst</span> <span class="directive">extends</span> AbstractParseResultHandler&lt;<span class="predefined-type">List</span>&lt;<span class="predefined-type">Object</span>&gt;&gt; <span class="directive">implements</span> IParseResultHandler {
         <span class="comment">/** Prints help if requested, and otherwise executes the top-level {@code Runnable} or {@code Callable} command.
@@ -5302,7 +5274,7 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
          * @throws ExecutionException if a problem occurred while processing the parse results; use
          *      {@link ExecutionException#getCommandLine()} to get the command or subcommand where processing failed
          * @since 3.0 */</span>
-        <span class="directive">protected</span> <span class="predefined-type">List</span>&lt;<span class="predefined-type">Object</span>&gt; handle(ParseResult parseResult, <span class="predefined-type">List</span>&lt;<span class="predefined-type">Object</span>&gt; prototypeResult) <span class="directive">throws</span> <span class="exception">ExecutionException</span> {
+        <span class="directive">protected</span> <span class="predefined-type">List</span>&lt;<span class="predefined-type">Object</span>&gt; handle(ParseResult parseResult) <span class="directive">throws</span> <span class="exception">ExecutionException</span> {
             <span class="keyword">return</span> execute(parseResult.commandSpec().commandLine(), <span class="keyword">new</span> <span class="predefined-type">ArrayList</span>&lt;<span class="predefined-type">Object</span>&gt;()); <span class="comment">// first</span>
         }
         <span class="annotation">@Override</span> <span class="directive">protected</span> RunFirst self() { <span class="keyword">return</span> <span class="local-variable">this</span>; }
@@ -5310,7 +5282,7 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
     <span class="comment">/**
      * Command line parse result handler that prints help if requested, and otherwise executes the most specific
      * {@code Runnable} or {@code Callable} subcommand.
-     * For use in the {@link #parseWithHandlers(IParseResultHandler2, Object, IExceptionHandler2, String...) parseWithHandler} methods.
+     * For use in the {@link #parseWithHandlers(IParseResultHandler2,  IExceptionHandler2, String...) parseWithHandler} methods.
      * &lt;p&gt;
      * Something like this:&lt;/p&gt;
      * &lt;pre&gt;{@code
@@ -5375,16 +5347,16 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
          * @throws ExecutionException if a problem occurred while processing the parse results; use
          *      {@link ExecutionException#getCommandLine()} to get the command or subcommand where processing failed
          * @since 3.0 */</span>
-        <span class="directive">protected</span> <span class="predefined-type">List</span>&lt;<span class="predefined-type">Object</span>&gt; handle(ParseResult parseResult, <span class="predefined-type">List</span>&lt;<span class="predefined-type">Object</span>&gt; prototypeResult) <span class="directive">throws</span> <span class="exception">ExecutionException</span> {
+        <span class="directive">protected</span> <span class="predefined-type">List</span>&lt;<span class="predefined-type">Object</span>&gt; handle(ParseResult parseResult) <span class="directive">throws</span> <span class="exception">ExecutionException</span> {
             <span class="predefined-type">List</span>&lt;CommandLine&gt; parsedCommands = parseResult.asCommandLineList();
-            <span class="keyword">return</span> execute(parsedCommands.get(parsedCommands.size() - <span class="integer">1</span>), prototypeResult);
+            <span class="keyword">return</span> execute(parsedCommands.get(parsedCommands.size() - <span class="integer">1</span>), <span class="keyword">new</span> <span class="predefined-type">ArrayList</span>&lt;<span class="predefined-type">Object</span>&gt;());
         }
         <span class="annotation">@Override</span> <span class="directive">protected</span> RunLast self() { <span class="keyword">return</span> <span class="local-variable">this</span>; }
     }
     <span class="comment">/**
      * Command line parse result handler that prints help if requested, and otherwise executes the top-level command and
      * all subcommands as {@code Runnable} or {@code Callable}.
-     * For use in the {@link #parseWithHandlers(IParseResultHandler2, Object, IExceptionHandler2, String...) parseWithHandler} methods.
+     * For use in the {@link #parseWithHandlers(IParseResultHandler2,  IExceptionHandler2, String...) parseWithHandler} methods.
      * @since 2.0 */</span>
     <span class="directive">public</span> <span class="directive">static</span> <span class="type">class</span> <span class="class">RunAll</span> <span class="directive">extends</span> AbstractParseResultHandler&lt;<span class="predefined-type">List</span>&lt;<span class="predefined-type">Object</span>&gt;&gt; <span class="directive">implements</span> IParseResultHandler {
         <span class="comment">/** Prints help if requested, and otherwise executes the top-level command and all subcommands as {@code Runnable}
@@ -5421,7 +5393,8 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
          * @throws ExecutionException if a problem occurred while processing the parse results; use
          *      {@link ExecutionException#getCommandLine()} to get the command or subcommand where processing failed
          * @since 3.0 */</span>
-        <span class="directive">protected</span> <span class="predefined-type">List</span>&lt;<span class="predefined-type">Object</span>&gt; handle(ParseResult parseResult, <span class="predefined-type">List</span>&lt;<span class="predefined-type">Object</span>&gt; prototypeResult) <span class="directive">throws</span> <span class="exception">ExecutionException</span> {
+        <span class="directive">protected</span> <span class="predefined-type">List</span>&lt;<span class="predefined-type">Object</span>&gt; handle(ParseResult parseResult) <span class="directive">throws</span> <span class="exception">ExecutionException</span> {
+            <span class="predefined-type">List</span>&lt;<span class="predefined-type">Object</span>&gt; prototypeResult = <span class="keyword">new</span> <span class="predefined-type">ArrayList</span>&lt;<span class="predefined-type">Object</span>&gt;();
             execute(parseResult.commandSpec().commandLine(), prototypeResult);
             <span class="keyword">while</span> (parseResult.hasSubcommand()) {
                 parseResult = parseResult.subcommand();
@@ -5432,13 +5405,13 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
         <span class="annotation">@Override</span> <span class="directive">protected</span> RunAll self() { <span class="keyword">return</span> <span class="local-variable">this</span>; }
     }
 
-    <span class="comment">/** @deprecated use {@link #parseWithHandler(IParseResultHandler2, Object, String[])} instead
+    <span class="comment">/** @deprecated use {@link #parseWithHandler(IParseResultHandler2,  String[])} instead
      * @since 2.0 */</span>
     <span class="annotation">@Deprecated</span> <span class="directive">public</span> <span class="predefined-type">List</span>&lt;<span class="predefined-type">Object</span>&gt; parseWithHandler(IParseResultHandler handler, <span class="predefined-type">PrintStream</span> out, <span class="predefined-type">String</span>... args) {
         <span class="keyword">return</span> parseWithHandlers(handler, out, Help.Ansi.AUTO, <span class="keyword">new</span> DefaultExceptionHandler(), args);
     }
     <span class="comment">/**
-     * Returns the result of calling {@link #parseWithHandlers(IParseResultHandler2, Object, IExceptionHandler2, String...)} with
+     * Returns the result of calling {@link #parseWithHandlers(IParseResultHandler2,  IExceptionHandler2, String...)} with
      * a new {@link DefaultExceptionHandler} in addition to the specified parse result handler and the specified command line arguments.
      * &lt;p&gt;
      * This is a convenience method intended to offer the same ease of use as the {@link #run(Runnable, PrintStream, PrintStream, Help.Ansi, String...) run}
@@ -5449,9 +5422,9 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
      * &lt;pre&gt;{@code
      * try {
      *     ParseResult parseResult = parseArgs(args);
-     *     return handler.handleParseResult(parseResult, prototypeReturnValue);
+     *     return handler.handleParseResult(parseResult);
      * } catch (ParameterException ex) {
-     *     return new DefaultExceptionHandler&lt;R&gt;().handleParseException(ex, prototypeReturnValue, args);
+     *     return new DefaultExceptionHandler&lt;R&gt;().handleParseException(ex, args);
      * }
      * }&lt;/pre&gt;
      * &lt;p&gt;
@@ -5466,9 +5439,6 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
      * &lt;/ul&gt;
      * @param &lt;R&gt; the return type of this handler
      * @param handler the function that will handle the result of successfully parsing the command line arguments
-     * @param prototypeReturnValue prototype return value, may be returned as is when the user requested help for example,
-     *                               or may be used to collect results from multiple subcommands, or may be used by the
-     *                               handler for internal processing and a completely different object is returned
      * @param args the command line arguments
      * @return an object resulting from handling the parse result or the exception that occurred while parsing the input
      * @throws ExecutionException if the command line arguments were parsed successfully but a problem occurred while processing the
@@ -5476,31 +5446,11 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
      * @see RunLast
      * @see RunAll
      * @since 3.0 */</span>
-    <span class="directive">public</span> &lt;R&gt; R parseWithHandler(IParseResultHandler2&lt;R&gt; handler, R prototypeReturnValue, <span class="predefined-type">String</span><span class="type">[]</span> args) {
-        <span class="keyword">return</span> parseWithHandlers(handler, prototypeReturnValue, <span class="keyword">new</span> DefaultExceptionHandler&lt;R&gt;(), args);
-    }
-    <span class="comment">/**
-     * Calls {@link #parseWithSimpleHandlers(AbstractSimpleParseResultHandler, IExceptionHandler2, String...)} with
-     * a new {@link DefaultExceptionHandler} in addition to the specified parse result handler and the specified command line arguments.
-     * &lt;p&gt;Calling this method roughly expands to:&lt;/p&gt;
-     * &lt;pre&gt;{@code
-     * try {
-     *     ParseResult parseResult = parseArgs(args);
-     *     handler.handleParseResult(parseResult);
-     * } catch (ParameterException ex) {
-     *     new DefaultExceptionHandler&lt;Void&gt;().handleParseException(ex, null, (String[]) args);
-     * }
-     * }&lt;/pre&gt;
-     * @param handler the function that will handle the result of successfully parsing the command line arguments
-     * @param args the command line arguments
-     * @throws ExecutionException if the command line arguments were parsed successfully but a problem occurred while processing the
-     *      parse results; use {@link ExecutionException#getCommandLine()} to get the command or subcommand where processing failed
-     * @since 3.0 */</span>
-    <span class="directive">public</span> <span class="type">void</span> parseWithSimpleHandler(AbstractSimpleParseResultHandler handler, <span class="predefined-type">String</span>... args) {
-        parseWithSimpleHandlers(handler, <span class="keyword">new</span> DefaultExceptionHandler&lt;<span class="predefined-type">Void</span>&gt;(), args);
+    <span class="directive">public</span> &lt;R&gt; R parseWithHandler(IParseResultHandler2&lt;R&gt; handler, <span class="predefined-type">String</span><span class="type">[]</span> args) {
+        <span class="keyword">return</span> parseWithHandlers(handler, <span class="keyword">new</span> DefaultExceptionHandler&lt;R&gt;(), args);
     }
 
-    <span class="comment">/** @deprecated use {@link #parseWithHandlers(IParseResultHandler2, Object, IExceptionHandler2, String...)} instead
+    <span class="comment">/** @deprecated use {@link #parseWithHandlers(IParseResultHandler2, IExceptionHandler2, String...)} instead
      * @since 2.0 */</span>
     <span class="annotation">@Deprecated</span> <span class="directive">public</span> <span class="predefined-type">List</span>&lt;<span class="predefined-type">Object</span>&gt; parseWithHandlers(IParseResultHandler handler, <span class="predefined-type">PrintStream</span> out, Help.Ansi ansi, IExceptionHandler exceptionHandler, <span class="predefined-type">String</span>... args) {
         <span class="keyword">try</span> {
@@ -5544,9 +5494,6 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
      * &lt;/ul&gt;
      *
      * @param handler the function that will handle the result of successfully parsing the command line arguments
-     * @param prototypeReturnValue prototype return value, may be returned as is when the user requested help for example,
-     *                               or may be used to collect results from multiple subcommands, or may be used by the
-     *                               handler for internal processing and a completely different object is returned
      * @param exceptionHandler the function that can handle the {@code ParameterException} thrown when the command line arguments are invalid
      * @param args the command line arguments
      * @return an object resulting from handling the parse result or the exception that occurred while parsing the input
@@ -5557,51 +5504,15 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
      * @see RunAll
      * @see DefaultExceptionHandler
      * @since 3.0 */</span>
-    <span class="directive">public</span> &lt;R&gt; R parseWithHandlers(IParseResultHandler2&lt;R&gt; handler, R prototypeReturnValue, IExceptionHandler2&lt;R&gt; exceptionHandler, <span class="predefined-type">String</span>... args) {
+    <span class="directive">public</span> &lt;R&gt; R parseWithHandlers(IParseResultHandler2&lt;R&gt; handler, IExceptionHandler2&lt;R&gt; exceptionHandler, <span class="predefined-type">String</span>... args) {
         ParseResult parseResult = <span class="predefined-constant">null</span>;
         <span class="keyword">try</span> {
             parseResult = parseArgs(args);
-            <span class="keyword">return</span> handler.handleParseResult(parseResult, prototypeReturnValue);
+            <span class="keyword">return</span> handler.handleParseResult(parseResult);
         } <span class="keyword">catch</span> (ParameterException ex) {
-            <span class="keyword">return</span> exceptionHandler.handleParseException(ex, prototypeReturnValue, (<span class="predefined-type">String</span><span class="type">[]</span>) args);
+            <span class="keyword">return</span> exceptionHandler.handleParseException(ex, (<span class="predefined-type">String</span><span class="type">[]</span>) args);
         } <span class="keyword">catch</span> (<span class="exception">ExecutionException</span> ex) {
-            <span class="keyword">return</span> exceptionHandler.handleExecutionException(ex, prototypeReturnValue, parseResult);
-        }
-    }
-    <span class="comment">/**
-     * Tries to {@linkplain #parseArgs(String...) parse} the specified command line arguments, and if successful, delegates
-     * the processing of the resulting {@code ParseResult} object to the specified {@linkplain AbstractSimpleParseResultHandler handler}.
-     * If the command line arguments were invalid, the {@code ParameterException} thrown from the {@code parse} method
-     * is caught and passed to the specified {@link IExceptionHandler2}.
-     * &lt;p&gt;Calling this method roughly expands to:&lt;/p&gt;
-     * &lt;pre&gt;
-     * ParseResult parseResult = null;
-     * try {
-     *     parseResult = parseArgs(args);
-     *     handleParseResult(parseResult);
-     * } catch (ParameterException ex) {
-     *     exceptionHandler.handleParseException(ex, null, (String[]) args);
-     * } catch (ExecutionException ex) {
-     *     exceptionHandler.handleExecutionException(ex, null, parseResult);
-     * }
-     * &lt;/pre&gt;
-     *
-     * @param handler the function that will handle the result of successfully parsing the command line arguments
-     * @param exceptionHandler the function that can handle the {@code ParameterException} thrown when the command line arguments are invalid
-     * @param args the command line arguments
-     * @throws ExecutionException if the command line arguments were parsed successfully but a problem occurred while processing the parse
-     *      result {@code ParseResult} object; use {@link ExecutionException#getCommandLine()} to get the command or subcommand where processing failed
-     * @see DefaultExceptionHandler
-     * @since 3.0 */</span>
-    <span class="directive">public</span> <span class="type">void</span> parseWithSimpleHandlers(AbstractSimpleParseResultHandler handler, IExceptionHandler2&lt;<span class="predefined-type">Void</span>&gt; exceptionHandler, <span class="predefined-type">String</span>... args) {
-        ParseResult parseResult = <span class="predefined-constant">null</span>;
-        <span class="keyword">try</span> {
-            parseResult = parseArgs(args);
-            handler.handleParseResult(parseResult, <span class="predefined-constant">null</span>);
-        } <span class="keyword">catch</span> (ParameterException ex) {
-            exceptionHandler.handleParseException(ex, <span class="predefined-constant">null</span>, (<span class="predefined-type">String</span><span class="type">[]</span>) args);
-        } <span class="keyword">catch</span> (<span class="exception">ExecutionException</span> ex) {
-            exceptionHandler.handleExecutionException(ex, <span class="predefined-constant">null</span>, parseResult);
+            <span class="keyword">return</span> exceptionHandler.handleExecutionException(ex, parseResult);
         }
     }
     <span class="comment">/**
@@ -5643,9 +5554,13 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
      * @param out the printStream to print to
      * @see #usage(PrintStream, Help.ColorScheme)
      */</span>
-    <span class="directive">public</span> <span class="type">void</span> usage(<span class="predefined-type">PrintStream</span> out) {
-        usage(out, Help.Ansi.AUTO);
-    }
+    <span class="directive">public</span> <span class="type">void</span> usage(<span class="predefined-type">PrintStream</span> out) { usage(out, Help.Ansi.AUTO); }
+    <span class="comment">/**
+     * Delegates to {@link #usage(PrintWriter, Help.Ansi)} with the {@linkplain Help.Ansi#AUTO platform default}.
+     * @param writer the PrintWriter to print to
+     * @see #usage(PrintWriter, Help.ColorScheme)
+     * @since 3.0 */</span>
+    <span class="directive">public</span> <span class="type">void</span> usage(<span class="predefined-type">PrintWriter</span> writer) { usage(writer, Help.Ansi.AUTO); }
 
     <span class="comment">/**
      * Delegates to {@link #usage(PrintStream, Help.ColorScheme)} with the {@linkplain Help#defaultColorScheme(CommandLine.Help.Ansi) default color scheme}.
@@ -5653,9 +5568,11 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
      * @param ansi whether the usage message should include ANSI escape codes or not
      * @see #usage(PrintStream, Help.ColorScheme)
      */</span>
-    <span class="directive">public</span> <span class="type">void</span> usage(<span class="predefined-type">PrintStream</span> out, Help.Ansi ansi) {
-        usage(out, Help.defaultColorScheme(ansi));
-    }
+    <span class="directive">public</span> <span class="type">void</span> usage(<span class="predefined-type">PrintStream</span> out, Help.Ansi ansi) { usage(out, Help.defaultColorScheme(ansi)); }
+    <span class="comment">/** Similar to {@link #usage(PrintStream, Help.Ansi)} but with the specified {@code PrintWriter} instead of a {@code PrintStream}.
+     * @since 3.0 */</span>
+    <span class="directive">public</span> <span class="type">void</span> usage(<span class="predefined-type">PrintWriter</span> writer, Help.Ansi ansi) { usage(writer, Help.defaultColorScheme(ansi)); }
+
     <span class="comment">/**
      * Prints a usage help message for the annotated command class to the specified {@code PrintStream}.
      * Delegates construction of the usage help message to the {@link Help} inner class and is equivalent to:
@@ -5689,9 +5606,15 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
      * @param colorScheme the {@code ColorScheme} defining the styles for options, parameters and commands when ANSI is enabled
      */</span>
     <span class="directive">public</span> <span class="type">void</span> usage(<span class="predefined-type">PrintStream</span> out, Help.ColorScheme colorScheme) {
-        Help help = <span class="keyword">new</span> Help(getCommandSpec(), colorScheme);
-        <span class="predefined-type">StringBuilder</span> sb = <span class="keyword">new</span> <span class="predefined-type">StringBuilder</span>()
-                .append(help.headerHeading())
+        out.print(usage(<span class="keyword">new</span> <span class="predefined-type">StringBuilder</span>(), <span class="keyword">new</span> Help(getCommandSpec(), colorScheme)));
+    }
+    <span class="comment">/** Similar to {@link #usage(PrintStream, Help.ColorScheme)}, but with the specified {@code PrintWriter} instead of a {@code PrintStream}.
+     * @since 3.0 */</span>
+    <span class="directive">public</span> <span class="type">void</span> usage(<span class="predefined-type">PrintWriter</span> writer, Help.ColorScheme colorScheme) {
+        writer.print(usage(<span class="keyword">new</span> <span class="predefined-type">StringBuilder</span>(), <span class="keyword">new</span> Help(getCommandSpec(), colorScheme)));
+    }
+    <span class="directive">private</span> <span class="directive">static</span> <span class="predefined-type">StringBuilder</span> usage(<span class="predefined-type">StringBuilder</span> sb, Help help) {
+        <span class="keyword">return</span> sb.append(help.headerHeading())
                 .append(help.header())
                 .append(help.synopsisHeading())      <span class="comment">//e.g. Usage:</span>
                 .append(help.synopsis(help.synopsisHeadingLength())) <span class="comment">//e.g. &amp;lt;main class&amp;gt; [OPTIONS] &amp;lt;command&amp;gt; [COMMAND-OPTIONS] [ARGUMENTS]</span>
@@ -5705,7 +5628,6 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
                 .append(help.commandList())          <span class="comment">//e.g.    add       adds the frup to the frooble</span>
                 .append(help.footerHeading())
                 .append(help.footer());
-        out.print(sb);
     }
 
     <span class="comment">/**
@@ -5762,7 +5684,7 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
      * @throws InitializationException if the specified command object does not have a {@link Command}, {@link Option} or {@link Parameters} annotation
      * @throws ExecutionException if the Callable throws an exception
      * @return {@code null} if an error occurred while parsing the command line options, otherwise returns the result of calling the Callable
-     * @see #parseWithHandlers(IParseResultHandler2, Object, IExceptionHandler2, String...)
+     * @see #parseWithHandlers(IParseResultHandler2, IExceptionHandler2, String...)
      * @since 3.0
      */</span>
     <span class="directive">public</span> <span class="directive">static</span> &lt;C <span class="directive">extends</span> <span class="predefined-type">Callable</span>&lt;T&gt;, T&gt; T call(C callable, <span class="predefined-type">String</span>... args) {
@@ -5781,7 +5703,7 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
      * @throws InitializationException if the specified command object does not have a {@link Command}, {@link Option} or {@link Parameters} annotation
      * @throws ExecutionException if the Callable throws an exception
      * @return {@code null} if an error occurred while parsing the command line options, otherwise returns the result of calling the Callable
-     * @see #parseWithHandlers(IParseResultHandler2, Object, IExceptionHandler2, String...)
+     * @see #parseWithHandlers(IParseResultHandler2, IExceptionHandler2, String...)
      * @see RunLast
      */</span>
     <span class="directive">public</span> <span class="directive">static</span> &lt;C <span class="directive">extends</span> <span class="predefined-type">Callable</span>&lt;T&gt;, T&gt; T call(C callable, <span class="predefined-type">PrintStream</span> out, <span class="predefined-type">String</span>... args) {
@@ -5799,7 +5721,7 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
      * @throws InitializationException if the specified command object does not have a {@link Command}, {@link Option} or {@link Parameters} annotation
      * @throws ExecutionException if the Callable throws an exception
      * @return {@code null} if an error occurred while parsing the command line options, otherwise returns the result of calling the Callable
-     * @see #parseWithHandlers(IParseResultHandler2, Object, IExceptionHandler2, String...)
+     * @see #parseWithHandlers(IParseResultHandler2, IExceptionHandler2, String...)
      * @see RunLast
      */</span>
     <span class="directive">public</span> <span class="directive">static</span> &lt;C <span class="directive">extends</span> <span class="predefined-type">Callable</span>&lt;T&gt;, T&gt; T call(C callable, <span class="predefined-type">PrintStream</span> out, Help.Ansi ansi, <span class="predefined-type">String</span>... args) {
@@ -5819,7 +5741,7 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
      * &lt;p&gt;
      * If the specified Callable command has subcommands, the {@linkplain RunLast last} subcommand specified on the
      * command line is executed.
-     * Commands with subcommands may be interested in calling the {@link #parseWithHandler(IParseResultHandler2, Object, String[]) parseWithHandler}
+     * Commands with subcommands may be interested in calling the {@link #parseWithHandler(IParseResultHandler2, String[]) parseWithHandler}
      * method with the {@link RunAll} handler or a custom handler.
      * &lt;/p&gt;
      * @param callable the command to call when {@linkplain #parse(String...) parsing} succeeds.
@@ -5832,13 +5754,13 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
      * @throws InitializationException if the specified command object does not have a {@link Command}, {@link Option} or {@link Parameters} annotation
      * @throws ExecutionException if the Callable throws an exception
      * @return {@code null} if an error occurred while parsing the command line options, or if help was requested and printed. Otherwise returns the result of calling the Callable
-     * @see #parseWithHandlers(IParseResultHandler2, Object, IExceptionHandler2, String...)
+     * @see #parseWithHandlers(IParseResultHandler2, IExceptionHandler2, String...)
      * @see RunLast
      * @since 3.0
      */</span>
     <span class="directive">public</span> <span class="directive">static</span> &lt;C <span class="directive">extends</span> <span class="predefined-type">Callable</span>&lt;T&gt;, T&gt; T call(C callable, <span class="predefined-type">PrintStream</span> out, <span class="predefined-type">PrintStream</span> err, Help.Ansi ansi, <span class="predefined-type">String</span>... args) {
         CommandLine cmd = <span class="keyword">new</span> CommandLine(callable);
-        <span class="predefined-type">List</span>&lt;<span class="predefined-type">Object</span>&gt; results = cmd.parseWithHandlers(<span class="keyword">new</span> RunLast().useOut(out).useAnsi(ansi), <span class="keyword">new</span> <span class="predefined-type">ArrayList</span>&lt;<span class="predefined-type">Object</span>&gt;(), <span class="keyword">new</span> DefaultExceptionHandler&lt;<span class="predefined-type">List</span>&lt;<span class="predefined-type">Object</span>&gt;&gt;().useErr(err).useAnsi(ansi), args);
+        <span class="predefined-type">List</span>&lt;<span class="predefined-type">Object</span>&gt; results = cmd.parseWithHandlers(<span class="keyword">new</span> RunLast().useOut(out).useAnsi(ansi), <span class="keyword">new</span> DefaultExceptionHandler&lt;<span class="predefined-type">List</span>&lt;<span class="predefined-type">Object</span>&gt;&gt;().useErr(err).useAnsi(ansi), args);
         <span class="annotation">@SuppressWarnings</span>(<span class="string"><span class="delimiter">&quot;</span><span class="content">unchecked</span><span class="delimiter">&quot;</span></span>) T result = results == <span class="predefined-constant">null</span> || results.isEmpty() ? <span class="predefined-constant">null</span> : (T) results.get(<span class="integer">0</span>);
         <span class="keyword">return</span> result;
     }
@@ -5852,7 +5774,7 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
      * @see #run(Runnable, PrintStream, PrintStream, Help.Ansi, String...)
      * @throws InitializationException if the specified command object does not have a {@link Command}, {@link Option} or {@link Parameters} annotation
      * @throws ExecutionException if the Runnable throws an exception
-     * @see #parseWithHandlers(IParseResultHandler2, Object, IExceptionHandler2, String...)
+     * @see #parseWithHandlers(IParseResultHandler2, IExceptionHandler2, String...)
      * @see RunLast
      * @since 3.0
      */</span>
@@ -5869,7 +5791,7 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
      * @see #run(Runnable, PrintStream, PrintStream, Help.Ansi, String...)
      * @throws InitializationException if the specified command object does not have a {@link Command}, {@link Option} or {@link Parameters} annotation
      * @throws ExecutionException if the Runnable throws an exception
-     * @see #parseWithHandler(IParseResultHandler2, Object, String[])
+     * @see #parseWithHandler(IParseResultHandler2, String[])
      * @see RunLast
      */</span>
     <span class="directive">public</span> <span class="directive">static</span> &lt;R <span class="directive">extends</span> <span class="predefined-type">Runnable</span>&gt; <span class="type">void</span> run(R runnable, <span class="predefined-type">PrintStream</span> out, <span class="predefined-type">String</span>... args) {
@@ -5885,7 +5807,7 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
      * @see #run(Runnable, PrintStream, PrintStream, Help.Ansi, String...)
      * @throws InitializationException if the specified command object does not have a {@link Command}, {@link Option} or {@link Parameters} annotation
      * @throws ExecutionException if the Runnable throws an exception
-     * @see #parseWithHandlers(IParseResultHandler2, Object, IExceptionHandler2, String...)
+     * @see #parseWithHandlers(IParseResultHandler2, IExceptionHandler2, String...)
      * @see RunLast
      */</span>
     <span class="directive">public</span> <span class="directive">static</span> &lt;R <span class="directive">extends</span> <span class="predefined-type">Runnable</span>&gt; <span class="type">void</span> run(R runnable, <span class="predefined-type">PrintStream</span> out, Help.Ansi ansi, <span class="predefined-type">String</span>... args) {
@@ -5903,7 +5825,7 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
      * &lt;p&gt;
      * If the specified Runnable command has subcommands, the {@linkplain RunLast last} subcommand specified on the
      * command line is executed.
-     * Commands with subcommands may be interested in calling the {@link #parseWithHandler(IParseResultHandler2, Object, String[]) parseWithHandler}
+     * Commands with subcommands may be interested in calling the {@link #parseWithHandler(IParseResultHandler2, String[]) parseWithHandler}
      * method with the {@link RunAll} handler or a custom handler.
      * &lt;/p&gt;&lt;p&gt;
      * From picocli v2.0, this method prints usage help or version help if {@linkplain #printHelpIfRequested(List, PrintStream, PrintStream, Help.Ansi) requested},
@@ -5917,13 +5839,13 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
      * @param &lt;R&gt; the annotated object must implement Runnable
      * @throws InitializationException if the specified command object does not have a {@link Command}, {@link Option} or {@link Parameters} annotation
      * @throws ExecutionException if the Runnable throws an exception
-     * @see #parseWithHandlers(IParseResultHandler2, Object, IExceptionHandler2, String...)
+     * @see #parseWithHandlers(IParseResultHandler2, IExceptionHandler2, String...)
      * @see RunLast
      * @since 3.0
      */</span>
     <span class="directive">public</span> <span class="directive">static</span> &lt;R <span class="directive">extends</span> <span class="predefined-type">Runnable</span>&gt; <span class="type">void</span> run(R runnable, <span class="predefined-type">PrintStream</span> out, <span class="predefined-type">PrintStream</span> err, Help.Ansi ansi, <span class="predefined-type">String</span>... args) {
         CommandLine cmd = <span class="keyword">new</span> CommandLine(runnable);
-        cmd.parseWithHandlers(<span class="keyword">new</span> RunLast().useOut(out).useAnsi(ansi), <span class="keyword">new</span> <span class="predefined-type">ArrayList</span>&lt;<span class="predefined-type">Object</span>&gt;(), <span class="keyword">new</span> DefaultExceptionHandler&lt;<span class="predefined-type">List</span>&lt;<span class="predefined-type">Object</span>&gt;&gt;().useErr(err).useAnsi(ansi), args);
+        cmd.parseWithHandlers(<span class="keyword">new</span> RunLast().useOut(out).useAnsi(ansi), <span class="keyword">new</span> DefaultExceptionHandler&lt;<span class="predefined-type">List</span>&lt;<span class="predefined-type">Object</span>&gt;&gt;().useErr(err).useAnsi(ansi), args);
     }
 
     <span class="comment">/**
@@ -7554,16 +7476,18 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
             <span class="directive">private</span> <span class="type">boolean</span> overwrittenOptionsAllowed = <span class="predefined-constant">false</span>;
             <span class="directive">private</span> <span class="type">boolean</span> unmatchedArgumentsAllowed = <span class="predefined-constant">false</span>;
             <span class="directive">private</span> <span class="type">boolean</span> expandAtFiles = <span class="predefined-constant">true</span>;
+            <span class="directive">private</span> <span class="type">boolean</span> posixClusteredShortOptionsAllowed = <span class="predefined-constant">true</span>;
 
             <span class="comment">/** Returns the String to use as the separator between options and option parameters. {@code &quot;=&quot;} by default,
              * initialized from {@link Command#separator()} if defined.*/</span>
             <span class="directive">public</span> <span class="predefined-type">String</span> separator() { <span class="keyword">return</span> (separator == <span class="predefined-constant">null</span>) ? DEFAULT_SEPARATOR : separator; }
 
-            <span class="directive">public</span> <span class="type">boolean</span> stopAtUnmatched()           { <span class="keyword">return</span> stopAtUnmatched; }
-            <span class="directive">public</span> <span class="type">boolean</span> stopAtPositional()          { <span class="keyword">return</span> stopAtPositional; }
-            <span class="directive">public</span> <span class="type">boolean</span> overwrittenOptionsAllowed() { <span class="keyword">return</span> overwrittenOptionsAllowed; }
-            <span class="directive">public</span> <span class="type">boolean</span> unmatchedArgumentsAllowed() { <span class="keyword">return</span> unmatchedArgumentsAllowed; }
-            <span class="directive">public</span> <span class="type">boolean</span> expandAtFiles()             { <span class="keyword">return</span> expandAtFiles; }
+            <span class="directive">public</span> <span class="type">boolean</span> stopAtUnmatched()                   { <span class="keyword">return</span> stopAtUnmatched; }
+            <span class="directive">public</span> <span class="type">boolean</span> stopAtPositional()                  { <span class="keyword">return</span> stopAtPositional; }
+            <span class="directive">public</span> <span class="type">boolean</span> overwrittenOptionsAllowed()         { <span class="keyword">return</span> overwrittenOptionsAllowed; }
+            <span class="directive">public</span> <span class="type">boolean</span> unmatchedArgumentsAllowed()         { <span class="keyword">return</span> unmatchedArgumentsAllowed; }
+            <span class="directive">public</span> <span class="type">boolean</span> expandAtFiles()                     { <span class="keyword">return</span> expandAtFiles; }
+            <span class="directive">public</span> <span class="type">boolean</span> posixClusteredShortOptionsAllowed() { <span class="keyword">return</span> posixClusteredShortOptionsAllowed; }
 
             <span class="comment">/** Sets the String to use as the separator between options and option parameters.
              * @return this ParserSpec for method chaining */</span>
@@ -7573,7 +7497,12 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
             <span class="directive">public</span> ParserSpec overwrittenOptionsAllowed(<span class="type">boolean</span> overwrittenOptionsAllowed) { <span class="local-variable">this</span>.overwrittenOptionsAllowed = overwrittenOptionsAllowed; <span class="keyword">return</span> <span class="local-variable">this</span>; }
             <span class="directive">public</span> ParserSpec unmatchedArgumentsAllowed(<span class="type">boolean</span> unmatchedArgumentsAllowed) { <span class="local-variable">this</span>.unmatchedArgumentsAllowed = unmatchedArgumentsAllowed; <span class="keyword">return</span> <span class="local-variable">this</span>; }
             <span class="directive">public</span> ParserSpec expandAtFiles(<span class="type">boolean</span> expandAtFiles)                         { <span class="local-variable">this</span>.expandAtFiles = expandAtFiles; <span class="keyword">return</span> <span class="local-variable">this</span>; }
-            <span class="type">void</span> initSeparator(<span class="predefined-type">String</span> value)            { <span class="keyword">if</span> (initializable(separator, value, DEFAULT_SEPARATOR))                         {separator = value;} }
+            <span class="directive">public</span> ParserSpec posixClusteredShortOptionsAllowed(<span class="type">boolean</span> posixClusteredShortOptionsAllowed) { <span class="local-variable">this</span>.posixClusteredShortOptionsAllowed = posixClusteredShortOptionsAllowed; <span class="keyword">return</span> <span class="local-variable">this</span>; }
+            <span class="type">void</span> initSeparator(<span class="predefined-type">String</span> value) { <span class="keyword">if</span> (initializable(separator, value, DEFAULT_SEPARATOR)) {separator = value;} }
+            <span class="directive">public</span> <span class="predefined-type">String</span> toString() {
+                <span class="keyword">return</span> <span class="predefined-type">String</span>.format(<span class="string"><span class="delimiter">&quot;</span><span class="content">posixClusteredShortOptionsAllowed=%s, stopAtPositional=%s, stopAtUnmatched=%s, separator=%s, overwrittenOptionsAllowed=%s, unmatchedArgumentsAllowed=%s, expandAtFiles=%s</span><span class="delimiter">&quot;</span></span>,
+                        posixClusteredShortOptionsAllowed, stopAtPositional, stopAtUnmatched, separator, overwrittenOptionsAllowed, unmatchedArgumentsAllowed, expandAtFiles);
+            }
         }
         <span class="comment">/** Models the shared attributes of {@link OptionSpec} and {@link PositionalParamSpec}.
          * @since 3.0 */</span>
@@ -8735,6 +8664,7 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
         <span class="predefined-type">List</span>&lt;CommandLine&gt; parse(<span class="predefined-type">String</span>... args) {
             Assert.notNull(args, <span class="string"><span class="delimiter">&quot;</span><span class="content">argument array</span><span class="delimiter">&quot;</span></span>);
             <span class="keyword">if</span> (tracer.isInfo()) {tracer.info(<span class="string"><span class="delimiter">&quot;</span><span class="content">Parsing %d command line args %s%n</span><span class="delimiter">&quot;</span></span>, args.length, <span class="predefined-type">Arrays</span>.toString(args));}
+            <span class="keyword">if</span> (tracer.isDebug()){tracer.debug(<span class="string"><span class="delimiter">&quot;</span><span class="content">Parser configuration: %s%n</span><span class="delimiter">&quot;</span></span>, config());}
             <span class="predefined-type">List</span>&lt;<span class="predefined-type">String</span>&gt; expanded = <span class="keyword">new</span> <span class="predefined-type">ArrayList</span>&lt;<span class="predefined-type">String</span>&gt;();
             <span class="keyword">for</span> (<span class="predefined-type">String</span> arg : args) { addOrExpand(arg, expanded, <span class="keyword">new</span> <span class="predefined-type">LinkedHashSet</span>&lt;<span class="predefined-type">String</span>&gt;()); }
             <span class="predefined-type">Stack</span>&lt;<span class="predefined-type">String</span>&gt; arguments = <span class="keyword">new</span> <span class="predefined-type">Stack</span>&lt;<span class="predefined-type">String</span>&gt;();
@@ -8906,7 +8836,7 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
                 }
                 <span class="comment">// Compact (single-letter) options can be grouped with other options or with an argument.</span>
                 <span class="comment">// only single-letter options can be combined with other options or with an argument</span>
-                <span class="keyword">else</span> <span class="keyword">if</span> (arg.length() &gt; <span class="integer">2</span> &amp;&amp; arg.startsWith(<span class="string"><span class="delimiter">&quot;</span><span class="content">-</span><span class="delimiter">&quot;</span></span>)) {
+                <span class="keyword">else</span> <span class="keyword">if</span> (config().posixClusteredShortOptionsAllowed() &amp;&amp; arg.length() &gt; <span class="integer">2</span> &amp;&amp; arg.startsWith(<span class="string"><span class="delimiter">&quot;</span><span class="content">-</span><span class="delimiter">&quot;</span></span>)) {
                     <span class="keyword">if</span> (tracer.isDebug()) {tracer.debug(<span class="string"><span class="delimiter">&quot;</span><span class="content">Trying to process '%s' as clustered short options%n</span><span class="delimiter">&quot;</span></span>, arg, args);}
                     processClusteredShortOptions(required, initialized, arg, args);
                 }
@@ -11685,8 +11615,8 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
 </div>
 <div id="footer">
 <div id="footer-text">
-Version 3.0.0-alpha-1<br>
-Last updated 2018-03-21 01:12:32 +09:00
+Version 3.0.0-alpha-2<br>
+Last updated 2018-03-27 21:42:52 JST
 </div>
 </div>
 </body>
