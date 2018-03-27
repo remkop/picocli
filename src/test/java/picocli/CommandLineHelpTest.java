@@ -17,7 +17,9 @@ package picocli;
 
 import org.junit.After;
 import org.junit.Ignore;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.contrib.java.lang.system.ProvideSystemProperty;
 import picocli.CommandLine.*;
 import picocli.CommandLine.Model.*;
 import picocli.CommandLine.Help.Ansi.IStyle;
@@ -47,6 +49,9 @@ import static picocli.ModelTestUtil.options;
  */
 public class CommandLineHelpTest {
     private static final String LINESEP = System.getProperty("line.separator");
+
+    @Rule
+    public final ProvideSystemProperty ansiOFF = new ProvideSystemProperty("picocli.ansi", "false");
 
     @After
     public void after() {

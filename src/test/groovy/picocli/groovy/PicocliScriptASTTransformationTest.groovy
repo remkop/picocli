@@ -20,7 +20,9 @@ import org.codehaus.groovy.control.ErrorCollector
 import org.codehaus.groovy.control.MultipleCompilationErrorsException
 import org.codehaus.groovy.control.messages.SyntaxErrorMessage
 import org.codehaus.groovy.syntax.SyntaxException
-import org.junit.Ignore;
+import org.junit.Ignore
+import org.junit.Rule
+import org.junit.contrib.java.lang.system.ProvideSystemProperty;
 
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
@@ -34,6 +36,9 @@ import groovy.transform.SourceURI;
 import static org.junit.Assert.*;
 
 public class PicocliScriptASTTransformationTest {
+    @Rule
+    public final ProvideSystemProperty ansiOFF = new ProvideSystemProperty("picocli.ansi", "false");
+
     @SourceURI
     URI sourceURI
 

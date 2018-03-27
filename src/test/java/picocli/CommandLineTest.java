@@ -51,10 +51,8 @@ import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.*;
+import org.junit.contrib.java.lang.system.ProvideSystemProperty;
 
 import static org.junit.Assert.*;
 import static picocli.CommandLine.*;
@@ -68,6 +66,9 @@ import static picocli.HelpTestUtil.setTraceLevel;
 // TODO test superclass bean and child class bean where child class field shadows super class and have same annotation Option name
 // TODO test superclass bean and child class bean where child class field shadows super class and have different annotation Option name
 public class CommandLineTest {
+    @Rule
+    public final ProvideSystemProperty ansiOFF = new ProvideSystemProperty("picocli.ansi", "false");
+
     @Before public void setUp() { System.clearProperty("picocli.trace"); }
     @After public void tearDown() { System.clearProperty("picocli.trace"); }
 
