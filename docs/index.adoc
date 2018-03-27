@@ -876,6 +876,11 @@ options and positional parameters as soon as it encounters an unmatched argument
 When this flag is set, the first unmatched argument and all subsequent command line arguments are added to the
 unmatched arguments list returned by `CommandLine.getUnmatchedArguments()`.
 
+=== Disallowing POSIX Clustered Short Options
+By default, the picocli parser allows POSIX clustered short options, so short options like `-x -v -f SomeFile` can be clustered together like `-xvfSomeFile`.
+From picocli 3.0, applications can call `CommandLine.setPosixClusteredShortOptionsAllowed(false)` to enforce that options must be separated with whitespace on the command line.
+
+
 
 == Help
 

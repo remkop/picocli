@@ -324,6 +324,28 @@ public class CommandLine {
         return this;
     }
 
+    /** Returns whether the parser accepts clustered short options. The default is {@code true}.
+     * @return {@code true} if short options like {@code -x -v -f SomeFile} can be clustered together like {@code -xvfSomeFile}, {@code false} otherwise
+     * @since 3.0 */
+    public boolean isPosixClusteredShortOptionsAllowed() { return getCommandSpec().parser().posixClusteredShortOptionsAllowed(); }
+
+    /** Sets whether short options like {@code -x -v -f SomeFile} can be clustered together like {@code -xvfSomeFile}.
+     * <p>The specified setting will be registered with this {@code CommandLine} and the full hierarchy of its
+     * subcommands and nested sub-subcommands <em>at the moment this method is called</em>. Subcommands added
+     * later will have the default setting. To ensure a setting is applied to all
+     * subcommands, call the setter last, after adding subcommands.</p>
+     * @param newValue the new setting
+     * @return this {@code CommandLine} object, to allow method chaining
+     * @since 3.0
+     */
+    public CommandLine setPosixClusteredShortOptionsAllowed(boolean newValue) {
+        getCommandSpec().parser().posixClusteredShortOptionsAllowed(newValue);
+        for (CommandLine command : getCommandSpec().subcommands().values()) {
+            command.setPosixClusteredShortOptionsAllowed(newValue);
+        }
+        return this;
+    }
+
     /** Returns whether the parser interprets the first positional parameter as "end of options" so the remaining
      * arguments are all treated as positional parameters. The default is {@code false}.
      * @return {@code true} if all values following the first positional parameter should be treated as positional parameters, {@code false} otherwise

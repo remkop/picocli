@@ -704,6 +704,52 @@ public class CommandLineTest {
     }
 
     @Test
+    public void testParserPosixClustedShortOptions_BeforeSubcommandsAdded() {
+        @Command class TopLevel {}
+        CommandLine commandLine = new CommandLine(new TopLevel());
+        assertEquals(true, commandLine.isPosixClusteredShortOptionsAllowed());
+        commandLine.setPosixClusteredShortOptionsAllowed(false);
+        assertEquals(false, commandLine.isPosixClusteredShortOptionsAllowed());
+
+        int childCount = 0;
+        int grandChildCount = 0;
+        commandLine.addSubcommand("main", createNestedCommand());
+        for (CommandLine sub : commandLine.getSubcommands().values()) {
+            childCount++;
+            assertEquals("subcommand added afterwards is not impacted", true, sub.isPosixClusteredShortOptionsAllowed());
+            for (CommandLine subsub : sub.getSubcommands().values()) {
+                grandChildCount++;
+                assertEquals("subcommand added afterwards is not impacted", true, subsub.isPosixClusteredShortOptionsAllowed());
+            }
+        }
+        assertTrue(childCount > 0);
+        assertTrue(grandChildCount > 0);
+    }
+
+    @Test
+    public void testParserPosixClustedShortOptions_AfterSubcommandsAdded() {
+        @Command class TopLevel {}
+        CommandLine commandLine = new CommandLine(new TopLevel());
+        commandLine.addSubcommand("main", createNestedCommand());
+        assertEquals(true, commandLine.isPosixClusteredShortOptionsAllowed());
+        commandLine.setPosixClusteredShortOptionsAllowed(false);
+        assertEquals(false, commandLine.isPosixClusteredShortOptionsAllowed());
+
+        int childCount = 0;
+        int grandChildCount = 0;
+        for (CommandLine sub : commandLine.getSubcommands().values()) {
+            childCount++;
+            assertEquals("subcommand added before IS impacted", false, sub.isPosixClusteredShortOptionsAllowed());
+            for (CommandLine subsub : sub.getSubcommands().values()) {
+                grandChildCount++;
+                assertEquals("subsubcommand added before IS impacted", false, sub.isPosixClusteredShortOptionsAllowed());
+            }
+        }
+        assertTrue(childCount > 0);
+        assertTrue(grandChildCount > 0);
+    }
+
+    @Test
     public void testDoubleDashSeparatesPositionalParameters() {
         CompactFields compact = CommandLine.populateCommand(new CompactFields(), "-oout -- -r -v p1 p2".split(" "));
         verifyCompact(compact, false, false, "out", fileArray("-r", "-v", "p1", "p2"));
