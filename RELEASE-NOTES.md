@@ -6,6 +6,7 @@
 - [#307] Enhancement: Provide CommandLine.usage(PrintWriter) method for testing and to facilitate migration from commons-cli to picocli.
 - [#306] Enhancement: Support generating autocompletion scripts for non-public @Command classes. Thanks to [cbeams](https://github.com/cbeams) for the request.
 - [#308] Enhancement: Provide API to disallow POSIX clustered short options.
+- [#310] Enhancement: PicocliBaseScript should follow conventions for stdout and stderr: requested help to stdout, invalid input usage help to stderr.
 
 ## <a name="3.0.0-alpha-2-deprecated"></a> Deprecations
 See [3.0.0-alpha-1]()#3.0.0-alpha-1-deprecated)

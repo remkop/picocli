@@ -112,7 +112,7 @@ abstract public class PicocliBaseScript extends Script {
             // check if the user requested help for the top-level command or any of the subcommands
             for (CommandLine parsed : parsedCommands) {
                 if (parsed.isUsageHelpRequested()) {
-                    return printHelpMessage(parsed);
+                    return printHelpMessage(parsed, System.out);
                 }
                 if (parsed.isVersionHelpRequested()) {
                     return printVersionHelpMessage(parsed);
@@ -273,14 +273,30 @@ abstract public class PicocliBaseScript extends Script {
      * @return The value that Script.run should return ({@code null} by default).
      */
     public Object printHelpMessage(CommandLine commandLine) {
-        commandLine.usage(System.err);
+        return printHelpMessage(commandLine, System.err);
+    }
+
+    /**
+     * If an &#064;Option whose {@code usageHelp} attribute is annotated as true appears in the arguments.
+     * then the script body is not run and this {@code printHelpMessage} method is called instead.
+     * The default behavior is to print the {@link CommandLine#usage(PrintStream)} to the specified stream.
+     * The return value becomes the return value for the Script.run which will be the exit code
+     * if we've been called from the command line.
+     *
+     * @param commandLine The CommandLine instance
+     * @param stream the stream to print the usage help message to
+     * @return The value that Script.run should return ({@code null} by default).
+     * @since 3.0
+     */
+    public Object printHelpMessage(CommandLine commandLine, PrintStream stream) {
+        commandLine.usage(stream);
         return null;
     }
 
     /**
      * If an &#064;Option whose {@code versionHelp} attribute is annotated as true appears in the arguments.
      * then the script body is not run and this printVersionHelpMessage method is called instead.
-     * The default behavior is to print the {@link CommandLine#printVersionHelp(PrintStream)} to {@code System.err}.
+     * The default behavior is to print the {@link CommandLine#printVersionHelp(PrintStream)} to {@code System.out}.
      * The return value becomes the return value for the Script.run which will be the exit code
      * if we've been called from the command line.
      *
@@ -288,7 +304,7 @@ abstract public class PicocliBaseScript extends Script {
      * @return The value that Script.run should return ({@code null} by default).
      */
     public Object printVersionHelpMessage(CommandLine commandLine) {
-        commandLine.printVersionHelp(System.err);
+        commandLine.printVersionHelp(System.out);
         return null;
     }
 }

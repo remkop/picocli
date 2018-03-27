@@ -18,7 +18,9 @@ package picocli.groovy
 
 import groovy.transform.SourceURI
 import org.junit.Ignore
+import org.junit.Rule
 import org.junit.Test
+import org.junit.contrib.java.lang.system.ProvideSystemProperty
 import picocli.CommandLine
 import picocli.CommandLine.ExecutionException
 
@@ -32,6 +34,9 @@ import static org.junit.Assert.*
  * @since 2.0
  */
 public class PicocliBaseScriptTest {
+    @Rule
+    public final ProvideSystemProperty ansiOFF = new ProvideSystemProperty("picocli.ansi", "false");
+
     @SourceURI URI sourceURI
 
     @Test
@@ -89,9 +94,33 @@ assert codepath == ['/usr/x.jar', '/bin/y.jar', 'z']
     }
 
     @Test
-    void testScriptAutomaticUsageHelp() {
+    void testScriptInvalidInputUsageHelpToStderr() {
         ByteArrayOutputStream baos = new ByteArrayOutputStream()
         System.setErr(new PrintStream(baos))
+
+        GroovyShell shell = new GroovyShell()
+        shell.context.setVariable('args', ["--unknownOption"] as String[])
+        shell.evaluate '''
+@picocli.groovy.PicocliScript
+import groovy.transform.Field
+import picocli.CommandLine
+
+@CommandLine.Option(names = ["-x", "--requiredOption"], required = true, description = "this option is required")
+@Field String requiredOption
+'''
+        String expected = String.format("" +
+                "args: [--unknownOption]%n" +
+                "Missing required option '-x=<requiredOption>'%n" +
+                "Usage: Script1 -x=<requiredOption>%n" +
+                "  -x, --requiredOption=<requiredOption>%n" +
+                "                              this option is required%n")
+        assert expected == baos.toString()
+    }
+
+    @Test
+    void testScriptRequestedUsageHelpToStdout() {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream()
+        System.setOut(new PrintStream(baos))
 
         GroovyShell shell = new GroovyShell()
         shell.context.setVariable('args', ["--help"] as String[])
@@ -106,13 +135,13 @@ import picocli.CommandLine
         String expected = String.format("" +
                 "Usage: Script1 [-h]%n" +
                 "  -h, --help%n")
-        assert expected == new String(baos.toByteArray(), Charset.defaultCharset())
+        assert expected == baos.toString()
     }
 
     @Test
-    void testScriptAutomaticVersionHelp() {
+    void testScriptRequestedVersionHelpToStdout() {
         ByteArrayOutputStream baos = new ByteArrayOutputStream()
-        System.setErr(new PrintStream(baos))
+        System.setOut(new PrintStream(baos))
 
         GroovyShell shell = new GroovyShell()
         shell.context.setVariable('args', ["--version"] as String[])
@@ -127,7 +156,7 @@ import picocli.CommandLine
 '''
         String expected = String.format("" +
                 "best version ever v1.2.3%n")
-        assert expected == new String(baos.toByteArray(), Charset.defaultCharset())
+        assert expected == baos.toString()
     }
 
     @Test
