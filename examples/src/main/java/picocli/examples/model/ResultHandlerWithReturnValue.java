@@ -42,8 +42,8 @@ public class ResultHandlerWithReturnValue {
                 .description("The files to process").build());
         CommandLine commandLine = new CommandLine(spec);
 
-        class Handler extends AbstractParseResultHandler<Void> {
-            public Void handle(ParseResult pr) {
+        class Handler extends AbstractParseResultHandler<Integer> {
+            public Integer handle(ParseResult pr) {
                 int count = pr.optionValue('c', 1);
                 List<File> files = pr.positionalValue(pr.positionalParams().get(0), Collections.<File>emptyList());
                 for (File f : files) {
@@ -51,11 +51,11 @@ public class ResultHandlerWithReturnValue {
                         System.out.println(i + " " + f.getName());
                     }
                 }
-                return null;
+                return files.size();
             }
             protected Handler self() { return this; }
         }
 
-        commandLine.parseWithHandler(new Handler(), args);
+        int processed = commandLine.parseWithHandler(new Handler(), args);
     }
 }

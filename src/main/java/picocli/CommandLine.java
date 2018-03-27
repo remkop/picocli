@@ -849,45 +849,6 @@ public class CommandLine {
          */
         protected abstract R handle(ParseResult parseResult) throws ExecutionException;
     }
-    /** Command line parse result handler that does not return a result. Prints help if requested, and otherwise calls
-     * {@link #handle(CommandLine.ParseResult)} with the parse result. Facilitates implementation of the {@link IParseResultHandler2} interface.
-     * <p>An example subclass can look like this:</p>
-     * <pre>{@code
-     * class MyResultHandler extends AbstractSimpleParseResultHandler {
-     *     protected void handle(ParseResult parseResult) throws ExecutionException { ... }
-     * }
-     * }</pre>
-     * @since 3.0 */
-    public abstract static class AbstractSimpleParseResultHandler extends AbstractHandler<Void, AbstractSimpleParseResultHandler> implements IParseResultHandler2<Void> {
-        /** Prints help if requested, and otherwise calls {@link #handle(CommandLine.ParseResult)}.
-         * Finally, either a list of result objects is returned, or the JVM is terminated if an exit code {@linkplain #andExit(int) was set}.
-         *
-         * @param parseResult the {@code ParseResult} that resulted from successfully parsing the command line arguments
-         * @return the specified return value
-         * @throws ParameterException if the {@link HelpCommand HelpCommand} was invoked for an unknown subcommand. Any {@code ParameterExceptions}
-         *      thrown from this method are treated as if this exception was thrown during parsing and passed to the {@link IExceptionHandler2}
-         * @throws ExecutionException if a problem occurred while processing the parse results; client code can use
-         *      {@link ExecutionException#getCommandLine()} to get the command or subcommand where processing failed
-         */
-        public Void handleParseResult(ParseResult parseResult) throws ExecutionException {
-            if (printHelpIfRequested(parseResult.asCommandLineList(), out(), err(), ansi())) {
-                return returnResultOrExit(null);
-            }
-            handle(parseResult);
-            return returnResultOrExit(null);
-        }
-        /** Processes the specified {@code ParseResult}.
-         * Implementations are responsible for catching any exceptions thrown in the {@code handle} method, and
-         * rethrowing an {@code ExecutionException} that details the problem and captures the offending {@code CommandLine} object.
-         *
-         * @param parseResult the {@code ParseResult} that resulted from successfully parsing the command line arguments
-         * @throws ExecutionException if a problem occurred while processing the parse results; client code can use
-         *      {@link ExecutionException#getCommandLine()} to get the command or subcommand where processing failed
-         */
-        protected abstract void handle(ParseResult parseResult) throws ExecutionException;
-        @Override protected AbstractSimpleParseResultHandler self() { return this; }
-    }
-
     /**
      * Command line parse result handler that prints help if requested, and otherwise executes the top-level
      * {@code Runnable} or {@code Callable} command.
@@ -1098,26 +1059,6 @@ public class CommandLine {
     public <R> R parseWithHandler(IParseResultHandler2<R> handler, String[] args) {
         return parseWithHandlers(handler, new DefaultExceptionHandler<R>(), args);
     }
-    /**
-     * Calls {@link #parseWithSimpleHandlers(AbstractSimpleParseResultHandler, IExceptionHandler2, String...)} with
-     * a new {@link DefaultExceptionHandler} in addition to the specified parse result handler and the specified command line arguments.
-     * <p>Calling this method roughly expands to:</p>
-     * <pre>{@code
-     * try {
-     *     ParseResult parseResult = parseArgs(args);
-     *     handler.handleParseResult(parseResult);
-     * } catch (ParameterException ex) {
-     *     new DefaultExceptionHandler<Void>().handleParseException(ex, null, (String[]) args);
-     * }
-     * }</pre>
-     * @param handler the function that will handle the result of successfully parsing the command line arguments
-     * @param args the command line arguments
-     * @throws ExecutionException if the command line arguments were parsed successfully but a problem occurred while processing the
-     *      parse results; use {@link ExecutionException#getCommandLine()} to get the command or subcommand where processing failed
-     * @since 3.0 */
-    public void parseWithSimpleHandler(AbstractSimpleParseResultHandler handler, String... args) {
-        parseWithSimpleHandlers(handler, new DefaultExceptionHandler<Void>(), args);
-    }
 
     /** @deprecated use {@link #parseWithHandlers(IParseResultHandler2, IExceptionHandler2, String...)} instead
      * @since 2.0 */
@@ -1182,42 +1123,6 @@ public class CommandLine {
             return exceptionHandler.handleParseException(ex, (String[]) args);
         } catch (ExecutionException ex) {
             return exceptionHandler.handleExecutionException(ex, parseResult);
-        }
-    }
-    /**
-     * Tries to {@linkplain #parseArgs(String...) parse} the specified command line arguments, and if successful, delegates
-     * the processing of the resulting {@code ParseResult} object to the specified {@linkplain AbstractSimpleParseResultHandler handler}.
-     * If the command line arguments were invalid, the {@code ParameterException} thrown from the {@code parse} method
-     * is caught and passed to the specified {@link IExceptionHandler2}.
-     * <p>Calling this method roughly expands to:</p>
-     * <pre>
-     * ParseResult parseResult = null;
-     * try {
-     *     parseResult = parseArgs(args);
-     *     handleParseResult(parseResult);
-     * } catch (ParameterException ex) {
-     *     exceptionHandler.handleParseException(ex, null, (String[]) args);
-     * } catch (ExecutionException ex) {
-     *     exceptionHandler.handleExecutionException(ex, null, parseResult);
-     * }
-     * </pre>
-     *
-     * @param handler the function that will handle the result of successfully parsing the command line arguments
-     * @param exceptionHandler the function that can handle the {@code ParameterException} thrown when the command line arguments are invalid
-     * @param args the command line arguments
-     * @throws ExecutionException if the command line arguments were parsed successfully but a problem occurred while processing the parse
-     *      result {@code ParseResult} object; use {@link ExecutionException#getCommandLine()} to get the command or subcommand where processing failed
-     * @see DefaultExceptionHandler
-     * @since 3.0 */
-    public void parseWithSimpleHandlers(AbstractSimpleParseResultHandler handler, IExceptionHandler2<Void> exceptionHandler, String... args) {
-        ParseResult parseResult = null;
-        try {
-            parseResult = parseArgs(args);
-            handler.handleParseResult(parseResult);
-        } catch (ParameterException ex) {
-            exceptionHandler.handleParseException(ex, (String[]) args);
-        } catch (ExecutionException ex) {
-            exceptionHandler.handleExecutionException(ex, parseResult);
         }
     }
     /**

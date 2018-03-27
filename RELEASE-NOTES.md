@@ -1,8 +1,16 @@
 # picocli Release Notes
 
 # <a name="3.0.0-alpha-2"></a> Picocli 3.0.0-alpha-2 (UNRELEASED)
+The picocli community is pleased to announce picocli 3.0.0-alpha-2.
+
+This release includes some bug fixes and small enhancements. See [3.0.0-alpha-1](#3.0.0-alpha-1) for recent functional changes.
+
+This is the twenty-second public release.
+Picocli follows [semantic versioning](http://semver.org/).
+
 ## <a name="3.0.0-alpha-2-fixes"></a> Fixed issues
 
+- [#312] Enhancement and API change: Remove `AbstractSimpleParseResultHandler` class and `parseWithSimpleHandlers` method.
 - [#311] Enhancement and API change: Simplify parseWithHandlers: removed prototypeReturnValue parameter.
 - [#307] Enhancement: Provide CommandLine.usage(PrintWriter) method for testing and to facilitate [GROOVY-8520](https://issues.apache.org/jira/browse/GROOVY-8520) migration from commons-cli to picocli.
 - [#306] Enhancement: Support generating autocompletion scripts for non-public @Command classes. Thanks to [cbeams](https://github.com/cbeams) for the request.
@@ -11,12 +19,12 @@
 - [#309] Bugfix: Tests were failing on environments that support ANSI colors.
 
 ## <a name="3.0.0-alpha-2-deprecated"></a> Deprecations
-See [3.0.0-alpha-1]()#3.0.0-alpha-1-deprecated)
+See [3.0.0-alpha-1](#3.0.0-alpha-1-deprecated)
 
 ## <a name="3.0.0-alpha-2-breaking-changes"></a> Potential breaking changes
 - [#311] This is an API change from 3.0.0-alpha-1: the `parseWithHandlers` methods signature changed: removed the `prototypeReturnValue` parameter.
 
-See [3.0.0-alpha-1]()#3.0.0-alpha-1-breaking-changes)
+See [3.0.0-alpha-1](#3.0.0-alpha-1-breaking-changes)
 
 # <a name="3.0.0-alpha-1"></a> Picocli 3.0.0-alpha-1
 The picocli community is pleased to announce picocli 3.0.0-alpha-1.
