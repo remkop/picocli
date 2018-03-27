@@ -276,7 +276,7 @@ public class CommandTokenizer {
 	 */
 	public CommandTokenizer commentChars(boolean enabled) {
 		if (enabled) {
-			this.quotePatterns = new ArrayList<String>(Arrays.asList('#'));
+			this.quotePatterns = new ArrayList<String>(Arrays.asList("#"));
 		}
 		else {
 			this.commentPatterns.clear();
@@ -323,7 +323,7 @@ public class CommandTokenizer {
 	 */
 	public CommandTokenizer escapeChars(boolean enabled) {
 		if (enabled) {
-			this.quotePatterns = new ArrayList<String>(Arrays.asList('\\'));
+			this.quotePatterns = new ArrayList<String>(Arrays.asList("\\"));
 		}
 		else {
 			this.escapePatterns.clear();
@@ -519,7 +519,7 @@ public class CommandTokenizer {
 	 */
 	public CommandTokenizer whitespaceChars(boolean enabled) {
 		if (enabled) {
-			this.whitespacePatterns = new ArrayList<String>(Arrays.asList(' '));
+			this.whitespacePatterns = new ArrayList<String>(Arrays.asList(" "));
 		}
 		else {
 			this.whitespacePatterns.clear();
