@@ -259,7 +259,7 @@ public class CommandTokenizer {
 	 * 
 	 * @param chars    The characters to be treated as comment starters.
 	 * @return         This tokenizer, for method chaining.
-	 * @see            {#commentChar(char)}
+	 * @see            #commentChar(char)
 	 */
 	public CommandTokenizer commentChars(char... chars) {
 		for (char c : chars) {
@@ -306,7 +306,7 @@ public class CommandTokenizer {
 	 * 
 	 * @param chars    The characters to be treated as escape characters.
 	 * @return         This tokenizer, for method chaining.
-	 * @see            {#escapeChar(char)}
+	 * @see            #escapeChar(char)
 	 */
 	public CommandTokenizer escapeChars(char... chars) {
 		for (char ch : chars) {
@@ -353,7 +353,7 @@ public class CommandTokenizer {
 	 * 
 	 * @param chars    The characters to be escaped.
 	 * @return         This tokenizer, for method chaining.
-	 * @see            {#escapedChar(char)}
+	 * @see            #escapedChar(char)
 	 */
 	public CommandTokenizer escapedChars(char... chars) {
 		for (char ch : chars) {
@@ -406,7 +406,7 @@ public class CommandTokenizer {
 	 * 
 	 * @param chars    The characters to be treated normally.
 	 * @return         This tokenizer, for method chaining.
-	 * @see            {#ordinaryChar(char)}
+	 * @see            #ordinaryChar(char)
 	 */
 	public CommandTokenizer ordinaryChars(char... chars) {
 		for (char ch : chars) {
@@ -437,7 +437,7 @@ public class CommandTokenizer {
 	 * 
 	 * @param chars    The characters to be treated as quotes.
 	 * @return         This tokenizer, for method chaining.
-	 * @see            {#quoteChar(char)}
+	 * @see            #quoteChar(char)
 	 */
 	public CommandTokenizer quoteChars(char... chars) {
 		for (char ch : chars) {
@@ -484,7 +484,7 @@ public class CommandTokenizer {
 	 * 
 	 * @param chars    The characters to be treated as whitespace.
 	 * @return         This tokenizer, for method chaining.
-	 * @see            {#whitespaceChar(char)}
+	 * @see            #whitespaceChar(char)
 	 */
 	public CommandTokenizer whitespaceChars(char... chars) {
 		for (char ch : chars) {
@@ -501,7 +501,7 @@ public class CommandTokenizer {
 	 * @param low      The minimum character.
 	 * @param hi       The maximum character.
 	 * @return         This tokenizer, for method chaining.
-	 * @see            {#whitespaceChar(char)}
+	 * @see            #whitespaceChar(char)
 	 */
 	public CommandTokenizer whitespaceChars(int low, int hi) {
 		for (int ch = low; ch <= hi; ch++) {
