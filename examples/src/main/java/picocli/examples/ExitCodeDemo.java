@@ -30,8 +30,7 @@ public class ExitCodeDemo implements Runnable {
         CommandLine cmd = new CommandLine(new ExitCodeDemo());
         cmd.parseWithHandlers(
                 new CommandLine.RunLast().andExit(123),
-                Collections.<Object>emptyList(),
-                new CommandLine.DefaultExceptionHandler<List<Object>>().andExit(456),
+                CommandLine.defaultExceptionHandler().andExit(456),
                 args);
     }
 }

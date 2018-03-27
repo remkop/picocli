@@ -148,7 +148,7 @@ public class CommandLineParseWithHandlersTest {
     }
 
     @Test
-    public void testParseWithHandler2RunXxxReturnsEmptyListIfHelpRequested() {
+    public void testParseWithHandler2RunXxxReturnsNullIfHelpRequested() {
         @Command(version = "abc 1.3.4")
         class App implements Callable<Object> {
             @Option(names = "-h", usageHelp = true) boolean requestHelp;
@@ -158,8 +158,8 @@ public class CommandLineParseWithHandlersTest {
         CommandLineFactory factory = new CommandLineFactory() {
             public CommandLine create() {return new CommandLine(new App());}
         };
-        verifyReturnValueForBuiltInHandlers2(factory, Collections.emptyList(), new String[] {"-h"});
-        verifyReturnValueForBuiltInHandlers2(factory, Collections.emptyList(), new String[] {"-V"});
+        verifyReturnValueForBuiltInHandlers2(factory, null, new String[] {"-h"});
+        verifyReturnValueForBuiltInHandlers2(factory, null, new String[] {"-V"});
     }
 
     @Test
@@ -181,7 +181,7 @@ public class CommandLineParseWithHandlersTest {
         PrintStream out = new PrintStream(new ByteArrayOutputStream());
         for (IParseResultHandler2 handler : handlers) {
             String descr = handler.getClass().getSimpleName();
-            Object actual = factory.create().parseWithHandler(handler, new ArrayList<Object>(), (String[]) args);
+            Object actual = factory.create().parseWithHandler(handler, args);
             assertEquals(descr + ": return value", expected, actual);
         }
     }
@@ -224,13 +224,13 @@ public class CommandLineParseWithHandlersTest {
         };
         PrintStream out = new PrintStream(new ByteArrayOutputStream());
 
-        Object actual1 = factory.create().parseWithHandler(new RunFirst(), new ArrayList<Object>(), new String[]{"sub"});
+        Object actual1 = factory.create().parseWithHandler(new RunFirst(), new String[]{"sub"});
         assertEquals("RunFirst: return value", Arrays.asList("RETURN VALUE"), actual1);
 
-        Object actual2 = factory.create().parseWithHandler(new RunLast(), new ArrayList<Object>(), new String[]{"sub"});
+        Object actual2 = factory.create().parseWithHandler(new RunLast(), new String[]{"sub"});
         assertEquals("RunLast: return value", Arrays.asList("SUB RETURN VALUE"), actual2);
 
-        Object actual3 = factory.create().parseWithHandler(new RunAll(), new ArrayList<Object>(), new String[]{"sub"});
+        Object actual3 = factory.create().parseWithHandler(new RunAll(), new String[]{"sub"});
         assertEquals("RunAll: return value", Arrays.asList("RETURN VALUE", "SUB RETURN VALUE"), actual3);
     }
 
@@ -318,7 +318,7 @@ public class CommandLineParseWithHandlersTest {
             }
         }
         exit.expectSystemExitWithStatus(23);
-        new CommandLine(new App()).parseWithHandler(new RunFirst().andExit(23), null, new String[]{});
+        new CommandLine(new App()).parseWithHandler(new RunFirst().andExit(23), new String[]{});
     }
 
     @Test
@@ -329,7 +329,7 @@ public class CommandLineParseWithHandlersTest {
             }
         }
         exit.expectSystemExitWithStatus(25);
-        new CommandLine(new App()).parseWithHandlers(new RunFirst().andExit(23), new ArrayList<Object>(),
+        new CommandLine(new App()).parseWithHandlers(new RunFirst().andExit(23),
                                                     defaultExceptionHandler().andExit(25));
         assertEquals(format("" +
                 "blah%n",
@@ -347,7 +347,7 @@ public class CommandLineParseWithHandlersTest {
                 throw new RuntimeException("blah");
             }
         }
-        new CommandLine(new App()).parseWithHandlers(new RunFirst().andExit(23), new ArrayList<Object>(),
+        new CommandLine(new App()).parseWithHandlers(new RunFirst().andExit(23),
                 defaultExceptionHandler().andExit(25));
     }
 
@@ -358,7 +358,7 @@ public class CommandLineParseWithHandlersTest {
                 throw new InternalError("blah");
             }
         }
-        new CommandLine(new App()).parseWithHandlers(new RunFirst().andExit(23), new ArrayList<Object>(),
+        new CommandLine(new App()).parseWithHandlers(new RunFirst().andExit(23),
                 defaultExceptionHandler().andExit(25));
     }
 

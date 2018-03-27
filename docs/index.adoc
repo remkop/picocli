@@ -2225,7 +2225,7 @@ and `useAnsi` to customize the Ansi style to use:
 
         cmd.parseWithHandlers(
                 new RunLast().useOut(myOut).useAnsi(Help.Ansi.ON),
-                new DefaultExceptionHandler().useErr(myErr).useAnsi(Help.Ansi.OFF),
+                CommandLine.defaultExceptionHandler().useErr(myErr).useAnsi(Help.Ansi.OFF),
                 args);
     }
 }
@@ -2245,7 +2245,7 @@ If an exit code was specified, the handler terminates the JVM with the specified
         CommandLine cmd = new CommandLine(new ExitCodeDemo());
         cmd.parseWithHandlers(
                 new RunLast().andExit(123),
-                new DefaultExceptionHandler().andExit(456),
+                CommandLine.defaultExceptionHandler().andExit(456),
                 args);
     }
 }
