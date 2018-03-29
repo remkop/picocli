@@ -4,7 +4,8 @@
 
 ## <a name="3.0.0-alpha-3-fixes"></a> Fixed issues
 
-- [#314] API: add method `CommandLine::setUsageHelpWidth` and `UsageMessageSpec::width` to set the max usage help message width.
+- [#314] Enhancement and API Change: add method `CommandLine::setUsageHelpWidth` and `UsageMessageSpec::width` to set the max usage help message width.
+- [#316] Enhancement: Support lenient mode where annotations are optional when extracting annotations.
 
 ## <a name="3.0.0-alpha-3-deprecated"></a> Deprecations
 See [3.0.0-alpha-1](https://github.com/remkop/picocli/releases/tag/v3.0.0-alpha-1#3.0.0-alpha-1-deprecated)

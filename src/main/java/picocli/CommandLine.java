@@ -172,7 +172,7 @@ public class CommandLine {
     public CommandLine(Object command, IFactory factory) {
         this.factory = Assert.notNull(factory, "factory");
         interpreter = new Interpreter();
-        commandSpec = CommandReflection.extractCommandSpec(command, factory);
+        commandSpec = CommandSpec.forAnnotatedObject(command, factory);
         commandSpec.commandLine(this);
         commandSpec.validate();
         if (commandSpec.unmatchedArgsBindings().size() > 0) { setUnmatchedArgumentsAllowed(true); }
@@ -195,7 +195,7 @@ public class CommandLine {
      * @return this CommandLine object, to allow method chaining
      * @since 3.0 */
     public CommandLine addMixin(String name, Object mixin) {
-        getCommandSpec().addMixin(name, CommandReflection.extractCommandSpec(mixin, factory));
+        getCommandSpec().addMixin(name, CommandSpec.forAnnotatedObject(mixin, factory));
         return this;
     }
 
@@ -2641,6 +2641,7 @@ public class CommandLine {
             /** Creates and returns a new {@code CommandSpec} initialized from the specified associated user object. The specified
              * user object must have at least one {@link Command}, {@link Option} or {@link Parameters} annotation.
              * @param userObject the user object annotated with {@link Command}, {@link Option} and/or {@link Parameters} annotations.
+             * @throws InitializationException if the specified object has no picocli annotations or has invalid annotations
              */
             public static CommandSpec forAnnotatedObject(Object userObject) { return forAnnotatedObject(userObject, new DefaultFactory()); }
 
@@ -2648,8 +2649,24 @@ public class CommandLine {
              * user object must have at least one {@link Command}, {@link Option} or {@link Parameters} annotation.
              * @param userObject the user object annotated with {@link Command}, {@link Option} and/or {@link Parameters} annotations.
              * @param factory the factory used to create instances of {@linkplain Command#subcommands() subcommands}, {@linkplain Option#converter() converters}, etc., that are registered declaratively with annotation attributes
+             * @throws InitializationException if the specified object has no picocli annotations or has invalid annotations
              */
-            public static CommandSpec forAnnotatedObject(Object userObject, IFactory factory) { return CommandReflection.extractCommandSpec(userObject, factory); }
+            public static CommandSpec forAnnotatedObject(Object userObject, IFactory factory) { return CommandReflection.extractCommandSpec(userObject, factory, true); }
+
+            /** Creates and returns a new {@code CommandSpec} initialized from the specified associated user object. If the specified
+             * user object has no {@link Command}, {@link Option} or {@link Parameters} annotations, an empty {@code CommandSpec} is returned.
+             * @param userObject the user object annotated with {@link Command}, {@link Option} and/or {@link Parameters} annotations.
+             * @throws InitializationException if the specified object has invalid annotations
+             */
+            public static CommandSpec forAnnotatedObjectLenient(Object userObject) { return forAnnotatedObjectLenient(userObject, new DefaultFactory()); }
+
+            /** Creates and returns a new {@code CommandSpec} initialized from the specified associated user object. If the specified
+             * user object has no {@link Command}, {@link Option} or {@link Parameters} annotations, an empty {@code CommandSpec} is returned.
+             * @param userObject the user object annotated with {@link Command}, {@link Option} and/or {@link Parameters} annotations.
+             * @param factory the factory used to create instances of {@linkplain Command#subcommands() subcommands}, {@linkplain Option#converter() converters}, etc., that are registered declaratively with annotation attributes
+             * @throws InitializationException if the specified object has invalid annotations
+             */
+            public static CommandSpec forAnnotatedObjectLenient(Object userObject, IFactory factory) { return CommandReflection.extractCommandSpec(userObject, factory, false); }
 
             /** Ensures all attributes of this {@code CommandSpec} have a valid value; throws an {@link InitializationException} if this cannot be achieved. */
             void validate() {
@@ -2867,7 +2884,7 @@ public class CommandLine {
              * @return this CommandSpec for method chaining
              * @see Command#mixinStandardHelpOptions() */
             public CommandSpec mixinStandardHelpOptions(boolean newValue) {
-                if (newValue) { addMixin(AutoHelpMixin.KEY, CommandReflection.extractCommandSpec(new AutoHelpMixin(), new DefaultFactory())); }
+                if (newValue) { addMixin(AutoHelpMixin.KEY, CommandSpec.forAnnotatedObject(new AutoHelpMixin(), new DefaultFactory())); }
                 else {
                     CommandSpec helpMixin = mixins.remove(AutoHelpMixin.KEY);
                     if (helpMixin != null) {
@@ -3742,7 +3759,7 @@ public class CommandLine {
             }
         }
         private static class CommandReflection {
-            static CommandSpec extractCommandSpec(Object command, IFactory factory) {
+            static CommandSpec extractCommandSpec(Object command, IFactory factory, boolean annotationsAreMandatory) {
                 if (command instanceof CommandSpec) { return (CommandSpec) command; }
 
                 CommandSpec result = CommandSpec.wrapWithoutInspection(Assert.notNull(command, "command"));
@@ -3754,7 +3771,7 @@ public class CommandLine {
                     hasCommandAnnotation |= initFromAnnotatedFields(command, cls, result, factory);
                     cls = cls.getSuperclass();
                 }
-                validateCommandSpec(result, hasCommandAnnotation, command);
+                if (annotationsAreMandatory) {validateCommandSpec(result, hasCommandAnnotation, command); }
                 result.withToString(command.getClass().getName()).validate();
                 return result;
             }
@@ -3893,7 +3910,7 @@ public class CommandLine {
                         userObject = factory.create(field.getType());
                         field.set(scope, userObject);
                     }
-                    CommandSpec result = extractCommandSpec(userObject, factory);
+                    CommandSpec result = CommandSpec.forAnnotatedObject(userObject, factory);
                     return result.withToString(abbreviate("mixin from field " + field.toGenericString()));
                 } catch (InitializationException ex) {
                     throw ex;
@@ -5435,7 +5452,7 @@ public class CommandLine {
          * @param colorScheme the color scheme to use
          * @deprecated use {@link picocli.CommandLine.Help#Help(picocli.CommandLine.Model.CommandSpec, picocli.CommandLine.Help.ColorScheme)}  */
         @Deprecated public Help(Object command, ColorScheme colorScheme) {
-            this(CommandReflection.extractCommandSpec(command, new DefaultFactory()), colorScheme);
+            this(CommandSpec.forAnnotatedObject(command, new DefaultFactory()), colorScheme);
         }
         /** Constructs a new {@code Help} instance with the specified color scheme, initialized from annotatations
          * on the specified class and superclasses.
@@ -5496,7 +5513,7 @@ public class CommandLine {
          * @deprecated
          */
         @Deprecated public Help addSubcommand(String commandName, Object command) {
-            commands.put(commandName, new Help(CommandReflection.extractCommandSpec(command, commandSpec.commandLine().factory)));
+            commands.put(commandName, new Help(CommandSpec.forAnnotatedObject(command, commandSpec.commandLine().factory)));
             return this;
         }
 
