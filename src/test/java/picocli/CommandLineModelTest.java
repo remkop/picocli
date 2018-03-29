@@ -166,6 +166,50 @@ public class CommandLineModelTest {
     }
 
     @Test
+    public void testUsageHelp_width_default80() {
+        assertEquals(80, UsageMessageSpec.DEFAULT_USAGE_WIDTH);
+        assertEquals(UsageMessageSpec.DEFAULT_USAGE_WIDTH, new UsageMessageSpec().width());
+    }
+
+    @Test
+    public void testUsageHelp_width_configurableWithSystemProperty() {
+        System.setProperty("picocli.usage.width", "67");
+        try {
+            assertEquals(67, new UsageMessageSpec().width());
+        } finally {
+            System.clearProperty("picocli.usage.width");
+        }
+    }
+
+    @Test
+    public void testUsageHelp_width_SystemPropertyOverrulesSetValue() {
+        System.setProperty("picocli.usage.width", "67");
+        try {
+            assertEquals(67, new UsageMessageSpec().width(123).width());
+        } finally {
+            System.clearProperty("picocli.usage.width");
+        }
+    }
+
+    @Test
+    public void testUsageHelp_width_setter() {
+        UsageMessageSpec spec = new UsageMessageSpec();
+        spec.width(67);
+        assertEquals(67, spec.width());
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testUsageHelp_width_setterDisallowsValuesBelow55() {
+        new UsageMessageSpec().width(54);
+    }
+
+    @Test
+    public void testUsageHelp_width_setterAllowsValuesAt55OrHigher() {
+        assertEquals(55, new UsageMessageSpec().width(55).width());
+        assertEquals(Integer.MAX_VALUE, new UsageMessageSpec().width(Integer.MAX_VALUE).width());
+    }
+
+    @Test
     public void testVersionHelp_basic() throws Exception {
         CommandSpec spec = CommandSpec.create().version("1.0", "copyright etc");
         CommandLine commandLine = new CommandLine(spec);

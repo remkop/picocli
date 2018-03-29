@@ -1531,6 +1531,26 @@ public class CommandLine {
         return this;
     }
 
+    /** Returns the maximum width of the usage help message.
+     * @see UsageMessageSpec#width() */
+    public int getUsageHelpWidth() { return getCommandSpec().usageMessage().width(); }
+
+    /** Sets the maximum width of the usage help message. Longer lines are wrapped.
+     * <p>The specified setting will be registered with this {@code CommandLine} and the full hierarchy of its
+     * subcommands and nested sub-subcommands <em>at the moment this method is called</em>. Subcommands added
+     * later will have the default setting. To ensure a setting is applied to all
+     * subcommands, call the setter last, after adding subcommands.</p>
+     * @param width the maximum width of the usage help message
+     * @see UsageMessageSpec#width(int)
+     * @return this {@code CommandLine} object, to allow method chaining */
+    public CommandLine setUsageHelpWidth(int width) {
+        getCommandSpec().usageMessage().width(width);
+        for (CommandLine command : getCommandSpec().subcommands().values()) {
+            command.setUsageHelpWidth(width);
+        }
+        return this;
+    }
+
     /** Returns the command name (also called program name) displayed in the usage help synopsis.
      * @return the command name (also called program name) displayed in the usage
      * @see CommandSpec#name()
@@ -2885,6 +2905,10 @@ public class CommandLine {
         /** Models the usage help message specification.
          * @since 3.0 */
         public static class UsageMessageSpec {
+            /** Constant holding the default usage message width: <code>{@value}</code>. */
+            public  final static int DEFAULT_USAGE_WIDTH = 80;
+            private final static int MINIMUM_USAGE_WIDTH = 55;
+
             /** Constant String holding the default synopsis heading: <code>{@value}</code>. */
             static final String DEFAULT_SYNOPSIS_HEADING = "Usage: ";
 
@@ -2925,6 +2949,41 @@ public class CommandLine {
             private String optionListHeading;
             private String commandListHeading;
             private String footerHeading;
+            private int width = DEFAULT_USAGE_WIDTH;
+
+            private static int getSysPropertyWidthOrDefault(int defaultWidth) {
+                String userValue = System.getProperty("picocli.usage.width");
+                if (userValue == null) { return defaultWidth; }
+                try {
+                    int width = Integer.parseInt(userValue);
+                    if (width < MINIMUM_USAGE_WIDTH) {
+                        new Tracer().warn("Invalid picocli.usage.width value %d. Using minimum usage width %d.%n", width, MINIMUM_USAGE_WIDTH);
+                        return MINIMUM_USAGE_WIDTH;
+                    }
+                    return width;
+                } catch (NumberFormatException ex) {
+                    new Tracer().warn("Invalid picocli.usage.width value '%s'. Using usage width %d.%n", userValue, defaultWidth);
+                    return defaultWidth;
+                }
+            }
+
+            /** Returns the maximum usage help message width. Derived from system property {@code "picocli.usage.width"}
+             * if set, otherwise returns the value set via the {@link #width(int)} method, or if not set, the {@linkplain #DEFAULT_USAGE_WIDTH default width}.
+             * @return the maximum usage help message width. Never returns less than 55. */
+            public int width() { return getSysPropertyWidthOrDefault(width); }
+
+            /**
+             * Sets the maximum usage help message width to the specified value. Longer values are wrapped.
+             * @param newValue the new maximum usage help message width. Must be 55 or greater.
+             * @return this {@code UsageMessageSpec} for method chaining
+             * @throws IllegalArgumentException if the specified width is less than 55
+             */
+            public UsageMessageSpec width(int newValue) {
+                if (newValue < MINIMUM_USAGE_WIDTH) {
+                    throw new IllegalArgumentException("Invalid usage message width " + newValue + ". Minimum value is " + MINIMUM_USAGE_WIDTH);
+                }
+                width = newValue; return this;
+            }
 
             /** Returns the optional heading preceding the header section. Initialized from {@link Command#headerHeading()}, or null. */
             public String headerHeading() { return headerHeading == null ? DEFAULT_SINGLE_VALUE : headerHeading; }
@@ -5349,8 +5408,6 @@ public class CommandLine {
         /** Constant String holding the default string that separates options from option parameters, value defined in {@link ParserSpec#DEFAULT_SEPARATOR}. */
         protected static final String DEFAULT_SEPARATOR = ParserSpec.DEFAULT_SEPARATOR;
 
-        private final static int MINIMUM_USAGE_WIDTH = 55;
-        private final static int DEFAULT_USAGE_WIDTH = 80;
         private final static int optionsColumnWidth = 2 + 2 + 1 + 24;
         private final CommandSpec commandSpec;
         private final ColorScheme colorScheme;
@@ -5562,12 +5619,12 @@ public class CommandLine {
             int firstColumnLength = commandName.length() + synopsisHeadingLength;
 
             // synopsis heading ("Usage: ") may be on the same line, so adjust column width
-            TextTable textTable = new TextTable(ansi(), firstColumnLength, getUsageHelpWidth() - firstColumnLength);
+            TextTable textTable = TextTable.forColumnWidths(ansi(), firstColumnLength, width() - firstColumnLength);
             textTable.indentWrappedLines = 1; // don't worry about first line: options (2nd column) always start with a space
 
             // right-adjust the command name by length of synopsis heading
             Text PADDING = Ansi.OFF.new Text(stringOf('X', synopsisHeadingLength));
-            textTable.addRowValues(new Text[] {PADDING.append(colorScheme.commandText(commandName)), optionText});
+            textTable.addRowValues(PADDING.append(colorScheme.commandText(commandName)), optionText);
             return textTable.toString().substring(synopsisHeadingLength); // cut off leading synopsis heading spaces
         }
 
@@ -5637,30 +5694,8 @@ public class CommandLine {
             return layout.toString();
         }
 
-        /** CONSIDER THIS METHOD PRIVATE. IT IS PACKAGE PRIVATE FOR TESTING PURPOSES ONLY.
-         *
-         * @return the usage help width from the {@code picocli.usage.width} system property.
-         *  If not defined or an invalid value was specified, the default width (80) is used.
-         *  If a value less than the minimum width was specified, the minimum width (55) is used.
-         */
-        static int getUsageHelpWidth() {
-            String userValue = System.getProperty("picocli.usage.width");
-            if (userValue == null) { return DEFAULT_USAGE_WIDTH; }
-            try {
-                int width = Integer.parseInt(userValue);
-                if (width < MINIMUM_USAGE_WIDTH) {
-                    new Tracer().warn("Invalid picocli.usage.width value %d. Using minimum usage width %d.%n", width, MINIMUM_USAGE_WIDTH);
-                    return MINIMUM_USAGE_WIDTH;
-                }
-                return width;
-            } catch (NumberFormatException ex) {
-                new Tracer().warn("Invalid picocli.usage.width value '%s'. Using default usage width %d.%n", userValue, DEFAULT_USAGE_WIDTH);
-                return DEFAULT_USAGE_WIDTH;
-            }
-        }
-
-        private static String heading(Ansi ansi, String values, Object... params) {
-            StringBuilder sb = join(ansi, new String[] {values}, new StringBuilder(), params);
+        private static String heading(Ansi ansi, int usageWidth, String values, Object... params) {
+            StringBuilder sb = join(ansi, usageWidth, new String[] {values}, new StringBuilder(), params);
             String result = sb.toString();
             result = result.endsWith(System.getProperty("line.separator"))
                     ? result.substring(0, result.length() - System.getProperty("line.separator").length()) : result;
@@ -5676,13 +5711,14 @@ public class CommandLine {
 
         /** Formats each of the specified values and appends it to the specified StringBuilder.
          * @param ansi whether the result should contain ANSI escape codes or not
+         * @param usageHelpWidth the width of the usage help message
          * @param values the values to format and append to the StringBuilder
          * @param sb the StringBuilder to collect the formatted strings
          * @param params the parameters to pass to the format method when formatting each value
          * @return the specified StringBuilder */
-        public static StringBuilder join(Ansi ansi, String[] values, StringBuilder sb, Object... params) {
+        public static StringBuilder join(Ansi ansi, int usageHelpWidth, String[] values, StringBuilder sb, Object... params) {
             if (values != null) {
-                TextTable table = new TextTable(ansi, getUsageHelpWidth());
+                TextTable table = TextTable.forColumnWidths(ansi, usageHelpWidth);
                 table.indentWrappedLines = 0;
                 for (String summaryLine : values) {
                     Text[] lines = ansi.new Text(format(summaryLine, params)).splitLines();
@@ -5695,6 +5731,7 @@ public class CommandLine {
         private static String format(String formatString,  Object... params) {
             return formatString == null ? "" : String.format(formatString, params);
         }
+        private int width() { return commandSpec.usageMessage().width(); }
         /** Returns command custom synopsis as a string. A custom synopsis can be zero or more lines, and can be
          * specified declaratively with the {@link Command#customSynopsis()} annotation attribute or programmatically
          * by setting the Help instance's {@link Help#customSynopsis} field.
@@ -5702,7 +5739,7 @@ public class CommandLine {
          * @return the custom synopsis lines combined into a single String (which may be empty)
          */
         public String customSynopsis(Object... params) {
-            return join(ansi(), commandSpec.usageMessage().customSynopsis(), new StringBuilder(), params).toString();
+            return join(ansi(), width(), commandSpec.usageMessage().customSynopsis(), new StringBuilder(), params).toString();
         }
         /** Returns command description text as a string. Description text can be zero or more lines, and can be specified
          * declaratively with the {@link Command#description()} annotation attribute or programmatically by
@@ -5711,7 +5748,7 @@ public class CommandLine {
          * @return the description lines combined into a single String (which may be empty)
          */
         public String description(Object... params) {
-            return join(ansi(), commandSpec.usageMessage().description(), new StringBuilder(), params).toString();
+            return join(ansi(), width(), commandSpec.usageMessage().description(), new StringBuilder(), params).toString();
         }
         /** Returns the command header text as a string. Header text can be zero or more lines, and can be specified
          * declaratively with the {@link Command#header()} annotation attribute or programmatically by
@@ -5720,7 +5757,7 @@ public class CommandLine {
          * @return the header lines combined into a single String (which may be empty)
          */
         public String header(Object... params) {
-            return join(ansi(), commandSpec.usageMessage().header(), new StringBuilder(), params).toString();
+            return join(ansi(), width(), commandSpec.usageMessage().header(), new StringBuilder(), params).toString();
         }
         /** Returns command footer text as a string. Footer text can be zero or more lines, and can be specified
          * declaratively with the {@link Command#footer()} annotation attribute or programmatically by
@@ -5729,21 +5766,21 @@ public class CommandLine {
          * @return the footer lines combined into a single String (which may be empty)
          */
         public String footer(Object... params) {
-            return join(ansi(), commandSpec.usageMessage().footer(), new StringBuilder(), params).toString();
+            return join(ansi(), width(), commandSpec.usageMessage().footer(), new StringBuilder(), params).toString();
         }
 
         /** Returns the text displayed before the header text; the result of {@code String.format(headerHeading, params)}.
          * @param params the parameters to use to format the header heading
          * @return the formatted header heading */
         public String headerHeading(Object... params) {
-            return heading(ansi(), commandSpec.usageMessage().headerHeading(), params);
+            return heading(ansi(), width(), commandSpec.usageMessage().headerHeading(), params);
         }
 
         /** Returns the text displayed before the synopsis text; the result of {@code String.format(synopsisHeading, params)}.
          * @param params the parameters to use to format the synopsis heading
          * @return the formatted synopsis heading */
         public String synopsisHeading(Object... params) {
-            return heading(ansi(), commandSpec.usageMessage().synopsisHeading(), params);
+            return heading(ansi(), width(), commandSpec.usageMessage().synopsisHeading(), params);
         }
 
         /** Returns the text displayed before the description text; an empty string if there is no description,
@@ -5751,7 +5788,7 @@ public class CommandLine {
          * @param params the parameters to use to format the description heading
          * @return the formatted description heading */
         public String descriptionHeading(Object... params) {
-            return empty(commandSpec.usageMessage().descriptionHeading()) ? "" : heading(ansi(), commandSpec.usageMessage().descriptionHeading(), params);
+            return empty(commandSpec.usageMessage().descriptionHeading()) ? "" : heading(ansi(), width(), commandSpec.usageMessage().descriptionHeading(), params);
         }
 
         /** Returns the text displayed before the positional parameter list; an empty string if there are no positional
@@ -5759,7 +5796,7 @@ public class CommandLine {
          * @param params the parameters to use to format the parameter list heading
          * @return the formatted parameter list heading */
         public String parameterListHeading(Object... params) {
-            return commandSpec.positionalParameters().isEmpty() ? "" : heading(ansi(), commandSpec.usageMessage().parameterListHeading(), params);
+            return commandSpec.positionalParameters().isEmpty() ? "" : heading(ansi(), width(), commandSpec.usageMessage().parameterListHeading(), params);
         }
 
         /** Returns the text displayed before the option list; an empty string if there are no options,
@@ -5767,7 +5804,7 @@ public class CommandLine {
          * @param params the parameters to use to format the option list heading
          * @return the formatted option list heading */
         public String optionListHeading(Object... params) {
-            return commandSpec.optionsMap().isEmpty() ? "" : heading(ansi(), commandSpec.usageMessage().optionListHeading(), params);
+            return commandSpec.optionsMap().isEmpty() ? "" : heading(ansi(), width(), commandSpec.usageMessage().optionListHeading(), params);
         }
 
         /** Returns the text displayed before the command list; an empty string if there are no commands,
@@ -5775,23 +5812,23 @@ public class CommandLine {
          * @param params the parameters to use to format the command list heading
          * @return the formatted command list heading */
         public String commandListHeading(Object... params) {
-            return commands.isEmpty() ? "" : heading(ansi(), commandSpec.usageMessage().commandListHeading(), params);
+            return commands.isEmpty() ? "" : heading(ansi(), width(), commandSpec.usageMessage().commandListHeading(), params);
         }
 
         /** Returns the text displayed before the footer text; the result of {@code String.format(footerHeading, params)}.
          * @param params the parameters to use to format the footer heading
          * @return the formatted footer heading */
         public String footerHeading(Object... params) {
-            return heading(ansi(), commandSpec.usageMessage().footerHeading(), params);
+            return heading(ansi(), width(), commandSpec.usageMessage().footerHeading(), params);
         }
         /** Returns a 2-column list with command names and the first line of their header or (if absent) description.
          * @return a usage help section describing the added commands */
         public String commandList() {
             if (commands.isEmpty()) { return ""; }
             int commandLength = maxLength(commands.keySet());
-            Help.TextTable textTable = new Help.TextTable(ansi(),
+            Help.TextTable textTable = Help.TextTable.forColumns(ansi(),
                     new Help.Column(commandLength + 2, 2, Help.Column.Overflow.SPAN),
-                    new Help.Column(getUsageHelpWidth() - (commandLength + 2), 2, Help.Column.Overflow.WRAP));
+                    new Help.Column(width() - (commandLength + 2), 2, Help.Column.Overflow.WRAP));
 
             for (Map.Entry<String, Help> entry : commands.entrySet()) {
                 Help help = entry.getValue();
@@ -5824,7 +5861,7 @@ public class CommandLine {
         /** Returns a {@code Layout} instance configured with the user preferences captured in this Help instance.
          * @return a Layout */
         public Layout createDefaultLayout() {
-            return new Layout(colorScheme, new TextTable(colorScheme.ansi()), createDefaultOptionRenderer(), createDefaultParameterRenderer());
+            return new Layout(colorScheme, TextTable.forDefaultColumns(colorScheme.ansi(), width()), createDefaultOptionRenderer(), createDefaultParameterRenderer());
         }
         /** Returns a new default OptionRenderer which converts {@link OptionSpec Options} to five columns of text to match
          *  the default {@linkplain TextTable TextTable} column layout. The first row of values looks like this:
@@ -6168,7 +6205,7 @@ public class CommandLine {
              * {@linkplain Help#createDefaultOptionRenderer() default option renderer}, and the
              * {@linkplain Help#createDefaultParameterRenderer() default parameter renderer}.
              * @param colorScheme the color scheme to use for common, auto-generated parts of the usage help message */
-            public Layout(ColorScheme colorScheme) { this(colorScheme, new TextTable(colorScheme.ansi())); }
+            public Layout(ColorScheme colorScheme, int tableWidth) { this(colorScheme, TextTable.forDefaultColumns(colorScheme.ansi(), tableWidth)); }
 
             /** Constructs a Layout with the specified color scheme, the specified TextTable, the
              * {@linkplain Help#createDefaultOptionRenderer() default option renderer}, and the
@@ -6310,7 +6347,7 @@ public class CommandLine {
             }
 
             /** The column definitions of this table. */
-            public final Column[] columns;
+            private final Column[] columns;
 
             /** The {@code char[]} slots of the {@code TextTable} to copy text values into. */
             protected final List<Text> columnValues = new ArrayList<Text>();
@@ -6319,6 +6356,7 @@ public class CommandLine {
             public int indentWrappedLines = 2;
 
             private final Ansi ansi;
+            private final int tableWidth;
 
             /** Constructs a TextTable with five columns as follows:
              * <ol>
@@ -6329,38 +6367,44 @@ public class CommandLine {
              * <li>description line(s) (width: 51, indent: 1, WRAP to next row on overflow)</li>
              * </ol>
              * @param ansi whether to emit ANSI escape codes or not
+             * @param usageHelpWidth the total width of the columns combined
              */
-            public TextTable(Ansi ansi) {
+            public static TextTable forDefaultColumns(Ansi ansi, int usageHelpWidth) {
                 // "* -c, --create                Creates a ...."
-                this(ansi, new Column[] {
+                return forColumns(ansi,
                             new Column(2,                                        0, TRUNCATE), // "*"
                             new Column(2,                                        0, TRUNCATE), // "-c"
                             new Column(1,                                        0, TRUNCATE), // ","
                             new Column(optionsColumnWidth - 2 - 2 - 1,           1, SPAN),  // " --create"
-                            new Column(getUsageHelpWidth() - optionsColumnWidth, 1, WRAP) // " Creates a ..."
-                    });
+                            new Column(usageHelpWidth - optionsColumnWidth, 1, WRAP)); // " Creates a ..."
             }
 
             /** Constructs a new TextTable with columns with the specified width, all SPANning  multiple columns on
              * overflow except the last column which WRAPS to the next row.
              * @param ansi whether to emit ANSI escape codes or not
-             * @param columnWidths the width of the table columns (all columns have zero indent)
+             * @param columnWidths the width of each table column (all columns have zero indent)
              */
-            public TextTable(Ansi ansi, int... columnWidths) {
-                this.ansi = Assert.notNull(ansi, "ansi");
-                columns = new Column[columnWidths.length];
+            public static TextTable forColumnWidths(Ansi ansi, int... columnWidths) {
+                Column[] columns = new Column[columnWidths.length];
                 for (int i = 0; i < columnWidths.length; i++) {
-                    columns[i] = new Column(columnWidths[i], 0, i == columnWidths.length - 1 ? SPAN: WRAP);
+                    columns[i] = new Column(columnWidths[i], 0, i == columnWidths.length - 1 ? WRAP : SPAN);
                 }
+                return new TextTable(ansi, columns);
             }
             /** Constructs a {@code TextTable} with the specified columns.
              * @param ansi whether to emit ANSI escape codes or not
              * @param columns columns to construct this TextTable with */
-            public TextTable(Ansi ansi, Column... columns) {
+            public static TextTable forColumns(Ansi ansi, Column... columns) { return new TextTable(ansi, columns); }
+            protected TextTable(Ansi ansi, Column[] columns) {
                 this.ansi = Assert.notNull(ansi, "ansi");
-                this.columns = Assert.notNull(columns, "columns");
+                this.columns = Assert.notNull(columns, "columns").clone();
                 if (columns.length == 0) { throw new IllegalArgumentException("At least one column is required"); }
+                int totalWidth = 0;
+                for (Column col : columns) { totalWidth += col.width; }
+                tableWidth = totalWidth;
             }
+            /** The column definitions of this table. */
+            public Column[] columns() { return columns.clone(); }
             /** Returns the {@code Text} slot at the specified row and column to write a text value into.
              * @param row the row of the cell whose Text to return
              * @param col the column of the cell whose Text to return
@@ -6509,7 +6553,7 @@ public class CommandLine {
              * @return the specified StringBuilder object (to allow method chaining and a more fluid API) */
             public StringBuilder toString(StringBuilder text) {
                 int columnCount = this.columns.length;
-                StringBuilder row = new StringBuilder(getUsageHelpWidth());
+                StringBuilder row = new StringBuilder(tableWidth);
                 for (int i = 0; i < columnValues.size(); i++) {
                     Text column = columnValues.get(i);
                     row.append(column.toString());

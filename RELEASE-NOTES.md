@@ -1,5 +1,27 @@
 # picocli Release Notes
 
+# <a name="3.0.0-alpha-3"></a> Picocli 3.0.0-alpha-3 (UNRELEASED)
+
+## <a name="3.0.0-alpha-3-fixes"></a> Fixed issues
+
+- [#314] API: add method `CommandLine::setUsageHelpWidth` and `UsageMessageSpec::width` to set the max usage help message width.
+
+## <a name="3.0.0-alpha-3-deprecated"></a> Deprecations
+See [3.0.0-alpha-1](https://github.com/remkop/picocli/releases/tag/v3.0.0-alpha-1#3.0.0-alpha-1-deprecated)
+
+## <a name="3.0.0-alpha-3-breaking-changes"></a> Potential breaking changes
+- Utility method `CommandLine.Help.join` signature changed: now takes an additional `usageHelpWidth` parameter.
+- Constructor `CommandLine.Help.Layout(ColorScheme)` signature changed: now takes an additional `usageHelpWidth` parameter. 
+- Public field `CommandLine.Help.TextTable.columns` is now private; added public method `CommandLine.Help.TextTable.columns()`.
+- Constructor `CommandLine.Help.TextTable(Ansi)` is replaced with factory method `CommandLine.Help.TextTable.forDefaultColumns(Ansi, int)`.
+- Constructor `CommandLine.Help.TextTable(Ansi, int...)` is replaced with factory method `CommandLine.Help.TextTable.forColumnWidths(Ansi, int...)`.
+- Constructor `CommandLine.Help.TextTable(Ansi, Column...)` modifier changed from public to protected.
+- Added factory method `CommandLine.Help.TextTable.forColumns(Ansi, Column...)`.
+
+See [3.0.0-alpha-2](https://github.com/remkop/picocli/releases/tag/v3.0.0-alpha-2#3.0.0-alpha-2-breaking-changes).
+See [3.0.0-alpha-1](https://github.com/remkop/picocli/releases/tag/v3.0.0-alpha-1#3.0.0-alpha-1-breaking-changes).
+
+
 # <a name="3.0.0-alpha-2"></a> Picocli 3.0.0-alpha-2
 The picocli community is pleased to announce picocli 3.0.0-alpha-2.
 

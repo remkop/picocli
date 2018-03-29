@@ -1327,7 +1327,8 @@ public class CommandLineHelpTest {
                 textArray(Help.Ansi.OFF, "1", "2", "3", "4")
         };
         final int[] count = {0};
-        TextTable tt = new TextTable(Help.Ansi.OFF) {
+        TextTable tt = TextTable.forDefaultColumns(Help.Ansi.OFF, UsageMessageSpec.DEFAULT_USAGE_WIDTH);
+        tt = new TextTable(Help.Ansi.OFF, tt.columns()) {
             @Override public void addRowValues(Text[] columnValues) {
                 assertArrayEquals(values[count[0]], columnValues);
                 count[0]++;
@@ -1825,7 +1826,7 @@ public class CommandLineHelpTest {
     }
     @Test
     public void testTextTable() {
-        TextTable table = new TextTable(Help.Ansi.OFF);
+        TextTable table = TextTable.forDefaultColumns(Help.Ansi.OFF, UsageMessageSpec.DEFAULT_USAGE_WIDTH);
         table.addRowValues(textArray(Help.Ansi.OFF, "", "-v", ",", "--verbose", "show what you're doing while you are doing it"));
         table.addRowValues(textArray(Help.Ansi.OFF, "", "-p", null, null, "the quick brown fox jumped over the lazy dog. The quick brown fox jumped over the lazy dog."));
         assertEquals(String.format(
@@ -1837,7 +1838,7 @@ public class CommandLineHelpTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void testTextTableAddsNewRowWhenTooManyValuesSpecified() {
-        TextTable table = new TextTable(Help.Ansi.OFF);
+        TextTable table = TextTable.forDefaultColumns(Help.Ansi.OFF, UsageMessageSpec.DEFAULT_USAGE_WIDTH);
         table.addRowValues(textArray(Help.Ansi.OFF, "", "-c", ",", "--create", "description", "INVALID", "Row 3"));
 //        assertEquals(String.format("" +
 //                        "  -c, --create                description                                       %n" +
@@ -1848,7 +1849,7 @@ public class CommandLineHelpTest {
 
     @Test
     public void testTextTableAddsNewRowWhenAnyColumnTooLong() {
-        TextTable table = new TextTable(Help.Ansi.OFF);
+        TextTable table = TextTable.forDefaultColumns(Help.Ansi.OFF, UsageMessageSpec.DEFAULT_USAGE_WIDTH);
         table.addRowValues("*", "-c", ",",
                 "--create, --create2, --create3, --create4, --create5, --create6, --create7, --create8",
                 "description");
@@ -1858,7 +1859,7 @@ public class CommandLineHelpTest {
                         "                              description%n"
                 ,""), table.toString(new StringBuilder()).toString());
 
-        table = new TextTable(Help.Ansi.OFF);
+        table = TextTable.forDefaultColumns(Help.Ansi.OFF, UsageMessageSpec.DEFAULT_USAGE_WIDTH);
         table.addRowValues("", "-c", ",",
                 "--create, --create2, --create3, --create4, --create5, --create6, --createAA7, --create8",
                 "description");
@@ -3121,11 +3122,11 @@ public class CommandLineHelpTest {
 
     @Test
     public void testShouldGetUsageWidthFromSystemProperties() {
-        int defaultWidth = Help.getUsageHelpWidth();
+        int defaultWidth = new UsageMessageSpec().width();
         assertEquals(80, defaultWidth);
         try {
             System.setProperty("picocli.usage.width", "123");
-            int width = Help.getUsageHelpWidth();
+            int width = new UsageMessageSpec().width();
             assertEquals(123, width);
         } finally {
             System.setProperty("picocli.usage.width", String.valueOf(defaultWidth));
@@ -3140,12 +3141,12 @@ public class CommandLineHelpTest {
 
         System.clearProperty("picocli.trace");
         System.setProperty("picocli.usage.width", "INVALID");
-        int actual = Help.getUsageHelpWidth();
+        int actual = new UsageMessageSpec().width();
         System.setErr(originalErr);
         System.clearProperty("picocli.usage.width");
 
         assertEquals(80, actual);
-        assertEquals(format("[picocli WARN] Invalid picocli.usage.width value 'INVALID'. Using default usage width 80.%n"), baos.toString("UTF-8"));
+        assertEquals(format("[picocli WARN] Invalid picocli.usage.width value 'INVALID'. Using usage width 80.%n"), baos.toString("UTF-8"));
     }
 
     @Test
@@ -3156,7 +3157,7 @@ public class CommandLineHelpTest {
 
         System.clearProperty("picocli.trace");
         System.setProperty("picocli.usage.width", "54");
-        int actual = Help.getUsageHelpWidth();
+        int actual = new UsageMessageSpec().width();
         System.setErr(originalErr);
         System.clearProperty("picocli.usage.width");
 
@@ -3166,26 +3167,18 @@ public class CommandLineHelpTest {
 
     @Test
     public void testTextTableWithLargeWidth() {
-        int defWidth = Help.getUsageHelpWidth();
-        System.setProperty("picocli.usage.width", "200");
+        TextTable table = TextTable.forDefaultColumns(Help.Ansi.OFF, 200);
+        table.addRowValues(textArray(Help.Ansi.OFF, "", "-v", ",", "--verbose", "show what you're doing while you are doing it"));
+        table.addRowValues(textArray(Help.Ansi.OFF, "", "-p", null, null, "the quick brown fox jumped over the lazy dog. The quick brown fox jumped over the lazy doooooooooooooooog."));
 
-        try {
-            TextTable table = new TextTable(Help.Ansi.OFF);
-            table.addRowValues(textArray(Help.Ansi.OFF, "", "-v", ",", "--verbose", "show what you're doing while you are doing it"));
-            table.addRowValues(textArray(Help.Ansi.OFF, "", "-p", null, null, "the quick brown fox jumped over the lazy dog. The quick brown fox jumped over the lazy doooooooooooooooog."));
-
-            assertEquals(String.format(
-                    "  -v, --verbose               show what you're doing while you are doing it%n" +
-                            "  -p                          the quick brown fox jumped over the lazy dog. The quick brown fox jumped over the lazy doooooooooooooooog.%n"
-            ), table.toString(new StringBuilder()).toString());
-        }  finally {
-            System.setProperty("picocli.usage.width", String.valueOf(defWidth));
-        }
+        assertEquals(String.format(
+                "  -v, --verbose               show what you're doing while you are doing it%n" +
+                        "  -p                          the quick brown fox jumped over the lazy dog. The quick brown fox jumped over the lazy doooooooooooooooog.%n"
+        ), table.toString(new StringBuilder()).toString());
     }
 
     @Test
     public void testLongMultiLineSynopsisIndentedWithLargeWidth() {
-        int defWidth = Help.getUsageHelpWidth();
         System.setProperty("picocli.usage.width", "200");
 
         try {
@@ -3202,37 +3195,47 @@ public class CommandLineHelpTest {
                             "                [--third-long-option-name=<third-long-option-value>]%n"),
                     help.synopsis(0));
         } finally {
-            System.setProperty("picocli.usage.width", String.valueOf(defWidth));
+            System.setProperty("picocli.usage.width", String.valueOf(UsageMessageSpec.DEFAULT_USAGE_WIDTH));
+        }
+    }
+
+    @Command(description = "The quick brown fox jumped over the lazy dog. The quick brown fox jumped over the lazy dog. The quick brown fox jumped over the lazy dog. The quick brown fox jumped over the lazy dog. The quick brown fox jumped over the lazy dog. The quick brown fox jumped over the lazy dog.")
+    static class WideDescriptionApp {
+        @Option(names = "-s", description = "The quick brown fox jumped over the lazy dog. The quick brown fox jumped over the lazy dog. The quick brown fox jumped over the lazy dog. The quick brown fox jumped over the lazy dog.")
+        String shortOption;
+
+        @Option(names = "--very-very-very-looooooooooooooooong-option-name", description = "The quick brown fox jumped over the lazy dog. The quick brown fox jumped over the lazy dog. The quick brown fox jumped over the lazy dog. The quick brown fox jumped over the lazy dog.")
+        String lengthyOption;
+
+        static final String expected = format("Usage: <main class> [--very-very-very-looooooooooooooooong-option-name=<lengthyOption>] [-s=<shortOption>]%n" +
+                "The quick brown fox jumped over the lazy dog. The quick brown fox jumped over the lazy dog. The quick brown fox jumped%n" +
+                "over the lazy dog. The quick brown fox jumped over the lazy dog. The quick brown fox jumped over the lazy dog. The%n" +
+                "quick brown fox jumped over the lazy dog.%n" +
+                "      --very-very-very-looooooooooooooooong-option-name=<lengthyOption>%n" +
+                "                              The quick brown fox jumped over the lazy dog. The quick brown fox jumped over the lazy%n" +
+                "                                dog. The quick brown fox jumped over the lazy dog. The quick brown fox jumped over the%n" +
+                "                                lazy dog.%n" +
+                "  -s= <shortOption>           The quick brown fox jumped over the lazy dog. The quick brown fox jumped over the lazy%n" +
+                "                                dog. The quick brown fox jumped over the lazy dog. The quick brown fox jumped over the%n" +
+                "                                lazy dog.%n");
+    }
+
+    @Test
+    public void testWideUsageViaSystemProperty() throws Exception {
+        System.setProperty("picocli.usage.width", String.valueOf(120));
+        try {
+            String actual = usageString(new WideDescriptionApp(), Help.Ansi.OFF);
+            assertEquals(WideDescriptionApp.expected, actual);
+        } finally {
+            System.setProperty("picocli.usage.width", String.valueOf(80));
         }
     }
 
     @Test
     public void testWideUsage() throws Exception {
-        @Command(description = "The quick brown fox jumped over the lazy dog. The quick brown fox jumped over the lazy dog. The quick brown fox jumped over the lazy dog. The quick brown fox jumped over the lazy dog. The quick brown fox jumped over the lazy dog. The quick brown fox jumped over the lazy dog.")
-        class App {
-            @Option(names = "-s", description = "The quick brown fox jumped over the lazy dog. The quick brown fox jumped over the lazy dog. The quick brown fox jumped over the lazy dog. The quick brown fox jumped over the lazy dog.")
-            String shortOption;
-
-            @Option(names = "--very-very-very-looooooooooooooooong-option-name", description = "The quick brown fox jumped over the lazy dog. The quick brown fox jumped over the lazy dog. The quick brown fox jumped over the lazy dog. The quick brown fox jumped over the lazy dog.")
-            String lengthyOption;
-        }
-        System.setProperty("picocli.usage.width", String.valueOf(120));
-        try {
-            String actual = usageString(new App(), Help.Ansi.OFF);
-            String expected = format("Usage: <main class> [--very-very-very-looooooooooooooooong-option-name=<lengthyOption>] [-s=<shortOption>]%n" +
-                    "The quick brown fox jumped over the lazy dog. The quick brown fox jumped over the lazy dog. The quick brown fox jumped%n" +
-                    "over the lazy dog. The quick brown fox jumped over the lazy dog. The quick brown fox jumped over the lazy dog. The%n" +
-                    "quick brown fox jumped over the lazy dog.%n" +
-                    "      --very-very-very-looooooooooooooooong-option-name=<lengthyOption>%n" +
-                    "                              The quick brown fox jumped over the lazy dog. The quick brown fox jumped over the lazy%n" +
-                    "                                dog. The quick brown fox jumped over the lazy dog. The quick brown fox jumped over the%n" +
-                    "                                lazy dog.%n" +
-                    "  -s= <shortOption>           The quick brown fox jumped over the lazy dog. The quick brown fox jumped over the lazy%n" +
-                    "                                dog. The quick brown fox jumped over the lazy dog. The quick brown fox jumped over the%n" +
-                    "                                lazy dog.%n");
-            assertEquals(expected, actual);
-        } finally {
-            System.setProperty("picocli.usage.width", String.valueOf(80));
-        }
+        CommandLine cmd = new CommandLine(new WideDescriptionApp());
+        cmd.setUsageHelpWidth(120);
+        String actual = usageString(cmd, Help.Ansi.OFF);
+        assertEquals(WideDescriptionApp.expected, actual);
     }
 }

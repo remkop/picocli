@@ -141,7 +141,7 @@ public class CustomLayoutDemo implements Runnable {
                 // We want to show two options on one row, next to each other,
                 // unless the first option spanned multiple columns (in which case there are not enough columns left)
                 int col = previous.column + 1;
-                if (col == 1 || col + columnValues.length > table.columns.length) { // if true, write into next row
+                if (col == 1 || col + columnValues.length > table.columns().length) { // if true, write into next row
 
                     // table also adds an empty row if a text value spanned multiple columns
                     if (table.rowCount() == 0 || table.rowCount() == previous.row + 1) { // avoid adding 2 empty rows
@@ -155,7 +155,7 @@ public class CustomLayoutDemo implements Runnable {
                 }
             }
         }
-        TextTable textTable = new TextTable(ansi,
+        TextTable textTable = TextTable.forColumns(ansi,
                 new Column(5, 2, TRUNCATE), // values should fit
                 new Column(30, 2, SPAN), // overflow into adjacent columns
                 new Column(4, 1, TRUNCATE), // values should fit again
@@ -242,7 +242,7 @@ public class CustomLayoutDemo implements Runnable {
         sb.append(help.header()).append(help.detailedSynopsis(0, null, false));
         sb.append(System.getProperty("line.separator"));
 
-        TextTable textTable = new TextTable(ansi,
+        TextTable textTable = TextTable.forColumns(ansi,
                 new Column(15, 2, TRUNCATE),
                 new Column(65, 1, WRAP));
         textTable.indentWrappedLines = 0;

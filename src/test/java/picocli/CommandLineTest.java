@@ -616,6 +616,54 @@ public class CommandLineTest {
     }
 
     @Test
+    public void testSetUsageHelpWidth_BeforeSubcommandsAdded() {
+        @Command class TopLevel {}
+        CommandLine commandLine = new CommandLine(new TopLevel());
+        int DEFAULT = Model.UsageMessageSpec.DEFAULT_USAGE_WIDTH;
+        assertEquals(DEFAULT, commandLine.getUsageHelpWidth());
+        commandLine.setUsageHelpWidth(120);
+        assertEquals(120, commandLine.getUsageHelpWidth());
+
+        int childCount = 0;
+        int grandChildCount = 0;
+        commandLine.addSubcommand("main", createNestedCommand());
+        for (CommandLine sub : commandLine.getSubcommands().values()) {
+            childCount++;
+            assertEquals("subcommand added afterwards is not impacted", DEFAULT, sub.getUsageHelpWidth());
+            for (CommandLine subsub : sub.getSubcommands().values()) {
+                grandChildCount++;
+                assertEquals("subcommand added afterwards is not impacted", DEFAULT, subsub.getUsageHelpWidth());
+            }
+        }
+        assertTrue(childCount > 0);
+        assertTrue(grandChildCount > 0);
+    }
+
+    @Test
+    public void testSetUsageHelpWidth_AfterSubcommandsAdded() {
+        @Command class TopLevel {}
+        CommandLine commandLine = new CommandLine(new TopLevel());
+        commandLine.addSubcommand("main", createNestedCommand());
+        int DEFAULT = Model.UsageMessageSpec.DEFAULT_USAGE_WIDTH;
+        assertEquals(DEFAULT, commandLine.getUsageHelpWidth());
+        commandLine.setUsageHelpWidth(120);
+        assertEquals(120, commandLine.getUsageHelpWidth());
+
+        int childCount = 0;
+        int grandChildCount = 0;
+        for (CommandLine sub : commandLine.getSubcommands().values()) {
+            childCount++;
+            assertEquals("subcommand added before IS impacted", 120, sub.getUsageHelpWidth());
+            for (CommandLine subsub : sub.getSubcommands().values()) {
+                grandChildCount++;
+                assertEquals("subsubcommand added before IS impacted", 120, sub.getUsageHelpWidth());
+            }
+        }
+        assertTrue(childCount > 0);
+        assertTrue(grandChildCount > 0);
+    }
+
+    @Test
     public void testOptionsMixedWithParameters() {
         CompactFields compact = CommandLine.populateCommand(new CompactFields(), "-r -v p1 -o out p2".split(" "));
         verifyCompact(compact, true, true, "out", fileArray("p1", "p2"));
