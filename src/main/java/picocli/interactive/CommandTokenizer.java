@@ -16,9 +16,9 @@ import java.util.Scanner;
  * patterns (note that the latter are Strings, NOT regex).
  * The syntax is meant to resemble that of
  * {@link java.io.StreamTokenizer StreamTokenizer}. 
- * <br />
- * Default patterns/characters:<br />
- * <tbody>
+ * <br>
+ * Default patterns/characters:<br>
+ * <table>
  * 	<tr>
  * 		<td>comments</td>
  * 		<td>{@code #}</td>
@@ -43,7 +43,7 @@ import java.util.Scanner;
  * 		<td>whitespace</td>
  * 		<td>{@code  ,\t}</td>
  * 	</tr>
- * </tbody>
+ * </table>
  */
 public class CommandTokenizer {
 
@@ -78,7 +78,7 @@ public class CommandTokenizer {
 	 * Creates an instance of {@code CommandTokenizer} with {@code cmd}
 	 * as the input.
 	 * Note that it does not parse until {@link #nextToken()} or
-	 * {@link #tokens()} is called. 
+	 * {@link #getTokens()} is called. 
 	 */
 	public CommandTokenizer(String cmd) {
 		this.input = new Scanner(cmd);
@@ -88,7 +88,7 @@ public class CommandTokenizer {
 	 * Creates an instance of {@code CommandTokenizer} with
 	 * {@code input} as the input.
 	 * Note that it does not parse until {@link #nextToken()} or
-	 * {@link #tokens()} is called. 
+	 * {@link #getTokens()} is called. 
 	 */
 	public CommandTokenizer(Scanner input) {
 		this.input = input;
