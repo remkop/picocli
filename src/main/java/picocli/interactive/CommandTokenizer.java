@@ -18,7 +18,7 @@ import java.util.Scanner;
  * {@link java.io.StreamTokenizer StreamTokenizer}. 
  * <br>
  * Default patterns/characters:<br>
- * <table>
+ * <table summary="Default special characters/patterns">
  * 	<tr>
  * 		<td>comments</td>
  * 		<td>{@code #}</td>
