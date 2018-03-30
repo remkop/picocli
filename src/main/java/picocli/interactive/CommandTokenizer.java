@@ -103,8 +103,8 @@ public class CommandTokenizer {
 		boolean inQuote = false;															// Stores if currently quoted
 		String quoteChar = "";																// Stores which char ends quotes
 		for (int i = 0; i < cmd.length(); i++) {
-			String curChar = cmd.substring(i, i);
-			String preChar = (i == 0) ? "" : cmd.substring(i - 1, i - 1);
+			String curChar = cmd.substring(i, i + 1);
+			String preChar = (i == 0) ? "" : cmd.substring(i - 1, i);
 			String curStr = cmdSplit[cmdSplit.length - 1];
 			if (quotePatterns.contains(curChar)) {											// Check if has quoting char
 				if (i == 0 || !escapePatterns.contains(preChar) && 
@@ -122,7 +122,7 @@ public class CommandTokenizer {
 				}
 			}
 			else if (commentPatterns.contains(curChar)) {									// Check if has commenting char
-				if (i == 0 || !escapePatterns.contains(preChar) && (!inQuote)) {
+				if (i == 0 || (!escapePatterns.contains(preChar) && !inQuote)) {
 					break;
 				}
 				else if (escapePatterns.contains(preChar)) {								// If previous char escapes it
