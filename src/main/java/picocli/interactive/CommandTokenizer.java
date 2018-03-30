@@ -101,14 +101,14 @@ public class CommandTokenizer {
 	public String[] parse(String cmd) {
 		String[] cmdSplit = new String[]{""};
 		boolean inQuote = false;															// Stores if currently quoted
-		char quoteChar = 0;																	// Stores which char ends quotes
+		String quoteChar = "";																// Stores which char ends quotes
 		for (int i = 0; i < cmd.length(); i++) {
-			char curChar = cmd.charAt(i);
-			char preChar = (i == 0) ? 0 : cmd.charAt(i - 1);
+			String curChar = cmd.substring(i, i);
+			String preChar = (i == 0) ? "" : cmd.substring(i - 1, i - 1);
 			String curStr = cmdSplit[cmdSplit.length - 1];
 			if (quotePatterns.contains(curChar)) {											// Check if has quoting char
 				if (i == 0 || !escapePatterns.contains(preChar) && 
-					(curChar == quoteChar || !inQuote)) {									// Make sure quote is unescaped and the right quote
+					(curChar.equals(quoteChar) || !inQuote)) {								// Make sure quote is unescaped and the right quote
 					inQuote = !inQuote;														// Toggle quoted text
 					if (inQuote) {
 						quoteChar = curChar;												// Set quote character to current char
