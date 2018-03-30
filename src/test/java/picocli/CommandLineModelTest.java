@@ -970,7 +970,8 @@ public class CommandLineModelTest {
         cmd.parser().maxArityIsMaxTotalParams(true);
 
         ParseResult parseResult = new CommandLine(cmd).parseArgs("-x", "1,2,3");
-        assertEquals(Arrays.asList("1,2,3"), parseResult.rawOptionValues('x')); // raw is the original command line argument
+        assertEquals(Arrays.asList("1", "2", "3"), parseResult.rawOptionValues('x')); // raw is split but untyped
+        assertEquals(Arrays.asList("1,2,3"), parseResult.option('x').originalStringValues()); // the original command line argument
         assertArrayEquals(new String[]{"1", "2", "3"}, parseResult.optionValue('x', (String[]) null));
 
         CommandSpec cmd2 = CommandSpec.create().addOption(OptionSpec.builder("-x").arity("1..3").splitRegex(",").build());

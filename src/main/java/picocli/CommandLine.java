@@ -3254,6 +3254,7 @@ public class CommandLine {
             final Object defaultValue;
             final IBinding binding;
             final List<String> rawStringValues = new ArrayList<String>();
+            final List<String> originalStringValues = new ArrayList<String>();
             final Range arity;
             String toString;
     
@@ -3368,10 +3369,16 @@ public class CommandLine {
             /** Returns {@code true} if this argument is a positional parameter, {@code false} otherwise. */
             public abstract boolean isPositional();
     
-            /** Returns the command line arguments matched by this option or positional parameter spec.
-             * @return the matched arguments as found on the command line: empty Strings for options without value, the values have not been {@linkplain #splitRegex() split}, and for map properties values may look like {@code "key=value"}*/
+            /** Returns the untyped command line arguments matched by this option or positional parameter spec.
+             * @return the matched arguments after {@linkplain #splitRegex() splitting}, but before type conversion.
+             *      For map properties, {@code "key=value"} values are split into the key and the value part. */
             public List<String> rawStringValues() { return Collections.unmodifiableList(rawStringValues); }
-    
+
+            /** Returns the original command line arguments matched by this option or positional parameter spec.
+             * @return the matched arguments as found on the command line: empty Strings for options without value, the
+             *      values have not been {@linkplain #splitRegex() split}, and for map properties values may look like {@code "key=value"}*/
+            public List<String> originalStringValues() { return Collections.unmodifiableList(originalStringValues); }
+
             /** Returns a string respresentation of this option or positional parameter. */
             public String toString() { return toString; }
     
@@ -4803,7 +4810,8 @@ public class CommandLine {
             if (tracer.level.isEnabled(level)) { level.print(tracer, traceMessage, argSpec.toString(),
                     String.valueOf(oldValue), String.valueOf(newValue), argDescription); }
             argSpec.setValue(newValue);
-            argSpec.rawStringValues.add(value); // #279 track empty string value if no command line argument was consumed
+            argSpec.originalStringValues.add(value); // #279 track empty string value if no command line argument was consumed
+            argSpec.rawStringValues.add(value);
             parseResult.add(argSpec, position);
             return result;
         }
@@ -4875,10 +4883,11 @@ public class CommandLine {
                 Object mapValue = tryConvert(argSpec, index, valueConverter, keyValue[1], classes[1]);
                 result.put(mapKey, mapValue);
                 if (tracer.isInfo()) {tracer.info("Putting [%s : %s] in %s<%s, %s> %s for %s%n", String.valueOf(mapKey), String.valueOf(mapValue),
-                        result.getClass().getSimpleName(), classes[0].getSimpleName(), classes[1].getSimpleName(), argSpec
-                                .toString(), argDescription);}
+                        result.getClass().getSimpleName(), classes[0].getSimpleName(), classes[1].getSimpleName(), argSpec.toString(), argDescription);}
+                argSpec.rawStringValues.add(keyValue[0]);
+                argSpec.rawStringValues.add(keyValue[1]);
             }
-            argSpec.rawStringValues.add(raw);
+            argSpec.originalStringValues.add(raw);
         }
 
         private void checkMaxArityExceeded(Range arity, int size, ArgSpec argSpec, String argDescription) {
@@ -4981,8 +4990,9 @@ public class CommandLine {
                 if (tracer.isInfo()) {
                     tracer.info("Adding [%s] to %s for %s%n", String.valueOf(result.get(result.size() - 1)), argSpec.toString(), argDescription);
                 }
+                argSpec.rawStringValues.add(values[j]);
             }
-            argSpec.rawStringValues.add(raw);
+            argSpec.originalStringValues.add(raw);
             return ++index;
         }
 
