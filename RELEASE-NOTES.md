@@ -4,6 +4,7 @@
 
 ## <a name="3.0.0-alpha-3-fixes"></a> Fixed issues
 
+- [#313] Enhancement and API Change: add method `CommandLine::setMaxArityIsMaxTotalParams` to configure the parser to use `arity` to limit the total number of values accumulated in an option or positional parameter.
 - [#314] Enhancement and API Change: add method `CommandLine::setUsageHelpWidth` and `UsageMessageSpec::width` to set the max usage help message width.
 - [#316] Enhancement: Support lenient mode where annotations are optional when extracting annotations.
 
@@ -18,6 +19,7 @@ See [3.0.0-alpha-1](https://github.com/remkop/picocli/releases/tag/v3.0.0-alpha-
 - Constructor `CommandLine.Help.TextTable(Ansi, int...)` is replaced with factory method `CommandLine.Help.TextTable.forColumnWidths(Ansi, int...)`.
 - Constructor `CommandLine.Help.TextTable(Ansi, Column...)` modifier changed from public to protected.
 - Added factory method `CommandLine.Help.TextTable.forColumns(Ansi, Column...)`.
+- Renamed `CommandLine.MaxValuesforFieldExceededException` to `CommandLine.MaxValuesExceededException`.
 
 See [3.0.0-alpha-2](https://github.com/remkop/picocli/releases/tag/v3.0.0-alpha-2#3.0.0-alpha-2-breaking-changes).
 See [3.0.0-alpha-1](https://github.com/remkop/picocli/releases/tag/v3.0.0-alpha-1#3.0.0-alpha-1-breaking-changes).

@@ -906,4 +906,80 @@ public class CommandLineModelTest {
         assertTrue(spec.options().isEmpty());
         assertFalse(spec.mixinStandardHelpOptions());
     }
+
+    @Test
+    public void testCommandSpec_forAnnotatedObject_requiresPicocliAnnotation() {
+        try {
+            CommandSpec.forAnnotatedObject(new Object());
+            fail("Expected error");
+        } catch (InitializationException ok) {
+            assertEquals("java.lang.Object is not a command: it has no @Command, @Option, @Parameters or @Unmatched annotations", ok.getMessage());
+        }
+    }
+
+    @Test
+    public void testCommandSpec_forAnnotatedObjectLenient_doesNotRequirePicocliAnnotation() {
+        CommandSpec.forAnnotatedObjectLenient(new Object()); // no error
+    }
+
+    @Test
+    public void testCommandSpec_forAnnotatedObjectLenient_returnsEmptyCommandSpec() {
+        CommandSpec spec = CommandSpec.forAnnotatedObjectLenient(new Object());
+        assertTrue(spec.optionsMap().isEmpty());
+        assertTrue(spec.posixOptionsMap().isEmpty());
+        assertTrue(spec.options().isEmpty());
+        assertTrue(spec.positionalParameters().isEmpty());
+        assertTrue(spec.unmatchedArgsBindings().isEmpty());
+        assertTrue(spec.subcommands().isEmpty());
+        assertTrue(spec.mixins().isEmpty());
+        assertTrue(spec.requiredArgs().isEmpty());
+        assertFalse(spec.mixinStandardHelpOptions());
+        assertFalse(spec.helpCommand());
+        assertEquals("<main class>", spec.name());
+        assertArrayEquals(new String[0], spec.version());
+        assertNull(spec.versionProvider());
+    }
+
+    @Test
+    public void testParser_MaxArityIsMaxTotalParams_falseByDefault() {
+        assertFalse(CommandSpec.create().parser().maxArityIsMaxTotalParams());
+    }
+
+    @Test
+    public void testParser_MaxArityIsMaxTotalParams_singleArguments() {
+        CommandSpec cmd = CommandSpec.create().addOption(OptionSpec.builder("-x").arity("1..3").build());
+        cmd.parser().maxArityIsMaxTotalParams(true);
+
+        ParseResult parseResult = new CommandLine(cmd).parseArgs("-x 1 -x 2 -x 3".split(" "));
+        assertEquals(Arrays.asList("1", "2", "3"), parseResult.rawOptionValues('x'));
+        assertArrayEquals(new String[]{"1", "2", "3"}, parseResult.optionValue('x', (String[]) null));
+
+        CommandSpec cmd2 = CommandSpec.create().addOption(OptionSpec.builder("-x").arity("1..3").build());
+        cmd2.parser().maxArityIsMaxTotalParams(true);
+        try {
+            new CommandLine(cmd2).parseArgs("-x 1 -x 2 -x 3 -x 4".split(" "));
+            fail("expected exception");
+        } catch (MaxValuesExceededException ok) {
+            assertEquals("option '-x' max number of values (3) exceeded: 4 elements.", ok.getMessage());
+        }
+    }
+
+    @Test
+    public void testParser_MaxArityIsMaxTotalParams_split() {
+        CommandSpec cmd = CommandSpec.create().addOption(OptionSpec.builder("-x").arity("1..3").splitRegex(",").build());
+        cmd.parser().maxArityIsMaxTotalParams(true);
+
+        ParseResult parseResult = new CommandLine(cmd).parseArgs("-x", "1,2,3");
+        assertEquals(Arrays.asList("1,2,3"), parseResult.rawOptionValues('x')); // raw is the original command line argument
+        assertArrayEquals(new String[]{"1", "2", "3"}, parseResult.optionValue('x', (String[]) null));
+
+        CommandSpec cmd2 = CommandSpec.create().addOption(OptionSpec.builder("-x").arity("1..3").splitRegex(",").build());
+        cmd2.parser().maxArityIsMaxTotalParams(true);
+        try {
+            new CommandLine(cmd2).parseArgs("-x", "1,2,3,4");
+            fail("expected exception");
+        } catch (MaxValuesExceededException ok) {
+            assertEquals("option '-x' max number of values (3) exceeded: 4 elements.", ok.getMessage());
+        }
+    }
 }
