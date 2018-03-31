@@ -48,8 +48,6 @@ public class CommandTokenizerTest {
 	public void testComments() {
 		String[] expected = new String[]{"a"};
 		String[] actual = tokenizer.parse("a #b c");
-		// To test an issue with this in Travis
-		for (String part : actual) System.out.print("[" + part + "]");
 		System.out.println();
 		assertArrayEquals(expected, actual);
 	}

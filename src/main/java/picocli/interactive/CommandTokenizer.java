@@ -147,6 +147,22 @@ public class CommandTokenizer {
 			}
 			cmdSplit[cmdSplit.length - 1] = curStr;											// Copy back to array
 		}
+		if (trimBlanks) {
+			while (cmdSplit.length > 0 &&
+				   (cmdSplit[0].equals("")) ||
+				   cmdSplit[0] == null) {
+				String[] cmdTmp = new String[cmdSplit.length - 1];
+				System.arraycopy(cmdSplit, 1, cmdTmp, 0, cmdTmp.length);
+				cmdSplit = cmdTmp;
+			}
+			while (cmdSplit.length > 0 &&
+				   (cmdSplit[cmdSplit.length - 1].equals("") ||
+				   cmdSplit[cmdSplit.length - 1] == null)) {
+				String[] cmdTmp = new String[cmdSplit.length - 1];
+				System.arraycopy(cmdSplit, 0, cmdTmp, 0, cmdTmp.length);
+				cmdSplit = cmdTmp;
+			}
+		}
 		return cmdSplit;
 	}
 	
@@ -179,35 +195,16 @@ public class CommandTokenizer {
 					}
 					cmdSplit = parse(cmd);
 					String[] moreCmd = parse(input);
-					String[] newCmd = new String[cmdSplit.length + moreCmd.length];
-					System.arraycopy(cmdSplit, 0, newCmd, 0, cmdSplit.length);
-					System.arraycopy(moreCmd, 0, newCmd, cmdSplit.length, moreCmd.length);
-					cmdSplit = newCmd;
+					String[] cmdTmp = new String[cmdSplit.length + moreCmd.length];
+					System.arraycopy(cmdSplit, 0, cmdTmp, 0, cmdSplit.length);
+					System.arraycopy(moreCmd, 0, cmdTmp, cmdSplit.length, moreCmd.length);
+					cmdSplit = cmdTmp;
 					break;
 				}
 				else {
 					cmdSplit = parse(cmd);
 					break;
 				}
-			}
-		}
-		while (trimBlanks) {
-			if (cmdSplit.length > 0 &&
-				(cmdSplit[0].equals("")) ||
-				cmdSplit[0] == null) {
-				String[] newCmd = new String[cmdSplit.length - 1];
-				System.arraycopy(cmdSplit, 1, newCmd, 0, newCmd.length);
-				cmdSplit = newCmd;
-			}
-			if (cmdSplit.length > 0 &&
-				(cmdSplit[cmdSplit.length - 1].equals("") ||
-				cmdSplit[cmdSplit.length - 1] == null)) {
-				String[] newCmd = new String[cmdSplit.length - 1];
-				System.arraycopy(cmdSplit, 0, newCmd, 0, newCmd.length);
-				cmdSplit = newCmd;
-			}
-			else {
-				break;
 			}
 		}
 		for (int i = 0; i< cmdSplit.length; i++) {
@@ -284,6 +281,53 @@ public class CommandTokenizer {
 		return this;
 	}
 
+	/**
+	 * Specifies that String pattern {@code pattern} ends lines.
+	 *
+	 * @param pattern  The character to start comments.
+	 * @return         This tokenizer, for method chaining. 
+	 */
+	public CommandTokenizer eolPattern(String pattern) {
+		if (pattern == null) {
+			this.eolPatterns.clear();
+		}
+		else {
+			this.eolPatterns.add(pattern);
+		}
+		return this;
+	}
+
+	/**
+	 * If {@code true}, resets to defaults. If {@code false}, clears all.
+	 * 
+	 * @param enabled  Whether to reset or clear.
+	 * @return         This tokenizer, for method chaining.
+	 */
+	public CommandTokenizer eolPatterns(boolean enabled) {
+		if (enabled) {
+			this.eolPatterns = new ArrayList<String>(Arrays.asList("\r\n", "\r", "\n"));
+		}
+		else {
+			this.eolPatterns.clear();
+		}
+		return this;
+	}
+
+	/**
+	 * Restores default patterns and characters.
+	 * 
+	 * @return         This tokenizer, for method chaining.
+	 */
+	public CommandTokenizer resetSyntax() {
+		this.escapePatterns = new ArrayList<String>(Arrays.asList("\\"));
+		this.escapedPatterns = new ArrayList<String>();
+		this.quotePatterns = new ArrayList<String>(Arrays.asList("\"", "'"));
+		this.whitespacePatterns = new ArrayList<String>(Arrays.asList(" ", "\t"));
+		this.eolPatterns = new ArrayList<String>(Arrays.asList("\r\n", "\r", "\n"));
+		this.trimBlanks = true;
+		return this;
+	}
+	
 	/**
 	 * Specifies that char {@code ch} escapes other characters.
 	 *
@@ -528,49 +572,14 @@ public class CommandTokenizer {
 	}
 
 	/**
-	 * Specifies that String pattern {@code pattern} ends lines.
-	 *
-	 * @param pattern  The character to start comments.
-	 * @return         This tokenizer, for method chaining. 
-	 */
-	public CommandTokenizer eolPattern(String pattern) {
-		if (pattern == null) {
-			this.eolPatterns.clear();
-		}
-		else {
-			this.eolPatterns.add(pattern);
-		}
-		return this;
-	}
-
-	/**
-	 * If {@code true}, resets to defaults. If {@code false}, clears all.
+	 * If {@code true}, trims blanks from the start and end. If 
+	 * {@code false}, keeps them.
 	 * 
-	 * @param enabled  Whether to reset or clear.
+	 * @param enabled  Whether to trim or keep.
 	 * @return         This tokenizer, for method chaining.
 	 */
-	public CommandTokenizer eolPatterns(boolean enabled) {
-		if (enabled) {
-			this.eolPatterns = new ArrayList<String>(Arrays.asList("\r\n", "\r", "\n"));
-		}
-		else {
-			this.eolPatterns.clear();
-		}
-		return this;
-	}
-	
-	/**
-	 * Restores default patterns and characters.
-	 * 
-	 * @return         This tokenizer, for method chaining.
-	 */
-	public CommandTokenizer resetSyntax() {
-		this.escapePatterns = new ArrayList<String>(Arrays.asList("\\"));
-		this.escapedPatterns = new ArrayList<String>();
-		this.quotePatterns = new ArrayList<String>(Arrays.asList("\"", "'"));
-		this.whitespacePatterns = new ArrayList<String>(Arrays.asList(" ", "\t"));
-		this.eolPatterns = new ArrayList<String>(Arrays.asList("\r\n", "\r", "\n"));
-		this.trimBlanks = true;
+	public CommandTokenizer trimBlanks(boolean enabled) {
+		trimBlanks = enabled;
 		return this;
 	}
 	
