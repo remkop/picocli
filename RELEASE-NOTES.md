@@ -1,12 +1,66 @@
 # picocli Release Notes
 
-# <a name="3.0.0-alpha-3"></a> Picocli 3.0.0-alpha-3 (UNRELEASED)
+# <a name="3.0.0-alpha-3"></a> Picocli 3.0.0-alpha-3
+The picocli community is pleased to announce picocli 3.0.0-alpha-3.
+
+This release includes changes to allow picocli to be configured to function like Apache Commons CLI, to support [GROOVY-8520](https://issues.apache.org/jira/browse/GROOVY-8520):
+* `maxArityIsMaxTotalParams` parser configuration option to use `arity` to limit the total number of values accumulated in an option or positional parameter.
+* Usage message width can now be configured programmatically.
+* "Lenient" mode when extracting annotations from a class where picocli annotations are optional (to allow mixing Groovy CLI annotations in Groovy CliBuilder).
+* Change semantics of ParseResult.rawOptionValue to mean values after split (but before type conversion).
+
+See [3.0.0-alpha-1](https://github.com/remkop/picocli/releases/tag/v3.0.0-alpha-1#3.0.0-alpha-1) and [3.0.0-alpha-2](https://github.com/remkop/picocli/releases/tag/v3.0.0-alpha-2#3.0.0-alpha-2) for recent functional changes.
+
+This is the twenty-third public release.
+Picocli follows [semantic versioning](http://semver.org/).
+
+## <a name="3.0.0-alpha-3-toc"></a> Table of Contents
+
+* [New and noteworthy](#3.0.0-alpha-3-new)
+* [Promoted features](#3.0.0-alpha-3-promoted)
+* [Fixed issues](#3.0.0-alpha-3-fixes)
+* [Deprecations](#3.0.0-alpha-3-deprecated)
+* [Potential breaking changes](#3.0.0-alpha-3-breaking-changes)
+
+## <a name="3.0.0-alpha-3-new"></a> New and Noteworthy
+### Max Arity Is Max Total Params
+
+This release introduces a `maxArityIsMaxTotalParams` parser configuration option.
+
+By default, the arity of an option is the number of arguments _for each occurrence_ of the option.
+For example, if option `-a` has `arity = "2"`, then the following is a perfectly valid command:
+for each occurrence of the option, two option parameters are specified.
+```bash
+<command> -a 1 2 -a 3 4 -a 5 6
+```
+However, if `CommandLine.setMaxArityIsMaxTotalParams(true)` is called first, the above example would result in a `MaxValuesExceededException` because the total number of values (6) exceeds the arity of 2.
+
+Additionally, by default, when `maxArityIsMaxTotalParams` is `false`, arity is only applied _before_ the argument is split into parts,
+while when `maxArityIsMaxTotalParams` is set to `true`, validation is applied _after_ a command line argument has been split into parts.
+
+For example, if we have an option like this:
+```java
+@Option(name = "-a", arity = "1..2", split = ",") String[] values;
+```
+By default, the following input would be a valid command:
+```bash
+<command> -a 1,2,3
+```
+By default, the option arity tells the parser to consume 1 to 2 arguments, and the option was followed by a single parameter, `"1,2,3"`, which is fine.
+
+However, if `maxArityIsMaxTotalParams` is set to true, the above example would result in a `MaxValuesExceededException` because the argument is split into 3 parts, which exceeds the max arity of 2.
+
+## <a name="3.0.0-alpha-3-promoted"></a> Promoted Features
+Promoted features are features that were incubating in previous versions of picocli but are now supported and subject to backwards compatibility. 
+
+No features have been promoted in this picocli release.
 
 ## <a name="3.0.0-alpha-3-fixes"></a> Fixed issues
 
 - [#313] Enhancement and API Change: add method `CommandLine::setMaxArityIsMaxTotalParams` to configure the parser to use `arity` to limit the total number of values accumulated in an option or positional parameter.
 - [#314] Enhancement and API Change: add method `CommandLine::setUsageHelpWidth` and `UsageMessageSpec::width` to set the max usage help message width.
 - [#316] Enhancement: Support lenient mode where annotations are optional when extracting annotations.
+- [#317] Enhancement: Change semantics of ParseResult.rawOptionValue to mean values after split (but before type conversion).
 
 ## <a name="3.0.0-alpha-3-deprecated"></a> Deprecations
 See [3.0.0-alpha-1](https://github.com/remkop/picocli/releases/tag/v3.0.0-alpha-1#3.0.0-alpha-1-deprecated)
@@ -23,6 +77,7 @@ See [3.0.0-alpha-1](https://github.com/remkop/picocli/releases/tag/v3.0.0-alpha-
 
 See [3.0.0-alpha-2](https://github.com/remkop/picocli/releases/tag/v3.0.0-alpha-2#3.0.0-alpha-2-breaking-changes).
 See [3.0.0-alpha-1](https://github.com/remkop/picocli/releases/tag/v3.0.0-alpha-1#3.0.0-alpha-1-breaking-changes).
+
 
 
 # <a name="3.0.0-alpha-2"></a> Picocli 3.0.0-alpha-2

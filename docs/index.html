@@ -513,8 +513,8 @@ table.CodeRay td.code>pre{padding:0}
 <div id="header">
 <h1>picocli - a mighty tiny command line interface</h1>
 <div class="details">
-<span id="revnumber">version 3.0.0-alpha-2,</span>
-<span id="revdate">2018-03-27</span>
+<span id="revnumber">version 3.0.0-alpha-3,</span>
+<span id="revdate">2018-03-31</span>
 </div>
 <div id="toc" class="toc2">
 <div id="toctitle">Features</div>
@@ -554,15 +554,16 @@ table.CodeRay td.code>pre{padding:0}
 <li><a href="#_required_parameters">5.2. Required Parameters</a></li>
 </ul>
 </li>
-<li><a href="#_strict_or_lenient_parsing">6. Strict or Lenient Parsing</a>
+<li><a href="#_parser_configuration">6. Parser Configuration</a>
 <ul class="sectlevel2">
 <li><a href="#_too_many_values">6.1. Too Many Values</a></li>
-<li><a href="#_stop_at_positional">6.2. Stop At Positional</a></li>
-<li><a href="#_unmatched_input">6.3. Unmatched Input</a></li>
-<li><a href="#__code_unmatched_code_annotation">6.4. <code>@Unmatched</code> annotation</a></li>
-<li><a href="#_unknown_options">6.5. Unknown Options</a></li>
-<li><a href="#_stop_at_unmatched">6.6. Stop At Unmatched</a></li>
-<li><a href="#_disallowing_posix_clustered_short_options">6.7. Disallowing POSIX Clustered Short Options</a></li>
+<li><a href="#_max_arity_is_max_total_params">6.2. Max Arity Is Max Total Params</a></li>
+<li><a href="#_stop_at_positional">6.3. Stop At Positional</a></li>
+<li><a href="#_unmatched_input">6.4. Unmatched Input</a></li>
+<li><a href="#__code_unmatched_code_annotation">6.5. <code>@Unmatched</code> annotation</a></li>
+<li><a href="#_unknown_options">6.6. Unknown Options</a></li>
+<li><a href="#_stop_at_unmatched">6.7. Stop At Unmatched</a></li>
+<li><a href="#_disallowing_posix_clustered_short_options">6.8. Disallowing POSIX Clustered Short Options</a></li>
 </ul>
 </li>
 <li><a href="#_help">7. Help</a>
@@ -1592,6 +1593,18 @@ The maximum can be an exact upper bound, or it can be <code>"*"</code> to denote
 <p>Option <code>-s</code> has arity <code>"1..*"</code> but instead of consuming all parameters,
 the <code>-f</code> argument is recognized as a separate option.</p>
 </div>
+<div class="admonitionblock tip">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-tip" title="Tip"></i>
+</td>
+<td class="content">
+It is also possible to <a href="#_max_arity_is_max_total_params">configure the parser</a> to use <code>arity</code> to limit the total number of values accumulated in an option or positional parameter.
+</td>
+</tr>
+</table>
+</div>
 </div>
 <div class="sect2">
 <h3 id="_default_arity">4.4. Default Arity</h3>
@@ -1806,7 +1819,7 @@ x = 'null'</code></pre>
 </div>
 </div>
 <div class="sect1">
-<h2 id="_strict_or_lenient_parsing">6. Strict or Lenient Parsing</h2>
+<h2 id="_parser_configuration">6. Parser Configuration</h2>
 <div class="sectionbody">
 <div class="sect2">
 <h3 id="_too_many_values">6.1. Too Many Values</h3>
@@ -1834,7 +1847,49 @@ and a WARN level message is printed to the console. (See <a href="#_tracing">Tra
 </div>
 </div>
 <div class="sect2">
-<h3 id="_stop_at_positional">6.2. Stop At Positional</h3>
+<h3 id="_max_arity_is_max_total_params">6.2. Max Arity Is Max Total Params</h3>
+<div class="paragraph">
+<p>By default, the <a href="#_arity">arity</a> of an option is the number of arguments <em>for each occurrence</em> of the option.
+For example, if option <code>-a</code> has <code>arity = "2"</code>, then the following is a perfectly valid command:
+for each occurrence of the option, two option parameters are specified.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre>&lt;command&gt; -a 1 2 -a 3 4 -a 5 6</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>However, if <code>CommandLine.setMaxArityIsMaxTotalParams(true)</code> is called first, the above example would result in a <code>MaxValuesExceededException</code> because the total number of values (6) exceeds the arity of 2.</p>
+</div>
+<div class="paragraph">
+<p>Additionally, by default, when <code>maxArityIsMaxTotalParams</code> is <code>false</code>, arity is only applied <em>before</em> the argument is <a href="#_split_regex">split</a> into parts,
+while when <code>maxArityIsMaxTotalParams</code> is set to <code>true</code>, validation is applied <em>after</em> a command line argument has been split into parts.</p>
+</div>
+<div class="paragraph">
+<p>For example, if we have an option like this:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="java"><span class="annotation">@Option</span>(name = <span class="string"><span class="delimiter">&quot;</span><span class="content">-a</span><span class="delimiter">&quot;</span></span>, arity = <span class="string"><span class="delimiter">&quot;</span><span class="content">1..2</span><span class="delimiter">&quot;</span></span>, split = <span class="string"><span class="delimiter">&quot;</span><span class="content">,</span><span class="delimiter">&quot;</span></span>) <span class="predefined-type">String</span><span class="type">[]</span> values;</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>By default, the following input would be a valid command:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre>&lt;command&gt; -a 1,2,3</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>By default, the option arity tells the parser to consume 1 to 2 arguments, and the option was followed by a single parameter, <code>"1,2,3"</code>, which is fine.</p>
+</div>
+<div class="paragraph">
+<p>However, if <code>maxArityIsMaxTotalParams</code> is set to true, the above example would result in a <code>MaxValuesExceededException</code> because the argument is split into 3 parts, which exceeds the max arity of 2.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_stop_at_positional">6.3. Stop At Positional</h3>
 <div class="paragraph">
 <p>By default, positional parameters can be mixed with options on the command line, but this is not always desirable.
 From picocli 2.3, applications can call <code>CommandLine.setStopAtPositional(true)</code>
@@ -1845,7 +1900,7 @@ to force the parser to treat all values following the first positional parameter
 </div>
 </div>
 <div class="sect2">
-<h3 id="_unmatched_input">6.3. Unmatched Input</h3>
+<h3 id="_unmatched_input">6.4. Unmatched Input</h3>
 <div class="paragraph">
 <p>By default, an <code>UnmatchedArgumentException</code> is thrown when a command line argument cannot be assigned to
 an option or positional parameter. For example:</p>
@@ -1876,7 +1931,7 @@ When unmatched arguments are allowed, the above input will be accepted and a WAR
 </div>
 </div>
 <div class="sect2">
-<h3 id="__code_unmatched_code_annotation">6.4. <code>@Unmatched</code> annotation</h3>
+<h3 id="__code_unmatched_code_annotation">6.5. <code>@Unmatched</code> annotation</h3>
 <div class="paragraph">
 <p>From picocli 3.0, fields annotated with <code>@Unmatched</code> will be populated with the unmatched arguments.
 The field must be of type <code>String[]</code> or <code>List&lt;String&gt;</code>.</p>
@@ -1887,7 +1942,7 @@ so no <code>UnmatchedArgumentException</code> is thrown when a command line argu
 </div>
 </div>
 <div class="sect2">
-<h3 id="_unknown_options">6.5. Unknown Options</h3>
+<h3 id="_unknown_options">6.6. Unknown Options</h3>
 <div class="paragraph">
 <p>A special case of unmatched input are arguments that look like options but don&#8217;t match any of the defined options.
 For example:</p>
@@ -1948,7 +2003,7 @@ the above input is treated as three positional parameters.</p>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_stop_at_unmatched">6.6. Stop At Unmatched</h3>
+<h3 id="_stop_at_unmatched">6.7. Stop At Unmatched</h3>
 <div class="paragraph">
 <p>From picocli 2.3, applications can call <code>CommandLine.setStopAtUnmatched(true)</code> to force the parser to stop interpreting
 options and positional parameters as soon as it encounters an unmatched argument.</p>
@@ -1959,7 +2014,7 @@ unmatched arguments list returned by <code>CommandLine.getUnmatchedArguments()</
 </div>
 </div>
 <div class="sect2">
-<h3 id="_disallowing_posix_clustered_short_options">6.7. Disallowing POSIX Clustered Short Options</h3>
+<h3 id="_disallowing_posix_clustered_short_options">6.8. Disallowing POSIX Clustered Short Options</h3>
 <div class="paragraph">
 <p>By default, the picocli parser allows POSIX clustered short options, so short options like <code>-x -v -f SomeFile</code> can be clustered together like <code>-xvfSomeFile</code>.
 From picocli 3.0, applications can call <code>CommandLine.setPosixClusteredShortOptionsAllowed(false)</code> to enforce that options must be separated with whitespace on the command line.</p>
@@ -2760,6 +2815,9 @@ CommandLine.usage(<span class="keyword">new</span> FineGrainedDefaults(), <span 
 <p>The default width of the usage help message is 80 characters.
 System property <code>picocli.usage.width</code> can be used to specify a custom width.
 The minimum width that can be configured is 55 characters.</p>
+</div>
+<div class="paragraph">
+<p>Picocli 3.0 also introduced programmatic API for this via the <code>CommandLine::setUsageHelpWidth</code> and <code>UsageMessageSpec::width</code> methods.</p>
 </div>
 </div>
 </div>
@@ -4141,7 +4199,7 @@ The script body is executed if the user input was valid and did not request usag
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="CodeRay highlight"><code data-lang="groovy"><span class="annotation">@Grab</span>(<span class="string"><span class="delimiter">'</span><span class="content">info.picocli:picocli:3.0.0-alpha-2</span><span class="delimiter">'</span></span>)
+<pre class="CodeRay highlight"><code data-lang="groovy"><span class="annotation">@Grab</span>(<span class="string"><span class="delimiter">'</span><span class="content">info.picocli:picocli:3.0.0-alpha-3</span><span class="delimiter">'</span></span>)
 <span class="annotation">@Command</span>(name = <span class="string"><span class="delimiter">&quot;</span><span class="content">myCommand</span><span class="delimiter">&quot;</span></span>,
   description = <span class="string"><span class="delimiter">&quot;</span><span class="content">@|bold Groovy script|@ @|underline picocli|@ example</span><span class="delimiter">&quot;</span></span>)
 <span class="annotation">@picocli</span>.groovy.PicocliScript
@@ -4180,7 +4238,7 @@ When using a Groovy version older than 2.4.7, use this workaround for the <a hre
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="CodeRay highlight"><code data-lang="groovy"><span class="annotation">@Grab</span>(<span class="string"><span class="delimiter">'</span><span class="content">info.picocli:picocli:3.0.0-alpha-2</span><span class="delimiter">'</span></span>)
+<pre class="CodeRay highlight"><code data-lang="groovy"><span class="annotation">@Grab</span>(<span class="string"><span class="delimiter">'</span><span class="content">info.picocli:picocli:3.0.0-alpha-3</span><span class="delimiter">'</span></span>)
 <span class="annotation">@GrabExclude</span>(<span class="string"><span class="delimiter">'</span><span class="content">org.codehaus.groovy:groovy-all</span><span class="delimiter">'</span></span>) <span class="comment">// work around GROOVY-7613</span>
 ...</code></pre>
 </div>
@@ -4352,7 +4410,7 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
 <h3 id="_gradle">23.1. Gradle</h3>
 <div class="listingblock">
 <div class="content">
-<pre>compile 'info.picocli:picocli:3.0.0-alpha-2'</pre>
+<pre>compile 'info.picocli:picocli:3.0.0-alpha-3'</pre>
 </div>
 </div>
 </div>
@@ -4363,7 +4421,7 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
 <pre>&lt;dependency&gt;
   &lt;groupId&gt;info.picocli&lt;/groupId&gt;
   &lt;artifactId&gt;picocli&lt;/artifactId&gt;
-  &lt;version&gt;3.0.0-alpha-2&lt;/version&gt;
+  &lt;version&gt;3.0.0-alpha-3&lt;/version&gt;
 &lt;/dependency&gt;</pre>
 </div>
 </div>
@@ -4372,7 +4430,7 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
 <h3 id="_scala_sbt">23.3. Scala SBT</h3>
 <div class="listingblock">
 <div class="content">
-<pre>libraryDependencies += "info.picocli" % "picocli" % "3.0.0-alpha-2"</pre>
+<pre>libraryDependencies += "info.picocli" % "picocli" % "3.0.0-alpha-3"</pre>
 </div>
 </div>
 </div>
@@ -4380,7 +4438,7 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
 <h3 id="_ivy">23.4. Ivy</h3>
 <div class="listingblock">
 <div class="content">
-<pre>&lt;dependency org="info.picocli" name="picocli" rev="3.0.0-alpha-2" /&gt;</pre>
+<pre>&lt;dependency org="info.picocli" name="picocli" rev="3.0.0-alpha-3" /&gt;</pre>
 </div>
 </div>
 </div>
@@ -4524,7 +4582,7 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
  */</span>
 <span class="directive">public</span> <span class="type">class</span> <span class="class">CommandLine</span> {
     <span class="comment">/** This is picocli version {@value}. */</span>
-    <span class="directive">public</span> <span class="directive">static</span> <span class="directive">final</span> <span class="predefined-type">String</span> VERSION = <span class="string"><span class="delimiter">&quot;</span><span class="content">3.0.0-alpha-2</span><span class="delimiter">&quot;</span></span>;
+    <span class="directive">public</span> <span class="directive">static</span> <span class="directive">final</span> <span class="predefined-type">String</span> VERSION = <span class="string"><span class="delimiter">&quot;</span><span class="content">3.0.0-alpha-3</span><span class="delimiter">&quot;</span></span>;
 
     <span class="directive">private</span> <span class="directive">final</span> Tracer tracer = <span class="keyword">new</span> Tracer();
     <span class="directive">private</span> <span class="directive">final</span> CommandSpec commandSpec;
@@ -4562,7 +4620,7 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
     <span class="directive">public</span> CommandLine(<span class="predefined-type">Object</span> command, IFactory factory) {
         <span class="local-variable">this</span>.factory = Assert.notNull(factory, <span class="string"><span class="delimiter">&quot;</span><span class="content">factory</span><span class="delimiter">&quot;</span></span>);
         interpreter = <span class="keyword">new</span> Interpreter();
-        commandSpec = CommandReflection.extractCommandSpec(command, factory);
+        commandSpec = CommandSpec.forAnnotatedObject(command, factory);
         commandSpec.commandLine(<span class="local-variable">this</span>);
         commandSpec.validate();
         <span class="keyword">if</span> (commandSpec.unmatchedArgsBindings().size() &gt; <span class="integer">0</span>) { setUnmatchedArgumentsAllowed(<span class="predefined-constant">true</span>); }
@@ -4585,7 +4643,7 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
      * @return this CommandLine object, to allow method chaining
      * @since 3.0 */</span>
     <span class="directive">public</span> CommandLine addMixin(<span class="predefined-type">String</span> name, <span class="predefined-type">Object</span> mixin) {
-        getCommandSpec().addMixin(name, CommandReflection.extractCommandSpec(mixin, factory));
+        getCommandSpec().addMixin(name, CommandSpec.forAnnotatedObject(mixin, factory));
         <span class="keyword">return</span> <span class="local-variable">this</span>;
     }
 
@@ -4732,6 +4790,49 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
         getCommandSpec().parser().posixClusteredShortOptionsAllowed(newValue);
         <span class="keyword">for</span> (CommandLine command : getCommandSpec().subcommands().values()) {
             command.setPosixClusteredShortOptionsAllowed(newValue);
+        }
+        <span class="keyword">return</span> <span class="local-variable">this</span>;
+    }
+
+    <span class="comment">/** Returns whether the parser should throw an error when the total number of values accumulated in an option or
+     * positional parameter exceeds the max arity. The default is {@code false}.
+     * &lt;p&gt;By default, the arity of an option is the number of arguments for each &lt;em&gt;occurrence&lt;/em&gt; of the option.
+     * For example, if option {@code -a} has arity=2, then {@code &lt;command&gt; -a 1 2 -a 3 4 -a 5 6} is a perfectly valid
+     * command: for each occurrence of the option, two option parameters are specified.
+     * &lt;/p&gt;&lt;p&gt;
+     * However, if {@link ParserSpec#maxArityIsMaxTotalParams() maxArityIsMaxTotalParams} is set to {@code true},
+     * the above example would result in a {@link MaxValuesExceededException} because the total number of values (6) exceeds the arity of 2.
+     * &lt;/p&gt;&lt;p&gt;
+     * Additionally, by default (when {@code maxArityIsMaxTotalParams} is {@code false}), arity is only applied &lt;em&gt;before&lt;/em&gt;
+     * the argument is {@linkplain OptionSpec#splitRegex() split} into parts, while if {@code maxArityIsMaxTotalParams} is set
+     * to {@code true}, validation is applied &lt;em&gt;after&lt;/em&gt; a command line argument has been split into parts.
+     * &lt;/p&gt;&lt;p&gt;
+     * For example, we have an option {@code -a} with {@code arity = &quot;1..2&quot;} and {@code splitRegex = &quot;,&quot;}, and the user
+     * specified {@code &lt;command&gt; -a 1,2,3} on the command line. By default, the option arity tells the parser to consume
+     * 1 to 2 arguments, and the option was followed by a single argument, {@code &quot;1,2,3&quot;}, which is fine.
+     * &lt;/p&gt;&lt;p&gt;
+     * However, if {@code maxArityIsMaxTotalParams} is set to {@code true}, the above example would result in a
+     * {@code MaxValuesExceededException} because the argument is split into 3 parts, which exceeds the max arity of 2.
+     * &lt;/p&gt;
+     * @return {@code true} if a {@link MaxValuesExceededException} should be thrown when the total number of values
+     *      accumulated in an option or positional parameter exceeds the max arity, {@code false} otherwise
+     * @since 3.0 */</span>
+    <span class="directive">public</span> <span class="type">boolean</span> isMaxArityIsMaxTotalParams() { <span class="keyword">return</span> getCommandSpec().parser().maxArityIsMaxTotalParams(); }
+
+    <span class="comment">/** Sets whether the parser should throw an error when the total number of values accumulated in an option or
+     * positional parameter exceeds the max arity. The default is {@code false}.
+     * &lt;p&gt;The specified setting will be registered with this {@code CommandLine} and the full hierarchy of its
+     * subcommands and nested sub-subcommands &lt;em&gt;at the moment this method is called&lt;/em&gt;. Subcommands added
+     * later will have the default setting. To ensure a setting is applied to all
+     * subcommands, call the setter last, after adding subcommands.&lt;/p&gt;
+     * @param newValue the new setting
+     * @return this {@code CommandLine} object, to allow method chaining
+     * @since 3.0
+     */</span>
+    <span class="directive">public</span> CommandLine setMaxArityIsMaxTotalParams(<span class="type">boolean</span> newValue) {
+        getCommandSpec().parser().maxArityIsMaxTotalParams(newValue);
+        <span class="keyword">for</span> (CommandLine command : getCommandSpec().subcommands().values()) {
+            command.setMaxArityIsMaxTotalParams(newValue);
         }
         <span class="keyword">return</span> <span class="local-variable">this</span>;
     }
@@ -5921,6 +6022,26 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
         <span class="keyword">return</span> <span class="local-variable">this</span>;
     }
 
+    <span class="comment">/** Returns the maximum width of the usage help message.
+     * @see UsageMessageSpec#width() */</span>
+    <span class="directive">public</span> <span class="type">int</span> getUsageHelpWidth() { <span class="keyword">return</span> getCommandSpec().usageMessage().width(); }
+
+    <span class="comment">/** Sets the maximum width of the usage help message. Longer lines are wrapped.
+     * &lt;p&gt;The specified setting will be registered with this {@code CommandLine} and the full hierarchy of its
+     * subcommands and nested sub-subcommands &lt;em&gt;at the moment this method is called&lt;/em&gt;. Subcommands added
+     * later will have the default setting. To ensure a setting is applied to all
+     * subcommands, call the setter last, after adding subcommands.&lt;/p&gt;
+     * @param width the maximum width of the usage help message
+     * @see UsageMessageSpec#width(int)
+     * @return this {@code CommandLine} object, to allow method chaining */</span>
+    <span class="directive">public</span> CommandLine setUsageHelpWidth(<span class="type">int</span> width) {
+        getCommandSpec().usageMessage().width(width);
+        <span class="keyword">for</span> (CommandLine command : getCommandSpec().subcommands().values()) {
+            command.setUsageHelpWidth(width);
+        }
+        <span class="keyword">return</span> <span class="local-variable">this</span>;
+    }
+
     <span class="comment">/** Returns the command name (also called program name) displayed in the usage help synopsis.
      * @return the command name (also called program name) displayed in the usage
      * @see CommandSpec#name()
@@ -7011,6 +7132,7 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
             <span class="comment">/** Creates and returns a new {@code CommandSpec} initialized from the specified associated user object. The specified
              * user object must have at least one {@link Command}, {@link Option} or {@link Parameters} annotation.
              * @param userObject the user object annotated with {@link Command}, {@link Option} and/or {@link Parameters} annotations.
+             * @throws InitializationException if the specified object has no picocli annotations or has invalid annotations
              */</span>
             <span class="directive">public</span> <span class="directive">static</span> CommandSpec forAnnotatedObject(<span class="predefined-type">Object</span> userObject) { <span class="keyword">return</span> forAnnotatedObject(userObject, <span class="keyword">new</span> DefaultFactory()); }
 
@@ -7018,8 +7140,24 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
              * user object must have at least one {@link Command}, {@link Option} or {@link Parameters} annotation.
              * @param userObject the user object annotated with {@link Command}, {@link Option} and/or {@link Parameters} annotations.
              * @param factory the factory used to create instances of {@linkplain Command#subcommands() subcommands}, {@linkplain Option#converter() converters}, etc., that are registered declaratively with annotation attributes
+             * @throws InitializationException if the specified object has no picocli annotations or has invalid annotations
              */</span>
-            <span class="directive">public</span> <span class="directive">static</span> CommandSpec forAnnotatedObject(<span class="predefined-type">Object</span> userObject, IFactory factory) { <span class="keyword">return</span> CommandReflection.extractCommandSpec(userObject, factory); }
+            <span class="directive">public</span> <span class="directive">static</span> CommandSpec forAnnotatedObject(<span class="predefined-type">Object</span> userObject, IFactory factory) { <span class="keyword">return</span> CommandReflection.extractCommandSpec(userObject, factory, <span class="predefined-constant">true</span>); }
+
+            <span class="comment">/** Creates and returns a new {@code CommandSpec} initialized from the specified associated user object. If the specified
+             * user object has no {@link Command}, {@link Option} or {@link Parameters} annotations, an empty {@code CommandSpec} is returned.
+             * @param userObject the user object annotated with {@link Command}, {@link Option} and/or {@link Parameters} annotations.
+             * @throws InitializationException if the specified object has invalid annotations
+             */</span>
+            <span class="directive">public</span> <span class="directive">static</span> CommandSpec forAnnotatedObjectLenient(<span class="predefined-type">Object</span> userObject) { <span class="keyword">return</span> forAnnotatedObjectLenient(userObject, <span class="keyword">new</span> DefaultFactory()); }
+
+            <span class="comment">/** Creates and returns a new {@code CommandSpec} initialized from the specified associated user object. If the specified
+             * user object has no {@link Command}, {@link Option} or {@link Parameters} annotations, an empty {@code CommandSpec} is returned.
+             * @param userObject the user object annotated with {@link Command}, {@link Option} and/or {@link Parameters} annotations.
+             * @param factory the factory used to create instances of {@linkplain Command#subcommands() subcommands}, {@linkplain Option#converter() converters}, etc., that are registered declaratively with annotation attributes
+             * @throws InitializationException if the specified object has invalid annotations
+             */</span>
+            <span class="directive">public</span> <span class="directive">static</span> CommandSpec forAnnotatedObjectLenient(<span class="predefined-type">Object</span> userObject, IFactory factory) { <span class="keyword">return</span> CommandReflection.extractCommandSpec(userObject, factory, <span class="predefined-constant">false</span>); }
 
             <span class="comment">/** Ensures all attributes of this {@code CommandSpec} have a valid value; throws an {@link InitializationException} if this cannot be achieved. */</span>
             <span class="type">void</span> validate() {
@@ -7237,7 +7375,7 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
              * @return this CommandSpec for method chaining
              * @see Command#mixinStandardHelpOptions() */</span>
             <span class="directive">public</span> CommandSpec mixinStandardHelpOptions(<span class="type">boolean</span> newValue) {
-                <span class="keyword">if</span> (newValue) { addMixin(AutoHelpMixin.KEY, CommandReflection.extractCommandSpec(<span class="keyword">new</span> AutoHelpMixin(), <span class="keyword">new</span> DefaultFactory())); }
+                <span class="keyword">if</span> (newValue) { addMixin(AutoHelpMixin.KEY, CommandSpec.forAnnotatedObject(<span class="keyword">new</span> AutoHelpMixin(), <span class="keyword">new</span> DefaultFactory())); }
                 <span class="keyword">else</span> {
                     CommandSpec helpMixin = mixins.remove(AutoHelpMixin.KEY);
                     <span class="keyword">if</span> (helpMixin != <span class="predefined-constant">null</span>) {
@@ -7275,6 +7413,10 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
         <span class="comment">/** Models the usage help message specification.
          * @since 3.0 */</span>
         <span class="directive">public</span> <span class="directive">static</span> <span class="type">class</span> <span class="class">UsageMessageSpec</span> {
+            <span class="comment">/** Constant holding the default usage message width: &lt;code&gt;{@value}&lt;/code&gt;. */</span>
+            <span class="directive">public</span>  <span class="directive">final</span> <span class="directive">static</span> <span class="type">int</span> DEFAULT_USAGE_WIDTH = <span class="integer">80</span>;
+            <span class="directive">private</span> <span class="directive">final</span> <span class="directive">static</span> <span class="type">int</span> MINIMUM_USAGE_WIDTH = <span class="integer">55</span>;
+
             <span class="comment">/** Constant String holding the default synopsis heading: &lt;code&gt;{@value}&lt;/code&gt;. */</span>
             <span class="directive">static</span> <span class="directive">final</span> <span class="predefined-type">String</span> DEFAULT_SYNOPSIS_HEADING = <span class="string"><span class="delimiter">&quot;</span><span class="content">Usage: </span><span class="delimiter">&quot;</span></span>;
 
@@ -7315,6 +7457,41 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
             <span class="directive">private</span> <span class="predefined-type">String</span> optionListHeading;
             <span class="directive">private</span> <span class="predefined-type">String</span> commandListHeading;
             <span class="directive">private</span> <span class="predefined-type">String</span> footerHeading;
+            <span class="directive">private</span> <span class="type">int</span> width = DEFAULT_USAGE_WIDTH;
+
+            <span class="directive">private</span> <span class="directive">static</span> <span class="type">int</span> getSysPropertyWidthOrDefault(<span class="type">int</span> defaultWidth) {
+                <span class="predefined-type">String</span> userValue = <span class="predefined-type">System</span>.getProperty(<span class="string"><span class="delimiter">&quot;</span><span class="content">picocli.usage.width</span><span class="delimiter">&quot;</span></span>);
+                <span class="keyword">if</span> (userValue == <span class="predefined-constant">null</span>) { <span class="keyword">return</span> defaultWidth; }
+                <span class="keyword">try</span> {
+                    <span class="type">int</span> width = <span class="predefined-type">Integer</span>.parseInt(userValue);
+                    <span class="keyword">if</span> (width &lt; MINIMUM_USAGE_WIDTH) {
+                        <span class="keyword">new</span> Tracer().warn(<span class="string"><span class="delimiter">&quot;</span><span class="content">Invalid picocli.usage.width value %d. Using minimum usage width %d.%n</span><span class="delimiter">&quot;</span></span>, width, MINIMUM_USAGE_WIDTH);
+                        <span class="keyword">return</span> MINIMUM_USAGE_WIDTH;
+                    }
+                    <span class="keyword">return</span> width;
+                } <span class="keyword">catch</span> (<span class="exception">NumberFormatException</span> ex) {
+                    <span class="keyword">new</span> Tracer().warn(<span class="string"><span class="delimiter">&quot;</span><span class="content">Invalid picocli.usage.width value '%s'. Using usage width %d.%n</span><span class="delimiter">&quot;</span></span>, userValue, defaultWidth);
+                    <span class="keyword">return</span> defaultWidth;
+                }
+            }
+
+            <span class="comment">/** Returns the maximum usage help message width. Derived from system property {@code &quot;picocli.usage.width&quot;}
+             * if set, otherwise returns the value set via the {@link #width(int)} method, or if not set, the {@linkplain #DEFAULT_USAGE_WIDTH default width}.
+             * @return the maximum usage help message width. Never returns less than 55. */</span>
+            <span class="directive">public</span> <span class="type">int</span> width() { <span class="keyword">return</span> getSysPropertyWidthOrDefault(width); }
+
+            <span class="comment">/**
+             * Sets the maximum usage help message width to the specified value. Longer values are wrapped.
+             * @param newValue the new maximum usage help message width. Must be 55 or greater.
+             * @return this {@code UsageMessageSpec} for method chaining
+             * @throws IllegalArgumentException if the specified width is less than 55
+             */</span>
+            <span class="directive">public</span> UsageMessageSpec width(<span class="type">int</span> newValue) {
+                <span class="keyword">if</span> (newValue &lt; MINIMUM_USAGE_WIDTH) {
+                    <span class="keyword">throw</span> <span class="keyword">new</span> <span class="exception">IllegalArgumentException</span>(<span class="string"><span class="delimiter">&quot;</span><span class="content">Invalid usage message width </span><span class="delimiter">&quot;</span></span> + newValue + <span class="string"><span class="delimiter">&quot;</span><span class="content">. Minimum value is </span><span class="delimiter">&quot;</span></span> + MINIMUM_USAGE_WIDTH);
+                }
+                width = newValue; <span class="keyword">return</span> <span class="local-variable">this</span>;
+            }
 
             <span class="comment">/** Returns the optional heading preceding the header section. Initialized from {@link Command#headerHeading()}, or null. */</span>
             <span class="directive">public</span> <span class="predefined-type">String</span> headerHeading() { <span class="keyword">return</span> headerHeading == <span class="predefined-constant">null</span> ? DEFAULT_SINGLE_VALUE : headerHeading; }
@@ -7477,6 +7654,7 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
             <span class="directive">private</span> <span class="type">boolean</span> unmatchedArgumentsAllowed = <span class="predefined-constant">false</span>;
             <span class="directive">private</span> <span class="type">boolean</span> expandAtFiles = <span class="predefined-constant">true</span>;
             <span class="directive">private</span> <span class="type">boolean</span> posixClusteredShortOptionsAllowed = <span class="predefined-constant">true</span>;
+            <span class="directive">private</span> <span class="type">boolean</span> maxArityIsMaxTotalParams = <span class="predefined-constant">false</span>;
 
             <span class="comment">/** Returns the String to use as the separator between options and option parameters. {@code &quot;=&quot;} by default,
              * initialized from {@link Command#separator()} if defined.*/</span>
@@ -7488,6 +7666,7 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
             <span class="directive">public</span> <span class="type">boolean</span> unmatchedArgumentsAllowed()         { <span class="keyword">return</span> unmatchedArgumentsAllowed; }
             <span class="directive">public</span> <span class="type">boolean</span> expandAtFiles()                     { <span class="keyword">return</span> expandAtFiles; }
             <span class="directive">public</span> <span class="type">boolean</span> posixClusteredShortOptionsAllowed() { <span class="keyword">return</span> posixClusteredShortOptionsAllowed; }
+            <span class="directive">public</span> <span class="type">boolean</span> maxArityIsMaxTotalParams()          { <span class="keyword">return</span> maxArityIsMaxTotalParams; }
 
             <span class="comment">/** Sets the String to use as the separator between options and option parameters.
              * @return this ParserSpec for method chaining */</span>
@@ -7498,10 +7677,11 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
             <span class="directive">public</span> ParserSpec unmatchedArgumentsAllowed(<span class="type">boolean</span> unmatchedArgumentsAllowed) { <span class="local-variable">this</span>.unmatchedArgumentsAllowed = unmatchedArgumentsAllowed; <span class="keyword">return</span> <span class="local-variable">this</span>; }
             <span class="directive">public</span> ParserSpec expandAtFiles(<span class="type">boolean</span> expandAtFiles)                         { <span class="local-variable">this</span>.expandAtFiles = expandAtFiles; <span class="keyword">return</span> <span class="local-variable">this</span>; }
             <span class="directive">public</span> ParserSpec posixClusteredShortOptionsAllowed(<span class="type">boolean</span> posixClusteredShortOptionsAllowed) { <span class="local-variable">this</span>.posixClusteredShortOptionsAllowed = posixClusteredShortOptionsAllowed; <span class="keyword">return</span> <span class="local-variable">this</span>; }
+            <span class="directive">public</span> ParserSpec maxArityIsMaxTotalParams(<span class="type">boolean</span> maxArityIsMaxTotalParams)   { <span class="local-variable">this</span>.maxArityIsMaxTotalParams = maxArityIsMaxTotalParams; <span class="keyword">return</span> <span class="local-variable">this</span>; }
             <span class="type">void</span> initSeparator(<span class="predefined-type">String</span> value) { <span class="keyword">if</span> (initializable(separator, value, DEFAULT_SEPARATOR)) {separator = value;} }
             <span class="directive">public</span> <span class="predefined-type">String</span> toString() {
-                <span class="keyword">return</span> <span class="predefined-type">String</span>.format(<span class="string"><span class="delimiter">&quot;</span><span class="content">posixClusteredShortOptionsAllowed=%s, stopAtPositional=%s, stopAtUnmatched=%s, separator=%s, overwrittenOptionsAllowed=%s, unmatchedArgumentsAllowed=%s, expandAtFiles=%s</span><span class="delimiter">&quot;</span></span>,
-                        posixClusteredShortOptionsAllowed, stopAtPositional, stopAtUnmatched, separator, overwrittenOptionsAllowed, unmatchedArgumentsAllowed, expandAtFiles);
+                <span class="keyword">return</span> <span class="predefined-type">String</span>.format(<span class="string"><span class="delimiter">&quot;</span><span class="content">posixClusteredShortOptionsAllowed=%s, stopAtPositional=%s, stopAtUnmatched=%s, separator=%s, overwrittenOptionsAllowed=%s, unmatchedArgumentsAllowed=%s, expandAtFiles=%s, maxArityIsMaxTotalParams=%s</span><span class="delimiter">&quot;</span></span>,
+                        posixClusteredShortOptionsAllowed, stopAtPositional, stopAtUnmatched, separator, overwrittenOptionsAllowed, unmatchedArgumentsAllowed, expandAtFiles, maxArityIsMaxTotalParams);
             }
         }
         <span class="comment">/** Models the shared attributes of {@link OptionSpec} and {@link PositionalParamSpec}.
@@ -7522,6 +7702,7 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
             <span class="directive">final</span> <span class="predefined-type">Object</span> defaultValue;
             <span class="directive">final</span> IBinding binding;
             <span class="directive">final</span> <span class="predefined-type">List</span>&lt;<span class="predefined-type">String</span>&gt; rawStringValues = <span class="keyword">new</span> <span class="predefined-type">ArrayList</span>&lt;<span class="predefined-type">String</span>&gt;();
+            <span class="directive">final</span> <span class="predefined-type">List</span>&lt;<span class="predefined-type">String</span>&gt; originalStringValues = <span class="keyword">new</span> <span class="predefined-type">ArrayList</span>&lt;<span class="predefined-type">String</span>&gt;();
             <span class="directive">final</span> Range arity;
             <span class="predefined-type">String</span> toString;
 
@@ -7636,9 +7817,15 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
             <span class="comment">/** Returns {@code true} if this argument is a positional parameter, {@code false} otherwise. */</span>
             <span class="directive">public</span> <span class="directive">abstract</span> <span class="type">boolean</span> isPositional();
 
-            <span class="comment">/** Returns the command line arguments matched by this option or positional parameter spec.
-             * @return the matched arguments as found on the command line: empty Strings for options without value, the values have not been {@linkplain #splitRegex() split}, and for map properties values may look like {@code &quot;key=value&quot;}*/</span>
+            <span class="comment">/** Returns the untyped command line arguments matched by this option or positional parameter spec.
+             * @return the matched arguments after {@linkplain #splitRegex() splitting}, but before type conversion.
+             *      For map properties, {@code &quot;key=value&quot;} values are split into the key and the value part. */</span>
             <span class="directive">public</span> <span class="predefined-type">List</span>&lt;<span class="predefined-type">String</span>&gt; rawStringValues() { <span class="keyword">return</span> <span class="predefined-type">Collections</span>.unmodifiableList(rawStringValues); }
+
+            <span class="comment">/** Returns the original command line arguments matched by this option or positional parameter spec.
+             * @return the matched arguments as found on the command line: empty Strings for options without value, the
+             *      values have not been {@linkplain #splitRegex() split}, and for map properties values may look like {@code &quot;key=value&quot;}*/</span>
+            <span class="directive">public</span> <span class="predefined-type">List</span>&lt;<span class="predefined-type">String</span>&gt; originalStringValues() { <span class="keyword">return</span> <span class="predefined-type">Collections</span>.unmodifiableList(originalStringValues); }
 
             <span class="comment">/** Returns a string respresentation of this option or positional parameter. */</span>
             <span class="directive">public</span> <span class="predefined-type">String</span> toString() { <span class="keyword">return</span> toString; }
@@ -8073,7 +8260,7 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
             }
         }
         <span class="directive">private</span> <span class="directive">static</span> <span class="type">class</span> <span class="class">CommandReflection</span> {
-            <span class="directive">static</span> CommandSpec extractCommandSpec(<span class="predefined-type">Object</span> command, IFactory factory) {
+            <span class="directive">static</span> CommandSpec extractCommandSpec(<span class="predefined-type">Object</span> command, IFactory factory, <span class="type">boolean</span> annotationsAreMandatory) {
                 <span class="keyword">if</span> (command <span class="keyword">instanceof</span> CommandSpec) { <span class="keyword">return</span> (CommandSpec) command; }
 
                 CommandSpec result = CommandSpec.wrapWithoutInspection(Assert.notNull(command, <span class="string"><span class="delimiter">&quot;</span><span class="content">command</span><span class="delimiter">&quot;</span></span>));
@@ -8085,7 +8272,7 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
                     hasCommandAnnotation |= initFromAnnotatedFields(command, cls, result, factory);
                     cls = cls.getSuperclass();
                 }
-                validateCommandSpec(result, hasCommandAnnotation, command);
+                <span class="keyword">if</span> (annotationsAreMandatory) {validateCommandSpec(result, hasCommandAnnotation, command); }
                 result.withToString(command.getClass().getName()).validate();
                 <span class="keyword">return</span> result;
             }
@@ -8224,7 +8411,7 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
                         userObject = factory.create(field.getType());
                         field.set(scope, userObject);
                     }
-                    CommandSpec result = extractCommandSpec(userObject, factory);
+                    CommandSpec result = CommandSpec.forAnnotatedObject(userObject, factory);
                     <span class="keyword">return</span> result.withToString(abbreviate(<span class="string"><span class="delimiter">&quot;</span><span class="content">mixin from field </span><span class="delimiter">&quot;</span></span> + field.toGenericString()));
                 } <span class="keyword">catch</span> (InitializationException ex) {
                     <span class="keyword">throw</span> ex;
@@ -9071,7 +9258,8 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
             <span class="keyword">if</span> (tracer.level.isEnabled(level)) { level.print(tracer, traceMessage, argSpec.toString(),
                     <span class="predefined-type">String</span>.valueOf(oldValue), <span class="predefined-type">String</span>.valueOf(newValue), argDescription); }
             argSpec.setValue(newValue);
-            argSpec.rawStringValues.add(value); <span class="comment">// #279 track empty string value if no command line argument was consumed</span>
+            argSpec.originalStringValues.add(value); <span class="comment">// #279 track empty string value if no command line argument was consumed</span>
+            argSpec.rawStringValues.add(value);
             parseResult.add(argSpec, position);
             <span class="keyword">return</span> result;
         }
@@ -9091,6 +9279,7 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
             <span class="type">int</span> originalSize = map.size();
             consumeMapArguments(argSpec, arity, args, classes, keyConverter, valueConverter, map, argDescription);
             parseResult.add(argSpec, position);
+            checkMaxArityExceeded(arity, map.size(), argSpec, argDescription);
             <span class="keyword">return</span> map.size() - originalSize;
         }
 
@@ -9142,18 +9331,18 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
                 <span class="predefined-type">Object</span> mapValue = tryConvert(argSpec, index, valueConverter, keyValue[<span class="integer">1</span>], classes[<span class="integer">1</span>]);
                 result.put(mapKey, mapValue);
                 <span class="keyword">if</span> (tracer.isInfo()) {tracer.info(<span class="string"><span class="delimiter">&quot;</span><span class="content">Putting [%s : %s] in %s&lt;%s, %s&gt; %s for %s%n</span><span class="delimiter">&quot;</span></span>, <span class="predefined-type">String</span>.valueOf(mapKey), <span class="predefined-type">String</span>.valueOf(mapValue),
-                        result.getClass().getSimpleName(), classes[<span class="integer">0</span>].getSimpleName(), classes[<span class="integer">1</span>].getSimpleName(), argSpec
-                                .toString(), argDescription);}
+                        result.getClass().getSimpleName(), classes[<span class="integer">0</span>].getSimpleName(), classes[<span class="integer">1</span>].getSimpleName(), argSpec.toString(), argDescription);}
+                argSpec.rawStringValues.add(keyValue[<span class="integer">0</span>]);
+                argSpec.rawStringValues.add(keyValue[<span class="integer">1</span>]);
             }
-            argSpec.rawStringValues.add(raw);
+            argSpec.originalStringValues.add(raw);
         }
 
-        <span class="directive">private</span> <span class="type">void</span> checkMaxArityExceeded(Range arity, <span class="type">int</span> remainder, ArgSpec argSpec, <span class="predefined-type">String</span><span class="type">[]</span> values) {
-            <span class="keyword">if</span> (values.length &lt;= remainder) { <span class="keyword">return</span>; }
-            <span class="predefined-type">String</span> desc = arity.max == remainder ? <span class="string"><span class="delimiter">&quot;</span><span class="delimiter">&quot;</span></span> + remainder : arity + <span class="string"><span class="delimiter">&quot;</span><span class="content">, remainder=</span><span class="delimiter">&quot;</span></span> + remainder;
-            <span class="keyword">throw</span> <span class="keyword">new</span> MaxValuesforFieldExceededException(CommandLine.this, optionDescription(<span class="string"><span class="delimiter">&quot;</span><span class="delimiter">&quot;</span></span>, argSpec, -<span class="integer">1</span>) +
-                    <span class="string"><span class="delimiter">&quot;</span><span class="content"> max number of values (</span><span class="delimiter">&quot;</span></span> + arity.max + <span class="string"><span class="delimiter">&quot;</span><span class="content">) exceeded: remainder is </span><span class="delimiter">&quot;</span></span> + remainder + <span class="string"><span class="delimiter">&quot;</span><span class="content"> but </span><span class="delimiter">&quot;</span></span> +
-                    values.length + <span class="string"><span class="delimiter">&quot;</span><span class="content"> values were specified: </span><span class="delimiter">&quot;</span></span> + <span class="predefined-type">Arrays</span>.toString(values));
+        <span class="directive">private</span> <span class="type">void</span> checkMaxArityExceeded(Range arity, <span class="type">int</span> size, ArgSpec argSpec, <span class="predefined-type">String</span> argDescription) {
+            <span class="keyword">if</span> (!commandSpec.parser().maxArityIsMaxTotalParams()) { <span class="keyword">return</span>; }
+            <span class="keyword">if</span> (size &lt;= arity.max) { <span class="keyword">return</span>; }
+            <span class="keyword">throw</span> <span class="keyword">new</span> MaxValuesExceededException(CommandLine.this, optionDescription(<span class="string"><span class="delimiter">&quot;</span><span class="delimiter">&quot;</span></span>, argSpec, -<span class="integer">1</span>) +
+                    <span class="string"><span class="delimiter">&quot;</span><span class="content"> max number of values (</span><span class="delimiter">&quot;</span></span> + arity.max + <span class="string"><span class="delimiter">&quot;</span><span class="content">) exceeded: </span><span class="delimiter">&quot;</span></span> + size + <span class="string"><span class="delimiter">&quot;</span><span class="content"> elements.</span><span class="delimiter">&quot;</span></span>);
         }
 
         <span class="directive">private</span> <span class="type">int</span> applyValuesToArrayField(ArgSpec argSpec,
@@ -9181,6 +9370,7 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
                 <span class="predefined-type">Array</span>.set(array, i, newValues.get(i));
             }
             parseResult.add(argSpec, position);
+            checkMaxArityExceeded(arity, newValues.size(), argSpec, argDescription);
             <span class="keyword">return</span> converted.size(); <span class="comment">// return how many args were consumed</span>
         }
 
@@ -9204,6 +9394,7 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
                 }
             }
             parseResult.add(argSpec, position);
+            checkMaxArityExceeded(arity, collection.size(), argSpec, argDescription);
             <span class="keyword">return</span> converted.size();
         }
 
@@ -9247,8 +9438,9 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
                 <span class="keyword">if</span> (tracer.isInfo()) {
                     tracer.info(<span class="string"><span class="delimiter">&quot;</span><span class="content">Adding [%s] to %s for %s%n</span><span class="delimiter">&quot;</span></span>, <span class="predefined-type">String</span>.valueOf(result.get(result.size() - <span class="integer">1</span>)), argSpec.toString(), argDescription);
                 }
+                argSpec.rawStringValues.add(values[j]);
             }
-            argSpec.rawStringValues.add(raw);
+            argSpec.originalStringValues.add(raw);
             <span class="keyword">return</span> ++index;
         }
 
@@ -9739,8 +9931,6 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
         <span class="comment">/** Constant String holding the default string that separates options from option parameters, value defined in {@link ParserSpec#DEFAULT_SEPARATOR}. */</span>
         <span class="directive">protected</span> <span class="directive">static</span> <span class="directive">final</span> <span class="predefined-type">String</span> DEFAULT_SEPARATOR = ParserSpec.DEFAULT_SEPARATOR;
 
-        <span class="directive">private</span> <span class="directive">final</span> <span class="directive">static</span> <span class="type">int</span> MINIMUM_USAGE_WIDTH = <span class="integer">55</span>;
-        <span class="directive">private</span> <span class="directive">final</span> <span class="directive">static</span> <span class="type">int</span> DEFAULT_USAGE_WIDTH = <span class="integer">80</span>;
         <span class="directive">private</span> <span class="directive">final</span> <span class="directive">static</span> <span class="type">int</span> optionsColumnWidth = <span class="integer">2</span> + <span class="integer">2</span> + <span class="integer">1</span> + <span class="integer">24</span>;
         <span class="directive">private</span> <span class="directive">final</span> CommandSpec commandSpec;
         <span class="directive">private</span> <span class="directive">final</span> ColorScheme colorScheme;
@@ -9768,7 +9958,7 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
          * @param colorScheme the color scheme to use
          * @deprecated use {@link picocli.CommandLine.Help#Help(picocli.CommandLine.Model.CommandSpec, picocli.CommandLine.Help.ColorScheme)}  */</span>
         <span class="annotation">@Deprecated</span> <span class="directive">public</span> Help(<span class="predefined-type">Object</span> command, ColorScheme colorScheme) {
-            <span class="local-variable">this</span>(CommandReflection.extractCommandSpec(command, <span class="keyword">new</span> DefaultFactory()), colorScheme);
+            <span class="local-variable">this</span>(CommandSpec.forAnnotatedObject(command, <span class="keyword">new</span> DefaultFactory()), colorScheme);
         }
         <span class="comment">/** Constructs a new {@code Help} instance with the specified color scheme, initialized from annotatations
          * on the specified class and superclasses.
@@ -9829,7 +10019,7 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
          * @deprecated
          */</span>
         <span class="annotation">@Deprecated</span> <span class="directive">public</span> Help addSubcommand(<span class="predefined-type">String</span> commandName, <span class="predefined-type">Object</span> command) {
-            commands.put(commandName, <span class="keyword">new</span> Help(CommandReflection.extractCommandSpec(command, commandSpec.commandLine().factory)));
+            commands.put(commandName, <span class="keyword">new</span> Help(CommandSpec.forAnnotatedObject(command, commandSpec.commandLine().factory)));
             <span class="keyword">return</span> <span class="local-variable">this</span>;
         }
 
@@ -9952,12 +10142,12 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
             <span class="type">int</span> firstColumnLength = commandName.length() + synopsisHeadingLength;
 
             <span class="comment">// synopsis heading (&quot;Usage: &quot;) may be on the same line, so adjust column width</span>
-            TextTable textTable = <span class="keyword">new</span> TextTable(ansi(), firstColumnLength, getUsageHelpWidth() - firstColumnLength);
+            TextTable textTable = TextTable.forColumnWidths(ansi(), firstColumnLength, width() - firstColumnLength);
             textTable.indentWrappedLines = <span class="integer">1</span>; <span class="comment">// don't worry about first line: options (2nd column) always start with a space</span>
 
             <span class="comment">// right-adjust the command name by length of synopsis heading</span>
             Text PADDING = Ansi.OFF.new Text(stringOf(<span class="string"><span class="delimiter">'</span><span class="content">X</span><span class="delimiter">'</span></span>, synopsisHeadingLength));
-            textTable.addRowValues(<span class="keyword">new</span> Text<span class="type">[]</span> {PADDING.append(colorScheme.commandText(commandName)), optionText});
+            textTable.addRowValues(PADDING.append(colorScheme.commandText(commandName)), optionText);
             <span class="keyword">return</span> textTable.toString().substring(synopsisHeadingLength); <span class="comment">// cut off leading synopsis heading spaces</span>
         }
 
@@ -10027,30 +10217,8 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
             <span class="keyword">return</span> layout.toString();
         }
 
-        <span class="comment">/** CONSIDER THIS METHOD PRIVATE. IT IS PACKAGE PRIVATE FOR TESTING PURPOSES ONLY.
-         *
-         * @return the usage help width from the {@code picocli.usage.width} system property.
-         *  If not defined or an invalid value was specified, the default width (80) is used.
-         *  If a value less than the minimum width was specified, the minimum width (55) is used.
-         */</span>
-        <span class="directive">static</span> <span class="type">int</span> getUsageHelpWidth() {
-            <span class="predefined-type">String</span> userValue = <span class="predefined-type">System</span>.getProperty(<span class="string"><span class="delimiter">&quot;</span><span class="content">picocli.usage.width</span><span class="delimiter">&quot;</span></span>);
-            <span class="keyword">if</span> (userValue == <span class="predefined-constant">null</span>) { <span class="keyword">return</span> DEFAULT_USAGE_WIDTH; }
-            <span class="keyword">try</span> {
-                <span class="type">int</span> width = <span class="predefined-type">Integer</span>.parseInt(userValue);
-                <span class="keyword">if</span> (width &lt; MINIMUM_USAGE_WIDTH) {
-                    <span class="keyword">new</span> Tracer().warn(<span class="string"><span class="delimiter">&quot;</span><span class="content">Invalid picocli.usage.width value %d. Using minimum usage width %d.%n</span><span class="delimiter">&quot;</span></span>, width, MINIMUM_USAGE_WIDTH);
-                    <span class="keyword">return</span> MINIMUM_USAGE_WIDTH;
-                }
-                <span class="keyword">return</span> width;
-            } <span class="keyword">catch</span> (<span class="exception">NumberFormatException</span> ex) {
-                <span class="keyword">new</span> Tracer().warn(<span class="string"><span class="delimiter">&quot;</span><span class="content">Invalid picocli.usage.width value '%s'. Using default usage width %d.%n</span><span class="delimiter">&quot;</span></span>, userValue, DEFAULT_USAGE_WIDTH);
-                <span class="keyword">return</span> DEFAULT_USAGE_WIDTH;
-            }
-        }
-
-        <span class="directive">private</span> <span class="directive">static</span> <span class="predefined-type">String</span> heading(Ansi ansi, <span class="predefined-type">String</span> values, <span class="predefined-type">Object</span>... params) {
-            <span class="predefined-type">StringBuilder</span> sb = join(ansi, <span class="keyword">new</span> <span class="predefined-type">String</span><span class="type">[]</span> {values}, <span class="keyword">new</span> <span class="predefined-type">StringBuilder</span>(), params);
+        <span class="directive">private</span> <span class="directive">static</span> <span class="predefined-type">String</span> heading(Ansi ansi, <span class="type">int</span> usageWidth, <span class="predefined-type">String</span> values, <span class="predefined-type">Object</span>... params) {
+            <span class="predefined-type">StringBuilder</span> sb = join(ansi, usageWidth, <span class="keyword">new</span> <span class="predefined-type">String</span><span class="type">[]</span> {values}, <span class="keyword">new</span> <span class="predefined-type">StringBuilder</span>(), params);
             <span class="predefined-type">String</span> result = sb.toString();
             result = result.endsWith(<span class="predefined-type">System</span>.getProperty(<span class="string"><span class="delimiter">&quot;</span><span class="content">line.separator</span><span class="delimiter">&quot;</span></span>))
                     ? result.substring(<span class="integer">0</span>, result.length() - <span class="predefined-type">System</span>.getProperty(<span class="string"><span class="delimiter">&quot;</span><span class="content">line.separator</span><span class="delimiter">&quot;</span></span>).length()) : result;
@@ -10066,13 +10234,14 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
 
         <span class="comment">/** Formats each of the specified values and appends it to the specified StringBuilder.
          * @param ansi whether the result should contain ANSI escape codes or not
+         * @param usageHelpWidth the width of the usage help message
          * @param values the values to format and append to the StringBuilder
          * @param sb the StringBuilder to collect the formatted strings
          * @param params the parameters to pass to the format method when formatting each value
          * @return the specified StringBuilder */</span>
-        <span class="directive">public</span> <span class="directive">static</span> <span class="predefined-type">StringBuilder</span> join(Ansi ansi, <span class="predefined-type">String</span><span class="type">[]</span> values, <span class="predefined-type">StringBuilder</span> sb, <span class="predefined-type">Object</span>... params) {
+        <span class="directive">public</span> <span class="directive">static</span> <span class="predefined-type">StringBuilder</span> join(Ansi ansi, <span class="type">int</span> usageHelpWidth, <span class="predefined-type">String</span><span class="type">[]</span> values, <span class="predefined-type">StringBuilder</span> sb, <span class="predefined-type">Object</span>... params) {
             <span class="keyword">if</span> (values != <span class="predefined-constant">null</span>) {
-                TextTable table = <span class="keyword">new</span> TextTable(ansi, getUsageHelpWidth());
+                TextTable table = TextTable.forColumnWidths(ansi, usageHelpWidth);
                 table.indentWrappedLines = <span class="integer">0</span>;
                 <span class="keyword">for</span> (<span class="predefined-type">String</span> summaryLine : values) {
                     Text<span class="type">[]</span> lines = ansi.new Text(format(summaryLine, params)).splitLines();
@@ -10085,6 +10254,7 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
         <span class="directive">private</span> <span class="directive">static</span> <span class="predefined-type">String</span> format(<span class="predefined-type">String</span> formatString,  <span class="predefined-type">Object</span>... params) {
             <span class="keyword">return</span> formatString == <span class="predefined-constant">null</span> ? <span class="string"><span class="delimiter">&quot;</span><span class="delimiter">&quot;</span></span> : <span class="predefined-type">String</span>.format(formatString, params);
         }
+        <span class="directive">private</span> <span class="type">int</span> width() { <span class="keyword">return</span> commandSpec.usageMessage().width(); }
         <span class="comment">/** Returns command custom synopsis as a string. A custom synopsis can be zero or more lines, and can be
          * specified declaratively with the {@link Command#customSynopsis()} annotation attribute or programmatically
          * by setting the Help instance's {@link Help#customSynopsis} field.
@@ -10092,7 +10262,7 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
          * @return the custom synopsis lines combined into a single String (which may be empty)
          */</span>
         <span class="directive">public</span> <span class="predefined-type">String</span> customSynopsis(<span class="predefined-type">Object</span>... params) {
-            <span class="keyword">return</span> join(ansi(), commandSpec.usageMessage().customSynopsis(), <span class="keyword">new</span> <span class="predefined-type">StringBuilder</span>(), params).toString();
+            <span class="keyword">return</span> join(ansi(), width(), commandSpec.usageMessage().customSynopsis(), <span class="keyword">new</span> <span class="predefined-type">StringBuilder</span>(), params).toString();
         }
         <span class="comment">/** Returns command description text as a string. Description text can be zero or more lines, and can be specified
          * declaratively with the {@link Command#description()} annotation attribute or programmatically by
@@ -10101,7 +10271,7 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
          * @return the description lines combined into a single String (which may be empty)
          */</span>
         <span class="directive">public</span> <span class="predefined-type">String</span> description(<span class="predefined-type">Object</span>... params) {
-            <span class="keyword">return</span> join(ansi(), commandSpec.usageMessage().description(), <span class="keyword">new</span> <span class="predefined-type">StringBuilder</span>(), params).toString();
+            <span class="keyword">return</span> join(ansi(), width(), commandSpec.usageMessage().description(), <span class="keyword">new</span> <span class="predefined-type">StringBuilder</span>(), params).toString();
         }
         <span class="comment">/** Returns the command header text as a string. Header text can be zero or more lines, and can be specified
          * declaratively with the {@link Command#header()} annotation attribute or programmatically by
@@ -10110,7 +10280,7 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
          * @return the header lines combined into a single String (which may be empty)
          */</span>
         <span class="directive">public</span> <span class="predefined-type">String</span> header(<span class="predefined-type">Object</span>... params) {
-            <span class="keyword">return</span> join(ansi(), commandSpec.usageMessage().header(), <span class="keyword">new</span> <span class="predefined-type">StringBuilder</span>(), params).toString();
+            <span class="keyword">return</span> join(ansi(), width(), commandSpec.usageMessage().header(), <span class="keyword">new</span> <span class="predefined-type">StringBuilder</span>(), params).toString();
         }
         <span class="comment">/** Returns command footer text as a string. Footer text can be zero or more lines, and can be specified
          * declaratively with the {@link Command#footer()} annotation attribute or programmatically by
@@ -10119,21 +10289,21 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
          * @return the footer lines combined into a single String (which may be empty)
          */</span>
         <span class="directive">public</span> <span class="predefined-type">String</span> footer(<span class="predefined-type">Object</span>... params) {
-            <span class="keyword">return</span> join(ansi(), commandSpec.usageMessage().footer(), <span class="keyword">new</span> <span class="predefined-type">StringBuilder</span>(), params).toString();
+            <span class="keyword">return</span> join(ansi(), width(), commandSpec.usageMessage().footer(), <span class="keyword">new</span> <span class="predefined-type">StringBuilder</span>(), params).toString();
         }
 
         <span class="comment">/** Returns the text displayed before the header text; the result of {@code String.format(headerHeading, params)}.
          * @param params the parameters to use to format the header heading
          * @return the formatted header heading */</span>
         <span class="directive">public</span> <span class="predefined-type">String</span> headerHeading(<span class="predefined-type">Object</span>... params) {
-            <span class="keyword">return</span> heading(ansi(), commandSpec.usageMessage().headerHeading(), params);
+            <span class="keyword">return</span> heading(ansi(), width(), commandSpec.usageMessage().headerHeading(), params);
         }
 
         <span class="comment">/** Returns the text displayed before the synopsis text; the result of {@code String.format(synopsisHeading, params)}.
          * @param params the parameters to use to format the synopsis heading
          * @return the formatted synopsis heading */</span>
         <span class="directive">public</span> <span class="predefined-type">String</span> synopsisHeading(<span class="predefined-type">Object</span>... params) {
-            <span class="keyword">return</span> heading(ansi(), commandSpec.usageMessage().synopsisHeading(), params);
+            <span class="keyword">return</span> heading(ansi(), width(), commandSpec.usageMessage().synopsisHeading(), params);
         }
 
         <span class="comment">/** Returns the text displayed before the description text; an empty string if there is no description,
@@ -10141,7 +10311,7 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
          * @param params the parameters to use to format the description heading
          * @return the formatted description heading */</span>
         <span class="directive">public</span> <span class="predefined-type">String</span> descriptionHeading(<span class="predefined-type">Object</span>... params) {
-            <span class="keyword">return</span> empty(commandSpec.usageMessage().descriptionHeading()) ? <span class="string"><span class="delimiter">&quot;</span><span class="delimiter">&quot;</span></span> : heading(ansi(), commandSpec.usageMessage().descriptionHeading(), params);
+            <span class="keyword">return</span> empty(commandSpec.usageMessage().descriptionHeading()) ? <span class="string"><span class="delimiter">&quot;</span><span class="delimiter">&quot;</span></span> : heading(ansi(), width(), commandSpec.usageMessage().descriptionHeading(), params);
         }
 
         <span class="comment">/** Returns the text displayed before the positional parameter list; an empty string if there are no positional
@@ -10149,7 +10319,7 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
          * @param params the parameters to use to format the parameter list heading
          * @return the formatted parameter list heading */</span>
         <span class="directive">public</span> <span class="predefined-type">String</span> parameterListHeading(<span class="predefined-type">Object</span>... params) {
-            <span class="keyword">return</span> commandSpec.positionalParameters().isEmpty() ? <span class="string"><span class="delimiter">&quot;</span><span class="delimiter">&quot;</span></span> : heading(ansi(), commandSpec.usageMessage().parameterListHeading(), params);
+            <span class="keyword">return</span> commandSpec.positionalParameters().isEmpty() ? <span class="string"><span class="delimiter">&quot;</span><span class="delimiter">&quot;</span></span> : heading(ansi(), width(), commandSpec.usageMessage().parameterListHeading(), params);
         }
 
         <span class="comment">/** Returns the text displayed before the option list; an empty string if there are no options,
@@ -10157,7 +10327,7 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
          * @param params the parameters to use to format the option list heading
          * @return the formatted option list heading */</span>
         <span class="directive">public</span> <span class="predefined-type">String</span> optionListHeading(<span class="predefined-type">Object</span>... params) {
-            <span class="keyword">return</span> commandSpec.optionsMap().isEmpty() ? <span class="string"><span class="delimiter">&quot;</span><span class="delimiter">&quot;</span></span> : heading(ansi(), commandSpec.usageMessage().optionListHeading(), params);
+            <span class="keyword">return</span> commandSpec.optionsMap().isEmpty() ? <span class="string"><span class="delimiter">&quot;</span><span class="delimiter">&quot;</span></span> : heading(ansi(), width(), commandSpec.usageMessage().optionListHeading(), params);
         }
 
         <span class="comment">/** Returns the text displayed before the command list; an empty string if there are no commands,
@@ -10165,23 +10335,23 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
          * @param params the parameters to use to format the command list heading
          * @return the formatted command list heading */</span>
         <span class="directive">public</span> <span class="predefined-type">String</span> commandListHeading(<span class="predefined-type">Object</span>... params) {
-            <span class="keyword">return</span> commands.isEmpty() ? <span class="string"><span class="delimiter">&quot;</span><span class="delimiter">&quot;</span></span> : heading(ansi(), commandSpec.usageMessage().commandListHeading(), params);
+            <span class="keyword">return</span> commands.isEmpty() ? <span class="string"><span class="delimiter">&quot;</span><span class="delimiter">&quot;</span></span> : heading(ansi(), width(), commandSpec.usageMessage().commandListHeading(), params);
         }
 
         <span class="comment">/** Returns the text displayed before the footer text; the result of {@code String.format(footerHeading, params)}.
          * @param params the parameters to use to format the footer heading
          * @return the formatted footer heading */</span>
         <span class="directive">public</span> <span class="predefined-type">String</span> footerHeading(<span class="predefined-type">Object</span>... params) {
-            <span class="keyword">return</span> heading(ansi(), commandSpec.usageMessage().footerHeading(), params);
+            <span class="keyword">return</span> heading(ansi(), width(), commandSpec.usageMessage().footerHeading(), params);
         }
         <span class="comment">/** Returns a 2-column list with command names and the first line of their header or (if absent) description.
          * @return a usage help section describing the added commands */</span>
         <span class="directive">public</span> <span class="predefined-type">String</span> commandList() {
             <span class="keyword">if</span> (commands.isEmpty()) { <span class="keyword">return</span> <span class="string"><span class="delimiter">&quot;</span><span class="delimiter">&quot;</span></span>; }
             <span class="type">int</span> commandLength = maxLength(commands.keySet());
-            Help.TextTable textTable = <span class="keyword">new</span> Help.TextTable(ansi(),
+            Help.TextTable textTable = Help.TextTable.forColumns(ansi(),
                     <span class="keyword">new</span> Help.Column(commandLength + <span class="integer">2</span>, <span class="integer">2</span>, Help.Column.Overflow.SPAN),
-                    <span class="keyword">new</span> Help.Column(getUsageHelpWidth() - (commandLength + <span class="integer">2</span>), <span class="integer">2</span>, Help.Column.Overflow.WRAP));
+                    <span class="keyword">new</span> Help.Column(width() - (commandLength + <span class="integer">2</span>), <span class="integer">2</span>, Help.Column.Overflow.WRAP));
 
             <span class="keyword">for</span> (<span class="predefined-type">Map</span>.Entry&lt;<span class="predefined-type">String</span>, Help&gt; entry : commands.entrySet()) {
                 Help help = entry.getValue();
@@ -10214,7 +10384,7 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
         <span class="comment">/** Returns a {@code Layout} instance configured with the user preferences captured in this Help instance.
          * @return a Layout */</span>
         <span class="directive">public</span> Layout createDefaultLayout() {
-            <span class="keyword">return</span> <span class="keyword">new</span> Layout(colorScheme, <span class="keyword">new</span> TextTable(colorScheme.ansi()), createDefaultOptionRenderer(), createDefaultParameterRenderer());
+            <span class="keyword">return</span> <span class="keyword">new</span> Layout(colorScheme, TextTable.forDefaultColumns(colorScheme.ansi(), width()), createDefaultOptionRenderer(), createDefaultParameterRenderer());
         }
         <span class="comment">/** Returns a new default OptionRenderer which converts {@link OptionSpec Options} to five columns of text to match
          *  the default {@linkplain TextTable TextTable} column layout. The first row of values looks like this:
@@ -10558,7 +10728,7 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
              * {@linkplain Help#createDefaultOptionRenderer() default option renderer}, and the
              * {@linkplain Help#createDefaultParameterRenderer() default parameter renderer}.
              * @param colorScheme the color scheme to use for common, auto-generated parts of the usage help message */</span>
-            <span class="directive">public</span> Layout(ColorScheme colorScheme) { <span class="local-variable">this</span>(colorScheme, <span class="keyword">new</span> TextTable(colorScheme.ansi())); }
+            <span class="directive">public</span> Layout(ColorScheme colorScheme, <span class="type">int</span> tableWidth) { <span class="local-variable">this</span>(colorScheme, TextTable.forDefaultColumns(colorScheme.ansi(), tableWidth)); }
 
             <span class="comment">/** Constructs a Layout with the specified color scheme, the specified TextTable, the
              * {@linkplain Help#createDefaultOptionRenderer() default option renderer}, and the
@@ -10700,7 +10870,7 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
             }
 
             <span class="comment">/** The column definitions of this table. */</span>
-            <span class="directive">public</span> <span class="directive">final</span> Column<span class="type">[]</span> columns;
+            <span class="directive">private</span> <span class="directive">final</span> Column<span class="type">[]</span> columns;
 
             <span class="comment">/** The {@code char[]} slots of the {@code TextTable} to copy text values into. */</span>
             <span class="directive">protected</span> <span class="directive">final</span> <span class="predefined-type">List</span>&lt;Text&gt; columnValues = <span class="keyword">new</span> <span class="predefined-type">ArrayList</span>&lt;Text&gt;();
@@ -10709,6 +10879,7 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
             <span class="directive">public</span> <span class="type">int</span> indentWrappedLines = <span class="integer">2</span>;
 
             <span class="directive">private</span> <span class="directive">final</span> Ansi ansi;
+            <span class="directive">private</span> <span class="directive">final</span> <span class="type">int</span> tableWidth;
 
             <span class="comment">/** Constructs a TextTable with five columns as follows:
              * &lt;ol&gt;
@@ -10719,38 +10890,44 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
              * &lt;li&gt;description line(s) (width: 51, indent: 1, WRAP to next row on overflow)&lt;/li&gt;
              * &lt;/ol&gt;
              * @param ansi whether to emit ANSI escape codes or not
+             * @param usageHelpWidth the total width of the columns combined
              */</span>
-            <span class="directive">public</span> TextTable(Ansi ansi) {
+            <span class="directive">public</span> <span class="directive">static</span> TextTable forDefaultColumns(Ansi ansi, <span class="type">int</span> usageHelpWidth) {
                 <span class="comment">// &quot;* -c, --create                Creates a ....&quot;</span>
-                <span class="local-variable">this</span>(ansi, <span class="keyword">new</span> Column<span class="type">[]</span> {
+                <span class="keyword">return</span> forColumns(ansi,
                             <span class="keyword">new</span> Column(<span class="integer">2</span>,                                        <span class="integer">0</span>, TRUNCATE), <span class="comment">// &quot;*&quot;</span>
                             <span class="keyword">new</span> Column(<span class="integer">2</span>,                                        <span class="integer">0</span>, TRUNCATE), <span class="comment">// &quot;-c&quot;</span>
                             <span class="keyword">new</span> Column(<span class="integer">1</span>,                                        <span class="integer">0</span>, TRUNCATE), <span class="comment">// &quot;,&quot;</span>
                             <span class="keyword">new</span> Column(optionsColumnWidth - <span class="integer">2</span> - <span class="integer">2</span> - <span class="integer">1</span>,           <span class="integer">1</span>, SPAN),  <span class="comment">// &quot; --create&quot;</span>
-                            <span class="keyword">new</span> Column(getUsageHelpWidth() - optionsColumnWidth, <span class="integer">1</span>, WRAP) <span class="comment">// &quot; Creates a ...&quot;</span>
-                    });
+                            <span class="keyword">new</span> Column(usageHelpWidth - optionsColumnWidth, <span class="integer">1</span>, WRAP)); <span class="comment">// &quot; Creates a ...&quot;</span>
             }
 
             <span class="comment">/** Constructs a new TextTable with columns with the specified width, all SPANning  multiple columns on
              * overflow except the last column which WRAPS to the next row.
              * @param ansi whether to emit ANSI escape codes or not
-             * @param columnWidths the width of the table columns (all columns have zero indent)
+             * @param columnWidths the width of each table column (all columns have zero indent)
              */</span>
-            <span class="directive">public</span> TextTable(Ansi ansi, <span class="type">int</span>... columnWidths) {
-                <span class="local-variable">this</span>.ansi = Assert.notNull(ansi, <span class="string"><span class="delimiter">&quot;</span><span class="content">ansi</span><span class="delimiter">&quot;</span></span>);
-                columns = <span class="keyword">new</span> Column[columnWidths.length];
+            <span class="directive">public</span> <span class="directive">static</span> TextTable forColumnWidths(Ansi ansi, <span class="type">int</span>... columnWidths) {
+                Column<span class="type">[]</span> columns = <span class="keyword">new</span> Column[columnWidths.length];
                 <span class="keyword">for</span> (<span class="type">int</span> i = <span class="integer">0</span>; i &lt; columnWidths.length; i++) {
-                    columns[i] = <span class="keyword">new</span> Column(columnWidths[i], <span class="integer">0</span>, i == columnWidths.length - <span class="integer">1</span> ? SPAN: WRAP);
+                    columns[i] = <span class="keyword">new</span> Column(columnWidths[i], <span class="integer">0</span>, i == columnWidths.length - <span class="integer">1</span> ? WRAP : SPAN);
                 }
+                <span class="keyword">return</span> <span class="keyword">new</span> TextTable(ansi, columns);
             }
             <span class="comment">/** Constructs a {@code TextTable} with the specified columns.
              * @param ansi whether to emit ANSI escape codes or not
              * @param columns columns to construct this TextTable with */</span>
-            <span class="directive">public</span> TextTable(Ansi ansi, Column... columns) {
+            <span class="directive">public</span> <span class="directive">static</span> TextTable forColumns(Ansi ansi, Column... columns) { <span class="keyword">return</span> <span class="keyword">new</span> TextTable(ansi, columns); }
+            <span class="directive">protected</span> TextTable(Ansi ansi, Column<span class="type">[]</span> columns) {
                 <span class="local-variable">this</span>.ansi = Assert.notNull(ansi, <span class="string"><span class="delimiter">&quot;</span><span class="content">ansi</span><span class="delimiter">&quot;</span></span>);
-                <span class="local-variable">this</span>.columns = Assert.notNull(columns, <span class="string"><span class="delimiter">&quot;</span><span class="content">columns</span><span class="delimiter">&quot;</span></span>);
+                <span class="local-variable">this</span>.columns = Assert.notNull(columns, <span class="string"><span class="delimiter">&quot;</span><span class="content">columns</span><span class="delimiter">&quot;</span></span>).clone();
                 <span class="keyword">if</span> (columns.length == <span class="integer">0</span>) { <span class="keyword">throw</span> <span class="keyword">new</span> <span class="exception">IllegalArgumentException</span>(<span class="string"><span class="delimiter">&quot;</span><span class="content">At least one column is required</span><span class="delimiter">&quot;</span></span>); }
+                <span class="type">int</span> totalWidth = <span class="integer">0</span>;
+                <span class="keyword">for</span> (Column col : columns) { totalWidth += col.width; }
+                tableWidth = totalWidth;
             }
+            <span class="comment">/** The column definitions of this table. */</span>
+            <span class="directive">public</span> Column<span class="type">[]</span> columns() { <span class="keyword">return</span> columns.clone(); }
             <span class="comment">/** Returns the {@code Text} slot at the specified row and column to write a text value into.
              * @param row the row of the cell whose Text to return
              * @param col the column of the cell whose Text to return
@@ -10899,7 +11076,7 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
              * @return the specified StringBuilder object (to allow method chaining and a more fluid API) */</span>
             <span class="directive">public</span> <span class="predefined-type">StringBuilder</span> toString(<span class="predefined-type">StringBuilder</span> text) {
                 <span class="type">int</span> columnCount = <span class="local-variable">this</span>.columns.length;
-                <span class="predefined-type">StringBuilder</span> row = <span class="keyword">new</span> <span class="predefined-type">StringBuilder</span>(getUsageHelpWidth());
+                <span class="predefined-type">StringBuilder</span> row = <span class="keyword">new</span> <span class="predefined-type">StringBuilder</span>(tableWidth);
                 <span class="keyword">for</span> (<span class="type">int</span> i = <span class="integer">0</span>; i &lt; columnValues.size(); i++) {
                     Text column = columnValues.get(i);
                     row.append(column.toString());
@@ -11589,9 +11766,9 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
         <span class="directive">public</span> UnmatchedArgumentException(CommandLine commandLine, <span class="predefined-type">List</span>&lt;<span class="predefined-type">String</span>&gt; args) { <span class="local-variable">this</span>(commandLine, <span class="string"><span class="delimiter">&quot;</span><span class="content">Unmatched argument</span><span class="delimiter">&quot;</span></span> + (args.size() == <span class="integer">1</span> ? <span class="string"><span class="delimiter">&quot;</span><span class="content"> </span><span class="delimiter">&quot;</span></span> : <span class="string"><span class="delimiter">&quot;</span><span class="content">s </span><span class="delimiter">&quot;</span></span>) + args); }
     }
     <span class="comment">/** Exception indicating that more values were specified for an option or parameter than its {@link Option#arity() arity} allows. */</span>
-    <span class="directive">public</span> <span class="directive">static</span> <span class="type">class</span> <span class="class">MaxValuesforFieldExceededException</span> <span class="directive">extends</span> ParameterException {
+    <span class="directive">public</span> <span class="directive">static</span> <span class="type">class</span> <span class="class">MaxValuesExceededException</span> <span class="directive">extends</span> ParameterException {
         <span class="directive">private</span> <span class="directive">static</span> <span class="directive">final</span> <span class="type">long</span> serialVersionUID = <span class="integer">6536145439570100641L</span>;
-        <span class="directive">public</span> MaxValuesforFieldExceededException(CommandLine commandLine, <span class="predefined-type">String</span> msg) { <span class="local-variable">super</span>(commandLine, msg); }
+        <span class="directive">public</span> MaxValuesExceededException(CommandLine commandLine, <span class="predefined-type">String</span> msg) { <span class="local-variable">super</span>(commandLine, msg); }
     }
     <span class="comment">/** Exception indicating that an option for a single-value option field has been specified multiple times on the command line. */</span>
     <span class="directive">public</span> <span class="directive">static</span> <span class="type">class</span> <span class="class">OverwrittenOptionException</span> <span class="directive">extends</span> ParameterException {
@@ -11615,8 +11792,8 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
 </div>
 <div id="footer">
 <div id="footer-text">
-Version 3.0.0-alpha-2<br>
-Last updated 2018-03-27 21:42:52 JST
+Version 3.0.0-alpha-3<br>
+Last updated 2018-03-31 09:41:23 JST
 </div>
 </div>
 </body>
