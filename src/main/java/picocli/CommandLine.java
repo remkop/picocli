@@ -2614,7 +2614,7 @@ public class CommandLine {
             /** Returns the current value of the binding. For multi-value options and positional parameters, this method returns an
              * array, collection or map to add values to.
              * @throws PicocliException if a problem occurred while obtaining the current value */
-            <T> T get() throws PicocliException;
+            <T> T get();
 
             /** Sets the new value of the binding. For multi-value options and positional parameters, this method is used to
              * set a new array instance that is one element larger than the previous instance, or to initialize the collection
@@ -2625,7 +2625,7 @@ public class CommandLine {
              * @param <T> type of the value
              * @return the previous value of the binding (if supported by this binding)
              * @throws PicocliException if a problem occurred while setting the new value */
-            <T> T set(T value) throws PicocliException;
+            <T> T set(T value);
         }
 
         /** The {@code CommandSpec} class models a command specification, including the options, positional parameters and subcommands
@@ -3358,9 +3358,21 @@ public class CommandLine {
             public IBinding binding()   { return binding; }
 
             /** Returns the current value of this argument. Delegates to the current {@link #binding()}. */
-            Object getValue()                throws PicocliException { return binding.get(); }
+            Object getValue() throws PicocliException {
+                try {
+                    return binding.get();
+                } catch (PicocliException ex) { throw ex;
+                } catch (Exception ex) {        throw new PicocliException("Could not get value for " + this, ex);
+                }
+            }
             /** Sets the value of this argument to the specified value and returns the previous value. Delegates to the current {@link #binding()}. */
-            Object setValue(Object newValue) throws PicocliException { return binding.set(newValue); }
+            Object setValue(Object newValue) throws PicocliException {
+                try {
+                    return binding.set(newValue);
+                } catch (PicocliException ex) { throw ex;
+                } catch (Exception ex) {        throw new PicocliException("Could not set value (" + newValue + ") for " + this, ex);
+                }
+            }
     
             /** Returns {@code true} if this argument's {@link #type()} is an array, a {@code Collection} or a {@code Map}, {@code false} otherwise. */
             boolean isMultiValue()     { return CommandLine.isMultiValue(type()); }
