@@ -744,52 +744,44 @@ public class CommandLineModelTest {
     }
 
     @Test
-    public void testUnmatchedArgsBinding_forStringArraySupplier() {
+    public void testUnmatchedArgsBinding_forStringArrayConsumer() {
         setTraceLevel("OFF");
-        class ArrayBinding implements IBinding {
+        class ArrayBinding implements ISetter {
             String[] array;
-            public <T> T get() throws PicocliException {
-                return (T) array;
-            }
-            public <T> T set(T value) throws PicocliException {
+            @SuppressWarnings("unchecked") public <T> T set(T value) {
                 T old = (T) array;
                 array = (String[]) value;
                 return old;
             }
         }
-        ArrayBinding binding = new ArrayBinding();
+        ArrayBinding setter = new ArrayBinding();
         CommandSpec cmd = CommandSpec.create();
-        UnmatchedArgsBinding unmatched = UnmatchedArgsBinding.forStringArraySupplier(binding);
-        assertSame(binding, unmatched.binding());
+        UnmatchedArgsBinding unmatched = UnmatchedArgsBinding.forStringArrayConsumer(setter);
+        assertSame(setter, unmatched.setter());
 
         cmd.addUnmatchedArgsBinding(unmatched);
         cmd.addOption(OptionSpec.builder("-x").build());
         ParseResult result = new CommandLine(cmd).parseArgs("-x", "a", "b", "c");
 
         assertEquals(Arrays.asList("a", "b", "c"), result.unmatched());
-        assertArrayEquals(new String[]{"a", "b", "c"}, binding.array);
+        assertArrayEquals(new String[]{"a", "b", "c"}, setter.array);
         assertSame(unmatched, cmd.unmatchedArgsBindings().get(0));
         assertEquals(1, cmd.unmatchedArgsBindings().size());
     }
 
     @Test
-    public void testUnmatchedArgsBinding_forStringListSupplier() {
+    public void testUnmatchedArgsBinding_forStringCollectionSupplier() {
         setTraceLevel("OFF");
-        class ArrayBinding implements IBinding {
-            List<String> list;
-            public <T> T get() throws PicocliException {
+        class ArrayBinding implements IGetter {
+            List<String> list = new ArrayList();
+            @SuppressWarnings("unchecked") public <T> T get() {
                 return (T) list;
-            }
-            public <T> T set(T value) throws PicocliException {
-                T old = (T) list;
-                list = (List<String>) value;
-                return old;
             }
         }
         ArrayBinding binding = new ArrayBinding();
         CommandSpec cmd = CommandSpec.create();
-        UnmatchedArgsBinding unmatched = UnmatchedArgsBinding.forStringListSupplier(binding);
-        assertSame(binding, unmatched.binding());
+        UnmatchedArgsBinding unmatched = UnmatchedArgsBinding.forStringCollectionSupplier(binding);
+        assertSame(binding, unmatched.getter());
 
         cmd.addUnmatchedArgsBinding(unmatched);
         cmd.addOption(OptionSpec.builder("-x").build());
@@ -802,53 +794,69 @@ public class CommandLineModelTest {
     }
 
     @Test
-    public void testUnmatchedArgsBinding_forStringConsumer() {
+    public void testUnmatchedArgsBinding_forStringArrayConsumer_withInvalidBinding() {
         setTraceLevel("OFF");
-        class ArrayBinding implements IBinding {
+        class ListBinding implements ISetter {
             List<String> list = new ArrayList<String>();
-            public <T> T get() throws PicocliException {
-                throw new UnsupportedOperationException();
-            }
-            public <T> T set(T value) throws PicocliException {
-                list.add((String) value);
-                return null;
-            }
-        }
-        ArrayBinding binding = new ArrayBinding();
-        CommandSpec cmd = CommandSpec.create();
-        UnmatchedArgsBinding unmatched = UnmatchedArgsBinding.forStringConsumer(binding);
-        assertSame(binding, unmatched.binding());
-
-        cmd.addUnmatchedArgsBinding(unmatched);
-        cmd.addOption(OptionSpec.builder("-x").build());
-        ParseResult result = new CommandLine(cmd).parseArgs("-x", "a", "b", "c");
-
-        assertEquals(Arrays.asList("a", "b", "c"), result.unmatched());
-        assertEquals(Arrays.asList("a", "b", "c"), binding.list);
-        assertSame(unmatched, cmd.unmatchedArgsBindings().get(0));
-        assertEquals(1, cmd.unmatchedArgsBindings().size());
-    }
-
-    @Test
-    public void testUnmatchedArgsBinding_forStringArraySupplier_withInvalidBinding() {
-        setTraceLevel("OFF");
-        class ListBinding implements IBinding {
-            List<String> list = new ArrayList<String>();
-            public <T> T get() throws PicocliException {
-                return (T) list;
-            }
-            public <T> T set(T value) throws PicocliException {
+            @SuppressWarnings("unchecked") public <T> T set(T value) {
                 T old = (T) list;
                 list = (List<String>) value;
                 return old;
             }
         }
         CommandSpec cmd = CommandSpec.create();
-        cmd.addUnmatchedArgsBinding(UnmatchedArgsBinding.forStringArraySupplier(new ListBinding()));
+        cmd.addUnmatchedArgsBinding(UnmatchedArgsBinding.forStringArrayConsumer(new ListBinding()));
         try {
             new CommandLine(cmd).parseArgs("-x", "a", "b", "c");
         } catch (Exception ex) {
-            assertTrue(ex.getMessage().contains("while processing argument at or before arg[0] '-x' in [-x, a, b, c]: java.lang.ClassCastException: java.util.ArrayList"));
+            assertTrue(ex.getMessage(), ex.getMessage().startsWith("Could not invoke setter ("));
+            assertTrue(ex.getMessage(), ex.getMessage().contains("with unmatched argument array '[-x, a, b, c]': java.lang.ClassCastException"));
+        }
+    }
+
+    @Test
+    public void testUnmatchedArgsBinding_forStringCollectionSupplier_withInvalidBinding() {
+        setTraceLevel("OFF");
+        class ListBinding implements IGetter {
+            @SuppressWarnings("unchecked") public <T> T get() {
+                return (T) new Object();
+            }
+        }
+        CommandSpec cmd = CommandSpec.create();
+        cmd.addUnmatchedArgsBinding(UnmatchedArgsBinding.forStringCollectionSupplier(new ListBinding()));
+        try {
+            new CommandLine(cmd).parseArgs("-x", "a", "b", "c");
+        } catch (Exception ex) {
+            assertTrue(ex.getMessage(), ex.getMessage().startsWith("Could not add unmatched argument array '[-x, a, b, c]' to collection returned by getter ("));
+            assertTrue(ex.getMessage(), ex.getMessage().contains("): java.lang.ClassCastException: java.lang.Object"));
+        }
+    }
+
+    @Test
+    public void testUnmatchedArgsBinding_forStringCollectionSupplier_exceptionsRethrownAsPicocliException() {
+        class ThrowingGetter implements IGetter {
+            public <T> T get() { throw new RuntimeException("test"); }
+        }
+        try {
+            UnmatchedArgsBinding.forStringCollectionSupplier(new ThrowingGetter()).addAll(new String[0]);
+            fail("Expected exception");
+        } catch (PicocliException ex) {
+            assertTrue(ex.getMessage(), ex.getMessage().startsWith("Could not add unmatched argument array '[]' to collection returned by getter ("));
+            assertTrue(ex.getMessage(), ex.getMessage().endsWith("): java.lang.RuntimeException: test"));
+        }
+    }
+
+    @Test
+    public void testUnmatchedArgsBinding_forStringArrayConsumer_exceptionsRethrownAsPicocliException() {
+        class ThrowingSetter implements ISetter {
+            public <T> T set(T value) { throw new RuntimeException("test"); }
+        }
+        try {
+            UnmatchedArgsBinding.forStringArrayConsumer(new ThrowingSetter()).addAll(new String[0]);
+            fail("Expected exception");
+        } catch (PicocliException ex) {
+            assertTrue(ex.getMessage(), ex.getMessage().startsWith("Could not invoke setter "));
+            assertTrue(ex.getMessage(), ex.getMessage().contains(") with unmatched argument array '[]': java.lang.RuntimeException: test"));
         }
     }
 

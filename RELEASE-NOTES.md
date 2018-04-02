@@ -1,5 +1,45 @@
 # picocli Release Notes
 
+# <a name="3.0.0-alpha-4"></a> Picocli 3.0.0-alpha-4 (UNRELEASED)
+The picocli community is pleased to announce picocli 3.0.0-alpha-4.
+
+This is the twenty-fourth public release.
+Picocli follows [semantic versioning](http://semver.org/).
+
+## <a name="3.0.0-alpha-4-toc"></a> Table of Contents
+
+* [New and noteworthy](#3.0.0-alpha-4-new)
+* [Promoted features](#3.0.0-alpha-4-promoted)
+* [Fixed issues](#3.0.0-alpha-4-fixes)
+* [Deprecations](#3.0.0-alpha-4-deprecated)
+* [Potential breaking changes](#3.0.0-alpha-4-breaking-changes)
+
+## <a name="3.0.0-alpha-4-new"></a> New and Noteworthy
+
+
+## <a name="3.0.0-alpha-4-promoted"></a> Promoted Features
+Promoted features are features that were incubating in previous versions of picocli but are now supported and subject to backwards compatibility. 
+
+No features have been promoted in this picocli release.
+
+## <a name="3.0.0-alpha-4-fixes"></a> Fixed issues
+
+[#318] Split model IBinding into IGetter and ISetter
+
+
+## <a name="3.0.0-alpha-4-deprecated"></a> Deprecations
+See [3.0.0-alpha-1](https://github.com/remkop/picocli/releases/tag/v3.0.0-alpha-1#3.0.0-alpha-1-deprecated)
+
+## <a name="3.0.0-alpha-4-breaking-changes"></a> Potential breaking changes
+- The `IBinding` interface introduced in v3.0.0-alpha-1 has been replaced with two functional interfaces `IGetter` and `ISetter`.
+- The `UnmatchedArgsBinding` factory methods introduced in v3.0.0-alpha-1 have been replaced with `forStringArrayConsumer` and `forStringCollectionSupplier`. 
+
+
+See [3.0.0-alpha-2](https://github.com/remkop/picocli/releases/tag/v3.0.0-alpha-2#3.0.0-alpha-2-breaking-changes).
+See [3.0.0-alpha-1](https://github.com/remkop/picocli/releases/tag/v3.0.0-alpha-1#3.0.0-alpha-1-breaking-changes).
+
+
+
 # <a name="3.0.0-alpha-3"></a> Picocli 3.0.0-alpha-3
 The picocli community is pleased to announce picocli 3.0.0-alpha-3.
 
