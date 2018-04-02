@@ -949,21 +949,21 @@ public class CommandLineModelTest {
     }
 
     @Test
-    public void testParser_MaxArityIsMaxTotalParams_falseByDefault() {
-        assertFalse(CommandSpec.create().parser().maxArityIsMaxTotalParams());
+    public void testParser_ArityRestrictsCumulativeSize_falseByDefault() {
+        assertFalse(CommandSpec.create().parser().arityRestrictsCumulativeSize());
     }
 
     @Test
-    public void testParser_MaxArityIsMaxTotalParams_singleArguments() {
+    public void testParser_ArityRestrictsCumulativeSize_singleArguments() {
         CommandSpec cmd = CommandSpec.create().addOption(OptionSpec.builder("-x").arity("1..3").build());
-        cmd.parser().maxArityIsMaxTotalParams(true);
+        cmd.parser().arityRestrictsCumulativeSize(true);
 
         ParseResult parseResult = new CommandLine(cmd).parseArgs("-x 1 -x 2 -x 3".split(" "));
         assertEquals(Arrays.asList("1", "2", "3"), parseResult.rawOptionValues('x'));
         assertArrayEquals(new String[]{"1", "2", "3"}, parseResult.optionValue('x', (String[]) null));
 
         CommandSpec cmd2 = CommandSpec.create().addOption(OptionSpec.builder("-x").arity("1..3").build());
-        cmd2.parser().maxArityIsMaxTotalParams(true);
+        cmd2.parser().arityRestrictsCumulativeSize(true);
         try {
             new CommandLine(cmd2).parseArgs("-x 1 -x 2 -x 3 -x 4".split(" "));
             fail("expected exception");
@@ -973,9 +973,9 @@ public class CommandLineModelTest {
     }
 
     @Test
-    public void testParser_MaxArityIsMaxTotalParams_split() {
+    public void testParser_ArityRestrictsCumulativeSize_split() {
         CommandSpec cmd = CommandSpec.create().addOption(OptionSpec.builder("-x").arity("1..3").splitRegex(",").build());
-        cmd.parser().maxArityIsMaxTotalParams(true);
+        cmd.parser().arityRestrictsCumulativeSize(true);
 
         ParseResult parseResult = new CommandLine(cmd).parseArgs("-x", "1,2,3");
         assertEquals(Arrays.asList("1", "2", "3"), parseResult.rawOptionValues('x')); // raw is split but untyped
@@ -983,7 +983,7 @@ public class CommandLineModelTest {
         assertArrayEquals(new String[]{"1", "2", "3"}, parseResult.optionValue('x', (String[]) null));
 
         CommandSpec cmd2 = CommandSpec.create().addOption(OptionSpec.builder("-x").arity("1..3").splitRegex(",").build());
-        cmd2.parser().maxArityIsMaxTotalParams(true);
+        cmd2.parser().arityRestrictsCumulativeSize(true);
         try {
             new CommandLine(cmd2).parseArgs("-x", "1,2,3,4");
             fail("expected exception");

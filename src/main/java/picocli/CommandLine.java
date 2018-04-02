@@ -352,24 +352,24 @@ public class CommandLine {
      * For example, if option {@code -a} has arity=2, then {@code <command> -a 1 2 -a 3 4 -a 5 6} is a perfectly valid
      * command: for each occurrence of the option, two option parameters are specified.
      * </p><p>
-     * However, if {@link ParserSpec#maxArityIsMaxTotalParams() maxArityIsMaxTotalParams} is set to {@code true},
+     * However, if {@link ParserSpec#arityRestrictsCumulativeSize() arityRestrictsCumulativeSize} is set to {@code true},
      * the above example would result in a {@link MaxValuesExceededException} because the total number of values (6) exceeds the arity of 2.
      * </p><p>
-     * Additionally, by default (when {@code maxArityIsMaxTotalParams} is {@code false}), arity is only applied <em>before</em>
-     * the argument is {@linkplain OptionSpec#splitRegex() split} into parts, while if {@code maxArityIsMaxTotalParams} is set
+     * Additionally, by default (when {@code arityRestrictsCumulativeSize} is {@code false}), arity is only applied <em>before</em>
+     * the argument is {@linkplain OptionSpec#splitRegex() split} into parts, while if {@code arityRestrictsCumulativeSize} is set
      * to {@code true}, validation is applied <em>after</em> a command line argument has been split into parts.
      * </p><p>
      * For example, we have an option {@code -a} with {@code arity = "1..2"} and {@code splitRegex = ","}, and the user
      * specified {@code <command> -a 1,2,3} on the command line. By default, the option arity tells the parser to consume
      * 1 to 2 arguments, and the option was followed by a single argument, {@code "1,2,3"}, which is fine.
      * </p><p>
-     * However, if {@code maxArityIsMaxTotalParams} is set to {@code true}, the above example would result in a
+     * However, if {@code arityRestrictsCumulativeSize} is set to {@code true}, the above example would result in a
      * {@code MaxValuesExceededException} because the argument is split into 3 parts, which exceeds the max arity of 2.
      * </p>
      * @return {@code true} if a {@link MaxValuesExceededException} should be thrown when the total number of values
      *      accumulated in an option or positional parameter exceeds the max arity, {@code false} otherwise
      * @since 3.0 */
-    public boolean isMaxArityIsMaxTotalParams() { return getCommandSpec().parser().maxArityIsMaxTotalParams(); }
+    public boolean isArityRestrictsCumulativeSize() { return getCommandSpec().parser().arityRestrictsCumulativeSize(); }
 
     /** Sets whether the parser should throw an error when the total number of values accumulated in an option or
      * positional parameter exceeds the max arity. The default is {@code false}.
@@ -381,10 +381,10 @@ public class CommandLine {
      * @return this {@code CommandLine} object, to allow method chaining
      * @since 3.0
      */
-    public CommandLine setMaxArityIsMaxTotalParams(boolean newValue) {
-        getCommandSpec().parser().maxArityIsMaxTotalParams(newValue);
+    public CommandLine setArityRestrictsCumulativeSize(boolean newValue) {
+        getCommandSpec().parser().arityRestrictsCumulativeSize(newValue);
         for (CommandLine command : getCommandSpec().subcommands().values()) {
-            command.setMaxArityIsMaxTotalParams(newValue);
+            command.setArityRestrictsCumulativeSize(newValue);
         }
         return this;
     }
@@ -3210,7 +3210,7 @@ public class CommandLine {
             private boolean unmatchedArgumentsAllowed = false;
             private boolean expandAtFiles = true;
             private boolean posixClusteredShortOptionsAllowed = true;
-            private boolean maxArityIsMaxTotalParams = false;
+            private boolean arityRestrictsCumulativeSize = false;
 
             /** Returns the String to use as the separator between options and option parameters. {@code "="} by default,
              * initialized from {@link Command#separator()} if defined.*/
@@ -3222,7 +3222,7 @@ public class CommandLine {
             public boolean unmatchedArgumentsAllowed()         { return unmatchedArgumentsAllowed; }
             public boolean expandAtFiles()                     { return expandAtFiles; }
             public boolean posixClusteredShortOptionsAllowed() { return posixClusteredShortOptionsAllowed; }
-            public boolean maxArityIsMaxTotalParams()          { return maxArityIsMaxTotalParams; }
+            public boolean arityRestrictsCumulativeSize()      { return arityRestrictsCumulativeSize; }
 
             /** Sets the String to use as the separator between options and option parameters.
              * @return this ParserSpec for method chaining */
@@ -3233,11 +3233,11 @@ public class CommandLine {
             public ParserSpec unmatchedArgumentsAllowed(boolean unmatchedArgumentsAllowed) { this.unmatchedArgumentsAllowed = unmatchedArgumentsAllowed; return this; }
             public ParserSpec expandAtFiles(boolean expandAtFiles)                         { this.expandAtFiles = expandAtFiles; return this; }
             public ParserSpec posixClusteredShortOptionsAllowed(boolean posixClusteredShortOptionsAllowed) { this.posixClusteredShortOptionsAllowed = posixClusteredShortOptionsAllowed; return this; }
-            public ParserSpec maxArityIsMaxTotalParams(boolean maxArityIsMaxTotalParams)   { this.maxArityIsMaxTotalParams = maxArityIsMaxTotalParams; return this; }
+            public ParserSpec arityRestrictsCumulativeSize(boolean arityRestrictsCumulativeSize)   { this.arityRestrictsCumulativeSize = arityRestrictsCumulativeSize; return this; }
             void initSeparator(String value) { if (initializable(separator, value, DEFAULT_SEPARATOR)) {separator = value;} }
             public String toString() {
-                return String.format("posixClusteredShortOptionsAllowed=%s, stopAtPositional=%s, stopAtUnmatched=%s, separator=%s, overwrittenOptionsAllowed=%s, unmatchedArgumentsAllowed=%s, expandAtFiles=%s, maxArityIsMaxTotalParams=%s",
-                        posixClusteredShortOptionsAllowed, stopAtPositional, stopAtUnmatched, separator, overwrittenOptionsAllowed, unmatchedArgumentsAllowed, expandAtFiles, maxArityIsMaxTotalParams);
+                return String.format("posixClusteredShortOptionsAllowed=%s, stopAtPositional=%s, stopAtUnmatched=%s, separator=%s, overwrittenOptionsAllowed=%s, unmatchedArgumentsAllowed=%s, expandAtFiles=%s, arityRestrictsCumulativeSize=%s",
+                        posixClusteredShortOptionsAllowed, stopAtPositional, stopAtUnmatched, separator, overwrittenOptionsAllowed, unmatchedArgumentsAllowed, expandAtFiles, arityRestrictsCumulativeSize);
             }
         }
         /** Models the shared attributes of {@link OptionSpec} and {@link PositionalParamSpec}.
@@ -4927,7 +4927,7 @@ public class CommandLine {
         }
 
         private void checkMaxArityExceeded(Range arity, int size, ArgSpec argSpec, String argDescription) {
-            if (!commandSpec.parser().maxArityIsMaxTotalParams()) { return; }
+            if (!commandSpec.parser().arityRestrictsCumulativeSize()) { return; }
             if (size <= arity.max) { return; }
             throw new MaxValuesExceededException(CommandLine.this, optionDescription("", argSpec, -1) +
                     " max number of values (" + arity.max + ") exceeded: " + size + " elements.");

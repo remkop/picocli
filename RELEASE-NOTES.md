@@ -25,6 +25,7 @@ No features have been promoted in this picocli release.
 ## <a name="3.0.0-alpha-4-fixes"></a> Fixed issues
 
 [#318] Split model IBinding into IGetter and ISetter
+[#320] Rename parser config `maxArityIsMaxTotalParams` to `arityRestrictsCumulativeSize`
 
 
 ## <a name="3.0.0-alpha-4-deprecated"></a> Deprecations
