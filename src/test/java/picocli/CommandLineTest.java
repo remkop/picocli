@@ -157,7 +157,7 @@ public class CommandLineTest {
         assertEquals("3.0.0-alpha-4-SNAPSHOT", CommandLine.VERSION);
     }
     @Test
-    public void testArrayPositionalParametersAreAppendedNotReplaced() {
+    public void testArrayPositionalParametersAreReplacedNotAppendedTo() {
         class ArrayPositionalParams {
             @Parameters() int[] array;
         }
@@ -166,7 +166,7 @@ public class CommandLineTest {
         int[] array = params.array;
         new CommandLine(params).parse("3", "2", "1");
         assertNotSame(array, params.array);
-        assertArrayEquals(new int[]{0, 0, 0, 3, 2, 1}, params.array);
+        assertArrayEquals(new int[]{3, 2, 1}, params.array);
     }
     private class ListPositionalParams {
         @Parameters(type = Integer.class) List<Integer> list;
@@ -189,14 +189,14 @@ public class CommandLineTest {
         assertEquals(Arrays.asList(3, 2, 1), params.list);
     }
     @Test
-    public void testListPositionalParametersAreAppendedToIfNonNull() {
+    public void testListPositionalParametersAreReplacedIfNonNull() {
         ListPositionalParams params = new ListPositionalParams();
         params.list = new ArrayList<Integer>();
         params.list.add(234);
         List<Integer> list = params.list;
         new CommandLine(params).parse("3", "2", "1");
-        assertSame(list, params.list);
-        assertEquals(Arrays.asList(234, 3, 2, 1), params.list);
+        assertNotSame(list, params.list);
+        assertEquals(Arrays.asList(3, 2, 1), params.list);
     }
     class SortedSetPositionalParams {
         @Parameters(type = Integer.class) SortedSet<Integer> sortedSet;
@@ -219,14 +219,14 @@ public class CommandLineTest {
         assertEquals(Arrays.asList(1, 2, 3), new ArrayList<Integer>(params.sortedSet));
     }
     @Test
-    public void testSortedSetPositionalParametersAreAppendedToIfNonNull() {
+    public void testSortedSetPositionalParametersAreReplacedIfNonNull() {
         SortedSetPositionalParams params = new SortedSetPositionalParams();
         params.sortedSet = new TreeSet<Integer>();
         params.sortedSet.add(234);
         SortedSet<Integer> list = params.sortedSet;
         new CommandLine(params).parse("3", "2", "1");
-        assertSame(list, params.sortedSet);
-        assertEquals(Arrays.asList(1, 2, 3, 234), new ArrayList<Integer>(params.sortedSet));
+        assertNotSame(list, params.sortedSet);
+        assertEquals(Arrays.asList(1, 2, 3), new ArrayList<Integer>(params.sortedSet));
     }
     class SetPositionalParams {
         @Parameters(type = Integer.class) Set<Integer> set;
@@ -249,14 +249,14 @@ public class CommandLineTest {
         assertEquals(new HashSet(Arrays.asList(1, 2, 3)), params.set);
     }
     @Test
-    public void testSetPositionalParametersAreAppendedToIfNonNull() {
+    public void testSetPositionalParametersAreReplacedIfNonNull() {
         SetPositionalParams params = new SetPositionalParams();
         params.set = new TreeSet<Integer>();
         params.set.add(234);
         Set<Integer> list = params.set;
         new CommandLine(params).parse("3", "2", "1");
-        assertSame(list, params.set);
-        assertEquals(new HashSet(Arrays.asList(1, 2, 3, 234)), params.set);
+        assertNotSame(list, params.set);
+        assertEquals(new HashSet(Arrays.asList(3, 2, 1)), params.set);
     }
     class QueuePositionalParams {
         @Parameters(type = Integer.class) Queue<Integer> queue;
@@ -279,14 +279,14 @@ public class CommandLineTest {
         assertEquals(new LinkedList(Arrays.asList(3, 2, 1)), params.queue);
     }
     @Test
-    public void testQueuePositionalParametersAreAppendedToIfNonNull() {
+    public void testQueuePositionalParametersAreReplacedIfNonNull() {
         QueuePositionalParams params = new QueuePositionalParams();
         params.queue = new LinkedList<Integer>();
         params.queue.add(234);
         Queue<Integer> list = params.queue;
         new CommandLine(params).parse("3", "2", "1");
-        assertSame(list, params.queue);
-        assertEquals(new LinkedList(Arrays.asList(234, 3, 2, 1)), params.queue);
+        assertNotSame(list, params.queue);
+        assertEquals(new LinkedList(Arrays.asList(3, 2, 1)), params.queue);
     }
     class CollectionPositionalParams {
         @Parameters(type = Integer.class) Collection<Integer> collection;
@@ -309,14 +309,14 @@ public class CommandLineTest {
         assertEquals(Arrays.asList(3, 2, 1), params.collection);
     }
     @Test
-    public void testCollectionPositionalParametersAreAppendedToIfNonNull() {
+    public void testCollectionPositionalParametersAreReplacedIfNonNull() {
         CollectionPositionalParams params = new CollectionPositionalParams();
         params.collection = new ArrayList<Integer>();
         params.collection.add(234);
         Collection<Integer> list = params.collection;
         new CommandLine(params).parse("3", "2", "1");
-        assertSame(list, params.collection);
-        assertEquals(Arrays.asList(234, 3, 2, 1), params.collection);
+        assertNotSame(list, params.collection);
+        assertEquals(Arrays.asList(3, 2, 1), params.collection);
     }
 
     @Test(expected = DuplicateOptionAnnotationsException.class)
@@ -1350,7 +1350,7 @@ public class CommandLineTest {
                 new File("111"),
                 new File("222")), app1.fileList1_2);
         assertArrayEquals("arg[0-3]", new File[]{
-                null, null, null, null, // existing values
+                //null, null, null, null, // #216 default values are replaced
                 new File("000"),
                 new File("111"),
                 new File("222"),
@@ -1362,7 +1362,7 @@ public class CommandLineTest {
         assertEquals("field initialized with arg[0]", new File("111"), app2.file0_1);
         assertEquals("arg[1]", Arrays.asList(new File("111")), app2.fileList1_2);
         assertArrayEquals("arg[0-3]", new File[]{
-                null, null, null, null, // existing values
+                //null, null, null, null,  // #216 default values are replaced
                 new File("000"),
                 new File("111"),}, app2.fileArray0_3);
         assertEquals("args", Arrays.asList("000", "111"), app2.all);
@@ -1371,7 +1371,7 @@ public class CommandLineTest {
         assertEquals("field initialized with arg[0]", new File("000"), app3.file0_1);
         assertEquals("arg[1]", null, app3.fileList1_2);
         assertArrayEquals("arg[0-3]", new File[]{
-                null, null, null, null, // existing values
+                //null, null, null, null,  // #216 default values are replaced
                 new File("000")}, app3.fileArray0_3);
         assertEquals("args", Arrays.asList("000"), app3.all);
 

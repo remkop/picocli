@@ -993,7 +993,6 @@ public class CommandLineModelTest {
         }
     }
 
-    @Ignore("needs #315")
     @Test
     public void testOptionSpec_setsDefaultValue_ifNotMatched() {
         CommandSpec cmd = CommandSpec.create().addOption(OptionSpec.builder("-x").defaultValue("123").type(int.class).build());
@@ -1002,7 +1001,6 @@ public class CommandLineModelTest {
         assertEquals(Integer.valueOf(123), parseResult.optionValue('x', -1));
     }
 
-    @Ignore("needs #315")
     @Test
     public void testPositionalParamSpec_setsDefaultValue_ifNotMatched() {
         CommandSpec cmd = CommandSpec.create().add(PositionalParamSpec.builder().defaultValue("123").type(int.class).build());
@@ -1011,7 +1009,6 @@ public class CommandLineModelTest {
         assertEquals(Integer.valueOf(123), parseResult.positionalValue(0, -1));
     }
 
-    @Ignore("needs #315")
     @Test
     public void testOptionSpec_defaultValue_overwritesInitialValue() {
         class Params {
@@ -1025,7 +1022,6 @@ public class CommandLineModelTest {
         assertEquals(Integer.valueOf(54321), parseResult.optionValue('x', -1));
     }
 
-    @Ignore("needs #315")
     @Test
     public void testPositionalParamSpec_defaultValue_overwritesInitialValue() {
         class Params {
@@ -1037,5 +1033,95 @@ public class CommandLineModelTest {
         cmd = new CommandLine(CommandSpec.create().add(x));
         ParseResult parseResult = cmd.parseArgs();
         assertEquals(Integer.valueOf(54321), parseResult.positionalValue(0, -1));
+    }
+
+    @Test
+    public void testOptionSpec_notRequiredIfNonNullDefaultValue() {
+        assertTrue(OptionSpec.builder("-x").required(true).build().required());
+        assertFalse(OptionSpec.builder("-x").defaultValue("123").required(true).build().required());
+    }
+
+    @Test
+    public void testPositionalParamSpec_notRequiredIfNonNullDefaultValue() {
+        assertTrue(PositionalParamSpec.builder().required(true).build().required());
+        assertFalse(PositionalParamSpec.builder().defaultValue("123").required(true).build().required());
+    }
+
+    @Test
+    public void testOptionSpec_DefaultValue_single_replacedByCommandLineValue() {
+        CommandSpec cmd = CommandSpec.create().addOption(OptionSpec.builder("-x").defaultValue("123").type(int.class).build());
+
+        ParseResult parseResult = new CommandLine(cmd).parseArgs("-x", "456");
+        assertEquals(Integer.valueOf(456), parseResult.optionValue('x', -1));
+    }
+
+    @Test
+    public void testPositionalParamSpec_DefaultValue_single_replacedByCommandLineValue() {
+        CommandSpec cmd = CommandSpec.create().add(PositionalParamSpec.builder().defaultValue("123").type(int.class).build());
+
+        ParseResult parseResult = new CommandLine(cmd).parseArgs("456");
+        assertEquals(Integer.valueOf(456), parseResult.positionalValue(0, -1));
+    }
+
+    @Test
+    public void testOptionSpec_DefaultValue_array_replacedByCommandLineValue() {
+        CommandSpec cmd = CommandSpec.create().addOption(OptionSpec
+                .builder("-x").defaultValue("1,2,3").splitRegex(",").type(int[].class).build());
+
+        ParseResult parseResult = new CommandLine(cmd).parseArgs("-x", "4,5,6");
+        assertArrayEquals(new int[]{4, 5, 6}, parseResult.optionValue('x', new int[0]));
+    }
+
+    @Test
+    public void testOptionSpec_DefaultValue_list_replacedByCommandLineValue() {
+        CommandSpec cmd = CommandSpec.create().addOption(OptionSpec
+                .builder("-x").defaultValue("1,2,3").splitRegex(",").type(List.class).auxiliaryTypes(Integer.class).build());
+
+        ParseResult parseResult = new CommandLine(cmd).parseArgs("-x", "4,5,6");
+        assertEquals(Arrays.asList(4, 5, 6), parseResult.optionValue('x', Collections.emptyList()));
+    }
+
+    @Test
+    public void testOptionSpec_DefaultValue_map_replacedByCommandLineValue() {
+        CommandSpec cmd = CommandSpec.create().add(OptionSpec
+                .builder("-x").defaultValue("1=A,2=B,3=C").splitRegex(",").type(Map.class).auxiliaryTypes(Integer.class, String.class).build());
+
+        ParseResult parseResult = new CommandLine(cmd).parseArgs("-x", "4=X,5=Y,6=Z");
+        Map<Integer, String> expected = new HashMap<Integer, String>();
+        expected.put(4, "X");
+        expected.put(5, "Y");
+        expected.put(6, "Z");
+        assertEquals(expected, parseResult.optionValue('x', Collections.emptyMap()));
+    }
+
+    @Test
+    public void testPositionalParamSpec_DefaultValue_array_replacedByCommandLineValue() {
+        CommandSpec cmd = CommandSpec.create().add(PositionalParamSpec
+                .builder().defaultValue("1,2,3").splitRegex(",").type(int[].class).build());
+
+        ParseResult parseResult = new CommandLine(cmd).parseArgs("4,5,6");
+        assertArrayEquals(new int[]{4, 5, 6}, parseResult.positionalValue(0, new int[0]));
+    }
+
+    @Test
+    public void testPositionalParamSpec_DefaultValue_list_replacedByCommandLineValue() {
+        CommandSpec cmd = CommandSpec.create().add(PositionalParamSpec
+                .builder().defaultValue("1,2,3").splitRegex(",").type(List.class).auxiliaryTypes(Integer.class).build());
+
+        ParseResult parseResult = new CommandLine(cmd).parseArgs("4,5,6");
+        assertEquals(Arrays.asList(4, 5, 6), parseResult.positionalValue(0, Collections.emptyList()));
+    }
+
+    @Test
+    public void testPositionalParamSpec_DefaultValue_map_replacedByCommandLineValue() {
+        CommandSpec cmd = CommandSpec.create().add(PositionalParamSpec
+                .builder().defaultValue("1=A,2=B,3=C").splitRegex(",").type(Map.class).auxiliaryTypes(Integer.class, String.class).build());
+
+        ParseResult parseResult = new CommandLine(cmd).parseArgs("4=X,5=Y,6=Z");
+        Map<Integer, String> expected = new HashMap<Integer, String>();
+        expected.put(4, "X");
+        expected.put(5, "Y");
+        expected.put(6, "Z");
+        assertEquals(expected, parseResult.positionalValue(0, Collections.emptyMap()));
     }
 }

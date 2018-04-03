@@ -306,7 +306,7 @@ public class CommandLineHelpTest {
         cmd.getCommandSpec().usageMessage().showDefaultValues(true);
         String result = usageString(cmd, Help.Ansi.OFF);
         assertEquals(format("" +
-                "Usage: <main class> -x=INT[,INT]... [-x=INT[,INT]...]...%n" +
+                "Usage: <main class> [-x=INT[,INT]...]...%n" +
                 "  -x, --array=INT[,INT]...    the array%n" +
                 "                                Default: 5,4,3,2,1%n"), result);
     }

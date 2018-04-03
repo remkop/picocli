@@ -3271,8 +3271,8 @@ public class CommandLine {
                 paramLabel = empty(builder.paramLabel) ? "PARAM" : builder.paramLabel;
                 converters = builder.converters == null ? new ITypeConverter<?>[0] : builder.converters;
                 showDefaultValue = builder.showDefaultValue == null ? Help.Visibility.ON_DEMAND : builder.showDefaultValue;
-                required = builder.required;
                 hidden = builder.hidden;
+                required = builder.required && builder.defaultValue == null; //#261 not required if it has a default
                 defaultValue = builder.defaultValue;
                 initialValue = builder.initialValue;
                 toString = builder.toString;
@@ -4523,6 +4523,7 @@ public class CommandLine {
             Set<ArgSpec> initialized = new HashSet<ArgSpec>();
             Collections.sort(required, new PositionalParametersSorter());
             try {
+                applyDefaultValues(required);
                 processArguments(parsedCommands, argumentStack, required, initialized, originalArgs);
             } catch (ParameterException ex) {
                 throw ex;
@@ -4549,6 +4550,20 @@ public class CommandLine {
                 if (tracer.isWarn()) { tracer.warn("Unmatched arguments: %s%n", parseResult.unmatched); }
             }
         }
+
+        private void applyDefaultValues(List<ArgSpec> required) throws Exception {
+            for (OptionSpec option              : commandSpec.options())              { applyDefault(option,     required); }
+            for (PositionalParamSpec positional : commandSpec.positionalParameters()) { applyDefault(positional, required); }
+        }
+
+        private void applyDefault(ArgSpec arg, List<ArgSpec> required) throws Exception {
+            if (arg.defaultValue() == null) { return; }
+            if (tracer.isDebug()) {tracer.debug("Applying defaultValue (%s) to %s%n", arg.defaultValue(), arg);}
+            Range arity = arg.arity().min(Math.max(1, arg.arity().min));
+            applyOption(arg, arity, stack(arg.defaultValue()), new HashSet<ArgSpec>(), arg.toString);
+            required.remove(arg);
+        }
+        private Stack<String> stack(String value) {Stack<String> result = new Stack<String>(); result.push(value); return result;}
 
         private void processArguments(List<CommandLine> parsedCommands,
                                       Stack<String> args,
@@ -4789,11 +4804,11 @@ public class CommandLine {
             assertNoMissingParameters(argSpec, arity.min, args);
 
             if (argSpec.type().isArray()) {
-                return applyValuesToArrayField(argSpec, arity, args, argDescription);
+                return applyValuesToArrayField(argSpec, arity, args, initialized, argDescription);
             } else if (Collection.class.isAssignableFrom(argSpec.type())) {
-                return applyValuesToCollectionField(argSpec, arity, args, argDescription);
+                return applyValuesToCollectionField(argSpec, arity, args, initialized, argDescription);
             } else if (Map.class.isAssignableFrom(argSpec.type())) {
-                return applyValuesToMapField(argSpec, arity, args, argDescription);
+                return applyValuesToMapField(argSpec, arity, args, initialized, argDescription);
             } else {
                 return applyValueToSingleValuedField(argSpec, arity, args, initialized, argDescription);
             }
@@ -4862,16 +4877,18 @@ public class CommandLine {
         private int applyValuesToMapField(ArgSpec argSpec,
                                           Range arity,
                                           Stack<String> args,
+                                          Set<ArgSpec> initialized,
                                           String argDescription) throws Exception {
             Class<?>[] classes = argSpec.auxiliaryTypes();
             if (classes.length < 2) { throw new ParameterException(CommandLine.this, argSpec.toString() + " needs two types (one for the map key, one for the value) but only has " + classes.length + " types configured."); }
             ITypeConverter<?> keyConverter   = getTypeConverter(classes[0], argSpec, 0);
             ITypeConverter<?> valueConverter = getTypeConverter(classes[1], argSpec, 1);
             @SuppressWarnings("unchecked") Map<Object, Object> map = (Map<Object, Object>) argSpec.getValue();
-            if (map == null) {
+            if (map == null || (!map.isEmpty() && !initialized.contains(argSpec))) {
                 map = createMap(argSpec.type()); // map class
                 argSpec.setValue(map);
             }
+            initialized.add(argSpec);
             int originalSize = map.size();
             consumeMapArguments(argSpec, arity, args, classes, keyConverter, valueConverter, map, argDescription);
             parseResult.add(argSpec, position);
@@ -4944,15 +4961,19 @@ public class CommandLine {
         private int applyValuesToArrayField(ArgSpec argSpec,
                                             Range arity,
                                             Stack<String> args,
+                                            Set<ArgSpec> initialized,
                                             String argDescription) throws Exception {
             Object existing = argSpec.getValue();
             int length = existing == null ? 0 : Array.getLength(existing);
             Class<?> type = argSpec.auxiliaryTypes()[0];
             List<Object> converted = consumeArguments(argSpec, arity, args, type, argDescription);
             List<Object> newValues = new ArrayList<Object>();
-            for (int i = 0; i < length; i++) {
-                newValues.add(Array.get(existing, i));
+            if (initialized.contains(argSpec)) { // existing values are default values if initialized does NOT contain argsSpec
+                for (int i = 0; i < length; i++) {
+                    newValues.add(Array.get(existing, i)); // keep non-default values
+                }
             }
+            initialized.add(argSpec);
             for (Object obj : converted) {
                 if (obj instanceof Collection<?>) {
                     newValues.addAll((Collection<?>) obj);
@@ -4974,14 +4995,16 @@ public class CommandLine {
         private int applyValuesToCollectionField(ArgSpec argSpec,
                                                  Range arity,
                                                  Stack<String> args,
+                                                 Set<ArgSpec> initialized,
                                                  String argDescription) throws Exception {
             Collection<Object> collection = (Collection<Object>) argSpec.getValue();
             Class<?> type = argSpec.auxiliaryTypes()[0];
             List<Object> converted = consumeArguments(argSpec, arity, args, type, argDescription);
-            if (collection == null) {
+            if (collection == null || (!collection.isEmpty() && !initialized.contains(argSpec))) {
                 collection = createCollection(argSpec.type()); // collection type
                 argSpec.setValue(collection);
             }
+            initialized.add(argSpec);
             for (Object element : converted) {
                 if (element instanceof Collection<?>) {
                     collection.addAll((Collection<?>) element);
