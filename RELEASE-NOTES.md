@@ -1,6 +1,6 @@
 # picocli Release Notes
 
-# <a name="3.0.0-alpha-4"></a> Picocli 3.0.0-alpha-4 (UNRELEASED)
+# <a name="3.0.0-alpha-4"></a> Picocli 3.0.0-alpha-4
 The picocli community is pleased to announce picocli 3.0.0-alpha-4.
 
 This is the twenty-fourth public release.
@@ -40,8 +40,9 @@ See [3.0.0-alpha-1](https://github.com/remkop/picocli/releases/tag/v3.0.0-alpha-
 - The `UnmatchedArgsBinding` factory methods introduced in v3.0.0-alpha-1 have been replaced with `forStringArrayConsumer` and `forStringCollectionSupplier`. 
 
 
-See [3.0.0-alpha-2](https://github.com/remkop/picocli/releases/tag/v3.0.0-alpha-2#3.0.0-alpha-2-breaking-changes).
-See [3.0.0-alpha-1](https://github.com/remkop/picocli/releases/tag/v3.0.0-alpha-1#3.0.0-alpha-1-breaking-changes).
+See also breaking changes for [3.0.0-alpha-3](https://github.com/remkop/picocli/releases/tag/v3.0.0-alpha-3#3.0.0-alpha-3-breaking-changes),
+[3.0.0-alpha-2](https://github.com/remkop/picocli/releases/tag/v3.0.0-alpha-2#3.0.0-alpha-2-breaking-changes),
+and [3.0.0-alpha-1](https://github.com/remkop/picocli/releases/tag/v3.0.0-alpha-1#3.0.0-alpha-1-breaking-changes).
 
 
 

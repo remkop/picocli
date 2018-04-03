@@ -134,7 +134,7 @@ import static picocli.CommandLine.Help.Column.Overflow.WRAP;
  */
 public class CommandLine {
     /** This is picocli version {@value}. */
-    public static final String VERSION = "3.0.0-alpha-4-SNAPSHOT";
+    public static final String VERSION = "3.0.0-alpha-4";
 
     private final Tracer tracer = new Tracer();
     private final CommandSpec commandSpec;
@@ -3374,7 +3374,7 @@ public class CommandLine {
                 try {
                     return getter.get();
                 } catch (PicocliException ex) { throw ex;
-                } catch (Exception ex) {        throw new PicocliException("Could not get value for " + this, ex);
+                } catch (Exception ex) {        throw new PicocliException("Could not get value for " + this + ": " + ex, ex);
                 }
             }
             /** Sets the value of this argument to the specified value and returns the previous value. Delegates to the current {@link #setter()}. */
@@ -3382,7 +3382,7 @@ public class CommandLine {
                 try {
                     return setter.set(newValue);
                 } catch (PicocliException ex) { throw ex;
-                } catch (Exception ex) {        throw new PicocliException("Could not set value (" + newValue + ") for " + this, ex);
+                } catch (Exception ex) {        throw new PicocliException("Could not set value (" + newValue + ") for " + this + ": " + ex, ex);
                 }
             }
     

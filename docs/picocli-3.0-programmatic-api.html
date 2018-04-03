@@ -583,17 +583,22 @@ spec.addPositional(PositionalParamSpec.builder()
         .description(<span class="string"><span class="delimiter">&quot;</span><span class="content">The files to process</span><span class="delimiter">&quot;</span></span>).build());
 CommandLine commandLine = <span class="keyword">new</span> CommandLine(spec);
 
-commandLine.parseWithSimpleHandlers(<span class="keyword">new</span> AbstractSimpleParseResultHandler() {
-    <span class="directive">public</span> <span class="type">void</span> handle(ParseResult pr) {
+<span class="type">class</span> <span class="class">Handler</span> <span class="directive">extends</span> AbstractParseResultHandler&lt;<span class="predefined-type">Integer</span>&gt; {
+    <span class="directive">protected</span> <span class="predefined-type">Handler</span> self() { <span class="keyword">return</span> <span class="local-variable">this</span>; }
+
+    <span class="directive">public</span> <span class="predefined-type">Integer</span> handle(ParseResult pr) {
         <span class="type">int</span> count = pr.optionValue(<span class="string"><span class="delimiter">'</span><span class="content">c</span><span class="delimiter">'</span></span>, <span class="integer">1</span>);
         <span class="predefined-type">List</span>&lt;<span class="predefined-type">File</span>&gt; files = pr.positionalValue(<span class="integer">0</span>, <span class="predefined-type">Collections</span>.&lt;<span class="predefined-type">File</span>&gt;emptyList());
-        <span class="keyword">for</span> (<span class="type">int</span> i = <span class="integer">0</span>; i &lt; count; i++) {
-            <span class="keyword">for</span> (<span class="predefined-type">File</span> f : files) {
-                <span class="predefined-type">System</span>.out.printf(<span class="string"><span class="delimiter">&quot;</span><span class="content">%d: %s%n</span><span class="delimiter">&quot;</span></span>, i, f);
+        <span class="keyword">for</span> (<span class="predefined-type">File</span> f : files) {
+            <span class="keyword">for</span> (<span class="type">int</span> i = <span class="integer">0</span>; i &lt; count; i++) {
+                <span class="predefined-type">System</span>.out.println(i + <span class="string"><span class="delimiter">&quot;</span><span class="content"> </span><span class="delimiter">&quot;</span></span> + f.getName());
             }
         }
+        <span class="keyword">return</span> files.size();
     }
-}, args);</code></pre>
+}
+
+<span class="type">int</span> processed = commandLine.parseWithHandler(<span class="keyword">new</span> <span class="predefined-type">Handler</span>(), args);</code></pre>
 </div>
 </div>
 </div>
@@ -720,10 +725,10 @@ CommandSpec cmd = CommandSpec.create()
 <p>Once an <code>OptionSpec</code> is constructed, its configuration becomes immutable, but its <code>value</code> can still be modified. Usually the value is set during command line parsing when a command line argument matches one of the option names.</p>
 </div>
 <div class="paragraph">
-<p>The value is set via a <em>binding</em>. We’ll come back to bindings later in this document.</p>
+<p>The value is set via the getter and setter <em>bindings</em>. We’ll come back to bindings later in this document.</p>
 </div>
 <div class="paragraph">
-<p>Similar to the annotation API, <code>OptionSpec</code> objects have <code>help</code>, <code>usageHelp</code> and <code>versionHelp</code> attributes. When the parser matches an option that was marked with any of these attributes, it will no longer validate that all required arguments exist. See the section below on the <code>parseWithHandler(s)</code> and <code>parseWithSimpleHandler(s)</code> methods that automatically print help when requested.</p>
+<p>Similar to the annotation API, <code>OptionSpec</code> objects have <code>help</code>, <code>usageHelp</code> and <code>versionHelp</code> attributes. When the parser matches an option that was marked with any of these attributes, it will no longer validate that all required arguments exist. See the section below on the <code>parseWithHandler(s)</code> methods that automatically print help when requested.</p>
 </div>
 </div>
 <div class="sect2">
@@ -735,7 +740,7 @@ CommandSpec cmd = CommandSpec.create()
 <p>Similar to <code>OptionSpec</code> objects, Once a <code>PositionalParamSpec</code> is constructed, its configuration becomes immutable, but its <code>value</code> can still be modified. Usually the value is set during command line parsing when a non-option command line argument is encountered at a position in its index range.</p>
 </div>
 <div class="paragraph">
-<p>The value is set via a <em>binding</em>. We’ll look at bindings next.</p>
+<p>The value is set via getter and setter <em>bindings</em>. We’ll look at bindings next.</p>
 </div>
 </div>
 <div class="sect2">
@@ -753,32 +758,41 @@ CommandSpec cmd = CommandSpec.create()
 <p>You may create a custom binding that delegates to some other data structure to retrieve and store the value.</p>
 </div>
 <div class="paragraph">
-<p>Below is the <code>IBinding</code> interface definition:</p>
+<p>A binding is either a getter or a setter:</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="CodeRay highlight"><code data-lang="java"><span class="directive">public</span> <span class="directive">static</span> <span class="type">interface</span> <span class="class">IBinding</span> {
-
-    <span class="comment">/** Returns the current value of the binding. For multi-value options and positional
-     * parameters, this method returns an array, collection or map to add values to.
+<pre class="CodeRay highlight"><code data-lang="java"><span class="directive">public</span> <span class="directive">static</span> <span class="type">interface</span> <span class="class">IGetter</span> {
+    <span class="comment">/** Returns the current value of the binding. For multi-value options and positional parameters,
+     * this method returns an array, collection or map to add values to.
      * @throws PicocliException if a problem occurred while obtaining the current value
-     */</span>
-    &lt;T&gt; T get() <span class="directive">throws</span> PicocliException;
-
-    <span class="comment">/** Sets the new value of the binding. For multi-value options and positional
-     * parameters, this method is used to set a new array instance that is one element
-     * larger than the previous instance, or to initialize the collection or map when
-     * the {@link #get() getter} returned {@code null}. For single-value options and
-     * positional parameters, this method simply sets the value.
+     * @throws Exception internally, picocli call sites will catch any exceptions thrown from here and rethrow them wrapped in a PicocliException */</span>
+    &lt;T&gt; T get() <span class="directive">throws</span> <span class="exception">Exception</span>;
+}</code></pre>
+</div>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="java"><span class="directive">public</span> <span class="directive">static</span> <span class="type">interface</span> <span class="class">ISetter</span> {
+    <span class="comment">/** Sets the new value of the option or positional parameter.
      *
-     * @param value the new value of the binding
+     * @param value the new value of the option or positional parameter
      * @param &lt;T&gt; type of the value
      * @return the previous value of the binding (if supported by this binding)
      * @throws PicocliException if a problem occurred while setting the new value
-     */</span>
-    &lt;T&gt; T set(T value) <span class="directive">throws</span> PicocliException;
+     * @throws Exception internally, picocli call sites will catch any exceptions thrown from here and rethrow them wrapped in a PicocliException */</span>
+    &lt;T&gt; T set(T value) <span class="directive">throws</span> <span class="exception">Exception</span>;
 }</code></pre>
 </div>
+</div>
+<div class="paragraph">
+<p>For single-value options, picocli will simply invoke the setter when an option or positional parameter is matched on the command line.</p>
+</div>
+<div class="paragraph">
+<p>For multi-value options or positional parameters, picocli will call the getter to get the current value, add the newly matched value, and call the setter with the result.
+For arrays, this means the existing elements are copied into a new array that is one element larger, and this new array is then set.
+For collections and maps, the new value is added to the collection returned by the getter.
+If the getter returns <code>null</code>, a new array, collection, or map is created.</p>
 </div>
 </div>
 </div>
@@ -932,56 +946,9 @@ CommandLine commandLine = <span class="keyword">new</span> CommandLine(spec);
 <p>There are a number of <code>parseWithHandler</code> convenience methods to reduce some boilerplate when processing the <code>ParseResult</code> programmatically. The convenience methods take care of printing help when requested by the user, and handle invalid input.</p>
 </div>
 <div class="sect3">
-<h4 id="_handlers_without_return_value">4.2.1. Handlers Without Return Value</h4>
+<h4 id="_handlers">4.2.1. Handlers</h4>
 <div class="paragraph">
-<p>Call the <code>parseWithSimpleHandler</code> method with a <code>AbstractSimpleParseResultHandler</code> subclass to process the parse result without returning a result value.  Note the absence of error handling and checking of whether the user requested help.  The <code>handle</code> method contains only your business logic.</p>
-</div>
-<div class="paragraph">
-<p>Example:</p>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre class="CodeRay highlight"><code data-lang="java">CommandSpec spec = CommandSpec.create();
-<span class="comment">// add options and positional parameters</span>
-
-CommandLine commandLine = <span class="keyword">new</span> CommandLine(spec);
-commandLine.parseWithSimpleHandler(<span class="keyword">new</span> AbstractSimpleParseResultHandler() {
-    <span class="directive">public</span> <span class="type">void</span> handle(ParseResult pr) {
-        <span class="type">int</span> count = pr.optionValue(<span class="string"><span class="delimiter">'</span><span class="content">c</span><span class="delimiter">'</span></span>, <span class="integer">1</span>);
-        <span class="predefined-type">List</span>&lt;<span class="predefined-type">File</span>&gt; files = pr.positionalValue(<span class="integer">0</span>, <span class="predefined-type">Collections</span>.&lt;<span class="predefined-type">File</span>&gt;emptyList());
-        <span class="keyword">for</span> (<span class="type">int</span> i = <span class="integer">0</span>; i &lt; count; i++) {
-            <span class="keyword">for</span> (<span class="predefined-type">File</span> f : files) {
-                <span class="predefined-type">System</span>.out.printf(<span class="string"><span class="delimiter">&quot;</span><span class="content">%d: %s%n</span><span class="delimiter">&quot;</span></span>, i, f);
-            }
-        }
-    }
-}, args);</code></pre>
-</div>
-</div>
-<div class="paragraph">
-<p>A variation of this method, <code>parseWithSimpleHandlers</code>, additionally takes an <code>IExceptionHandler2&lt;Void&gt;</code> to customize how invalid input should be handled and optionally set an exit code for when the input was invalid.</p>
-</div>
-<div class="paragraph">
-<p>Example:</p>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre class="CodeRay highlight"><code data-lang="java">CommandSpec spec = CommandSpec.create();
-<span class="comment">// add options and positional parameters</span>
-
-CommandLine commandLine = <span class="keyword">new</span> CommandLine(spec);
-commandLine.parseWithSimpleHandlers(<span class="keyword">new</span> AbstractSimpleParseResultHandler() {
-    <span class="directive">public</span> <span class="type">void</span> handle(ParseResult pr) {...}
-}.useOut(<span class="predefined-type">System</span>.out).andExit(<span class="integer">123</span>),
-        <span class="keyword">new</span> DefaultExceptionHandler&lt;<span class="predefined-type">Void</span>&gt;().andExit(<span class="integer">567</span>),
-        args);</code></pre>
-</div>
-</div>
-</div>
-<div class="sect3">
-<h4 id="_handlers_with_return_value">4.2.2. Handlers with Return Value</h4>
-<div class="paragraph">
-<p>It is possible for the parse result processing logic to return a result. To accomplish this, call the <code>CommandLine::parseWithHandler</code> method with a class that extends <code>AbstractParseResultHandler</code> and a prototype return value. The <code>process</code> method may return a completely different return value object (as long as it has the correct type) or it can modify the return value object that was passed in to the <code>parseWithHandler</code> method.</p>
+<p>It is possible for the parse result processing logic to return a result. To accomplish this, call the <code>CommandLine::parseWithHandler</code> method with a class that extends <code>AbstractParseResultHandler</code>.</p>
 </div>
 <div class="paragraph">
 <p>Example:</p>
@@ -993,30 +960,27 @@ commandLine.parseWithSimpleHandlers(<span class="keyword">new</span> AbstractSim
 
 CommandLine commandLine = <span class="keyword">new</span> CommandLine(spec);
 
-<span class="type">class</span> <span class="class">MyResult</span> {
-    <span class="predefined-type">List</span>&lt;<span class="predefined-type">File</span>&gt; files = <span class="keyword">new</span> <span class="predefined-type">ArrayList</span>&lt;<span class="predefined-type">File</span>&gt;();
-}
+<span class="type">class</span> <span class="class">Handler</span> <span class="directive">extends</span> AbstractParseResultHandler&lt;<span class="predefined-type">Integer</span>&gt; {
+    <span class="directive">protected</span> <span class="predefined-type">Handler</span> self() { <span class="keyword">return</span> <span class="local-variable">this</span>; }
 
-<span class="type">class</span> <span class="class">MyHandler</span> <span class="directive">extends</span> AbstractParseResultHandler&lt;MyResult&gt; {
-    <span class="directive">public</span> MyResult handle(ParseResult pr, MyResult returnValue) {
+    <span class="directive">public</span> <span class="predefined-type">Integer</span> handle(ParseResult pr) {
         <span class="type">int</span> count = pr.optionValue(<span class="string"><span class="delimiter">'</span><span class="content">c</span><span class="delimiter">'</span></span>, <span class="integer">1</span>);
         <span class="predefined-type">List</span>&lt;<span class="predefined-type">File</span>&gt; files = pr.positionalValue(<span class="integer">0</span>, <span class="predefined-type">Collections</span>.&lt;<span class="predefined-type">File</span>&gt;emptyList());
         <span class="keyword">for</span> (<span class="predefined-type">File</span> f : files) {
             <span class="keyword">for</span> (<span class="type">int</span> i = <span class="integer">0</span>; i &lt; count; i++) {
-                returnValue.files.add(f);
+                <span class="predefined-type">System</span>.out.println(i + <span class="string"><span class="delimiter">&quot;</span><span class="content"> </span><span class="delimiter">&quot;</span></span> + f.getName());
             }
         }
-        <span class="keyword">return</span> returnValue;
+        <span class="keyword">return</span> files.size();
     }
-    <span class="directive">protected</span> MyHandler self() { <span class="keyword">return</span> <span class="local-variable">this</span>; }
 }
 
-MyResult result = commandLine.parseWithHandler(<span class="keyword">new</span> MyHandler(), <span class="keyword">new</span> MyResult(), args);
+<span class="type">int</span> processed = commandLine.parseWithHandler(<span class="keyword">new</span> <span class="predefined-type">Handler</span>(), args);
 <span class="comment">// do something with result...</span></code></pre>
 </div>
 </div>
 <div class="paragraph">
-<p>This method also has a variation, <code>parseWithHandlers</code>, which additionally takes an <code>IExceptionHandler2&lt;MyResult&gt;</code> to customize how invalid input should be handled and optionally set an exit code.</p>
+<p>This method also has a variation, <code>parseWithHandlers</code>, which additionally takes an <code>IExceptionHandler2</code> to customize how invalid input should be handled and optionally set an exit code.</p>
 </div>
 <div class="paragraph">
 <p>Example:</p>
@@ -1027,10 +991,9 @@ MyResult result = commandLine.parseWithHandler(<span class="keyword">new</span> 
 <span class="comment">// add options and positional parameters</span>
 
 CommandLine commandLine = <span class="keyword">new</span> CommandLine(spec);
-MyResult result = commandLine.parseWithHandler(
+<span class="predefined-type">Integer</span> result = commandLine.parseWithHandlers(
         <span class="keyword">new</span> MyHandler().useOut(<span class="predefined-type">System</span>.out).andExit(<span class="integer">123</span>),
-        <span class="keyword">new</span> MyResult(),
-        <span class="keyword">new</span> DefaultExceptionHandler&lt;MyResult&gt;().andExit(<span class="integer">567</span>),
+        <span class="keyword">new</span> DefaultExceptionHandler&lt;<span class="predefined-type">Integer</span>&gt;().andExit(<span class="integer">567</span>),
         args);
 <span class="comment">// do something with result...</span></code></pre>
 </div>
@@ -1043,7 +1006,7 @@ MyResult result = commandLine.parseWithHandler(
 <div id="footer">
 <div id="footer-text">
 Version 3.0.0-alpha-1-SNAPSHOT<br>
-Last updated 2018-03-18 11:51:22 JST
+Last updated 2018-04-02 23:31:47 JST
 </div>
 </div>
 </body>
