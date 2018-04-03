@@ -26,6 +26,7 @@ No features have been promoted in this picocli release.
 
 [#318] Split model IBinding into IGetter and ISetter
 [#320] Rename parser config `maxArityIsMaxTotalParams` to `arityRestrictsCumulativeSize`
+[#263] Bugfix: positional parameter defaults were not shown in usage help message. Thanks to [ymenager](https://github.com/ymenager) for the bug report.
 
 
 ## <a name="3.0.0-alpha-4-deprecated"></a> Deprecations

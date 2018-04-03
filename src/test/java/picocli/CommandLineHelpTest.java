@@ -62,7 +62,7 @@ public class CommandLineHelpTest {
     }
 
     @Test
-    public void testShowDefaultValuesDemo() throws Exception {
+    public void testShowDefaultValuesDemo() {
         @Command(showDefaultValues = true)
         class FineGrainedDefaults {
             @Option(names = "-a", description = "ALWAYS shown even if null", showDefaultValue = ALWAYS)
@@ -89,7 +89,7 @@ public class CommandLineHelpTest {
     }
 
     @Test
-    public void testCommandWithoutShowDefaultValuesOptionOnDemandNullValue_hidesDefault() throws Exception {
+    public void testCommandWithoutShowDefaultValuesOptionOnDemandNullValue_hidesDefault() {
         @Command()
         class Params {
             @Option(names = {"-f", "--file"}, required = true, description = "the file to use") File file;
@@ -103,7 +103,7 @@ public class CommandLineHelpTest {
     }
 
     @Test
-    public void testCommandWithoutShowDefaultValuesOptionOnDemandNonNullValue_hidesDefault() throws Exception {
+    public void testCommandWithoutShowDefaultValuesOptionOnDemandNonNullValue_hidesDefault() {
         @Command()
         class Params {
             @Option(names = {"-f", "--file"}, required = true, description = "the file to use") File file = new File("/tmp/file");
@@ -117,7 +117,7 @@ public class CommandLineHelpTest {
     }
 
     @Test
-    public void testCommandWithoutShowDefaultValuesOptionAlwaysNullValue_showsNullDefault() throws Exception {
+    public void testCommandWithoutShowDefaultValuesOptionAlwaysNullValue_showsNullDefault() {
         @Command()
         class Params {
             @Option(names = {"-f", "--file"}, required = true, description = "the file to use", showDefaultValue = Help.Visibility.ALWAYS)
@@ -131,7 +131,7 @@ public class CommandLineHelpTest {
     }
 
     @Test
-    public void testCommandWithoutShowDefaultValuesOptionAlwaysNonNullValue_showsDefault() throws Exception {
+    public void testCommandWithoutShowDefaultValuesOptionAlwaysNonNullValue_showsDefault() {
         @Command()
         class Params {
             @Option(names = {"-f", "--file"}, required = true, description = "the file to use", showDefaultValue = Help.Visibility.ALWAYS)
@@ -145,7 +145,7 @@ public class CommandLineHelpTest {
     }
 
     @Test
-    public void testCommandShowDefaultValuesOptionOnDemandNullValue_hidesDefault() throws Exception {
+    public void testCommandShowDefaultValuesOptionOnDemandNullValue_hidesDefault() {
         @Command(showDefaultValues = true)
         class Params {
             @Option(names = {"-f", "--file"}, required = true, description = "the file to use") File file;
@@ -159,7 +159,7 @@ public class CommandLineHelpTest {
     }
 
     @Test
-    public void testCommandShowDefaultValuesOptionNeverNullValue_hidesDefault() throws Exception {
+    public void testCommandShowDefaultValuesOptionNeverNullValue_hidesDefault() {
         @Command(showDefaultValues = true)
         class Params {
             @Option(names = {"-f", "--file"}, required = true, description = "the file to use") File file;
@@ -173,7 +173,7 @@ public class CommandLineHelpTest {
     }
 
     @Test
-    public void testCommandShowDefaultValuesOptionAlwaysNullValue_showsNullDefault() throws Exception {
+    public void testCommandShowDefaultValuesOptionAlwaysNullValue_showsNullDefault() {
         @Command(showDefaultValues = true)
         class Params {
             @Option(names = {"-f", "--file"}, required = true, description = "the file to use") File file;
@@ -188,7 +188,7 @@ public class CommandLineHelpTest {
     }
 
     @Test
-    public void testCommandShowDefaultValuesOptionOnDemandNonNullValue_showsDefault() throws Exception {
+    public void testCommandShowDefaultValuesOptionOnDemandNonNullValue_showsDefault() {
         @Command(showDefaultValues = true)
         class Params {
             @Option(names = {"-f", "--file"}, required = true, description = "the file to use")
@@ -206,7 +206,7 @@ public class CommandLineHelpTest {
     }
 
     @Test
-    public void testCommandShowDefaultValuesOptionNeverNonNullValue_hidesDefault() throws Exception {
+    public void testCommandShowDefaultValuesOptionNeverNonNullValue_hidesDefault() {
         @Command(showDefaultValues = true)
         class Params {
             @Option(names = {"-f", "--file"}, required = true, description = "the file to use")
@@ -223,7 +223,7 @@ public class CommandLineHelpTest {
     }
 
     @Test
-    public void testCommandShowDefaultValuesOptionAlwaysNonNullValue_hidesDefault() throws Exception {
+    public void testCommandShowDefaultValuesOptionAlwaysNonNullValue_hidesDefault() {
         @Command(showDefaultValues = true)
         class Params {
             @Option(names = {"-f", "--file"}, required = true, description = "the file to use")
@@ -241,7 +241,7 @@ public class CommandLineHelpTest {
     }
 
     @Test
-    public void testCommandShowDefaultValuesOptionOnDemandArrayField() throws Exception {
+    public void testCommandShowDefaultValuesOptionOnDemandArrayField() {
         @Command(showDefaultValues = true)
         class Params {
             @Option(names = {"-x", "--array"}, required = true, description = "the array")
@@ -259,7 +259,7 @@ public class CommandLineHelpTest {
     }
 
     @Test
-    public void testCommandShowDefaultValuesOptionNeverArrayField_hidesDefault() throws Exception {
+    public void testCommandShowDefaultValuesOptionNeverArrayField_hidesDefault() {
         @Command(showDefaultValues = true)
         class Params {
             @Option(names = {"-x", "--array"}, required = true, description = "the array")
@@ -276,7 +276,7 @@ public class CommandLineHelpTest {
     }
 
     @Test
-    public void testCommandShowDefaultValuesOptionAlwaysNullArrayField_showsNull() throws Exception {
+    public void testCommandShowDefaultValuesOptionAlwaysNullArrayField_showsNull() {
         @Command(showDefaultValues = true)
         class Params {
             @Option(names = {"-x", "--array"}, required = true, description = "the array")
@@ -293,7 +293,197 @@ public class CommandLineHelpTest {
     }
 
     @Test
-    public void testUsageSeparatorWithoutDefault() throws Exception {
+    public void testOptionSpec_defaultValue_overwritesInitialValue() {
+        @Command(showDefaultValues = true)
+        class Params {
+            @Option(names = {"-x", "--array"}, required = true, paramLabel = "INT", description = "the array")
+            int[] array = {1, 5, 11, 23};
+        }
+        CommandLine cmd = new CommandLine(new Params());
+        OptionSpec x = cmd.getCommandSpec().posixOptionsMap().get('x').toBuilder().defaultValue("5,4,3,2,1").splitRegex(",").build();
+
+        cmd = new CommandLine(CommandSpec.create().addOption(x));
+        cmd.getCommandSpec().usageMessage().showDefaultValues(true);
+        String result = usageString(cmd, Help.Ansi.OFF);
+        assertEquals(format("" +
+                "Usage: <main class> -x=INT[,INT]... [-x=INT[,INT]...]...%n" +
+                "  -x, --array=INT[,INT]...    the array%n" +
+                "                                Default: 5,4,3,2,1%n"), result);
+    }
+
+    @Test
+    public void testCommandWithoutShowDefaultValuesPositionalOnDemandNullValue_hidesDefault() {
+        @Command()
+        class Params {
+            @Parameters(index = "0", description = "the file to use") File file;
+            @Parameters(index = "1", description = "another option", showDefaultValue = Help.Visibility.ON_DEMAND) File other;
+        }
+        String result = usageString(new Params(), Help.Ansi.OFF);
+        assertEquals(format("" +
+                "Usage: <main class> <file> <other>%n" +
+                "      <file>                  the file to use%n" +
+                "      <other>                 another option%n"), result);
+    }
+
+    @Test
+    public void testCommandWithoutShowDefaultValuesPositionalOnDemandNonNullValue_hidesDefault() {
+        @Command()
+        class Params {
+            @Parameters(index = "0", description = "the file to use") File file = new File("/tmp/file");
+            @Parameters(index = "1", description = "another option", showDefaultValue = Help.Visibility.ON_DEMAND) File other = new File("/tmp/other");
+        }
+        String result = usageString(new Params(), Help.Ansi.OFF);
+        assertEquals(format("" +
+                "Usage: <main class> <file> <other>%n" +
+                "      <file>                  the file to use%n" +
+                "      <other>                 another option%n"), result);
+    }
+
+    @Test
+    public void testCommandWithoutShowDefaultValuesPositionalAlwaysNullValue_showsNullDefault() {
+        @Command()
+        class Params {
+            @Parameters(index = "0", description = "the file to use", showDefaultValue = Help.Visibility.ALWAYS)
+            File file;
+        }
+        String result = usageString(new Params(), Help.Ansi.OFF);
+        assertEquals(format("" +
+                "Usage: <main class> <file>%n" +
+                "      <file>                  the file to use%n" +
+                "                                Default: null%n"), result);
+    }
+
+    @Test
+    public void testCommandWithoutShowDefaultValuesPositionalAlwaysNonNullValue_showsDefault() {
+        @Command()
+        class Params {
+            @Parameters(index = "0", description = "the file to use", showDefaultValue = Help.Visibility.ALWAYS)
+            File file = new File("/tmp/file");
+        }
+        String result = usageString(new Params(), Help.Ansi.OFF);
+        assertEquals(format("" +
+                "Usage: <main class> <file>%n" +
+                "      <file>                  the file to use%n" +
+                "                                Default: %s%n", new File("/tmp/file")), result);
+    }
+
+    @Test
+    public void testCommandShowDefaultValuesPositionalOnDemandNullValue_hidesDefault() {
+        @Command(showDefaultValues = true)
+        class Params {
+            @Parameters(index = "0", description = "the file to use") File file;
+            @Parameters(index = "1", description = "another option", showDefaultValue = Help.Visibility.ON_DEMAND) File other;
+        }
+        String result = usageString(new Params(), Help.Ansi.OFF);
+        assertEquals(format("" +
+                "Usage: <main class> <file> <other>%n" +
+                "      <file>                  the file to use%n" +
+                "      <other>                 another option%n"), result);
+    }
+
+    @Test
+    public void testCommandShowDefaultValuesPositionalNeverNullValue_hidesDefault() {
+        @Command(showDefaultValues = true)
+        class Params {
+            @Parameters(index = "0", description = "the file to use") File file;
+            @Parameters(index = "1", description = "another option", showDefaultValue = Help.Visibility.NEVER) File other;
+        }
+        String result = usageString(new Params(), Help.Ansi.OFF);
+        assertEquals(format("" +
+                "Usage: <main class> <file> <other>%n" +
+                "      <file>                  the file to use%n" +
+                "      <other>                 another option%n"), result);
+    }
+
+    @Test
+    public void testCommandShowDefaultValuesPositionalAlwaysNullValue_showsNullDefault() {
+        @Command(showDefaultValues = true)
+        class Params {
+            @Parameters(index = "0", description = "the file to use") File file;
+            @Parameters(index = "1", description = "another option", showDefaultValue = Help.Visibility.ALWAYS) File other;
+        }
+        String result = usageString(new Params(), Help.Ansi.OFF);
+        assertEquals(format("" +
+                "Usage: <main class> <file> <other>%n" +
+                "      <file>                  the file to use%n" +
+                "      <other>                 another option%n" +
+                "                                Default: null%n"), result);
+    }
+
+    @Test
+    public void testCommandShowDefaultValuesPositionalOnDemandNonNullValue_showsDefault() {
+        @Command(showDefaultValues = true)
+        class Params {
+            @Parameters(index = "0", description = "the file to use")
+            File file = new File("theDefault.txt");
+            @Parameters(index = "1", description = "another option", showDefaultValue = Help.Visibility.ON_DEMAND)
+            File other = new File("other.txt");
+        }
+        String result = usageString(new Params(), Help.Ansi.OFF);
+        assertEquals(format("" +
+                "Usage: <main class> <file> <other>%n" +
+                "      <file>                  the file to use%n" +
+                "                                Default: theDefault.txt%n" +
+                "      <other>                 another option%n" +
+                "                                Default: other.txt%n"), result);
+    }
+
+    @Test
+    public void testCommandShowDefaultValuesPositionalNeverNonNullValue_hidesDefault() {
+        @Command(showDefaultValues = true)
+        class Params {
+            @Parameters(index = "0", description = "the file to use")
+            File file = new File("theDefault.txt");
+            @Parameters(index = "1", description = "another option", showDefaultValue = Help.Visibility.NEVER)
+            File other = new File("other.txt");
+        }
+        String result = usageString(new Params(), Help.Ansi.OFF);
+        assertEquals(format("" +
+                "Usage: <main class> <file> <other>%n" +
+                "      <file>                  the file to use%n" +
+                "                                Default: theDefault.txt%n" +
+                "      <other>                 another option%n"), result);
+    }
+
+    @Test
+    public void testCommandShowDefaultValuesPositionalAlwaysNonNullValue_hidesDefault() {
+        @Command(showDefaultValues = true)
+        class Params {
+            @Parameters(index = "0", description = "the file to use")
+            File file = new File("theDefault.txt");
+            @Parameters(index = "1", description = "another option", showDefaultValue = Help.Visibility.ALWAYS)
+            File other = new File("other.txt");
+        }
+        String result = usageString(new Params(), Help.Ansi.OFF);
+        assertEquals(format("" +
+                "Usage: <main class> <file> <other>%n" +
+                "      <file>                  the file to use%n" +
+                "                                Default: theDefault.txt%n" +
+                "      <other>                 another option%n" +
+                "                                Default: other.txt%n"), result);
+    }
+
+    @Test
+    public void testPositionalParamSpec_defaultValue_overwritesInitialValue() {
+        @Command(showDefaultValues = true)
+        class Params {
+            @Parameters(paramLabel = "INT", description = "the array")
+            int[] value = {1, 5, 11, 23};
+        }
+        CommandLine cmd = new CommandLine(new Params());
+        PositionalParamSpec x = cmd.getCommandSpec().positionalParameters().get(0).toBuilder().defaultValue("5,4,3,2,1").splitRegex(",").build();
+
+        cmd = new CommandLine(CommandSpec.create().add(x));
+        cmd.getCommandSpec().usageMessage().showDefaultValues(true);
+        String result = usageString(cmd, Help.Ansi.OFF);
+        assertEquals(format("" +
+                "Usage: <main class> [INT[,INT]...]...%n" +
+                "      [INT[,INT]...]...       the array%n" +
+                "                                Default: 5,4,3,2,1%n"), result);
+    }
+
+    @Test
+    public void testUsageSeparatorWithoutDefault() {
         @Command()
         class Params {
             @Option(names = {"-f", "--file"}, required = true, description = "the file to use") File file = new File("def.txt");
@@ -305,7 +495,7 @@ public class CommandLineHelpTest {
     }
 
     @Test
-    public void testUsageSeparator() throws Exception {
+    public void testUsageSeparator() {
         @Command(showDefaultValues = true)
         class Params {
             @Option(names = {"-f", "--file"}, required = true, description = "the file to use") File file = new File("def.txt");
@@ -318,7 +508,7 @@ public class CommandLineHelpTest {
     }
 
     @Test
-    public void testUsageParamLabels() throws Exception {
+    public void testUsageParamLabels() {
         @Command()
         class ParamLabels {
             @Option(names = "-P",    paramLabel = "KEY=VALUE", type  = {String.class, String.class},
@@ -339,7 +529,7 @@ public class CommandLineHelpTest {
     }
 
     @Test
-    public void testUsageParamLabelsWithLongMapOptionName() throws Exception {
+    public void testUsageParamLabelsWithLongMapOptionName() {
         @Command()
         class ParamLabels {
             @Option(names = {"-P", "--properties"},
@@ -1721,7 +1911,7 @@ public class CommandLineHelpTest {
     }
 
     @Test
-    public void testSynopsis_firstLineLengthAdjustedForSynopsisHeading() throws Exception {
+    public void testSynopsis_firstLineLengthAdjustedForSynopsisHeading() {
         //Usage: small-test-program [-acorv!?] [--version] [-h <number>] [-p <file>|<folder>] [-d
 //                 <folder> [<folder>]] [-i <includePattern>
 //                 [<includePattern>...]]
@@ -2166,7 +2356,7 @@ public class CommandLineHelpTest {
     }
 
     @Test
-    public void testSubclassedCommandHelp() throws Exception {
+    public void testSubclassedCommandHelp() {
         @Command(name = "parent", description = "parent description")
         class ParentOption {
         }
@@ -2204,37 +2394,37 @@ public class CommandLineHelpTest {
     }
 
     @Test
-    public void testUsageMainCommand_NoAnsi() throws Exception {
+    public void testUsageMainCommand_NoAnsi() {
         String actual = usageString(Demo.mainCommand(), Help.Ansi.OFF);
         assertEquals(String.format(Demo.EXPECTED_USAGE_MAIN), actual);
     }
 
     @Test
-    public void testUsageMainCommand_ANSI() throws Exception {
+    public void testUsageMainCommand_ANSI() {
         String actual = usageString(Demo.mainCommand(), Help.Ansi.ON);
         assertEquals(Help.Ansi.ON.new Text(String.format(Demo.EXPECTED_USAGE_MAIN_ANSI)), actual);
     }
 
     @Test
-    public void testUsageSubcommandGitStatus_NoAnsi() throws Exception {
+    public void testUsageSubcommandGitStatus_NoAnsi() {
         String actual = usageString(new Demo.GitStatus(), Help.Ansi.OFF);
         assertEquals(String.format(Demo.EXPECTED_USAGE_GITSTATUS), actual);
     }
 
     @Test
-    public void testUsageSubcommandGitStatus_ANSI() throws Exception {
+    public void testUsageSubcommandGitStatus_ANSI() {
         String actual = usageString(new Demo.GitStatus(), Help.Ansi.ON);
         assertEquals(Help.Ansi.ON.new Text(String.format(Demo.EXPECTED_USAGE_GITSTATUS_ANSI)), actual);
     }
 
     @Test
-    public void testUsageSubcommandGitCommit_NoAnsi() throws Exception {
+    public void testUsageSubcommandGitCommit_NoAnsi() {
         String actual = usageString(new Demo.GitCommit(), Help.Ansi.OFF);
         assertEquals(String.format(Demo.EXPECTED_USAGE_GITCOMMIT), actual);
     }
 
     @Test
-    public void testUsageSubcommandGitCommit_ANSI() throws Exception {
+    public void testUsageSubcommandGitCommit_ANSI() {
         String actual = usageString(new Demo.GitCommit(), Help.Ansi.ON);
         assertEquals(Help.Ansi.ON.new Text(String.format(Demo.EXPECTED_USAGE_GITCOMMIT_ANSI)), actual);
     }
@@ -2576,59 +2766,59 @@ public class CommandLineHelpTest {
     }
 
     @Test
-    public void testCommandLine_printVersionInfo_printsSinglePlainTextString() throws Exception {
+    public void testCommandLine_printVersionInfo_printsSinglePlainTextString() {
         @Command(version = "1.0") class Versioned {}
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        new CommandLine(new Versioned()).printVersionHelp(new PrintStream(baos, true, "UTF8"), Help.Ansi.OFF);
-        String result = baos.toString("UTF8");
+        new CommandLine(new Versioned()).printVersionHelp(new PrintStream(baos, true), Help.Ansi.OFF);
+        String result = baos.toString();
         assertEquals(String.format("1.0%n"), result);
     }
 
     @Test
-    public void testCommandLine_printVersionInfo_printsArrayOfPlainTextStrings() throws Exception {
+    public void testCommandLine_printVersionInfo_printsArrayOfPlainTextStrings() {
         @Command(version = {"Versioned Command 1.0", "512-bit superdeluxe", "(c) 2017"}) class Versioned {}
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        new CommandLine(new Versioned()).printVersionHelp(new PrintStream(baos, true, "UTF8"), Help.Ansi.OFF);
-        String result = baos.toString("UTF8");
+        new CommandLine(new Versioned()).printVersionHelp(new PrintStream(baos, true), Help.Ansi.OFF);
+        String result = baos.toString();
         assertEquals(String.format("Versioned Command 1.0%n512-bit superdeluxe%n(c) 2017%n"), result);
     }
 
     @Test
-    public void testCommandLine_printVersionInfo_printsSingleStringWithMarkup() throws Exception {
+    public void testCommandLine_printVersionInfo_printsSingleStringWithMarkup() {
         @Command(version = "@|red 1.0|@") class Versioned {}
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        new CommandLine(new Versioned()).printVersionHelp(new PrintStream(baos, true, "UTF8"), Help.Ansi.ON);
-        String result = baos.toString("UTF8");
+        new CommandLine(new Versioned()).printVersionHelp(new PrintStream(baos, true), Help.Ansi.ON);
+        String result = baos.toString();
         assertEquals(String.format("\u001B[31m1.0\u001B[39m\u001B[0m%n"), result);
     }
 
     @Test
-    public void testCommandLine_printVersionInfo_printsArrayOfStringsWithMarkup() throws Exception {
+    public void testCommandLine_printVersionInfo_printsArrayOfStringsWithMarkup() {
         @Command(version = {
                 "@|yellow Versioned Command 1.0|@",
                 "@|blue Build 12345|@",
                 "@|red,bg(white) (c) 2017|@" })
         class Versioned {}
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        new CommandLine(new Versioned()).printVersionHelp(new PrintStream(baos, true, "UTF8"), Help.Ansi.ON);
-        String result = baos.toString("UTF8");
+        new CommandLine(new Versioned()).printVersionHelp(new PrintStream(baos, true), Help.Ansi.ON);
+        String result = baos.toString();
         assertEquals(String.format("" +
                 "\u001B[33mVersioned Command 1.0\u001B[39m\u001B[0m%n" +
                 "\u001B[34mBuild 12345\u001B[39m\u001B[0m%n" +
                 "\u001B[31m\u001B[47m(c) 2017\u001B[49m\u001B[39m\u001B[0m%n"), result);
     }
     @Test
-    public void testCommandLine_printVersionInfo_formatsArguments() throws Exception {
+    public void testCommandLine_printVersionInfo_formatsArguments() {
         @Command(version = {"First line %1$s", "Second line %2$s", "Third line %s %s"}) class Versioned {}
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        PrintStream ps = new PrintStream(baos, true, "UTF8");
+        PrintStream ps = new PrintStream(baos, true);
         new CommandLine(new Versioned()).printVersionHelp(ps, Help.Ansi.OFF, "VALUE1", "VALUE2", "VALUE3");
-        String result = baos.toString("UTF8");
+        String result = baos.toString();
         assertEquals(String.format("First line VALUE1%nSecond line VALUE2%nThird line VALUE1 VALUE2%n"), result);
     }
 
     @Test
-    public void testCommandLine_printVersionInfo_withMarkupAndParameterContainingMarkup() throws Exception {
+    public void testCommandLine_printVersionInfo_withMarkupAndParameterContainingMarkup() {
         @Command(version = {
                 "@|yellow Versioned Command 1.0|@",
                 "@|blue Build 12345|@%1$s",
@@ -2649,7 +2839,7 @@ public class CommandLineHelpTest {
     }
 
     @Test
-    public void testCommandLine_printVersionInfo_fromAnnotation_withMarkupAndParameterContainingMarkup() throws Exception {
+    public void testCommandLine_printVersionInfo_fromAnnotation_withMarkupAndParameterContainingMarkup() {
         @Command(versionProvider = MarkupVersionProvider.class)
         class Versioned {}
 
@@ -2658,7 +2848,7 @@ public class CommandLineHelpTest {
     }
 
     @Test
-    public void testCommandLine_printVersionInfo_usesProviderIfBothProviderAndStaticVersionInfoExist() throws Exception {
+    public void testCommandLine_printVersionInfo_usesProviderIfBothProviderAndStaticVersionInfoExist() {
         @Command(versionProvider = MarkupVersionProvider.class, version = "static version is ignored")
         class Versioned {}
 
@@ -2666,12 +2856,12 @@ public class CommandLineHelpTest {
         verifyVersionWithMarkup(commandLine);
     }
 
-    private void verifyVersionWithMarkup(CommandLine commandLine) throws UnsupportedEncodingException {
+    private void verifyVersionWithMarkup(CommandLine commandLine) {
         String[] args = {"@|bold VALUE1|@", "@|underline VALUE2|@", "VALUE3"};
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        PrintStream ps = new PrintStream(baos, true, "UTF8");
+        PrintStream ps = new PrintStream(baos, true);
         commandLine.printVersionHelp(ps, Help.Ansi.ON, (Object[]) args);
-        String result = baos.toString("UTF8");
+        String result = baos.toString();
         assertEquals(String.format("" +
                 "\u001B[33mVersioned Command 1.0\u001B[39m\u001B[0m%n" +
                 "\u001B[34mBuild 12345\u001B[39m\u001B[0m\u001B[1mVALUE1\u001B[21m\u001B[0m%n" +
@@ -2679,7 +2869,7 @@ public class CommandLineHelpTest {
     }
 
     static class FailingVersionProvider implements IVersionProvider {
-        public String[] getVersion() throws Exception {
+        public String[] getVersion() {
             throw new IllegalStateException("sorry can't give you a version");
         }
     }
@@ -2719,7 +2909,7 @@ public class CommandLineHelpTest {
     }
 
     @Test
-    public void testMapFieldHelp() throws Exception {
+    public void testMapFieldHelp() {
         class App {
             @Parameters(arity = "2", split = "\\|",
                     paramLabel = "FIXTAG=VALUE",
@@ -2841,7 +3031,7 @@ public class CommandLineHelpTest {
     }
 
     @Test
-    public void testDemoUsage() throws Exception {
+    public void testDemoUsage() {
         String expected = String.format("" +
                 "       .__                    .__  .__%n" +
                 "______ |__| ____  ____   ____ |  | |__|%n" +
@@ -2894,7 +3084,7 @@ public class CommandLineHelpTest {
         }
     }
     @Test
-    public void testAutoHelpMixinUsageHelpOption() throws Exception {
+    public void testAutoHelpMixinUsageHelpOption() {
         @Command(mixinStandardHelpOptions = true) class App {}
 
         String[] helpOptions = {"-h", "--help"};
@@ -2914,7 +3104,7 @@ public class CommandLineHelpTest {
     }
 
     @Test
-    public void testAutoHelpMixinVersionHelpOption() throws Exception {
+    public void testAutoHelpMixinVersionHelpOption() {
         @Command(mixinStandardHelpOptions = true, version = "1.2.3") class App {}
 
         String[] versionOptions = {"-V", "--version"};
@@ -2931,7 +3121,7 @@ public class CommandLineHelpTest {
     }
 
     @Test
-    public void testAutoHelpMixinUsageHelpSubcommandOnAppWithoutSubcommands() throws Exception {
+    public void testAutoHelpMixinUsageHelpSubcommandOnAppWithoutSubcommands() {
         @Command(mixinStandardHelpOptions = true, subcommands = HelpCommand.class) class App {}
 
         List<CommandLine> list = new CommandLine(new App()).parse("help");
@@ -2949,7 +3139,7 @@ public class CommandLineHelpTest {
     }
 
     @Test
-    public void testAutoHelpMixinRunHelpSubcommandOnAppWithoutSubcommands() throws Exception {
+    public void testAutoHelpMixinRunHelpSubcommandOnAppWithoutSubcommands() {
         @Command(mixinStandardHelpOptions = true, subcommands = HelpCommand.class)
         class App implements Runnable{ public void run(){}}
 
@@ -2965,7 +3155,7 @@ public class CommandLineHelpTest {
         assertEquals(expected, baos.toString());
     }
     @Test
-    public void testHelpSubcommandWithValidCommand() throws Exception {
+    public void testHelpSubcommandWithValidCommand() {
         @Command(subcommands = {Sub.class, HelpCommand.class}) class App implements Runnable{ public void run(){}}
 
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -2978,7 +3168,7 @@ public class CommandLineHelpTest {
     }
 
     @Test
-    public void testHelpSubcommandWithInvalidCommand() throws Exception {
+    public void testHelpSubcommandWithInvalidCommand() {
         @Command(mixinStandardHelpOptions = true, subcommands = {Sub.class, HelpCommand.class})
         class App implements Runnable{ public void run(){}}
 
@@ -2997,7 +3187,7 @@ public class CommandLineHelpTest {
     }
 
     @Test
-    public void testHelpSubcommandWithHelpOption() throws Exception {
+    public void testHelpSubcommandWithHelpOption() {
         @Command(subcommands = {Sub.class, HelpCommand.class})
         class App implements Runnable{ public void run(){}}
 
@@ -3022,7 +3212,7 @@ public class CommandLineHelpTest {
     }
 
     @Test
-    public void testHelpSubcommandWithoutCommand() throws Exception {
+    public void testHelpSubcommandWithoutCommand() {
         @Command(mixinStandardHelpOptions = true, subcommands = {Sub.class, HelpCommand.class})
         class App implements Runnable{ public void run(){}}
 
@@ -3044,7 +3234,7 @@ public class CommandLineHelpTest {
     }
 
     @Test
-    public void testUsageTextWithHiddenSubcommand() throws Exception {
+    public void testUsageTextWithHiddenSubcommand() {
         @Command(name = "foo", description = "This is a visible subcommand") class Foo { }
         @Command(name = "bar", description = "This is a hidden subcommand", hidden = true) class Bar { }
         @Command(name = "app", subcommands = {Foo.class, Bar.class}) class App { }
@@ -3061,7 +3251,7 @@ public class CommandLineHelpTest {
     }
 
     @Test
-    public void testUsage_NoHeaderIfAllSubcommandHidden() throws Exception {
+    public void testUsage_NoHeaderIfAllSubcommandHidden() {
         @Command(name = "foo", description = "This is a foo sub-command", hidden = true) class Foo { }
         @Command(name = "bar", description = "This is a foo sub-command", hidden = true) class Bar { }
         @Command(name = "app", abbreviateSynopsis = true) class App { }
@@ -3079,7 +3269,7 @@ public class CommandLineHelpTest {
     }
 
     @Test
-    public void test282BrokenValidationWhenNoOptionsToCompareWith() throws Exception {
+    public void test282BrokenValidationWhenNoOptionsToCompareWith() {
         class App implements Runnable {
             @Parameters(paramLabel = "FILES", arity = "1..*", description = "List of files")
             private List<File> files = new ArrayList<File>();
@@ -3098,7 +3288,7 @@ public class CommandLineHelpTest {
     }
 
     @Test
-    public void test282ValidationWorksWhenOptionToCompareWithExists() throws Exception {
+    public void test282ValidationWorksWhenOptionToCompareWithExists() {
         class App implements Runnable {
             @Parameters(paramLabel = "FILES", arity = "1..*", description = "List of files")
             private List<File> files = new ArrayList<File>();
@@ -3221,7 +3411,7 @@ public class CommandLineHelpTest {
     }
 
     @Test
-    public void testWideUsageViaSystemProperty() throws Exception {
+    public void testWideUsageViaSystemProperty() {
         System.setProperty("picocli.usage.width", String.valueOf(120));
         try {
             String actual = usageString(new WideDescriptionApp(), Help.Ansi.OFF);
@@ -3232,7 +3422,7 @@ public class CommandLineHelpTest {
     }
 
     @Test
-    public void testWideUsage() throws Exception {
+    public void testWideUsage() {
         CommandLine cmd = new CommandLine(new WideDescriptionApp());
         cmd.setUsageHelpWidth(120);
         String actual = usageString(cmd, Help.Ansi.OFF);

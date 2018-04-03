@@ -3244,24 +3244,25 @@ public class CommandLine {
          * @since 3.0 */
         public abstract static class ArgSpec {
             // help-related fields
-            final boolean hidden;
-            final String paramLabel;
-            final String[] description;
-            final Help.Visibility showDefaultValue;
+            private final boolean hidden;
+            private final String paramLabel;
+            private final String[] description;
+            private final Help.Visibility showDefaultValue;
     
             // parser fields
-            final boolean required;
-            final String splitRegex;
-            final Class<?> type;
-            final Class<?>[] auxiliaryTypes;
-            final ITypeConverter<?>[] converters;
-            final Object defaultValue;
-            final IGetter getter;
-            final ISetter setter;
-            final List<String> rawStringValues = new ArrayList<String>();
-            final List<String> originalStringValues = new ArrayList<String>();
-            final Range arity;
-            String toString;
+            private final boolean required;
+            private final String splitRegex;
+            private final Class<?> type;
+            private final Class<?>[] auxiliaryTypes;
+            private final ITypeConverter<?>[] converters;
+            private final String defaultValue;
+            private final Object initialValue;
+            private final IGetter getter;
+            private final ISetter setter;
+            private final List<String> rawStringValues = new ArrayList<String>();
+            private final List<String> originalStringValues = new ArrayList<String>();
+            private final Range arity;
+            protected String toString;
     
             /** Constructs a new {@code ArgSpec}. */
             private ArgSpec(Builder builder) {
@@ -3273,6 +3274,7 @@ public class CommandLine {
                 required = builder.required;
                 hidden = builder.hidden;
                 defaultValue = builder.defaultValue;
+                initialValue = builder.initialValue;
                 toString = builder.toString;
                 getter = builder.getter;
                 setter = builder.setter;
@@ -3354,8 +3356,10 @@ public class CommandLine {
             /** Returns the type to convert the option or positional parameter to before {@linkplain #setValue(Object) setting} the value. */
             public Class<?> type()         { return type; }
     
-            /** Returns the default value of this option or positional parameter. */
-            public Object defaultValue()   { return defaultValue; }
+            /** Returns the default value of this option or positional parameter, before splitting and type conversion.
+             * A value of {@code null} means this option or positional parameter does not have a default. */
+            public String defaultValue()   { return defaultValue; }
+            Object initialValue()          { return initialValue; }
     
             /** Returns whether this option or positional parameter's default value should be shown in the usage help. */
             public Help.Visibility showDefaultValue() { return showDefaultValue; }
@@ -3398,6 +3402,14 @@ public class CommandLine {
              * @return the matched arguments as found on the command line: empty Strings for options without value, the
              *      values have not been {@linkplain #splitRegex() split}, and for map properties values may look like {@code "key=value"}*/
             public List<String> originalStringValues() { return Collections.unmodifiableList(originalStringValues); }
+
+            protected boolean showDefaultValue(CommandSpec commandSpec) {
+                if (showDefaultValue() == Help.Visibility.ALWAYS)   { return true; }
+                if (showDefaultValue() == Help.Visibility.NEVER)    { return false; }
+                if (initialValue == null && defaultValue() == null) { return false; }
+                boolean isBoolean = isBoolean(type());
+                return !isBoolean && commandSpec != null && commandSpec.usageMessage.showDefaultValues();
+            }
 
             /** Returns a string respresentation of this option or positional parameter. */
             public String toString() { return toString; }
@@ -3445,7 +3457,8 @@ public class CommandLine {
                 private Class<?> type;
                 private Class<?>[] auxiliaryTypes;
                 private ITypeConverter<?>[] converters;
-                private Object defaultValue;
+                private String defaultValue;
+                private Object initialValue;
                 private Help.Visibility showDefaultValue;
                 private String toString;
                 private IGetter getter = new ObjectBinding();
@@ -3508,9 +3521,14 @@ public class CommandLine {
                  * @param propertyType the type of this option or parameter. For multi-value options and positional parameters this can be an array, or a (sub-type of) Collection or Map. */
                 public T type(Class<?> propertyType)         { this.type = Assert.notNull(propertyType, "type"); return self(); }
     
-                /** Sets the default value of this option or positional parameter to the specified value, and returns this builder. */
-                public T defaultValue(Object defaultValue)   { this.defaultValue = defaultValue; return self(); }
-    
+                /** Sets the default value of this option or positional parameter to the specified value, and returns this builder.
+                 * Before parsing the command line, the result of {@linkplain #splitRegex() splitting} and {@linkplain #converters() type converting}
+                 * this default value is applied to the option or positional parameter. A value of {@code null} means no default. */
+                public T defaultValue(String defaultValue)   { this.defaultValue = defaultValue; return self(); }
+
+                /** Sets the initial value (for usage help) of this option or positional parameter to the specified value, and returns this builder. */
+                public T initialValue(Object initialValue)   { this.initialValue = initialValue; return self(); }
+
                 /** Sets the {@link IGetter} that is responsible for getting the value of this argument, and returns this builder. */
                 public T getter(IGetter getter)              { this.getter = getter; return self(); }
                 /** Sets the {@link ISetter} that is responsible for modifying the value of this argument, and returns this builder. */
@@ -3599,12 +3617,9 @@ public class CommandLine {
             /** Returns one or more option names. At least one option name is required.
              * @see Option#names() */
             public String[] names()       { return names.clone(); }
-    
-            private boolean showDefaultValue(CommandSpec commandSpec) {
-                if (showDefaultValue() == Help.Visibility.ALWAYS) { return true; }
-                if (showDefaultValue() == Help.Visibility.NEVER)  { return false; }
-                boolean isBoolean = !isMultiValue() && isBoolean(auxiliaryTypes()[0]);
-                return commandSpec != null && commandSpec.usageMessage().showDefaultValues() && defaultValue() != null && !help() && !versionHelp() && !usageHelp() && !isBoolean;
+
+            protected boolean showDefaultValue(CommandSpec commandSpec) {
+                return super.showDefaultValue(commandSpec) && !help() && !versionHelp() && !usageHelp();
             }
     
             /** Returns whether this option disables validation of the other arguments.
@@ -3724,7 +3739,7 @@ public class CommandLine {
             private PositionalParamSpec(Builder builder) {
                 super(builder);
                 index = builder.index == null ? Range.valueOf("*") : builder.index; 
-                capacity = builder.capacity == null ? Range.parameterCapacity(arity, index) : builder.capacity;
+                capacity = builder.capacity == null ? Range.parameterCapacity(arity(), index) : builder.capacity;
                 if (toString == null) { toString = "positional parameter[" + index() + "]"; }
             }
             /** Returns a new Builder initialized with the attributes from this {@code PositionalParamSpec}. Calling {@code build} immediately will return a copy of this {@code PositionalParamSpec}.
@@ -3739,14 +3754,7 @@ public class CommandLine {
             public Range index()            { return index; }
             private Range capacity()        { return capacity; }
             public static Builder builder() { return new Builder(); }
-            
-            private boolean showDefaultValue(CommandSpec commandSpec) {
-                if (showDefaultValue() == Help.Visibility.ALWAYS) { return true; }
-                if (showDefaultValue() == Help.Visibility.NEVER)  { return false; }
-                boolean isBoolean = !isMultiValue() && isBoolean(auxiliaryTypes()[0]);
-                return commandSpec != null && commandSpec.usageMessage.showDefaultValues() && defaultValue() != null && !isBoolean;
-            }
-    
+
             public int hashCode() {
                 return super.hashCode()
                         + 37 * Assert.hashCode(capacity)
@@ -4072,7 +4080,7 @@ public class CommandLine {
             private static void initCommon(ArgSpec.Builder<?> builder, Object scope, Field field) {
                 field.setAccessible(true);
                 builder.type(field.getType()); // field type
-                builder.defaultValue(getDefaultValue(scope, field));
+                builder.initialValue(getInitialValue(scope, field));
                 builder.withToString(abbreviate("field " + field.toGenericString()));
                 FieldBinding binding = new FieldBinding(scope, field);
                 builder.getter(binding).setter(binding);
@@ -4119,19 +4127,19 @@ public class CommandLine {
                 }
                 return new Class<?>[] {propertyType}; // not a multi-value field
             }
-            static Object getDefaultValue(Object scope, Field field) {
-                Object defaultValue = null;
+            static Object getInitialValue(Object scope, Field field) {
+                Object result = null;
                 try {
-                    defaultValue = field.get(scope);
-                    if (defaultValue != null && field.getType().isArray()) {
+                    result = field.get(scope);
+                    if (result != null && field.getType().isArray()) {
                         StringBuilder sb = new StringBuilder();
-                        for (int i = 0; i < Array.getLength(defaultValue); i++) {
-                            sb.append(i > 0 ? ", " : "").append(Array.get(defaultValue, i));
+                        for (int i = 0; i < Array.getLength(result); i++) {
+                            sb.append(i > 0 ? ", " : "").append(Array.get(result, i));
                         }
-                        defaultValue = sb.insert(0, "[").append("]").toString();
+                        result = sb.insert(0, "[").append("]").toString();
                     }
                 } catch (Exception ex) { }
-                return defaultValue;
+                return result;
             }
         }
         private static class FieldBinding implements IGetter, ISetter {
@@ -5991,9 +5999,7 @@ public class CommandLine {
         public IOptionRenderer createDefaultOptionRenderer() {
             DefaultOptionRenderer result = new DefaultOptionRenderer();
             result.requiredMarker = String.valueOf(commandSpec.usageMessage().requiredOptionMarker());
-            if (commandSpec.usageMessage().showDefaultValues()) {
-                result.commandSpec = this.commandSpec;
-            }
+            result.commandSpec = this.commandSpec;
             return result;
         }
         /** Returns a new minimal OptionRenderer which converts {@link OptionSpec Options} to a single row with two columns
@@ -6019,6 +6025,7 @@ public class CommandLine {
         public IParameterRenderer createDefaultParameterRenderer() {
             DefaultParameterRenderer result = new DefaultParameterRenderer();
             result.requiredMarker = String.valueOf(commandSpec.usageMessage().requiredOptionMarker());
+            result.commandSpec = this.commandSpec;
             return result;
         }
         /** Returns a new minimal ParameterRenderer which converts {@linkplain PositionalParamSpec positional parameters}
@@ -6101,7 +6108,6 @@ public class CommandLine {
             public String requiredMarker = " ";
             public CommandSpec commandSpec;
             private String sep;
-            private boolean showDefault;
             public Text[][] render(OptionSpec option, IParamLabelRenderer paramLabelRenderer, ColorScheme scheme) {
                 String[] names = ShortestFirst.sort(option.names());
                 int shortOptionCount = names[0].length() == 2 ? 1 : 0;
@@ -6111,10 +6117,8 @@ public class CommandLine {
                 String longOption = join(names, shortOptionCount, names.length - shortOptionCount, ", ");
                 Text longOptionText = createLongOptionText(option, paramLabelRenderer, scheme, longOption);
 
-                showDefault = option.showDefaultValue(commandSpec);
-
                 String requiredOption = option.required() ? requiredMarker : "";
-                return renderDescriptionLines(option, scheme, requiredOption, shortOption, longOptionText, option.defaultValue());
+                return renderDescriptionLines(option, scheme, requiredOption, shortOption, longOptionText);
             }
 
             private Text createLongOptionText(OptionSpec option, IParamLabelRenderer renderer, ColorScheme scheme, String longOption) {
@@ -6137,19 +6141,11 @@ public class CommandLine {
                                                     ColorScheme scheme,
                                                     String requiredOption,
                                                     String shortOption,
-                                                    Text longOptionText,
-                                                    Object defaultValue) {
+                                                    Text longOptionText) {
                 Text EMPTY = Ansi.EMPTY_TEXT;
+                boolean[] showDefault = {option.showDefaultValue(commandSpec)};
                 List<Text[]> result = new ArrayList<Text[]>();
-                Text[] descriptionFirstLines = scheme.ansi().new Text(str(option.description(), 0)).splitLines();
-                if (descriptionFirstLines.length == 0 || (descriptionFirstLines.length == 1 && descriptionFirstLines[0].plain.length() == 0)) {
-                    if (showDefault) {
-                        descriptionFirstLines = new Text[]{scheme.ansi().new Text("  Default: " + defaultValue)};
-                        showDefault = false; // don't show the default value twice
-                    } else {
-                        descriptionFirstLines = new Text[]{ EMPTY };
-                    }
-                }
+                Text[] descriptionFirstLines = createDescriptionFirstLines(scheme, option, showDefault);
                 result.add(new Text[] { scheme.optionText(requiredOption), scheme.optionText(shortOption),
                         scheme.ansi().new Text(sep), longOptionText, descriptionFirstLines[0] });
                 for (int i = 1; i < descriptionFirstLines.length; i++) {
@@ -6161,9 +6157,7 @@ public class CommandLine {
                         result.add(new Text[] { EMPTY, EMPTY, EMPTY, EMPTY, line });
                     }
                 }
-                if (showDefault) {
-                    result.add(new Text[] { EMPTY, EMPTY, EMPTY, EMPTY, scheme.ansi().new Text("  Default: " + defaultValue) });
-                }
+                if (showDefault[0]) { addTrailingDefaultLine(result, option, scheme); }
                 return result.toArray(new Text[result.size()][]);
             }
         }
@@ -6215,14 +6209,15 @@ public class CommandLine {
          */
         static class DefaultParameterRenderer implements IParameterRenderer {
             public String requiredMarker = " ";
+            public CommandSpec commandSpec;
             public Text[][] render(PositionalParamSpec param, IParamLabelRenderer paramLabelRenderer, ColorScheme scheme) {
                 Text label = paramLabelRenderer.renderParameterLabel(param, scheme.ansi(), scheme.parameterStyles);
                 Text requiredParameter = scheme.parameterText(param.arity().min > 0 ? requiredMarker : "");
 
                 Text EMPTY = Ansi.EMPTY_TEXT;
+                boolean[] showDefault = {param.showDefaultValue(commandSpec)};
                 List<Text[]> result = new ArrayList<Text[]>();
-                Text[] descriptionFirstLines = scheme.ansi().new Text(str(param.description(), 0)).splitLines();
-                if (descriptionFirstLines.length == 0) { descriptionFirstLines = new Text[]{ EMPTY }; }
+                Text[] descriptionFirstLines = createDescriptionFirstLines(scheme, param, showDefault);
                 result.add(new Text[] { requiredParameter, EMPTY, EMPTY, label, descriptionFirstLines[0] });
                 for (int i = 1; i < descriptionFirstLines.length; i++) {
                     result.add(new Text[] { EMPTY, EMPTY, EMPTY, EMPTY, descriptionFirstLines[i] });
@@ -6233,9 +6228,31 @@ public class CommandLine {
                         result.add(new Text[] { EMPTY, EMPTY, EMPTY, EMPTY, line });
                     }
                 }
+                if (showDefault[0]) { addTrailingDefaultLine(result, param, scheme); }
                 return result.toArray(new Text[result.size()][]);
             }
         }
+
+        private static void addTrailingDefaultLine(List<Text[]> result, ArgSpec arg, ColorScheme scheme) {
+            Text EMPTY = Ansi.EMPTY_TEXT;
+            Object defaultValue = arg.defaultValue() == null ? arg.initialValue() : arg.defaultValue();
+            result.add(new Text[]{EMPTY, EMPTY, EMPTY, EMPTY, scheme.ansi().new Text("  Default: " + defaultValue)});
+        }
+
+        private static Text[] createDescriptionFirstLines(ColorScheme scheme, ArgSpec arg, boolean[] showDefault) {
+            Text[] result = scheme.ansi().new Text(str(arg.description(), 0)).splitLines();
+            if (result.length == 0 || (result.length == 1 && result[0].plain.length() == 0)) {
+                if (showDefault[0]) {
+                    Object defaultValue = arg.defaultValue() == null ? arg.initialValue() : arg.defaultValue();
+                    result = new Text[]{scheme.ansi().new Text("  Default: " + defaultValue)};
+                    showDefault[0] = false; // don't show the default value twice
+                } else {
+                    result = new Text[]{ Ansi.EMPTY_TEXT };
+                }
+            }
+            return result;
+        }
+
         /** When customizing online usage help for an option parameter or a positional parameter, a custom
          * {@code IParamLabelRenderer} can be used to render the parameter name or label to a String. */
         public interface IParamLabelRenderer {

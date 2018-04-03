@@ -19,6 +19,7 @@ import java.io.UnsupportedEncodingException;
 import java.sql.Types;
 import java.util.*;
 
+import org.junit.Ignore;
 import org.junit.Test;
 
 import picocli.CommandLine.*;
@@ -990,5 +991,51 @@ public class CommandLineModelTest {
         } catch (MaxValuesExceededException ok) {
             assertEquals("option '-x' max number of values (3) exceeded: 4 elements.", ok.getMessage());
         }
+    }
+
+    @Ignore("needs #315")
+    @Test
+    public void testOptionSpec_setsDefaultValue_ifNotMatched() {
+        CommandSpec cmd = CommandSpec.create().addOption(OptionSpec.builder("-x").defaultValue("123").type(int.class).build());
+
+        ParseResult parseResult = new CommandLine(cmd).parseArgs();
+        assertEquals(Integer.valueOf(123), parseResult.optionValue('x', -1));
+    }
+
+    @Ignore("needs #315")
+    @Test
+    public void testPositionalParamSpec_setsDefaultValue_ifNotMatched() {
+        CommandSpec cmd = CommandSpec.create().add(PositionalParamSpec.builder().defaultValue("123").type(int.class).build());
+
+        ParseResult parseResult = new CommandLine(cmd).parseArgs();
+        assertEquals(Integer.valueOf(123), parseResult.positionalValue(0, -1));
+    }
+
+    @Ignore("needs #315")
+    @Test
+    public void testOptionSpec_defaultValue_overwritesInitialValue() {
+        class Params {
+            @Option(names = "-x") int num = 12345;
+        }
+        CommandLine cmd = new CommandLine(new Params());
+        OptionSpec x = cmd.getCommandSpec().posixOptionsMap().get('x').toBuilder().defaultValue("54321").build();
+
+        cmd = new CommandLine(CommandSpec.create().addOption(x));
+        ParseResult parseResult = cmd.parseArgs();
+        assertEquals(Integer.valueOf(54321), parseResult.optionValue('x', -1));
+    }
+
+    @Ignore("needs #315")
+    @Test
+    public void testPositionalParamSpec_defaultValue_overwritesInitialValue() {
+        class Params {
+            @Parameters int num = 12345;
+        }
+        CommandLine cmd = new CommandLine(new Params());
+        PositionalParamSpec x = cmd.getCommandSpec().positionalParameters().get(0).toBuilder().defaultValue("54321").build();
+
+        cmd = new CommandLine(CommandSpec.create().add(x));
+        ParseResult parseResult = cmd.parseArgs();
+        assertEquals(Integer.valueOf(54321), parseResult.positionalValue(0, -1));
     }
 }
