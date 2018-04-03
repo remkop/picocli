@@ -26,7 +26,7 @@ No features have been promoted in this picocli release.
 
 [#318] API Change: Split model IBinding into IGetter and ISetter.
 [#320] API Change: Rename parser config `maxArityIsMaxTotalParams` to `arityRestrictsCumulativeSize`.
-[#216] Enhancement: Parsed values are no longer appended to, but instead replace, the default value of multi-value (array, Collection or Map) options and positional parameters. Thanks to [wiwie](https://github.com/wiwie) for the request.
+[#216] Enhancement: Parsed values now replace the default value of multi-value (array, Collection or Map) options and positional parameters instead of being appended to them. Thanks to [wiwie](https://github.com/wiwie) for the request.
 [#261] Enhancement: Options and positional parameters with a `defaultValue` are never required. Thanks to [ymenager](https://github.com/ymenager) for the request.
 [#315] Enhancement: Initialize ArgSpec value with `defaultValue` before parsing command line.
 [#263] Bugfix: positional parameter defaults were not shown in usage help message. Thanks to [ymenager](https://github.com/ymenager) for the bug report.
@@ -35,7 +35,7 @@ No features have been promoted in this picocli release.
 See [3.0.0-alpha-1](https://github.com/remkop/picocli/releases/tag/v3.0.0-alpha-1#3.0.0-alpha-1-deprecated)
 
 ## <a name="3.0.0-alpha-4-breaking-changes"></a> Potential breaking changes
-- Parsed values are no longer appended to, but instead replace, the default value of multi-value (array, Collection or Map) options and positional parameters.
+- Parsed values now replace the default value of multi-value (array, Collection or Map) options and positional parameters instead of being appended to them.
 - The `IBinding` interface introduced in v3.0.0-alpha-1 has been replaced with two functional interfaces `IGetter` and `ISetter`.
 - The `UnmatchedArgsBinding` factory methods introduced in v3.0.0-alpha-1 have been replaced with `forStringArrayConsumer` and `forStringCollectionSupplier`. 
 
