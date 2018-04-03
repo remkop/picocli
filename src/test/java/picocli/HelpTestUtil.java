@@ -21,7 +21,6 @@ import picocli.CommandLine.Help.Ansi.Text;
 
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
-import java.io.UnsupportedEncodingException;
 
 import static org.junit.Assert.assertEquals;
 
@@ -31,31 +30,31 @@ public class HelpTestUtil {
         System.setProperty("picocli.trace", level);
     }
 
-    public static String usageString(Object annotatedObject, Ansi ansi) throws UnsupportedEncodingException {
+    public static String usageString(Object annotatedObject, Ansi ansi) {
         return usageString(new CommandLine(annotatedObject), ansi);
     }
 
-    public static String usageString(CommandLine commandLine, Ansi ansi) throws UnsupportedEncodingException {
+    public static String usageString(CommandLine commandLine, Ansi ansi) {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        commandLine.usage(new PrintStream(baos, true, "UTF8"), ansi);
-        String result = baos.toString("UTF8");
+        commandLine.usage(new PrintStream(baos, true), ansi);
+        String result = baos.toString();
 
         if (ansi == Ansi.AUTO) {
             baos.reset();
-            commandLine.usage(new PrintStream(baos, true, "UTF8"));
-            assertEquals(result, baos.toString("UTF8"));
+            commandLine.usage(new PrintStream(baos, true));
+            assertEquals(result, baos.toString());
         } else if (ansi == Ansi.ON) {
             baos.reset();
-            commandLine.usage(new PrintStream(baos, true, "UTF8"), Help.defaultColorScheme(Ansi.ON));
-            assertEquals(result, baos.toString("UTF8"));
+            commandLine.usage(new PrintStream(baos, true), Help.defaultColorScheme(Ansi.ON));
+            assertEquals(result, baos.toString());
         }
         return result;
     }
 
-    public static String versionString(CommandLine commandLine, Ansi ansi, Object... params) throws UnsupportedEncodingException {
+    public static String versionString(CommandLine commandLine, Ansi ansi, Object... params) {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        commandLine.printVersionHelp(new PrintStream(baos, true, "UTF8"), ansi, params);
-        String result = baos.toString("UTF8");
+        commandLine.printVersionHelp(new PrintStream(baos, true), ansi, params);
+        String result = baos.toString();
         return result;
     }
 
