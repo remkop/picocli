@@ -2490,13 +2490,6 @@ public class CommandLineHelpTest {
         assertEquals("\u001B[1m--NoAnsiFormat\u001B[21m\u001B[0m", Help.Ansi.ON.new Text("@|bold --NoAnsiFormat|@").toString());
     }
 
-    @Ignore("Until nested styles are supported")
-    @Test
-    public void testTextConstructorWithNestedStyle() {
-        assertEquals("\u001B[1mfirst \u001B[2msecond\u001B[22m\u001B[21m", Help.Ansi.ON.new Text("@|bold first @|underline second|@|@").toString());
-        assertEquals("\u001B[1mfirst \u001B[4msecond\u001B[24m third\u001B[21m", Help.Ansi.ON.new Text("@|bold first @|underline second|@ third|@").toString());
-    }
-
     @Test
     public void testTextApply() {
         Text txt = Help.Ansi.ON.apply("--p", Arrays.<IStyle>asList(Style.fg_red, Style.bold));
