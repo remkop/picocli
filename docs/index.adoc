@@ -857,7 +857,7 @@ If picocli finds a field annotated with `@Unmatched`, it automatically sets `unm
 so no `UnmatchedArgumentException` is thrown when a command line argument cannot be assigned to an option or positional parameter.
 
 === Unknown Options
-A special case of unmatched input are arguments that look like options but don't match any of the defined options.
+A special case of unmatched input are arguments that resemble options but don't match any of the defined options.
 For example:
 
 [source,java]
@@ -874,7 +874,7 @@ The above defines options `-a` and `-b`, but what should the parser do with inpu
 The `-x` argument "looks like" an option but there is no `-x` option defined...
 
 One possibility is to silently accept such values as positional parameters but this is often not desirable.
-From version 1.0, picocli determines if the unmatched argument "looks like an option"
+From version 1.0, picocli determines if the unmatched argument "resembles an option"
 by comparing its leading characters to the prefix characters of the known options.
 
 When the unmatched value is similar to the known options, picocli throws an `UnmatchedArgumentException`
@@ -890,13 +890,14 @@ Arguments that are not considered similar to the known options are interpreted a
 ----
 The above input is treated by the parser as one positional parameter (`x`) followed by the `-a` option and its value.
 
-Use the <<Double dash (`--`),end-of-options delimiter>> (`--`) to ensure that arguments resembling an option are treated as positional parameters without `UnmatchedArgumentException`:
+Picocli 3.0 introduced a `CommandLine.setUnmatchedOptionsArePositionalParams(boolean)` method that can be used to
+force the parser to treat arguments resembling an option as positional parameters. For example:
 
 ----
-<command> -- -x -a AAA
+<command> -x -a AAA
 ----
-Everything following the `--` end-of-options delimiter is treated as positional parameters by the parser, so
-the above input is treated as three positional parameters.
+When `unmatchedOptionsArePositionalParams` is set to `true`, the unknown option `-x` is treated as a positional parameter.
+The next argument `-a` is recognized and processed as a known option like you would expect.
 
 === Stop At Unmatched
 From picocli 2.3, applications can call `CommandLine.setStopAtUnmatched(true)` to force the parser to stop interpreting

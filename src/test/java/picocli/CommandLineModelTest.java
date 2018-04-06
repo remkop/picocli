@@ -706,7 +706,7 @@ public class CommandLineModelTest {
     }
 
     @Test
-    public void testConversion() {
+    public void testConversion_TODO() {
         // TODO convertion with aux types (abstract field types, generic map with and without explicit type attribute etc)
     }
 

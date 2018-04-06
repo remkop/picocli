@@ -26,6 +26,7 @@ No features have been promoted in this picocli release.
 
 ## <a name="3.0.0-alpha-5-fixes"></a> Fixed issues
 
+- [#326] Enhancement and API Change: Add parser configuration to treat unmatched options as positional parameters.
 - [#283] Enhancement and API Change: Provide `getMissing` method on MissingParameterException to get a reference to the problematic options and positional parameters. Thanks to [jcapsule](https://github.com/jcapsule) for the suggestion.
 - [#323] Enhancement: Remove dependency on java.sql package: picocli should only require the java.base module when running in Java 9.
 - [#325] Enhancement: Allow custom type converter to map empty String to custom default value for empty options. Thanks to [jesselong](https://github.com/jesselong) for the suggestion.

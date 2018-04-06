@@ -710,6 +710,86 @@ public class CommandLineTest {
     }
 
     @Test
+    public void testParserUnmatchedOptionsArePositionalParams_BeforeSubcommandsAdded() {
+        @Command class TopLevel {}
+        CommandLine commandLine = new CommandLine(new TopLevel());
+        assertEquals(false, commandLine.isUnmatchedOptionsArePositionalParams());
+        commandLine.setUnmatchedOptionsArePositionalParams(true);
+        assertEquals(true, commandLine.isUnmatchedOptionsArePositionalParams());
+
+        int childCount = 0;
+        int grandChildCount = 0;
+        commandLine.addSubcommand("main", createNestedCommand());
+        for (CommandLine sub : commandLine.getSubcommands().values()) {
+            childCount++;
+            assertEquals("subcommand added afterwards is not impacted", false, sub.isUnmatchedOptionsArePositionalParams());
+            for (CommandLine subsub : sub.getSubcommands().values()) {
+                grandChildCount++;
+                assertEquals("subcommand added afterwards is not impacted", false, subsub.isUnmatchedOptionsArePositionalParams());
+            }
+        }
+        assertTrue(childCount > 0);
+        assertTrue(grandChildCount > 0);
+    }
+
+    @Test
+    public void testParserUnmatchedOptionsArePositionalParams_AfterSubcommandsAdded() {
+        @Command class TopLevel {}
+        CommandLine commandLine = new CommandLine(new TopLevel());
+        commandLine.addSubcommand("main", createNestedCommand());
+        assertEquals(false, commandLine.isUnmatchedOptionsArePositionalParams());
+        commandLine.setUnmatchedOptionsArePositionalParams(true);
+        assertEquals(true, commandLine.isUnmatchedOptionsArePositionalParams());
+
+        int childCount = 0;
+        int grandChildCount = 0;
+        for (CommandLine sub : commandLine.getSubcommands().values()) {
+            childCount++;
+            assertEquals("subcommand added before IS impacted", true, sub.isUnmatchedOptionsArePositionalParams());
+            for (CommandLine subsub : sub.getSubcommands().values()) {
+                grandChildCount++;
+                assertEquals("subsubcommand added before IS impacted", true, sub.isUnmatchedOptionsArePositionalParams());
+            }
+        }
+        assertTrue(childCount > 0);
+        assertTrue(grandChildCount > 0);
+    }
+
+    @Test
+    public void testParserUnmatchedOptionsArePositionalParams_False_unmatchedOptionThrowsUnmatchedArgumentException() {
+        class App {
+            @Option(names = "-a") String alpha;
+            @Parameters String[] remainder;
+        }
+        CommandLine app = new CommandLine(new App());
+        try {
+            app.parseArgs("-x", "-a", "AAA");
+            fail("Expected exception");
+        } catch (UnmatchedArgumentException ok) {
+            assertEquals("Unmatched argument [-x]", ok.getMessage());
+        }
+    }
+
+    @Test
+    public void testParserUnmatchedOptionsArePositionalParams_True_unmatchedOptionIsPositionalParam() {
+        class App {
+            @Option(names = "-a") String alpha;
+            @Parameters String[] remainder;
+        }
+        App app = new App();
+        CommandLine cmd = new CommandLine(app);
+        cmd.setUnmatchedOptionsArePositionalParams(true);
+        ParseResult parseResult = cmd.parseArgs("-x", "-a", "AAA");
+        assertTrue(parseResult.hasPositional(0));
+        assertArrayEquals(new String[]{"-x"}, parseResult.positionalValue(0, new String[0]));
+        assertTrue(parseResult.hasOption("a"));
+        assertEquals("AAA", parseResult.optionValue("a", null));
+
+        assertArrayEquals(new String[]{"-x"}, app.remainder);
+        assertEquals("AAA", app.alpha);
+    }
+
+    @Test
     public void testOptionsMixedWithParameters() {
         CompactFields compact = CommandLine.populateCommand(new CompactFields(), "-r -v p1 -o out p2".split(" "));
         verifyCompact(compact, true, true, "out", fileArray("p1", "p2"));

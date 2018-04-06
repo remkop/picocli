@@ -448,6 +448,35 @@ public class CommandLine {
         return this;
     }
 
+    /** Returns whether arguments on the command line that resemble an option should be treated as positional parameters.
+     * The default is {@code false} and the parser behaviour depends on {@link #isUnmatchedArgumentsAllowed()}.
+     * @return {@code true} arguments on the command line that resemble an option should be treated as positional parameters, {@code false} otherwise
+     * @see #getUnmatchedArguments()
+     * @since 3.0
+     */
+    public boolean isUnmatchedOptionsArePositionalParams() {
+        return getCommandSpec().parser().unmatchedOptionsArePositionalParams();
+    }
+
+    /** Sets whether arguments on the command line that resemble an option should be treated as positional parameters.
+     * <p>The specified setting will be registered with this {@code CommandLine} and the full hierarchy of its
+     * subcommands and nested sub-subcommands <em>at the moment this method is called</em>. Subcommands added
+     * later will have the default setting. To ensure a setting is applied to all
+     * subcommands, call the setter last, after adding subcommands.</p>
+     * @param newValue the new setting. When {@code true}, arguments on the command line that resemble an option should be treated as positional parameters.
+     * @return this {@code CommandLine} object, to allow method chaining
+     * @since 3.0
+     * @see #getUnmatchedArguments()
+     * @see #isUnmatchedArgumentsAllowed
+     */
+    public CommandLine setUnmatchedOptionsArePositionalParams(boolean newValue) {
+        getCommandSpec().parser().unmatchedOptionsArePositionalParams(newValue);
+        for (CommandLine command : getCommandSpec().subcommands().values()) {
+            command.setUnmatchedOptionsArePositionalParams(newValue);
+        }
+        return this;
+    }
+
     /** Returns whether the end user may specify arguments on the command line that are not matched to any option or parameter fields.
      * The default is {@code false} and a {@link UnmatchedArgumentException} is thrown if this happens.
      * When {@code true}, the last unmatched arguments are available via the {@link #getUnmatchedArguments()} method.
@@ -3220,6 +3249,7 @@ public class CommandLine {
             private boolean expandAtFiles = true;
             private boolean posixClusteredShortOptionsAllowed = true;
             private boolean arityRestrictsCumulativeSize = false;
+            private boolean unmatchedOptionsArePositionalParams = false;
 
             /** Returns the String to use as the separator between options and option parameters. {@code "="} by default,
              * initialized from {@link Command#separator()} if defined.*/
@@ -3232,6 +3262,7 @@ public class CommandLine {
             public boolean expandAtFiles()                     { return expandAtFiles; }
             public boolean posixClusteredShortOptionsAllowed() { return posixClusteredShortOptionsAllowed; }
             public boolean arityRestrictsCumulativeSize()      { return arityRestrictsCumulativeSize; }
+            public boolean unmatchedOptionsArePositionalParams() { return unmatchedOptionsArePositionalParams; }
 
             /** Sets the String to use as the separator between options and option parameters.
              * @return this ParserSpec for method chaining */
@@ -3241,8 +3272,9 @@ public class CommandLine {
             public ParserSpec overwrittenOptionsAllowed(boolean overwrittenOptionsAllowed) { this.overwrittenOptionsAllowed = overwrittenOptionsAllowed; return this; }
             public ParserSpec unmatchedArgumentsAllowed(boolean unmatchedArgumentsAllowed) { this.unmatchedArgumentsAllowed = unmatchedArgumentsAllowed; return this; }
             public ParserSpec expandAtFiles(boolean expandAtFiles)                         { this.expandAtFiles = expandAtFiles; return this; }
-            public ParserSpec posixClusteredShortOptionsAllowed(boolean posixClusteredShortOptionsAllowed) { this.posixClusteredShortOptionsAllowed = posixClusteredShortOptionsAllowed; return this; }
             public ParserSpec arityRestrictsCumulativeSize(boolean arityRestrictsCumulativeSize)   { this.arityRestrictsCumulativeSize = arityRestrictsCumulativeSize; return this; }
+            public ParserSpec posixClusteredShortOptionsAllowed(boolean posixClusteredShortOptionsAllowed) { this.posixClusteredShortOptionsAllowed = posixClusteredShortOptionsAllowed; return this; }
+            public ParserSpec unmatchedOptionsArePositionalParams(boolean unmatchedOptionsArePositionalParams) { this.unmatchedOptionsArePositionalParams = unmatchedOptionsArePositionalParams; return this; }
             void initSeparator(String value) { if (initializable(separator, value, DEFAULT_SEPARATOR)) {separator = value;} }
             public String toString() {
                 return String.format("posixClusteredShortOptionsAllowed=%s, stopAtPositional=%s, stopAtUnmatched=%s, separator=%s, overwrittenOptionsAllowed=%s, unmatchedArgumentsAllowed=%s, expandAtFiles=%s, arityRestrictsCumulativeSize=%s",
@@ -4663,6 +4695,10 @@ public class CommandLine {
             }
         }
         private boolean resemblesOption(String arg) {
+            if (commandSpec.parser().unmatchedOptionsArePositionalParams()) {
+                if (tracer.isDebug()) {tracer.debug("Parser is configured to treat all unmatched options as positional parameter%n", arg);}
+                return false;
+            }
             if (commandSpec.options().isEmpty()) {
                 boolean result = arg.startsWith("-");
                 if (tracer.isDebug()) {tracer.debug("%s %s an option%n", arg, (result ? "resembles" : "doesn't resemble"));}
