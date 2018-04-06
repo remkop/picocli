@@ -23,6 +23,7 @@ import java.lang.annotation.Target;
 import java.lang.reflect.Array;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.ParameterizedType;
@@ -38,11 +39,6 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.ByteOrder;
 import java.nio.charset.Charset;
-import java.sql.Connection;
-import java.sql.Driver;
-import java.sql.DriverManager;
-import java.sql.Time;
-import java.sql.Timestamp;
 import java.text.BreakIterator;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -4403,7 +4399,6 @@ public class CommandLine {
             converterRegistry.put(URI.class,           new BuiltIn.URIConverter());
             converterRegistry.put(URL.class,           new BuiltIn.URLConverter());
             converterRegistry.put(Date.class,          new BuiltIn.ISO8601DateConverter());
-            converterRegistry.put(Time.class,          new BuiltIn.ISO8601TimeConverter());
             converterRegistry.put(BigDecimal.class,    new BuiltIn.BigDecimalConverter());
             converterRegistry.put(BigInteger.class,    new BuiltIn.BigIntegerConverter());
             converterRegistry.put(Charset.class,       new BuiltIn.CharsetConverter());
@@ -4414,10 +4409,12 @@ public class CommandLine {
             converterRegistry.put(TimeZone.class,      new BuiltIn.TimeZoneConverter());
             converterRegistry.put(ByteOrder.class,     new BuiltIn.ByteOrderConverter());
             converterRegistry.put(Class.class,         new BuiltIn.ClassConverter());
-            converterRegistry.put(Connection.class,    new BuiltIn.ConnectionConverter());
-            converterRegistry.put(Driver.class,        new BuiltIn.DriverConverter());
-            converterRegistry.put(Timestamp.class,     new BuiltIn.TimestampConverter());
             converterRegistry.put(NetworkInterface.class, new BuiltIn.NetworkInterfaceConverter());
+
+            BuiltIn.ISO8601TimeConverter.registerIfAvailable(converterRegistry, tracer);
+            BuiltIn.registerIfAvailable(converterRegistry, tracer, "java.sql.Connection", "java.sql.DriverManager","getConnection", String.class);
+            BuiltIn.registerIfAvailable(converterRegistry, tracer, "java.sql.Driver", "java.sql.DriverManager","getDriver", String.class);
+            BuiltIn.registerIfAvailable(converterRegistry, tracer, "java.sql.Timestamp", "java.sql.Timestamp","valueOf", String.class);
 
             BuiltIn.registerIfAvailable(converterRegistry, tracer, "java.time.Duration", "parse", CharSequence.class);
             BuiltIn.registerIfAvailable(converterRegistry, tracer, "java.time.Instant", "parse", CharSequence.class);
@@ -5307,24 +5304,47 @@ public class CommandLine {
         }
         /** Converts text in any of the following formats to a {@code java.sql.Time}: {@code HH:mm}, {@code HH:mm:ss},
          * {@code HH:mm:ss.SSS}, {@code HH:mm:ss,SSS}. Other formats result in a ParameterException. */
-        static class ISO8601TimeConverter implements ITypeConverter<Time> {
-            public Time convert(String value) {
+        static class ISO8601TimeConverter implements ITypeConverter<Object> {
+            // Implementation note: use reflection so that picocli only requires the java.base module in Java 9.
+            private static final String FQCN = "java.sql.Time";
+            public Object convert(String value) {
                 try {
                     if (value.length() <= 5) {
-                        return new Time(new SimpleDateFormat("HH:mm").parse(value).getTime());
+                        return createTime(new SimpleDateFormat("HH:mm").parse(value).getTime());
                     } else if (value.length() <= 8) {
-                        return new Time(new SimpleDateFormat("HH:mm:ss").parse(value).getTime());
+                        return createTime(new SimpleDateFormat("HH:mm:ss").parse(value).getTime());
                     } else if (value.length() <= 12) {
                         try {
-                            return new Time(new SimpleDateFormat("HH:mm:ss.SSS").parse(value).getTime());
+                            return createTime(new SimpleDateFormat("HH:mm:ss.SSS").parse(value).getTime());
                         } catch (ParseException e2) {
-                            return new Time(new SimpleDateFormat("HH:mm:ss,SSS").parse(value).getTime());
+                            return createTime(new SimpleDateFormat("HH:mm:ss,SSS").parse(value).getTime());
                         }
                     }
                 } catch (ParseException ignored) {
                     // ignored because we throw a ParameterException below
                 }
                 throw new TypeConversionException("'" + value + "' is not a HH:mm[:ss[.SSS]] time");
+            }
+
+            private Object createTime(long epochMillis) {
+                try {
+                    Class<?> timeClass = Class.forName(FQCN);
+                    Constructor<?> constructor = timeClass.getDeclaredConstructor(long.class);
+                    return constructor.newInstance(epochMillis);
+                } catch (Exception e) {
+                    throw new TypeConversionException("Unable to create new java.sql.Time with long value " + epochMillis + ": " + e.getMessage());
+                }
+            }
+
+            public static void registerIfAvailable(Map<Class<?>, ITypeConverter<?>> registry, Tracer tracer) {
+                try {
+                    registry.put(Class.forName(FQCN), new ISO8601TimeConverter());
+                } catch (Exception e) {
+                    if (!traced.contains(FQCN)) {
+                        tracer.debug("Could not register converter for %s: %s%n", FQCN, e.toString());
+                    }
+                    traced.add(FQCN);
+                }
             }
         }
         static class BigDecimalConverter implements ITypeConverter<BigDecimal> {
@@ -5375,15 +5395,6 @@ public class CommandLine {
                 }
             }
         }
-        static class ConnectionConverter implements ITypeConverter<Connection> {
-            public Connection convert(String s) throws Exception { return DriverManager.getConnection(s); }
-        }
-        static class DriverConverter implements ITypeConverter<Driver> {
-            public Driver convert(String s) throws Exception { return DriverManager.getDriver(s); }
-        }
-        static class TimestampConverter implements ITypeConverter<Timestamp> {
-            public Timestamp convert(String s) throws Exception { return Timestamp.valueOf(s); }
-        }
         static void registerIfAvailable(Map<Class<?>, ITypeConverter<?>> registry, Tracer tracer, String fqcn, String factoryMethodName, Class<?>... paramTypes) {
             registerIfAvailable(registry, tracer, fqcn, fqcn, factoryMethodName, paramTypes);
         }
@@ -5417,8 +5428,10 @@ public class CommandLine {
                     } else {
                         return method.invoke(null, s);
                     }
+                } catch (InvocationTargetException e) {
+                    throw new TypeConversionException("Unable to convert '" + s + "' to " + method.getReturnType() + ": " + e.getTargetException().toString());
                 } catch (Exception e) {
-                    throw new TypeConversionException("Unable to convert " + s + " to " + method.getReturnType() + ": " + e.getMessage());
+                    throw new TypeConversionException("Unable to convert '" + s + "' to " + method.getReturnType() + ": " + e.toString());
                 }
             }
         }

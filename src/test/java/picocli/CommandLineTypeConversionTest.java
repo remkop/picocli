@@ -490,17 +490,19 @@ public class CommandLineTypeConversionTest {
     }
     @Test
     public void testConnectionConvertersInvalidError() {
-        parseInvalidValue("-Connection", "aa", ": java.sql.SQLException: No suitable driver");
+        parseInvalidValue("-Connection", "aa",
+                "Unable to convert 'aa' to interface java.sql.Connection: java.sql.SQLException: No suitable driver for option '-Connection'",
+                "Unable to convert 'aa' to interface java.sql.Connection: java.sql.SQLException: No suitable driver found for aa for option '-Connection'");
     }
     @Test
     public void testDriverConvertersInvalidError() {
-        parseInvalidValue("-Driver", "aa", ": java.sql.SQLException: No suitable driver");
+        parseInvalidValue("-Driver", "aa", "Unable to convert 'aa' to interface java.sql.Driver: java.sql.SQLException: No suitable driver for option '-Driver'");
     }
     @Test
     public void testTimestampConvertersInvalidError() {
         parseInvalidValue("-Timestamp", "aa",
-                "Could not convert 'aa' to Timestamp for option '-Timestamp': java.lang.IllegalArgumentException: Timestamp format must be yyyy-mm-dd hh:mm:ss[.fffffffff]",
-                "Could not convert 'aa' to Timestamp for option '-Timestamp': java.lang.IllegalArgumentException: Timestamp format must be yyyy-mm-dd hh:mm:ss.fffffffff"
+                "Unable to convert 'aa' to class java.sql.Timestamp: java.lang.IllegalArgumentException: Timestamp format must be yyyy-mm-dd hh:mm:ss[.fffffffff] for option '-Timestamp'",
+                "Unable to convert 'aa' to class java.sql.Timestamp: java.lang.IllegalArgumentException: Timestamp format must be yyyy-mm-dd hh:mm:ss.fffffffff for option '-Timestamp'"
         );
     }
 
