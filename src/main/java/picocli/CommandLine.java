@@ -3531,7 +3531,7 @@ public class CommandLine {
 
                 /** Returns the description of this option, used when generating the usage documentation.
                  * @see Option#description() */
-                public String[] description()  { return description.clone(); }
+                public String[] description()  { return description; }
 
                 /** Returns how many arguments this option or positional parameter requires.
                  * @see Option#arity() */
@@ -3543,13 +3543,13 @@ public class CommandLine {
 
                 /** Returns auxiliary type information used when the {@link #type()} is a generic {@code Collection}, {@code Map} or an abstract class.
                  * @see Option#type() */
-                public Class<?>[] auxiliaryTypes() { return auxiliaryTypes.clone(); }
+                public Class<?>[] auxiliaryTypes() { return auxiliaryTypes; }
 
                 /** Returns one or more {@link CommandLine.ITypeConverter type converters} to use to convert the command line
                  * argument into a strongly typed value (or key-value pair for map fields). This is useful when a particular
                  * option or positional parameter should use a custom conversion that is different from the normal conversion for the arg spec's type.
                  * @see Option#converter() */
-                public ITypeConverter<?>[] converters() { return converters.clone(); }
+                public ITypeConverter<?>[] converters() { return converters; }
 
                 /** Returns a regular expression to split option parameter values or {@code ""} if the value should not be split.
                  * @see Option#split() */
@@ -3768,7 +3768,7 @@ public class CommandLine {
 
                 /** Returns one or more option names. At least one option name is required.
                  * @see Option#names() */
-                public String[] names()       { return names.clone(); }
+                public String[] names()       { return names; }
 
                 /** Returns whether this option disables validation of the other arguments.
                  * @see Option#help()
