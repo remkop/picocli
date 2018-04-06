@@ -272,6 +272,8 @@ public class CommandLineArityTest {
             fail("Should not accept missing mandatory parameter");
         } catch (MissingParameterException ex) {
             assertEquals("Missing required parameter: <mandatory>", ex.getMessage());
+            assertEquals(1, ex.getMissing().size());
+            assertEquals("<mandatory>", ex.getMissing().get(0).paramLabel());
         }
     }
     @Test
@@ -662,6 +664,8 @@ public class CommandLineArityTest {
             fail("expected MissingParameterException");
         } catch (MissingParameterException ok) {
             assertEquals("Missing required parameter for option '-chars' (<charOptions>)", ok.getMessage());
+            assertEquals(1, ok.getMissing().size());
+            assertTrue(ok.getMissing().get(0).toString(), ok.getMissing().get(0) instanceof Model.OptionSpec);
         }
     }
 
@@ -917,6 +921,8 @@ public class CommandLineArityTest {
             fail("Expected MissingParameterException");
         } catch (MissingParameterException ex) {
             assertEquals("positional parameter at index 0..* (<parameters>) requires at least 2 values, but only 1 were specified: [p3]", ex.getMessage());
+            assertEquals(1, ex.getMissing().size());
+            assertTrue(ex.getMissing().get(0).toString(), ex.getMissing().get(0) instanceof Model.PositionalParamSpec);
         }
     }
 

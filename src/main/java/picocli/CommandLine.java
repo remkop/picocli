@@ -5191,7 +5191,7 @@ public class CommandLine {
             if (arity > args.size()) {
                 if (arity == 1) {
                     if (argSpec.isOption()) {
-                        throw new MissingParameterException(CommandLine.this, "Missing required parameter for " +
+                        throw new MissingParameterException(CommandLine.this, argSpec, "Missing required parameter for " +
                                 optionDescription("", argSpec, 0));
                     }
                     Range indexRange = ((PositionalParamSpec) argSpec).index();
@@ -5213,13 +5213,13 @@ public class CommandLine {
                     } else {
                         msg += (count > 1 ? "s: " : ": ");
                     }
-                    throw new MissingParameterException(CommandLine.this, msg + names);
+                    throw new MissingParameterException(CommandLine.this, argSpec, msg + names);
                 }
                 if (args.isEmpty()) {
-                    throw new MissingParameterException(CommandLine.this, optionDescription("", argSpec, 0) +
+                    throw new MissingParameterException(CommandLine.this, argSpec, optionDescription("", argSpec, 0) +
                             " requires at least " + arity + " values, but none were specified.");
                 }
-                throw new MissingParameterException(CommandLine.this, optionDescription("", argSpec, 0) +
+                throw new MissingParameterException(CommandLine.this, argSpec, optionDescription("", argSpec, 0) +
                         " requires at least " + arity + " values, but only " + args.size() + " were specified: " + reverse(args));
             }
         }
@@ -7371,20 +7371,23 @@ public class CommandLine {
      */
     public static class MissingParameterException extends ParameterException {
         private static final long serialVersionUID = 5075678535706338753L;
-        public MissingParameterException(CommandLine commandLine, String msg) {
+        private final List<ArgSpec> missing;
+        public MissingParameterException(CommandLine commandLine, ArgSpec missing, String msg) { this(commandLine, Arrays.asList(missing), msg); }
+        public MissingParameterException(CommandLine commandLine, Collection<ArgSpec> missing, String msg) {
             super(commandLine, msg);
+            this.missing = Collections.unmodifiableList(new ArrayList<ArgSpec>(missing));
         }
-
+        public List<ArgSpec> getMissing() { return missing; }
         private static MissingParameterException create(CommandLine cmd, Collection<ArgSpec> missing, String separator) {
             if (missing.size() == 1) {
-                return new MissingParameterException(cmd, "Missing required option '"
+                return new MissingParameterException(cmd, missing, "Missing required option '"
                         + describe(missing.iterator().next(), separator) + "'");
             }
             List<String> names = new ArrayList<String>(missing.size());
             for (ArgSpec argSpec : missing) {
                 names.add(describe(argSpec, separator));
             }
-            return new MissingParameterException(cmd, "Missing required options " + names.toString());
+            return new MissingParameterException(cmd, missing, "Missing required options " + names.toString());
         }
         private static String describe(ArgSpec argSpec, String separator) {
             String prefix = (argSpec.isOption())

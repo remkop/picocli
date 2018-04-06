@@ -261,6 +261,8 @@ public class CommandLineModelTest {
             commandLine.parse();
         } catch (MissingParameterException ex) {
             assertEquals("Missing required option '-x=PARAM'", ex.getMessage());
+            assertEquals(1, ex.getMissing().size());
+            assertSame(ex.getMissing().get(0).toString(), parent.posixOptionsMap().get('x'), ex.getMissing().get(0));
         }
     }
 

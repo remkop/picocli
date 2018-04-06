@@ -1681,6 +1681,8 @@ public class CommandLineTest {
             fail("MissingParameterException expected");
         } catch (MissingParameterException ex) {
             assertEquals("positional parameter at index 0..* (<values>) requires at least 2 values, but only 1 were specified: [a,b,c,d,e]", ex.getMessage());
+            assertEquals(1, ex.getMissing().size());
+            assertTrue(ex.getMissing().get(0).toString(), ex.getMissing().get(0) instanceof Model.PositionalParamSpec);
         }
         try {
             CommandLine.populateCommand(new Args()); // 0 arg: should fail
