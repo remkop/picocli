@@ -4836,7 +4836,7 @@ public class CommandLine {
                         Boolean currentValue = (Boolean) argSpec.getValue();
                         value = String.valueOf(currentValue == null || !currentValue); // #147 toggle existing boolean value
                     }
-                } else if (CharSequence.class.isAssignableFrom(cls)) { // String option with optional value
+                } else { // option with optional value #325
                     if (isOption(value)) {
                         args.push(value); // we don't consume the value
                         value = "";

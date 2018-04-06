@@ -786,4 +786,43 @@ public class CommandLineTypeConversionTest {
         return (Map<Class<?>, ITypeConverter<?>>) makeAccessible(interpreter.getClass().getDeclaredField("converterRegistry")).get(interpreter);
     }
     private static Field makeAccessible(Field f) { f.setAccessible(true); return f; }
+
+    static class EmptyValueConverter implements ITypeConverter<Short> {
+        public Short convert(String value) throws Exception {
+            return value == null
+                    ? -1
+                    : "".equals(value) ? -2 : Short.valueOf(value);
+        }
+    }
+
+    @Test
+    public void testOptionEmptyValue() {
+        class Standard {
+            @Option(names = "-x", arity = "0..1", description = "may have empty value")
+            Short x;
+        }
+
+        try {
+            CommandLine.populateCommand(new Standard(), "-x");
+            fail("Expect exception for Short.valueOf(\"\")");
+        } catch (Exception expected) {
+            assertTrue(expected.getMessage(), expected.getMessage().contains("input string: \"\""));
+        }
+
+        Standard withValue1 = CommandLine.populateCommand(new Standard(), "-x=987");
+        assertEquals(Short.valueOf((short) 987), withValue1.x);
+
+        //------------------
+        class CustomConverter {
+            @Option(names = "-x", arity = "0..1", description = "may have empty value",
+                    converter = EmptyValueConverter.class)
+            Short x;
+        }
+
+        CustomConverter withoutValue2 = CommandLine.populateCommand(new CustomConverter(), "-x");
+        assertEquals(Short.valueOf((short) -2), withoutValue2.x);
+
+        CustomConverter withValue2 = CommandLine.populateCommand(new CustomConverter(), "-x=987");
+        assertEquals(Short.valueOf((short) 987), withValue2.x);
+    }
 }

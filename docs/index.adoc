@@ -723,7 +723,7 @@ x = ''
 java OptionalValueDemo
 x = 'null'
 ----
-
+From picocli 3.0, options with non-String types can specify a <<Custom Type Converters,type converter>> to convert the empty String to a strongly typed value when the option is specified without a value.
 
 
 == Required Arguments
