@@ -3525,7 +3525,56 @@ public class CommandLine {
     
                 public    abstract ArgSpec build();
                 protected abstract T self(); // subclasses must override to return "this"
-    
+                /** Returns whether this is a required option or positional parameter.
+                 * @see Option#required() */
+                public boolean required()      { return required; }
+
+                /** Returns the description of this option, used when generating the usage documentation.
+                 * @see Option#description() */
+                public String[] description()  { return description.clone(); }
+
+                /** Returns how many arguments this option or positional parameter requires.
+                 * @see Option#arity() */
+                public Range arity()           { return arity; }
+
+                /** Returns the name of the option or positional parameter used in the usage help message.
+                 * @see Option#paramLabel() {@link Parameters#paramLabel()} */
+                public String paramLabel()     { return paramLabel; }
+
+                /** Returns auxiliary type information used when the {@link #type()} is a generic {@code Collection}, {@code Map} or an abstract class.
+                 * @see Option#type() */
+                public Class<?>[] auxiliaryTypes() { return auxiliaryTypes.clone(); }
+
+                /** Returns one or more {@link CommandLine.ITypeConverter type converters} to use to convert the command line
+                 * argument into a strongly typed value (or key-value pair for map fields). This is useful when a particular
+                 * option or positional parameter should use a custom conversion that is different from the normal conversion for the arg spec's type.
+                 * @see Option#converter() */
+                public ITypeConverter<?>[] converters() { return converters.clone(); }
+
+                /** Returns a regular expression to split option parameter values or {@code ""} if the value should not be split.
+                 * @see Option#split() */
+                public String splitRegex()     { return splitRegex; }
+
+                /** Returns whether this option should be excluded from the usage message.
+                 * @see Option#hidden() */
+                public boolean hidden()        { return hidden; }
+
+                /** Returns the type to convert the option or positional parameter to before {@linkplain #setValue(Object) setting} the value. */
+                public Class<?> type()         { return type; }
+
+                /** Returns the default value of this option or positional parameter, before splitting and type conversion.
+                 * A value of {@code null} means this option or positional parameter does not have a default. */
+                public String defaultValue()   { return defaultValue; }
+                Object initialValue()          { return initialValue; }
+
+                /** Returns whether this option or positional parameter's default value should be shown in the usage help. */
+                public Help.Visibility showDefaultValue() { return showDefaultValue; }
+
+                /** Returns the {@link IGetter} that is responsible for supplying the value of this argument. */
+                public IGetter getter()        { return getter; }
+                /** Returns the {@link ISetter} that is responsible for modifying the value of this argument. */
+                public ISetter setter()        { return setter; }
+
                 /** Sets whether this is a required option or positional parameter, and returns this builder. */
                 public T required(boolean required)          { this.required = required; return self(); }
     
@@ -3654,15 +3703,15 @@ public class CommandLine {
             public Builder toBuilder()    { return new Builder(this); }
             public boolean isOption()     { return true; }
             public boolean isPositional() { return false; }
-    
-            /** Returns one or more option names. At least one option name is required.
-             * @see Option#names() */
-            public String[] names()       { return names.clone(); }
 
             protected boolean showDefaultValue(CommandSpec commandSpec) {
                 return super.showDefaultValue(commandSpec) && !help() && !versionHelp() && !usageHelp();
             }
-    
+
+            /** Returns one or more option names. At least one option name is required.
+             * @see Option#names() */
+            public String[] names()       { return names.clone(); }
+
             /** Returns whether this option disables validation of the other arguments.
              * @see Option#help()
              * @deprecated Use {@link #usageHelp()} and {@link #versionHelp()} instead. */
@@ -3716,7 +3765,24 @@ public class CommandLine {
                 @Override public OptionSpec build() { return new OptionSpec(this); }
                 /** Returns this builder. */
                 @Override protected Builder self() { return this; }
-    
+
+                /** Returns one or more option names. At least one option name is required.
+                 * @see Option#names() */
+                public String[] names()       { return names.clone(); }
+
+                /** Returns whether this option disables validation of the other arguments.
+                 * @see Option#help()
+                 * @deprecated Use {@link #usageHelp()} and {@link #versionHelp()} instead. */
+                @Deprecated public boolean help() { return help; }
+
+                /** Returns whether this option allows the user to request usage help.
+                 * @see Option#usageHelp()  */
+                public boolean usageHelp()    { return usageHelp; }
+
+                /** Returns whether this option allows the user to request version information.
+                 * @see Option#versionHelp()  */
+                public boolean versionHelp()  { return versionHelp; }
+
                 /** Replaces the option names with the specified values. At least one option name is required, and returns this builder.
                  * @return this builder instance to provide a fluent interface */
                 public Builder names(String... names)           { this.names = Assert.notNull(names, "names").clone(); return self(); }
@@ -3829,6 +3895,11 @@ public class CommandLine {
                 @Override public PositionalParamSpec build() { return new PositionalParamSpec(this); }
                 /** Returns this builder. */
                 @Override protected Builder self()  { return this; }
+
+                /** Returns an index or range specifying which of the command line arguments should be assigned to this positional parameter.
+                 * @see Parameters#index() */
+                public Range index()            { return index; }
+
                 /** Sets the index or range specifying which of the command line arguments should be assigned to this positional parameter, and returns this builder. */
                 public Builder index(String range)  { return index(Range.valueOf(range)); }
     
