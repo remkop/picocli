@@ -20,8 +20,11 @@ import java.sql.Types;
 import java.util.*;
 
 import org.junit.Ignore;
+import org.junit.Rule;
 import org.junit.Test;
 
+import org.junit.contrib.java.lang.system.SystemErrRule;
+import org.junit.contrib.java.lang.system.SystemOutRule;
 import picocli.CommandLine.*;
 import picocli.CommandLine.Model.*;
 import picocli.CommandLine.Help.Ansi;
@@ -33,6 +36,12 @@ import static picocli.HelpTestUtil.versionString;
 
 
 public class CommandLineModelTest {
+    @Rule
+    public final SystemErrRule systemErrRule = new SystemErrRule().enableLog().muteForSuccessfulTests();
+
+    @Rule
+    public final SystemOutRule systemOutRule = new SystemOutRule().enableLog().muteForSuccessfulTests();
+
     @Test
     public void testEmptyModelUsageHelp() throws Exception {
         CommandSpec spec = CommandSpec.create();
@@ -263,7 +272,7 @@ public class CommandLineModelTest {
         spec.addOption(OptionSpec.builder("-c", "--count").paramLabel("COUNT").arity("1").type(int.class).description("number of times to execute").build());
         CommandLine commandLine = new CommandLine(spec);
         commandLine.parse("-c", "33");
-        assertEquals(33, spec.optionsMap().get("-c").getValue());
+        assertEquals(Integer.valueOf(33), spec.optionsMap().get("-c").getValue());
     } // TODO parse method should return an object offering only the options/positionals that were matched
 
     @Test
@@ -669,8 +678,8 @@ public class CommandLineModelTest {
                 new CommandLineTypeConversionTest.SqlTypeConverter()).description("sql type converter").build());
         CommandLine commandLine = new CommandLine(spec);
         commandLine.parse("-c", "33", "-s", "BLOB");
-        assertEquals(33, spec.optionsMap().get("-c").getValue());
-        assertEquals(Types.BLOB, spec.optionsMap().get("-s").getValue());
+        assertEquals(Integer.valueOf(33), spec.optionsMap().get("-c").getValue());
+        assertEquals(Integer.valueOf(Types.BLOB), spec.optionsMap().get("-s").getValue());
     }
     @Test
     public void testPositionalConvertersOverridesRegisteredTypeConverter() throws Exception {
@@ -680,8 +689,8 @@ public class CommandLineModelTest {
                 new CommandLineTypeConversionTest.SqlTypeConverter()).description("sql type converter").build());
         CommandLine commandLine = new CommandLine(spec);
         commandLine.parse("33", "BLOB");
-        assertEquals(33, spec.positionalParameters().get(0).getValue());
-        assertEquals(Types.BLOB, spec.positionalParameters().get(1).getValue());
+        assertEquals(Integer.valueOf(33), spec.positionalParameters().get(0).getValue());
+        assertEquals(Integer.valueOf(Types.BLOB), spec.positionalParameters().get(1).getValue());
     }
 
     @Test
@@ -1123,5 +1132,65 @@ public class CommandLineModelTest {
         expected.put(5, "Y");
         expected.put(6, "Z");
         assertEquals(expected, parseResult.positionalValue(0, Collections.emptyMap()));
+    }
+
+    @Test
+    public void testMultipleUsageHelpOptions() {
+        setTraceLevel("WARN");
+        CommandSpec cmd = CommandSpec.create()
+                .add(OptionSpec.builder("-x").type(boolean.class).usageHelp(true).build())
+                .add(OptionSpec.builder("-h").type(boolean.class).usageHelp(true).build());
+
+        assertEquals("", systemErrRule.getLog());
+        systemErrRule.clearLog();
+        new CommandLine(cmd);
+        assertEquals("", systemOutRule.getLog());
+        assertEquals("[picocli WARN] Multiple options are marked as 'usageHelp=true'. Usually there is only one --help option that displays usage help.", systemErrRule.getLog());
+    }
+
+    @Test
+    public void testMultipleVersionHelpOptions() {
+        setTraceLevel("WARN");
+        CommandSpec cmd = CommandSpec.create()
+                .add(OptionSpec.builder("-x").type(boolean.class).versionHelp(true).build())
+                .add(OptionSpec.builder("-V").type(boolean.class).versionHelp(true).build());
+
+        assertEquals("", systemErrRule.getLog());
+        systemErrRule.clearLog();
+        new CommandLine(cmd);
+        assertEquals("", systemOutRule.getLog());
+        assertEquals("[picocli WARN] Multiple options are marked as 'versionHelp=true'. Usually there is only one --version option that displays version information.", systemErrRule.getLog());
+    }
+
+    @Test
+    public void testNonBooleanUsageHelpOptions() {
+        CommandSpec cmd = CommandSpec.create().add(OptionSpec.builder("-z").type(int.class).usageHelp(true).build());
+        try {
+            new CommandLine(cmd);
+        } catch (InitializationException ex) {
+            assertEquals("Non-boolean options (like -z) should not be marked as 'usageHelp=true'.", ex.getMessage());
+        }
+    }
+
+    @Test
+    public void testNonBooleanVersionHelpOptions() {
+        CommandSpec cmd = CommandSpec.create().add(OptionSpec.builder("-x").type(int.class).versionHelp(true).build());
+        try {
+            new CommandLine(cmd);
+        } catch (InitializationException ex) {
+            assertEquals("Non-boolean options (like -x) should not be marked as 'versionHelp=true'.", ex.getMessage());
+        }
+    }
+
+    @Test
+    public void testBooleanObjectUsageHelpOptions() {
+        CommandSpec cmd = CommandSpec.create().add(OptionSpec.builder("-z").type(Boolean.class).usageHelp(true).build());
+        assertTrue(new CommandLine(cmd).parseArgs("-z").isUsageHelpRequested());
+    }
+
+    @Test
+    public void testBooleanObjectVersionHelpOptions() {
+        CommandSpec cmd = CommandSpec.create().add(OptionSpec.builder("-x").type(Boolean.class).versionHelp(true).build());
+        assertTrue(new CommandLine(cmd).parseArgs("-x").isVersionHelpRequested());
     }
 }

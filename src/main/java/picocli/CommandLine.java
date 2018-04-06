@@ -2715,6 +2715,19 @@ public class CommandLine {
             void validate() {
                 Collections.sort(positionalParameters, new PositionalParametersSorter());
                 validatePositionalParameters(positionalParameters);
+                int usageHelpCount = 0, versionHelpCount = 0;
+                for (OptionSpec option : options()) {
+                    if (option.usageHelp()) {
+                        usageHelpCount++;
+                        if (!isBoolean(option.type())) { throw new InitializationException("Non-boolean options (like " + option.names()[0] + ") should not be marked as 'usageHelp=true'."); }
+                    }
+                    if (option.versionHelp()) {
+                        versionHelpCount++;
+                        if (!isBoolean(option.type())) { throw new InitializationException("Non-boolean options (like " + option.names()[0] + ") should not be marked as 'versionHelp=true'."); }
+                    }
+                }
+                if (usageHelpCount > 1)   { commandLine.tracer.warn("Multiple options are marked as 'usageHelp=true'. Usually there is only one --help option that displays usage help."); }
+                if (versionHelpCount > 1) { commandLine.tracer.warn("Multiple options are marked as 'versionHelp=true'. Usually there is only one --version option that displays version information."); }
             }
     
             /** Returns the user object associated with this command.
