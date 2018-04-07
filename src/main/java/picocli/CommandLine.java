@@ -3575,6 +3575,8 @@ public class CommandLine {
                 /** Returns the {@link ISetter} that is responsible for modifying the value of this argument. */
                 public ISetter setter()        { return setter; }
 
+                public String toString() { return toString; }
+
                 /** Sets whether this is a required option or positional parameter, and returns this builder. */
                 public T required(boolean required)          { this.required = required; return self(); }
     

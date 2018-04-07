@@ -15,6 +15,7 @@
  */
 package picocli;
 
+import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.sql.Types;
 import java.util.*;
@@ -1194,5 +1195,119 @@ public class CommandLineModelTest {
     public void testBooleanObjectVersionHelpOptions() {
         CommandSpec cmd = CommandSpec.create().add(OptionSpec.builder("-x").type(Boolean.class).versionHelp(true).build());
         assertTrue(new CommandLine(cmd).parseArgs("-x").isVersionHelpRequested());
+    }
+    @Test
+    public void testGettersOnOptionBuilder() {
+        ISetter setter = new ISetter() {
+            public <T> T set(T value) throws Exception {
+                return null;
+            }
+        };
+        IGetter getter = new IGetter() {
+            public <T> T get() throws Exception {
+                return null;
+            }
+        };
+        ITypeConverter<Integer> converter = new ITypeConverter<Integer>() {
+            public Integer convert(String value) throws Exception {
+                return null;
+            }
+        };
+        OptionSpec.Builder builder = OptionSpec.builder("-x");
+        builder.auxiliaryTypes(Integer.class, Integer.TYPE)
+                .type(Double.TYPE)
+                .splitRegex(",,,")
+                .required(true)
+                .defaultValue("DEF")
+                .description("Description")
+                .paramLabel("param")
+                .arity("1")
+                .help(true)
+                .versionHelp(true)
+                .usageHelp(true)
+                .hidden(true)
+                .setter(setter)
+                .getter(getter)
+                .converters(converter)
+                .initialValue("ABC")
+                .showDefaultValue(Help.Visibility.NEVER)
+                .withToString("TOSTRING");
+        assertArrayEquals(new Class[]{Integer.class, Integer.TYPE}, builder.auxiliaryTypes());
+        assertEquals(Double.TYPE, builder.type());
+        assertEquals(",,,", builder.splitRegex());
+        assertTrue(builder.required());
+        assertEquals("DEF", builder.defaultValue());
+        assertArrayEquals(new String[]{"Description"}, builder.description());
+        assertEquals("param", builder.paramLabel());
+        assertEquals(Range.valueOf("1"), builder.arity());
+        assertTrue(builder.help());
+        assertTrue(builder.versionHelp());
+        assertTrue(builder.usageHelp());
+        assertTrue(builder.hidden());
+        assertSame(getter, builder.getter());
+        assertSame(setter, builder.setter());
+        assertSame(converter, builder.converters()[0]);
+        assertEquals("ABC", builder.initialValue());
+        assertEquals(Help.Visibility.NEVER, builder.showDefaultValue());
+        assertEquals("TOSTRING", builder.toString());
+
+        builder.names("a", "b", "c")
+                .type(String.class)
+                .auxiliaryTypes(StringWriter.class);
+        assertArrayEquals(new String[]{"a", "b", "c"}, builder.names());
+        assertArrayEquals(new Class[]{StringWriter.class}, builder.auxiliaryTypes());
+        assertEquals(String.class, builder.type());
+    }
+
+    @Test
+    public void testGettersOnPositionalBuilder() {
+        ISetter setter = new ISetter() {
+            public <T> T set(T value) throws Exception {
+                return null;
+            }
+        };
+        IGetter getter = new IGetter() {
+            public <T> T get() throws Exception {
+                return null;
+            }
+        };
+        ITypeConverter<Integer> converter = new ITypeConverter<Integer>() {
+            public Integer convert(String value) throws Exception {
+                return null;
+            }
+        };
+        PositionalParamSpec.Builder builder = PositionalParamSpec.builder();
+        builder.auxiliaryTypes(Integer.class, Integer.TYPE)
+                .type(Double.TYPE)
+                .splitRegex(",,,")
+                .required(true)
+                .defaultValue("DEF")
+                .description("Description")
+                .paramLabel("param")
+                .arity("1")
+                .hidden(true)
+                .setter(setter)
+                .getter(getter)
+                .converters(converter)
+                .initialValue("ABC")
+                .showDefaultValue(Help.Visibility.NEVER)
+                .index("3..4")
+                .withToString("TOSTRING");
+        assertArrayEquals(new Class[]{Integer.class, Integer.TYPE}, builder.auxiliaryTypes());
+        assertEquals(Double.TYPE, builder.type());
+        assertEquals(",,,", builder.splitRegex());
+        assertTrue(builder.required());
+        assertEquals("DEF", builder.defaultValue());
+        assertArrayEquals(new String[]{"Description"}, builder.description());
+        assertEquals("param", builder.paramLabel());
+        assertEquals(Range.valueOf("1"), builder.arity());
+        assertTrue(builder.hidden());
+        assertSame(getter, builder.getter());
+        assertSame(setter, builder.setter());
+        assertSame(converter, builder.converters()[0]);
+        assertEquals("ABC", builder.initialValue());
+        assertEquals(Help.Visibility.NEVER, builder.showDefaultValue());
+        assertEquals("TOSTRING", builder.toString());
+        assertEquals(Range.valueOf("3..4"), builder.index());
     }
 }
