@@ -1310,4 +1310,28 @@ public class CommandLineModelTest {
         assertEquals("TOSTRING", builder.toString());
         assertEquals(Range.valueOf("3..4"), builder.index());
     }
+
+    @Test
+    public void testParseResetsRawAndOriginalStringValues() {
+        CommandSpec spec = CommandSpec.create()
+                .addOption(OptionSpec.builder("-x").type(String.class).build())
+                .addPositional(PositionalParamSpec.builder().build());
+        CommandLine cmd = new CommandLine(spec);
+        ParseResult parseResult = cmd.parseArgs("-x", "XVAL", "POSITIONAL");
+        assertEquals("XVAL", parseResult.option('x').getValue());
+        assertEquals(Arrays.asList("XVAL"), parseResult.option('x').rawStringValues());
+        assertEquals(Arrays.asList("XVAL"), parseResult.option('x').originalStringValues());
+        assertEquals("POSITIONAL", parseResult.positional(0).getValue());
+        assertEquals(Arrays.asList("POSITIONAL"), parseResult.positional(0).rawStringValues());
+        assertEquals(Arrays.asList("POSITIONAL"), parseResult.positional(0).originalStringValues());
+
+        ParseResult parseResult2 = cmd.parseArgs("-x", "222", "$$$$");
+        assertEquals("222", parseResult2.option('x').getValue());
+        assertEquals(Arrays.asList("222"), parseResult2.option('x').rawStringValues());
+        assertEquals(Arrays.asList("222"), parseResult2.option('x').originalStringValues());
+        assertEquals("$$$$", parseResult2.positional(0).getValue());
+        assertEquals(Arrays.asList("$$$$"), parseResult2.positional(0).rawStringValues());
+        assertEquals(Arrays.asList("$$$$"), parseResult2.positional(0).originalStringValues());
+
+    }
 }

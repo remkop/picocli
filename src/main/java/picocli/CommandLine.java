@@ -3330,9 +3330,9 @@ public class CommandLine {
             private final Object initialValue;
             private final IGetter getter;
             private final ISetter setter;
-            private final List<String> rawStringValues = new ArrayList<String>();
-            private final List<String> originalStringValues = new ArrayList<String>();
             private final Range arity;
+            private List<String> rawStringValues = new ArrayList<String>();
+            private List<String> originalStringValues = new ArrayList<String>();
             protected String toString;
     
             /** Constructs a new {@code ArgSpec}. */
@@ -3469,10 +3469,16 @@ public class CommandLine {
              *      For map properties, {@code "key=value"} values are split into the key and the value part. */
             public List<String> rawStringValues() { return Collections.unmodifiableList(rawStringValues); }
 
+            /** Sets the {@code rawStringValues} to a new list instance. */
+            protected void resetRawStringValues() { rawStringValues = new ArrayList<String>(); }
+
             /** Returns the original command line arguments matched by this option or positional parameter spec.
              * @return the matched arguments as found on the command line: empty Strings for options without value, the
              *      values have not been {@linkplain #splitRegex() split}, and for map properties values may look like {@code "key=value"}*/
             public List<String> originalStringValues() { return Collections.unmodifiableList(originalStringValues); }
+
+            /** Sets the {@code originalStringValues} to a new list instance. */
+            protected void resetOriginalStringValues() { originalStringValues = new ArrayList<String>(); }
 
             protected boolean showDefaultValue(CommandSpec commandSpec) {
                 if (showDefaultValue() == Help.Visibility.ALWAYS)   { return true; }
@@ -4655,6 +4661,14 @@ public class CommandLine {
             endOfOptions = false;
             isHelpRequested = false;
             parseResult = ParseResult.builder(getCommandSpec());
+            for (OptionSpec option : getCommandSpec().options()) {
+                option.resetRawStringValues();
+                option.resetOriginalStringValues();
+            }
+            for (PositionalParamSpec positional : getCommandSpec().positionalParameters()) {
+                positional.resetRawStringValues();
+                positional.resetOriginalStringValues();
+            }
         }
 
         private void parse(List<CommandLine> parsedCommands, Stack<String> argumentStack, String[] originalArgs) {
