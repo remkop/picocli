@@ -776,7 +776,7 @@ The following command line arguments would be accepted:
 
 == Parser Configuration
 
-=== Too Many Values
+=== Overwriting Single Options
 
 When a single-value option is specified multiple times on the command line, the default parser behaviour is
 to throw an `OverwrittenOptionException`. For example:
@@ -913,7 +913,7 @@ From picocli 3.0, applications can call `CommandLine.setToggleBooleanFlags(false
 If toggling is off, flags are simply set to `true` when the option is matched on the command line.
 
 
-=== Disallowing POSIX Clustered Short Options
+=== POSIX Clustered Short Options
 By default, the picocli parser allows POSIX clustered short options, so short options like `-x -v -f SomeFile` can be clustered together like `-xvfSomeFile`.
 From picocli 3.0, applications can call `CommandLine.setPosixClusteredShortOptionsAllowed(false)` to enforce that options must be separated with whitespace on the command line.
 
