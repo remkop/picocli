@@ -26,6 +26,7 @@ No features have been promoted in this picocli release.
 
 ## <a name="3.0.0-alpha-5-fixes"></a> Fixed issues
 
+- [#329] Enhancement and API Change: Add parser configuration to control whether boolean flags should be toggled.
 - [#328] Enhancement and API Change: Provide getter methods on `OptionSpec.Builder` and `PositionalParamSpec.Builder`.
 - [#326] Enhancement and API Change: Add parser configuration to treat unmatched options as positional parameters.
 - [#283] Enhancement and API Change: Provide `getMissing` method on MissingParameterException to get a reference to the problematic options and positional parameters. Thanks to [jcapsule](https://github.com/jcapsule) for the suggestion.

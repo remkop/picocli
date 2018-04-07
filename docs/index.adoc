@@ -665,7 +665,7 @@ If no `arity` is specified, the number of parameters depends on the field's type
 [grid=cols,cols="30,5,65",options="header"]
 |===
 | @Option Field Type | Default Arity | Notes
-| boolean      | 0 |Boolean options by default don't require an option parameter. The field is toggled to its logical negative when the option name is recognized.
+| boolean      | 0 |Boolean options by default don't require an option parameter. The field is toggled to its logical negative when the option name is recognized. (This can be <<Toggle Boolean Flags,switched off>>.)
 | Single-valued type (e.g., `int`, `String`, `File`) | 1 | The option name must be followed by a value.
 | Multi-valued type (arrays, collections or maps) | 1 | The option name must be followed by a value.
 |===
@@ -905,6 +905,13 @@ options and positional parameters as soon as it encounters an unmatched argument
 
 When this flag is set, the first unmatched argument and all subsequent command line arguments are added to the
 unmatched arguments list returned by `CommandLine.getUnmatchedArguments()`.
+
+=== Toggle Boolean Flags
+By default, boolean flag options without a parameter are "toggled" when the option is matched on the command line:
+if the value is `true` it is set to `false`, and when the value is `false` it is set to `true`.
+From picocli 3.0, applications can call `CommandLine.setToggleBooleanFlags(false)` to switch this behaviour off.
+If toggling is off, flags are simply set to `true` when the option is matched on the command line.
+
 
 === Disallowing POSIX Clustered Short Options
 By default, the picocli parser allows POSIX clustered short options, so short options like `-x -v -f SomeFile` can be clustered together like `-xvfSomeFile`.

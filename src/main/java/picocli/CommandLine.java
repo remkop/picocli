@@ -293,6 +293,33 @@ public class CommandLine {
      * @since 0.9.8 */
     public boolean isVersionHelpRequested() { return interpreter.parseResult != null && interpreter.parseResult.versionHelpRequested; }
 
+    /** Returns whether the value of boolean flag options should be "toggled" when the option is matched.
+     * By default, flags are toggled, so if the value is {@code true} it is set to {@code false}, and when the value is
+     * {@code false} it is set to {@code true}. If toggling is off, flags are simply set to {@code true}.
+     * @return {@code true} the value of boolean flag options should be "toggled" when the option is matched, {@code false} otherwise
+     * @since 3.0
+     */
+    public boolean isToggleBooleanFlags() {
+        return getCommandSpec().parser().toggleBooleanFlags();
+    }
+
+    /** Sets whether the value of boolean flag options should be "toggled" when the option is matched.
+     * <p>The specified setting will be registered with this {@code CommandLine} and the full hierarchy of its
+     * subcommands and nested sub-subcommands <em>at the moment this method is called</em>. Subcommands added
+     * later will have the default setting. To ensure a setting is applied to all
+     * subcommands, call the setter last, after adding subcommands.</p>
+     * @param newValue the new setting
+     * @return this {@code CommandLine} object, to allow method chaining
+     * @since 3.0
+     */
+    public CommandLine setToggleBooleanFlags(boolean newValue) {
+        getCommandSpec().parser().toggleBooleanFlags(newValue);
+        for (CommandLine command : getCommandSpec().subcommands().values()) {
+            command.setToggleBooleanFlags(newValue);
+        }
+        return this;
+    }
+
     /** Returns whether options for single-value fields can be specified multiple times on the command line.
      * The default is {@code false} and a {@link OverwrittenOptionException} is thrown if this happens.
      * When {@code true}, the last specified value is retained.
@@ -3244,6 +3271,7 @@ public class CommandLine {
             private String separator;
             private boolean stopAtUnmatched = false;
             private boolean stopAtPositional = false;
+            private boolean toggleBooleanFlags = true;
             private boolean overwrittenOptionsAllowed = false;
             private boolean unmatchedArgumentsAllowed = false;
             private boolean expandAtFiles = true;
@@ -3257,6 +3285,7 @@ public class CommandLine {
 
             public boolean stopAtUnmatched()                   { return stopAtUnmatched; }
             public boolean stopAtPositional()                  { return stopAtPositional; }
+            public boolean toggleBooleanFlags()              { return toggleBooleanFlags; }
             public boolean overwrittenOptionsAllowed()         { return overwrittenOptionsAllowed; }
             public boolean unmatchedArgumentsAllowed()         { return unmatchedArgumentsAllowed; }
             public boolean expandAtFiles()                     { return expandAtFiles; }
@@ -3269,6 +3298,7 @@ public class CommandLine {
             public ParserSpec separator(String separator)                                  { this.separator = separator; return this; }
             public ParserSpec stopAtUnmatched(boolean stopAtUnmatched)                     { this.stopAtUnmatched = stopAtUnmatched; return this; }
             public ParserSpec stopAtPositional(boolean stopAtPositional)                   { this.stopAtPositional = stopAtPositional; return this; }
+            public ParserSpec toggleBooleanFlags(boolean toggleBooleanFlags)           { this.toggleBooleanFlags = toggleBooleanFlags; return this; }
             public ParserSpec overwrittenOptionsAllowed(boolean overwrittenOptionsAllowed) { this.overwrittenOptionsAllowed = overwrittenOptionsAllowed; return this; }
             public ParserSpec unmatchedArgumentsAllowed(boolean unmatchedArgumentsAllowed) { this.unmatchedArgumentsAllowed = unmatchedArgumentsAllowed; return this; }
             public ParserSpec expandAtFiles(boolean expandAtFiles)                         { this.expandAtFiles = expandAtFiles; return this; }
@@ -4955,8 +4985,12 @@ public class CommandLine {
                         if (value != null) {
                             args.push(value); // we don't consume the value
                         }
-                        Boolean currentValue = (Boolean) argSpec.getValue();
-                        value = String.valueOf(currentValue == null || !currentValue); // #147 toggle existing boolean value
+                        if (commandSpec.parser().toggleBooleanFlags()) {
+                            Boolean currentValue = (Boolean) argSpec.getValue();
+                            value = String.valueOf(currentValue == null || !currentValue); // #147 toggle existing boolean value
+                        } else {
+                            value = "true";
+                        }
                     }
                 } else { // option with optional value #325
                     if (isOption(value)) {

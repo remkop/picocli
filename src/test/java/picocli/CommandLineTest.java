@@ -710,6 +710,52 @@ public class CommandLineTest {
     }
 
     @Test
+    public void testParserToggleBooleanFlags_BeforeSubcommandsAdded() {
+        @Command class TopLevel {}
+        CommandLine commandLine = new CommandLine(new TopLevel());
+        assertEquals(true, commandLine.isToggleBooleanFlags());
+        commandLine.setToggleBooleanFlags(false);
+        assertEquals(false, commandLine.isToggleBooleanFlags());
+
+        int childCount = 0;
+        int grandChildCount = 0;
+        commandLine.addSubcommand("main", createNestedCommand());
+        for (CommandLine sub : commandLine.getSubcommands().values()) {
+            childCount++;
+            assertEquals("subcommand added afterwards is not impacted", true, sub.isToggleBooleanFlags());
+            for (CommandLine subsub : sub.getSubcommands().values()) {
+                grandChildCount++;
+                assertEquals("subcommand added afterwards is not impacted", true, subsub.isToggleBooleanFlags());
+            }
+        }
+        assertTrue(childCount > 0);
+        assertTrue(grandChildCount > 0);
+    }
+
+    @Test
+    public void testParserToggleBooleanFlags_AfterSubcommandsAdded() {
+        @Command class TopLevel {}
+        CommandLine commandLine = new CommandLine(new TopLevel());
+        commandLine.addSubcommand("main", createNestedCommand());
+        assertEquals(true, commandLine.isToggleBooleanFlags());
+        commandLine.setToggleBooleanFlags(false);
+        assertEquals(false, commandLine.isToggleBooleanFlags());
+
+        int childCount = 0;
+        int grandChildCount = 0;
+        for (CommandLine sub : commandLine.getSubcommands().values()) {
+            childCount++;
+            assertEquals("subcommand added before IS impacted", false, sub.isToggleBooleanFlags());
+            for (CommandLine subsub : sub.getSubcommands().values()) {
+                grandChildCount++;
+                assertEquals("subsubcommand added before IS impacted", false, sub.isToggleBooleanFlags());
+            }
+        }
+        assertTrue(childCount > 0);
+        assertTrue(grandChildCount > 0);
+    }
+
+    @Test
     public void testParserUnmatchedOptionsArePositionalParams_BeforeSubcommandsAdded() {
         @Command class TopLevel {}
         CommandLine commandLine = new CommandLine(new TopLevel());
@@ -3809,5 +3855,59 @@ public class CommandLineTest {
         CommandLine commandLine = new CommandLine(new Parent(), new InnerClassFactory(this));
         commandLine.parse("--help");
         assertTrue("No exceptions", true);
+    }
+
+    @Test
+    public void testToggleBooleanFlagsByDefault() {
+        class Flags {
+            @Option(names = "-a") boolean a;
+            @Option(names = "-b") boolean b = true;
+            @Parameters(index = "0") boolean p0;
+            @Parameters(index = "1") boolean p1 = true;
+        }
+        Flags flags = new Flags();
+        CommandLine commandLine = new CommandLine(flags);
+        assertFalse(flags.a);
+        assertFalse(flags.p0);
+        assertTrue (flags.b);
+        assertTrue (flags.p1);
+        commandLine.parse("-a", "-b", "true", "false");
+        assertFalse(!flags.a);
+        assertTrue (!flags.b);
+        assertFalse(!flags.p0);
+        assertTrue (!flags.p1);
+        commandLine.parse("-a", "-b", "true", "false");
+        assertFalse(flags.a);
+        assertTrue (flags.b);
+        assertFalse(!flags.p0); // as set
+        assertTrue (!flags.p1);
+    }
+
+    @Test
+    public void testNoToggleBooleanFlagsWhenSwitchedOff() {
+        class Flags {
+            @Option(names = "-a") boolean a;
+            @Option(names = "-b") boolean b = true;
+            @Parameters(index = "0") boolean p0;
+            @Parameters(index = "1") boolean p1 = true;
+        }
+        Flags flags = new Flags();
+        CommandLine commandLine = new CommandLine(flags);
+        commandLine.setToggleBooleanFlags(false);
+        // initial
+        assertFalse(flags.a);
+        assertFalse(flags.p0);
+        assertTrue (flags.b);
+        assertTrue (flags.p1);
+        commandLine.parse("-a", "-b", "true", "false");
+        assertTrue(flags.a);
+        assertTrue (flags.b);
+        assertTrue (flags.p0);
+        assertFalse(flags.p1);
+        commandLine.parse("-a", "-b", "true", "false");
+        assertTrue(flags.a);
+        assertTrue (flags.b);
+        assertTrue (flags.p0);
+        assertFalse(flags.p1);
     }
 }
