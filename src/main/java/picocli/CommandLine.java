@@ -251,7 +251,7 @@ public class CommandLine {
     public CommandLine addSubcommand(String name, Object command) {
         CommandLine subcommandLine = toCommandLine(command, factory);
         getCommandSpec().addSubcommand(name, subcommandLine);
-        CommandReflection.initParentCommand(subcommandLine.getCommandSpec().userObject(), getCommandSpec().userObject());
+        CommandLine.Model.CommandReflection.initParentCommand(subcommandLine.getCommandSpec().userObject(), getCommandSpec().userObject());
         return this;
     }
     /** Returns a map with the subcommands {@linkplain #addSubcommand(String, Object) registered} on this instance.
@@ -5865,6 +5865,12 @@ public class CommandLine {
                     sb.append(' ').append(parameterLabelRenderer().renderParameterLabel(positionalParam, ansi(), colorScheme.parameterStyles));
                 }
             }
+
+            // only show if object has subcommands
+            if (!commandSpec.subcommands().isEmpty()) {
+                sb.append(" [COMMAND]");
+            }
+
             return colorScheme.commandText(commandSpec.name()).toString()
                     + (sb.toString()) + System.getProperty("line.separator");
         }
@@ -5939,6 +5945,13 @@ public class CommandLine {
                     optionText = optionText.append(label);
                 }
             }
+
+            if(!commandSpec.subcommands().isEmpty()){
+                optionText = optionText.append(" [")
+                        .append("COMMAND")
+                        .append("]");
+            }
+
             // Fix for #142: first line of synopsis overshoots max. characters
             String commandName = commandSpec.name();
             int firstColumnLength = commandName.length() + synopsisHeadingLength;

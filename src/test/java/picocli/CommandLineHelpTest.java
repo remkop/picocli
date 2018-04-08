@@ -2259,8 +2259,8 @@ public class CommandLineHelpTest {
         assertEquals("base", help.commandName());
         assertEquals(String.format("cust%n"), help.synopsis(0));
         assertEquals(String.format("cust%n"), help.customSynopsis());
-        assertEquals(String.format("base%n"), help.abbreviatedSynopsis());
-        assertEquals(String.format("base%n"), help.detailedSynopsis(0, null, true));
+        assertEquals(String.format("base [COMMAND]%n"), help.abbreviatedSynopsis());
+        assertEquals(String.format("base [COMMAND]%n"), help.detailedSynopsis(0, null, true));
         assertEquals("abcd", help.synopsisHeading());
         assertEquals(String.format("  sub  This is a subcommand%n"), help.commandList());
         assertEquals("c o m m a n d s", help.commandListHeading());
@@ -2456,7 +2456,7 @@ public class CommandLineHelpTest {
                 );
         String main = usageString(commandLine, Help.Ansi.OFF);
         assertEquals(String.format("" +
-                "Usage: main [-ah]%n" +
+                "Usage: main [-ah] [COMMAND]%n" +
                 "  -a%n" +
                 "  -h%n" +
                 "Commands:%n" +
@@ -2465,7 +2465,7 @@ public class CommandLineHelpTest {
 
         String cmd2 = usageString(commandLine.getSubcommands().get("cmd2"), Help.Ansi.OFF);
         assertEquals(String.format("" +
-                "Usage: cmd2 [-ch]%n" +
+                "Usage: cmd2 [-ch] [COMMAND]%n" +
                 "  -c%n" +
                 "  -h%n" +
                 "Commands:%n" +
@@ -2474,7 +2474,7 @@ public class CommandLineHelpTest {
 
         String sub22 = usageString(commandLine.getSubcommands().get("cmd2").getSubcommands().get("sub22"), Help.Ansi.OFF);
         assertEquals(String.format("" +
-                "Usage: sub22 [-g]%n" +
+                "Usage: sub22 [-g] [COMMAND]%n" +
                 "  -g%n" +
                 "Commands:%n" +
                 "  sub22sub1%n"), sub22);
@@ -3123,7 +3123,7 @@ public class CommandLineHelpTest {
         assertTrue(CommandLine.printHelpIfRequested(list, new PrintStream(baos), Help.Ansi.OFF));
 
         String expected = String.format("" +
-                "Usage: <main class> [-hV]%n" +
+                "Usage: <main class> [-hV] [COMMAND]%n" +
                 "  -h, --help                  Show this help message and exit.%n" +
                 "  -V, --version               Print version information and exit.%n" +
                 "Commands:%n" +
@@ -3140,7 +3140,7 @@ public class CommandLineHelpTest {
         CommandLine.run(new App(), new PrintStream(baos), Help.Ansi.OFF, "help");
 
         String expected = String.format("" +
-                "Usage: <main class> [-hV]%n" +
+                "Usage: <main class> [-hV] [COMMAND]%n" +
                 "  -h, --help                  Show this help message and exit.%n" +
                 "  -V, --version               Print version information and exit.%n" +
                 "Commands:%n" +
@@ -3170,7 +3170,7 @@ public class CommandLineHelpTest {
 
         String expected = String.format("" +
                 "Unknown subcommand 'abcd'.%n" +
-                "Usage: <main class> [-hV]%n" +
+                "Usage: <main class> [-hV] [COMMAND]%n" +
                 "  -h, --help                  Show this help message and exit.%n" +
                 "  -V, --version               Print version information and exit.%n" +
                 "Commands:%n" +
@@ -3213,7 +3213,7 @@ public class CommandLineHelpTest {
         CommandLine.run(new App(), new PrintStream(baos), Help.Ansi.OFF, "help");
 
         String expected = String.format("" +
-                "Usage: <main class> [-hV]%n" +
+                "Usage: <main class> [-hV] [COMMAND]%n" +
                 "  -h, --help                  Show this help message and exit.%n" +
                 "  -V, --version               Print version information and exit.%n" +
                 "Commands:%n" +
@@ -3237,7 +3237,7 @@ public class CommandLineHelpTest {
         app.usage(new PrintStream(baos));
 
         String expected = format("" +
-                "Usage: app%n" +
+                "Usage: app [COMMAND]%n" +
                 "Commands:%n" +
                 "  foo  This is a visible subcommand%n");
         assertEquals(expected, baos.toString());
@@ -3257,7 +3257,7 @@ public class CommandLineHelpTest {
         app.usage(new PrintStream(baos));
 
         String expected = format("" +
-                "Usage: app%n");
+                "Usage: app [COMMAND]%n");
         assertEquals(expected, baos.toString());
     }
 
