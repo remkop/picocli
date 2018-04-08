@@ -470,7 +470,7 @@ public class Demo implements Runnable {
             throw new InternalError(ex.toString());
         }
     }
-    static final String EXPECTED_USAGE_MAIN = "Usage: git [-hV] [--git-dir=<gitDir>]%n" +
+    static final String EXPECTED_USAGE_MAIN = "Usage: git [-hV] [--git-dir=<gitDir>] [COMMAND]%n" +
             "Git is a fast, scalable, distributed revision control system with an unusually%n" +
             "rich command set that provides both high-level operations and full access to%n" +
             "internals.%n" +
@@ -494,7 +494,7 @@ public class Demo implements Runnable {
             "  rebase    Forward-port local commits to the updated upstream head.%n" +
             "  tag       Create, list, delete or verify a tag object signed with GPG.%n";
 
-    static final String EXPECTED_USAGE_MAIN_ANSI = "Usage: \u001B[1mgit\u001B[21m\u001B[0m [\u001B[33m-hV\u001B[39m\u001B[0m] [\u001B[33m--git-dir\u001B[39m\u001B[0m=\u001B[3m<gitDir>\u001B[23m\u001B[0m]%n" +
+    static final String EXPECTED_USAGE_MAIN_ANSI = "Usage: \u001B[1mgit\u001B[21m\u001B[0m [\u001B[33m-hV\u001B[39m\u001B[0m] [\u001B[33m--git-dir\u001B[39m\u001B[0m=\u001B[3m<gitDir>\u001B[23m\u001B[0m] [COMMAND]%n" +
             "Git is a fast, scalable, distributed revision control system with an unusually%n" +
             "rich command set that provides both high-level operations and full access to%n" +
             "internals.%n" +

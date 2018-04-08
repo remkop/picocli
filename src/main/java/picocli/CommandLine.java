@@ -5948,7 +5948,7 @@ public class CommandLine {
 
             if(!commandSpec.subcommands().isEmpty()){
                 optionText = optionText.append(" [")
-                        .append(colorScheme.optionText("COMMAND"))
+                        .append("COMMAND")
                         .append("]");
             }
 
