@@ -971,7 +971,7 @@ public class CommandLineModelTest {
         cmd.parser().arityRestrictsCumulativeSize(true);
 
         ParseResult parseResult = new CommandLine(cmd).parseArgs("-x 1 -x 2 -x 3".split(" "));
-        assertEquals(Arrays.asList("1", "2", "3"), parseResult.rawOptionValues('x'));
+        assertEquals(Arrays.asList("1", "2", "3"), parseResult.matchedOption('x').stringValues());
         assertArrayEquals(new String[]{"1", "2", "3"}, parseResult.matchedOptionValue('x', (String[]) null));
 
         CommandSpec cmd2 = CommandSpec.create().addOption(OptionSpec.builder("-x").arity("1..3").build());
@@ -990,7 +990,7 @@ public class CommandLineModelTest {
         cmd.parser().arityRestrictsCumulativeSize(true);
 
         ParseResult parseResult = new CommandLine(cmd).parseArgs("-x", "1,2,3");
-        assertEquals(Arrays.asList("1", "2", "3"), parseResult.rawOptionValues('x')); // raw is split but untyped
+        assertEquals(Arrays.asList("1", "2", "3"), parseResult.matchedOption('x').stringValues()); // raw is split but untyped
         assertEquals(Arrays.asList("1,2,3"), parseResult.matchedOption('x').originalStringValues()); // the original command line argument
         assertArrayEquals(new String[]{"1", "2", "3"}, parseResult.matchedOptionValue('x', (String[]) null));
 

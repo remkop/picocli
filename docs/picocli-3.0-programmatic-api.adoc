@@ -220,9 +220,9 @@ assert pr.hasMatchedOption('V');         // single-character alias works too
 assert pr.hasMatchedOption("verbose");   // and, command name without hyphens
 ----
 
-=== Typed Option Values
+=== Matched Option Values
 
-The `matchedOptionValue` method returns the command line value or values, converted to the option's type. This method requires a default value, which will be returned in case the option was not specified on the command line. In the above example, we defined the `--file` option to be of type `List<File>`, so we pass in an empty list as the default value:
+The `matchedOptionValue` method returns the command line value or values, converted to the option's type. This method requires a default value, which will be returned in case the option was not matched on the command line. In the above example, we defined the `--file` option to be of type `List<File>`, so we pass in an empty list as the default value:
 
 [source,java]
 ----
