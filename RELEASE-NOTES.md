@@ -30,6 +30,7 @@ No features have been promoted in this picocli release.
 - [#328] Enhancement and API Change: Provide getter methods on `OptionSpec.Builder` and `PositionalParamSpec.Builder`.
 - [#326] Enhancement and API Change: Add parser configuration to treat unmatched options as positional parameters.
 - [#283] Enhancement and API Change: Provide `getMissing` method on MissingParameterException to get a reference to the problematic options and positional parameters. Thanks to [jcapsule](https://github.com/jcapsule) for the suggestion.
+- [#333] Enhancement: Added subcommand to synopsis in generated usage help. Thanks to [jcapsule](https://github.com/jcapsule) for the pull request.
 - [#323] Enhancement: Remove dependency on java.sql package: picocli should only require the java.base module when running in Java 9.
 - [#325] Enhancement: Allow custom type converter to map empty String to custom default value for empty options. Thanks to [jesselong](https://github.com/jesselong) for the suggestion.
 - [#303] Enhancement: Improve validation to prevent common mistakes.
