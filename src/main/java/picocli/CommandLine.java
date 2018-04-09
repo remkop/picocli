@@ -4408,7 +4408,7 @@ public class CommandLine {
             /** Sets the specified command line arguments that were parsed. */
             public Builder originalArgs(String[] originalArgs) { originalArgList.addAll(Arrays.asList(originalArgs)); return this;}
 
-            void addRawStringValue     (ArgSpec argSpec, String value) { if (!isInitializingDefaultValues) { argSpec.stringValues.add(value);} }
+            void addStringValue        (ArgSpec argSpec, String value) { if (!isInitializingDefaultValues) { argSpec.stringValues.add(value);} }
             void addOriginalStringValue(ArgSpec argSpec, String value) { if (!isInitializingDefaultValues) { argSpec.originalStringValues.add(value); } }
         }
         private final CommandSpec commandSpec;
@@ -5052,7 +5052,7 @@ public class CommandLine {
                     String.valueOf(oldValue), String.valueOf(newValue), argDescription); }
             argSpec.setValue(newValue);
             parseResult.addOriginalStringValue(argSpec, value);// #279 track empty string value if no command line argument was consumed
-            parseResult.addRawStringValue(argSpec, value);
+            parseResult.addStringValue(argSpec, value);
             parseResult.add(argSpec, position);
             return result;
         }
@@ -5127,8 +5127,8 @@ public class CommandLine {
                 result.put(mapKey, mapValue);
                 if (tracer.isInfo()) {tracer.info("Putting [%s : %s] in %s<%s, %s> %s for %s%n", String.valueOf(mapKey), String.valueOf(mapValue),
                         result.getClass().getSimpleName(), classes[0].getSimpleName(), classes[1].getSimpleName(), argSpec.toString(), argDescription);}
-                parseResult.addRawStringValue(argSpec, keyValue[0]);
-                parseResult.addRawStringValue(argSpec, keyValue[1]);
+                parseResult.addStringValue(argSpec, keyValue[0]);
+                parseResult.addStringValue(argSpec, keyValue[1]);
             }
             parseResult.addOriginalStringValue(argSpec, raw);
         }
@@ -5239,7 +5239,7 @@ public class CommandLine {
                 if (tracer.isInfo()) {
                     tracer.info("Adding [%s] to %s for %s%n", String.valueOf(result.get(result.size() - 1)), argSpec.toString(), argDescription);
                 }
-                parseResult.addRawStringValue(argSpec, values[j]);
+                parseResult.addStringValue(argSpec, values[j]);
             }
             parseResult.addOriginalStringValue(argSpec, raw);
             return ++index;
