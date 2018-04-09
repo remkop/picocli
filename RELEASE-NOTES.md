@@ -36,7 +36,8 @@ No features have been promoted in this picocli release.
 - [#325] Enhancement: Allow custom type converter to map empty String to custom default value for empty options. Thanks to [jesselong](https://github.com/jesselong) for the suggestion.
 - [#303] Enhancement: Improve validation to prevent common mistakes.
 - [#327] Bugfix: Default values should not cause options and positional parameters to be added to ParseResult.
-- [#330] Bugfix: Interpreter should clear option's and positional parameter's rawStringValues list before parsing new input.
+- [#330] Bugfix: `Interpreter` should clear option's and positional parameter's rawStringValues list before parsing new input.
+- [#335] Bugfix: Abstract class `ArgSpec` should not implement `equals` and `hashCode`. 
 
 ## <a name="3.0.0-alpha-5-deprecated"></a> Deprecations
 See [3.0.0-alpha-1](https://github.com/remkop/picocli/releases/tag/v3.0.0-alpha-1#3.0.0-alpha-1-deprecated)

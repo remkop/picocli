@@ -3524,10 +3524,8 @@ public class CommandLine {
             private String[] splitValue(String value) {
                 return splitRegex().length() == 0 ? new String[] {value} : value.split(splitRegex());
             }
-            public boolean equals(Object obj) {
-                if (obj == this) { return true; }
-                if (!(obj instanceof ArgSpec)) { return false; }
-                ArgSpec other = (ArgSpec) obj;
+            protected boolean equalsImpl(ArgSpec other) {
+                if (other == this) { return true; }
                 boolean result = Assert.equals(this.defaultValue, other.defaultValue)
                         && Assert.equals(this.type, other.type)
                         && Assert.equals(this.arity, other.arity)
@@ -3540,7 +3538,7 @@ public class CommandLine {
                         ;
                 return result;
             }
-            public int hashCode() {
+            protected int hashCodeImpl() {
                 return 17
                         + 37 * Assert.hashCode(defaultValue)
                         + 37 * Assert.hashCode(type)
@@ -3796,7 +3794,7 @@ public class CommandLine {
                 if (obj == this) { return true; }
                 if (!(obj instanceof OptionSpec)) { return false; }
                 OptionSpec other = (OptionSpec) obj;
-                boolean result = super.equals(obj)
+                boolean result = super.equalsImpl(other)
                         && help == other.help
                         && usageHelp == other.usageHelp
                         && versionHelp == other.versionHelp
@@ -3804,7 +3802,7 @@ public class CommandLine {
                 return result;
             }
             public int hashCode() {
-                return super.hashCode()
+                return super.hashCodeImpl()
                         + 37 * Assert.hashCode(help)
                         + 37 * Assert.hashCode(usageHelp)
                         + 37 * Assert.hashCode(versionHelp)
@@ -3931,7 +3929,7 @@ public class CommandLine {
             public static Builder builder() { return new Builder(); }
 
             public int hashCode() {
-                return super.hashCode()
+                return super.hashCodeImpl()
                         + 37 * Assert.hashCode(capacity)
                         + 37 * Assert.hashCode(index);
             }
@@ -3943,7 +3941,8 @@ public class CommandLine {
                     return false;
                 }
                 PositionalParamSpec other = (PositionalParamSpec) obj;
-                return Assert.equals(this.capacity, other.capacity)
+                return super.equalsImpl(other)
+                        && Assert.equals(this.capacity, other.capacity)
                         && Assert.equals(this.index, other.index);
             }
     
