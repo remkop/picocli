@@ -221,7 +221,7 @@ public class CommandLineParseResultTest {
     }
 
     @Test
-    public void testPositionalValue() {
+    public void testMatchedPositionalValue() {
         class App {
             @Parameters(index = "0", arity = "0..1") int index0 = -1;
             @Parameters(index = "1", arity = "0..1") int index1 = -1;
@@ -239,13 +239,6 @@ public class CommandLineParseResultTest {
         assertEquals(Integer.valueOf(0), parseResult.matchedPositionalValue(0, 0));
         assertEquals(Integer.valueOf(1), parseResult.matchedPositionalValue(1, 1));
         assertNull(parseResult.matchedPositionalValue(2, null));
-
-        List<PositionalParamSpec> all = cmd.getCommandSpec().positionalParameters();
-        assertEquals(3, all.size());
-        assertEquals(Integer.valueOf(0), parseResult.matchedPositionalValue(all.get(0), 0));
-        assertEquals(Integer.valueOf(1), parseResult.matchedPositionalValue(all.get(1), 1));
-        assertEquals(Integer.valueOf(-1), parseResult.matchedPositionalValue(all.get(2), -1));
-        assertNull(parseResult.matchedPositionalValue(null, null));
     }
 
     @Test
