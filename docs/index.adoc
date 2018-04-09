@@ -908,7 +908,7 @@ unmatched arguments list returned by `CommandLine.getUnmatchedArguments()`.
 
 === Toggle Boolean Flags
 By default, boolean flag options without a parameter are "toggled" when the option is matched on the command line:
-if the value is `true` it is set to `false`, and when the value is `false` it is set to `true`.
+if the previous value was `true` it is set to `false`, and when the value was `false` it is set to `true`.
 From picocli 3.0, applications can call `CommandLine.setToggleBooleanFlags(false)` to switch this behaviour off.
 If toggling is off, flags are simply set to `true` when the option is matched on the command line.
 
