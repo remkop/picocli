@@ -34,6 +34,7 @@ No features have been promoted in this picocli release.
 - [#323] Enhancement: Remove dependency on java.sql package: picocli should only require the java.base module when running in Java 9.
 - [#325] Enhancement: Allow custom type converter to map empty String to custom default value for empty options. Thanks to [jesselong](https://github.com/jesselong) for the suggestion.
 - [#303] Enhancement: Improve validation to prevent common mistakes.
+- [#327] Bugfix: Default values should not cause options and positional parameters to be added to ParseResult.
 - [#330] Bugfix: Interpreter should clear option's and positional parameter's rawStringValues list before parsing new input.
 
 ## <a name="3.0.0-alpha-5-deprecated"></a> Deprecations

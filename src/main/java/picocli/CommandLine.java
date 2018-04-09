@@ -3024,6 +3024,36 @@ public class CommandLine {
             void initVersionProvider(Class<? extends IVersionProvider> value, IFactory factory) {
                 if (initializable(versionProvider, value, NoVersionProvider.class)) { versionProvider = (DefaultFactory.createVersionProvider(factory, value)); }
             }
+
+            /** Returns the option with the specified short name, or {@code null} if no option with that name is defined for this command. */
+            public OptionSpec findOption(char shortName) { return findOption(shortName, options()); }
+            /** Returns the option with the specified name, or {@code null} if no option with that name is defined for this command.
+             * @param name used to search the options. May include option name prefix characters or not. */
+            public OptionSpec findOption(String name) { return findOption(name, options()); }
+
+            static OptionSpec findOption(char shortName, Iterable<OptionSpec> options) {
+                for (OptionSpec option : options) {
+                    for (String name : option.names()) {
+                        if (name.length() == 2 && name.charAt(0) == '-' && name.charAt(1) == shortName) { return option; }
+                        if (name.length() == 1 && name.charAt(0) == shortName) { return option; }
+                    }
+                }
+                return null;
+            }
+            static OptionSpec findOption(String name, List<OptionSpec> options) {
+                for (OptionSpec option : options) {
+                    for (String prefixed : option.names()) {
+                        if (prefixed.equals(name) || stripPrefix(prefixed).equals(name)) { return option; }
+                    }
+                }
+                return null;
+            }
+            private static String stripPrefix(String prefixed) {
+                for (int i = 0; i < prefixed.length(); i++) {
+                    if (Character.isJavaIdentifierPart(prefixed.charAt(i))) { return prefixed.substring(i); }
+                }
+                return prefixed;
+            }
         }
         private static boolean initializable(Object current, Object candidate, Object defaultValue) {
             return current == null && !Assert.notNull(defaultValue, "defaultValue").equals(candidate);
@@ -4341,6 +4371,7 @@ public class CommandLine {
             private ParseResult subcommand;
             private boolean usageHelpRequested;
             private boolean versionHelpRequested;
+            boolean isInitializingDefaultValues;
 
             private Builder(CommandSpec spec) { commandSpec = Assert.notNull(spec, "commandSpec"); }
             /** Creates and returns a new {@code ParseResult} instance for this builder's configuration. */
@@ -4352,17 +4383,18 @@ public class CommandLine {
              * @param position the command line position at which the  {@code PositionalParamSpec} was matched. Ignored for {@code OptionSpec}s.
              * @return this builder for method chaining */
             public Builder add(ArgSpec arg, int position) {
-                if (arg.isOption()) { options.add((OptionSpec) arg); }
+                if (arg.isOption()) { addOption((OptionSpec) arg); }
                 else { addPositionalParam((PositionalParamSpec) arg, position); }
                 return this;
             }
             /** Adds the specified {@code OptionSpec} to the list of options that were matched on the command line. */
-            public Builder addOption(OptionSpec option) { options.add(option); return this; }
+            public Builder addOption(OptionSpec option) { if (!isInitializingDefaultValues) {options.add(option);} return this; }
             /** Adds the specified {@code PositionalParamSpec} to the list of parameters that were matched on the command line.
              * @param positionalParam the matched {@code PositionalParamSpec}
              * @param position the command line position at which the  {@code PositionalParamSpec} was matched.
              * @return this builder for method chaining */
             public Builder addPositionalParam(PositionalParamSpec positionalParam, int position) {
+                if (isInitializingDefaultValues) { return this; }
                 positionals.add(positionalParam);
                 while (positionalParams.size() <= position) { positionalParams.add(new ArrayList<PositionalParamSpec>()); }
                 positionalParams.get(position).add(positionalParam);
@@ -4376,13 +4408,16 @@ public class CommandLine {
             public Builder subcommand(ParseResult subcommand) { this.subcommand = subcommand; return this; }
             /** Sets the specified command line arguments that were parsed. */
             public Builder originalArgs(String[] originalArgs) { originalArgList.addAll(Arrays.asList(originalArgs)); return this;}
+
+            void addRawStringValue     (ArgSpec argSpec, String value) { if (!isInitializingDefaultValues) { argSpec.rawStringValues.add(value);} }
+            void addOriginalStringValue(ArgSpec argSpec, String value) { if (!isInitializingDefaultValues) { argSpec.originalStringValues.add(value); } }
         }
         private final CommandSpec commandSpec;
-        private final List<OptionSpec> options;
-        private final List<PositionalParamSpec> uniquePositionals;
+        private final List<OptionSpec> matchedOptions;
+        private final List<PositionalParamSpec> matchedUniquePositionals;
         private final List<String> originalArgs;
         private final List<String> unmatched;
-        private final List<List<PositionalParamSpec>> positionalParams;
+        private final List<List<PositionalParamSpec>> matchedPositionalParams;
         private final ParseResult subcommand;
         private final boolean usageHelpRequested;
         private final boolean versionHelpRequested;
@@ -4390,71 +4425,79 @@ public class CommandLine {
         private ParseResult(ParseResult.Builder builder) {
             commandSpec = builder.commandSpec;
             subcommand = builder.subcommand;
-            options = new ArrayList<OptionSpec>(builder.options);
+            matchedOptions = new ArrayList<OptionSpec>(builder.options);
             unmatched = new ArrayList<String>(builder.unmatched);
             originalArgs = new ArrayList<String>(builder.originalArgList);
-            uniquePositionals = new ArrayList<PositionalParamSpec>(builder.positionals);
-            positionalParams = new ArrayList<List<PositionalParamSpec>>(builder.positionalParams);
+            matchedUniquePositionals = new ArrayList<PositionalParamSpec>(builder.positionals);
+            matchedPositionalParams = new ArrayList<List<PositionalParamSpec>>(builder.positionalParams);
             usageHelpRequested = builder.usageHelpRequested;
             versionHelpRequested = builder.versionHelpRequested;
         }
-        /** Returns the option with the specified short name, or {@code null} if no option with that name was matched on the command one. */
-        public OptionSpec option(char shortName) {
-            for (OptionSpec option : options) {
-                for (String name : option.names()) {
-                    if (name.length() == 2 && name.charAt(0) == '-' && name.charAt(1) == shortName) { return option; }
-                    if (name.length() == 1 && name.charAt(0) == shortName) { return option; }
-                }
-            }
-            return null;
-        }
-        /** Returns the option with the specified name, or {@code null} if no option with that name was matched on the command one.
+        /** Returns the option with the specified short name, or {@code null} if no option with that name was matched
+         * on the command line.
+         * <p>Use {@link OptionSpec#getValue() getValue} on the returned {@code OptionSpec} to get the matched value (or values),
+         * converted to the type of the option. Alternatively, use {@link OptionSpec#rawStringValues() stringValues}
+         * to get the matched String values after they were {@linkplain OptionSpec#splitRegex() split} into parts, or
+         * {@link OptionSpec#originalStringValues() originalStringValues} to get the original String values that were
+         * matched on the command line, before any processing.
+         * </p><p>To get the {@linkplain OptionSpec#defaultValue() default value} of an option that was
+         * {@linkplain #hasOption(char) <em>not</em> matched} on the command line, use
+         * {@code parseResult.commandSpec().findOption(shortName).getValue()}. </p>
+         * @see CommandSpec#findOption(char)  */
+        public OptionSpec option(char shortName) { return CommandSpec.findOption(shortName, matchedOptions); }
+
+        /** Returns the option with the specified name, or {@code null} if no option with that name was matched on the command line.
+         * <p>Use {@link OptionSpec#getValue() getValue} on the returned {@code OptionSpec} to get the matched value (or values),
+         * converted to the type of the option. Alternatively, use {@link OptionSpec#rawStringValues() stringValues}
+         * to get the matched String values after they were {@linkplain OptionSpec#splitRegex() split} into parts, or
+         * {@link OptionSpec#originalStringValues() originalStringValues} to get the original String values that were
+         * matched on the command line, before any processing.
+         * </p><p>To get the {@linkplain OptionSpec#defaultValue() default value} of an option that was
+         * {@linkplain #hasOption(String) <em>not</em> matched} on the command line, use
+         * {@code parseResult.commandSpec().findOption(String).getValue()}. </p>
+         * @see CommandSpec#findOption(String)
          * @param name used to search the matched options. May be an alias of the option name that was actually specified on the command line.
          *      The specified name may include option name prefix characters or not. */
-        public OptionSpec option(String name) {
-            for (OptionSpec option : options) {
-                for (String prefixed : option.names()) {
-                    if (prefixed.equals(name) || stripPrefix(prefixed).equals(name)) { return option; }
-                }
-            }
-            return null;
-        }
-        private String stripPrefix(String prefixed) {
-            for (int i = 0; i < prefixed.length(); i++) {
-                if (Character.isJavaIdentifierPart(prefixed.charAt(i))) { return prefixed.substring(i); }
-            }
-            return prefixed;
-        }
+        public OptionSpec option(String name) { return CommandSpec.findOption(name, matchedOptions); }
+
         /** Returns the {@code PositionalParamSpec} that was matched at the specified position, or {@code null} if no positional parameters were matched at that position. */
         public PositionalParamSpec positional(int position) {
-            if (positionalParams.size() <= position || positionalParams.get(position).isEmpty()) { return null; }
-            return positionalParams.get(position).get(0);
+            if (matchedPositionalParams.size() <= position || matchedPositionalParams.get(position).isEmpty()) { return null; }
+            return matchedPositionalParams.get(position).get(0);
         }
         /** Returns the {@code CommandSpec} for the matched command. */
         public CommandSpec commandSpec()                    { return commandSpec; }
+
         /** Returns whether an option whose aliases include the specified short name was matched on the command line.
          * @param shortName used to search the matched options. May be an alias of the option name that was actually specified on the command line. */
-        public boolean hasOption(char shortName)            { return option(shortName) != null; }
+        public boolean hasOption(char shortName)     { return option(shortName) != null; }
         /** Returns whether an option whose aliases include the specified name was matched on the command line.
          * @param name used to search the matched options. May be an alias of the option name that was actually specified on the command line.
          *      The specified name may include option name prefix characters or not. */
-        public boolean hasOption(String name)               { return option(name) != null; }
+        public boolean hasOption(String name)        { return option(name) != null; }
         /** Returns whether the specified option was matched on the command line. */
-        public boolean hasOption(OptionSpec option)         { return options.contains(option); }
+        public boolean hasOption(OptionSpec option)  { return matchedOptions.contains(option); }
+
         /** Returns whether a positional parameter was matched at the specified position. */
-        public boolean hasPositional(int position)          { return positional(position) != null; }
+        public boolean hasPositional(int position)   { return positional(position) != null; }
         /** Returns whether the specified positional parameter was matched on the command line. */
-        public boolean hasPositional(PositionalParamSpec positional) { return uniquePositionals.contains(positional); }
+        public boolean hasPositional(PositionalParamSpec positional) { return matchedUniquePositionals.contains(positional); }
+
         /** Returns a list of matched options, in the order they were found on the command line. */
-        public List<OptionSpec> options()                   { return Collections.unmodifiableList(options); }
+        public List<OptionSpec> options()            { return Collections.unmodifiableList(matchedOptions); }
+
         /** Returns a list of matched positional parameters. */
-        public List<PositionalParamSpec> positionalParams() { return Collections.unmodifiableList(uniquePositionals); }
+        public List<PositionalParamSpec> positionalParams() { return Collections.unmodifiableList(matchedUniquePositionals); }
+
         /** Returns a list of command line arguments that did not match any options or positional parameters. */
         public List<String> unmatched()                     { return Collections.unmodifiableList(unmatched); }
+
         /** Returns the command line arguments that were parsed. */
         public List<String> originalArgs()                  { return Collections.unmodifiableList(originalArgs); }
+
         /** Returns the command line argument String value of the option with the specified name, or {@code null} if no option with the specified name was matched. */
         public String rawOptionValue(char shortName)        { return rawOptionValue(shortName, null); }
+
         /** Returns the command line argument String value of the option with the specified name, or {@code null} if no option with the specified name was matched.
          * @param name used to search the matched options. May be an alias of the option name that was actually specified on the command line.
          *      The specified name may include option name prefix characters or not. */
@@ -4469,6 +4512,7 @@ public class CommandLine {
         public String rawOptionValue(String name, String defaultValue)       { return rawOptionValue(option(name), defaultValue); }
         /** Returns the command line argument String value of the specified option, or the specified default value if the specified option is {@code null}. */
         public String rawOptionValue(OptionSpec option, String defaultValue) { return option == null || option.rawStringValues().isEmpty() ? defaultValue : option.rawStringValues().get(0); }
+
         /** Returns the command line argument String value of the positional parameter at the specified position, or {@code null} if no positional parameter was matched at that position. */
         public String rawPositionalValue(int position)                       { return rawPositionalValue(positional(position), position, null); }
         /** Returns the command line argument String value of the positional parameter at the specified position, or the specified default value if no positional parameter was matched at that position. */
@@ -4479,6 +4523,7 @@ public class CommandLine {
             int pos = position - positional.index().min;
             return positional.rawStringValues().size() <= pos ? defaultValue : positional.rawStringValues().get(pos);
         }
+
         /** Returns all command line argument String values matched for the option with the specified name, or an empty list if no option with the specified name was matched. */
         public List<String> rawOptionValues(char shortName)    { return rawOptionValues(option(shortName)); }
         /** Returns all command line argument String values matched for the option with the specified name, or an empty list if no option with the specified name was matched.
@@ -4487,6 +4532,7 @@ public class CommandLine {
         public List<String> rawOptionValues(String name)       { return rawOptionValues(option(name)); }
         /** Returns all command line argument String values matched for the specified option, or an empty list if the specified option is {@code null}. */
         public List<String> rawOptionValues(OptionSpec option) { return option == null ? Collections.<String>emptyList() : option.rawStringValues(); }
+
         /** Returns the command line argument value of the option with the specified name, converted to the {@linkplain OptionSpec#type() type} of the option, or the specified default value if no option with the specified name was matched. */
         public <T> T optionValue(char shortName, T defaultValue)    { return optionValue(option(shortName), defaultValue); }
         /** Returns the command line argument value of the option with the specified name, converted to the {@linkplain OptionSpec#type() type} of the option, or the specified default value if no option with the specified name was matched. */
@@ -4494,6 +4540,7 @@ public class CommandLine {
         /** Returns the command line argument value of the specified option, converted to the {@linkplain OptionSpec#type() type} of the option, or the specified default value if the specified option is {@code null}. */
         @SuppressWarnings("unchecked")
         public <T> T optionValue(OptionSpec option, T defaultValue) { return option == null ? defaultValue : (T) option.getValue(); }
+
         /** Returns the command line argument value of the positional parameter at the specified position, converted to the {@linkplain PositionalParamSpec#type() type} of the positional parameter, or the specified default value if no positional parameter was matched at that position. */
         public <T> T positionalValue(int position, T defaultValue)  { return positionalValue(positional(position), defaultValue); }
         /** Returns the command line argument value of the specified positional parameter, converted to the {@linkplain PositionalParamSpec#type() type} of the positional parameter, or the specified default value if the specified positional parameter is {@code null}. */
@@ -4502,13 +4549,18 @@ public class CommandLine {
 
         /** Returns {@code true} if a subcommand was matched on the command line, {@code false} otherwise. */
         public boolean hasSubcommand()          { return subcommand != null; }
+
         /** Returns the {@code ParseResult} for the subcommand of this command that was matched on the command line, or {@code null} if no subcommand was matched. */
         public ParseResult subcommand()         { return subcommand; }
+
         /** Returns {@code true} if one of the options that was matched on the command line is a {@link OptionSpec#usageHelp() usageHelp} option. */
         public boolean isUsageHelpRequested()   { return usageHelpRequested; }
+
         /** Returns {@code true} if one of the options that was matched on the command line is a {@link OptionSpec#versionHelp() versionHelp} option. */
         public boolean isVersionHelpRequested() { return versionHelpRequested; }
-        /** Returns this {@code ParseResult} as a list of {@code CommandLine} objects, one for each matched command/subcommand. */
+
+        /** Returns this {@code ParseResult} as a list of {@code CommandLine} objects, one for each matched command/subcommand.
+         * For backwards compatibility with pre-3.0 methods. */
         public List<CommandLine> asCommandLineList() {
             List<CommandLine> result = new ArrayList<CommandLine>();
             ParseResult pr = this;
@@ -4711,8 +4763,10 @@ public class CommandLine {
         }
 
         private void applyDefaultValues(List<ArgSpec> required) throws Exception {
+            parseResult.isInitializingDefaultValues = true;
             for (OptionSpec option              : commandSpec.options())              { applyDefault(option,     required); }
             for (PositionalParamSpec positional : commandSpec.positionalParameters()) { applyDefault(positional, required); }
+            parseResult.isInitializingDefaultValues = false;
         }
 
         private void applyDefault(ArgSpec arg, List<ArgSpec> required) throws Exception {
@@ -5036,8 +5090,8 @@ public class CommandLine {
             if (tracer.level.isEnabled(level)) { level.print(tracer, traceMessage, argSpec.toString(),
                     String.valueOf(oldValue), String.valueOf(newValue), argDescription); }
             argSpec.setValue(newValue);
-            argSpec.originalStringValues.add(value); // #279 track empty string value if no command line argument was consumed
-            argSpec.rawStringValues.add(value);
+            parseResult.addOriginalStringValue(argSpec, value);// #279 track empty string value if no command line argument was consumed
+            parseResult.addRawStringValue(argSpec, value);
             parseResult.add(argSpec, position);
             return result;
         }
@@ -5112,10 +5166,10 @@ public class CommandLine {
                 result.put(mapKey, mapValue);
                 if (tracer.isInfo()) {tracer.info("Putting [%s : %s] in %s<%s, %s> %s for %s%n", String.valueOf(mapKey), String.valueOf(mapValue),
                         result.getClass().getSimpleName(), classes[0].getSimpleName(), classes[1].getSimpleName(), argSpec.toString(), argDescription);}
-                argSpec.rawStringValues.add(keyValue[0]);
-                argSpec.rawStringValues.add(keyValue[1]);
+                parseResult.addRawStringValue(argSpec, keyValue[0]);
+                parseResult.addRawStringValue(argSpec, keyValue[1]);
             }
-            argSpec.originalStringValues.add(raw);
+            parseResult.addOriginalStringValue(argSpec, raw);
         }
 
         private void checkMaxArityExceeded(Range arity, int size, ArgSpec argSpec, String argDescription) {
@@ -5224,9 +5278,9 @@ public class CommandLine {
                 if (tracer.isInfo()) {
                     tracer.info("Adding [%s] to %s for %s%n", String.valueOf(result.get(result.size() - 1)), argSpec.toString(), argDescription);
                 }
-                argSpec.rawStringValues.add(values[j]);
+                parseResult.addRawStringValue(argSpec, values[j]);
             }
-            argSpec.originalStringValues.add(raw);
+            parseResult.addOriginalStringValue(argSpec, raw);
             return ++index;
         }
 

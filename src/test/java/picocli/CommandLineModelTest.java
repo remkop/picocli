@@ -20,7 +20,6 @@ import java.io.UnsupportedEncodingException;
 import java.sql.Types;
 import java.util.*;
 
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 
@@ -1010,7 +1009,13 @@ public class CommandLineModelTest {
         CommandSpec cmd = CommandSpec.create().addOption(OptionSpec.builder("-x").defaultValue("123").type(int.class).build());
 
         ParseResult parseResult = new CommandLine(cmd).parseArgs();
-        assertEquals(Integer.valueOf(123), parseResult.optionValue('x', -1));
+        assertFalse(parseResult.hasOption('x'));
+        // TODO this method should be renamed to matchedOptionValue
+        assertEquals(Integer.valueOf(-1), parseResult.optionValue('x', -1));
+
+        // TODO optionValue should return the value of the option, matched or not
+        //assertEquals(Integer.valueOf(123), parseResult.optionValue('x'));
+        assertEquals(Integer.valueOf(123), parseResult.commandSpec().findOption('x').getValue());
     }
 
     @Test
@@ -1018,7 +1023,13 @@ public class CommandLineModelTest {
         CommandSpec cmd = CommandSpec.create().add(PositionalParamSpec.builder().defaultValue("123").type(int.class).build());
 
         ParseResult parseResult = new CommandLine(cmd).parseArgs();
-        assertEquals(Integer.valueOf(123), parseResult.positionalValue(0, -1));
+        assertFalse(parseResult.hasPositional(0));
+        // TODO this method should be renamed to matchedPositionalValue
+        assertEquals(Integer.valueOf(-1), parseResult.positionalValue(0, -1));
+
+        // TODO positionalValue should return the value of the option, matched or not
+        //assertEquals(Integer.valueOf(123), parseResult.positionalValue(0));
+        assertEquals(Integer.valueOf(123), parseResult.commandSpec().positionalParameters().get(0).getValue());
     }
 
     @Test
@@ -1031,7 +1042,13 @@ public class CommandLineModelTest {
 
         cmd = new CommandLine(CommandSpec.create().addOption(x));
         ParseResult parseResult = cmd.parseArgs();
-        assertEquals(Integer.valueOf(54321), parseResult.optionValue('x', -1));
+        assertFalse(parseResult.hasOption('x'));
+        // TODO this method should be renamed to matchedOptionValue
+        assertEquals(Integer.valueOf(-1), parseResult.optionValue('x', -1));
+
+        // TODO optionValue should return the value of the option, matched or not
+        //assertEquals(Integer.valueOf(54321), parseResult.optionValue('x'));
+        assertEquals(Integer.valueOf(54321), parseResult.commandSpec().findOption('x').getValue());
     }
 
     @Test
@@ -1044,7 +1061,14 @@ public class CommandLineModelTest {
 
         cmd = new CommandLine(CommandSpec.create().add(x));
         ParseResult parseResult = cmd.parseArgs();
-        assertEquals(Integer.valueOf(54321), parseResult.positionalValue(0, -1));
+
+        // default not in the parse result
+        assertFalse(parseResult.hasPositional(0));
+        assertEquals(Integer.valueOf(-1), parseResult.positionalValue(0, -1));
+
+        // but positional spec does have the default value
+        assertEquals(Integer.valueOf(54321), parseResult.commandSpec().positionalParameters().get(0).getValue());
+
     }
 
     @Test
@@ -1333,5 +1357,23 @@ public class CommandLineModelTest {
         assertEquals(Arrays.asList("$$$$"), parseResult2.positional(0).rawStringValues());
         assertEquals(Arrays.asList("$$$$"), parseResult2.positional(0).originalStringValues());
 
+    }
+
+    @Test
+    public void testInitializingDefaultsShouldNotAddOptionToParseResult() {
+        CommandSpec spec = CommandSpec.create()
+                .addOption(OptionSpec.builder("-x").type(String.class).defaultValue("xyz").build());
+        CommandLine cmd = new CommandLine(spec);
+        ParseResult parseResult = cmd.parseArgs();
+        assertFalse(parseResult.hasOption('x'));
+    }
+
+    @Test
+    public void testInitializingDefaultsShouldNotAddPositionalToParseResult() {
+        CommandSpec spec = CommandSpec.create()
+                .addPositional(PositionalParamSpec.builder().defaultValue("xyz").build());
+        CommandLine cmd = new CommandLine(spec);
+        ParseResult parseResult = cmd.parseArgs();
+        assertFalse(parseResult.hasPositional(0));
     }
 }
