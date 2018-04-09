@@ -26,11 +26,12 @@ No features have been promoted in this picocli release.
 
 ## <a name="3.0.0-alpha-5-fixes"></a> Fixed issues
 
-- [#329] Enhancement and New API: Add parser configuration to control whether boolean flags should be toggled.
-- [#328] Enhancement and New API: Provide getter methods on `OptionSpec.Builder` and `PositionalParamSpec.Builder`.
-- [#326] Enhancement and New API: Add parser configuration to treat unmatched options as positional parameters.
-- [#283] Enhancement and New API: Provide `getMissing` method on MissingParameterException to get a reference to the problematic options and positional parameters. Thanks to [jcapsule](https://github.com/jcapsule) for the suggestion.
-- [#334] Enhancement and API Change: Renamed `ArgSpec.rawStringValues()` to `ArgSpec.stringValues()`.
+- [#329] New API: Add parser configuration to control whether boolean flags should be toggled.
+- [#328] New API: Provide getter methods on `OptionSpec.Builder` and `PositionalParamSpec.Builder`.
+- [#326] New API: Add parser configuration to treat unmatched options as positional parameters.
+- [#283] New API: Provide `getMissing` method on MissingParameterException to get a reference to the problematic options and positional parameters. Thanks to [jcapsule](https://github.com/jcapsule) for the suggestion.
+- [#334] API Change: Renamed `ArgSpec.rawStringValues()` to `ArgSpec.stringValues()`.
+- [#342] API Change: Prefix ParseResult methods with `matched` if they return only matched options/positionals.
 - [#333] Enhancement: Added subcommand to synopsis in generated usage help. Thanks to [jcapsule](https://github.com/jcapsule) for the pull request.
 - [#323] Enhancement: Remove dependency on java.sql package: picocli should only require the java.base module when running in Java 9.
 - [#325] Enhancement: Allow custom type converter to map empty String to custom default value for empty options. Thanks to [jesselong](https://github.com/jesselong) for the suggestion.
@@ -44,7 +45,14 @@ See [3.0.0-alpha-1](https://github.com/remkop/picocli/releases/tag/v3.0.0-alpha-
 
 ## <a name="3.0.0-alpha-5-breaking-changes"></a> Potential breaking changes
 
-- Renamed `ArgSpec.rawStringValues()` to `ArgSpec.stringValues()`.
+* Renamed `ArgSpec.rawStringValues()` to `ArgSpec.stringValues()`.
+* Renames `ParseResult` methods with `matched` if they return only matched options/positionals:
+    * `options` to `matchedOptions`
+    * `positionalParams` to `matchedPositionals`
+    * `option(char)`, `option(String)` to `matchedOption`
+    * `positional(int)` to `matchedPositional`
+    * `hasOption(char)`, `hasOption(String)`, `hasOption(OptionSpec)` to `hasMatchedOption`
+    * `hasPositional(int)`, `hasPositional(PositionalParamSpec)` to `hasMatchedPositional`
 
 
 See also breaking changes for 

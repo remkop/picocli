@@ -991,7 +991,7 @@ public class CommandLineModelTest {
 
         ParseResult parseResult = new CommandLine(cmd).parseArgs("-x", "1,2,3");
         assertEquals(Arrays.asList("1", "2", "3"), parseResult.rawOptionValues('x')); // raw is split but untyped
-        assertEquals(Arrays.asList("1,2,3"), parseResult.option('x').originalStringValues()); // the original command line argument
+        assertEquals(Arrays.asList("1,2,3"), parseResult.matchedOption('x').originalStringValues()); // the original command line argument
         assertArrayEquals(new String[]{"1", "2", "3"}, parseResult.optionValue('x', (String[]) null));
 
         CommandSpec cmd2 = CommandSpec.create().addOption(OptionSpec.builder("-x").arity("1..3").splitRegex(",").build());
@@ -1009,7 +1009,7 @@ public class CommandLineModelTest {
         CommandSpec cmd = CommandSpec.create().addOption(OptionSpec.builder("-x").defaultValue("123").type(int.class).build());
 
         ParseResult parseResult = new CommandLine(cmd).parseArgs();
-        assertFalse(parseResult.hasOption('x'));
+        assertFalse(parseResult.hasMatchedOption('x'));
         // TODO this method should be renamed to matchedOptionValue
         assertEquals(Integer.valueOf(-1), parseResult.optionValue('x', -1));
 
@@ -1023,7 +1023,7 @@ public class CommandLineModelTest {
         CommandSpec cmd = CommandSpec.create().add(PositionalParamSpec.builder().defaultValue("123").type(int.class).build());
 
         ParseResult parseResult = new CommandLine(cmd).parseArgs();
-        assertFalse(parseResult.hasPositional(0));
+        assertFalse(parseResult.hasMatchedPositional(0));
         // TODO this method should be renamed to matchedPositionalValue
         assertEquals(Integer.valueOf(-1), parseResult.positionalValue(0, -1));
 
@@ -1042,7 +1042,7 @@ public class CommandLineModelTest {
 
         cmd = new CommandLine(CommandSpec.create().addOption(x));
         ParseResult parseResult = cmd.parseArgs();
-        assertFalse(parseResult.hasOption('x'));
+        assertFalse(parseResult.hasMatchedOption('x'));
         // TODO this method should be renamed to matchedOptionValue
         assertEquals(Integer.valueOf(-1), parseResult.optionValue('x', -1));
 
@@ -1063,7 +1063,7 @@ public class CommandLineModelTest {
         ParseResult parseResult = cmd.parseArgs();
 
         // default not in the parse result
-        assertFalse(parseResult.hasPositional(0));
+        assertFalse(parseResult.hasMatchedPositional(0));
         assertEquals(Integer.valueOf(-1), parseResult.positionalValue(0, -1));
 
         // but positional spec does have the default value
@@ -1342,20 +1342,20 @@ public class CommandLineModelTest {
                 .addPositional(PositionalParamSpec.builder().build());
         CommandLine cmd = new CommandLine(spec);
         ParseResult parseResult = cmd.parseArgs("-x", "XVAL", "POSITIONAL");
-        assertEquals("XVAL", parseResult.option('x').getValue());
-        assertEquals(Arrays.asList("XVAL"), parseResult.option('x').stringValues());
-        assertEquals(Arrays.asList("XVAL"), parseResult.option('x').originalStringValues());
-        assertEquals("POSITIONAL", parseResult.positional(0).getValue());
-        assertEquals(Arrays.asList("POSITIONAL"), parseResult.positional(0).stringValues());
-        assertEquals(Arrays.asList("POSITIONAL"), parseResult.positional(0).originalStringValues());
+        assertEquals("XVAL", parseResult.matchedOption('x').getValue());
+        assertEquals(Arrays.asList("XVAL"), parseResult.matchedOption('x').stringValues());
+        assertEquals(Arrays.asList("XVAL"), parseResult.matchedOption('x').originalStringValues());
+        assertEquals("POSITIONAL", parseResult.matchedPositional(0).getValue());
+        assertEquals(Arrays.asList("POSITIONAL"), parseResult.matchedPositional(0).stringValues());
+        assertEquals(Arrays.asList("POSITIONAL"), parseResult.matchedPositional(0).originalStringValues());
 
         ParseResult parseResult2 = cmd.parseArgs("-x", "222", "$$$$");
-        assertEquals("222", parseResult2.option('x').getValue());
-        assertEquals(Arrays.asList("222"), parseResult2.option('x').stringValues());
-        assertEquals(Arrays.asList("222"), parseResult2.option('x').originalStringValues());
-        assertEquals("$$$$", parseResult2.positional(0).getValue());
-        assertEquals(Arrays.asList("$$$$"), parseResult2.positional(0).stringValues());
-        assertEquals(Arrays.asList("$$$$"), parseResult2.positional(0).originalStringValues());
+        assertEquals("222", parseResult2.matchedOption('x').getValue());
+        assertEquals(Arrays.asList("222"), parseResult2.matchedOption('x').stringValues());
+        assertEquals(Arrays.asList("222"), parseResult2.matchedOption('x').originalStringValues());
+        assertEquals("$$$$", parseResult2.matchedPositional(0).getValue());
+        assertEquals(Arrays.asList("$$$$"), parseResult2.matchedPositional(0).stringValues());
+        assertEquals(Arrays.asList("$$$$"), parseResult2.matchedPositional(0).originalStringValues());
 
     }
 
@@ -1365,7 +1365,7 @@ public class CommandLineModelTest {
                 .addOption(OptionSpec.builder("-x").type(String.class).defaultValue("xyz").build());
         CommandLine cmd = new CommandLine(spec);
         ParseResult parseResult = cmd.parseArgs();
-        assertFalse(parseResult.hasOption('x'));
+        assertFalse(parseResult.hasMatchedOption('x'));
     }
 
     @Test
@@ -1374,6 +1374,6 @@ public class CommandLineModelTest {
                 .addPositional(PositionalParamSpec.builder().defaultValue("xyz").build());
         CommandLine cmd = new CommandLine(spec);
         ParseResult parseResult = cmd.parseArgs();
-        assertFalse(parseResult.hasPositional(0));
+        assertFalse(parseResult.hasMatchedPositional(0));
     }
 }

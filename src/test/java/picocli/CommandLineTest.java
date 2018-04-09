@@ -823,9 +823,9 @@ public class CommandLineTest {
         CommandLine cmd = new CommandLine(app);
         cmd.setUnmatchedOptionsArePositionalParams(true);
         ParseResult parseResult = cmd.parseArgs("-x", "-a", "AAA");
-        assertTrue(parseResult.hasPositional(0));
+        assertTrue(parseResult.hasMatchedPositional(0));
         assertArrayEquals(new String[]{"-x"}, parseResult.positionalValue(0, new String[0]));
-        assertTrue(parseResult.hasOption("a"));
+        assertTrue(parseResult.hasMatchedOption("a"));
         assertEquals("AAA", parseResult.optionValue("a", null));
 
         assertArrayEquals(new String[]{"-x"}, app.remainder);
