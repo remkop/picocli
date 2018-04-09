@@ -720,17 +720,17 @@ public class CommandLineModelTest {
         List<CommandLine> parsed1 = new CommandLine(new Sample()).parse();// not specified
         OptionSpec option1 = parsed1.get(0).getCommandSpec().optionsMap().get("--foo");
         assertNull("optional option is null when option not specified", option1.getValue());
-        assertTrue("optional option has no raw string value when option not specified", option1.rawStringValues().isEmpty());
+        assertTrue("optional option has no string value when option not specified", option1.stringValues().isEmpty());
 
         List<CommandLine> parsed2 = new CommandLine(new Sample()).parse("--foo");// specified without value
         OptionSpec option2 = parsed2.get(0).getCommandSpec().optionsMap().get("--foo");
         assertEquals("optional option is empty string when specified without args", "", option2.getValue());
-        assertEquals("optional option raw string value when specified without args", "", option2.rawStringValues().get(0));
+        assertEquals("optional option string value when specified without args", "", option2.stringValues().get(0));
 
         List<CommandLine> parsed3 = new CommandLine(new Sample()).parse("--foo", "value");// specified with value
         OptionSpec option3 = parsed3.get(0).getCommandSpec().optionsMap().get("--foo");
         assertEquals("optional option is empty string when specified without args", "value", option3.getValue());
-        assertEquals("optional option raw string value when specified without args", "value", option3.rawStringValues().get(0));
+        assertEquals("optional option string value when specified without args", "value", option3.stringValues().get(0));
     }
 
     @Test
@@ -1343,18 +1343,18 @@ public class CommandLineModelTest {
         CommandLine cmd = new CommandLine(spec);
         ParseResult parseResult = cmd.parseArgs("-x", "XVAL", "POSITIONAL");
         assertEquals("XVAL", parseResult.option('x').getValue());
-        assertEquals(Arrays.asList("XVAL"), parseResult.option('x').rawStringValues());
+        assertEquals(Arrays.asList("XVAL"), parseResult.option('x').stringValues());
         assertEquals(Arrays.asList("XVAL"), parseResult.option('x').originalStringValues());
         assertEquals("POSITIONAL", parseResult.positional(0).getValue());
-        assertEquals(Arrays.asList("POSITIONAL"), parseResult.positional(0).rawStringValues());
+        assertEquals(Arrays.asList("POSITIONAL"), parseResult.positional(0).stringValues());
         assertEquals(Arrays.asList("POSITIONAL"), parseResult.positional(0).originalStringValues());
 
         ParseResult parseResult2 = cmd.parseArgs("-x", "222", "$$$$");
         assertEquals("222", parseResult2.option('x').getValue());
-        assertEquals(Arrays.asList("222"), parseResult2.option('x').rawStringValues());
+        assertEquals(Arrays.asList("222"), parseResult2.option('x').stringValues());
         assertEquals(Arrays.asList("222"), parseResult2.option('x').originalStringValues());
         assertEquals("$$$$", parseResult2.positional(0).getValue());
-        assertEquals(Arrays.asList("$$$$"), parseResult2.positional(0).rawStringValues());
+        assertEquals(Arrays.asList("$$$$"), parseResult2.positional(0).stringValues());
         assertEquals(Arrays.asList("$$$$"), parseResult2.positional(0).originalStringValues());
 
     }

@@ -3361,7 +3361,7 @@ public class CommandLine {
             private final IGetter getter;
             private final ISetter setter;
             private final Range arity;
-            private List<String> rawStringValues = new ArrayList<String>();
+            private List<String> stringValues = new ArrayList<String>();
             private List<String> originalStringValues = new ArrayList<String>();
             protected String toString;
     
@@ -3497,10 +3497,10 @@ public class CommandLine {
             /** Returns the untyped command line arguments matched by this option or positional parameter spec.
              * @return the matched arguments after {@linkplain #splitRegex() splitting}, but before type conversion.
              *      For map properties, {@code "key=value"} values are split into the key and the value part. */
-            public List<String> rawStringValues() { return Collections.unmodifiableList(rawStringValues); }
+            public List<String> stringValues() { return Collections.unmodifiableList(stringValues); }
 
-            /** Sets the {@code rawStringValues} to a new list instance. */
-            protected void resetRawStringValues() { rawStringValues = new ArrayList<String>(); }
+            /** Sets the {@code stringValues} to a new list instance. */
+            protected void resetStringValues() { stringValues = new ArrayList<String>(); }
 
             /** Returns the original command line arguments matched by this option or positional parameter spec.
              * @return the matched arguments as found on the command line: empty Strings for options without value, the
@@ -4409,7 +4409,7 @@ public class CommandLine {
             /** Sets the specified command line arguments that were parsed. */
             public Builder originalArgs(String[] originalArgs) { originalArgList.addAll(Arrays.asList(originalArgs)); return this;}
 
-            void addRawStringValue     (ArgSpec argSpec, String value) { if (!isInitializingDefaultValues) { argSpec.rawStringValues.add(value);} }
+            void addRawStringValue     (ArgSpec argSpec, String value) { if (!isInitializingDefaultValues) { argSpec.stringValues.add(value);} }
             void addOriginalStringValue(ArgSpec argSpec, String value) { if (!isInitializingDefaultValues) { argSpec.originalStringValues.add(value); } }
         }
         private final CommandSpec commandSpec;
@@ -4436,7 +4436,7 @@ public class CommandLine {
         /** Returns the option with the specified short name, or {@code null} if no option with that name was matched
          * on the command line.
          * <p>Use {@link OptionSpec#getValue() getValue} on the returned {@code OptionSpec} to get the matched value (or values),
-         * converted to the type of the option. Alternatively, use {@link OptionSpec#rawStringValues() stringValues}
+         * converted to the type of the option. Alternatively, use {@link OptionSpec#stringValues() stringValues}
          * to get the matched String values after they were {@linkplain OptionSpec#splitRegex() split} into parts, or
          * {@link OptionSpec#originalStringValues() originalStringValues} to get the original String values that were
          * matched on the command line, before any processing.
@@ -4448,7 +4448,7 @@ public class CommandLine {
 
         /** Returns the option with the specified name, or {@code null} if no option with that name was matched on the command line.
          * <p>Use {@link OptionSpec#getValue() getValue} on the returned {@code OptionSpec} to get the matched value (or values),
-         * converted to the type of the option. Alternatively, use {@link OptionSpec#rawStringValues() stringValues}
+         * converted to the type of the option. Alternatively, use {@link OptionSpec#stringValues() stringValues}
          * to get the matched String values after they were {@linkplain OptionSpec#splitRegex() split} into parts, or
          * {@link OptionSpec#originalStringValues() originalStringValues} to get the original String values that were
          * matched on the command line, before any processing.
@@ -4511,7 +4511,7 @@ public class CommandLine {
          *      The specified name may include option name prefix characters or not. */
         public String rawOptionValue(String name, String defaultValue)       { return rawOptionValue(option(name), defaultValue); }
         /** Returns the command line argument String value of the specified option, or the specified default value if the specified option is {@code null}. */
-        public String rawOptionValue(OptionSpec option, String defaultValue) { return option == null || option.rawStringValues().isEmpty() ? defaultValue : option.rawStringValues().get(0); }
+        public String rawOptionValue(OptionSpec option, String defaultValue) { return option == null || option.stringValues().isEmpty() ? defaultValue : option.stringValues().get(0); }
 
         /** Returns the command line argument String value of the positional parameter at the specified position, or {@code null} if no positional parameter was matched at that position. */
         public String rawPositionalValue(int position)                       { return rawPositionalValue(positional(position), position, null); }
@@ -4521,7 +4521,7 @@ public class CommandLine {
         private String rawPositionalValue(PositionalParamSpec positional, int position, String defaultValue) {
             if (positional == null) { return defaultValue; }
             int pos = position - positional.index().min;
-            return positional.rawStringValues().size() <= pos ? defaultValue : positional.rawStringValues().get(pos);
+            return positional.stringValues().size() <= pos ? defaultValue : positional.stringValues().get(pos);
         }
 
         /** Returns all command line argument String values matched for the option with the specified name, or an empty list if no option with the specified name was matched. */
@@ -4531,7 +4531,7 @@ public class CommandLine {
          *      The specified name may include option name prefix characters or not. */
         public List<String> rawOptionValues(String name)       { return rawOptionValues(option(name)); }
         /** Returns all command line argument String values matched for the specified option, or an empty list if the specified option is {@code null}. */
-        public List<String> rawOptionValues(OptionSpec option) { return option == null ? Collections.<String>emptyList() : option.rawStringValues(); }
+        public List<String> rawOptionValues(OptionSpec option) { return option == null ? Collections.<String>emptyList() : option.stringValues(); }
 
         /** Returns the command line argument value of the option with the specified name, converted to the {@linkplain OptionSpec#type() type} of the option, or the specified default value if no option with the specified name was matched. */
         public <T> T optionValue(char shortName, T defaultValue)    { return optionValue(option(shortName), defaultValue); }
@@ -4714,11 +4714,11 @@ public class CommandLine {
             isHelpRequested = false;
             parseResult = ParseResult.builder(getCommandSpec());
             for (OptionSpec option : getCommandSpec().options()) {
-                option.resetRawStringValues();
+                option.resetStringValues();
                 option.resetOriginalStringValues();
             }
             for (PositionalParamSpec positional : getCommandSpec().positionalParameters()) {
-                positional.resetRawStringValues();
+                positional.resetStringValues();
                 positional.resetOriginalStringValues();
             }
         }

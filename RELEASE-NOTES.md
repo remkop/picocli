@@ -26,10 +26,11 @@ No features have been promoted in this picocli release.
 
 ## <a name="3.0.0-alpha-5-fixes"></a> Fixed issues
 
-- [#329] Enhancement and API Change: Add parser configuration to control whether boolean flags should be toggled.
-- [#328] Enhancement and API Change: Provide getter methods on `OptionSpec.Builder` and `PositionalParamSpec.Builder`.
-- [#326] Enhancement and API Change: Add parser configuration to treat unmatched options as positional parameters.
-- [#283] Enhancement and API Change: Provide `getMissing` method on MissingParameterException to get a reference to the problematic options and positional parameters. Thanks to [jcapsule](https://github.com/jcapsule) for the suggestion.
+- [#329] Enhancement and New API: Add parser configuration to control whether boolean flags should be toggled.
+- [#328] Enhancement and New API: Provide getter methods on `OptionSpec.Builder` and `PositionalParamSpec.Builder`.
+- [#326] Enhancement and New API: Add parser configuration to treat unmatched options as positional parameters.
+- [#283] Enhancement and New API: Provide `getMissing` method on MissingParameterException to get a reference to the problematic options and positional parameters. Thanks to [jcapsule](https://github.com/jcapsule) for the suggestion.
+- [#334] Enhancement and API Change: Renamed `ArgSpec.rawStringValues()` to `ArgSpec.stringValues()`.
 - [#333] Enhancement: Added subcommand to synopsis in generated usage help. Thanks to [jcapsule](https://github.com/jcapsule) for the pull request.
 - [#323] Enhancement: Remove dependency on java.sql package: picocli should only require the java.base module when running in Java 9.
 - [#325] Enhancement: Allow custom type converter to map empty String to custom default value for empty options. Thanks to [jesselong](https://github.com/jesselong) for the suggestion.
@@ -41,6 +42,8 @@ No features have been promoted in this picocli release.
 See [3.0.0-alpha-1](https://github.com/remkop/picocli/releases/tag/v3.0.0-alpha-1#3.0.0-alpha-1-deprecated)
 
 ## <a name="3.0.0-alpha-5-breaking-changes"></a> Potential breaking changes
+
+- Renamed `ArgSpec.rawStringValues()` to `ArgSpec.stringValues()`.
 
 
 See also breaking changes for 
@@ -157,8 +160,8 @@ No features have been promoted in this picocli release.
 
 ## <a name="3.0.0-alpha-3-fixes"></a> Fixed issues
 
-- [#313] Enhancement and API Change: add method `CommandLine::setMaxArityIsMaxTotalParams` to configure the parser to use `arity` to limit the total number of values accumulated in an option or positional parameter.
-- [#314] Enhancement and API Change: add method `CommandLine::setUsageHelpWidth` and `UsageMessageSpec::width` to set the max usage help message width.
+- [#313] Enhancement and New API: add method `CommandLine::setMaxArityIsMaxTotalParams` to configure the parser to use `arity` to limit the total number of values accumulated in an option or positional parameter.
+- [#314] Enhancement and New API: add method `CommandLine::setUsageHelpWidth` and `UsageMessageSpec::width` to set the max usage help message width.
 - [#316] Enhancement: Support lenient mode where annotations are optional when extracting annotations.
 - [#317] Enhancement: Change semantics of ParseResult.rawOptionValue to mean values after split (but before type conversion).
 
@@ -508,7 +511,6 @@ Method signature changes on inner classes and interfaces of the `Help` class:
 * Class `CommandLine.Help.Layout` all methods changed: `Field` parameters replaced by `CommandLine.ArgSpec`, `CommandLine.OptionSpec` and `CommandLine.PositionalParamSpec` parameters.
 
 
-TBD: should `Help.Ansi.Text::append` modify the specified `Text` instance instead of returning a new `Text` instance like it currently does?
 
 
 # <a name="2.3.0"></a> Picocli 2.3.0
