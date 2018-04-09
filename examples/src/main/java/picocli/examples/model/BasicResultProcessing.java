@@ -46,8 +46,8 @@ public class BasicResultProcessing {
             ParseResult pr = commandLine.parseArgs(args);
             if (CommandLine.printHelpIfRequested(pr)) { return; }
 
-            int count = pr.optionValue('c', 1);
-            List<File> files = pr.positionalValue(pr.matchedPositionals().get(0), Collections.<File>emptyList());
+            int count = pr.matchedOptionValue('c', 1);
+            List<File> files = pr.matchedPositionalValue(0, Collections.<File>emptyList());
             for (File f : files) {
                 for (int i = 0; i < count; i++) {
                     System.out.println(i + " " + f.getName());

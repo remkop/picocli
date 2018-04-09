@@ -159,6 +159,7 @@ task bumpVersion {
         ant.replaceregexp(match: ":revnumber: $oldVersion", replace: ":revnumber: $version", flags: 'g', byline: true, encoding: 'UTF8') {
             fileset(dir: 'docs', includes: 'index.adoc')
             fileset(dir: 'docs', includes: 'autocomplete.adoc')
+            fileset(dir: 'docs', includes: 'picocli-3.0-programmatic-api.adoc')
         }
         // Downloads section, Gradle
         ant.replaceregexp(match: ":picocli:$oldVersion", replace: ":picocli:$version", flags: 'g', byline: true, encoding: 'UTF8') {
@@ -179,6 +180,7 @@ task bumpVersion {
         ant.replaceregexp(match: oldRevdate, replace: revDate, flags: 'g', byline: true, encoding: 'UTF8') {
             fileset(dir: 'docs', includes: 'index.adoc')
             fileset(dir: 'docs', includes: 'autocomplete.adoc')
+            fileset(dir: 'docs', includes: 'picocli-3.0-programmatic-api.adoc')
         }
     }
 }

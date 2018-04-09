@@ -4533,18 +4533,18 @@ public class CommandLine {
         public List<String> rawOptionValues(OptionSpec option) { return option == null ? Collections.<String>emptyList() : option.stringValues(); }
 
         /** Returns the command line argument value of the option with the specified name, converted to the {@linkplain OptionSpec#type() type} of the option, or the specified default value if no option with the specified name was matched. */
-        public <T> T optionValue(char shortName, T defaultValue)    { return optionValue(matchedOption(shortName), defaultValue); }
+        public <T> T matchedOptionValue(char shortName, T defaultValue)    { return matchedOptionValue(matchedOption(shortName), defaultValue); }
         /** Returns the command line argument value of the option with the specified name, converted to the {@linkplain OptionSpec#type() type} of the option, or the specified default value if no option with the specified name was matched. */
-        public <T> T optionValue(String name, T defaultValue)       { return optionValue(matchedOption(name), defaultValue); }
+        public <T> T matchedOptionValue(String name, T defaultValue)       { return matchedOptionValue(matchedOption(name), defaultValue); }
         /** Returns the command line argument value of the specified option, converted to the {@linkplain OptionSpec#type() type} of the option, or the specified default value if the specified option is {@code null}. */
         @SuppressWarnings("unchecked")
-        public <T> T optionValue(OptionSpec option, T defaultValue) { return option == null ? defaultValue : (T) option.getValue(); }
+        public <T> T matchedOptionValue(OptionSpec option, T defaultValue) { return option == null ? defaultValue : (T) option.getValue(); }
 
         /** Returns the command line argument value of the positional parameter at the specified position, converted to the {@linkplain PositionalParamSpec#type() type} of the positional parameter, or the specified default value if no positional parameter was matched at that position. */
-        public <T> T positionalValue(int position, T defaultValue)  { return positionalValue(matchedPositional(position), defaultValue); }
+        public <T> T matchedPositionalValue(int position, T defaultValue)  { return matchedPositionalValue(matchedPositional(position), defaultValue); }
         /** Returns the command line argument value of the specified positional parameter, converted to the {@linkplain PositionalParamSpec#type() type} of the positional parameter, or the specified default value if the specified positional parameter is {@code null}. */
         @SuppressWarnings("unchecked")
-        public <T> T positionalValue(PositionalParamSpec positional, T defaultValue) { return positional == null ? defaultValue : (T) positional.getValue(); }
+        public <T> T matchedPositionalValue(PositionalParamSpec positional, T defaultValue) { return positional == null ? defaultValue : (T) positional.getValue(); }
 
         /** Returns {@code true} if a subcommand was matched on the command line, {@code false} otherwise. */
         public boolean hasSubcommand()          { return subcommand != null; }

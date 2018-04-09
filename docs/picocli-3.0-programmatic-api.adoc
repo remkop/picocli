@@ -1,8 +1,8 @@
 = Programmatic API
 //:author: Remko Popma
 //:email: rpopma@apache.org
-:revnumber: 3.0.0-alpha-1-SNAPSHOT
-:revdate: 2018-03-15
+:revnumber: 3.0.0-alpha-5-SNAPSHOT
+:revdate: 2018-04-03
 :toc: left
 :numbered:
 :toclevels: 2
@@ -35,8 +35,8 @@ class Handler extends AbstractParseResultHandler<Integer> {
     protected Handler self() { return this; }
 
     public Integer handle(ParseResult pr) {
-        int count = pr.optionValue('c', 1);
-        List<File> files = pr.positionalValue(0, Collections.<File>emptyList());
+        int count = pr.matchedOptionValue('c', 1);
+        List<File> files = pr.matchedPositionalValue(0, Collections.<File>emptyList());
         for (File f : files) {
             for (int i = 0; i < count; i++) {
                 System.out.println(i + " " + f.getName());
@@ -214,15 +214,15 @@ ParseResult pr = commandLine.parseArgs(args);
 List<String> originalArgs = pr.originalArgs(); // lists all command line args
 assert Arrays.asList(args).equals(originalArgs);
 
-assert pr.hasOption("--verbose"); // as specified on command line
-assert pr.hasOption("-V");        // other aliases work also
-assert pr.hasOption('V');         // single-character alias works too
-assert pr.hasOption("verbose");   // and, command name without hyphens
+assert pr.hasMatchedOption("--verbose"); // as specified on command line
+assert pr.hasMatchedOption("-V");        // other aliases work also
+assert pr.hasMatchedOption('V');         // single-character alias works too
+assert pr.hasMatchedOption("verbose");   // and, command name without hyphens
 ----
 
 === Typed Option Values
 
-The `optionValue` method returns the command line value or values, converted to the option's type. This method requires a default value, which will be returned in case the option was not specified on the command line. In the above example, we defined the `--file` option to be of type `List<File>`, so we pass in an empty list as the default value:
+The `matchedOptionValue` method returns the command line value or values, converted to the option's type. This method requires a default value, which will be returned in case the option was not specified on the command line. In the above example, we defined the `--file` option to be of type `List<File>`, so we pass in an empty list as the default value:
 
 [source,java]
 ----
@@ -231,8 +231,8 @@ ParseResult pr = commandLine.parseArgs("-f", "file1", "--file=file2");
 List<File> defaultValue = Collections.emptyList();
 List<File> expected     = Arrays.asList(new File("file1"), new File("file2"));
 
-assert expected.equals(pr.optionValue('f', defaultValue));
-assert expected.equals(pr.optionValue("--file", defaultValue));
+assert expected.equals(pr.matchedOptionValue('f', defaultValue));
+assert expected.equals(pr.matchedOptionValue("--file", defaultValue));
 ----
 
 === Untyped Option Values
@@ -265,16 +265,16 @@ CommandLine cmd = new CommandLine(new App());
 cmd.addSubcommand("sub", new Sub());
 ParseResult parseResult = cmd.parseArgs("-x", "xval", "sub", "1", "2", "3");
 
-assert parseResult.hasOption("-x");
-assert "xval".equals(parseResult.optionValue("-x", "default"));
+assert parseResult.hasMatchedOption("-x");
+assert "xval".equals(parseResult.matchedOptionValue("-x", "default"));
 
 assert parseResult.hasSubcommand();
 ParseResult subResult = parseResult.subcommand();
 
-assert  subResult.hasPositional(0);
-assert  subResult.hasPositional(1);
-assert  subResult.hasPositional(2);
-assert !subResult.hasPositional(3);
+assert  subResult.hasMatchedPositional(0);
+assert  subResult.hasMatchedPositional(1);
+assert  subResult.hasMatchedPositional(2);
+assert !subResult.hasMatchedPositional(3);
 assert "1".equals(subResult.rawPositionalValue(0));
 assert "2".equals(subResult.rawPositionalValue(1));
 assert "3".equals(subResult.rawPositionalValue(2));
@@ -298,8 +298,8 @@ try {
     if (CommandLine.printHelpIfRequested(pr)) {
         return;
     }
-    int count = pr.optionValue('c', 1);
-    List<File> files = pr.positionalValue(0, Collections.<File>emptyList());
+    int count = pr.matchedOptionValue('c', 1);
+    List<File> files = pr.matchedPositionalValue(0, Collections.<File>emptyList());
     for (int i = 0; i < count; i++) {
         for (File f : files) {
             System.out.printf("%d: %s%n", i, f);
@@ -333,8 +333,8 @@ class Handler extends AbstractParseResultHandler<Integer> {
     protected Handler self() { return this; }
 
     public Integer handle(ParseResult pr) {
-        int count = pr.optionValue('c', 1);
-        List<File> files = pr.positionalValue(0, Collections.<File>emptyList());
+        int count = pr.matchedOptionValue('c', 1);
+        List<File> files = pr.matchedPositionalValue(0, Collections.<File>emptyList());
         for (File f : files) {
             for (int i = 0; i < count; i++) {
                 System.out.println(i + " " + f.getName());
