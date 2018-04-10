@@ -288,12 +288,7 @@ public class CommandTokenizer {
 	 * @return         This tokenizer, for method chaining. 
 	 */
 	public CommandTokenizer eolPattern(String pattern) {
-		if (pattern == null) {
-			this.eolPatterns.clear();
-		}
-		else {
-			this.eolPatterns.add(pattern);
-		}
+		this.eolPatterns.add(pattern);
 		return this;
 	}
 
@@ -312,21 +307,6 @@ public class CommandTokenizer {
 		}
 		return this;
 	}
-
-	/**
-	 * Restores default patterns and characters.
-	 * 
-	 * @return         This tokenizer, for method chaining.
-	 */
-	public CommandTokenizer resetSyntax() {
-		this.escapePatterns = new ArrayList<String>(Arrays.asList("\\"));
-		this.escapedPatterns = new ArrayList<String>();
-		this.quotePatterns = new ArrayList<String>(Arrays.asList("\"", "'"));
-		this.whitespacePatterns = new ArrayList<String>(Arrays.asList(" ", "\t"));
-		this.eolPatterns = new ArrayList<String>(Arrays.asList("\r\n", "\r", "\n"));
-		this.trimBlanks = true;
-		return this;
-	}
 	
 	/**
 	 * Specifies that char {@code ch} escapes other characters.
@@ -335,13 +315,8 @@ public class CommandTokenizer {
 	 * @return         This tokenizer, for method chaining. 
 	 */
 	public CommandTokenizer escapeChar(char ch) {
-		if (ch < 0) {
-			this.quotePatterns.clear();
-		}
-		else {
-			this.ordinaryChar(ch);
-			this.escapePatterns.add(String.valueOf(ch));
-		}
+		this.ordinaryChar(ch);
+		this.escapePatterns.add(String.valueOf(ch));
 		return this;
 	}
 
@@ -382,13 +357,8 @@ public class CommandTokenizer {
 	 * @return         This tokenizer, for method chaining. 
 	 */
 	public CommandTokenizer escapedChar(char ch) {
-		if (ch < 0) {
-			this.escapedPatterns.clear();
-		}
-		else {
-			this.ordinaryChar(ch);
-			this.escapedPatterns.add(String.valueOf(ch));
-		}
+		this.ordinaryChar(ch);
+		this.escapedPatterns.add(String.valueOf(ch));
 		return this;
 	}
 
@@ -466,13 +436,8 @@ public class CommandTokenizer {
 	 * @return         This tokenizer, for method chaining. 
 	 */
 	public CommandTokenizer quoteChar(char ch) {
-		if (ch < 0) {
-			this.quotePatterns.clear();
-		}
-		else {
-			this.ordinaryChar(ch);
-			this.quotePatterns.add(String.valueOf(ch));
-		}
+		this.ordinaryChar(ch);
+		this.quotePatterns.add(String.valueOf(ch));
 		return this;
 	}
 
@@ -513,13 +478,8 @@ public class CommandTokenizer {
 	 * @return         This tokenizer, for method chaining. 
 	 */
 	public CommandTokenizer whitespaceChar(char ch) {
-		if (ch < 0) {
-			this.whitespacePatterns.clear();
-		}
-		else {
-			this.ordinaryChar(ch);
-			this.whitespacePatterns.add(String.valueOf(ch));
-		}
+		this.ordinaryChar(ch);
+		this.whitespacePatterns.add(String.valueOf(ch));
 		return this;
 	}
 
@@ -579,7 +539,22 @@ public class CommandTokenizer {
 	 * @return         This tokenizer, for method chaining.
 	 */
 	public CommandTokenizer trimBlanks(boolean enabled) {
-		trimBlanks = enabled;
+		this.trimBlanks = enabled;
+		return this;
+	}
+
+	/**
+	 * Restores default patterns and characters.
+	 * 
+	 * @return         This tokenizer, for method chaining.
+	 */
+	public CommandTokenizer resetSyntax() {
+		this.escapePatterns = new ArrayList<String>(Arrays.asList("\\"));
+		this.escapedPatterns = new ArrayList<String>();
+		this.quotePatterns = new ArrayList<String>(Arrays.asList("\"", "'"));
+		this.whitespacePatterns = new ArrayList<String>(Arrays.asList(" ", "\t"));
+		this.eolPatterns = new ArrayList<String>(Arrays.asList("\r\n", "\r", "\n"));
+		this.trimBlanks = true;
 		return this;
 	}
 	
