@@ -513,8 +513,8 @@ table.CodeRay td.code>pre{padding:0}
 <div id="header">
 <h1>Programmatic API</h1>
 <div class="details">
-<span id="revnumber">version 3.0.0-alpha-1-SNAPSHOT,</span>
-<span id="revdate">2018-03-15</span>
+<span id="revnumber">version 3.0.0-alpha-5,</span>
+<span id="revdate">2018-04-11</span>
 </div>
 <div id="toc" class="toc2">
 <div id="toctitle">Table of Contents</div>
@@ -531,9 +531,8 @@ table.CodeRay td.code>pre{padding:0}
 <li><a href="#_parse_result">3. Parse Result</a>
 <ul class="sectlevel2">
 <li><a href="#_querying_for_options">3.1. Querying for Options</a></li>
-<li><a href="#_typed_option_values">3.2. Typed Option Values</a></li>
-<li><a href="#_untyped_option_values">3.3. Untyped Option Values</a></li>
-<li><a href="#_subcommands_2">3.4. Subcommands</a></li>
+<li><a href="#_matched_option_values">3.2. Matched Option Values</a></li>
+<li><a href="#_subcommands_2">3.3. Subcommands</a></li>
 </ul>
 </li>
 <li><a href="#_parsing_and_result_processing">4. Parsing and Result Processing</a>
@@ -587,8 +586,8 @@ CommandLine commandLine = <span class="keyword">new</span> CommandLine(spec);
     <span class="directive">protected</span> <span class="predefined-type">Handler</span> self() { <span class="keyword">return</span> <span class="local-variable">this</span>; }
 
     <span class="directive">public</span> <span class="predefined-type">Integer</span> handle(ParseResult pr) {
-        <span class="type">int</span> count = pr.optionValue(<span class="string"><span class="delimiter">'</span><span class="content">c</span><span class="delimiter">'</span></span>, <span class="integer">1</span>);
-        <span class="predefined-type">List</span>&lt;<span class="predefined-type">File</span>&gt; files = pr.positionalValue(<span class="integer">0</span>, <span class="predefined-type">Collections</span>.&lt;<span class="predefined-type">File</span>&gt;emptyList());
+        <span class="type">int</span> count = pr.matchedOptionValue(<span class="string"><span class="delimiter">'</span><span class="content">c</span><span class="delimiter">'</span></span>, <span class="integer">1</span>);
+        <span class="predefined-type">List</span>&lt;<span class="predefined-type">File</span>&gt; files = pr.matchedPositionalValue(<span class="integer">0</span>, <span class="predefined-type">Collections</span>.&lt;<span class="predefined-type">File</span>&gt;emptyList());
         <span class="keyword">for</span> (<span class="predefined-type">File</span> f : files) {
             <span class="keyword">for</span> (<span class="type">int</span> i = <span class="integer">0</span>; i &lt; count; i++) {
                 <span class="predefined-type">System</span>.out.println(i + <span class="string"><span class="delimiter">&quot;</span><span class="content"> </span><span class="delimiter">&quot;</span></span> + f.getName());
@@ -828,17 +827,17 @@ ParseResult pr = commandLine.parseArgs(args);
 <span class="predefined-type">List</span>&lt;<span class="predefined-type">String</span>&gt; originalArgs = pr.originalArgs(); <span class="comment">// lists all command line args</span>
 <span class="keyword">assert</span> <span class="predefined-type">Arrays</span>.asList(args).equals(originalArgs);
 
-<span class="keyword">assert</span> pr.hasOption(<span class="string"><span class="delimiter">&quot;</span><span class="content">--verbose</span><span class="delimiter">&quot;</span></span>); <span class="comment">// as specified on command line</span>
-<span class="keyword">assert</span> pr.hasOption(<span class="string"><span class="delimiter">&quot;</span><span class="content">-V</span><span class="delimiter">&quot;</span></span>);        <span class="comment">// other aliases work also</span>
-<span class="keyword">assert</span> pr.hasOption(<span class="string"><span class="delimiter">'</span><span class="content">V</span><span class="delimiter">'</span></span>);         <span class="comment">// single-character alias works too</span>
-<span class="keyword">assert</span> pr.hasOption(<span class="string"><span class="delimiter">&quot;</span><span class="content">verbose</span><span class="delimiter">&quot;</span></span>);   <span class="comment">// and, command name without hyphens</span></code></pre>
+<span class="keyword">assert</span> pr.hasMatchedOption(<span class="string"><span class="delimiter">&quot;</span><span class="content">--verbose</span><span class="delimiter">&quot;</span></span>); <span class="comment">// as specified on command line</span>
+<span class="keyword">assert</span> pr.hasMatchedOption(<span class="string"><span class="delimiter">&quot;</span><span class="content">-V</span><span class="delimiter">&quot;</span></span>);        <span class="comment">// other aliases work also</span>
+<span class="keyword">assert</span> pr.hasMatchedOption(<span class="string"><span class="delimiter">'</span><span class="content">V</span><span class="delimiter">'</span></span>);         <span class="comment">// single-character alias works too</span>
+<span class="keyword">assert</span> pr.hasMatchedOption(<span class="string"><span class="delimiter">&quot;</span><span class="content">verbose</span><span class="delimiter">&quot;</span></span>);   <span class="comment">// and, command name without hyphens</span></code></pre>
 </div>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_typed_option_values">3.2. Typed Option Values</h3>
+<h3 id="_matched_option_values">3.2. Matched Option Values</h3>
 <div class="paragraph">
-<p>The <code>optionValue</code> method returns the command line value or values, converted to the option&#8217;s type. This method requires a default value, which will be returned in case the option was not specified on the command line. In the above example, we defined the <code>--file</code> option to be of type <code>List&lt;File&gt;</code>, so we pass in an empty list as the default value:</p>
+<p>The <code>matchedOptionValue</code> method returns the command line value or values, converted to the option&#8217;s type. This method requires a default value, which will be returned in case the option was not matched on the command line. In the above example, we defined the <code>--file</code> option to be of type <code>List&lt;File&gt;</code>, so we pass in an empty list as the default value:</p>
 </div>
 <div class="listingblock">
 <div class="content">
@@ -847,30 +846,13 @@ ParseResult pr = commandLine.parseArgs(args);
 <span class="predefined-type">List</span>&lt;<span class="predefined-type">File</span>&gt; defaultValue = <span class="predefined-type">Collections</span>.emptyList();
 <span class="predefined-type">List</span>&lt;<span class="predefined-type">File</span>&gt; expected     = <span class="predefined-type">Arrays</span>.asList(<span class="keyword">new</span> <span class="predefined-type">File</span>(<span class="string"><span class="delimiter">&quot;</span><span class="content">file1</span><span class="delimiter">&quot;</span></span>), <span class="keyword">new</span> <span class="predefined-type">File</span>(<span class="string"><span class="delimiter">&quot;</span><span class="content">file2</span><span class="delimiter">&quot;</span></span>));
 
-<span class="keyword">assert</span> expected.equals(pr.optionValue(<span class="string"><span class="delimiter">'</span><span class="content">f</span><span class="delimiter">'</span></span>, defaultValue));
-<span class="keyword">assert</span> expected.equals(pr.optionValue(<span class="string"><span class="delimiter">&quot;</span><span class="content">--file</span><span class="delimiter">&quot;</span></span>, defaultValue));</code></pre>
+<span class="keyword">assert</span> expected.equals(pr.matchedOptionValue(<span class="string"><span class="delimiter">'</span><span class="content">f</span><span class="delimiter">'</span></span>, defaultValue));
+<span class="keyword">assert</span> expected.equals(pr.matchedOptionValue(<span class="string"><span class="delimiter">&quot;</span><span class="content">--file</span><span class="delimiter">&quot;</span></span>, defaultValue));</code></pre>
 </div>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_untyped_option_values">3.3. Untyped Option Values</h3>
-<div class="paragraph">
-<p>The <code>rawOptionValue</code> method returns the String argument specified on the command line. If the command line contains multiple arguments for this option, the first value is returned. Use the <code>rawOptionValues</code> method to get a list of all values specified on the command line for an option.</p>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre class="CodeRay highlight"><code data-lang="java"><span class="keyword">assert</span> <span class="string"><span class="delimiter">&quot;</span><span class="content">file1</span><span class="delimiter">&quot;</span></span>.equals(pr.rawOptionValue(<span class="string"><span class="delimiter">'</span><span class="content">f</span><span class="delimiter">'</span></span>));       <span class="comment">// single-character alias</span>
-<span class="keyword">assert</span> <span class="string"><span class="delimiter">&quot;</span><span class="content">file1</span><span class="delimiter">&quot;</span></span>.equals(pr.rawOptionValue(<span class="string"><span class="delimiter">&quot;</span><span class="content">-f</span><span class="delimiter">&quot;</span></span>));      <span class="comment">// short name</span>
-<span class="keyword">assert</span> <span class="string"><span class="delimiter">&quot;</span><span class="content">file1</span><span class="delimiter">&quot;</span></span>.equals(pr.rawOptionValue(<span class="string"><span class="delimiter">&quot;</span><span class="content">--file</span><span class="delimiter">&quot;</span></span>));  <span class="comment">// long name</span>
-
-<span class="predefined-type">List</span>&lt;<span class="predefined-type">String</span>&gt; expected = <span class="predefined-type">Arrays</span>.asList(<span class="string"><span class="delimiter">&quot;</span><span class="content">file1</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">file2</span><span class="delimiter">&quot;</span></span>);
-<span class="keyword">assert</span> expected.equals(pr.rawOptionValues(<span class="string"><span class="delimiter">&quot;</span><span class="content">f</span><span class="delimiter">&quot;</span></span>));     <span class="comment">// short name without hyphens</span>
-<span class="keyword">assert</span> expected.equals(pr.rawOptionValues(<span class="string"><span class="delimiter">&quot;</span><span class="content">file</span><span class="delimiter">&quot;</span></span>));  <span class="comment">// long name without hyphens</span></code></pre>
-</div>
-</div>
-</div>
-<div class="sect2">
-<h3 id="_subcommands_2">3.4. Subcommands</h3>
+<h3 id="_subcommands_2">3.3. Subcommands</h3>
 <div class="paragraph">
 <p>Use the <code>hasSubcommand</code> method to determine whether the command line contained subcommands. The <code>subcommand</code> method returns a different <code>ParseResult</code> object that can be used to query which options and positional parameters were matched for the subcommand.</p>
 </div>
@@ -886,19 +868,16 @@ CommandLine cmd = <span class="keyword">new</span> CommandLine(<span class="keyw
 cmd.addSubcommand(<span class="string"><span class="delimiter">&quot;</span><span class="content">sub</span><span class="delimiter">&quot;</span></span>, <span class="keyword">new</span> Sub());
 ParseResult parseResult = cmd.parseArgs(<span class="string"><span class="delimiter">&quot;</span><span class="content">-x</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">xval</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">sub</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">1</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">2</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">3</span><span class="delimiter">&quot;</span></span>);
 
-<span class="keyword">assert</span> parseResult.hasOption(<span class="string"><span class="delimiter">&quot;</span><span class="content">-x</span><span class="delimiter">&quot;</span></span>);
-<span class="keyword">assert</span> <span class="string"><span class="delimiter">&quot;</span><span class="content">xval</span><span class="delimiter">&quot;</span></span>.equals(parseResult.optionValue(<span class="string"><span class="delimiter">&quot;</span><span class="content">-x</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">default</span><span class="delimiter">&quot;</span></span>));
+<span class="keyword">assert</span> parseResult.hasMatchedOption(<span class="string"><span class="delimiter">&quot;</span><span class="content">-x</span><span class="delimiter">&quot;</span></span>);
+<span class="keyword">assert</span> <span class="string"><span class="delimiter">&quot;</span><span class="content">xval</span><span class="delimiter">&quot;</span></span>.equals(parseResult.matchedOptionValue(<span class="string"><span class="delimiter">&quot;</span><span class="content">-x</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">default</span><span class="delimiter">&quot;</span></span>));
 
 <span class="keyword">assert</span> parseResult.hasSubcommand();
 ParseResult subResult = parseResult.subcommand();
 
-<span class="keyword">assert</span>  subResult.hasPositional(<span class="integer">0</span>);
-<span class="keyword">assert</span>  subResult.hasPositional(<span class="integer">1</span>);
-<span class="keyword">assert</span>  subResult.hasPositional(<span class="integer">2</span>);
-<span class="keyword">assert</span> !subResult.hasPositional(<span class="integer">3</span>);
-<span class="keyword">assert</span> <span class="string"><span class="delimiter">&quot;</span><span class="content">1</span><span class="delimiter">&quot;</span></span>.equals(subResult.rawPositionalValue(<span class="integer">0</span>));
-<span class="keyword">assert</span> <span class="string"><span class="delimiter">&quot;</span><span class="content">2</span><span class="delimiter">&quot;</span></span>.equals(subResult.rawPositionalValue(<span class="integer">1</span>));
-<span class="keyword">assert</span> <span class="string"><span class="delimiter">&quot;</span><span class="content">3</span><span class="delimiter">&quot;</span></span>.equals(subResult.rawPositionalValue(<span class="integer">2</span>));</code></pre>
+<span class="keyword">assert</span>  subResult.hasMatchedPositional(<span class="integer">0</span>);
+<span class="keyword">assert</span>  subResult.hasMatchedPositional(<span class="integer">1</span>);
+<span class="keyword">assert</span>  subResult.hasMatchedPositional(<span class="integer">2</span>);
+<span class="keyword">assert</span> !subResult.hasMatchedPositional(<span class="integer">3</span>);</code></pre>
 </div>
 </div>
 </div>
@@ -926,8 +905,8 @@ CommandLine commandLine = <span class="keyword">new</span> CommandLine(spec);
     <span class="keyword">if</span> (CommandLine.printHelpIfRequested(pr)) {
         <span class="keyword">return</span>;
     }
-    <span class="type">int</span> count = pr.optionValue(<span class="string"><span class="delimiter">'</span><span class="content">c</span><span class="delimiter">'</span></span>, <span class="integer">1</span>);
-    <span class="predefined-type">List</span>&lt;<span class="predefined-type">File</span>&gt; files = pr.positionalValue(<span class="integer">0</span>, <span class="predefined-type">Collections</span>.&lt;<span class="predefined-type">File</span>&gt;emptyList());
+    <span class="type">int</span> count = pr.matchedOptionValue(<span class="string"><span class="delimiter">'</span><span class="content">c</span><span class="delimiter">'</span></span>, <span class="integer">1</span>);
+    <span class="predefined-type">List</span>&lt;<span class="predefined-type">File</span>&gt; files = pr.matchedPositionalValue(<span class="integer">0</span>, <span class="predefined-type">Collections</span>.&lt;<span class="predefined-type">File</span>&gt;emptyList());
     <span class="keyword">for</span> (<span class="type">int</span> i = <span class="integer">0</span>; i &lt; count; i++) {
         <span class="keyword">for</span> (<span class="predefined-type">File</span> f : files) {
             <span class="predefined-type">System</span>.out.printf(<span class="string"><span class="delimiter">&quot;</span><span class="content">%d: %s%n</span><span class="delimiter">&quot;</span></span>, i, f);
@@ -964,8 +943,8 @@ CommandLine commandLine = <span class="keyword">new</span> CommandLine(spec);
     <span class="directive">protected</span> <span class="predefined-type">Handler</span> self() { <span class="keyword">return</span> <span class="local-variable">this</span>; }
 
     <span class="directive">public</span> <span class="predefined-type">Integer</span> handle(ParseResult pr) {
-        <span class="type">int</span> count = pr.optionValue(<span class="string"><span class="delimiter">'</span><span class="content">c</span><span class="delimiter">'</span></span>, <span class="integer">1</span>);
-        <span class="predefined-type">List</span>&lt;<span class="predefined-type">File</span>&gt; files = pr.positionalValue(<span class="integer">0</span>, <span class="predefined-type">Collections</span>.&lt;<span class="predefined-type">File</span>&gt;emptyList());
+        <span class="type">int</span> count = pr.matchedOptionValue(<span class="string"><span class="delimiter">'</span><span class="content">c</span><span class="delimiter">'</span></span>, <span class="integer">1</span>);
+        <span class="predefined-type">List</span>&lt;<span class="predefined-type">File</span>&gt; files = pr.matchedPositionalValue(<span class="integer">0</span>, <span class="predefined-type">Collections</span>.&lt;<span class="predefined-type">File</span>&gt;emptyList());
         <span class="keyword">for</span> (<span class="predefined-type">File</span> f : files) {
             <span class="keyword">for</span> (<span class="type">int</span> i = <span class="integer">0</span>; i &lt; count; i++) {
                 <span class="predefined-type">System</span>.out.println(i + <span class="string"><span class="delimiter">&quot;</span><span class="content"> </span><span class="delimiter">&quot;</span></span> + f.getName());
@@ -1005,8 +984,8 @@ CommandLine commandLine = <span class="keyword">new</span> CommandLine(spec);
 </div>
 <div id="footer">
 <div id="footer-text">
-Version 3.0.0-alpha-1-SNAPSHOT<br>
-Last updated 2018-04-02 23:31:47 JST
+Version 3.0.0-alpha-5<br>
+Last updated 2018-04-11 03:12:47 JST
 </div>
 </div>
 </body>

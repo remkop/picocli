@@ -1,8 +1,8 @@
 = Programmatic API
 //:author: Remko Popma
 //:email: rpopma@apache.org
-:revnumber: 3.0.0-alpha-5-SNAPSHOT
-:revdate: 2018-04-03
+:revnumber: 3.0.0-alpha-5
+:revdate: 2018-04-11
 :toc: left
 :numbered:
 :toclevels: 2
@@ -235,20 +235,6 @@ assert expected.equals(pr.matchedOptionValue('f', defaultValue));
 assert expected.equals(pr.matchedOptionValue("--file", defaultValue));
 ----
 
-=== Untyped Option Values
-
-The `rawOptionValue` method returns the String argument specified on the command line. If the command line contains multiple arguments for this option, the first value is returned. Use the `rawOptionValues` method to get a list of all values specified on the command line for an option.
-
-[source,java]
-----
-assert "file1".equals(pr.rawOptionValue('f'));       // single-character alias
-assert "file1".equals(pr.rawOptionValue("-f"));      // short name
-assert "file1".equals(pr.rawOptionValue("--file"));  // long name
-
-List<String> expected = Arrays.asList("file1", "file2");
-assert expected.equals(pr.rawOptionValues("f"));     // short name without hyphens
-assert expected.equals(pr.rawOptionValues("file"));  // long name without hyphens
-----
 
 === Subcommands
 
@@ -275,9 +261,6 @@ assert  subResult.hasMatchedPositional(0);
 assert  subResult.hasMatchedPositional(1);
 assert  subResult.hasMatchedPositional(2);
 assert !subResult.hasMatchedPositional(3);
-assert "1".equals(subResult.rawPositionalValue(0));
-assert "2".equals(subResult.rawPositionalValue(1));
-assert "3".equals(subResult.rawPositionalValue(2));
 ----
 
 
