@@ -42,27 +42,7 @@ import java.nio.charset.Charset;
 import java.text.BreakIterator;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.Currency;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Queue;
-import java.util.Set;
-import java.util.SortedSet;
-import java.util.Stack;
-import java.util.TimeZone;
-import java.util.TreeSet;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.regex.Pattern;
 
@@ -3364,7 +3344,8 @@ public class CommandLine {
             private List<String> stringValues = new ArrayList<String>();
             private List<String> originalStringValues = new ArrayList<String>();
             protected String toString;
-    
+            Map<Integer, Object> typedValues = new TreeMap<Integer, Object>();
+
             /** Constructs a new {@code ArgSpec}. */
             private ArgSpec(Builder builder) {
                 description = builder.description == null ? new String[0] : builder.description;
@@ -3907,7 +3888,7 @@ public class CommandLine {
         public static class PositionalParamSpec extends ArgSpec {
             private Range index;
             private Range capacity;
-    
+
             /** Ensures all attributes of this {@code PositionalParamSpec} have a valid value; throws an {@link InitializationException} if this cannot be achieved. */
             private PositionalParamSpec(Builder builder) {
                 super(builder);
@@ -4382,8 +4363,11 @@ public class CommandLine {
              * @param position the command line position at which the  {@code PositionalParamSpec} was matched. Ignored for {@code OptionSpec}s.
              * @return this builder for method chaining */
             public Builder add(ArgSpec arg, int position) {
-                if (arg.isOption()) { addOption((OptionSpec) arg); }
-                else { addPositionalParam((PositionalParamSpec) arg, position); }
+                if (arg.isOption()) {
+                    addOption((OptionSpec) arg);
+                } else {
+                    addPositionalParam((PositionalParamSpec) arg, position);
+                }
                 return this;
             }
             /** Adds the specified {@code OptionSpec} to the list of options that were matched on the command line. */
@@ -4410,6 +4394,9 @@ public class CommandLine {
 
             void addStringValue        (ArgSpec argSpec, String value) { if (!isInitializingDefaultValues) { argSpec.stringValues.add(value);} }
             void addOriginalStringValue(ArgSpec argSpec, String value) { if (!isInitializingDefaultValues) { argSpec.originalStringValues.add(value); } }
+            void addTypedValues(ArgSpec argSpec, int position, Object typedValue) {
+                if (!isInitializingDefaultValues) { argSpec.typedValues.put(position, typedValue); }
+            }
         }
         private final CommandSpec commandSpec;
         private final List<OptionSpec> matchedOptions;
@@ -4459,10 +4446,16 @@ public class CommandLine {
          *      The specified name may include option name prefix characters or not. */
         public OptionSpec matchedOption(String name) { return CommandSpec.findOption(name, matchedOptions); }
 
-        /** Returns the {@code PositionalParamSpec} that was matched at the specified position, or {@code null} if no positional parameters were matched at that position. */
+        /** Returns the first {@code PositionalParamSpec} that matched an argument at the specified position, or {@code null} if no positional parameters were matched at that position. */
         public PositionalParamSpec matchedPositional(int position) {
             if (matchedPositionalParams.size() <= position || matchedPositionalParams.get(position).isEmpty()) { return null; }
             return matchedPositionalParams.get(position).get(0);
+        }
+
+        /** Returns all {@code PositionalParamSpec} objects that matched an argument at the specified position, or an empty list if no positional parameters were matched at that position. */
+        public List<PositionalParamSpec> matchedPositionals(int position) {
+            if (matchedPositionalParams.size() <= position) { return Collections.emptyList(); }
+            return matchedPositionalParams.get(position) == null ? Collections.<PositionalParamSpec>emptyList() : matchedPositionalParams.get(position);
         }
         /** Returns the {@code CommandSpec} for the matched command. */
         public CommandSpec commandSpec()                    { return commandSpec; }
@@ -4677,10 +4670,12 @@ public class CommandLine {
             for (OptionSpec option : getCommandSpec().options()) {
                 option.resetStringValues();
                 option.resetOriginalStringValues();
+                option.typedValues.clear();
             }
             for (PositionalParamSpec positional : getCommandSpec().positionalParameters()) {
                 positional.resetStringValues();
                 positional.resetOriginalStringValues();
+                positional.typedValues.clear();
             }
         }
 
@@ -4872,7 +4867,7 @@ public class CommandLine {
             int consumed = 0;
             for (PositionalParamSpec positionalParam : commandSpec.positionalParameters()) {
                 Range indexRange = positionalParam.index();
-                if (!indexRange.contains(position)) {
+                if (!indexRange.contains(position) || positionalParam.typedValues.get(position) != null) {
                     continue;
                 }
                 Stack<String> argsCopy = copy(args);
@@ -5053,6 +5048,7 @@ public class CommandLine {
             argSpec.setValue(newValue);
             parseResult.addOriginalStringValue(argSpec, value);// #279 track empty string value if no command line argument was consumed
             parseResult.addStringValue(argSpec, value);
+            parseResult.addTypedValues(argSpec, position, newValue);
             parseResult.add(argSpec, position);
             return result;
         }
@@ -5086,51 +5082,79 @@ public class CommandLine {
                                          ITypeConverter<?> valueConverter,
                                          Map<Object, Object> result,
                                          String argDescription) throws Exception {
+
+            // don't modify Interpreter.position: same position may be consumed by multiple ArgSpec objects
+            int currentPosition = position;
+
             // first do the arity.min mandatory parameters
             for (int i = 0; i < arity.min; i++) {
-                consumeOneMapArgument(argSpec, args, classes, keyConverter, valueConverter, result, i, argDescription);
+                Map<Object, Object> typedValuesAtPosition = new LinkedHashMap<Object, Object>();
+                parseResult.addTypedValues(argSpec, currentPosition++, typedValuesAtPosition);
+                consumeOneMapArgument(argSpec, args.pop(), classes, keyConverter, valueConverter, typedValuesAtPosition, i, argDescription);
+                result.putAll(typedValuesAtPosition);
             }
             // now process the varargs if any
             for (int i = arity.min; i < arity.max && !args.isEmpty(); i++) {
-                if (!varargCanConsumeNextValue(argSpec, args.peek())) {
-                    break;
+                if (!varargCanConsumeNextValue(argSpec, args.peek())) { break; }
+
+                Map<Object, Object> typedValuesAtPosition = new LinkedHashMap<Object, Object>();
+                parseResult.addTypedValues(argSpec, currentPosition++, typedValuesAtPosition);
+                if (!canConsumeOneMapArgument(argSpec, args.peek(), classes, keyConverter, valueConverter)) {
+                    break; // leave empty map at argSpec.typedValues[currentPosition] so we won't try to consume that position again
                 }
-                consumeOneMapArgument(argSpec, args, classes, keyConverter, valueConverter, result, i, argDescription);
+                consumeOneMapArgument(argSpec, args.pop(), classes, keyConverter, valueConverter, typedValuesAtPosition, i, argDescription);
+                result.putAll(typedValuesAtPosition);
             }
         }
 
         private void consumeOneMapArgument(ArgSpec argSpec,
-                                           Stack<String> args,
+                                           String arg,
                                            Class<?>[] classes,
                                            ITypeConverter<?> keyConverter, ITypeConverter<?> valueConverter,
                                            Map<Object, Object> result,
                                            int index,
                                            String argDescription) throws Exception {
-            String raw = trim(args.pop());
+            String raw = trim(arg);
             String[] values = argSpec.splitValue(raw);
             for (String value : values) {
-                String[] keyValue = value.split("=");
-                if (keyValue.length < 2) {
-                    String splitRegex = argSpec.splitRegex();
-                    if (splitRegex.length() == 0) {
-                        throw new ParameterException(CommandLine.this, "Value for option " + optionDescription("",
-                                argSpec,
-                                0) + " should be in KEY=VALUE format but was " + value);
-                    } else {
-                        throw new ParameterException(CommandLine.this, "Value for option " + optionDescription("",
-                                argSpec,
-                                0) + " should be in KEY=VALUE[" + splitRegex + "KEY=VALUE]... format but was " + value);
-                    }
-                }
+                String[] keyValue = splitKeyValue(argSpec, value);
                 Object mapKey =   tryConvert(argSpec, index, keyConverter,   keyValue[0], classes[0]);
                 Object mapValue = tryConvert(argSpec, index, valueConverter, keyValue[1], classes[1]);
                 result.put(mapKey, mapValue);
-                if (tracer.isInfo()) {tracer.info("Putting [%s : %s] in %s<%s, %s> %s for %s%n", String.valueOf(mapKey), String.valueOf(mapValue),
-                        result.getClass().getSimpleName(), classes[0].getSimpleName(), classes[1].getSimpleName(), argSpec.toString(), argDescription);}
+                if (tracer.isInfo()) { tracer.info("Putting [%s : %s] in %s<%s, %s> %s for %s%n", String.valueOf(mapKey), String.valueOf(mapValue),
+                        result.getClass().getSimpleName(), classes[0].getSimpleName(), classes[1].getSimpleName(), argSpec.toString(), argDescription); }
                 parseResult.addStringValue(argSpec, keyValue[0]);
                 parseResult.addStringValue(argSpec, keyValue[1]);
             }
             parseResult.addOriginalStringValue(argSpec, raw);
+        }
+
+        private boolean canConsumeOneMapArgument(ArgSpec argSpec, String raw, Class<?>[] classes,
+                                                 ITypeConverter<?> keyConverter, ITypeConverter<?> valueConverter) {
+            String[] values = argSpec.splitValue(raw);
+            try {
+                for (String value : values) {
+                    String[] keyValue = splitKeyValue(argSpec, value);
+                    tryConvert(argSpec, -1, keyConverter, keyValue[0], classes[0]);
+                    tryConvert(argSpec, -1, valueConverter, keyValue[1], classes[1]);
+                }
+                return true;
+            } catch (PicocliException ex) { return false; }
+        }
+
+        private String[] splitKeyValue(ArgSpec argSpec, String value) {
+            String[] keyValue = value.split("=");
+            if (keyValue.length < 2) {
+                String splitRegex = argSpec.splitRegex();
+                if (splitRegex.length() == 0) {
+                    throw new ParameterException(CommandLine.this, "Value for option " + optionDescription("",
+                            argSpec, 0) + " should be in KEY=VALUE format but was " + value);
+                } else {
+                    throw new ParameterException(CommandLine.this, "Value for option " + optionDescription("",
+                            argSpec, 0) + " should be in KEY=VALUE[" + splitRegex + "KEY=VALUE]... format but was " + value);
+                }
+            }
+            return keyValue;
         }
 
         private void checkMaxArityExceeded(Range arity, int size, ArgSpec argSpec, String argDescription) {
@@ -5206,16 +5230,27 @@ public class CommandLine {
                                               String argDescription) throws Exception {
             List<Object> result = new ArrayList<Object>();
 
+            // don't modify Interpreter.position: same position may be consumed by multiple ArgSpec objects
+            int currentPosition = position;
+
             // first do the arity.min mandatory parameters
             for (int i = 0; i < arity.min; i++) {
-                consumeOneArgument(argSpec, arity, args, type, result, i, argDescription);
+                List<Object> typedValuesAtPosition = new ArrayList<Object>();
+                parseResult.addTypedValues(argSpec, currentPosition++, typedValuesAtPosition);
+                consumeOneArgument(argSpec, arity, args.pop(), type, typedValuesAtPosition, i, argDescription);
+                result.addAll(typedValuesAtPosition);
             }
             // now process the varargs if any
             for (int i = arity.min; i < arity.max && !args.isEmpty(); i++) {
-                if (!varargCanConsumeNextValue(argSpec, args.peek())) {
-                    break;
+                if (!varargCanConsumeNextValue(argSpec, args.peek())) { break; }
+
+                List<Object> typedValuesAtPosition = new ArrayList<Object>();
+                parseResult.addTypedValues(argSpec, currentPosition++, typedValuesAtPosition);
+                if (!canConsumeOneArgument(argSpec, args.peek(), type)) {
+                    break; // leave empty list at argSpec.typedValues[currentPosition] so we won't try to consume that position again
                 }
-                consumeOneArgument(argSpec, arity, args, type, result, i, argDescription);
+                consumeOneArgument(argSpec, arity, args.pop(), type, typedValuesAtPosition, i, argDescription);
+                result.addAll(typedValuesAtPosition);
             }
             if (result.isEmpty() && arity.min == 0 && arity.max <= 1 && isBoolean(type)) {
                 return Arrays.asList((Object) Boolean.TRUE);
@@ -5225,15 +5260,14 @@ public class CommandLine {
 
         private int consumeOneArgument(ArgSpec argSpec,
                                        Range arity,
-                                       Stack<String> args,
+                                       String arg,
                                        Class<?> type,
                                        List<Object> result,
                                        int index,
-                                       String argDescription) throws Exception {
-            String raw = trim(args.pop());
+                                       String argDescription) {
+            String raw = trim(arg);
             String[] values = argSpec.splitValue(raw);
             ITypeConverter<?> converter = getTypeConverter(type, argSpec, 0);
-
             for (int j = 0; j < values.length; j++) {
                 result.add(tryConvert(argSpec, index, converter, values[j], type));
                 if (tracer.isInfo()) {
@@ -5243,6 +5277,15 @@ public class CommandLine {
             }
             parseResult.addOriginalStringValue(argSpec, raw);
             return ++index;
+        }
+        private boolean canConsumeOneArgument(ArgSpec argSpec, String arg, Class<?> type) {
+            ITypeConverter<?> converter = getTypeConverter(type, argSpec, 0);
+            try {
+                for (String value : argSpec.splitValue(trim(arg))) {
+                    tryConvert(argSpec, -1, converter, value, type);
+                }
+                return true;
+            } catch (PicocliException ex) { return false; }
         }
 
         /** Returns whether the next argument can be assigned to a vararg option/positional parameter.
@@ -5278,7 +5321,7 @@ public class CommandLine {
             return (arg.length() > 2 && arg.startsWith("-") && commandSpec.posixOptionsMap().containsKey(arg.charAt(1)));
         }
         private Object tryConvert(ArgSpec argSpec, int index, ITypeConverter<?> converter, String value, Class<?> type)
-                throws Exception {
+                throws ParameterException {
             try {
                 return converter.convert(value);
             } catch (TypeConversionException ex) {

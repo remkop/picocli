@@ -1523,9 +1523,8 @@ public class CommandLineTest {
         assertArrayEquals(new String[]{"file1", "file2"}, app1.files);
     }
 
-    @Ignore("Requires #70 support for variable arity in positional parameters")
     @Test
-    public void testPositionalParamWithFixedIndexRangeAndVariableArity() throws Exception {
+    public void testPositionalParamWithFixedIndexRangeAndVariableArity() throws Exception { // #70
         class App {
             @Parameters(index = "0") InetAddress host1;
             @Parameters(index = "1") int port1;
@@ -1540,6 +1539,45 @@ public class CommandLineTest {
         assertEquals(InetAddress.getByName("localhost"), app2.host2);
         assertArrayEquals(new int[]{2222}, app2.port2range);
         assertArrayEquals(new String[]{"file1", "file2"}, app2.files);
+    }
+
+    @Test
+    public void test70MultiplePositionalsConsumeSamePosition() {
+        class App {
+            @Parameters(index = "0..3") String[] posA;
+            @Parameters(index = "2..4") String[] posB;
+            @Unmatched String[] unmatched;
+        }
+        App app = CommandLine.populateCommand(new App(), "A B C D E F".split(" "));
+        assertArrayEquals(new String[]{"A", "B", "C", "D"}, app.posA);
+        assertArrayEquals(new String[]{"C", "D", "E"}, app.posB);
+        assertArrayEquals(new String[]{"F"}, app.unmatched);
+    }
+
+    @Test
+    public void test70PositionalOnlyConsumesPositionWhenTypeConversionSucceeds() {
+        class App {
+            @Parameters(index = "0..3") int[] posA;
+            @Parameters(index = "2..4") String[] posB;
+            @Unmatched String[] unmatched;
+        }
+        App app = CommandLine.populateCommand(new App(), "11 22 C D E F".split(" "));
+        assertArrayEquals("posA cannot consume positions 2 and 3", new int[]{11, 22}, app.posA);
+        assertArrayEquals(new String[]{"C", "D", "E"}, app.posB);
+        assertArrayEquals(new String[]{"F"}, app.unmatched);
+    }
+
+    @Test
+    public void test70PositionalOnlyConsumesPositionWhenTypeConversionSucceeds2() {
+        class App {
+            @Parameters(index = "0..3") String[] posA;
+            @Parameters(index = "2..4") int[] posB;
+            @Unmatched String[] unmatched;
+        }
+        App app = CommandLine.populateCommand(new App(), "A B C 33 44 55".split(" "));
+        assertArrayEquals(new String[]{"A", "B", "C", "33"}, app.posA);
+        assertArrayEquals(new int[]{33, 44}, app.posB);
+        assertArrayEquals(new String[]{"55"}, app.unmatched);
     }
 
     @Test(expected = ParameterIndexGapException.class)
