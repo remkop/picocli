@@ -17,6 +17,7 @@ package picocli;
 
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import picocli.CommandLine.*;
 
@@ -996,5 +997,53 @@ public class CommandLineArityTest {
         assertEquals("foo", cmd.foo);
         assertEquals(null, cmd.alpha);
         assertEquals(Arrays.asList("xx", "--alpha", "--beta"), cmd.params);
+    }
+
+    @Test
+    public void testStopProcessingVarargsWhenCumulativeSizeReached() {
+        class ValSepC {
+            @Option(names = "-a", arity="1..2") String[] a;
+            @Option(names = "-b", arity="1..2", split=",") String[] b;
+            @Option(names = "-c", arity="1..*", split=",") String[] c;
+            @Unmatched String[] remaining;
+        }
+        ValSepC val1 = parseRestrictingCumulativeSize(new ValSepC(), "-a 1 2 3 4".split(" "));
+        assertArrayEquals(new String[]{"1", "2"}, val1.a);
+        assertArrayEquals(new String[]{"3", "4"}, val1.remaining);
+
+        ValSepC val2 = parseRestrictingCumulativeSize(new ValSepC(), "-a1 -a2 3".split(" "));
+        assertArrayEquals(new String[]{"1", "2"}, val2.a);
+        assertArrayEquals(new String[]{"3"}, val2.remaining);
+
+        ValSepC val3 = parseRestrictingCumulativeSize(new ValSepC(), "-b1,2".split(" "));
+        assertArrayEquals(new String[]{"1", "2"}, val3.b);
+
+        ValSepC val4 = parseRestrictingCumulativeSize(new ValSepC(), "-c 1".split(" "));
+        assertArrayEquals(new String[]{"1"}, val4.c);
+
+        ValSepC val5 = parseRestrictingCumulativeSize(new ValSepC(), "-c1".split(" "));
+        assertArrayEquals(new String[]{"1"}, val5.c);
+
+        ValSepC val6 = parseRestrictingCumulativeSize(new ValSepC(), "-c1,2,3".split(" "));
+        assertArrayEquals(new String[]{"1", "2", "3"}, val6.c);
+    }
+
+    @Ignore
+    @Test
+    public void testCommonsCliCompatibleSeparatorHandling() {
+        class ValSepC {
+            @Option(names = "-a", arity="1..2") String[] a;
+            @Option(names = "-b", arity="1..2", split=",") String[] b;
+            @Option(names = "-c", arity="1..*", split=",") String[] c;
+            @Unmatched String[] remaining;
+        }
+        ValSepC val3a = parseRestrictingCumulativeSize(new ValSepC(), "-b1,2,3".split(" "));
+        assertArrayEquals(new String[]{"1", "2,3"}, val3a.b);
+    }
+    private <T> T parseRestrictingCumulativeSize(T obj, String[] args) {
+        CommandLine cmd = new CommandLine(obj);
+        cmd.getCommandSpec().parser().arityRestrictsCumulativeSize(true);
+        cmd.parseArgs(args);
+        return obj;
     }
 }

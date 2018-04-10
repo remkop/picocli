@@ -973,15 +973,19 @@ public class CommandLineModelTest {
         ParseResult parseResult = new CommandLine(cmd).parseArgs("-x 1 -x 2 -x 3".split(" "));
         assertEquals(Arrays.asList("1", "2", "3"), parseResult.matchedOption('x').stringValues());
         assertArrayEquals(new String[]{"1", "2", "3"}, parseResult.matchedOptionValue('x', (String[]) null));
+    }
 
-        CommandSpec cmd2 = CommandSpec.create().addOption(OptionSpec.builder("-x").arity("1..3").build());
+    @Test
+    public void testParser_ArityRestrictsCumulativeSize_singleArguments_tooMany_becomeUnmatchedArgs() {
+        CommandSpec cmd2 = CommandSpec.create()
+                .addOption(OptionSpec.builder("-x").arity("1..3").build());
         cmd2.parser().arityRestrictsCumulativeSize(true);
-        try {
-            new CommandLine(cmd2).parseArgs("-x 1 -x 2 -x 3 -x 4".split(" "));
-            fail("expected exception");
-        } catch (MaxValuesExceededException ok) {
-            assertEquals("option '-x' max number of values (3) exceeded: 4 elements.", ok.getMessage());
-        }
+        cmd2.parser().unmatchedArgumentsAllowed(true);
+
+        ParseResult parseResult = new CommandLine(cmd2).parseArgs("-x 1 -x 2 -x 3 -x 4".split(" "));
+        assertEquals(Arrays.asList("1", "2", "3"), parseResult.matchedOption('x').stringValues());
+        assertArrayEquals(new String[]{"1", "2", "3"}, parseResult.matchedOptionValue('x', (String[]) null));
+        assertEquals(Arrays.asList("-x", "4"), parseResult.unmatched());
     }
 
     @Test

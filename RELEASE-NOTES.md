@@ -41,8 +41,9 @@ No features have been promoted in this picocli release.
 - [#303] Enhancement: Improve validation to prevent common mistakes.
 - [#70]  Enhancement: Positional parameters should only consume values where type conversion succeeds.
 - [#327] Bugfix: Default values should not cause options and positional parameters to be added to ParseResult.
-- [#330] Bugfix: `Interpreter` should clear option's and positional parameter's rawStringValues list before parsing new input.
+- [#330] Bugfix: `Interpreter` should clear option's and positional parameter's `stringValues` list before parsing new input.
 - [#335] Bugfix: Abstract class `ArgSpec` should not implement `equals` and `hashCode`. 
+- [#345] Bugfix: Stop processing varargs when cumulative size reached.
 
 ## <a name="3.0.0-alpha-5-deprecated"></a> Deprecations
 See [3.0.0-alpha-1](https://github.com/remkop/picocli/releases/tag/v3.0.0-alpha-1#3.0.0-alpha-1-deprecated)

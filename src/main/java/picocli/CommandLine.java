@@ -3491,6 +3491,10 @@ public class CommandLine {
             /** Sets the {@code originalStringValues} to a new list instance. */
             protected void resetOriginalStringValues() { originalStringValues = new ArrayList<String>(); }
 
+            boolean acceptsValues(ParserSpec parser) {
+                return !parser.arityRestrictsCumulativeSize() || stringValues().size() < arity().max;
+            }
+
             protected boolean showDefaultValue(CommandSpec commandSpec) {
                 if (showDefaultValue() == Help.Visibility.ALWAYS)   { return true; }
                 if (showDefaultValue() == Help.Visibility.NEVER)    { return false; }
@@ -4801,7 +4805,7 @@ public class CommandLine {
                 } else {
                     if (tracer.isDebug()) {tracer.debug("'%s' cannot be separated into <option>%s<option-parameter>%n", arg, separator);}
                 }
-                if (commandSpec.optionsMap().containsKey(arg)) {
+                if (isStandaloneOption(arg)) {
                     processStandaloneOption(required, initialized, arg, args, paramAttachedToOption);
                 }
                 // Compact (single-letter) options can be grouped with other options or with an argument.
@@ -4810,8 +4814,7 @@ public class CommandLine {
                     if (tracer.isDebug()) {tracer.debug("Trying to process '%s' as clustered short options%n", arg, args);}
                     processClusteredShortOptions(required, initialized, arg, args);
                 }
-                // The argument could not be interpreted as an option.
-                // We take this to mean that the remainder are positional arguments
+                // The argument could not be interpreted as an option: process it as a positional argument
                 else {
                     args.push(arg);
                     if (tracer.isDebug()) {tracer.debug("Could not find option '%s', deciding whether to treat as unmatched option or positional parameter...%n", arg);}
@@ -4821,6 +4824,12 @@ public class CommandLine {
                 }
             }
         }
+
+        private boolean isStandaloneOption(String arg) {
+            OptionSpec option = commandSpec.optionsMap().get(arg);
+            return option != null && option.acceptsValues(commandSpec.parser());
+        }
+
         private boolean resemblesOption(String arg) {
             if (commandSpec.parser().unmatchedOptionsArePositionalParams()) {
                 if (tracer.isDebug()) {tracer.debug("Parser is configured to treat all unmatched options as positional parameter%n", arg);}
@@ -4912,7 +4921,8 @@ public class CommandLine {
             String cluster = arg.substring(1);
             boolean paramAttachedToOption = true;
             do {
-                if (cluster.length() > 0 && commandSpec.posixOptionsMap().containsKey(cluster.charAt(0))) {
+                if (cluster.length() > 0 && commandSpec.posixOptionsMap().containsKey(cluster.charAt(0))
+                        && commandSpec.posixOptionsMap().get(cluster.charAt(0)).acceptsValues(commandSpec.parser())) {
                     ArgSpec argSpec = commandSpec.posixOptionsMap().get(cluster.charAt(0));
                     Range arity = argSpec.arity();
                     String argDescription = "option " + prefix + cluster.charAt(0);
@@ -5068,7 +5078,8 @@ public class CommandLine {
             }
             initialized.add(argSpec);
             int originalSize = map.size();
-            consumeMapArguments(argSpec, arity, args, classes, keyConverter, valueConverter, map, argDescription);
+            Range reducedArity = reduceMaxArity(arity, originalSize);
+            consumeMapArguments(argSpec, reducedArity, args, classes, keyConverter, valueConverter, map, argDescription);
             parseResult.add(argSpec, position);
             checkMaxArityExceeded(arity, map.size(), argSpec, argDescription);
             return map.size() - originalSize;
@@ -5164,6 +5175,10 @@ public class CommandLine {
                     " max number of values (" + arity.max + ") exceeded: " + size + " elements.");
         }
 
+        private Range reduceMaxArity(Range arity, int existingSize) {
+            return commandSpec.parser().arityRestrictsCumulativeSize()? arity.max(arity.max - existingSize) : arity;
+        }
+
         private int applyValuesToArrayField(ArgSpec argSpec,
                                             Range arity,
                                             Stack<String> args,
@@ -5171,8 +5186,9 @@ public class CommandLine {
                                             String argDescription) throws Exception {
             Object existing = argSpec.getValue();
             int length = existing == null ? 0 : Array.getLength(existing);
+            Range reducedArity = reduceMaxArity(arity, length);
             Class<?> type = argSpec.auxiliaryTypes()[0];
-            List<Object> converted = consumeArguments(argSpec, arity, args, type, argDescription);
+            List<Object> converted = consumeArguments(argSpec, reducedArity, args, type, argDescription);
             List<Object> newValues = new ArrayList<Object>();
             if (initialized.contains(argSpec)) { // existing values are default values if initialized does NOT contain argsSpec
                 for (int i = 0; i < length; i++) {
@@ -5205,7 +5221,8 @@ public class CommandLine {
                                                  String argDescription) throws Exception {
             Collection<Object> collection = (Collection<Object>) argSpec.getValue();
             Class<?> type = argSpec.auxiliaryTypes()[0];
-            List<Object> converted = consumeArguments(argSpec, arity, args, type, argDescription);
+            Range reducedArity = reduceMaxArity(arity, collection == null ? 0 : collection.size());
+            List<Object> converted = consumeArguments(argSpec, reducedArity, args, type, argDescription);
             if (collection == null || (!collection.isEmpty() && !initialized.contains(argSpec))) {
                 collection = createCollection(argSpec.type()); // collection type
                 argSpec.setValue(collection);
