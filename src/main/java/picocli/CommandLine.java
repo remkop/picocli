@@ -3454,7 +3454,7 @@ public class CommandLine {
             public ISetter setter()        { return setter; }
 
             /** Returns the current value of this argument. Delegates to the current {@link #getter()}. */
-            <T> T getValue() throws PicocliException {
+            public <T> T getValue() throws PicocliException {
                 try {
                     return getter.get();
                 } catch (PicocliException ex) { throw ex;
@@ -3462,7 +3462,7 @@ public class CommandLine {
                 }
             }
             /** Sets the value of this argument to the specified value and returns the previous value. Delegates to the current {@link #setter()}. */
-            <T> T setValue(T newValue) throws PicocliException {
+            public <T> T setValue(T newValue) throws PicocliException {
                 try {
                     return setter.set(newValue);
                 } catch (PicocliException ex) { throw ex;
@@ -3471,7 +3471,7 @@ public class CommandLine {
             }
     
             /** Returns {@code true} if this argument's {@link #type()} is an array, a {@code Collection} or a {@code Map}, {@code false} otherwise. */
-            boolean isMultiValue()     { return CommandLine.isMultiValue(type()); }
+            public boolean isMultiValue()     { return CommandLine.isMultiValue(type()); }
             /** Returns {@code true} if this argument is a named option, {@code false} otherwise. */
             public abstract boolean isOption();
             /** Returns {@code true} if this argument is a positional parameter, {@code false} otherwise. */
