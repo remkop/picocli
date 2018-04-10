@@ -1005,6 +1005,8 @@ public class CommandLineArityTest {
             @Option(names = "-a", arity="1..2") String[] a;
             @Option(names = "-b", arity="1..2", split=",") String[] b;
             @Option(names = "-c", arity="1..*", split=",") String[] c;
+            @Option(names = "-d") boolean d;
+            @Option(names = "-e", arity="1", split=",") boolean e;
             @Unmatched String[] remaining;
         }
         ValSepC val1 = parseRestrictingCumulativeSize(new ValSepC(), "-a 1 2 3 4".split(" "));
@@ -1026,6 +1028,14 @@ public class CommandLineArityTest {
 
         ValSepC val6 = parseRestrictingCumulativeSize(new ValSepC(), "-c1,2,3".split(" "));
         assertArrayEquals(new String[]{"1", "2", "3"}, val6.c);
+
+        ValSepC val7 = parseRestrictingCumulativeSize(new ValSepC(), "-d".split(" "));
+        assertTrue(val7.d);
+        assertFalse(val7.e);
+
+        ValSepC val8 = parseRestrictingCumulativeSize(new ValSepC(), "-e true".split(" "));
+        assertFalse(val8.d);
+        assertTrue(val8.e);
     }
 
     @Ignore

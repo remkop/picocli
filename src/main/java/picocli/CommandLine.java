@@ -3492,7 +3492,7 @@ public class CommandLine {
             protected void resetOriginalStringValues() { originalStringValues = new ArrayList<String>(); }
 
             boolean acceptsValues(ParserSpec parser) {
-                return !parser.arityRestrictsCumulativeSize() || stringValues().size() < arity().max;
+                return arity().max == 0 || !parser.arityRestrictsCumulativeSize() || stringValues().size() < arity().max;
             }
 
             protected boolean showDefaultValue(CommandSpec commandSpec) {
