@@ -50,6 +50,71 @@ public class CommandLineArityTest {
         assertEquals("1..*", arity.toString());
         assertEquals(Range.valueOf("1..*"), arity);
     }
+
+    @Test
+    public void testValueOfDisallowsInvalidRange() {
+        try {
+            Range.valueOf("1..0");
+            fail("Expected exception");
+        } catch (InitializationException ex) {
+            assertEquals("Invalid range (min=1, max=0)", ex.getMessage());
+        }
+        try {
+            Range.valueOf("3..1");
+            fail("Expected exception");
+        } catch (InitializationException ex) {
+            assertEquals("Invalid range (min=3, max=1)", ex.getMessage());
+        }
+    }
+
+    @Test
+    public void testValueOfDisallowsNegativeRange() {
+        try {
+            Range.valueOf("-1..0");
+            fail("Expected exception");
+        } catch (InitializationException ex) {
+            assertEquals("Invalid negative range (min=-1, max=0)", ex.getMessage());
+        }
+        try {
+            Range.valueOf("-3..1");
+            fail("Expected exception");
+        } catch (InitializationException ex) {
+            assertEquals("Invalid negative range (min=-3, max=1)", ex.getMessage());
+        }
+    }
+
+    @Test
+    public void testConstructorDisallowsNegativeRange() {
+        try {
+            new Range(-1, 0, true, true, "");
+            fail("Expected exception");
+        } catch (InitializationException ex) {
+            assertEquals("Invalid negative range (min=-1, max=0)", ex.getMessage());
+        }
+        try {
+            new Range(-3, -1, true, true, "");
+            fail("Expected exception");
+        } catch (InitializationException ex) {
+            assertEquals("Invalid negative range (min=-3, max=-1)", ex.getMessage());
+        }
+    }
+
+    @Test
+    public void testConstructorDisallowsInvalidRange() {
+        try {
+            new Range(1, 0, true, true, "");
+            fail("Expected exception");
+        } catch (InitializationException ex) {
+            assertEquals("Invalid range (min=1, max=0)", ex.getMessage());
+        }
+        try {
+            new Range(3, 1, true, true, "");
+            fail("Expected exception");
+        } catch (InitializationException ex) {
+            assertEquals("Invalid range (min=3, max=1)", ex.getMessage());
+        }
+    }
+
     private static class SupportedTypes2 {
         @Option(names = "-boolean")       boolean booleanField;
         @Option(names = "-int")           int intField;
@@ -692,14 +757,12 @@ public class CommandLineArityTest {
             @Parameters(arity = "-1..*")
             List<String> params;
         }
-        ArrayParamsNegativeArity params = CommandLine.populateCommand(new ArrayParamsNegativeArity(), "a", "b", "c");
-        assertEquals(Arrays.asList("a", "b", "c"), params.params);
-
-        params = CommandLine.populateCommand(new ArrayParamsNegativeArity(), "a");
-        assertEquals(Arrays.asList("a"), params.params);
-
-        params = CommandLine.populateCommand(new ArrayParamsNegativeArity());
-        assertEquals(null, params.params);
+        try {
+            new CommandLine(new ArrayParamsNegativeArity());
+            fail("Expected exception");
+        } catch (InitializationException ex) {
+            assertEquals("Invalid negative range (min=-1, max=2147483647)", ex.getMessage());
+        }
     }
 
     @Test
@@ -760,28 +823,6 @@ public class CommandLineArityTest {
         } catch (MissingParameterException ex) {
             assertEquals("positional parameter at index 0..* (<params>) requires at least 2 values, but none were specified.", ex.getMessage());
         }
-    }
-
-    @Test
-    public void testNonVarargArrayParametersWithNegativeArityConsumesZeroArguments() {
-        class NonVarArgArrayParamsNegativeArity {
-            @Parameters(arity = "-1")
-            List<String> params;
-        }
-        try {
-            CommandLine.populateCommand(new NonVarArgArrayParamsNegativeArity(), "a", "b", "c");
-            fail("Expected UnmatchedArgumentException");
-        } catch (UnmatchedArgumentException ex) {
-            assertEquals("Unmatched arguments [a, b, c]", ex.getMessage());
-        }
-        try {
-            CommandLine.populateCommand(new NonVarArgArrayParamsNegativeArity(), "a");
-            fail("Expected UnmatchedArgumentException");
-        } catch (UnmatchedArgumentException ex) {
-            assertEquals("Unmatched argument [a]", ex.getMessage());
-        }
-        NonVarArgArrayParamsNegativeArity params = CommandLine.populateCommand(new NonVarArgArrayParamsNegativeArity());
-        assertEquals(null, params.params);
     }
 
     @Test

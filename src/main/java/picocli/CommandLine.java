@@ -2466,6 +2466,8 @@ public class CommandLine {
          * @param originalValue the original value that was specified on the option or parameter
          */
         public Range(int min, int max, boolean variable, boolean unspecified, String originalValue) {
+            if (min < 0 || max < 0) { throw new InitializationException("Invalid negative range (min=" + min + ", max=" + max + ")"); }
+            if (min > max) { throw new InitializationException("Invalid range (min=" + min + ", max=" + max + ")"); }
             this.min = min;
             this.max = max;
             this.isVariable = variable;
