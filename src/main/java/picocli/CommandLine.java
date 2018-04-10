@@ -5084,6 +5084,7 @@ public class CommandLine {
             consumeMapArguments(argSpec, reducedArity, args, classes, keyConverter, valueConverter, map, argDescription);
             parseResult.add(argSpec, position);
             checkMaxArityExceeded(arity, map.size(), argSpec, argDescription);
+            argSpec.setValue(map);
             return map.size() - originalSize;
         }
 
@@ -5239,6 +5240,7 @@ public class CommandLine {
             }
             parseResult.add(argSpec, position);
             checkMaxArityExceeded(arity, collection.size(), argSpec, argDescription);
+            argSpec.setValue(collection);
             return converted.size();
         }
 

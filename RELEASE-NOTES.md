@@ -42,6 +42,7 @@ No features have been promoted in this picocli release.
 - [#303] Enhancement: Improve validation to prevent common mistakes.
 - [#70]  Enhancement: Positional parameters should only consume values where type conversion succeeds.
 - [#346] Enhancement: Validate that arity min is never greater than max.
+- [#348] Enhancement: Interpreter should call `ArgSpec.setValue` for every matched option or positional parameter.
 - [#327] Bugfix: Default values should not cause options and positional parameters to be added to ParseResult.
 - [#330] Bugfix: `Interpreter` should clear option's and positional parameter's `stringValues` list before parsing new input.
 - [#335] Bugfix: Abstract class `ArgSpec` should not implement `equals` and `hashCode`. 
