@@ -4745,7 +4745,7 @@ public class CommandLine {
                     unmatchedArgsBinding.addAll(unmatched.clone());
                 }
                 if (!isUnmatchedArgumentsAllowed()) { throw new UnmatchedArgumentException(CommandLine.this, Collections.unmodifiableList(parseResult.unmatched)); }
-                if (tracer.isWarn()) { tracer.warn("Unmatched arguments: %s%n", parseResult.unmatched); }
+                if (tracer.isInfo()) { tracer.info("Unmatched arguments: %s%n", parseResult.unmatched); }
             }
         }
 
@@ -5068,20 +5068,17 @@ public class CommandLine {
             ITypeConverter<?> converter = getTypeConverter(cls, argSpec, 0);
             Object newValue = tryConvert(argSpec, -1, converter, value, cls);
             Object oldValue = argSpec.getValue();
-            TraceLevel level = TraceLevel.INFO;
             String traceMessage = "Setting %s to '%3$s' (was '%2$s') for %4$s%n";
             if (initialized != null) {
                 if (initialized.contains(argSpec)) {
                     if (!isOverwrittenOptionsAllowed()) {
                         throw new OverwrittenOptionException(CommandLine.this, optionDescription("", argSpec, 0) +  " should be specified only once");
                     }
-                    level = TraceLevel.WARN;
                     traceMessage = "Overwriting %s value '%s' with '%s' for %s%n";
                 }
                 initialized.add(argSpec);
             }
-            if (tracer.level.isEnabled(level)) { level.print(tracer, traceMessage, argSpec.toString(),
-                    String.valueOf(oldValue), String.valueOf(newValue), argDescription); }
+            if (tracer.isInfo()) { tracer.info(traceMessage, argSpec.toString(), String.valueOf(oldValue), String.valueOf(newValue), argDescription); }
             argSpec.setValue(newValue);
             parseResult.addOriginalStringValue(argSpec, value);// #279 track empty string value if no command line argument was consumed
             parseResult.addStringValue(argSpec, value);

@@ -2023,6 +2023,7 @@ public class CommandLineTest {
         ByteArrayOutputStream baos = new ByteArrayOutputStream(2500);
         System.setErr(new PrintStream(baos));
 
+        setTraceLevel("INFO");
         class App {
             @Option(names = "-f") String field = null;
             @Option(names = "-p") int primitive = 43;
@@ -2034,11 +2035,14 @@ public class CommandLineTest {
         System.setErr(originalErr);
 
         String expected = String.format("" +
-                        "[picocli WARN] Overwriting field String %1$s.field value '111' with '222' for option -f%n" +
-                        "[picocli WARN] Overwriting field String %1$s.field value '222' with '333' for option -f%n",
+                        "[picocli INFO] Parsing 6 command line args [-f, 111, -f, 222, -f, 333]%n" +
+                        "[picocli INFO] Setting field String picocli.CommandLineTest$16App.field to '111' (was 'null') for option -f%n" +
+                        "[picocli INFO] Overwriting field String picocli.CommandLineTest$16App.field value '111' with '222' for option -f%n" +
+                        "[picocli INFO] Overwriting field String picocli.CommandLineTest$16App.field value '222' with '333' for option -f%n",
                 App.class.getName());
         String actual = new String(baos.toByteArray(), "UTF8");
         assertEquals(expected, actual);
+        setTraceLevel("WARN");
     }
     @Test
     public void testTraceWarningIfUnmatchedArgsWhenUnmatchedArgumentsAllowed() throws Exception {
@@ -2046,6 +2050,7 @@ public class CommandLineTest {
         ByteArrayOutputStream baos = new ByteArrayOutputStream(2500);
         System.setErr(new PrintStream(baos));
 
+        setTraceLevel("INFO");
         class App {
             @Parameters(index = "0", arity = "2", split = "\\|", type = {Integer.class, String.class})
             Map<Integer,String> message;
@@ -2054,10 +2059,14 @@ public class CommandLineTest {
         assertEquals(Arrays.asList("3=c", "4=d"), cmd.getUnmatchedArguments());
         System.setErr(originalErr);
 
-        String expected = String.format("[picocli WARN] Unmatched arguments: [3=c, 4=d]%n");
+        String expected = String.format("[picocli INFO] Parsing 4 command line args [1=a, 2=b, 3=c, 4=d]%n" +
+                "[picocli INFO] Putting [1 : a] in LinkedHashMap<Integer, String> field java.util.Map<Integer, String> picocli.CommandLineTest$17App.message for args[0] at position 0%n" +
+                "[picocli INFO] Putting [2 : b] in LinkedHashMap<Integer, String> field java.util.Map<Integer, String> picocli.CommandLineTest$17App.message for args[0] at position 0%n" +
+                "[picocli INFO] Unmatched arguments: [3=c, 4=d]%n");
         String actual = new String(baos.toByteArray(), "UTF8");
         //System.out.println(actual);
         assertEquals(expected, actual);
+        setTraceLevel("WARN");
     }
 
     @Test
@@ -2907,7 +2916,7 @@ public class CommandLineTest {
             @Option(names = {"-c", "--ccc"}) String third;
             @Parameters String[] positional;
         }
-        //System.setProperty("picocli.trace", "DEBUG");
+        setTraceLevel("INFO");
         PrintStream originalErr = System.err;
         ByteArrayOutputStream baos = new ByteArrayOutputStream(2500);
         System.setErr(new PrintStream(baos));
@@ -2925,9 +2934,15 @@ public class CommandLineTest {
         assertEquals("C", ((App) cmd.getCommand()).third);
 
         String expected = String.format("" +
-                "[picocli WARN] Unmatched arguments: [-yy]%n" +
-                "[picocli WARN] Unmatched arguments: [-y]%n" +
-                "[picocli WARN] Unmatched arguments: [--y]%n");
+                "[picocli INFO] Parsing 2 command line args [-yy, -a=A]%n" +
+                "[picocli INFO] Setting field String picocli.CommandLineTest$47App.first to 'A' (was 'null') for option -a%n" +
+                "[picocli INFO] Unmatched arguments: [-yy]%n" +
+                "[picocli INFO] Parsing 2 command line args [-y, -b=B]%n" +
+                "[picocli INFO] Setting field String picocli.CommandLineTest$47App.second to 'B' (was 'null') for option -b%n" +
+                "[picocli INFO] Unmatched arguments: [-y]%n" +
+                "[picocli INFO] Parsing 2 command line args [--y, -c=C]%n" +
+                "[picocli INFO] Setting field String picocli.CommandLineTest$47App.third to 'C' (was 'null') for option -c%n" +
+                "[picocli INFO] Unmatched arguments: [--y]%n");
         String actual = new String(baos.toByteArray(), "UTF8");
         assertEquals(expected, actual);
         setTraceLevel("WARN");
