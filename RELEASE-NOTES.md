@@ -25,6 +25,7 @@ No features have been promoted in this picocli release.
 
 ## <a name="3.0.0-alpha-6-fixes"></a> Fixed issues
 - [#350] Enhancement: Improve error message for `usageHelp` and `versionHelp` validation.
+- [#351] Documentation: Improve javadoc for OptionSpec.usageHelp and versionHelp.
 
 ## <a name="3.0.0-alpha-6-deprecated"></a> Deprecations
 See [3.0.0-alpha-1](https://github.com/remkop/picocli/releases/tag/v3.0.0-alpha-1#3.0.0-alpha-1-deprecated)

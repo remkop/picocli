@@ -1771,36 +1771,50 @@ public class CommandLine {
         @Deprecated boolean help() default false;
 
         /**
-         * Set {@code usageHelp=true} if this option allows the user to request usage help. If this option is
-         * specified on the command line, picocli will not validate the remaining arguments (so no "missing required
-         * option" errors) and the {@link CommandLine#isUsageHelpRequested()} method will return {@code true}.
+         * Set {@code usageHelp=true} for the {@code --help} option that triggers display of the usage help message.
+         * The <a href="http://picocli.info/#_printing_help_automatically">convenience methods</a> {@code Commandline.call},
+         * {@code Commandline.run}, and {@code Commandline.parseWithHandler(s)} will automatically print usage help
+         * when an option with {@code usageHelp=true} was specified on the command line.
          * <p>
-         * This attribute is useful for special options like help ({@code -h} and {@code --help} on unix,
-         * {@code -?} and {@code -Help} on Windows).
+         * By default, <em>all</em> options and positional parameters are included in the usage help message
+         * <em>except when explicitly marked {@linkplain #hidden() hidden}.</em>
          * </p><p>
-         * Note that the {@link #parse(String...)} method will not print usage help documentation, but only sets
-         * the value of the annotated field. Usage help is automatically printed when using any of the {@link #run(Runnable, PrintStream, String...)},
-         * {@link #call(Callable, PrintStream, String...)} or {@link #parseWithHandler(IParseResultHandler, PrintStream, String...)} methods.
+         * If this option is specified on the command line, picocli will not validate the remaining arguments (so no "missing required
+         * option" errors) and the {@link CommandLine#isUsageHelpRequested()} method will return {@code true}.
+         * </p><p>
+         * Alternatively, consider annotating your command with {@linkplain Command#mixinStandardHelpOptions() @Command(mixinStandardHelpOptions = true)}.
          * </p>
          * @return whether this option allows the user to request usage help
          * @since 0.9.8
+         * @see #hidden()
+         * @see #run(Runnable, String...)
+         * @see #call(Callable, String...)
+         * @see #parseWithHandler(IParseResultHandler2, String[])
+         * @see #printHelpIfRequested(List, PrintStream, PrintStream, Help.Ansi)
          */
         boolean usageHelp() default false;
 
         /**
-         * Set {@code versionHelp=true} if this option allows the user to request version information. If this option is
-         * specified on the command line, picocli will not validate the remaining arguments (so no "missing required
-         * option" errors) and the {@link CommandLine#isVersionHelpRequested()} method will return {@code true}.
+         * Set {@code versionHelp=true} for the {@code --version} option that triggers display of the version information.
+         * The <a href="http://picocli.info/#_printing_help_automatically">convenience methods</a> {@code Commandline.call},
+         * {@code Commandline.run}, and {@code Commandline.parseWithHandler(s)} will automatically print version information
+         * when an option with {@code versionHelp=true} was specified on the command line.
          * <p>
-         * This attribute is useful for special options like version ({@code -V} and {@code --version} on unix,
-         * {@code -Version} on Windows).
+         * The version information string is obtained from the command's {@linkplain Command#version() version} annotation
+         * or from the {@linkplain Command#versionProvider() version provider}.
          * </p><p>
-         * Note that the {@link #parse(String...)} method will not print version help information, but only sets
-         * the value of the annotated field. Version help is automatically printed when using any of the {@link #run(Runnable, PrintStream, String...)},
-         * {@link #call(Callable, PrintStream, String...)} or {@link #parseWithHandler(IParseResultHandler, PrintStream, String...)} methods.
+         * If this option is specified on the command line, picocli will not validate the remaining arguments (so no "missing required
+         * option" errors) and the {@link CommandLine#isUsageHelpRequested()} method will return {@code true}.
+         * </p><p>
+         * Alternatively, consider annotating your command with {@linkplain Command#mixinStandardHelpOptions() @Command(mixinStandardHelpOptions = true)}.
          * </p>
          * @return whether this option allows the user to request version information
          * @since 0.9.8
+         * @see #hidden()
+         * @see #run(Runnable, String...)
+         * @see #call(Callable, String...)
+         * @see #parseWithHandler(IParseResultHandler2, String[])
+         * @see #printHelpIfRequested(List, PrintStream, PrintStream, Help.Ansi)
          */
         boolean versionHelp() default false;
 
@@ -1919,8 +1933,8 @@ public class CommandLine {
         String split() default "";
 
         /**
-         * Set {@code hidden=true} if this option should not be included in the usage documentation.
-         * @return whether this option should be excluded from the usage message
+         * Set {@code hidden=true} if this option should not be included in the usage help message.
+         * @return whether this option should be excluded from the usage documentation
          */
         boolean hidden() default false;
 
