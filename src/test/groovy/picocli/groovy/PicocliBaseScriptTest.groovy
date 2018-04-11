@@ -110,7 +110,7 @@ import picocli.CommandLine
 '''
         String expected = String.format("" +
                 "args: [--unknownOption]%n" +
-                "Missing required option '-x=<requiredOption>'%n" +
+                "Missing required option '--requiredOption=<requiredOption>'%n" +
                 "Usage: Script1 -x=<requiredOption>%n" +
                 "  -x, --requiredOption=<requiredOption>%n" +
                 "                              this option is required%n")

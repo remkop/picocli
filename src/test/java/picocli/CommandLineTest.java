@@ -1203,13 +1203,13 @@ public class CommandLineTest {
             params = CommandLine.populateCommand(new VariousPrefixCharacters(), "--dash".split(" "));
             fail("int option needs arg");
         } catch (ParameterException ex) {
-            assertEquals("Missing required parameter for option '-d' (<dash>)", ex.getMessage());
+            assertEquals("Missing required parameter for option '--dash' (<dash>)", ex.getMessage());
         }
 
         try {
             params = CommandLine.populateCommand(new VariousPrefixCharacters(), "--owner".split(" "));
         } catch (ParameterException ex) {
-            assertEquals("Missing required parameter for option '/Owner' (<owner>)", ex.getMessage());
+            assertEquals("Missing required parameter for option '--owner' (<owner>)", ex.getMessage());
         }
 
         params = CommandLine.populateCommand(new VariousPrefixCharacters(), "--owner=".split(" "));
@@ -1223,7 +1223,7 @@ public class CommandLineTest {
             params = CommandLine.populateCommand(new VariousPrefixCharacters(), "--dash=".split(" "));
             fail("int option (with sep but no value) needs arg");
         } catch (ParameterException ex) {
-            assertEquals("Could not convert '' to int for option '-d'" +
+            assertEquals("Could not convert '' to int for option '--dash'" +
                     ": java.lang.NumberFormatException: For input string: \"\"", ex.getMessage());
         }
 
@@ -1231,7 +1231,7 @@ public class CommandLineTest {
             params = CommandLine.populateCommand(new VariousPrefixCharacters(), "--dash= /4".split(" "));
             fail("int option (with sep but no value, followed by other option) needs arg");
         } catch (ParameterException ex) {
-            assertEquals("Could not convert '' to int for option '-d'" +
+            assertEquals("Could not convert '' to int for option '--dash'" +
                     ": java.lang.NumberFormatException: For input string: \"\"", ex.getMessage());
         }
     }
@@ -2330,13 +2330,13 @@ public class CommandLineTest {
             CommandLine.populateCommand(new App(), "-s", "1", "--str", "2");
             fail("expected exception");
         } catch (OverwrittenOptionException ex) {
-            assertEquals("option '-s' (<string>) should be specified only once", ex.getMessage());
+            assertEquals("option '--str' (<string>) should be specified only once", ex.getMessage());
         }
         try {
             CommandLine.populateCommand(new App(), "-v", "--verbose");
             fail("expected exception");
         } catch (OverwrittenOptionException ex) {
-            assertEquals("option '-v' (<bool>) should be specified only once", ex.getMessage());
+            assertEquals("option '--verbose' (<bool>) should be specified only once", ex.getMessage());
         }
     }
 
@@ -2395,7 +2395,7 @@ public class CommandLineTest {
             commandLine.parse("-u", "foo");
             fail("expected exception");
         } catch (MissingParameterException ex) {
-            assertEquals("Missing required option '-p=<password>'", ex.getLocalizedMessage());
+            assertEquals("Missing required option '--password=<password>'", ex.getLocalizedMessage());
         }
         commandLine.parse("-u", "foo", "-p", "abc");
     }
@@ -3214,7 +3214,7 @@ public class CommandLineTest {
             new CommandLine(new Example()).parse("inputfile1", "inputfile2");
             fail("Expected MissingParameterException");
         } catch (MissingParameterException ex) {
-            assertEquals("Missing required option '-o=<outputDir>'", ex.getMessage());
+            assertEquals("Missing required option '--out-dir=<outputDir>'", ex.getMessage());
         }
 
         // a single empty string parameter was specified: this becomes an <inputFile> value
@@ -3222,7 +3222,7 @@ public class CommandLineTest {
             new CommandLine(new Example()).parse("");
             fail("Expected MissingParameterException");
         } catch (MissingParameterException ex) {
-            assertEquals("Missing required option '-o=<outputDir>'", ex.getMessage());
+            assertEquals("Missing required option '--out-dir=<outputDir>'", ex.getMessage());
         }
 
         // no parameters were specified
@@ -3230,7 +3230,7 @@ public class CommandLineTest {
             new CommandLine(new Example()).parse();
             fail("Expected MissingParameterException");
         } catch (MissingParameterException ex) {
-            assertEquals("Missing required options [-o=<outputDir>, params[0..*]=<inputFiles>]", ex.getMessage());
+            assertEquals("Missing required options [--out-dir=<outputDir>, params[0..*]=<inputFiles>]", ex.getMessage());
         }
 
         // finally, let's test the success scenario

@@ -520,7 +520,7 @@ public class CommandLineArityTest {
             CommandLine.populateCommand(new BooleanOptionsArity0_nAndParameters(), "-rv=234 -bool".split(" "));
             fail("was able to assign 234 to boolean");
         } catch (CommandLine.ParameterException ex) {
-            assertEquals("'234' is not a boolean for option '-v'", ex.getMessage());
+            assertEquals("'234' is not a boolean for option '-other'", ex.getMessage());
         }
     }
 

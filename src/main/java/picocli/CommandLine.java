@@ -2773,12 +2773,12 @@ public class CommandLine {
                 List<String> versionHelpAttr = new ArrayList<String>();
                 for (OptionSpec option : options()) {
                     if (option.usageHelp()) {
-                        usageHelpAttr.add(option.names()[0]);
-                        if (!isBoolean(option.type())) { wrongUsageHelpAttr.add(option.names()[0]); }
+                        usageHelpAttr.add(option.longestName());
+                        if (!isBoolean(option.type())) { wrongUsageHelpAttr.add(option.longestName()); }
                     }
                     if (option.versionHelp()) {
-                        versionHelpAttr.add(option.names()[0]);
-                        if (!isBoolean(option.type())) { wrongVersionHelpAttr.add(option.names()[0]); }
+                        versionHelpAttr.add(option.longestName());
+                        if (!isBoolean(option.type())) { wrongVersionHelpAttr.add(option.longestName()); }
                     }
                 }
                 String wrongType = "Non-boolean options like %s should not be marked as '%s=true'. Usually a command has one %s boolean flag that triggers display of the %s. Alternatively, consider using @Command(mixinStandardHelpOptions = true) on your command instead.";
@@ -3772,7 +3772,7 @@ public class CommandLine {
                 if (names == null || names.length == 0 || Arrays.asList(names).contains("")) {
                     throw new InitializationException("Invalid names: " + Arrays.toString(names));
                 }
-                if (toString() == null) { toString = "option " + names[0]; }
+                if (toString() == null) { toString = "option " + longestName(); }
             }
     
             /** Returns a new Builder initialized with the attributes from this {@code OptionSpec}. Calling {@code build} immediately will return a copy of this {@code OptionSpec}.
@@ -5381,7 +5381,7 @@ public class CommandLine {
         private String optionDescription(String prefix, ArgSpec argSpec, int index) {
             String desc = "";
             if (argSpec.isOption()) {
-                desc = prefix + "option '" + ((OptionSpec) argSpec).names()[0] + "'";
+                desc = prefix + "option '" + ((OptionSpec) argSpec).longestName() + "'";
                 if (index >= 0) {
                     if (argSpec.arity().max > 1) {
                         desc += " at index " + index;
@@ -7671,7 +7671,7 @@ public class CommandLine {
         }
         private static String describe(ArgSpec argSpec, String separator) {
             String prefix = (argSpec.isOption())
-                ? ((OptionSpec) argSpec).names()[0] + separator
+                ? ((OptionSpec) argSpec).longestName() + separator
                 : "params[" + ((PositionalParamSpec) argSpec).index() + "]" + separator;
             return prefix + argSpec.paramLabel();
         }
