@@ -990,8 +990,6 @@ Usage: <main class> [-hV] [--option=<option>]
       --option=<option>       Some option.
   -h, --help                  Show this help message and exit.
   -V, --version               Print version information and exit.
-Commands:
-  help  Displays help information about the specified command
 ----
 
 === Built-in Help Subcommand
