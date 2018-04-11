@@ -1176,7 +1176,7 @@ public class CommandLineModelTest {
         systemErrRule.clearLog();
         new CommandLine(cmd);
         assertEquals("", systemOutRule.getLog());
-        assertEquals("[picocli WARN] Multiple options are marked as 'usageHelp=true'. Usually there is only one --help option that displays usage help.", systemErrRule.getLog());
+        assertEquals(String.format("[picocli WARN] Multiple options [-x, -h] are marked as 'usageHelp=true'. Usually a command has only one --help option that triggers display of the usage help message. Alternatively, consider using @Command(mixinStandardHelpOptions = true) on your command instead.%n"), systemErrRule.getLog());
     }
 
     @Test
@@ -1190,7 +1190,7 @@ public class CommandLineModelTest {
         systemErrRule.clearLog();
         new CommandLine(cmd);
         assertEquals("", systemOutRule.getLog());
-        assertEquals("[picocli WARN] Multiple options are marked as 'versionHelp=true'. Usually there is only one --version option that displays version information.", systemErrRule.getLog());
+        assertEquals(String.format("[picocli WARN] Multiple options [-x, -V] are marked as 'versionHelp=true'. Usually a command has only one --version option that triggers display of the version information. Alternatively, consider using @Command(mixinStandardHelpOptions = true) on your command instead.%n"), systemErrRule.getLog());
     }
 
     @Test
@@ -1199,7 +1199,7 @@ public class CommandLineModelTest {
         try {
             new CommandLine(cmd);
         } catch (InitializationException ex) {
-            assertEquals("Non-boolean options (like -z) should not be marked as 'usageHelp=true'.", ex.getMessage());
+            assertEquals("Non-boolean options like [-z] should not be marked as 'usageHelp=true'. Usually a command has one --help boolean flag that triggers display of the usage help message. Alternatively, consider using @Command(mixinStandardHelpOptions = true) on your command instead.", ex.getMessage());
         }
     }
 
@@ -1209,7 +1209,7 @@ public class CommandLineModelTest {
         try {
             new CommandLine(cmd);
         } catch (InitializationException ex) {
-            assertEquals("Non-boolean options (like -x) should not be marked as 'versionHelp=true'.", ex.getMessage());
+            assertEquals("Non-boolean options like [-x] should not be marked as 'versionHelp=true'. Usually a command has one --version boolean flag that triggers display of the version information. Alternatively, consider using @Command(mixinStandardHelpOptions = true) on your command instead.", ex.getMessage());
         }
     }
 

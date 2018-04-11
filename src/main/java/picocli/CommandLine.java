@@ -2753,19 +2753,30 @@ public class CommandLine {
             void validate() {
                 Collections.sort(positionalParameters, new PositionalParametersSorter());
                 validatePositionalParameters(positionalParameters);
-                int usageHelpCount = 0, versionHelpCount = 0;
+                List<String> wrongUsageHelpAttr = new ArrayList<String>();
+                List<String> wrongVersionHelpAttr = new ArrayList<String>();
+                List<String> usageHelpAttr = new ArrayList<String>();
+                List<String> versionHelpAttr = new ArrayList<String>();
                 for (OptionSpec option : options()) {
                     if (option.usageHelp()) {
-                        usageHelpCount++;
-                        if (!isBoolean(option.type())) { throw new InitializationException("Non-boolean options (like " + option.names()[0] + ") should not be marked as 'usageHelp=true'."); }
+                        usageHelpAttr.add(option.names()[0]);
+                        if (!isBoolean(option.type())) { wrongUsageHelpAttr.add(option.names()[0]); }
                     }
                     if (option.versionHelp()) {
-                        versionHelpCount++;
-                        if (!isBoolean(option.type())) { throw new InitializationException("Non-boolean options (like " + option.names()[0] + ") should not be marked as 'versionHelp=true'."); }
+                        versionHelpAttr.add(option.names()[0]);
+                        if (!isBoolean(option.type())) { wrongVersionHelpAttr.add(option.names()[0]); }
                     }
                 }
-                if (usageHelpCount > 1)   { commandLine.tracer.warn("Multiple options are marked as 'usageHelp=true'. Usually there is only one --help option that displays usage help."); }
-                if (versionHelpCount > 1) { commandLine.tracer.warn("Multiple options are marked as 'versionHelp=true'. Usually there is only one --version option that displays version information."); }
+                String wrongType = "Non-boolean options like %s should not be marked as '%s=true'. Usually a command has one %s boolean flag that triggers display of the %s. Alternatively, consider using @Command(mixinStandardHelpOptions = true) on your command instead.";
+                String multiple = "Multiple options %s are marked as '%s=true'. Usually a command has only one %s option that triggers display of the %s. Alternatively, consider using @Command(mixinStandardHelpOptions = true) on your command instead.%n";
+                if (!wrongUsageHelpAttr.isEmpty()) {
+                    throw new InitializationException(String.format(wrongType, wrongUsageHelpAttr, "usageHelp", "--help", "usage help message"));
+                }
+                if (!wrongVersionHelpAttr.isEmpty()) {
+                    throw new InitializationException(String.format(wrongType, wrongVersionHelpAttr, "versionHelp", "--version", "version information"));
+                }
+                if (usageHelpAttr.size() > 1)   { new Tracer().warn(multiple, usageHelpAttr, "usageHelp", "--help", "usage help message"); }
+                if (versionHelpAttr.size() > 1) { new Tracer().warn(multiple, versionHelpAttr, "versionHelp", "--version", "version information"); }
             }
     
             /** Returns the user object associated with this command.

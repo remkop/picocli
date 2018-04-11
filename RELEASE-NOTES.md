@@ -1,5 +1,45 @@
 # picocli Release Notes
 
+# <a name="3.0.0-alpha-6"></a> Picocli 3.0.0-alpha-6 (UNRELEASED)
+The picocli community is pleased to announce picocli 3.0.0-alpha-6.
+
+This release contains enhancements and bug fixes.
+
+This is the twenty-sixth public release.
+Picocli follows [semantic versioning](http://semver.org/).
+
+## <a name="3.0.0-alpha-6-toc"></a> Table of Contents
+* [New and noteworthy](#3.0.0-alpha-6-new)
+* [Promoted features](#3.0.0-alpha-6-promoted)
+* [Fixed issues](#3.0.0-alpha-6-fixes)
+* [Deprecations](#3.0.0-alpha-6-deprecated)
+* [Potential breaking changes](#3.0.0-alpha-6-breaking-changes)
+
+## <a name="3.0.0-alpha-5-new"></a> New and Noteworthy
+
+
+## <a name="3.0.0-alpha-6-promoted"></a> Promoted Features
+Promoted features are features that were incubating in previous versions of picocli but are now supported and subject to backwards compatibility. 
+
+No features have been promoted in this picocli release.
+
+## <a name="3.0.0-alpha-6-fixes"></a> Fixed issues
+- [#350] Enhancement: Improve error message for `usageHelp` and `versionHelp` validation.
+
+## <a name="3.0.0-alpha-6-deprecated"></a> Deprecations
+See [3.0.0-alpha-1](https://github.com/remkop/picocli/releases/tag/v3.0.0-alpha-1#3.0.0-alpha-1-deprecated)
+
+## <a name="3.0.0-alpha-6-breaking-changes"></a> Potential breaking changes
+See also breaking changes for 
+[3.0.0-alpha-5](https://github.com/remkop/picocli/releases/tag/v3.0.0-alpha-5#3.0.0-alpha-5-breaking-changes),
+[3.0.0-alpha-4](https://github.com/remkop/picocli/releases/tag/v3.0.0-alpha-4#3.0.0-alpha-4-breaking-changes),
+[3.0.0-alpha-3](https://github.com/remkop/picocli/releases/tag/v3.0.0-alpha-3#3.0.0-alpha-3-breaking-changes),
+[3.0.0-alpha-2](https://github.com/remkop/picocli/releases/tag/v3.0.0-alpha-2#3.0.0-alpha-2-breaking-changes),
+and [3.0.0-alpha-1](https://github.com/remkop/picocli/releases/tag/v3.0.0-alpha-1#3.0.0-alpha-1-breaking-changes).
+
+
+
+
 # <a name="3.0.0-alpha-5"></a> Picocli 3.0.0-alpha-5
 The picocli community is pleased to announce picocli 3.0.0-alpha-5.
 
