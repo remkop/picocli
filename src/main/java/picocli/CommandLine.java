@@ -3786,9 +3786,12 @@ public class CommandLine {
                 return super.showDefaultValue(commandSpec) && !help() && !versionHelp() && !usageHelp();
             }
 
-            /** Returns one or more option names. At least one option name is required.
+            /** Returns one or more option names. The returned array will contain at least one option name.
              * @see Option#names() */
             public String[] names()       { return names.clone(); }
+
+            /** Returns the longest {@linkplain #names() option name}. */
+            public String longestName() { return Help.ShortestFirst.longestFirst(names.clone())[0]; }
 
             /** Returns whether this option disables validation of the other arguments.
              * @see Option#help()
@@ -6743,6 +6746,11 @@ public class CommandLine {
             /** Sorts the specified array of Strings shortest-first and returns it. */
             public static String[] sort(String[] names) {
                 Arrays.sort(names, new ShortestFirst());
+                return names;
+            }
+            /** Sorts the specified array of Strings longest-first and returns it. */
+            public static String[] longestFirst(String[] names) {
+                Arrays.sort(names, Collections.reverseOrder(new ShortestFirst()));
                 return names;
             }
         }

@@ -1380,4 +1380,21 @@ public class CommandLineModelTest {
         ParseResult parseResult = cmd.parseArgs();
         assertFalse(parseResult.hasMatchedPositional(0));
     }
+
+    @Test
+    public void testOptionLongestName_oneName() {
+        assertEquals("-x", OptionSpec.builder("-x").build().longestName());
+    }
+
+    @Test
+    public void testOptionLongestName_multipleEqualLength_returnsFirst() {
+        assertEquals("-x", OptionSpec.builder("-x", "-a").build().longestName());
+    }
+
+    @Test
+    public void testOptionLongestName_returnsLongest() {
+        assertEquals("-xxx", OptionSpec.builder("-x", "-xx", "-xxx").build().longestName());
+        assertEquals("-aaa", OptionSpec.builder("-x", "-xx", "-aaa").build().longestName());
+        assertEquals("-abcd", OptionSpec.builder("-x", "-abcd", "-aaa").build().longestName());
+    }
 }

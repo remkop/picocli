@@ -24,6 +24,7 @@ Promoted features are features that were incubating in previous versions of pico
 No features have been promoted in this picocli release.
 
 ## <a name="3.0.0-alpha-6-fixes"></a> Fixed issues
+- [#349] New API: Add `longestName()` convenience method to OptionSpec.
 - [#350] Enhancement: Improve error message for `usageHelp` and `versionHelp` validation.
 - [#351] Documentation: Improve javadoc for OptionSpec.usageHelp and versionHelp.
 - [#344] Enhancement: Don't show WARN message for unmatched args or overwritten options.
