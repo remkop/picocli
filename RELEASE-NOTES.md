@@ -25,6 +25,8 @@ No features have been promoted in this picocli release.
 
 ## <a name="3.0.0-alpha-6-fixes"></a> Fixed issues
 - [#349] New API: Add `longestName()` convenience method to OptionSpec.
+- [#352] New API: Add method to copy all attributes of a ParserSpec to a CommandSpec.
+- [#353] New API: Add method to copy all attributes of a UsageMessageSpec to a CommandSpec.
 - [#343] New API: Add method `Help.Ansi.Text::concat` and deprecate the `append` method. ("Append" suggests the Text object is modified, like StringBuilder, but Text is immutable.)
 - [#350] Enhancement: Improve error message for `usageHelp` and `versionHelp` validation.
 - [#344] Enhancement: Don't show WARN message for unmatched args or overwritten options.

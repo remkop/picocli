@@ -2811,9 +2811,13 @@ public class CommandLine {
 
             /** Returns the parser specification for this command. */
             public ParserSpec parser() { return parser; }
+            /** Initializes the parser specification for this command from the specified settings and returns this commandSpec.*/
+            public CommandSpec parser(ParserSpec settings) { parser.initFrom(settings); return this; }
 
             /** Returns the usage help message specification for this command. */
             public UsageMessageSpec usageMessage() { return usageMessage; }
+            /** Initializes the usageMessage specification for this command from the specified settings and returns this commandSpec.*/
+            public CommandSpec usageMessage(UsageMessageSpec settings) { usageMessage.initFrom(settings); return this; }
 
             /** Returns a read-only view of the subcommand map. */
             public Map<String, CommandLine> subcommands() { return Collections.unmodifiableMap(commands); }
@@ -3298,6 +3302,26 @@ public class CommandLine {
             void initFooterHeading(String value)        { if (initializable(footerHeading, value, DEFAULT_SINGLE_VALUE))                  {footerHeading = value;} }
             void initParameterListHeading(String value) { if (initializable(parameterListHeading, value, DEFAULT_SINGLE_VALUE))           {parameterListHeading = value;} }
             void initOptionListHeading(String value)    { if (initializable(optionListHeading, value, DEFAULT_SINGLE_VALUE))              {optionListHeading = value;} }
+
+            void initFrom(UsageMessageSpec settings) {
+                description = settings.description;
+                customSynopsis = settings.customSynopsis;
+                header = settings.header;
+                footer = settings.footer;
+                abbreviateSynopsis = settings.abbreviateSynopsis;
+                sortOptions = settings.sortOptions;
+                showDefaultValues = settings.showDefaultValues;
+                hidden = settings.hidden;
+                requiredOptionMarker = settings.requiredOptionMarker;
+                headerHeading = settings.headerHeading;
+                synopsisHeading = settings.synopsisHeading;
+                descriptionHeading = settings.descriptionHeading;
+                parameterListHeading = settings.parameterListHeading;
+                optionListHeading = settings.optionListHeading;
+                commandListHeading = settings.commandListHeading;
+                footerHeading = settings.footerHeading;
+                width = settings.width;
+            }
         }
         /** Models parser configuration specification.
          * @since 3.0 */
@@ -3322,7 +3346,7 @@ public class CommandLine {
 
             public boolean stopAtUnmatched()                   { return stopAtUnmatched; }
             public boolean stopAtPositional()                  { return stopAtPositional; }
-            public boolean toggleBooleanFlags()              { return toggleBooleanFlags; }
+            public boolean toggleBooleanFlags()                { return toggleBooleanFlags; }
             public boolean overwrittenOptionsAllowed()         { return overwrittenOptionsAllowed; }
             public boolean unmatchedArgumentsAllowed()         { return unmatchedArgumentsAllowed; }
             public boolean expandAtFiles()                     { return expandAtFiles; }
@@ -3335,7 +3359,7 @@ public class CommandLine {
             public ParserSpec separator(String separator)                                  { this.separator = separator; return this; }
             public ParserSpec stopAtUnmatched(boolean stopAtUnmatched)                     { this.stopAtUnmatched = stopAtUnmatched; return this; }
             public ParserSpec stopAtPositional(boolean stopAtPositional)                   { this.stopAtPositional = stopAtPositional; return this; }
-            public ParserSpec toggleBooleanFlags(boolean toggleBooleanFlags)           { this.toggleBooleanFlags = toggleBooleanFlags; return this; }
+            public ParserSpec toggleBooleanFlags(boolean toggleBooleanFlags)               { this.toggleBooleanFlags = toggleBooleanFlags; return this; }
             public ParserSpec overwrittenOptionsAllowed(boolean overwrittenOptionsAllowed) { this.overwrittenOptionsAllowed = overwrittenOptionsAllowed; return this; }
             public ParserSpec unmatchedArgumentsAllowed(boolean unmatchedArgumentsAllowed) { this.unmatchedArgumentsAllowed = unmatchedArgumentsAllowed; return this; }
             public ParserSpec expandAtFiles(boolean expandAtFiles)                         { this.expandAtFiles = expandAtFiles; return this; }
@@ -3346,6 +3370,19 @@ public class CommandLine {
             public String toString() {
                 return String.format("posixClusteredShortOptionsAllowed=%s, stopAtPositional=%s, stopAtUnmatched=%s, separator=%s, overwrittenOptionsAllowed=%s, unmatchedArgumentsAllowed=%s, expandAtFiles=%s, arityRestrictsCumulativeSize=%s",
                         posixClusteredShortOptionsAllowed, stopAtPositional, stopAtUnmatched, separator, overwrittenOptionsAllowed, unmatchedArgumentsAllowed, expandAtFiles, arityRestrictsCumulativeSize);
+            }
+
+            void initFrom(ParserSpec settings) {
+                separator = settings.separator;
+                stopAtUnmatched = settings.stopAtUnmatched;
+                stopAtPositional = settings.stopAtPositional;
+                toggleBooleanFlags = settings.toggleBooleanFlags;
+                overwrittenOptionsAllowed = settings.overwrittenOptionsAllowed;
+                unmatchedArgumentsAllowed = settings.unmatchedArgumentsAllowed;
+                expandAtFiles = settings.expandAtFiles;
+                posixClusteredShortOptionsAllowed = settings.posixClusteredShortOptionsAllowed;
+                arityRestrictsCumulativeSize = settings.arityRestrictsCumulativeSize;
+                unmatchedOptionsArePositionalParams = settings.unmatchedOptionsArePositionalParams;
             }
         }
         /** Models the shared attributes of {@link OptionSpec} and {@link PositionalParamSpec}.
