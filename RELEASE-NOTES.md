@@ -25,11 +25,14 @@ No features have been promoted in this picocli release.
 
 ## <a name="3.0.0-alpha-6-fixes"></a> Fixed issues
 - [#349] New API: Add `longestName()` convenience method to OptionSpec.
+- [#343] New API: Add method `Help.Ansi.Text::concat` and deprecate the `append` method. ("Append" suggests the Text object is modified, like StringBuilder, but Text is immutable.)
 - [#350] Enhancement: Improve error message for `usageHelp` and `versionHelp` validation.
-- [#351] Documentation: Improve javadoc for OptionSpec.usageHelp and versionHelp.
 - [#344] Enhancement: Don't show WARN message for unmatched args or overwritten options.
+- [#351] Documentation: Improve javadoc for OptionSpec.usageHelp and versionHelp.
 
 ## <a name="3.0.0-alpha-6-deprecated"></a> Deprecations
+- The `Help.Ansi.Text::append` method is now deprecated in favour of the new `concat` method.
+
 See [3.0.0-alpha-1](https://github.com/remkop/picocli/releases/tag/v3.0.0-alpha-1#3.0.0-alpha-1-deprecated)
 
 ## <a name="3.0.0-alpha-6-breaking-changes"></a> Potential breaking changes

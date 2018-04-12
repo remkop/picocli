@@ -6022,10 +6022,10 @@ public class CommandLine {
                 }
                 options.removeAll(booleanOptions);
                 if (clusteredRequired.length() > 1) { // initial length was 1
-                    optionText = optionText.append(" ").append(colorScheme.optionText(clusteredRequired.toString()));
+                    optionText = optionText.concat(" ").concat(colorScheme.optionText(clusteredRequired.toString()));
                 }
                 if (clusteredOptional.length() > 1) { // initial length was 1
-                    optionText = optionText.append(" [").append(colorScheme.optionText(clusteredOptional.toString())).append("]");
+                    optionText = optionText.concat(" [").concat(colorScheme.optionText(clusteredOptional.toString())).concat("]");
                 }
             }
             for (OptionSpec option : options) {
@@ -6038,23 +6038,23 @@ public class CommandLine {
                     } else {
                         optionText = appendOptionSynopsis(optionText, option, ShortestFirst.sort(option.names())[0], " [", "]");
                         if (option.isMultiValue()) {
-                            optionText = optionText.append("...");
+                            optionText = optionText.concat("...");
                         }
                     }
                 }
             }
             for (PositionalParamSpec positionalParam : commandSpec.positionalParameters()) {
                 if (!positionalParam.hidden()) {
-                    optionText = optionText.append(" ");
+                    optionText = optionText.concat(" ");
                     Text label = parameterLabelRenderer().renderParameterLabel(positionalParam, colorScheme.ansi(), colorScheme.parameterStyles);
-                    optionText = optionText.append(label);
+                    optionText = optionText.concat(label);
                 }
             }
 
             if(!commandSpec.subcommands().isEmpty()){
-                optionText = optionText.append(" [")
-                        .append("COMMAND")
-                        .append("]");
+                optionText = optionText.concat(" [")
+                        .concat("COMMAND")
+                        .concat("]");
             }
 
             // Fix for #142: first line of synopsis overshoots max. characters
@@ -6067,16 +6067,16 @@ public class CommandLine {
 
             // right-adjust the command name by length of synopsis heading
             Text PADDING = Ansi.OFF.new Text(stringOf('X', synopsisHeadingLength));
-            textTable.addRowValues(PADDING.append(colorScheme.commandText(commandName)), optionText);
+            textTable.addRowValues(PADDING.concat(colorScheme.commandText(commandName)), optionText);
             return textTable.toString().substring(synopsisHeadingLength); // cut off leading synopsis heading spaces
         }
 
         private Text appendOptionSynopsis(Text optionText, OptionSpec option, String optionName, String prefix, String suffix) {
             Text optionParamText = parameterLabelRenderer().renderParameterLabel(option, colorScheme.ansi(), colorScheme.optionParamStyles);
-            return optionText.append(prefix)
-                    .append(colorScheme.optionText(optionName))
-                    .append(optionParamText)
-                    .append(suffix);
+            return optionText.concat(prefix)
+                    .concat(colorScheme.optionText(optionName))
+                    .concat(optionParamText)
+                    .concat(suffix);
         }
 
         /** Returns the number of characters the synopsis heading will take on the same line as the synopsis.
@@ -6454,10 +6454,10 @@ public class CommandLine {
                     // #181 paramLabelText may be =LABEL or [=LABEL...]
                     int sepStart = paramLabelText.plainString().indexOf(sep);
                     Text prefix = paramLabelText.substring(0, sepStart);
-                    paramLabelText = prefix.append(paramLabelText.substring(sepStart + sep.length()));
+                    paramLabelText = prefix.concat(paramLabelText.substring(sepStart + sep.length()));
                 }
                 Text longOptionText = scheme.optionText(longOption);
-                longOptionText = longOptionText.append(paramLabelText);
+                longOptionText = longOptionText.concat(paramLabelText);
                 return longOptionText;
             }
 
@@ -6491,7 +6491,7 @@ public class CommandLine {
             public Text[][] render(OptionSpec option, IParamLabelRenderer parameterLabelRenderer, ColorScheme scheme) {
                 Text optionText = scheme.optionText(option.names()[0]);
                 Text paramLabelText = parameterLabelRenderer.renderParameterLabel(option, scheme.ansi(), scheme.optionParamStyles);
-                optionText = optionText.append(paramLabelText);
+                optionText = optionText.concat(paramLabelText);
                 return new Text[][] {{ optionText,
                                         scheme.ansi().new Text(option.description().length == 0 ? "" : option.description()[0]) }};
             }
@@ -6611,29 +6611,29 @@ public class CommandLine {
                 Text result = ansi.new Text("");
                 String sep = argSpec.isOption() ? separator() : "";
                 Text paramName = ansi.apply(argSpec.paramLabel(), styles);
-                if (!empty(argSpec.splitRegex())) { paramName = paramName.append("[" + argSpec.splitRegex()).append(paramName).append("]..."); } // #194
+                if (!empty(argSpec.splitRegex())) { paramName = paramName.concat("[" + argSpec.splitRegex()).concat(paramName).concat("]..."); } // #194
                 Range capacity = argSpec.isOption() ? argSpec.arity() : ((PositionalParamSpec)argSpec).capacity();
                 for (int i = 0; i < capacity.min; i++) {
-                    result = result.append(sep).append(paramName);
+                    result = result.concat(sep).concat(paramName);
                     sep = " ";
                 }
                 if (capacity.isVariable) {
                     if (result.length == 0) { // arity="*" or arity="0..*"
-                        result = result.append(sep + "[").append(paramName).append("]...");
+                        result = result.concat(sep + "[").concat(paramName).concat("]...");
                     } else if (!result.plainString().endsWith("...")) { // getSplitRegex param may already end with "..."
-                        result = result.append("...");
+                        result = result.concat("...");
                     }
                 } else {
                     sep = result.length == 0 ? (argSpec.isOption() ? separator() : "") : " ";
                     for (int i = capacity.min; i < capacity.max; i++) {
                         if (sep.trim().length() == 0) {
-                            result = result.append(sep + "[").append(paramName);
+                            result = result.concat(sep + "[").concat(paramName);
                         } else {
-                            result = result.append("[" + sep).append(paramName);
+                            result = result.concat("[" + sep).concat(paramName);
                         }
                         sep  = " ";
                     }
-                    for (int i = capacity.min; i < capacity.max; i++) { result = result.append("]"); }
+                    for (int i = capacity.min; i < capacity.max; i++) { result = result.concat("]"); }
                 }
                 return result;
             }
@@ -7023,7 +7023,6 @@ public class CommandLine {
                         row.setLength(0);
                     }
                 }
-                //if (Ansi.enabled()) { text.append(Style.reset.off()); }
                 return text;
             }
             public String toString() { return toString(new StringBuilder()).toString(); }
@@ -7443,17 +7442,22 @@ public class CommandLine {
                     result.length = end - start;
                     return result;
                 }
-                /** Returns a new {@code Text} instance with the specified text appended. Does not modify this instance!
-                 * @param string the text to append
-                 * @return a new Text instance */
-                public Text append(String string) {
-                    return append(new Text(string));
-                }
+                /** @deprecated use {@link #concat(String)} instead */
+                @Deprecated public Text append(String string) { return concat(string); }
+                /** @deprecated use {@link #concat(Text)} instead */
+                @Deprecated public Text append(Text text) { return concat(text); }
 
-                /** Returns a new {@code Text} instance with the specified text appended. Does not modify this instance!
-                 * @param other the text to append
-                 * @return a new Text instance */
-                public Text append(Text other) {
+                /** Returns a copy of this {@code Text} instance with the specified text concatenated to the end. Does not modify this instance!
+                 * @param string the text to concatenate to the end of this Text
+                 * @return a new Text instance
+                 * @since 3.0 */
+                public Text concat(String string) { return concat(new Text(string)); }
+
+                /** Returns a copy of this {@code Text} instance with the specified text concatenated to the end. Does not modify this instance!
+                 * @param other the text to concatenate to the end of this Text
+                 * @return a new Text instance
+                 * @since 3.0 */
+                public Text concat(Text other) {
                     Text result = (Text) clone();
                     result.plain = new StringBuilder(plain.toString().substring(from, from + length));
                     result.from = 0;

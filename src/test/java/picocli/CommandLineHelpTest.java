@@ -2509,7 +2509,7 @@ public class CommandLineHelpTest {
     @Test
     public void testTextSubString() {
         Help.Ansi ansi = Help.Ansi.ON;
-        Text txt =   ansi.new Text("@|bold 01234|@").append("56").append("@|underline 7890|@");
+        Text txt =   ansi.new Text("@|bold 01234|@").concat("56").concat("@|underline 7890|@");
         assertEquals(ansi.new Text("@|bold 01234|@56@|underline 7890|@"), txt.substring(0));
         assertEquals(ansi.new Text("@|bold 1234|@56@|underline 7890|@"), txt.substring(1));
         assertEquals(ansi.new Text("@|bold 234|@56@|underline 7890|@"), txt.substring(2));
@@ -2552,9 +2552,9 @@ public class CommandLineHelpTest {
     public void testTextSplitLines() {
         Help.Ansi ansi = Help.Ansi.ON;
         Text[] all = {
-                ansi.new Text("@|bold 012\n34|@").append("5\nAA\n6").append("@|underline 78\n90|@"),
-                ansi.new Text("@|bold 012\r34|@").append("5\rAA\r6").append("@|underline 78\r90|@"),
-                ansi.new Text("@|bold 012\r\n34|@").append("5\r\nAA\r\n6").append("@|underline 78\r\n90|@"),
+                ansi.new Text("@|bold 012\n34|@").concat("5\nAA\n6").concat("@|underline 78\n90|@"),
+                ansi.new Text("@|bold 012\r34|@").concat("5\rAA\r6").concat("@|underline 78\r90|@"),
+                ansi.new Text("@|bold 012\r\n34|@").concat("5\r\nAA\r\n6").concat("@|underline 78\r\n90|@"),
         };
         for (Text text : all) {
             Text[] lines = text.splitLines();
@@ -2570,9 +2570,9 @@ public class CommandLineHelpTest {
     public void testTextSplitLinesStartEnd() {
         Help.Ansi ansi = Help.Ansi.ON;
         Text[] all = {
-                ansi.new Text("\n@|bold 012\n34|@").append("5\nAA\n6").append("@|underline 78\n90|@\n"),
-                ansi.new Text("\r@|bold 012\r34|@").append("5\rAA\r6").append("@|underline 78\r90|@\r"),
-                ansi.new Text("\r\n@|bold 012\r\n34|@").append("5\r\nAA\r\n6").append("@|underline 78\r\n90|@\r\n"),
+                ansi.new Text("\n@|bold 012\n34|@").concat("5\nAA\n6").concat("@|underline 78\n90|@\n"),
+                ansi.new Text("\r@|bold 012\r34|@").concat("5\rAA\r6").concat("@|underline 78\r90|@\r"),
+                ansi.new Text("\r\n@|bold 012\r\n34|@").concat("5\r\nAA\r\n6").concat("@|underline 78\r\n90|@\r\n"),
         };
         for (Text text : all) {
             Text[] lines = text.splitLines();
@@ -2590,9 +2590,9 @@ public class CommandLineHelpTest {
     public void testTextSplitLinesStartEndIntermediate() {
         Help.Ansi ansi = Help.Ansi.ON;
         Text[] all = {
-                ansi.new Text("\n@|bold 012\n\n\n34|@").append("5\n\n\nAA\n\n\n6").append("@|underline 78\n90|@\n"),
-                ansi.new Text("\r@|bold 012\r\r\r34|@").append("5\r\r\rAA\r\r\r6").append("@|underline 78\r90|@\r"),
-                ansi.new Text("\r\n@|bold 012\r\n\r\n\r\n34|@").append("5\r\n\r\n\r\nAA\r\n\r\n\r\n6").append("@|underline 78\r\n90|@\r\n"),
+                ansi.new Text("\n@|bold 012\n\n\n34|@").concat("5\n\n\nAA\n\n\n6").concat("@|underline 78\n90|@\n"),
+                ansi.new Text("\r@|bold 012\r\r\r34|@").concat("5\r\r\rAA\r\r\r6").concat("@|underline 78\r90|@\r"),
+                ansi.new Text("\r\n@|bold 012\r\n\r\n\r\n34|@").concat("5\r\n\r\n\r\nAA\r\n\r\n\r\n6").concat("@|underline 78\r\n90|@\r\n"),
         };
         for (Text text : all) {
             Text[] lines = text.splitLines();
