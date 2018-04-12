@@ -513,8 +513,8 @@ table.CodeRay td.code>pre{padding:0}
 <div id="header">
 <h1>picocli - a mighty tiny command line interface</h1>
 <div class="details">
-<span id="revnumber">version 3.0.0-alpha-5,</span>
-<span id="revdate">2018-04-11</span>
+<span id="revnumber">version 3.0.0-alpha-6,</span>
+<span id="revdate">2018-04-12</span>
 </div>
 <div id="toc" class="toc2">
 <div id="toctitle">Features</div>
@@ -2129,9 +2129,7 @@ The usage help message for the above example looks like this:</p>
 <pre>Usage: &lt;main class&gt; [-hV] [--option=&lt;option&gt;]
       --option=&lt;option&gt;       Some option.
   -h, --help                  Show this help message and exit.
-  -V, --version               Print version information and exit.
-Commands:
-  help  Displays help information about the specified command</pre>
+  -V, --version               Print version information and exit.</pre>
 </div>
 </div>
 </div>
@@ -4214,7 +4212,7 @@ The script body is executed if the user input was valid and did not request usag
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="CodeRay highlight"><code data-lang="groovy"><span class="annotation">@Grab</span>(<span class="string"><span class="delimiter">'</span><span class="content">info.picocli:picocli:3.0.0-alpha-5</span><span class="delimiter">'</span></span>)
+<pre class="CodeRay highlight"><code data-lang="groovy"><span class="annotation">@Grab</span>(<span class="string"><span class="delimiter">'</span><span class="content">info.picocli:picocli:3.0.0-alpha-6</span><span class="delimiter">'</span></span>)
 <span class="annotation">@Command</span>(name = <span class="string"><span class="delimiter">&quot;</span><span class="content">myCommand</span><span class="delimiter">&quot;</span></span>,
   description = <span class="string"><span class="delimiter">&quot;</span><span class="content">@|bold Groovy script|@ @|underline picocli|@ example</span><span class="delimiter">&quot;</span></span>)
 <span class="annotation">@picocli</span>.groovy.PicocliScript
@@ -4253,7 +4251,7 @@ When using a Groovy version older than 2.4.7, use this workaround for the <a hre
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="CodeRay highlight"><code data-lang="groovy"><span class="annotation">@Grab</span>(<span class="string"><span class="delimiter">'</span><span class="content">info.picocli:picocli:3.0.0-alpha-5</span><span class="delimiter">'</span></span>)
+<pre class="CodeRay highlight"><code data-lang="groovy"><span class="annotation">@Grab</span>(<span class="string"><span class="delimiter">'</span><span class="content">info.picocli:picocli:3.0.0-alpha-6</span><span class="delimiter">'</span></span>)
 <span class="annotation">@GrabExclude</span>(<span class="string"><span class="delimiter">'</span><span class="content">org.codehaus.groovy:groovy-all</span><span class="delimiter">'</span></span>) <span class="comment">// work around GROOVY-7613</span>
 ...</code></pre>
 </div>
@@ -4425,7 +4423,7 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
 <h3 id="_gradle">23.1. Gradle</h3>
 <div class="listingblock">
 <div class="content">
-<pre>compile 'info.picocli:picocli:3.0.0-alpha-5'</pre>
+<pre>compile 'info.picocli:picocli:3.0.0-alpha-6'</pre>
 </div>
 </div>
 </div>
@@ -4436,7 +4434,7 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
 <pre>&lt;dependency&gt;
   &lt;groupId&gt;info.picocli&lt;/groupId&gt;
   &lt;artifactId&gt;picocli&lt;/artifactId&gt;
-  &lt;version&gt;3.0.0-alpha-5&lt;/version&gt;
+  &lt;version&gt;3.0.0-alpha-6&lt;/version&gt;
 &lt;/dependency&gt;</pre>
 </div>
 </div>
@@ -4445,7 +4443,7 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
 <h3 id="_scala_sbt">23.3. Scala SBT</h3>
 <div class="listingblock">
 <div class="content">
-<pre>libraryDependencies += "info.picocli" % "picocli" % "3.0.0-alpha-5"</pre>
+<pre>libraryDependencies += "info.picocli" % "picocli" % "3.0.0-alpha-6"</pre>
 </div>
 </div>
 </div>
@@ -4453,7 +4451,7 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
 <h3 id="_ivy">23.4. Ivy</h3>
 <div class="listingblock">
 <div class="content">
-<pre>&lt;dependency org="info.picocli" name="picocli" rev="3.0.0-alpha-5" /&gt;</pre>
+<pre>&lt;dependency org="info.picocli" name="picocli" rev="3.0.0-alpha-6" /&gt;</pre>
 </div>
 </div>
 </div>
@@ -4573,7 +4571,7 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
  */</span>
 <span class="directive">public</span> <span class="type">class</span> <span class="class">CommandLine</span> {
     <span class="comment">/** This is picocli version {@value}. */</span>
-    <span class="directive">public</span> <span class="directive">static</span> <span class="directive">final</span> <span class="predefined-type">String</span> VERSION = <span class="string"><span class="delimiter">&quot;</span><span class="content">3.0.0-alpha-5</span><span class="delimiter">&quot;</span></span>;
+    <span class="directive">public</span> <span class="directive">static</span> <span class="directive">final</span> <span class="predefined-type">String</span> VERSION = <span class="string"><span class="delimiter">&quot;</span><span class="content">3.0.0-alpha-6</span><span class="delimiter">&quot;</span></span>;
 
     <span class="directive">private</span> <span class="directive">final</span> Tracer tracer = <span class="keyword">new</span> Tracer();
     <span class="directive">private</span> <span class="directive">final</span> CommandSpec commandSpec;
@@ -6234,36 +6232,50 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
         <span class="annotation">@Deprecated</span> <span class="type">boolean</span> help() <span class="keyword">default</span> <span class="predefined-constant">false</span>;
 
         <span class="comment">/**
-         * Set {@code usageHelp=true} if this option allows the user to request usage help. If this option is
-         * specified on the command line, picocli will not validate the remaining arguments (so no &quot;missing required
-         * option&quot; errors) and the {@link CommandLine#isUsageHelpRequested()} method will return {@code true}.
+         * Set {@code usageHelp=true} for the {@code --help} option that triggers display of the usage help message.
+         * The &lt;a href=&quot;http://picocli.info/#_printing_help_automatically&quot;&gt;convenience methods&lt;/a&gt; {@code Commandline.call},
+         * {@code Commandline.run}, and {@code Commandline.parseWithHandler(s)} will automatically print usage help
+         * when an option with {@code usageHelp=true} was specified on the command line.
          * &lt;p&gt;
-         * This attribute is useful for special options like help ({@code -h} and {@code --help} on unix,
-         * {@code -?} and {@code -Help} on Windows).
+         * By default, &lt;em&gt;all&lt;/em&gt; options and positional parameters are included in the usage help message
+         * &lt;em&gt;except when explicitly marked {@linkplain #hidden() hidden}.&lt;/em&gt;
          * &lt;/p&gt;&lt;p&gt;
-         * Note that the {@link #parse(String...)} method will not print usage help documentation, but only sets
-         * the value of the annotated field. Usage help is automatically printed when using any of the {@link #run(Runnable, PrintStream, String...)},
-         * {@link #call(Callable, PrintStream, String...)} or {@link #parseWithHandler(IParseResultHandler, PrintStream, String...)} methods.
+         * If this option is specified on the command line, picocli will not validate the remaining arguments (so no &quot;missing required
+         * option&quot; errors) and the {@link CommandLine#isUsageHelpRequested()} method will return {@code true}.
+         * &lt;/p&gt;&lt;p&gt;
+         * Alternatively, consider annotating your command with {@linkplain Command#mixinStandardHelpOptions() @Command(mixinStandardHelpOptions = true)}.
          * &lt;/p&gt;
          * @return whether this option allows the user to request usage help
          * @since 0.9.8
+         * @see #hidden()
+         * @see #run(Runnable, String...)
+         * @see #call(Callable, String...)
+         * @see #parseWithHandler(IParseResultHandler2, String[])
+         * @see #printHelpIfRequested(List, PrintStream, PrintStream, Help.Ansi)
          */</span>
         <span class="type">boolean</span> usageHelp() <span class="keyword">default</span> <span class="predefined-constant">false</span>;
 
         <span class="comment">/**
-         * Set {@code versionHelp=true} if this option allows the user to request version information. If this option is
-         * specified on the command line, picocli will not validate the remaining arguments (so no &quot;missing required
-         * option&quot; errors) and the {@link CommandLine#isVersionHelpRequested()} method will return {@code true}.
+         * Set {@code versionHelp=true} for the {@code --version} option that triggers display of the version information.
+         * The &lt;a href=&quot;http://picocli.info/#_printing_help_automatically&quot;&gt;convenience methods&lt;/a&gt; {@code Commandline.call},
+         * {@code Commandline.run}, and {@code Commandline.parseWithHandler(s)} will automatically print version information
+         * when an option with {@code versionHelp=true} was specified on the command line.
          * &lt;p&gt;
-         * This attribute is useful for special options like version ({@code -V} and {@code --version} on unix,
-         * {@code -Version} on Windows).
+         * The version information string is obtained from the command's {@linkplain Command#version() version} annotation
+         * or from the {@linkplain Command#versionProvider() version provider}.
          * &lt;/p&gt;&lt;p&gt;
-         * Note that the {@link #parse(String...)} method will not print version help information, but only sets
-         * the value of the annotated field. Version help is automatically printed when using any of the {@link #run(Runnable, PrintStream, String...)},
-         * {@link #call(Callable, PrintStream, String...)} or {@link #parseWithHandler(IParseResultHandler, PrintStream, String...)} methods.
+         * If this option is specified on the command line, picocli will not validate the remaining arguments (so no &quot;missing required
+         * option&quot; errors) and the {@link CommandLine#isUsageHelpRequested()} method will return {@code true}.
+         * &lt;/p&gt;&lt;p&gt;
+         * Alternatively, consider annotating your command with {@linkplain Command#mixinStandardHelpOptions() @Command(mixinStandardHelpOptions = true)}.
          * &lt;/p&gt;
          * @return whether this option allows the user to request version information
          * @since 0.9.8
+         * @see #hidden()
+         * @see #run(Runnable, String...)
+         * @see #call(Callable, String...)
+         * @see #parseWithHandler(IParseResultHandler2, String[])
+         * @see #printHelpIfRequested(List, PrintStream, PrintStream, Help.Ansi)
          */</span>
         <span class="type">boolean</span> versionHelp() <span class="keyword">default</span> <span class="predefined-constant">false</span>;
 
@@ -6382,8 +6394,8 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
         <span class="predefined-type">String</span> split() <span class="keyword">default</span> <span class="string"><span class="delimiter">&quot;</span><span class="delimiter">&quot;</span></span>;
 
         <span class="comment">/**
-         * Set {@code hidden=true} if this option should not be included in the usage documentation.
-         * @return whether this option should be excluded from the usage message
+         * Set {@code hidden=true} if this option should not be included in the usage help message.
+         * @return whether this option should be excluded from the usage documentation
          */</span>
         <span class="type">boolean</span> hidden() <span class="keyword">default</span> <span class="predefined-constant">false</span>;
 
@@ -7216,19 +7228,30 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
             <span class="type">void</span> validate() {
                 <span class="predefined-type">Collections</span>.sort(positionalParameters, <span class="keyword">new</span> PositionalParametersSorter());
                 validatePositionalParameters(positionalParameters);
-                <span class="type">int</span> usageHelpCount = <span class="integer">0</span>, versionHelpCount = <span class="integer">0</span>;
+                <span class="predefined-type">List</span>&lt;<span class="predefined-type">String</span>&gt; wrongUsageHelpAttr = <span class="keyword">new</span> <span class="predefined-type">ArrayList</span>&lt;<span class="predefined-type">String</span>&gt;();
+                <span class="predefined-type">List</span>&lt;<span class="predefined-type">String</span>&gt; wrongVersionHelpAttr = <span class="keyword">new</span> <span class="predefined-type">ArrayList</span>&lt;<span class="predefined-type">String</span>&gt;();
+                <span class="predefined-type">List</span>&lt;<span class="predefined-type">String</span>&gt; usageHelpAttr = <span class="keyword">new</span> <span class="predefined-type">ArrayList</span>&lt;<span class="predefined-type">String</span>&gt;();
+                <span class="predefined-type">List</span>&lt;<span class="predefined-type">String</span>&gt; versionHelpAttr = <span class="keyword">new</span> <span class="predefined-type">ArrayList</span>&lt;<span class="predefined-type">String</span>&gt;();
                 <span class="keyword">for</span> (OptionSpec option : options()) {
                     <span class="keyword">if</span> (option.usageHelp()) {
-                        usageHelpCount++;
-                        <span class="keyword">if</span> (!isBoolean(option.type())) { <span class="keyword">throw</span> <span class="keyword">new</span> InitializationException(<span class="string"><span class="delimiter">&quot;</span><span class="content">Non-boolean options (like </span><span class="delimiter">&quot;</span></span> + option.names()[<span class="integer">0</span>] + <span class="string"><span class="delimiter">&quot;</span><span class="content">) should not be marked as 'usageHelp=true'.</span><span class="delimiter">&quot;</span></span>); }
+                        usageHelpAttr.add(option.longestName());
+                        <span class="keyword">if</span> (!isBoolean(option.type())) { wrongUsageHelpAttr.add(option.longestName()); }
                     }
                     <span class="keyword">if</span> (option.versionHelp()) {
-                        versionHelpCount++;
-                        <span class="keyword">if</span> (!isBoolean(option.type())) { <span class="keyword">throw</span> <span class="keyword">new</span> InitializationException(<span class="string"><span class="delimiter">&quot;</span><span class="content">Non-boolean options (like </span><span class="delimiter">&quot;</span></span> + option.names()[<span class="integer">0</span>] + <span class="string"><span class="delimiter">&quot;</span><span class="content">) should not be marked as 'versionHelp=true'.</span><span class="delimiter">&quot;</span></span>); }
+                        versionHelpAttr.add(option.longestName());
+                        <span class="keyword">if</span> (!isBoolean(option.type())) { wrongVersionHelpAttr.add(option.longestName()); }
                     }
                 }
-                <span class="keyword">if</span> (usageHelpCount &gt; <span class="integer">1</span>)   { commandLine.tracer.warn(<span class="string"><span class="delimiter">&quot;</span><span class="content">Multiple options are marked as 'usageHelp=true'. Usually there is only one --help option that displays usage help.</span><span class="delimiter">&quot;</span></span>); }
-                <span class="keyword">if</span> (versionHelpCount &gt; <span class="integer">1</span>) { commandLine.tracer.warn(<span class="string"><span class="delimiter">&quot;</span><span class="content">Multiple options are marked as 'versionHelp=true'. Usually there is only one --version option that displays version information.</span><span class="delimiter">&quot;</span></span>); }
+                <span class="predefined-type">String</span> wrongType = <span class="string"><span class="delimiter">&quot;</span><span class="content">Non-boolean options like %s should not be marked as '%s=true'. Usually a command has one %s boolean flag that triggers display of the %s. Alternatively, consider using @Command(mixinStandardHelpOptions = true) on your command instead.</span><span class="delimiter">&quot;</span></span>;
+                <span class="predefined-type">String</span> multiple = <span class="string"><span class="delimiter">&quot;</span><span class="content">Multiple options %s are marked as '%s=true'. Usually a command has only one %s option that triggers display of the %s. Alternatively, consider using @Command(mixinStandardHelpOptions = true) on your command instead.%n</span><span class="delimiter">&quot;</span></span>;
+                <span class="keyword">if</span> (!wrongUsageHelpAttr.isEmpty()) {
+                    <span class="keyword">throw</span> <span class="keyword">new</span> InitializationException(<span class="predefined-type">String</span>.format(wrongType, wrongUsageHelpAttr, <span class="string"><span class="delimiter">&quot;</span><span class="content">usageHelp</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">--help</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">usage help message</span><span class="delimiter">&quot;</span></span>));
+                }
+                <span class="keyword">if</span> (!wrongVersionHelpAttr.isEmpty()) {
+                    <span class="keyword">throw</span> <span class="keyword">new</span> InitializationException(<span class="predefined-type">String</span>.format(wrongType, wrongVersionHelpAttr, <span class="string"><span class="delimiter">&quot;</span><span class="content">versionHelp</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">--version</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">version information</span><span class="delimiter">&quot;</span></span>));
+                }
+                <span class="keyword">if</span> (usageHelpAttr.size() &gt; <span class="integer">1</span>)   { <span class="keyword">new</span> Tracer().warn(multiple, usageHelpAttr, <span class="string"><span class="delimiter">&quot;</span><span class="content">usageHelp</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">--help</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">usage help message</span><span class="delimiter">&quot;</span></span>); }
+                <span class="keyword">if</span> (versionHelpAttr.size() &gt; <span class="integer">1</span>) { <span class="keyword">new</span> Tracer().warn(multiple, versionHelpAttr, <span class="string"><span class="delimiter">&quot;</span><span class="content">versionHelp</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">--version</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">version information</span><span class="delimiter">&quot;</span></span>); }
             }
 
             <span class="comment">/** Returns the user object associated with this command.
@@ -7249,9 +7272,13 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
 
             <span class="comment">/** Returns the parser specification for this command. */</span>
             <span class="directive">public</span> ParserSpec parser() { <span class="keyword">return</span> parser; }
+            <span class="comment">/** Initializes the parser specification for this command from the specified settings and returns this commandSpec.*/</span>
+            <span class="directive">public</span> CommandSpec parser(ParserSpec settings) { parser.initFrom(settings); <span class="keyword">return</span> <span class="local-variable">this</span>; }
 
             <span class="comment">/** Returns the usage help message specification for this command. */</span>
             <span class="directive">public</span> UsageMessageSpec usageMessage() { <span class="keyword">return</span> usageMessage; }
+            <span class="comment">/** Initializes the usageMessage specification for this command from the specified settings and returns this commandSpec.*/</span>
+            <span class="directive">public</span> CommandSpec usageMessage(UsageMessageSpec settings) { usageMessage.initFrom(settings); <span class="keyword">return</span> <span class="local-variable">this</span>; }
 
             <span class="comment">/** Returns a read-only view of the subcommand map. */</span>
             <span class="directive">public</span> <span class="predefined-type">Map</span>&lt;<span class="predefined-type">String</span>, CommandLine&gt; subcommands() { <span class="keyword">return</span> <span class="predefined-type">Collections</span>.unmodifiableMap(commands); }
@@ -7736,6 +7763,26 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
             <span class="type">void</span> initFooterHeading(<span class="predefined-type">String</span> value)        { <span class="keyword">if</span> (initializable(footerHeading, value, DEFAULT_SINGLE_VALUE))                  {footerHeading = value;} }
             <span class="type">void</span> initParameterListHeading(<span class="predefined-type">String</span> value) { <span class="keyword">if</span> (initializable(parameterListHeading, value, DEFAULT_SINGLE_VALUE))           {parameterListHeading = value;} }
             <span class="type">void</span> initOptionListHeading(<span class="predefined-type">String</span> value)    { <span class="keyword">if</span> (initializable(optionListHeading, value, DEFAULT_SINGLE_VALUE))              {optionListHeading = value;} }
+
+            <span class="type">void</span> initFrom(UsageMessageSpec settings) {
+                description = settings.description;
+                customSynopsis = settings.customSynopsis;
+                header = settings.header;
+                footer = settings.footer;
+                abbreviateSynopsis = settings.abbreviateSynopsis;
+                sortOptions = settings.sortOptions;
+                showDefaultValues = settings.showDefaultValues;
+                hidden = settings.hidden;
+                requiredOptionMarker = settings.requiredOptionMarker;
+                headerHeading = settings.headerHeading;
+                synopsisHeading = settings.synopsisHeading;
+                descriptionHeading = settings.descriptionHeading;
+                parameterListHeading = settings.parameterListHeading;
+                optionListHeading = settings.optionListHeading;
+                commandListHeading = settings.commandListHeading;
+                footerHeading = settings.footerHeading;
+                width = settings.width;
+            }
         }
         <span class="comment">/** Models parser configuration specification.
          * @since 3.0 */</span>
@@ -7760,7 +7807,7 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
 
             <span class="directive">public</span> <span class="type">boolean</span> stopAtUnmatched()                   { <span class="keyword">return</span> stopAtUnmatched; }
             <span class="directive">public</span> <span class="type">boolean</span> stopAtPositional()                  { <span class="keyword">return</span> stopAtPositional; }
-            <span class="directive">public</span> <span class="type">boolean</span> toggleBooleanFlags()              { <span class="keyword">return</span> toggleBooleanFlags; }
+            <span class="directive">public</span> <span class="type">boolean</span> toggleBooleanFlags()                { <span class="keyword">return</span> toggleBooleanFlags; }
             <span class="directive">public</span> <span class="type">boolean</span> overwrittenOptionsAllowed()         { <span class="keyword">return</span> overwrittenOptionsAllowed; }
             <span class="directive">public</span> <span class="type">boolean</span> unmatchedArgumentsAllowed()         { <span class="keyword">return</span> unmatchedArgumentsAllowed; }
             <span class="directive">public</span> <span class="type">boolean</span> expandAtFiles()                     { <span class="keyword">return</span> expandAtFiles; }
@@ -7773,7 +7820,7 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
             <span class="directive">public</span> ParserSpec separator(<span class="predefined-type">String</span> separator)                                  { <span class="local-variable">this</span>.separator = separator; <span class="keyword">return</span> <span class="local-variable">this</span>; }
             <span class="directive">public</span> ParserSpec stopAtUnmatched(<span class="type">boolean</span> stopAtUnmatched)                     { <span class="local-variable">this</span>.stopAtUnmatched = stopAtUnmatched; <span class="keyword">return</span> <span class="local-variable">this</span>; }
             <span class="directive">public</span> ParserSpec stopAtPositional(<span class="type">boolean</span> stopAtPositional)                   { <span class="local-variable">this</span>.stopAtPositional = stopAtPositional; <span class="keyword">return</span> <span class="local-variable">this</span>; }
-            <span class="directive">public</span> ParserSpec toggleBooleanFlags(<span class="type">boolean</span> toggleBooleanFlags)           { <span class="local-variable">this</span>.toggleBooleanFlags = toggleBooleanFlags; <span class="keyword">return</span> <span class="local-variable">this</span>; }
+            <span class="directive">public</span> ParserSpec toggleBooleanFlags(<span class="type">boolean</span> toggleBooleanFlags)               { <span class="local-variable">this</span>.toggleBooleanFlags = toggleBooleanFlags; <span class="keyword">return</span> <span class="local-variable">this</span>; }
             <span class="directive">public</span> ParserSpec overwrittenOptionsAllowed(<span class="type">boolean</span> overwrittenOptionsAllowed) { <span class="local-variable">this</span>.overwrittenOptionsAllowed = overwrittenOptionsAllowed; <span class="keyword">return</span> <span class="local-variable">this</span>; }
             <span class="directive">public</span> ParserSpec unmatchedArgumentsAllowed(<span class="type">boolean</span> unmatchedArgumentsAllowed) { <span class="local-variable">this</span>.unmatchedArgumentsAllowed = unmatchedArgumentsAllowed; <span class="keyword">return</span> <span class="local-variable">this</span>; }
             <span class="directive">public</span> ParserSpec expandAtFiles(<span class="type">boolean</span> expandAtFiles)                         { <span class="local-variable">this</span>.expandAtFiles = expandAtFiles; <span class="keyword">return</span> <span class="local-variable">this</span>; }
@@ -7784,6 +7831,19 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
             <span class="directive">public</span> <span class="predefined-type">String</span> toString() {
                 <span class="keyword">return</span> <span class="predefined-type">String</span>.format(<span class="string"><span class="delimiter">&quot;</span><span class="content">posixClusteredShortOptionsAllowed=%s, stopAtPositional=%s, stopAtUnmatched=%s, separator=%s, overwrittenOptionsAllowed=%s, unmatchedArgumentsAllowed=%s, expandAtFiles=%s, arityRestrictsCumulativeSize=%s</span><span class="delimiter">&quot;</span></span>,
                         posixClusteredShortOptionsAllowed, stopAtPositional, stopAtUnmatched, separator, overwrittenOptionsAllowed, unmatchedArgumentsAllowed, expandAtFiles, arityRestrictsCumulativeSize);
+            }
+
+            <span class="type">void</span> initFrom(ParserSpec settings) {
+                separator = settings.separator;
+                stopAtUnmatched = settings.stopAtUnmatched;
+                stopAtPositional = settings.stopAtPositional;
+                toggleBooleanFlags = settings.toggleBooleanFlags;
+                overwrittenOptionsAllowed = settings.overwrittenOptionsAllowed;
+                unmatchedArgumentsAllowed = settings.unmatchedArgumentsAllowed;
+                expandAtFiles = settings.expandAtFiles;
+                posixClusteredShortOptionsAllowed = settings.posixClusteredShortOptionsAllowed;
+                arityRestrictsCumulativeSize = settings.arityRestrictsCumulativeSize;
+                unmatchedOptionsArePositionalParams = settings.unmatchedOptionsArePositionalParams;
             }
         }
         <span class="comment">/** Models the shared attributes of {@link OptionSpec} and {@link PositionalParamSpec}.
@@ -8210,7 +8270,7 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
                 <span class="keyword">if</span> (names == <span class="predefined-constant">null</span> || names.length == <span class="integer">0</span> || <span class="predefined-type">Arrays</span>.asList(names).contains(<span class="string"><span class="delimiter">&quot;</span><span class="delimiter">&quot;</span></span>)) {
                     <span class="keyword">throw</span> <span class="keyword">new</span> InitializationException(<span class="string"><span class="delimiter">&quot;</span><span class="content">Invalid names: </span><span class="delimiter">&quot;</span></span> + <span class="predefined-type">Arrays</span>.toString(names));
                 }
-                <span class="keyword">if</span> (toString() == <span class="predefined-constant">null</span>) { toString = <span class="string"><span class="delimiter">&quot;</span><span class="content">option </span><span class="delimiter">&quot;</span></span> + names[<span class="integer">0</span>]; }
+                <span class="keyword">if</span> (toString() == <span class="predefined-constant">null</span>) { toString = <span class="string"><span class="delimiter">&quot;</span><span class="content">option </span><span class="delimiter">&quot;</span></span> + longestName(); }
             }
 
             <span class="comment">/** Returns a new Builder initialized with the attributes from this {@code OptionSpec}. Calling {@code build} immediately will return a copy of this {@code OptionSpec}.
@@ -8224,9 +8284,12 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
                 <span class="keyword">return</span> <span class="local-variable">super</span>.showDefaultValue(commandSpec) &amp;&amp; !help() &amp;&amp; !versionHelp() &amp;&amp; !usageHelp();
             }
 
-            <span class="comment">/** Returns one or more option names. At least one option name is required.
+            <span class="comment">/** Returns one or more option names. The returned array will contain at least one option name.
              * @see Option#names() */</span>
             <span class="directive">public</span> <span class="predefined-type">String</span><span class="type">[]</span> names()       { <span class="keyword">return</span> names.clone(); }
+
+            <span class="comment">/** Returns the longest {@linkplain #names() option name}. */</span>
+            <span class="directive">public</span> <span class="predefined-type">String</span> longestName() { <span class="keyword">return</span> Help.ShortestFirst.longestFirst(names.clone())[<span class="integer">0</span>]; }
 
             <span class="comment">/** Returns whether this option disables validation of the other arguments.
              * @see Option#help()
@@ -9140,11 +9203,21 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
                 option.resetStringValues();
                 option.resetOriginalStringValues();
                 option.typedValues.clear();
+                <span class="keyword">try</span> {
+                    option.setter().set(option.initialValue());
+                } <span class="keyword">catch</span> (<span class="exception">Exception</span> ex) {
+                    tracer.warn(<span class="string"><span class="delimiter">&quot;</span><span class="content">Could not clear value for %s: %s</span><span class="delimiter">&quot;</span></span>, option, ex);
+                }
             }
             <span class="keyword">for</span> (PositionalParamSpec positional : getCommandSpec().positionalParameters()) {
                 positional.resetStringValues();
                 positional.resetOriginalStringValues();
                 positional.typedValues.clear();
+                <span class="keyword">try</span> {
+                    positional.setter().set(positional.initialValue());
+                } <span class="keyword">catch</span> (<span class="exception">Exception</span> ex) {
+                    tracer.warn(<span class="string"><span class="delimiter">&quot;</span><span class="content">Could not clear value for %s: %s</span><span class="delimiter">&quot;</span></span>, positional, ex);
+                }
             }
         }
 
@@ -9183,7 +9256,7 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
                     unmatchedArgsBinding.addAll(unmatched.clone());
                 }
                 <span class="keyword">if</span> (!isUnmatchedArgumentsAllowed()) { <span class="keyword">throw</span> <span class="keyword">new</span> UnmatchedArgumentException(CommandLine.this, <span class="predefined-type">Collections</span>.unmodifiableList(parseResult.unmatched)); }
-                <span class="keyword">if</span> (tracer.isWarn()) { tracer.warn(<span class="string"><span class="delimiter">&quot;</span><span class="content">Unmatched arguments: %s%n</span><span class="delimiter">&quot;</span></span>, parseResult.unmatched); }
+                <span class="keyword">if</span> (tracer.isInfo()) { tracer.info(<span class="string"><span class="delimiter">&quot;</span><span class="content">Unmatched arguments: %s%n</span><span class="delimiter">&quot;</span></span>, parseResult.unmatched); }
             }
         }
 
@@ -9506,20 +9579,17 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
             ITypeConverter&lt;?&gt; converter = getTypeConverter(cls, argSpec, <span class="integer">0</span>);
             <span class="predefined-type">Object</span> newValue = tryConvert(argSpec, -<span class="integer">1</span>, converter, value, cls);
             <span class="predefined-type">Object</span> oldValue = argSpec.getValue();
-            TraceLevel level = TraceLevel.INFO;
             <span class="predefined-type">String</span> traceMessage = <span class="string"><span class="delimiter">&quot;</span><span class="content">Setting %s to '%3$s' (was '%2$s') for %4$s%n</span><span class="delimiter">&quot;</span></span>;
             <span class="keyword">if</span> (initialized != <span class="predefined-constant">null</span>) {
                 <span class="keyword">if</span> (initialized.contains(argSpec)) {
                     <span class="keyword">if</span> (!isOverwrittenOptionsAllowed()) {
                         <span class="keyword">throw</span> <span class="keyword">new</span> OverwrittenOptionException(CommandLine.this, optionDescription(<span class="string"><span class="delimiter">&quot;</span><span class="delimiter">&quot;</span></span>, argSpec, <span class="integer">0</span>) +  <span class="string"><span class="delimiter">&quot;</span><span class="content"> should be specified only once</span><span class="delimiter">&quot;</span></span>);
                     }
-                    level = TraceLevel.WARN;
                     traceMessage = <span class="string"><span class="delimiter">&quot;</span><span class="content">Overwriting %s value '%s' with '%s' for %s%n</span><span class="delimiter">&quot;</span></span>;
                 }
                 initialized.add(argSpec);
             }
-            <span class="keyword">if</span> (tracer.level.isEnabled(level)) { level.print(tracer, traceMessage, argSpec.toString(),
-                    <span class="predefined-type">String</span>.valueOf(oldValue), <span class="predefined-type">String</span>.valueOf(newValue), argDescription); }
+            <span class="keyword">if</span> (tracer.isInfo()) { tracer.info(traceMessage, argSpec.toString(), <span class="predefined-type">String</span>.valueOf(oldValue), <span class="predefined-type">String</span>.valueOf(newValue), argDescription); }
             argSpec.setValue(newValue);
             parseResult.addOriginalStringValue(argSpec, value);<span class="comment">// #279 track empty string value if no command line argument was consumed</span>
             parseResult.addStringValue(argSpec, value);
@@ -9819,7 +9889,7 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
         <span class="directive">private</span> <span class="predefined-type">String</span> optionDescription(<span class="predefined-type">String</span> prefix, ArgSpec argSpec, <span class="type">int</span> index) {
             <span class="predefined-type">String</span> desc = <span class="string"><span class="delimiter">&quot;</span><span class="delimiter">&quot;</span></span>;
             <span class="keyword">if</span> (argSpec.isOption()) {
-                desc = prefix + <span class="string"><span class="delimiter">&quot;</span><span class="content">option '</span><span class="delimiter">&quot;</span></span> + ((OptionSpec) argSpec).names()[<span class="integer">0</span>] + <span class="string"><span class="delimiter">&quot;</span><span class="content">'</span><span class="delimiter">&quot;</span></span>;
+                desc = prefix + <span class="string"><span class="delimiter">&quot;</span><span class="content">option '</span><span class="delimiter">&quot;</span></span> + ((OptionSpec) argSpec).longestName() + <span class="string"><span class="delimiter">&quot;</span><span class="content">'</span><span class="delimiter">&quot;</span></span>;
                 <span class="keyword">if</span> (index &gt;= <span class="integer">0</span>) {
                     <span class="keyword">if</span> (argSpec.arity().max &gt; <span class="integer">1</span>) {
                         desc += <span class="string"><span class="delimiter">&quot;</span><span class="content"> at index </span><span class="delimiter">&quot;</span></span> + index;
@@ -10221,13 +10291,14 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
      * before the help command's {@code run} or {@code call} method is called.&lt;/p&gt;
      * &lt;p&gt;&lt;b&gt;Implementation note:&lt;/b&gt;&lt;/p&gt;&lt;p&gt;
      * If an error occurs in the {@code run} or {@code call} method while processing the help request, it is recommended custom Help
-     * commands throw a {@link ParameterException} with a reference to the parent command. The {@link DefaultExceptionHandler} will print
+     * commands throw a {@link ParameterException ParameterException} with a reference to the parent command. The {@link DefaultExceptionHandler DefaultExceptionHandler} will print
      * the error message and the usage for the parent command, and will terminate with the exit code of the exception handler if one was set.
      * &lt;/p&gt;
      * @since 3.0 */</span>
     <span class="directive">public</span> <span class="directive">static</span> <span class="type">interface</span> <span class="class">IHelpCommandInitializable</span> {
         <span class="comment">/** Initializes this object with the information needed to implement a help command that provides usage help for other commands.
-         * @param helpCommandLine provides access to this command's parent and sibling commands
+         * @param helpCommandLine the {@code CommandLine} object associated with this help command. Implementors can use
+         *                        this to walk the command hierarchy and get access to the help command's parent and sibling commands.
          * @param ansi whether to use Ansi colors or not
          * @param out the stream to print the usage help message to
          * @param err the error stream to print any diagnostic messages to, in addition to the output from the exception handler
@@ -10459,10 +10530,10 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
                 }
                 options.removeAll(booleanOptions);
                 <span class="keyword">if</span> (clusteredRequired.length() &gt; <span class="integer">1</span>) { <span class="comment">// initial length was 1</span>
-                    optionText = optionText.append(<span class="string"><span class="delimiter">&quot;</span><span class="content"> </span><span class="delimiter">&quot;</span></span>).append(colorScheme.optionText(clusteredRequired.toString()));
+                    optionText = optionText.concat(<span class="string"><span class="delimiter">&quot;</span><span class="content"> </span><span class="delimiter">&quot;</span></span>).concat(colorScheme.optionText(clusteredRequired.toString()));
                 }
                 <span class="keyword">if</span> (clusteredOptional.length() &gt; <span class="integer">1</span>) { <span class="comment">// initial length was 1</span>
-                    optionText = optionText.append(<span class="string"><span class="delimiter">&quot;</span><span class="content"> [</span><span class="delimiter">&quot;</span></span>).append(colorScheme.optionText(clusteredOptional.toString())).append(<span class="string"><span class="delimiter">&quot;</span><span class="content">]</span><span class="delimiter">&quot;</span></span>);
+                    optionText = optionText.concat(<span class="string"><span class="delimiter">&quot;</span><span class="content"> [</span><span class="delimiter">&quot;</span></span>).concat(colorScheme.optionText(clusteredOptional.toString())).concat(<span class="string"><span class="delimiter">&quot;</span><span class="content">]</span><span class="delimiter">&quot;</span></span>);
                 }
             }
             <span class="keyword">for</span> (OptionSpec option : options) {
@@ -10475,23 +10546,23 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
                     } <span class="keyword">else</span> {
                         optionText = appendOptionSynopsis(optionText, option, ShortestFirst.sort(option.names())[<span class="integer">0</span>], <span class="string"><span class="delimiter">&quot;</span><span class="content"> [</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">]</span><span class="delimiter">&quot;</span></span>);
                         <span class="keyword">if</span> (option.isMultiValue()) {
-                            optionText = optionText.append(<span class="string"><span class="delimiter">&quot;</span><span class="content">...</span><span class="delimiter">&quot;</span></span>);
+                            optionText = optionText.concat(<span class="string"><span class="delimiter">&quot;</span><span class="content">...</span><span class="delimiter">&quot;</span></span>);
                         }
                     }
                 }
             }
             <span class="keyword">for</span> (PositionalParamSpec positionalParam : commandSpec.positionalParameters()) {
                 <span class="keyword">if</span> (!positionalParam.hidden()) {
-                    optionText = optionText.append(<span class="string"><span class="delimiter">&quot;</span><span class="content"> </span><span class="delimiter">&quot;</span></span>);
+                    optionText = optionText.concat(<span class="string"><span class="delimiter">&quot;</span><span class="content"> </span><span class="delimiter">&quot;</span></span>);
                     Text label = parameterLabelRenderer().renderParameterLabel(positionalParam, colorScheme.ansi(), colorScheme.parameterStyles);
-                    optionText = optionText.append(label);
+                    optionText = optionText.concat(label);
                 }
             }
 
             <span class="keyword">if</span>(!commandSpec.subcommands().isEmpty()){
-                optionText = optionText.append(<span class="string"><span class="delimiter">&quot;</span><span class="content"> [</span><span class="delimiter">&quot;</span></span>)
-                        .append(<span class="string"><span class="delimiter">&quot;</span><span class="content">COMMAND</span><span class="delimiter">&quot;</span></span>)
-                        .append(<span class="string"><span class="delimiter">&quot;</span><span class="content">]</span><span class="delimiter">&quot;</span></span>);
+                optionText = optionText.concat(<span class="string"><span class="delimiter">&quot;</span><span class="content"> [</span><span class="delimiter">&quot;</span></span>)
+                        .concat(<span class="string"><span class="delimiter">&quot;</span><span class="content">COMMAND</span><span class="delimiter">&quot;</span></span>)
+                        .concat(<span class="string"><span class="delimiter">&quot;</span><span class="content">]</span><span class="delimiter">&quot;</span></span>);
             }
 
             <span class="comment">// Fix for #142: first line of synopsis overshoots max. characters</span>
@@ -10504,16 +10575,16 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
 
             <span class="comment">// right-adjust the command name by length of synopsis heading</span>
             Text PADDING = Ansi.OFF.new Text(stringOf(<span class="string"><span class="delimiter">'</span><span class="content">X</span><span class="delimiter">'</span></span>, synopsisHeadingLength));
-            textTable.addRowValues(PADDING.append(colorScheme.commandText(commandName)), optionText);
+            textTable.addRowValues(PADDING.concat(colorScheme.commandText(commandName)), optionText);
             <span class="keyword">return</span> textTable.toString().substring(synopsisHeadingLength); <span class="comment">// cut off leading synopsis heading spaces</span>
         }
 
         <span class="directive">private</span> Text appendOptionSynopsis(Text optionText, OptionSpec option, <span class="predefined-type">String</span> optionName, <span class="predefined-type">String</span> prefix, <span class="predefined-type">String</span> suffix) {
             Text optionParamText = parameterLabelRenderer().renderParameterLabel(option, colorScheme.ansi(), colorScheme.optionParamStyles);
-            <span class="keyword">return</span> optionText.append(prefix)
-                    .append(colorScheme.optionText(optionName))
-                    .append(optionParamText)
-                    .append(suffix);
+            <span class="keyword">return</span> optionText.concat(prefix)
+                    .concat(colorScheme.optionText(optionName))
+                    .concat(optionParamText)
+                    .concat(suffix);
         }
 
         <span class="comment">/** Returns the number of characters the synopsis heading will take on the same line as the synopsis.
@@ -10891,10 +10962,10 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
                     <span class="comment">// #181 paramLabelText may be =LABEL or [=LABEL...]</span>
                     <span class="type">int</span> sepStart = paramLabelText.plainString().indexOf(sep);
                     Text prefix = paramLabelText.substring(<span class="integer">0</span>, sepStart);
-                    paramLabelText = prefix.append(paramLabelText.substring(sepStart + sep.length()));
+                    paramLabelText = prefix.concat(paramLabelText.substring(sepStart + sep.length()));
                 }
                 Text longOptionText = scheme.optionText(longOption);
-                longOptionText = longOptionText.append(paramLabelText);
+                longOptionText = longOptionText.concat(paramLabelText);
                 <span class="keyword">return</span> longOptionText;
             }
 
@@ -10928,7 +10999,7 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
             <span class="directive">public</span> Text<span class="type">[]</span><span class="type">[]</span> render(OptionSpec option, IParamLabelRenderer parameterLabelRenderer, ColorScheme scheme) {
                 Text optionText = scheme.optionText(option.names()[<span class="integer">0</span>]);
                 Text paramLabelText = parameterLabelRenderer.renderParameterLabel(option, scheme.ansi(), scheme.optionParamStyles);
-                optionText = optionText.append(paramLabelText);
+                optionText = optionText.concat(paramLabelText);
                 <span class="keyword">return</span> <span class="keyword">new</span> Text<span class="type">[]</span><span class="type">[]</span> {{ optionText,
                                         scheme.ansi().new Text(option.description().length == <span class="integer">0</span> ? <span class="string"><span class="delimiter">&quot;</span><span class="delimiter">&quot;</span></span> : option.description()[<span class="integer">0</span>]) }};
             }
@@ -11048,29 +11119,29 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
                 Text result = ansi.new Text(<span class="string"><span class="delimiter">&quot;</span><span class="delimiter">&quot;</span></span>);
                 <span class="predefined-type">String</span> sep = argSpec.isOption() ? separator() : <span class="string"><span class="delimiter">&quot;</span><span class="delimiter">&quot;</span></span>;
                 Text paramName = ansi.apply(argSpec.paramLabel(), styles);
-                <span class="keyword">if</span> (!empty(argSpec.splitRegex())) { paramName = paramName.append(<span class="string"><span class="delimiter">&quot;</span><span class="content">[</span><span class="delimiter">&quot;</span></span> + argSpec.splitRegex()).append(paramName).append(<span class="string"><span class="delimiter">&quot;</span><span class="content">]...</span><span class="delimiter">&quot;</span></span>); } <span class="comment">// #194</span>
+                <span class="keyword">if</span> (!empty(argSpec.splitRegex())) { paramName = paramName.concat(<span class="string"><span class="delimiter">&quot;</span><span class="content">[</span><span class="delimiter">&quot;</span></span> + argSpec.splitRegex()).concat(paramName).concat(<span class="string"><span class="delimiter">&quot;</span><span class="content">]...</span><span class="delimiter">&quot;</span></span>); } <span class="comment">// #194</span>
                 Range capacity = argSpec.isOption() ? argSpec.arity() : ((PositionalParamSpec)argSpec).capacity();
                 <span class="keyword">for</span> (<span class="type">int</span> i = <span class="integer">0</span>; i &lt; capacity.min; i++) {
-                    result = result.append(sep).append(paramName);
+                    result = result.concat(sep).concat(paramName);
                     sep = <span class="string"><span class="delimiter">&quot;</span><span class="content"> </span><span class="delimiter">&quot;</span></span>;
                 }
                 <span class="keyword">if</span> (capacity.isVariable) {
                     <span class="keyword">if</span> (result.length == <span class="integer">0</span>) { <span class="comment">// arity=&quot;*&quot; or arity=&quot;0..*&quot;</span>
-                        result = result.append(sep + <span class="string"><span class="delimiter">&quot;</span><span class="content">[</span><span class="delimiter">&quot;</span></span>).append(paramName).append(<span class="string"><span class="delimiter">&quot;</span><span class="content">]...</span><span class="delimiter">&quot;</span></span>);
+                        result = result.concat(sep + <span class="string"><span class="delimiter">&quot;</span><span class="content">[</span><span class="delimiter">&quot;</span></span>).concat(paramName).concat(<span class="string"><span class="delimiter">&quot;</span><span class="content">]...</span><span class="delimiter">&quot;</span></span>);
                     } <span class="keyword">else</span> <span class="keyword">if</span> (!result.plainString().endsWith(<span class="string"><span class="delimiter">&quot;</span><span class="content">...</span><span class="delimiter">&quot;</span></span>)) { <span class="comment">// getSplitRegex param may already end with &quot;...&quot;</span>
-                        result = result.append(<span class="string"><span class="delimiter">&quot;</span><span class="content">...</span><span class="delimiter">&quot;</span></span>);
+                        result = result.concat(<span class="string"><span class="delimiter">&quot;</span><span class="content">...</span><span class="delimiter">&quot;</span></span>);
                     }
                 } <span class="keyword">else</span> {
                     sep = result.length == <span class="integer">0</span> ? (argSpec.isOption() ? separator() : <span class="string"><span class="delimiter">&quot;</span><span class="delimiter">&quot;</span></span>) : <span class="string"><span class="delimiter">&quot;</span><span class="content"> </span><span class="delimiter">&quot;</span></span>;
                     <span class="keyword">for</span> (<span class="type">int</span> i = capacity.min; i &lt; capacity.max; i++) {
                         <span class="keyword">if</span> (sep.trim().length() == <span class="integer">0</span>) {
-                            result = result.append(sep + <span class="string"><span class="delimiter">&quot;</span><span class="content">[</span><span class="delimiter">&quot;</span></span>).append(paramName);
+                            result = result.concat(sep + <span class="string"><span class="delimiter">&quot;</span><span class="content">[</span><span class="delimiter">&quot;</span></span>).concat(paramName);
                         } <span class="keyword">else</span> {
-                            result = result.append(<span class="string"><span class="delimiter">&quot;</span><span class="content">[</span><span class="delimiter">&quot;</span></span> + sep).append(paramName);
+                            result = result.concat(<span class="string"><span class="delimiter">&quot;</span><span class="content">[</span><span class="delimiter">&quot;</span></span> + sep).concat(paramName);
                         }
                         sep  = <span class="string"><span class="delimiter">&quot;</span><span class="content"> </span><span class="delimiter">&quot;</span></span>;
                     }
-                    <span class="keyword">for</span> (<span class="type">int</span> i = capacity.min; i &lt; capacity.max; i++) { result = result.append(<span class="string"><span class="delimiter">&quot;</span><span class="content">]</span><span class="delimiter">&quot;</span></span>); }
+                    <span class="keyword">for</span> (<span class="type">int</span> i = capacity.min; i &lt; capacity.max; i++) { result = result.concat(<span class="string"><span class="delimiter">&quot;</span><span class="content">]</span><span class="delimiter">&quot;</span></span>); }
                 }
                 <span class="keyword">return</span> result;
             }
@@ -11183,6 +11254,11 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
             <span class="comment">/** Sorts the specified array of Strings shortest-first and returns it. */</span>
             <span class="directive">public</span> <span class="directive">static</span> <span class="predefined-type">String</span><span class="type">[]</span> sort(<span class="predefined-type">String</span><span class="type">[]</span> names) {
                 <span class="predefined-type">Arrays</span>.sort(names, <span class="keyword">new</span> ShortestFirst());
+                <span class="keyword">return</span> names;
+            }
+            <span class="comment">/** Sorts the specified array of Strings longest-first and returns it. */</span>
+            <span class="directive">public</span> <span class="directive">static</span> <span class="predefined-type">String</span><span class="type">[]</span> longestFirst(<span class="predefined-type">String</span><span class="type">[]</span> names) {
+                <span class="predefined-type">Arrays</span>.sort(names, <span class="predefined-type">Collections</span>.reverseOrder(<span class="keyword">new</span> ShortestFirst()));
                 <span class="keyword">return</span> names;
             }
         }
@@ -11455,7 +11531,6 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
                         row.setLength(<span class="integer">0</span>);
                     }
                 }
-                <span class="comment">//if (Ansi.enabled()) { text.append(Style.reset.off()); }</span>
                 <span class="keyword">return</span> text;
             }
             <span class="directive">public</span> <span class="predefined-type">String</span> toString() { <span class="keyword">return</span> toString(<span class="keyword">new</span> <span class="predefined-type">StringBuilder</span>()).toString(); }
@@ -11875,17 +11950,22 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
                     result.length = end - start;
                     <span class="keyword">return</span> result;
                 }
-                <span class="comment">/** Returns a new {@code Text} instance with the specified text appended. Does not modify this instance!
-                 * @param string the text to append
-                 * @return a new Text instance */</span>
-                <span class="directive">public</span> Text append(<span class="predefined-type">String</span> string) {
-                    <span class="keyword">return</span> append(<span class="keyword">new</span> Text(string));
-                }
+                <span class="comment">/** @deprecated use {@link #concat(String)} instead */</span>
+                <span class="annotation">@Deprecated</span> <span class="directive">public</span> Text append(<span class="predefined-type">String</span> string) { <span class="keyword">return</span> concat(string); }
+                <span class="comment">/** @deprecated use {@link #concat(Text)} instead */</span>
+                <span class="annotation">@Deprecated</span> <span class="directive">public</span> Text append(Text text) { <span class="keyword">return</span> concat(text); }
 
-                <span class="comment">/** Returns a new {@code Text} instance with the specified text appended. Does not modify this instance!
-                 * @param other the text to append
-                 * @return a new Text instance */</span>
-                <span class="directive">public</span> Text append(Text other) {
+                <span class="comment">/** Returns a copy of this {@code Text} instance with the specified text concatenated to the end. Does not modify this instance!
+                 * @param string the text to concatenate to the end of this Text
+                 * @return a new Text instance
+                 * @since 3.0 */</span>
+                <span class="directive">public</span> Text concat(<span class="predefined-type">String</span> string) { <span class="keyword">return</span> concat(<span class="keyword">new</span> Text(string)); }
+
+                <span class="comment">/** Returns a copy of this {@code Text} instance with the specified text concatenated to the end. Does not modify this instance!
+                 * @param other the text to concatenate to the end of this Text
+                 * @return a new Text instance
+                 * @since 3.0 */</span>
+                <span class="directive">public</span> Text concat(Text other) {
                     Text result = (Text) clone();
                     result.plain = <span class="keyword">new</span> <span class="predefined-type">StringBuilder</span>(plain.toString().substring(from, from + length));
                     result.from = <span class="integer">0</span>;
@@ -12103,7 +12183,7 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
         }
         <span class="directive">private</span> <span class="directive">static</span> <span class="predefined-type">String</span> describe(ArgSpec argSpec, <span class="predefined-type">String</span> separator) {
             <span class="predefined-type">String</span> prefix = (argSpec.isOption())
-                ? ((OptionSpec) argSpec).names()[<span class="integer">0</span>] + separator
+                ? ((OptionSpec) argSpec).longestName() + separator
                 : <span class="string"><span class="delimiter">&quot;</span><span class="content">params[</span><span class="delimiter">&quot;</span></span> + ((PositionalParamSpec) argSpec).index() + <span class="string"><span class="delimiter">&quot;</span><span class="content">]</span><span class="delimiter">&quot;</span></span> + separator;
             <span class="keyword">return</span> prefix + argSpec.paramLabel();
         }
@@ -12161,8 +12241,8 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
 </div>
 <div id="footer">
 <div id="footer-text">
-Version 3.0.0-alpha-5<br>
-Last updated 2018-04-11 03:06:59 JST
+Version 3.0.0-alpha-6<br>
+Last updated 2018-04-12 23:10:57 JST
 </div>
 </div>
 </body>

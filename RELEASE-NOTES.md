@@ -1,6 +1,6 @@
 # picocli Release Notes
 
-# <a name="3.0.0-alpha-6"></a> Picocli 3.0.0-alpha-6 (UNRELEASED)
+# <a name="3.0.0-alpha-6"></a> Picocli 3.0.0-alpha-6
 The picocli community is pleased to announce picocli 3.0.0-alpha-6.
 
 This release contains enhancements and bug fixes.
@@ -15,7 +15,7 @@ Picocli follows [semantic versioning](http://semver.org/).
 * [Deprecations](#3.0.0-alpha-6-deprecated)
 * [Potential breaking changes](#3.0.0-alpha-6-breaking-changes)
 
-## <a name="3.0.0-alpha-5-new"></a> New and Noteworthy
+## <a name="3.0.0-alpha-6-new"></a> New and Noteworthy
 
 
 ## <a name="3.0.0-alpha-6-promoted"></a> Promoted Features
