@@ -3927,9 +3927,9 @@ public class CommandLineTest {
         assertFalse(!flags.p0);
         assertTrue (!flags.p1);
         commandLine.parse("-a", "-b", "true", "false");
-        assertFalse(flags.a);
-        assertTrue (flags.b);
-        assertFalse(!flags.p0); // as set
+        assertFalse(!flags.a);
+        assertTrue (!flags.b);
+        assertFalse(!flags.p0);
         assertTrue (!flags.p1);
     }
 

@@ -31,6 +31,7 @@ No features have been promoted in this picocli release.
 - [#350] Enhancement: Improve error message for `usageHelp` and `versionHelp` validation.
 - [#344] Enhancement: Don't show WARN message for unmatched args or overwritten options.
 - [#351] Documentation: Improve javadoc for OptionSpec.usageHelp and versionHelp.
+- [#354] Bug fix: Interpreter should reset options and positional parameters to their initial value before parsing new input.
 
 ## <a name="3.0.0-alpha-6-deprecated"></a> Deprecations
 - The `Help.Ansi.Text::append` method is now deprecated in favour of the new `concat` method.

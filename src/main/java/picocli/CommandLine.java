@@ -4742,11 +4742,21 @@ public class CommandLine {
                 option.resetStringValues();
                 option.resetOriginalStringValues();
                 option.typedValues.clear();
+                try {
+                    option.setter().set(option.initialValue());
+                } catch (Exception ex) {
+                    tracer.warn("Could not clear value for %s: %s", option, ex);
+                }
             }
             for (PositionalParamSpec positional : getCommandSpec().positionalParameters()) {
                 positional.resetStringValues();
                 positional.resetOriginalStringValues();
                 positional.typedValues.clear();
+                try {
+                    positional.setter().set(positional.initialValue());
+                } catch (Exception ex) {
+                    tracer.warn("Could not clear value for %s: %s", positional, ex);
+                }
             }
         }
 

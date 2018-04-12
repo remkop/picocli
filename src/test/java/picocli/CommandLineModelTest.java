@@ -1397,4 +1397,115 @@ public class CommandLineModelTest {
         assertEquals("-aaa", OptionSpec.builder("-x", "-xx", "-aaa").build().longestName());
         assertEquals("-abcd", OptionSpec.builder("-x", "-abcd", "-aaa").build().longestName());
     }
+
+    @Test
+    public void testClearArrayOptionOldValueBeforeParse() {
+        CommandSpec cmd = CommandSpec.create();
+        cmd.addOption(OptionSpec.builder("-x").arity("2..3").build());
+
+        CommandLine cl = new CommandLine(cmd);
+        cl.parseArgs("-x", "1", "2", "3");
+        assertArrayEquals(new String[] {"1", "2", "3"}, (String[]) cmd.findOption("x").getValue());
+
+        cl.parseArgs("-x", "4", "5");
+        assertArrayEquals(new String[] {"4", "5"}, (String[]) cmd.findOption("x").getValue());
+    }
+
+    @Test
+    public void testClearListOptionOldValueBeforeParse() {
+        CommandSpec cmd = CommandSpec.create();
+        cmd.addOption(OptionSpec.builder("-x").type(List.class).build());
+
+        CommandLine cl = new CommandLine(cmd);
+        cl.parseArgs("-x", "1", "-x", "2", "-x", "3");
+        assertEquals(Arrays.asList("1", "2", "3"), cmd.findOption("x").getValue());
+
+        cl.parseArgs("-x", "4", "-x", "5");
+        assertEquals(Arrays.asList("4", "5"), cmd.findOption("x").getValue());
+    }
+
+    @Test
+    public void testClearMapOptionOldValueBeforeParse() {
+        CommandSpec cmd = CommandSpec.create();
+        cmd.addOption(OptionSpec.builder("-x").type(Map.class).build());
+
+        CommandLine cl = new CommandLine(cmd);
+        cl.parseArgs("-x", "A=1", "-x", "B=2", "-x", "C=3");
+        Map<String, String> expected = new LinkedHashMap<String, String>();
+        expected.put("A", "1");
+        expected.put("B", "2");
+        expected.put("C", "3");
+        assertEquals(expected, cmd.findOption("x").getValue());
+
+        cl.parseArgs("-x", "D=4", "-x", "E=5");
+        expected = new LinkedHashMap<String, String>();
+        expected.put("D", "4");
+        expected.put("E", "5");
+        assertEquals(expected, cmd.findOption("x").getValue());
+    }
+
+    @Test
+    public void testClearSimpleOptionOldValueBeforeParse() {
+        CommandSpec cmd = CommandSpec.create();
+        cmd.addOption(OptionSpec.builder("-x").type(String.class).build());
+
+        CommandLine cl = new CommandLine(cmd);
+        cl.parseArgs("-x", "1");
+        assertEquals("1", cmd.findOption("x").getValue());
+
+        cl.parseArgs("-x", "2");
+        assertEquals("2", cmd.findOption("x").getValue());
+    }
+
+    @Test
+    public void testOptionClearCustomSetterBeforeParse() {
+        CommandSpec cmd = CommandSpec.create();
+        final List<Object> values = new ArrayList<Object>();
+        ISetter setter = new ISetter() {
+            public <T> T set(T value) throws Exception {
+                values.add(value);
+                return null;
+            }
+        };
+        cmd.addOption(OptionSpec.builder("-x").type(String.class).setter(setter).build());
+
+        CommandLine cl = new CommandLine(cmd);
+        assertTrue(values.isEmpty());
+        cl.parseArgs("-x", "1");
+        assertEquals(2, values.size());
+        assertEquals(null, values.get(0));
+        assertEquals("1", values.get(1));
+
+        values.clear();
+        cl.parseArgs("-x", "2");
+        assertEquals(2, values.size());
+        assertEquals(null, values.get(0));
+        assertEquals("2", values.get(1));
+    }
+
+    @Test
+    public void testPositionalClearCustomSetterBeforeParse() {
+        CommandSpec cmd = CommandSpec.create();
+        final List<Object> values = new ArrayList<Object>();
+        ISetter setter = new ISetter() {
+            public <T> T set(T value) throws Exception {
+                values.add(value);
+                return null;
+            }
+        };
+        cmd.add(PositionalParamSpec.builder().type(String.class).setter(setter).build());
+
+        CommandLine cl = new CommandLine(cmd);
+        assertTrue(values.isEmpty());
+        cl.parseArgs("1");
+        assertEquals(2, values.size());
+        assertEquals(null, values.get(0));
+        assertEquals("1", values.get(1));
+
+        values.clear();
+        cl.parseArgs("2");
+        assertEquals(2, values.size());
+        assertEquals(null, values.get(0));
+        assertEquals("2", values.get(1));
+    }
 }
