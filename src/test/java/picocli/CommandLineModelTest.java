@@ -1401,7 +1401,7 @@ public class CommandLineModelTest {
     @Test
     public void testClearArrayOptionOldValueBeforeParse() {
         CommandSpec cmd = CommandSpec.create();
-        cmd.addOption(OptionSpec.builder("-x").arity("2..3").build());
+        cmd.addOption(OptionSpec.builder("-x").arity("2..3").initialValue(new String[] {"ABC"}).build());
 
         CommandLine cl = new CommandLine(cmd);
         cl.parseArgs("-x", "1", "2", "3");
@@ -1409,12 +1409,31 @@ public class CommandLineModelTest {
 
         cl.parseArgs("-x", "4", "5");
         assertArrayEquals(new String[] {"4", "5"}, (String[]) cmd.findOption("x").getValue());
+
+        cl.parseArgs();
+        assertArrayEquals(new String[] {"ABC"}, (String[]) cmd.findOption("x").getValue());
+    }
+
+    @Test
+    public void testDontClearArrayOptionOldValueBeforeParse() {
+        CommandSpec cmd = CommandSpec.create();
+        cmd.addOption(OptionSpec.builder("-x").arity("2..3").initialValue(new String[] {"ABC"}).hasInitialValue(false).build());
+
+        CommandLine cl = new CommandLine(cmd);
+        cl.parseArgs("-x", "1", "2", "3");
+        assertArrayEquals(new String[] {"1", "2", "3"}, (String[]) cmd.findOption("x").getValue());
+
+        cl.parseArgs("-x", "4", "5");
+        assertArrayEquals(new String[] {"4", "5"}, (String[]) cmd.findOption("x").getValue());
+
+        cl.parseArgs();
+        assertArrayEquals(new String[] {"4", "5"}, (String[]) cmd.findOption("x").getValue());
     }
 
     @Test
     public void testClearListOptionOldValueBeforeParse() {
         CommandSpec cmd = CommandSpec.create();
-        cmd.addOption(OptionSpec.builder("-x").type(List.class).build());
+        cmd.addOption(OptionSpec.builder("-x").type(List.class).initialValue(Arrays.asList("ABC")).build());
 
         CommandLine cl = new CommandLine(cmd);
         cl.parseArgs("-x", "1", "-x", "2", "-x", "3");
@@ -1422,12 +1441,33 @@ public class CommandLineModelTest {
 
         cl.parseArgs("-x", "4", "-x", "5");
         assertEquals(Arrays.asList("4", "5"), cmd.findOption("x").getValue());
+
+        cl.parseArgs();
+        assertEquals(Arrays.asList("ABC"), cmd.findOption("x").getValue());
+    }
+
+    @Test
+    public void testDontClearListOptionOldValueBeforeParse() {
+        CommandSpec cmd = CommandSpec.create();
+        cmd.addOption(OptionSpec.builder("-x").type(List.class).initialValue(Arrays.asList("ABC")).hasInitialValue(false).build());
+
+        CommandLine cl = new CommandLine(cmd);
+        cl.parseArgs("-x", "1", "-x", "2", "-x", "3");
+        assertEquals(Arrays.asList("1", "2", "3"), cmd.findOption("x").getValue());
+
+        cl.parseArgs("-x", "4", "-x", "5");
+        assertEquals(Arrays.asList("4", "5"), cmd.findOption("x").getValue());
+
+        cl.parseArgs();
+        assertEquals(Arrays.asList("4", "5"), cmd.findOption("x").getValue());
     }
 
     @Test
     public void testClearMapOptionOldValueBeforeParse() {
         CommandSpec cmd = CommandSpec.create();
-        cmd.addOption(OptionSpec.builder("-x").type(Map.class).build());
+        Map<String, String> map = new HashMap<String, String>();
+        map.put("ABC", "XYZ");
+        cmd.addOption(OptionSpec.builder("-x").type(Map.class).initialValue(map).build());
 
         CommandLine cl = new CommandLine(cmd);
         cl.parseArgs("-x", "A=1", "-x", "B=2", "-x", "C=3");
@@ -1442,18 +1482,65 @@ public class CommandLineModelTest {
         expected.put("D", "4");
         expected.put("E", "5");
         assertEquals(expected, cmd.findOption("x").getValue());
+
+        cl.parseArgs();
+        assertEquals(map, cmd.findOption("x").getValue());
+    }
+
+    @Test
+    public void testDontClearMapOptionOldValueBeforeParse() {
+        CommandSpec cmd = CommandSpec.create();
+        Map<String, String> map = new HashMap<String, String>();
+        map.put("ABC", "XYZ");
+        cmd.addOption(OptionSpec.builder("-x").type(Map.class).initialValue(map).hasInitialValue(false).build());
+
+        CommandLine cl = new CommandLine(cmd);
+        cl.parseArgs("-x", "A=1", "-x", "B=2", "-x", "C=3");
+        Map<String, String> expected = new LinkedHashMap<String, String>();
+        expected.put("A", "1");
+        expected.put("B", "2");
+        expected.put("C", "3");
+        assertEquals(expected, cmd.findOption("x").getValue());
+
+        cl.parseArgs("-x", "D=4", "-x", "E=5");
+        expected = new LinkedHashMap<String, String>();
+        expected.put("D", "4");
+        expected.put("E", "5");
+        assertEquals(expected, cmd.findOption("x").getValue());
+
+        cl.parseArgs();
+        assertEquals(expected, cmd.findOption("x").getValue());
     }
 
     @Test
     public void testClearSimpleOptionOldValueBeforeParse() {
         CommandSpec cmd = CommandSpec.create();
-        cmd.addOption(OptionSpec.builder("-x").type(String.class).build());
+        cmd.addOption(OptionSpec.builder("-x").type(String.class).initialValue(null).build());
 
         CommandLine cl = new CommandLine(cmd);
         cl.parseArgs("-x", "1");
         assertEquals("1", cmd.findOption("x").getValue());
 
         cl.parseArgs("-x", "2");
+        assertEquals("2", cmd.findOption("x").getValue());
+
+        cl.parseArgs();
+        assertNull(cmd.findOption("x").getValue());
+    }
+
+    @Test
+    public void testDontClearSimpleOptionOldValueBeforeParse() {
+        CommandSpec cmd = CommandSpec.create();
+        cmd.addOption(OptionSpec.builder("-x").type(String.class).initialValue(null).hasInitialValue(false).build());
+
+        CommandLine cl = new CommandLine(cmd);
+        cl.parseArgs("-x", "1");
+        assertEquals("1", cmd.findOption("x").getValue());
+
+        cl.parseArgs("-x", "2");
+        assertEquals("2", cmd.findOption("x").getValue());
+
+        cl.parseArgs();
         assertEquals("2", cmd.findOption("x").getValue());
     }
 
@@ -1507,5 +1594,39 @@ public class CommandLineModelTest {
         assertEquals(2, values.size());
         assertEquals(null, values.get(0));
         assertEquals("2", values.get(1));
+    }
+
+    @Test
+    public void testArityRestrictsCumulativeSize() {
+        CommandSpec cmdSpec = CommandSpec.create();
+        cmdSpec.parser().arityRestrictsCumulativeSize(true)
+                .unmatchedArgumentsAllowed(true);
+        cmdSpec.addOption(OptionSpec.builder("-x").splitRegex(",").type(List.class).arity("1..3").build());
+
+        CommandLine cmd = new CommandLine(cmdSpec);
+        ParseResult result = cmd.parseArgs("-x a,b,c def".split(" "));
+        assertEquals(Arrays.asList("a", "b", "c"), result.matchedOptionValue("x", Collections.emptyList()));
+        assertEquals(Arrays.asList("def"), result.unmatched());
+    }
+
+    @Test
+    public void testArityRestrictsCumulativeSizeMap() {
+        CommandSpec cmdSpec = CommandSpec.create();
+        cmdSpec.parser().arityRestrictsCumulativeSize(true)
+                .unmatchedArgumentsAllowed(true);
+        cmdSpec.addOption(OptionSpec.builder("-x").splitRegex(",").type(Map.class).arity("1..3").build());
+        cmdSpec.add(PositionalParamSpec.builder().splitRegex(",").type(Map.class).build());
+
+        CommandLine cmd = new CommandLine(cmdSpec);
+        ParseResult result = cmd.parseArgs("-x a=1,b=2,c=3 def=123".split(" "));
+        Map<String, String> map = new LinkedHashMap<String, String>();
+        map.put("a", "1");
+        map.put("b", "2");
+        map.put("c", "3");
+        assertEquals(map, result.matchedOptionValue("x", Collections.emptyMap()));
+
+        Map<String, String> pos = new LinkedHashMap<String, String>();
+        pos.put("def", "123");
+        assertEquals(pos, result.matchedPositionalValue(0, Collections.emptyMap()));
     }
 }

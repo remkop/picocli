@@ -1,5 +1,40 @@
 # picocli Release Notes
 
+# <a name="3.0.0-beta-1"></a> Picocli 3.0.0-beta-1 (UNRELEASED)
+The picocli community is pleased to announce picocli 3.0.0-beta-1.
+
+This release contains enhancements and bug fixes.
+
+This is the twenty-seventh public release.
+Picocli follows [semantic versioning](http://semver.org/).
+
+## <a name="3.0.0-beta-1-toc"></a> Table of Contents
+* [New and noteworthy](#3.0.0-beta-1-new)
+* [Promoted features](#3.0.0-beta-1-promoted)
+* [Fixed issues](#3.0.0-beta-1-fixes)
+* [Deprecations](#3.0.0-beta-1-deprecated)
+* [Potential breaking changes](#3.0.0-beta-1-breaking-changes)
+
+## <a name="3.0.0-beta-1-new"></a> New and Noteworthy
+
+
+## <a name="3.0.0-beta-1-promoted"></a> Promoted Features
+Promoted features are features that were incubating in previous versions of picocli but are now supported and subject to backwards compatibility. 
+
+No features have been promoted in this picocli release.
+
+## <a name="3.0.0-beta-1-fixes"></a> Fixed issues
+- [#355] API Change: Add method `ArgSpec.hasInitialValue`.
+- [#356] Bug fix: `Interpreter.consumeArguments` should check max arity reached when `parser.arityRestrictsCumulativeSize` = true.
+
+
+## <a name="3.0.0-beta-1-deprecated"></a> Deprecations
+
+## <a name="3.0.0-beta-1-breaking-changes"></a> Potential breaking changes
+
+
+
+
 # <a name="3.0.0-alpha-6"></a> Picocli 3.0.0-alpha-6
 The picocli community is pleased to announce picocli 3.0.0-alpha-6.
 

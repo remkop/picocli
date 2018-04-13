@@ -1014,6 +1014,10 @@ public class CommandLineTest {
         String expected = String.format("" +
                         "[picocli INFO] Parsing 6 command line args [-oout, --, -r, -v, p1, p2]%n" +
                         "[picocli DEBUG] Parser configuration: posixClusteredShortOptionsAllowed=true, stopAtPositional=false, stopAtUnmatched=false, separator=null, overwrittenOptionsAllowed=false, unmatchedArgumentsAllowed=false, expandAtFiles=true, arityRestrictsCumulativeSize=false%n" +
+                        "[picocli DEBUG] Set initial value for field boolean picocli.CommandLineTest$CompactFields.verbose of type boolean to false.%n" +
+                        "[picocli DEBUG] Set initial value for field boolean picocli.CommandLineTest$CompactFields.recursive of type boolean to false.%n" +
+                        "[picocli DEBUG] Set initial value for field java.io.File picocli.CommandLineTest$CompactFields.outputFile of type class java.io.File to null.%n" +
+                        "[picocli DEBUG] Set initial value for field java.io.File[] picocli.CommandLineTest$CompactFields.inputFiles of type class [Ljava.io.File; to null.%n" +
                         "[picocli DEBUG] Initializing %1$s$CompactFields: 3 options, 1 positional parameters, 0 required, 0 subcommands.%n" +
                         "[picocli DEBUG] Processing argument '-oout'. Remainder=[--, -r, -v, p1, p2]%n" +
                         "[picocli DEBUG] '-oout' cannot be separated into <option>=<option-parameter>%n" +
@@ -1980,6 +1984,9 @@ public class CommandLineTest {
         String expected = String.format("" +
                         "[picocli INFO] Parsing 8 command line args [--git-dir=/home/rpopma/picocli, commit, -m, \"Fixed typos\", --, src1.java, src2.java, src3.java]%n" +
                         "[picocli DEBUG] Parser configuration: posixClusteredShortOptionsAllowed=true, stopAtPositional=false, stopAtUnmatched=false, separator=null, overwrittenOptionsAllowed=false, unmatchedArgumentsAllowed=false, expandAtFiles=true, arityRestrictsCumulativeSize=false%n" +
+                        "[picocli DEBUG] Set initial value for field boolean picocli.CommandLine$AutoHelpMixin.helpRequested of type boolean to false.%n" +
+                        "[picocli DEBUG] Set initial value for field boolean picocli.CommandLine$AutoHelpMixin.versionRequested of type boolean to false.%n" +
+                        "[picocli DEBUG] Set initial value for field java.io.File picocli.Demo$Git.gitDir of type class java.io.File to null.%n" +
                         "[picocli DEBUG] Initializing %1$s$Git: 3 options, 0 positional parameters, 0 required, 12 subcommands.%n" +
                         "[picocli DEBUG] Processing argument '--git-dir=/home/rpopma/picocli'. Remainder=[commit, -m, \"Fixed typos\", --, src1.java, src2.java, src3.java]%n" +
                         "[picocli DEBUG] Separated '--git-dir' option from '/home/rpopma/picocli' option parameter%n" +
@@ -1987,6 +1994,15 @@ public class CommandLineTest {
                         "[picocli INFO] Setting field java.io.File picocli.Demo$Git.gitDir to '%2$s' (was 'null') for option --git-dir%n" +
                         "[picocli DEBUG] Processing argument 'commit'. Remainder=[-m, \"Fixed typos\", --, src1.java, src2.java, src3.java]%n" +
                         "[picocli DEBUG] Found subcommand 'commit' (%1$s$GitCommit)%n" +
+                        "[picocli DEBUG] Set initial value for field boolean picocli.Demo$GitCommit.all of type boolean to false.%n" +
+                        "[picocli DEBUG] Set initial value for field boolean picocli.Demo$GitCommit.patch of type boolean to false.%n" +
+                        "[picocli DEBUG] Set initial value for field String picocli.Demo$GitCommit.reuseMessageCommit of type class java.lang.String to null.%n" +
+                        "[picocli DEBUG] Set initial value for field String picocli.Demo$GitCommit.reEditMessageCommit of type class java.lang.String to null.%n" +
+                        "[picocli DEBUG] Set initial value for field String picocli.Demo$GitCommit.fixupCommit of type class java.lang.String to null.%n" +
+                        "[picocli DEBUG] Set initial value for field String picocli.Demo$GitCommit.squashCommit of type class java.lang.String to null.%n" +
+                        "[picocli DEBUG] Set initial value for field java.io.File picocli.Demo$GitCommit.file of type class java.io.File to null.%n" +
+                        "[picocli DEBUG] Set initial value for field java.util.List<String> picocli.Demo$GitCommit.message of type interface java.util.List to [].%n" +
+                        "[picocli DEBUG] Set initial value for field java.util.List<java.io.File> picocli.Demo$GitCommit.files of type interface java.util.List to [].%n" +
                         "[picocli DEBUG] Initializing %1$s$GitCommit: 8 options, 1 positional parameters, 0 required, 0 subcommands.%n" +
                         "[picocli DEBUG] Processing argument '-m'. Remainder=[\"Fixed typos\", --, src1.java, src2.java, src3.java]%n" +
                         "[picocli DEBUG] '-m' cannot be separated into <option>=<option-parameter>%n" +

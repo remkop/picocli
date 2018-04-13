@@ -3344,27 +3344,45 @@ public class CommandLine {
              * initialized from {@link Command#separator()} if defined.*/
             public String separator() { return (separator == null) ? DEFAULT_SEPARATOR : separator; }
 
+            /** @see CommandLine#isStopAtUnmatched() */
             public boolean stopAtUnmatched()                   { return stopAtUnmatched; }
+            /** @see CommandLine#isStopAtPositional() */
             public boolean stopAtPositional()                  { return stopAtPositional; }
+            /** @see CommandLine#isToggleBooleanFlags() */
             public boolean toggleBooleanFlags()                { return toggleBooleanFlags; }
+            /** @see CommandLine#isOverwrittenOptionsAllowed() */
             public boolean overwrittenOptionsAllowed()         { return overwrittenOptionsAllowed; }
+            /** @see CommandLine#isUnmatchedArgumentsAllowed() */
             public boolean unmatchedArgumentsAllowed()         { return unmatchedArgumentsAllowed; }
+            /** @see CommandLine#isExpandAtFiles() */
             public boolean expandAtFiles()                     { return expandAtFiles; }
+            /** @see CommandLine#isPosixClusteredShortOptionsAllowed() */
             public boolean posixClusteredShortOptionsAllowed() { return posixClusteredShortOptionsAllowed; }
+            /** @see CommandLine#isArityRestrictsCumulativeSize() */
             public boolean arityRestrictsCumulativeSize()      { return arityRestrictsCumulativeSize; }
+            /** @see CommandLine#isUnmatchedOptionsArePositionalParams() */
             public boolean unmatchedOptionsArePositionalParams() { return unmatchedOptionsArePositionalParams; }
 
             /** Sets the String to use as the separator between options and option parameters.
              * @return this ParserSpec for method chaining */
             public ParserSpec separator(String separator)                                  { this.separator = separator; return this; }
+            /** @see CommandLine#setStopAtUnmatched(boolean) */
             public ParserSpec stopAtUnmatched(boolean stopAtUnmatched)                     { this.stopAtUnmatched = stopAtUnmatched; return this; }
+            /** @see CommandLine#setStopAtPositional(boolean) */
             public ParserSpec stopAtPositional(boolean stopAtPositional)                   { this.stopAtPositional = stopAtPositional; return this; }
+            /** @see CommandLine#setToggleBooleanFlags(boolean) */
             public ParserSpec toggleBooleanFlags(boolean toggleBooleanFlags)               { this.toggleBooleanFlags = toggleBooleanFlags; return this; }
+            /** @see CommandLine#setOverwrittenOptionsAllowed(boolean) */
             public ParserSpec overwrittenOptionsAllowed(boolean overwrittenOptionsAllowed) { this.overwrittenOptionsAllowed = overwrittenOptionsAllowed; return this; }
+            /** @see CommandLine#setUnmatchedArgumentsAllowed(boolean) */
             public ParserSpec unmatchedArgumentsAllowed(boolean unmatchedArgumentsAllowed) { this.unmatchedArgumentsAllowed = unmatchedArgumentsAllowed; return this; }
+            /** @see CommandLine#setExpandAtFiles(boolean) */
             public ParserSpec expandAtFiles(boolean expandAtFiles)                         { this.expandAtFiles = expandAtFiles; return this; }
+            /** @see CommandLine#setArityRestrictsCumulativeSize(boolean) */
             public ParserSpec arityRestrictsCumulativeSize(boolean arityRestrictsCumulativeSize)   { this.arityRestrictsCumulativeSize = arityRestrictsCumulativeSize; return this; }
+            /** @see CommandLine#setPosixClusteredShortOptionsAllowed(boolean) */
             public ParserSpec posixClusteredShortOptionsAllowed(boolean posixClusteredShortOptionsAllowed) { this.posixClusteredShortOptionsAllowed = posixClusteredShortOptionsAllowed; return this; }
+            /** @see CommandLine#setUnmatchedOptionsArePositionalParams(boolean) */
             public ParserSpec unmatchedOptionsArePositionalParams(boolean unmatchedOptionsArePositionalParams) { this.unmatchedOptionsArePositionalParams = unmatchedOptionsArePositionalParams; return this; }
             void initSeparator(String value) { if (initializable(separator, value, DEFAULT_SEPARATOR)) {separator = value;} }
             public String toString() {
@@ -3402,6 +3420,7 @@ public class CommandLine {
             private final ITypeConverter<?>[] converters;
             private final String defaultValue;
             private final Object initialValue;
+            private final boolean hasInitialValue;
             private final IGetter getter;
             private final ISetter setter;
             private final Range arity;
@@ -3421,6 +3440,7 @@ public class CommandLine {
                 required = builder.required && builder.defaultValue == null; //#261 not required if it has a default
                 defaultValue = builder.defaultValue;
                 initialValue = builder.initialValue;
+                hasInitialValue = builder.hasInitialValue;
                 toString = builder.toString;
                 getter = builder.getter;
                 setter = builder.setter;
@@ -3505,7 +3525,13 @@ public class CommandLine {
             /** Returns the default value of this option or positional parameter, before splitting and type conversion.
              * A value of {@code null} means this option or positional parameter does not have a default. */
             public String defaultValue()   { return defaultValue; }
-            Object initialValue()          { return initialValue; }
+            /** Returns the initial value this option or positional parameter. If {@link #hasInitialValue()} is true,
+             * the option will be reset to the initial value before parsing (regardless of whether a default value exists),
+             * to clear values that would otherwise remain from parsing previous input. */
+            public Object initialValue()     { return initialValue; }
+            /** Determines whether the option or positional parameter will be reset to the {@link #initialValue()}
+             * before parsing new input.*/
+            public boolean hasInitialValue() { return hasInitialValue; }
     
             /** Returns whether this option or positional parameter's default value should be shown in the usage help. */
             public Help.Visibility showDefaultValue() { return showDefaultValue; }
@@ -3555,8 +3581,13 @@ public class CommandLine {
             /** Sets the {@code originalStringValues} to a new list instance. */
             protected void resetOriginalStringValues() { originalStringValues = new ArrayList<String>(); }
 
-            boolean acceptsValues(ParserSpec parser) {
-                return arity().max == 0 || !parser.arityRestrictsCumulativeSize() || stringValues().size() < arity().max;
+            boolean acceptsValues(int add, ParserSpec parser) {
+                boolean result = arity().max == 0 || !parser.arityRestrictsCumulativeSize() || stringValues().size() + add <= arity().max;
+                if (!result) {
+                    String argDescription = isOption() ? "option " + ((OptionSpec) this).longestName() : "positional at " + ((PositionalParamSpec) this).index();
+                    new Tracer().debug("%s cannot accept %s additional values: max.arity=$s, arityRestrictsCumulativeSize=%s, stringValues.size=%s.%n", argDescription, add, arity().max, parser.arityRestrictsCumulativeSize(), stringValues().size());
+                }
+                return result;
             }
 
             protected boolean showDefaultValue(CommandSpec commandSpec) {
@@ -3613,6 +3644,7 @@ public class CommandLine {
                 private ITypeConverter<?>[] converters;
                 private String defaultValue;
                 private Object initialValue;
+                private boolean hasInitialValue = true;
                 private Help.Visibility showDefaultValue;
                 private String toString;
                 private IGetter getter = new ObjectBinding();
@@ -3677,8 +3709,14 @@ public class CommandLine {
 
                 /** Returns the default value of this option or positional parameter, before splitting and type conversion.
                  * A value of {@code null} means this option or positional parameter does not have a default. */
-                public String defaultValue()   { return defaultValue; }
-                Object initialValue()          { return initialValue; }
+                public String defaultValue()     { return defaultValue; }
+                /** Returns the initial value this option or positional parameter. If {@link #hasInitialValue()} is true,
+                 * the option will be reset to the initial value before parsing (regardless of whether a default value exists),
+                 * to clear values that would otherwise remain from parsing previous input. */
+                public Object initialValue()     { return initialValue; }
+                /** Determines whether the option or positional parameter will be reset to the {@link #initialValue()}
+                 * before parsing new input.*/
+                public boolean hasInitialValue() { return hasInitialValue; }
 
                 /** Returns whether this option or positional parameter's default value should be shown in the usage help. */
                 public Help.Visibility showDefaultValue() { return showDefaultValue; }
@@ -3731,8 +3769,14 @@ public class CommandLine {
                  * this default value is applied to the option or positional parameter. A value of {@code null} means no default. */
                 public T defaultValue(String defaultValue)   { this.defaultValue = defaultValue; return self(); }
 
-                /** Sets the initial value (for usage help) of this option or positional parameter to the specified value, and returns this builder. */
+                /** Sets the initial value of this option or positional parameter to the specified value, and returns this builder.
+                 * If {@link #hasInitialValue()} is true, the option will be reset to the initial value before parsing (regardless
+                 * of whether a default value exists), to clear values that would otherwise remain from parsing previous input. */
                 public T initialValue(Object initialValue)   { this.initialValue = initialValue; return self(); }
+
+                /** Determines whether the option or positional parameter will be reset to the {@link #initialValue()}
+                 * before parsing new input.*/
+                public T hasInitialValue(boolean hasInitialValue)   { this.hasInitialValue = hasInitialValue; return self(); }
 
                 /** Sets the {@link IGetter} that is responsible for getting the value of this argument, and returns this builder. */
                 public T getter(IGetter getter)              { this.getter = getter; return self(); }
@@ -4359,18 +4403,7 @@ public class CommandLine {
                 return new Class<?>[] {propertyType}; // not a multi-value field
             }
             static Object getInitialValue(Object scope, Field field) {
-                Object result = null;
-                try {
-                    result = field.get(scope);
-                    if (result != null && field.getType().isArray()) {
-                        StringBuilder sb = new StringBuilder();
-                        for (int i = 0; i < Array.getLength(result); i++) {
-                            sb.append(i > 0 ? ", " : "").append(Array.get(result, i));
-                        }
-                        result = sb.insert(0, "[").append("]").toString();
-                    }
-                } catch (Exception ex) { }
-                return result;
+                try { return field.get(scope); } catch (Exception ex) { return null; }
             }
         }
         private static class FieldBinding implements IGetter, ISetter {
@@ -4742,20 +4775,30 @@ public class CommandLine {
                 option.resetStringValues();
                 option.resetOriginalStringValues();
                 option.typedValues.clear();
-                try {
-                    option.setter().set(option.initialValue());
-                } catch (Exception ex) {
-                    tracer.warn("Could not clear value for %s: %s", option, ex);
+                if (option.hasInitialValue()) {
+                    try {
+                        option.setter().set(option.initialValue());
+                        tracer.debug("Set initial value for %s of type %s to %s.%n", option, option.type(), String.valueOf(option.initialValue()));
+                    } catch (Exception ex) {
+                        tracer.warn("Could not set initial value for %s of type %s to %s: %s%n", option, option.type(), String.valueOf(option.initialValue()), ex);
+                    }
+                } else {
+                    tracer.debug("Initial value not available for %s%n", option);
                 }
             }
             for (PositionalParamSpec positional : getCommandSpec().positionalParameters()) {
                 positional.resetStringValues();
                 positional.resetOriginalStringValues();
                 positional.typedValues.clear();
-                try {
-                    positional.setter().set(positional.initialValue());
-                } catch (Exception ex) {
-                    tracer.warn("Could not clear value for %s: %s", positional, ex);
+                if (positional.hasInitialValue()) {
+                    try {
+                        positional.setter().set(positional.initialValue());
+                        tracer.debug("Set initial value for %s of type %s to %s.%n", positional, positional.type(), String.valueOf(positional.initialValue()));
+                    } catch (Exception ex) {
+                        tracer.warn("Could not set initial value for %s of type %s to %s: %s%n", positional, positional.type(), String.valueOf(positional.initialValue()), ex);
+                    }
+                } else {
+                    tracer.debug("Initial value not available for %s%n", positional);
                 }
             }
         }
@@ -4904,7 +4947,7 @@ public class CommandLine {
 
         private boolean isStandaloneOption(String arg) {
             OptionSpec option = commandSpec.optionsMap().get(arg);
-            return option != null && option.acceptsValues(commandSpec.parser());
+            return option != null && option.acceptsValues(1, commandSpec.parser());
         }
 
         private boolean resemblesOption(String arg) {
@@ -4999,7 +5042,7 @@ public class CommandLine {
             boolean paramAttachedToOption = true;
             do {
                 if (cluster.length() > 0 && commandSpec.posixOptionsMap().containsKey(cluster.charAt(0))
-                        && commandSpec.posixOptionsMap().get(cluster.charAt(0)).acceptsValues(commandSpec.parser())) {
+                        && commandSpec.posixOptionsMap().get(cluster.charAt(0)).acceptsValues(1, commandSpec.parser())) {
                     ArgSpec argSpec = commandSpec.posixOptionsMap().get(cluster.charAt(0));
                     Range arity = argSpec.arity();
                     String argDescription = "option " + prefix + cluster.charAt(0);
@@ -5185,7 +5228,7 @@ public class CommandLine {
 
                 Map<Object, Object> typedValuesAtPosition = new LinkedHashMap<Object, Object>();
                 parseResult.addTypedValues(argSpec, currentPosition++, typedValuesAtPosition);
-                if (!canConsumeOneMapArgument(argSpec, args.peek(), classes, keyConverter, valueConverter)) {
+                if (!canConsumeOneMapArgument(argSpec, args.peek(), classes, keyConverter, valueConverter, argDescription)) {
                     break; // leave empty map at argSpec.typedValues[currentPosition] so we won't try to consume that position again
                 }
                 consumeOneMapArgument(argSpec, args.pop(), classes, keyConverter, valueConverter, typedValuesAtPosition, i, argDescription);
@@ -5216,8 +5259,13 @@ public class CommandLine {
         }
 
         private boolean canConsumeOneMapArgument(ArgSpec argSpec, String raw, Class<?>[] classes,
-                                                 ITypeConverter<?> keyConverter, ITypeConverter<?> valueConverter) {
+                                                 ITypeConverter<?> keyConverter, ITypeConverter<?> valueConverter,
+                                                 String argDescription) {
             String[] values = argSpec.splitValue(raw);
+            if (!argSpec.acceptsValues(values.length, commandSpec.parser())) {
+                tracer.debug("$s would split into %s values but %s cannot accept that many values.%n", raw, values.length, argDescription);
+                return false;
+            }
             try {
                 for (String value : values) {
                     String[] keyValue = splitKeyValue(argSpec, value);
@@ -5225,7 +5273,10 @@ public class CommandLine {
                     tryConvert(argSpec, -1, valueConverter, keyValue[1], classes[1]);
                 }
                 return true;
-            } catch (PicocliException ex) { return false; }
+            } catch (PicocliException ex) {
+                tracer.debug("$s cannot be assigned to %s: type conversion fails: %s.%n", raw, argDescription, ex.getMessage());
+                return false;
+            }
         }
 
         private String[] splitKeyValue(ArgSpec argSpec, String value) {
@@ -5339,7 +5390,7 @@ public class CommandLine {
 
                 List<Object> typedValuesAtPosition = new ArrayList<Object>();
                 parseResult.addTypedValues(argSpec, currentPosition++, typedValuesAtPosition);
-                if (!canConsumeOneArgument(argSpec, args.peek(), type)) {
+                if (!canConsumeOneArgument(argSpec, args.peek(), type, argDescription)) {
                     break; // leave empty list at argSpec.typedValues[currentPosition] so we won't try to consume that position again
                 }
                 consumeOneArgument(argSpec, arity, args.pop(), type, typedValuesAtPosition, i, argDescription);
@@ -5371,14 +5422,22 @@ public class CommandLine {
             parseResult.addOriginalStringValue(argSpec, raw);
             return ++index;
         }
-        private boolean canConsumeOneArgument(ArgSpec argSpec, String arg, Class<?> type) {
+        private boolean canConsumeOneArgument(ArgSpec argSpec, String arg, Class<?> type, String argDescription) {
             ITypeConverter<?> converter = getTypeConverter(type, argSpec, 0);
             try {
-                for (String value : argSpec.splitValue(trim(arg))) {
+                String[] values = argSpec.splitValue(trim(arg));
+                if (!argSpec.acceptsValues(values.length, commandSpec.parser())) {
+                    tracer.debug("$s would split into %s values but %s cannot accept that many values.%n", arg, values.length, argDescription);
+                    return false;
+                }
+                for (String value : values) {
                     tryConvert(argSpec, -1, converter, value, type);
                 }
                 return true;
-            } catch (PicocliException ex) { return false; }
+            } catch (PicocliException ex) {
+                tracer.debug("$s cannot be assigned to %s: type conversion fails: %s.%n", arg, argDescription, ex.getMessage());
+                return false;
+            }
         }
 
         /** Returns whether the next argument can be assigned to a vararg option/positional parameter.
@@ -6607,6 +6666,13 @@ public class CommandLine {
         private static void addTrailingDefaultLine(List<Text[]> result, ArgSpec arg, ColorScheme scheme) {
             Text EMPTY = Ansi.EMPTY_TEXT;
             Object defaultValue = arg.defaultValue() == null ? arg.initialValue() : arg.defaultValue();
+            if (defaultValue != null && defaultValue.getClass().isArray()) {
+                StringBuilder sb = new StringBuilder();
+                for (int i = 0; i < Array.getLength(defaultValue); i++) {
+                    sb.append(i > 0 ? ", " : "").append(Array.get(defaultValue, i));
+                }
+                defaultValue = sb.insert(0, "[").append("]").toString();
+            }
             result.add(new Text[]{EMPTY, EMPTY, EMPTY, EMPTY, scheme.ansi().new Text("  Default: " + defaultValue)});
         }
 
