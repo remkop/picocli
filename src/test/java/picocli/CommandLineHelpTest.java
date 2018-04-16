@@ -2927,6 +2927,72 @@ public class CommandLineHelpTest {
                 "           (-PTIMEUNIT=VALUE) or as a comma-separated list.%n");
         assertEquals(expected, actual);
     }
+
+    @Test
+    public void testMapFieldHelpSplit_arityRestrictsCumulativeTotal() {
+        class App {
+            @Parameters(arity = "2", split = "\\|",
+                    paramLabel = "FIXTAG=VALUE",
+                    description = "Exactly two lists of vertical bar '|'-separated FIXTAG=VALUE pairs.")
+            Map<Integer,String> message;
+
+            @Option(names = {"-P", "-map"}, split = ",",
+                    paramLabel = "TIMEUNIT=VALUE",
+                    description = "Any number of TIMEUNIT=VALUE pairs. These may be specified separately (-PTIMEUNIT=VALUE) or as a comma-separated list.")
+            Map<TimeUnit, String> map;
+        }
+        CommandSpec spec = CommandSpec.forAnnotatedObject(new App());
+        spec.parser().limitSplit(true);
+        String actual = usageString(new CommandLine(spec), Help.Ansi.OFF);
+        String expected = String.format("" +
+                "Usage: <main class> [-P=TIMEUNIT=VALUE[,TIMEUNIT=VALUE]...]... FIXTAG=VALUE%n" +
+                "                    [\\|FIXTAG=VALUE]... FIXTAG=VALUE[\\|FIXTAG=VALUE]...%n" +
+                "      FIXTAG=VALUE[\\|FIXTAG=VALUE]... FIXTAG=VALUE[\\|FIXTAG=VALUE]...%n" +
+                "                              Exactly two lists of vertical bar '|'-separated%n" +
+                "                                FIXTAG=VALUE pairs.%n" +
+                "  -P, -map=TIMEUNIT=VALUE[,TIMEUNIT=VALUE]...%n" +
+                "                              Any number of TIMEUNIT=VALUE pairs. These may be%n" +
+                "                                specified separately (-PTIMEUNIT=VALUE) or as a%n" +
+                "                                comma-separated list.%n");
+        assertEquals(expected, actual);
+    }
+
+//    def cli = new CliBuilder(name:'ant',
+//    header:'Options:')
+//            cli.help('print this message')
+//            cli.logfile(type:File, argName:'file', 'use given file for log')
+//            cli.D(type:Map, argName:'property=value', args: '+', 'use value for given property')
+//            cli.lib(argName:'path', valueSeparator:',', args: '3',
+//            'comma-separated list of up to 3 paths to search for jars and classes')
+    @Test
+    public void testMultiValueCliBuilderCompatibility() {
+        class App {
+            @Option(names = "--help", description = "print this message")
+            boolean help;
+            @Option(names = "--logfile", description = "use given file for log")
+            File file;
+            @Option(names = "-P", arity = "0..*", paramLabel = "<key=ppp>", description = "use value for project key")
+            Map projectMap;
+            @Option(names = "-D", arity = "1..*", paramLabel = "<key=ddd>", description = "use value for given property")
+            Map map;
+            @Option(names = "-S", arity = "0..*", split = ",", paramLabel = "<key=sss>", description = "use value for project key")
+            Map sss;
+            @Option(names = "-T", arity = "1..*", split = ",", paramLabel = "<key=ttt>", description = "use value for given property")
+            Map ttt;
+            @Option(names = "--x", arity = "0..2", split = ",", description = "comma-separated list of up to 2 xxx's")
+            String[] x;
+            @Option(names = "--y", arity = "3", split = ",", description = "exactly 3 y's")
+            String[] y;
+            @Option(names = "--lib", arity = "1..3", split = ",", description = "comma-separated list of up to 3 paths to search for jars and classes")
+            String[] path;
+        }
+        CommandSpec spec = CommandSpec.forAnnotatedObject(new App());
+        spec.parser().limitSplit(true);
+        String actual = usageString(new CommandLine(spec), Help.Ansi.OFF);
+        String expected = String.format("");
+        assertEquals(expected, actual);
+    }
+
     @Test
     public void testMapFieldTypeInference() throws UnsupportedEncodingException {
         class App {

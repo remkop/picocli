@@ -6732,31 +6732,52 @@ public class CommandLine {
             public String separator() { return commandSpec.parser().separator(); }
             public Text renderParameterLabel(ArgSpec argSpec, Ansi ansi, List<IStyle> styles) {
                 Text result = ansi.new Text("");
-                String sep = argSpec.isOption() ? separator() : "";
+                String initialSep = argSpec.isOption() ? separator() : "";
                 Text paramName = ansi.apply(argSpec.paramLabel(), styles);
-                if (!empty(argSpec.splitRegex())) { paramName = paramName.concat("[" + argSpec.splitRegex()).concat(paramName).concat("]..."); } // #194
                 Range capacity = argSpec.isOption() ? argSpec.arity() : ((PositionalParamSpec)argSpec).capacity();
+                String split = argSpec.splitRegex();
+                String sep = initialSep;
+                String nextSep = " ";
+                boolean succinct = false;
+                if (!empty(split)) {
+                    if (commandSpec.parser().limitSplit()) {
+                        nextSep = split;
+                        succinct = true;
+                    } else {
+                        paramName = paramName.concat("[" + split).concat(paramName).concat("]..."); /* #194 */
+                    }
+                }
                 for (int i = 0; i < capacity.min; i++) {
                     result = result.concat(sep).concat(paramName);
-                    sep = " ";
+                    sep = nextSep;
                 }
                 if (capacity.isVariable) {
-                    if (result.length == 0) { // arity="*" or arity="0..*"
-                        result = result.concat(sep + "[").concat(paramName).concat("]...");
+                    String suffix = commandSpec.parser().limitSplit() ? "" : "...";
+                    if (result.length == 0 || (succinct && capacity.min <= 1)) { /*len=0: arity="*" or arity="0..*" */
+                        if (succinct && capacity.min == 0) {
+                            result = result.concat(sep + "[").concat(paramName).concat("[" + split).concat(paramName).concat("]]");
+//                        } else if (succinct && capacity.min == 1) {
+//                            result = result.concat(sep + "[").concat(paramName).concat("]" + suffix);
+                        } else {
+                            result = result.concat(sep + "[").concat(paramName).concat("]" + suffix);
+                        }
                     } else if (!result.plainString().endsWith("...")) { // getSplitRegex param may already end with "..."
-                        result = result.concat("...");
+                        result = result.concat(suffix);
                     }
                 } else {
-                    sep = result.length == 0 ? (argSpec.isOption() ? separator() : "") : " ";
+                    sep = result.length == 0 ? initialSep : nextSep;
                     for (int i = capacity.min; i < capacity.max; i++) {
                         if (sep.trim().length() == 0) {
                             result = result.concat(sep + "[").concat(paramName);
                         } else {
                             result = result.concat("[" + sep).concat(paramName);
                         }
-                        sep  = " ";
+                        sep  = nextSep;
                     }
                     for (int i = capacity.min; i < capacity.max; i++) { result = result.concat("]"); }
+                    if (succinct && capacity.min == capacity.max) {
+                        result = result.concat("[" + sep).concat(paramName).concat("]");
+                    }
                 }
                 return result;
             }
