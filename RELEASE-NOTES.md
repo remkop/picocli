@@ -25,6 +25,7 @@ No features have been promoted in this picocli release.
 
 ## <a name="3.0.0-beta-1-fixes"></a> Fixed issues
 - [#355] API Change: Add method `ArgSpec.hasInitialValue`.
+- [#363] API Change: Add parser option to limit the number of parts when splitting to max arity, for compatibility with commons-cli.
 - [#356] Bug fix: `Interpreter.consumeArguments` should check max arity reached when `parser.arityRestrictsCumulativeSize` = true.
 
 

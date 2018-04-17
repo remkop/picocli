@@ -1040,12 +1040,13 @@ public class CommandLineArityTest {
         assertEquals(Arrays.asList("xx", "--alpha", "--beta"), cmd.params);
     }
 
+    @Ignore
     @Test
     public void testStopProcessingVarargsWhenCumulativeSizeReached() {
         class ValSepC {
-            @Option(names = "-a", arity="1..2") String[] a;
-            @Option(names = "-b", arity="1..2", split=",") String[] b;
-            @Option(names = "-c", arity="1..*", split=",") String[] c;
+            @Option(names = "-a", arity="2") String[] a;
+            @Option(names = "-b", arity="2", split=",") String[] b;
+            @Option(names = "-c", arity="*", split=",") String[] c;
             @Option(names = "-d") boolean d;
             @Option(names = "-e", arity="1", split=",") boolean e;
             @Unmatched String[] remaining;
@@ -1079,7 +1080,7 @@ public class CommandLineArityTest {
         assertTrue(val8.e);
     }
 
-    @Ignore
+    //@Ignore
     @Test
     public void testCommonsCliCompatibleSeparatorHandling() {
         class ValSepC {
@@ -1093,7 +1094,7 @@ public class CommandLineArityTest {
     }
     private <T> T parseRestrictingCumulativeSize(T obj, String[] args) {
         CommandLine cmd = new CommandLine(obj);
-        cmd.getCommandSpec().parser().arityRestrictsCumulativeSize(true);
+        cmd.getCommandSpec().parser().limitSplit(true); //arityRestrictsCumulativeSize(true);
         cmd.parseArgs(args);
         return obj;
     }

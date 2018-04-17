@@ -3339,6 +3339,7 @@ public class CommandLine {
             private boolean posixClusteredShortOptionsAllowed = true;
             private boolean arityRestrictsCumulativeSize = false;
             private boolean unmatchedOptionsArePositionalParams = false;
+            private boolean limitSplit = false;
 
             /** Returns the String to use as the separator between options and option parameters. {@code "="} by default,
              * initialized from {@link Command#separator()} if defined.*/
@@ -3362,6 +3363,10 @@ public class CommandLine {
             public boolean arityRestrictsCumulativeSize()      { return arityRestrictsCumulativeSize; }
             /** @see CommandLine#isUnmatchedOptionsArePositionalParams() */
             public boolean unmatchedOptionsArePositionalParams() { return unmatchedOptionsArePositionalParams; }
+            private boolean splitFirst()                       { return limitSplit(); }
+            /** Returns true if arguments should be split first before any further processing and the number of
+             * parts resulting from the split is limited to the max arity of the argument. */
+            public boolean limitSplit()                        { return limitSplit; }
 
             /** Sets the String to use as the separator between options and option parameters.
              * @return this ParserSpec for method chaining */
@@ -3384,6 +3389,9 @@ public class CommandLine {
             public ParserSpec posixClusteredShortOptionsAllowed(boolean posixClusteredShortOptionsAllowed) { this.posixClusteredShortOptionsAllowed = posixClusteredShortOptionsAllowed; return this; }
             /** @see CommandLine#setUnmatchedOptionsArePositionalParams(boolean) */
             public ParserSpec unmatchedOptionsArePositionalParams(boolean unmatchedOptionsArePositionalParams) { this.unmatchedOptionsArePositionalParams = unmatchedOptionsArePositionalParams; return this; }
+            /** Sets whether arguments should be {@linkplain ArgSpec#splitRegex() split} first before any further processing.
+             * If true, the original argument will only be split into as many parts as allowed by max arity. */
+            public ParserSpec limitSplit(boolean limitSplit)                               { this.limitSplit = limitSplit; return this; }
             void initSeparator(String value) { if (initializable(separator, value, DEFAULT_SEPARATOR)) {separator = value;} }
             public String toString() {
                 return String.format("posixClusteredShortOptionsAllowed=%s, stopAtPositional=%s, stopAtUnmatched=%s, separator=%s, overwrittenOptionsAllowed=%s, unmatchedArgumentsAllowed=%s, expandAtFiles=%s, arityRestrictsCumulativeSize=%s",
@@ -3401,6 +3409,7 @@ public class CommandLine {
                 posixClusteredShortOptionsAllowed = settings.posixClusteredShortOptionsAllowed;
                 arityRestrictsCumulativeSize = settings.arityRestrictsCumulativeSize;
                 unmatchedOptionsArePositionalParams = settings.unmatchedOptionsArePositionalParams;
+                limitSplit = settings.limitSplit;
             }
         }
         /** Models the shared attributes of {@link OptionSpec} and {@link PositionalParamSpec}.
@@ -3601,8 +3610,10 @@ public class CommandLine {
             /** Returns a string respresentation of this option or positional parameter. */
             public String toString() { return toString; }
     
-            private String[] splitValue(String value) {
-                return splitRegex().length() == 0 ? new String[] {value} : value.split(splitRegex());
+            private String[] splitValue(String value, ParserSpec parser, Range arity, int consumed) {
+                if (splitRegex().length() == 0) { return new String[] {value}; }
+                int limit = parser.limitSplit() ? Math.max(arity.max - consumed, 0) : 0;
+                return value.split(splitRegex(), limit);
             }
             protected boolean equalsImpl(ArgSpec other) {
                 if (other == this) { return true; }
@@ -4828,7 +4839,7 @@ public class CommandLine {
                     if (missing.isOption()) {
                         throw MissingParameterException.create(CommandLine.this, required, config().separator());
                     } else {
-                        assertNoMissingParameters(missing, missing.arity().min, argumentStack);
+                        assertNoMissingParameters(missing, missing.arity(), argumentStack);
                     }
                 }
             }
@@ -5002,7 +5013,7 @@ public class CommandLine {
                 Stack<String> argsCopy = copy(args);
                 Range arity = positionalParam.arity();
                 if (tracer.isDebug()) {tracer.debug("Position %d is in index range %s. Trying to assign args to %s, arity=%s%n", position, indexRange, positionalParam, arity);}
-                assertNoMissingParameters(positionalParam, arity.min, argsCopy);
+                assertNoMissingParameters(positionalParam, arity, argsCopy);
                 int originalSize = argsCopy.size();
                 applyOption(positionalParam, arity, argsCopy, initialized, "args[" + indexRange + "] at position " + position);
                 int count = originalSize - argsCopy.size();
@@ -5104,7 +5115,7 @@ public class CommandLine {
                                 Set<ArgSpec> initialized,
                                 String argDescription) throws Exception {
             updateHelpRequested(argSpec);
-            assertNoMissingParameters(argSpec, arity.min, args);
+            assertNoMissingParameters(argSpec, arity, args);
 
             if (argSpec.type().isArray()) {
                 return applyValuesToArrayField(argSpec, arity, args, initialized, argDescription);
@@ -5216,35 +5227,40 @@ public class CommandLine {
             int currentPosition = position;
 
             // first do the arity.min mandatory parameters
-            for (int i = 0; i < arity.min; i++) {
+            int initialSize = argSpec.stringValues().size();
+            int consumed = consumedCountMap(0, initialSize, argSpec);
+            for (int i = 0; consumed < arity.min && !args.isEmpty(); i++) {
                 Map<Object, Object> typedValuesAtPosition = new LinkedHashMap<Object, Object>();
                 parseResult.addTypedValues(argSpec, currentPosition++, typedValuesAtPosition);
-                consumeOneMapArgument(argSpec, args.pop(), classes, keyConverter, valueConverter, typedValuesAtPosition, i, argDescription);
+                consumeOneMapArgument(argSpec, arity, consumed, args.pop(), classes, keyConverter, valueConverter, typedValuesAtPosition, i, argDescription);
                 result.putAll(typedValuesAtPosition);
+                consumed = consumedCountMap(i + 1, initialSize, argSpec);
             }
             // now process the varargs if any
-            for (int i = arity.min; i < arity.max && !args.isEmpty(); i++) {
+            for (int i = consumed; consumed < arity.max && !args.isEmpty(); i++) {
                 if (!varargCanConsumeNextValue(argSpec, args.peek())) { break; }
 
                 Map<Object, Object> typedValuesAtPosition = new LinkedHashMap<Object, Object>();
                 parseResult.addTypedValues(argSpec, currentPosition++, typedValuesAtPosition);
-                if (!canConsumeOneMapArgument(argSpec, args.peek(), classes, keyConverter, valueConverter, argDescription)) {
+                if (!canConsumeOneMapArgument(argSpec, arity, consumed, args.peek(), classes, keyConverter, valueConverter, argDescription)) {
                     break; // leave empty map at argSpec.typedValues[currentPosition] so we won't try to consume that position again
                 }
-                consumeOneMapArgument(argSpec, args.pop(), classes, keyConverter, valueConverter, typedValuesAtPosition, i, argDescription);
+                consumeOneMapArgument(argSpec, arity, consumed, args.pop(), classes, keyConverter, valueConverter, typedValuesAtPosition, i, argDescription);
                 result.putAll(typedValuesAtPosition);
+                consumed = consumedCountMap(i + 1, initialSize, argSpec);
             }
         }
 
         private void consumeOneMapArgument(ArgSpec argSpec,
+                                           Range arity, int consumed,
                                            String arg,
                                            Class<?>[] classes,
                                            ITypeConverter<?> keyConverter, ITypeConverter<?> valueConverter,
                                            Map<Object, Object> result,
                                            int index,
-                                           String argDescription) throws Exception {
+                                           String argDescription) {
             String raw = trim(arg);
-            String[] values = argSpec.splitValue(raw);
+            String[] values = argSpec.splitValue(raw, commandSpec.parser(), arity, consumed);
             for (String value : values) {
                 String[] keyValue = splitKeyValue(argSpec, value);
                 Object mapKey =   tryConvert(argSpec, index, keyConverter,   keyValue[0], classes[0]);
@@ -5258,10 +5274,11 @@ public class CommandLine {
             parseResult.addOriginalStringValue(argSpec, raw);
         }
 
-        private boolean canConsumeOneMapArgument(ArgSpec argSpec, String raw, Class<?>[] classes,
+        private boolean canConsumeOneMapArgument(ArgSpec argSpec, Range arity, int consumed,
+                                                 String raw, Class<?>[] classes,
                                                  ITypeConverter<?> keyConverter, ITypeConverter<?> valueConverter,
                                                  String argDescription) {
-            String[] values = argSpec.splitValue(raw);
+            String[] values = argSpec.splitValue(raw, commandSpec.parser(), arity, consumed);
             if (!argSpec.acceptsValues(values.length, commandSpec.parser())) {
                 tracer.debug("$s would split into %s values but %s cannot accept that many values.%n", raw, values.length, argDescription);
                 return false;
@@ -5378,23 +5395,27 @@ public class CommandLine {
             int currentPosition = position;
 
             // first do the arity.min mandatory parameters
-            for (int i = 0; i < arity.min; i++) {
+            int initialSize = argSpec.stringValues().size();
+            int consumed = consumedCount(0, initialSize, argSpec);
+            for (int i = 0; consumed < arity.min && !args.isEmpty(); i++) {
                 List<Object> typedValuesAtPosition = new ArrayList<Object>();
                 parseResult.addTypedValues(argSpec, currentPosition++, typedValuesAtPosition);
-                consumeOneArgument(argSpec, arity, args.pop(), type, typedValuesAtPosition, i, argDescription);
+                consumeOneArgument(argSpec, arity, consumed, args.pop(), type, typedValuesAtPosition, i, argDescription);
                 result.addAll(typedValuesAtPosition);
+                consumed = consumedCount(i + 1, initialSize, argSpec);
             }
             // now process the varargs if any
-            for (int i = arity.min; i < arity.max && !args.isEmpty(); i++) {
+            for (int i = consumed; consumed < arity.max && !args.isEmpty(); i++) {
                 if (!varargCanConsumeNextValue(argSpec, args.peek())) { break; }
 
                 List<Object> typedValuesAtPosition = new ArrayList<Object>();
                 parseResult.addTypedValues(argSpec, currentPosition++, typedValuesAtPosition);
-                if (!canConsumeOneArgument(argSpec, args.peek(), type, argDescription)) {
+                if (!canConsumeOneArgument(argSpec, arity, consumed, args.peek(), type, argDescription)) {
                     break; // leave empty list at argSpec.typedValues[currentPosition] so we won't try to consume that position again
                 }
-                consumeOneArgument(argSpec, arity, args.pop(), type, typedValuesAtPosition, i, argDescription);
+                consumeOneArgument(argSpec, arity, consumed, args.pop(), type, typedValuesAtPosition, i, argDescription);
                 result.addAll(typedValuesAtPosition);
+                consumed = consumedCount(i + 1, initialSize, argSpec);
             }
             if (result.isEmpty() && arity.min == 0 && arity.max <= 1 && isBoolean(type)) {
                 return Arrays.asList((Object) Boolean.TRUE);
@@ -5402,15 +5423,24 @@ public class CommandLine {
             return result;
         }
 
+        private int consumedCount(int i, int initialSize, ArgSpec arg) {
+            return commandSpec.parser().splitFirst() ? arg.stringValues().size() - initialSize : i;
+        }
+
+        private int consumedCountMap(int i, int initialSize, ArgSpec arg) {
+            return commandSpec.parser().splitFirst() ? (arg.stringValues().size() - initialSize) / 2 : i;
+        }
+
         private int consumeOneArgument(ArgSpec argSpec,
                                        Range arity,
+                                       int consumed,
                                        String arg,
                                        Class<?> type,
                                        List<Object> result,
                                        int index,
                                        String argDescription) {
             String raw = trim(arg);
-            String[] values = argSpec.splitValue(raw);
+            String[] values = argSpec.splitValue(raw, commandSpec.parser(), arity, consumed);
             ITypeConverter<?> converter = getTypeConverter(type, argSpec, 0);
             for (int j = 0; j < values.length; j++) {
                 result.add(tryConvert(argSpec, index, converter, values[j], type));
@@ -5422,10 +5452,10 @@ public class CommandLine {
             parseResult.addOriginalStringValue(argSpec, raw);
             return ++index;
         }
-        private boolean canConsumeOneArgument(ArgSpec argSpec, String arg, Class<?> type, String argDescription) {
+        private boolean canConsumeOneArgument(ArgSpec argSpec, Range arity, int consumed, String arg, Class<?> type, String argDescription) {
             ITypeConverter<?> converter = getTypeConverter(type, argSpec, 0);
             try {
-                String[] values = argSpec.splitValue(trim(arg));
+                String[] values = argSpec.splitValue(trim(arg), commandSpec.parser(), arity, consumed);
                 if (!argSpec.acceptsValues(values.length, commandSpec.parser())) {
                     tracer.debug("$s would split into %s values but %s cannot accept that many values.%n", arg, values.length, argDescription);
                     return false;
@@ -5554,9 +5584,13 @@ public class CommandLine {
             throw new MissingTypeConverterException(CommandLine.this, "No TypeConverter registered for " + type.getName() + " of " + argSpec);
         }
 
-        private void assertNoMissingParameters(ArgSpec argSpec, int arity, Stack<String> args) {
-            if (arity > args.size()) {
-                if (arity == 1) {
+        private void assertNoMissingParameters(ArgSpec argSpec, Range arity, Stack<String> args) {
+            int available = args.size();
+            if (available > 0 && commandSpec.parser().splitFirst() && argSpec.splitRegex().length() > 0) {
+                available += argSpec.splitValue(args.peek(), commandSpec.parser(), arity, 0).length - 1;
+            }
+            if (arity.min > available) {
+                if (arity.min == 1) {
                     if (argSpec.isOption()) {
                         throw new MissingParameterException(CommandLine.this, argSpec, "Missing required parameter for " +
                                 optionDescription("", argSpec, 0));
@@ -5584,10 +5618,10 @@ public class CommandLine {
                 }
                 if (args.isEmpty()) {
                     throw new MissingParameterException(CommandLine.this, argSpec, optionDescription("", argSpec, 0) +
-                            " requires at least " + arity + " values, but none were specified.");
+                            " requires at least " + arity.min + " values, but none were specified.");
                 }
                 throw new MissingParameterException(CommandLine.this, argSpec, optionDescription("", argSpec, 0) +
-                        " requires at least " + arity + " values, but only " + args.size() + " were specified: " + reverse(args));
+                        " requires at least " + arity.min + " values, but only " + available + " were specified: " + reverse(args));
             }
         }
         private String trim(String value) {
