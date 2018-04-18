@@ -71,9 +71,9 @@ import picocli.CommandLine.Parameters
                 "Unmatched argument [--xyz]%n" +
                 "Usage: test-command [-cp=<codepath>]... [<parameters>]...%n" +
                 "tests help from a command script%n" +
-                "      [<parameters>]...       some parameters%n" +
+                "      [<parameters>]...   some parameters%n" +
                 "      -cp, --codepath=<codepath>%n" +
-                "                              the codepath%n")
+                "                          the codepath%n")
     }
 
     @Test

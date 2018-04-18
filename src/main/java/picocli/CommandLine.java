@@ -6005,7 +6005,7 @@ public class CommandLine {
         /** Constant String holding the default string that separates options from option parameters, value defined in {@link ParserSpec#DEFAULT_SEPARATOR}. */
         protected static final String DEFAULT_SEPARATOR = ParserSpec.DEFAULT_SEPARATOR;
 
-        private final static int optionsColumnWidth = 2 + 2 + 1 + 24;
+        private final static int defaultOptionsColumnWidth = 24;
         private final CommandSpec commandSpec;
         private final ColorScheme colorScheme;
         private final Map<String, Help> commands = new LinkedHashMap<String, Help>();
@@ -6266,7 +6266,25 @@ public class CommandLine {
             Comparator<OptionSpec> sortOrder = commandSpec.usageMessage().sortOptions()
                     ? createShortOptionNameComparator()
                     : null;
-            return optionList(createDefaultLayout(), sortOrder, parameterLabelRenderer());
+
+            return optionList(createLayout(calcLongOptionColumnWidth()), sortOrder, parameterLabelRenderer());
+        }
+
+        private int calcLongOptionColumnWidth() {
+            int max = 0;
+            IOptionRenderer optionRenderer = new DefaultOptionRenderer(false, " ");
+            for (OptionSpec option : commandSpec.options()) {
+                Text[][] values = optionRenderer.render(option, parameterLabelRenderer(), colorScheme);
+                int len = values[0][3].length;
+                if (len < Help.defaultOptionsColumnWidth - 3) { max = Math.max(max, len); }
+            }
+            IParameterRenderer paramRenderer = new DefaultParameterRenderer(false, " ");
+            for (PositionalParamSpec positional : commandSpec.positionalParameters()) {
+                Text[][] values = paramRenderer.render(positional, parameterLabelRenderer(), colorScheme);
+                int len = values[0][3].length;
+                if (len < Help.defaultOptionsColumnWidth - 3) { max = Math.max(max, len); }
+            }
+            return max + 3;
         }
 
         /** Sorts all {@code Options} with the specified {@code comparator} (if the comparator is non-{@code null}),
@@ -6291,7 +6309,7 @@ public class CommandLine {
          * @return the section of the usage help message that lists the parameters
          */
         public String parameterList() {
-            return parameterList(createDefaultLayout(), parameterLabelRenderer());
+            return parameterList(createLayout(calcLongOptionColumnWidth()), parameterLabelRenderer());
         }
         /**
          * Returns the section of the usage help message that lists the parameters with their descriptions.
@@ -6471,8 +6489,13 @@ public class CommandLine {
         /** Returns a {@code Layout} instance configured with the user preferences captured in this Help instance.
          * @return a Layout */
         public Layout createDefaultLayout() {
-            return new Layout(colorScheme, TextTable.forDefaultColumns(colorScheme.ansi(), width()), createDefaultOptionRenderer(), createDefaultParameterRenderer());
+            return createLayout(Help.defaultOptionsColumnWidth);
         }
+
+        private Layout createLayout(int longOptionsColumnWidth) {
+            return new Layout(colorScheme, TextTable.forDefaultColumns(colorScheme.ansi(), longOptionsColumnWidth, width()), createDefaultOptionRenderer(), createDefaultParameterRenderer());
+        }
+
         /** Returns a new default OptionRenderer which converts {@link OptionSpec Options} to five columns of text to match
          *  the default {@linkplain TextTable TextTable} column layout. The first row of values looks like this:
          * <ol>
@@ -7003,13 +7026,29 @@ public class CommandLine {
              * @param usageHelpWidth the total width of the columns combined
              */
             public static TextTable forDefaultColumns(Ansi ansi, int usageHelpWidth) {
+                return forDefaultColumns(ansi, defaultOptionsColumnWidth, usageHelpWidth);
+            }
+
+            /** Constructs a TextTable with five columns as follows:
+             * <ol>
+             * <li>required option/parameter marker (width: 2, indent: 0, TRUNCATE on overflow)</li>
+             * <li>short option name (width: 2, indent: 0, TRUNCATE on overflow)</li>
+             * <li>comma separator (width: 1, indent: 0, TRUNCATE on overflow)</li>
+             * <li>long option name(s) (width: 24, indent: 1, SPAN multiple columns on overflow)</li>
+             * <li>description line(s) (width: 51, indent: 1, WRAP to next row on overflow)</li>
+             * </ol>
+             * @param ansi whether to emit ANSI escape codes or not
+             * @param longOptionsColumnWidth the width of the long options column
+             * @param usageHelpWidth the total width of the columns combined
+             */
+            public static TextTable forDefaultColumns(Ansi ansi, int longOptionsColumnWidth, int usageHelpWidth) {
                 // "* -c, --create                Creates a ...."
                 return forColumns(ansi,
-                            new Column(2,                                        0, TRUNCATE), // "*"
-                            new Column(2,                                        0, TRUNCATE), // "-c"
-                            new Column(1,                                        0, TRUNCATE), // ","
-                            new Column(optionsColumnWidth - 2 - 2 - 1,           1, SPAN),  // " --create"
-                            new Column(usageHelpWidth - optionsColumnWidth, 1, WRAP)); // " Creates a ..."
+                        new Column(2,                                       0, TRUNCATE), // "*"
+                        new Column(2,                                       0, TRUNCATE), // "-c"
+                        new Column(1,                                       0, TRUNCATE), // ","
+                        new Column(longOptionsColumnWidth,                         1, SPAN),  // " --create"
+                        new Column(usageHelpWidth - longOptionsColumnWidth, 1, WRAP)); // " Creates a ..."
             }
 
             /** Constructs a new TextTable with columns with the specified width, all SPANning  multiple columns on

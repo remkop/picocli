@@ -16,7 +16,34 @@ Picocli follows [semantic versioning](http://semver.org/).
 * [Potential breaking changes](#3.0.0-beta-1-breaking-changes)
 
 ## <a name="3.0.0-beta-1-new"></a> New and Noteworthy
+Previously, the usage message layout had a fixed width long option name column: this column is always 24 characters, even if none of the options have a long option name.
 
+This gives weird-looking usage help messages in some cases. For example:
+```java
+@Command(name="ls")
+class App {
+    @Option(names = "-a", description = "display all files") boolean a;
+    @Option(names = "-l", description = "use a long listing format") boolean l;
+    @Option(names = "-t", description = "sort by modification time") boolean t;
+}
+```
+
+The usage message for this example was:
+```
+Usage: ls [-alt]
+  -a                          display all files
+  -l                          use a long listing format
+  -t                          sort by modification time
+```
+From this release, picocli adjusts the width of the long option name column to the longest name (max 24).
+
+The new usage message for this example looks like this:
+```
+Usage: ls [-alt]
+  -a     display all files
+  -l     use a long listing format
+  -t     sort by modification time
+```
 
 ## <a name="3.0.0-beta-1-promoted"></a> Promoted Features
 Promoted features are features that were incubating in previous versions of picocli but are now supported and subject to backwards compatibility. 
@@ -27,6 +54,7 @@ No features have been promoted in this picocli release.
 - [#355] API Change: Add method `ArgSpec.hasInitialValue`.
 - [#361] API Change: Add parser option `aritySatisfiedByAttachedOptionParam` for commons-cli compatibility.
 - [#363] API Change: Add parser option to limit the number of parts when splitting to max arity, for compatibility with commons-cli.
+- [#360] Enhancement: Dynamically adjust width of long option name column (up to max 24).
 - [#356] Bug fix: `Interpreter.consumeArguments` should check max arity reached when `parser.arityRestrictsCumulativeSize` = true.
 
 

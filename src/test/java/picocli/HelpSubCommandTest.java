@@ -23,7 +23,7 @@ public class HelpSubCommandTest {
         String actual = usageString(commandLine, Help.Ansi.OFF);
         String expected = String.format("" +
                 "Usage: <main class> [-h] [COMMAND]%n" +
-                "  -h, --help                  show help and exit%n" +
+                "  -h, --help   show help and exit%n" +
                 "Commands:%n" +
                 "  subcommand%n");
         assertEquals(expected, actual);
@@ -45,7 +45,7 @@ public class HelpSubCommandTest {
         String actual = usageString(commandLine, Help.Ansi.OFF);
         String expected = String.format("" +
                 "Usage: <main class> [OPTIONS] [COMMAND]%n" +
-                "  -h, --help                  show help and exit%n" +
+                "  -h, --help   show help and exit%n" +
                 "Commands:%n" +
                 "  subcommand%n");
         assertEquals(expected, actual);

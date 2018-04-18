@@ -173,23 +173,20 @@ public class AutoCompleteTest {
             "Usage: picocli.AutoComplete [-fhw] [-n=<commandName>] [-o=<autoCompleteScript>]%n" +
             "                            <commandLineFQCN>%n" +
             "Generates a bash completion script for the specified command class.%n" +
-            "      <commandLineFQCN>       Fully qualified class name of the annotated%n" +
-            "                                @Command class to generate a completion script%n" +
-            "                                for.%n" +
-            "  -n, --name=<commandName>    Name of the command to create a completion script%n" +
-            "                                for. When omitted, the annotated class @Command%n" +
-            "                                'name' attribute is used. If no @Command 'name'%n" +
-            "                                attribute exists, '<CLASS-SIMPLE-NAME>' (in%n" +
-            "                                lower-case) is used.%n" +
+            "      <commandLineFQCN>      Fully qualified class name of the annotated @Command%n" +
+            "                               class to generate a completion script for.%n" +
+            "  -n, --name=<commandName>   Name of the command to create a completion script for.%n" +
+            "                               When omitted, the annotated class @Command 'name'%n" +
+            "                               attribute is used. If no @Command 'name' attribute%n" +
+            "                               exists, '<CLASS-SIMPLE-NAME>' (in lower-case) is used.%n" +
             "  -o, --completionScript=<autoCompleteScript>%n" +
-            "                              Path of the completion script file to generate.%n" +
-            "                                When omitted, a file named%n" +
-            "                                '<commandName>_completion' is generated in the%n" +
-            "                                current directory.%n" +
-            "  -w, --writeCommandScript    Write a '<commandName>' sample command script to%n" +
-            "                                the same directory as the completion script.%n" +
-            "  -f, --force                 Overwrite existing script files.%n" +
-            "  -h, --help                  Display this help message and quit.%n");
+            "                             Path of the completion script file to generate. When%n" +
+            "                               omitted, a file named '<commandName>_completion' is%n" +
+            "                               generated in the current directory.%n" +
+            "  -w, --writeCommandScript   Write a '<commandName>' sample command script to the%n" +
+            "                               same directory as the completion script.%n" +
+            "  -f, --force                Overwrite existing script files.%n" +
+            "  -h, --help                 Display this help message and quit.%n");
 
     @Test
     public void testAutoCompleteAppHelp() throws Exception {

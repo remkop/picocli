@@ -113,7 +113,7 @@ import picocli.CommandLine
                 "Missing required option '--requiredOption=<requiredOption>'%n" +
                 "Usage: Script1 -x=<requiredOption>%n" +
                 "  -x, --requiredOption=<requiredOption>%n" +
-                "                              this option is required%n")
+                "         this option is required%n")
         assert expected == baos.toString()
     }
 

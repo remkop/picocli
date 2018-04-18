@@ -70,9 +70,9 @@ public class CommandLineModelTest {
         String actual = usageString(commandLine, Ansi.OFF);
         String expected = String.format("" +
                 "Usage: <main class> [-hV] [-c=COUNT]%n" +
-                "  -c, --count=COUNT           number of times to execute%n" +
-                "  -h, --help                  show help and exit%n" +
-                "  -V, --version               show help and exit%n");
+                "  -c, --count=COUNT   number of times to execute%n" +
+                "  -h, --help          show help and exit%n" +
+                "  -V, --version       show help and exit%n");
         assertEquals(expected, actual);
     }
 
@@ -96,7 +96,7 @@ public class CommandLineModelTest {
         String actual = usageString(commandLine, Ansi.OFF);
         String expected = String.format("" +
                 "Usage: <main class> PARAM...%n" +
-                "      PARAM...                positional param%n");
+                "      PARAM...   positional param%n");
         assertEquals(expected, actual);
     }
 
@@ -107,8 +107,8 @@ public class CommandLineModelTest {
         String actual = usageString(commandLine, Ansi.OFF);
         String expected = String.format("" +
                 "Usage: <main class> [-hV]%n" +
-                "  -h, --help                  Show this help message and exit.%n" +
-                "  -V, --version               Print version information and exit.%n");
+                "  -h, --help      Show this help message and exit.%n" +
+                "  -V, --version   Print version information and exit.%n");
         assertEquals(expected, actual);
     }
 
@@ -137,10 +137,10 @@ public class CommandLineModelTest {
                 "description line 1%n" +
                 "description line 2%n" +
                 "Positional Parameters%n" +
-                "      PARAM...                positional param%n" +
+                "      PARAM...    positional param%n" +
                 "Options%n" +
-                "  -h, --help                  Show this help message and exit.%n" +
-                "  -V, --version               Print version information and exit.%n" +
+                "  -h, --help      Show this help message and exit.%n" +
+                "  -V, --version   Print version information and exit.%n" +
                 "Footer heading%n" +
                 "footer line 1%n" +
                 "footer line 2%n");
@@ -156,7 +156,7 @@ public class CommandLineModelTest {
         String actual = usageString(commandLine, Ansi.OFF);
         String expected = String.format("" +
                 "Usage: <main class> [OPTIONS]%n" +
-                "! -x                          required%n");
+                "! -x     required%n");
         assertEquals(expected, actual);
     }
 
@@ -170,8 +170,8 @@ public class CommandLineModelTest {
         String actual = usageString(commandLine, Ansi.OFF);
         String expected = String.format("" +
                 "Usage: <main class> [OPTIONS] POSITIONAL...%n" +
-                "!     POSITIONAL...           positional%n" +
-                "! -x                          required%n");
+                "!     POSITIONAL...   positional%n" +
+                "! -x                  required%n");
         assertEquals(expected, actual);
     }
 

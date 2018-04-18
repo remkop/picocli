@@ -474,9 +474,12 @@ public class Demo implements Runnable {
             "Git is a fast, scalable, distributed revision control system with an unusually%n" +
             "rich command set that provides both high-level operations and full access to%n" +
             "internals.%n" +
-            "      --git-dir=<gitDir>      Set the path to the repository%n" +
-            "  -h, --help                  Show this help message and exit.%n" +
-            "  -V, --version               Print version information and exit.%n" +
+
+            "      --git-dir=<gitDir>   " +
+            "Set the path to the repository%n" +
+            "  -h, --help               " +
+            "Show this help message and exit.%n" +
+            "  -V, --version            Print version information and exit.%n" +
             "%n" +
             "Commands:%n" +
             "%n" +
@@ -498,9 +501,9 @@ public class Demo implements Runnable {
             "Git is a fast, scalable, distributed revision control system with an unusually%n" +
             "rich command set that provides both high-level operations and full access to%n" +
             "internals.%n" +
-            "      \u001B[33m--git-dir\u001B[39m\u001B[0m=\u001B[3m<gitDir>\u001B[23m\u001B[0m      Set the path to the repository%n" +
-            "  \u001B[33m-h\u001B[39m\u001B[0m, \u001B[33m--help\u001B[39m\u001B[0m                  Show this help message and exit.%n" +
-            "  \u001B[33m-V\u001B[39m\u001B[0m, \u001B[33m--version\u001B[39m\u001B[0m               Print version information and exit.%n" +
+            "      \u001B[33m--git-dir\u001B[39m\u001B[0m=\u001B[3m<gitDir>\u001B[23m\u001B[0m   Set the path to the repository%n" +
+            "  \u001B[33m-h\u001B[39m\u001B[0m, \u001B[33m--help\u001B[39m\u001B[0m               Show this help message and exit.%n" +
+            "  \u001B[33m-V\u001B[39m\u001B[0m, \u001B[33m--version\u001B[39m\u001B[0m            Print version information and exit.%n" +
             "%n" +
             "Commands:%n" +
             "%n" +
@@ -537,20 +540,18 @@ public class Demo implements Runnable {
             "ignored by gitignore(5)). The first are what you would commit by running git%n" +
             "commit; the second and third are what you could commit by running git add%n" +
             "before running git commit.%n" +
-            "      --ignored               Show ignored files as well%n" +
-            "  -b, --branch                Show the branch and tracking info even in%n" +
-            "                                short-format%n" +
-            "  -s, --short                 Give the output in the short-format%n" +
-            "  -u, --untracked=<mode>      Show untracked files.%n" +
-            "                              The mode parameter is optional (defaults to%n" +
-            "                                `all`), and is used to specify the handling of%n" +
-            "                                untracked files.%n" +
-            "                              The possible options are:%n" +
-            "                               * no - Show no untracked files.%n" +
-            "                               * normal - Shows untracked files and directories.%n" +
-            "                               * all - Also shows individual files in untracked%n" +
-            "                                directories.%n" +
-            "                                Default: all%n";
+            "      --ignored            Show ignored files as well%n" +
+            "  -b, --branch             Show the branch and tracking info even in short-format%n" +
+            "  -s, --short              Give the output in the short-format%n" +
+            "  -u, --untracked=<mode>   Show untracked files.%n" +
+            "                           The mode parameter is optional (defaults to `all`), and%n" +
+            "                             is used to specify the handling of untracked files.%n" +
+            "                           The possible options are:%n" +
+            "                            * no - Show no untracked files.%n" +
+            "                            * normal - Shows untracked files and directories.%n" +
+            "                            * all - Also shows individual files in untracked%n" +
+            "                             directories.%n" +
+            "                             Default: all%n";
 
     static final String EXPECTED_USAGE_GITSTATUS_ANSI = "Show the working tree status.%n" +
             "Usage: @|bold git-status|@ [@|yellow <options>|@...] [--] [@|yellow <pathspec>|@...]%n" +
@@ -560,20 +561,18 @@ public class Demo implements Runnable {
             "ignored by gitignore(5)). The first are what you would commit by running git%n" +
             "commit; the second and third are what you could commit by running git add%n" +
             "before running git commit.%n" +
-            "      @|yellow --ignored|@               Show ignored files as well%n" +
-            "  @|yellow -b|@, @|yellow --branch|@                Show the branch and tracking info even in%n" +
-            "                                short-format%n" +
-            "  @|yellow -s|@, @|yellow --short|@                 Give the output in the short-format%n" +
-            "  @|yellow -u|@, @|yellow --untracked|@=@|italic <mode>|@      Show untracked files.%n" +
-            "                              The mode parameter is optional (defaults to%n" +
-            "                                `all`), and is used to specify the handling of%n" +
-            "                                untracked files.%n" +
-            "                              The possible options are:%n" +
-            "                               * @|yellow no|@ - Show no untracked files.%n" +
-            "                               * @|yellow normal|@ - Shows untracked files and directories.%n" +
-            "                               * @|yellow all|@ - Also shows individual files in untracked%n" +
-            "                                directories.%n" +
-            "                                Default: all%n";
+            "      @|yellow --ignored|@            Show ignored files as well%n" +
+            "  @|yellow -b|@, @|yellow --branch|@             Show the branch and tracking info even in short-format%n" +
+            "  @|yellow -s|@, @|yellow --short|@              Give the output in the short-format%n" +
+            "  @|yellow -u|@, @|yellow --untracked|@=@|italic <mode>|@   Show untracked files.%n" +
+            "                           The mode parameter is optional (defaults to `all`), and%n" +
+            "                             is used to specify the handling of untracked files.%n" +
+            "                           The possible options are:%n" +
+            "                            * @|yellow no|@ - Show no untracked files.%n" +
+            "                            * @|yellow normal|@ - Shows untracked files and directories.%n" +
+            "                            * @|yellow all|@ - Also shows individual files in untracked%n" +
+            "                             directories.%n" +
+            "                             Default: all%n";
 
     public void testUsageSubCommandCommit() {
         try {
@@ -599,36 +598,33 @@ public class Demo implements Runnable {
             "message from the user describing the changes.%n" +
             "%n" +
             "Parameters:%n" +
-            "      [<files>]...            the files to commit%n" +
+            "      [<files>]...        the files to commit%n" +
             "%n" +
             "Options:%n" +
-            "  -a, --all                   Tell the command to automatically stage files%n" +
-            "                                that have been modified and deleted, but new%n" +
-            "                                files you have not told Git about are not%n" +
-            "                                affected.%n" +
-            "  -p, --patch                 Use the interactive patch selection interface to%n" +
-            "                                chose which changes to commit%n" +
+            "  -a, --all               Tell the command to automatically stage files that have%n" +
+            "                            been modified and deleted, but new files you have not%n" +
+            "                            told Git about are not affected.%n" +
+            "  -p, --patch             Use the interactive patch selection interface to chose%n" +
+            "                            which changes to commit%n" +
             "  -C, --reuse-message=<commit>%n" +
-            "                              Take an existing commit object, and reuse the log%n" +
-            "                                message and the authorship information%n" +
-            "                                (including the timestamp) when creating the%n" +
-            "                                commit.%n" +
+            "                          Take an existing commit object, and reuse the log message%n" +
+            "                            and the authorship information (including the timestamp)%n" +
+            "                            when creating the commit.%n" +
             "  -c, --reedit-message=<commit>%n" +
-            "                              Like -C, but with -c the editor is invoked, so%n" +
-            "                                that the user canfurther edit the commit%n" +
-            "                                message.%n" +
-            "      --fixup=<commit>        Construct a commit message for use with rebase%n" +
-            "                                --autosquash.%n" +
-            "      --squash=<commit>       Construct a commit message for use with rebase%n" +
-            "                                --autosquash. The commitmessage subject line is%n" +
-            "                                taken from the specified commit with a prefix%n" +
-            "                                of \"squash! \". Can be used with additional%n" +
-            "                                commit message options (-m/-c/-C/-F).%n" +
-            "  -F, --file=<file>           Take the commit message from the given file. Use%n" +
-            "                                - to read the message from the standard input.%n" +
-            "  -m, --message=<msg>         Use the given <msg> as the commit message. If%n" +
-            "                                multiple -m options are given, their values are%n" +
-            "                                concatenated as separate paragraphs.%n";
+            "                          Like -C, but with -c the editor is invoked, so that the%n" +
+            "                            user canfurther edit the commit message.%n" +
+            "      --fixup=<commit>    Construct a commit message for use with rebase%n" +
+            "                            --autosquash.%n" +
+            "      --squash=<commit>   Construct a commit message for use with rebase%n" +
+            "                            --autosquash. The commitmessage subject line is taken%n" +
+            "                            from the specified commit with a prefix of \"squash! \".%n" +
+            "                            Can be used with additional commit message options%n" +
+            "                            (-m/-c/-C/-F).%n" +
+            "  -F, --file=<file>       Take the commit message from the given file. Use - to read%n" +
+            "                            the message from the standard input.%n" +
+            "  -m, --message=<msg>     Use the given <msg> as the commit message. If multiple -m%n" +
+            "                            options are given, their values are concatenated as%n" +
+            "                            separate paragraphs.%n";
 
     static final String EXPECTED_USAGE_GITCOMMIT_ANSI = "@|bold,underline Usage:|@%n" +
             "%n" +
@@ -643,36 +639,33 @@ public class Demo implements Runnable {
             "message from the user describing the changes.%n" +
             "%n" +
             "@|bold,underline Parameters:|@%n" +
-            "      [@|yellow <files>|@]...            the files to commit%n" +
+            "      [@|yellow <files>|@]...        the files to commit%n" +
             "%n" +
             "@|bold,underline Options:|@%n" +
-            "  @|yellow -a|@, @|yellow --all|@                   Tell the command to automatically stage files%n" +
-            "                                that have been modified and deleted, but new%n" +
-            "                                files you have not told Git about are not%n" +
-            "                                affected.%n" +
-            "  @|yellow -p|@, @|yellow --patch|@                 Use the interactive patch selection interface to%n" +
-            "                                chose which changes to commit%n" +
-            "  @|yellow -C|@, @|yellow --reuse-message|@=@|italic <commit|@@|italic >|@%n" +
-            "                              Take an existing commit object, and reuse the log%n" +
-            "                                message and the authorship information%n" +
-            "                                (including the timestamp) when creating the%n" +
-            "                                commit.%n" +
-            "  @|yellow -c|@, @|yellow --reedit-message|@=@|italic <commi|@@|italic t>|@%n" +
-            "                              Like -C, but with -c the editor is invoked, so%n" +
-            "                                that the user canfurther edit the commit%n" +
-            "                                message.%n" +
-            "      @|yellow --fixup|@=@|italic <commit>|@        Construct a commit message for use with rebase%n" +
-            "                                --autosquash.%n" +
-            "      @|yellow --squash|@=@|italic <commit>|@       Construct a commit message for use with rebase%n" +
-            "                                --autosquash. The commitmessage subject line is%n" +
-            "                                taken from the specified commit with a prefix%n" +
-            "                                of \"squash! \". Can be used with additional%n" +
-            "                                commit message options (-m/-c/-C/-F).%n" +
-            "  @|yellow -F|@, @|yellow --file|@=@|italic <file>|@           Take the commit message from the given file. Use%n" +
-            "                                - to read the message from the standard input.%n" +
-            "  @|yellow -m|@, @|yellow --message|@=@|italic <msg>|@         Use the given <msg> as the commit message. If%n" +
-            "                                multiple -m options are given, their values are%n" +
-            "                                concatenated as separate paragraphs.%n";
+            "  @|yellow -a|@, @|yellow --all|@               Tell the command to automatically stage files that have%n" +
+            "                            been modified and deleted, but new files you have not%n" +
+            "                            told Git about are not affected.%n" +
+            "  @|yellow -p|@, @|yellow --patch|@             Use the interactive patch selection interface to chose%n" +
+            "                            which changes to commit%n" +
+            "  @|yellow -C|@, @|yellow --reuse-message|@=@|italic <co|@@|italic mmit>|@%n" +
+            "                          Take an existing commit object, and reuse the log message%n" +
+            "                            and the authorship information (including the timestamp)%n" +
+            "                            when creating the commit.%n" +
+            "  @|yellow -c|@, @|yellow --reedit-message|@=@|italic <c|@@|italic ommit>|@%n" +
+            "                          Like -C, but with -c the editor is invoked, so that the%n" +
+            "                            user canfurther edit the commit message.%n" +
+            "      @|yellow --fixup|@=@|italic <commit>|@    Construct a commit message for use with rebase%n" +
+            "                            --autosquash.%n" +
+            "      @|yellow --squash|@=@|italic <commit>|@   Construct a commit message for use with rebase%n" +
+            "                            --autosquash. The commitmessage subject line is taken%n" +
+            "                            from the specified commit with a prefix of \"squash! \".%n" +
+            "                            Can be used with additional commit message options%n" +
+            "                            (-m/-c/-C/-F).%n" +
+            "  @|yellow -F|@, @|yellow --file|@=@|italic <file>|@       Take the commit message from the given file. Use - to read%n" +
+            "                            the message from the standard input.%n" +
+            "  @|yellow -m|@, @|yellow --message|@=@|italic <msg>|@     Use the given <msg> as the commit message. If multiple -m%n" +
+            "                            options are given, their values are concatenated as%n" +
+            "                            separate paragraphs.%n";
 
     static
     // tag::CheckSum[]

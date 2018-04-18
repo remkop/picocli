@@ -2451,10 +2451,10 @@ public class CommandLineTest {
                 .replaceAll("\r\n", "\n"); // Normalize line endings.
 
         String expectedOutput =
-                "Usage: <main class> [--foo-bar-baz=<foo>]\n" +
-                "      --foo-bar-baz=<foo>       Default:\n" +
-                "                                aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\n" +
-                "                                aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\n";
+                        "Usage: <main class> [--foo-bar-baz=<foo>]\n" +
+                        "      --foo-bar-baz=<foo>     Default:\n" +
+                        "                              aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\n" +
+                        "                              aaaaaaaaaaaaaaaaaaaaaaaaaa\n";
 
         assertEquals(expectedOutput, content);
     }
