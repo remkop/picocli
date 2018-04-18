@@ -1040,9 +1040,9 @@ public class CommandLineArityTest {
         assertEquals(Arrays.asList("xx", "--alpha", "--beta"), cmd.params);
     }
 
-    @Ignore
+//    @Ignore
     @Test
-    public void testStopProcessingVarargsWhenCumulativeSizeReached() {
+    public void testPosixAttachedOnly1() {
         class ValSepC {
             @Option(names = "-a", arity="2") String[] a;
             @Option(names = "-b", arity="2", split=",") String[] b;
@@ -1051,33 +1051,85 @@ public class CommandLineArityTest {
             @Option(names = "-e", arity="1", split=",") boolean e;
             @Unmatched String[] remaining;
         }
-        ValSepC val1 = parseRestrictingCumulativeSize(new ValSepC(), "-a 1 2 3 4".split(" "));
+        ValSepC val1 = parseCommonsCliCompatible(new ValSepC(), "-a 1 2 3 4".split(" "));
         assertArrayEquals(new String[]{"1", "2"}, val1.a);
         assertArrayEquals(new String[]{"3", "4"}, val1.remaining);
 
-        ValSepC val2 = parseRestrictingCumulativeSize(new ValSepC(), "-a1 -a2 3".split(" "));
+        ValSepC val2 = parseCommonsCliCompatible(new ValSepC(), "-a1 -a2 3".split(" "));
         assertArrayEquals(new String[]{"1", "2"}, val2.a);
         assertArrayEquals(new String[]{"3"}, val2.remaining);
 
-        ValSepC val3 = parseRestrictingCumulativeSize(new ValSepC(), "-b1,2".split(" "));
+        ValSepC val3 = parseCommonsCliCompatible(new ValSepC(), "-b1,2".split(" "));
         assertArrayEquals(new String[]{"1", "2"}, val3.b);
 
-        ValSepC val4 = parseRestrictingCumulativeSize(new ValSepC(), "-c 1".split(" "));
+        ValSepC val4 = parseCommonsCliCompatible(new ValSepC(), "-c 1".split(" "));
         assertArrayEquals(new String[]{"1"}, val4.c);
 
-        ValSepC val5 = parseRestrictingCumulativeSize(new ValSepC(), "-c1".split(" "));
+        ValSepC val5 = parseCommonsCliCompatible(new ValSepC(), "-c1".split(" "));
         assertArrayEquals(new String[]{"1"}, val5.c);
 
-        ValSepC val6 = parseRestrictingCumulativeSize(new ValSepC(), "-c1,2,3".split(" "));
+        ValSepC val6 = parseCommonsCliCompatible(new ValSepC(), "-c1,2,3".split(" "));
         assertArrayEquals(new String[]{"1", "2", "3"}, val6.c);
 
-        ValSepC val7 = parseRestrictingCumulativeSize(new ValSepC(), "-d".split(" "));
+        ValSepC val7 = parseCommonsCliCompatible(new ValSepC(), "-d".split(" "));
         assertTrue(val7.d);
         assertFalse(val7.e);
 
-        ValSepC val8 = parseRestrictingCumulativeSize(new ValSepC(), "-e true".split(" "));
+        ValSepC val8 = parseCommonsCliCompatible(new ValSepC(), "-e true".split(" "));
         assertFalse(val8.d);
         assertTrue(val8.e);
+    }
+
+    @Ignore
+    @Test
+    public void testPosixAttachedOnly3() {
+        class ValSepC {
+            @Option(names = "-a", arity = "2")
+            String[] a;
+            @Unmatched
+            String[] remaining;
+        }
+
+        try {
+            parseCommonsCliCompatible(new ValSepC(), "-a 1 -a 2".split(" "));
+            fail();
+        } catch (Exception ok) {
+        }
+    }
+
+    @Test
+    public void testPosixAttachedOnly2() {
+        class ValSepC {
+            @Option(names = "-a", arity="2") String[] a;
+            @Unmatched String[] remaining;
+        }
+        try {
+            parseCommonsCliCompatible(new ValSepC(), "-a 1".split(" "));
+            fail();
+        } catch (Exception ok) {
+        }
+
+        ValSepC val1 = parseCommonsCliCompatible(new ValSepC(), "-a1".split(" "));
+        assertArrayEquals(new String[]{"1"}, val1.a);
+
+        val1 = parseCommonsCliCompatible(new ValSepC(), "-a1 -a2".split(" "));
+        assertArrayEquals(new String[]{"1", "2"}, val1.a);
+
+        val1 = parseCommonsCliCompatible(new ValSepC(), "-a1 -a2 -a3".split(" "));
+        assertArrayEquals(new String[]{"1", "2", "3"}, val1.a);
+
+        try {
+            parseCommonsCliCompatible(new ValSepC(), "-a 1 -a 2 -a 3".split(" "));
+            fail();
+        } catch (Exception ok) {
+        }
+
+        val1 = parseCommonsCliCompatible(new ValSepC(), "-a 1 2".split(" "));
+        assertArrayEquals(new String[]{"1", "2"}, val1.a);
+
+        val1 = parseCommonsCliCompatible(new ValSepC(), "-a1 2".split(" "));
+        assertArrayEquals(new String[]{"1"}, val1.a);
+        assertArrayEquals(new String[]{"2"}, val1.remaining);
     }
 
     //@Ignore
@@ -1089,12 +1141,14 @@ public class CommandLineArityTest {
             @Option(names = "-c", arity="1..*", split=",") String[] c;
             @Unmatched String[] remaining;
         }
-        ValSepC val3a = parseRestrictingCumulativeSize(new ValSepC(), "-b1,2,3".split(" "));
+        ValSepC val3a = parseCommonsCliCompatible(new ValSepC(), "-b1,2,3".split(" "));
         assertArrayEquals(new String[]{"1", "2,3"}, val3a.b);
     }
-    private <T> T parseRestrictingCumulativeSize(T obj, String[] args) {
+    private <T> T parseCommonsCliCompatible(T obj, String[] args) {
         CommandLine cmd = new CommandLine(obj);
-        cmd.getCommandSpec().parser().limitSplit(true); //arityRestrictsCumulativeSize(true);
+        cmd.getCommandSpec().parser()
+                .limitSplit(true)
+                .aritySatisfiedByAttachedOptionParam(true); //arityRestrictsCumulativeSize(true);
         cmd.parseArgs(args);
         return obj;
     }

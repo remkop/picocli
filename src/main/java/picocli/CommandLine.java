@@ -3340,6 +3340,7 @@ public class CommandLine {
             private boolean arityRestrictsCumulativeSize = false;
             private boolean unmatchedOptionsArePositionalParams = false;
             private boolean limitSplit = false;
+            private boolean aritySatisfiedByAttachedOptionParam = false;
 
             /** Returns the String to use as the separator between options and option parameters. {@code "="} by default,
              * initialized from {@link Command#separator()} if defined.*/
@@ -3367,6 +3368,8 @@ public class CommandLine {
             /** Returns true if arguments should be split first before any further processing and the number of
              * parts resulting from the split is limited to the max arity of the argument. */
             public boolean limitSplit()                        { return limitSplit; }
+            /** Returns true if options with attached arguments should not consume subsequent arguments and should not validate arity. */
+            public boolean aritySatisfiedByAttachedOptionParam() { return aritySatisfiedByAttachedOptionParam; }
 
             /** Sets the String to use as the separator between options and option parameters.
              * @return this ParserSpec for method chaining */
@@ -3389,13 +3392,21 @@ public class CommandLine {
             public ParserSpec posixClusteredShortOptionsAllowed(boolean posixClusteredShortOptionsAllowed) { this.posixClusteredShortOptionsAllowed = posixClusteredShortOptionsAllowed; return this; }
             /** @see CommandLine#setUnmatchedOptionsArePositionalParams(boolean) */
             public ParserSpec unmatchedOptionsArePositionalParams(boolean unmatchedOptionsArePositionalParams) { this.unmatchedOptionsArePositionalParams = unmatchedOptionsArePositionalParams; return this; }
+
+            /** Returns true if options with attached arguments should not consume subsequent arguments and should not validate arity. */
+            public ParserSpec aritySatisfiedByAttachedOptionParam(boolean newValue) { aritySatisfiedByAttachedOptionParam = newValue; return this; }
+
             /** Sets whether arguments should be {@linkplain ArgSpec#splitRegex() split} first before any further processing.
              * If true, the original argument will only be split into as many parts as allowed by max arity. */
             public ParserSpec limitSplit(boolean limitSplit)                               { this.limitSplit = limitSplit; return this; }
             void initSeparator(String value) { if (initializable(separator, value, DEFAULT_SEPARATOR)) {separator = value;} }
             public String toString() {
-                return String.format("posixClusteredShortOptionsAllowed=%s, stopAtPositional=%s, stopAtUnmatched=%s, separator=%s, overwrittenOptionsAllowed=%s, unmatchedArgumentsAllowed=%s, expandAtFiles=%s, arityRestrictsCumulativeSize=%s",
-                        posixClusteredShortOptionsAllowed, stopAtPositional, stopAtUnmatched, separator, overwrittenOptionsAllowed, unmatchedArgumentsAllowed, expandAtFiles, arityRestrictsCumulativeSize);
+                return String.format("posixClusteredShortOptionsAllowed=%s, stopAtPositional=%s, stopAtUnmatched=%s, " +
+                                "separator=%s, overwrittenOptionsAllowed=%s, unmatchedArgumentsAllowed=%s, expandAtFiles=%s, " +
+                                "arityRestrictsCumulativeSize=%s, limitSplit=%s, aritySatisfiedByAttachedOptionParam=%s",
+                        posixClusteredShortOptionsAllowed, stopAtPositional, stopAtUnmatched,
+                        separator, overwrittenOptionsAllowed, unmatchedArgumentsAllowed, expandAtFiles,
+                        arityRestrictsCumulativeSize, limitSplit, aritySatisfiedByAttachedOptionParam);
             }
 
             void initFrom(ParserSpec settings) {
@@ -3410,6 +3421,7 @@ public class CommandLine {
                 arityRestrictsCumulativeSize = settings.arityRestrictsCumulativeSize;
                 unmatchedOptionsArePositionalParams = settings.unmatchedOptionsArePositionalParams;
                 limitSplit = settings.limitSplit;
+                aritySatisfiedByAttachedOptionParam = settings.aritySatisfiedByAttachedOptionParam;
             }
         }
         /** Models the shared attributes of {@link OptionSpec} and {@link PositionalParamSpec}.
@@ -4637,6 +4649,9 @@ public class CommandLine {
             return result;
         }
     }
+    private enum LookBehind { SEPARATE, ATTACHED, ATTACHED_WITH_SEPARATOR;
+        public boolean isAttached() { return this != LookBehind.SEPARATE; }
+    }
     /**
      * Helper class responsible for processing command line arguments.
      */
@@ -4864,7 +4879,7 @@ public class CommandLine {
             if (arg.defaultValue() == null) { return; }
             if (tracer.isDebug()) {tracer.debug("Applying defaultValue (%s) to %s%n", arg.defaultValue(), arg);}
             Range arity = arg.arity().min(Math.max(1, arg.arity().min));
-            applyOption(arg, arity, stack(arg.defaultValue()), new HashSet<ArgSpec>(), arg.toString);
+            applyOption(arg, LookBehind.SEPARATE, arity, stack(arg.defaultValue()), new HashSet<ArgSpec>(), arg.toString);
             required.remove(arg);
         }
         private Stack<String> stack(String value) {Stack<String> result = new Stack<String>(); result.push(value); return result;}
@@ -5015,7 +5030,7 @@ public class CommandLine {
                 if (tracer.isDebug()) {tracer.debug("Position %d is in index range %s. Trying to assign args to %s, arity=%s%n", position, indexRange, positionalParam, arity);}
                 assertNoMissingParameters(positionalParam, arity, argsCopy);
                 int originalSize = argsCopy.size();
-                applyOption(positionalParam, arity, argsCopy, initialized, "args[" + indexRange + "] at position " + position);
+                applyOption(positionalParam, LookBehind.SEPARATE, arity, argsCopy, initialized, "args[" + indexRange + "] at position " + position);
                 int count = originalSize - argsCopy.size();
                 if (count > 0) { required.remove(positionalParam); }
                 consumed = Math.max(consumed, count);
@@ -5040,8 +5055,9 @@ public class CommandLine {
             if (paramAttachedToKey) {
                 arity = arity.min(Math.max(1, arity.min)); // if key=value, minimum arity is at least 1
             }
+            LookBehind lookBehind = paramAttachedToKey ? LookBehind.ATTACHED_WITH_SEPARATOR : LookBehind.SEPARATE;
             if (tracer.isDebug()) {tracer.debug("Found option named '%s': %s, arity=%s%n", arg, argSpec, arity);}
-            applyOption(argSpec, arity, args, initialized, "option " + arg);
+            applyOption(argSpec, lookBehind, arity, args, initialized, "option " + arg);
         }
 
         private void processClusteredShortOptions(Collection<ArgSpec> required,
@@ -5075,8 +5091,9 @@ public class CommandLine {
                     if (!empty(cluster)) {
                         args.push(cluster); // interpret remainder as option parameter (CAUTION: may be empty string!)
                     }
+                    LookBehind lookBehind = paramAttachedToOption ? LookBehind.ATTACHED_WITH_SEPARATOR : LookBehind.SEPARATE;
                     int argCount = args.size();
-                    int consumed = applyOption(argSpec, arity, args, initialized, argDescription);
+                    int consumed = applyOption(argSpec, lookBehind, arity, args, initialized, argDescription);
                     // if cluster was consumed as a parameter or if this field was the last in the cluster we're done; otherwise continue do-while loop
                     if (empty(cluster) || args.isEmpty() || args.size() < argCount) {
                         return;
@@ -5110,12 +5127,16 @@ public class CommandLine {
         }
 
         private int applyOption(ArgSpec argSpec,
+                                LookBehind lookBehind,
                                 Range arity,
                                 Stack<String> args,
                                 Set<ArgSpec> initialized,
                                 String argDescription) throws Exception {
             updateHelpRequested(argSpec);
-            assertNoMissingParameters(argSpec, arity, args);
+            boolean consumeOnlyOne = commandSpec.parser().aritySatisfiedByAttachedOptionParam() && lookBehind.isAttached();
+            if (consumeOnlyOne) {
+                args = args.isEmpty() ? args : stack(args.pop());
+            } else { assertNoMissingParameters(argSpec, arity, args); }
 
             if (argSpec.type().isArray()) {
                 return applyValuesToArrayField(argSpec, arity, args, initialized, argDescription);
