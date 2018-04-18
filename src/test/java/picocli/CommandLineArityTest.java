@@ -1080,6 +1080,56 @@ public class CommandLineArityTest {
         assertTrue(val8.e);
     }
 
+    @Test
+    public void testPosixClusteredBooleansAttached() {
+        class App {
+            @Option(names = "-a") boolean a;
+            @Option(names = "-b") boolean b;
+            @Option(names = "-c") boolean c;
+            @Unmatched String[] remaining;
+        }
+
+        App app = parseCommonsCliCompatible(new App(), "-abc".split(" "));
+        assertTrue("a", app.a);
+        assertTrue("b", app.b);
+        assertTrue("c", app.c);
+        assertNull(app.remaining);
+
+        app = parseCommonsCliCompatible(new App(), "-abc -d".split(" "));
+        assertTrue("a", app.a);
+        assertTrue("b", app.b);
+        assertTrue("c", app.c);
+        assertArrayEquals(new String[]{"-d"}, app.remaining);
+    }
+
+    @Test
+    public void testPosixClusteredBooleanArraysAttached() {
+        class App {
+            @Option(names = "-a") boolean[] a;
+            @Option(names = "-b") boolean[] b;
+            @Option(names = "-c") boolean[] c;
+            @Unmatched String[] remaining;
+        }
+
+        App app = parseCommonsCliCompatible(new App(), "-abc".split(" "));
+        assertArrayEquals("a", new boolean[]{true}, app.a);
+        assertArrayEquals("b", new boolean[]{true}, app.b);
+        assertArrayEquals("c", new boolean[]{true}, app.c);
+        assertNull(app.remaining);
+
+        app = parseCommonsCliCompatible(new App(), "-abc -d".split(" "));
+        assertArrayEquals("a", new boolean[]{true}, app.a);
+        assertArrayEquals("b", new boolean[]{true}, app.b);
+        assertArrayEquals("c", new boolean[]{true}, app.c);
+        assertArrayEquals(new String[]{"-d"}, app.remaining);
+
+        app = parseCommonsCliCompatible(new App(), "-aaabbccc -d".split(" "));
+        assertArrayEquals("a", new boolean[]{true, true, true}, app.a);
+        assertArrayEquals("b", new boolean[]{true, true}, app.b);
+        assertArrayEquals("c", new boolean[]{true, true, true}, app.c);
+        assertArrayEquals(new String[]{"-d"}, app.remaining);
+    }
+
     @Ignore
     @Test
     public void testPosixAttachedOnly3() {

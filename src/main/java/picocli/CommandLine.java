@@ -5079,7 +5079,9 @@ public class CommandLine {
                     required.remove(argSpec);
                     cluster = cluster.length() > 0 ? cluster.substring(1) : "";
                     paramAttachedToOption = cluster.length() > 0;
+                    LookBehind lookBehind = paramAttachedToOption ? LookBehind.ATTACHED_WITH_SEPARATOR : LookBehind.SEPARATE;
                     if (cluster.startsWith(config().separator())) {// attached with separator, like -f=FILE or -v=true
+                        lookBehind = LookBehind.ATTACHED_WITH_SEPARATOR;
                         cluster = cluster.substring(config().separator().length());
                         arity = arity.min(Math.max(1, arity.min)); // if key=value, minimum arity is at least 1
                     }
@@ -5092,7 +5094,6 @@ public class CommandLine {
                     if (!empty(cluster)) {
                         args.push(cluster); // interpret remainder as option parameter (CAUTION: may be empty string!)
                     }
-                    LookBehind lookBehind = paramAttachedToOption ? LookBehind.ATTACHED_WITH_SEPARATOR : LookBehind.SEPARATE;
                     int argCount = args.size();
                     int consumed = applyOption(argSpec, lookBehind, arity, args, initialized, argDescription);
                     // if cluster was consumed as a parameter or if this field was the last in the cluster we're done; otherwise continue do-while loop
@@ -5135,19 +5136,23 @@ public class CommandLine {
                                 String argDescription) throws Exception {
             updateHelpRequested(argSpec);
             boolean consumeOnlyOne = commandSpec.parser().aritySatisfiedByAttachedOptionParam() && lookBehind.isAttached();
+            Stack<String> workingStack = args;
             if (consumeOnlyOne) {
-                args = args.isEmpty() ? args : stack(args.pop());
+                workingStack = args.isEmpty() ? args : stack(args.pop());
             } else { assertNoMissingParameters(argSpec, arity, args); }
 
+            int result;
             if (argSpec.type().isArray()) {
-                return applyValuesToArrayField(argSpec, arity, args, initialized, argDescription);
+                result = applyValuesToArrayField(argSpec, arity, workingStack, initialized, argDescription);
             } else if (Collection.class.isAssignableFrom(argSpec.type())) {
-                return applyValuesToCollectionField(argSpec, arity, args, initialized, argDescription);
+                result = applyValuesToCollectionField(argSpec, arity, workingStack, initialized, argDescription);
             } else if (Map.class.isAssignableFrom(argSpec.type())) {
-                return applyValuesToMapField(argSpec, arity, args, initialized, argDescription);
+                result = applyValuesToMapField(argSpec, arity, workingStack, initialized, argDescription);
             } else {
-                return applyValueToSingleValuedField(argSpec, arity, args, initialized, argDescription);
+                result = applyValueToSingleValuedField(argSpec, arity, workingStack, initialized, argDescription);
             }
+            if (workingStack != args && !workingStack.isEmpty()) { args.push(workingStack.pop()); if (!workingStack.isEmpty()) {throw new IllegalStateException("Working stack should be empty but was " + new ArrayList<String>(workingStack));}}
+            return result;
         }
 
         private int applyValueToSingleValuedField(ArgSpec argSpec,
