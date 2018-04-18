@@ -3611,12 +3611,13 @@ public class CommandLine {
                 return result;
             }
 
-            protected boolean showDefaultValue(CommandSpec commandSpec) {
-                if (showDefaultValue() == Help.Visibility.ALWAYS)   { return true; }
-                if (showDefaultValue() == Help.Visibility.NEVER)    { return false; }
-                if (initialValue == null && defaultValue() == null) { return false; }
-                boolean isBoolean = isBoolean(type());
-                return !isBoolean && commandSpec != null && commandSpec.usageMessage.showDefaultValues();
+            /** Returns whether the default for this option or positional parameter should be shown, potentially overriding the specified global setting.
+             * @param usageHelpShowDefaults whether the command's UsageMessageSpec is configured to show default values. */
+            protected boolean internalShowDefaultValue(boolean usageHelpShowDefaults) {
+                if (showDefaultValue() == Help.Visibility.ALWAYS)   { return true; }  // override global usage help setting
+                if (showDefaultValue() == Help.Visibility.NEVER)    { return false; } // override global usage help setting
+                if (initialValue == null && defaultValue() == null) { return false; } // no default value to show
+                return usageHelpShowDefaults && !isBoolean(type());
             }
 
             /** Returns a string respresentation of this option or positional parameter. */
@@ -3886,8 +3887,8 @@ public class CommandLine {
             public boolean isOption()     { return true; }
             public boolean isPositional() { return false; }
 
-            protected boolean showDefaultValue(CommandSpec commandSpec) {
-                return super.showDefaultValue(commandSpec) && !help() && !versionHelp() && !usageHelp();
+            protected boolean internalShowDefaultValue(boolean usageMessageShowDefaults) {
+                return super.internalShowDefaultValue(usageMessageShowDefaults) && !help() && !versionHelp() && !usageHelp();
             }
 
             /** Returns one or more option names. The returned array will contain at least one option name.
@@ -6482,10 +6483,7 @@ public class CommandLine {
          * @return a new default OptionRenderer
          */
         public IOptionRenderer createDefaultOptionRenderer() {
-            DefaultOptionRenderer result = new DefaultOptionRenderer();
-            result.requiredMarker = String.valueOf(commandSpec.usageMessage().requiredOptionMarker());
-            result.commandSpec = this.commandSpec;
-            return result;
+            return new DefaultOptionRenderer(commandSpec.usageMessage.showDefaultValues(), "" +commandSpec.usageMessage().requiredOptionMarker());
         }
         /** Returns a new minimal OptionRenderer which converts {@link OptionSpec Options} to a single row with two columns
          * of text: an option name and a description. If multiple names or descriptions exist, the first value is used.
@@ -6508,10 +6506,7 @@ public class CommandLine {
          * @return a new default ParameterRenderer
          */
         public IParameterRenderer createDefaultParameterRenderer() {
-            DefaultParameterRenderer result = new DefaultParameterRenderer();
-            result.requiredMarker = String.valueOf(commandSpec.usageMessage().requiredOptionMarker());
-            result.commandSpec = this.commandSpec;
-            return result;
+            return new DefaultParameterRenderer(commandSpec.usageMessage.showDefaultValues(), "" + commandSpec.usageMessage().requiredOptionMarker());
         }
         /** Returns a new minimal ParameterRenderer which converts {@linkplain PositionalParamSpec positional parameters}
          * to a single row with two columns of text: an option name and a description. If multiple descriptions exist, the first value is used.
@@ -6590,9 +6585,13 @@ public class CommandLine {
          *   OptionSpec#description()} array, and these rows look like {@code {"", "", "", option.description()[i]}}.</p>
          */
         static class DefaultOptionRenderer implements IOptionRenderer {
-            public String requiredMarker = " ";
-            public CommandSpec commandSpec;
+            private String requiredMarker = " ";
+            private boolean showDefaultValues;
             private String sep;
+            public DefaultOptionRenderer(boolean showDefaultValues, String requiredMarker) {
+                this.showDefaultValues = showDefaultValues;
+                this.requiredMarker = Assert.notNull(requiredMarker, "requiredMarker");
+            }
             public Text[][] render(OptionSpec option, IParamLabelRenderer paramLabelRenderer, ColorScheme scheme) {
                 String[] names = ShortestFirst.sort(option.names());
                 int shortOptionCount = names[0].length() == 2 ? 1 : 0;
@@ -6628,7 +6627,7 @@ public class CommandLine {
                                                     String shortOption,
                                                     Text longOptionText) {
                 Text EMPTY = Ansi.EMPTY_TEXT;
-                boolean[] showDefault = {option.showDefaultValue(commandSpec)};
+                boolean[] showDefault = {option.internalShowDefaultValue(showDefaultValues)};
                 List<Text[]> result = new ArrayList<Text[]>();
                 Text[] descriptionFirstLines = createDescriptionFirstLines(scheme, option, showDefault);
                 result.add(new Text[] { scheme.optionText(requiredOption), scheme.optionText(shortOption),
@@ -6693,14 +6692,18 @@ public class CommandLine {
          *   PositionalParamSpec#description()} array, and these rows look like {@code {"", "", "", param.description()[i]}}.</p>
          */
         static class DefaultParameterRenderer implements IParameterRenderer {
-            public String requiredMarker = " ";
-            public CommandSpec commandSpec;
+            private String requiredMarker = " ";
+            private boolean showDefaultValues;
+            public DefaultParameterRenderer(boolean showDefaultValues, String requiredMarker) {
+                this.showDefaultValues = showDefaultValues;
+                this.requiredMarker = Assert.notNull(requiredMarker, "requiredMarker");
+            }
             public Text[][] render(PositionalParamSpec param, IParamLabelRenderer paramLabelRenderer, ColorScheme scheme) {
                 Text label = paramLabelRenderer.renderParameterLabel(param, scheme.ansi(), scheme.parameterStyles);
                 Text requiredParameter = scheme.parameterText(param.arity().min > 0 ? requiredMarker : "");
 
                 Text EMPTY = Ansi.EMPTY_TEXT;
-                boolean[] showDefault = {param.showDefaultValue(commandSpec)};
+                boolean[] showDefault = {param.internalShowDefaultValue(showDefaultValues)};
                 List<Text[]> result = new ArrayList<Text[]>();
                 Text[] descriptionFirstLines = createDescriptionFirstLines(scheme, param, showDefault);
                 result.add(new Text[] { requiredParameter, EMPTY, EMPTY, label, descriptionFirstLines[0] });
@@ -6833,7 +6836,7 @@ public class CommandLine {
              * @param colorScheme the color scheme to use for common, auto-generated parts of the usage help message
              * @param textTable the TextTable to lay out parts of the usage help message in tabular format */
             public Layout(ColorScheme colorScheme, TextTable textTable) {
-                this(colorScheme, textTable, new DefaultOptionRenderer(), new DefaultParameterRenderer());
+                this(colorScheme, textTable, new DefaultOptionRenderer(false, " "), new DefaultParameterRenderer(false, " "));
             }
             /** Constructs a Layout with the specified color scheme, the specified TextTable, the
              * specified option renderer and the specified parameter renderer.
