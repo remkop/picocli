@@ -51,19 +51,19 @@ Promoted features are features that were incubating in previous versions of pico
 No features have been promoted in this picocli release.
 
 ## <a name="3.0.0-beta-1-fixes"></a> Fixed issues
+- [#364] API Change: Remove parser option `arityRestrictsCumulativeSize`.
 - [#355] API Change: Add method `ArgSpec.hasInitialValue`.
 - [#361] API Change: Add parser option `aritySatisfiedByAttachedOptionParam` for commons-cli compatibility.
 - [#363] API Change: Add parser option to limit the number of parts when splitting to max arity, for compatibility with commons-cli.
 - [#360] Enhancement: Dynamically adjust width of long option name column (up to max 24).
-- [#356] Bug fix: `Interpreter.consumeArguments` should check max arity reached when `parser.arityRestrictsCumulativeSize` = true.
 
 
 ## <a name="3.0.0-beta-1-deprecated"></a> Deprecations
 
 ## <a name="3.0.0-beta-1-breaking-changes"></a> Potential breaking changes
 
-
-
+- The usage message format changed: it now dynamically adjusts the width of the long option name column. This may break tests.
+- API Change: Removed parser option `arityRestrictsCumulativeSize` introduced in 3.0.0-alpha-3.
 
 # <a name="3.0.0-alpha-6"></a> Picocli 3.0.0-alpha-6
 The picocli community is pleased to announce picocli 3.0.0-alpha-6.

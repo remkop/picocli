@@ -961,54 +961,6 @@ public class CommandLineModelTest {
     }
 
     @Test
-    public void testParser_ArityRestrictsCumulativeSize_falseByDefault() {
-        assertFalse(CommandSpec.create().parser().arityRestrictsCumulativeSize());
-    }
-
-    @Test
-    public void testParser_ArityRestrictsCumulativeSize_singleArguments() {
-        CommandSpec cmd = CommandSpec.create().addOption(OptionSpec.builder("-x").arity("1..3").build());
-        cmd.parser().arityRestrictsCumulativeSize(true);
-
-        ParseResult parseResult = new CommandLine(cmd).parseArgs("-x 1 -x 2 -x 3".split(" "));
-        assertEquals(Arrays.asList("1", "2", "3"), parseResult.matchedOption('x').stringValues());
-        assertArrayEquals(new String[]{"1", "2", "3"}, parseResult.matchedOptionValue('x', (String[]) null));
-    }
-
-    @Test
-    public void testParser_ArityRestrictsCumulativeSize_singleArguments_tooMany_becomeUnmatchedArgs() {
-        CommandSpec cmd2 = CommandSpec.create()
-                .addOption(OptionSpec.builder("-x").arity("1..3").build());
-        cmd2.parser().arityRestrictsCumulativeSize(true);
-        cmd2.parser().unmatchedArgumentsAllowed(true);
-
-        ParseResult parseResult = new CommandLine(cmd2).parseArgs("-x 1 -x 2 -x 3 -x 4".split(" "));
-        assertEquals(Arrays.asList("1", "2", "3"), parseResult.matchedOption('x').stringValues());
-        assertArrayEquals(new String[]{"1", "2", "3"}, parseResult.matchedOptionValue('x', (String[]) null));
-        assertEquals(Arrays.asList("-x", "4"), parseResult.unmatched());
-    }
-
-    @Test
-    public void testParser_ArityRestrictsCumulativeSize_split() {
-        CommandSpec cmd = CommandSpec.create().addOption(OptionSpec.builder("-x").arity("1..3").splitRegex(",").build());
-        cmd.parser().arityRestrictsCumulativeSize(true);
-
-        ParseResult parseResult = new CommandLine(cmd).parseArgs("-x", "1,2,3");
-        assertEquals(Arrays.asList("1", "2", "3"), parseResult.matchedOption('x').stringValues()); // raw is split but untyped
-        assertEquals(Arrays.asList("1,2,3"), parseResult.matchedOption('x').originalStringValues()); // the original command line argument
-        assertArrayEquals(new String[]{"1", "2", "3"}, parseResult.matchedOptionValue('x', (String[]) null));
-
-        CommandSpec cmd2 = CommandSpec.create().addOption(OptionSpec.builder("-x").arity("1..3").splitRegex(",").build());
-        cmd2.parser().arityRestrictsCumulativeSize(true);
-        try {
-            new CommandLine(cmd2).parseArgs("-x", "1,2,3,4");
-            fail("expected exception");
-        } catch (MaxValuesExceededException ok) {
-            assertEquals("option '-x' max number of values (3) exceeded: 4 elements.", ok.getMessage());
-        }
-    }
-
-    @Test
     public void testOptionSpec_setsDefaultValue_ifNotMatched() {
         CommandSpec cmd = CommandSpec.create().addOption(OptionSpec.builder("-x").defaultValue("123").type(int.class).build());
 
@@ -1594,39 +1546,5 @@ public class CommandLineModelTest {
         assertEquals(2, values.size());
         assertEquals(null, values.get(0));
         assertEquals("2", values.get(1));
-    }
-
-    @Test
-    public void testArityRestrictsCumulativeSize() {
-        CommandSpec cmdSpec = CommandSpec.create();
-        cmdSpec.parser().arityRestrictsCumulativeSize(true)
-                .unmatchedArgumentsAllowed(true);
-        cmdSpec.addOption(OptionSpec.builder("-x").splitRegex(",").type(List.class).arity("1..3").build());
-
-        CommandLine cmd = new CommandLine(cmdSpec);
-        ParseResult result = cmd.parseArgs("-x a,b,c def".split(" "));
-        assertEquals(Arrays.asList("a", "b", "c"), result.matchedOptionValue("x", Collections.emptyList()));
-        assertEquals(Arrays.asList("def"), result.unmatched());
-    }
-
-    @Test
-    public void testArityRestrictsCumulativeSizeMap() {
-        CommandSpec cmdSpec = CommandSpec.create();
-        cmdSpec.parser().arityRestrictsCumulativeSize(true)
-                .unmatchedArgumentsAllowed(true);
-        cmdSpec.addOption(OptionSpec.builder("-x").splitRegex(",").type(Map.class).arity("1..3").build());
-        cmdSpec.add(PositionalParamSpec.builder().splitRegex(",").type(Map.class).build());
-
-        CommandLine cmd = new CommandLine(cmdSpec);
-        ParseResult result = cmd.parseArgs("-x a=1,b=2,c=3 def=123".split(" "));
-        Map<String, String> map = new LinkedHashMap<String, String>();
-        map.put("a", "1");
-        map.put("b", "2");
-        map.put("c", "3");
-        assertEquals(map, result.matchedOptionValue("x", Collections.emptyMap()));
-
-        Map<String, String> pos = new LinkedHashMap<String, String>();
-        pos.put("def", "123");
-        assertEquals(pos, result.matchedPositionalValue(0, Collections.emptyMap()));
     }
 }

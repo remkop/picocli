@@ -661,52 +661,6 @@ public class CommandLineTest {
     }
 
     @Test
-    public void testParserArityRestrictsCumulativeSize_BeforeSubcommandsAdded() {
-        @Command class TopLevel {}
-        CommandLine commandLine = new CommandLine(new TopLevel());
-        assertEquals(false, commandLine.isArityRestrictsCumulativeSize());
-        commandLine.setArityRestrictsCumulativeSize(true);
-        assertEquals(true, commandLine.isArityRestrictsCumulativeSize());
-
-        int childCount = 0;
-        int grandChildCount = 0;
-        commandLine.addSubcommand("main", createNestedCommand());
-        for (CommandLine sub : commandLine.getSubcommands().values()) {
-            childCount++;
-            assertEquals("subcommand added afterwards is not impacted", false, sub.isArityRestrictsCumulativeSize());
-            for (CommandLine subsub : sub.getSubcommands().values()) {
-                grandChildCount++;
-                assertEquals("subcommand added afterwards is not impacted", false, subsub.isArityRestrictsCumulativeSize());
-            }
-        }
-        assertTrue(childCount > 0);
-        assertTrue(grandChildCount > 0);
-    }
-
-    @Test
-    public void testParserArityRestrictsCumulativeSize_AfterSubcommandsAdded() {
-        @Command class TopLevel {}
-        CommandLine commandLine = new CommandLine(new TopLevel());
-        commandLine.addSubcommand("main", createNestedCommand());
-        assertEquals(false, commandLine.isArityRestrictsCumulativeSize());
-        commandLine.setArityRestrictsCumulativeSize(true);
-        assertEquals(true, commandLine.isArityRestrictsCumulativeSize());
-
-        int childCount = 0;
-        int grandChildCount = 0;
-        for (CommandLine sub : commandLine.getSubcommands().values()) {
-            childCount++;
-            assertEquals("subcommand added before IS impacted", true, sub.isArityRestrictsCumulativeSize());
-            for (CommandLine subsub : sub.getSubcommands().values()) {
-                grandChildCount++;
-                assertEquals("subsubcommand added before IS impacted", true, sub.isArityRestrictsCumulativeSize());
-            }
-        }
-        assertTrue(childCount > 0);
-        assertTrue(grandChildCount > 0);
-    }
-
-    @Test
     public void testParserToggleBooleanFlags_BeforeSubcommandsAdded() {
         @Command class TopLevel {}
         CommandLine commandLine = new CommandLine(new TopLevel());
@@ -1013,7 +967,7 @@ public class CommandLineTest {
                 "[picocli DEBUG] Could not register converter for java.nio.file.Path: java.lang.ClassNotFoundException: java.nio.file.Path%n");
         String expected = String.format("" +
                         "[picocli INFO] Parsing 6 command line args [-oout, --, -r, -v, p1, p2]%n" +
-                        "[picocli DEBUG] Parser configuration: posixClusteredShortOptionsAllowed=true, stopAtPositional=false, stopAtUnmatched=false, separator=null, overwrittenOptionsAllowed=false, unmatchedArgumentsAllowed=false, expandAtFiles=true, arityRestrictsCumulativeSize=false, limitSplit=false, aritySatisfiedByAttachedOptionParam=false%n" +
+                        "[picocli DEBUG] Parser configuration: posixClusteredShortOptionsAllowed=true, stopAtPositional=false, stopAtUnmatched=false, separator=null, overwrittenOptionsAllowed=false, unmatchedArgumentsAllowed=false, expandAtFiles=true, limitSplit=false, aritySatisfiedByAttachedOptionParam=false%n" +
                         "[picocli DEBUG] Set initial value for field boolean picocli.CommandLineTest$CompactFields.verbose of type boolean to false.%n" +
                         "[picocli DEBUG] Set initial value for field boolean picocli.CommandLineTest$CompactFields.recursive of type boolean to false.%n" +
                         "[picocli DEBUG] Set initial value for field java.io.File picocli.CommandLineTest$CompactFields.outputFile of type class java.io.File to null.%n" +
@@ -1983,7 +1937,7 @@ public class CommandLineTest {
                 "[picocli DEBUG] Could not register converter for java.nio.file.Path: java.lang.ClassNotFoundException: java.nio.file.Path%n");
         String expected = String.format("" +
                         "[picocli INFO] Parsing 8 command line args [--git-dir=/home/rpopma/picocli, commit, -m, \"Fixed typos\", --, src1.java, src2.java, src3.java]%n" +
-                        "[picocli DEBUG] Parser configuration: posixClusteredShortOptionsAllowed=true, stopAtPositional=false, stopAtUnmatched=false, separator=null, overwrittenOptionsAllowed=false, unmatchedArgumentsAllowed=false, expandAtFiles=true, arityRestrictsCumulativeSize=false, limitSplit=false, aritySatisfiedByAttachedOptionParam=false%n" +
+                        "[picocli DEBUG] Parser configuration: posixClusteredShortOptionsAllowed=true, stopAtPositional=false, stopAtUnmatched=false, separator=null, overwrittenOptionsAllowed=false, unmatchedArgumentsAllowed=false, expandAtFiles=true, limitSplit=false, aritySatisfiedByAttachedOptionParam=false%n" +
                         "[picocli DEBUG] Set initial value for field boolean picocli.CommandLine$AutoHelpMixin.helpRequested of type boolean to false.%n" +
                         "[picocli DEBUG] Set initial value for field boolean picocli.CommandLine$AutoHelpMixin.versionRequested of type boolean to false.%n" +
                         "[picocli DEBUG] Set initial value for field java.io.File picocli.Demo$Git.gitDir of type class java.io.File to null.%n" +
