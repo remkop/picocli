@@ -1,6 +1,6 @@
 # picocli Release Notes
 
-# <a name="3.0.0-beta-1"></a> Picocli 3.0.0-beta-1 (UNRELEASED)
+# <a name="3.0.0-beta-1"></a> Picocli 3.0.0-beta-1
 The picocli community is pleased to announce picocli 3.0.0-beta-1.
 
 This release contains enhancements and bug fixes.

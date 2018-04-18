@@ -37,8 +37,9 @@ interactively showing users what options and subcommands are available.
 ![Picocli Demo help message with ANSI colors](docs/images/picocli.Demo.png?raw=true)
 
 #### Releases
-* [Releases](https://github.com/remkop/picocli/releases) - latest: 3.0.0-alpha-6
-* [Picocli 3.0.0-alpha-6 Release Notes](https://github.com/remkop/picocli/releases/tag/v3.0.0-alpha-6) - note there are some [potential breaking changes](https://github.com/remkop/picocli/releases/tag/v3.0.0-alpha-6#3.0.0-alpha-6-breaking-changes) from prior versions
+* [Releases](https://github.com/remkop/picocli/releases) - latest: 3.0.0-beta-1
+* [Picocli 3.0.0-beta-1 Release Notes](https://github.com/remkop/picocli/releases/tag/v3.0.0-beta-1) - note there are some [potential breaking changes](https://github.com/remkop/picocli/releases/tag/v3.0.0-beta-1#3.0.0-beta-1-breaking-changes) from prior versions
+* [Picocli 3.0.0-beta-1 Release Notes](https://github.com/remkop/picocli/releases/tag/v3.0.0-beta-1) - note there are some [potential breaking changes](https://github.com/remkop/picocli/releases/tag/v3.0.0-beta-1#3.0.0-beta-1-breaking-changes) from prior versions
 * [Picocli 3.0.0-alpha-4 Release Notes](https://github.com/remkop/picocli/releases/tag/v3.0.0-alpha-4) - note there are some [potential breaking changes](https://github.com/remkop/picocli/releases/tag/v3.0.0-alpha-4#3.0.0-alpha-4-breaking-changes) from prior versions
 * [Picocli 3.0.0-alpha-3 Release Notes](https://github.com/remkop/picocli/releases/tag/v3.0.0-alpha-3) - note there are some [potential breaking changes](https://github.com/remkop/picocli/releases/tag/v3.0.0-alpha-3#3.0.0-alpha-3-breaking-changes) from prior versions
 * [Picocli 3.0.0-alpha-2 Release Notes](https://github.com/remkop/picocli/releases/tag/v3.0.0-alpha-2) - note there are some [potential breaking changes](https://github.com/remkop/picocli/releases/tag/v3.0.0-alpha-2#3.0.0-alpha-2-breaking-changes) from prior versions
@@ -143,35 +144,35 @@ See the [source code](https://github.com/remkop/picocli/blob/master/src/main/jav
 
 ### Gradle
 ```
-compile 'info.picocli:picocli:3.0.0-alpha-6'
+compile 'info.picocli:picocli:3.0.0-beta-1'
 ```
 ### Maven
 ```
 <dependency>
   <groupId>info.picocli</groupId>
   <artifactId>picocli</artifactId>
-  <version>3.0.0-alpha-6</version>
+  <version>3.0.0-beta-1</version>
 </dependency>
 ```
 ### Scala SBT
 ```
-libraryDependencies += "info.picocli" % "picocli" % "3.0.0-alpha-6"
+libraryDependencies += "info.picocli" % "picocli" % "3.0.0-beta-1"
 ```
 ### Ivy
 ```
-<dependency org="info.picocli" name="picocli" rev="3.0.0-alpha-6" />
+<dependency org="info.picocli" name="picocli" rev="3.0.0-beta-1" />
 ```
 ### Grape
 ```groovy
 @Grapes(
-    @Grab(group='info.picocli', module='picocli', version='3.0.0-alpha-6')
+    @Grab(group='info.picocli', module='picocli', version='3.0.0-beta-1')
 )
 ```
 ### Leiningen
 ```
-[info.picocli/picocli "3.0.0-alpha-6"]
+[info.picocli/picocli "3.0.0-beta-1"]
 ```
 ### Buildr
 ```
-'info.picocli:picocli:jar:3.0.0-alpha-6'
+'info.picocli:picocli:jar:3.0.0-beta-1'
 ```
