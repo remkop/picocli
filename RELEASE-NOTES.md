@@ -17,6 +17,28 @@ Picocli follows [semantic versioning](http://semver.org/).
 
 ## <a name="3.0.0-beta-2-new"></a> New and Noteworthy
 
+### Stricter Arity Validation
+
+Until this release, options with mandatory parameters would consume as many arguments as required, even if those arguments matched other option flags. For example:
+
+Given a command like this:
+```java
+class App {
+  @Option(names = "-a", arity = "2")
+  String[] a;
+  
+  @Option(names = "-v")
+  boolean v;
+}
+```
+Prior to this change, the following input would be accepted:
+```
+<command> -a 1 -v
+```
+In previous versions, picocli accepted this and assigned `"1"` and `"-v"` as the two values for the `-a` option.
+From this release, the parser notices that one of the arguments is an option and throws a `MissingParameterException` because not enough parameters were specified for the first option.
+
+
 ## <a name="3.0.0-beta-2-promoted"></a> Promoted Features
 Promoted features are features that were incubating in previous versions of picocli but are now supported and subject to backwards compatibility. 
 
@@ -29,7 +51,7 @@ No features have been promoted in this picocli release.
 ## <a name="3.0.0-beta-2-deprecated"></a> Deprecations
 
 ## <a name="3.0.0-beta-2-breaking-changes"></a> Potential breaking changes
-
+- Stricter arity validation may break existing applications that intentionally consume arguments regardless of whether arguments are other options.
 
 
 # <a name="3.0.0-beta-1"></a> Picocli 3.0.0-beta-1
