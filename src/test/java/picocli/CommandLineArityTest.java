@@ -25,6 +25,7 @@ import java.io.File;
 import java.net.InetAddress;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import static org.junit.Assert.*;
@@ -954,9 +955,14 @@ public class CommandLineArityTest {
         assertEquals(Arrays.asList("v1", "v2"), result.options);
         assertEquals(Arrays.asList("p1", "p2", "p3", "p4"), result.parameters);
 
-        Arg result2 = CommandLine.populateCommand(new Arg(), "-o", "v1", "p1", "-o", "v2", "p3");
-        assertEquals(Arrays.asList("v1"), result2.options);
-        assertEquals(Arrays.asList("p1", "-o", "v2", "p3"), result2.parameters);
+        try {
+            CommandLine.populateCommand(new Arg(), "-o", "v1", "p1", "-o", "v2", "p3");
+            fail("Expected MissingParameterException");
+        } catch (MissingParameterException ex) {
+            assertEquals("Expected parameter 2 (of 2 mandatory parameters) for positional parameter at index 0..* (<parameters>) but found '-o'", ex.getMessage());
+            assertEquals(1, ex.getMissing().size());
+            assertTrue(ex.getMissing().get(0).toString(), ex.getMissing().get(0) instanceof Model.PositionalParamSpec);
+        }
 
         try {
             CommandLine.populateCommand(new Arg(), "-o", "v1", "p1", "p2", "-o", "v2", "p3");
@@ -966,6 +972,69 @@ public class CommandLineArityTest {
             assertEquals(1, ex.getMissing().size());
             assertTrue(ex.getMissing().get(0).toString(), ex.getMissing().get(0) instanceof Model.PositionalParamSpec);
         }
+    }
+
+    @Test
+    public void test365_StricterArityValidation() {
+        class Cmd {
+            @Option(names = "-a", arity = "2") String[] a;
+            @Option(names = "-b", arity = "1..2") String[] b;
+            @Option(names = "-c", arity = "2..3") String[] c;
+            @Option(names = "-v") boolean verbose;
+        }
+        assertMissing("Expected parameter 2 (of 2 mandatory parameters) for option '-a' but found '-a'",
+                new Cmd(), "-a", "1", "-a", "2");
+
+        assertMissing("Expected parameter 2 (of 2 mandatory parameters) for option '-a' but found '-v'",
+                new Cmd(), "-a", "1", "-v");
+
+        assertMissing("Expected parameter for option '-b' but found '-v'",
+                new Cmd(), "-b", "-v");
+
+        assertMissing("option '-c' at index 0 (<c>) requires at least 2 values, but only 1 were specified: [-a]",
+                new Cmd(), "-c", "-a");
+
+        assertMissing("Expected parameter 1 (of 2 mandatory parameters) for option '-c' but found '-a'",
+                new Cmd(), "-c", "-a", "1", "2");
+
+        assertMissing("Expected parameter 2 (of 2 mandatory parameters) for option '-c' but found '-a'",
+                new Cmd(), "-c", "1", "-a");
+    }
+
+    @Test
+    public void test365_StricterArityValidationWithMaps() {
+        class Cmd {
+            @Option(names = "-a", arity = "2") Map<String,String> a;
+            @Option(names = "-b", arity = "1..2") Map<String,String> b;
+            @Option(names = "-c", arity = "2..3") Map<String,String> c;
+            @Option(names = "-v") boolean verbose;
+        }
+        assertMissing("Expected parameter 2 (of 2 mandatory parameters) for option '-a' but found '-a'",
+                new Cmd(), "-a", "A=B", "-a", "C=D");
+
+        assertMissing("Expected parameter 2 (of 2 mandatory parameters) for option '-a' but found '-v'",
+                new Cmd(), "-a", "A=B", "-v");
+
+        assertMissing("Expected parameter for option '-b' but found '-v'",
+                new Cmd(), "-b", "-v");
+
+        assertMissing("option '-c' at index 0 (<String=String>) requires at least 2 values, but only 1 were specified: [-a]",
+                new Cmd(), "-c", "-a");
+
+        assertMissing("Expected parameter 1 (of 2 mandatory parameters) for option '-c' but found '-a'",
+                new Cmd(), "-c", "-a", "A=B", "C=D");
+
+        assertMissing("Expected parameter 2 (of 2 mandatory parameters) for option '-c' but found '-a'",
+                new Cmd(), "-c", "A=B", "-a");
+    }
+    private void assertMissing(String expected, Object command, String... args) {
+        try {
+            CommandLine.populateCommand(command, args);
+            fail("Expected missing param exception");
+        } catch (MissingParameterException ex) {
+            assertEquals(expected, ex.getMessage());
+        }
+
     }
 
     @Test

@@ -5209,6 +5209,7 @@ public class CommandLine {
             for (int i = 0; consumed < arity.min && !args.isEmpty(); i++) {
                 Map<Object, Object> typedValuesAtPosition = new LinkedHashMap<Object, Object>();
                 parseResult.addTypedValues(argSpec, currentPosition++, typedValuesAtPosition);
+                assertNoMissingMandatoryParameter(argSpec, args, i, arity);
                 consumeOneMapArgument(argSpec, arity, consumed, args.pop(), classes, keyConverter, valueConverter, typedValuesAtPosition, i, argDescription);
                 result.putAll(typedValuesAtPosition);
                 consumed = consumedCountMap(i + 1, initialSize, argSpec);
@@ -5286,6 +5287,13 @@ public class CommandLine {
                 }
             }
             return keyValue;
+        }
+
+        private void assertNoMissingMandatoryParameter(ArgSpec argSpec, Stack<String> args, int i, Range arity) {
+            if (!varargCanConsumeNextValue(argSpec, args.peek())) {
+                String desc = arity.min > 1 ? (i + 1) + " (of " + arity.min + " mandatory parameters) " : "";
+                throw new MissingParameterException(CommandLine.this, argSpec, "Expected parameter " + desc + "for " + optionDescription("", argSpec, -1) + " but found '" + args.peek() + "'");
+            }
         }
 
         private void checkMaxArityExceeded(Range arity, int size, ArgSpec argSpec, String argDescription) {
@@ -5377,6 +5385,7 @@ public class CommandLine {
             for (int i = 0; consumed < arity.min && !args.isEmpty(); i++) {
                 List<Object> typedValuesAtPosition = new ArrayList<Object>();
                 parseResult.addTypedValues(argSpec, currentPosition++, typedValuesAtPosition);
+                assertNoMissingMandatoryParameter(argSpec, args, i, arity);
                 consumeOneArgument(argSpec, arity, consumed, args.pop(), type, typedValuesAtPosition, i, argDescription);
                 result.addAll(typedValuesAtPosition);
                 consumed = consumedCount(i + 1, initialSize, argSpec);
