@@ -3401,7 +3401,8 @@ public class CommandLine {
             private List<String> stringValues = new ArrayList<String>();
             private List<String> originalStringValues = new ArrayList<String>();
             protected String toString;
-            Map<Integer, Object> typedValues = new TreeMap<Integer, Object>();
+            private List<Object> typedValues = new ArrayList<Object>();
+            Map<Integer, Object> typedValueAtPosition = new TreeMap<Integer, Object>();
 
             /** Constructs a new {@code ArgSpec}. */
             private ArgSpec(Builder builder) {
@@ -3543,6 +3544,11 @@ public class CommandLine {
              * @return the matched arguments after {@linkplain #splitRegex() splitting}, but before type conversion.
              *      For map properties, {@code "key=value"} values are split into the key and the value part. */
             public List<String> stringValues() { return Collections.unmodifiableList(stringValues); }
+
+            /** Returns the typed command line arguments matched by this option or positional parameter spec.
+             * @return the matched arguments after {@linkplain #splitRegex() splitting} and type conversion.
+             *      For map properties, {@code "key=value"} values are split into the key and the value part. */
+            public List<Object> typedValues() { return Collections.unmodifiableList(typedValues); }
 
             /** Sets the {@code stringValues} to a new list instance. */
             protected void resetStringValues() { stringValues = new ArrayList<String>(); }
@@ -4476,7 +4482,10 @@ public class CommandLine {
             void addStringValue        (ArgSpec argSpec, String value) { if (!isInitializingDefaultValues) { argSpec.stringValues.add(value);} }
             void addOriginalStringValue(ArgSpec argSpec, String value) { if (!isInitializingDefaultValues) { argSpec.originalStringValues.add(value); } }
             void addTypedValues(ArgSpec argSpec, int position, Object typedValue) {
-                if (!isInitializingDefaultValues) { argSpec.typedValues.put(position, typedValue); }
+                if (!isInitializingDefaultValues) {
+                    argSpec.typedValues.add(typedValue);
+                    argSpec.typedValueAtPosition.put(position, typedValue);
+                }
             }
         }
         private final CommandSpec commandSpec;
@@ -4751,35 +4760,23 @@ public class CommandLine {
             endOfOptions = false;
             isHelpRequested = false;
             parseResult = ParseResult.builder(getCommandSpec());
-            for (OptionSpec option : getCommandSpec().options()) {
-                option.resetStringValues();
-                option.resetOriginalStringValues();
-                option.typedValues.clear();
-                if (option.hasInitialValue()) {
-                    try {
-                        option.setter().set(option.initialValue());
-                        tracer.debug("Set initial value for %s of type %s to %s.%n", option, option.type(), String.valueOf(option.initialValue()));
-                    } catch (Exception ex) {
-                        tracer.warn("Could not set initial value for %s of type %s to %s: %s%n", option, option.type(), String.valueOf(option.initialValue()), ex);
-                    }
-                } else {
-                    tracer.debug("Initial value not available for %s%n", option);
+            for (OptionSpec option : getCommandSpec().options())                           { clear(option); }
+            for (PositionalParamSpec positional : getCommandSpec().positionalParameters()) { clear(positional); }
+        }
+        private void clear(ArgSpec argSpec) {
+            argSpec.resetStringValues();
+            argSpec.resetOriginalStringValues();
+            argSpec.typedValues.clear();
+            argSpec.typedValueAtPosition.clear();
+            if (argSpec.hasInitialValue()) {
+                try {
+                    argSpec.setter().set(argSpec.initialValue());
+                    tracer.debug("Set initial value for %s of type %s to %s.%n", argSpec, argSpec.type(), String.valueOf(argSpec.initialValue()));
+                } catch (Exception ex) {
+                    tracer.warn("Could not set initial value for %s of type %s to %s: %s%n", argSpec, argSpec.type(), String.valueOf(argSpec.initialValue()), ex);
                 }
-            }
-            for (PositionalParamSpec positional : getCommandSpec().positionalParameters()) {
-                positional.resetStringValues();
-                positional.resetOriginalStringValues();
-                positional.typedValues.clear();
-                if (positional.hasInitialValue()) {
-                    try {
-                        positional.setter().set(positional.initialValue());
-                        tracer.debug("Set initial value for %s of type %s to %s.%n", positional, positional.type(), String.valueOf(positional.initialValue()));
-                    } catch (Exception ex) {
-                        tracer.warn("Could not set initial value for %s of type %s to %s: %s%n", positional, positional.type(), String.valueOf(positional.initialValue()), ex);
-                    }
-                } else {
-                    tracer.debug("Initial value not available for %s%n", positional);
-                }
+            } else {
+                tracer.debug("Initial value not available for %s%n", argSpec);
             }
         }
 
@@ -4976,7 +4973,7 @@ public class CommandLine {
             int consumed = 0;
             for (PositionalParamSpec positionalParam : commandSpec.positionalParameters()) {
                 Range indexRange = positionalParam.index();
-                if (!indexRange.contains(position) || positionalParam.typedValues.get(position) != null) {
+                if (!indexRange.contains(position) || positionalParam.typedValueAtPosition.get(position) != null) {
                     continue;
                 }
                 Stack<String> argsCopy = copy(args);
@@ -5223,7 +5220,7 @@ public class CommandLine {
                 Map<Object, Object> typedValuesAtPosition = new LinkedHashMap<Object, Object>();
                 parseResult.addTypedValues(argSpec, currentPosition++, typedValuesAtPosition);
                 if (!canConsumeOneMapArgument(argSpec, arity, consumed, args.peek(), classes, keyConverter, valueConverter, argDescription)) {
-                    break; // leave empty map at argSpec.typedValues[currentPosition] so we won't try to consume that position again
+                    break; // leave empty map at argSpec.typedValueAtPosition[currentPosition] so we won't try to consume that position again
                 }
                 consumeOneMapArgument(argSpec, arity, consumed, args.pop(), classes, keyConverter, valueConverter, typedValuesAtPosition, i, argDescription);
                 result.putAll(typedValuesAtPosition);
@@ -5391,7 +5388,7 @@ public class CommandLine {
                 List<Object> typedValuesAtPosition = new ArrayList<Object>();
                 parseResult.addTypedValues(argSpec, currentPosition++, typedValuesAtPosition);
                 if (!canConsumeOneArgument(argSpec, arity, consumed, args.peek(), type, argDescription)) {
-                    break; // leave empty list at argSpec.typedValues[currentPosition] so we won't try to consume that position again
+                    break; // leave empty list at argSpec.typedValueAtPosition[currentPosition] so we won't try to consume that position again
                 }
                 consumeOneArgument(argSpec, arity, consumed, args.pop(), type, typedValuesAtPosition, i, argDescription);
                 result.addAll(typedValuesAtPosition);

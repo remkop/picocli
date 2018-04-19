@@ -710,6 +710,28 @@ public class CommandLineModelTest {
         // TODO convertion with aux types (abstract field types, generic map with and without explicit type attribute etc)
     }
 
+    @Test
+    public void testTypedValues() {
+        class App {
+            @Option(names="-x") int x;
+        }
+        ParseResult result1 = new CommandLine(new App()).parseArgs();// not specified
+        assertFalse(result1.hasMatchedOption('x'));
+        assertTrue(result1.commandSpec().findOption('x').typedValues().isEmpty());
+
+        ParseResult result2 = new CommandLine(new App()).parseArgs("-x", "123");
+        assertTrue(result2.hasMatchedOption('x'));
+        assertEquals(Integer.valueOf(123), result2.matchedOptionValue('x', 0));
+
+        ParseResult result3 = new CommandLine(new App())
+                .setOverwrittenOptionsAllowed(true)
+                .parseArgs("-x", "1", "-x", "2", "-x", "3");
+        assertTrue(result3.hasMatchedOption('x'));
+        assertEquals(Integer.valueOf(3), result3.matchedOptionValue('x', 0));
+        assertEquals(Arrays.asList("1", "2", "3"), result3.matchedOption('x').stringValues());
+        assertEquals(Arrays.asList(1, 2, 3), result3.matchedOption('x').typedValues());
+    }
+
     /** see <a href="https://github.com/remkop/picocli/issues/279">issue #279</a>  */
     @Test
     public void testSingleValueFieldWithOptionalParameter_279() {
@@ -721,16 +743,19 @@ public class CommandLineModelTest {
         OptionSpec option1 = parsed1.get(0).getCommandSpec().optionsMap().get("--foo");
         assertNull("optional option is null when option not specified", option1.getValue());
         assertTrue("optional option has no string value when option not specified", option1.stringValues().isEmpty());
+        assertTrue("optional option has no typed value when option not specified", option1.typedValues().isEmpty());
 
         List<CommandLine> parsed2 = new CommandLine(new Sample()).parse("--foo");// specified without value
         OptionSpec option2 = parsed2.get(0).getCommandSpec().optionsMap().get("--foo");
         assertEquals("optional option is empty string when specified without args", "", option2.getValue());
         assertEquals("optional option string value when specified without args", "", option2.stringValues().get(0));
+        assertEquals("optional option typed value when specified without args", "", option2.typedValues().get(0));
 
         List<CommandLine> parsed3 = new CommandLine(new Sample()).parse("--foo", "value");// specified with value
         OptionSpec option3 = parsed3.get(0).getCommandSpec().optionsMap().get("--foo");
         assertEquals("optional option is empty string when specified without args", "value", option3.getValue());
         assertEquals("optional option string value when specified without args", "value", option3.stringValues().get(0));
+        assertEquals("optional option typed value when specified without args", "value", option3.typedValues().get(0));
     }
 
     @Test

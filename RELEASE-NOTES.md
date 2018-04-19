@@ -1,5 +1,36 @@
 # picocli Release Notes
 
+# <a name="3.0.0-beta-2"></a> Picocli 3.0.0-beta-2 (UNRELEASED)
+The picocli community is pleased to announce picocli 3.0.0-beta-2.
+
+This release contains enhancements and bug fixes.
+
+This is the twenty-eighth public release.
+Picocli follows [semantic versioning](http://semver.org/).
+
+## <a name="3.0.0-beta-2-toc"></a> Table of Contents
+* [New and noteworthy](#3.0.0-beta-2-new)
+* [Promoted features](#3.0.0-beta-2-promoted)
+* [Fixed issues](#3.0.0-beta-2-fixes)
+* [Deprecations](#3.0.0-beta-2-deprecated)
+* [Potential breaking changes](#3.0.0-beta-2-breaking-changes)
+
+## <a name="3.0.0-beta-2-new"></a> New and Noteworthy
+
+## <a name="3.0.0-beta-2-promoted"></a> Promoted Features
+Promoted features are features that were incubating in previous versions of picocli but are now supported and subject to backwards compatibility. 
+
+No features have been promoted in this picocli release.
+
+## <a name="3.0.0-beta-2-fixes"></a> Fixed issues
+- [#366] API Change: Add `ArgSpec.getTypedValues()` method.
+
+## <a name="3.0.0-beta-2-deprecated"></a> Deprecations
+
+## <a name="3.0.0-beta-2-breaking-changes"></a> Potential breaking changes
+
+
+
 # <a name="3.0.0-beta-1"></a> Picocli 3.0.0-beta-1
 The picocli community is pleased to announce picocli 3.0.0-beta-1.
 
