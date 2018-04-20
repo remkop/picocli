@@ -3316,7 +3316,6 @@ public class CommandLine {
             public boolean expandAtFiles()                     { return expandAtFiles; }
             /** @see CommandLine#isPosixClusteredShortOptionsAllowed() */
             public boolean posixClusteredShortOptionsAllowed() { return posixClusteredShortOptionsAllowed; }
-            private boolean arityRestrictsCumulativeSize()      { return false; }
             /** @see CommandLine#isUnmatchedOptionsArePositionalParams() */
             public boolean unmatchedOptionsArePositionalParams() { return unmatchedOptionsArePositionalParams; }
             private boolean splitFirst()                       { return limitSplit(); }
@@ -3341,7 +3340,6 @@ public class CommandLine {
             public ParserSpec unmatchedArgumentsAllowed(boolean unmatchedArgumentsAllowed) { this.unmatchedArgumentsAllowed = unmatchedArgumentsAllowed; return this; }
             /** @see CommandLine#setExpandAtFiles(boolean) */
             public ParserSpec expandAtFiles(boolean expandAtFiles)                         { this.expandAtFiles = expandAtFiles; return this; }
-            /** @see CommandLine#setArityRestrictsCumulativeSize(boolean) */
             /** @see CommandLine#setPosixClusteredShortOptionsAllowed(boolean) */
             public ParserSpec posixClusteredShortOptionsAllowed(boolean posixClusteredShortOptionsAllowed) { this.posixClusteredShortOptionsAllowed = posixClusteredShortOptionsAllowed; return this; }
             /** @see CommandLine#setUnmatchedOptionsArePositionalParams(boolean) */
@@ -3560,15 +3558,6 @@ public class CommandLine {
 
             /** Sets the {@code originalStringValues} to a new list instance. */
             protected void resetOriginalStringValues() { originalStringValues = new ArrayList<String>(); }
-
-            boolean acceptsValues(int add, ParserSpec parser) {
-                boolean result = arity().max == 0 || !parser.arityRestrictsCumulativeSize() || stringValues().size() + add <= arity().max;
-                if (!result) {
-                    String argDescription = isOption() ? "option " + ((OptionSpec) this).longestName() : "positional at " + ((PositionalParamSpec) this).index();
-                    new Tracer().debug("%s cannot accept %s additional values: max.arity=$s, arityRestrictsCumulativeSize=%s, stringValues.size=%s.%n", argDescription, add, arity().max, parser.arityRestrictsCumulativeSize(), stringValues().size());
-                }
-                return result;
-            }
 
             /** Returns whether the default for this option or positional parameter should be shown, potentially overriding the specified global setting.
              * @param usageHelpShowDefaults whether the command's UsageMessageSpec is configured to show default values. */
@@ -4923,8 +4912,7 @@ public class CommandLine {
         }
 
         private boolean isStandaloneOption(String arg) {
-            OptionSpec option = commandSpec.optionsMap().get(arg);
-            return option != null && option.acceptsValues(1, commandSpec.parser());
+            return commandSpec.optionsMap().containsKey(arg);
         }
 
         private boolean resemblesOption(String arg) {
@@ -5019,8 +5007,7 @@ public class CommandLine {
             String cluster = arg.substring(1);
             boolean paramAttachedToOption = true;
             do {
-                if (cluster.length() > 0 && commandSpec.posixOptionsMap().containsKey(cluster.charAt(0))
-                        && commandSpec.posixOptionsMap().get(cluster.charAt(0)).acceptsValues(1, commandSpec.parser())) {
+                if (cluster.length() > 0 && commandSpec.posixOptionsMap().containsKey(cluster.charAt(0))) {
                     ArgSpec argSpec = commandSpec.posixOptionsMap().get(cluster.charAt(0));
                     Range arity = argSpec.arity();
                     String argDescription = "option " + prefix + cluster.charAt(0);
@@ -5183,10 +5170,8 @@ public class CommandLine {
             }
             initialized.add(argSpec);
             int originalSize = map.size();
-            Range reducedArity = reduceMaxArity(arity, originalSize);
-            consumeMapArguments(argSpec, reducedArity, args, classes, keyConverter, valueConverter, map, argDescription);
+            consumeMapArguments(argSpec, arity, args, classes, keyConverter, valueConverter, map, argDescription);
             parseResult.add(argSpec, position);
-            checkMaxArityExceeded(arity, map.size(), argSpec, argDescription);
             argSpec.setValue(map);
             return map.size() - originalSize;
         }
@@ -5257,10 +5242,6 @@ public class CommandLine {
                                                  ITypeConverter<?> keyConverter, ITypeConverter<?> valueConverter,
                                                  String argDescription) {
             String[] values = argSpec.splitValue(raw, commandSpec.parser(), arity, consumed);
-            if (!argSpec.acceptsValues(values.length, commandSpec.parser())) {
-                tracer.debug("$s would split into %s values but %s cannot accept that many values.%n", raw, values.length, argDescription);
-                return false;
-            }
             try {
                 for (String value : values) {
                     String[] keyValue = splitKeyValue(argSpec, value);
@@ -5295,18 +5276,6 @@ public class CommandLine {
                 throw new MissingParameterException(CommandLine.this, argSpec, "Expected parameter " + desc + "for " + optionDescription("", argSpec, -1) + " but found '" + args.peek() + "'");
             }
         }
-
-        private void checkMaxArityExceeded(Range arity, int size, ArgSpec argSpec, String argDescription) {
-            if (!commandSpec.parser().arityRestrictsCumulativeSize()) { return; }
-            if (size <= arity.max) { return; }
-            throw new MaxValuesExceededException(CommandLine.this, optionDescription("", argSpec, -1) +
-                    " max number of values (" + arity.max + ") exceeded: " + size + " elements.");
-        }
-
-        private Range reduceMaxArity(Range arity, int existingSize) {
-            return commandSpec.parser().arityRestrictsCumulativeSize()? arity.max(arity.max - existingSize) : arity;
-        }
-
         private int applyValuesToArrayField(ArgSpec argSpec,
                                             Range arity,
                                             Stack<String> args,
@@ -5314,9 +5283,8 @@ public class CommandLine {
                                             String argDescription) throws Exception {
             Object existing = argSpec.getValue();
             int length = existing == null ? 0 : Array.getLength(existing);
-            Range reducedArity = reduceMaxArity(arity, length);
             Class<?> type = argSpec.auxiliaryTypes()[0];
-            List<Object> converted = consumeArguments(argSpec, reducedArity, args, type, argDescription);
+            List<Object> converted = consumeArguments(argSpec, arity, args, type, argDescription);
             List<Object> newValues = new ArrayList<Object>();
             if (initialized.contains(argSpec)) { // existing values are default values if initialized does NOT contain argsSpec
                 for (int i = 0; i < length; i++) {
@@ -5337,7 +5305,6 @@ public class CommandLine {
                 Array.set(array, i, newValues.get(i));
             }
             parseResult.add(argSpec, position);
-            checkMaxArityExceeded(arity, newValues.size(), argSpec, argDescription);
             return converted.size(); // return how many args were consumed
         }
 
@@ -5349,8 +5316,7 @@ public class CommandLine {
                                                  String argDescription) throws Exception {
             Collection<Object> collection = (Collection<Object>) argSpec.getValue();
             Class<?> type = argSpec.auxiliaryTypes()[0];
-            Range reducedArity = reduceMaxArity(arity, collection == null ? 0 : collection.size());
-            List<Object> converted = consumeArguments(argSpec, reducedArity, args, type, argDescription);
+            List<Object> converted = consumeArguments(argSpec, arity, args, type, argDescription);
             if (collection == null || (!collection.isEmpty() && !initialized.contains(argSpec))) {
                 collection = createCollection(argSpec.type()); // collection type
                 argSpec.setValue(collection);
@@ -5364,7 +5330,6 @@ public class CommandLine {
                 }
             }
             parseResult.add(argSpec, position);
-            checkMaxArityExceeded(arity, collection.size(), argSpec, argDescription);
             argSpec.setValue(collection);
             return converted.size();
         }
@@ -5442,10 +5407,10 @@ public class CommandLine {
             ITypeConverter<?> converter = getTypeConverter(type, argSpec, 0);
             try {
                 String[] values = argSpec.splitValue(trim(arg), commandSpec.parser(), arity, consumed);
-                if (!argSpec.acceptsValues(values.length, commandSpec.parser())) {
-                    tracer.debug("$s would split into %s values but %s cannot accept that many values.%n", arg, values.length, argDescription);
-                    return false;
-                }
+//                if (!argSpec.acceptsValues(values.length, commandSpec.parser())) {
+//                    tracer.debug("$s would split into %s values but %s cannot accept that many values.%n", arg, values.length, argDescription);
+//                    return false;
+//                }
                 for (String value : values) {
                     tryConvert(argSpec, -1, converter, value, type);
                 }

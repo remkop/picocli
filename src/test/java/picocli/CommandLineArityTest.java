@@ -1267,7 +1267,7 @@ public class CommandLineArityTest {
         CommandLine cmd = new CommandLine(obj);
         cmd.getCommandSpec().parser()
                 .limitSplit(true)
-                .aritySatisfiedByAttachedOptionParam(true); //arityRestrictsCumulativeSize(true);
+                .aritySatisfiedByAttachedOptionParam(true);
         cmd.parseArgs(args);
         return obj;
     }
