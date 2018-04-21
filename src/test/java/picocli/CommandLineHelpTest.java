@@ -306,8 +306,8 @@ public class CommandLineHelpTest {
         cmd.getCommandSpec().usageMessage().showDefaultValues(true);
         String result = usageString(cmd, Help.Ansi.OFF);
         assertEquals(format("" +
-                "Usage: <main class> [-x=INT[,INT]...]...%n" +
-                "  -x, --array=INT[,INT]...   the array%n" +
+                "Usage: <main class> [-x=INT[,INT...]]...%n" +
+                "  -x, --array=INT[,INT...]   the array%n" +
                 "                               Default: 5,4,3,2,1%n"), result);
     }
 
@@ -477,8 +477,8 @@ public class CommandLineHelpTest {
         cmd.getCommandSpec().usageMessage().showDefaultValues(true);
         String result = usageString(cmd, Help.Ansi.OFF);
         assertEquals(format("" +
-                "Usage: <main class> [INT[,INT]...]...%n" +
-                "      [INT[,INT]...]...   the array%n" +
+                "Usage: <main class> [INT[,INT...]...]%n" +
+                "      [INT[,INT...]...]   the array%n" +
                 "                            Default: 5,4,3,2,1%n"), result);
     }
 
@@ -567,10 +567,10 @@ public class CommandLineHelpTest {
             List<String> d;
         }
         String expected = String.format("" +
-                "Usage: <main class> -a=ARG [-a=ARG]... -b=[ARG]... [-b=[ARG]...]... -c=ARG...%n" +
+                "Usage: <main class> -a=ARG [-a=ARG]... -b[=ARG...] [-b[=ARG...]]... -c=ARG...%n" +
                 "                    [-c=ARG...]... -d=ARG ARG... [-d=ARG ARG...]...%n" +
                 "  -a= ARG%n" +
-                "  -b= [ARG]...%n" +
+                "  -b= [ARG...]%n" +
                 "  -c= ARG...%n" +
                 "  -d= ARG ARG...%n");
         //CommandLine.usage(new Args(), System.out);
@@ -590,10 +590,10 @@ public class CommandLineHelpTest {
             String[] d;
         }
         String expected = String.format("" +
-                "Usage: <main class> [-a=ARG]... [-b=[ARG]...]... [-c=ARG...]... [-d=ARG%n" +
+                "Usage: <main class> [-a=ARG]... [-b[=ARG...]]... [-c=ARG...]... [-d=ARG%n" +
                 "                    ARG...]...%n" +
                 "  -a= ARG%n" +
-                "  -b= [ARG]...%n" +
+                "  -b= [ARG...]%n" +
                 "  -c= ARG...%n" +
                 "  -d= ARG ARG...%n");
         //CommandLine.usage(new Args(), System.out);
@@ -678,7 +678,7 @@ public class CommandLineHelpTest {
     public void testUsageFixedArityShortOptionArray() throws UnsupportedEncodingException {
         class Args {
             @Option(names = "-a", paramLabel = "ARG") // default
-                    String[] a;
+            String[] a;
             @Option(names = "-b", paramLabel = "ARG", arity = "0")
             String[] b;
             @Option(names = "-c", paramLabel = "ARG", arity = "1")
@@ -711,11 +711,11 @@ public class CommandLineHelpTest {
             List<String> d;
         }
         String expected = String.format("" +
-                "Usage: <main class> --aa=ARG [--aa=ARG]... --bb=[ARG]... [--bb=[ARG]...]...%n" +
+                "Usage: <main class> --aa=ARG [--aa=ARG]... --bb[=ARG...] [--bb[=ARG...]]...%n" +
                 "                    --cc=ARG... [--cc=ARG...]... --dd=ARG ARG... [--dd=ARG%n" +
                 "                    ARG...]...%n" +
                 "      --aa=ARG%n" +
-                "      --bb=[ARG]...%n" +
+                "      --bb[=ARG...]%n" +
                 "      --cc=ARG...%n" +
                 "      --dd=ARG ARG...%n");
         //CommandLine.usage(new Args(), System.out);
@@ -735,10 +735,10 @@ public class CommandLineHelpTest {
             String[] d;
         }
         String expected = String.format("" +
-                "Usage: <main class> [--aa=ARG]... [--bb=[ARG]...]... [--cc=ARG...]... [--dd=ARG%n" +
+                "Usage: <main class> [--aa=ARG]... [--bb[=ARG...]]... [--cc=ARG...]... [--dd=ARG%n" +
                 "                    ARG...]...%n" +
                 "      --aa=ARG%n" +
-                "      --bb=[ARG]...%n" +
+                "      --bb[=ARG...]%n" +
                 "      --cc=ARG...%n" +
                 "      --dd=ARG ARG...%n");
         //CommandLine.usage(new Args(), System.out);
@@ -860,12 +860,12 @@ public class CommandLineHelpTest {
             Map<Integer, URL> d;
         }
         String expected = String.format("" +
-                "Usage: <main class> -a=KEY=VAL [-a=KEY=VAL]... -b=[<String=String>]... [-b=%n" +
-                "                    [<String=String>]...]... -c=<String=TimeUnit>...%n" +
+                "Usage: <main class> -a=KEY=VAL [-a=KEY=VAL]... -b[=<String=String>...] [-b%n" +
+                "                    [=<String=String>...]]... -c=<String=TimeUnit>...%n" +
                 "                    [-c=<String=TimeUnit>...]... -d=<Integer=URL>%n" +
                 "                    <Integer=URL>... [-d=<Integer=URL> <Integer=URL>...]...%n" +
                 "  -a= KEY=VAL%n" +
-                "  -b= [<String=String>]...%n" +
+                "  -b= [<String=String>...]%n" +
                 "  -c= <String=TimeUnit>...%n" +
                 "  -d= <Integer=URL> <Integer=URL>...%n" +
                 "                             description%n");
@@ -886,10 +886,10 @@ public class CommandLineHelpTest {
             Map<String, URL> d;
         }
         String expected = String.format("" +
-                "Usage: <main class> [-a=<String=String>]... [-b=[<Integer=Integer>]...]...%n" +
+                "Usage: <main class> [-a=<String=String>]... [-b[=<Integer=Integer>...]]...%n" +
                 "                    [-c=KEY=VALUE...]... [-d=<String=URL> <String=URL>...]...%n" +
                 "  -a= <String=String>%n" +
-                "  -b= [<Integer=Integer>]...%n" +
+                "  -b= [<Integer=Integer>...]%n" +
                 "%n" + // TODO
                 "  -c= KEY=VALUE...%n" +
                 "  -d= <String=URL> <String=URL>...%n" +
@@ -1022,9 +1022,9 @@ public class CommandLineHelpTest {
             List<String> d;
         }
         String expected = String.format("" +
-                "Usage: <main class> [APARAM]... [<b>]... <c>... <d> <d>...%n" +
-                "      [APARAM]...   APARAM description%n" +
-                "      [<b>]...      b description%n" +
+                "Usage: <main class> [APARAM...] [<b>...] <c>... <d> <d>...%n" +
+                "      [APARAM...]   APARAM description%n" +
+                "      [<b>...]      b description%n" +
                 "      <c>...        c description%n" +
                 "      <d> <d>...    d description%n");
         //CommandLine.usage(new Args(), System.out);
@@ -1069,9 +1069,9 @@ public class CommandLineHelpTest {
             String[] d;
         }
         String expected = String.format("" +
-                "Usage: <main class>  [<a>]... <c> <d> <d>%n" +
+                "Usage: <main class>  [<a>...] <c> <d> <d>%n" +
                 "                 b description (arity=0)%n" +
-                "      [<a>]...   a description (default arity)%n" +
+                "      [<a>...]   a description (default arity)%n" +
                 "      <c>        b description (arity=1)%n" +
                 "      <d> <d>    b description (arity=2)%n");
         //CommandLine.usage(new Args(), System.out);
@@ -1091,10 +1091,10 @@ public class CommandLineHelpTest {
             Map<String, URL> d;
         }
         String expected = String.format("" +
-                "Usage: <main class> [<String=String>]... [<Integer=Integer>]... KEY=VALUE...%n" +
+                "Usage: <main class> [<String=String>...] [<Integer=Integer>...] KEY=VALUE...%n" +
                 "                    <String=URL> <String=URL>...%n" +
-                "      [<String=String>]...%n" +
-                "      [<Integer=Integer>]... a description (arity=0..*)%n" +
+                "      [<String=String>...]%n" +
+                "      [<Integer=Integer>...] a description (arity=0..*)%n" +
                 "      KEY=VALUE...%n" +
                 "      <String=URL> <String=URL>...%n" +
                 "                             description%n");
@@ -1141,9 +1141,9 @@ public class CommandLineHelpTest {
             Map<URI, URL> d;
         }
         String expected = String.format("" +
-                "Usage: <main class>  [<Short=Field>]... <Long=File> <URI=URL> <URI=URL>%n" +
+                "Usage: <main class>  [<Short=Field>...] <Long=File> <URI=URL> <URI=URL>%n" +
                 "                            b description (arity=0)%n" +
-                "      [<Short=Field>]...    a description%n" +
+                "      [<Short=Field>...]    a description%n" +
                 "      <Long=File>           c description%n" +
                 "      <URI=URL> <URI=URL>   d description%n");
         //CommandLine.usage(new Args(), System.out);
@@ -1162,8 +1162,8 @@ public class CommandLineHelpTest {
         String actual = baos.toString("UTF8");
 
         String expected = String.format("" +
-                "Usage: @|reverse <main class>|@ [@|bg_magenta -x|@=@|bg_yellow <options>|@]... [@|bg_cyan <params>|@]...%n" +
-                "      [@|bg_cyan <params>|@]...   param desc%n" +
+                "Usage: @|reverse <main class>|@ [@|bg_magenta -x|@=@|bg_yellow <options>|@]... [@|bg_cyan <params>|@...]%n" +
+                "      [@|bg_cyan <params>|@...]   param desc%n" +
                 "  @|bg_magenta -x|@= @|bg_yellow <|@@|bg_yellow options>|@       option desc%n");
         assertEquals(Help.Ansi.ON.new Text(expected).toString(), actual);
     }
@@ -1565,7 +1565,7 @@ public class CommandLineHelpTest {
             @Parameters File[] files;
         }
         Help help = new Help(new App(), Help.Ansi.OFF);
-        assertEquals("<main class> [OPTIONS] [<files>]..." + LINESEP, help.synopsis(0));
+        assertEquals("<main class> [OPTIONS] [<files>...]" + LINESEP, help.synopsis(0));
     }
 
     @Test
@@ -1578,7 +1578,7 @@ public class CommandLineHelpTest {
             @Parameters File[] files;
         }
         Help help = new Help(new App(), Help.defaultColorScheme(Help.Ansi.ON));
-        assertEquals(Help.Ansi.ON.new Text("@|bold <main class>|@ [OPTIONS] [@|yellow <files>|@]..." + LINESEP).toString(), help.synopsis(0));
+        assertEquals(Help.Ansi.ON.new Text("@|bold <main class>|@ [OPTIONS] [@|yellow <files>|@...]" + LINESEP).toString(), help.synopsis(0));
     }
 
     @Test
@@ -1591,8 +1591,8 @@ public class CommandLineHelpTest {
             @Parameters File[] files;
         }
         String expected = "" +
-                "Usage: aprogram [OPTIONS] [<files>]...%n" +
-                "      [<files>]...%n" +
+                "Usage: aprogram [OPTIONS] [<files>...]%n" +
+                "      [<files>...]%n" +
                 "  -c, --count=<count>%n" +
                 "  -v, --verbose%n";
         String actual = usageString(new CommandLine(new App()), Help.Ansi.OFF);
@@ -1609,8 +1609,8 @@ public class CommandLineHelpTest {
             @Parameters File[] files;
         }
         String expected = "" +
-                "Usage: anotherProgram [OPTIONS] [<files>]...%n" +
-                "      [<files>]...%n" +
+                "Usage: anotherProgram [OPTIONS] [<files>...]%n" +
+                "      [<files>...]%n" +
                 "  -c, --count=<count>%n" +
                 "  -v, --verbose%n";
         String actual = usageString(new CommandLine(new App()).setCommandName("anotherProgram"), Help.Ansi.OFF);
@@ -1627,8 +1627,8 @@ public class CommandLineHelpTest {
             @Parameters File[] files;
         }
         String expected = "" +
-                "Usage: aprogram [-v] [-c=<count>] [<files>]...%n" +
-                "      [<files>]...%n" +
+                "Usage: aprogram [-v] [-c=<count>] [<files>...]%n" +
+                "      [<files>...]%n" +
                 "  -c, --count=<count>%n" +
                 "  -v, --verbose%n";
         String actual = usageString(new CommandLine(new App()), Help.Ansi.OFF);
@@ -1644,8 +1644,8 @@ public class CommandLineHelpTest {
             @Parameters File[] files;
         }
         String expected = "" +
-                "Usage: anotherProgram [-v] [-c=<count>] [<files>]...%n" +
-                "      [<files>]...%n" +
+                "Usage: anotherProgram [-v] [-c=<count>] [<files>...]%n" +
+                "      [<files>...]%n" +
                 "  -c, --count=<count>%n" +
                 "  -v, --verbose%n";
         String actual = usageString(new CommandLine(new App()).setCommandName("anotherProgram"), Help.Ansi.OFF);
@@ -1750,7 +1750,7 @@ public class CommandLineHelpTest {
         }
         Help help = new Help(new App(), Help.Ansi.OFF);
         // NOTE Expected :<main class> [-v] [-c[=<count>]...] but arity=0 for int field is weird anyway...
-        assertEquals("<main class> [-v] [-c=[<count>]...]" + LINESEP, help.synopsis(0));
+        assertEquals("<main class> [-v] [-c[=<count>...]]" + LINESEP, help.synopsis(0));
     }
 
     @Test
@@ -1775,8 +1775,8 @@ public class CommandLineHelpTest {
         CommandLine commandLine = new CommandLine(new App()).setSeparator(":");
         String actual = usageString(commandLine, Help.Ansi.OFF);
         String expected = "" +
-                "Usage: <main class> [-v] [-c:<count>] [<files>]...%n" +
-                "      [<files>]...%n" +
+                "Usage: <main class> [-v] [-c:<count>] [<files>...]%n" +
+                "      [<files>...]%n" +
                 "  -c, --count:<count>%n" +
                 "  -v, --verbose%n";
         assertEquals(String.format(expected), actual);
@@ -1791,7 +1791,7 @@ public class CommandLineHelpTest {
             @Parameters File[] files;
         }
         Help help = new Help(new App(), Help.Ansi.OFF);
-        assertEquals("<main class> [-v] [-c:<count>] [<files>]..." + LINESEP, help.synopsis(0));
+        assertEquals("<main class> [-v] [-c:<count>] [<files>...]" + LINESEP, help.synopsis(0));
     }
 
     @Test
@@ -1803,7 +1803,7 @@ public class CommandLineHelpTest {
             @Parameters File[] files;
         }
         Help help = new Help(new App(), Help.defaultColorScheme(Help.Ansi.ON));
-        assertEquals(Help.Ansi.ON.new Text("@|bold <main class>|@ [@|yellow -v|@] [@|yellow -c|@:@|italic <count>|@] [@|yellow <files>|@]..." + LINESEP),
+        assertEquals(Help.Ansi.ON.new Text("@|bold <main class>|@ [@|yellow -v|@] [@|yellow -c|@:@|italic <count>|@] [@|yellow <files>|@...]" + LINESEP),
                 help.synopsis(0));
     }
 
@@ -1816,7 +1816,7 @@ public class CommandLineHelpTest {
             @Parameters(paramLabel = "FILE") File[] files;
         }
         Help help = new Help(new App(), Help.Ansi.OFF);
-        assertEquals("<main class> [-v] [-c=<count>] [FILE]..." + LINESEP, help.synopsis(0));
+        assertEquals("<main class> [-v] [-c=<count>] [FILE...]" + LINESEP, help.synopsis(0));
     }
 
     @Test
@@ -1828,7 +1828,7 @@ public class CommandLineHelpTest {
             @Parameters(paramLabel = "FILE") File[] files;
         }
         Help help = new Help(new App(), Help.defaultColorScheme(Help.Ansi.ON));
-        assertEquals(Help.Ansi.ON.new Text("@|bold <main class>|@ [@|yellow -v|@] [@|yellow -c|@=@|italic <count>|@] [@|yellow FILE|@]..." + LINESEP),
+        assertEquals(Help.Ansi.ON.new Text("@|bold <main class>|@ [@|yellow -v|@] [@|yellow -c|@=@|italic <count>|@] [@|yellow FILE|@...]" + LINESEP),
                 help.synopsis(0));
     }
 
@@ -2192,13 +2192,13 @@ public class CommandLineHelpTest {
         String actual = usageString(new App(), Help.Ansi.OFF);
         String expected = String.format(
                 "Usage: <main class> <host1> <port1> <host2> <port2range> [<port2range>]%n" +
-                        "                    [<files>]...%n" +
+                        "                    [<files>...]%n" +
                         "      <host1>        source host%n" +
                         "      <port1>        source port%n" +
                         "      <host2>        destination host%n" +
                         "      <port2range> [<port2range>]%n" +
                         "                     destination port range%n" +
-                        "      [<files>]...   files to transfer%n"
+                        "      [<files>...]   files to transfer%n"
         );
         assertEquals(expected, actual);
     }
@@ -2904,11 +2904,24 @@ public class CommandLineHelpTest {
     }
 
     @Test
-    public void testMapFieldHelp() {
+    public void testRepeatingGroup() {
+        class App {
+            @Parameters(arity = "2", description = "description") String[] twoArgs;
+        }
+        String actual = usageString(new App(), Help.Ansi.OFF);
+        String expected = String.format("" +
+                "Usage: <main class> (<twoArgs> <twoArgs>)...%n" +
+                "      (<twoArgs> <twoArgs>)...%n" +
+                "         description%n");
+        assertEquals(expected, actual);
+    }
+    
+    @Test
+    public void testMapFieldHelp_with_unlimitedSplit() {
         class App {
             @Parameters(arity = "2", split = "\\|",
                     paramLabel = "FIXTAG=VALUE",
-                    description = "Exactly two lists of vertical bar '|'-separated FIXTAG=VALUE pairs.")
+                    description = "Repeating group of two lists of vertical bar '|'-separated FIXTAG=VALUE pairs.")
             Map<Integer,String> message;
 
             @Option(names = {"-P", "-map"}, split = ",",
@@ -2918,18 +2931,19 @@ public class CommandLineHelpTest {
         }
         String actual = usageString(new App(), Help.Ansi.OFF);
         String expected = String.format("" +
-                "Usage: <main class> [-P=TIMEUNIT=VALUE[,TIMEUNIT=VALUE]...]... FIXTAG=VALUE%n" +
-                "                    [\\|FIXTAG=VALUE]... FIXTAG=VALUE[\\|FIXTAG=VALUE]...%n" +
-                "      FIXTAG=VALUE[\\|FIXTAG=VALUE]... FIXTAG=VALUE[\\|FIXTAG=VALUE]...%n" +
-                "         Exactly two lists of vertical bar '|'-separated FIXTAG=VALUE pairs.%n" +
-                "  -P, -map=TIMEUNIT=VALUE[,TIMEUNIT=VALUE]...%n" +
+                "Usage: <main class> [-P=TIMEUNIT=VALUE[,TIMEUNIT=VALUE...]]... (FIXTAG=VALUE%n" +
+                "                    [\\|FIXTAG=VALUE...] FIXTAG=VALUE[\\|FIXTAG=VALUE...])...%n" +
+                "      (FIXTAG=VALUE[\\|FIXTAG=VALUE...] FIXTAG=VALUE[\\|FIXTAG=VALUE...])...%n" +
+                "         Repeating group of two lists of vertical bar '|'-separated FIXTAG=VALUE%n" +
+                "           pairs.%n" +
+                "  -P, -map=TIMEUNIT=VALUE[,TIMEUNIT=VALUE...]%n" +
                 "         Any number of TIMEUNIT=VALUE pairs. These may be specified separately%n" +
                 "           (-PTIMEUNIT=VALUE) or as a comma-separated list.%n");
         assertEquals(expected, actual);
     }
 
     @Test
-    public void testMapFieldHelpSplit_arityRestrictsCumulativeTotal() {
+    public void testMapFieldHelpSplit_with_limitSplit() {
         class App {
             @Parameters(arity = "2", split = "\\|",
                     paramLabel = "FIXTAG=VALUE",
@@ -2945,15 +2959,13 @@ public class CommandLineHelpTest {
         spec.parser().limitSplit(true);
         String actual = usageString(new CommandLine(spec), Help.Ansi.OFF);
         String expected = String.format("" +
-                "Usage: <main class> [-P=TIMEUNIT=VALUE[,TIMEUNIT=VALUE]...]... FIXTAG=VALUE%n" +
-                "                    [\\|FIXTAG=VALUE]... FIXTAG=VALUE[\\|FIXTAG=VALUE]...%n" +
-                "      FIXTAG=VALUE[\\|FIXTAG=VALUE]... FIXTAG=VALUE[\\|FIXTAG=VALUE]...%n" +
-                "                              Exactly two lists of vertical bar '|'-separated%n" +
-                "                                FIXTAG=VALUE pairs.%n" +
+                "Usage: <main class> [-P=TIMEUNIT=VALUE[,TIMEUNIT=VALUE]...]...%n" +
+                "                    (FIXTAG=VALUE\\|FIXTAG=VALUE)...%n" +
+                "      (FIXTAG=VALUE\\|FIXTAG=VALUE)...%n" +
+                "         Exactly two lists of vertical bar '|'-separated FIXTAG=VALUE pairs.%n" +
                 "  -P, -map=TIMEUNIT=VALUE[,TIMEUNIT=VALUE]...%n" +
-                "                              Any number of TIMEUNIT=VALUE pairs. These may be%n" +
-                "                                specified separately (-PTIMEUNIT=VALUE) or as a%n" +
-                "                                comma-separated list.%n");
+                "         Any number of TIMEUNIT=VALUE pairs. These may be specified separately%n" +
+                "           (-PTIMEUNIT=VALUE) or as a comma-separated list.%n");
         assertEquals(expected, actual);
     }
 
@@ -2989,7 +3001,24 @@ public class CommandLineHelpTest {
         CommandSpec spec = CommandSpec.forAnnotatedObject(new App());
         spec.parser().limitSplit(true);
         String actual = usageString(new CommandLine(spec), Help.Ansi.OFF);
-        String expected = String.format("");
+        String expected = String.format("" +
+                "Usage: <main class> [--help] [--logfile=<file>] [--x[=<x>[,<x>]]]...%n" +
+                "                    [--lib=<path>[,<path>[,<path>]]]... [--y=<y>,<y>,<y>]... [-P%n" +
+                "                    [=<key=ppp>...]]... [-S[=<key=sss>[,<key=sss>]...]]...%n" +
+                "                    [-D=<key=ddd>...]... [-T=<key=ttt>[,<key=ttt>]...]...%n" +
+                "      --help             print this message%n" +
+                "      --lib=<path>[,<path>[,<path>]]%n" +
+                "                         comma-separated list of up to 3 paths to search for jars%n" +
+                "                           and classes%n" +
+                "      --logfile=<file>   use given file for log%n" +
+                "      --x[=<x>[,<x>]]    comma-separated list of up to 2 xxx's%n" +
+                "      --y=<y>,<y>,<y>    exactly 3 y's%n" +
+                "  -D= <key=ddd>...       use value for given property%n" +
+                "  -P= [<key=ppp>...]     use value for project key%n" +
+                "  -S= [<key=sss>[,<key=sss>]...]%n" +
+                "                         use value for project key%n" +
+                "  -T= <key=ttt>[,<key=ttt>]...%n" +
+                "                         use value for given property%n");
         assertEquals(expected, actual);
     }
 
@@ -3255,12 +3284,12 @@ public class CommandLineHelpTest {
         String expected = String.format("" +
                 "Displays help information about the specified command%n" +
                 "%n" +
-                "Usage: help [-h] [COMMAND]...%n" +
+                "Usage: help [-h] [COMMAND...]%n" +
                 "%n" +
                 "When no COMMAND is given, the usage help for the main command is displayed.%n" +
                 "If a COMMAND is specified, the help for that command is shown.%n" +
                 "%n" +
-                "      [COMMAND]...   The COMMAND to display the usage help message for.%n" +
+                "      [COMMAND...]   The COMMAND to display the usage help message for.%n" +
                 "  -h, --help         Show usage help for the help command and exit.%n");
         assertEquals(expected, baos.toString());
 

@@ -590,7 +590,7 @@ public class Demo implements Runnable {
             "Record changes to the repository.%n" +
             "%n" +
             "git-commit [-ap] [--fixup=<commit>] [--squash=<commit>] [-c=<commit>]%n" +
-            "           [-C=<commit>] [-F=<file>] [-m=<msg>]... [<files>]...%n" +
+            "           [-C=<commit>] [-F=<file>] [-m=<msg>]... [<files>...]%n" +
             "%n" +
             "Description:%n" +
             "%n" +
@@ -598,7 +598,7 @@ public class Demo implements Runnable {
             "message from the user describing the changes.%n" +
             "%n" +
             "Parameters:%n" +
-            "      [<files>]...        the files to commit%n" +
+            "      [<files>...]        the files to commit%n" +
             "%n" +
             "Options:%n" +
             "  -a, --all               Tell the command to automatically stage files that have%n" +
@@ -631,7 +631,7 @@ public class Demo implements Runnable {
             "Record changes to the repository.%n" +
             "%n" +
             "@|bold git-commit|@ [@|yellow -ap|@] [@|yellow --fixup|@=@|italic <commit>|@] [@|yellow --squash|@=@|italic <commit>|@] [@|yellow -c|@=@|italic <commit>|@]%n" +
-            "           [@|yellow -C|@=@|italic <commit>|@] [@|yellow -F|@=@|italic <file>|@] [@|yellow -m|@=@|italic <msg>|@]... [@|yellow <files>|@]...%n" +
+            "           [@|yellow -C|@=@|italic <commit>|@] [@|yellow -F|@=@|italic <file>|@] [@|yellow -m|@=@|italic <msg>|@]... [@|yellow <files>|@...]%n" +
             "%n" +
             "@|bold,underline Description:|@%n" +
             "%n" +
@@ -639,7 +639,7 @@ public class Demo implements Runnable {
             "message from the user describing the changes.%n" +
             "%n" +
             "@|bold,underline Parameters:|@%n" +
-            "      [@|yellow <files>|@]...        the files to commit%n" +
+            "      [@|yellow <files>|@...]        the files to commit%n" +
             "%n" +
             "@|bold,underline Options:|@%n" +
             "  @|yellow -a|@, @|yellow --all|@               Tell the command to automatically stage files that have%n" +

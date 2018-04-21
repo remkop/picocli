@@ -6731,55 +6731,103 @@ public class CommandLine {
             }
             public String separator() { return commandSpec.parser().separator(); }
             public Text renderParameterLabel(ArgSpec argSpec, Ansi ansi, List<IStyle> styles) {
-                Text result = ansi.new Text("");
-                String initialSep = argSpec.isOption() ? separator() : "";
                 Text paramName = ansi.apply(argSpec.paramLabel(), styles);
                 Range capacity = argSpec.isOption() ? argSpec.arity() : ((PositionalParamSpec)argSpec).capacity();
+                if (capacity.max == 0) { return ansi.new Text(""); }
+
                 String split = argSpec.splitRegex();
-                String sep = initialSep;
-                String nextSep = " ";
-                boolean succinct = false;
-                if (!empty(split)) {
-                    if (commandSpec.parser().limitSplit()) {
-                        nextSep = split;
-                        succinct = true;
-                    } else {
-                        paramName = paramName.concat("[" + split).concat(paramName).concat("]..."); /* #194 */
+                String mandatorySep = empty(split) ? " "  : split;
+                String optionalSep  = empty(split) ? " [" : "[" + split;
+
+                boolean unlimitedSplit = !empty(split) && !commandSpec.parser().limitSplit();
+                boolean limitedSplit =   !empty(split) &&  commandSpec.parser().limitSplit();
+                Text repeating = paramName;
+                int paramCount = 1;
+                if (unlimitedSplit) {
+                    repeating = paramName.concat("[" + split).concat(paramName).concat("...]");
+                    paramCount++;
+                    mandatorySep = " ";
+                    optionalSep = " [";
+                }
+                Text result = repeating;
+
+                int done = 1;
+                for (; done < capacity.min; done++) {
+                    result = result.concat(mandatorySep).concat(repeating); // " PARAM" or ",PARAM"
+                    paramCount += paramCount;
+                }
+                if (!capacity.isVariable) {
+                    for (int i = done; i < capacity.max; i++) {
+                        result = result.concat(optionalSep).concat(paramName); // " [PARAM" or "[,PARAM"
+                        paramCount++;
+                    }
+                    for (int i = done; i < capacity.max; i++) {
+                        result = result.concat("]");
                     }
                 }
-                for (int i = 0; i < capacity.min; i++) {
-                    result = result.concat(sep).concat(paramName);
-                    sep = nextSep;
+                // show an extra trailing "[,PARAM]" if split and either max=* or splitting is not restricted to max
+                boolean effectivelyVariable = capacity.isVariable || (limitedSplit && paramCount == 1);
+                if (limitedSplit && effectivelyVariable && paramCount == 1) {
+                    result = result.concat(optionalSep).concat(repeating).concat("]"); // PARAM[,PARAM]...
                 }
-                if (capacity.isVariable) {
-                    String suffix = commandSpec.parser().limitSplit() ? "" : "...";
-                    if (result.length == 0 || (succinct && capacity.min <= 1)) { /*len=0: arity="*" or arity="0..*" */
-                        if (succinct && capacity.min == 0) {
-                            result = result.concat(sep + "[").concat(paramName).concat("[" + split).concat(paramName).concat("]]");
-//                        } else if (succinct && capacity.min == 1) {
-//                            result = result.concat(sep + "[").concat(paramName).concat("]" + suffix);
-                        } else {
-                            result = result.concat(sep + "[").concat(paramName).concat("]" + suffix);
-                        }
-                    } else if (!result.plainString().endsWith("...")) { // getSplitRegex param may already end with "..."
-                        result = result.concat(suffix);
+                if (effectivelyVariable) {
+                    if (!argSpec.arity().isVariable && argSpec.arity().min > 1) {
+                        result = ansi.new Text("(").concat(result).concat(")"); // repeating group
                     }
+                    result = result.concat("..."); // PARAM...
+                }
+                String optionSeparator = argSpec.isOption() ? separator() : "";
+                if (capacity.min == 0) { // optional
+                    String sep2 = empty(optionSeparator.trim()) ? optionSeparator + "[" : "[" + optionSeparator;
+                    result = ansi.new Text(sep2).concat(result).concat("]");
                 } else {
-                    sep = result.length == 0 ? initialSep : nextSep;
-                    for (int i = capacity.min; i < capacity.max; i++) {
-                        if (sep.trim().length() == 0) {
-                            result = result.concat(sep + "[").concat(paramName);
-                        } else {
-                            result = result.concat("[" + sep).concat(paramName);
-                        }
-                        sep  = nextSep;
-                    }
-                    for (int i = capacity.min; i < capacity.max; i++) { result = result.concat("]"); }
-                    if (succinct && capacity.min == capacity.max) {
-                        result = result.concat("[" + sep).concat(paramName).concat("]");
-                    }
+                    result = ansi.new Text(optionSeparator).concat(result);
                 }
                 return result;
+//                String sep = initialSep;
+//                String nextSep = " ";
+//                boolean succinct = false;
+//                if (!empty(split)) {
+//                    if (commandSpec.parser().limitSplit()) {
+//                        nextSep = split;
+//                        succinct = true;
+//                    } else {
+//                        paramName = paramName.concat("[" + split).concat(paramName).concat("]..."); /* #194 */
+//                    }
+//                }
+//                for (int i = 0; i < capacity.min; i++) {
+//                    result = result.concat(sep).concat(paramName);
+//                    sep = nextSep;
+//                }
+//                if (capacity.isVariable) {
+//                    String suffix = commandSpec.parser().limitSplit() ? "" : "...";
+//                    if (result.length == 0 || (succinct && capacity.min <= 1)) { /*len=0: arity="*" or arity="0..*" */
+//                        if (succinct && capacity.min == 0) {
+//                            result = result.concat(sep + "[").concat(paramName).concat("[" + split).concat(paramName).concat("]]");
+////                        } else if (succinct && capacity.min == 1) {
+////                            result = result.concat(sep + "[").concat(paramName).concat("]" + suffix);
+//                        } else {
+//                            result = result.concat(sep + "[").concat(paramName).concat("]" + suffix);
+//                        }
+//                    } else if (!result.plainString().endsWith("...")) { // getSplitRegex param may already end with "..."
+//                        result = result.concat(suffix);
+//                    }
+//                } else {
+//                    sep = result.length == 0 ? initialSep : nextSep;
+//                    for (int i = capacity.min; i < capacity.max; i++) {
+//                        if (sep.trim().length() == 0) {
+//                            result = result.concat(sep + "[").concat(paramName);
+//                        } else {
+//                            result = result.concat("[" + sep).concat(paramName);
+//                        }
+//                        sep  = nextSep;
+//                    }
+//                    for (int i = capacity.min; i < capacity.max; i++) { result = result.concat("]"); }
+//                    if (succinct && capacity.min == capacity.max) {
+//                        result = result.concat("[" + sep).concat(paramName).concat("]");
+//                    }
+//                }
+//                return result;
             }
         }
         /** Use a Layout to format usage help text for options and parameters in tabular format.

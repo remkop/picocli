@@ -47,6 +47,7 @@ No features have been promoted in this picocli release.
 ## <a name="3.0.0-beta-2-fixes"></a> Fixed issues
 - [#366] API Change: Add `ArgSpec.getTypedValues()` method.
 - [#365] Enhancement: Stricter arity validation: options with mandatory parameters no longer consume other option flags.
+- [#357] Enhancement: Improve synopsis format. Be more succinct when `limitSplit` is true. Support repeating groups.
 
 ## <a name="3.0.0-beta-2-deprecated"></a> Deprecations
 

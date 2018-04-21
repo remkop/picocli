@@ -496,11 +496,11 @@ public class CommandLineMixinTest {
                 "MixinSub Header Heading%n" +
                 "MixinSub Header%n" +
                 "Receiver Synopsis Heading%n" +
-                "superName [<files>]...%n" +
+                "superName [<files>...]%n" +
                 "MixinSub Description Heading%n" +
                 "description from mixinSub%n" +
                 "Receiver Parameter List Heading%n" +
-                "      [<files>]...   some files%n" +
+                "      [<files>...]   some files%n" +
                 "ReceiverSuper Footer Heading%n" +
                 "ReceiverSuper Footer%n");
         assertEquals(expected, usageString(commandLine, Help.Ansi.OFF));
@@ -566,9 +566,9 @@ public class CommandLineMixinTest {
         assertEquals("<files>",         commandSpec.positionalParameters().get(1).paramLabel());
 
         String expects = String.format("" +
-                "Usage: <main class> [-a=<alpha>] [-b=<beta>] [<receiverFiles>]... [<files>]...%n" +
-                "      [<receiverFiles>]...   parameters from receiver%n" +
-                "      [<files>]...           parameters from mixin%n" +
+                "Usage: <main class> [-a=<alpha>] [-b=<beta>] [<receiverFiles>...] [<files>...]%n" +
+                "      [<receiverFiles>...]   parameters from receiver%n" +
+                "      [<files>...]           parameters from mixin%n" +
                 "  -b, --beta=<beta>          Receiver option%n" +
                 "  -a, --alpha=<alpha>        option from mixin%n");
         assertEquals(expects, usageString(commandLine, Help.Ansi.OFF));
@@ -644,9 +644,9 @@ public class CommandLineMixinTest {
         assertEquals("<receiverFiles>", commandSpec.positionalParameters().get(1).paramLabel());
 
         String expects = String.format("" +
-                "Usage: <main class> [-a=<alpha>] [-b=<beta>] [<files>]... [<receiverFiles>]...%n" +
-                "      [<files>]...           parameters from mixin%n" +
-                "      [<receiverFiles>]...   parameters from receiver%n" +
+                "Usage: <main class> [-a=<alpha>] [-b=<beta>] [<files>...] [<receiverFiles>...]%n" +
+                "      [<files>...]           parameters from mixin%n" +
+                "      [<receiverFiles>...]   parameters from receiver%n" +
                 "  -a, --alpha=<alpha>        option from mixin%n" +
                 "  -b, --beta=<beta>          Receiver option%n");
         assertEquals(expects, usageString(commandLine, Help.Ansi.OFF));
