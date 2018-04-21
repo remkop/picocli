@@ -37,7 +37,8 @@ interactively showing users what options and subcommands are available.
 ![Picocli Demo help message with ANSI colors](docs/images/picocli.Demo.png?raw=true)
 
 #### Releases
-* [Releases](https://github.com/remkop/picocli/releases) - latest: 3.0.0-beta-1
+* [Releases](https://github.com/remkop/picocli/releases) - latest: 3.0.0-beta-2
+* [Picocli 3.0.0-beta-2 Release Notes](https://github.com/remkop/picocli/releases/tag/v3.0.0-beta-2) - note there are some [potential breaking changes](https://github.com/remkop/picocli/releases/tag/v3.0.0-beta-2#3.0.0-beta-2-breaking-changes) from prior versions
 * [Picocli 3.0.0-beta-1 Release Notes](https://github.com/remkop/picocli/releases/tag/v3.0.0-beta-1) - note there are some [potential breaking changes](https://github.com/remkop/picocli/releases/tag/v3.0.0-beta-1#3.0.0-beta-1-breaking-changes) from prior versions
 * [Picocli 3.0.0-alpha-6 Release Notes](https://github.com/remkop/picocli/releases/tag/v3.0.0-alpha-6) - note there are some [potential breaking changes](https://github.com/remkop/picocli/releases/tag/v3.0.0-alpha-6#3.0.0-alpha-6-breaking-changes) from prior versions
 * [Picocli 3.0.0-alpha-5 Release Notes](https://github.com/remkop/picocli/releases/tag/v3.0.0-alpha-5) - note there are some [potential breaking changes](https://github.com/remkop/picocli/releases/tag/v3.0.0-alpha-5#3.0.0-alpha-5-breaking-changes) from prior versions
@@ -145,35 +146,35 @@ See the [source code](https://github.com/remkop/picocli/blob/master/src/main/jav
 
 ### Gradle
 ```
-compile 'info.picocli:picocli:3.0.0-beta-1'
+compile 'info.picocli:picocli:3.0.0-beta-2'
 ```
 ### Maven
 ```
 <dependency>
   <groupId>info.picocli</groupId>
   <artifactId>picocli</artifactId>
-  <version>3.0.0-beta-1</version>
+  <version>3.0.0-beta-2</version>
 </dependency>
 ```
 ### Scala SBT
 ```
-libraryDependencies += "info.picocli" % "picocli" % "3.0.0-beta-1"
+libraryDependencies += "info.picocli" % "picocli" % "3.0.0-beta-2"
 ```
 ### Ivy
 ```
-<dependency org="info.picocli" name="picocli" rev="3.0.0-beta-1" />
+<dependency org="info.picocli" name="picocli" rev="3.0.0-beta-2" />
 ```
 ### Grape
 ```groovy
 @Grapes(
-    @Grab(group='info.picocli', module='picocli', version='3.0.0-beta-1')
+    @Grab(group='info.picocli', module='picocli', version='3.0.0-beta-2')
 )
 ```
 ### Leiningen
 ```
-[info.picocli/picocli "3.0.0-beta-1"]
+[info.picocli/picocli "3.0.0-beta-2"]
 ```
 ### Buildr
 ```
-'info.picocli:picocli:jar:3.0.0-beta-1'
+'info.picocli:picocli:jar:3.0.0-beta-2'
 ```

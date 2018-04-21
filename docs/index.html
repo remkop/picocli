@@ -513,8 +513,8 @@ table.CodeRay td.code>pre{padding:0}
 <div id="header">
 <h1>picocli - a mighty tiny command line interface</h1>
 <div class="details">
-<span id="revnumber">version 3.0.0-beta-1,</span>
-<span id="revdate">2018-04-18</span>
+<span id="revnumber">version 3.0.0-beta-2,</span>
+<span id="revdate">2018-04-21</span>
 </div>
 <div id="toc" class="toc2">
 <div id="toctitle">Features</div>
@@ -557,14 +557,13 @@ table.CodeRay td.code>pre{padding:0}
 <li><a href="#_parser_configuration">6. Parser Configuration</a>
 <ul class="sectlevel2">
 <li><a href="#_overwriting_single_options">6.1. Overwriting Single Options</a></li>
-<li><a href="#_limiting_cumulative_size">6.2. Limiting Cumulative Size</a></li>
-<li><a href="#_stop_at_positional">6.3. Stop At Positional</a></li>
-<li><a href="#_unmatched_input">6.4. Unmatched Input</a></li>
-<li><a href="#__code_unmatched_code_annotation">6.5. <code>@Unmatched</code> annotation</a></li>
-<li><a href="#_unknown_options">6.6. Unknown Options</a></li>
-<li><a href="#_stop_at_unmatched">6.7. Stop At Unmatched</a></li>
-<li><a href="#_toggle_boolean_flags">6.8. Toggle Boolean Flags</a></li>
-<li><a href="#_posix_clustered_short_options">6.9. POSIX Clustered Short Options</a></li>
+<li><a href="#_stop_at_positional">6.2. Stop At Positional</a></li>
+<li><a href="#_unmatched_input">6.3. Unmatched Input</a></li>
+<li><a href="#__code_unmatched_code_annotation">6.4. <code>@Unmatched</code> annotation</a></li>
+<li><a href="#_unknown_options">6.5. Unknown Options</a></li>
+<li><a href="#_stop_at_unmatched">6.6. Stop At Unmatched</a></li>
+<li><a href="#_toggle_boolean_flags">6.7. Toggle Boolean Flags</a></li>
+<li><a href="#_posix_clustered_short_options">6.8. POSIX Clustered Short Options</a></li>
 </ul>
 </li>
 <li><a href="#_help">7. Help</a>
@@ -1601,7 +1600,7 @@ the <code>-f</code> argument is recognized as a separate option.</p>
 <i class="fa icon-tip" title="Tip"></i>
 </td>
 <td class="content">
-It is also possible to <a href="#_limiting_cumulative_size">configure the parser</a> to use <code>arity</code> to limit the total number of values accumulated in an option or positional parameter.
+It is also possible to <a href="#Limiting Cumulative Size">configure the parser</a> to use <code>arity</code> to limit the total number of values accumulated in an option or positional parameter.
 </td>
 </tr>
 </table>
@@ -1851,50 +1850,7 @@ and a WARN level message is printed to the console. (See <a href="#_tracing">Tra
 </div>
 </div>
 <div class="sect2">
-<h3 id="_limiting_cumulative_size">6.2. Limiting Cumulative Size</h3>
-<div class="paragraph">
-<p>By default, the <a href="#_arity">arity</a> of an option is the number of arguments <em>for each occurrence</em> of the option.
-For example, if option <code>-a</code> has <code>arity = "2"</code>, then the following is a perfectly valid command:
-for each occurrence of the option, two option parameters are specified.</p>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre>&lt;command&gt; -a 1 2 -a 3 4 -a 5 6</pre>
-</div>
-</div>
-<div class="paragraph">
-<p>However, if <code>CommandLine.setArityRestrictsCumulativeSize(true)</code> is called first, <code>arity</code> also becomes an upper bound on the number of values accumulated for an option or positional parameter.
-The above example would result in a <code>MaxValuesExceededException</code> because the total number of values (6) exceeds the arity of 2.</p>
-</div>
-<div class="paragraph">
-<p>Additionally, by default, when <code>arityRestrictsCumulativeSize</code> is <code>false</code>, arity is only applied <em>before</em> the argument is <a href="#_split_regex">split</a> into parts,
-while when <code>arityRestrictsCumulativeSize</code> is set to <code>true</code>, validation is applied <em>after</em> a command line argument has been split into parts.</p>
-</div>
-<div class="paragraph">
-<p>For example, if we have an option like this:</p>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre class="CodeRay highlight"><code data-lang="java"><span class="annotation">@Option</span>(name = <span class="string"><span class="delimiter">&quot;</span><span class="content">-a</span><span class="delimiter">&quot;</span></span>, arity = <span class="string"><span class="delimiter">&quot;</span><span class="content">1..2</span><span class="delimiter">&quot;</span></span>, split = <span class="string"><span class="delimiter">&quot;</span><span class="content">,</span><span class="delimiter">&quot;</span></span>) <span class="predefined-type">String</span><span class="type">[]</span> values;</code></pre>
-</div>
-</div>
-<div class="paragraph">
-<p>By default, the following input would be a valid command:</p>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre>&lt;command&gt; -a 1,2,3</pre>
-</div>
-</div>
-<div class="paragraph">
-<p>By default, the option arity tells the parser to consume 1 to 2 arguments, and the option was followed by a single parameter, <code>"1,2,3"</code>, which is fine.</p>
-</div>
-<div class="paragraph">
-<p>However, if <code>arityRestrictsCumulativeSize</code> is set to true, the above example would result in a <code>MaxValuesExceededException</code> because the argument is split into 3 parts, which exceeds the max arity of 2.</p>
-</div>
-</div>
-<div class="sect2">
-<h3 id="_stop_at_positional">6.3. Stop At Positional</h3>
+<h3 id="_stop_at_positional">6.2. Stop At Positional</h3>
 <div class="paragraph">
 <p>By default, positional parameters can be mixed with options on the command line, but this is not always desirable.
 From picocli 2.3, applications can call <code>CommandLine.setStopAtPositional(true)</code>
@@ -1905,7 +1861,7 @@ to force the parser to treat all values following the first positional parameter
 </div>
 </div>
 <div class="sect2">
-<h3 id="_unmatched_input">6.4. Unmatched Input</h3>
+<h3 id="_unmatched_input">6.3. Unmatched Input</h3>
 <div class="paragraph">
 <p>By default, an <code>UnmatchedArgumentException</code> is thrown when a command line argument cannot be assigned to
 an option or positional parameter. For example:</p>
@@ -1936,7 +1892,7 @@ When unmatched arguments are allowed, the above input will be accepted and a WAR
 </div>
 </div>
 <div class="sect2">
-<h3 id="__code_unmatched_code_annotation">6.5. <code>@Unmatched</code> annotation</h3>
+<h3 id="__code_unmatched_code_annotation">6.4. <code>@Unmatched</code> annotation</h3>
 <div class="paragraph">
 <p>From picocli 3.0, fields annotated with <code>@Unmatched</code> will be populated with the unmatched arguments.
 The field must be of type <code>String[]</code> or <code>List&lt;String&gt;</code>.</p>
@@ -1947,7 +1903,7 @@ so no <code>UnmatchedArgumentException</code> is thrown when a command line argu
 </div>
 </div>
 <div class="sect2">
-<h3 id="_unknown_options">6.6. Unknown Options</h3>
+<h3 id="_unknown_options">6.5. Unknown Options</h3>
 <div class="paragraph">
 <p>A special case of unmatched input are arguments that resemble options but don&#8217;t match any of the defined options.
 For example:</p>
@@ -2009,7 +1965,7 @@ The next argument <code>-a</code> is recognized and processed as a known option 
 </div>
 </div>
 <div class="sect2">
-<h3 id="_stop_at_unmatched">6.7. Stop At Unmatched</h3>
+<h3 id="_stop_at_unmatched">6.6. Stop At Unmatched</h3>
 <div class="paragraph">
 <p>From picocli 2.3, applications can call <code>CommandLine.setStopAtUnmatched(true)</code> to force the parser to stop interpreting
 options and positional parameters as soon as it encounters an unmatched argument.</p>
@@ -2020,7 +1976,7 @@ unmatched arguments list returned by <code>CommandLine.getUnmatchedArguments()</
 </div>
 </div>
 <div class="sect2">
-<h3 id="_toggle_boolean_flags">6.8. Toggle Boolean Flags</h3>
+<h3 id="_toggle_boolean_flags">6.7. Toggle Boolean Flags</h3>
 <div class="paragraph">
 <p>By default, boolean flag options without a parameter are "toggled" when the option is matched on the command line:
 if the previous value was <code>true</code> it is set to <code>false</code>, and when the value was <code>false</code> it is set to <code>true</code>.
@@ -2029,7 +1985,7 @@ If toggling is off, flags are simply set to <code>true</code> when the option is
 </div>
 </div>
 <div class="sect2">
-<h3 id="_posix_clustered_short_options">6.9. POSIX Clustered Short Options</h3>
+<h3 id="_posix_clustered_short_options">6.8. POSIX Clustered Short Options</h3>
 <div class="paragraph">
 <p>By default, the picocli parser allows POSIX clustered short options, so short options like <code>-x -v -f SomeFile</code> can be clustered together like <code>-xvfSomeFile</code>.
 From picocli 3.0, applications can call <code>CommandLine.setPosixClusteredShortOptionsAllowed(false)</code> to enforce that options must be separated with whitespace on the command line.</p>
@@ -4212,7 +4168,7 @@ The script body is executed if the user input was valid and did not request usag
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="CodeRay highlight"><code data-lang="groovy"><span class="annotation">@Grab</span>(<span class="string"><span class="delimiter">'</span><span class="content">info.picocli:picocli:3.0.0-beta-1</span><span class="delimiter">'</span></span>)
+<pre class="CodeRay highlight"><code data-lang="groovy"><span class="annotation">@Grab</span>(<span class="string"><span class="delimiter">'</span><span class="content">info.picocli:picocli:3.0.0-beta-2</span><span class="delimiter">'</span></span>)
 <span class="annotation">@Command</span>(name = <span class="string"><span class="delimiter">&quot;</span><span class="content">myCommand</span><span class="delimiter">&quot;</span></span>,
   description = <span class="string"><span class="delimiter">&quot;</span><span class="content">@|bold Groovy script|@ @|underline picocli|@ example</span><span class="delimiter">&quot;</span></span>)
 <span class="annotation">@picocli</span>.groovy.PicocliScript
@@ -4251,7 +4207,7 @@ When using a Groovy version older than 2.4.7, use this workaround for the <a hre
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="CodeRay highlight"><code data-lang="groovy"><span class="annotation">@Grab</span>(<span class="string"><span class="delimiter">'</span><span class="content">info.picocli:picocli:3.0.0-beta-1</span><span class="delimiter">'</span></span>)
+<pre class="CodeRay highlight"><code data-lang="groovy"><span class="annotation">@Grab</span>(<span class="string"><span class="delimiter">'</span><span class="content">info.picocli:picocli:3.0.0-beta-2</span><span class="delimiter">'</span></span>)
 <span class="annotation">@GrabExclude</span>(<span class="string"><span class="delimiter">'</span><span class="content">org.codehaus.groovy:groovy-all</span><span class="delimiter">'</span></span>) <span class="comment">// work around GROOVY-7613</span>
 ...</code></pre>
 </div>
@@ -4423,7 +4379,7 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
 <h3 id="_gradle">23.1. Gradle</h3>
 <div class="listingblock">
 <div class="content">
-<pre>compile 'info.picocli:picocli:3.0.0-beta-1'</pre>
+<pre>compile 'info.picocli:picocli:3.0.0-beta-2'</pre>
 </div>
 </div>
 </div>
@@ -4434,7 +4390,7 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
 <pre>&lt;dependency&gt;
   &lt;groupId&gt;info.picocli&lt;/groupId&gt;
   &lt;artifactId&gt;picocli&lt;/artifactId&gt;
-  &lt;version&gt;3.0.0-beta-1&lt;/version&gt;
+  &lt;version&gt;3.0.0-beta-2&lt;/version&gt;
 &lt;/dependency&gt;</pre>
 </div>
 </div>
@@ -4443,7 +4399,7 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
 <h3 id="_scala_sbt">23.3. Scala SBT</h3>
 <div class="listingblock">
 <div class="content">
-<pre>libraryDependencies += "info.picocli" % "picocli" % "3.0.0-beta-1"</pre>
+<pre>libraryDependencies += "info.picocli" % "picocli" % "3.0.0-beta-2"</pre>
 </div>
 </div>
 </div>
@@ -4451,7 +4407,7 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
 <h3 id="_ivy">23.4. Ivy</h3>
 <div class="listingblock">
 <div class="content">
-<pre>&lt;dependency org="info.picocli" name="picocli" rev="3.0.0-beta-1" /&gt;</pre>
+<pre>&lt;dependency org="info.picocli" name="picocli" rev="3.0.0-beta-2" /&gt;</pre>
 </div>
 </div>
 </div>
@@ -4571,7 +4527,7 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
  */</span>
 <span class="directive">public</span> <span class="type">class</span> <span class="class">CommandLine</span> {
     <span class="comment">/** This is picocli version {@value}. */</span>
-    <span class="directive">public</span> <span class="directive">static</span> <span class="directive">final</span> <span class="predefined-type">String</span> VERSION = <span class="string"><span class="delimiter">&quot;</span><span class="content">3.0.0-beta-1</span><span class="delimiter">&quot;</span></span>;
+    <span class="directive">public</span> <span class="directive">static</span> <span class="directive">final</span> <span class="predefined-type">String</span> VERSION = <span class="string"><span class="delimiter">&quot;</span><span class="content">3.0.0-beta-2</span><span class="delimiter">&quot;</span></span>;
 
     <span class="directive">private</span> <span class="directive">final</span> Tracer tracer = <span class="keyword">new</span> Tracer();
     <span class="directive">private</span> <span class="directive">final</span> CommandSpec commandSpec;
@@ -7777,7 +7733,6 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
             <span class="directive">public</span> <span class="type">boolean</span> expandAtFiles()                     { <span class="keyword">return</span> expandAtFiles; }
             <span class="comment">/** @see CommandLine#isPosixClusteredShortOptionsAllowed() */</span>
             <span class="directive">public</span> <span class="type">boolean</span> posixClusteredShortOptionsAllowed() { <span class="keyword">return</span> posixClusteredShortOptionsAllowed; }
-            <span class="directive">private</span> <span class="type">boolean</span> arityRestrictsCumulativeSize()      { <span class="keyword">return</span> <span class="predefined-constant">false</span>; }
             <span class="comment">/** @see CommandLine#isUnmatchedOptionsArePositionalParams() */</span>
             <span class="directive">public</span> <span class="type">boolean</span> unmatchedOptionsArePositionalParams() { <span class="keyword">return</span> unmatchedOptionsArePositionalParams; }
             <span class="directive">private</span> <span class="type">boolean</span> splitFirst()                       { <span class="keyword">return</span> limitSplit(); }
@@ -7802,7 +7757,6 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
             <span class="directive">public</span> ParserSpec unmatchedArgumentsAllowed(<span class="type">boolean</span> unmatchedArgumentsAllowed) { <span class="local-variable">this</span>.unmatchedArgumentsAllowed = unmatchedArgumentsAllowed; <span class="keyword">return</span> <span class="local-variable">this</span>; }
             <span class="comment">/** @see CommandLine#setExpandAtFiles(boolean) */</span>
             <span class="directive">public</span> ParserSpec expandAtFiles(<span class="type">boolean</span> expandAtFiles)                         { <span class="local-variable">this</span>.expandAtFiles = expandAtFiles; <span class="keyword">return</span> <span class="local-variable">this</span>; }
-            <span class="comment">/** @see CommandLine#setArityRestrictsCumulativeSize(boolean) */</span>
             <span class="comment">/** @see CommandLine#setPosixClusteredShortOptionsAllowed(boolean) */</span>
             <span class="directive">public</span> ParserSpec posixClusteredShortOptionsAllowed(<span class="type">boolean</span> posixClusteredShortOptionsAllowed) { <span class="local-variable">this</span>.posixClusteredShortOptionsAllowed = posixClusteredShortOptionsAllowed; <span class="keyword">return</span> <span class="local-variable">this</span>; }
             <span class="comment">/** @see CommandLine#setUnmatchedOptionsArePositionalParams(boolean) */</span>
@@ -7862,7 +7816,8 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
             <span class="directive">private</span> <span class="predefined-type">List</span>&lt;<span class="predefined-type">String</span>&gt; stringValues = <span class="keyword">new</span> <span class="predefined-type">ArrayList</span>&lt;<span class="predefined-type">String</span>&gt;();
             <span class="directive">private</span> <span class="predefined-type">List</span>&lt;<span class="predefined-type">String</span>&gt; originalStringValues = <span class="keyword">new</span> <span class="predefined-type">ArrayList</span>&lt;<span class="predefined-type">String</span>&gt;();
             <span class="directive">protected</span> <span class="predefined-type">String</span> toString;
-            <span class="predefined-type">Map</span>&lt;<span class="predefined-type">Integer</span>, <span class="predefined-type">Object</span>&gt; typedValues = <span class="keyword">new</span> <span class="predefined-type">TreeMap</span>&lt;<span class="predefined-type">Integer</span>, <span class="predefined-type">Object</span>&gt;();
+            <span class="directive">private</span> <span class="predefined-type">List</span>&lt;<span class="predefined-type">Object</span>&gt; typedValues = <span class="keyword">new</span> <span class="predefined-type">ArrayList</span>&lt;<span class="predefined-type">Object</span>&gt;();
+            <span class="predefined-type">Map</span>&lt;<span class="predefined-type">Integer</span>, <span class="predefined-type">Object</span>&gt; typedValueAtPosition = <span class="keyword">new</span> <span class="predefined-type">TreeMap</span>&lt;<span class="predefined-type">Integer</span>, <span class="predefined-type">Object</span>&gt;();
 
             <span class="comment">/** Constructs a new {@code ArgSpec}. */</span>
             <span class="directive">private</span> ArgSpec(Builder builder) {
@@ -8005,6 +7960,11 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
              *      For map properties, {@code &quot;key=value&quot;} values are split into the key and the value part. */</span>
             <span class="directive">public</span> <span class="predefined-type">List</span>&lt;<span class="predefined-type">String</span>&gt; stringValues() { <span class="keyword">return</span> <span class="predefined-type">Collections</span>.unmodifiableList(stringValues); }
 
+            <span class="comment">/** Returns the typed command line arguments matched by this option or positional parameter spec.
+             * @return the matched arguments after {@linkplain #splitRegex() splitting} and type conversion.
+             *      For map properties, {@code &quot;key=value&quot;} values are split into the key and the value part. */</span>
+            <span class="directive">public</span> <span class="predefined-type">List</span>&lt;<span class="predefined-type">Object</span>&gt; typedValues() { <span class="keyword">return</span> <span class="predefined-type">Collections</span>.unmodifiableList(typedValues); }
+
             <span class="comment">/** Sets the {@code stringValues} to a new list instance. */</span>
             <span class="directive">protected</span> <span class="type">void</span> resetStringValues() { stringValues = <span class="keyword">new</span> <span class="predefined-type">ArrayList</span>&lt;<span class="predefined-type">String</span>&gt;(); }
 
@@ -8015,15 +7975,6 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
 
             <span class="comment">/** Sets the {@code originalStringValues} to a new list instance. */</span>
             <span class="directive">protected</span> <span class="type">void</span> resetOriginalStringValues() { originalStringValues = <span class="keyword">new</span> <span class="predefined-type">ArrayList</span>&lt;<span class="predefined-type">String</span>&gt;(); }
-
-            <span class="type">boolean</span> acceptsValues(<span class="type">int</span> add, ParserSpec parser) {
-                <span class="type">boolean</span> result = arity().max == <span class="integer">0</span> || !parser.arityRestrictsCumulativeSize() || stringValues().size() + add &lt;= arity().max;
-                <span class="keyword">if</span> (!result) {
-                    <span class="predefined-type">String</span> argDescription = isOption() ? <span class="string"><span class="delimiter">&quot;</span><span class="content">option </span><span class="delimiter">&quot;</span></span> + ((OptionSpec) <span class="local-variable">this</span>).longestName() : <span class="string"><span class="delimiter">&quot;</span><span class="content">positional at </span><span class="delimiter">&quot;</span></span> + ((PositionalParamSpec) <span class="local-variable">this</span>).index();
-                    <span class="keyword">new</span> Tracer().debug(<span class="string"><span class="delimiter">&quot;</span><span class="content">%s cannot accept %s additional values: max.arity=$s, arityRestrictsCumulativeSize=%s, stringValues.size=%s.%n</span><span class="delimiter">&quot;</span></span>, argDescription, add, arity().max, parser.arityRestrictsCumulativeSize(), stringValues().size());
-                }
-                <span class="keyword">return</span> result;
-            }
 
             <span class="comment">/** Returns whether the default for this option or positional parameter should be shown, potentially overriding the specified global setting.
              * @param usageHelpShowDefaults whether the command's UsageMessageSpec is configured to show default values. */</span>
@@ -8937,7 +8888,10 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
             <span class="type">void</span> addStringValue        (ArgSpec argSpec, <span class="predefined-type">String</span> value) { <span class="keyword">if</span> (!isInitializingDefaultValues) { argSpec.stringValues.add(value);} }
             <span class="type">void</span> addOriginalStringValue(ArgSpec argSpec, <span class="predefined-type">String</span> value) { <span class="keyword">if</span> (!isInitializingDefaultValues) { argSpec.originalStringValues.add(value); } }
             <span class="type">void</span> addTypedValues(ArgSpec argSpec, <span class="type">int</span> position, <span class="predefined-type">Object</span> typedValue) {
-                <span class="keyword">if</span> (!isInitializingDefaultValues) { argSpec.typedValues.put(position, typedValue); }
+                <span class="keyword">if</span> (!isInitializingDefaultValues) {
+                    argSpec.typedValues.add(typedValue);
+                    argSpec.typedValueAtPosition.put(position, typedValue);
+                }
             }
         }
         <span class="directive">private</span> <span class="directive">final</span> CommandSpec commandSpec;
@@ -9212,35 +9166,23 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
             endOfOptions = <span class="predefined-constant">false</span>;
             isHelpRequested = <span class="predefined-constant">false</span>;
             parseResult = ParseResult.builder(getCommandSpec());
-            <span class="keyword">for</span> (OptionSpec option : getCommandSpec().options()) {
-                option.resetStringValues();
-                option.resetOriginalStringValues();
-                option.typedValues.clear();
-                <span class="keyword">if</span> (option.hasInitialValue()) {
-                    <span class="keyword">try</span> {
-                        option.setter().set(option.initialValue());
-                        tracer.debug(<span class="string"><span class="delimiter">&quot;</span><span class="content">Set initial value for %s of type %s to %s.%n</span><span class="delimiter">&quot;</span></span>, option, option.type(), <span class="predefined-type">String</span>.valueOf(option.initialValue()));
-                    } <span class="keyword">catch</span> (<span class="exception">Exception</span> ex) {
-                        tracer.warn(<span class="string"><span class="delimiter">&quot;</span><span class="content">Could not set initial value for %s of type %s to %s: %s%n</span><span class="delimiter">&quot;</span></span>, option, option.type(), <span class="predefined-type">String</span>.valueOf(option.initialValue()), ex);
-                    }
-                } <span class="keyword">else</span> {
-                    tracer.debug(<span class="string"><span class="delimiter">&quot;</span><span class="content">Initial value not available for %s%n</span><span class="delimiter">&quot;</span></span>, option);
+            <span class="keyword">for</span> (OptionSpec option : getCommandSpec().options())                           { clear(option); }
+            <span class="keyword">for</span> (PositionalParamSpec positional : getCommandSpec().positionalParameters()) { clear(positional); }
+        }
+        <span class="directive">private</span> <span class="type">void</span> clear(ArgSpec argSpec) {
+            argSpec.resetStringValues();
+            argSpec.resetOriginalStringValues();
+            argSpec.typedValues.clear();
+            argSpec.typedValueAtPosition.clear();
+            <span class="keyword">if</span> (argSpec.hasInitialValue()) {
+                <span class="keyword">try</span> {
+                    argSpec.setter().set(argSpec.initialValue());
+                    tracer.debug(<span class="string"><span class="delimiter">&quot;</span><span class="content">Set initial value for %s of type %s to %s.%n</span><span class="delimiter">&quot;</span></span>, argSpec, argSpec.type(), <span class="predefined-type">String</span>.valueOf(argSpec.initialValue()));
+                } <span class="keyword">catch</span> (<span class="exception">Exception</span> ex) {
+                    tracer.warn(<span class="string"><span class="delimiter">&quot;</span><span class="content">Could not set initial value for %s of type %s to %s: %s%n</span><span class="delimiter">&quot;</span></span>, argSpec, argSpec.type(), <span class="predefined-type">String</span>.valueOf(argSpec.initialValue()), ex);
                 }
-            }
-            <span class="keyword">for</span> (PositionalParamSpec positional : getCommandSpec().positionalParameters()) {
-                positional.resetStringValues();
-                positional.resetOriginalStringValues();
-                positional.typedValues.clear();
-                <span class="keyword">if</span> (positional.hasInitialValue()) {
-                    <span class="keyword">try</span> {
-                        positional.setter().set(positional.initialValue());
-                        tracer.debug(<span class="string"><span class="delimiter">&quot;</span><span class="content">Set initial value for %s of type %s to %s.%n</span><span class="delimiter">&quot;</span></span>, positional, positional.type(), <span class="predefined-type">String</span>.valueOf(positional.initialValue()));
-                    } <span class="keyword">catch</span> (<span class="exception">Exception</span> ex) {
-                        tracer.warn(<span class="string"><span class="delimiter">&quot;</span><span class="content">Could not set initial value for %s of type %s to %s: %s%n</span><span class="delimiter">&quot;</span></span>, positional, positional.type(), <span class="predefined-type">String</span>.valueOf(positional.initialValue()), ex);
-                    }
-                } <span class="keyword">else</span> {
-                    tracer.debug(<span class="string"><span class="delimiter">&quot;</span><span class="content">Initial value not available for %s%n</span><span class="delimiter">&quot;</span></span>, positional);
-                }
+            } <span class="keyword">else</span> {
+                tracer.debug(<span class="string"><span class="delimiter">&quot;</span><span class="content">Initial value not available for %s%n</span><span class="delimiter">&quot;</span></span>, argSpec);
             }
         }
 
@@ -9387,8 +9329,7 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
         }
 
         <span class="directive">private</span> <span class="type">boolean</span> isStandaloneOption(<span class="predefined-type">String</span> arg) {
-            OptionSpec option = commandSpec.optionsMap().get(arg);
-            <span class="keyword">return</span> option != <span class="predefined-constant">null</span> &amp;&amp; option.acceptsValues(<span class="integer">1</span>, commandSpec.parser());
+            <span class="keyword">return</span> commandSpec.optionsMap().containsKey(arg);
         }
 
         <span class="directive">private</span> <span class="type">boolean</span> resemblesOption(<span class="predefined-type">String</span> arg) {
@@ -9437,7 +9378,7 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
             <span class="type">int</span> consumed = <span class="integer">0</span>;
             <span class="keyword">for</span> (PositionalParamSpec positionalParam : commandSpec.positionalParameters()) {
                 Range indexRange = positionalParam.index();
-                <span class="keyword">if</span> (!indexRange.contains(position) || positionalParam.typedValues.get(position) != <span class="predefined-constant">null</span>) {
+                <span class="keyword">if</span> (!indexRange.contains(position) || positionalParam.typedValueAtPosition.get(position) != <span class="predefined-constant">null</span>) {
                     <span class="keyword">continue</span>;
                 }
                 <span class="predefined-type">Stack</span>&lt;<span class="predefined-type">String</span>&gt; argsCopy = copy(args);
@@ -9483,8 +9424,7 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
             <span class="predefined-type">String</span> cluster = arg.substring(<span class="integer">1</span>);
             <span class="type">boolean</span> paramAttachedToOption = <span class="predefined-constant">true</span>;
             <span class="keyword">do</span> {
-                <span class="keyword">if</span> (cluster.length() &gt; <span class="integer">0</span> &amp;&amp; commandSpec.posixOptionsMap().containsKey(cluster.charAt(<span class="integer">0</span>))
-                        &amp;&amp; commandSpec.posixOptionsMap().get(cluster.charAt(<span class="integer">0</span>)).acceptsValues(<span class="integer">1</span>, commandSpec.parser())) {
+                <span class="keyword">if</span> (cluster.length() &gt; <span class="integer">0</span> &amp;&amp; commandSpec.posixOptionsMap().containsKey(cluster.charAt(<span class="integer">0</span>))) {
                     ArgSpec argSpec = commandSpec.posixOptionsMap().get(cluster.charAt(<span class="integer">0</span>));
                     Range arity = argSpec.arity();
                     <span class="predefined-type">String</span> argDescription = <span class="string"><span class="delimiter">&quot;</span><span class="content">option </span><span class="delimiter">&quot;</span></span> + prefix + cluster.charAt(<span class="integer">0</span>);
@@ -9647,10 +9587,8 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
             }
             initialized.add(argSpec);
             <span class="type">int</span> originalSize = map.size();
-            Range reducedArity = reduceMaxArity(arity, originalSize);
-            consumeMapArguments(argSpec, reducedArity, args, classes, keyConverter, valueConverter, map, argDescription);
+            consumeMapArguments(argSpec, arity, args, classes, keyConverter, valueConverter, map, argDescription);
             parseResult.add(argSpec, position);
-            checkMaxArityExceeded(arity, map.size(), argSpec, argDescription);
             argSpec.setValue(map);
             <span class="keyword">return</span> map.size() - originalSize;
         }
@@ -9673,6 +9611,7 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
             <span class="keyword">for</span> (<span class="type">int</span> i = <span class="integer">0</span>; consumed &lt; arity.min &amp;&amp; !args.isEmpty(); i++) {
                 <span class="predefined-type">Map</span>&lt;<span class="predefined-type">Object</span>, <span class="predefined-type">Object</span>&gt; typedValuesAtPosition = <span class="keyword">new</span> <span class="predefined-type">LinkedHashMap</span>&lt;<span class="predefined-type">Object</span>, <span class="predefined-type">Object</span>&gt;();
                 parseResult.addTypedValues(argSpec, currentPosition++, typedValuesAtPosition);
+                assertNoMissingMandatoryParameter(argSpec, args, i, arity);
                 consumeOneMapArgument(argSpec, arity, consumed, args.pop(), classes, keyConverter, valueConverter, typedValuesAtPosition, i, argDescription);
                 result.putAll(typedValuesAtPosition);
                 consumed = consumedCountMap(i + <span class="integer">1</span>, initialSize, argSpec);
@@ -9684,7 +9623,7 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
                 <span class="predefined-type">Map</span>&lt;<span class="predefined-type">Object</span>, <span class="predefined-type">Object</span>&gt; typedValuesAtPosition = <span class="keyword">new</span> <span class="predefined-type">LinkedHashMap</span>&lt;<span class="predefined-type">Object</span>, <span class="predefined-type">Object</span>&gt;();
                 parseResult.addTypedValues(argSpec, currentPosition++, typedValuesAtPosition);
                 <span class="keyword">if</span> (!canConsumeOneMapArgument(argSpec, arity, consumed, args.peek(), classes, keyConverter, valueConverter, argDescription)) {
-                    <span class="keyword">break</span>; <span class="comment">// leave empty map at argSpec.typedValues[currentPosition] so we won't try to consume that position again</span>
+                    <span class="keyword">break</span>; <span class="comment">// leave empty map at argSpec.typedValueAtPosition[currentPosition] so we won't try to consume that position again</span>
                 }
                 consumeOneMapArgument(argSpec, arity, consumed, args.pop(), classes, keyConverter, valueConverter, typedValuesAtPosition, i, argDescription);
                 result.putAll(typedValuesAtPosition);
@@ -9720,10 +9659,6 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
                                                  ITypeConverter&lt;?&gt; keyConverter, ITypeConverter&lt;?&gt; valueConverter,
                                                  <span class="predefined-type">String</span> argDescription) {
             <span class="predefined-type">String</span><span class="type">[]</span> values = argSpec.splitValue(raw, commandSpec.parser(), arity, consumed);
-            <span class="keyword">if</span> (!argSpec.acceptsValues(values.length, commandSpec.parser())) {
-                tracer.debug(<span class="string"><span class="delimiter">&quot;</span><span class="content">$s would split into %s values but %s cannot accept that many values.%n</span><span class="delimiter">&quot;</span></span>, raw, values.length, argDescription);
-                <span class="keyword">return</span> <span class="predefined-constant">false</span>;
-            }
             <span class="keyword">try</span> {
                 <span class="keyword">for</span> (<span class="predefined-type">String</span> value : values) {
                     <span class="predefined-type">String</span><span class="type">[]</span> keyValue = splitKeyValue(argSpec, value);
@@ -9752,17 +9687,12 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
             <span class="keyword">return</span> keyValue;
         }
 
-        <span class="directive">private</span> <span class="type">void</span> checkMaxArityExceeded(Range arity, <span class="type">int</span> size, ArgSpec argSpec, <span class="predefined-type">String</span> argDescription) {
-            <span class="keyword">if</span> (!commandSpec.parser().arityRestrictsCumulativeSize()) { <span class="keyword">return</span>; }
-            <span class="keyword">if</span> (size &lt;= arity.max) { <span class="keyword">return</span>; }
-            <span class="keyword">throw</span> <span class="keyword">new</span> MaxValuesExceededException(CommandLine.this, optionDescription(<span class="string"><span class="delimiter">&quot;</span><span class="delimiter">&quot;</span></span>, argSpec, -<span class="integer">1</span>) +
-                    <span class="string"><span class="delimiter">&quot;</span><span class="content"> max number of values (</span><span class="delimiter">&quot;</span></span> + arity.max + <span class="string"><span class="delimiter">&quot;</span><span class="content">) exceeded: </span><span class="delimiter">&quot;</span></span> + size + <span class="string"><span class="delimiter">&quot;</span><span class="content"> elements.</span><span class="delimiter">&quot;</span></span>);
+        <span class="directive">private</span> <span class="type">void</span> assertNoMissingMandatoryParameter(ArgSpec argSpec, <span class="predefined-type">Stack</span>&lt;<span class="predefined-type">String</span>&gt; args, <span class="type">int</span> i, Range arity) {
+            <span class="keyword">if</span> (!varargCanConsumeNextValue(argSpec, args.peek())) {
+                <span class="predefined-type">String</span> desc = arity.min &gt; <span class="integer">1</span> ? (i + <span class="integer">1</span>) + <span class="string"><span class="delimiter">&quot;</span><span class="content"> (of </span><span class="delimiter">&quot;</span></span> + arity.min + <span class="string"><span class="delimiter">&quot;</span><span class="content"> mandatory parameters) </span><span class="delimiter">&quot;</span></span> : <span class="string"><span class="delimiter">&quot;</span><span class="delimiter">&quot;</span></span>;
+                <span class="keyword">throw</span> <span class="keyword">new</span> MissingParameterException(CommandLine.this, argSpec, <span class="string"><span class="delimiter">&quot;</span><span class="content">Expected parameter </span><span class="delimiter">&quot;</span></span> + desc + <span class="string"><span class="delimiter">&quot;</span><span class="content">for </span><span class="delimiter">&quot;</span></span> + optionDescription(<span class="string"><span class="delimiter">&quot;</span><span class="delimiter">&quot;</span></span>, argSpec, -<span class="integer">1</span>) + <span class="string"><span class="delimiter">&quot;</span><span class="content"> but found '</span><span class="delimiter">&quot;</span></span> + args.peek() + <span class="string"><span class="delimiter">&quot;</span><span class="content">'</span><span class="delimiter">&quot;</span></span>);
+            }
         }
-
-        <span class="directive">private</span> Range reduceMaxArity(Range arity, <span class="type">int</span> existingSize) {
-            <span class="keyword">return</span> commandSpec.parser().arityRestrictsCumulativeSize()? arity.max(arity.max - existingSize) : arity;
-        }
-
         <span class="directive">private</span> <span class="type">int</span> applyValuesToArrayField(ArgSpec argSpec,
                                             Range arity,
                                             <span class="predefined-type">Stack</span>&lt;<span class="predefined-type">String</span>&gt; args,
@@ -9770,9 +9700,8 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
                                             <span class="predefined-type">String</span> argDescription) <span class="directive">throws</span> <span class="exception">Exception</span> {
             <span class="predefined-type">Object</span> existing = argSpec.getValue();
             <span class="type">int</span> length = existing == <span class="predefined-constant">null</span> ? <span class="integer">0</span> : <span class="predefined-type">Array</span>.getLength(existing);
-            Range reducedArity = reduceMaxArity(arity, length);
             <span class="predefined-type">Class</span>&lt;?&gt; type = argSpec.auxiliaryTypes()[<span class="integer">0</span>];
-            <span class="predefined-type">List</span>&lt;<span class="predefined-type">Object</span>&gt; converted = consumeArguments(argSpec, reducedArity, args, type, argDescription);
+            <span class="predefined-type">List</span>&lt;<span class="predefined-type">Object</span>&gt; converted = consumeArguments(argSpec, arity, args, type, argDescription);
             <span class="predefined-type">List</span>&lt;<span class="predefined-type">Object</span>&gt; newValues = <span class="keyword">new</span> <span class="predefined-type">ArrayList</span>&lt;<span class="predefined-type">Object</span>&gt;();
             <span class="keyword">if</span> (initialized.contains(argSpec)) { <span class="comment">// existing values are default values if initialized does NOT contain argsSpec</span>
                 <span class="keyword">for</span> (<span class="type">int</span> i = <span class="integer">0</span>; i &lt; length; i++) {
@@ -9793,7 +9722,6 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
                 <span class="predefined-type">Array</span>.set(array, i, newValues.get(i));
             }
             parseResult.add(argSpec, position);
-            checkMaxArityExceeded(arity, newValues.size(), argSpec, argDescription);
             <span class="keyword">return</span> converted.size(); <span class="comment">// return how many args were consumed</span>
         }
 
@@ -9805,8 +9733,7 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
                                                  <span class="predefined-type">String</span> argDescription) <span class="directive">throws</span> <span class="exception">Exception</span> {
             <span class="predefined-type">Collection</span>&lt;<span class="predefined-type">Object</span>&gt; collection = (<span class="predefined-type">Collection</span>&lt;<span class="predefined-type">Object</span>&gt;) argSpec.getValue();
             <span class="predefined-type">Class</span>&lt;?&gt; type = argSpec.auxiliaryTypes()[<span class="integer">0</span>];
-            Range reducedArity = reduceMaxArity(arity, collection == <span class="predefined-constant">null</span> ? <span class="integer">0</span> : collection.size());
-            <span class="predefined-type">List</span>&lt;<span class="predefined-type">Object</span>&gt; converted = consumeArguments(argSpec, reducedArity, args, type, argDescription);
+            <span class="predefined-type">List</span>&lt;<span class="predefined-type">Object</span>&gt; converted = consumeArguments(argSpec, arity, args, type, argDescription);
             <span class="keyword">if</span> (collection == <span class="predefined-constant">null</span> || (!collection.isEmpty() &amp;&amp; !initialized.contains(argSpec))) {
                 collection = createCollection(argSpec.type()); <span class="comment">// collection type</span>
                 argSpec.setValue(collection);
@@ -9820,7 +9747,6 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
                 }
             }
             parseResult.add(argSpec, position);
-            checkMaxArityExceeded(arity, collection.size(), argSpec, argDescription);
             argSpec.setValue(collection);
             <span class="keyword">return</span> converted.size();
         }
@@ -9841,6 +9767,7 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
             <span class="keyword">for</span> (<span class="type">int</span> i = <span class="integer">0</span>; consumed &lt; arity.min &amp;&amp; !args.isEmpty(); i++) {
                 <span class="predefined-type">List</span>&lt;<span class="predefined-type">Object</span>&gt; typedValuesAtPosition = <span class="keyword">new</span> <span class="predefined-type">ArrayList</span>&lt;<span class="predefined-type">Object</span>&gt;();
                 parseResult.addTypedValues(argSpec, currentPosition++, typedValuesAtPosition);
+                assertNoMissingMandatoryParameter(argSpec, args, i, arity);
                 consumeOneArgument(argSpec, arity, consumed, args.pop(), type, typedValuesAtPosition, i, argDescription);
                 result.addAll(typedValuesAtPosition);
                 consumed = consumedCount(i + <span class="integer">1</span>, initialSize, argSpec);
@@ -9852,7 +9779,7 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
                 <span class="predefined-type">List</span>&lt;<span class="predefined-type">Object</span>&gt; typedValuesAtPosition = <span class="keyword">new</span> <span class="predefined-type">ArrayList</span>&lt;<span class="predefined-type">Object</span>&gt;();
                 parseResult.addTypedValues(argSpec, currentPosition++, typedValuesAtPosition);
                 <span class="keyword">if</span> (!canConsumeOneArgument(argSpec, arity, consumed, args.peek(), type, argDescription)) {
-                    <span class="keyword">break</span>; <span class="comment">// leave empty list at argSpec.typedValues[currentPosition] so we won't try to consume that position again</span>
+                    <span class="keyword">break</span>; <span class="comment">// leave empty list at argSpec.typedValueAtPosition[currentPosition] so we won't try to consume that position again</span>
                 }
                 consumeOneArgument(argSpec, arity, consumed, args.pop(), type, typedValuesAtPosition, i, argDescription);
                 result.addAll(typedValuesAtPosition);
@@ -9897,10 +9824,10 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
             ITypeConverter&lt;?&gt; converter = getTypeConverter(type, argSpec, <span class="integer">0</span>);
             <span class="keyword">try</span> {
                 <span class="predefined-type">String</span><span class="type">[]</span> values = argSpec.splitValue(trim(arg), commandSpec.parser(), arity, consumed);
-                <span class="keyword">if</span> (!argSpec.acceptsValues(values.length, commandSpec.parser())) {
-                    tracer.debug(<span class="string"><span class="delimiter">&quot;</span><span class="content">$s would split into %s values but %s cannot accept that many values.%n</span><span class="delimiter">&quot;</span></span>, arg, values.length, argDescription);
-                    <span class="keyword">return</span> <span class="predefined-constant">false</span>;
-                }
+<span class="comment">//                if (!argSpec.acceptsValues(values.length, commandSpec.parser())) {</span>
+<span class="comment">//                    tracer.debug(&quot;$s would split into %s values but %s cannot accept that many values.%n&quot;, arg, values.length, argDescription);</span>
+<span class="comment">//                    return false;</span>
+<span class="comment">//                }</span>
                 <span class="keyword">for</span> (<span class="predefined-type">String</span> value : values) {
                     tryConvert(argSpec, -<span class="integer">1</span>, converter, value, type);
                 }
@@ -11221,34 +11148,103 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
             }
             <span class="directive">public</span> <span class="predefined-type">String</span> separator() { <span class="keyword">return</span> commandSpec.parser().separator(); }
             <span class="directive">public</span> Text renderParameterLabel(ArgSpec argSpec, Ansi ansi, <span class="predefined-type">List</span>&lt;IStyle&gt; styles) {
-                Text result = ansi.new Text(<span class="string"><span class="delimiter">&quot;</span><span class="delimiter">&quot;</span></span>);
-                <span class="predefined-type">String</span> sep = argSpec.isOption() ? separator() : <span class="string"><span class="delimiter">&quot;</span><span class="delimiter">&quot;</span></span>;
                 Text paramName = ansi.apply(argSpec.paramLabel(), styles);
-                <span class="keyword">if</span> (!empty(argSpec.splitRegex())) { paramName = paramName.concat(<span class="string"><span class="delimiter">&quot;</span><span class="content">[</span><span class="delimiter">&quot;</span></span> + argSpec.splitRegex()).concat(paramName).concat(<span class="string"><span class="delimiter">&quot;</span><span class="content">]...</span><span class="delimiter">&quot;</span></span>); } <span class="comment">// #194</span>
                 Range capacity = argSpec.isOption() ? argSpec.arity() : ((PositionalParamSpec)argSpec).capacity();
-                <span class="keyword">for</span> (<span class="type">int</span> i = <span class="integer">0</span>; i &lt; capacity.min; i++) {
-                    result = result.concat(sep).concat(paramName);
-                    sep = <span class="string"><span class="delimiter">&quot;</span><span class="content"> </span><span class="delimiter">&quot;</span></span>;
+                <span class="keyword">if</span> (capacity.max == <span class="integer">0</span>) { <span class="keyword">return</span> ansi.new Text(<span class="string"><span class="delimiter">&quot;</span><span class="delimiter">&quot;</span></span>); }
+
+                <span class="predefined-type">String</span> split = argSpec.splitRegex();
+                <span class="predefined-type">String</span> mandatorySep = empty(split) ? <span class="string"><span class="delimiter">&quot;</span><span class="content"> </span><span class="delimiter">&quot;</span></span>  : split;
+                <span class="predefined-type">String</span> optionalSep  = empty(split) ? <span class="string"><span class="delimiter">&quot;</span><span class="content"> [</span><span class="delimiter">&quot;</span></span> : <span class="string"><span class="delimiter">&quot;</span><span class="content">[</span><span class="delimiter">&quot;</span></span> + split;
+
+                <span class="type">boolean</span> unlimitedSplit = !empty(split) &amp;&amp; !commandSpec.parser().limitSplit();
+                <span class="type">boolean</span> limitedSplit =   !empty(split) &amp;&amp;  commandSpec.parser().limitSplit();
+                Text repeating = paramName;
+                <span class="type">int</span> paramCount = <span class="integer">1</span>;
+                <span class="keyword">if</span> (unlimitedSplit) {
+                    repeating = paramName.concat(<span class="string"><span class="delimiter">&quot;</span><span class="content">[</span><span class="delimiter">&quot;</span></span> + split).concat(paramName).concat(<span class="string"><span class="delimiter">&quot;</span><span class="content">...]</span><span class="delimiter">&quot;</span></span>);
+                    paramCount++;
+                    mandatorySep = <span class="string"><span class="delimiter">&quot;</span><span class="content"> </span><span class="delimiter">&quot;</span></span>;
+                    optionalSep = <span class="string"><span class="delimiter">&quot;</span><span class="content"> [</span><span class="delimiter">&quot;</span></span>;
                 }
-                <span class="keyword">if</span> (capacity.isVariable) {
-                    <span class="keyword">if</span> (result.length == <span class="integer">0</span>) { <span class="comment">// arity=&quot;*&quot; or arity=&quot;0..*&quot;</span>
-                        result = result.concat(sep + <span class="string"><span class="delimiter">&quot;</span><span class="content">[</span><span class="delimiter">&quot;</span></span>).concat(paramName).concat(<span class="string"><span class="delimiter">&quot;</span><span class="content">]...</span><span class="delimiter">&quot;</span></span>);
-                    } <span class="keyword">else</span> <span class="keyword">if</span> (!result.plainString().endsWith(<span class="string"><span class="delimiter">&quot;</span><span class="content">...</span><span class="delimiter">&quot;</span></span>)) { <span class="comment">// getSplitRegex param may already end with &quot;...&quot;</span>
-                        result = result.concat(<span class="string"><span class="delimiter">&quot;</span><span class="content">...</span><span class="delimiter">&quot;</span></span>);
+                Text result = repeating;
+
+                <span class="type">int</span> done = <span class="integer">1</span>;
+                <span class="keyword">for</span> (; done &lt; capacity.min; done++) {
+                    result = result.concat(mandatorySep).concat(repeating); <span class="comment">// &quot; PARAM&quot; or &quot;,PARAM&quot;</span>
+                    paramCount += paramCount;
+                }
+                <span class="keyword">if</span> (!capacity.isVariable) {
+                    <span class="keyword">for</span> (<span class="type">int</span> i = done; i &lt; capacity.max; i++) {
+                        result = result.concat(optionalSep).concat(paramName); <span class="comment">// &quot; [PARAM&quot; or &quot;[,PARAM&quot;</span>
+                        paramCount++;
                     }
+                    <span class="keyword">for</span> (<span class="type">int</span> i = done; i &lt; capacity.max; i++) {
+                        result = result.concat(<span class="string"><span class="delimiter">&quot;</span><span class="content">]</span><span class="delimiter">&quot;</span></span>);
+                    }
+                }
+                <span class="comment">// show an extra trailing &quot;[,PARAM]&quot; if split and either max=* or splitting is not restricted to max</span>
+                <span class="type">boolean</span> effectivelyVariable = capacity.isVariable || (limitedSplit &amp;&amp; paramCount == <span class="integer">1</span>);
+                <span class="keyword">if</span> (limitedSplit &amp;&amp; effectivelyVariable &amp;&amp; paramCount == <span class="integer">1</span>) {
+                    result = result.concat(optionalSep).concat(repeating).concat(<span class="string"><span class="delimiter">&quot;</span><span class="content">]</span><span class="delimiter">&quot;</span></span>); <span class="comment">// PARAM[,PARAM]...</span>
+                }
+                <span class="keyword">if</span> (effectivelyVariable) {
+                    <span class="keyword">if</span> (!argSpec.arity().isVariable &amp;&amp; argSpec.arity().min &gt; <span class="integer">1</span>) {
+                        result = ansi.new Text(<span class="string"><span class="delimiter">&quot;</span><span class="content">(</span><span class="delimiter">&quot;</span></span>).concat(result).concat(<span class="string"><span class="delimiter">&quot;</span><span class="content">)</span><span class="delimiter">&quot;</span></span>); <span class="comment">// repeating group</span>
+                    }
+                    result = result.concat(<span class="string"><span class="delimiter">&quot;</span><span class="content">...</span><span class="delimiter">&quot;</span></span>); <span class="comment">// PARAM...</span>
+                }
+                <span class="predefined-type">String</span> optionSeparator = argSpec.isOption() ? separator() : <span class="string"><span class="delimiter">&quot;</span><span class="delimiter">&quot;</span></span>;
+                <span class="keyword">if</span> (capacity.min == <span class="integer">0</span>) { <span class="comment">// optional</span>
+                    <span class="predefined-type">String</span> sep2 = empty(optionSeparator.trim()) ? optionSeparator + <span class="string"><span class="delimiter">&quot;</span><span class="content">[</span><span class="delimiter">&quot;</span></span> : <span class="string"><span class="delimiter">&quot;</span><span class="content">[</span><span class="delimiter">&quot;</span></span> + optionSeparator;
+                    result = ansi.new Text(sep2).concat(result).concat(<span class="string"><span class="delimiter">&quot;</span><span class="content">]</span><span class="delimiter">&quot;</span></span>);
                 } <span class="keyword">else</span> {
-                    sep = result.length == <span class="integer">0</span> ? (argSpec.isOption() ? separator() : <span class="string"><span class="delimiter">&quot;</span><span class="delimiter">&quot;</span></span>) : <span class="string"><span class="delimiter">&quot;</span><span class="content"> </span><span class="delimiter">&quot;</span></span>;
-                    <span class="keyword">for</span> (<span class="type">int</span> i = capacity.min; i &lt; capacity.max; i++) {
-                        <span class="keyword">if</span> (sep.trim().length() == <span class="integer">0</span>) {
-                            result = result.concat(sep + <span class="string"><span class="delimiter">&quot;</span><span class="content">[</span><span class="delimiter">&quot;</span></span>).concat(paramName);
-                        } <span class="keyword">else</span> {
-                            result = result.concat(<span class="string"><span class="delimiter">&quot;</span><span class="content">[</span><span class="delimiter">&quot;</span></span> + sep).concat(paramName);
-                        }
-                        sep  = <span class="string"><span class="delimiter">&quot;</span><span class="content"> </span><span class="delimiter">&quot;</span></span>;
-                    }
-                    <span class="keyword">for</span> (<span class="type">int</span> i = capacity.min; i &lt; capacity.max; i++) { result = result.concat(<span class="string"><span class="delimiter">&quot;</span><span class="content">]</span><span class="delimiter">&quot;</span></span>); }
+                    result = ansi.new Text(optionSeparator).concat(result);
                 }
                 <span class="keyword">return</span> result;
+<span class="comment">//                String sep = initialSep;</span>
+<span class="comment">//                String nextSep = &quot; &quot;;</span>
+<span class="comment">//                boolean succinct = false;</span>
+<span class="comment">//                if (!empty(split)) {</span>
+<span class="comment">//                    if (commandSpec.parser().limitSplit()) {</span>
+<span class="comment">//                        nextSep = split;</span>
+<span class="comment">//                        succinct = true;</span>
+<span class="comment">//                    } else {</span>
+<span class="comment">//                        paramName = paramName.concat(&quot;[&quot; + split).concat(paramName).concat(&quot;]...&quot;); /* #194 */</span>
+<span class="comment">//                    }</span>
+<span class="comment">//                }</span>
+<span class="comment">//                for (int i = 0; i &lt; capacity.min; i++) {</span>
+<span class="comment">//                    result = result.concat(sep).concat(paramName);</span>
+<span class="comment">//                    sep = nextSep;</span>
+<span class="comment">//                }</span>
+<span class="comment">//                if (capacity.isVariable) {</span>
+<span class="comment">//                    String suffix = commandSpec.parser().limitSplit() ? &quot;&quot; : &quot;...&quot;;</span>
+<span class="comment">//                    if (result.length == 0 || (succinct &amp;&amp; capacity.min &lt;= 1)) { /*len=0: arity=&quot;*&quot; or arity=&quot;0..*&quot; */</span>
+<span class="comment">//                        if (succinct &amp;&amp; capacity.min == 0) {</span>
+<span class="comment">//                            result = result.concat(sep + &quot;[&quot;).concat(paramName).concat(&quot;[&quot; + split).concat(paramName).concat(&quot;]]&quot;);</span>
+<span class="comment">////                        } else if (succinct &amp;&amp; capacity.min == 1) {</span>
+<span class="comment">////                            result = result.concat(sep + &quot;[&quot;).concat(paramName).concat(&quot;]&quot; + suffix);</span>
+<span class="comment">//                        } else {</span>
+<span class="comment">//                            result = result.concat(sep + &quot;[&quot;).concat(paramName).concat(&quot;]&quot; + suffix);</span>
+<span class="comment">//                        }</span>
+<span class="comment">//                    } else if (!result.plainString().endsWith(&quot;...&quot;)) { // getSplitRegex param may already end with &quot;...&quot;</span>
+<span class="comment">//                        result = result.concat(suffix);</span>
+<span class="comment">//                    }</span>
+<span class="comment">//                } else {</span>
+<span class="comment">//                    sep = result.length == 0 ? initialSep : nextSep;</span>
+<span class="comment">//                    for (int i = capacity.min; i &lt; capacity.max; i++) {</span>
+<span class="comment">//                        if (sep.trim().length() == 0) {</span>
+<span class="comment">//                            result = result.concat(sep + &quot;[&quot;).concat(paramName);</span>
+<span class="comment">//                        } else {</span>
+<span class="comment">//                            result = result.concat(&quot;[&quot; + sep).concat(paramName);</span>
+<span class="comment">//                        }</span>
+<span class="comment">//                        sep  = nextSep;</span>
+<span class="comment">//                    }</span>
+<span class="comment">//                    for (int i = capacity.min; i &lt; capacity.max; i++) { result = result.concat(&quot;]&quot;); }</span>
+<span class="comment">//                    if (succinct &amp;&amp; capacity.min == capacity.max) {</span>
+<span class="comment">//                        result = result.concat(&quot;[&quot; + sep).concat(paramName).concat(&quot;]&quot;);</span>
+<span class="comment">//                    }</span>
+<span class="comment">//                }</span>
+<span class="comment">//                return result;</span>
             }
         }
         <span class="comment">/** Use a Layout to format usage help text for options and parameters in tabular format.
@@ -12362,8 +12358,8 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
 </div>
 <div id="footer">
 <div id="footer-text">
-Version 3.0.0-beta-1<br>
-Last updated 2018-04-18 21:52:05 JST
+Version 3.0.0-beta-2<br>
+Last updated 2018-04-21 17:56:02 CEST
 </div>
 </div>
 </body>
