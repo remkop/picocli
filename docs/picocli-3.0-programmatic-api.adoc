@@ -1,7 +1,7 @@
 = Programmatic API
 //:author: Remko Popma
 //:email: rpopma@apache.org
-:revnumber: 3.0.0-beta-2
+:revnumber: 3.0.0-beta-3-SNAPSHOT
 :revdate: 2018-04-21
 :toc: left
 :numbered:
