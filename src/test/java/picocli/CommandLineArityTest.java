@@ -1271,4 +1271,32 @@ public class CommandLineArityTest {
         cmd.parseArgs(args);
         return obj;
     }
+
+    @Ignore("#370 Needs support for `last position` in index")
+    @Test
+    public void test370UnboundedArityParam() {
+        class App {
+            @Parameters(index = "0", description = "Folder")
+            private String folder;
+
+            // TODO add support for $-x in index to mean the x-before-last element
+            @Parameters(index = "1..$-1", description = "Source paths")
+            private String [] sources;
+
+            // TODO add support for $ in index to mean the last element
+            @Parameters(index = "$", description = "Destination folder path")
+            private String destination;
+        }
+
+        //setTraceLevel("DEBUG");
+        App app = new App();
+        new CommandLine(app)
+                .setOverwrittenOptionsAllowed(true)
+                .parseArgs("folder source1 source2 source3 destination".split(" "));
+
+        assertEquals("folder", app.folder);
+        assertArrayEquals(new String[]{"source1", "source2", "source2"}, app.sources);
+        assertEquals("destination", app.destination);
+        //CommandLine.usage(new App(), System.out);
+    }
 }
