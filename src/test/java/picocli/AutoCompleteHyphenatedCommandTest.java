@@ -4,6 +4,7 @@ import java.io.IOException;
 
 import org.junit.Test;
 
+import static java.lang.String.format;
 import static org.junit.Assert.assertEquals;
 import static picocli.CommandLine.*;
 
@@ -12,7 +13,7 @@ public class AutoCompleteHyphenatedCommandTest {
     @Test
     public void testCompletionScript() throws IOException {
         String actual = AutoComplete.bash("rcmd", new CommandLine(new HyphenatedCommand()));
-        String expected = AutoCompleteTest.loadTextFromClasspath("/hyphenated_completion");
+        String expected = format(AutoCompleteTest.loadTextFromClasspath("/hyphenated_completion"), CommandLine.VERSION);
         assertEquals(expected, actual);
     }
 }
