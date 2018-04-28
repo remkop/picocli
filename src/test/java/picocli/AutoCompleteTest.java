@@ -134,7 +134,7 @@ public class AutoCompleteTest {
         return result.toString().substring(0, result.length() - 1);
     }
 
-    private static String loadTextFromClasspath(String path) {
+    static String loadTextFromClasspath(String path) {
         URL url = AutoCompleteTest.class.getResource(path);
         if (url == null) { throw new IllegalArgumentException("Could not find '" + path + "' in classpath."); }
         BufferedReader reader = null;
@@ -401,14 +401,20 @@ public class AutoCompleteTest {
                 "complete -F _complete_picocli.AutoComplete -o default picocli.AutoComplete picocli.AutoComplete.sh picocli.AutoComplete.bash\n");
         assertEquals(expected, new String(completion, "UTF8"));
     }
-    private byte[] readBytes(File f) throws IOException {
+    public static byte[] readBytes(File f) throws IOException {
         int pos = 0;
         int len = 0;
         byte[] buffer = new byte[(int) f.length()];
-        FileInputStream fis = new FileInputStream(f);
-        while ((len = fis.read(buffer, pos, buffer.length - pos)) > 0) { pos += len; }
-        fis.close();
-        return buffer;
+        FileInputStream fis = null;
+        try {
+            fis = new FileInputStream(f);
+            while ((len = fis.read(buffer, pos, buffer.length - pos)) > 0) {
+                pos += len;
+            }
+            return buffer;
+        } finally {
+            fis.close();
+        }
     }
     @Test
     public void testCommandDescriptor() {

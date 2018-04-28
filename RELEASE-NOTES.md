@@ -1,5 +1,36 @@
 # picocli Release Notes
 
+# <a name="3.0.0-beta-3"></a> Picocli 3.0.0-beta-3 (UNRELEASED)
+The picocli community is pleased to announce picocli 3.0.0-beta-3.
+
+This release contains enhancements and bug fixes.
+
+This is the twenty-eighth public release.
+Picocli follows [semantic versioning](http://semver.org/).
+
+## <a name="3.0.0-beta-3-toc"></a> Table of Contents
+* [New and noteworthy](#3.0.0-beta-3-new)
+* [Promoted features](#3.0.0-beta-3-promoted)
+* [Fixed issues](#3.0.0-beta-3-fixes)
+* [Deprecations](#3.0.0-beta-3-deprecated)
+* [Potential breaking changes](#3.0.0-beta-3-breaking-changes)
+
+## <a name="3.0.0-beta-3-new"></a> New and Noteworthy
+
+
+## <a name="3.0.0-beta-3-promoted"></a> Promoted Features
+Promoted features are features that were incubating in previous versions of picocli but are now supported and subject to backwards compatibility. 
+
+No features have been promoted in this picocli release.
+
+## <a name="3.0.0-beta-3-fixes"></a> Fixed issues
+- [#371] Fixed bug where autocompletion did not work correctly for subcommands with embedded hyphens. Thanks to [Paulius Fadelis](https://github.com/Fadelis) for the bug report.
+
+## <a name="3.0.0-beta-3-deprecated"></a> Deprecations
+
+## <a name="3.0.0-beta-3-breaking-changes"></a> Potential breaking changes
+- 
+
 # <a name="3.0.0-beta-2"></a> Picocli 3.0.0-beta-2
 The picocli community is pleased to announce picocli 3.0.0-beta-2.
 

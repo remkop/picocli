@@ -384,7 +384,7 @@ public class AutoComplete {
             int count = functionCalls.size();
             String functionName = "_picocli_" + scriptName + "_" + concat("_", predecessors, entry.getKey(), new Bashify());
             functionCalls.add(format("  ArrContains COMP_WORDS CMDS%2$d && { %1$s; return $?; }\n", functionName, count));
-            buff.append(      format("  CMDS%2$d=(%1$s)\n", concat(" ", predecessors, entry.getKey(), new Bashify()), count));
+            buff.append(      format("  CMDS%2$d=(%1$s)\n", concat(" ", predecessors, entry.getKey(), new NullFunction()), count));
 
             // remember the function name and associated subcommand so we can easily generate a function later
             function2command.put(new CommandDescriptor(functionName, entry.getKey()), entry.getValue());
