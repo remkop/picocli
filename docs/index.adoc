@@ -85,7 +85,7 @@ class CheckSum implements Callable<Void> {
     public static void main(String[] args) throws Exception {
         // CheckSum implements Callable, so parsing, error handling and handling user
         // requests for usage help or version help can be done with one line of code.
-        CommandLine.call(new CheckSum(), System.err, args);
+        CommandLine.call(new CheckSum(), args);
     }
 
     @Override
@@ -707,7 +707,7 @@ class OptionalValueDemo implements Runnable {
     public void run() { System.out.printf("x = '%s'%n", x); }
 
     public static void main(String... args) {
-       CommandLine.run(new OptionalValueDemo(), System.out, args);
+       CommandLine.run(new OptionalValueDemo(), args);
     }
 }
 ----
@@ -959,9 +959,9 @@ Commands with `mixinStandardHelpOptions` do not need to explicitly declare field
 The usage help message for the above example looks like this:
 ----
 Usage: <main class> [-hV] [--option=<option>]
-      --option=<option>       Some option.
-  -h, --help                  Show this help message and exit.
-  -V, --version               Print version information and exit.
+      --option=<option>   Some option.
+  -h, --help              Show this help message and exit.
+  -V, --version           Print version information and exit.
 ----
 
 === Built-in Help Subcommand
@@ -1155,19 +1155,19 @@ A default picocli usage help message looks like this:
 ----
 Usage: cat [-AbeEnstTuv] [--help] [--version] [FILE...]
 Concatenate FILE(s), or standard input, to standard output.
-      FILE                    Files whose contents to display
-  -A, --show-all              equivalent to -vET
-  -b, --number-nonblank       number nonempty output lines, overrides -n
-  -e                          equivalent to -vET
-  -E, --show-ends             display $ at end of each line
-  -n, --number                number all output lines
-  -s, --squeeze-blank         suppress repeated empty output lines
-  -t                          equivalent to -vT
-  -T, --show-tabs             display TAB characters as ^I
-  -u                          (ignored)
-  -v, --show-nonprinting      use ^ and M- notation, except for LDF and TAB
-      --help                  display this help and exit
-      --version               output version information and exit
+      FILE                 Files whose contents to display
+  -A, --show-all           equivalent to -vET
+  -b, --number-nonblank    number nonempty output lines, overrides -n
+  -e                       equivalent to -vET
+  -E, --show-ends          display $ at end of each line
+  -n, --number             number all output lines
+  -s, --squeeze-blank      suppress repeated empty output lines
+  -t                       equivalent to -vT
+  -T, --show-tabs          display TAB characters as ^I
+  -u                       (ignored)
+  -v, --show-nonprinting   use ^ and M- notation, except for LDF and TAB
+      --help               display this help and exit
+      --version            output version information and exit
 Copyright(c) 2017
 ----
 
@@ -1208,10 +1208,10 @@ in the synopsis and in the option list. By default, the field name is shown in `
 Use the `paramLabel` attribute to display a different name. For example:
 ----
 Usage: <main class> [-f=FILE] [-n=<number>] NUM <host>
-      NUM                     number param
-      host                    the host parameter
-  -f= FILE                    a file
-  -n= <number>                a number option
+      NUM        number param
+      host       the host parameter
+  -f= FILE       a file
+  -n= <number>   a number option
 ----
 Some annotated fields in the below example class have a `paramLabel` attribute and others don't:
 [source,java]
@@ -1383,9 +1383,9 @@ class App {
 The above will generate the following usage help message, where the `all` field is not shown:
 ----
 Usage: <main class> <host> <port> [<files>...]
-      host                    destination host
-      port                    destination port
-      files                   files to transfer
+      host    destination host
+      port    destination port
+      files   files to transfer
 ----
 
 === Show Default Values
@@ -1404,8 +1404,8 @@ CommandLine.usage(new DefaultValues(), System.out);
 This produces the following usage help:
 ----
 Usage: <main class> -f=<file>
-  -f, --file=<file>           the file to use
-                                Default: config.xml
+  -f, --file=<file>   the file to use
+                        Default: config.xml
 ----
 
 Picocli 3.0 gives more fine-grained control and adds a `showDefaultValue` attribute to the `@Option` and `@Parameters` annotation.
@@ -1440,12 +1440,12 @@ CommandLine.usage(new FineGrainedDefaults(), System.out);
 This produces the following usage help:
 ----
 Usage: <main class> [-a=<optionA>] [-b=<optionB>] [-c=<optionC>] [-d=<optionD>]
-  -a= <optionA>               ALWAYS shown even if null
-                                Default: null
-  -b= <optionB>               NEVER shown
-  -c= <optionC>               ON_DEMAND hides null
-  -d= <optionD>               ON_DEMAND shows non-null
-                                Default: abc
+  -a= <optionA>   ALWAYS shown even if null
+                    Default: null
+  -b= <optionB>   NEVER shown
+  -c= <optionC>   ON_DEMAND hides null
+  -d= <optionD>   ON_DEMAND shows non-null
+                    Default: abc
 ----
 
 === Required-Option Marker
@@ -1462,8 +1462,8 @@ class Example {
 Produces the following usage help message:
 ----
 Usage: <main class> [OPTIONS]
-  -a, --alpha=<alpha>         optional alpha
-* -b, --beta=<beta>           mandatory beta
+  -a, --alpha=<alpha>   optional alpha
+* -b, --beta=<beta>     mandatory beta
 ----
 
 === Usage Width
@@ -1900,9 +1900,9 @@ Usage: git [-hV] [--git-dir=<gitDir>]
 Git is a fast, scalable, distributed revision control system with an unusually
 rich command set that provides both high-level operations and full access to
 internals.
-      --git-dir=<gitDir>      Set the path to the repository.
-  -h, --help                  Show this help message and exit.
-  -V, --version               Print version information and exit.
+      --git-dir=<gitDir>   Set the path to the repository.
+  -h, --help               Show this help message and exit.
+  -V, --version            Print version information and exit.
 
 Commands:
 
@@ -2482,13 +2482,12 @@ In Groovy, use `[` and `]` to surround array values, instead of the `{` and `}` 
 
 [source,groovy]
 ----
-@Command(name = "MyApp", version = "Groovy picocli demo v3.0",
+@Command(name = "MyApp", version = "Groovy picocli v3.0 demo",
          mixinStandardHelpOptions = true, // add --help and --version options
          description = "@|bold Groovy|@ @|underline picocli|@ example")
 class MyApp implements Runnable {
 
-    @Option(names = ["-c", "--count"], paramLabel = "COUNT",
-            description = "number of repetitions")
+    @Option(names = ["-c", "--count"], description = "number of repetitions")
     int count = 1
 
     void run() {
@@ -2550,13 +2549,12 @@ Kotlin 1.2 (released Nov 28, 2017) officially supports http://kotlinlang.org/doc
 
 [source,kotlin]
 ----
-@Command(name = "MyApp", version = ["Kotlin picocli demo v3.0"],
+@Command(name = "MyApp", version = ["Kotlin picocli v3.0 demo"],
         mixinStandardHelpOptions = true, // add --help and --version options
         description = ["@|bold Kotlin|@ @|underline picocli|@ example"])
 class MyApp : Runnable {
 
-    @Option(names = ["-c", "--count"], paramLabel = "COUNT",
-            description = ["number of repetitions"])
+    @Option(names = ["-c", "--count"], description = ["number of repetitions"])
     private var count: Int = 1
 
     override fun run() {
@@ -2577,7 +2575,7 @@ Kotlin versions prior to 1.2 did not allow the https://kotlinlang.org/docs/refer
         description = arrayOf("@|bold Kotlin|@ @|underline picocli|@ example"))
 class MyApp : Runnable {
 
-    @Option(names = arrayOf("-c", "--count"), paramLabel = "COUNT",
+    @Option(names = arrayOf("-c", "--count"),
             description = arrayOf("number of repetitions"))
     private var count: Int = 1
 
@@ -2596,25 +2594,25 @@ so be aware that you will have to write `Array(...)` for the `names`, `descripti
 
 [source,scala]
 ----
-@Command(name = "MyApp", version = Array("Scala picocli demo v3.0"),
-  mixinStandardHelpOptions = true, // add --help and --version options
-  description = Array("@|bold Scala|@ @|underline picocli|@ example"))
+@Command(name = "MyApp", version = Array("Scala picocli v3.0 demo"),
+    mixinStandardHelpOptions = true, // add --help and --version options
+    description = Array("@|bold Scala|@ @|underline picocli|@ example"))
 class MyApp extends Runnable {
 
-  @Option(names = Array("-c", "--count"), paramLabel = "COUNT",
-    description = Array("number of repetitions"))
-  private var count: Int = 1
+    @Option(names = Array("-c", "--count"),
+            description = Array("number of repetitions"))
+    private var count: Int = 1
 
-  def run() : Unit = {
-    for (i <- 0 until count) {
-      println(s"hello world $i...")
+    def run() : Unit = {
+        for (i <- 0 until count) {
+            println(s"hello world $i...")
+        }
     }
-  }
 }
 object MyApp {
-  def main(args: Array[String]) {
-    CommandLine.run(new MyApp(), args: _*)
-  }
+    def main(args: Array[String]) {
+        CommandLine.run(new MyApp(), args: _*)
+    }
 }
 ----
 
