@@ -41,7 +41,7 @@ public class VersionProviderDemo2 implements Runnable {
     }
 
     public static void main(String[] args) {
-        CommandLine.run(new VersionProviderDemo2(), System.out, args);
+        CommandLine.run(new VersionProviderDemo2(), args);
     }
 
     /**

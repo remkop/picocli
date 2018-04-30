@@ -49,6 +49,6 @@ public class AutomaticHelpDemo implements Runnable {
     }
 
     public static void main(String... args) {
-        CommandLine.run(new AutomaticHelpDemo(), System.err, args);
+        CommandLine.run(new AutomaticHelpDemo(), args);
     }
 }

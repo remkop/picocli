@@ -62,6 +62,6 @@ public class ParentCommandDemo {
     }
 
     public static void main(String[] args) {
-        CommandLine.run(new FileUtils(), System.out, "--directory=examples/src", "list", "-r");
+        CommandLine.run(new FileUtils(), "--directory=examples/src", "list", "-r");
     }
 }

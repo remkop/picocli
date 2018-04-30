@@ -36,6 +36,6 @@ public class AutomaticHelpDemo3 implements Runnable {
     // to run, execute:
     // java picocli.examples.AutomaticHelpDemo3 help
     public static void main(String... args) {
-        CommandLine.run(new AutomaticHelpDemo3(), System.out, args);
+        CommandLine.run(new AutomaticHelpDemo3(), args);
     }
 }

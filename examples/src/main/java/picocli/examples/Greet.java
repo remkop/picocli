@@ -29,6 +29,6 @@ public class Greet implements Runnable {
     }
 
     public static void main(String... args) {
-        CommandLine.run(new Greet(), System.err, args);
+        CommandLine.run(new Greet(), args);
     }
 }
