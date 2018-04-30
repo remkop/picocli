@@ -2541,33 +2541,22 @@ Kotlin 1.2 (released Nov 28, 2017) officially supports http://kotlinlang.org/doc
 
 [source,kotlin]
 ----
-@Command(name = "MyApp", version = ["Kotlin picocli demo v1.0"],
+@Command(name = "MyApp", version = ["Kotlin picocli demo v3.0"],
+        mixinStandardHelpOptions = true, // add --help and --version options
         description = ["@|bold Kotlin|@ @|underline picocli|@ example"])
 class MyApp : Runnable {
 
     @Option(names = ["-c", "--count"], paramLabel = "COUNT",
-            description = ["the count"])
-    private var count: Int = 0
-
-    @Option(names = ["-h", "--help"], usageHelp = true,
-            description = ["print this help and exit"])
-    private var helpRequested: Boolean = false
-
-    @Option(names = ["-V", "--version"], versionHelp = true,
-            description = ["print version info and exit"])
-    private var versionRequested: Boolean = false
+            description = ["number of repetitions"])
+    private var count: Int = 1
 
     override fun run() {
         for (i in 0 until count) {
             println("hello world $i...")
         }
     }
-    companion object {
-        @JvmStatic fun main(args: Array<String>) {
-            CommandLine.run(MyApp(), System.err, *args)
-        }
-    }
 }
+fun main(args: Array<String>) = CommandLine.run(MyApp(), *args)
 ----
 
 Kotlin versions prior to 1.2 did not allow the https://kotlinlang.org/docs/reference/annotations.html[array literal syntax in annotations], so with older versions of Kotlin you will have to write `arrayOf(...)` for the `names`, `description` and `type` attributes.
@@ -2575,32 +2564,21 @@ Kotlin versions prior to 1.2 did not allow the https://kotlinlang.org/docs/refer
 [source,kotlin]
 ----
 @Command(name = "MyApp", version = arrayOf("picocli demo for Kotlin v1.0 and Kotlin v1.1"),
+        mixinStandardHelpOptions = true, // add --help and --version options
         description = arrayOf("@|bold Kotlin|@ @|underline picocli|@ example"))
 class MyApp : Runnable {
 
     @Option(names = arrayOf("-c", "--count"), paramLabel = "COUNT",
-            description = arrayOf("the count"))
-    private var count: Int = 0
-
-    @Option(names = arrayOf("-h", "--help"), usageHelp = true,
-            description = arrayOf("print this help and exit"))
-    private var helpRequested: Boolean = false
-
-    @Option(names = arrayOf("-V", "--version"), versionHelp = true,
-            description = arrayOf("print version info and exit"))
-    private var versionRequested: Boolean = false
+            description = arrayOf("number of repetitions"))
+    private var count: Int = 1
 
     override fun run() {
         for (i in 0 until count) {
             println("hello world $i...")
         }
     }
-    companion object {
-        @JvmStatic fun main(args: Array<String>) {
-            CommandLine.run(MyApp(), System.err, *args)
-        }
-    }
 }
+fun main(args: Array<String>) = CommandLine.run(MyApp(), *args)
 ----
 
 === Scala
