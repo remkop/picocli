@@ -31,6 +31,8 @@ spec.addPositional(PositionalParamSpec.builder()
         .description("The files to process").build());
 CommandLine commandLine = new CommandLine(spec);
 
+// processing parse results can be done manually
+// or delegated to a handler
 class Handler extends AbstractParseResultHandler<Integer> {
     protected Handler self() { return this; }
 
@@ -46,7 +48,12 @@ class Handler extends AbstractParseResultHandler<Integer> {
     }
 }
 
-int processed = commandLine.parseWithHandler(new Handler(), args);
+// using a handler gives fine-grained control
+// over which streams to use and exit codes
+Integer processed = commandLine.parseWithHandlers(
+        new Handler().useOut(System.out).andExit(123),
+        new DefaultExceptionHandler<Integer>().andExit(567),
+        args);
 ----
 
 == Configuration
@@ -159,10 +166,11 @@ A binding is either a getter or a setter:
 [source,java]
 ----
 public static interface IGetter {
-    /** Returns the current value of the binding. For multi-value options and positional parameters,
-     * this method returns an array, collection or map to add values to.
+    /** Returns the current value of the binding. For multi-value options and positional
+     * parameters, this method returns an array, collection or map to add values to.
      * @throws PicocliException if a problem occurred while obtaining the current value
-     * @throws Exception internally, picocli call sites will catch any exceptions thrown from here and rethrow them wrapped in a PicocliException */
+     * @throws Exception internally, picocli call sites will catch any exceptions
+     *         thrown from here and rethrow them wrapped in a PicocliException */
     <T> T get() throws Exception;
 }
 ----
@@ -176,7 +184,8 @@ public static interface ISetter {
      * @param <T> type of the value
      * @return the previous value of the binding (if supported by this binding)
      * @throws PicocliException if a problem occurred while setting the new value
-     * @throws Exception internally, picocli call sites will catch any exceptions thrown from here and rethrow them wrapped in a PicocliException */
+     * @throws Exception internally, picocli call sites will catch any exceptions
+     *         thrown from here and rethrow them wrapped in a PicocliException */
     <T> T set(T value) throws Exception;
 }
 ----
@@ -197,8 +206,13 @@ spec.addOption(OptionSpec.builder("-V", "--verbose").build());
 spec.addOption(OptionSpec.builder("-f", "--file")
         .paramLabel("FILES")
         .type(List.class)
-        .auxiliaryTypes(File.class) // so, this option is of type List<File>
+        .auxiliaryTypes(File.class) // this option is of type List<File>
         .description("The files to process").build());
+spec.addOption(OptionSpec.builder("-n", "--num")
+        .paramLabel("COUNT")
+        .type(int[].class)
+        .splitRegex(",")
+        .description("Comma-separated list of integers").build());
 CommandLine commandLine = new CommandLine(spec);
 ----
 
@@ -208,7 +222,7 @@ The `CommandLine::parseArgs` method returns a `ParseResult` object that allows c
 
 [source,java]
 ----
-String[] args = { "--verbose", "-f", "file1", "--file=file2" };
+String[] args = { "--verbose", "-f", "file1", "--file=file2", "-n1,2,3" };
 ParseResult pr = commandLine.parseArgs(args);
 
 List<String> originalArgs = pr.originalArgs(); // lists all command line args
@@ -226,13 +240,34 @@ The `matchedOptionValue` method returns the command line value or values, conver
 
 [source,java]
 ----
-ParseResult pr = commandLine.parseArgs("-f", "file1", "--file=file2");
+ParseResult pr = commandLine.parseArgs("-f", "file1", "--file=file2", "-n1,2,3");
 
 List<File> defaultValue = Collections.emptyList();
 List<File> expected     = Arrays.asList(new File("file1"), new File("file2"));
 
 assert expected.equals(pr.matchedOptionValue('f', defaultValue));
 assert expected.equals(pr.matchedOptionValue("--file", defaultValue));
+
+assert Arrays.equals(new int[]{1,2,3}, pr.matchedOptionValue('n', new int[0]));
+----
+
+=== Original Option Values
+
+Use the `OptionSpec.stringValues()` or `OptionSpec.originalStringValues()` method to get a list of all values specified on the command line for an option.
+The `stringValues()` method returns the arguments after splitting but before type conversion, while
+the `originalStringValues()` method returns the matched arguments as specified on the command line (before splitting).
+
+[source,java]
+----
+ParseResult pr = commandLine.parseArgs("-f", "file1", "--file=file2", "-n1,2,3");
+
+// Command line arguments after splitting but before type conversion
+assert "1".equals(pr.matchedOption('n').stringValues().get(0));
+assert "2".equals(pr.matchedOption('n').stringValues().get(1));
+assert "3".equals(pr.matchedOption('n').stringValues().get(2));
+
+// Command line arguments as found on the command line
+assert "1,2,3".equals(pr.matchedOption("--num").originalStringValues().get(0));
 ----
 
 
