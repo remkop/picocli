@@ -318,8 +318,8 @@ try {
     }
     int count = pr.matchedOptionValue('c', 1);
     List<File> files = pr.matchedPositionalValue(0, Collections.<File>emptyList());
-    for (int i = 0; i < count; i++) {
-        for (File f : files) {
+    for (File f : files) {
+        for (int i = 0; i < count; i++) {
             System.out.printf("%d: %s%n", i, f);
         }
     }
