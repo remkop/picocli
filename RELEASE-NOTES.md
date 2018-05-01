@@ -1,35 +1,471 @@
 # picocli Release Notes
 
-# <a name="3.0.0-beta-3"></a> Picocli 3.0.0-beta-3 (UNRELEASED)
-The picocli community is pleased to announce picocli 3.0.0-beta-3.
+# <a name="3.0.0"></a> Picocli 3.0.0
+The picocli community is pleased to announce picocli 3.0.0.
 
-This release contains enhancements and bug fixes.
+This release offers a [programmatic API](http://picocli.info/picocli-3.0-programmatic-api.html) for creating command line applications, in addition to the annotations API. The programmatic API allows applications to dynamically create command line options on the fly, and also makes it possible to create idiomatic domain-specific languages for processing command line arguments, using picocli, in other JVM languages. The picocli community is proud to announce that [Apache Groovy](http://groovy-lang.org/)'s [CliBuilder](http://docs.groovy-lang.org/docs/next/html/gapi/groovy/cli/picocli/CliBuilder.html) DSL for command line applications has been rewritten to use the picocli programmatic API, starting from Groovy 2.5.
 
-This is the twenty-eighth public release.
+Another new feature in this release are Mixins. Mixins allow reusing common options, parameters and command attributes in multiple applications without copy-and-paste duplication.
+
+This release aims to reduce boilerplate code in user applications even further with the new `mixinStandardHelpOptions` command attribute. Picocli adds standard `usageHelp` and `versionHelp` options to commands with this attribute. Additionally picocli now offers a `HelpCommand` that can be installed as a subcommand on any application command to provide usage help for the parent command or sibling subcommands.
+
+From this release, picocli is better at following unix conventions: by default it now prints to stdout when the user requested help, and prints to stderr when the input was invalid or an unexpected error occurred. This release also gives better control over the process exit code.
+
+A new `@Unmatched` annotation allows applications to easily capture unmatched arguments (arguments that could not be matched with any of the registered options or positional parameters).
+
+Usage help message improvements: the usage help message width is now configurable, and the message layout is improved to reduce horizontal padding. Furthermore, you can now specify for individual options or positional parameters whether their default value should be shown in the description or hidden.
+
+Finally, this release adds several options to configure parser behaviour. Picocli can now be configured to function like Apache Commons CLI, to facilitate migration from Apache Commons CLI to picocli.
+
+
+This is the twenty-ninth public release.
 Picocli follows [semantic versioning](http://semver.org/).
 
-## <a name="3.0.0-beta-3-toc"></a> Table of Contents
-* [New and noteworthy](#3.0.0-beta-3-new)
-* [Promoted features](#3.0.0-beta-3-promoted)
-* [Fixed issues](#3.0.0-beta-3-fixes)
-* [Deprecations](#3.0.0-beta-3-deprecated)
-* [Potential breaking changes](#3.0.0-beta-3-breaking-changes)
+## <a name="3.0.0"></a> Table of Contents
+* [New and noteworthy](#3.0.0-new)
+* [Promoted features](#3.0.0-promoted)
+* [Fixed issues](#3.0.0-fixes)
+* [Deprecations](#3.0.0-deprecated)
+* [Potential breaking changes](#3.0.0-breaking-changes)
 
-## <a name="3.0.0-beta-3-new"></a> New and Noteworthy
+## <a name="3.0.0-new"></a> New and Noteworthy
+
+### <a name="3.0.0-Programmatic-API"></a> Programmatic API
+This release offers a programmatic API for creating command line applications, in addition to the annotations API. The programmatic API allows applications to dynamically create command line options on the fly, and also makes it possible to create idiomatic domain-specific languages for processing command line arguments, using picocli, in other JVM languages. (Example: Groovy [CliBuilder](http://docs.groovy-lang.org/docs/next/html/gapi/groovy/cli/picocli/CliBuilder.html).)
+
+_If you have suggestions for improving the programmatic API, please raise a ticket on GitHub!_
+
+#### Example
+```java
+CommandSpec spec = CommandSpec.create();
+spec.mixinStandardHelpOptions(true); // --help and --version options
+spec.addOption(OptionSpec.builder("-c", "--count")
+        .paramLabel("COUNT")
+        .type(int.class)
+        .description("number of times to execute").build());
+spec.addPositional(PositionalParamSpec.builder()
+        .paramLabel("FILES")
+        .type(List.class).auxiliaryTypes(File.class) // List<File>
+        .description("The files to process").build());
+
+CommandLine commandLine = new CommandLine(spec);
+try {
+    // see also the CommandLine.parseWithHandler(s) convenience methods
+    ParseResult pr = commandLine.parseArgs(args);
+    
+    if (CommandLine.printHelpIfRequested(pr)) {
+        return;
+    }
+    int count = pr.matchedOptionValue('c', 1);
+    List<File> files = pr.matchedPositionalValue(0, Collections.<File>emptyList());
+    for (File f : files) {
+        for (int i = 0; i < count; i++) {
+            System.out.printf("%d: %s%n", i, f);
+        }
+    }
+} catch (ParseException invalidInput) {
+    System.err.println(invalidInput.getMessage());
+    invalidInput.getCommandLine().usage(System.err);
+}
+```
+
+#### CommandSpec
+`CommandSpec` models a command. It is the programmatic variant of the `@Command` annotation. It has a name and a version, both of which may be empty.  It also has a `UsageMessageSpec` to configure aspects of the usage help message and a `ParserSpec` that can be used to control the behaviour of the parser.
+
+#### OptionSpec and PositionalParamSpec
+`OptionSpec` models a named option, and `PositionalParamSpec` models one or more positional parameters. They are the programmatic variant of the `@Option` and `@Parameters` annotations, respectively.
+
+An `OptionSpec` must have at least one name, which is used during parsing to match command line arguments. Other attributes can be left empty and picocli will give them a reasonable default value. This defaulting is why `OptionSpec` objects are created with a builder: this allows you to specify only some attributes and let picocli initialise the other attributes. For example, if only the option’s name is specified, picocli assumes the option takes no parameters (arity = 0), and is of type `boolean`. Another example, if arity is larger than `1`, picocli sets the type to `List` and the `auxiliary type` to `String`.
+
+`PositionalParamSpec` objects don’t have names, but have an index range instead. A single `PositionalParamSpec` object can capture multiple positional parameters. The default index range is set to `0..*` (all indices). A command may have multiple `PositionalParamSpec` objects to capture positional parameters at different index ranges. This can be useful if positional parameters at different index ranges have different data types.
+
+Similar to `OptionSpec` objects, Once a `PositionalParamSpec` is constructed, its configuration becomes immutable, but its `value` can still be modified. Usually the value is set during command line parsing when a non-option command line argument is encountered at a position in its index range.
+
+#### <a name="3.0.0-ParseResult"></a> ParseResult
+A `ParseResult` class is now available that allows applications to inspect the result of parsing a sequence of command line arguments.
+
+This class provides methods to query whether the command line arguments included certain options or position parameters, and what the value or values of these options and positional parameters was. Both the original command line argument String value as well as a strongly typed value can be obtained.
 
 
-## <a name="3.0.0-beta-3-promoted"></a> Promoted Features
+### Mixins for Reuse
+Mixins are a convenient alternative to subclassing: picocli annotations from _any_ class can be added to ("mixed in" with) another command. This includes options, positional parameters, subcommands and command attributes. Picocli [autoHelp](#3.0.0-alpha-1-autohelp) internally uses a mixin.
+
+A mixin is a separate class with options, positional parameters, subcommands and command attributes that can be reused in other commands. Mixins can be installed by calling the `CommandLine.addMixin` method with an object of this class, or annotating a field in your command with `@Mixin`. Here is an example mixin class:
+
+```java
+public class ReusableOptions {
+
+    @Option(names = { "-v", "--verbose" }, description = {
+        "Specify multiple -v options to increase verbosity.", "For example, `-v -v -v` or `-vvv`" })
+    protected boolean[] verbosity = new boolean[0];
+}
+```
+
+#### Adding Mixins Programmatically
+The below example shows how a mixin can be added programmatically with the `CommandLine.addMixin` method.
+
+```java
+CommandLine commandLine = new CommandLine(new MyCommand());
+commandline.addMixin("myMixin", new ReusableOptions());
+```
+#### `@Mixin` Annotation
+A command can also include mixins by annotating fields with `@Mixin`. All picocli annotations found in the mixin class are added to the command that has a field annotated with `@Mixin`. For example:
+
+```java
+@Command(name = "zip", description = "Example reuse with @Mixin annotation.")
+public class MyCommand {
+
+    // adds the options defined in ReusableOptions to this command
+    @Mixin
+    private ReusableOptions myMixin;
+}
+```
+
+
+### <a name="3.0.0-mixinStandardHelpOptions"></a> Standard Help Options
+This release introduces the `mixinStandardHelpOptions` command attribute. When this attribute is set to `true`, picocli adds a mixin to the command that adds `usageHelp` and `versionHelp` options to the command. For example:
+
+```java
+@Command(mixinStandardHelpOptions = true, version = "auto help demo - picocli 3.0")
+class AutoHelpDemo implements Runnable {
+
+    @Option(names = "--option", description = "Some option.")
+    String option;
+
+    @Override public void run() { }
+}
+```
+
+Commands with `mixinStandardHelpOptions` do not need to explicitly declare fields annotated with `@Option(usageHelp = true)` and `@Option(versionHelp = true)` any more. The usage help message for the above example looks like this:
+```text
+Usage: <main class> [-hV] [--option=<option>]
+      --option=<option>   Some option.
+  -h, --help              Show this help message and exit.
+  -V, --version           Print version information and exit.
+```
+
+### <a name="3.0.0-HelpCommand"></a> Help Command
+
+From this release, picocli provides a `help` subcommand (`picocli.CommandLine.HelpCommand`) that can be installed as a subcommand on any application command to provide usage help for the parent command or sibling subcommands. For example:
+
+```java
+@Command(subcommands = HelpCommand.class)
+class AutoHelpDemo implements Runnable {
+
+    @Option(names = "--option", description = "Some option.")
+    String option;
+
+    @Override public void run() { }
+}
+```
+
+
+```text
+# print help for the `maincommand` command
+maincommand help
+
+# print help for the `subcommand` command
+maincommand help subcommand
+```
+
+For applications that want to create a custom help command, this release also introduces a new interface `picocli.CommandLine.IHelpCommandInitializable` that provides custom help commands with the information they need: access to the parent command and sibling commands, whether to use Ansi colors or not, and the streams to print the usage help message to.
+
+### <a name="3.0.0-Unmatched"></a> `@Unmatched` Annotation
+Unmatched arguments are the command line arguments that could not be assigned to any of the defined options or positional parameters. From this release, fields annotated with `@Unmatched` will be populated with the unmatched arguments. The field must be of type `String[]` or `List<String>`.
+
+If picocli finds a field annotated with `@Unmatched`, it automatically sets `unmatchedArgumentsAllowed` to `true` so no `UnmatchedArgumentException` is thrown when a command line argument cannot be assigned to an option or positional parameter.
+
+### <a name="3.0.0-std"></a> Stdout or Stderr
+From picocli v3.0, the `run` and `call` convenience methods follow unix conventions: print to stdout when the user requested help, and print to stderr when the input was invalid or an unexpected error occurred.
+
+Custom handlers can extend `AbstractHandler` to facilitate following this convention. `AbstractHandler` also provides `useOut` and `useErr` methods to allow customizing the target output streams, and `useAnsi` to customize the Ansi style to use:
+
+```java
+@Command class CustomizeTargetStreamsDemo implements Runnable {
+    public void run() { ... }
+
+    public static void main(String... args) {
+        CommandLine cmd = new CommandLine(new CustomizeTargetStreamsDemo());
+
+        PrintStream myOut = getOutputPrintStream(); // custom stream to send command output to
+        PrintStream myErr = getErrorPrintStream();  // custom stream for error messages
+
+        cmd.parseWithHandlers(
+                new RunLast().useOut(myOut).useAnsi(Help.Ansi.ON),
+                new DefaultExceptionHandler().useErr(myErr).useAnsi(Help.Ansi.OFF),
+                args);
+    }
+}
+```
+
+### <a name="3.0.0-exit-code"></a> Exit Code Support
+From picocli v3.0, the built-in parse result handlers (`RunFirst`, `RunLast` and `RunAll`) and exception handler (`DefaultExceptionHandler`) can specify an exit code. If an exit code was specified, the handler terminates the JVM with the specified status code when finished.
+
+```java
+@Command class ExitCodeDemo implements Runnable {
+    public void run() { throw new ParameterException(new CommandLine(this), "exit code demo"); }
+
+    public static void main(String... args) {
+        CommandLine cmd = new CommandLine(new ExitCodeDemo());
+        cmd.parseWithHandlers(
+                new RunLast().andExit(123),
+                new DefaultExceptionHandler().andExit(456),
+                args);
+    }
+}
+```
+Running this command prints the following to stderr and exits the JVM with status code `456`.
+
+```
+exit code demo
+Usage: <main class>
+```
+
+Custom handlers can extend `AbstractHandler` to inherit this behaviour.
+
+
+### <a name="3.0.0-ShowDefault"></a> Fine-grained ShowDefault
+
+This release adds a `showDefaultValue` attribute to the `@Option` and `@Parameters` annotation. This allows you to specify for each individual option and positional parameter whether its default value should be shown in the usage help.
+
+This attribute accepts three values:
+
+* `ALWAYS` - always display the default value of this option or positional parameter, even `null` values, regardless what value of `showDefaultValues` was specified on the command
+* `NEVER` - don't show the default value for this option or positional parameter, regardless what value of `showDefaultValues` was specified on the command
+* `ON_DEMAND` - (this is the default) only show the default value for this option or positional parameter if `showDefaultValues` was specified on the command
+
+The `NEVER` value is useful for security sensitive command line arguments like passwords. The `ALWAYS` value is useful when you only want to show the default value for a few arguments but not for all (in combination with `@Command(showDefaultValues = false)`).
+
+### <a name="3.0.0-UsageHelpLayout"></a> Improved Usage Help Message Layout
+Previously, the usage message layout had a fixed width long option name column: this column is always 24 characters, even if none of the options have a long option name.
+
+This gave strange-looking usage help messages in some cases. For example:
+```java
+@Command(name="ls")
+class App {
+    @Option(names = "-a", description = "display all files") boolean a;
+    @Option(names = "-l", description = "use a long listing format") boolean l;
+    @Option(names = "-t", description = "sort by modification time") boolean t;
+}
+```
+
+The usage message for this example was:
+```
+Usage: ls [-alt]
+  -a                          display all files
+  -l                          use a long listing format
+  -t                          sort by modification time
+```
+From this release, picocli adjusts the width of the long option name column to the longest name (up to max 24).
+
+The new usage message for this example looks like this:
+```
+Usage: ls [-alt]
+  -a     display all files
+  -l     use a long listing format
+  -t     sort by modification time
+```
+
+### <a name="3.0.0-StricterArity"></a> Stricter Arity Validation
+
+Until this release, options with mandatory parameters would consume as many arguments as required, even if those arguments matched other option flags. For example:
+
+Given a command like this:
+```java
+class App {
+  @Option(names = "-a", arity = "2")
+  String[] a;
+  
+  @Option(names = "-v")
+  boolean v;
+}
+```
+Prior to this change, the following input would be accepted:
+```
+<command> -a 1 -v
+```
+In previous versions, picocli accepted this and assigned `"1"` and `"-v"` as the two values for the `-a` option.
+From this release, the parser notices that one of the arguments is an option and throws a `MissingParameterException` because not enough parameters were specified for the first option.
+
+
+## <a name="3.0.0-promoted"></a> Promoted Features
 Promoted features are features that were incubating in previous versions of picocli but are now supported and subject to backwards compatibility. 
 
 No features have been promoted in this picocli release.
 
-## <a name="3.0.0-beta-3-fixes"></a> Fixed issues
+## <a name="3.0.0-fixes"></a> Fixed issues
 - [#371] Fixed bug where autocompletion did not work correctly for subcommands with embedded hyphens. Thanks to [Paulius Fadelis](https://github.com/Fadelis) for the bug report.
+- [#372] Simplify Kotlin example in user manual. Thanks to [Dustin Spicuzza](https://github.com/virtuald).
 
-## <a name="3.0.0-beta-3-deprecated"></a> Deprecations
+### 3.0.0-alpha-1
+- [#245] New Feature: from 3.0, picocli offers an API for programmatic configuration.
+- [#257] New Feature: new `ParseResult` class allows programmatic inspection of the result of parsing a sequence of command line arguments.
+- [#144] New Feature: added support for mixins to allow reusing common options, positional parameters, subcommands and command attributes from any object.
+- [#253] New Feature: added `@Unmatched` annotation for unmatched arguments.
+- [#175] New Feature: `mixinStandardHelpOptions` attribute to install the standard `--help` and `--version` options, obviating the need for fields annotated with `@Option(usageHelp = true)` and `@Option(versionHelp = true)`.
+- [#175] New Feature: picocli now provides a `HelpCommand` that can be installed as a subcommand on any application command to provide usage help for the parent command or sibling subcommands.
+- [#175] New Feature: new `IHelpCommandInitializable` interface facilitates construction of custom help commands.
+- [#250] Enhancement: the `run` and `call` convenience methods now follow convention: print to stdout when the user requested help, print to stderr when the input was invalid or an unexpected error occurred. Added `AbstractHandler` to facilitate following this convention for custom parse result handlers and exception handlers. 
+- [#251] New Feature: exit code support. The built-in parse result handlers (`RunFirst`, `RunLast` and `RunAll`) and exception handler  (`DefaultExceptionHandler`) can now optionally specify an exit code. If specified, the handler terminates the JVM with the specified status code when finished. Custom handlers can extend `AbstractHandler` to inherit this behaviour. 
+- [#262] New Feature: new `showDefaultValue` attribute on `@Option` and `@Parameters` gives fine-grained control over which default values to show or hide. Thanks to [ymenager](https://github.com/ymenager) for the request.
+- [#268] New Feature: new `helpCommand` attribute on `@Command`: if the command line arguments contain a subcommand annotated with `helpCommand`, the parser will not validate the required options or positional parameters of the parent command. Thanks to [ymenager](https://github.com/ymenager) for the request.
+- [#277] New Feature: new `hidden` attribute on `@Command` to omit the specified subcommand from the usage help message command list of the parent command. Thanks to [pditommaso](https://github.com/pditommaso).
+- [#159] Enhancement: make help usage message width configurable. Thanks to [pditommaso](https://github.com/pditommaso).
 
-## <a name="3.0.0-beta-3-breaking-changes"></a> Potential breaking changes
-- 
+### 3.0.0-alpha-2
+- [#312] Enhancement and API change (against earlier alpha version): Remove `AbstractSimpleParseResultHandler` class and `parseWithSimpleHandlers` method.
+- [#311] Enhancement and API change (against earlier alpha version): Simplify parseWithHandlers: removed prototypeReturnValue parameter.
+- [#307] Enhancement: Provide CommandLine.usage(PrintWriter) method for testing and to facilitate [GROOVY-8520](https://issues.apache.org/jira/browse/GROOVY-8520) migration from commons-cli to picocli.
+- [#306] Enhancement: Support generating autocompletion scripts for non-public @Command classes. Thanks to [cbeams](https://github.com/cbeams) for the request.
+- [#308] Enhancement: Provide API to disallow POSIX clustered short options.
+- [#310] Enhancement: PicocliBaseScript should follow conventions for stdout and stderr: requested help to stdout, invalid input usage help to stderr.
+- [#309] Bugfix: Tests were failing on environments that support ANSI colors.
+
+### 3.0.0-alpha-3
+- [#313] Enhancement and New API: add method (later removed in 3.0.0-beta-1) `CommandLine::setMaxArityIsMaxTotalParams` to configure the parser to use `arity` to limit the total number of values accumulated in an option or positional parameter.
+- [#314] Enhancement and New API: add method `CommandLine::setUsageHelpWidth` and `UsageMessageSpec::width` to set the max usage help message width.
+- [#316] Enhancement: Support lenient mode where annotations are optional when extracting annotations.
+- [#317] Enhancement: Change semantics of ParseResult.rawOptionValue to mean values after split (but before type conversion).
+
+### 3.0.0-alpha-4
+- [#318] API Change: Split model IBinding into IGetter and ISetter.
+- [#320] API Change: Rename parser config `maxArityIsMaxTotalParams` to `arityRestrictsCumulativeSize`. (Property was removed in 3.0.0-beta-1.)
+- [#216] Enhancement: Parsed values now replace the default value of multi-value (array, Collection or Map) options and positional parameters instead of being appended to them. Thanks to [wiwie](https://github.com/wiwie) for the request.
+- [#261] Enhancement: Options and positional parameters with a `defaultValue` are never required. Thanks to [ymenager](https://github.com/ymenager) for the request.
+- [#315] Enhancement: Initialize ArgSpec value with `defaultValue` before parsing command line.
+- [#263] Bugfix: positional parameter defaults were not shown in usage help message. Thanks to [ymenager](https://github.com/ymenager) for the bug report.
+
+### 3.0.0-alpha-5
+- [#329] New API: Add parser configuration to control whether boolean flags should be toggled.
+- [#328] New API: Provide getter methods on `OptionSpec.Builder` and `PositionalParamSpec.Builder`.
+- [#326] New API: Add parser configuration to treat unmatched options as positional parameters.
+- [#283] New API: Provide `getMissing` method on MissingParameterException to get a reference to the problematic options and positional parameters. Thanks to [jcapsule](https://github.com/jcapsule) for the suggestion.
+- [#334] API Change: Rename `ArgSpec.rawStringValues()` to `ArgSpec.stringValues()`.
+- [#342] API Change: Prefix ParseResult methods with `matched` if they return only matched options/positionals.
+- [#340] API Change: Rename `ParseResult.optionValue(String, T)` to `matchedOptionValue(String, T)`.
+- [#338] API Change: Remove `ParseResult.rawOptionValue(s)` and `rawPositionalValue(s)` methods.
+- [#339] API Change: Remove `ParseResult.matchedOptionValue(OptionSpec)` and `matchedPositionalValue(PositionalParamSpec)` methods.
+- [#347] API Change: Make `ArgSpec.getValue`, `setValue` and `isMultiValue` public methods.
+- [#333] Enhancement: Added subcommand to synopsis in generated usage help. Thanks to [jcapsule](https://github.com/jcapsule) for the pull request.
+- [#323] Enhancement: Remove dependency on java.sql package: picocli should only require the java.base module when running in Java 9.
+- [#325] Enhancement: Allow custom type converter to map empty String to custom default value for empty options. Thanks to [jesselong](https://github.com/jesselong) for the suggestion.
+- [#303] Enhancement: Improve validation to prevent common mistakes.
+- [#70]  Enhancement: Positional parameters should only consume values where type conversion succeeds.
+- [#346] Enhancement: Validate that arity min is never greater than max.
+- [#348] Enhancement: Interpreter should call `ArgSpec.setValue` for every matched option or positional parameter.
+- [#327] Bugfix: Default values should not cause options and positional parameters to be added to ParseResult.
+- [#330] Bugfix: `Interpreter` should clear option's and positional parameter's `stringValues` list before parsing new input.
+- [#335] Bugfix: Abstract class `ArgSpec` should not implement `equals` and `hashCode`. 
+- [#345] Bugfix: Stop processing varargs when cumulative size reached. (This functionality was removed in 3.0.0-beta-1.)
+
+### 3.0.0-alpha-6
+- [#349] New API: Add `longestName()` convenience method to OptionSpec.
+- [#352] New API: Add method to copy all attributes of a ParserSpec to a CommandSpec.
+- [#353] New API: Add method to copy all attributes of a UsageMessageSpec to a CommandSpec.
+- [#343] New API: Add method `Help.Ansi.Text::concat` and deprecate the `append` method. ("Append" suggests the Text object is modified, like StringBuilder, but Text is immutable.)
+- [#350] Enhancement: Improve error message for `usageHelp` and `versionHelp` validation.
+- [#344] Enhancement: Don't show WARN message for unmatched args or overwritten options.
+- [#351] Documentation: Improve javadoc for OptionSpec.usageHelp and versionHelp.
+- [#354] Bug fix: Interpreter should reset options and positional parameters to their initial value before parsing new input.
+
+### 3.0.0-beta-1
+- [#364] API Change: Remove parser option `arityRestrictsCumulativeSize`.
+- [#355] API Change: Add method `ArgSpec.hasInitialValue`.
+- [#361] API Change: Add parser option `aritySatisfiedByAttachedOptionParam` for commons-cli compatibility.
+- [#363] API Change: Add parser option to limit the number of parts when splitting to max arity, for compatibility with commons-cli.
+- [#360] Enhancement: Dynamically adjust width of long option name column (up to max 24).
+
+### 3.0.0-beta-2
+- [#366] API Change: Add `ArgSpec.getTypedValues()` method.
+- [#365] Enhancement: Stricter arity validation: options with mandatory parameters no longer consume other option flags.
+- [#357] Enhancement: Improve synopsis format. Be more succinct when `limitSplit` is true. Support repeating groups.
+
+
+## <a name="3.0.0-deprecated"></a> Deprecations
+### 3.0.0-alpha-1
+The `picocli.CommandLine.Help::Help(Object, CommandLine.Help.ColorScheme)` constructor has been deprecated. Use the `picocli.CommandLine.Help::Help(CommandLine.CommandSpec, CommandLine.Help.ColorScheme)` constructor instead. 
+
+The `picocli.CommandLine.IParseResultHandler` interface has been deprecated. Use the `picocli.CommandLine.IParseResultHandler2` interface instead.
+
+The `picocli.CommandLine.IExceptionHandler` interface has been deprecated. Use the `picocli.CommandLine.IExceptionHandler2` interface instead.
+
+### 3.0.0-alpha-6
+- The `Help.Ansi.Text::append` method is now deprecated in favour of the new `concat` method.
+
+
+## <a name="3.0.0-breaking-changes"></a> Potential breaking changes
+### 3.0.0-alpha-1
+#### Help API Changes
+The following public fields were removed from the `picocli.CommandLine.Help` class. Instead, set these attributes on a `CommandLine.CommandSpec` object passed to any of the `Help` constructors.
+
+* abbreviateSynopsis 
+* commandListHeading 
+* commandName 
+* customSynopsis 
+* description 
+* descriptionHeading 
+* footer 
+* footerHeading 
+* header 
+* headerHeading 
+* optionFields 
+* optionListHeading 
+* parameterLabelRenderer - replaced with the `Help.parameterLabelRenderer()` method
+* parameterListHeading 
+* requiredOptionMarker
+* separator 
+* showDefaultValues 
+* sortOptions 
+* synopsisHeading 
+
+Method signature changes on inner classes and interfaces of the `Help` class:
+
+* Interface method `CommandLine.Help.IOptionRenderer::render` signature changed: `CommandLine.Option` and `Field` parameters are replaced with a single `CommandLine.OptionSpec` parameter.
+* Interface method `CommandLine.Help.IParameterRenderer::render` signature changed: `CommandLine.Parameters` and `Field` parameters are replaced with a single `CommandLine.PositionalParamSpec` parameter.
+* Interface method `CommandLine.Help.IParamLabelRenderer::renderParameterLabel` signature changed: `Field` parameter replaced with `CommandLine.ArgSpec` parameter.
+* Class `CommandLine.Help.Layout` all methods changed: `Field` parameters replaced by `CommandLine.ArgSpec`, `CommandLine.OptionSpec` and `CommandLine.PositionalParamSpec` parameters.
+
+### 3.0.0-alpha-2
+- [#311] API change from 3.0.0-alpha-1: the `parseWithHandlers` methods signature changed: removed the `prototypeReturnValue` parameter.
+- [#312] API change from 3.0.0-alpha-1: Remove `AbstractSimpleParseResultHandler` class and `parseWithSimpleHandlers` method.
+
+### 3.0.0-alpha-3
+- Utility method `CommandLine.Help.join` signature changed: now takes an additional `usageHelpWidth` parameter.
+- Constructor `CommandLine.Help.Layout(ColorScheme)` signature changed: now takes an additional `usageHelpWidth` parameter. 
+- Public field `CommandLine.Help.TextTable.columns` is now private; added public method `CommandLine.Help.TextTable.columns()`.
+- Constructor `CommandLine.Help.TextTable(Ansi)` is replaced with factory method `CommandLine.Help.TextTable.forDefaultColumns(Ansi, int)`.
+- Constructor `CommandLine.Help.TextTable(Ansi, int...)` is replaced with factory method `CommandLine.Help.TextTable.forColumnWidths(Ansi, int...)`.
+- Constructor `CommandLine.Help.TextTable(Ansi, Column...)` modifier changed from public to protected.
+- Added factory method `CommandLine.Help.TextTable.forColumns(Ansi, Column...)`.
+- Renamed `CommandLine.MaxValuesforFieldExceededException` to `CommandLine.MaxValuesExceededException`.
+
+### 3.0.0-alpha-4
+- Parsed values now replace the default value of multi-value (array, Collection or Map) options and positional parameters instead of being appended to them.
+- The `IBinding` interface introduced in v3.0.0-alpha-1 has been replaced with two functional interfaces `IGetter` and `ISetter`.
+- The `UnmatchedArgsBinding` factory methods introduced in v3.0.0-alpha-1 have been replaced with `forStringArrayConsumer` and `forStringCollectionSupplier`. 
+
+### 3.0.0-alpha-5
+Changes against earlier 3.0.0-alpha versions:
+
+* Renamed `ArgSpec.rawStringValues()` to `ArgSpec.stringValues()`.
+* Renamed `ParseResult` methods with `matched` if they return only matched options/positionals:
+    * `options` to `matchedOptions`
+    * `positionalParams` to `matchedPositionals`
+    * `option(char)`, `option(String)` to `matchedOption`
+    * `positional(int)` to `matchedPositional`
+    * `hasOption(char)`, `hasOption(String)`, `hasOption(OptionSpec)` to `hasMatchedOption`
+    * `hasPositional(int)`, `hasPositional(PositionalParamSpec)` to `hasMatchedPositional`
+* Renamed `ParseResult.optionValue(String, T)` to `matchedOptionValue(String, T)`, and `positionalValue` to `matchedPositionalValue`.
+* Removed `ParseResult::rawOptionValue(s)` and `rawPositionalValue(s)` methods.
+* Removed `ParseResult.matchedOptionValue(OptionSpec)` and `matchedPositionalValue(PositionalParamSpec)` methods.
+
+### 3.0.0-beta-1
+- The usage message format changed: it now dynamically adjusts the width of the long option name column. This may break tests.
+- API Change: Removed parser option `arityRestrictsCumulativeSize` introduced in 3.0.0-alpha-3.
+
+### 3.0.0-beta-2
+- Stricter arity validation may break existing applications that intentionally consume arguments regardless of whether arguments are other options.
+
 
 # <a name="3.0.0-beta-2"></a> Picocli 3.0.0-beta-2
 The picocli community is pleased to announce picocli 3.0.0-beta-2.

@@ -513,8 +513,8 @@ table.CodeRay td.code>pre{padding:0}
 <div id="header">
 <h1>Programmatic API</h1>
 <div class="details">
-<span id="revnumber">version 3.0.0-beta-2,</span>
-<span id="revdate">2018-04-21</span>
+<span id="revnumber">version 3.0.0,</span>
+<span id="revdate">2018-05-01</span>
 </div>
 <div id="toc" class="toc2">
 <div id="toctitle">Table of Contents</div>
@@ -532,7 +532,8 @@ table.CodeRay td.code>pre{padding:0}
 <ul class="sectlevel2">
 <li><a href="#_querying_for_options">3.1. Querying for Options</a></li>
 <li><a href="#_matched_option_values">3.2. Matched Option Values</a></li>
-<li><a href="#_subcommands_2">3.3. Subcommands</a></li>
+<li><a href="#_original_option_values">3.3. Original Option Values</a></li>
+<li><a href="#_subcommands_2">3.4. Subcommands</a></li>
 </ul>
 </li>
 <li><a href="#_parsing_and_result_processing">4. Parsing and Result Processing</a>
@@ -582,6 +583,8 @@ spec.addPositional(PositionalParamSpec.builder()
         .description(<span class="string"><span class="delimiter">&quot;</span><span class="content">The files to process</span><span class="delimiter">&quot;</span></span>).build());
 CommandLine commandLine = <span class="keyword">new</span> CommandLine(spec);
 
+<span class="comment">// processing parse results can be done manually</span>
+<span class="comment">// or delegated to a handler</span>
 <span class="type">class</span> <span class="class">Handler</span> <span class="directive">extends</span> AbstractParseResultHandler&lt;<span class="predefined-type">Integer</span>&gt; {
     <span class="directive">protected</span> <span class="predefined-type">Handler</span> self() { <span class="keyword">return</span> <span class="local-variable">this</span>; }
 
@@ -597,7 +600,12 @@ CommandLine commandLine = <span class="keyword">new</span> CommandLine(spec);
     }
 }
 
-<span class="type">int</span> processed = commandLine.parseWithHandler(<span class="keyword">new</span> <span class="predefined-type">Handler</span>(), args);</code></pre>
+<span class="comment">// using a handler gives fine-grained control</span>
+<span class="comment">// over which streams to use and exit codes</span>
+<span class="predefined-type">Integer</span> processed = commandLine.parseWithHandlers(
+        <span class="keyword">new</span> <span class="predefined-type">Handler</span>().useOut(<span class="predefined-type">System</span>.out).andExit(<span class="integer">123</span>),
+        <span class="keyword">new</span> DefaultExceptionHandler&lt;<span class="predefined-type">Integer</span>&gt;().andExit(<span class="integer">567</span>),
+        args);</code></pre>
 </div>
 </div>
 </div>
@@ -762,10 +770,11 @@ CommandSpec cmd = CommandSpec.create()
 <div class="listingblock">
 <div class="content">
 <pre class="CodeRay highlight"><code data-lang="java"><span class="directive">public</span> <span class="directive">static</span> <span class="type">interface</span> <span class="class">IGetter</span> {
-    <span class="comment">/** Returns the current value of the binding. For multi-value options and positional parameters,
-     * this method returns an array, collection or map to add values to.
+    <span class="comment">/** Returns the current value of the binding. For multi-value options and positional
+     * parameters, this method returns an array, collection or map to add values to.
      * @throws PicocliException if a problem occurred while obtaining the current value
-     * @throws Exception internally, picocli call sites will catch any exceptions thrown from here and rethrow them wrapped in a PicocliException */</span>
+     * @throws Exception internally, picocli call sites will catch any exceptions
+     *         thrown from here and rethrow them wrapped in a PicocliException */</span>
     &lt;T&gt; T get() <span class="directive">throws</span> <span class="exception">Exception</span>;
 }</code></pre>
 </div>
@@ -779,7 +788,8 @@ CommandSpec cmd = CommandSpec.create()
      * @param &lt;T&gt; type of the value
      * @return the previous value of the binding (if supported by this binding)
      * @throws PicocliException if a problem occurred while setting the new value
-     * @throws Exception internally, picocli call sites will catch any exceptions thrown from here and rethrow them wrapped in a PicocliException */</span>
+     * @throws Exception internally, picocli call sites will catch any exceptions
+     *         thrown from here and rethrow them wrapped in a PicocliException */</span>
     &lt;T&gt; T set(T value) <span class="directive">throws</span> <span class="exception">Exception</span>;
 }</code></pre>
 </div>
@@ -809,8 +819,13 @@ spec.addOption(OptionSpec.builder(<span class="string"><span class="delimiter">&
 spec.addOption(OptionSpec.builder(<span class="string"><span class="delimiter">&quot;</span><span class="content">-f</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">--file</span><span class="delimiter">&quot;</span></span>)
         .paramLabel(<span class="string"><span class="delimiter">&quot;</span><span class="content">FILES</span><span class="delimiter">&quot;</span></span>)
         .type(<span class="predefined-type">List</span>.class)
-        .auxiliaryTypes(<span class="predefined-type">File</span>.class) <span class="comment">// so, this option is of type List&lt;File&gt;</span>
+        .auxiliaryTypes(<span class="predefined-type">File</span>.class) <span class="comment">// this option is of type List&lt;File&gt;</span>
         .description(<span class="string"><span class="delimiter">&quot;</span><span class="content">The files to process</span><span class="delimiter">&quot;</span></span>).build());
+spec.addOption(OptionSpec.builder(<span class="string"><span class="delimiter">&quot;</span><span class="content">-n</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">--num</span><span class="delimiter">&quot;</span></span>)
+        .paramLabel(<span class="string"><span class="delimiter">&quot;</span><span class="content">COUNT</span><span class="delimiter">&quot;</span></span>)
+        .type(<span class="type">int</span><span class="type">[]</span>.class)
+        .splitRegex(<span class="string"><span class="delimiter">&quot;</span><span class="content">,</span><span class="delimiter">&quot;</span></span>)
+        .description(<span class="string"><span class="delimiter">&quot;</span><span class="content">Comma-separated list of integers</span><span class="delimiter">&quot;</span></span>).build());
 CommandLine commandLine = <span class="keyword">new</span> CommandLine(spec);</code></pre>
 </div>
 </div>
@@ -821,7 +836,7 @@ CommandLine commandLine = <span class="keyword">new</span> CommandLine(spec);</c
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="CodeRay highlight"><code data-lang="java"><span class="predefined-type">String</span><span class="type">[]</span> args = { <span class="string"><span class="delimiter">&quot;</span><span class="content">--verbose</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">-f</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">file1</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">--file=file2</span><span class="delimiter">&quot;</span></span> };
+<pre class="CodeRay highlight"><code data-lang="java"><span class="predefined-type">String</span><span class="type">[]</span> args = { <span class="string"><span class="delimiter">&quot;</span><span class="content">--verbose</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">-f</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">file1</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">--file=file2</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">-n1,2,3</span><span class="delimiter">&quot;</span></span> };
 ParseResult pr = commandLine.parseArgs(args);
 
 <span class="predefined-type">List</span>&lt;<span class="predefined-type">String</span>&gt; originalArgs = pr.originalArgs(); <span class="comment">// lists all command line args</span>
@@ -841,18 +856,41 @@ ParseResult pr = commandLine.parseArgs(args);
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="CodeRay highlight"><code data-lang="java">ParseResult pr = commandLine.parseArgs(<span class="string"><span class="delimiter">&quot;</span><span class="content">-f</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">file1</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">--file=file2</span><span class="delimiter">&quot;</span></span>);
+<pre class="CodeRay highlight"><code data-lang="java">ParseResult pr = commandLine.parseArgs(<span class="string"><span class="delimiter">&quot;</span><span class="content">-f</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">file1</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">--file=file2</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">-n1,2,3</span><span class="delimiter">&quot;</span></span>);
 
 <span class="predefined-type">List</span>&lt;<span class="predefined-type">File</span>&gt; defaultValue = <span class="predefined-type">Collections</span>.emptyList();
 <span class="predefined-type">List</span>&lt;<span class="predefined-type">File</span>&gt; expected     = <span class="predefined-type">Arrays</span>.asList(<span class="keyword">new</span> <span class="predefined-type">File</span>(<span class="string"><span class="delimiter">&quot;</span><span class="content">file1</span><span class="delimiter">&quot;</span></span>), <span class="keyword">new</span> <span class="predefined-type">File</span>(<span class="string"><span class="delimiter">&quot;</span><span class="content">file2</span><span class="delimiter">&quot;</span></span>));
 
 <span class="keyword">assert</span> expected.equals(pr.matchedOptionValue(<span class="string"><span class="delimiter">'</span><span class="content">f</span><span class="delimiter">'</span></span>, defaultValue));
-<span class="keyword">assert</span> expected.equals(pr.matchedOptionValue(<span class="string"><span class="delimiter">&quot;</span><span class="content">--file</span><span class="delimiter">&quot;</span></span>, defaultValue));</code></pre>
+<span class="keyword">assert</span> expected.equals(pr.matchedOptionValue(<span class="string"><span class="delimiter">&quot;</span><span class="content">--file</span><span class="delimiter">&quot;</span></span>, defaultValue));
+
+<span class="keyword">assert</span> <span class="predefined-type">Arrays</span>.equals(<span class="keyword">new</span> <span class="type">int</span><span class="type">[]</span>{<span class="integer">1</span>,<span class="integer">2</span>,<span class="integer">3</span>}, pr.matchedOptionValue(<span class="string"><span class="delimiter">'</span><span class="content">n</span><span class="delimiter">'</span></span>, <span class="keyword">new</span> <span class="type">int</span>[<span class="integer">0</span>]));</code></pre>
 </div>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_subcommands_2">3.3. Subcommands</h3>
+<h3 id="_original_option_values">3.3. Original Option Values</h3>
+<div class="paragraph">
+<p>Use the <code>OptionSpec.stringValues()</code> or <code>OptionSpec.originalStringValues()</code> method to get a list of all values specified on the command line for an option.
+The <code>stringValues()</code> method returns the arguments after splitting but before type conversion, while
+the <code>originalStringValues()</code> method returns the matched arguments as specified on the command line (before splitting).</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="java">ParseResult pr = commandLine.parseArgs(<span class="string"><span class="delimiter">&quot;</span><span class="content">-f</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">file1</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">--file=file2</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">-n1,2,3</span><span class="delimiter">&quot;</span></span>);
+
+<span class="comment">// Command line arguments after splitting but before type conversion</span>
+<span class="keyword">assert</span> <span class="string"><span class="delimiter">&quot;</span><span class="content">1</span><span class="delimiter">&quot;</span></span>.equals(pr.matchedOption(<span class="string"><span class="delimiter">'</span><span class="content">n</span><span class="delimiter">'</span></span>).stringValues().get(<span class="integer">0</span>));
+<span class="keyword">assert</span> <span class="string"><span class="delimiter">&quot;</span><span class="content">2</span><span class="delimiter">&quot;</span></span>.equals(pr.matchedOption(<span class="string"><span class="delimiter">'</span><span class="content">n</span><span class="delimiter">'</span></span>).stringValues().get(<span class="integer">1</span>));
+<span class="keyword">assert</span> <span class="string"><span class="delimiter">&quot;</span><span class="content">3</span><span class="delimiter">&quot;</span></span>.equals(pr.matchedOption(<span class="string"><span class="delimiter">'</span><span class="content">n</span><span class="delimiter">'</span></span>).stringValues().get(<span class="integer">2</span>));
+
+<span class="comment">// Command line arguments as found on the command line</span>
+<span class="keyword">assert</span> <span class="string"><span class="delimiter">&quot;</span><span class="content">1,2,3</span><span class="delimiter">&quot;</span></span>.equals(pr.matchedOption(<span class="string"><span class="delimiter">&quot;</span><span class="content">--num</span><span class="delimiter">&quot;</span></span>).originalStringValues().get(<span class="integer">0</span>));</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_subcommands_2">3.4. Subcommands</h3>
 <div class="paragraph">
 <p>Use the <code>hasSubcommand</code> method to determine whether the command line contained subcommands. The <code>subcommand</code> method returns a different <code>ParseResult</code> object that can be used to query which options and positional parameters were matched for the subcommand.</p>
 </div>
@@ -907,8 +945,8 @@ CommandLine commandLine = <span class="keyword">new</span> CommandLine(spec);
     }
     <span class="type">int</span> count = pr.matchedOptionValue(<span class="string"><span class="delimiter">'</span><span class="content">c</span><span class="delimiter">'</span></span>, <span class="integer">1</span>);
     <span class="predefined-type">List</span>&lt;<span class="predefined-type">File</span>&gt; files = pr.matchedPositionalValue(<span class="integer">0</span>, <span class="predefined-type">Collections</span>.&lt;<span class="predefined-type">File</span>&gt;emptyList());
-    <span class="keyword">for</span> (<span class="type">int</span> i = <span class="integer">0</span>; i &lt; count; i++) {
-        <span class="keyword">for</span> (<span class="predefined-type">File</span> f : files) {
+    <span class="keyword">for</span> (<span class="predefined-type">File</span> f : files) {
+        <span class="keyword">for</span> (<span class="type">int</span> i = <span class="integer">0</span>; i &lt; count; i++) {
             <span class="predefined-type">System</span>.out.printf(<span class="string"><span class="delimiter">&quot;</span><span class="content">%d: %s%n</span><span class="delimiter">&quot;</span></span>, i, f);
         }
     }
@@ -984,8 +1022,8 @@ CommandLine commandLine = <span class="keyword">new</span> CommandLine(spec);
 </div>
 <div id="footer">
 <div id="footer-text">
-Version 3.0.0-beta-2<br>
-Last updated 2018-04-21 17:56:02 CEST
+Version 3.0.0<br>
+Last updated 2018-05-01 02:33:18 CEST
 </div>
 </div>
 </body>

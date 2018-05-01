@@ -513,8 +513,8 @@ table.CodeRay td.code>pre{padding:0}
 <div id="header">
 <h1>picocli - a mighty tiny command line interface</h1>
 <div class="details">
-<span id="revnumber">version 3.0.0-beta-2,</span>
-<span id="revdate">2018-04-21</span>
+<span id="revnumber">version 3.0.0,</span>
+<span id="revdate">2018-05-01</span>
 </div>
 <div id="toc" class="toc2">
 <div id="toctitle">Features</div>
@@ -765,7 +765,7 @@ that is needed to give your application usage help and version help.</p>
     <span class="directive">public</span> <span class="directive">static</span> <span class="type">void</span> main(<span class="predefined-type">String</span><span class="type">[]</span> args) <span class="directive">throws</span> <span class="exception">Exception</span> {
         <span class="comment">// CheckSum implements Callable, so parsing, error handling and handling user</span>
         <span class="comment">// requests for usage help or version help can be done with one line of code.</span>
-        CommandLine.call(<span class="keyword">new</span> CheckSum(), <span class="predefined-type">System</span>.err, args);
+        CommandLine.call(<span class="keyword">new</span> CheckSum(), args);
     }
 
     <span class="annotation">@Override</span>
@@ -1720,7 +1720,7 @@ If the option is not specified, it keeps its default value. For example:</p>
     <span class="directive">public</span> <span class="type">void</span> run() { <span class="predefined-type">System</span>.out.printf(<span class="string"><span class="delimiter">&quot;</span><span class="content">x = '%s'%n</span><span class="delimiter">&quot;</span></span>, x); }
 
     <span class="directive">public</span> <span class="directive">static</span> <span class="type">void</span> main(<span class="predefined-type">String</span>... args) {
-       CommandLine.run(<span class="keyword">new</span> OptionalValueDemo(), <span class="predefined-type">System</span>.out, args);
+       CommandLine.run(<span class="keyword">new</span> OptionalValueDemo(), args);
     }
 }</code></pre>
 </div>
@@ -2083,9 +2083,9 @@ The usage help message for the above example looks like this:</p>
 <div class="listingblock">
 <div class="content">
 <pre>Usage: &lt;main class&gt; [-hV] [--option=&lt;option&gt;]
-      --option=&lt;option&gt;       Some option.
-  -h, --help                  Show this help message and exit.
-  -V, --version               Print version information and exit.</pre>
+      --option=&lt;option&gt;   Some option.
+  -h, --help              Show this help message and exit.
+  -V, --version           Print version information and exit.</pre>
 </div>
 </div>
 </div>
@@ -2352,19 +2352,19 @@ and a build-generated version properties file-based
 <div class="content">
 <pre>Usage: cat [-AbeEnstTuv] [--help] [--version] [FILE...]
 Concatenate FILE(s), or standard input, to standard output.
-      FILE                    Files whose contents to display
-  -A, --show-all              equivalent to -vET
-  -b, --number-nonblank       number nonempty output lines, overrides -n
-  -e                          equivalent to -vET
-  -E, --show-ends             display $ at end of each line
-  -n, --number                number all output lines
-  -s, --squeeze-blank         suppress repeated empty output lines
-  -t                          equivalent to -vT
-  -T, --show-tabs             display TAB characters as ^I
-  -u                          (ignored)
-  -v, --show-nonprinting      use ^ and M- notation, except for LDF and TAB
-      --help                  display this help and exit
-      --version               output version information and exit
+      FILE                 Files whose contents to display
+  -A, --show-all           equivalent to -vET
+  -b, --number-nonblank    number nonempty output lines, overrides -n
+  -e                       equivalent to -vET
+  -E, --show-ends          display $ at end of each line
+  -n, --number             number all output lines
+  -s, --squeeze-blank      suppress repeated empty output lines
+  -t                       equivalent to -vT
+  -T, --show-tabs          display TAB characters as ^I
+  -u                       (ignored)
+  -v, --show-nonprinting   use ^ and M- notation, except for LDF and TAB
+      --help               display this help and exit
+      --version            output version information and exit
 Copyright(c) 2017</pre>
 </div>
 </div>
@@ -2421,10 +2421,10 @@ Use the <code>paramLabel</code> attribute to display a different name. For examp
 <div class="listingblock">
 <div class="content">
 <pre>Usage: &lt;main class&gt; [-f=FILE] [-n=&lt;number&gt;] NUM &lt;host&gt;
-      NUM                     number param
-      host                    the host parameter
-  -f= FILE                    a file
-  -n= &lt;number&gt;                a number option</pre>
+      NUM        number param
+      host       the host parameter
+  -f= FILE       a file
+  -n= &lt;number&gt;   a number option</pre>
 </div>
 </div>
 <div class="paragraph">
@@ -2664,9 +2664,9 @@ by default each of these fields would be shown in the usage message, which would
 <div class="listingblock">
 <div class="content">
 <pre>Usage: &lt;main class&gt; &lt;host&gt; &lt;port&gt; [&lt;files&gt;...]
-      host                    destination host
-      port                    destination port
-      files                   files to transfer</pre>
+      host    destination host
+      port    destination port
+      files   files to transfer</pre>
 </div>
 </div>
 </div>
@@ -2692,8 +2692,8 @@ CommandLine.usage(<span class="keyword">new</span> DefaultValues(), <span class=
 <div class="listingblock">
 <div class="content">
 <pre>Usage: &lt;main class&gt; -f=&lt;file&gt;
-  -f, --file=&lt;file&gt;           the file to use
-                                Default: config.xml</pre>
+  -f, --file=&lt;file&gt;   the file to use
+                        Default: config.xml</pre>
 </div>
 </div>
 <div class="paragraph">
@@ -2744,12 +2744,12 @@ CommandLine.usage(<span class="keyword">new</span> FineGrainedDefaults(), <span 
 <div class="listingblock">
 <div class="content">
 <pre>Usage: &lt;main class&gt; [-a=&lt;optionA&gt;] [-b=&lt;optionB&gt;] [-c=&lt;optionC&gt;] [-d=&lt;optionD&gt;]
-  -a= &lt;optionA&gt;               ALWAYS shown even if null
-                                Default: null
-  -b= &lt;optionB&gt;               NEVER shown
-  -c= &lt;optionC&gt;               ON_DEMAND hides null
-  -d= &lt;optionD&gt;               ON_DEMAND shows non-null
-                                Default: abc</pre>
+  -a= &lt;optionA&gt;   ALWAYS shown even if null
+                    Default: null
+  -b= &lt;optionB&gt;   NEVER shown
+  -c= &lt;optionC&gt;   ON_DEMAND hides null
+  -d= &lt;optionD&gt;   ON_DEMAND shows non-null
+                    Default: abc</pre>
 </div>
 </div>
 </div>
@@ -2773,8 +2773,8 @@ CommandLine.usage(<span class="keyword">new</span> FineGrainedDefaults(), <span 
 <div class="listingblock">
 <div class="content">
 <pre>Usage: &lt;main class&gt; [OPTIONS]
-  -a, --alpha=&lt;alpha&gt;         optional alpha
-* -b, --beta=&lt;beta&gt;           mandatory beta</pre>
+  -a, --alpha=&lt;alpha&gt;   optional alpha
+* -b, --beta=&lt;beta&gt;     mandatory beta</pre>
 </div>
 </div>
 </div>
@@ -3379,9 +3379,9 @@ commandLine.usage(<span class="predefined-type">System</span>.out);</code></pre>
 Git is a fast, scalable, distributed revision control system with an unusually
 rich command set that provides both high-level operations and full access to
 internals.
-      --git-dir=&lt;gitDir&gt;      Set the path to the repository.
-  -h, --help                  Show this help message and exit.
-  -V, --version               Print version information and exit.
+      --git-dir=&lt;gitDir&gt;   Set the path to the repository.
+  -h, --help               Show this help message and exit.
+  -V, --version            Print version information and exit.
 
 Commands:
 
@@ -4146,15 +4146,27 @@ See the <a href="autocomplete.html">Autocomplete for Java Command Line Applicati
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="CodeRay highlight"><code data-lang="groovy"><span class="type">class</span> <span class="class">Args</span> {
-    <span class="annotation">@Option</span>(names = [<span class="string"><span class="delimiter">&quot;</span><span class="content">-h</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">--help</span><span class="delimiter">&quot;</span></span>], usageHelp=<span class="predefined-constant">true</span>,
-      description = <span class="string"><span class="delimiter">&quot;</span><span class="content">Print this help and exit</span><span class="delimiter">&quot;</span></span>)
-    <span class="type">boolean</span> helpRequested = <span class="predefined-constant">false</span>;
+<pre class="CodeRay highlight"><code data-lang="groovy"><span class="annotation">@Command</span>(name = <span class="string"><span class="delimiter">&quot;</span><span class="content">MyApp</span><span class="delimiter">&quot;</span></span>, version = <span class="string"><span class="delimiter">&quot;</span><span class="content">Groovy picocli v3.0 demo</span><span class="delimiter">&quot;</span></span>,
+         mixinStandardHelpOptions = <span class="predefined-constant">true</span>, <span class="comment">// add --help and --version options</span>
+         description = <span class="string"><span class="delimiter">&quot;</span><span class="content">@|bold Groovy|@ @|underline picocli|@ example</span><span class="delimiter">&quot;</span></span>)
+<span class="type">class</span> <span class="class">MyApp</span> <span class="directive">implements</span> <span class="predefined-type">Runnable</span> {
+
+    <span class="annotation">@Option</span>(names = [<span class="string"><span class="delimiter">&quot;</span><span class="content">-c</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">--count</span><span class="delimiter">&quot;</span></span>], description = <span class="string"><span class="delimiter">&quot;</span><span class="content">number of repetitions</span><span class="delimiter">&quot;</span></span>)
+    <span class="type">int</span> count = <span class="integer">1</span>
+
+    <span class="type">void</span> run() {
+        count.times {
+            println(<span class="string"><span class="delimiter">&quot;</span><span class="content">hello world </span><span class="inline"><span class="inline-delimiter">$</span><span class="local-variable">it</span></span><span class="content">...</span><span class="delimiter">&quot;</span></span>)
+        }
+    }
+    <span class="directive">static</span> <span class="type">void</span> main(<span class="predefined-type">String</span><span class="type">[]</span> args) {
+        CommandLine.run(<span class="keyword">new</span> MayApp(), args)
+    }
 }</code></pre>
 </div>
 </div>
 <div class="paragraph">
-<p>Picocli 2.0 introduces special support for Groovy scripts.</p>
+<p>Picocli 2.0 introduced special support for Groovy scripts.</p>
 </div>
 <div class="paragraph">
 <p>Scripts annotated with <code>@picocli.groovy.PicocliScript</code> are automatically transformed to use
@@ -4168,28 +4180,24 @@ The script body is executed if the user input was valid and did not request usag
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="CodeRay highlight"><code data-lang="groovy"><span class="annotation">@Grab</span>(<span class="string"><span class="delimiter">'</span><span class="content">info.picocli:picocli:3.0.0-beta-2</span><span class="delimiter">'</span></span>)
-<span class="annotation">@Command</span>(name = <span class="string"><span class="delimiter">&quot;</span><span class="content">myCommand</span><span class="delimiter">&quot;</span></span>,
-  description = <span class="string"><span class="delimiter">&quot;</span><span class="content">@|bold Groovy script|@ @|underline picocli|@ example</span><span class="delimiter">&quot;</span></span>)
+<pre class="CodeRay highlight"><code data-lang="groovy"><span class="annotation">@Grab</span>(<span class="string"><span class="delimiter">'</span><span class="content">info.picocli:picocli:3.0.0</span><span class="delimiter">'</span></span>)
+<span class="annotation">@Command</span>(name = <span class="string"><span class="delimiter">&quot;</span><span class="content">myScript</span><span class="delimiter">&quot;</span></span>,
+        mixinStandardHelpOptions = <span class="predefined-constant">true</span>, <span class="comment">// add --help and --version options</span>
+        description = <span class="string"><span class="delimiter">&quot;</span><span class="content">@|bold Groovy script|@ @|underline picocli|@ example</span><span class="delimiter">&quot;</span></span>)
 <span class="annotation">@picocli</span>.groovy.PicocliScript
 <span class="keyword">import</span> <span class="include">groovy.transform.Field</span>
 <span class="keyword">import</span> <span class="include">static</span> <span class="include">picocli.CommandLine.*</span>
 
-<span class="annotation">@Option</span>(names = <span class="string"><span class="delimiter">&quot;</span><span class="content">-x</span><span class="delimiter">&quot;</span></span>, description = <span class="string"><span class="delimiter">&quot;</span><span class="content">number of repetitions</span><span class="delimiter">&quot;</span></span>)
-<span class="annotation">@Field</span> <span class="type">int</span> count;
+<span class="annotation">@Option</span>(names = [<span class="string"><span class="delimiter">&quot;</span><span class="content">-c</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">--count</span><span class="delimiter">&quot;</span></span>], description = <span class="string"><span class="delimiter">&quot;</span><span class="content">number of repetitions</span><span class="delimiter">&quot;</span></span>)
+<span class="annotation">@Field</span> <span class="type">int</span> count = <span class="integer">1</span>;
 
-<span class="annotation">@Option</span>(names = [<span class="string"><span class="delimiter">&quot;</span><span class="content">-h</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">--help</span><span class="delimiter">&quot;</span></span>], usageHelp = <span class="predefined-constant">true</span>,
-  description = <span class="string"><span class="delimiter">&quot;</span><span class="content">print this help message and exit</span><span class="delimiter">&quot;</span></span>)
-<span class="annotation">@Field</span> <span class="type">boolean</span> helpRequested;
+<span class="comment">// PicocliBaseScript prints usage help or version if requested by the user</span>
 
-<span class="comment">//if (helpRequested) { // not necessary: PicocliBaseScript takes care of this</span>
-<span class="comment">//    CommandLine.usage(this, System.out); return 0;</span>
-<span class="comment">//}</span>
 count.times {
    println <span class="string"><span class="delimiter">&quot;</span><span class="content">hi</span><span class="delimiter">&quot;</span></span>
 }
 <span class="comment">// the CommandLine that parsed the args is available as a property</span>
-<span class="keyword">assert</span> <span class="local-variable">this</span>.commandLine.commandName == <span class="string"><span class="delimiter">&quot;</span><span class="content">myCommand</span><span class="delimiter">&quot;</span></span></code></pre>
+<span class="keyword">assert</span> <span class="local-variable">this</span>.commandLine.commandName == <span class="string"><span class="delimiter">&quot;</span><span class="content">myScript</span><span class="delimiter">&quot;</span></span></code></pre>
 </div>
 </div>
 <div class="admonitionblock caution">
@@ -4207,7 +4215,7 @@ When using a Groovy version older than 2.4.7, use this workaround for the <a hre
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="CodeRay highlight"><code data-lang="groovy"><span class="annotation">@Grab</span>(<span class="string"><span class="delimiter">'</span><span class="content">info.picocli:picocli:3.0.0-beta-2</span><span class="delimiter">'</span></span>)
+<pre class="CodeRay highlight"><code data-lang="groovy"><span class="annotation">@Grab</span>(<span class="string"><span class="delimiter">'</span><span class="content">info.picocli:picocli:3.0.0</span><span class="delimiter">'</span></span>)
 <span class="annotation">@GrabExclude</span>(<span class="string"><span class="delimiter">'</span><span class="content">org.codehaus.groovy:groovy-all</span><span class="delimiter">'</span></span>) <span class="comment">// work around GROOVY-7613</span>
 ...</code></pre>
 </div>
@@ -4220,33 +4228,21 @@ When using a Groovy version older than 2.4.7, use this workaround for the <a hre
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="CodeRay highlight"><code data-lang="kotlin">@Command(name = &quot;MyApp&quot;, version = [&quot;Kotlin picocli demo v1.0&quot;],
+<pre class="CodeRay highlight"><code data-lang="kotlin">@Command(name = &quot;MyApp&quot;, version = [&quot;Kotlin picocli v3.0 demo&quot;],
+        mixinStandardHelpOptions = true, // add --help and --version options
         description = [&quot;@|bold Kotlin|@ @|underline picocli|@ example&quot;])
 class MyApp : Runnable {
 
-    @Option(names = [&quot;-c&quot;, &quot;--count&quot;], paramLabel = &quot;COUNT&quot;,
-            description = [&quot;the count&quot;])
-    private var count: Int = 0
-
-    @Option(names = [&quot;-h&quot;, &quot;--help&quot;], usageHelp = true,
-            description = [&quot;print this help and exit&quot;])
-    private var helpRequested: Boolean = false
-
-    @Option(names = [&quot;-V&quot;, &quot;--version&quot;], versionHelp = true,
-            description = [&quot;print version info and exit&quot;])
-    private var versionRequested: Boolean = false
+    @Option(names = [&quot;-c&quot;, &quot;--count&quot;], description = [&quot;number of repetitions&quot;])
+    private var count: Int = 1
 
     override fun run() {
         for (i in 0 until count) {
             println(&quot;hello world $i...&quot;)
         }
     }
-    companion object {
-        @JvmStatic fun main(args: Array&lt;String&gt;) {
-            CommandLine.run(MyApp(), System.err, *args)
-        }
-    }
-}</code></pre>
+}
+fun main(args: Array&lt;String&gt;) = CommandLine.run(MyApp(), *args)</code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -4255,32 +4251,21 @@ class MyApp : Runnable {
 <div class="listingblock">
 <div class="content">
 <pre class="CodeRay highlight"><code data-lang="kotlin">@Command(name = &quot;MyApp&quot;, version = arrayOf(&quot;picocli demo for Kotlin v1.0 and Kotlin v1.1&quot;),
+        mixinStandardHelpOptions = true, // add --help and --version options
         description = arrayOf(&quot;@|bold Kotlin|@ @|underline picocli|@ example&quot;))
 class MyApp : Runnable {
 
-    @Option(names = arrayOf(&quot;-c&quot;, &quot;--count&quot;), paramLabel = &quot;COUNT&quot;,
-            description = arrayOf(&quot;the count&quot;))
-    private var count: Int = 0
-
-    @Option(names = arrayOf(&quot;-h&quot;, &quot;--help&quot;), usageHelp = true,
-            description = arrayOf(&quot;print this help and exit&quot;))
-    private var helpRequested: Boolean = false
-
-    @Option(names = arrayOf(&quot;-V&quot;, &quot;--version&quot;), versionHelp = true,
-            description = arrayOf(&quot;print version info and exit&quot;))
-    private var versionRequested: Boolean = false
+    @Option(names = arrayOf(&quot;-c&quot;, &quot;--count&quot;),
+            description = arrayOf(&quot;number of repetitions&quot;))
+    private var count: Int = 1
 
     override fun run() {
         for (i in 0 until count) {
             println(&quot;hello world $i...&quot;)
         }
     }
-    companion object {
-        @JvmStatic fun main(args: Array&lt;String&gt;) {
-            CommandLine.run(MyApp(), System.err, *args)
-        }
-    }
-}</code></pre>
+}
+fun main(args: Array&lt;String&gt;) = CommandLine.run(MyApp(), *args)</code></pre>
 </div>
 </div>
 </div>
@@ -4292,32 +4277,25 @@ so be aware that you will have to write <code>Array(&#8230;&#8203;)</code> for t
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="CodeRay highlight"><code data-lang="scala">@Command(name = &quot;MyApp&quot;, version = Array(&quot;Scala picocli demo v1.0&quot;),
-  description = Array(&quot;@|bold Scala|@ @|underline picocli|@ example&quot;))
+<pre class="CodeRay highlight"><code data-lang="scala">@Command(name = &quot;MyApp&quot;, version = Array(&quot;Scala picocli v3.0 demo&quot;),
+    mixinStandardHelpOptions = true, // add --help and --version options
+    description = Array(&quot;@|bold Scala|@ @|underline picocli|@ example&quot;))
 class MyApp extends Runnable {
 
-  @Option(names = Array(&quot;-c&quot;, &quot;--count&quot;), paramLabel = &quot;COUNT&quot;,
-    description = Array(&quot;the count&quot;))
-  private val count: Int = 0
+    @Option(names = Array(&quot;-c&quot;, &quot;--count&quot;),
+            description = Array(&quot;number of repetitions&quot;))
+    private var count: Int = 1
 
-  @Option(names = Array(&quot;-h&quot;, &quot;--help&quot;), usageHelp = true,
-    description = Array(&quot;print this help and exit&quot;))
-  private val helpRequested: Boolean = false
-
-  @Option(names = Array(&quot;-V&quot;, &quot;--version&quot;), versionHelp = true,
-    description = Array(&quot;print version info and exit&quot;))
-  private val versionRequested: Boolean = false
-
-  def run() : Unit = {
-    for (i &lt;- 0 until count) {
-      println(s&quot;hello world $i...&quot;)
+    def run() : Unit = {
+        for (i &lt;- 0 until count) {
+            println(s&quot;hello world $i...&quot;)
+        }
     }
-  }
 }
 object MyApp {
-  def main(args: Array[String]) {
-    CommandLine.run(new MyApp(), System.err, args: _*)
-  }
+    def main(args: Array[String]) {
+        CommandLine.run(new MyApp(), args: _*)
+    }
 }</code></pre>
 </div>
 </div>
@@ -4379,7 +4357,7 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
 <h3 id="_gradle">23.1. Gradle</h3>
 <div class="listingblock">
 <div class="content">
-<pre>compile 'info.picocli:picocli:3.0.0-beta-2'</pre>
+<pre>compile 'info.picocli:picocli:3.0.0'</pre>
 </div>
 </div>
 </div>
@@ -4390,7 +4368,7 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
 <pre>&lt;dependency&gt;
   &lt;groupId&gt;info.picocli&lt;/groupId&gt;
   &lt;artifactId&gt;picocli&lt;/artifactId&gt;
-  &lt;version&gt;3.0.0-beta-2&lt;/version&gt;
+  &lt;version&gt;3.0.0&lt;/version&gt;
 &lt;/dependency&gt;</pre>
 </div>
 </div>
@@ -4399,7 +4377,7 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
 <h3 id="_scala_sbt">23.3. Scala SBT</h3>
 <div class="listingblock">
 <div class="content">
-<pre>libraryDependencies += "info.picocli" % "picocli" % "3.0.0-beta-2"</pre>
+<pre>libraryDependencies += "info.picocli" % "picocli" % "3.0.0"</pre>
 </div>
 </div>
 </div>
@@ -4407,7 +4385,7 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
 <h3 id="_ivy">23.4. Ivy</h3>
 <div class="listingblock">
 <div class="content">
-<pre>&lt;dependency org="info.picocli" name="picocli" rev="3.0.0-beta-2" /&gt;</pre>
+<pre>&lt;dependency org="info.picocli" name="picocli" rev="3.0.0" /&gt;</pre>
 </div>
 </div>
 </div>
@@ -4527,7 +4505,7 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
  */</span>
 <span class="directive">public</span> <span class="type">class</span> <span class="class">CommandLine</span> {
     <span class="comment">/** This is picocli version {@value}. */</span>
-    <span class="directive">public</span> <span class="directive">static</span> <span class="directive">final</span> <span class="predefined-type">String</span> VERSION = <span class="string"><span class="delimiter">&quot;</span><span class="content">3.0.0-beta-2</span><span class="delimiter">&quot;</span></span>;
+    <span class="directive">public</span> <span class="directive">static</span> <span class="directive">final</span> <span class="predefined-type">String</span> VERSION = <span class="string"><span class="delimiter">&quot;</span><span class="content">3.0.0</span><span class="delimiter">&quot;</span></span>;
 
     <span class="directive">private</span> <span class="directive">final</span> Tracer tracer = <span class="keyword">new</span> Tracer();
     <span class="directive">private</span> <span class="directive">final</span> CommandSpec commandSpec;
@@ -12358,8 +12336,8 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
 </div>
 <div id="footer">
 <div id="footer-text">
-Version 3.0.0-beta-2<br>
-Last updated 2018-04-21 17:56:02 CEST
+Version 3.0.0<br>
+Last updated 2018-05-01 02:33:18 CEST
 </div>
 </div>
 </body>
