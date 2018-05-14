@@ -513,8 +513,8 @@ table.CodeRay td.code>pre{padding:0}
 <div id="header">
 <h1>picocli - a mighty tiny command line interface</h1>
 <div class="details">
-<span id="revnumber">version 3.0.0,</span>
-<span id="revdate">2018-05-01</span>
+<span id="revnumber">version 3.0.1,</span>
+<span id="revdate">2018-05-15</span>
 </div>
 <div id="toc" class="toc2">
 <div id="toctitle">Features</div>
@@ -2537,7 +2537,7 @@ Each element of the attribute String array is displayed on a separate line.</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="CodeRay highlight"><code data-lang="java"><span class="annotation">@Command</span>(name = <span class="string"><span class="delimiter">&quot;</span><span class="content">git-commit</span><span class="delimiter">&quot;</span></span>,
+<pre class="CodeRay highlight"><code data-lang="java"><span class="annotation">@Command</span>(name = <span class="string"><span class="delimiter">&quot;</span><span class="content">commit</span><span class="delimiter">&quot;</span></span>,
         sortOptions = <span class="predefined-constant">false</span>,
         headerHeading = <span class="string"><span class="delimiter">&quot;</span><span class="content">Usage:%n%n</span><span class="delimiter">&quot;</span></span>,
         synopsisHeading = <span class="string"><span class="delimiter">&quot;</span><span class="content">%n</span><span class="delimiter">&quot;</span></span>,
@@ -2567,7 +2567,7 @@ and also that options are listed in declaration order (instead of in alphabetic 
 
 Record changes to the repository.
 
-git-commit [-ap] [--fixup=&lt;commit&gt;] [--squash=&lt;commit&gt;] [-c=&lt;commit&gt;]
+git commit [-ap] [--fixup=&lt;commit&gt;] [--squash=&lt;commit&gt;] [-c=&lt;commit&gt;]
            [-C=&lt;commit&gt;] [-F=&lt;file&gt;] [-m[=&lt;msg&gt;...]] [&lt;files&gt;...]
 
 Description:
@@ -2882,7 +2882,7 @@ Similarly, <code>fg(&lt;color&gt;)</code> explicitly sets the foreground color.<
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="CodeRay highlight"><code data-lang="java"><span class="annotation">@Command</span>(name = <span class="string"><span class="delimiter">&quot;</span><span class="content">git-commit</span><span class="delimiter">&quot;</span></span>,
+<pre class="CodeRay highlight"><code data-lang="java"><span class="annotation">@Command</span>(name = <span class="string"><span class="delimiter">&quot;</span><span class="content">commit</span><span class="delimiter">&quot;</span></span>,
         sortOptions = <span class="predefined-constant">false</span>,
         headerHeading = <span class="string"><span class="delimiter">&quot;</span><span class="content">@|bold,underline Usage|@:%n%n</span><span class="delimiter">&quot;</span></span>,
         synopsisHeading = <span class="string"><span class="delimiter">&quot;</span><span class="content">%n</span><span class="delimiter">&quot;</span></span>,
@@ -3172,7 +3172,8 @@ The specified name is used by the parser to recognize subcommands in the command
 <p>It is strongly recommended that subcommands have a <code>@Command</code> annotation with <code>name</code> and <code>description</code> attributes.</p>
 </div>
 <div class="paragraph">
-<p>Subcommands registered programmatically can have a <code>@Command name</code> attribute that is different from the command name they are registered with. The <code>name</code> attribute value is not used when parsing the command line but only in the usage help synopsis of the subcommand. For example, a git command line could be <code>git commit -m "message"</code>, but the usage help for the <code>commit</code> subcommand could show <code>Usage: git-commit &lt;options&gt;</code>.</p>
+<p>From picocli 3.1, the usage help synopsis of the subcommand shows not only the subcommand name but also the parent command name.
+For example, if the <code>git</code> command has a <code>commit</code> subcommand, the usage help for the <code>commit</code> subcommand shows <code>Usage: git commit &lt;options&gt;</code>.</p>
 </div>
 <div class="admonitionblock caution">
 <table>
@@ -3356,7 +3357,7 @@ The <code>List</code> subcommand can use the <code>@ParentCommand</code> annotat
 <div class="sect2">
 <h3 id="_usage_help_for_subcommands">12.5. Usage Help for Subcommands</h3>
 <div class="paragraph">
-<p>After registering subcommands, calling the <code>commandLine.usage</code> method will show a usage help message that includes all registered commands. For example:</p>
+<p>After registering subcommands, calling the <code>commandLine.usage</code> method will show a usage help message that includes all registered subcommands. For example:</p>
 </div>
 <div class="listingblock">
 <div class="content">
@@ -3424,8 +3425,12 @@ The most commonly used git commands are:
 </div>
 <div class="paragraph">
 <p>The usage help message for each subcommand is produced by calling <code>CommandLine.usage(new SubCommand(), out)</code>.
-For example, see <a href="#_section_headings">Section Headings</a> for an example subcommand (<code>git-commit</code>), which produces the help message shown
+For example, see <a href="#_section_headings">Section Headings</a> for an example subcommand (<code>git commit</code>), which produces the help message shown
 in <a href="#_expanded_example">Expanded Example</a>.</p>
+</div>
+<div class="paragraph">
+<p>From picocli 3.1, the usage help synopsis of the subcommand shows not only the subcommand name but also the parent command name.
+For example, if the <code>git</code> command has a <code>commit</code> subcommand, the usage help for the <code>commit</code> subcommand shows <code>Usage: git commit &lt;options&gt;</code>.</p>
 </div>
 </div>
 <div class="sect2">
@@ -4180,7 +4185,7 @@ The script body is executed if the user input was valid and did not request usag
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="CodeRay highlight"><code data-lang="groovy"><span class="annotation">@Grab</span>(<span class="string"><span class="delimiter">'</span><span class="content">info.picocli:picocli:3.0.0</span><span class="delimiter">'</span></span>)
+<pre class="CodeRay highlight"><code data-lang="groovy"><span class="annotation">@Grab</span>(<span class="string"><span class="delimiter">'</span><span class="content">info.picocli:picocli:3.0.1</span><span class="delimiter">'</span></span>)
 <span class="annotation">@Command</span>(name = <span class="string"><span class="delimiter">&quot;</span><span class="content">myScript</span><span class="delimiter">&quot;</span></span>,
         mixinStandardHelpOptions = <span class="predefined-constant">true</span>, <span class="comment">// add --help and --version options</span>
         description = <span class="string"><span class="delimiter">&quot;</span><span class="content">@|bold Groovy script|@ @|underline picocli|@ example</span><span class="delimiter">&quot;</span></span>)
@@ -4215,7 +4220,7 @@ When using a Groovy version older than 2.4.7, use this workaround for the <a hre
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="CodeRay highlight"><code data-lang="groovy"><span class="annotation">@Grab</span>(<span class="string"><span class="delimiter">'</span><span class="content">info.picocli:picocli:3.0.0</span><span class="delimiter">'</span></span>)
+<pre class="CodeRay highlight"><code data-lang="groovy"><span class="annotation">@Grab</span>(<span class="string"><span class="delimiter">'</span><span class="content">info.picocli:picocli:3.0.1</span><span class="delimiter">'</span></span>)
 <span class="annotation">@GrabExclude</span>(<span class="string"><span class="delimiter">'</span><span class="content">org.codehaus.groovy:groovy-all</span><span class="delimiter">'</span></span>) <span class="comment">// work around GROOVY-7613</span>
 ...</code></pre>
 </div>
@@ -4357,7 +4362,7 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
 <h3 id="_gradle">23.1. Gradle</h3>
 <div class="listingblock">
 <div class="content">
-<pre>compile 'info.picocli:picocli:3.0.0'</pre>
+<pre>compile 'info.picocli:picocli:3.0.1'</pre>
 </div>
 </div>
 </div>
@@ -4368,7 +4373,7 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
 <pre>&lt;dependency&gt;
   &lt;groupId&gt;info.picocli&lt;/groupId&gt;
   &lt;artifactId&gt;picocli&lt;/artifactId&gt;
-  &lt;version&gt;3.0.0&lt;/version&gt;
+  &lt;version&gt;3.0.1&lt;/version&gt;
 &lt;/dependency&gt;</pre>
 </div>
 </div>
@@ -4377,7 +4382,7 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
 <h3 id="_scala_sbt">23.3. Scala SBT</h3>
 <div class="listingblock">
 <div class="content">
-<pre>libraryDependencies += "info.picocli" % "picocli" % "3.0.0"</pre>
+<pre>libraryDependencies += "info.picocli" % "picocli" % "3.0.1"</pre>
 </div>
 </div>
 </div>
@@ -4385,7 +4390,7 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
 <h3 id="_ivy">23.4. Ivy</h3>
 <div class="listingblock">
 <div class="content">
-<pre>&lt;dependency org="info.picocli" name="picocli" rev="3.0.0" /&gt;</pre>
+<pre>&lt;dependency org="info.picocli" name="picocli" rev="3.0.1" /&gt;</pre>
 </div>
 </div>
 </div>
@@ -4505,7 +4510,7 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
  */</span>
 <span class="directive">public</span> <span class="type">class</span> <span class="class">CommandLine</span> {
     <span class="comment">/** This is picocli version {@value}. */</span>
-    <span class="directive">public</span> <span class="directive">static</span> <span class="directive">final</span> <span class="predefined-type">String</span> VERSION = <span class="string"><span class="delimiter">&quot;</span><span class="content">3.0.0</span><span class="delimiter">&quot;</span></span>;
+    <span class="directive">public</span> <span class="directive">static</span> <span class="directive">final</span> <span class="predefined-type">String</span> VERSION = <span class="string"><span class="delimiter">&quot;</span><span class="content">3.0.1</span><span class="delimiter">&quot;</span></span>;
 
     <span class="directive">private</span> <span class="directive">final</span> Tracer tracer = <span class="keyword">new</span> Tracer();
     <span class="directive">private</span> <span class="directive">final</span> CommandSpec commandSpec;
@@ -7299,9 +7304,20 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
              * each {@code UnmatchedArgsBinding} captures the arguments that could not be matched to any options or positional parameters. */</span>
             <span class="directive">public</span> <span class="predefined-type">List</span>&lt;UnmatchedArgsBinding&gt; unmatchedArgsBindings() { <span class="keyword">return</span> <span class="predefined-type">Collections</span>.unmodifiableList(unmatchedArgs); }
 
-            <span class="comment">/** Returns the String to use as the program name in the synopsis line of the help message.
-             * {@link #DEFAULT_COMMAND_NAME} by default, initialized from {@link Command#name()} if defined. */</span>
+            <span class="comment">/** Returns name of this command. Used in the synopsis line of the help message.
+             * {@link #DEFAULT_COMMAND_NAME} by default, initialized from {@link Command#name()} if defined.
+             * @see #qualifiedName() */</span>
             <span class="directive">public</span> <span class="predefined-type">String</span> name() { <span class="keyword">return</span> (name == <span class="predefined-constant">null</span>) ? DEFAULT_COMMAND_NAME : name; }
+
+            <span class="comment">/** Returns the String to use as the program name in the synopsis line of the help message:
+             * this command's {@link #name() name}, preceded by the qualified name of the parent command, if any.
+             * {@link #DEFAULT_COMMAND_NAME} by default, initialized from {@link Command#name()} if defined.
+             * @since 3.0.1 */</span>
+            <span class="directive">public</span> <span class="predefined-type">String</span> qualifiedName() {
+                <span class="predefined-type">String</span> result = name();
+                <span class="keyword">if</span> (parent() != <span class="predefined-constant">null</span>) { result = parent().qualifiedName() + <span class="string"><span class="delimiter">&quot;</span><span class="content"> </span><span class="delimiter">&quot;</span></span> + result; }
+                <span class="keyword">return</span> result;
+            }
 
             <span class="comment">/** Returns version information for this command, to print to the console when the user specifies an
              * {@linkplain OptionSpec#versionHelp() option} to request version help. This is not part of the usage help message.
@@ -8494,8 +8510,12 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
                 <span class="predefined-type">Class</span>&lt;?&gt; cls = command.getClass();
                 <span class="type">boolean</span> hasCommandAnnotation = <span class="predefined-constant">false</span>;
                 <span class="keyword">while</span> (cls != <span class="predefined-constant">null</span>) {
-                    hasCommandAnnotation |= updateCommandAttributes(cls, result, factory);
+                    <span class="type">boolean</span> thisCommandHasAnnotation = updateCommandAttributes(cls, result, factory);
+                    hasCommandAnnotation |= thisCommandHasAnnotation;
                     hasCommandAnnotation |= initFromAnnotatedFields(command, cls, result, factory);
+                    <span class="keyword">if</span> (thisCommandHasAnnotation) { <span class="comment">//#377 Standard help options should be added last</span>
+                        result.mixinStandardHelpOptions(cls.getAnnotation(Command.class).mixinStandardHelpOptions());
+                    }
                     cls = cls.getSuperclass();
                 }
                 <span class="keyword">if</span> (annotationsAreMandatory) {validateCommandSpec(result, hasCommandAnnotation, command); }
@@ -8515,7 +8535,6 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
                 commandSpec.initVersion(cmd.version());
                 commandSpec.initHelpCommand(cmd.helpCommand());
                 commandSpec.initVersionProvider(cmd.versionProvider(), factory);
-                commandSpec.mixinStandardHelpOptions(cmd.mixinStandardHelpOptions());
                 commandSpec.usageMessage().initSynopsisHeading(cmd.synopsisHeading());
                 commandSpec.usageMessage().initCommandListHeading(cmd.commandListHeading());
                 commandSpec.usageMessage().initRequiredOptionMarker(cmd.requiredOptionMarker());
@@ -9651,7 +9670,7 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
         }
 
         <span class="directive">private</span> <span class="predefined-type">String</span><span class="type">[]</span> splitKeyValue(ArgSpec argSpec, <span class="predefined-type">String</span> value) {
-            <span class="predefined-type">String</span><span class="type">[]</span> keyValue = value.split(<span class="string"><span class="delimiter">&quot;</span><span class="content">=</span><span class="delimiter">&quot;</span></span>);
+            <span class="predefined-type">String</span><span class="type">[]</span> keyValue = value.split(<span class="string"><span class="delimiter">&quot;</span><span class="content">=</span><span class="delimiter">&quot;</span></span>, <span class="integer">2</span>);
             <span class="keyword">if</span> (keyValue.length &lt; <span class="integer">2</span>) {
                 <span class="predefined-type">String</span> splitRegex = argSpec.splitRegex();
                 <span class="keyword">if</span> (splitRegex.length() == <span class="integer">0</span>) {
@@ -10462,7 +10481,7 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
                 sb.append(<span class="string"><span class="delimiter">&quot;</span><span class="content"> [COMMAND]</span><span class="delimiter">&quot;</span></span>);
             }
 
-            <span class="keyword">return</span> colorScheme.commandText(commandSpec.name()).toString()
+            <span class="keyword">return</span> colorScheme.commandText(commandSpec.qualifiedName()).toString()
                     + (sb.toString()) + <span class="predefined-type">System</span>.getProperty(<span class="string"><span class="delimiter">&quot;</span><span class="content">line.separator</span><span class="delimiter">&quot;</span></span>);
         }
         <span class="comment">/** Generates a detailed synopsis message showing all options and parameters. Follows the unix convention of
@@ -10544,7 +10563,7 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
             }
 
             <span class="comment">// Fix for #142: first line of synopsis overshoots max. characters</span>
-            <span class="predefined-type">String</span> commandName = commandSpec.name();
+            <span class="predefined-type">String</span> commandName = commandSpec.qualifiedName();
             <span class="type">int</span> firstColumnLength = commandName.length() + synopsisHeadingLength;
 
             <span class="comment">// synopsis heading (&quot;Usage: &quot;) may be on the same line, so adjust column width</span>
@@ -12336,8 +12355,8 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
 </div>
 <div id="footer">
 <div id="footer-text">
-Version 3.0.0<br>
-Last updated 2018-05-01 02:33:18 CEST
+Version 3.0.1<br>
+Last updated 2018-05-15 00:48:50 JST
 </div>
 </div>
 </body>

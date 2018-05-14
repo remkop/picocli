@@ -7,7 +7,7 @@
 
 # picocli - a mighty tiny command line interface
 
-Annotation-based Java command line parser, featuring usage help with ANSI colors, autocomplete and nested subcommands.
+Java command line parser with both an annotations API and a programmatic API, featuring usage help with ANSI colors, autocomplete and nested subcommands.
 In a single file, so you can include it _in source form_.
 This lets users run picocli-based applications without requiring picocli as an external dependency.
 
@@ -37,7 +37,7 @@ interactively showing users what options and subcommands are available.
 ![Picocli Demo help message with ANSI colors](docs/images/picocli.Demo.png?raw=true)
 
 #### Releases
-* [Releases](https://github.com/remkop/picocli/releases) - latest: 3.0.0
+* [Releases](https://github.com/remkop/picocli/releases) - latest: 3.0.1
 * [Picocli 3.0.0 Release Notes](https://github.com/remkop/picocli/releases/tag/v3.0.0) - note there are some [potential breaking changes](https://github.com/remkop/picocli/releases/tag/v3.0.0#3.0.0-breaking-changes) from prior versions
 * [Picocli 2.0 Release Notes](https://github.com/remkop/picocli/releases/tag/v2.0.0) - note there are some [potential breaking changes](https://github.com/remkop/picocli/releases/tag/v2.0.0#2.0-breaking-changes) from prior versions
 
@@ -139,35 +139,35 @@ See the [source code](https://github.com/remkop/picocli/blob/master/src/main/jav
 
 ### Gradle
 ```
-compile 'info.picocli:picocli:3.0.0'
+compile 'info.picocli:picocli:3.0.1'
 ```
 ### Maven
 ```
 <dependency>
   <groupId>info.picocli</groupId>
   <artifactId>picocli</artifactId>
-  <version>3.0.0</version>
+  <version>3.0.1</version>
 </dependency>
 ```
 ### Scala SBT
 ```
-libraryDependencies += "info.picocli" % "picocli" % "3.0.0"
+libraryDependencies += "info.picocli" % "picocli" % "3.0.1"
 ```
 ### Ivy
 ```
-<dependency org="info.picocli" name="picocli" rev="3.0.0" />
+<dependency org="info.picocli" name="picocli" rev="3.0.1" />
 ```
 ### Grape
 ```groovy
 @Grapes(
-    @Grab(group='info.picocli', module='picocli', version='3.0.0')
+    @Grab(group='info.picocli', module='picocli', version='3.0.1')
 )
 ```
 ### Leiningen
 ```
-[info.picocli/picocli "3.0.0"]
+[info.picocli/picocli "3.0.1"]
 ```
 ### Buildr
 ```
-'info.picocli:picocli:jar:3.0.0'
+'info.picocli:picocli:jar:3.0.1'
 ```
