@@ -2904,9 +2904,20 @@ public class CommandLine {
              * each {@code UnmatchedArgsBinding} captures the arguments that could not be matched to any options or positional parameters. */
             public List<UnmatchedArgsBinding> unmatchedArgsBindings() { return Collections.unmodifiableList(unmatchedArgs); }
     
-            /** Returns the String to use as the program name in the synopsis line of the help message.
-             * {@link #DEFAULT_COMMAND_NAME} by default, initialized from {@link Command#name()} if defined. */
+            /** Returns name of this command. Used in the synopsis line of the help message.
+             * {@link #DEFAULT_COMMAND_NAME} by default, initialized from {@link Command#name()} if defined.
+             * @see #qualifiedName() */
             public String name() { return (name == null) ? DEFAULT_COMMAND_NAME : name; }
+
+            /** Returns the String to use as the program name in the synopsis line of the help message:
+             * this command's {@link #name() name}, preceded by the qualified name of the parent command, if any.
+             * {@link #DEFAULT_COMMAND_NAME} by default, initialized from {@link Command#name()} if defined.
+             * @since 3.0.1 */
+            public String qualifiedName() {
+                String result = name();
+                if (parent() != null) { result = parent().qualifiedName() + " " + result; }
+                return result;
+            }
 
             /** Returns version information for this command, to print to the console when the user specifies an
              * {@linkplain OptionSpec#versionHelp() option} to request version help. This is not part of the usage help message.
@@ -6070,7 +6081,7 @@ public class CommandLine {
                 sb.append(" [COMMAND]");
             }
 
-            return colorScheme.commandText(commandSpec.name()).toString()
+            return colorScheme.commandText(commandSpec.qualifiedName()).toString()
                     + (sb.toString()) + System.getProperty("line.separator");
         }
         /** Generates a detailed synopsis message showing all options and parameters. Follows the unix convention of
@@ -6152,7 +6163,7 @@ public class CommandLine {
             }
 
             // Fix for #142: first line of synopsis overshoots max. characters
-            String commandName = commandSpec.name();
+            String commandName = commandSpec.qualifiedName();
             int firstColumnLength = commandName.length() + synopsisHeadingLength;
 
             // synopsis heading ("Usage: ") may be on the same line, so adjust column width

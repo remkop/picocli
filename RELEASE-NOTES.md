@@ -3,6 +3,8 @@
 # <a name="3.1.0"></a> Picocli 3.1.0
 The picocli community is pleased to announce picocli 3.1.0.
 
+This release fixes a bug for map options and has several improvements for the usage help message, especially for subcommands.
+
 This is the thirtieth public release.
 Picocli follows [semantic versioning](http://semver.org/).
 
@@ -14,6 +16,24 @@ Picocli follows [semantic versioning](http://semver.org/).
 * [Potential breaking changes](#3.1.0-breaking-changes)
 
 ## <a name="3.1.0-new"></a> New and Noteworthy
+From this release, the usage help synopsis of the subcommand shows not only the subcommand name but also the parent command name. For example, take the following hierarchy of subcommands.
+
+```java
+@Command(name = "main", subcommands = {Sub.class}) class App { }
+@Command(name = "sub", subcommands = {SubSub.class}) class Sub { }
+@Command(name = "subsub", mixinStandardHelpOptions = true) class SubSub { }
+
+CommandLine parser = new CommandLine(new App());
+ParseResult result = parser.parseArgs("sub", "subsub", "--help");
+CommandLine.printHelpIfRequested(result);
+```
+The above code prints the usage help for the `subsub` nested subcommand. Notice that this shows not only the subcommand name but the full command hierarchy:
+
+```
+Usage: main sub subsub [-hV]
+  -h, --help      Show this help message and exit.
+  -V, --version   Print version information and exit.
+```
 
 ## <a name="3.0.0-promoted"></a> Promoted Features
 Promoted features are features that were incubating in previous versions of picocli but are now supported and subject to backwards compatibility. 
@@ -21,14 +41,15 @@ Promoted features are features that were incubating in previous versions of pico
 No features have been promoted in this picocli release.
 
 ## <a name="3.1.0-fixes"></a> Fixed issues
-- [#378] Map option problem when value contains '=' separator. Thanks to [Markus Kramer](https://github.com/MarkusKramer) for the bug report.
-- [#377] Standard help options should be added last: when `mixinStandardHelpOptions` is set and `sortOptions` is false, the help options should appear after the command options in the usage help message.
-
+- [#287] Enhancement: Subcommand help now also shows parent command name in synopsis.
+- [#378] Bugfix: Map option problem when value contains '=' separator. Thanks to [Markus Kramer](https://github.com/MarkusKramer) for the bug report.
+- [#377] Bugfix: Standard help options should be added last: when `mixinStandardHelpOptions` is set and `sortOptions` is false, the help options should appear after the command options in the usage help message.
 
 ## <a name="3.1.0-deprecated"></a> Deprecations
 No features were deprecated in this release.
 
 ## <a name="3.1.0-breaking-changes"></a> Potential breaking changes
+The usage help synopsis of the subcommand shows not only the subcommand name but also the parent command name (and parent's parent command name, up to the top-level command).
 
 
 

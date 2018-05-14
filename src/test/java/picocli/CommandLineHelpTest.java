@@ -2467,7 +2467,7 @@ public class CommandLineHelpTest {
 
         String cmd2 = usageString(commandLine.getSubcommands().get("cmd2"), Help.Ansi.OFF);
         assertEquals(String.format("" +
-                "Usage: cmd2 [-ch] [COMMAND]%n" +
+                "Usage: main cmd2 [-ch] [COMMAND]%n" +
                 "  -c%n" +
                 "  -h%n" +
                 "Commands:%n" +
@@ -2476,7 +2476,7 @@ public class CommandLineHelpTest {
 
         String sub22 = usageString(commandLine.getSubcommands().get("cmd2").getSubcommands().get("sub22"), Help.Ansi.OFF);
         assertEquals(String.format("" +
-                "Usage: sub22 [-g] [COMMAND]%n" +
+                "Usage: main cmd2 sub22 [-g] [COMMAND]%n" +
                 "  -g%n" +
                 "Commands:%n" +
                 "  sub22sub1%n"), sub22);
@@ -3249,7 +3249,7 @@ public class CommandLineHelpTest {
         CommandLine.run(new App(), new PrintStream(baos), Help.Ansi.OFF, "help", "sub");
 
         String expected = String.format("" +
-                "Usage: sub%n" +
+                "Usage: <main class> sub%n" +
                 "This is a subcommand%n");
         assertEquals(expected, baos.toString());
     }
@@ -3284,7 +3284,7 @@ public class CommandLineHelpTest {
         String expected = String.format("" +
                 "Displays help information about the specified command%n" +
                 "%n" +
-                "Usage: help [-h] [COMMAND...]%n" +
+                "Usage: <main class> help [-h] [COMMAND...]%n" +
                 "%n" +
                 "When no COMMAND is given, the usage help for the main command is displayed.%n" +
                 "If a COMMAND is specified, the help for that command is shown.%n" +
@@ -3318,6 +3318,28 @@ public class CommandLineHelpTest {
         StringWriter sw = new StringWriter();
         new CommandLine(new App()).usage(new PrintWriter(sw));
         assertEquals(expected, sw.toString());
+    }
+
+
+    @Test
+    public void testUsageHelpForNestedSubcommands() {
+        @Command(name = "subsub", mixinStandardHelpOptions = true) class SubSub { }
+        @Command(name = "sub", subcommands = {SubSub.class}) class Sub { }
+        @Command(name = "main", subcommands = {Sub.class}) class App { }
+
+        CommandLine app = new CommandLine(new App(), new InnerClassFactory(this));
+        //ParseResult result = app.parseArgs("sub", "subsub", "--help");
+        //CommandLine.printHelpIfRequested(result);
+        CommandLine subsub = app.getSubcommands().get("sub").getSubcommands().get("subsub");
+
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        subsub.usage(new PrintStream(baos), Help.Ansi.OFF);
+
+        String expected = String.format("" +
+                "Usage: main sub subsub [-hV]%n" +
+                "  -h, --help      Show this help message and exit.%n" +
+                "  -V, --version   Print version information and exit.%n");
+        assertEquals(expected, baos.toString());
     }
 
     @Test
