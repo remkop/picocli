@@ -1,5 +1,36 @@
 # picocli Release Notes
 
+# <a name="3.1.0"></a> Picocli 3.1.0
+The picocli community is pleased to announce picocli 3.1.0.
+
+This is the thirtieth public release.
+Picocli follows [semantic versioning](http://semver.org/).
+
+## <a name="3.1.0"></a> Table of Contents
+* [New and noteworthy](#3.1.0-new)
+* [Promoted features](#3.1.0-promoted)
+* [Fixed issues](#3.1.0-fixes)
+* [Deprecations](#3.1.0-deprecated)
+* [Potential breaking changes](#3.1.0-breaking-changes)
+
+## <a name="3.1.0-new"></a> New and Noteworthy
+
+## <a name="3.0.0-promoted"></a> Promoted Features
+Promoted features are features that were incubating in previous versions of picocli but are now supported and subject to backwards compatibility. 
+
+No features have been promoted in this picocli release.
+
+## <a name="3.1.0-fixes"></a> Fixed issues
+- [#378] Map option problem when value contains '=' separator. Thanks to [Markus Kramer](https://github.com/MarkusKramer) for the bug report.
+
+
+## <a name="3.1.0-deprecated"></a> Deprecations
+No features were deprecated in this release.
+
+## <a name="3.1.0-breaking-changes"></a> Potential breaking changes
+
+
+
 # <a name="3.0.0"></a> Picocli 3.0.0
 The picocli community is pleased to announce picocli 3.0.0.
 

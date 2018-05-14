@@ -5256,7 +5256,7 @@ public class CommandLine {
         }
 
         private String[] splitKeyValue(ArgSpec argSpec, String value) {
-            String[] keyValue = value.split("=");
+            String[] keyValue = value.split("=", 2);
             if (keyValue.length < 2) {
                 String splitRegex = argSpec.splitRegex();
                 if (splitRegex.length() == 0) {

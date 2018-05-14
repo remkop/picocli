@@ -3930,4 +3930,18 @@ public class CommandLineTest {
         assertTrue (flags.p0);
         assertFalse(flags.p1);
     }
+    @Test
+    public void testMapValuesContainingSeparator() {
+        class MyCommand {
+            @Option(names = {"-p", "--parameter"})
+            Map<String, String> parameters;
+        }
+        String[] args = new String[] {"-p", "AppOptions=\"-Dspring.profiles.active=test -Dspring.mail.host=smtp.mailtrap.io\""};
+        MyCommand c = CommandLine.populateCommand(new MyCommand(), args);
+        assertEquals("\"-Dspring.profiles.active=test -Dspring.mail.host=smtp.mailtrap.io\"", c.parameters.get("AppOptions"));
+
+        args = new String[] {"-p", "\"AppOptions=-Dspring.profiles.active=test -Dspring.mail.host=smtp.mailtrap.io\""};
+        c = CommandLine.populateCommand(new MyCommand(), args);
+        assertEquals("-Dspring.profiles.active=test -Dspring.mail.host=smtp.mailtrap.io", c.parameters.get("AppOptions"));
+    }
 }
