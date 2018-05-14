@@ -19,7 +19,9 @@ import org.junit.Test;
 import picocli.CommandLine.*;
 import picocli.CommandLine.Model.*;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.PrintStream;
 import java.io.UnsupportedEncodingException;
 
 import static org.junit.Assert.*;
@@ -759,6 +761,28 @@ public class CommandLineMixinTest {
         commandLine.addMixin("mixin", new MixMeIn());
         assertFalse("mixin was registered", commandLine.getMixins().isEmpty());
         assertTrue(commandLine.getMixins().get("mixin") instanceof MixMeIn);
+    }
+
+
+    @Test
+    public void testMixinStandardHelpOptions_AreAddedLast() {
+        @Command(mixinStandardHelpOptions = true, sortOptions = false) class App {
+            @Option(names = "-a", description = "a option") boolean aOpt;
+            @Option(names = "-z", description = "z option") boolean zOpt;
+        }
+        CommandLine commandLine = new CommandLine(new App(), new InnerClassFactory(this));
+
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        commandLine.usage(new PrintStream(baos));
+
+        String expected = String.format("" +
+                "Usage: <main class> [-ahVz]%n" +
+                "  -a              a option%n" +
+                "  -z              z option%n" +
+                "  -h, --help      Show this help message and exit.%n" +
+                "  -V, --version   Print version information and exit.%n"
+        );
+        assertEquals(expected, baos.toString());
     }
 
 }

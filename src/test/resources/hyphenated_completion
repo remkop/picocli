@@ -90,7 +90,7 @@ function _picocli_rcmd_sub1() {
   PREV_WORD=${COMP_WORDS[COMP_CWORD-1]}
 
   COMMANDS=""
-  FLAG_OPTS="-h --help -V --version flag1"
+  FLAG_OPTS="flag1 -h --help -V --version"
   ARG_OPTS="option1"
 
   COMPREPLY=( $(compgen -W "${FLAG_OPTS} ${ARG_OPTS} ${COMMANDS}" -- ${CURR_WORD}) )
@@ -103,7 +103,7 @@ function _picocli_rcmd_sub2() {
   PREV_WORD=${COMP_WORDS[COMP_CWORD-1]}
 
   COMMANDS=""
-  FLAG_OPTS="-h --help -V --version flag-2"
+  FLAG_OPTS="flag-2 -h --help -V --version"
   ARG_OPTS="option-2"
 
   COMPREPLY=( $(compgen -W "${FLAG_OPTS} ${ARG_OPTS} ${COMMANDS}" -- ${CURR_WORD}) )

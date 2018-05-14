@@ -4099,8 +4099,12 @@ public class CommandLine {
                 Class<?> cls = command.getClass();
                 boolean hasCommandAnnotation = false;
                 while (cls != null) {
-                    hasCommandAnnotation |= updateCommandAttributes(cls, result, factory);
+                    boolean thisCommandHasAnnotation = updateCommandAttributes(cls, result, factory);
+                    hasCommandAnnotation |= thisCommandHasAnnotation;
                     hasCommandAnnotation |= initFromAnnotatedFields(command, cls, result, factory);
+                    if (thisCommandHasAnnotation) { //#377 Standard help options should be added last
+                        result.mixinStandardHelpOptions(cls.getAnnotation(Command.class).mixinStandardHelpOptions());
+                    }
                     cls = cls.getSuperclass();
                 }
                 if (annotationsAreMandatory) {validateCommandSpec(result, hasCommandAnnotation, command); }
@@ -4120,7 +4124,6 @@ public class CommandLine {
                 commandSpec.initVersion(cmd.version());
                 commandSpec.initHelpCommand(cmd.helpCommand());
                 commandSpec.initVersionProvider(cmd.versionProvider(), factory);
-                commandSpec.mixinStandardHelpOptions(cmd.mixinStandardHelpOptions());
                 commandSpec.usageMessage().initSynopsisHeading(cmd.synopsisHeading());
                 commandSpec.usageMessage().initCommandListHeading(cmd.commandListHeading());
                 commandSpec.usageMessage().initRequiredOptionMarker(cmd.requiredOptionMarker());

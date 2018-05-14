@@ -22,6 +22,7 @@ No features have been promoted in this picocli release.
 
 ## <a name="3.1.0-fixes"></a> Fixed issues
 - [#378] Map option problem when value contains '=' separator. Thanks to [Markus Kramer](https://github.com/MarkusKramer) for the bug report.
+- [#377] Standard help options should be added last: when `mixinStandardHelpOptions` is set and `sortOptions` is false, the help options should appear after the command options in the usage help message.
 
 
 ## <a name="3.1.0-deprecated"></a> Deprecations
