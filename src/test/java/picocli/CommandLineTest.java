@@ -3863,7 +3863,7 @@ public class CommandLineTest {
             new CommandLine(new App());
             fail("Expected exception");
         } catch (InitializationException ex) {
-            String pattern = "A field cannot have both @Unmatched and @Option or @Parameters annotations, but '%s' has both.";
+            String pattern = "A member cannot have both @Unmatched and @Option or @Parameters annotations, but '%s' has both.";
             Field f = App.class.getDeclaredField("unmatched");
             assertEquals(String.format(pattern, f), ex.getMessage());
         }
@@ -3878,7 +3878,7 @@ public class CommandLineTest {
             new CommandLine(new App());
             fail("Expected exception");
         } catch (InitializationException ex) {
-            String pattern = "A field cannot have both @Unmatched and @Option or @Parameters annotations, but '%s' has both.";
+            String pattern = "A member cannot have both @Unmatched and @Option or @Parameters annotations, but '%s' has both.";
             Field f = App.class.getDeclaredField("unmatched");
             assertEquals(String.format(pattern, f), ex.getMessage());
         }
@@ -3893,7 +3893,7 @@ public class CommandLineTest {
             new CommandLine(new App());
             fail("Expected exception");
         } catch (InitializationException ex) {
-            String pattern = "A field cannot be both a @Mixin command and an @Unmatched but '%s' is both.";
+            String pattern = "A member cannot be both a @Mixin command and an @Unmatched but '%s' is both.";
             Field f = App.class.getDeclaredField("unmatched");
             assertEquals(String.format(pattern, f), ex.getMessage());
         }
@@ -3908,7 +3908,7 @@ public class CommandLineTest {
             new CommandLine(new App());
             fail("Expected exception");
         } catch (InitializationException ex) {
-            String pattern = "A field cannot be both a @Mixin command and an @Option or @Parameters, but '%s' is both.";
+            String pattern = "A member cannot be both a @Mixin command and an @Option or @Parameters, but '%s' is both.";
             Field f = App.class.getDeclaredField("unmatched");
             assertEquals(String.format(pattern, f), ex.getMessage());
         }
@@ -3923,7 +3923,7 @@ public class CommandLineTest {
             new CommandLine(new App());
             fail("Expected exception");
         } catch (InitializationException ex) {
-            String pattern = "A field cannot be both a @Mixin command and an @Option or @Parameters, but '%s' is both.";
+            String pattern = "A member cannot be both a @Mixin command and an @Option or @Parameters, but '%s' is both.";
             Field f = App.class.getDeclaredField("unmatched");
             assertEquals(String.format(pattern, f), ex.getMessage());
         }

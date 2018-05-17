@@ -16,19 +16,12 @@
 package picocli;
 
 import java.io.*;
+import java.lang.annotation.Annotation;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
-import java.lang.reflect.Array;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
-import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Type;
-import java.lang.reflect.WildcardType;
+import java.lang.reflect.*;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.net.InetAddress;
@@ -1638,7 +1631,6 @@ public class CommandLine {
     private static String str(String[] arr, int i) { return (arr == null || arr.length == 0) ? "" : arr[i]; }
     private static boolean isBoolean(Class<?> type) { return type == Boolean.class || type == Boolean.TYPE; }
     private static CommandLine toCommandLine(Object obj, IFactory factory) { return obj instanceof CommandLine ? (CommandLine) obj : new CommandLine(obj, factory);}
-    private static boolean isMultiValue(Field field) {  return isMultiValue(field.getType()); }
     private static boolean isMultiValue(Class<?> cls) { return cls.isArray() || Collection.class.isAssignableFrom(cls) || Map.class.isAssignableFrom(cls); }
 
     private static class NoCompletionCandidates implements Iterable<String> {
@@ -1674,7 +1666,7 @@ public class CommandLine {
      * </p>
      */
     @Retention(RetentionPolicy.RUNTIME)
-    @Target(ElementType.FIELD)
+    @Target({ElementType.FIELD, ElementType.METHOD})
     public @interface Option {
         /**
          * One or more option names. At least one option name is required.
@@ -1971,7 +1963,7 @@ public class CommandLine {
      * is thrown.</p>
      */
     @Retention(RetentionPolicy.RUNTIME)
-    @Target(ElementType.FIELD)
+    @Target({ElementType.FIELD, ElementType.METHOD})
     public @interface Parameters {
         /** Specify an index ("0", or "1", etc.) to pick which of the command line arguments should be assigned to this
          * field. For array or Collection fields, you can also specify an index range ("0..3", or "2..*", etc.) to assign
@@ -2541,30 +2533,33 @@ public class CommandLine {
          * or the field type's default arity if no arity was specified.
          * @param field the field whose Option annotation to inspect
          * @return a new {@code Range} based on the Option arity annotation on the specified field */
-        public static Range optionArity(Field field) {
-            return field.isAnnotationPresent(Option.class)
-                    ? adjustForType(Range.valueOf(field.getAnnotation(Option.class).arity()), field)
+        public static Range optionArity(Field field) { return optionArity(new TypedMember(field)); }
+        private static Range optionArity(TypedMember member) {
+            return member.isAnnotationPresent(Option.class)
+                    ? adjustForType(Range.valueOf(member.getAnnotation(Option.class).arity()), member)
                     : new Range(0, 0, false, true, "0");
         }
         /** Returns a new {@code Range} based on the {@link Parameters#arity()} annotation on the specified field,
          * or the field type's default arity if no arity was specified.
          * @param field the field whose Parameters annotation to inspect
          * @return a new {@code Range} based on the Parameters arity annotation on the specified field */
-        public static Range parameterArity(Field field) {
-            return field.isAnnotationPresent(Parameters.class)
-                    ? adjustForType(Range.valueOf(field.getAnnotation(Parameters.class).arity()), field)
+        public static Range parameterArity(Field field) { return parameterArity(new TypedMember(field)); }
+        private static Range parameterArity(TypedMember member) {
+            return member.isAnnotationPresent(Parameters.class)
+                    ? adjustForType(Range.valueOf(member.getAnnotation(Parameters.class).arity()), member)
                     : new Range(0, 0, false, true, "0");
         }
         /** Returns a new {@code Range} based on the {@link Parameters#index()} annotation on the specified field.
          * @param field the field whose Parameters annotation to inspect
          * @return a new {@code Range} based on the Parameters index annotation on the specified field */
-        public static Range parameterIndex(Field field) {
-            return field.isAnnotationPresent(Parameters.class)
-                    ? Range.valueOf(field.getAnnotation(Parameters.class).index())
+        public static Range parameterIndex(Field field) { return parameterIndex(new TypedMember(field)); }
+        private static Range parameterIndex(TypedMember member) {
+            return member.isAnnotationPresent(Parameters.class)
+                    ? Range.valueOf(member.getAnnotation(Parameters.class).index())
                     : new Range(0, 0, false, true, "0");
         }
-        static Range adjustForType(Range result, Field field) {
-            return result.isUnspecified ? defaultArity(field) : result;
+        static Range adjustForType(Range result, TypedMember member) {
+            return result.isUnspecified ? defaultArity(member) : result;
         }
         /** Returns the default arity {@code Range}: for {@link Option options} this is 0 for booleans and 1 for
          * other types, for {@link Parameters parameters} booleans have arity 0, arrays or Collections have
@@ -2572,11 +2567,12 @@ public class CommandLine {
          * @param field the field whose default arity to return
          * @return a new {@code Range} indicating the default arity of the specified field
          * @since 2.0 */
-        public static Range defaultArity(Field field) {
-            Class<?> type = field.getType();
-            if (field.isAnnotationPresent(Option.class)) {
+        public static Range defaultArity(Field field) { return defaultArity(new TypedMember(field)); }
+        private static Range defaultArity(TypedMember member) {
+            Class<?> type = member.getType();
+            if (member.isAnnotationPresent(Option.class)) {
                 Class<?>[] typeAttribute = ArgsReflection
-                        .inferTypes(type, field.getAnnotation(Option.class).type(), field.getGenericType());
+                        .inferTypes(type, member.getAnnotation(Option.class).type(), member.getGenericType());
                 boolean zeroArgs = isBoolean(type) || (isMultiValue(type) && isBoolean(typeAttribute[0]));
                 return zeroArgs ? Range.valueOf("0") : Range.valueOf("1");
             }
@@ -2593,10 +2589,10 @@ public class CommandLine {
             return isBoolean(type) ? Range.valueOf("0") : Range.valueOf("1");
         }
         private int size() { return 1 + max - min; }
-        static Range parameterCapacity(Field field) {
-            Range arity = parameterArity(field);
-            if (!isMultiValue(field)) { return arity; }
-            Range index = parameterIndex(field);
+        static Range parameterCapacity(TypedMember member) {
+            Range arity = parameterArity(member);
+            if (!member.isMultiValue()) { return arity; }
+            Range index = parameterIndex(member);
             return parameterCapacity(arity, index);
         }
         private static Range parameterCapacity(Range arity, Range index) {
@@ -4264,25 +4260,140 @@ public class CommandLine {
                 }
             }
         }
+        static class TypedMember {
+            final AccessibleObject accessible;
+            final String name;
+            final Class<?> type;
+            final Type genericType;
+            final boolean hasInitialValue;
+            private IGetter getter;
+            private ISetter setter;
+            TypedMember(Field field) {
+                accessible = Assert.notNull(field, "field");
+                accessible.setAccessible(true);
+                name = field.getName();
+                type = field.getType();
+                genericType = field.getGenericType();
+                hasInitialValue = true;
+            }
+            static TypedMember createIfAnnotated(Field field, Object scope) {
+                return isAnnotated(field) ? new TypedMember(field, scope) : null;
+            }
+            private TypedMember(Field field, Object scope) {
+                this(field);
+                FieldBinding binding = new FieldBinding(scope, field);
+                getter = binding; setter = binding;
+            }
+            static TypedMember createIfAnnotated(Method method, Object scope) {
+                return isAnnotated(method) ? new TypedMember(method, scope) : null;
+            }
+            private TypedMember(Method method, Object scope) {
+                accessible = Assert.notNull(method, "method");
+                accessible.setAccessible(true);
+                name = propertyName(method.getName());
+                Class<?>[] parameterTypes = method.getParameterTypes();
+                boolean isGetter = parameterTypes.length == 0 && method.getReturnType() != Void.TYPE && method.getReturnType() != Void.class;
+                boolean isSetter = parameterTypes.length > 0;
+                if (isSetter == isGetter) { throw new InitializationException("Invalid method, must be either getter or setter: " + method); }
+                if (isGetter) {
+                    hasInitialValue = true;
+                    type = method.getReturnType();
+                    genericType = method.getGenericReturnType();
+                    if (Proxy.isProxyClass(scope.getClass())) {
+                        PicocliInvocationHandler handler = (PicocliInvocationHandler) Proxy.getInvocationHandler(scope);
+                        PicocliInvocationHandler.ProxyBinding binding = handler.new ProxyBinding(method);
+                        getter = binding; setter = binding;
+
+                        // initial value
+                        try {
+                            if (type.isPrimitive()) {
+                                if ("boolean".equals(type.getSimpleName().toLowerCase())) {
+                                    setter.set(false);
+                                } else {
+                                    setter.set((byte) 0);
+                                }
+                            }
+                        } catch (Exception ex) {
+                            throw new PicocliException("Could not set initial value for " + method + ": " + ex.toString(), ex);
+                        }
+                    } else {
+                        //throw new IllegalArgumentException("Getter method but not a proxy: " + scope + ": " + method);
+                        MethodBinding binding = new MethodBinding(scope, method);
+                        getter = binding; setter = binding;
+                    }
+                } else {
+                    hasInitialValue = false;
+                    type = parameterTypes[0];
+                    genericType = method.getGenericParameterTypes()[0];
+                    MethodBinding binding = new MethodBinding(scope, method);
+                    getter = binding; setter = binding;
+                }
+            }
+            static boolean isAnnotated(AnnotatedElement e) {
+                return e.isAnnotationPresent(Command.class)
+                        || e.isAnnotationPresent(Option.class)
+                        || e.isAnnotationPresent(Parameters.class)
+                        || e.isAnnotationPresent(Unmatched.class)
+                        || e.isAnnotationPresent(Mixin.class)
+                        || e.isAnnotationPresent(ParentCommand.class);
+            }
+            boolean isAnnotationPresent(Class<? extends Annotation> annotationClass) { return accessible.isAnnotationPresent(annotationClass); }
+            <T extends Annotation> T getAnnotation(Class<T> annotationClass) { return accessible.getAnnotation(annotationClass); }
+            String name()            { return name; }
+            boolean isArgSpec()      { return isOption() || isParameter(); }
+            boolean isOption()       { return isAnnotationPresent(Option.class); }
+            boolean isParameter()    { return isAnnotationPresent(Parameters.class); }
+            boolean isMixin()        { return isAnnotationPresent(Mixin.class); }
+            boolean isUnmatched()    { return isAnnotationPresent(Unmatched.class); }
+            boolean isMultiValue()   { return CommandLine.isMultiValue(getType()); }
+            IGetter getter()         { return getter; }
+            ISetter setter()         { return setter; }
+            Class<?> getType()       { return type; }
+            Type getGenericType()    { return genericType; }
+            public String toString() { return accessible.toString(); }
+            String toGenericString() { return accessible instanceof Field ? ((Field) accessible).toGenericString() : ((Method) accessible).toGenericString(); }
+            String mixinName()    {
+                String annotationName = getAnnotation(Mixin.class).name();
+                return empty(annotationName) ? name() : annotationName;
+            }
+
+            static String propertyName(String methodName) {
+                if (methodName.length() > 3 && (methodName.startsWith("get") || methodName.startsWith("set"))) { return decapitalize(methodName.substring(3)); }
+                return decapitalize(methodName);
+            }
+            private static String decapitalize(String name) {
+                if (name == null || name.length() == 0) { return name; }
+                char[] chars = name.toCharArray();
+                chars[0] = Character.toLowerCase(chars[0]);
+                return new String(chars);
+            }
+        }
         private static class CommandReflection {
             static CommandSpec extractCommandSpec(Object command, IFactory factory, boolean annotationsAreMandatory) {
                 if (command instanceof CommandSpec) { return (CommandSpec) command; }
+                Object instance = command;
+                String commandClassName = command.getClass().getName();
+                if (command instanceof Class && ((Class) command).isInterface()) {
+                    Class cls = (Class) command;
+                    commandClassName = cls.getName();
+                    instance = Proxy.newProxyInstance(cls.getClassLoader(), new Class[] {cls}, new PicocliInvocationHandler());
+                }
 
-                CommandSpec result = CommandSpec.wrapWithoutInspection(Assert.notNull(command, "command"));
+                CommandSpec result = CommandSpec.wrapWithoutInspection(Assert.notNull(instance, "command"));
 
                 Class<?> cls = command.getClass();
                 boolean hasCommandAnnotation = false;
                 while (cls != null) {
                     boolean thisCommandHasAnnotation = updateCommandAttributes(cls, result, factory);
                     hasCommandAnnotation |= thisCommandHasAnnotation;
-                    hasCommandAnnotation |= initFromAnnotatedFields(command, cls, result, factory);
+                    hasCommandAnnotation |= initFromAnnotatedFields(instance, cls, result, factory);
                     if (thisCommandHasAnnotation) { //#377 Standard help options should be added last
                         result.mixinStandardHelpOptions(cls.getAnnotation(Command.class).mixinStandardHelpOptions());
                     }
                     cls = cls.getSuperclass();
                 }
-                if (annotationsAreMandatory) {validateCommandSpec(result, hasCommandAnnotation, command); }
-                result.withToString(command.getClass().getName()).validate();
+                if (annotationsAreMandatory) {validateCommandSpec(result, hasCommandAnnotation, commandClassName); }
+                result.withToString(commandClassName).validate();
                 return result;
             }
 
@@ -4362,60 +4473,67 @@ public class CommandLine {
             private static boolean initFromAnnotatedFields(Object scope, Class<?> cls, CommandSpec receiver, IFactory factory) {
                 boolean result = false;
                 for (Field field : cls.getDeclaredFields()) {
-                    if (isMixin(field)) {
-                        validateMixin(field);
-                        receiver.addMixin(mixinName(field), buildMixinForField(field, scope, factory));
-                        result = true;
-                    }
-                    if (isUnmatched(field)) {
-                        validateUnmatched(field);
-                        receiver.addUnmatchedArgsBinding(buildUnmatchedForField(field, scope));
-                    }
-                    if (isArgSpec(field)) {
-                        validateArgSpecField(field);
-                        if (isOption(field))    { receiver.addOption(ArgsReflection.extractOptionSpec(scope, field, factory)); }
-                        if (isParameter(field)) { receiver.addPositional(ArgsReflection.extractPositionalParamSpec(scope, field, factory)); }
-                    }
-                    if (isInject(field)) {
-                        validateInject(field);
-                        field.setAccessible(true);
-                        new FieldBinding(scope, field).set(receiver);
-                    }
+                    result |= initFromAnnotatedTypedMembers(TypedMember.createIfAnnotated(field, scope), receiver, factory);
+                }
+                for (Method method : cls.getDeclaredMethods()) {
+                    result |= initFromAnnotatedTypedMembers(TypedMember.createIfAnnotated(method, scope), receiver, factory);
                 }
                 return result;
             }
-            private static String mixinName(Field field) {
-                String annotationName = field.getAnnotation(Mixin.class).name();
-                return empty(annotationName) ? field.getName() : annotationName;
+            private static boolean initFromAnnotatedTypedMembers(TypedMember member, CommandSpec receiver, IFactory factory) {
+                boolean result = false;
+                if (member == null) { return result; }
+                if (member.isMixin()) {
+                    validateMixin(member);
+                    receiver.addMixin(member.mixinName(), buildMixinForField(member, factory));
+                    result = true;
+                }
+                if (member.isUnmatched()) {
+                    validateUnmatched(member);
+                    receiver.addUnmatchedArgsBinding(buildUnmatchedForField(member));
+                }
+                if (member.isArgSpec()) {
+                    validateArgSpecField(member);
+                    if (member.isOption())    { receiver.addOption(ArgsReflection.extractOptionSpec(member, factory)); }
+                    if (member.isParameter()) { receiver.addPositional(ArgsReflection.extractPositionalParamSpec(member, factory)); }
+                }
+                if (isInject(field)) {
+                    validateInject(field);
+                    field.setAccessible(true);
+                    new FieldBinding(scope, field).set(receiver);
+                }
+                return result;
             }
-            private static void validateMixin(Field field) {
-                if (isMixin(field) && (isOption(field) || isParameter(field))) {
-                    throw new DuplicateOptionAnnotationsException("A field cannot be both a @Mixin command and an @Option or @Parameters, but '" + field + "' is both.");
+            private static void validateMixin(TypedMember member) {
+                if (member.isMixin() && member.isArgSpec()) {
+                    throw new DuplicateOptionAnnotationsException("A member cannot be both a @Mixin command and an @Option or @Parameters, but '" + member + "' is both.");
                 }
-                if (isMixin(field) && (isUnmatched(field))) {
-                    throw new DuplicateOptionAnnotationsException("A field cannot be both a @Mixin command and an @Unmatched but '" + field + "' is both.");
-                }
-            }
-            private static void validateUnmatched(Field field) {
-                if (isUnmatched(field) && (isOption(field) || isParameter(field))) {
-                    throw new DuplicateOptionAnnotationsException("A field cannot have both @Unmatched and @Option or @Parameters annotations, but '" + field + "' has both.");
+                if (member.isMixin() && member.isUnmatched()) {
+                    throw new DuplicateOptionAnnotationsException("A member cannot be both a @Mixin command and an @Unmatched but '" + member + "' is both.");
                 }
             }
-            private static void validateArgSpecField(Field field) {
-                if (isOption(field) && isParameter(field)) {
-                    throw new DuplicateOptionAnnotationsException("A field can be either @Option or @Parameters, but '" + field + "' is both.");
+            private static void validateUnmatched(TypedMember member) {
+                if (member.isUnmatched() && member.isArgSpec()) {
+                    throw new DuplicateOptionAnnotationsException("A member cannot have both @Unmatched and @Option or @Parameters annotations, but '" + member + "' has both.");
                 }
-                if (isMixin(field) && (isOption(field) || isParameter(field))) {
-                    throw new DuplicateOptionAnnotationsException("A field cannot be both a @Mixin command and an @Option or @Parameters, but '" + field + "' is both.");
+            }
+            private static void validateArgSpecField(TypedMember member) {
+                if (member.isOption() && member.isParameter()) {
+                    throw new DuplicateOptionAnnotationsException("A member can be either @Option or @Parameters, but '" + member + "' is both.");
                 }
+                if (member.isMixin() && member.isArgSpec()) {
+                    throw new DuplicateOptionAnnotationsException("A member cannot be both a @Mixin command and an @Option or @Parameters, but '" + member + "' is both.");
+                }
+                if (!(member.accessible instanceof Field)) { return; }
+                Field field = (Field) member.accessible;
                 if (Modifier.isFinal(field.getModifiers()) && (field.getType().isPrimitive() || String.class.isAssignableFrom(field.getType()))) {
                     throw new InitializationException("Constant (final) primitive and String fields like " + field + " cannot be used as " +
-                            (isOption(field) ? "an @Option" : "a @Parameter") + ": compile-time constant inlining may hide new values written to it.");
+                            (member.isOption() ? "an @Option" : "a @Parameter") + ": compile-time constant inlining may hide new values written to it.");
                 }
             }
-            private static void validateCommandSpec(CommandSpec result, boolean hasCommandAnnotation, Object command) {
+            private static void validateCommandSpec(CommandSpec result, boolean hasCommandAnnotation, String commandClassName) {
                 if (!hasCommandAnnotation && result.positionalParameters.isEmpty() && result.optionsByNameMap.isEmpty() && result.unmatchedArgs.isEmpty()) {
-                    throw new InitializationException(command.getClass().getName() + " is not a command: it has no @Command, @Option, @Parameters or @Unmatched annotations");
+                    throw new InitializationException(commandClassName + " is not a command: it has no @Command, @Option, @Parameters or @Unmatched annotations");
                 }
             }
             private static void validateInject(Field field) {
@@ -4430,60 +4548,51 @@ public class CommandLine {
                 }
                 if (field.getType() != CommandSpec.class) { throw new InitializationException("@picocli.CommandLine.Inject annotation is only supported on fields of type " + CommandSpec.class.getName()); }
             }
-            private static CommandSpec buildMixinForField(Field field, Object scope, IFactory factory) {
+            private static CommandSpec buildMixinForField(TypedMember member, IFactory factory) {
                 try {
-                    field.setAccessible(true);
-                    Object userObject = field.get(scope);
+                    Object userObject = member.getter().get();
                     if (userObject == null) {
-                        userObject = factory.create(field.getType());
-                        field.set(scope, userObject);
+                        userObject = factory.create(member.getType());
+                        member.setter().set(userObject);
                     }
                     CommandSpec result = CommandSpec.forAnnotatedObject(userObject, factory);
-                    return result.withToString(abbreviate("mixin from field " + field.toGenericString()));
+                    return result.withToString(abbreviate("mixin from member " + member.toGenericString()));
                 } catch (InitializationException ex) {
                     throw ex;
                 } catch (Exception ex) {
-                    throw new InitializationException("Could not access or modify mixin field " + field + ": " + ex, ex);
+                    throw new InitializationException("Could not access or modify mixin member " + member + ": " + ex, ex);
                 }
             }
-            private static UnmatchedArgsBinding buildUnmatchedForField(final Field field, final Object scope) {
-                if (!(field.getType().equals(String[].class) ||
-                        (List.class.isAssignableFrom(field.getType()) && field.getGenericType() instanceof ParameterizedType
-                                && ((ParameterizedType) field.getGenericType()).getActualTypeArguments()[0].equals(String.class)))) {
-                    throw new InitializationException("Invalid type for " + field + ": must be either String[] or List<String>");
+            private static UnmatchedArgsBinding buildUnmatchedForField(final TypedMember member) {
+                if (!(member.getType().equals(String[].class) ||
+                        (List.class.isAssignableFrom(member.getType()) && member.getGenericType() instanceof ParameterizedType
+                                && ((ParameterizedType) member.getGenericType()).getActualTypeArguments()[0].equals(String.class)))) {
+                    throw new InitializationException("Invalid type for " + member + ": must be either String[] or List<String>");
                 }
-                field.setAccessible(true);
-                if (field.getType().equals(String[].class)) {
-                    return UnmatchedArgsBinding.forStringArrayConsumer(new FieldBinding(scope, field));
+                if (member.getType().equals(String[].class)) {
+                    return UnmatchedArgsBinding.forStringArrayConsumer(member.setter());
                 } else {
                     return UnmatchedArgsBinding.forStringCollectionSupplier(new IGetter() {
                         @SuppressWarnings("unchecked") public <T> T get() throws Exception {
-                            field.setAccessible(true);
-                            List<String> result = (List<String>) field.get(scope);
+                            List<String> result = (List<String>) member.getter().get();
                             if (result == null) {
                                 result = new ArrayList<String>();
-                                field.set(scope, result);
+                                member.setter().set(result);
                             }
                             return (T) result;
                         }
                     });
                 }
             }
-            static boolean isArgSpec(Field f)   { return isOption(f) || isParameter(f); }
-            static boolean isOption(Field f)    { return f.isAnnotationPresent(Option.class); }
-            static boolean isParameter(Field f) { return f.isAnnotationPresent(Parameters.class); }
-            static boolean isMixin(Field f)     { return f.isAnnotationPresent(Mixin.class); }
-            static boolean isUnmatched(Field f) { return f.isAnnotationPresent(Unmatched.class); }
-            static boolean isInject(Field f)    { return f.isAnnotationPresent(Inject.class); }
         }
 
         /** Helper class to reflectively create OptionSpec and PositionalParamSpec objects from annotated elements.
          * Package protected for testing. CONSIDER THIS CLASS PRIVATE.  */
         static class ArgsReflection {
-            static OptionSpec extractOptionSpec(Object scope, Field field, IFactory factory) {
-                Option option = field.getAnnotation(Option.class);
+            static OptionSpec extractOptionSpec(TypedMember member, IFactory factory) {
+                Option option = member.getAnnotation(Option.class);
                 OptionSpec.Builder builder = OptionSpec.builder(option.names());
-                initCommon(builder, scope, field);
+                initCommon(builder, member);
 
                 builder.help(option.help());
                 builder.usageHelp(option.usageHelp());
@@ -4493,31 +4602,31 @@ public class CommandLine {
                     builder.completionCandidates(DefaultFactory.createCompletionCandidates(factory, option.completionCandidates()));
                 }
 
-                builder.arity(Range.optionArity(field));
+                builder.arity(Range.optionArity(member));
                 builder.required(option.required());
                 builder.description(option.description());
-                Class<?>[] elementTypes = inferTypes(field.getType(), option.type(), field.getGenericType());
+                Class<?>[] elementTypes = inferTypes(member.getType(), option.type(), member.getGenericType());
                 builder.auxiliaryTypes(elementTypes);
-                builder.paramLabel(inferLabel(option.paramLabel(), field.getName(), field.getType(), elementTypes));
+                builder.paramLabel(inferLabel(option.paramLabel(), member.name(), member.getType(), elementTypes));
                 builder.splitRegex(option.split());
                 builder.hidden(option.hidden());
                 builder.converters(DefaultFactory.createConverter(factory, option.converter()));
                 return builder.build();
             }
-            static PositionalParamSpec extractPositionalParamSpec(Object scope, Field field, IFactory factory) {
+            static PositionalParamSpec extractPositionalParamSpec(TypedMember member, IFactory factory) {
                 PositionalParamSpec.Builder builder = PositionalParamSpec.builder();
-                initCommon(builder, scope, field);
-                Range arity = Range.parameterArity(field);
+                initCommon(builder, member);
+                Range arity = Range.parameterArity(member);
                 builder.arity(arity);
-                builder.index(Range.parameterIndex(field));
-                builder.capacity(Range.parameterCapacity(field));
+                builder.index(Range.parameterIndex(member));
+                builder.capacity(Range.parameterCapacity(member));
                 builder.required(arity.min > 0);
 
-                Parameters parameters = field.getAnnotation(Parameters.class);
+                Parameters parameters = member.getAnnotation(Parameters.class);
                 builder.description(parameters.description());
-                Class<?>[] elementTypes = inferTypes(field.getType(), parameters.type(), field.getGenericType());
+                Class<?>[] elementTypes = inferTypes(member.getType(), parameters.type(), member.getGenericType());
                 builder.auxiliaryTypes(elementTypes);
-                builder.paramLabel(inferLabel(parameters.paramLabel(), field.getName(), field.getType(), elementTypes));
+                builder.paramLabel(inferLabel(parameters.paramLabel(), member.name(), member.getType(), elementTypes));
                 builder.splitRegex(parameters.split());
                 builder.hidden(parameters.hidden());
                 builder.converters(DefaultFactory.createConverter(factory, parameters.converter()));
@@ -4527,18 +4636,18 @@ public class CommandLine {
                 }
                 return builder.build();
             }
-            private static void initCommon(ArgSpec.Builder<?> builder, Object scope, Field field) {
-                field.setAccessible(true);
-                builder.type(field.getType()); // field type
-                builder.initialValue(getInitialValue(scope, field));
-                builder.withToString(abbreviate("field " + field.toGenericString()));
-                FieldBinding binding = new FieldBinding(scope, field);
-                builder.getter(binding).setter(binding);
+            private static void initCommon(ArgSpec.Builder<?> builder, TypedMember member) {
+                builder.type(member.getType());
+                builder.withToString((member.accessible instanceof Field ? "field " : "method ") + abbreviate(member.toGenericString()));
+
+                builder.getter(member.getter()).setter(member.setter());
+                builder.hasInitialValue(member.hasInitialValue);
+                try { builder.initialValue(member.getter().get()); } catch (Exception ex) { builder.initialValue(null); }
             }
             static String abbreviate(String text) {
-                return text.replace("field private ", "field ")
-                        .replace("field protected ", "field ")
-                        .replace("field public ", "field ")
+                return text.replace("private ", "")
+                        .replace("protected ", "")
+                        .replace("public ", "")
                         .replace("java.lang.", "");
             }
             private static String inferLabel(String label, String fieldName, Class<?> fieldType, Class<?>[] types) {
@@ -4577,9 +4686,6 @@ public class CommandLine {
                 }
                 return new Class<?>[] {propertyType}; // not a multi-value field
             }
-            static Object getInitialValue(Object scope, Field field) {
-                try { return field.get(scope); } catch (Exception ex) { return null; }
-            }
         }
         private static class FieldBinding implements IGetter, ISetter {
             private final Object scope;
@@ -4600,6 +4706,39 @@ public class CommandLine {
                     return result;
                 } catch (Exception ex) {
                     throw new PicocliException("Could not set value for field " + field + " to " + value, ex);
+                }
+            }
+        }
+        private static class MethodBinding implements IGetter, ISetter {
+            private final Object scope;
+            private final Method method;
+            private Object currentValue;
+            MethodBinding(Object scope, Method method) { this.scope = scope; this.method = method; }
+            @SuppressWarnings("unchecked") public <T> T get() { return (T) currentValue; }
+            public <T> T set(T value) throws PicocliException {
+                try {
+                    @SuppressWarnings("unchecked") T result = (T) currentValue;
+                    method.invoke(scope, value);
+                    currentValue = value;
+                    return result;
+                } catch (Exception ex) {
+                    throw new PicocliException("Could not invoke " + method + " with " + value, ex);
+                }
+            }
+        }
+        private static class PicocliInvocationHandler implements InvocationHandler {
+            final Map<String, Object> map = new HashMap<String, Object>();
+            public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+                return map.get(method.getName());
+            }
+            class ProxyBinding implements IGetter, ISetter {
+                private final Method method;
+                ProxyBinding(Method method) { this.method = Assert.notNull(method, "method"); }
+                @SuppressWarnings("unchecked") public <T> T get() { return (T) map.get(method.getName()); }
+                public <T> T set(T value) {
+                    T result = get();
+                    map.put(method.getName(), value);
+                    return result;
                 }
             }
         }
