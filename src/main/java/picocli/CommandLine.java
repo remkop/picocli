@@ -4281,6 +4281,9 @@ public class CommandLine {
             }
             private TypedMember(Field field, Object scope) {
                 this(field);
+                if (Proxy.isProxyClass(scope.getClass())) {
+                    throw new InitializationException("Invalid picocli annotation on interface field");
+                }
                 FieldBinding binding = new FieldBinding(scope, field);
                 getter = binding; setter = binding;
             }
@@ -4306,15 +4309,15 @@ public class CommandLine {
 
                         // initial value
                         try {
-                            if (type.isPrimitive()) {
-                                if ("boolean".equals(type.getSimpleName().toLowerCase())) {
-                                    setter.set(false);
-                                } else {
-                                    setter.set((byte) 0);
-                                }
-                            }
+                            if      (type == Boolean.TYPE || type == Boolean.class) { setter.set(false); }
+                            else if (type == Byte.TYPE    || type == Byte.class)    { setter.set(Byte.valueOf((byte) 0)); }
+                            else if (type == Short.TYPE   || type == Short.class)   { setter.set(Short.valueOf((short) 0)); }
+                            else if (type == Integer.TYPE || type == Integer.class) { setter.set(Integer.valueOf(0)); }
+                            else if (type == Long.TYPE    || type == Long.class)    { setter.set(Long.valueOf(0L)); }
+                            else if (type == Float.TYPE   || type == Float.class)   { setter.set(Float.valueOf(0f)); }
+                            else if (type == Double.TYPE  || type == Double.class)  { setter.set(Double.valueOf(0d)); }
                         } catch (Exception ex) {
-                            throw new PicocliException("Could not set initial value for " + method + ": " + ex.toString(), ex);
+                            throw new InitializationException("Could not set initial value for " + method + ": " + ex.toString(), ex);
                         }
                     } else {
                         //throw new IllegalArgumentException("Getter method but not a proxy: " + scope + ": " + method);
@@ -4372,16 +4375,16 @@ public class CommandLine {
             static CommandSpec extractCommandSpec(Object command, IFactory factory, boolean annotationsAreMandatory) {
                 if (command instanceof CommandSpec) { return (CommandSpec) command; }
                 Object instance = command;
-                String commandClassName = command.getClass().getName();
+                Class<?> cls = command.getClass();
+                String commandClassName = cls.getName();
                 if (command instanceof Class && ((Class) command).isInterface()) {
-                    Class cls = (Class) command;
+                    cls = (Class) command;
                     commandClassName = cls.getName();
                     instance = Proxy.newProxyInstance(cls.getClassLoader(), new Class[] {cls}, new PicocliInvocationHandler());
                 }
 
                 CommandSpec result = CommandSpec.wrapWithoutInspection(Assert.notNull(instance, "command"));
 
-                Class<?> cls = command.getClass();
                 boolean hasCommandAnnotation = false;
                 while (cls != null) {
                     boolean thisCommandHasAnnotation = updateCommandAttributes(cls, result, factory);
