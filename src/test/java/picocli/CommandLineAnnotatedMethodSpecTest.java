@@ -107,10 +107,10 @@ public class CommandLineAnnotatedMethodSpecTest {
         @Option(names = "-list")
         List<String> getList();
 
-        @Option(names = "-map", type = {Integer.class, Double.class})
+        @Option(names = "-map")
         Map<Integer, Double> getMap();
 
-        @Option(names = "-set", type = Short.class)
+        @Option(names = "-set")
         SortedSet<Short> getSortedSet();
     }
 
@@ -188,5 +188,27 @@ public class CommandLineAnnotatedMethodSpecTest {
         } catch (InitializationException ok) {
             assertEquals("Invalid picocli annotation on interface field", ok.getMessage());
         }
+    }
+
+    @Test
+    public void testPopulateSpec() {
+        Objects objects = CommandLine.populateSpec(Objects.class, "-b -y1 -s2 -i3 -l4 -f5 -d6 -bigint=7 -string abc -list a -list b -map 1=2.0 -set 33 -set 22".split(" "));
+        assertTrue(objects.aBoolean());
+        assertEquals(Byte.valueOf((byte) 1), objects.aByte());
+        assertEquals(Short.valueOf((short) 2), objects.aShort());
+        assertEquals(Integer.valueOf(3), objects.anInt());
+        assertEquals(Long.valueOf(4), objects.aLong());
+        assertEquals(5f, objects.aFloat(), 0.0001);
+        assertEquals(6d, objects.aDouble(), 0.0001);
+        assertEquals(BigInteger.valueOf(7), objects.aBigInteger());
+        assertEquals("abc", objects.aString());
+        assertEquals(Arrays.asList("a", "b"), objects.getList());
+        Map<Integer, Double> map = new HashMap<Integer, Double>();
+        map.put(1, 2.0);
+        assertEquals(map, objects.getMap());
+        Set<Short> set = new TreeSet<Short>();
+        set.add((short) 22);
+        set.add((short) 33);
+        assertEquals(set, objects.getSortedSet());
     }
 }

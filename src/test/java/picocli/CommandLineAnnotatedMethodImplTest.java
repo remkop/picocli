@@ -83,10 +83,10 @@ public class CommandLineAnnotatedMethodImplTest {
         @Option(names = "-string") void setString(String val) { aString = val; }
         @Option(names = "-list")   void setList(List<String> val) { aList = val; }
 
-        @Option(names = "-map", type = {Integer.class, Double.class})
+        @Option(names = "-map")
         void setMap(Map<Integer, Double> val) { aMap = val; }
 
-        @Option(names = "-set", type = Short.class)
+        @Option(names = "-set")
         void setSortedSet(SortedSet<Short> val) { aSet = val; }
     }
 

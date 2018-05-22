@@ -514,6 +514,34 @@ public class CommandLine {
         return command;
     }
 
+    /**
+     * <p>
+     * Convenience method that derives the command specification from the specified interface class, and returns an
+     * instance of the specified interface. The interface is expected to have annotated getter methods. Picocli will
+     * instantiate the interface and the getter methods will return the option and positional parameter values matched on the command line.
+     * </p><p>
+     * This is equivalent to
+     * </p><pre>
+     * CommandLine cli = new CommandLine(spec);
+     * cli.parse(args);
+     * return cli.getCommand();
+     * </pre>
+     *
+     * @param spec the interface that defines the command specification. This object contains getter methods annotated with
+     *          {@code @Option} or {@code @Parameters}.
+     * @param args the command line arguments to parse
+     * @param <T> the type of the annotated object
+     * @return an instance of the specified annotated interface
+     * @throws InitializationException if the specified command object does not have a {@link Command}, {@link Option} or {@link Parameters} annotation
+     * @throws ParameterException if the specified command line arguments are invalid
+     * @since 3.1
+     */
+    public static <T> T populateSpec(Class<T> spec, String... args) {
+        CommandLine cli = toCommandLine(spec, new DefaultFactory());
+        cli.parse(args);
+        return cli.getCommand();
+    }
+
     /** Parses the specified command line arguments and returns a list of {@code CommandLine} objects representing the
      * top-level command and any subcommands (if any) that were recognized and initialized during the parsing process.
      * <p>
