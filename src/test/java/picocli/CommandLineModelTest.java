@@ -1572,4 +1572,24 @@ public class CommandLineModelTest {
         assertEquals(null, values.get(0));
         assertEquals("2", values.get(1));
     }
+
+    @Test
+    public void test381_NPE_whenAddingSubcommand() {
+        CommandSpec toplevel = CommandSpec.create();
+        toplevel.addOption(OptionSpec.builder("-o").description("o option").build());
+
+        CommandSpec sub = CommandSpec.create();
+        sub.addOption(OptionSpec.builder("-x").description("x option").build());
+
+        CommandLine commandLine = new CommandLine(toplevel);
+        commandLine.addSubcommand("sub", sub); // NPE here
+        commandLine.usage(System.out);
+
+        String expected = String.format("" +
+                "Usage: <main class> [-o] [COMMAND]%n" +
+                "  -o     o option%n" +
+                "Commands:%n" +
+                "  sub%n");
+        assertEquals(expected, systemOutRule.getLog());
+    }
 }

@@ -1,5 +1,37 @@
 # picocli Release Notes
 
+# <a name="3.0.2"></a> Picocli 3.0.2
+The picocli community is pleased to announce picocli 3.0.2.
+
+This release fixes a bug for programmatic configuration.
+
+This is the thirty-first public release.
+Picocli follows [semantic versioning](http://semver.org/).
+
+## <a name="3.0.2"></a> Table of Contents
+* [New and noteworthy](#3.0.2-new)
+* [Promoted features](#3.0.2-promoted)
+* [Fixed issues](#3.0.2-fixes)
+* [Deprecations](#3.0.2-deprecated)
+* [Potential breaking changes](#3.0.2-breaking-changes)
+
+## <a name="3.0.2-new"></a> New and Noteworthy
+
+## <a name="3.0.2-promoted"></a> Promoted Features
+Promoted features are features that were incubating in previous versions of picocli but are now supported and subject to backwards compatibility. 
+
+No features have been promoted in this picocli release.
+
+## <a name="3.0.2-fixes"></a> Fixed issues
+- [#381] Bugfix: Prevent NPE when adding programmatically created subcommands to CommandLine. Thanks to [Mikusch](https://github.com/Mikusch) for the bug report.
+
+## <a name="3.0.2-deprecated"></a> Deprecations
+No features were deprecated in this release.
+
+## <a name="3.0.2-breaking-changes"></a> Potential breaking changes
+This release has no breaking changes.
+
+
 # <a name="3.0.1"></a> Picocli 3.0.1
 The picocli community is pleased to announce picocli 3.0.1.
 

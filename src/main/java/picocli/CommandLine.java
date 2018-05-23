@@ -4171,6 +4171,7 @@ public class CommandLine {
                 }
             }
             static void initParentCommand(Object subcommand, Object parent) {
+                if (subcommand == null) { return; }
                 try {
                     Class<?> cls = subcommand.getClass();
                     while (cls != null) {
