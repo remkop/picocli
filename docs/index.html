@@ -513,8 +513,8 @@ table.CodeRay td.code>pre{padding:0}
 <div id="header">
 <h1>picocli - a mighty tiny command line interface</h1>
 <div class="details">
-<span id="revnumber">version 3.0.1,</span>
-<span id="revdate">2018-05-15</span>
+<span id="revnumber">version 3.0.2,</span>
+<span id="revdate">2018-05-23</span>
 </div>
 <div id="toc" class="toc2">
 <div id="toctitle">Features</div>
@@ -4185,7 +4185,7 @@ The script body is executed if the user input was valid and did not request usag
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="CodeRay highlight"><code data-lang="groovy"><span class="annotation">@Grab</span>(<span class="string"><span class="delimiter">'</span><span class="content">info.picocli:picocli:3.0.1</span><span class="delimiter">'</span></span>)
+<pre class="CodeRay highlight"><code data-lang="groovy"><span class="annotation">@Grab</span>(<span class="string"><span class="delimiter">'</span><span class="content">info.picocli:picocli:3.0.2</span><span class="delimiter">'</span></span>)
 <span class="annotation">@Command</span>(name = <span class="string"><span class="delimiter">&quot;</span><span class="content">myScript</span><span class="delimiter">&quot;</span></span>,
         mixinStandardHelpOptions = <span class="predefined-constant">true</span>, <span class="comment">// add --help and --version options</span>
         description = <span class="string"><span class="delimiter">&quot;</span><span class="content">@|bold Groovy script|@ @|underline picocli|@ example</span><span class="delimiter">&quot;</span></span>)
@@ -4220,7 +4220,7 @@ When using a Groovy version older than 2.4.7, use this workaround for the <a hre
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="CodeRay highlight"><code data-lang="groovy"><span class="annotation">@Grab</span>(<span class="string"><span class="delimiter">'</span><span class="content">info.picocli:picocli:3.0.1</span><span class="delimiter">'</span></span>)
+<pre class="CodeRay highlight"><code data-lang="groovy"><span class="annotation">@Grab</span>(<span class="string"><span class="delimiter">'</span><span class="content">info.picocli:picocli:3.0.2</span><span class="delimiter">'</span></span>)
 <span class="annotation">@GrabExclude</span>(<span class="string"><span class="delimiter">'</span><span class="content">org.codehaus.groovy:groovy-all</span><span class="delimiter">'</span></span>) <span class="comment">// work around GROOVY-7613</span>
 ...</code></pre>
 </div>
@@ -4362,7 +4362,7 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
 <h3 id="_gradle">23.1. Gradle</h3>
 <div class="listingblock">
 <div class="content">
-<pre>compile 'info.picocli:picocli:3.0.1'</pre>
+<pre>compile 'info.picocli:picocli:3.0.2'</pre>
 </div>
 </div>
 </div>
@@ -4373,7 +4373,7 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
 <pre>&lt;dependency&gt;
   &lt;groupId&gt;info.picocli&lt;/groupId&gt;
   &lt;artifactId&gt;picocli&lt;/artifactId&gt;
-  &lt;version&gt;3.0.1&lt;/version&gt;
+  &lt;version&gt;3.0.2&lt;/version&gt;
 &lt;/dependency&gt;</pre>
 </div>
 </div>
@@ -4382,7 +4382,7 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
 <h3 id="_scala_sbt">23.3. Scala SBT</h3>
 <div class="listingblock">
 <div class="content">
-<pre>libraryDependencies += "info.picocli" % "picocli" % "3.0.1"</pre>
+<pre>libraryDependencies += "info.picocli" % "picocli" % "3.0.2"</pre>
 </div>
 </div>
 </div>
@@ -4390,7 +4390,7 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
 <h3 id="_ivy">23.4. Ivy</h3>
 <div class="listingblock">
 <div class="content">
-<pre>&lt;dependency org="info.picocli" name="picocli" rev="3.0.1" /&gt;</pre>
+<pre>&lt;dependency org="info.picocli" name="picocli" rev="3.0.2" /&gt;</pre>
 </div>
 </div>
 </div>
@@ -4510,7 +4510,7 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
  */</span>
 <span class="directive">public</span> <span class="type">class</span> <span class="class">CommandLine</span> {
     <span class="comment">/** This is picocli version {@value}. */</span>
-    <span class="directive">public</span> <span class="directive">static</span> <span class="directive">final</span> <span class="predefined-type">String</span> VERSION = <span class="string"><span class="delimiter">&quot;</span><span class="content">3.0.1</span><span class="delimiter">&quot;</span></span>;
+    <span class="directive">public</span> <span class="directive">static</span> <span class="directive">final</span> <span class="predefined-type">String</span> VERSION = <span class="string"><span class="delimiter">&quot;</span><span class="content">3.0.2</span><span class="delimiter">&quot;</span></span>;
 
     <span class="directive">private</span> <span class="directive">final</span> Tracer tracer = <span class="keyword">new</span> Tracer();
     <span class="directive">private</span> <span class="directive">final</span> CommandSpec commandSpec;
@@ -7193,6 +7193,7 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
              * @return this {@code CommandSpec} object for method chaining */</span>
             <span class="directive">public</span> CommandSpec addSubcommand(<span class="predefined-type">String</span> name, CommandLine commandLine) {
                 commands.put(name, commandLine);
+                <span class="keyword">if</span> (commandLine.getCommandSpec().name == <span class="predefined-constant">null</span>) { commandLine.getCommandSpec().name(name); }
                 commandLine.getCommandSpec().parent(<span class="local-variable">this</span>);
                 <span class="keyword">return</span> <span class="local-variable">this</span>;
             }
@@ -8571,6 +8572,7 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
                 }
             }
             <span class="directive">static</span> <span class="type">void</span> initParentCommand(<span class="predefined-type">Object</span> subcommand, <span class="predefined-type">Object</span> parent) {
+                <span class="keyword">if</span> (subcommand == <span class="predefined-constant">null</span>) { <span class="keyword">return</span>; }
                 <span class="keyword">try</span> {
                     <span class="predefined-type">Class</span>&lt;?&gt; cls = subcommand.getClass();
                     <span class="keyword">while</span> (cls != <span class="predefined-constant">null</span>) {
@@ -12355,8 +12357,8 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
 </div>
 <div id="footer">
 <div id="footer-text">
-Version 3.0.1<br>
-Last updated 2018-05-15 00:48:50 JST
+Version 3.0.2<br>
+Last updated 2018-05-23 20:45:53 JST
 </div>
 </div>
 </body>
