@@ -1592,4 +1592,54 @@ public class CommandLineModelTest {
                 "  sub%n");
         assertEquals(expected, systemOutRule.getLog());
     }
+
+    @Test
+    public void testSubcommandNameIsInitializedWhenAddedToParent() {
+        CommandSpec toplevel = CommandSpec.create();
+        toplevel.addOption(OptionSpec.builder("-o").description("o option").build());
+
+        CommandSpec sub = CommandSpec.create();
+        sub.addOption(OptionSpec.builder("-x").description("x option").build());
+
+        CommandLine commandLine = new CommandLine(toplevel);
+        CommandLine subCommandLine = new CommandLine(sub);
+        assertEquals("<main class>", sub.name());
+        assertEquals("<main class>", subCommandLine.getCommandName());
+
+        commandLine.addSubcommand("sub", subCommandLine);
+        assertEquals("sub", sub.name());
+        assertEquals("sub", subCommandLine.getCommandName());
+
+        subCommandLine.usage(System.out);
+
+        String expected = String.format("" +
+                "Usage: <main class> sub [-x]%n" +
+                "  -x     x option%n");
+        assertEquals(expected, systemOutRule.getLog());
+    }
+
+    @Test
+    public void testSubcommandNameNotOverwrittenWhenAddedToParent() {
+        CommandSpec toplevel = CommandSpec.create();
+        toplevel.addOption(OptionSpec.builder("-o").description("o option").build());
+
+        CommandSpec sub = CommandSpec.create().name("SOMECOMMAND");
+        sub.addOption(OptionSpec.builder("-x").description("x option").build());
+
+        CommandLine commandLine = new CommandLine(toplevel);
+        CommandLine subCommandLine = new CommandLine(sub);
+        assertEquals("SOMECOMMAND", sub.name());
+        assertEquals("SOMECOMMAND", subCommandLine.getCommandName());
+
+        commandLine.addSubcommand("sub", subCommandLine);
+        assertEquals("SOMECOMMAND", sub.name());
+        assertEquals("SOMECOMMAND", subCommandLine.getCommandName());
+
+        subCommandLine.usage(System.out);
+
+        String expected = String.format("" +
+                "Usage: <main class> SOMECOMMAND [-x]%n" +
+                "  -x     x option%n");
+        assertEquals(expected, systemOutRule.getLog());
+    }
 }

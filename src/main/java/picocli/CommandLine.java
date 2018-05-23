@@ -2793,6 +2793,7 @@ public class CommandLine {
              * @return this {@code CommandSpec} object for method chaining */
             public CommandSpec addSubcommand(String name, CommandLine commandLine) {
                 commands.put(name, commandLine);
+                if (commandLine.getCommandSpec().name == null) { commandLine.getCommandSpec().name(name); }
                 commandLine.getCommandSpec().parent(this);
                 return this;
             }
