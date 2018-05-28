@@ -1605,7 +1605,10 @@ On Windows, when picocli detects it is running under a Unix variant like Cygwin 
  it will display ANSI colors and styles, otherwise it will not emit ANSI codes.
 
 ==== Windows
-Starting from Windows 10 the Windows console https://msdn.microsoft.com/en-us/library/windows/desktop/mt638032(v=vs.85).aspx[supports ANSI escape sequences], but http://www.nivot.org/blog/post/2016/02/04/Windows-10-TH2-(v1511)-Console-Host-Enhancements[they may need to be enabled].
+Starting from Windows 10 the Windows console https://msdn.microsoft.com/en-us/library/windows/desktop/mt638032(v=vs.85).aspx[supports ANSI escape sequences],
+but https://github.com/Microsoft/WSL/issues/1173#issuecomment-254250445[it's not enabled by default].
+Unless the specific software you're using (e.g. java) enables ANSI processing by calling the https://docs.microsoft.com/en-us/windows/console/setconsolemode[SetConsoleMode] API with the `ENABLE_VIRTUAL_TERMINAL_PROCESSING` (`0x0400`) flag (java doesn't), you won't see colors or get ANSI processing for that application.
+Note that there is a registry setting to https://superuser.com/questions/413073/windows-console-with-ansi-colors-handling/1300251#1300251[change the global default] from _opt in_ to _opt out_.
 
 For Windows version below 10, the Windows command console doesn't support output coloring by default. One option is to install either http://cmder.net/[Cmder], http://sourceforge.net/projects/conemu/[ConEmu], https://github.com/adoxa/ansicon/[ANSICON] or https://mintty.github.io/[Mintty] (used by default in GitBash and Cygwin) to add coloring support to their Windows command console.
 
