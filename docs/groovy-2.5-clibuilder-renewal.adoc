@@ -1,0 +1,522 @@
+= Groovy 2.5 CliBuilder Renewal
+//:author: Remko Popma
+//:email: rpopma@apache.org
+//:revnumber: picocli 3.0.2, Groovy 2.5
+:revdate: 2018-05-30
+//:toc: left
+//:numbered:
+//:toclevels: 2
+:source-highlighter: coderay
+:icons: font
+:imagesdir: images
+
+The `CliBuilder` class for quickly and concisely building command line applications has been renewed in Apache Groovy 2.5.
+This article highlights what is new.
+
+image::CliBuilder2.5-cygwin.png[]
+
+== The `groovy.util.CliBuilder` Class is Deprecated
+Previous versions of CliBuilder used Apache https://commons.apache.org/proper/commons-cli/index.html[Commons CLI] as the underlying parser library.
+From Groovy 2.5, there is an alternative version of CliBuilder based on the https://github.com/remkop/picocli[picocli] parser.
+
+It is recommended that applications explicitly import either `groovy.cli.picocli.CliBuilder` or `groovy.cli.commons.CliBuilder`. The `groovy.util.CliBuilder` class is deprecated and delegates to the Commons CLI version for backwards compatibility.
+
+New features will likely only be added to the picocli version, and `groovy.util.CliBuilder` may be removed in a future version of Groovy.
+The Commons CLI version is intended for applications that rely on the internals of the Commons CLI implementation of CliBuilder and cannot easily migrate to the picocli version.
+
+Next, let's look at some new features in Groovy 2.5 CliBuilder.
+
+== Typed Options
+
+image::Type.jpg[Type]
+
+Options can be boolean flags or they can take one or more option parameters.
+In previous versions of CliBuilder, you would have to specify `args: 1` for options that need a parameter, or
+`args: '+'` for options that accept multiple parameters.
+
+This version of CliBuilder adds support for typed options. This is convenient when processing parse results,
+but additionally, the number of arguments is inferred from the type,
+so if the `type` is specified, `args` can be omitted.
+
+For example:
+
+[source,groovy]
+----
+def cli = new CliBuilder()
+cli.a(type: String, 'a-arg')
+cli.b(type: boolean, 'b-arg')
+cli.c(type: Boolean, 'c-arg')
+cli.d(type: int, 'd-arg')
+cli.e(type: Long, 'e-arg')
+cli.f(type: Float, 'f-arg')
+cli.g(type: BigDecimal, 'g-arg')
+cli.h(type: File, 'h-arg')
+cli.i(type: RoundingMode, 'i-arg')
+
+def argz = '''-a John -b -d 21 -e 1980 -f 3.5 -g 3.14159
+    -h cv.txt -i DOWN and some more'''.split()
+
+def options = cli.parse(argz)
+assert options.a == 'John'
+assert options.b
+assert !options.c
+assert options.d == 21
+assert options.e == 1980L
+assert options.f == 3.5f
+assert options.g == 3.14159
+assert options.h == new File('cv.txt')
+assert options.i == RoundingMode.DOWN
+assert options.arguments() == ['and', 'some', 'more']
+----
+
+=== Supported Types
+The Commons CLI-based CliBuilder supports primitives, numeric types, files, enums and arrays thereof
+(using http://docs.groovy-lang.org/2.5.0-SNAPSHOT/html/gapi/index.html?org/codehaus/groovy/runtime/StringGroovyMethods.html#asType[StringGroovyMethods#asType(String, Class)]).
+The picocli-based CliBuilder supports those http://picocli.info/#_built_in_types[and more].
+
+=== Adding More Types
+If the built-in types don't meet your needs, it is easy to register a custom converter. Specify a `convert` Closure to convert the String argument to any other type. For example:
+
+[source,groovy]
+----
+import java.nio.file.Paths
+import java.time.LocalTime
+
+def cli = new CliBuilder()
+cli.a(convert: { it.toUpperCase() }, 'a-arg')    // <1>
+cli.p(convert: { Paths.get(it) }, 'p-arg')       // <2>
+cli.t(convert: { LocalTime.parse(it) }, 't-arg') // <3>
+
+def options = cli.parse('-a abc -p /usr/home -t 15:31:59'.split())
+assert options.a == 'ABC'
+assert options.p.absolute && options.p.parent == Paths.get('/usr')
+assert options.t.hour == 15 && options.t.minute == 31
+----
+<1> Convert one String to another
+<2> Option value is converted to a `java.nio.file.Path`
+<3> Option value is converted to a `java.time.LocalTime`
+
+== Annotations
+
+image::a-annotations.png[Annotations]
+
+From this release, Groovy offers an annotation API for processing command line arguments.
+
+Applications can annotate fields or methods with `@groovy.cli.Option` for named options
+or `@groovy.cli.Unparsed` for positional parameters.
+When the parser matches a command line argument with an option name or positional parameter, the value is converted
+to the correct type and injected into the field or method.
+
+=== Annotating Methods of an Interface
+One way to use the annotations is on "getter-like" methods (methods that return a value) of an interface. For example:
+[source,groovy]
+----
+import groovy.cli.*
+
+interface IHello {
+    @Option(shortName='h', description='display usage') Boolean help()   <1>
+    @Option(shortName='u', description='user name')     String user()    <2>
+    @Unparsed(description = 'positional parameters')    List remaining() <3>
+}
+----
+<1> Method returns `true` if `-h` or `--help` was specified on the command line.
+<2> Method returns the parameter value that was specified for the `-u` or `--user` option.
+<3> Any remaining parameters will be returned as a list from this method.
+
+How to use this interface (using the picocli version to demonstrate its usage help):
+[source,groovy]
+----
+import groovy.cli.picocli.CliBuilder
+
+def cli = new CliBuilder(name: 'groovy Greeter')
+def argz = '--user abc'.split()
+IHello hello = cli.parseFromSpec(IHello, argz)
+assert hello.user() == 'abc'
+
+hello = cli.parseFromSpec(GreeterI, ['--help', 'Some', 'Other', 'Args'] as String[])
+assert hello.help()
+cli.usage()
+assert hello.remaining() == ['Some', 'Other', 'Args']
+----
+This prints the following usage help message:
+[source]
+----
+Usage: groovy Greeter [-h] [-u=<user>] [<remaining>...]
+      [<remaining>...]   positional parameters
+  -u, --user=<user>      user name
+  -h, --help             display usage
+----
+When `parseFromSpec` is called, `CliBuilder` reads the annotations, parses the command line arguments
+and returns an instance of the interface.
+The interface methods return the option values matched on the command line.
+
+
+=== Annotating Properties or Setter Methods of a Class
+Another way to use the annotations is on the properties or "setter-like" methods (`void` methods with a single parameter) of a class. For example:
+[source,groovy]
+----
+class Hello {
+    @Option(shortName='h', description='display usage') // <1>
+    Boolean help
+
+    private String user
+    @Option(shortName='u', description='user name')     // <2>
+    void setUser(String user) {
+        this.user = user
+    }
+    String getUser() { user }
+
+    @Unparsed(description = 'positional parameters')    // <3>
+    List remaining
+}
+----
+<1> The `help` Boolean property is set to `true` if `-h` or `--help` was specified on the command line.
+<2> The `setUser` property setter method is invoked with the `-u` or `--user` option parameter value.
+<3> The `remaining` property is set to a new `List` containing the remaining args, if any.
+
+The annotated class can be used as follows:
+[source,groovy]
+----
+String[] argz = ['--user', 'abc', 'foo']
+
+def cli = new CliBuilder(usage: 'groovy Greeter [option]') // <1>
+Hello greeter = cli.parseFromInstance(new Hello(), argz)   // <2>
+assert greeter.user == 'abc'                               // <3>
+assert greeter.remaining == ['foo']                        // <4>
+----
+<1> Create a `CliBuilder` instance.
+<2> Extract options from the annotated instance, parse arguments, and populate and return the supplied instance.
+<3> Verify that the String option value has been assigned to the property.
+<4> Verify the remaining arguments property.
+
+When `parseFromInstance` is called, `CliBuilder` again reads the annotations, parses the command line
+arguments and finally returns the instance. The annotated fields and setter methods are initialized with the values
+matched for the associated option.
+
+
+=== Script Annotations
+image::GroovyScriptAnnotations.png[Script]
+
+Groovy 2.5 also offers new annotations for Groovy scripts.
+
+`@OptionField` is equivalent to combining `@groovy.transform.Field` and `@Option`, whereas `@UnparsedField` is equivalent to combining `@Field` and `@Unparsed`.
+
+Use these annotations to turn script variables into fields so that the variables can be populated by CliBuilder. For example:
+
+[source,groovy]
+----
+import groovy.cli.OptionField
+import groovy.cli.UnparsedField
+
+@OptionField String user
+@OptionField Boolean help
+@UnparsedField List remaining
+
+String[] argz = ['--user', 'abc', 'foo']
+
+new CliBuilder().parseFromInstance(this, argz)
+assert user == 'abc'
+assert remaining == ['foo']
+----
+
+== Typed Positional Parameters
+This version of CliBuilder offers some limited support for strongly typed positional parameters.
+
+If all positional parameters have the same type, the `@Unparsed` annotation can be used with an array type other than `String[]`.
+Again, the type conversion is done using http://docs.groovy-lang.org/2.5.0-SNAPSHOT/html/gapi/index.html?org/codehaus/groovy/runtime/StringGroovyMethods.html#asType[StringGroovyMethods#asType(String, Class)]
+in the Commons CLI version, while the picocli version of CliBuilder supports a http://picocli.info/#_built_in_types[superset] of those types.
+
+This functionality is only available for the annotations API, not for the dynamic API.
+Here is an example of an interface that can capture strongly typed positional parameters:
+
+[source,groovy]
+----
+interface TypedPositionals {
+    @Unparsed Integer[] nums()
+}
+----
+
+The code below demonstrates the type conversion:
+[source,groovy]
+----
+def argz = '12 34 56'.split()
+def cli = new CliBuilder()
+def options = cli.parseFromSpec(TypedPositionals, argz)
+assert options.nums() == [12, 34, 56]
+----
+
+
+== Apache Commons CLI Features
+
+image::FeatureIconAdvancedOptions.png[]
+
+Sometimes you may want to use advanced features of the underlying parsing library.
+For example, you may have a command line application with mutually exclusive options.
+The below code shows how to achieve this using the Apache Commons CLI `OptionGroup` API:
+
+[source,groovy]
+----
+import groovy.cli.commons.CliBuilder
+import org.apache.commons.cli.*
+
+def cli = new CliBuilder()
+def optionGroup = new OptionGroup()
+optionGroup.with {
+  addOption cli.option('s', [longOpt: 'silent'], 's option')
+  addOption cli.option('v', [longOpt: 'verbose'], 'v option')
+}
+cli.options.addOptionGroup optionGroup
+
+assert !cli.parse('--silent --verbose'.split()) <1>
+----
+<1> Parsing this input will fail because two mutually exclusive options were specified.
+
+== Picocli CliBuilder Features
+
+image::FeatureIconAdvancedOptions.png[]
+
+=== Strongly Typed Lists
+Options with multiple values often use an array or a List to capture the values.
+Arrays can be strongly typed, that is, contain elements other than String.
+The picocli version of CliBuilder lets you do the same with Lists.
+The `auxiliaryType` specifies the type that the elements should be converted to.
+For example:
+
+[source,groovy]
+----
+import groovy.cli.picocli.CliBuilder
+
+def cli = new CliBuilder()
+cli.T(type: List, auxiliaryTypes: Long, 'typed list')  // <1>
+
+def options = cli.parse('-T 1 -T 2 -T 3'.split())      // <2>
+assert options.Ts == [ 1L, 2L, 3L ]                    // <3>
+----
+<1> Define an option that can have multiple integer values.
+<2> An example command line.
+<3> The option values as a `List<Integer>`.
+
+=== Strongly Typed Maps
+The picocli version of CliBuilder offers native support for Map options.
+This is as simple as specifying Map as the option type.
+By default, both keys and values are stored as Strings in the Map,
+but it’s possible to use `auxiliaryType` to specify the types that the keys and values should be converted to.
+
+[source,groovy]
+----
+import groovy.cli.picocli.CliBuilder
+
+def cli = new CliBuilder()
+cli.D(args: 2,   valueSeparator: '=', 'Commons CLI style map')                 // <1>
+cli.X(type: Map, 'picocli style map support')                                  // <2>
+cli.Z(type: Map, auxiliaryTypes: [TimeUnit, Integer].toArray(), 'typed map')   // <3>
+
+def options = cli.parse('-Da=b -Dc=d -Xx=y -Xi=j -ZDAYS=2 -ZHOURS=23'.split()) // <4>
+assert options.Ds == ['a', 'b', 'c', 'd']                                      // <5>
+assert options.Xs == [ 'x':'y', 'i':'j' ]                                      // <6>
+assert options.Zs == [ (DAYS as TimeUnit):2, (HOURS as TimeUnit):23 ]          // <7>
+----
+<1> Commons CLI has map-like options by specifying that each option must have two parameters, with some separator.
+<2> The picocli version of CliBuilder has native support for Map options.
+<3> The key type and value type can be specified for strongly-typed maps.
+<4> An example command line.
+<5> The Commons CLI style option gives a list of [key, value, key, value, ...] objects.
+<6> The picocli style option gives the result as a `Map<String, String>`.
+<7> When `auxiliaryTypes` are specified, the keys and values of the map are converted to the specified types, giving you a `Map<TimeUnit, Integer>`.
+
+=== Usage Help with Detailed Synopsis
+CliBuilder has always supported a `usage` property to display the usage help synopsis of a command:
+[source,groovy]
+----
+// the old way
+new CliBuilder(usage: 'myapp [options]').usage()
+----
+The above program prints:
+----
+Usage: myapp [options]
+----
+
+This still works, but the picocli version has a better alternative with the `name` property.
+If you specify `name` instead of `usage`, picocli will show all options in a succinct synopsis with square brackets `[` and `]` for optional elements and ellipsis `...` for elements that can be repeated one or more times. For example:
+[source,groovy]
+----
+def cli = new CliBuilder(name: 'myapp') // detailed synopsis
+cli.a('option a description')
+cli.b('option b description')
+cli.c(type: List, 'option c description')
+cli.usage()
+----
+The above program prints:
+----
+Usage: myapp [-ab] [-c=PARAM]...
+the new way
+  -a           option a description
+  -b           option b description
+  -c= PARAM    option c description
+----
+
+
+=== Use Any Option Names
+Before, if an option had multiple names with a single hyphen, you had no choice but to declare the option multiple times:
+[source,groovy]
+----
+// before: split -cp, -classpath into two options
+def cli = new CliBuilder(usage: 'groovyConsole [options] [filename]')
+cli.classpath('Where to find the class files')
+cli.cp(longOpt: 'classpath', 'Aliases for '-classpath')
+----
+
+The picocli version of CliBuilder supports a `names` property that can have any number of option names that can take any prefix. For example:
+[source,groovy]
+----
+// after: an option can have many names with any prefix
+def cli = new CliBuilder(usage: 'groovyConsole [options] [filename]')
+cli._(names: ['-cp', '-classpath', '--classpath'], 'Where to find the class files')
+----
+
+
+=== Fine-grained Usage Help Message
+Picocli offers fine-grained control over the usage help message format and this functionality is exposed via the `usageMessage` CliBuilder property.
+
+The usage message has a number of sections: header, synopsis, description, parameters, options and finally the footer. Each section has a heading, that precedes the first line of its section. For example:
+
+[source,groovy]
+----
+import groovy.cli.picocli.CliBuilder
+
+def cli = new CliBuilder()
+cli.name = "groovy clidemo"
+cli.usageMessage.with {                // <1>
+    headerHeading("Header heading:%n") // <2>
+    header("header 1", "header 2")     // <3>
+    synopsisHeading("%nUSAGE: ")
+    descriptionHeading("%nDescription heading:%n")
+    description("description 1", "description 2")
+    optionListHeading("%nOPTIONS:%n")
+    footerHeading("%nFooter heading:%n")
+    footer("footer 1", "footer 2")
+}
+cli.a(longOpt: 'aaa', 'a-arg')         // <4>
+cli.b(longOpt: 'bbb', 'b-arg')
+cli.usage()
+----
+<1> Use the `usageMessage` CliBuilder property to customize the usage help message.
+<2> Headings can contain string format specifiers like the `%n` newline.
+<3> Sections are multi-line: each string will be rendered on a separate line.
+<4> Define some options.
+
+This prints the following output:
+----
+Header heading:
+header 1
+header 2
+
+USAGE: groovy clidemo [-ab]
+
+Description heading:
+description 1
+description 2
+
+OPTIONS:
+  -a, --aaa    a-arg
+  -b, --bbb    b-arg
+
+Footer heading:
+footer 1
+footer 2
+----
+
+
+=== Usage Help with ANSI Colors
+Out of the box, the command name, option names and parameter labels in the usage help message are rendered with http://picocli.info/#_ansi_colors_and_styles[ANSI styles and colors].
+The color scheme for these elements can be http://picocli.info/#_configuring_fixed_elements[configured] with system properties.
+
+Other than that, you can use colors and styles in the descriptions and other sections of the usage help message,
+using a http://picocli.info/#_usage_help_with_styles_and_colors[simple markup notation]. The example below demonstrates:
+
+[source,groovy]
+----
+def cli = new groovy.cli.picocli.CliBuilder(name: 'myapp')
+cli.usageMessage.with {
+    headerHeading("@|bold,red,underline Header heading|@:%n")
+    header($/@|bold,green \
+  ___ _ _ ___      _ _    _
+ / __| (_) _ )_  _(_) |__| |___ _ _
+| (__| | | _ \ || | | / _` / -_) '_|
+ \___|_|_|___/\_,_|_|_\__,_\___|_|
+|@/$)
+    synopsisHeading("@|bold,underline Usage|@: ")
+    descriptionHeading("%n@|bold,underline Description heading|@:%n")
+    description("Description 1", "Description 2")      // after the synopsis
+    optionListHeading("%n@|bold,underline Options heading|@:%n")
+    footerHeading("%n@|bold,underline Footer heading|@:%n")
+    footer($/@|bold,blue \
+   ___                         ___   ___
+  / __|_ _ ___  _____ ___  _  |_  ) | __|
+ | (_ | '_/ _ \/ _ \ V / || |  / / _|__ \
+  \___|_| \___/\___/\_/ \_, | /___(_)___/
+                        |__/             |@/$)
+}
+cli.a('option a description')
+cli.b('option b description')
+cli.c(type: List, 'option c description')
+cli.usage()
+----
+The code above gives the following output:
+
+image::CliBuilder2.5-cygwin.png[]
+
+(Credit to http://patorjk.com/software/taag/[http://patorjk.com/software/taag/] for the ASCII art.)
+
+=== New `errorWriter` Property
+When the user provided invalid input, the picocli version of CliBuilder writes an error message and the usage help message to the new `errorWriter` property (set to `System.err` by default).
+When the user requests help, and the application calls `CliBuilder.usage()`, the usage help message is printed to the `writer` property (`System.out` by default).
+
+Previous versions of CliBuilder used the `writer` property for both invalid input and user-requested help.
+
+Why this change? This helps command line application authors to follow standard practice and separate diagnostic output from the program output: If the output of a Groovy program is piped to another program,
+sending error messages to STDERR prevents the downstream program from inadvertently trying to parse error output.
+On the other hand, when users request help with `--help` or `--version`, the output should be sent to STDOUT,
+because the user may want to pipe the output to a utility like `less` or `grep`.
+
+For backwards compatibility, setting the `writer` property to another value will also set the `errorWriter` to the same value.
+(You can still set the `errorWriter` to another value afterwards if desired.)
+
+
+== Gotchas/Incompatibilities
+
+image:incompatible.jpg[]
+
+There are a few areas where the new versions of `CliBuilder` are not compatible with previous versions or with each other.
+
+=== Properties `options` and `formatter` Unavailable in Picocli Version
+The Commons CLI version of CliBuilder, and previous versions of CliBuilder, expose an `options` property of type `org.apache.commons.cli.Options`, that can be used to configure the underlying Commons CLI parser without going through the CliBuilder API. This property is not available in the picocli version of CliBuilder.
+Applications that read or write this property must import `groovy.cli.commons.CliBuilder`
+or modify the application.
+
+Additionally, the `formatter` property of type `org.apache.commons.cli.HelpFormatter` is not available in the picocli version of CliBuilder. If your application uses this property, consider using the `usageMessage` property instead, or import `groovy.cli.commons.CliBuilder`.
+
+
+=== Property `parser` Differs in Picocli and Commons CLI Versions
+The picocli version of CliBuilder has a `parser` property that exposes a `picocli.CommandLine.Model.ParserSpec` object
+that can be used to configure the parser behavior.
+
+The Commons CLI version of CliBuilder, and previous versions of CliBuilder, expose a `parser` property of type `org.apache.commons.cli.CommandLineParser`. This functionality is not available in the picocli version of CliBuilder.
+
+If your application uses the `parser` property to set a different Commons CLI parser, consider using the `posix` property instead, or import `groovy.cli.commons.CliBuilder`.
+
+=== Different Parser Behavior for `longOption`
+The Commons CLI `DefaultParser` recognizes `longOption` option names prefixed with a single hypen (e.g., `-option`)
+as well as options prefixed with a double hyphen (e.g., `--option`).
+This is not always obvious since the usage help message only shows the double hyphen prefix for `longOption` option names.
+
+For backwards compatibility, the picocli version of CliBuilder has an `acceptLongOptionsWithSingleHyphen` property:
+set this property to `true` if the parser should recognize long option names with both
+a single hyphen and a double hyphen prefix. The default is `false`,
+so only long option names with a double hypen prefix (`--option`) are recognized.
+
+== Conclusion
+Groovy 2.5 CliBuilder offers a host of exciting new features. Try it out and let us know what you think!
+
+For reference: Groovy http://groovy-lang.org/[site] and GitHub https://github.com/apache/groovy/[project],
+picocli http://picocli.info/[site] and GitHub https://github.com/remkop/picocli[project].
