@@ -364,7 +364,7 @@ the new way
 
 
 === Use Any Option Names
-image::freedom-(c)-PsychoShadow-www.bigstockphoto.com.jpg[]
+image::http://picocli.info/images/freedom-c-PsychoShadow-www.bigstockphoto.com.jpg[]
 _Image credit: (c) PsychoShadow - www.bigstockphoto.com_
 
 Before, if an option had multiple names with a single hyphen, you had no choice but to declare the option multiple times:
