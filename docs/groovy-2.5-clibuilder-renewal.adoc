@@ -13,7 +13,7 @@
 The `CliBuilder` class for quickly and concisely building command line applications has been renewed in Apache Groovy 2.5.
 This article highlights what is new.
 
-image::CliBuilder2.5-cygwin.png[]
+image::http://picocli.info/images/CliBuilder2.5-cygwin.png[]
 
 == The `groovy.util.CliBuilder` Class is Deprecated
 Previous versions of CliBuilder used Apache https://commons.apache.org/proper/commons-cli/index.html[Commons CLI] as the underlying parser library.
@@ -28,7 +28,7 @@ Next, let's look at some new features in Groovy 2.5 CliBuilder.
 
 == Typed Options
 
-image::Type.jpg[Type]
+image::http://picocli.info/images/Type.jpg[Type]
 
 Options can be boolean flags or they can take one or more option parameters.
 In previous versions of CliBuilder, you would have to specify `args: 1` for options that need a parameter, or
@@ -98,7 +98,7 @@ assert options.t.hour == 15 && options.t.minute == 31
 
 == Annotations
 
-image::a-annotations.png[Annotations]
+image::http://picocli.info/images/a-annotations.png[Annotations]
 
 From this release, Groovy offers an annotation API for processing command line arguments.
 
@@ -195,7 +195,7 @@ matched for the associated option.
 
 
 === Script Annotations
-image::GroovyScriptAnnotations.png[Script]
+image::http://picocli.info/images/GroovyScriptAnnotations.png[Script]
 
 Groovy 2.5 also offers new annotations for Groovy scripts.
 
@@ -248,7 +248,7 @@ assert options.nums() == [12, 34, 56]
 
 == Apache Commons CLI Features
 
-image::FeatureIconAdvancedOptions.png[]
+image::http://picocli.info/images/FeatureIconAdvancedOptions.png[]
 
 Sometimes you may want to use advanced features of the underlying parsing library.
 For example, you may have a command line application with mutually exclusive options.
@@ -273,7 +273,7 @@ assert !cli.parse('--silent --verbose'.split()) <1>
 
 == Picocli CliBuilder Features
 
-image::FeatureIconAdvancedOptions.png[]
+image::http://picocli.info/images/FeatureIconAdvancedOptions.png[]
 
 === Strongly Typed Lists
 Options with multiple values often use an array or a List to capture the values.
@@ -464,7 +464,7 @@ cli.usage()
 ----
 The code above gives the following output:
 
-image::CliBuilder2.5-cygwin.png[]
+image::http://picocli.info/images/CliBuilder2.5-cygwin.png[]
 
 (Credit to http://patorjk.com/software/taag/[http://patorjk.com/software/taag/] for the ASCII art.)
 
@@ -485,7 +485,7 @@ For backwards compatibility, setting the `writer` property to another value will
 
 == Gotchas/Incompatibilities
 
-image:incompatible.jpg[]
+image::http://picocli.info/images/incompatible.jpg[]
 
 There are a few areas where the new versions of `CliBuilder` are not compatible with previous versions or with each other.
 
