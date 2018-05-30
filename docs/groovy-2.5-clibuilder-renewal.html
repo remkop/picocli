@@ -525,7 +525,7 @@ This article highlights what is new.</p>
 </div>
 <div class="imageblock">
 <div class="content">
-<img src="images/CliBuilder2.5-cygwin.png" alt="CliBuilder2.5 cygwin">
+<img src="http://picocli.info/images/CliBuilder2.5-cygwin.png" alt="CliBuilder2.5 cygwin">
 </div>
 </div>
 </div>
@@ -554,7 +554,7 @@ The Commons CLI version is intended for applications that rely on the internals 
 <div class="sectionbody">
 <div class="imageblock">
 <div class="content">
-<img src="images/Type.jpg" alt="Type">
+<img src="http://picocli.info/images/Type.jpg" alt="Type">
 </div>
 </div>
 <div class="paragraph">
@@ -652,7 +652,7 @@ cli.t(<span class="key">convert</span>: { LocalTime.parse(<span class="local-var
 <div class="sectionbody">
 <div class="imageblock">
 <div class="content">
-<img src="images/a-annotations.png" alt="Annotations">
+<img src="http://picocli.info/images/a-annotations.png" alt="Annotations">
 </div>
 </div>
 <div class="paragraph">
@@ -813,7 +813,7 @@ matched for the associated option.</p>
 <h3 id="_script_annotations">Script Annotations</h3>
 <div class="imageblock">
 <div class="content">
-<img src="images/GroovyScriptAnnotations.png" alt="Script">
+<img src="http://picocli.info/images/GroovyScriptAnnotations.png" alt="Script">
 </div>
 </div>
 <div class="paragraph">
@@ -884,7 +884,7 @@ Here is an example of an interface that can capture strongly typed positional pa
 <div class="sectionbody">
 <div class="imageblock">
 <div class="content">
-<img src="images/FeatureIconAdvancedOptions.png" alt="FeatureIconAdvancedOptions">
+<img src="http://picocli.info/images/FeatureIconAdvancedOptions.png" alt="FeatureIconAdvancedOptions">
 </div>
 </div>
 <div class="paragraph">
@@ -923,11 +923,16 @@ cli.options.addOptionGroup optionGroup
 <div class="sectionbody">
 <div class="imageblock">
 <div class="content">
-<img src="images/FeatureIconAdvancedOptions.png" alt="FeatureIconAdvancedOptions">
+<img src="http://picocli.info/images/FeatureIconAdvancedOptions.png" alt="FeatureIconAdvancedOptions">
 </div>
 </div>
 <div class="sect2">
 <h3 id="_strongly_typed_lists">Strongly Typed Lists</h3>
+<div class="imageblock">
+<div class="content">
+<img src="http://picocli.info/images/list.png" alt="list">
+</div>
+</div>
 <div class="paragraph">
 <p>Options with multiple values often use an array or a List to capture the values.
 Arrays can be strongly typed, that is, contain elements other than String.
@@ -965,6 +970,11 @@ cli.T(<span class="key">type</span>: <span class="predefined-type">List</span>, 
 </div>
 <div class="sect2">
 <h3 id="_strongly_typed_maps">Strongly Typed Maps</h3>
+<div class="imageblock">
+<div class="content">
+<img src="http://picocli.info/images/map.png" alt="map">
+</div>
+</div>
 <div class="paragraph">
 <p>The picocli version of CliBuilder offers native support for Map options.
 This is as simple as specifying Map as the option type.
@@ -1021,6 +1031,11 @@ cli.Z(<span class="key">type</span>: <span class="predefined-type">Map</span>, <
 </div>
 <div class="sect2">
 <h3 id="_usage_help_with_detailed_synopsis">Usage Help with Detailed Synopsis</h3>
+<div class="imageblock">
+<div class="content">
+<img src="http://picocli.info/images/iceberg.png" alt="iceberg">
+</div>
+</div>
 <div class="paragraph">
 <p>CliBuilder has always supported a <code>usage</code> property to display the usage help synopsis of a command:</p>
 </div>
@@ -1066,6 +1081,14 @@ the new way
 </div>
 <div class="sect2">
 <h3 id="_use_any_option_names">Use Any Option Names</h3>
+<div class="imageblock">
+<div class="content">
+<img src="images/freedom-(c)-PsychoShadow-www.bigstockphoto.com.jpg" alt="freedom (c) PsychoShadow www.bigstockphoto.com">
+</div>
+</div>
+<div class="paragraph">
+<p><em>Image credit: (c) PsychoShadow - www.bigstockphoto.com</em></p>
+</div>
 <div class="paragraph">
 <p>Before, if an option had multiple names with a single hyphen, you had no choice but to declare the option multiple times:</p>
 </div>
@@ -1090,6 +1113,11 @@ cli._(<span class="key">names</span>: [<span class="string"><span class="delimit
 </div>
 <div class="sect2">
 <h3 id="_fine_grained_usage_help_message">Fine-grained Usage Help Message</h3>
+<div class="imageblock">
+<div class="content">
+<img src="http://picocli.info/images/sift.png" alt="sift">
+</div>
+</div>
 <div class="paragraph">
 <p>Picocli offers fine-grained control over the usage help message format and this functionality is exposed via the <code>usageMessage</code> CliBuilder property.</p>
 </div>
@@ -1206,7 +1234,7 @@ cli.usage()</code></pre>
 </div>
 <div class="imageblock">
 <div class="content">
-<img src="images/CliBuilder2.5-cygwin.png" alt="CliBuilder2.5 cygwin">
+<img src="http://picocli.info/images/CliBuilder2.5-cygwin.png" alt="CliBuilder2.5 cygwin">
 </div>
 </div>
 <div class="paragraph">
@@ -1215,6 +1243,11 @@ cli.usage()</code></pre>
 </div>
 <div class="sect2">
 <h3 id="_new_code_errorwriter_code_property">New <code>errorWriter</code> Property</h3>
+<div class="imageblock">
+<div class="content">
+<img src="http://picocli.info/images/error.png" alt="error">
+</div>
+</div>
 <div class="paragraph">
 <p>When the user provided invalid input, the picocli version of CliBuilder writes an error message and the usage help message to the new <code>errorWriter</code> property (set to <code>System.err</code> by default).
 When the user requests help, and the application calls <code>CliBuilder.usage()</code>, the usage help message is printed to the <code>writer</code> property (<code>System.out</code> by default).</p>
@@ -1238,8 +1271,10 @@ because the user may want to pipe the output to a utility like <code>less</code>
 <div class="sect1">
 <h2 id="_gotchas_incompatibilities">Gotchas/Incompatibilities</h2>
 <div class="sectionbody">
-<div class="paragraph">
-<p><span class="image"><img src="images/incompatible.jpg" alt="incompatible"></span></p>
+<div class="imageblock">
+<div class="content">
+<img src="http://picocli.info/images/incompatible.jpg" alt="incompatible">
+</div>
 </div>
 <div class="paragraph">
 <p>There are a few areas where the new versions of <code>CliBuilder</code> are not compatible with previous versions or with each other.</p>
@@ -1299,7 +1334,7 @@ picocli <a href="http://picocli.info/">site</a> and GitHub <a href="https://gith
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2018-05-29 21:44:46 JST
+Last updated 2018-05-30 22:34:18 JST
 </div>
 </div>
 </body>

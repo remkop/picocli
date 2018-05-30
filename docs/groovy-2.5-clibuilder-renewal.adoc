@@ -276,6 +276,8 @@ assert !cli.parse('--silent --verbose'.split()) <1>
 image::http://picocli.info/images/FeatureIconAdvancedOptions.png[]
 
 === Strongly Typed Lists
+image::http://picocli.info/images/list.png[]
+
 Options with multiple values often use an array or a List to capture the values.
 Arrays can be strongly typed, that is, contain elements other than String.
 The picocli version of CliBuilder lets you do the same with Lists.
@@ -297,6 +299,8 @@ assert options.Ts == [ 1L, 2L, 3L ]                    // <3>
 <3> The option values as a `List<Integer>`.
 
 === Strongly Typed Maps
+image::http://picocli.info/images/map.png[]
+
 The picocli version of CliBuilder offers native support for Map options.
 This is as simple as specifying Map as the option type.
 By default, both keys and values are stored as Strings in the Map,
@@ -325,6 +329,9 @@ assert options.Zs == [ (DAYS as TimeUnit):2, (HOURS as TimeUnit):23 ]          /
 <7> When `auxiliaryTypes` are specified, the keys and values of the map are converted to the specified types, giving you a `Map<TimeUnit, Integer>`.
 
 === Usage Help with Detailed Synopsis
+
+image::http://picocli.info/images/iceberg.png[]
+
 CliBuilder has always supported a `usage` property to display the usage help synopsis of a command:
 [source,groovy]
 ----
@@ -357,6 +364,9 @@ the new way
 
 
 === Use Any Option Names
+image::freedom-(c)-PsychoShadow-www.bigstockphoto.com.jpg[]
+_Image credit: (c) PsychoShadow - www.bigstockphoto.com_
+
 Before, if an option had multiple names with a single hyphen, you had no choice but to declare the option multiple times:
 [source,groovy]
 ----
@@ -376,6 +386,8 @@ cli._(names: ['-cp', '-classpath', '--classpath'], 'Where to find the class file
 
 
 === Fine-grained Usage Help Message
+image::http://picocli.info/images/sift.png[]
+
 Picocli offers fine-grained control over the usage help message format and this functionality is exposed via the `usageMessage` CliBuilder property.
 
 The usage message has a number of sections: header, synopsis, description, parameters, options and finally the footer. Each section has a heading, that precedes the first line of its section. For example:
@@ -469,6 +481,9 @@ image::http://picocli.info/images/CliBuilder2.5-cygwin.png[]
 (Credit to http://patorjk.com/software/taag/[http://patorjk.com/software/taag/] for the ASCII art.)
 
 === New `errorWriter` Property
+
+image::http://picocli.info/images/error.png[]
+
 When the user provided invalid input, the picocli version of CliBuilder writes an error message and the usage help message to the new `errorWriter` property (set to `System.err` by default).
 When the user requests help, and the application calls `CliBuilder.usage()`, the usage help message is printed to the `writer` property (`System.out` by default).
 
