@@ -1,4 +1,4 @@
-<p align="center"><img src="docs/images/logo/horizontalv2.png" alt="picocli" height="150px"></p>
+<p align="center"><img src="docs/images/logo/horizontal.png" alt="picocli" height="150px"></p>
 
 [![GitHub Release](https://img.shields.io/github/release/remkop/picocli.svg)](https://github.com/remkop/picocli/releases) 
 [![Build Status](https://travis-ci.org/remkop/picocli.svg?branch=master)](https://travis-ci.org/remkop/picocli) 
@@ -60,6 +60,11 @@ interactively showing users what options and subcommands are available.
 
 #### Related
 * Check out Thibaud Lepretre's [picocli Spring boot starter](https://github.com/kakawait/picocli-spring-boot-starter)!
+
+#### Credit
+<img src="http://picocli.info/images/logo/icon.png" height="50">
+
+[Reallinfo](https://github.com/reallinfo) designed the new picocli logo! Many thanks!
 
 
 ## Example

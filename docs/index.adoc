@@ -17,7 +17,7 @@ image::https://s3.amazonaws.com/github/ribbons/forkme_right_red_aa0000.png[Fork 
 [quote]
 Every main method deserves picocli!
 
-image:cli.jpg[picocli the Mighty Tiny Command Line Interface]
+image:logo/horizontal.png[picocli the Mighty Tiny Command Line Interface,width=800]
 
 The user manual for the latest release is at http://picocli.info.
 

@@ -1,5 +1,37 @@
 # picocli Release Notes
 
+# <a name="3.0.3"></a> Picocli 3.0.3 (UNRELEASED)
+The picocli community is pleased to announce picocli 3.0.3.
+
+This release contains bugfixes and enhancements.
+
+This is the thirty-first public release.
+Picocli follows [semantic versioning](http://semver.org/).
+
+## <a name="3.0.3"></a> Table of Contents
+* [New and noteworthy](#3.0.3-new)
+* [Promoted features](#3.0.3-promoted)
+* [Fixed issues](#3.0.3-fixes)
+* [Deprecations](#3.0.3-deprecated)
+* [Potential breaking changes](#3.0.3-breaking-changes)
+
+## <a name="3.0.3-new"></a> New and Noteworthy
+
+## <a name="3.0.3-promoted"></a> Promoted Features
+Promoted features are features that were incubating in previous versions of picocli but are now supported and subject to backwards compatibility. 
+
+No features have been promoted in this picocli release.
+
+## <a name="3.0.3-fixes"></a> Fixed issues
+- [#383] Enhancement: [Reallinfo](https://github.com/reallinfo) designed the new picocli logo. Amazing work, many thanks!
+
+## <a name="3.0.3-deprecated"></a> Deprecations
+No features were deprecated in this release.
+
+## <a name="3.0.3-breaking-changes"></a> Potential breaking changes
+This release has no breaking changes.
+
+
 # <a name="3.0.2"></a> Picocli 3.0.2
 The picocli community is pleased to announce picocli 3.0.2.
 
