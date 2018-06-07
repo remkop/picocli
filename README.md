@@ -1,4 +1,4 @@
-
+<p align="center"><img src="docs/images/logo/horizontal.png" alt="picocli" height="150px"></p>
 
 [![GitHub Release](https://img.shields.io/github/release/remkop/picocli.svg)](https://github.com/remkop/picocli/releases) 
 [![Build Status](https://travis-ci.org/remkop/picocli.svg?branch=master)](https://travis-ci.org/remkop/picocli) 
