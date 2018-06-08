@@ -19,7 +19,7 @@ image::http://picocli.info/images/CliBuilder2.5-cygwin.png[]
 Previous versions of CliBuilder used Apache https://commons.apache.org/proper/commons-cli/index.html[Commons CLI] as the underlying parser library.
 From Groovy 2.5, there is an alternative version of CliBuilder based on the https://github.com/remkop/picocli[picocli] parser.
 
-It is recommended that applications explicitly import either `groovy.cli.picocli.CliBuilder` or `groovy.cli.commons.CliBuilder`. The `groovy.util.CliBuilder` class is deprecated and delegates to the Commons CLI version for backwards compatibility.
+Going forward, it is recommended that applications explicitly import either `groovy.cli.picocli.CliBuilder` or `groovy.cli.commons.CliBuilder`. The `groovy.util.CliBuilder` class is deprecated and delegates to the Commons CLI version for backwards compatibility.
 
 New features will likely only be added to the picocli version, and `groovy.util.CliBuilder` may be removed in a future version of Groovy.
 The Commons CLI version is intended for applications that rely on the internals of the Commons CLI implementation of CliBuilder and cannot easily migrate to the picocli version.
@@ -71,7 +71,7 @@ assert options.arguments() == ['and', 'some', 'more']
 
 === Supported Types
 The Commons CLI-based CliBuilder supports primitives, numeric types, files, enums and arrays thereof
-(using http://docs.groovy-lang.org/2.5.0-SNAPSHOT/html/gapi/index.html?org/codehaus/groovy/runtime/StringGroovyMethods.html#asType[StringGroovyMethods#asType(String, Class)]).
+(using http://docs.groovy-lang.org/2.5.0/html/gapi/index.html?org/codehaus/groovy/runtime/StringGroovyMethods.html#asType[StringGroovyMethods#asType(String, Class)]).
 The picocli-based CliBuilder supports those http://picocli.info/#_built_in_types[and more].
 
 === Adding More Types
@@ -223,7 +223,7 @@ assert remaining == ['foo']
 This version of CliBuilder offers some limited support for strongly typed positional parameters.
 
 If all positional parameters have the same type, the `@Unparsed` annotation can be used with an array type other than `String[]`.
-Again, the type conversion is done using http://docs.groovy-lang.org/2.5.0-SNAPSHOT/html/gapi/index.html?org/codehaus/groovy/runtime/StringGroovyMethods.html#asType[StringGroovyMethods#asType(String, Class)]
+Again, the type conversion is done using http://docs.groovy-lang.org/2.5.0/html/gapi/index.html?org/codehaus/groovy/runtime/StringGroovyMethods.html#asType[StringGroovyMethods#asType(String, Class)]
 in the Commons CLI version, while the picocli version of CliBuilder supports a http://picocli.info/#_built_in_types[superset] of those types.
 
 This functionality is only available for the annotations API, not for the dynamic API.
