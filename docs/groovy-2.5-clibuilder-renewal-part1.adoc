@@ -11,7 +11,8 @@
 :imagesdir: images
 
 The `CliBuilder` class for quickly and concisely building command line applications has been renewed in Apache Groovy 2.5.
-This article highlights what is new.
+This two-part article highlights what is new.
+link:groovy-2.5-clibuilder-renewal-part2.html[Part 2] explains how to leverage some of the advanced features of the underlying libraries from CliBuilder.
 
 image::http://picocli.info/images/CliBuilder2.5-cygwin.png[]
 
@@ -282,4 +283,9 @@ so only long option names with a double hypen prefix (`--option`) are recognized
 
 == Wait, There's More...
 
-link:groovy-2.5-clibuilder-renewal-part2.html[Part 2] of this article will talk about how you can leverage some of the advanced features of the underlying libraries from CliBuilder. This is where you can make your command line application really shine. Stay tuned...
+link:groovy-2.5-clibuilder-renewal-part2.html[Part 2] of this article explains how to leverage some of the advanced features of the underlying libraries from CliBuilder. This is where you can make your command line application really shine. Stay tuned...
+
+NOTE: For more information, visit the Groovy http://groovy-lang.org/[site] and
+GitHub https://github.com/apache/groovy/[project],
+and the picocli http://picocli.info/[site] and https://github.com/remkop/picocli[picocli GitHub project].
+Please star the projects if you like what you see!

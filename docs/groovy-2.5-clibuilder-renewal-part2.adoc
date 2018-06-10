@@ -11,7 +11,8 @@
 :imagesdir: images
 
 The `CliBuilder` class for quickly and concisely building command line applications has been renewed in Apache Groovy 2.5.
-This is the second of a 2-part article series that highlights what is new. If you missed it, This is part 2 of a 2-part article. In case you missed it, link:groovy-2.5-clibuilder-renewal-part1.html[Part 1 is here]. This article shows some of the advanced features of the underlying libraries from CliBuilder.
+This is the second of a two-part article series that highlights what is new.
+In case you missed it, link:groovy-2.5-clibuilder-renewal-part1.html[Part 1 is here]. This article shows some of the advanced features of the underlying libraries from CliBuilder.
 
 image::http://picocli.info/images/CliBuilder2.5-cygwin.png[]
 
@@ -282,9 +283,9 @@ For backwards compatibility, setting the `writer` property to another value will
 Groovy 2.5 CliBuilder offers a host of exciting new features.
 Try it out and let us know what you think!
 
-For more information, visit the Groovy http://groovy-lang.org/[site] and
+This is part 2 of a two-part article. In case you missed it, here is link:groovy-2.5-clibuilder-renewal-part1.html[Part 1].
+
+NOTE: For more information, visit the Groovy http://groovy-lang.org/[site] and
 GitHub https://github.com/apache/groovy/[project],
 and the picocli http://picocli.info/[site] and https://github.com/remkop/picocli[picocli GitHub project].
 Please star the projects if you like what you see!
-
-This is part 2 of a 2-part article. In case you missed it, here is link:groovy-2.5-clibuilder-renewal-part1.html[Part 1].
