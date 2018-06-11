@@ -1,34 +1,35 @@
 # picocli Release Notes
 
-# <a name="3.0.3"></a> Picocli 3.0.3 (UNRELEASED)
-The picocli community is pleased to announce picocli 3.0.3.
+# <a name="3.1.0"></a> Picocli 3.1.0 (UNRELEASED)
+The picocli community is pleased to announce picocli 3.1.0.
 
 This release contains bugfixes and enhancements.
 
-This is the thirty-first public release.
+This is the thirty-second public release.
 Picocli follows [semantic versioning](http://semver.org/).
 
-## <a name="3.0.3"></a> Table of Contents
-* [New and noteworthy](#3.0.3-new)
-* [Promoted features](#3.0.3-promoted)
-* [Fixed issues](#3.0.3-fixes)
-* [Deprecations](#3.0.3-deprecated)
-* [Potential breaking changes](#3.0.3-breaking-changes)
+## <a name="3.1.0"></a> Table of Contents
+* [New and noteworthy](#3.1.0-new)
+* [Promoted features](#3.1.0-promoted)
+* [Fixed issues](#3.1.0-fixes)
+* [Deprecations](#3.1.0-deprecated)
+* [Potential breaking changes](#3.1.0-breaking-changes)
 
-## <a name="3.0.3-new"></a> New and Noteworthy
+## <a name="3.1.0-new"></a> New and Noteworthy
 
-## <a name="3.0.3-promoted"></a> Promoted Features
+## <a name="3.1.0-promoted"></a> Promoted Features
 Promoted features are features that were incubating in previous versions of picocli but are now supported and subject to backwards compatibility. 
 
 No features have been promoted in this picocli release.
 
-## <a name="3.0.3-fixes"></a> Fixed issues
+## <a name="3.1.0-fixes"></a> Fixed issues
 - [#383] Enhancement: [Reallinfo](https://github.com/reallinfo) designed the new picocli logo. Amazing work, many thanks!
+- [#388] Bugfix: Prevent AnnotationFormatError "Duplicate annotation for class" with @PicocliScript when the script contains classes. Thanks to [Bradford Powell](https://github.com/bpow) for the bug report.
 
-## <a name="3.0.3-deprecated"></a> Deprecations
+## <a name="3.1.0-deprecated"></a> Deprecations
 No features were deprecated in this release.
 
-## <a name="3.0.3-breaking-changes"></a> Potential breaking changes
+## <a name="3.1.0-breaking-changes"></a> Potential breaking changes
 This release has no breaking changes.
 
 

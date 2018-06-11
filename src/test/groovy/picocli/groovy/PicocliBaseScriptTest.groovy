@@ -292,4 +292,31 @@ throw new IllegalStateException("Hi this is a test exception")
         assert params.positional.contains("123")
     }
 
+
+    @Test
+    void testScriptWithInnerClass() {
+        String script = '''
+import static picocli.CommandLine.*
+@Command(name="classyTest")
+@picocli.groovy.PicocliScript
+import groovy.transform.Field
+
+@Option(names = ['-g', '--greeting'], description = 'Type of greeting')
+@Field String greeting = 'Hello\'
+
+println "${greeting} world!"
+
+class Message {
+    String greeting
+    String target
+}
+'''
+        GroovyShell shell = new GroovyShell(new Binding())
+        shell.context.setVariable('args', ["-g", "Hi"] as String[])
+
+        ByteArrayOutputStream baos = new ByteArrayOutputStream()
+        System.setOut(new PrintStream(baos))
+        shell.evaluate script
+        assertEquals("Hi world!", baos.toString().trim())
+    }
 }

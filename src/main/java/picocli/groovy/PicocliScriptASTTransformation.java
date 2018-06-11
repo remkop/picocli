@@ -137,7 +137,9 @@ public class PicocliScriptASTTransformation extends AbstractASTTransformation {
         }
 
         List<AnnotationNode> annotations = parent.getAnnotations(COMMAND_TYPE);
-        cNode.addAnnotations(annotations);
+        if (cNode.getAnnotations(COMMAND_TYPE).isEmpty()) { // #388 prevent "Duplicate annotation for class" AnnotationFormatError
+            cNode.addAnnotations(annotations);
+        }
         cNode.setSuperClass(baseScriptType);
 
 
