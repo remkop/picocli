@@ -513,8 +513,8 @@ table.CodeRay td.code>pre{padding:0}
 <div id="header">
 <h1>picocli - a mighty tiny command line interface</h1>
 <div class="details">
-<span id="revnumber">version 3.0.2,</span>
-<span id="revdate">2018-05-23</span>
+<span id="revnumber">version 3.1.0,</span>
+<span id="revdate">2018-06-11</span>
 </div>
 <div id="toc" class="toc2">
 <div id="toctitle">Features</div>
@@ -687,7 +687,7 @@ Every main method deserves picocli!
 </blockquote>
 </div>
 <div class="paragraph">
-<p><span class="image"><img src="images/logo/horizontal.png" width="800" alt="picocli the Mighty Tiny Command Line Interface"></span></p>
+<p><span class="image"><img src="images/logo/horizontal.png" alt="picocli the Mighty Tiny Command Line Interface" width="800"></span></p>
 </div>
 <div class="paragraph">
 <p>The user manual for the latest release is at <a href="http://picocli.info" class="bare">http://picocli.info</a>.</p>
@@ -3001,7 +3001,10 @@ On Windows, when picocli detects it is running under a Unix variant like Cygwin 
 <div class="sect3">
 <h4 id="_windows">10.5.2. Windows</h4>
 <div class="paragraph">
-<p>Starting from Windows 10 the Windows console <a href="https://msdn.microsoft.com/en-us/library/windows/desktop/mt638032(v=vs.85).aspx">supports ANSI escape sequences</a>, but <a href="http://www.nivot.org/blog/post/2016/02/04/Windows-10-TH2-(v1511)-Console-Host-Enhancements">they may need to be enabled</a>.</p>
+<p>Starting from Windows 10 the Windows console <a href="https://msdn.microsoft.com/en-us/library/windows/desktop/mt638032(v=vs.85).aspx">supports ANSI escape sequences</a>,
+but <a href="https://github.com/Microsoft/WSL/issues/1173#issuecomment-254250445">it&#8217;s not enabled by default</a>.
+Unless the specific software you&#8217;re using (e.g. java) enables ANSI processing by calling the <a href="https://docs.microsoft.com/en-us/windows/console/setconsolemode">SetConsoleMode</a> API with the <code>ENABLE_VIRTUAL_TERMINAL_PROCESSING</code> (<code>0x0400</code>) flag (java doesn&#8217;t), you won&#8217;t see colors or get ANSI processing for that application.
+Note that there is a registry setting to <a href="https://superuser.com/questions/413073/windows-console-with-ansi-colors-handling/1300251#1300251">change the global default</a> from <em>opt in</em> to <em>opt out</em>.</p>
 </div>
 <div class="paragraph">
 <p>For Windows version below 10, the Windows command console doesn&#8217;t support output coloring by default. One option is to install either <a href="http://cmder.net/">Cmder</a>, <a href="http://sourceforge.net/projects/conemu/">ConEmu</a>, <a href="https://github.com/adoxa/ansicon/">ANSICON</a> or <a href="https://mintty.github.io/">Mintty</a> (used by default in GitBash and Cygwin) to add coloring support to their Windows command console.</p>
@@ -4185,7 +4188,7 @@ The script body is executed if the user input was valid and did not request usag
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="CodeRay highlight"><code data-lang="groovy"><span class="annotation">@Grab</span>(<span class="string"><span class="delimiter">'</span><span class="content">info.picocli:picocli:3.0.2</span><span class="delimiter">'</span></span>)
+<pre class="CodeRay highlight"><code data-lang="groovy"><span class="annotation">@Grab</span>(<span class="string"><span class="delimiter">'</span><span class="content">info.picocli:picocli:3.1.0</span><span class="delimiter">'</span></span>)
 <span class="annotation">@Command</span>(name = <span class="string"><span class="delimiter">&quot;</span><span class="content">myScript</span><span class="delimiter">&quot;</span></span>,
         mixinStandardHelpOptions = <span class="predefined-constant">true</span>, <span class="comment">// add --help and --version options</span>
         description = <span class="string"><span class="delimiter">&quot;</span><span class="content">@|bold Groovy script|@ @|underline picocli|@ example</span><span class="delimiter">&quot;</span></span>)
@@ -4220,7 +4223,7 @@ When using a Groovy version older than 2.4.7, use this workaround for the <a hre
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="CodeRay highlight"><code data-lang="groovy"><span class="annotation">@Grab</span>(<span class="string"><span class="delimiter">'</span><span class="content">info.picocli:picocli:3.0.2</span><span class="delimiter">'</span></span>)
+<pre class="CodeRay highlight"><code data-lang="groovy"><span class="annotation">@Grab</span>(<span class="string"><span class="delimiter">'</span><span class="content">info.picocli:picocli:3.1.0</span><span class="delimiter">'</span></span>)
 <span class="annotation">@GrabExclude</span>(<span class="string"><span class="delimiter">'</span><span class="content">org.codehaus.groovy:groovy-all</span><span class="delimiter">'</span></span>) <span class="comment">// work around GROOVY-7613</span>
 ...</code></pre>
 </div>
@@ -4362,7 +4365,7 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
 <h3 id="_gradle">23.1. Gradle</h3>
 <div class="listingblock">
 <div class="content">
-<pre>compile 'info.picocli:picocli:3.0.2'</pre>
+<pre>compile 'info.picocli:picocli:3.1.0'</pre>
 </div>
 </div>
 </div>
@@ -4373,7 +4376,7 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
 <pre>&lt;dependency&gt;
   &lt;groupId&gt;info.picocli&lt;/groupId&gt;
   &lt;artifactId&gt;picocli&lt;/artifactId&gt;
-  &lt;version&gt;3.0.2&lt;/version&gt;
+  &lt;version&gt;3.1.0&lt;/version&gt;
 &lt;/dependency&gt;</pre>
 </div>
 </div>
@@ -4382,7 +4385,7 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
 <h3 id="_scala_sbt">23.3. Scala SBT</h3>
 <div class="listingblock">
 <div class="content">
-<pre>libraryDependencies += "info.picocli" % "picocli" % "3.0.2"</pre>
+<pre>libraryDependencies += "info.picocli" % "picocli" % "3.1.0"</pre>
 </div>
 </div>
 </div>
@@ -4390,7 +4393,7 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
 <h3 id="_ivy">23.4. Ivy</h3>
 <div class="listingblock">
 <div class="content">
-<pre>&lt;dependency org="info.picocli" name="picocli" rev="3.0.2" /&gt;</pre>
+<pre>&lt;dependency org="info.picocli" name="picocli" rev="3.1.0" /&gt;</pre>
 </div>
 </div>
 </div>
@@ -4510,7 +4513,7 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
  */</span>
 <span class="directive">public</span> <span class="type">class</span> <span class="class">CommandLine</span> {
     <span class="comment">/** This is picocli version {@value}. */</span>
-    <span class="directive">public</span> <span class="directive">static</span> <span class="directive">final</span> <span class="predefined-type">String</span> VERSION = <span class="string"><span class="delimiter">&quot;</span><span class="content">3.0.2</span><span class="delimiter">&quot;</span></span>;
+    <span class="directive">public</span> <span class="directive">static</span> <span class="directive">final</span> <span class="predefined-type">String</span> VERSION = <span class="string"><span class="delimiter">&quot;</span><span class="content">3.1.0</span><span class="delimiter">&quot;</span></span>;
 
     <span class="directive">private</span> <span class="directive">final</span> Tracer tracer = <span class="keyword">new</span> Tracer();
     <span class="directive">private</span> <span class="directive">final</span> CommandSpec commandSpec;
@@ -4629,7 +4632,23 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
      * @see Command#subcommands()
      */</span>
     <span class="directive">public</span> CommandLine addSubcommand(<span class="predefined-type">String</span> name, <span class="predefined-type">Object</span> command) {
+        <span class="keyword">return</span> addSubcommand(name, command, <span class="keyword">new</span> <span class="predefined-type">String</span>[<span class="integer">0</span>]);
+    }
+
+    <span class="comment">/** Registers a subcommand with the specified name and all specified aliases. See also {@link #addSubcommand(String, Object)}.
+     *
+     *
+     * @param name the string to recognize on the command line as a subcommand
+     * @param command the object to initialize with command line arguments following the subcommand name.
+     *          This may be a {@code CommandLine} instance with its own (nested) subcommands
+     * @param aliases zero or more alias names that are also recognized on the command line as this subcommand
+     * @return this CommandLine object, to allow method chaining
+     * @since 3.1
+     * @see #addSubcommand(String, Object)
+     */</span>
+    <span class="directive">public</span> CommandLine addSubcommand(<span class="predefined-type">String</span> name, <span class="predefined-type">Object</span> command, <span class="predefined-type">String</span>... aliases) {
         CommandLine subcommandLine = toCommandLine(command, factory);
+        subcommandLine.getCommandSpec().aliases(aliases);
         getCommandSpec().addSubcommand(name, subcommandLine);
         CommandLine.Model.CommandReflection.initParentCommand(subcommandLine.getCommandSpec().userObject(), getCommandSpec().userObject());
         <span class="keyword">return</span> <span class="local-variable">this</span>;
@@ -6556,6 +6575,11 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
          * @see Help#commandName() */</span>
         <span class="predefined-type">String</span> name() <span class="keyword">default</span> <span class="string"><span class="delimiter">&quot;</span><span class="content">&lt;main class&gt;</span><span class="delimiter">&quot;</span></span>;
 
+        <span class="comment">/** Alternative command names by which this subcommand is recognized on the command line.
+         * @return one or more alternative command names
+         * @since 3.1 */</span>
+        <span class="predefined-type">String</span><span class="type">[]</span> aliases() <span class="keyword">default</span> {};
+
         <span class="comment">/** A list of classes to instantiate and register as subcommands. When registering subcommands declaratively
          * like this, you don't need to call the {@link CommandLine#addSubcommand(String, Object)} method. For example, this:
          * &lt;pre&gt;
@@ -7074,6 +7098,7 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
             <span class="directive">private</span> CommandSpec parent;
 
             <span class="directive">private</span> <span class="predefined-type">String</span> name;
+            <span class="directive">private</span> <span class="predefined-type">String</span><span class="type">[]</span> aliases = {};
             <span class="directive">private</span> <span class="predefined-type">Boolean</span> isHelpCommand;
             <span class="directive">private</span> IVersionProvider versionProvider;
             <span class="directive">private</span> <span class="predefined-type">String</span><span class="type">[]</span> version;
@@ -7189,12 +7214,18 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
 
             <span class="comment">/** Adds the specified subcommand with the specified name.
              * @param name subcommand name - when this String is encountered in the command line arguments the subcommand is invoked
-             * @param commandLine the subcommand to envoke when the name is encountered on the command line
+             * @param subCommandLine the subcommand to envoke when the name is encountered on the command line
              * @return this {@code CommandSpec} object for method chaining */</span>
-            <span class="directive">public</span> CommandSpec addSubcommand(<span class="predefined-type">String</span> name, CommandLine commandLine) {
-                commands.put(name, commandLine);
-                <span class="keyword">if</span> (commandLine.getCommandSpec().name == <span class="predefined-constant">null</span>) { commandLine.getCommandSpec().name(name); }
-                commandLine.getCommandSpec().parent(<span class="local-variable">this</span>);
+            <span class="directive">public</span> CommandSpec addSubcommand(<span class="predefined-type">String</span> name, CommandLine subCommandLine) {
+                CommandLine previous = commands.put(name, subCommandLine);
+                <span class="keyword">if</span> (previous != <span class="predefined-constant">null</span> &amp;&amp; previous != subCommandLine) { <span class="keyword">throw</span> <span class="keyword">new</span> InitializationException(<span class="string"><span class="delimiter">&quot;</span><span class="content">Another subcommand named '</span><span class="delimiter">&quot;</span></span> + name + <span class="string"><span class="delimiter">&quot;</span><span class="content">' already exists for command '</span><span class="delimiter">&quot;</span></span> + <span class="local-variable">this</span>.name() + <span class="string"><span class="delimiter">&quot;</span><span class="content">'</span><span class="delimiter">&quot;</span></span>); }
+                CommandSpec subSpec = subCommandLine.getCommandSpec();
+                <span class="keyword">if</span> (subSpec.name == <span class="predefined-constant">null</span>) { subSpec.name(name); }
+                subSpec.parent(<span class="local-variable">this</span>);
+                <span class="keyword">for</span> (<span class="predefined-type">String</span> alias : subSpec.aliases()) {
+                    previous = commands.put(alias, subCommandLine);
+                    <span class="keyword">if</span> (previous != <span class="predefined-constant">null</span> &amp;&amp; previous != subCommandLine) { <span class="keyword">throw</span> <span class="keyword">new</span> InitializationException(<span class="string"><span class="delimiter">&quot;</span><span class="content">Alias '</span><span class="delimiter">&quot;</span></span> + alias + <span class="string"><span class="delimiter">&quot;</span><span class="content">' for subcommand '</span><span class="delimiter">&quot;</span></span> + name + <span class="string"><span class="delimiter">&quot;</span><span class="content">' is already used by another subcommand of '</span><span class="delimiter">&quot;</span></span> + <span class="local-variable">this</span>.name() + <span class="string"><span class="delimiter">&quot;</span><span class="content">'</span><span class="delimiter">&quot;</span></span>); }
+                }
                 <span class="keyword">return</span> <span class="local-variable">this</span>;
             }
 
@@ -7310,6 +7341,10 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
              * @see #qualifiedName() */</span>
             <span class="directive">public</span> <span class="predefined-type">String</span> name() { <span class="keyword">return</span> (name == <span class="predefined-constant">null</span>) ? DEFAULT_COMMAND_NAME : name; }
 
+            <span class="comment">/** Returns the alias command names of this subcommand.
+             * @since 3.1 */</span>
+            <span class="directive">public</span> <span class="predefined-type">String</span><span class="type">[]</span> aliases() { <span class="keyword">return</span> aliases.clone(); }
+
             <span class="comment">/** Returns the String to use as the program name in the synopsis line of the help message:
              * this command's {@link #name() name}, preceded by the qualified name of the parent command, if any.
              * {@link #DEFAULT_COMMAND_NAME} by default, initialized from {@link Command#name()} if defined.
@@ -7352,10 +7387,14 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
             <span class="comment">/** Returns a string representation of this command, used in error messages and trace messages. */</span>
             <span class="directive">public</span> <span class="predefined-type">String</span> toString() { <span class="keyword">return</span> toString; }
 
-
             <span class="comment">/** Sets the String to use as the program name in the synopsis line of the help message.
              * @return this CommandSpec for method chaining */</span>
             <span class="directive">public</span> CommandSpec name(<span class="predefined-type">String</span> name) { <span class="local-variable">this</span>.name = name; <span class="keyword">return</span> <span class="local-variable">this</span>; }
+
+            <span class="comment">/** Sets the alternative names by which this subcommand is recognized on the command line.
+             * @return this CommandSpec for method chaining
+             * @since 3.1 */</span>
+            <span class="directive">public</span> CommandSpec aliases(<span class="predefined-type">String</span>... aliases) { <span class="local-variable">this</span>.aliases = aliases == <span class="predefined-constant">null</span> ? <span class="keyword">new</span> <span class="predefined-type">String</span>[<span class="integer">0</span>] : aliases.clone(); <span class="keyword">return</span> <span class="local-variable">this</span>; }
 
             <span class="comment">/** Sets version information literals for this command, to print to the console when the user specifies an
              * {@linkplain OptionSpec#versionHelp() option} to request version help. Only used if no {@link #versionProvider() versionProvider} is set.
@@ -7399,7 +7438,7 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
 
             <span class="type">void</span> initName(<span class="predefined-type">String</span> value)                 { <span class="keyword">if</span> (initializable(name, value, DEFAULT_COMMAND_NAME))                           {name = value;} }
             <span class="type">void</span> initHelpCommand(<span class="type">boolean</span> value)         { <span class="keyword">if</span> (initializable(isHelpCommand, value, DEFAULT_IS_HELP_COMMAND))               {isHelpCommand = value;} }
-            <span class="type">void</span> initVersion(<span class="predefined-type">String</span><span class="type">[]</span> value)            { <span class="keyword">if</span> (initializable(version, value, UsageMessageSpec.DEFAULT_MULTI_LINE))                          {version = value.clone();} }
+            <span class="type">void</span> initVersion(<span class="predefined-type">String</span><span class="type">[]</span> value)            { <span class="keyword">if</span> (initializable(version, value, UsageMessageSpec.DEFAULT_MULTI_LINE))         {version = value.clone();} }
             <span class="type">void</span> initVersionProvider(IVersionProvider value) { <span class="keyword">if</span> (versionProvider == <span class="predefined-constant">null</span>) { versionProvider = value; } }
             <span class="type">void</span> initVersionProvider(<span class="predefined-type">Class</span>&lt;? <span class="directive">extends</span> IVersionProvider&gt; value, IFactory factory) {
                 <span class="keyword">if</span> (initializable(versionProvider, value, NoVersionProvider.class)) { versionProvider = (DefaultFactory.createVersionProvider(factory, value)); }
@@ -8529,6 +8568,7 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
                 <span class="keyword">if</span> (!cls.isAnnotationPresent(Command.class)) { <span class="keyword">return</span> <span class="predefined-constant">false</span>; }
 
                 Command cmd = cls.getAnnotation(Command.class);
+                commandSpec.aliases(cmd.aliases());
                 initSubcommands(cmd, commandSpec, factory);
 
                 commandSpec.parser().initSeparator(cmd.separator());
@@ -10349,6 +10389,7 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
         <span class="directive">private</span> <span class="directive">final</span> CommandSpec commandSpec;
         <span class="directive">private</span> <span class="directive">final</span> ColorScheme colorScheme;
         <span class="directive">private</span> <span class="directive">final</span> <span class="predefined-type">Map</span>&lt;<span class="predefined-type">String</span>, Help&gt; commands = <span class="keyword">new</span> <span class="predefined-type">LinkedHashMap</span>&lt;<span class="predefined-type">String</span>, Help&gt;();
+        <span class="directive">private</span> <span class="predefined-type">List</span>&lt;<span class="predefined-type">String</span>&gt; aliases = <span class="predefined-type">Collections</span>.emptyList();
 
         <span class="directive">private</span> IParamLabelRenderer parameterLabelRenderer;
 
@@ -10380,10 +10421,15 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
          * @param colorScheme the color scheme to use */</span>
         <span class="directive">public</span> Help(CommandSpec commandSpec, ColorScheme colorScheme) {
             <span class="local-variable">this</span>.commandSpec = Assert.notNull(commandSpec, <span class="string"><span class="delimiter">&quot;</span><span class="content">commandSpec</span><span class="delimiter">&quot;</span></span>);
-            <span class="local-variable">this</span>.addAllSubcommands(commandSpec.subcommands());
+            <span class="local-variable">this</span>.aliases = <span class="keyword">new</span> <span class="predefined-type">ArrayList</span>&lt;<span class="predefined-type">String</span>&gt;(<span class="predefined-type">Arrays</span>.asList(commandSpec.aliases()));
+            <span class="local-variable">this</span>.aliases.add(<span class="integer">0</span>, commandSpec.name());
             <span class="local-variable">this</span>.colorScheme = Assert.notNull(colorScheme, <span class="string"><span class="delimiter">&quot;</span><span class="content">colorScheme</span><span class="delimiter">&quot;</span></span>).applySystemProperties();
             parameterLabelRenderer = createDefaultParamLabelRenderer(); <span class="comment">// uses help separator</span>
+
+            <span class="local-variable">this</span>.addAllSubcommands(commandSpec.subcommands());
         }
+
+        Help withCommandNames(<span class="predefined-type">List</span>&lt;<span class="predefined-type">String</span>&gt; aliases) { <span class="local-variable">this</span>.aliases = aliases; <span class="keyword">return</span> <span class="local-variable">this</span>; }
 
         <span class="comment">/** Returns the {@code CommandSpec} model that this Help was constructed with.
          * @since 3.0 */</span>
@@ -10406,11 +10452,28 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
          */</span>
         <span class="directive">public</span> Help addAllSubcommands(<span class="predefined-type">Map</span>&lt;<span class="predefined-type">String</span>, CommandLine&gt; commands) {
             <span class="keyword">if</span> (commands != <span class="predefined-constant">null</span>) {
+                <span class="comment">// first collect aliases</span>
+                <span class="predefined-type">Map</span>&lt;CommandLine, <span class="predefined-type">List</span>&lt;<span class="predefined-type">String</span>&gt;&gt; done = <span class="keyword">new</span> <span class="predefined-type">IdentityHashMap</span>&lt;CommandLine, <span class="predefined-type">List</span>&lt;<span class="predefined-type">String</span>&gt;&gt;();
+                <span class="keyword">for</span> (CommandLine cmd : commands.values()) {
+                    <span class="keyword">if</span> (!done.containsKey(cmd)) {
+                        done.put(cmd, <span class="keyword">new</span> <span class="predefined-type">ArrayList</span>&lt;<span class="predefined-type">String</span>&gt;(<span class="predefined-type">Arrays</span>.asList(cmd.commandSpec.aliases())));
+                    }
+                }
+                <span class="comment">// then loop over all names that the command was registered with and add this name to the front of the list (if it isn't already in the list)</span>
+                <span class="keyword">for</span> (<span class="predefined-type">Map</span>.Entry&lt;<span class="predefined-type">String</span>, CommandLine&gt; entry : commands.entrySet()) {
+                    <span class="predefined-type">List</span>&lt;<span class="predefined-type">String</span>&gt; aliases = done.get(entry.getValue());
+                    <span class="keyword">if</span> (!aliases.contains(entry.getKey())) { aliases.add(<span class="integer">0</span>, entry.getKey()); }
+                }
+                <span class="comment">// The aliases list for each command now has at least one entry, with the main name at the front.</span>
+                <span class="comment">// Now we loop over the commands in the order that they were registered on their parent command.</span>
                 <span class="keyword">for</span> (<span class="predefined-type">Map</span>.Entry&lt;<span class="predefined-type">String</span>, CommandLine&gt; entry : commands.entrySet()) {
                     <span class="comment">// not registering hidden commands is easier than suppressing display in Help.commandList():</span>
                     <span class="comment">// if all subcommands are hidden, help should not show command list header</span>
                     <span class="keyword">if</span> (!entry.getValue().getCommandSpec().usageMessage().hidden()) {
-                        addSubcommand(entry.getKey(), entry.getValue());
+                        <span class="predefined-type">List</span>&lt;<span class="predefined-type">String</span>&gt; aliases = done.remove(entry.getValue());
+                        <span class="keyword">if</span> (aliases != <span class="predefined-constant">null</span>) { <span class="comment">// otherwise we already processed this command by another alias</span>
+                            addSubcommand(aliases, entry.getValue());
+                        }
                     }
                 }
             }
@@ -10418,11 +10481,12 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
         }
 
         <span class="comment">/** Registers the specified subcommand with this Help.
-         * @param commandName the name of the subcommand to display in the usage message
+         * @param commandNames the name and aliases of the subcommand to display in the usage message
          * @param commandLine the {@code CommandLine} object to get more information from
          * @return this Help instance (for method chaining) */</span>
-        Help addSubcommand(<span class="predefined-type">String</span> commandName, CommandLine commandLine) {
-            commands.put(commandName, <span class="keyword">new</span> Help(commandLine.commandSpec));
+        Help addSubcommand(<span class="predefined-type">List</span>&lt;<span class="predefined-type">String</span>&gt; commandNames, CommandLine commandLine) {
+            <span class="predefined-type">String</span> all = commandNames.toString();
+            commands.put(all.substring(<span class="integer">1</span>, all.length() - <span class="integer">1</span>), <span class="keyword">new</span> Help(commandLine.commandSpec, colorScheme).withCommandNames(commandNames));
             <span class="keyword">return</span> <span class="local-variable">this</span>;
         }
 
@@ -10803,7 +10867,7 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
                 CommandSpec command = help.commandSpec;
                 <span class="predefined-type">String</span> header = command.usageMessage().header() != <span class="predefined-constant">null</span> &amp;&amp; command.usageMessage().header().length &gt; <span class="integer">0</span> ? command.usageMessage().header()[<span class="integer">0</span>]
                         : (command.usageMessage().description() != <span class="predefined-constant">null</span> &amp;&amp; command.usageMessage().description().length &gt; <span class="integer">0</span> ? command.usageMessage().description()[<span class="integer">0</span>] : <span class="string"><span class="delimiter">&quot;</span><span class="delimiter">&quot;</span></span>);
-                textTable.addRowValues(colorScheme.commandText(entry.getKey()), ansi().new Text(header));
+                textTable.addRowValues(help.commandNamesText(), ansi().new Text(header));
             }
             <span class="keyword">return</span> textTable.toString();
         }
@@ -10811,6 +10875,13 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
             <span class="predefined-type">List</span>&lt;<span class="predefined-type">String</span>&gt; strings = <span class="keyword">new</span> <span class="predefined-type">ArrayList</span>&lt;<span class="predefined-type">String</span>&gt;(any);
             <span class="predefined-type">Collections</span>.sort(strings, <span class="predefined-type">Collections</span>.reverseOrder(Help.shortestFirst()));
             <span class="keyword">return</span> strings.get(<span class="integer">0</span>).length();
+        }
+        <span class="directive">private</span> Text commandNamesText() {
+            Text result = colorScheme.commandText(aliases.get(<span class="integer">0</span>));
+            <span class="keyword">for</span> (<span class="type">int</span> i = <span class="integer">1</span>; i &lt; aliases.size(); i++) {
+                result = result.concat(<span class="string"><span class="delimiter">&quot;</span><span class="content">, </span><span class="delimiter">&quot;</span></span>).concat(colorScheme.commandText(aliases.get(i)));
+            }
+            <span class="keyword">return</span> result;
         }
         <span class="directive">private</span> <span class="directive">static</span> <span class="predefined-type">String</span> join(<span class="predefined-type">String</span><span class="type">[]</span> names, <span class="type">int</span> offset, <span class="type">int</span> length, <span class="predefined-type">String</span> separator) {
             <span class="keyword">if</span> (names == <span class="predefined-constant">null</span>) { <span class="keyword">return</span> <span class="string"><span class="delimiter">&quot;</span><span class="delimiter">&quot;</span></span>; }
@@ -12357,8 +12428,8 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
 </div>
 <div id="footer">
 <div id="footer-text">
-Version 3.0.2<br>
-Last updated 2018-05-23 20:45:53 JST
+Version 3.1.0<br>
+Last updated 2018-06-11 23:56:49 JST
 </div>
 </div>
 </body>

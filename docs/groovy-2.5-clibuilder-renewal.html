@@ -538,7 +538,7 @@ This article highlights what is new.</p>
 From Groovy 2.5, there is an alternative version of CliBuilder based on the <a href="https://github.com/remkop/picocli">picocli</a> parser.</p>
 </div>
 <div class="paragraph">
-<p>It is recommended that applications explicitly import either <code>groovy.cli.picocli.CliBuilder</code> or <code>groovy.cli.commons.CliBuilder</code>. The <code>groovy.util.CliBuilder</code> class is deprecated and delegates to the Commons CLI version for backwards compatibility.</p>
+<p>Going forward, it is recommended that applications explicitly import either <code>groovy.cli.picocli.CliBuilder</code> or <code>groovy.cli.commons.CliBuilder</code>. The <code>groovy.util.CliBuilder</code> class is deprecated and delegates to the Commons CLI version for backwards compatibility.</p>
 </div>
 <div class="paragraph">
 <p>New features will likely only be added to the picocli version, and <code>groovy.util.CliBuilder</code> may be removed in a future version of Groovy.
@@ -603,7 +603,7 @@ cli.i(<span class="key">type</span>: <span class="predefined-type">RoundingMode<
 <h3 id="_supported_types">Supported Types</h3>
 <div class="paragraph">
 <p>The Commons CLI-based CliBuilder supports primitives, numeric types, files, enums and arrays thereof
-(using <a href="http://docs.groovy-lang.org/2.5.0-SNAPSHOT/html/gapi/index.html?org/codehaus/groovy/runtime/StringGroovyMethods.html#asType">StringGroovyMethods#asType(String, Class)</a>).
+(using <a href="http://docs.groovy-lang.org/2.5.0/html/gapi/index.html?org/codehaus/groovy/runtime/StringGroovyMethods.html#asType">StringGroovyMethods#asType(String, Class)</a>).
 The picocli-based CliBuilder supports those <a href="http://picocli.info/#_built_in_types">and more</a>.</p>
 </div>
 </div>
@@ -852,7 +852,7 @@ matched for the associated option.</p>
 </div>
 <div class="paragraph">
 <p>If all positional parameters have the same type, the <code>@Unparsed</code> annotation can be used with an array type other than <code>String[]</code>.
-Again, the type conversion is done using <a href="http://docs.groovy-lang.org/2.5.0-SNAPSHOT/html/gapi/index.html?org/codehaus/groovy/runtime/StringGroovyMethods.html#asType">StringGroovyMethods#asType(String, Class)</a>
+Again, the type conversion is done using <a href="http://docs.groovy-lang.org/2.5.0/html/gapi/index.html?org/codehaus/groovy/runtime/StringGroovyMethods.html#asType">StringGroovyMethods#asType(String, Class)</a>
 in the Commons CLI version, while the picocli version of CliBuilder supports a <a href="http://picocli.info/#_built_in_types">superset</a> of those types.</p>
 </div>
 <div class="paragraph">
@@ -1334,7 +1334,7 @@ picocli <a href="http://picocli.info/">site</a> and GitHub <a href="https://gith
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2018-05-30 22:56:54 JST
+Last updated 2018-06-10 19:49:25 JST
 </div>
 </div>
 </body>

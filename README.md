@@ -39,7 +39,7 @@ interactively showing users what options and subcommands are available.
 ![Picocli Demo help message with ANSI colors](docs/images/picocli.Demo.png?raw=true)
 
 #### Releases
-* [Releases](https://github.com/remkop/picocli/releases) - latest: 3.0.2
+* [Releases](https://github.com/remkop/picocli/releases) - latest: 3.1.0
 * [Picocli 3.0.0 Release Notes](https://github.com/remkop/picocli/releases/tag/v3.0.0) - note there are some [potential breaking changes](https://github.com/remkop/picocli/releases/tag/v3.0.0#3.0.0-breaking-changes) from prior versions
 * [Picocli 2.0 Release Notes](https://github.com/remkop/picocli/releases/tag/v2.0.0) - note there are some [potential breaking changes](https://github.com/remkop/picocli/releases/tag/v2.0.0#2.0-breaking-changes) from prior versions
 
@@ -52,7 +52,7 @@ interactively showing users what options and subcommands are available.
 * [FAQ](https://github.com/remkop/picocli/wiki/FAQ)
 
 #### Articles
-* Picocli is now part of Groovy. From <img src="http://picocli.info/images/groovy-logo.png" height="50"> Groovy 2.5, picocli is the underlying parser for Groovy's [CliBuilder DSL](http://groovy-lang.org/dsls.html#_clibuilder). Details: [Part 1](http://picocli.info/groovy-2.5-clibuilder-renewal-part1.html) (also [on DZone](https://dzone.com/articles/groovy-25-clibuilder-renewal)), [Part 2](http://picocli.info/groovy-2.5-clibuilder-renewal-part2.html), [all in one](http://picocli.info/groovy-2.5-clibuilder-renewal.html) (also on [blogs.apache.org](https://blogs.apache.org/logging/entry/groovy-2-5-clibuilder-renewal)). 
+* Picocli is now part of Groovy. <img src="http://picocli.info/images/groovy-logo.png" height="50"> From Groovy 2.5, picocli is the underlying parser for Groovy's [CliBuilder DSL](http://groovy-lang.org/dsls.html#_clibuilder). Details: [Part 1](http://picocli.info/groovy-2.5-clibuilder-renewal-part1.html) (also [on DZone](https://dzone.com/articles/groovy-25-clibuilder-renewal)), [Part 2](http://picocli.info/groovy-2.5-clibuilder-renewal-part2.html), [all in one](http://picocli.info/groovy-2.5-clibuilder-renewal.html) (also on [blogs.apache.org](https://blogs.apache.org/logging/entry/groovy-2-5-clibuilder-renewal)). 
 * [Java Command-Line Interfaces (Part 30): Observations](http://marxsoftware.blogspot.jp/2017/11/java-cmd-line-observations.html) by Dustin Marx about picocli 2.0.1 (also on: [DZone](https://dzone.com/articles/java-command-line-interfaces-part-30-finale-observations), [Java Code Geeks](https://www.javacodegeeks.com/2017/11/java-command-line-interfaces-part-30-observations.html))
 * [Java Command-Line Interfaces (Part 10): Picocli](http://marxsoftware.blogspot.jp/2017/08/picocli.html) by Dustin Marx about picocli 0.9.7 (also on: [DZone](https://dzone.com/articles/java-command-line-interfaces-part-10-picocli), [Java Code Geeks](https://www.javacodegeeks.com/2017/08/java-command-line-interfaces-part-10-picocli.html)) 
 * [Picocli 2.0: Groovy Scripts on Steroids](http://picocli.info/picocli-2.0-groovy-scripts-on-steroids.html) (also on: [DZone](https://dzone.com/articles/picocli-v2-groovy-scripts-on-steroids), [Java Code Geeks](https://www.javacodegeeks.com/2018/01/picocli-2-0-groovy-scripts-steroids.html))
@@ -147,35 +147,35 @@ See the [source code](https://github.com/remkop/picocli/blob/master/src/main/jav
 
 ### Gradle
 ```
-compile 'info.picocli:picocli:3.0.2'
+compile 'info.picocli:picocli:3.1.0'
 ```
 ### Maven
 ```
 <dependency>
   <groupId>info.picocli</groupId>
   <artifactId>picocli</artifactId>
-  <version>3.0.2</version>
+  <version>3.1.0</version>
 </dependency>
 ```
 ### Scala SBT
 ```
-libraryDependencies += "info.picocli" % "picocli" % "3.0.2"
+libraryDependencies += "info.picocli" % "picocli" % "3.1.0"
 ```
 ### Ivy
 ```
-<dependency org="info.picocli" name="picocli" rev="3.0.2" />
+<dependency org="info.picocli" name="picocli" rev="3.1.0" />
 ```
 ### Grape
 ```groovy
 @Grapes(
-    @Grab(group='info.picocli', module='picocli', version='3.0.2')
+    @Grab(group='info.picocli', module='picocli', version='3.1.0')
 )
 ```
 ### Leiningen
 ```
-[info.picocli/picocli "3.0.2"]
+[info.picocli/picocli "3.1.0"]
 ```
 ### Buildr
 ```
-'info.picocli:picocli:jar:3.0.2'
+'info.picocli:picocli:jar:3.1.0'
 ```
