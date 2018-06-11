@@ -2087,6 +2087,21 @@ public class CommandLineTest {
         return commandLine;
     }
 
+    private static CommandLine createNestedCommandWithAliases() {
+        CommandLine commandLine = new CommandLine(new MainCommand());
+        commandLine
+                .addSubcommand("cmd1", new CommandLine(new ChildCommand1())
+                        .addSubcommand("sub11", new GrandChild1Command1(), "sub11alias1", "sub11alias2")
+                        .addSubcommand("sub12", new GrandChild1Command2(), "sub12alias1", "sub12alias2")
+                        , "cmd1alias1", "cmd1alias2")
+                .addSubcommand("cmd2", new CommandLine(new ChildCommand2())
+                        .addSubcommand("sub21", new GrandChild2Command1(), "sub21alias1", "sub21alias2")
+                        .addSubcommand("sub22", new CommandLine(new GrandChild2Command2())
+                                .addSubcommand("sub22sub1", new GreatGrandChild2Command2_1(), "sub22sub1alias1", "sub22sub1alias2"), "sub22alias1", "sub22alias2")
+                        , "cmd2alias1", "cmd2alias2");
+        return commandLine;
+    }
+
     @Test
     public void testCommandListReturnsOnlyCommandsRegisteredOnInstance() {
         CommandLine commandLine = createNestedCommand();
@@ -2095,6 +2110,35 @@ public class CommandLineTest {
         assertEquals(2, commandMap.size());
         assertTrue("cmd1", commandMap.get("cmd1").getCommand() instanceof ChildCommand1);
         assertTrue("cmd2", commandMap.get("cmd2").getCommand() instanceof ChildCommand2);
+    }
+
+    @Test
+    public void testCommandListReturnsAliases() {
+        CommandLine commandLine = createNestedCommandWithAliases();
+
+        Map<String, CommandLine> commandMap = commandLine.getSubcommands();
+        assertEquals(6, commandMap.size());
+        assertEquals(setOf("cmd1", "cmd1alias1", "cmd1alias2", "cmd2", "cmd2alias1", "cmd2alias2"), commandMap.keySet());
+        assertTrue("cmd1", commandMap.get("cmd1").getCommand() instanceof ChildCommand1);
+        assertSame(commandMap.get("cmd1"), commandMap.get("cmd1alias1"));
+        assertSame(commandMap.get("cmd1"), commandMap.get("cmd1alias2"));
+
+        assertTrue("cmd2", commandMap.get("cmd2").getCommand() instanceof ChildCommand2);
+        assertSame(commandMap.get("cmd2"), commandMap.get("cmd2alias1"));
+        assertSame(commandMap.get("cmd2"), commandMap.get("cmd2alias2"));
+
+        CommandLine cmd2 = commandMap.get("cmd2");
+        Map<String, CommandLine> subMap = cmd2.getSubcommands();
+
+        assertTrue("cmd2", subMap.get("sub21").getCommand() instanceof GrandChild2Command1);
+        assertSame(subMap.get("sub21"), subMap.get("sub21alias1"));
+        assertSame(subMap.get("sub21"), subMap.get("sub21alias2"));
+    }
+
+    public static <T> Set<T> setOf(T... elements) {
+        Set<T> result = new HashSet<T>();
+        for (T t : elements) { result.add(t); }
+        return result;
     }
 
     @Test
@@ -2180,6 +2224,53 @@ public class CommandLineTest {
         } catch (UnmatchedArgumentException ex) {
             assertEquals("Unmatched argument [sub22sub1]", ex.getMessage());
         }
+    }
+
+    @Test
+    public void testParseNestedSubCommandsWithAliases() {
+        // valid
+        List<CommandLine> main = createNestedCommandWithAliases().parse("cmd1alias1");
+        assertEquals(2, main.size());
+        assertFalse(((MainCommand)   main.get(0).getCommand()).a);
+        assertFalse(((ChildCommand1) main.get(1).getCommand()).b);
+
+        List<CommandLine> mainWithOptions = createNestedCommandWithAliases().parse("-a", "cmd1alias2", "-b");
+        assertEquals(2, mainWithOptions.size());
+        assertTrue(((MainCommand)   mainWithOptions.get(0).getCommand()).a);
+        assertTrue(((ChildCommand1) mainWithOptions.get(1).getCommand()).b);
+
+        List<CommandLine> sub1 = createNestedCommandWithAliases().parse("cmd1", "sub11");
+        assertEquals(3, sub1.size());
+        assertFalse(((MainCommand)         sub1.get(0).getCommand()).a);
+        assertFalse(((ChildCommand1)       sub1.get(1).getCommand()).b);
+        assertFalse(((GrandChild1Command1) sub1.get(2).getCommand()).d);
+
+        List<CommandLine> sub1WithOptions = createNestedCommandWithAliases().parse("-a", "cmd1alias1", "-b", "sub11alias2", "-d");
+        assertEquals(3, sub1WithOptions.size());
+        assertTrue(((MainCommand)         sub1WithOptions.get(0).getCommand()).a);
+        assertTrue(((ChildCommand1)       sub1WithOptions.get(1).getCommand()).b);
+        assertTrue(((GrandChild1Command1) sub1WithOptions.get(2).getCommand()).d);
+
+        // sub12 is not nested under sub11 so is not recognized
+        try {
+            createNestedCommandWithAliases().parse("cmd1alias1", "sub11alias1", "sub12alias1");
+            fail("Expected exception for sub12alias1");
+        } catch (UnmatchedArgumentException ex) {
+            assertEquals("Unmatched argument [sub12alias1]", ex.getMessage());
+        }
+        List<CommandLine> sub22sub1 = createNestedCommandWithAliases().parse("cmd2alias1", "sub22alias2", "sub22sub1alias1");
+        assertEquals(4, sub22sub1.size());
+        assertFalse(((MainCommand)                sub22sub1.get(0).getCommand()).a);
+        assertFalse(((ChildCommand2)              sub22sub1.get(1).getCommand()).c);
+        assertFalse(((GrandChild2Command2)        sub22sub1.get(2).getCommand()).g);
+        assertFalse(((GreatGrandChild2Command2_1) sub22sub1.get(3).getCommand()).h);
+
+        List<CommandLine> sub22sub1WithOptions = createNestedCommandWithAliases().parse("-a", "cmd2alias1", "-c", "sub22alias1", "-g", "sub22sub1alias2", "-h");
+        assertEquals(4, sub22sub1WithOptions.size());
+        assertTrue(((MainCommand)                sub22sub1WithOptions.get(0).getCommand()).a);
+        assertTrue(((ChildCommand2)              sub22sub1WithOptions.get(1).getCommand()).c);
+        assertTrue(((GrandChild2Command2)        sub22sub1WithOptions.get(2).getCommand()).g);
+        assertTrue(((GreatGrandChild2Command2_1) sub22sub1WithOptions.get(3).getCommand()).h);
     }
 
     @Test

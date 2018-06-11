@@ -3,7 +3,11 @@
 # <a name="3.1.0"></a> Picocli 3.1.0 (UNRELEASED)
 The picocli community is pleased to announce picocli 3.1.0.
 
-This release contains bugfixes and enhancements.
+This release contains bugfixes and support for command aliases.
+
+Picocli has a new logo! Many thanks to [Reallinfo](https://github.com/reallinfo) for the design!
+
+<img src="http://picocli.info/images/logo/horizontal.png" height="100"> 
 
 This is the thirty-second public release.
 Picocli follows [semantic versioning](http://semver.org/).
@@ -16,6 +20,28 @@ Picocli follows [semantic versioning](http://semver.org/).
 * [Potential breaking changes](#3.1.0-breaking-changes)
 
 ## <a name="3.1.0-new"></a> New and Noteworthy
+### Command Aliases
+This release adds support for command aliases.
+
+```java
+@Command(name = "top", subcommands = {SubCommand.class},
+        description = "top level command")
+static class TopLevelCommand { }
+
+@Command(name = "sub", aliases = {"s", "sb"},
+        description = "I'm a subcommand")
+static class SubCommand {}
+
+new CommandLine(new TopLevelCommand()).usage(System.out);
+```
+The above would print the following usage help message:
+
+```text
+Usage: top [COMMAND]
+top level command
+Commands:
+  sub, s, sb   I'm a subcommand
+```
 
 ## <a name="3.1.0-promoted"></a> Promoted Features
 Promoted features are features that were incubating in previous versions of picocli but are now supported and subject to backwards compatibility. 
@@ -23,6 +49,7 @@ Promoted features are features that were incubating in previous versions of pico
 No features have been promoted in this picocli release.
 
 ## <a name="3.1.0-fixes"></a> Fixed issues
+- [#288] New feature: add support for command aliases. 
 - [#383] Enhancement: [Reallinfo](https://github.com/reallinfo) designed the new picocli logo. Amazing work, many thanks!
 - [#388] Bugfix: Prevent AnnotationFormatError "Duplicate annotation for class" with @PicocliScript when the script contains classes. Thanks to [Bradford Powell](https://github.com/bpow) for the bug report.
 

@@ -229,7 +229,23 @@ public class CommandLine {
      * @see Command#subcommands()
      */
     public CommandLine addSubcommand(String name, Object command) {
+        return addSubcommand(name, command, new String[0]);
+    }
+
+    /** Registers a subcommand with the specified name and all specified aliases. See also {@link #addSubcommand(String, Object)}.
+     *
+     *
+     * @param name the string to recognize on the command line as a subcommand
+     * @param command the object to initialize with command line arguments following the subcommand name.
+     *          This may be a {@code CommandLine} instance with its own (nested) subcommands
+     * @param aliases zero or more alias names that are also recognized on the command line as this subcommand
+     * @return this CommandLine object, to allow method chaining
+     * @since 3.1
+     * @see #addSubcommand(String, Object)
+     */
+    public CommandLine addSubcommand(String name, Object command, String... aliases) {
         CommandLine subcommandLine = toCommandLine(command, factory);
+        subcommandLine.getCommandSpec().aliases(aliases);
         getCommandSpec().addSubcommand(name, subcommandLine);
         CommandLine.Model.CommandReflection.initParentCommand(subcommandLine.getCommandSpec().userObject(), getCommandSpec().userObject());
         return this;
@@ -2156,6 +2172,11 @@ public class CommandLine {
          * @see Help#commandName() */
         String name() default "<main class>";
 
+        /** Alternative command names by which this subcommand is recognized on the command line.
+         * @return one or more alternative command names
+         * @since 3.1 */
+        String[] aliases() default {};
+
         /** A list of classes to instantiate and register as subcommands. When registering subcommands declaratively
          * like this, you don't need to call the {@link CommandLine#addSubcommand(String, Object)} method. For example, this:
          * <pre>
@@ -2674,6 +2695,7 @@ public class CommandLine {
             private CommandSpec parent;
     
             private String name;
+            private String[] aliases = {};
             private Boolean isHelpCommand;
             private IVersionProvider versionProvider;
             private String[] version;
@@ -2789,12 +2811,18 @@ public class CommandLine {
     
             /** Adds the specified subcommand with the specified name.
              * @param name subcommand name - when this String is encountered in the command line arguments the subcommand is invoked
-             * @param commandLine the subcommand to envoke when the name is encountered on the command line
+             * @param subCommandLine the subcommand to envoke when the name is encountered on the command line
              * @return this {@code CommandSpec} object for method chaining */
-            public CommandSpec addSubcommand(String name, CommandLine commandLine) {
-                commands.put(name, commandLine);
-                if (commandLine.getCommandSpec().name == null) { commandLine.getCommandSpec().name(name); }
-                commandLine.getCommandSpec().parent(this);
+            public CommandSpec addSubcommand(String name, CommandLine subCommandLine) {
+                CommandLine previous = commands.put(name, subCommandLine);
+                if (previous != null && previous != subCommandLine) { throw new InitializationException("Another subcommand named '" + name + "' already exists for command '" + this.name() + "'"); }
+                CommandSpec subSpec = subCommandLine.getCommandSpec();
+                if (subSpec.name == null) { subSpec.name(name); }
+                subSpec.parent(this);
+                for (String alias : subSpec.aliases()) {
+                    previous = commands.put(alias, subCommandLine);
+                    if (previous != null && previous != subCommandLine) { throw new InitializationException("Alias '" + alias + "' for subcommand '" + name + "' is already used by another subcommand of '" + this.name() + "'"); }
+                }
                 return this;
             }
     
@@ -2910,6 +2938,10 @@ public class CommandLine {
              * @see #qualifiedName() */
             public String name() { return (name == null) ? DEFAULT_COMMAND_NAME : name; }
 
+            /** Returns the alias command names of this subcommand.
+             * @since 3.1 */
+            public String[] aliases() { return aliases.clone(); }
+
             /** Returns the String to use as the program name in the synopsis line of the help message:
              * this command's {@link #name() name}, preceded by the qualified name of the parent command, if any.
              * {@link #DEFAULT_COMMAND_NAME} by default, initialized from {@link Command#name()} if defined.
@@ -2951,11 +2983,15 @@ public class CommandLine {
 
             /** Returns a string representation of this command, used in error messages and trace messages. */
             public String toString() { return toString; }
-    
-    
+
             /** Sets the String to use as the program name in the synopsis line of the help message.
              * @return this CommandSpec for method chaining */
             public CommandSpec name(String name) { this.name = name; return this; }
+
+            /** Sets the alternative names by which this subcommand is recognized on the command line.
+             * @return this CommandSpec for method chaining
+             * @since 3.1 */
+            public CommandSpec aliases(String... aliases) { this.aliases = aliases == null ? new String[0] : aliases.clone(); return this; }
 
             /** Sets version information literals for this command, to print to the console when the user specifies an
              * {@linkplain OptionSpec#versionHelp() option} to request version help. Only used if no {@link #versionProvider() versionProvider} is set.
@@ -2999,7 +3035,7 @@ public class CommandLine {
     
             void initName(String value)                 { if (initializable(name, value, DEFAULT_COMMAND_NAME))                           {name = value;} }
             void initHelpCommand(boolean value)         { if (initializable(isHelpCommand, value, DEFAULT_IS_HELP_COMMAND))               {isHelpCommand = value;} }
-            void initVersion(String[] value)            { if (initializable(version, value, UsageMessageSpec.DEFAULT_MULTI_LINE))                          {version = value.clone();} }
+            void initVersion(String[] value)            { if (initializable(version, value, UsageMessageSpec.DEFAULT_MULTI_LINE))         {version = value.clone();} }
             void initVersionProvider(IVersionProvider value) { if (versionProvider == null) { versionProvider = value; } }
             void initVersionProvider(Class<? extends IVersionProvider> value, IFactory factory) {
                 if (initializable(versionProvider, value, NoVersionProvider.class)) { versionProvider = (DefaultFactory.createVersionProvider(factory, value)); }
@@ -4129,6 +4165,7 @@ public class CommandLine {
                 if (!cls.isAnnotationPresent(Command.class)) { return false; }
 
                 Command cmd = cls.getAnnotation(Command.class);
+                commandSpec.aliases(cmd.aliases());
                 initSubcommands(cmd, commandSpec, factory);
 
                 commandSpec.parser().initSeparator(cmd.separator());
@@ -5949,6 +5986,7 @@ public class CommandLine {
         private final CommandSpec commandSpec;
         private final ColorScheme colorScheme;
         private final Map<String, Help> commands = new LinkedHashMap<String, Help>();
+        private List<String> aliases = Collections.emptyList();
 
         private IParamLabelRenderer parameterLabelRenderer;
 
@@ -5980,10 +6018,15 @@ public class CommandLine {
          * @param colorScheme the color scheme to use */
         public Help(CommandSpec commandSpec, ColorScheme colorScheme) {
             this.commandSpec = Assert.notNull(commandSpec, "commandSpec");
-            this.addAllSubcommands(commandSpec.subcommands());
+            this.aliases = new ArrayList<String>(Arrays.asList(commandSpec.aliases()));
+            this.aliases.add(0, commandSpec.name());
             this.colorScheme = Assert.notNull(colorScheme, "colorScheme").applySystemProperties();
             parameterLabelRenderer = createDefaultParamLabelRenderer(); // uses help separator
+
+            this.addAllSubcommands(commandSpec.subcommands());
         }
+
+        Help withCommandNames(List<String> aliases) { this.aliases = aliases; return this; }
 
         /** Returns the {@code CommandSpec} model that this Help was constructed with.
          * @since 3.0 */
@@ -6006,11 +6049,28 @@ public class CommandLine {
          */
         public Help addAllSubcommands(Map<String, CommandLine> commands) {
             if (commands != null) {
+                // first collect aliases
+                Map<CommandLine, List<String>> done = new IdentityHashMap<CommandLine, List<String>>();
+                for (CommandLine cmd : commands.values()) {
+                    if (!done.containsKey(cmd)) {
+                        done.put(cmd, new ArrayList<String>(Arrays.asList(cmd.commandSpec.aliases())));
+                    }
+                }
+                // then loop over all names that the command was registered with and add this name to the front of the list (if it isn't already in the list)
+                for (Map.Entry<String, CommandLine> entry : commands.entrySet()) {
+                    List<String> aliases = done.get(entry.getValue());
+                    if (!aliases.contains(entry.getKey())) { aliases.add(0, entry.getKey()); }
+                }
+                // The aliases list for each command now has at least one entry, with the main name at the front.
+                // Now we loop over the commands in the order that they were registered on their parent command.
                 for (Map.Entry<String, CommandLine> entry : commands.entrySet()) {
                     // not registering hidden commands is easier than suppressing display in Help.commandList():
                     // if all subcommands are hidden, help should not show command list header
                     if (!entry.getValue().getCommandSpec().usageMessage().hidden()) {
-                        addSubcommand(entry.getKey(), entry.getValue());
+                        List<String> aliases = done.remove(entry.getValue());
+                        if (aliases != null) { // otherwise we already processed this command by another alias
+                            addSubcommand(aliases, entry.getValue());
+                        }
                     }
                 }
             }
@@ -6018,11 +6078,12 @@ public class CommandLine {
         }
 
         /** Registers the specified subcommand with this Help.
-         * @param commandName the name of the subcommand to display in the usage message
+         * @param commandNames the name and aliases of the subcommand to display in the usage message
          * @param commandLine the {@code CommandLine} object to get more information from
          * @return this Help instance (for method chaining) */
-        Help addSubcommand(String commandName, CommandLine commandLine) {
-            commands.put(commandName, new Help(commandLine.commandSpec));
+        Help addSubcommand(List<String> commandNames, CommandLine commandLine) {
+            String all = commandNames.toString();
+            commands.put(all.substring(1, all.length() - 1), new Help(commandLine.commandSpec, colorScheme).withCommandNames(commandNames));
             return this;
         }
 
@@ -6403,7 +6464,7 @@ public class CommandLine {
                 CommandSpec command = help.commandSpec;
                 String header = command.usageMessage().header() != null && command.usageMessage().header().length > 0 ? command.usageMessage().header()[0]
                         : (command.usageMessage().description() != null && command.usageMessage().description().length > 0 ? command.usageMessage().description()[0] : "");
-                textTable.addRowValues(colorScheme.commandText(entry.getKey()), ansi().new Text(header));
+                textTable.addRowValues(help.commandNamesText(), ansi().new Text(header));
             }
             return textTable.toString();
         }
@@ -6411,6 +6472,13 @@ public class CommandLine {
             List<String> strings = new ArrayList<String>(any);
             Collections.sort(strings, Collections.reverseOrder(Help.shortestFirst()));
             return strings.get(0).length();
+        }
+        private Text commandNamesText() {
+            Text result = colorScheme.commandText(aliases.get(0));
+            for (int i = 1; i < aliases.size(); i++) {
+                result = result.concat(", ").concat(colorScheme.commandText(aliases.get(i)));
+            }
+            return result;
         }
         private static String join(String[] names, int offset, int length, String separator) {
             if (names == null) { return ""; }
