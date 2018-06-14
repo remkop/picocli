@@ -3345,6 +3345,7 @@ public class CommandLine {
             private boolean unmatchedOptionsArePositionalParams = false;
             private boolean limitSplit = false;
             private boolean aritySatisfiedByAttachedOptionParam = false;
+            private boolean collectErrors = false;
 
             /** Returns the String to use as the separator between options and option parameters. {@code "="} by default,
              * initialized from {@link Command#separator()} if defined.*/
@@ -3372,6 +3373,9 @@ public class CommandLine {
             public boolean limitSplit()                        { return limitSplit; }
             /** Returns true if options with attached arguments should not consume subsequent arguments and should not validate arity. */
             public boolean aritySatisfiedByAttachedOptionParam() { return aritySatisfiedByAttachedOptionParam; }
+            /** Returns true if exceptions during parsing should be collected instead of thrown.
+             * @since 3.2 */
+            public boolean collectErrors()                     { return collectErrors; }
 
             /** Sets the String to use as the separator between options and option parameters.
              * @return this ParserSpec for method chaining */
@@ -3392,6 +3396,9 @@ public class CommandLine {
             public ParserSpec posixClusteredShortOptionsAllowed(boolean posixClusteredShortOptionsAllowed) { this.posixClusteredShortOptionsAllowed = posixClusteredShortOptionsAllowed; return this; }
             /** @see CommandLine#setUnmatchedOptionsArePositionalParams(boolean) */
             public ParserSpec unmatchedOptionsArePositionalParams(boolean unmatchedOptionsArePositionalParams) { this.unmatchedOptionsArePositionalParams = unmatchedOptionsArePositionalParams; return this; }
+            /** Sets whether exceptions during parsing should be collected instead of thrown.
+             * @since 3.2 */
+            public ParserSpec collectErrors(boolean collectErrors)                         { this.collectErrors = collectErrors; return this; }
 
             /** Returns true if options with attached arguments should not consume subsequent arguments and should not validate arity. */
             public ParserSpec aritySatisfiedByAttachedOptionParam(boolean newValue) { aritySatisfiedByAttachedOptionParam = newValue; return this; }
@@ -4481,6 +4488,7 @@ public class CommandLine {
             private boolean usageHelpRequested;
             private boolean versionHelpRequested;
             boolean isInitializingDefaultValues;
+            private List<Exception> errors = new ArrayList<Exception>(1);
 
             private Builder(CommandSpec spec) { commandSpec = Assert.notNull(spec, "commandSpec"); }
             /** Creates and returns a new {@code ParseResult} instance for this builder's configuration. */
@@ -4529,6 +4537,9 @@ public class CommandLine {
                     argSpec.typedValueAtPosition.put(position, typedValue);
                 }
             }
+            public void addError(PicocliException ex) {
+                errors.add(Assert.notNull(ex, "exception"));
+            }
         }
         private final CommandSpec commandSpec;
         private final List<OptionSpec> matchedOptions;
@@ -4536,6 +4547,8 @@ public class CommandLine {
         private final List<String> originalArgs;
         private final List<String> unmatched;
         private final List<List<PositionalParamSpec>> matchedPositionalParams;
+        private final List<Exception> errors;
+
         private final ParseResult subcommand;
         private final boolean usageHelpRequested;
         private final boolean versionHelpRequested;
@@ -4548,6 +4561,7 @@ public class CommandLine {
             originalArgs = new ArrayList<String>(builder.originalArgList);
             matchedUniquePositionals = new ArrayList<PositionalParamSpec>(builder.positionals);
             matchedPositionalParams = new ArrayList<List<PositionalParamSpec>>(builder.positionalParams);
+            errors = new ArrayList<Exception>(builder.errors);
             usageHelpRequested = builder.usageHelpRequested;
             versionHelpRequested = builder.versionHelpRequested;
         }
@@ -4618,6 +4632,10 @@ public class CommandLine {
 
         /** Returns the command line arguments that were parsed. */
         public List<String> originalArgs()                  { return Collections.unmodifiableList(originalArgs); }
+
+        /** If {@link ParserSpec#collectErrors} is {@code true}, returns the list of exceptions that were encountered during parsing, otherwise, returns an empty list.
+         * @since 3.2 */
+        public List<Exception> errors()                     { return Collections.unmodifiableList(errors); }
 
         /** Returns the command line argument value of the option with the specified name, converted to the {@linkplain OptionSpec#type() type} of the option, or the specified default value if no option with the specified name was matched. */
         public <T> T matchedOptionValue(char shortName, T defaultValue)    { return matchedOptionValue(matchedOption(shortName), defaultValue); }
@@ -4821,6 +4839,13 @@ public class CommandLine {
                 tracer.debug("Initial value not available for %s%n", argSpec);
             }
         }
+        private void maybeThrow(PicocliException ex) throws PicocliException {
+            if (commandSpec.parser().collectErrors) {
+                parseResult.addError(ex);
+            } else {
+                throw ex;
+            }
+        }
 
         private void parse(List<CommandLine> parsedCommands, Stack<String> argumentStack, String[] originalArgs) {
             clear(); // first reset any state in case this CommandLine instance is being reused
@@ -4832,20 +4857,27 @@ public class CommandLine {
             List<ArgSpec> required = new ArrayList<ArgSpec>(commandSpec.requiredArgs());
             Set<ArgSpec> initialized = new HashSet<ArgSpec>();
             Collections.sort(required, new PositionalParametersSorter());
-            try {
-                applyDefaultValues(required);
-                processArguments(parsedCommands, argumentStack, required, initialized, originalArgs);
-            } catch (ParameterException ex) {
-                throw ex;
-            } catch (Exception ex) {
-                int offendingArgIndex = originalArgs.length - argumentStack.size() - 1;
-                String arg = offendingArgIndex >= 0 && offendingArgIndex < originalArgs.length ? originalArgs[offendingArgIndex] : "?";
-                throw ParameterException.create(CommandLine.this, ex, arg, offendingArgIndex, originalArgs);
-            }
+            boolean continueOnError = commandSpec.parser().collectErrors;
+            do {
+                int stackSize = argumentStack.size();
+                try {
+                    applyDefaultValues(required);
+                    processArguments(parsedCommands, argumentStack, required, initialized, originalArgs);
+                } catch (ParameterException ex) {
+                    maybeThrow(ex);
+                } catch (Exception ex) {
+                    int offendingArgIndex = originalArgs.length - argumentStack.size() - 1;
+                    String arg = offendingArgIndex >= 0 && offendingArgIndex < originalArgs.length ? originalArgs[offendingArgIndex] : "?";
+                    maybeThrow(ParameterException.create(CommandLine.this, ex, arg, offendingArgIndex, originalArgs));
+                }
+                if (continueOnError && stackSize == argumentStack.size() && stackSize > 0) {
+                    parseResult.unmatched.add(argumentStack.pop());
+                }
+            } while (!argumentStack.isEmpty() && continueOnError);
             if (!isAnyHelpRequested() && !required.isEmpty()) {
                 for (ArgSpec missing : required) {
                     if (missing.isOption()) {
-                        throw MissingParameterException.create(CommandLine.this, required, config().separator());
+                        maybeThrow(MissingParameterException.create(CommandLine.this, required, config().separator()));
                     } else {
                         assertNoMissingParameters(missing, missing.arity(), argumentStack);
                     }
@@ -4856,7 +4888,7 @@ public class CommandLine {
                 for (UnmatchedArgsBinding unmatchedArgsBinding : getCommandSpec().unmatchedArgsBindings()) {
                     unmatchedArgsBinding.addAll(unmatched.clone());
                 }
-                if (!isUnmatchedArgumentsAllowed()) { throw new UnmatchedArgumentException(CommandLine.this, Collections.unmodifiableList(parseResult.unmatched)); }
+                if (!isUnmatchedArgumentsAllowed()) { maybeThrow(new UnmatchedArgumentException(CommandLine.this, Collections.unmodifiableList(parseResult.unmatched))); }
                 if (tracer.isInfo()) { tracer.info("Unmatched arguments: %s%n", parseResult.unmatched); }
             }
         }
@@ -5020,7 +5052,7 @@ public class CommandLine {
                 Stack<String> argsCopy = copy(args);
                 Range arity = positionalParam.arity();
                 if (tracer.isDebug()) {tracer.debug("Position %d is in index range %s. Trying to assign args to %s, arity=%s%n", position, indexRange, positionalParam, arity);}
-                assertNoMissingParameters(positionalParam, arity, argsCopy);
+                if (!assertNoMissingParameters(positionalParam, arity, argsCopy)) { break; } // #389 collectErrors parsing
                 int originalSize = argsCopy.size();
                 applyOption(positionalParam, LookBehind.SEPARATE, arity, argsCopy, initialized, "args[" + indexRange + "] at position " + position);
                 int count = originalSize - argsCopy.size();
@@ -5129,7 +5161,9 @@ public class CommandLine {
             Stack<String> workingStack = args;
             if (consumeOnlyOne) {
                 workingStack = args.isEmpty() ? args : stack(args.pop());
-            } else { assertNoMissingParameters(argSpec, arity, args); }
+            } else {
+                if (!assertNoMissingParameters(argSpec, arity, args)) { return 0; } // #389 collectErrors parsing
+            }
 
             int result;
             if (argSpec.type().isArray()) {
@@ -5588,7 +5622,7 @@ public class CommandLine {
             throw new MissingTypeConverterException(CommandLine.this, "No TypeConverter registered for " + type.getName() + " of " + argSpec);
         }
 
-        private void assertNoMissingParameters(ArgSpec argSpec, Range arity, Stack<String> args) {
+        private boolean assertNoMissingParameters(ArgSpec argSpec, Range arity, Stack<String> args) {
             int available = args.size();
             if (available > 0 && commandSpec.parser().splitFirst() && argSpec.splitRegex().length() > 0) {
                 available += argSpec.splitValue(args.peek(), commandSpec.parser(), arity, 0).length - 1;
@@ -5596,8 +5630,9 @@ public class CommandLine {
             if (arity.min > available) {
                 if (arity.min == 1) {
                     if (argSpec.isOption()) {
-                        throw new MissingParameterException(CommandLine.this, argSpec, "Missing required parameter for " +
-                                optionDescription("", argSpec, 0));
+                        maybeThrow(new MissingParameterException(CommandLine.this, argSpec, "Missing required parameter for " +
+                                optionDescription("", argSpec, 0)));
+                        return false;
                     }
                     Range indexRange = ((PositionalParamSpec) argSpec).index();
                     String sep = "";
@@ -5618,15 +5653,17 @@ public class CommandLine {
                     } else {
                         msg += (count > 1 ? "s: " : ": ");
                     }
-                    throw new MissingParameterException(CommandLine.this, argSpec, msg + names);
+                    maybeThrow(new MissingParameterException(CommandLine.this, argSpec, msg + names));
+                } else if (args.isEmpty()) {
+                    maybeThrow(new MissingParameterException(CommandLine.this, argSpec, optionDescription("", argSpec, 0) +
+                            " requires at least " + arity.min + " values, but none were specified."));
+                } else {
+                    maybeThrow(new MissingParameterException(CommandLine.this, argSpec, optionDescription("", argSpec, 0) +
+                            " requires at least " + arity.min + " values, but only " + available + " were specified: " + reverse(args)));
                 }
-                if (args.isEmpty()) {
-                    throw new MissingParameterException(CommandLine.this, argSpec, optionDescription("", argSpec, 0) +
-                            " requires at least " + arity.min + " values, but none were specified.");
-                }
-                throw new MissingParameterException(CommandLine.this, argSpec, optionDescription("", argSpec, 0) +
-                        " requires at least " + arity.min + " values, but only " + available + " were specified: " + reverse(args));
+                return false;
             }
+            return true;
         }
         private String trim(String value) {
             return unquote(value);
