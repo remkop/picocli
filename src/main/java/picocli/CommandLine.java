@@ -3374,6 +3374,7 @@ public class CommandLine {
             /** Returns true if options with attached arguments should not consume subsequent arguments and should not validate arity. */
             public boolean aritySatisfiedByAttachedOptionParam() { return aritySatisfiedByAttachedOptionParam; }
             /** Returns true if exceptions during parsing should be collected instead of thrown.
+             * Multiple errors may be encountered during parsing. These can be obtained from {@link ParseResult#errors()}.
              * @since 3.2 */
             public boolean collectErrors()                     { return collectErrors; }
 
@@ -3397,6 +3398,7 @@ public class CommandLine {
             /** @see CommandLine#setUnmatchedOptionsArePositionalParams(boolean) */
             public ParserSpec unmatchedOptionsArePositionalParams(boolean unmatchedOptionsArePositionalParams) { this.unmatchedOptionsArePositionalParams = unmatchedOptionsArePositionalParams; return this; }
             /** Sets whether exceptions during parsing should be collected instead of thrown.
+             * Multiple errors may be encountered during parsing. These can be obtained from {@link ParseResult#errors()}.
              * @since 3.2 */
             public ParserSpec collectErrors(boolean collectErrors)                         { this.collectErrors = collectErrors; return this; }
 
