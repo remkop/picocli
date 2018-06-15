@@ -1,5 +1,47 @@
 # picocli Release Notes
 
+# <a name="3.2.0"></a> Picocli 3.2.0 (UNRELEASED)
+The picocli community is pleased to announce picocli 3.2.0.
+
+This release contains bugfixes and new features.
+
+This is the thirty-third public release.
+Picocli follows [semantic versioning](http://semver.org/).
+
+## <a name="3.2.0"></a> Table of Contents
+* [New and noteworthy](#3.2.0-new)
+* [Promoted features](#3.2.0-promoted)
+* [Fixed issues](#3.2.0-fixes)
+* [Deprecations](#3.2.0-deprecated)
+* [Potential breaking changes](#3.2.0-breaking-changes)
+
+## <a name="3.2.0-new"></a> New and Noteworthy
+### Lenient Parse Mode
+
+This release adds the ability to continue parsing invalid input to the end.
+When `collectErrors` is set to `true`, and a problem occurs during parsing, an `Exception` is added to the `ParseResult.errors()` list and parsing continues. The default behaviour (when `collectErrors` is `false`) is to abort parsing by throwing the `Exception`.
+
+This is useful when generating completion candidates on partial input, and is also useful when using picocli in
+languages like Clojure where idiomatic error handling does not involve throwing and catching exceptions.
+
+When using this feature, applications are responsible for actively verifying that no errors occurred before executing the business logic. Use with care!
+
+
+## <a name="3.2.0-promoted"></a> Promoted Features
+Promoted features are features that were incubating in previous versions of picocli but are now supported and subject to backwards compatibility. 
+
+No features have been promoted in this picocli release.
+
+## <a name="3.2.0-fixes"></a> Fixed issues
+- [#389] New feature: Support 'lenient' parsing mode: don't throw `Exceptions` but add them to the `ParseResult.errors()` list and continue parsing.
+
+## <a name="3.2.0-deprecated"></a> Deprecations
+No features were deprecated in this release.
+
+## <a name="3.2.0-breaking-changes"></a> Potential breaking changes
+This release has no breaking changes.
+
+
 # <a name="3.1.0"></a> Picocli 3.1.0
 The picocli community is pleased to announce picocli 3.1.0.
 

@@ -889,6 +889,14 @@ If toggling is off, flags are simply set to `true` when the option is matched on
 By default, the picocli parser allows POSIX clustered short options, so short options like `-x -v -f SomeFile` can be clustered together like `-xvfSomeFile`.
 From picocli 3.0, applications can call `CommandLine.setPosixClusteredShortOptionsAllowed(false)` to enforce that options must be separated with whitespace on the command line.
 
+=== Lenient Mode (Incubating)
+From picocli 3.2, the parser can be configured to continue parsing invalid input to the end.
+When `collectErrors` is set to `true`, and a problem occurs during parsing, an `Exception` is added to the `ParseResult.errors()` list and parsing continues. The default behaviour (when `collectErrors` is `false`) is to abort parsing by throwing the `Exception`.
+
+This is useful when generating completion candidates on partial input, and is also useful when using picocli in
+languages like Clojure where idiomatic error handling does not involve throwing and catching exceptions.
+
+When using this feature, applications are responsible for actively verifying that no errors occurred before executing the business logic. Use with care!
 
 
 == Help
