@@ -51,6 +51,12 @@ public class CommandLineParseResultTest {
         ParseResult result = new CommandLine(new App()).parseArgs("-t", "-i", "1", "a", "b");
         assertEquals(Arrays.asList("-t", "-i", "1", "a", "b"), result.originalArgs());
 
+        assertSame(result.commandSpec().findOption("-t"), result.tentativeMatch.get(0));
+        assertSame(result.commandSpec().findOption("-i"), result.tentativeMatch.get(1));
+        assertSame(result.originalArgs().get(2), result.tentativeMatch.get(2));
+        assertSame(result.commandSpec().positionalParameters().get(0), result.tentativeMatch.get(3));
+        assertSame(result.commandSpec().positionalParameters().get(0), result.tentativeMatch.get(4));
+
         assertTrue(result.unmatched().isEmpty());
         assertFalse(result.hasSubcommand());
         assertFalse(result.isUsageHelpRequested());
@@ -75,6 +81,12 @@ public class CommandLineParseResultTest {
         String[] args = {"a", "b", "c", "d", "e"};
         ParseResult result = new CommandLine(new App()).parseArgs(args);
         assertEquals(Arrays.asList(args), result.originalArgs());
+
+        assertSame(result.commandSpec().positionalParameters().get(0), result.tentativeMatch.get(0));
+        assertSame(result.commandSpec().positionalParameters().get(0), result.tentativeMatch.get(1));
+        assertSame(result.commandSpec().positionalParameters().get(1), result.tentativeMatch.get(2));
+        assertSame(result.commandSpec().positionalParameters().get(1), result.tentativeMatch.get(3));
+        assertSame(result.commandSpec().positionalParameters().get(1), result.tentativeMatch.get(4));
 
         assertTrue(result.unmatched().isEmpty());
         assertFalse(result.hasSubcommand());
@@ -111,6 +123,13 @@ public class CommandLineParseResultTest {
         ParseResult parseResult = cmd.parseArgs("-x", "xval", "sub", "1", "2", "3");
         assertEquals(Arrays.asList("-x", "xval", "sub", "1", "2", "3"), parseResult.originalArgs());
 
+        assertSame(parseResult.commandSpec().findOption("-x"), parseResult.tentativeMatch.get(0));
+        assertSame(parseResult.originalArgs().get(1), parseResult.tentativeMatch.get(1));
+        assertSame(parseResult.subcommand().commandSpec(), parseResult.tentativeMatch.get(2));
+        assertSame(parseResult.subcommand().commandSpec().positionalParameters().get(0), parseResult.tentativeMatch.get(3));
+        assertSame(parseResult.subcommand().commandSpec().positionalParameters().get(0), parseResult.tentativeMatch.get(4));
+        assertSame(parseResult.subcommand().commandSpec().positionalParameters().get(0), parseResult.tentativeMatch.get(5));
+
         assertTrue(parseResult.hasMatchedOption("-x"));
         assertEquals("xval", parseResult.matchedOption("-x").stringValues().get(0));
         assertEquals("xval", parseResult.matchedOptionValue("-x", "xval"));
@@ -138,12 +157,17 @@ public class CommandLineParseResultTest {
             @Parameters(index = "2", arity = "0..1") int index2 = -1;
         }
         CommandLine cmd = new CommandLine(new App());
-        ParseResult parseResult = cmd.parseArgs("-x", "xval", "0", "1");
+        ParseResult result = cmd.parseArgs("-x", "xval", "0", "1");
+
+        assertSame(result.commandSpec().findOption("-x"), result.tentativeMatch.get(0));
+        assertSame(result.originalArgs().get(1), result.tentativeMatch.get(1));
+        assertSame(result.commandSpec().positionalParameters().get(0), result.tentativeMatch.get(2));
+        assertSame(result.commandSpec().positionalParameters().get(1), result.tentativeMatch.get(3));
 
         List<PositionalParamSpec> all = cmd.getCommandSpec().positionalParameters();
-        assertTrue(parseResult.hasMatchedPositional(all.get(0)));
-        assertTrue(parseResult.hasMatchedPositional(all.get(1)));
-        assertFalse(parseResult.hasMatchedPositional(all.get(2)));
+        assertTrue(result.hasMatchedPositional(all.get(0)));
+        assertTrue(result.hasMatchedPositional(all.get(1)));
+        assertFalse(result.hasMatchedPositional(all.get(2)));
     }
 
     @Test
@@ -355,16 +379,21 @@ public class CommandLineParseResultTest {
             @Option(names = "-y") String y;
         }
         CommandLine cmd = new CommandLine(new App());
-        ParseResult parseResult = cmd.parseArgs("-x", "value1", "-x", "value2");
-        assertTrue(parseResult.hasMatchedOption("x"));
-        assertTrue(parseResult.hasMatchedOption("-x"));
-        assertTrue(parseResult.hasMatchedOption("XX"));
-        assertTrue(parseResult.hasMatchedOption("++XX"));
-        assertTrue(parseResult.hasMatchedOption("XXX"));
-        assertTrue(parseResult.hasMatchedOption("/XXX"));
+        ParseResult result = cmd.parseArgs("-x", "value1", "-x", "value2");
+        assertTrue(result.hasMatchedOption("x"));
+        assertTrue(result.hasMatchedOption("-x"));
+        assertTrue(result.hasMatchedOption("XX"));
+        assertTrue(result.hasMatchedOption("++XX"));
+        assertTrue(result.hasMatchedOption("XXX"));
+        assertTrue(result.hasMatchedOption("/XXX"));
 
-        assertFalse(parseResult.hasMatchedOption("y"));
-        assertFalse(parseResult.hasMatchedOption("-y"));
+        assertFalse(result.hasMatchedOption("y"));
+        assertFalse(result.hasMatchedOption("-y"));
+
+        assertSame(result.commandSpec().findOption("-x"), result.tentativeMatch.get(0));
+        assertSame(result.originalArgs().get(1), result.tentativeMatch.get(1));
+        assertSame(result.commandSpec().findOption("-x"), result.tentativeMatch.get(2));
+        assertSame(result.originalArgs().get(3), result.tentativeMatch.get(3));
     }
 
     @Test
@@ -423,17 +452,24 @@ public class CommandLineParseResultTest {
             @Option(names = "-y") double y;
         }
         CommandLine cmd = new CommandLine(new App());
-        ParseResult parseResult = cmd.parseArgs("-x", "123", "-x", "456", "-y", "3.14");
+        ParseResult result = cmd.parseArgs("-x", "123", "-x", "456", "-y", "3.14");
         int[] expected = {123, 456};
-        assertArrayEquals(expected, parseResult.matchedOptionValue("x", expected));
-        assertArrayEquals(expected, parseResult.matchedOptionValue("-x", expected));
-        assertArrayEquals(expected, parseResult.matchedOptionValue("XX", expected));
-        assertArrayEquals(expected, parseResult.matchedOptionValue("++XX", expected));
-        assertArrayEquals(expected, parseResult.matchedOptionValue("XXX", expected));
-        assertArrayEquals(expected, parseResult.matchedOptionValue("/XXX", expected));
+        assertArrayEquals(expected, result.matchedOptionValue("x", expected));
+        assertArrayEquals(expected, result.matchedOptionValue("-x", expected));
+        assertArrayEquals(expected, result.matchedOptionValue("XX", expected));
+        assertArrayEquals(expected, result.matchedOptionValue("++XX", expected));
+        assertArrayEquals(expected, result.matchedOptionValue("XXX", expected));
+        assertArrayEquals(expected, result.matchedOptionValue("/XXX", expected));
 
-        assertEquals(Double.valueOf(3.14), parseResult.matchedOptionValue("y", 3.14));
-        assertEquals(Double.valueOf(3.14), parseResult.matchedOptionValue("-y", 3.14));
+        assertEquals(Double.valueOf(3.14), result.matchedOptionValue("y", 3.14));
+        assertEquals(Double.valueOf(3.14), result.matchedOptionValue("-y", 3.14));
+
+        assertSame(result.commandSpec().findOption("-x"), result.tentativeMatch.get(0));
+        assertSame(result.originalArgs().get(1), result.tentativeMatch.get(1));
+        assertSame(result.commandSpec().findOption("-x"), result.tentativeMatch.get(2));
+        assertSame(result.originalArgs().get(3), result.tentativeMatch.get(3));
+        assertSame(result.commandSpec().findOption("-y"), result.tentativeMatch.get(4));
+        assertSame(result.originalArgs().get(5), result.tentativeMatch.get(5));
     }
 
     @Test(expected = ClassCastException.class)
@@ -517,6 +553,30 @@ public class CommandLineParseResultTest {
         // for examples in Programmatic API wiki page
         assert expected.equals(pr.matchedOption('f').stringValues());
         assert expected.equals(pr.matchedOption("file").stringValues());
+
+        assertSame(pr.commandSpec().findOption("-V"), pr.tentativeMatch.get(0));
+        assertSame(pr.commandSpec().findOption("-f"), pr.tentativeMatch.get(1));
+        assertSame(pr.originalArgs().get(2), pr.tentativeMatch.get(2));
+        assertSame(pr.commandSpec().findOption("-f"), pr.tentativeMatch.get(3));
+        assertEquals(4, pr.tentativeMatch.size());
+    }
+
+    @Test
+    public void testClusteredAndAttached() {
+        class App {
+            @Option(names = "-x") boolean extract;
+            @Option(names = "-v") boolean verbose;
+            @Option(names = "-f") File file;
+            @Option(names = "-o") File outputFile;
+            @Option(names = "-i") File inputFile;
+        }
+        CommandLine cmd = new CommandLine(new App());
+        ParseResult pr = cmd.parseArgs("-xvfFILE", "-oOUT", "-iOUT");
+
+        assertSame(pr.commandSpec().findOption("-f"), pr.tentativeMatch.get(0));
+        assertSame(pr.commandSpec().findOption("-o"), pr.tentativeMatch.get(1));
+        assertSame(pr.commandSpec().findOption("-i"), pr.tentativeMatch.get(2));
+        assertEquals(3, pr.tentativeMatch.size());
     }
 
     @Test
