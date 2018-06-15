@@ -456,7 +456,7 @@ public class CommandLineArityTest {
         }
     }
 
-    private static class BooleanOptionsArity0_nAndParameters {
+    static class BooleanOptionsArity0_nAndParameters {
         @Parameters String[] params;
         @Option(names = "-bool", arity = "0..*") boolean bool;
         @Option(names = {"-v", "-other"}, arity="0..*") boolean vOrOther;

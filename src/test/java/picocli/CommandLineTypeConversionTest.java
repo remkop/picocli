@@ -645,7 +645,7 @@ public class CommandLineTypeConversionTest {
         commandLine.parse("100");
         assertEquals(123, app.converted);
     }
-    private static class EnumParams {
+    static class EnumParams {
         @Option(names = "-timeUnit")
         TimeUnit timeUnit;
         @Option(names = "-timeUnitArray", arity = "2") TimeUnit[] timeUnitArray;
