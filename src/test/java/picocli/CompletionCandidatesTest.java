@@ -151,7 +151,7 @@ public class CompletionCandidatesTest {
                 "                           long, list, of, completion, candidates, that, is,%n" +
                 "                           intended, to, wrap, to, the, next, line., I, wonder, if,%n" +
                 "                           it, is, long, enough.%n" +
-                "      --logfile=<file>   Use given file for log. Default: \\a\\b\\c%n" +
+                "      --logfile=<file>   Use given file for log. Default: %s%n" +
                 "      --strNull=<str>    String without default. Default: null%n" +
                 "      --x=<x>[,<x>...]   Comma-separated list of some xxx's. Valid values: A, B, C, D%n" +
                 "      --y=<y>            Test long default. Default: This is a very long default%n" +
@@ -160,7 +160,7 @@ public class CompletionCandidatesTest {
                 "  -P= [<key=ppp>...]     Use value for project key.%n" +
                 "                         Default={key1=veryveryverylonglonglongvaluevaluevalue,%n" +
                 "                           key2=very2very2very2longlonglongvaluevaluevalue2,%n" +
-                "                           key3=very3very3very3longlonglongvaluevaluevalue3}%n");
+                "                           key3=very3very3very3longlonglongvaluevaluevalue3}%n", new File("/a/b/c"));
         String actual = usageString(new CommandLine(new App(), new InnerClassFactory(this)), CommandLine.Help.Ansi.OFF);
         assertEquals(expected, actual);
     }
