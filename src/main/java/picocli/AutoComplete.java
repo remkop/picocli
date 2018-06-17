@@ -28,11 +28,13 @@ import java.util.List;
 import java.util.Map;
 
 import picocli.CommandLine.Command;
+import picocli.CommandLine.Model.PositionalParamSpec;
 import picocli.CommandLine.Option;
 import picocli.CommandLine.Parameters;
 import picocli.CommandLine.Model.ArgSpec;
 import picocli.CommandLine.Model.CommandSpec;
 import picocli.CommandLine.Model.OptionSpec;
+import picocli.CommandLine.ParseResult;
 
 import static java.lang.String.*;
 
@@ -554,5 +556,34 @@ public class AutoComplete {
             result.addAll(Arrays.asList(option.names()));
         }
         return concat(" ", result, "", new NullFunction()).trim();
+    }
+
+    private static int complete(CommandSpec spec, String[] args, int argIndex, int positionInArg, int cursor, List<CharSequence> candidates) {
+        if (spec == null)       { throw new NullPointerException("spec is null"); }
+        if (args == null)       { throw new NullPointerException("args is null"); }
+        if (candidates == null) { throw new NullPointerException("candidates list is null"); }
+        if (argIndex < 0      || argIndex >= args.length)                 { throw new IllegalArgumentException("Invalid argIndex " + argIndex + ": args array only has " + args.length + " elements."); }
+        if (positionInArg < 0 || positionInArg > args[argIndex].length()) { throw new IllegalArgumentException("Invalid positionInArg " + positionInArg + ": args[" + argIndex + "] (" + args[argIndex] + ") only has " + args[argIndex].length() + " characters."); }
+
+        boolean reset = spec.parser().collectErrors();
+        try {
+            spec.parser().collectErrors(true);
+            CommandLine parser = new CommandLine(spec);
+            ParseResult parseResult = parser.parseArgs(args);
+            if (argIndex >= parseResult.tentativeMatch.size()) {
+                System.err.println("ERROR: no match found for args[" + argIndex + "] (" + args[argIndex] + ")");
+            } else {
+                Object obj = parseResult.tentativeMatch.get(argIndex);
+                if (obj instanceof CommandSpec) { // subcommand
+                } else if (obj instanceof OptionSpec) { // option
+                } else if (obj instanceof PositionalParamSpec) { // positional
+                } else {
+
+                }
+            }
+            return -1;
+        } finally {
+            spec.parser().collectErrors(reset);
+        }
     }
 }
