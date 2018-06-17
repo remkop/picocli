@@ -26,12 +26,12 @@ import picocli.CommandLine.Model.PositionalParamSpec;
 import picocli.CommandLine.Option;
 import picocli.CommandLine.Parameters;
 
-import java.util.Arrays;
-import java.util.ArrayList;
-import java.util.List;
+import java.io.File;
+import java.util.*;
 
 import static java.lang.String.format;
 import static org.junit.Assert.*;
+import static picocli.HelpTestUtil.usageString;
 
 /**
  * Tests valid values-related functionality.
@@ -105,5 +105,63 @@ public class CompletionCandidatesTest {
         CommandSpec spec = CommandSpec.create();
         spec.add(PositionalParamSpec.builder().completionCandidates(Arrays.asList("x", "y", "z")).build());
         assertEquals(Arrays.asList("x", "y", "z"), extract(spec.positionalParameters().get(0).completionCandidates()));
+    }
+    private static Map<String, String> createLongMap() {
+        Map<String, String> result = new LinkedHashMap<String, String>();
+        result.put("key1", "veryveryverylonglonglongvaluevaluevalue");
+        result.put("key2", "very2very2very2longlonglongvaluevaluevalue2");
+        result.put("key3", "very3very3very3longlonglongvaluevaluevalue3");
+        return result;
+    }
+
+    @Test
+    public void testUsageHelpVariableReplacement() {
+        class MyLongCandidates extends ArrayList<String> {
+            MyLongCandidates() { super(Arrays.asList("This is a very long list of completion candidates that is intended to wrap to the next line. I wonder if it is long enough.".split(" ")));}
+        }
+        class App {
+            @Option(names = "--logfile", description = "Use given file for log. Default: ${DEFAULT-VALUE}")
+            File file = new File("/a/b/c");
+            @Option(names = "-P", arity = "0..*", paramLabel = "<key=ppp>",
+                    description = "Use value for project key.%nDefault=${DEFAULT-VALUE}")
+            Map<String, String> projectMap = createLongMap();
+            @Option(names = "--x", split = ",", completionCandidates = MyAbcdCandidates.class,
+                    description = "Comma-separated list of some xxx's. Valid values: ${COMPLETION-CANDIDATES}")
+            String[] x;
+            @Option(names = "--y", description = "Test long default. Default: ${DEFAULT-VALUE}")
+            String y = "This is a very long default value that is intended to wrap to the next line. I wonder if it is long enough.";
+            @Option(names = "--lib", completionCandidates = MyLongCandidates.class,
+                    description = "comma-separated list of up to 3 paths to search for jars and classes. Some example values: ${COMPLETION-CANDIDATES}")
+            String lib;
+            @Option(names = "--boolF", description = "Boolean variable 1. Default: ${DEFAULT-VALUE}")
+            boolean initiallyFalse;
+            @Option(names = "--boolT", description = "Boolean variable 2. Default: ${DEFAULT-VALUE}")
+            boolean initiallyTrue = true;
+            @Option(names = "--strNull", description = "String without default. Default: ${DEFAULT-VALUE}")
+            String str = null;
+        }
+        String expected = String.format("" +
+                "Usage: <main class> [--boolF] [--boolT] [--lib=<lib>] [--logfile=<file>]%n" +
+                "                    [--strNull=<str>] [--y=<y>] [--x=<x>[,<x>...]]... [-P%n" +
+                "                    [=<key=ppp>...]]...%n" +
+                "      --boolF            Boolean variable 1. Default: false%n" +
+                "      --boolT            Boolean variable 2. Default: true%n" +
+                "      --lib=<lib>        comma-separated list of up to 3 paths to search for jars%n" +
+                "                           and classes. Some example values: This, is, a, very,%n" +
+                "                           long, list, of, completion, candidates, that, is,%n" +
+                "                           intended, to, wrap, to, the, next, line., I, wonder, if,%n" +
+                "                           it, is, long, enough.%n" +
+                "      --logfile=<file>   Use given file for log. Default: \\a\\b\\c%n" +
+                "      --strNull=<str>    String without default. Default: null%n" +
+                "      --x=<x>[,<x>...]   Comma-separated list of some xxx's. Valid values: A, B, C, D%n" +
+                "      --y=<y>            Test long default. Default: This is a very long default%n" +
+                "                           value that is intended to wrap to the next line. I wonder%n" +
+                "                           if it is long enough.%n" +
+                "  -P= [<key=ppp>...]     Use value for project key.%n" +
+                "                         Default={key1=veryveryverylonglonglongvaluevaluevalue,%n" +
+                "                           key2=very2very2very2longlonglongvaluevaluevalue2,%n" +
+                "                           key3=very3very3very3longlonglongvaluevaluevalue3}%n");
+        String actual = usageString(new CommandLine(new App(), new InnerClassFactory(this)), CommandLine.Help.Ansi.OFF);
+        assertEquals(expected, actual);
     }
 }

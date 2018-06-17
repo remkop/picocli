@@ -26,6 +26,19 @@ languages like Clojure where idiomatic error handling does not involve throwing 
 
 When using this feature, applications are responsible for actively verifying that no errors occurred before executing the business logic. Use with care!
 
+### Embed Default Values in Description
+Currently, if `@Command(showDefaultValues = true)` is specified, default values are shown in the description column of the options list. The format for this is fixed: it adds a line to the option's description: `"  Default: <default value>"`.
+
+```
+Usage: This is the current output ...
+ -o, --option    This option does something.
+                   Default: abc
+```
+
+From this release the string `${DEFAULT-VALUE}` can be embedded anywhere in the option or positional parameter description, and when the usage help is generated, the variable is replaced with the actual default value.
+
+Similarly, completion candidates can be embedded with `${COMPLETION_CANDIDATES}`.
+
 
 ## <a name="3.2.0-promoted"></a> Promoted Features
 Promoted features are features that were incubating in previous versions of picocli but are now supported and subject to backwards compatibility. 
@@ -36,6 +49,7 @@ No features have been promoted in this picocli release.
 - [#389] New feature: Support 'lenient' parsing mode: don't throw `Exceptions` but add them to the `ParseResult.errors()` list and continue parsing.
 - [#392] New feature: Ability to map command line arguments to picocli spec elements. Internally used for generating completion candidates.
 - [#391] New feature: Add API to get completion candidates for option and positional parameter values of any type.
+- [#395] New feature: Allow embedding default values anywhere in @Option or @Parameters description.
 
 ## <a name="3.2.0-deprecated"></a> Deprecations
 No features were deprecated in this release.
