@@ -3471,6 +3471,9 @@ public class CommandLine {
         /** Models the shared attributes of {@link OptionSpec} and {@link PositionalParamSpec}.
          * @since 3.0 */
         public abstract static class ArgSpec {
+            static final String DESCRIPTION_VARIABLE_DEFAULT_VALUE = "${DEFAULT-VALUE}";
+            static final String DESCRIPTION_VARIABLE_COMPLETION_CANDIDATES = "${COMPLETION-CANDIDATES}";
+
             // help-related fields
             private final boolean hidden;
             private final String paramLabel;
@@ -3557,10 +3560,34 @@ public class CommandLine {
              * @see Option#required() */
             public boolean required()      { return required; }
     
-            /** Returns the description of this option, used when generating the usage documentation.
+            /** Returns the description template of this option, before variables are rendered.
              * @see Option#description() */
             public String[] description()  { return description.clone(); }
-    
+
+            /** Returns the description of this option, after variables are rendered. Used when generating the usage documentation.
+             * @see Option#description()
+             * @since 3.2 */
+            public String[] renderedDescription()  {
+                if (description == null || description.length == 0) { return description; }
+                StringBuilder candidates = new StringBuilder();
+                if (completionCandidates != null) {
+                    for (String candidate : completionCandidates) {
+                        if (candidates.length() > 0) { candidates.append(", "); }
+                        candidates.append(candidate);
+                    }
+                }
+                String defaultValueString = "";
+                if (!isBoolean(type()) && (defaultValue != null || initialValue != null)) {
+                    defaultValueString = String.valueOf(defaultValue != null ? defaultValue : initialValue);
+                }
+                String[] result = new String[description.length];
+                for (int i = 0; i < description.length; i++) {
+                    result[i] = String.format(description[i].replace(DESCRIPTION_VARIABLE_DEFAULT_VALUE, defaultValueString)
+                            .replace(DESCRIPTION_VARIABLE_COMPLETION_CANDIDATES, candidates.toString()));
+                }
+                return result;
+            }
+
             /** Returns how many arguments this option or positional parameter requires.
              * @see Option#arity() */
             public Range arity()           { return arity; }
