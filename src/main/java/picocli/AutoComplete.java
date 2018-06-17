@@ -170,10 +170,25 @@ public class AutoComplete {
             return f.type().isEnum();
         }
     }
+    private static class HasCompletions implements Predicate<ArgSpec> {
+        public boolean test(ArgSpec f) {
+            return f.completionCandidates() != null;
+        }
+    }
     private static <T> Predicate<T> negate(final Predicate<T> original) {
         return new Predicate<T>() {
             public boolean test(T t) {
                 return !original.test(t);
+            }
+        };
+    }
+    private static <T> Predicate<T> and(final Predicate<T>... originals) {
+        return new Predicate<T>() {
+            public boolean test(T t) {
+                for (Predicate<T> p : originals) {
+                    if (!p.test(t)) { return false; }
+                }
+                return true;
             }
         };
     }
@@ -450,10 +465,11 @@ public class AutoComplete {
         // Starting with java enums.
         List<OptionSpec> enumOptions = filter(commandSpec.options(), new EnumArgFilter());
         for (OptionSpec f : enumOptions) {
-            buff.append(format("  %s_OPTION_ARGS=\"%s\" # %s values\n",
-                    bashify(f.paramLabel()),
-                    concat(" ", Arrays.asList((Enum[]) f.type().getEnumConstants()), null, new EnumNameFunction()).trim(),
-                    f.type().getSimpleName()));
+            generateEnumCompetionCandidates(buff, f);
+        }
+        List<OptionSpec> optionsWithCompletionCandidates = filter(commandSpec.options(), and(new HasCompletions(), negate(new EnumArgFilter())));
+        for (OptionSpec f : optionsWithCompletionCandidates) {
+            generateNonEnumCompetionCandidates(buff, f);
         }
         // TODO generate completion lists for other option types:
         // Charset, Currency, Locale, TimeZone, ByteOrder,
@@ -467,6 +483,27 @@ public class AutoComplete {
         // Generate the footer: a default COMPREPLY to fall back to, and the function closing brace.
         buff.append(format(FOOTER));
         return buff.toString();
+    }
+
+    private static void generateEnumCompetionCandidates(StringBuilder buff, OptionSpec f) {
+        buff.append(format("  %s_OPTION_ARGS=\"%s\" # %s values\n",
+                bashify(f.paramLabel()),
+                concat(" ", Arrays.asList((Enum[]) f.type().getEnumConstants()), null, new EnumNameFunction()).trim(),
+                f.type().getSimpleName()));
+    }
+
+    private static void generateNonEnumCompetionCandidates(StringBuilder buff, OptionSpec f) {
+        buff.append(format("  %s_OPTION_ARGS=\"%s\" # %s values\n",
+                bashify(f.paramLabel()),
+                concat(" ", extract(f.completionCandidates())).trim(),
+                f.longestName()));
+    }
+    private static List<String> extract(Iterable<String> generator) {
+        List<String> result = new ArrayList<String>();
+        for (String e : generator) {
+            result.add(e);
+        }
+        return result;
     }
 
     private static String generateOptionsSwitch(List<OptionSpec> argOptions, List<OptionSpec> enumOptions) {
@@ -489,7 +526,7 @@ public class AutoComplete {
     private static String generateOptionsCases(List<OptionSpec> argOptionFields, List<OptionSpec> enumOptions, String indent, String currWord) {
         StringBuilder buff = new StringBuilder(1024);
         for (OptionSpec option : argOptionFields) {
-            if (enumOptions.contains(option)) {
+            if (enumOptions.contains(option) || option.completionCandidates() != null) {
                 buff.append(format("%s    %s)\n", indent, concat("|", option.names()))); // "    -u|--timeUnit)\n"
                 buff.append(format("%s      COMPREPLY=( $( compgen -W \"${%s_OPTION_ARGS}\" -- %s ) )\n", indent, bashify(option.paramLabel()), currWord));
                 buff.append(format("%s      return $?\n", indent));

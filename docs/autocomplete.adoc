@@ -170,6 +170,11 @@ DAYS     HOURS     MICROSECONDS  MILLISECONDS  MINUTES    NANOSECONDS   SECONDS
 ----
 
 
+=== Other Completion Candidates
+Picocli 3.2 introduces a `completionCandidates` API that can be used to generate completion candidates
+regardless of the type of the option or positional parameter.
+
+Picocli calls this iterator when the completion script is generated.
 
 == Alternative Ways to Define Commands
 This section describes creating commands in more depth than the <<Quick Start Tutorial>>.

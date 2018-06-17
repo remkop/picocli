@@ -34,6 +34,8 @@ import java.io.PrintStream;
 import java.lang.reflect.Field;
 import java.net.InetAddress;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -92,10 +94,14 @@ public class AutoCompleteTest {
             }
         }
     }
+    static class Candidates extends ArrayList<String> {
+        Candidates() {super(Arrays.asList("a", "b", "c"));}
+    }
     @Command(description = "First level subcommand 1")
     public static class Sub1 {
         @Option(names = "--num", description = "a number") double number;
         @Option(names = "--str", description = "a String") String str;
+        @Option(names = "--candidates", completionCandidates = Candidates.class, description = "with candidates") String str2;
     }
     @Command(description = "First level subcommand 2")
     public static class Sub2 {
@@ -110,6 +116,7 @@ public class AutoCompleteTest {
     public static class Sub2Child2 {
         @Option(names = {"-u", "--timeUnit"}) private TimeUnit timeUnit;
         @Option(names = {"-t", "--timeout"}) private long timeout;
+        @Option(names = "--candidates", completionCandidates = Candidates.class, description = "with candidates") String str2;
     }
 
     @Test

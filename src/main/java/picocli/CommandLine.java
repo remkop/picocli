@@ -1641,6 +1641,9 @@ public class CommandLine {
     private static boolean isMultiValue(Field field) {  return isMultiValue(field.getType()); }
     private static boolean isMultiValue(Class<?> cls) { return cls.isArray() || Collection.class.isAssignableFrom(cls) || Map.class.isAssignableFrom(cls); }
 
+    private static class NoCompletionCandidates implements Iterable<String> {
+        public Iterator<String> iterator() { return Collections.<String>emptyList().iterator(); }
+    }
     /**
      * <p>
      * Annotate fields in your class with {@code @Option} and picocli will initialize these fields when matching
@@ -1918,6 +1921,14 @@ public class CommandLine {
          * @return whether this option's default value should be shown in the usage help message
          */
         Help.Visibility showDefaultValue() default Help.Visibility.ON_DEMAND;
+
+        /** Use this attribute to specify an {@code Iterable<String>} class that generates completion candidates for this option.
+         * For map fields, completion candidates should be in {@code key=value} form.
+         *
+         * @return a class whose instances can iterate over the completion candidates for this option
+         * @see picocli.CommandLine.IFactory
+         * @since 3.2 */
+        Class<? extends Iterable<String>> completionCandidates() default NoCompletionCandidates.class;
     }
     /**
      * <p>
@@ -2044,6 +2055,14 @@ public class CommandLine {
          * @return whether this positional parameter's default value should be shown in the usage help message
          */
         Help.Visibility showDefaultValue() default Help.Visibility.ON_DEMAND;
+
+        /** Use this attribute to specify an {@code Iterable<String>} class that generates completion candidates for
+         * this positional parameter. For map fields, completion candidates should be in {@code key=value} form.
+         *
+         * @return a class whose instances can iterate over the completion candidates for this positional parameter
+         * @see picocli.CommandLine.IFactory
+         * @since 3.2 */
+        Class<? extends Iterable<String>> completionCandidates() default NoCompletionCandidates.class;
     }
 
     /**
@@ -2434,6 +2453,10 @@ public class CommandLine {
             return result;
         }
         public static IVersionProvider createVersionProvider(IFactory factory, Class<? extends IVersionProvider> cls) {
+            try { return factory.create(cls); }
+            catch (Exception ex) { throw new InitializationException("Could not instantiate " + cls + ": " + ex, ex); }
+        }
+        public static Iterable<String> createCompletionCandidates(IFactory factory, Class<? extends Iterable<String>> cls) {
             try { return factory.create(cls); }
             catch (Exception ex) { throw new InitializationException("Could not instantiate " + cls + ": " + ex, ex); }
         }
@@ -3440,13 +3463,14 @@ public class CommandLine {
             private final String paramLabel;
             private final String[] description;
             private final Help.Visibility showDefaultValue;
-    
+
             // parser fields
             private final boolean required;
             private final String splitRegex;
             private final Class<?> type;
             private final Class<?>[] auxiliaryTypes;
             private final ITypeConverter<?>[] converters;
+            private final Iterable<String> completionCandidates;
             private final String defaultValue;
             private final Object initialValue;
             private final boolean hasInitialValue;
@@ -3466,6 +3490,7 @@ public class CommandLine {
                 paramLabel = empty(builder.paramLabel) ? "PARAM" : builder.paramLabel;
                 converters = builder.converters == null ? new ITypeConverter<?>[0] : builder.converters;
                 showDefaultValue = builder.showDefaultValue == null ? Help.Visibility.ON_DEMAND : builder.showDefaultValue;
+                completionCandidates = builder.completionCandidates;
                 hidden = builder.hidden;
                 required = builder.required && builder.defaultValue == null; //#261 not required if it has a default
                 defaultValue = builder.defaultValue;
@@ -3565,7 +3590,13 @@ public class CommandLine {
     
             /** Returns whether this option or positional parameter's default value should be shown in the usage help. */
             public Help.Visibility showDefaultValue() { return showDefaultValue; }
-    
+
+            /** Returns the completion candidates for this option or positional parameter, or {@code null} if this option
+             * or positional parameter does not have any completion candidates.
+             * @return the completion candidates for this option or positional parameter, or {@code null}
+             * @since 3.2 */
+            public Iterable<String> completionCandidates() { return completionCandidates; }
+
             /** Returns the {@link IGetter} that is responsible for supplying the value of this argument. */
             public IGetter getter()        { return getter; }
             /** Returns the {@link ISetter} that is responsible for modifying the value of this argument. */
@@ -3675,6 +3706,7 @@ public class CommandLine {
                 private Object initialValue;
                 private boolean hasInitialValue = true;
                 private Help.Visibility showDefaultValue;
+                private Iterable<String> completionCandidates;
                 private String toString;
                 private IGetter getter = new ObjectBinding();
                 private ISetter setter = (ISetter) getter;
@@ -3692,6 +3724,7 @@ public class CommandLine {
                     paramLabel = original.paramLabel;
                     required = original.required;
                     showDefaultValue = original.showDefaultValue;
+                    completionCandidates = original.completionCandidates;
                     splitRegex = original.splitRegex;
                     toString = original.toString;
                     type = original.type;
@@ -3750,6 +3783,10 @@ public class CommandLine {
                 /** Returns whether this option or positional parameter's default value should be shown in the usage help. */
                 public Help.Visibility showDefaultValue() { return showDefaultValue; }
 
+                /** Returns the completion candidates for this option or positional parameter, or {@code null}.
+                 * @since 3.2 */
+                public Iterable<String> completionCandidates() { return completionCandidates; }
+
                 /** Returns the {@link IGetter} that is responsible for supplying the value of this argument. */
                 public IGetter getter()        { return getter; }
                 /** Returns the {@link ISetter} that is responsible for modifying the value of this argument. */
@@ -3785,7 +3822,11 @@ public class CommandLine {
     
                 /** Sets whether this option or positional parameter's default value should be shown in the usage help, and returns this builder. */
                 public T showDefaultValue(Help.Visibility visibility) { showDefaultValue = Assert.notNull(visibility, "visibility"); return self(); }
-    
+
+                /** Sets the completion candidates for this option or positional parameter, and returns this builder.
+                 * @since 3.2 */
+                public T completionCandidates(Iterable<String> completionCandidates) { this.completionCandidates = Assert.notNull(completionCandidates, "completionCandidates"); return self(); }
+
                 /** Sets whether this option should be excluded from the usage message, and returns this builder. */
                 public T hidden(boolean hidden)              { this.hidden = hidden; return self(); }
     
@@ -4354,6 +4395,9 @@ public class CommandLine {
                 builder.usageHelp(option.usageHelp());
                 builder.versionHelp(option.versionHelp());
                 builder.showDefaultValue(option.showDefaultValue());
+                if (!NoCompletionCandidates.class.equals(option.completionCandidates())) {
+                    builder.completionCandidates(DefaultFactory.createCompletionCandidates(factory, option.completionCandidates()));
+                }
 
                 builder.arity(Range.optionArity(field));
                 builder.required(option.required());
@@ -4384,6 +4428,9 @@ public class CommandLine {
                 builder.hidden(parameters.hidden());
                 builder.converters(DefaultFactory.createConverter(factory, parameters.converter()));
                 builder.showDefaultValue(parameters.showDefaultValue());
+                if (!NoCompletionCandidates.class.equals(parameters.completionCandidates())) {
+                    builder.completionCandidates(DefaultFactory.createCompletionCandidates(factory, parameters.completionCandidates()));
+                }
                 return builder.build();
             }
             private static void initCommon(ArgSpec.Builder<?> builder, Object scope, Field field) {

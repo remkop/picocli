@@ -35,6 +35,7 @@ No features have been promoted in this picocli release.
 ## <a name="3.2.0-fixes"></a> Fixed issues
 - [#389] New feature: Support 'lenient' parsing mode: don't throw `Exceptions` but add them to the `ParseResult.errors()` list and continue parsing.
 - [#392] New feature: Ability to map command line arguments to picocli spec elements. Internally used for generating completion candidates.
+- [#391] New feature: Add API to get completion candidates for option and positional parameter values of any type.
 
 ## <a name="3.2.0-deprecated"></a> Deprecations
 No features were deprecated in this release.
