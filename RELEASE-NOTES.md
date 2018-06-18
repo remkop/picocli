@@ -26,18 +26,59 @@ languages like Clojure where idiomatic error handling does not involve throwing 
 
 When using this feature, applications are responsible for actively verifying that no errors occurred before executing the business logic. Use with care!
 
-### Embed Default Values in Description
-Currently, if `@Command(showDefaultValues = true)` is specified, default values are shown in the description column of the options list. The format for this is fixed: it adds a line to the option's description: `"  Default: <default value>"`.
+### `${DEFAULT-VALUE}` Variable
+From picocli 3.2, it is possible to embed the default values in the description for an option or positional parameter by
+specifying the variable `${DEFAULT-VALUE}` in the description text.
+Picocli uses reflection to get the default values from the annotated fields.
 
+The variable is replaced with the default value regardless of the `@Command(showDefaultValues)` attribute
+and regardless of the `@Option(showDefaultValues)` or `@Parameters(showDefaultValues)` attribute.
+
+```java
+class DefaultValues {
+    @Option(names = {"-f", "--file"},
+            description = "the file to use (default: ${DEFAULT-VALUE})")
+    File file = new File("config.xml");
+}
+
+CommandLine.usage(new DefaultValues(), System.out);
 ```
-Usage: This is the current output ...
- -o, --option    This option does something.
-                   Default: abc
+This produces the following usage help:
+```text
+Usage: <main class> -f=<file>
+  -f, --file=<file>   the file to use (default: config.xml)
 ```
 
-From this release the string `${DEFAULT-VALUE}` can be embedded anywhere in the option or positional parameter description, and when the usage help is generated, the variable is replaced with the actual default value.
+### `${COMPLETION-CANDIDATES}` Variable
+Similarly, it is possible to embed the completion candidates in the description for an option or positional parameter by
+specifying the variable `${COMPLETION-CANDIDATES}` in the description text.
 
-Similarly, completion candidates can be embedded with `${COMPLETION_CANDIDATES}`.
+This works for java `enum` classes and for options or positional parameters of non-enum types for which completion candidates are specified.
+
+```java
+enum Lang { java, groovy, kotlin, javascript, frege, clojure }
+
+static class MyAbcCandidates extends ArrayList<String> {
+    MyAbcCandidates() { super(Arrays.asList("A", "B", "C")); }
+}
+
+class ValidValuesDemo {
+    @Option(names = "-l", description = "Enum. Values: ${COMPLETION-CANDIDATES}")
+    Lang lang = null;
+
+    @Option(names = "-o", completionCandidates = MyAbcCandidates.class,
+            description = "Candidates: ${COMPLETION-CANDIDATES}")
+    String option;
+}
+
+CommandLine.usage(new ValidValuesDemo(), System.out);
+```
+This produces the following usage help:
+```text
+Usage: <main class> -l=<lang> -o=<option>
+  -l=<lang>     Enum. Values: java, groovy, kotlin, javascript, frege, clojure
+  -o=<option>   Candidates: A, B, C
+```
 
 
 ## <a name="3.2.0-promoted"></a> Promoted Features

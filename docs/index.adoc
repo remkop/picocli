@@ -1397,13 +1397,19 @@ Usage: <main class> <host> <port> [<files>...]
 ----
 
 === Show Default Values
-Use the `@Command(showDefaultValues = true)` attribute to append the default value of all non-`null` options and positional parameters to the description column. Picocli uses reflection to get the default values from the annotated fields. For example:
+==== `${DEFAULT-VALUE}` Variable
+From picocli 3.2, it is possible to embed the default values in the description for an option or positional parameter by
+specifying the variable `${DEFAULT-VALUE}` in the description text.
+Picocli uses reflection to get the default values from the annotated fields.
+
+The variable is replaced with the default value regardless of the `@Command(showDefaultValues)` attribute
+and regardless of the `@Option(showDefaultValues)` or `@Parameters(showDefaultValues)` attribute.
 
 [source,java]
 ----
-@Command(showDefaultValues = true)
 class DefaultValues {
-    @Option(names = {"-f", "--file"}, description = "the file to use")
+    @Option(names = {"-f", "--file"},
+            description = "the file to use (default: ${DEFAULT-VALUE})")
     File file = new File("config.xml");
 }
 
@@ -1412,11 +1418,47 @@ CommandLine.usage(new DefaultValues(), System.out);
 This produces the following usage help:
 ----
 Usage: <main class> -f=<file>
-  -f, --file=<file>   the file to use
-                        Default: config.xml
+  -f, --file=<file>   the file to use (default: config.xml)
 ----
 
-Picocli 3.0 gives more fine-grained control and adds a `showDefaultValue` attribute to the `@Option` and `@Parameters` annotation.
+==== `${COMPLETION-CANDIDATES}` Variable
+Similarly, it is possible to embed the completion candidates in the description for an option or positional parameter by
+specifying the variable `${COMPLETION-CANDIDATES}` in the description text.
+
+This works for java `enum` classes and for options or positional parameters of non-enum types for which completion candidates are specified.
+
+[source,java]
+----
+enum Lang { java, groovy, kotlin, javascript, frege, clojure }
+
+static class MyAbcCandidates extends ArrayList<String> {
+    MyAbcCandidates() { super(Arrays.asList("A", "B", "C")); }
+}
+
+class ValidValuesDemo {
+    @Option(names = "-l", description = "Enum. Values: ${COMPLETION-CANDIDATES}")
+    Lang lang = null;
+
+    @Option(names = "-o", completionCandidates = MyAbcCandidates.class,
+            description = "Candidates: ${COMPLETION-CANDIDATES}")
+    String option;
+}
+
+CommandLine.usage(new ValidValuesDemo(), System.out);
+----
+This produces the following usage help:
+----
+Usage: <main class> -l=<lang> -o=<option>
+  -l=<lang>     Enum. Values: java, groovy, kotlin, javascript, frege, clojure
+  -o=<option>   Candidates: A, B, C
+----
+
+
+==== Legacy Configuration for Displaying Default Values
+Prior to picocli 3.2, you need to use the `@Command(showDefaultValues = true)` attribute to append the default value of
+ all non-`null` options and positional parameters to the description column.
+
+Additionally, picocli 3.0 introduced a `showDefaultValue` attribute to the `@Option` and `@Parameters` annotation.
 This allows you to specify for each individual option and positional parameter whether its default value should be shown in the usage help.
 This attribute accepts three values:
 
@@ -1424,37 +1466,7 @@ This attribute accepts three values:
 * `NEVER` - don't show the default value for this option or positional parameter, regardless what value of `showDefaultValues` was specified on the command
 * `ON_DEMAND` - (this is the default) only show the default value for this option or positional parameter if `showDefaultValues` was specified on the command
 
-The `NEVER` value is useful for security sensitive command line arguments like passwords. The `ALWAYS` value is useful when you only want to show the default value for a few arguments but not for all (in combination with `@Command(showDefaultValues = false)`).
-[source,java]
-----
-import static picocli.CommandLine.Help.Visibility.*;
-
-@Command(showDefaultValues = true)
-class FineGrainedDefaults {
-    @Option(names = "-a", description = "ALWAYS shown even if null", showDefaultValue = ALWAYS)
-    String optionA;
-
-    @Option(names = "-b", description = "NEVER shown", showDefaultValue = NEVER)
-    String optionB = "xyz";
-
-    @Option(names = "-c", description = "ON_DEMAND hides null", showDefaultValue = ON_DEMAND)
-    String optionC;
-
-    @Option(names = "-d", description = "ON_DEMAND shows non-null", showDefaultValue = ON_DEMAND)
-    String optionD = "abc";
-}
-CommandLine.usage(new FineGrainedDefaults(), System.out);
-----
-This produces the following usage help:
-----
-Usage: <main class> [-a=<optionA>] [-b=<optionB>] [-c=<optionC>] [-d=<optionD>]
-  -a= <optionA>   ALWAYS shown even if null
-                    Default: null
-  -b= <optionB>   NEVER shown
-  -c= <optionC>   ON_DEMAND hides null
-  -d= <optionD>   ON_DEMAND shows non-null
-                    Default: abc
-----
+These legacy mechanisms still work but for maximum flexibility use the variables explained above.
 
 === Required-Option Marker
 Required options can be marked in the option list by the character specified with the `requiredOptionMarker` attribute. By default options are not marked because the synopsis shows users which options are required and which are optional. This feature may be useful in combination with `abbreviatedSynopsis`. For example:
