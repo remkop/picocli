@@ -3595,6 +3595,9 @@ public class CommandLine {
                         if (candidates.length() > 0) { candidates.append(", "); }
                         candidates.append(candidate);
                     }
+                } else if (type != null && type.isEnum()) {
+                    candidates.append(Arrays.asList(type.getEnumConstants()));
+                    candidates.delete(0, 1).setLength(candidates.length() - 1);
                 }
                 String defaultValueString = defaultValueString = String.valueOf(defaultValue != null ? defaultValue : initialValue);
                 String[] result = new String[description.length];

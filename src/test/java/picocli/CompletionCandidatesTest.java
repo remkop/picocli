@@ -114,6 +114,8 @@ public class CompletionCandidatesTest {
         return result;
     }
 
+    enum Lang { java, kotlin, groovy, javascript, frege, clojure }
+
     @Test
     public void testUsageHelpVariableReplacement() {
         class MyLongCandidates extends ArrayList<String> {
@@ -122,30 +124,42 @@ public class CompletionCandidatesTest {
         class App {
             @Option(names = "--logfile", description = "Use given file for log. Default: ${DEFAULT-VALUE}")
             File file = new File("/a/b/c");
+
             @Option(names = "-P", arity = "0..*", paramLabel = "<key=ppp>",
                     description = "Use value for project key.%nDefault=${DEFAULT-VALUE}")
             Map<String, String> projectMap = createLongMap();
+
             @Option(names = "--x", split = ",", completionCandidates = MyAbcdCandidates.class,
                     description = "Comma-separated list of some xxx's. Valid values: ${COMPLETION-CANDIDATES}")
             String[] x;
+
             @Option(names = "--y", description = "Test long default. Default: ${DEFAULT-VALUE}")
             String y = "This is a very long default value that is intended to wrap to the next line. I wonder if it is long enough.";
+
             @Option(names = "--lib", completionCandidates = MyLongCandidates.class,
                     description = "comma-separated list of up to 3 paths to search for jars and classes. Some example values: ${COMPLETION-CANDIDATES}")
             String lib;
+
             @Option(names = "--boolF", description = "Boolean variable 1. Default: ${DEFAULT-VALUE}")
             boolean initiallyFalse;
+
             @Option(names = "--boolT", description = "Boolean variable 2. Default: ${DEFAULT-VALUE}")
             boolean initiallyTrue = true;
+
             @Option(names = "--strNull", description = "String without default. Default: ${DEFAULT-VALUE}")
             String str = null;
+
+            @Option(names = "--enum", description = "Enum. Values: ${COMPLETION-CANDIDATES}")
+            Lang lang = null;
         }
         String expected = String.format("" +
-                "Usage: <main class> [--boolF] [--boolT] [--lib=<lib>] [--logfile=<file>]%n" +
-                "                    [--strNull=<str>] [--y=<y>] [--x=<x>[,<x>...]]... [-P%n" +
-                "                    [=<key=ppp>...]]...%n" +
+                "Usage: <main class> [--boolF] [--boolT] [--enum=<lang>] [--lib=<lib>]%n" +
+                "                    [--logfile=<file>] [--strNull=<str>] [--y=<y>] [--x=<x>[,%n" +
+                "                    <x>...]]... [-P[=<key=ppp>...]]...%n" +
                 "      --boolF            Boolean variable 1. Default: false%n" +
                 "      --boolT            Boolean variable 2. Default: true%n" +
+                "      --enum=<lang>      Enum. Values: java, kotlin, groovy, javascript, frege,%n" +
+                "                           clojure%n" +
                 "      --lib=<lib>        comma-separated list of up to 3 paths to search for jars%n" +
                 "                           and classes. Some example values: This, is, a, very,%n" +
                 "                           long, list, of, completion, candidates, that, is,%n" +
