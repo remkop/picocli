@@ -558,32 +558,133 @@ public class AutoComplete {
         return concat(" ", result, "", new NullFunction()).trim();
     }
 
-    private static int complete(CommandSpec spec, String[] args, int argIndex, int positionInArg, int cursor, List<CharSequence> candidates) {
+    public static int complete(CommandSpec spec, String[] args, int argIndex, int positionInArg, int cursor, List<CharSequence> candidates) {
         if (spec == null)       { throw new NullPointerException("spec is null"); }
         if (args == null)       { throw new NullPointerException("args is null"); }
         if (candidates == null) { throw new NullPointerException("candidates list is null"); }
+        if (argIndex == args.length) {
+            String[] copy = new String[args.length + 1];
+            System.arraycopy(args, 0, copy, 0, args.length);
+            args = copy;
+            args[argIndex] = "";
+        }
         if (argIndex < 0      || argIndex >= args.length)                 { throw new IllegalArgumentException("Invalid argIndex " + argIndex + ": args array only has " + args.length + " elements."); }
         if (positionInArg < 0 || positionInArg > args[argIndex].length()) { throw new IllegalArgumentException("Invalid positionInArg " + positionInArg + ": args[" + argIndex + "] (" + args[argIndex] + ") only has " + args[argIndex].length() + " characters."); }
 
         boolean reset = spec.parser().collectErrors();
         try {
+            String committedPrefix = args[argIndex].substring(0, positionInArg);
+
             spec.parser().collectErrors(true);
             CommandLine parser = new CommandLine(spec);
             ParseResult parseResult = parser.parseArgs(args);
             if (argIndex >= parseResult.tentativeMatch.size()) {
-                System.err.println("ERROR: no match found for args[" + argIndex + "] (" + args[argIndex] + ")");
+                int count = parseResult.tentativeMatch.size();
+                if (count == 0) {
+                    addCandidatesForArgsFollowing(spec, candidates);
+                } else {
+                    addCandidatesForArgsFollowing(parseResult.tentativeMatch.get(count - 1), candidates);
+                }
             } else {
                 Object obj = parseResult.tentativeMatch.get(argIndex);
                 if (obj instanceof CommandSpec) { // subcommand
-                } else if (obj instanceof OptionSpec) { // option
-                } else if (obj instanceof PositionalParamSpec) { // positional
-                } else {
+                    addCandidatesForArgsFollowing(((CommandSpec) obj).parent(), candidates);
 
+                } else if (obj instanceof OptionSpec) { // option
+				    int sep = args[argIndex].indexOf(spec.parser().separator());
+					if (sep < 0 || positionInArg < sep) { // no '=' or cursor before '='
+						addCandidatesForArgsFollowing(findCommandFor((OptionSpec) obj, spec), candidates);
+					} else {
+						committedPrefix = args[argIndex].substring(sep + 1, positionInArg);
+						addCandidatesForArgsFollowing((OptionSpec) obj, candidates);
+					}
+
+                } else if (obj instanceof PositionalParamSpec) { // positional
+                    addCandidatesForArgsFollowing(findCommandFor((PositionalParamSpec) obj, spec), candidates);
+
+                } else {
+                    int i = argIndex - 1;
+                    while (i > 0 && !isPicocliModelObject(parseResult.tentativeMatch.get(i))) {i--;}
+                    if (i < 0) { return -1; }
+                    addCandidatesForArgsFollowing(parseResult.tentativeMatch.get(i), candidates);
                 }
             }
-            return -1;
+            filterAndTrimMatchingPrefix(committedPrefix, candidates);
+            return candidates.isEmpty() ? -1 : cursor;
         } finally {
             spec.parser().collectErrors(reset);
+        }
+    }
+
+    private static CommandSpec findCommandFor(OptionSpec option, CommandSpec commandSpec) {
+        OptionSpec found = commandSpec.findOption(option.longestName());
+        if (found != null) { return commandSpec; }
+        for (CommandLine sub : commandSpec.subcommands().values()) {
+            CommandSpec result = findCommandFor(option, sub.getCommandSpec());
+            if (result != null) { return result; }
+        }
+        return null;
+    }
+    private static CommandSpec findCommandFor(PositionalParamSpec positional, CommandSpec commandSpec) {
+        for (PositionalParamSpec defined : commandSpec.positionalParameters()) {
+            if (defined == positional) { return commandSpec; }
+        }
+        for (CommandLine sub : commandSpec.subcommands().values()) {
+            CommandSpec result = findCommandFor(positional, sub.getCommandSpec());
+            if (result != null) { return result; }
+        }
+        return null;
+    }
+    private static boolean isPicocliModelObject(Object obj) {
+        return obj instanceof CommandSpec || obj instanceof OptionSpec || obj instanceof PositionalParamSpec;
+    }
+
+    private static void filterAndTrimMatchingPrefix(String prefix, List<CharSequence> candidates) {
+		List<CharSequence> replace = new ArrayList<CharSequence>();
+		for (CharSequence seq : candidates) {
+			if (seq.toString().startsWith(prefix)) {
+                replace.add(seq.subSequence(prefix.length(), seq.length()));
+			}
+		}
+		candidates.clear();
+        candidates.addAll(replace);
+	}
+	private static void addCandidatesForArgsFollowing(Object obj, List<CharSequence> candidates) {
+		if (obj == null) { return; }
+		if (obj instanceof CommandSpec) {
+			addCandidatesForArgsFollowing((CommandSpec) obj, candidates);
+		} else if (obj instanceof OptionSpec) {
+			addCandidatesForArgsFollowing((OptionSpec) obj, candidates);
+		} else if (obj instanceof PositionalParamSpec) {
+			addCandidatesForArgsFollowing((PositionalParamSpec) obj, candidates);
+		}
+	}
+    private static void addCandidatesForArgsFollowing(CommandSpec commandSpec, List<CharSequence> candidates) {
+        if (commandSpec == null) { return; }
+        for (Map.Entry<String, CommandLine> entry : commandSpec.subcommands().entrySet()) {
+            candidates.add(entry.getKey());
+            candidates.addAll(Arrays.asList(entry.getValue().getCommandSpec().aliases()));
+        }
+        candidates.addAll(commandSpec.optionsMap().keySet());
+        for (PositionalParamSpec positional : commandSpec.positionalParameters()) {
+            addCandidatesForArgsFollowing(positional, candidates);
+        }
+    }
+	private static void addCandidatesForArgsFollowing(OptionSpec optionSpec, List<CharSequence> candidates) {
+        if (optionSpec != null) {
+            addCompletionCandidates(optionSpec.completionCandidates(), optionSpec.type(), candidates);
+        }
+	}
+	private static void addCandidatesForArgsFollowing(PositionalParamSpec positionalSpec, List<CharSequence> candidates) {
+        if (positionalSpec != null) {
+            addCompletionCandidates(positionalSpec.completionCandidates(), positionalSpec.type(), candidates);
+        }
+    }
+    private static void addCompletionCandidates(Iterable<String> completionCandidates, Class<?> type, List<CharSequence> candidates) {
+        if (completionCandidates != null) {
+            for (String candidate : completionCandidates) { candidates.add(candidate); }
+        } else if (type != null && type.isEnum()) {
+            for (Object constant : type.getEnumConstants()) { candidates.add(String.valueOf(constant)); }
         }
     }
 }

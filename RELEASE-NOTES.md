@@ -16,15 +16,65 @@ Picocli follows [semantic versioning](http://semver.org/).
 * [Potential breaking changes](#3.2.0-breaking-changes)
 
 ## <a name="3.2.0-new"></a> New and Noteworthy
-### Lenient Parse Mode
+### JLine Tab-Completion Support
 
-This release adds the ability to continue parsing invalid input to the end.
-When `collectErrors` is set to `true`, and a problem occurs during parsing, an `Exception` is added to the `ParseResult.errors()` list and parsing continues. The default behaviour (when `collectErrors` is `false`) is to abort parsing by throwing the `Exception`.
+This release adds support for JLine Tab-Completion.
 
-This is useful when generating completion candidates on partial input, and is also useful when using picocli in
-languages like Clojure where idiomatic error handling does not involve throwing and catching exceptions.
+[Jline 2.x](https://github.com/jline/jline2) and [3.x](https://github.com/jline/jline3) is a Java library for handling console input, often used to create interactive shell applications.
 
-When using this feature, applications are responsible for actively verifying that no errors occurred before executing the business logic. Use with care!
+Command line applications based on picocli can generate completion candidates for the command line in the JLine shell. The generated completion candidates are context sensitive, so once a subcommand is specified, only the options for that subcommand are shown, and once an option is specified, only parameters for that option are shown.
+
+Below is an example picocli `Completer` implementation for JLine 2.x:
+
+```java
+import jline.console.completer.ArgumentCompleter;
+import jline.console.completer.Completer;
+import picocli.AutoComplete;
+import picocli.CommandLine;
+import picocli.CommandLine.Model.CommandSpec;
+
+import java.util.List;
+
+public class PicocliJLineCompleter implements Completer {
+    private final CommandSpec spec;
+
+    public PicocliJLineCompleter(CommandSpec spec) {
+        this.spec = spec;
+    }
+
+    @Override
+    public int complete(String buffer, int cursor, List<CharSequence> candidates) {
+        // use the jline internal parser to split the line into tokens
+        ArgumentCompleter.ArgumentList list =
+                new ArgumentCompleter.WhitespaceArgumentDelimiter().delimit(buffer, cursor);
+
+        // let picocli generate completion candidates for the token where the cursor is at
+        return AutoComplete.complete(spec,
+                list.getArguments(),
+                list.getCursorArgumentIndex(),
+                list.getArgumentPosition(),
+                cursor,
+                candidates);
+    }
+}
+```
+
+### Completion Candidates
+From this release, `@Options` and `@Parameters` have a new `completionCandidates` attribute that can be used to generate a list of completions for this option or positional parameter. For example:
+
+```java
+static class MyAbcCandidates extends ArrayList<String> {
+    MyAbcCandidates() { super(Arrays.asList("A", "B", "C")); }
+}
+
+class ValidValuesDemo {
+    @Option(names = "-o", completionCandidates = MyAbcCandidates.class)
+    String option;
+}
+```
+
+This will generate completion option values `A`, `B` and `C` in the generated bash auto-completion script and in JLine.
+
 
 ### `${DEFAULT-VALUE}` Variable
 From picocli 3.2, it is possible to embed the default values in the description for an option or positional parameter by
@@ -80,6 +130,16 @@ Usage: <main class> -l=<lang> -o=<option>
   -o=<option>   Candidates: A, B, C
 ```
 
+### Lenient Parse Mode
+
+This release adds the ability to continue parsing invalid input to the end.
+When `collectErrors` is set to `true`, and a problem occurs during parsing, an `Exception` is added to the `ParseResult.errors()` list and parsing continues. The default behaviour (when `collectErrors` is `false`) is to abort parsing by throwing the `Exception`.
+
+This is useful when generating completion candidates on partial input, and is also useful when using picocli in
+languages like Clojure where idiomatic error handling does not involve throwing and catching exceptions.
+
+When using this feature, applications are responsible for actively verifying that no errors occurred before executing the business logic. Use with care!
+
 
 ## <a name="3.2.0-promoted"></a> Promoted Features
 Promoted features are features that were incubating in previous versions of picocli but are now supported and subject to backwards compatibility. 
@@ -90,7 +150,8 @@ No features have been promoted in this picocli release.
 - [#389] New feature: Support 'lenient' parsing mode: don't throw `Exceptions` but add them to the `ParseResult.errors()` list and continue parsing.
 - [#392] New feature: Ability to map command line arguments to picocli spec elements. Internally used for generating completion candidates.
 - [#391] New feature: Add API to get completion candidates for option and positional parameter values of any type.
-- [#395] New feature: Allow embedding default values anywhere in @Option or @Parameters description.
+- [#393] New feature: Add support for JLine completers.
+- [#395] New feature: Allow embedding default values anywhere in description for `@Option` or `@Parameters`.
 
 ## <a name="3.2.0-deprecated"></a> Deprecations
 No features were deprecated in this release.

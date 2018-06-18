@@ -21,7 +21,9 @@ import org.junit.contrib.java.lang.system.ProvideSystemProperty;
 import org.junit.contrib.java.lang.system.SystemErrRule;
 import org.junit.contrib.java.lang.system.SystemOutRule;
 import picocli.CommandLine.Command;
+import picocli.CommandLine.Model.CommandSpec;
 import picocli.CommandLine.Option;
+import picocli.CommandLine.Parameters;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
@@ -36,6 +38,8 @@ import java.net.InetAddress;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -116,7 +120,7 @@ public class AutoCompleteTest {
     public static class Sub2Child2 {
         @Option(names = {"-u", "--timeUnit"}) private TimeUnit timeUnit;
         @Option(names = {"-t", "--timeout"}) private long timeout;
-        @Option(names = "--candidates", completionCandidates = Candidates.class, description = "with candidates") String str2;
+        @Parameters(completionCandidates = Candidates.class, description = "with candidates") String str2;
     }
 
     @Test
@@ -491,5 +495,66 @@ public class AutoCompleteTest {
         assertEquals("", systemOutRule.getLog());
 
         completionScript.delete();
+    }
+
+    @Test
+    public void testComplete() {
+        CommandLine hierarchy = new CommandLine(new TopLevel())
+                .addSubcommand("sub1", new Sub1())
+                .addSubcommand("sub2", new CommandLine(new Sub2())
+                        .addSubcommand("subsub1", new Sub2Child1())
+                        .addSubcommand("subsub2", new Sub2Child2())
+                );
+
+        CommandSpec spec = hierarchy.getCommandSpec();
+        spec.parser().collectErrors(true);
+        List<CharSequence> result = new ArrayList<CharSequence>();
+        String[] args = new String[] {};
+
+        test(spec, a(),                           0, 0, 500, l("--help", "--version", "-V", "-h", "sub1", "sub2"));
+        test(spec, a("-"),                        0, 0, 500, l("--help", "--version", "-V", "-h", "sub1", "sub2"));
+        test(spec, a("-"),                        0, 1, 500, l("-help", "-version", "V", "h"));
+        test(spec, a("-h"),                       0, 1, 500, l("-help", "-version", "V", "h"));
+        test(spec, a("-h"),                       0, 2, 500, l(""));
+        test(spec, a("s"),                        0, 1, 500, l("ub1", "ub2"));
+        test(spec, a("sub1"),                     1, 0, 500, l("--candidates", "--num", "--str"));
+        test(spec, a("sub1", "-"),                1, 0, 500, l("--candidates", "--num", "--str"));
+        test(spec, a("sub1", "-"),                1, 1, 500, l("-candidates", "-num", "-str"));
+        test(spec, a("sub1", "--"),               1, 1, 500, l("-candidates", "-num", "-str"));
+        test(spec, a("sub1", "--"),               1, 2, 500, l("candidates", "num", "str"));
+        test(spec, a("sub1", "--c"),              1, 2, 500, l("candidates", "num", "str"));
+        test(spec, a("sub1", "--c"),              1, 3, 500, l("andidates"));
+        test(spec, a("sub1", "--candidates"),     2, 0, 500, l("a", "b", "c"));
+        test(spec, a("sub1", "--num"),            2, 0, 500, l());
+        test(spec, a("sub1", "--str"),            2, 0, 500, l());
+        test(spec, a("sub2"),                     1, 0, 500, l("--directory", "--num2", "-d", "subsub1", "subsub2"));
+        test(spec, a("sub2", "-"),                1, 1, 500, l("-directory", "-num2", "d"));
+        test(spec, a("sub2", "-d"),               2, 0, 500, l());
+        test(spec, a("sub2", "subsub1"),          2, 0, 500, l("--host", "-h"));
+        test(spec, a("sub2", "subsub2"),          2, 0, 500, l("--timeUnit", "--timeout", "-t", "-u", "a", "b", "c"));
+        test(spec, a("sub2", "subsub2", "-"),     2, 1, 500, l("-timeUnit", "-timeout", "t", "u"));
+        test(spec, a("sub2", "subsub2", "a"),     2, 1, 500, l(""));
+    }
+
+    private static void test(CommandSpec spec, String[] args, int argIndex, int positionInArg, int cursor, List<CharSequence> expected) {
+        List<CharSequence> actual = new ArrayList<CharSequence>();
+        AutoComplete.complete(spec, args, argIndex, positionInArg, cursor, actual);
+        Collections.sort(actual, new CharSequenceSort());
+        Collections.sort(expected, new CharSequenceSort());
+        assertEquals(expected, actual);
+    }
+
+    private static String[] a(String... args) {
+        return args;
+    }
+
+    private static List<CharSequence> l(CharSequence... args) {
+        return Arrays.asList(args);
+    }
+
+    static class CharSequenceSort implements Comparator<CharSequence> {
+        public int compare(CharSequence left, CharSequence right) {
+            return left.toString().compareTo(right.toString());
+        }
     }
 }
