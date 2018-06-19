@@ -16,7 +16,7 @@ Picocli follows [semantic versioning](http://semver.org/).
 * [Potential breaking changes](#3.2.0-breaking-changes)
 
 ## <a name="3.2.0-new"></a> New and Noteworthy
-### JLine Tab-Completion Support
+### <a name="3.2.0-jline"></a> JLine Tab-Completion Support
 
 This release adds support for JLine Tab-Completion.
 
@@ -59,7 +59,7 @@ public class PicocliJLineCompleter implements Completer {
 }
 ```
 
-### Completion Candidates
+### <a name="3.2.0-completion-candidates"></a> Completion Candidates
 From this release, `@Options` and `@Parameters` have a new `completionCandidates` attribute that can be used to generate a list of completions for this option or positional parameter. For example:
 
 ```java
@@ -76,7 +76,7 @@ class ValidValuesDemo {
 This will generate completion option values `A`, `B` and `C` in the generated bash auto-completion script and in JLine.
 
 
-### `${DEFAULT-VALUE}` Variable
+### <a name="3.2.0-default-variable"></a> `${DEFAULT-VALUE}` Variable
 From picocli 3.2, it is possible to embed the default values in the description for an option or positional parameter by
 specifying the variable `${DEFAULT-VALUE}` in the description text.
 Picocli uses reflection to get the default values from the annotated fields.
@@ -99,7 +99,7 @@ Usage: <main class> -f=<file>
   -f, --file=<file>   the file to use (default: config.xml)
 ```
 
-### `${COMPLETION-CANDIDATES}` Variable
+### <a name="3.2.0-completion-variable"></a>  `${COMPLETION-CANDIDATES}` Variable
 Similarly, it is possible to embed the completion candidates in the description for an option or positional parameter by
 specifying the variable `${COMPLETION-CANDIDATES}` in the description text.
 
@@ -130,7 +130,26 @@ Usage: <main class> -l=<lang> -o=<option>
   -o=<option>   Candidates: A, B, C
 ```
 
-### Lenient Parse Mode
+### <a name="3.2.0-Inject"></a> `@Inject` Annotation  
+A new `@Inject` annotation is now available that injects the `CommandSpec` model of the command into an command field.
+
+This is useful when a command needs to use the picocli API, for example to walk the command hierarchy and iterate over its sibling commands.
+This complements the `@ParentCommand` annotation;  the `@ParentCommand` annotation injects a user-defined command object, whereas this annotation injects a picocli class.
+  
+```java
+class InjectExample implements Runnable {
+   @Inject CommandSpec commandSpec;
+   //...
+   public void run() {
+       // do something with the injected object
+   }
+}
+  
+```  
+  
+  
+
+### <a name="3.2.0-lenient-parse"></a> Lenient Parse Mode
 
 This release adds the ability to continue parsing invalid input to the end.
 When `collectErrors` is set to `true`, and a problem occurs during parsing, an `Exception` is added to the `ParseResult.errors()` list and parsing continues. The default behaviour (when `collectErrors` is `false`) is to abort parsing by throwing the `Exception`.
@@ -152,6 +171,7 @@ No features have been promoted in this picocli release.
 - [#391] New feature: Add API to get completion candidates for option and positional parameter values of any type.
 - [#393] New feature: Add support for JLine completers.
 - [#395] New feature: Allow embedding default values anywhere in description for `@Option` or `@Parameters`.
+- [#259] New Feature: Added `@Inject` annotation to inject `CommandSpec` into application field.
 
 ## <a name="3.2.0-deprecated"></a> Deprecations
 No features were deprecated in this release.

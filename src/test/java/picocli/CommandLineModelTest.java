@@ -1642,4 +1642,51 @@ public class CommandLineModelTest {
                 "  -x     x option%n");
         assertEquals(expected, systemOutRule.getLog());
     }
+
+    @Test
+    public void testInject_AnnotatedFieldInjected() {
+        class Injected {
+            @Inject CommandSpec commandSpec;
+            @Parameters String[] params;
+        }
+        Injected injected = new Injected();
+        assertNull(injected.commandSpec);
+
+        CommandLine cmd = new CommandLine(injected);
+        assertSame(cmd.getCommandSpec(), injected.commandSpec);
+    }
+
+    @Test
+    public void testInject_AnnotatedFieldInjectedForSubcommand() {
+        class Injected {
+            @Inject CommandSpec commandSpec;
+            @Parameters String[] params;
+        }
+        Injected injected = new Injected();
+        Injected sub = new Injected();
+
+        assertNull(injected.commandSpec);
+        assertNull(sub.commandSpec);
+
+        CommandLine cmd = new CommandLine(injected);
+        assertSame(cmd.getCommandSpec(), injected.commandSpec);
+
+        CommandLine subcommand = new CommandLine(sub);
+        assertSame(subcommand.getCommandSpec(), sub.commandSpec);
+    }
+
+    @Test
+    public void testInject_FieldMustBeCommandSpec() {
+        class Injected {
+            @Inject CommandLine commandLine;
+            @Parameters String[] params;
+        }
+        Injected injected = new Injected();
+        try {
+            new CommandLine(injected);
+            fail("Expect exception");
+        } catch (InitializationException ex) {
+            assertEquals("@picocli.CommandLine.Inject annotation is only supported on fields of type picocli.CommandLine$Model$CommandSpec", ex.getMessage());
+        }
+    }
 }

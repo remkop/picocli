@@ -2182,7 +2182,23 @@ public class CommandLine {
          * @return a String to register the mixin object with, or an empty String if the name of the annotated field should be used */
         String name() default "";
     }
-
+    /**
+     * Fields annotated with {@code @Inject} will be initialized with the {@code CommandLine} or {@code CommandSpec} for the command the field is part of. Example usage:
+     * <pre>
+     * class InjectExample implements Runnable {
+     *     &#064;Inject CommandLine commandLine; // usually you inject either the CommandLine
+     *     &#064;Inject CommandSpec commandSpec; // or the CommandSpec
+     *     //...
+     *     public void run() {
+     *         // do something with the injected objects
+     *     }
+     * }
+     * </pre>
+     * @since 3.2
+     */
+    @Retention(RetentionPolicy.RUNTIME)
+    @Target(ElementType.FIELD)
+    public @interface Inject { }
     /**
      * <p>Annotate your class with {@code @Command} when you want more control over the format of the generated help
      * message.
@@ -4361,6 +4377,11 @@ public class CommandLine {
                         if (isOption(field))    { receiver.addOption(ArgsReflection.extractOptionSpec(scope, field, factory)); }
                         if (isParameter(field)) { receiver.addPositional(ArgsReflection.extractPositionalParamSpec(scope, field, factory)); }
                     }
+                    if (isInject(field)) {
+                        validateInject(field);
+                        field.setAccessible(true);
+                        new FieldBinding(scope, field).set(receiver);
+                    }
                 }
                 return result;
             }
@@ -4397,6 +4418,18 @@ public class CommandLine {
                 if (!hasCommandAnnotation && result.positionalParameters.isEmpty() && result.optionsByNameMap.isEmpty() && result.unmatchedArgs.isEmpty()) {
                     throw new InitializationException(command.getClass().getName() + " is not a command: it has no @Command, @Option, @Parameters or @Unmatched annotations");
                 }
+            }
+            private static void validateInject(Field field) {
+                if (isInject(field) && (isOption(field) || isParameter(field))) {
+                    throw new DuplicateOptionAnnotationsException("A field cannot have both @Inject and @Option or @Parameters annotations, but '" + field + "' has both.");
+                }
+                if (isInject(field) && isUnmatched(field)) {
+                    throw new DuplicateOptionAnnotationsException("A field cannot have both @Inject and @Unmatched annotations, but '" + field + "' has both.");
+                }
+                if (isInject(field) && isMixin(field)) {
+                    throw new DuplicateOptionAnnotationsException("A field cannot have both @Inject and @Mixin annotations, but '" + field + "' has both.");
+                }
+                if (field.getType() != CommandSpec.class) { throw new InitializationException("@picocli.CommandLine.Inject annotation is only supported on fields of type " + CommandSpec.class.getName()); }
             }
             private static CommandSpec buildMixinForField(Field field, Object scope, IFactory factory) {
                 try {
@@ -4442,6 +4475,7 @@ public class CommandLine {
             static boolean isParameter(Field f) { return f.isAnnotationPresent(Parameters.class); }
             static boolean isMixin(Field f)     { return f.isAnnotationPresent(Mixin.class); }
             static boolean isUnmatched(Field f) { return f.isAnnotationPresent(Unmatched.class); }
+            static boolean isInject(Field f)    { return f.isAnnotationPresent(Inject.class); }
         }
 
         /** Helper class to reflectively create OptionSpec and PositionalParamSpec objects from annotated elements.

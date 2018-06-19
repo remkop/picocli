@@ -1853,7 +1853,7 @@ private void handleParseResult(List<CommandLine> parsed) {
 You may be interested in the <<Convenience Methods for Subcommands,convenience methods for subcommands>> to reduce error handling and other boilerplate code in your application.
 
 
-=== `@ParentCommand` annotation
+=== `@ParentCommand` Annotation
 In command line applications with subcommands, options of the top level command are often intended as "global" options that apply to all the subcommands. Prior to picocli 2.2, subcommands had no easy way to access their parent command options unless the parent command made these values available in a global variable.
 
 The `@ParentCommand` annotation introduced in picocli 2.2 makes it easy for subcommands to access their parent command options: subcommand fields annotated with `@ParentCommand` are initialized with a reference to the parent command. For example:
@@ -1972,7 +1972,7 @@ in <<Expanded Example>>.
 From picocli 3.1, the usage help synopsis of the subcommand shows not only the subcommand name but also the parent command name.
 For example, if the `git` command has a `commit` subcommand, the usage help for the `commit` subcommand shows `Usage: git commit <options>`.
 
-=== Hidden subcommands
+=== Hidden Subcommands
 
 Commands with the `hidden` attribute set to `true` will not be shown in the usage help message of their parent command.
 
@@ -1996,7 +1996,7 @@ Commands:
   foo  This is a visible subcommand
 ----
 
-=== Help subcommands
+=== Help Subcommands
 
 Commands with the `helpCommand` attribute set to `true` are treated as help commands.
 When picocli encounters a help command on the command line, required options and required positional parameters of the parent command
@@ -2009,7 +2009,7 @@ See <<Custom Help Subcommands>> for more details on creating help subcommands.
 @Command(helpCommand = true)
 ----
 
-=== Nested sub-subcommands
+=== Nested sub-Subcommands
 The specified object can be an annotated object or a
 `CommandLine` instance with its own nested subcommands. For example:
 
@@ -2300,6 +2300,27 @@ Usage: <main class>
 ----
 
 Custom handlers can extend `AbstractHandler` to inherit this behaviour.
+
+=== `@Inject` Annotation
+Picocli 3.2 introduces a custom `@Inject` annotation (not `javax.inject.Inject`) for injecting the `CommandSpec` model of the command into a command field.
+
+This is useful when a command needs to use the picocli API, for example to walk the command hierarchy and iterate over its sibling commands.
+This complements the `@ParentCommand` annotation;  the `@ParentCommand` annotation injects a user-defined command object, whereas this annotation injects a picocli class.
+
+Currently only the `CommandSpec` model of the command can be injected.
+
+[source,java]
+----
+class InjectExample implements Runnable {
+   @Inject CommandSpec commandSpec;
+
+   //...
+
+   public void run() {
+       // do something with the injected object
+   }
+}
+----
 
 
 === Custom Factory
