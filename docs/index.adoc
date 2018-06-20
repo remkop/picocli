@@ -2302,7 +2302,7 @@ Usage: <main class>
 Custom handlers can extend `AbstractHandler` to inherit this behaviour.
 
 === `@Inject` Annotation
-Picocli 3.2 introduces a custom `@Inject` annotation (not `javax.inject.Inject`) for injecting the `CommandSpec` model of the command into a command field.
+Picocli 3.2 introduces a custom `@Inject` annotation (`picocli.CommandLine.Inject`, not `javax.inject.Inject`) for injecting the `CommandSpec` model of the command into a command field.
 
 This is useful when a command needs to use the picocli API, for example to walk the command hierarchy and iterate over its sibling commands.
 This complements the `@ParentCommand` annotation;  the `@ParentCommand` annotation injects a user-defined command object, whereas this annotation injects a picocli class.

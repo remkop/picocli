@@ -2183,11 +2183,10 @@ public class CommandLine {
         String name() default "";
     }
     /**
-     * Fields annotated with {@code @Inject} will be initialized with the {@code CommandLine} or {@code CommandSpec} for the command the field is part of. Example usage:
+     * Fields annotated with {@code @Inject} will be initialized with the {@code CommandSpec} for the command the field is part of. Example usage:
      * <pre>
      * class InjectExample implements Runnable {
-     *     &#064;Inject CommandLine commandLine; // usually you inject either the CommandLine
-     *     &#064;Inject CommandSpec commandSpec; // or the CommandSpec
+     *     &#064;Inject CommandSpec commandSpec;
      *     //...
      *     public void run() {
      *         // do something with the injected objects
