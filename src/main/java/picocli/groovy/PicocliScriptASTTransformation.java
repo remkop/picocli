@@ -60,8 +60,6 @@ public class PicocliScriptASTTransformation extends AbstractASTTransformation {
         AnnotationNode node = (AnnotationNode) nodes[0];
         if (!MY_TYPE.equals(node.getClassNode())) return;
 
-        source.getErrorCollector().addWarning(1, "parent=" + parent, source.getCST(), source);
-
         if (parent instanceof DeclarationExpression) {
             changeBaseScriptTypeFromDeclaration(source, (DeclarationExpression) parent, node);
         } else if (parent instanceof ImportNode || parent instanceof PackageNode) {
