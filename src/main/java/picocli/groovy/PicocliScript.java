@@ -85,7 +85,7 @@ import java.lang.annotation.Target;
  */
 @java.lang.annotation.Documented
 @Retention(RetentionPolicy.SOURCE)
-@Target({ElementType.LOCAL_VARIABLE, ElementType.PACKAGE, ElementType.TYPE /*, ElementType.IMPORT*/})
+@Target({ElementType.LOCAL_VARIABLE, ElementType.PACKAGE, ElementType.TYPE, ElementType.FIELD /*, ElementType.IMPORT*/})
 @GroovyASTTransformationClass("picocli.groovy.PicocliScriptASTTransformation")
 public @interface PicocliScript {
     Class<?> value() default PicocliBaseScript.class;

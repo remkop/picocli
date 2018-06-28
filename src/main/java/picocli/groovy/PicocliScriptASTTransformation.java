@@ -18,16 +18,7 @@ package picocli.groovy;
 
 import java.util.List;
 
-import org.codehaus.groovy.ast.ASTNode;
-import org.codehaus.groovy.ast.AnnotatedNode;
-import org.codehaus.groovy.ast.AnnotationNode;
-import org.codehaus.groovy.ast.ClassHelper;
-import org.codehaus.groovy.ast.ClassNode;
-import org.codehaus.groovy.ast.ConstructorNode;
-import org.codehaus.groovy.ast.ImportNode;
-import org.codehaus.groovy.ast.MethodNode;
-import org.codehaus.groovy.ast.PackageNode;
-import org.codehaus.groovy.ast.Parameter;
+import org.codehaus.groovy.ast.*;
 import org.codehaus.groovy.ast.expr.ClassExpression;
 import org.codehaus.groovy.ast.expr.DeclarationExpression;
 import org.codehaus.groovy.ast.expr.EmptyExpression;
@@ -69,6 +60,8 @@ public class PicocliScriptASTTransformation extends AbstractASTTransformation {
         AnnotationNode node = (AnnotationNode) nodes[0];
         if (!MY_TYPE.equals(node.getClassNode())) return;
 
+        source.getErrorCollector().addWarning(1, "parent=" + parent, source.getCST(), source);
+
         if (parent instanceof DeclarationExpression) {
             changeBaseScriptTypeFromDeclaration(source, (DeclarationExpression) parent, node);
         } else if (parent instanceof ImportNode || parent instanceof PackageNode) {
@@ -108,9 +101,18 @@ public class PicocliScriptASTTransformation extends AbstractASTTransformation {
             return;
         }
 
-        if (!(de.getRightExpression() instanceof EmptyExpression)) {
-            addError("Annotation " + MY_TYPE_NAME + " not supported with variable assignment.", de);
-            return;
+        ClassNode cNode = de.getDeclaringClass();
+        ClassNode baseScriptType = de.getVariableExpression().getType().getPlainNodeReference();
+        if (baseScriptType.isScript()) {
+            if (!(de.getRightExpression() instanceof EmptyExpression)) {
+                addError("Annotation " + MY_TYPE_NAME + " not supported with variable assignment.", de);
+                return;
+            }
+            de.setRightExpression(new VariableExpression("this"));
+        } else {
+            source.getErrorCollector().addWarning(1, "!baseScriptType.isScript, baseScriptType=" + baseScriptType, source.getCST(), source);
+            source.getErrorCollector().addWarning(1, "cNode = " + cNode, source.getCST(), source);
+            baseScriptType = BASE_SCRIPT_TYPE;
         }
         Expression value = node.getMember("value");
         if (value != null) {
@@ -118,9 +120,6 @@ public class PicocliScriptASTTransformation extends AbstractASTTransformation {
             return;
         }
 
-        ClassNode cNode = de.getDeclaringClass();
-        ClassNode baseScriptType = de.getVariableExpression().getType().getPlainNodeReference();
-        de.setRightExpression(new VariableExpression("this"));
 
         changeBaseScriptType(source, de, cNode, baseScriptType, node);
     }

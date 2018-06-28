@@ -172,6 +172,7 @@ No features have been promoted in this picocli release.
 - [#393] New feature: Add support for JLine completers.
 - [#395] New feature: Allow embedding default values anywhere in description for `@Option` or `@Parameters`.
 - [#259] New Feature: Added `@Inject` annotation to inject `CommandSpec` into application field.
+- [#398] Enhancement: Allow `@PicocliScript` annotation on Groovy script `@Field` variables instead of just on imports.
 
 ## <a name="3.2.0-deprecated"></a> Deprecations
 No features were deprecated in this release.

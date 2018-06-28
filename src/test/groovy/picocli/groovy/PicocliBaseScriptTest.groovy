@@ -139,6 +139,44 @@ import picocli.CommandLine
     }
 
     @Test
+    void testPicocliScriptAnnotationOnFieldWithoutImport1() {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream()
+        System.setOut(new PrintStream(baos))
+
+        GroovyShell shell = new GroovyShell()
+        shell.context.setVariable('args', ["--help"] as String[])
+        shell.evaluate '''
+@picocli.CommandLine.Command(name = 'cmd', description = 'my description')
+@picocli.groovy.PicocliScript
+
+@picocli.CommandLine.Option(names = ["-h", "--help"], usageHelp = true)
+@groovy.transform.Field boolean usageHelpRequested
+'''
+        String expected = String.format("" +
+                "Usage: cmd [-h]%n" +
+                "my description%n" +
+                "  -h, --help%n")
+        assert expected == baos.toString()
+    }
+
+    @Test
+    void testPicocliScriptAnnotationOnFieldWithoutImport2() {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream()
+        System.setOut(new PrintStream(baos))
+
+        GroovyShell shell = new GroovyShell()
+        shell.context.setVariable('args', [ "-h" ] as String[])
+        def result = shell.evaluate(new File(new File(sourceURI).parentFile, 'ScriptWithoutImports.groovy'))
+        assert result == null // help is invoked so script is not run
+
+        String expected = String.format("" +
+                "Usage: cmd [-h]%n" +
+                "my description%n" +
+                "  -h, --help%n")
+        assert expected == baos.toString()
+    }
+
+    @Test
     void testScriptRequestedVersionHelpToStdout() {
         ByteArrayOutputStream baos = new ByteArrayOutputStream()
         System.setOut(new PrintStream(baos))
