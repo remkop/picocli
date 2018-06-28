@@ -1059,7 +1059,8 @@ If you specify <code>name</code> instead of <code>usage</code>, picocli will sho
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="CodeRay highlight"><code data-lang="groovy"><span class="keyword">def</span> cli = <span class="keyword">new</span> CliBuilder(<span class="key">name</span>: <span class="string"><span class="delimiter">'</span><span class="content">myapp</span><span class="delimiter">'</span></span>) <span class="comment">// detailed synopsis</span>
+<pre class="CodeRay highlight"><code data-lang="groovy"><span class="comment">// the new way</span>
+<span class="keyword">def</span> cli = <span class="keyword">new</span> CliBuilder(<span class="key">name</span>: <span class="string"><span class="delimiter">'</span><span class="content">myapp</span><span class="delimiter">'</span></span>) <span class="comment">// detailed synopsis</span>
 cli.a(<span class="string"><span class="delimiter">'</span><span class="content">option a description</span><span class="delimiter">'</span></span>)
 cli.b(<span class="string"><span class="delimiter">'</span><span class="content">option b description</span><span class="delimiter">'</span></span>)
 cli.c(<span class="key">type</span>: <span class="predefined-type">List</span>, <span class="string"><span class="delimiter">'</span><span class="content">option c description</span><span class="delimiter">'</span></span>)
@@ -1072,7 +1073,6 @@ cli.usage()</code></pre>
 <div class="listingblock">
 <div class="content">
 <pre>Usage: myapp [-ab] [-c=PARAM]...
-the new way
   -a           option a description
   -b           option b description
   -c= PARAM    option c description</pre>
@@ -1334,7 +1334,7 @@ picocli <a href="http://picocli.info/">site</a> and GitHub <a href="https://gith
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2018-06-10 19:49:25 JST
+Last updated 2018-06-29 00:32:39 +09:00
 </div>
 </div>
 </body>

@@ -347,6 +347,7 @@ This still works, but the picocli version has a better alternative with the `nam
 If you specify `name` instead of `usage`, picocli will show all options in a succinct synopsis with square brackets `[` and `]` for optional elements and ellipsis `...` for elements that can be repeated one or more times. For example:
 [source,groovy]
 ----
+// the new way
 def cli = new CliBuilder(name: 'myapp') // detailed synopsis
 cli.a('option a description')
 cli.b('option b description')
@@ -356,7 +357,6 @@ cli.usage()
 The above program prints:
 ----
 Usage: myapp [-ab] [-c=PARAM]...
-the new way
   -a           option a description
   -b           option b description
   -c= PARAM    option c description
