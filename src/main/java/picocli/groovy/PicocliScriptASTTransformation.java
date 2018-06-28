@@ -108,8 +108,6 @@ public class PicocliScriptASTTransformation extends AbstractASTTransformation {
             }
             de.setRightExpression(new VariableExpression("this"));
         } else {
-            source.getErrorCollector().addWarning(1, "!baseScriptType.isScript, baseScriptType=" + baseScriptType, source.getCST(), source);
-            source.getErrorCollector().addWarning(1, "cNode = " + cNode, source.getCST(), source);
             baseScriptType = BASE_SCRIPT_TYPE;
         }
         Expression value = node.getMember("value");
