@@ -1942,6 +1942,11 @@ public class CommandLine {
          */
         boolean hidden() default false;
 
+        /** Returns the default value of this option, before splitting and type conversion.
+         * @return a String that (after type conversion) will be used as the value for this option if no value was specified on the command line
+         * @since 3.2 */
+        String defaultValue() default "__no_default_value__";
+
         /** Use this attribute to control for a specific option whether its default value should be shown in the usage
          * help message. If not specified, the default value is only shown when the {@link Command#showDefaultValues()}
          * is set {@code true} on the command. Use this attribute to specify whether the default value
@@ -2093,6 +2098,11 @@ public class CommandLine {
          * @return whether this parameter should be excluded from the usage message
          */
         boolean hidden() default false;
+
+        /** Returns the default value of this positional parameter, before splitting and type conversion.
+         * @return a String that (after type conversion) will be used as the value for this positional parameter if no value was specified on the command line
+         * @since 3.2 */
+        String defaultValue() default "__no_default_value__";
 
         /** Use this attribute to control for a specific positional parameter whether its default value should be shown in the usage
          * help message. If not specified, the default value is only shown when the {@link Command#showDefaultValues()}
@@ -2511,20 +2521,16 @@ public class CommandLine {
         }
         private static ITypeConverter<?>[] createConverter(IFactory factory, Class<? extends ITypeConverter<?>>[] classes) {
             ITypeConverter<?>[] result = new ITypeConverter<?>[classes.length];
-            for (int i = 0; i < classes.length; i++) {
-                try {
-                    result[i] = factory.create(classes[i]);
-                } catch (Exception ex) {
-                    throw new InitializationException("Could not instantiate " + classes[i] + ": " + ex, ex);
-                }
-            }
+            for (int i = 0; i < classes.length; i++) { result[i] = create(factory, classes[i]); }
             return result;
         }
         public static IVersionProvider createVersionProvider(IFactory factory, Class<? extends IVersionProvider> cls) {
-            try { return factory.create(cls); }
-            catch (Exception ex) { throw new InitializationException("Could not instantiate " + cls + ": " + ex, ex); }
+            return create(factory, cls);
         }
         public static Iterable<String> createCompletionCandidates(IFactory factory, Class<? extends Iterable<String>> cls) {
+            return create(factory, cls);
+        }
+        public static <T> T create(IFactory factory, Class<T> cls) {
             try { return factory.create(cls); }
             catch (Exception ex) { throw new InitializationException("Could not instantiate " + cls + ": " + ex, ex); }
         }
@@ -3532,6 +3538,7 @@ public class CommandLine {
         public abstract static class ArgSpec {
             static final String DESCRIPTION_VARIABLE_DEFAULT_VALUE = "${DEFAULT-VALUE}";
             static final String DESCRIPTION_VARIABLE_COMPLETION_CANDIDATES = "${COMPLETION-CANDIDATES}";
+            private static final String NO_DEFAULT_VALUE = "__no_default_value__";
 
             // help-related fields
             private final boolean hidden;
@@ -3936,8 +3943,8 @@ public class CommandLine {
     
                 /** Sets the default value of this option or positional parameter to the specified value, and returns this builder.
                  * Before parsing the command line, the result of {@linkplain #splitRegex() splitting} and {@linkplain #converters() type converting}
-                 * this default value is applied to the option or positional parameter. A value of {@code null} means no default. */
-                public T defaultValue(String defaultValue)   { this.defaultValue = defaultValue; return self(); }
+                 * this default value is applied to the option or positional parameter. A value of {@code null} or {@code "__no_default_value__"} means no default. */
+                public T defaultValue(String defaultValue)   { this.defaultValue = NO_DEFAULT_VALUE.equals(defaultValue) ? null : defaultValue; return self(); }
 
                 /** Sets the initial value of this option or positional parameter to the specified value, and returns this builder.
                  * If {@link #hasInitialValue()} is true, the option will be reset to the initial value before parsing (regardless
@@ -4407,10 +4414,14 @@ public class CommandLine {
                 Object instance = command;
                 Class<?> cls = command.getClass();
                 String commandClassName = cls.getName();
-                if (command instanceof Class && ((Class) command).isInterface()) {
+                if (command instanceof Class) {
                     cls = (Class) command;
                     commandClassName = cls.getName();
-                    instance = Proxy.newProxyInstance(cls.getClassLoader(), new Class[] {cls}, new PicocliInvocationHandler());
+                    if (cls.isInterface()) {
+                        instance = Proxy.newProxyInstance(cls.getClassLoader(), new Class[]{cls}, new PicocliInvocationHandler());
+                    } else {
+                        instance = DefaultFactory.create(factory, cls);
+                    }
                 }
 
                 CommandSpec result = CommandSpec.wrapWithoutInspection(Assert.notNull(instance, "command"));
@@ -4642,6 +4653,7 @@ public class CommandLine {
                 builder.paramLabel(inferLabel(option.paramLabel(), member.name(), member.getType(), elementTypes));
                 builder.splitRegex(option.split());
                 builder.hidden(option.hidden());
+                builder.defaultValue(option.defaultValue());
                 builder.converters(DefaultFactory.createConverter(factory, option.converter()));
                 return builder.build();
             }
@@ -4661,6 +4673,7 @@ public class CommandLine {
                 builder.paramLabel(inferLabel(parameters.paramLabel(), member.name(), member.getType(), elementTypes));
                 builder.splitRegex(parameters.split());
                 builder.hidden(parameters.hidden());
+                builder.defaultValue(parameters.defaultValue());
                 builder.converters(DefaultFactory.createConverter(factory, parameters.converter()));
                 builder.showDefaultValue(parameters.showDefaultValue());
                 if (!NoCompletionCandidates.class.equals(parameters.completionCandidates())) {

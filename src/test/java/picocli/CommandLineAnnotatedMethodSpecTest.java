@@ -3,6 +3,7 @@ package picocli;
 import org.junit.*;
 import org.junit.contrib.java.lang.system.ProvideSystemProperty;
 
+import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -43,6 +44,29 @@ public class CommandLineAnnotatedMethodSpecTest {
         double aDouble();
     }
 
+    interface PrimitivesWithDefault {
+        @Option(names = "-b", defaultValue = "true")
+        boolean aBoolean();
+
+        @Option(names = "-y", defaultValue = "11")
+        byte aByte();
+
+        @Option(names = "-s", defaultValue = "12")
+        short aShort();
+
+        @Option(names = "-i", defaultValue = "13")
+        int anInt();
+
+        @Option(names = "-l", defaultValue = "14")
+        long aLong();
+
+        @Option(names = "-f", defaultValue = "15.5")
+        float aFloat();
+
+        @Option(names = "-d", defaultValue = "16.6")
+        double aDouble();
+    }
+
     @Test
     public void testInterfaceIsInstantiated() {
         CommandLine cmd = new CommandLine(Primitives.class);
@@ -50,8 +74,9 @@ public class CommandLineAnnotatedMethodSpecTest {
     }
 
     @Test
-    public void testPrimitiveDefaultValues() {
+    public void testPrimitiveWithoutDefaultValues() {
         CommandLine cmd = new CommandLine(Primitives.class);
+        cmd.parse();
         Primitives primitives = cmd.getCommand();
         assertFalse(primitives.aBoolean());
         assertEquals(0, primitives.aByte());
@@ -60,6 +85,20 @@ public class CommandLineAnnotatedMethodSpecTest {
         assertEquals(0, primitives.aLong());
         assertEquals(0, primitives.aFloat(), 0.0001);
         assertEquals(0, primitives.aDouble(), 0.0001);
+    }
+
+    @Test
+    public void testPrimitivesWithDefaultValues() {
+        CommandLine cmd = new CommandLine(PrimitivesWithDefault.class);
+        cmd.parse();
+        PrimitivesWithDefault primitives = cmd.getCommand();
+        assertTrue(primitives.aBoolean());
+        assertEquals(11, primitives.aByte());
+        assertEquals((short) 12, primitives.aShort());
+        assertEquals(13, primitives.anInt());
+        assertEquals(14, primitives.aLong());
+        assertEquals(15.5f, primitives.aFloat(), 0.0001);
+        assertEquals(16.6d, primitives.aDouble(), 0.0001);
     }
 
     @Test
@@ -114,9 +153,48 @@ public class CommandLineAnnotatedMethodSpecTest {
         SortedSet<Short> getSortedSet();
     }
 
+    interface ObjectsWithDefault {
+        @Option(names = "-b", defaultValue = "true")
+        Boolean aBoolean();
+
+        @Option(names = "-y", defaultValue = "123")
+        Byte aByte();
+
+        @Option(names = "-s", defaultValue = "11")
+        Short aShort();
+
+        @Option(names = "-i", defaultValue = "12")
+        Integer anInt();
+
+        @Option(names = "-l", defaultValue = "13")
+        Long aLong();
+
+        @Option(names = "-f", defaultValue = "14.4")
+        Float aFloat();
+
+        @Option(names = "-d", defaultValue = "15.5")
+        Double aDouble();
+
+        @Option(names = "-bigint", defaultValue = "16.6")
+        BigDecimal aBigDecimal();
+
+        @Option(names = "-string", defaultValue = "abc")
+        String aString();
+
+        @Option(names = "-list", defaultValue = "a,b,c", split = ",")
+        List<String> getList();
+
+        @Option(names = "-map", defaultValue = "1=1,2=2,3=3", split = ",")
+        Map<Integer, Double> getMap();
+
+        @Option(names = "-set", defaultValue = "1,2,3", split = ",")
+        SortedSet<Short> getSortedSet();
+    }
+
     @Test
-    public void testObjectsDefaultValues() {
+    public void testObjectsWithoutDefaultValues() {
         CommandLine cmd = new CommandLine(Objects.class);
+        cmd.parse();
         Objects objects = cmd.getCommand();
         assertFalse(objects.aBoolean());
         assertEquals(Byte.valueOf((byte) 0), objects.aByte());
@@ -130,6 +208,29 @@ public class CommandLineAnnotatedMethodSpecTest {
         assertNull(objects.getList());
         assertNull(objects.getMap());
         assertNull(objects.getSortedSet());
+    }
+
+    @Test
+    public void testObjectsWithDefaultValues() {
+        CommandLine cmd = new CommandLine(ObjectsWithDefault.class);
+        cmd.parse();
+        ObjectsWithDefault objects = cmd.getCommand();
+        assertTrue(objects.aBoolean());
+        assertEquals(Byte.valueOf((byte) 123), objects.aByte());
+        assertEquals(Short.valueOf((short) 11), objects.aShort());
+        assertEquals(Integer.valueOf(12), objects.anInt());
+        assertEquals(Long.valueOf(13), objects.aLong());
+        assertEquals(14.4f, objects.aFloat(), 0.0001);
+        assertEquals(15.5d, objects.aDouble(), 0.0001);
+        assertEquals(new BigDecimal("16.6"), objects.aBigDecimal());
+        assertEquals("abc", objects.aString());
+        assertEquals(Arrays.asList("a", "b", "c"), objects.getList());
+        Map<Integer, Double> map = new HashMap<Integer, Double>();
+        map.put(1, 1.0);
+        map.put(2, 2.0);
+        map.put(3, 3.0);
+        assertEquals(map, objects.getMap());
+        assertEquals(new TreeSet<Short>(Arrays.asList((short)1, (short)2, (short)3)), objects.getSortedSet());
     }
 
     @Test

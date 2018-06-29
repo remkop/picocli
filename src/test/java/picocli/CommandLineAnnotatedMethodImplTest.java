@@ -4,6 +4,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.contrib.java.lang.system.ProvideSystemProperty;
 
+import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.*;
 
@@ -33,7 +34,7 @@ public class CommandLineAnnotatedMethodImplTest {
     }
 
     @Test
-    public void testPrimitiveDefaultValues() {
+    public void testPrimitivesWithoutDefaultValues() {
         Primitives primitives = CommandLine.populateCommand(new Primitives());
         assertFalse(primitives.aBoolean);
         assertEquals(0, primitives.aByte);
@@ -42,6 +43,36 @@ public class CommandLineAnnotatedMethodImplTest {
         assertEquals(0, primitives.aLong);
         assertEquals(0, primitives.aFloat, 0.0001);
         assertEquals(0, primitives.aDouble, 0.0001);
+    }
+
+    static class PrimitivesWithDefault {
+        boolean aBoolean;
+        byte aByte;
+        short aShort;
+        int anInt;
+        long aLong;
+        float aFloat;
+        double aDouble;
+
+        @Option(names = "-b", defaultValue = "true") void setBoolean(boolean val) { aBoolean = val; }
+        @Option(names = "-y", defaultValue = "11") void setByte(byte val) { aByte = val; }
+        @Option(names = "-s", defaultValue = "12") void setShort(short val) { aShort = val; }
+        @Option(names = "-i", defaultValue = "13") void setInt(int val) { anInt = val; }
+        @Option(names = "-l", defaultValue = "14") void setLong(long val) { aLong = val; }
+        @Option(names = "-f", defaultValue = "15.5") void setFloat(float val) { aFloat = val; }
+        @Option(names = "-d", defaultValue = "16.6") void setDouble(double val) { aDouble = val; }
+    }
+
+    @Test
+    public void testPrimitivesWithDefaultValues() {
+        PrimitivesWithDefault primitives = CommandLine.populateCommand(new PrimitivesWithDefault());
+        assertTrue(primitives.aBoolean);
+        assertEquals(11, primitives.aByte);
+        assertEquals((short) 12, primitives.aShort);
+        assertEquals(13, primitives.anInt);
+        assertEquals(14, primitives.aLong);
+        assertEquals(15.5, primitives.aFloat, 0.0001);
+        assertEquals(16.6, primitives.aDouble, 0.0001);
     }
 
     @Test
@@ -55,6 +86,62 @@ public class CommandLineAnnotatedMethodImplTest {
         assertEquals(4, primitives.aLong);
         assertEquals(5, primitives.aFloat, 0.0001);
         assertEquals(6, primitives.aDouble, 0.0001);
+    }
+
+    static class ObjectsWithDefaults {
+        Boolean aBoolean;
+        Byte aByte;
+        Short aShort;
+        Integer anInt;
+        Long aLong;
+        Float aFloat;
+        Double aDouble;
+        BigDecimal aBigDecimal;
+        String aString;
+        List<String> aList;
+        Map<Integer, Double> aMap;
+        SortedSet<Short> aSet;
+
+        @Option(names = "-b", defaultValue = "true") void setBoolean(Boolean val) { aBoolean = val; }
+        @Option(names = "-y", defaultValue = "123") void setByte(Byte val) { aByte = val; }
+        @Option(names = "-s", defaultValue = "11") void setShort(Short val) { aShort = val; }
+        @Option(names = "-i", defaultValue = "12") void setInt(Integer val) { anInt = val; }
+        @Option(names = "-l", defaultValue = "13") void setLong(Long val) { aLong = val; }
+        @Option(names = "-f", defaultValue = "14.4") void setFloat(Float val) { aFloat = val; }
+        @Option(names = "-d", defaultValue = "15.5") void setDouble(Double val) { aDouble = val; }
+
+        @Option(names = "-bigint", defaultValue = "16.6") void setBigDecimal(BigDecimal val) { aBigDecimal = val; }
+        @Option(names = "-string", defaultValue = "abc") void setString(String val) { aString = val; }
+        @Option(names = "-list", defaultValue = "a,b,c", split = ",") void setList(List<String> val) { aList = val; }
+
+        @Option(names = "-map", defaultValue = "1=1,2=2,3=3", split = ",")
+        void setMap(Map<Integer, Double> val) { aMap = val; }
+
+        @Option(names = "-set", defaultValue = "1,2,3", split = ",")
+        void setSortedSet(SortedSet<Short> val) { aSet = val; }
+    }
+
+    @Test
+    public void testObjectsWithDefaultValues() {
+        CommandLine cmd = new CommandLine(ObjectsWithDefaults.class);
+        cmd.parse();
+        ObjectsWithDefaults objects = cmd.getCommand();
+        assertTrue(objects.aBoolean);
+        assertEquals(Byte.valueOf((byte) 123), objects.aByte);
+        assertEquals(Short.valueOf((short) 11), objects.aShort);
+        assertEquals(Integer.valueOf(12), objects.anInt);
+        assertEquals(Long.valueOf(13), objects.aLong);
+        assertEquals(14.4f, objects.aFloat, 0.0001);
+        assertEquals(15.5d, objects.aDouble, 0.0001);
+        assertEquals(new BigDecimal("16.6"), objects.aBigDecimal);
+        assertEquals("abc", objects.aString);
+        assertEquals(Arrays.asList("a", "b", "c"), objects.aList);
+        Map<Integer, Double> map = new HashMap<Integer, Double>();
+        map.put(1, 1.0);
+        map.put(2, 2.0);
+        map.put(3, 3.0);
+        assertEquals(map, objects.aMap);
+        assertEquals(new TreeSet<Short>(Arrays.asList((short)1, (short)2, (short)3)), objects.aSet);
     }
 
     static class Objects {
@@ -91,7 +178,7 @@ public class CommandLineAnnotatedMethodImplTest {
     }
 
     @Test
-    public void testObjectsDefaultValues() {
+    public void testObjectsWithoutDefaultValues() {
         Objects objects = CommandLine.populateCommand(new Objects());
         assertNull(objects.aBoolean);
         assertNull(objects.aByte);

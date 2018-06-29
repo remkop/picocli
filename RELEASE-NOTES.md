@@ -148,6 +148,7 @@ class InjectExample implements Runnable {
 ```  
   
   
+  
 
 ### <a name="3.2.0-lenient-parse"></a> Lenient Parse Mode
 
@@ -172,7 +173,9 @@ No features have been promoted in this picocli release.
 - [#393] New feature: Add support for JLine completers.
 - [#395] New feature: Allow embedding default values anywhere in description for `@Option` or `@Parameters`.
 - [#259] New Feature: Added `@Inject` annotation to inject `CommandSpec` into application field.
+- [#182] New Feature: Add support for annotating methods with `@Option` and `@Parameters`.
 - [#398] Enhancement: Allow `@PicocliScript` annotation on Groovy script `@Field` variables instead of just on imports.
+- [#322] Enhancement: Add `defaultValue` attribute to @Option and @Parameters annotation.
 
 ## <a name="3.2.0-deprecated"></a> Deprecations
 No features were deprecated in this release.
