@@ -16,6 +16,53 @@ Picocli follows [semantic versioning](http://semver.org/).
 * [Potential breaking changes](#3.2.0-breaking-changes)
 
 ## <a name="3.2.0-new"></a> New and Noteworthy
+### <a name="3.2.0-method-annotations"></a> Annotated Methods
+From this release, `@Option` and `@Parameter` annotations can be added to methods as well as fields of a class.
+
+For concrete classes, annotate "setter" methods (methods that accept a parameter) and when the option is specified on the command line, picocli will invoke the method with the value specified on the command line, converted to the type of the method parameter.
+
+Alternatively, you may annotate "getter-like" methods (methods that return a value) on an interface, and picocli will create an instance of the interface that returns the values specified on the command line, converted to the method return type. This feature is inspired by [Jewel CLI](https://github.com/lexicalscope/jewelcli).
+
+#### Annotating Methods of an Interface
+The `@Option` and `@Parameters` annotations can be used on methods of an interface that return a value. For example:
+
+```java
+interface Counter {
+    @Option(names = "--count")
+    int getCount();
+}
+```
+You use it by specifying the class of the interface:
+```java
+CommandLine cmd = new CommandLine(Counter.class); // specify a class
+String[] args = new String[] {"--count", "3"};
+cmd.parse(args);
+Counter counter = cmd.getCommand(); // picocli created an instance
+assert counter.getCount() == 3; // method returns command line value
+```
+
+#### Annotating Methods of a Concrete Class
+The `@Option` and `@Parameters` annotations can be used on methods of a class that accept a parameter. For example:
+
+```java
+class Counter {
+    int count;
+    
+    @Option(names = "--count")
+    void setCount(int count) {
+        this.count = count;
+    }
+}
+```
+You use it by passing an instance of the class:
+```java
+Counter counter = new Counter(); // the instance to populate
+CommandLine cmd = new CommandLine(counter);
+String[] args = new String[] {"--count", "3"};
+cmd.parse(args);
+assert counter.count == 3; // method was invoked with command line value
+```
+
 ### <a name="3.2.0-jline"></a> JLine Tab-Completion Support
 
 This release adds support for JLine Tab-Completion.
@@ -167,13 +214,13 @@ Promoted features are features that were incubating in previous versions of pico
 No features have been promoted in this picocli release.
 
 ## <a name="3.2.0-fixes"></a> Fixed issues
+- [#182] New Feature: Add support for annotating methods with `@Option` and `@Parameters`.
+- [#393] New feature: Add support for JLine completers.
 - [#389] New feature: Support 'lenient' parsing mode: don't throw `Exceptions` but add them to the `ParseResult.errors()` list and continue parsing.
 - [#392] New feature: Ability to map command line arguments to picocli spec elements. Internally used for generating completion candidates.
 - [#391] New feature: Add API to get completion candidates for option and positional parameter values of any type.
-- [#393] New feature: Add support for JLine completers.
 - [#395] New feature: Allow embedding default values anywhere in description for `@Option` or `@Parameters`.
 - [#259] New Feature: Added `@Inject` annotation to inject `CommandSpec` into application field.
-- [#182] New Feature: Add support for annotating methods with `@Option` and `@Parameters`.
 - [#398] Enhancement: Allow `@PicocliScript` annotation on Groovy script `@Field` variables instead of just on imports.
 - [#322] Enhancement: Add `defaultValue` attribute to @Option and @Parameters annotation.
 

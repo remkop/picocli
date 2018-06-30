@@ -2167,6 +2167,56 @@ Command attributes may be defined multiple times, but only one value is preserve
 
 
 == Tips & Tricks
+=== Annotated Methods
+From version 3.2, `@Option` and `@Parameter` annotations can be added to methods as well as fields of a class.
+
+For concrete classes, annotate "setter" methods (methods that accept a parameter) and when the option is specified on the command line, picocli will invoke the method with the value specified on the command line, converted to the type of the method parameter.
+
+Alternatively, you may annotate "getter-like" methods (methods that return a value) on an interface, and picocli will create an instance of the interface that returns the values specified on the command line, converted to the method return type.
+
+==== Annotating Methods of an Interface
+The `@Option` and `@Parameters` annotations can be used on methods of an interface that return a value. For example:
+
+[source,java]
+----
+interface Counter {
+    @Option(names = "--count")
+    int getCount();
+}
+----
+You use it by specifying the class of the interface:
+[source,java]
+----
+CommandLine cmd = new CommandLine(Counter.class); // specify a class
+String[] args = new String[] {"--count", "3"};
+cmd.parse(args);
+Counter counter = cmd.getCommand(); // picocli created an instance
+assert counter.getCount() == 3; // method returns command line value
+----
+
+==== Annotating Methods of a Concrete Class
+The `@Option` and `@Parameters` annotations can be used on methods of a class that accept a parameter. For example:
+
+[source,java]
+----
+class Counter {
+    int count;
+
+    @Option(names = "--count")
+    void setCount(int count) {
+        this.count = count;
+    }
+}
+----
+You use it by passing an instance of the class:
+[source,java]
+----
+Counter counter = new Counter(); // the instance to populate
+CommandLine cmd = new CommandLine(counter);
+String[] args = new String[] {"--count", "3"};
+cmd.parse(args);
+assert counter.count == 3; // method was invoked with command line value
+----
 
 === Less Boilerplate
 You can omit some of the boilerplate code from your application when the annotated object implements `Runnable` or `Callable`:
