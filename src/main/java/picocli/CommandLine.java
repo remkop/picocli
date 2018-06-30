@@ -2709,7 +2709,7 @@ public class CommandLine {
         for (PositionalParamSpec positional : positionalParametersFields) {
             Range index = positional.index();
             if (index.min > min) {
-                throw new ParameterIndexGapException("Missing positional parameter with index=" + min +
+                throw new ParameterIndexGapException("Command definition should have a positional parameter with index=" + min +
                         ". Nearest positional parameter '" + positional.paramLabel() + "' has index=" + index.min);
             }
             min = Math.max(min, index.max);

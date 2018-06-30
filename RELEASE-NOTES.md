@@ -3,7 +3,7 @@
 # <a name="3.2.0"></a> Picocli 3.2.0 (UNRELEASED)
 The picocli community is pleased to announce picocli 3.2.0.
 
-This release contains bugfixes and new features.
+This release contains new features and enhancements.
 
 This is the thirty-third public release.
 Picocli follows [semantic versioning](http://semver.org/).
@@ -223,6 +223,7 @@ No features have been promoted in this picocli release.
 - [#259] New Feature: Added `@Inject` annotation to inject `CommandSpec` into application field.
 - [#398] Enhancement: Allow `@PicocliScript` annotation on Groovy script `@Field` variables instead of just on imports.
 - [#322] Enhancement: Add `defaultValue` attribute to @Option and @Parameters annotation.
+- [#375] Enhancement: Improve `ParameterIndexGapException` error message. Thanks to [gpettey](https://github.com/gpettey).
 
 ## <a name="3.2.0-deprecated"></a> Deprecations
 No features were deprecated in this release.
