@@ -1434,7 +1434,7 @@ static class MyAbcCandidates extends ArrayList<String> {
 }
 
 class ValidValuesDemo {
-    @Option(names = "-l", description = "Enum. Values: ${COMPLETION-CANDIDATES}")
+    @Option(names = "-l", description = "Enum values: ${COMPLETION-CANDIDATES}")
     Lang lang = null;
 
     @Option(names = "-o", completionCandidates = MyAbcCandidates.class,
@@ -1447,7 +1447,7 @@ CommandLine.usage(new ValidValuesDemo(), System.out);
 This produces the following usage help:
 ----
 Usage: <main class> -l=<lang> -o=<option>
-  -l=<lang>     Enum. Values: java, groovy, kotlin, javascript, frege, clojure
+  -l=<lang>     Enum values: java, groovy, kotlin, javascript, frege, clojure
   -o=<option>   Candidates: A, B, C
 ----
 
