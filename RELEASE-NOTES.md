@@ -224,6 +224,7 @@ No features have been promoted in this picocli release.
 - [#398] Enhancement: Allow `@PicocliScript` annotation on Groovy script `@Field` variables instead of just on imports.
 - [#322] Enhancement: Add `defaultValue` attribute to @Option and @Parameters annotation.
 - [#375] Enhancement: Improve `ParameterIndexGapException` error message. Thanks to [gpettey](https://github.com/gpettey).
+- [#401] Doc: The user manual no longer includes the full `CommandLine.java` source code.
 
 ## <a name="3.2.0-deprecated"></a> Deprecations
 No features were deprecated in this release.
