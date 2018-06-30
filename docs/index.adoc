@@ -655,8 +655,6 @@ ArityDemo -s A B C -f 1.0 2.0 /file1 /file2
 Option `-s` has arity `"1..*"` but instead of consuming all parameters,
 the `-f` argument is recognized as a separate option.
 
-TIP: It is also possible to <<Limiting Cumulative Size,configure the parser>> to use `arity` to limit the total number of values accumulated in an option or positional parameter.
-
 === Default Arity
 If no `arity` is specified, the number of parameters depends on the field's type.
 
