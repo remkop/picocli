@@ -2213,10 +2213,10 @@ public class CommandLine {
         String name() default "";
     }
     /**
-     * Fields annotated with {@code @Inject} will be initialized with the {@code CommandSpec} for the command the field is part of. Example usage:
+     * Fields annotated with {@code @PicoInject} will be initialized with the {@code CommandSpec} for the command the field is part of. Example usage:
      * <pre>
      * class InjectExample implements Runnable {
-     *     &#064;Inject CommandSpec commandSpec;
+     *     &#064;PicoInject CommandSpec commandSpec;
      *     //...
      *     public void run() {
      *         // do something with the injected objects
@@ -2227,7 +2227,7 @@ public class CommandLine {
      */
     @Retention(RetentionPolicy.RUNTIME)
     @Target(ElementType.FIELD)
-    public @interface Inject { }
+    public @interface PicoInject { }
     /**
      * <p>Annotate your class with {@code @Command} when you want more control over the format of the generated help
      * message.
@@ -4373,7 +4373,7 @@ public class CommandLine {
                         || e.isAnnotationPresent(Parameters.class)
                         || e.isAnnotationPresent(Unmatched.class)
                         || e.isAnnotationPresent(Mixin.class)
-                        || e.isAnnotationPresent(Inject.class)
+                        || e.isAnnotationPresent(PicoInject.class)
                         || e.isAnnotationPresent(ParentCommand.class);
             }
             boolean isAnnotationPresent(Class<? extends Annotation> annotationClass) { return accessible.isAnnotationPresent(annotationClass); }
@@ -4384,7 +4384,7 @@ public class CommandLine {
             boolean isParameter()    { return isAnnotationPresent(Parameters.class); }
             boolean isMixin()        { return isAnnotationPresent(Mixin.class); }
             boolean isUnmatched()    { return isAnnotationPresent(Unmatched.class); }
-            boolean isInject()       { return isAnnotationPresent(Inject.class); }
+            boolean isPicoInject()   { return isAnnotationPresent(PicoInject.class); }
             boolean isMultiValue()   { return CommandLine.isMultiValue(getType()); }
             IGetter getter()         { return getter; }
             ISetter setter()         { return setter; }
@@ -4541,7 +4541,7 @@ public class CommandLine {
                     if (member.isOption())    { receiver.addOption(ArgsReflection.extractOptionSpec(member, factory)); }
                     if (member.isParameter()) { receiver.addPositional(ArgsReflection.extractPositionalParamSpec(member, factory)); }
                 }
-                if (member.isInject()) {
+                if (member.isPicoInject()) {
                     validateInject(member);
                     try { member.setter().set(receiver); } catch (Exception ex) { throw new InitializationException("Could not inject spec", ex); }
                 }
@@ -4580,13 +4580,13 @@ public class CommandLine {
                 }
             }
             private static void validateInject(TypedMember member) {
-                if (member.isInject() && (member.isOption() || member.isParameter())) {
+                if (member.isPicoInject() && (member.isOption() || member.isParameter())) {
                     throw new DuplicateOptionAnnotationsException("A member cannot have both @Inject and @Option or @Parameters annotations, but '" + member + "' has both.");
                 }
-                if (member.isInject() && member.isUnmatched()) {
+                if (member.isPicoInject() && member.isUnmatched()) {
                     throw new DuplicateOptionAnnotationsException("A member cannot have both @Inject and @Unmatched annotations, but '" + member + "' has both.");
                 }
-                if (member.isInject() && member.isMixin()) {
+                if (member.isPicoInject() && member.isMixin()) {
                     throw new DuplicateOptionAnnotationsException("A member cannot have both @Inject and @Mixin annotations, but '" + member + "' has both.");
                 }
                 if (member.getType() != CommandSpec.class) { throw new InitializationException("@picocli.CommandLine.Inject annotation is only supported on fields of type " + CommandSpec.class.getName()); }
