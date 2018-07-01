@@ -2355,8 +2355,6 @@ Picocli 3.2 introduces a `@Spec` annotation for injecting the `CommandSpec` mode
 This is useful when a command needs to use the picocli API, for example to walk the command hierarchy and iterate over its sibling commands.
 This complements the `@ParentCommand` annotation;  the `@ParentCommand` annotation injects a user-defined command object, whereas this annotation injects a picocli class.
 
-Currently only the `CommandSpec` model of the command can be injected.
-
 [source,java]
 ----
 class InjectSpecExample implements Runnable {
