@@ -1686,7 +1686,7 @@ public class CommandLineModelTest {
             new CommandLine(injected);
             fail("Expect exception");
         } catch (InitializationException ex) {
-            assertEquals("@picocli.CommandLine.Inject annotation is only supported on fields of type picocli.CommandLine$Model$CommandSpec", ex.getMessage());
+            assertEquals("@picocli.CommandLine.Spec annotation is only supported on fields of type picocli.CommandLine$Model$CommandSpec", ex.getMessage());
         }
     }
 }
