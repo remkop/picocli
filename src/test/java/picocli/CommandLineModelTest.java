@@ -1646,7 +1646,7 @@ public class CommandLineModelTest {
     @Test
     public void testInject_AnnotatedFieldInjected() {
         class Injected {
-            @PicoInject CommandSpec commandSpec;
+            @Spec CommandSpec commandSpec;
             @Parameters String[] params;
         }
         Injected injected = new Injected();
@@ -1659,7 +1659,7 @@ public class CommandLineModelTest {
     @Test
     public void testInject_AnnotatedFieldInjectedForSubcommand() {
         class Injected {
-            @PicoInject CommandSpec commandSpec;
+            @Spec CommandSpec commandSpec;
             @Parameters String[] params;
         }
         Injected injected = new Injected();
@@ -1678,7 +1678,7 @@ public class CommandLineModelTest {
     @Test
     public void testInject_FieldMustBeCommandSpec() {
         class Injected {
-            @PicoInject CommandLine commandLine;
+            @Spec CommandLine commandLine;
             @Parameters String[] params;
         }
         Injected injected = new Injected();

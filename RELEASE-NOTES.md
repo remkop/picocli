@@ -177,18 +177,18 @@ Usage: <main class> -l=<lang> -o=<option>
   -o=<option>   Candidates: A, B, C
 ```
 
-### <a name="3.2.0-PicoInject"></a> `@PicoInject` Annotation  
-A new `@PicoInject` annotation is now available that injects the `CommandSpec` model of the command into an command field.
+### <a name="3.2.0-Spec"></a> `@Spec` Annotation  
+A new `@Spec` annotation is now available that injects the `CommandSpec` model of the command into a command field.
 
 This is useful when a command needs to use the picocli API, for example to walk the command hierarchy and iterate over its sibling commands.
 This complements the `@ParentCommand` annotation;  the `@ParentCommand` annotation injects a user-defined command object, whereas this annotation injects a picocli class.
   
 ```java
-class InjectExample implements Runnable {
-   @PicoInject CommandSpec commandSpec;
+class InjectSpecExample implements Runnable {
+   @Spec CommandSpec commandSpec;
    //...
    public void run() {
-       // do something with the injected object
+       // do something with the injected spec
    }
 }
   
@@ -220,7 +220,7 @@ No features have been promoted in this picocli release.
 - [#392] New feature: Ability to map command line arguments to picocli spec elements. Internally used for generating completion candidates.
 - [#391] New feature: Add API to get completion candidates for option and positional parameter values of any type.
 - [#395] New feature: Allow embedding default values anywhere in description for `@Option` or `@Parameters`.
-- [#259] New Feature: Added `@PicoInject` annotation to inject `CommandSpec` into application field.
+- [#259] New Feature: Added `@Spec` annotation to inject `CommandSpec` into application field.
 - [#398] Enhancement: Allow `@PicocliScript` annotation on Groovy script `@Field` variables instead of just on imports.
 - [#322] Enhancement: Add `defaultValue` attribute to @Option and @Parameters annotation.
 - [#375] Enhancement: Improve `ParameterIndexGapException` error message. Thanks to [gpettey](https://github.com/gpettey).
