@@ -221,6 +221,7 @@ No features have been promoted in this picocli release.
 - [#391] New feature: Add API to get completion candidates for option and positional parameter values of any type.
 - [#395] New feature: Allow embedding default values anywhere in description for `@Option` or `@Parameters`.
 - [#259] New Feature: Added `@Spec` annotation to inject `CommandSpec` into application field.
+- [#400] Enhancement: Add run/call static methods that accept an `IFactory`. This allows Dependency Injection containers to provide the Runnable/Callable implementation.
 - [#398] Enhancement: Allow `@PicocliScript` annotation on Groovy script `@Field` variables instead of just on imports.
 - [#322] Enhancement: Add `defaultValue` attribute to @Option and @Parameters annotation.
 - [#375] Enhancement: Improve `ParameterIndexGapException` error message. Thanks to [gpettey](https://github.com/gpettey).

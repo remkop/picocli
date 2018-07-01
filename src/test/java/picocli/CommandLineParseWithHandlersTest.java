@@ -362,14 +362,14 @@ public class CommandLineParseWithHandlersTest {
                 defaultExceptionHandler().andExit(25));
     }
 
-    @Command(name = "mycmd", mixinStandardHelpOptions = true)
+    @Command(name = "mycmd", mixinStandardHelpOptions = true, version = "MyCallable-1.0")
     static class MyCallable implements Callable<Object> {
         @Option(names = "-x", description = "this is an option")
         String option;
         public Object call() { throw new IllegalStateException("this is a test"); }
     }
 
-    @Command(name = "mycmd", mixinStandardHelpOptions = true)
+    @Command(name = "mycmd", mixinStandardHelpOptions = true, version = "MyRunnable-1.0")
     static class MyRunnable implements Runnable {
         @Option(names = "-x", description = "this is an option")
         String option;
@@ -597,4 +597,157 @@ public class CommandLineParseWithHandlersTest {
         assertEquals("", systemOutRule.getLog());
     }
 
+    @Test
+    public void testCallWithFactory() {
+        Runnable[] variations = new Runnable[] {
+                new Runnable() {public void run() {CommandLine.call(MyCallable.class, new InnerClassFactory(this), "-x", "a");}},
+                new Runnable() {public void run() {CommandLine.call(MyCallable.class, new InnerClassFactory(this), System.out, "-x", "a");}},
+                new Runnable() {public void run() {CommandLine.call(MyCallable.class, new InnerClassFactory(this), System.out, Help.Ansi.OFF, "-x", "a");}},
+                new Runnable() {public void run() {CommandLine.call(MyCallable.class, new InnerClassFactory(this), System.out, System.out, Help.Ansi.OFF, "-x", "a");}},
+        };
+        for (Runnable r : variations) {
+            try {
+                r.run();
+            } catch (ExecutionException ex) {
+                assertTrue(ex.getMessage().startsWith("Error while calling command (picocli.CommandLineParseWithHandlersTest$MyCallable"));
+                assertTrue(ex.getCause() instanceof IllegalStateException);
+                assertEquals("this is a test", ex.getCause().getMessage());
+            }
+        }
+    }
+
+    @Test
+    public void testCallWithFactoryVersionHelp() {
+        CommandLine.call(MyCallable.class, new InnerClassFactory(this), "--version");
+        assertEquals(String.format("MyCallable-1.0%n"), systemOutRule.getLog());
+        assertEquals("", systemErrRule.getLog());
+        systemOutRule.clearLog();
+
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        final PrintStream ps = new PrintStream(baos);
+        Runnable[] variations = new Runnable[] {
+                new Runnable() {public void run() {CommandLine.call(MyCallable.class, new InnerClassFactory(this), ps, "--version");}},
+                new Runnable() {public void run() {CommandLine.call(MyCallable.class, new InnerClassFactory(this), ps, Help.Ansi.OFF, "--version");}},
+                new Runnable() {public void run() {CommandLine.call(MyCallable.class, new InnerClassFactory(this), ps, System.out, Help.Ansi.OFF, "--version");}},
+        };
+        for (Runnable r : variations) {
+            assertEquals("", baos.toString());
+            r.run();
+            assertEquals(String.format("MyCallable-1.0%n"), baos.toString());
+            baos.reset();
+            assertEquals("", systemErrRule.getLog());
+            assertEquals("", systemOutRule.getLog());
+        }
+    }
+
+    @Test
+    public void testCallWithFactoryInvalidInput() {
+        String expected = String.format("" +
+                "Missing required parameter for option '-x' (<option>)%n" +
+                "Usage: mycmd [-hV] [-x=<option>]%n" +
+                "  -h, --help      Show this help message and exit.%n" +
+                "  -V, --version   Print version information and exit.%n" +
+                "  -x= <option>    this is an option%n");
+        Runnable[] variations = new Runnable[] {
+                new Runnable() {public void run() {CommandLine.call(MyCallable.class, new InnerClassFactory(this), "-x");}},
+                new Runnable() {public void run() {CommandLine.call(MyCallable.class, new InnerClassFactory(this), System.out, "-x");}},
+                new Runnable() {public void run() {CommandLine.call(MyCallable.class, new InnerClassFactory(this), System.out, Help.Ansi.OFF, "-x");}},
+        };
+        for (Runnable r : variations) {
+            assertEquals("", systemErrRule.getLog());
+            assertEquals("", systemOutRule.getLog());
+            systemErrRule.clearLog();
+            systemOutRule.clearLog();
+            r.run();
+            assertEquals(expected, systemErrRule.getLog());
+            assertEquals("", systemOutRule.getLog());
+
+            systemErrRule.clearLog();
+            systemOutRule.clearLog();
+        }
+
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        final PrintStream ps = new PrintStream(baos);
+        CommandLine.call(MyCallable.class, new InnerClassFactory(this), System.out, ps, Help.Ansi.OFF, "-x");
+        assertEquals(expected, baos.toString());
+        assertEquals("", systemOutRule.getLog());
+        assertEquals("", systemErrRule.getLog());
+    }
+
+    @Test
+    public void testRunWithFactory() {
+        Runnable[] variations = new Runnable[] {
+                new Runnable() {public void run() {CommandLine.run(MyRunnable.class, new InnerClassFactory(this), "-x", "a");}},
+                new Runnable() {public void run() {CommandLine.run(MyRunnable.class, new InnerClassFactory(this), System.out, "-x", "a");}},
+                new Runnable() {public void run() {CommandLine.run(MyRunnable.class, new InnerClassFactory(this), System.out, Help.Ansi.OFF, "-x", "a");}},
+                new Runnable() {public void run() {CommandLine.run(MyRunnable.class, new InnerClassFactory(this), System.out, System.out, Help.Ansi.OFF, "-x", "a");}},
+        };
+        for (Runnable r : variations) {
+            try {
+                r.run();
+            } catch (ExecutionException ex) {
+                assertTrue(ex.getMessage(), ex.getMessage().startsWith("Error while running command (picocli.CommandLineParseWithHandlersTest$MyRunnable"));
+                assertTrue(ex.getCause() instanceof IllegalStateException);
+                assertEquals("this is a test", ex.getCause().getMessage());
+            }
+        }
+    }
+
+    @Test
+    public void testRunWithFactoryVersionHelp() {
+        CommandLine.run(MyRunnable.class, new InnerClassFactory(this), "--version");
+        assertEquals(String.format("MyRunnable-1.0%n"), systemOutRule.getLog());
+        assertEquals("", systemErrRule.getLog());
+        systemOutRule.clearLog();
+
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        final PrintStream ps = new PrintStream(baos);
+        Runnable[] variations = new Runnable[] {
+                new Runnable() {public void run() {CommandLine.run(MyRunnable.class, new InnerClassFactory(this), ps, "--version");}},
+                new Runnable() {public void run() {CommandLine.run(MyRunnable.class, new InnerClassFactory(this), ps, Help.Ansi.OFF, "--version");}},
+                new Runnable() {public void run() {CommandLine.run(MyRunnable.class, new InnerClassFactory(this), ps, System.out, Help.Ansi.OFF, "--version");}},
+        };
+        for (Runnable r : variations) {
+            assertEquals("", baos.toString());
+            r.run();
+            assertEquals(String.format("MyRunnable-1.0%n"), baos.toString());
+            baos.reset();
+            assertEquals("", systemErrRule.getLog());
+            assertEquals("", systemOutRule.getLog());
+        }
+    }
+
+    @Test
+    public void testRunWithFactoryInvalidInput() {
+        String expected = String.format("" +
+                "Missing required parameter for option '-x' (<option>)%n" +
+                "Usage: mycmd [-hV] [-x=<option>]%n" +
+                "  -h, --help      Show this help message and exit.%n" +
+                "  -V, --version   Print version information and exit.%n" +
+                "  -x= <option>    this is an option%n");
+        Runnable[] variations = new Runnable[] {
+                new Runnable() {public void run() {CommandLine.run(MyRunnable.class, new InnerClassFactory(this), "-x");}},
+                new Runnable() {public void run() {CommandLine.run(MyRunnable.class, new InnerClassFactory(this), System.out, "-x");}},
+                new Runnable() {public void run() {CommandLine.run(MyRunnable.class, new InnerClassFactory(this), System.out, Help.Ansi.OFF, "-x");}},
+        };
+        for (Runnable r : variations) {
+            assertEquals("", systemErrRule.getLog());
+            assertEquals("", systemOutRule.getLog());
+            systemErrRule.clearLog();
+            systemOutRule.clearLog();
+            r.run();
+            assertEquals(expected, systemErrRule.getLog());
+            assertEquals("", systemOutRule.getLog());
+
+            systemErrRule.clearLog();
+            systemOutRule.clearLog();
+        }
+
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        final PrintStream ps = new PrintStream(baos);
+        CommandLine.run(MyRunnable.class, new InnerClassFactory(this), System.out, ps, Help.Ansi.OFF, "-x");
+        assertEquals(expected, baos.toString());
+        assertEquals("", systemOutRule.getLog());
+        assertEquals("", systemErrRule.getLog());
+    }
 }

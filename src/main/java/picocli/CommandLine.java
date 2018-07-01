@@ -1362,7 +1362,7 @@ public class CommandLine {
      * @see #call(Callable, PrintStream, PrintStream, Help.Ansi, String...)
      * @throws InitializationException if the specified command object does not have a {@link Command}, {@link Option} or {@link Parameters} annotation
      * @throws ExecutionException if the Callable throws an exception
-     * @return {@code null} if an error occurred while parsing the command line options, otherwise returns the result of calling the Callable
+     * @return {@code null} if an error occurred while parsing the command line options, or if help was requested and printed. Otherwise returns the result of calling the Callable
      * @see #parseWithHandlers(IParseResultHandler2, IExceptionHandler2, String...)
      * @since 3.0
      */
@@ -1381,7 +1381,7 @@ public class CommandLine {
      * @see #call(Callable, PrintStream, PrintStream, Help.Ansi, String...)
      * @throws InitializationException if the specified command object does not have a {@link Command}, {@link Option} or {@link Parameters} annotation
      * @throws ExecutionException if the Callable throws an exception
-     * @return {@code null} if an error occurred while parsing the command line options, otherwise returns the result of calling the Callable
+     * @return {@code null} if an error occurred while parsing the command line options, or if help was requested and printed. Otherwise returns the result of calling the Callable
      * @see #parseWithHandlers(IParseResultHandler2, IExceptionHandler2, String...)
      * @see RunLast
      */
@@ -1399,7 +1399,7 @@ public class CommandLine {
      * @see #call(Callable, PrintStream, PrintStream, Help.Ansi, String...)
      * @throws InitializationException if the specified command object does not have a {@link Command}, {@link Option} or {@link Parameters} annotation
      * @throws ExecutionException if the Callable throws an exception
-     * @return {@code null} if an error occurred while parsing the command line options, otherwise returns the result of calling the Callable
+     * @return {@code null} if an error occurred while parsing the command line options, or if help was requested and printed. Otherwise returns the result of calling the Callable
      * @see #parseWithHandlers(IParseResultHandler2, IExceptionHandler2, String...)
      * @see RunLast
      */
@@ -1439,6 +1439,101 @@ public class CommandLine {
      */
     public static <C extends Callable<T>, T> T call(C callable, PrintStream out, PrintStream err, Help.Ansi ansi, String... args) {
         CommandLine cmd = new CommandLine(callable);
+        List<Object> results = cmd.parseWithHandlers(new RunLast().useOut(out).useAnsi(ansi), new DefaultExceptionHandler<List<Object>>().useErr(err).useAnsi(ansi), args);
+        @SuppressWarnings("unchecked") T result = results == null || results.isEmpty() ? null : (T) results.get(0);
+        return result;
+    }
+    /**
+     * Delegates to {@link #call(Class, IFactory, PrintStream, PrintStream, Help.Ansi, String...)} with {@code System.out} for
+     * requested usage help messages, {@code System.err} for diagnostic error messages, and {@link Help.Ansi#AUTO}.
+     * @param callableClass class of the command to call when {@linkplain #parseArgs(String...) parsing} succeeds.
+     * @param factory the factory responsible for instantiating the specified callable class and potentially other classes
+     * @param args the command line arguments to parse
+     * @param <C> the annotated class must implement Callable
+     * @param <T> the return type of the most specific command (must implement {@code Callable})
+     * @see #call(Class, IFactory, PrintStream, PrintStream, Help.Ansi, String...)
+     * @throws InitializationException if the specified class cannot be instantiated by the factory, or does not have a {@link Command}, {@link Option} or {@link Parameters} annotation
+     * @throws ExecutionException if the Callable throws an exception
+     * @return {@code null} if an error occurred while parsing the command line options, or if help was requested and printed. Otherwise returns the result of calling the Callable
+     * @see #parseWithHandlers(IParseResultHandler2, IExceptionHandler2, String...)
+     * @since 3.2
+     */
+    public static <C extends Callable<T>, T> T call(Class<C> callableClass, IFactory factory, String... args) {
+        return call(callableClass, factory, System.out, System.err, Help.Ansi.AUTO, args);
+    }
+    /**
+     * Delegates to {@link #call(Class, IFactory, PrintStream, PrintStream, Help.Ansi, String...)} with
+     * {@code System.err} for diagnostic error messages, and {@link Help.Ansi#AUTO}.
+     * @param callableClass class of the command to call when {@linkplain #parseArgs(String...) parsing} succeeds.
+     * @param factory the factory responsible for instantiating the specified callable class and potentially other classes
+     * @param out the printStream to print the usage help message to when the user requested help
+     * @param args the command line arguments to parse
+     * @param <C> the annotated class must implement Callable
+     * @param <T> the return type of the most specific command (must implement {@code Callable})
+     * @see #call(Class, IFactory, PrintStream, PrintStream, Help.Ansi, String...)
+     * @throws InitializationException if the specified class cannot be instantiated by the factory, or does not have a {@link Command}, {@link Option} or {@link Parameters} annotation
+     * @throws ExecutionException if the Callable throws an exception
+     * @return {@code null} if an error occurred while parsing the command line options, or if help was requested and printed. Otherwise returns the result of calling the Callable
+     * @see #parseWithHandlers(IParseResultHandler2, IExceptionHandler2, String...)
+     * @since 3.2
+     */
+    public static <C extends Callable<T>, T> T call(Class<C> callableClass, IFactory factory, PrintStream out, String... args) {
+        return call(callableClass, factory, out, System.err, Help.Ansi.AUTO, args);
+    }
+    /**
+     * Delegates to {@link #call(Class, IFactory, PrintStream, PrintStream, Help.Ansi, String...)} with
+     * {@code System.err} for diagnostic error messages.
+     * @param callableClass class of the command to call when {@linkplain #parseArgs(String...) parsing} succeeds.
+     * @param factory the factory responsible for instantiating the specified callable class and potentially other classes
+     * @param out the printStream to print the usage help message to when the user requested help
+     * @param ansi the ANSI style to use
+     * @param args the command line arguments to parse
+     * @param <C> the annotated class must implement Callable
+     * @param <T> the return type of the most specific command (must implement {@code Callable})
+     * @see #call(Class, IFactory, PrintStream, PrintStream, Help.Ansi, String...)
+     * @throws InitializationException if the specified class cannot be instantiated by the factory, or does not have a {@link Command}, {@link Option} or {@link Parameters} annotation
+     * @throws ExecutionException if the Callable throws an exception
+     * @return {@code null} if an error occurred while parsing the command line options, or if help was requested and printed. Otherwise returns the result of calling the Callable
+     * @see #parseWithHandlers(IParseResultHandler2, IExceptionHandler2, String...)
+     * @since 3.2
+     */
+    public static <C extends Callable<T>, T> T call(Class<C> callableClass, IFactory factory, PrintStream out, Help.Ansi ansi, String... args) {
+        return call(callableClass, factory, out, System.err, ansi, args);
+    }
+    /**
+     * Convenience method to allow command line application authors to avoid some boilerplate code in their application.
+     * The annotated class needs to implement {@link Callable}. Calling this method is equivalent to:
+     * <pre>{@code
+     * CommandLine cmd = new CommandLine(callableClass, factory);
+     * List<Object> results = cmd.parseWithHandlers(new RunLast().useOut(out).useAnsi(ansi),
+     *                                              new DefaultExceptionHandler().useErr(err).useAnsi(ansi),
+     *                                              args);
+     * T result = results == null || results.isEmpty() ? null : (T) results.get(0);
+     * return result;
+     * }</pre>
+     * <p>
+     * If the specified Callable command has subcommands, the {@linkplain RunLast last} subcommand specified on the
+     * command line is executed.
+     * Commands with subcommands may be interested in calling the {@link #parseWithHandler(IParseResultHandler2, String[]) parseWithHandler}
+     * method with the {@link RunAll} handler or a custom handler.
+     * </p>
+     * @param callableClass class of the command to call when {@linkplain #parseArgs(String...) parsing} succeeds.
+     * @param factory the factory responsible for instantiating the specified callable class and potentially other classes
+     * @param out the printStream to print the usage help message to when the user requested help
+     * @param err the printStream to print diagnostic messages to
+     * @param ansi the ANSI style to use
+     * @param args the command line arguments to parse
+     * @param <C> the annotated class must implement Callable
+     * @param <T> the return type of the most specific command (must implement {@code Callable})
+     * @see #call(Class, IFactory, PrintStream, PrintStream, Help.Ansi, String...)
+     * @throws InitializationException if the specified class cannot be instantiated by the factory, or does not have a {@link Command}, {@link Option} or {@link Parameters} annotation
+     * @throws ExecutionException if the Callable throws an exception
+     * @return {@code null} if an error occurred while parsing the command line options, or if help was requested and printed. Otherwise returns the result of calling the Callable
+     * @see #parseWithHandlers(IParseResultHandler2, IExceptionHandler2, String...)
+     * @since 3.2
+     */
+    public static <C extends Callable<T>, T> T call(Class<C> callableClass, IFactory factory, PrintStream out, PrintStream err, Help.Ansi ansi, String... args) {
+        CommandLine cmd = new CommandLine(callableClass, factory);
         List<Object> results = cmd.parseWithHandlers(new RunLast().useOut(out).useAnsi(ansi), new DefaultExceptionHandler<List<Object>>().useErr(err).useAnsi(ansi), args);
         @SuppressWarnings("unchecked") T result = results == null || results.isEmpty() ? null : (T) results.get(0);
         return result;
@@ -1524,6 +1619,96 @@ public class CommandLine {
      */
     public static <R extends Runnable> void run(R runnable, PrintStream out, PrintStream err, Help.Ansi ansi, String... args) {
         CommandLine cmd = new CommandLine(runnable);
+        cmd.parseWithHandlers(new RunLast().useOut(out).useAnsi(ansi), new DefaultExceptionHandler<List<Object>>().useErr(err).useAnsi(ansi), args);
+    }
+    /**
+     * Delegates to {@link #run(Class, IFactory, PrintStream, PrintStream, Help.Ansi, String...)} with {@code System.out} for
+     * requested usage help messages, {@code System.err} for diagnostic error messages, and {@link Help.Ansi#AUTO}.
+     * @param runnableClass class of the command to run when {@linkplain #parseArgs(String...) parsing} succeeds.
+     * @param factory the factory responsible for instantiating the specified Runnable class and potentially other classes
+     * @param args the command line arguments to parse
+     * @param <R> the annotated class must implement Runnable
+     * @see #run(Class, IFactory, PrintStream, PrintStream, Help.Ansi, String...)
+     * @throws InitializationException if the specified class cannot be instantiated by the factory, or does not have a {@link Command}, {@link Option} or {@link Parameters} annotation
+     * @throws ExecutionException if the Runnable throws an exception
+     * @see #parseWithHandlers(IParseResultHandler2, IExceptionHandler2, String...)
+     * @see RunLast
+     * @since 3.2
+     */
+    public static <R extends Runnable> void run(Class<R> runnableClass, IFactory factory, String... args) {
+        run(runnableClass, factory, System.out, System.err, Help.Ansi.AUTO, args);
+    }
+    /**
+     * Delegates to {@link #run(Class, IFactory, PrintStream, PrintStream, Help.Ansi, String...)} with
+     * {@code System.err} for diagnostic error messages, and {@link Help.Ansi#AUTO}.
+     * @param runnableClass class of the command to run when {@linkplain #parseArgs(String...) parsing} succeeds.
+     * @param factory the factory responsible for instantiating the specified Runnable class and potentially other classes
+     * @param out the printStream to print the usage help message to when the user requested help
+     * @param args the command line arguments to parse
+     * @param <R> the annotated class must implement Runnable
+     * @see #run(Class, IFactory, PrintStream, PrintStream, Help.Ansi, String...)
+     * @throws InitializationException if the specified class cannot be instantiated by the factory, or does not have a {@link Command}, {@link Option} or {@link Parameters} annotation
+     * @throws ExecutionException if the Runnable throws an exception
+     * @see #parseWithHandlers(IParseResultHandler2, IExceptionHandler2, String...)
+     * @see RunLast
+     * @since 3.2
+     */
+    public static <R extends Runnable> void run(Class<R> runnableClass, IFactory factory, PrintStream out, String... args) {
+        run(runnableClass, factory, out, System.err, Help.Ansi.AUTO, args);
+    }
+    /**
+     * Delegates to {@link #run(Class, IFactory, PrintStream, PrintStream, Help.Ansi, String...)} with
+     * {@code System.err} for diagnostic error messages.
+     * @param runnableClass class of the command to run when {@linkplain #parseArgs(String...) parsing} succeeds.
+     * @param factory the factory responsible for instantiating the specified Runnable class and potentially other classes
+     * @param out the printStream to print the usage help message to when the user requested help
+     * @param ansi whether the usage message should include ANSI escape codes or not
+     * @param args the command line arguments to parse
+     * @param <R> the annotated class must implement Runnable
+     * @see #run(Class, IFactory, PrintStream, PrintStream, Help.Ansi, String...)
+     * @throws InitializationException if the specified class cannot be instantiated by the factory, or does not have a {@link Command}, {@link Option} or {@link Parameters} annotation
+     * @throws ExecutionException if the Runnable throws an exception
+     * @see #parseWithHandlers(IParseResultHandler2, IExceptionHandler2, String...)
+     * @see RunLast
+     * @since 3.2
+     */
+    public static <R extends Runnable> void run(Class<R> runnableClass, IFactory factory, PrintStream out, Help.Ansi ansi, String... args) {
+        run(runnableClass, factory, out, System.err, ansi, args);
+    }
+    /**
+     * Convenience method to allow command line application authors to avoid some boilerplate code in their application.
+     * The annotated class needs to implement {@link Runnable}. Calling this method is equivalent to:
+     * <pre>{@code
+     * CommandLine cmd = new CommandLine(runnableClass, factory);
+     * cmd.parseWithHandlers(new RunLast().useOut(out).useAnsi(ansi),
+     *                       new DefaultExceptionHandler().useErr(err).useAnsi(ansi),
+     *                       args);
+     * }</pre>
+     * <p>
+     * If the specified Runnable command has subcommands, the {@linkplain RunLast last} subcommand specified on the
+     * command line is executed.
+     * Commands with subcommands may be interested in calling the {@link #parseWithHandler(IParseResultHandler2, String[]) parseWithHandler}
+     * method with the {@link RunAll} handler or a custom handler.
+     * </p><p>
+     * This method prints usage help or version help if {@linkplain #printHelpIfRequested(List, PrintStream, PrintStream, Help.Ansi) requested},
+     * and any exceptions thrown by the {@code Runnable} are caught and rethrown wrapped in an {@code ExecutionException}.
+     * </p>
+     * @param runnableClass class of the command to run when {@linkplain #parseArgs(String...) parsing} succeeds.
+     * @param factory the factory responsible for instantiating the specified Runnable class and potentially other classes
+     * @param out the printStream to print the usage help message to when the user requested help
+     * @param err the printStream to print diagnostic messages to
+     * @param ansi whether the usage message should include ANSI escape codes or not
+     * @param args the command line arguments to parse
+     * @param <R> the annotated class must implement Runnable
+     * @see #run(Class, IFactory, PrintStream, PrintStream, Help.Ansi, String...)
+     * @throws InitializationException if the specified class cannot be instantiated by the factory, or does not have a {@link Command}, {@link Option} or {@link Parameters} annotation
+     * @throws ExecutionException if the Runnable throws an exception
+     * @see #parseWithHandlers(IParseResultHandler2, IExceptionHandler2, String...)
+     * @see RunLast
+     * @since 3.2
+     */
+    public static <R extends Runnable> void run(Class<R> runnableClass, IFactory factory, PrintStream out, PrintStream err, Help.Ansi ansi, String... args) {
+        CommandLine cmd = new CommandLine(runnableClass, factory);
         cmd.parseWithHandlers(new RunLast().useOut(out).useAnsi(ansi), new DefaultExceptionHandler<List<Object>>().useErr(err).useAnsi(ansi), args);
     }
 
