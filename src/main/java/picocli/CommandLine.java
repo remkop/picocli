@@ -130,6 +130,9 @@ public class CommandLine {
      * <p>The specified object may be a {@link CommandSpec CommandSpec} object, or it may be a {@code @Command}-annotated
      * user object with {@code @Option} and {@code @Parameters}-annotated fields, in which case picocli automatically
      * constructs a {@code CommandSpec} from this user object.
+     *  </p><p> If the specified command object is an interface {@code Class} with {@code @Option} and {@code @Parameters}-annotated methods,
+     * picocli creates a {@link java.lang.reflect.Proxy Proxy} whose methods return the matched command line values.
+     * If the specified command object is a concrete {@code Class}, picocli delegates to the {@linkplain IFactory factory} to get an instance.
      * </p><p>
      * When the {@link #parse(String...)} method is called, the {@link CommandSpec CommandSpec} object will be
      * initialized based on command line arguments. If the commandSpec is created from an annotated user object, this
@@ -1422,6 +1425,9 @@ public class CommandLine {
      * command line is executed.
      * Commands with subcommands may be interested in calling the {@link #parseWithHandler(IParseResultHandler2, String[]) parseWithHandler}
      * method with the {@link RunAll} handler or a custom handler.
+     * </p><p>
+     * Use {@link #call(Class, IFactory, PrintStream, PrintStream, Help.Ansi, String...) call(Class, IFactory, ...)} instead of this method
+     * if you want to use a factory that performs Dependency Injection.
      * </p>
      * @param callable the command to call when {@linkplain #parse(String...) parsing} succeeds.
      * @param out the printStream to print the usage help message to when the user requested help
@@ -1433,6 +1439,7 @@ public class CommandLine {
      * @throws InitializationException if the specified command object does not have a {@link Command}, {@link Option} or {@link Parameters} annotation
      * @throws ExecutionException if the Callable throws an exception
      * @return {@code null} if an error occurred while parsing the command line options, or if help was requested and printed. Otherwise returns the result of calling the Callable
+     * @see #call(Class, IFactory, PrintStream, PrintStream, Help.Ansi, String...)
      * @see #parseWithHandlers(IParseResultHandler2, IExceptionHandler2, String...)
      * @see RunLast
      * @since 3.0
@@ -1447,7 +1454,7 @@ public class CommandLine {
      * Delegates to {@link #call(Class, IFactory, PrintStream, PrintStream, Help.Ansi, String...)} with {@code System.out} for
      * requested usage help messages, {@code System.err} for diagnostic error messages, and {@link Help.Ansi#AUTO}.
      * @param callableClass class of the command to call when {@linkplain #parseArgs(String...) parsing} succeeds.
-     * @param factory the factory responsible for instantiating the specified callable class and potentially other classes
+     * @param factory the factory responsible for instantiating the specified callable class and potentially inject other components
      * @param args the command line arguments to parse
      * @param <C> the annotated class must implement Callable
      * @param <T> the return type of the most specific command (must implement {@code Callable})
@@ -1465,7 +1472,7 @@ public class CommandLine {
      * Delegates to {@link #call(Class, IFactory, PrintStream, PrintStream, Help.Ansi, String...)} with
      * {@code System.err} for diagnostic error messages, and {@link Help.Ansi#AUTO}.
      * @param callableClass class of the command to call when {@linkplain #parseArgs(String...) parsing} succeeds.
-     * @param factory the factory responsible for instantiating the specified callable class and potentially other classes
+     * @param factory the factory responsible for instantiating the specified callable class and potentially injecting other components
      * @param out the printStream to print the usage help message to when the user requested help
      * @param args the command line arguments to parse
      * @param <C> the annotated class must implement Callable
@@ -1484,7 +1491,7 @@ public class CommandLine {
      * Delegates to {@link #call(Class, IFactory, PrintStream, PrintStream, Help.Ansi, String...)} with
      * {@code System.err} for diagnostic error messages.
      * @param callableClass class of the command to call when {@linkplain #parseArgs(String...) parsing} succeeds.
-     * @param factory the factory responsible for instantiating the specified callable class and potentially other classes
+     * @param factory the factory responsible for instantiating the specified callable class and potentially injecting other components
      * @param out the printStream to print the usage help message to when the user requested help
      * @param ansi the ANSI style to use
      * @param args the command line arguments to parse
@@ -1502,6 +1509,9 @@ public class CommandLine {
     }
     /**
      * Convenience method to allow command line application authors to avoid some boilerplate code in their application.
+     * The specified {@linkplain IFactory factory} will create an instance of the specified {@code callableClass};
+     * use this method instead of {@link #call(Callable, PrintStream, PrintStream, Help.Ansi, String...) call(Callable, ...)}
+     * if you want to use a factory that performs Dependency Injection.
      * The annotated class needs to implement {@link Callable}. Calling this method is equivalent to:
      * <pre>{@code
      * CommandLine cmd = new CommandLine(callableClass, factory);
@@ -1518,7 +1528,7 @@ public class CommandLine {
      * method with the {@link RunAll} handler or a custom handler.
      * </p>
      * @param callableClass class of the command to call when {@linkplain #parseArgs(String...) parsing} succeeds.
-     * @param factory the factory responsible for instantiating the specified callable class and potentially other classes
+     * @param factory the factory responsible for instantiating the specified callable class and potentially injecting other components
      * @param out the printStream to print the usage help message to when the user requested help
      * @param err the printStream to print diagnostic messages to
      * @param ansi the ANSI style to use
@@ -1529,6 +1539,7 @@ public class CommandLine {
      * @throws InitializationException if the specified class cannot be instantiated by the factory, or does not have a {@link Command}, {@link Option} or {@link Parameters} annotation
      * @throws ExecutionException if the Callable throws an exception
      * @return {@code null} if an error occurred while parsing the command line options, or if help was requested and printed. Otherwise returns the result of calling the Callable
+     * @see #call(Callable, PrintStream, PrintStream, Help.Ansi, String...)
      * @see #parseWithHandlers(IParseResultHandler2, IExceptionHandler2, String...)
      * @since 3.2
      */
@@ -1604,6 +1615,9 @@ public class CommandLine {
      * </p><p>
      * From picocli v2.0, this method prints usage help or version help if {@linkplain #printHelpIfRequested(List, PrintStream, PrintStream, Help.Ansi) requested},
      * and any exceptions thrown by the {@code Runnable} are caught and rethrown wrapped in an {@code ExecutionException}.
+     * </p><p>
+     * Use {@link #run(Class, IFactory, PrintStream, PrintStream, Help.Ansi, String...) run(Class, IFactory, ...)} instead of this method
+     * if you want to use a factory that performs Dependency Injection.
      * </p>
      * @param runnable the command to run when {@linkplain #parse(String...) parsing} succeeds.
      * @param out the printStream to print the usage help message to when the user requested help
@@ -1615,6 +1629,7 @@ public class CommandLine {
      * @throws ExecutionException if the Runnable throws an exception
      * @see #parseWithHandlers(IParseResultHandler2, IExceptionHandler2, String...)
      * @see RunLast
+     * @see #run(Class, IFactory, PrintStream, PrintStream, Help.Ansi, String...)
      * @since 3.0
      */
     public static <R extends Runnable> void run(R runnable, PrintStream out, PrintStream err, Help.Ansi ansi, String... args) {
@@ -1625,7 +1640,7 @@ public class CommandLine {
      * Delegates to {@link #run(Class, IFactory, PrintStream, PrintStream, Help.Ansi, String...)} with {@code System.out} for
      * requested usage help messages, {@code System.err} for diagnostic error messages, and {@link Help.Ansi#AUTO}.
      * @param runnableClass class of the command to run when {@linkplain #parseArgs(String...) parsing} succeeds.
-     * @param factory the factory responsible for instantiating the specified Runnable class and potentially other classes
+     * @param factory the factory responsible for instantiating the specified Runnable class and potentially injecting other components
      * @param args the command line arguments to parse
      * @param <R> the annotated class must implement Runnable
      * @see #run(Class, IFactory, PrintStream, PrintStream, Help.Ansi, String...)
@@ -1642,7 +1657,7 @@ public class CommandLine {
      * Delegates to {@link #run(Class, IFactory, PrintStream, PrintStream, Help.Ansi, String...)} with
      * {@code System.err} for diagnostic error messages, and {@link Help.Ansi#AUTO}.
      * @param runnableClass class of the command to run when {@linkplain #parseArgs(String...) parsing} succeeds.
-     * @param factory the factory responsible for instantiating the specified Runnable class and potentially other classes
+     * @param factory the factory responsible for instantiating the specified Runnable class and potentially injecting other components
      * @param out the printStream to print the usage help message to when the user requested help
      * @param args the command line arguments to parse
      * @param <R> the annotated class must implement Runnable
@@ -1660,7 +1675,7 @@ public class CommandLine {
      * Delegates to {@link #run(Class, IFactory, PrintStream, PrintStream, Help.Ansi, String...)} with
      * {@code System.err} for diagnostic error messages.
      * @param runnableClass class of the command to run when {@linkplain #parseArgs(String...) parsing} succeeds.
-     * @param factory the factory responsible for instantiating the specified Runnable class and potentially other classes
+     * @param factory the factory responsible for instantiating the specified Runnable class and potentially injecting other components
      * @param out the printStream to print the usage help message to when the user requested help
      * @param ansi whether the usage message should include ANSI escape codes or not
      * @param args the command line arguments to parse
@@ -1677,6 +1692,9 @@ public class CommandLine {
     }
     /**
      * Convenience method to allow command line application authors to avoid some boilerplate code in their application.
+     * The specified {@linkplain IFactory factory} will create an instance of the specified {@code runnableClass};
+     * use this method instead of {@link #run(Runnable, PrintStream, PrintStream, Help.Ansi, String...) run(Runnable, ...)}
+     * if you want to use a factory that performs Dependency Injection.
      * The annotated class needs to implement {@link Runnable}. Calling this method is equivalent to:
      * <pre>{@code
      * CommandLine cmd = new CommandLine(runnableClass, factory);
@@ -1694,7 +1712,7 @@ public class CommandLine {
      * and any exceptions thrown by the {@code Runnable} are caught and rethrown wrapped in an {@code ExecutionException}.
      * </p>
      * @param runnableClass class of the command to run when {@linkplain #parseArgs(String...) parsing} succeeds.
-     * @param factory the factory responsible for instantiating the specified Runnable class and potentially other classes
+     * @param factory the factory responsible for instantiating the specified Runnable class and potentially injecting other components
      * @param out the printStream to print the usage help message to when the user requested help
      * @param err the printStream to print diagnostic messages to
      * @param ansi whether the usage message should include ANSI escape codes or not
@@ -1703,6 +1721,7 @@ public class CommandLine {
      * @see #run(Class, IFactory, PrintStream, PrintStream, Help.Ansi, String...)
      * @throws InitializationException if the specified class cannot be instantiated by the factory, or does not have a {@link Command}, {@link Option} or {@link Parameters} annotation
      * @throws ExecutionException if the Runnable throws an exception
+     * @see #run(Runnable, PrintStream, PrintStream, Help.Ansi, String...)
      * @see #parseWithHandlers(IParseResultHandler2, IExceptionHandler2, String...)
      * @see RunLast
      * @since 3.2
@@ -2681,14 +2700,22 @@ public class CommandLine {
     /**
      * Factory for instantiating classes that are registered declaratively with annotation attributes, like
      * {@link Command#subcommands()}, {@link Option#converter()}, {@link Parameters#converter()} and {@link Command#versionProvider()}.
+     * <p>The default factory implementation simply creates a new instance of the specified class when {@link #create(Class)} is invoked.
+     * </p><p>
+     * You may provide a custom implementation of this interface.
+     * For example, a custom factory implementation could delegate to a dependency injection container that provides the requested instance.
+     * </p>
+     * @see picocli.CommandLine#CommandLine(Object, IFactory)
+     * @see #call(Class, IFactory, PrintStream, PrintStream, Help.Ansi, String...)
+     * @see #run(Class, IFactory, PrintStream, PrintStream, Help.Ansi, String...)
      * @since 2.2 */
     public interface IFactory {
         /**
-         * Creates and returns an instance of the specified class.
-         * @param cls the class to instantiate
-         * @param <K> the type to instantiate
-         * @return the new instance
-         * @throws Exception an exception detailing what went wrong when creating the instance
+         * Returns an instance of the specified class.
+         * @param cls the class of the object to return
+         * @param <K> the type of the object to return
+         * @return the instance
+         * @throws Exception an exception detailing what went wrong when creating or obtaining the instance
          */
         <K> K create(Class<K> cls) throws Exception;
     }
@@ -2709,13 +2736,13 @@ public class CommandLine {
             for (int i = 0; i < classes.length; i++) { result[i] = create(factory, classes[i]); }
             return result;
         }
-        public static IVersionProvider createVersionProvider(IFactory factory, Class<? extends IVersionProvider> cls) {
+        static IVersionProvider createVersionProvider(IFactory factory, Class<? extends IVersionProvider> cls) {
             return create(factory, cls);
         }
-        public static Iterable<String> createCompletionCandidates(IFactory factory, Class<? extends Iterable<String>> cls) {
+        static Iterable<String> createCompletionCandidates(IFactory factory, Class<? extends Iterable<String>> cls) {
             return create(factory, cls);
         }
-        public static <T> T create(IFactory factory, Class<T> cls) {
+        static <T> T create(IFactory factory, Class<T> cls) {
             try { return factory.create(cls); }
             catch (Exception ex) { throw new InitializationException("Could not instantiate " + cls + ": " + ex, ex); }
         }
@@ -4595,17 +4622,24 @@ public class CommandLine {
         }
         private static class CommandReflection {
             static CommandSpec extractCommandSpec(Object command, IFactory factory, boolean annotationsAreMandatory) {
+                Class<?> cls = command.getClass();
+                Tracer t = new Tracer();
+                t.debug("Creating CommandSpec for object of class %s with factory %s%n", cls.getName(), factory.getClass().getName());
                 if (command instanceof CommandSpec) { return (CommandSpec) command; }
                 Object instance = command;
-                Class<?> cls = command.getClass();
                 String commandClassName = cls.getName();
                 if (command instanceof Class) {
                     cls = (Class) command;
                     commandClassName = cls.getName();
                     if (cls.isInterface()) {
+                        t.debug("Creating Proxy for interface %s%n", cls.getName());
                         instance = Proxy.newProxyInstance(cls.getClassLoader(), new Class[]{cls}, new PicocliInvocationHandler());
                     } else {
+                        t.debug("Getting a %s instance from the factory%n", cls.getName());
                         instance = DefaultFactory.create(factory, cls);
+                        cls = instance.getClass();
+                        commandClassName = cls.getName();
+                        t.debug("Got a %s instance%n", commandClassName);
                     }
                 }
 
