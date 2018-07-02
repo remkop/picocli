@@ -35,7 +35,7 @@ class CheckSum implements Callable&lt;Void&gt; {
     public static void main(String[] args) throws Exception {
         // CheckSum implements Callable, so parsing, error handling and handling user
         // requests for usage help or version help can be done with one line of code.
-        CommandLine.call(new CheckSum(), System.err, args);
+        CommandLine.call(new CheckSum(), args);
     }
 
     &#064;Override

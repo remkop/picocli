@@ -552,6 +552,37 @@ class TypeDemo {
 }
 ----
 
+== Default Values
+It is possible to define a default value for an option or positional parameter, that is assigned when the user did not specify this option or positional parameter on the command line.
+
+For annotated fields, it is simplest to declare the field with a value:
+[source,java]
+----
+@Option(names = "-c", description = "The count (default: ${DEFAULT_VALUE})")
+int count = 123; // default value is 123
+----
+For <<Annotated Methods,annotated methods>>, use the `defaultValue` annotation attribute. For example, for an annotated interface:
+[source,java]
+----
+interface Spec {
+    @Option(names = "-c", defaultValue = "123", description = "... ${DEFAULT_VALUE} ...")
+    int count();
+}
+----
+Or similarly for an annotated concrete class:
+[source,java]
+----
+class Impl {
+    int count;
+
+    @Option(names = "-c", defaultValue = "123", description = "... ${DEFAULT_VALUE} ...")
+    void setCount(int count) {
+        this.count = count;
+    }
+}
+----
+
+Note that you can use the `${DEFAULT_VALUE}` variable in the `description` of the option or positional parameter and picocli will <<Show Default Values,show>> the actual default value.
 
 == Multiple Values
 Multi-valued options and positional parameters are annotated fields that can capture multiple values from the command line.
@@ -1396,7 +1427,7 @@ Usage: <main class> <host> <port> [<files>...]
 
 === Show Default Values
 ==== `${DEFAULT-VALUE}` Variable
-From picocli 3.2, it is possible to embed the default values in the description for an option or positional parameter by
+From picocli 3.2, it is possible to embed the <<Default Values,default values>> in the description for an option or positional parameter by
 specifying the variable `${DEFAULT-VALUE}` in the description text.
 Picocli uses reflection to get the default values from the annotated fields.
 
