@@ -3,7 +3,12 @@
 # <a name="3.2.0"></a> Picocli 3.2.0 (UNRELEASED)
 The picocli community is pleased to announce picocli 3.2.0.
 
-This release contains new features and enhancements.
+This release contains new features and enhancements:
+
+* Improved support for Dependency Injection
+* Methods can now be annotated with `@Option` and `@Parameters`
+* Support for JLine-based interactive command line interfaces (`completionCandidates` attribute on `@Option` and `@Parameters`, and the `AutoComplete.complete` method)
+* New `@Spec` annotation for injecting a command with its `CommandSpec`
 
 This is the thirty-third public release.
 Picocli follows [semantic versioning](http://semver.org/).
@@ -16,6 +21,60 @@ Picocli follows [semantic versioning](http://semver.org/).
 * [Potential breaking changes](#3.2.0-breaking-changes)
 
 ## <a name="3.2.0-new"></a> New and Noteworthy
+### <a name="3.2.0-di"></a> Dependency Injection
+This release makes integration with Dependency Injection containers extremely easy:
+
+* `CommandLine` constructor now accepts a `Class` instance as the user object, and will delegate to the `IFactory` to get an instance.
+* New `CommandLine.run(Class<Runnable>, IFactory, ...)` and `CommandLine.call(Class<Callable>, IFactory, ...)` methods. These work the same as the existing `run` and `call` methods except that the `Runnable` or `Callable` instance is created by the factory.
+
+The below example shows how to create an `IFactory` implementation with a Guice `Injector`:
+
+```java
+import com.google.inject.*;
+import picocli.CommandLine.IFactory;
+
+public class GuiceFactory implements IFactory {
+    private final Injector injector = Guice.createInjector(new DemoModule());
+
+    @Override
+    public <K> K create(Class<K> aClass) throws Exception {
+        return injector.getInstance(aClass);
+    }
+
+    static class DemoModule extends AbstractModule {
+        @Override
+        protected void configure() {
+            bind(java.util.List.class).to(java.util.LinkedList.class);
+            bind(Runnable.class).to(InjectionDemo.class);
+        }
+    }
+}
+```
+
+
+Use the custom factory when creating a `CommandLine` instance, or when invoking the `run` or `call` convenience methods:
+
+```java
+import javax.inject.Inject;
+
+@Command(name = "di-demo")
+public class InjectionDemo implements Runnable {
+    @Inject java.util.List list;
+
+    @Option(names = "-x") int x;
+
+    public static void main(String[] args) {
+        CommandLine.run(Runnable.class, new GuiceFactory(), args);
+    }
+
+    @Override
+    public void run() {
+        assert list instanceof java.util.LinkedList;
+    }
+}
+```
+
+
 ### <a name="3.2.0-method-annotations"></a> Annotated Methods
 From this release, `@Option` and `@Parameter` annotations can be added to methods as well as fields of a class.
 
@@ -222,6 +281,7 @@ No features have been promoted in this picocli release.
 - [#395] New feature: Allow embedding default values anywhere in description for `@Option` or `@Parameters`.
 - [#259] New Feature: Added `@Spec` annotation to inject `CommandSpec` into application field.
 - [#400] Enhancement: Add run/call static methods that accept an `IFactory`. This allows Dependency Injection containers to provide the Runnable/Callable implementation.
+- [#404] Enhancement: Ask IFactory for implementation before creating Proxy for interface. Needed for Dependency Injection.
 - [#398] Enhancement: Allow `@PicocliScript` annotation on Groovy script `@Field` variables instead of just on imports.
 - [#322] Enhancement: Add `defaultValue` attribute to @Option and @Parameters annotation.
 - [#375] Enhancement: Improve `ParameterIndexGapException` error message. Thanks to [gpettey](https://github.com/gpettey).

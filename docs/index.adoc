@@ -2402,7 +2402,7 @@ class InjectSpecExample implements Runnable {
 
 === Custom Factory
 
-Declaratively registered <<Registering Subcommands Declaratively,subcommands>>, <<Option-specific Type Converters,type converters>> and <<Dynamic Version Information,version providers>> must be instantiated somehow. From picocli 2.2, a custom factory can be specified when constructing a `CommandLine` instance. This allows full control over object creation and opens possibilities for Inversion of Control and Dependency Injection. For example:
+Declaratively registered <<Registering Subcommands Declaratively,subcommands>>, <<Option-specific Type Converters,type converters>> and <<Dynamic Version Information,version providers>> must be instantiated somehow. From picocli 2.2, a custom factory can be specified when constructing a `CommandLine` instance. This allows full control over object creation and opens possibilities for Inversion of Control and Dependency Injection (see <<Dependency Injection,next section>>). For example:
 
 [source,java]
 ----
@@ -2427,6 +2427,57 @@ public interface IFactory {
 ----
 
 If no factory is specified, a default factory is used. The default factory requires that the classes to instantiate have a public no-argument constructor: it instantiates the class by calling first calling `clazz.newInstance()`, and if that fails, `clazz.getDeclaredConstructor().newInstance()`.
+
+=== Dependency Injection
+You can specify a <<Custom Factory>> to integrate with a Dependency Injection container.
+
+The below example shows how to create an `IFactory` implementation with a Guice `Injector`:
+
+[source,java]
+----
+import com.google.inject.*;
+import picocli.CommandLine.IFactory;
+
+public class GuiceFactory implements IFactory {
+    private final Injector injector = Guice.createInjector(new DemoModule());
+
+    @Override
+    public <K> K create(Class<K> aClass) throws Exception {
+        return injector.getInstance(aClass);
+    }
+
+    static class DemoModule extends AbstractModule {
+        @Override
+        protected void configure() {
+            bind(java.util.List.class).to(java.util.LinkedList.class);
+            bind(Runnable.class).to(InjectionDemo.class);
+        }
+    }
+}
+----
+
+Use the custom factory when creating a `CommandLine` instance, or when invoking the `run` or `call` convenience methods:
+
+[source,java]
+----
+import javax.inject.Inject;
+
+@Command(name = "di-demo")
+public class InjectionDemo implements Runnable {
+    @Inject java.util.List list;
+
+    @Option(names = "-x") int x;
+
+    public static void main(String[] args) {
+        CommandLine.run(Runnable.class, new GuiceFactory(), args);
+    }
+
+    @Override
+    public void run() {
+        assert list instanceof java.util.LinkedList;
+    }
+}
+----
 
 
 === Boolean Options with Parameters

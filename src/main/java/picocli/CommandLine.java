@@ -4631,15 +4631,19 @@ public class CommandLine {
                 if (command instanceof Class) {
                     cls = (Class) command;
                     commandClassName = cls.getName();
-                    if (cls.isInterface()) {
-                        t.debug("Creating Proxy for interface %s%n", cls.getName());
-                        instance = Proxy.newProxyInstance(cls.getClassLoader(), new Class[]{cls}, new PicocliInvocationHandler());
-                    } else {
+                    try {
                         t.debug("Getting a %s instance from the factory%n", cls.getName());
                         instance = DefaultFactory.create(factory, cls);
                         cls = instance.getClass();
                         commandClassName = cls.getName();
-                        t.debug("Got a %s instance%n", commandClassName);
+                        t.debug("Factory returned a %s instance%n", commandClassName);
+                    } catch (InitializationException ex) {
+                        if (cls.isInterface()) {
+                            t.debug("%s. Creating Proxy for interface %s%n", ex.getCause(), cls.getName());
+                            instance = Proxy.newProxyInstance(cls.getClassLoader(), new Class[]{cls}, new PicocliInvocationHandler());
+                        } else {
+                            throw ex;
+                        }
                     }
                 }
 
