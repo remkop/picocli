@@ -38,18 +38,18 @@ public class HelpTestUtil {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         commandLine.usage(new PrintStream(baos, true), ansi);
         String result = baos.toString();
-        assertEquals(result, commandLine.getUsageString(ansi));
+        assertEquals(result, commandLine.getUsageMessage(ansi));
 
         if (ansi == Ansi.AUTO) {
             baos.reset();
             commandLine.usage(new PrintStream(baos, true));
             assertEquals(result, baos.toString());
-            assertEquals(result, commandLine.getUsageString());
+            assertEquals(result, commandLine.getUsageMessage());
         } else if (ansi == Ansi.ON) {
             baos.reset();
             commandLine.usage(new PrintStream(baos, true), Help.defaultColorScheme(Ansi.ON));
             assertEquals(result, baos.toString());
-            assertEquals(result, commandLine.getUsageString(Help.defaultColorScheme(Ansi.ON)));
+            assertEquals(result, commandLine.getUsageMessage(Help.defaultColorScheme(Ansi.ON)));
         }
         return result;
     }
