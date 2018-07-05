@@ -1295,6 +1295,21 @@ public class CommandLine {
     public void usage(PrintWriter writer, Help.ColorScheme colorScheme) {
         writer.print(usage(new StringBuilder(), new Help(getCommandSpec(), colorScheme)));
     }
+    /** Similar to {@link #usage(PrintStream)}, but returns the usage help message as a String instead of printing it to the {@code PrintStream}.
+     * @since 3.2 */
+    public String getUsageString() {
+        return usage(new StringBuilder(), new Help(getCommandSpec())).toString();
+    }
+    /** Similar to {@link #usage(PrintStream, Help.Ansi)}, but returns the usage help message as a String instead of printing it to the {@code PrintStream}.
+     * @since 3.2 */
+    public String getUsageString(Help.Ansi ansi) {
+        return usage(new StringBuilder(), new Help(getCommandSpec(), ansi)).toString();
+    }
+    /** Similar to {@link #usage(PrintStream, Help.ColorScheme)}, but returns the usage help message as a String instead of printing it to the {@code PrintStream}.
+     * @since 3.2 */
+    public String getUsageString(Help.ColorScheme colorScheme) {
+        return usage(new StringBuilder(), new Help(getCommandSpec(), colorScheme)).toString();
+    }
     private static StringBuilder usage(StringBuilder sb, Help help) {
         return sb.append(help.headerHeading())
                 .append(help.header())
