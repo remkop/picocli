@@ -1,14 +1,14 @@
 group 'info.picocli'
 description 'Java command line parser with both an annotations API and a programmatic API. Usage help with ANSI styles and colors. Autocomplete. Nested subcommands. Easily included as source to avoid adding a dependency.'
-version '3.2.0'
+version '3.2.1-SNAPSHOT'
 
 // for bumpVersion task
-def oldVersion = '3\\.1\\.1-SNAPSHOT'
-def oldRevdate = '2018\\-06\\-11'
+def oldVersion = '3\\.2\\.0'
+def oldRevdate = '2018\\-07\\-06'
 def revDate    = '2018-07-06'
 
 // for bumpReadmeVersion task
-def previousReleaseVersion = '3.1.0'
+def previousReleaseVersion = '3.2.0'
 
 buildscript {
     repositories {
