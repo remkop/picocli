@@ -286,6 +286,7 @@ No features have been promoted in this picocli release.
 - [#322] Enhancement: Add `defaultValue` attribute to @Option and @Parameters annotation.
 - [#375] Enhancement: Improve `ParameterIndexGapException` error message. Thanks to [gpettey](https://github.com/gpettey).
 - [#405] Enhancement: Add method `CommandLine.getUsageMessage()`.
+- [#406] Enhancement: Added fields to `ParameterException`. Thanks to [David Hait](https://github.com/dhait).
 - [#401] Doc: The user manual no longer includes the full `CommandLine.java` source code.
 
 ## <a name="3.2.0-deprecated"></a> Deprecations

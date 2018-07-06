@@ -6550,7 +6550,7 @@ public class CommandLine {
                 if (subcommand != null) {
                     subcommand.usage(out, ansi);
                 } else {
-                    throw new ParameterException(parent, "Unknown subcommand '" + commands[0] + "'.", commands[0]);
+                    throw new ParameterException(parent, "Unknown subcommand '" + commands[0] + "'.", null, commands[0]);
                 }
             } else {
                 parent.usage(out, ansi);
@@ -8563,16 +8563,6 @@ public class CommandLine {
         /** Constructs a new ParameterException with the specified CommandLine and error message.
          * @param commandLine the command or subcommand whose input was invalid
          * @param msg describes the problem
-         * @param value the value that caused this ParameterException
-         * @since 2.0 */
-        public ParameterException(CommandLine commandLine, String msg, String value) {
-            super(msg);
-            this.commandLine = Assert.notNull(commandLine, "commandLine");
-            this.value = value;
-        }
-        /** Constructs a new ParameterException with the specified CommandLine and error message.
-         * @param commandLine the command or subcommand whose input was invalid
-         * @param msg describes the problem
          * @since 2.0 */
         public ParameterException(CommandLine commandLine, String msg) {
             super(msg);
@@ -8593,25 +8583,14 @@ public class CommandLine {
          * @param commandLine the command or subcommand whose input was invalid
          * @param msg describes the problem
          * @param ex the exception that caused this ParameterException
-         * @param value the value that caused this ParameterException
-         * @since 2.0 */
-        public ParameterException(CommandLine commandLine, String msg, Exception ex, String value) {
-            super(msg, ex);
-            this.commandLine = Assert.notNull(commandLine, "commandLine");
-            this.value = value;
-        }
-
-        /** Constructs a new ParameterException with the specified CommandLine and error message.
-         * @param commandLine the command or subcommand whose input was invalid
-         * @param msg describes the problem
-         * @param ex the exception that caused this ParameterException
          * @param argSpec the argSpec that caused this ParameterException
          * @param value the value that caused this ParameterException
          * @since 3.2 */
         public ParameterException(CommandLine commandLine, String msg, Exception ex, ArgSpec argSpec, String value) {
             super(msg, ex);
             this.commandLine = Assert.notNull(commandLine, "commandLine");
-            this.argSpec = Assert.notNull(argSpec, "argSpec");
+            if (argSpec == null && value == null) { throw new IllegalArgumentException("ArgSpec and value cannot both be null"); }
+            this.argSpec = argSpec;
             this.value = value;
         }
 
@@ -8624,7 +8603,8 @@ public class CommandLine {
         public ParameterException(CommandLine commandLine, String msg, ArgSpec argSpec, String value) {
             super(msg);
             this.commandLine = Assert.notNull(commandLine, "commandLine");
-            this.argSpec = Assert.notNull(argSpec, "argSpec");
+            if (argSpec == null && value == null) { throw new IllegalArgumentException("ArgSpec and value cannot both be null"); }
+            this.argSpec = argSpec;
             this.value = value;
         }
 
@@ -8650,7 +8630,7 @@ public class CommandLine {
         private static ParameterException create(CommandLine cmd, Exception ex, String arg, int i, String[] args) {
             String msg = ex.getClass().getSimpleName() + ": " + ex.getLocalizedMessage()
                     + " while processing argument at or before arg[" + i + "] '" + arg + "' in " + Arrays.toString(args) + ": " + ex.toString();
-            return new ParameterException(cmd, msg, ex, arg);
+            return new ParameterException(cmd, msg, ex, null, arg);
         }
     }
     /**
