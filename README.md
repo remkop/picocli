@@ -34,12 +34,16 @@ Works with Java 5 or higher (but is designed to facilitate the use of Java 8 lam
 
 Picocli-based command line applications can have [TAB autocompletion](http://picocli.info/autocomplete.html),
 interactively showing users what options and subcommands are available.
+When an option has [`completionCandidates`](http://picocli.info/#__code_completion_candidates_code_variable) or has an `enum` type, autocompletion can also suggest option values.
+Picocli can generate completion scripts for bash and zsh, and offers an API to easily create a [JLine](https://github.com/jline/jline2) `Completer` for your application.
+
+Picocli-based applications can easily [integrate](http://picocli.info/#_dependency_injection) with Dependency Injection containers.
 
 <a id="picocli_demo"></a>
 ![Picocli Demo help message with ANSI colors](docs/images/picocli.Demo.png?raw=true)
 
 #### Releases
-* [Releases](https://github.com/remkop/picocli/releases) - latest: 3.1.0
+* [Releases](https://github.com/remkop/picocli/releases) - latest: 3.2.0
 * [Picocli 3.0.0 Release Notes](https://github.com/remkop/picocli/releases/tag/v3.0.0) - note there are some [potential breaking changes](https://github.com/remkop/picocli/releases/tag/v3.0.0#3.0.0-breaking-changes) from prior versions
 * [Picocli 2.0 Release Notes](https://github.com/remkop/picocli/releases/tag/v2.0.0) - note there are some [potential breaking changes](https://github.com/remkop/picocli/releases/tag/v2.0.0#2.0-breaking-changes) from prior versions
 
@@ -147,35 +151,35 @@ See the [source code](https://github.com/remkop/picocli/blob/master/src/main/jav
 
 ### Gradle
 ```
-compile 'info.picocli:picocli:3.1.0'
+compile 'info.picocli:picocli:3.2.0'
 ```
 ### Maven
 ```
 <dependency>
   <groupId>info.picocli</groupId>
   <artifactId>picocli</artifactId>
-  <version>3.1.0</version>
+  <version>3.2.0</version>
 </dependency>
 ```
 ### Scala SBT
 ```
-libraryDependencies += "info.picocli" % "picocli" % "3.1.0"
+libraryDependencies += "info.picocli" % "picocli" % "3.2.0"
 ```
 ### Ivy
 ```
-<dependency org="info.picocli" name="picocli" rev="3.1.0" />
+<dependency org="info.picocli" name="picocli" rev="3.2.0" />
 ```
 ### Grape
 ```groovy
 @Grapes(
-    @Grab(group='info.picocli', module='picocli', version='3.1.0')
+    @Grab(group='info.picocli', module='picocli', version='3.2.0')
 )
 ```
 ### Leiningen
 ```
-[info.picocli/picocli "3.1.0"]
+[info.picocli/picocli "3.2.0"]
 ```
 ### Buildr
 ```
-'info.picocli:picocli:jar:3.1.0'
+'info.picocli:picocli:jar:3.2.0'
 ```
