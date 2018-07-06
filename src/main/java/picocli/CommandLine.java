@@ -5842,7 +5842,7 @@ public class CommandLine {
                                           Set<ArgSpec> initialized,
                                           String argDescription) throws Exception {
             Class<?>[] classes = argSpec.auxiliaryTypes();
-            if (classes.length < 2) { throw new ParameterException(CommandLine.this, argSpec.toString() + " needs two types (one for the map key, one for the value) but only has " + classes.length + " types configured."); }
+            if (classes.length < 2) { throw new ParameterException(CommandLine.this, argSpec.toString() + " needs two types (one for the map key, one for the value) but only has " + classes.length + " types configured.",argSpec, null); }
             ITypeConverter<?> keyConverter   = getTypeConverter(classes[0], argSpec, 0);
             ITypeConverter<?> valueConverter = getTypeConverter(classes[1], argSpec, 1);
             @SuppressWarnings("unchecked") Map<Object, Object> map = (Map<Object, Object>) argSpec.getValue();
@@ -5948,10 +5948,10 @@ public class CommandLine {
                 String splitRegex = argSpec.splitRegex();
                 if (splitRegex.length() == 0) {
                     throw new ParameterException(CommandLine.this, "Value for option " + optionDescription("",
-                            argSpec, 0) + " should be in KEY=VALUE format but was " + value);
+                            argSpec, 0) + " should be in KEY=VALUE format but was " + value, argSpec, value);
                 } else {
                     throw new ParameterException(CommandLine.this, "Value for option " + optionDescription("",
-                            argSpec, 0) + " should be in KEY=VALUE[" + splitRegex + "KEY=VALUE]... format but was " + value);
+                            argSpec, 0) + " should be in KEY=VALUE[" + splitRegex + "KEY=VALUE]... format but was " + value, argSpec, value);
                 }
             }
             return keyValue;
@@ -6152,10 +6152,10 @@ public class CommandLine {
             try {
                 return converter.convert(value);
             } catch (TypeConversionException ex) {
-                throw new ParameterException(CommandLine.this, ex.getMessage() + optionDescription(" for ", argSpec, index));
+                throw new ParameterException(CommandLine.this, ex.getMessage() + optionDescription(" for ", argSpec, index), argSpec, value);
             } catch (Exception other) {
                 String desc = optionDescription(" for ", argSpec, index) + ": " + other;
-                throw new ParameterException(CommandLine.this, "Could not convert '" + value + "' to " + type.getSimpleName() + desc, other);
+                throw new ParameterException(CommandLine.this, "Could not convert '" + value + "' to " + type.getSimpleName() + desc, other, argSpec, value);
             }
         }
 
@@ -6550,7 +6550,7 @@ public class CommandLine {
                 if (subcommand != null) {
                     subcommand.usage(out, ansi);
                 } else {
-                    throw new ParameterException(parent, "Unknown subcommand '" + commands[0] + "'.");
+                    throw new ParameterException(parent, "Unknown subcommand '" + commands[0] + "'.", commands[0]);
                 }
             } else {
                 parent.usage(out, ansi);
@@ -8557,7 +8557,19 @@ public class CommandLine {
     public static class ParameterException extends PicocliException {
         private static final long serialVersionUID = 1477112829129763139L;
         private final CommandLine commandLine;
+        private ArgSpec argSpec = null;
+        private String value = null;
 
+        /** Constructs a new ParameterException with the specified CommandLine and error message.
+         * @param commandLine the command or subcommand whose input was invalid
+         * @param msg describes the problem
+         * @param value the value that caused this ParameterException
+         * @since 2.0 */
+        public ParameterException(CommandLine commandLine, String msg, String value) {
+            super(msg);
+            this.commandLine = Assert.notNull(commandLine, "commandLine");
+            this.value = value;
+        }
         /** Constructs a new ParameterException with the specified CommandLine and error message.
          * @param commandLine the command or subcommand whose input was invalid
          * @param msg describes the problem
@@ -8566,6 +8578,7 @@ public class CommandLine {
             super(msg);
             this.commandLine = Assert.notNull(commandLine, "commandLine");
         }
+
         /** Constructs a new ParameterException with the specified CommandLine and error message.
          * @param commandLine the command or subcommand whose input was invalid
          * @param msg describes the problem
@@ -8576,16 +8589,68 @@ public class CommandLine {
             this.commandLine = Assert.notNull(commandLine, "commandLine");
         }
 
+        /** Constructs a new ParameterException with the specified CommandLine and error message.
+         * @param commandLine the command or subcommand whose input was invalid
+         * @param msg describes the problem
+         * @param ex the exception that caused this ParameterException
+         * @param value the value that caused this ParameterException
+         * @since 2.0 */
+        public ParameterException(CommandLine commandLine, String msg, Exception ex, String value) {
+            super(msg, ex);
+            this.commandLine = Assert.notNull(commandLine, "commandLine");
+            this.value = value;
+        }
+
+        /** Constructs a new ParameterException with the specified CommandLine and error message.
+         * @param commandLine the command or subcommand whose input was invalid
+         * @param msg describes the problem
+         * @param ex the exception that caused this ParameterException
+         * @param argSpec the argSpec that caused this ParameterException
+         * @param value the value that caused this ParameterException
+         * @since 3.2 */
+        public ParameterException(CommandLine commandLine, String msg, Exception ex, ArgSpec argSpec, String value) {
+            super(msg, ex);
+            this.commandLine = Assert.notNull(commandLine, "commandLine");
+            this.argSpec = Assert.notNull(argSpec, "argSpec");
+            this.value = value;
+        }
+
+        /** Constructs a new ParameterException with the specified CommandLine and error message.
+         * @param commandLine the command or subcommand whose input was invalid
+         * @param msg describes the problem
+         * @param argSpec the argSpec that caused this ParameterException
+         * @param value the value that caused this ParameterException
+         * @since 3.2 */
+        public ParameterException(CommandLine commandLine, String msg, ArgSpec argSpec, String value) {
+            super(msg);
+            this.commandLine = Assert.notNull(commandLine, "commandLine");
+            this.argSpec = Assert.notNull(argSpec, "argSpec");
+            this.value = value;
+        }
+
+
         /** Returns the {@code CommandLine} object for the (sub)command whose input could not be parsed.
          * @return the {@code CommandLine} object for the (sub)command where parsing failed.
          * @since 2.0
          */
         public CommandLine getCommandLine() { return commandLine; }
 
+        /** Returns the {@code ArgSpec} object for the (sub)command whose input could not be parsed.
+         * @return the {@code ArgSpec} object for the (sub)command where parsing failed.
+         * @since 3.2
+         */
+        public ArgSpec getArgSpec() { return argSpec; }
+
+        /** Returns the {@code String} value for the (sub)command whose input could not be parsed.
+         * @return the {@code String} value for the (sub)command where parsing failed.
+         * @since 3.2
+         */
+        public String getValue() { return value; }
+
         private static ParameterException create(CommandLine cmd, Exception ex, String arg, int i, String[] args) {
             String msg = ex.getClass().getSimpleName() + ": " + ex.getLocalizedMessage()
                     + " while processing argument at or before arg[" + i + "] '" + arg + "' in " + Arrays.toString(args) + ": " + ex.toString();
-            return new ParameterException(cmd, msg, ex);
+            return new ParameterException(cmd, msg, ex, arg);
         }
     }
     /**

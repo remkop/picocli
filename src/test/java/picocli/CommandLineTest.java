@@ -4050,4 +4050,27 @@ public class CommandLineTest {
         c = CommandLine.populateCommand(new MyCommand(), args);
         assertEquals("-Dspring.profiles.active=test -Dspring.mail.host=smtp.mailtrap.io", c.parameters.get("AppOptions"));
     }
+
+    // Enum required for testIssue402, can't be local
+    public enum Choices {
+        CHOICE1,
+        CHOICE2
+    }
+    @Test
+    public void testIssue402() {
+        class AppWithEnum {
+            @Parameters(type = Choices.class)
+            private Choices choice;
+        }
+        AppWithEnum app;
+        try {
+            app = CommandLine.populateCommand(new AppWithEnum(), "CHOICE3");
+        } catch (ParameterException e) {
+            assertEquals("<choice>", e.getArgSpec().paramLabel());
+            assertEquals(2, e.getArgSpec().type().getEnumConstants().length);
+            assertEquals(Choices.CHOICE1, e.getArgSpec().type().getEnumConstants()[0]);
+            assertEquals(Choices.CHOICE2, e.getArgSpec().type().getEnumConstants()[1]);
+            assertEquals("CHOICE3", e.getValue());
+        }
+    }
 }
