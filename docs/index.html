@@ -1451,7 +1451,7 @@ For example:</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="CodeRay highlight"><code data-lang="java"><span class="annotation">@Option</span>(names = <span class="string"><span class="delimiter">&quot;</span><span class="content">-c</span><span class="delimiter">&quot;</span></span>, description = <span class="string"><span class="delimiter">&quot;</span><span class="content">The count (default: ${DEFAULT_VALUE})</span><span class="delimiter">&quot;</span></span>)
+<pre class="CodeRay highlight"><code data-lang="java"><span class="annotation">@Option</span>(names = <span class="string"><span class="delimiter">&quot;</span><span class="content">-c</span><span class="delimiter">&quot;</span></span>, description = <span class="string"><span class="delimiter">&quot;</span><span class="content">The count (default: ${DEFAULT-VALUE})</span><span class="delimiter">&quot;</span></span>)
 <span class="type">int</span> count = <span class="integer">123</span>; <span class="comment">// default value is 123</span></code></pre>
 </div>
 </div>
@@ -1461,7 +1461,7 @@ For example:</p>
 <div class="listingblock">
 <div class="content">
 <pre class="CodeRay highlight"><code data-lang="java"><span class="type">interface</span> <span class="class">Spec</span> {
-    <span class="annotation">@Option</span>(names = <span class="string"><span class="delimiter">&quot;</span><span class="content">-c</span><span class="delimiter">&quot;</span></span>, defaultValue = <span class="string"><span class="delimiter">&quot;</span><span class="content">123</span><span class="delimiter">&quot;</span></span>, description = <span class="string"><span class="delimiter">&quot;</span><span class="content">... ${DEFAULT_VALUE} ...</span><span class="delimiter">&quot;</span></span>)
+    <span class="annotation">@Option</span>(names = <span class="string"><span class="delimiter">&quot;</span><span class="content">-c</span><span class="delimiter">&quot;</span></span>, defaultValue = <span class="string"><span class="delimiter">&quot;</span><span class="content">123</span><span class="delimiter">&quot;</span></span>, description = <span class="string"><span class="delimiter">&quot;</span><span class="content">... ${DEFAULT-VALUE} ...</span><span class="delimiter">&quot;</span></span>)
     <span class="type">int</span> count();
 }</code></pre>
 </div>
@@ -1474,7 +1474,7 @@ For example:</p>
 <pre class="CodeRay highlight"><code data-lang="java"><span class="type">class</span> <span class="class">Impl</span> {
     <span class="type">int</span> count;
 
-    <span class="annotation">@Option</span>(names = <span class="string"><span class="delimiter">&quot;</span><span class="content">-c</span><span class="delimiter">&quot;</span></span>, defaultValue = <span class="string"><span class="delimiter">&quot;</span><span class="content">123</span><span class="delimiter">&quot;</span></span>, description = <span class="string"><span class="delimiter">&quot;</span><span class="content">... ${DEFAULT_VALUE} ...</span><span class="delimiter">&quot;</span></span>)
+    <span class="annotation">@Option</span>(names = <span class="string"><span class="delimiter">&quot;</span><span class="content">-c</span><span class="delimiter">&quot;</span></span>, defaultValue = <span class="string"><span class="delimiter">&quot;</span><span class="content">123</span><span class="delimiter">&quot;</span></span>, description = <span class="string"><span class="delimiter">&quot;</span><span class="content">... ${DEFAULT-VALUE} ...</span><span class="delimiter">&quot;</span></span>)
     <span class="type">void</span> setCount(<span class="type">int</span> count) {
         <span class="local-variable">this</span>.count = count;
     }
@@ -1482,7 +1482,7 @@ For example:</p>
 </div>
 </div>
 <div class="paragraph">
-<p>Note that you can use the <code>${DEFAULT_VALUE}</code> variable in the <code>description</code> of the option or positional parameter and picocli will <a href="#_show_default_values">show</a> the actual default value.</p>
+<p>Note that you can use the <code>${DEFAULT-VALUE}</code> variable in the <code>description</code> of the option or positional parameter and picocli will <a href="#_show_default_values">show</a> the actual default value.</p>
 </div>
 </div>
 </div>

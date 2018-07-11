@@ -558,14 +558,14 @@ It is possible to define a default value for an option or positional parameter, 
 For annotated fields, it is simplest to declare the field with a value:
 [source,java]
 ----
-@Option(names = "-c", description = "The count (default: ${DEFAULT_VALUE})")
+@Option(names = "-c", description = "The count (default: ${DEFAULT-VALUE})")
 int count = 123; // default value is 123
 ----
 For <<Annotated Methods,annotated methods>>, use the `defaultValue` annotation attribute. For example, for an annotated interface:
 [source,java]
 ----
 interface Spec {
-    @Option(names = "-c", defaultValue = "123", description = "... ${DEFAULT_VALUE} ...")
+    @Option(names = "-c", defaultValue = "123", description = "... ${DEFAULT-VALUE} ...")
     int count();
 }
 ----
@@ -575,14 +575,14 @@ Or similarly for an annotated concrete class:
 class Impl {
     int count;
 
-    @Option(names = "-c", defaultValue = "123", description = "... ${DEFAULT_VALUE} ...")
+    @Option(names = "-c", defaultValue = "123", description = "... ${DEFAULT-VALUE} ...")
     void setCount(int count) {
         this.count = count;
     }
 }
 ----
 
-Note that you can use the `${DEFAULT_VALUE}` variable in the `description` of the option or positional parameter and picocli will <<Show Default Values,show>> the actual default value.
+Note that you can use the `${DEFAULT-VALUE}` variable in the `description` of the option or positional parameter and picocli will <<Show Default Values,show>> the actual default value.
 
 == Multiple Values
 Multi-valued options and positional parameters are annotated fields that can capture multiple values from the command line.
