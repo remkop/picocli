@@ -6243,7 +6243,7 @@ public class CommandLine {
                     }
                     Range indexRange = ((PositionalParamSpec) argSpec).index();
                     String sep = "";
-                    String names = "";
+                    String names = ": ";
                     int count = 0;
                     List<PositionalParamSpec> positionalParameters = commandSpec.positionalParameters();
                     for (int i = indexRange.min; i < positionalParameters.size(); i++) {
@@ -6255,10 +6255,8 @@ public class CommandLine {
                     }
                     String msg = "Missing required parameter";
                     Range paramArity = argSpec.arity();
-                    if (paramArity.isVariable) {
-                        msg += "s at positions " + indexRange + ": ";
-                    } else {
-                        msg += (count > 1 ? "s: " : ": ");
+                    if (count > 1 || arity.min - available > 1) {
+                        msg += "s";
                     }
                     maybeThrow(new MissingParameterException(CommandLine.this, argSpec, msg + names));
                 } else if (args.isEmpty()) {

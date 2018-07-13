@@ -25,6 +25,7 @@ No features have been promoted in this picocli release.
 
 ## <a name="3.3.0-fixes"></a> Fixed issues
 - [#411] Bugfix: Completion candidates were only generated for the first option, not for subsequent options.
+- [#409] Enhancement: Improve error message for missing required positional parameters. Thanks to [Mārtiņš Kalvāns](https://github.com/sisidra) and [Olle Lundberg](https://github.com/lndbrg).
 
 ## <a name="3.3.0-deprecated"></a> Deprecations
 No features were deprecated in this release.

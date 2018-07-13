@@ -3390,7 +3390,7 @@ public class CommandLineHelpTest {
         CommandLine.run(new App(), System.out, new PrintStream(baos), Help.Ansi.OFF, args);
 
         String expected = format("" +
-                "Missing required parameters at positions 0..*: FILES%n" +
+                "Missing required parameter: FILES%n" +
                 "Usage: <main class> FILES...%n" +
                 "      FILES...   List of files%n");
         assertEquals(expected, baos.toString());
@@ -3412,7 +3412,7 @@ public class CommandLineHelpTest {
         CommandLine.run(new App(), System.out, new PrintStream(baos), Help.Ansi.OFF, args);
 
         String expected = format("" +
-                "Missing required parameters at positions 0..*: FILES%n" +
+                "Missing required parameter: FILES%n" +
                 "Usage: <main class> [-v] FILES...%n" +
                 "      FILES...   List of files%n" +
                 "  -v             Print output%n");

@@ -798,7 +798,22 @@ public class CommandLineArityTest {
             params = CommandLine.populateCommand(new ArrayParamsArity1_n());
             fail("Should not accept input with missing parameter");
         } catch (MissingParameterException ex) {
-            assertEquals("Missing required parameters at positions 0..*: <params>", ex.getMessage());
+            assertEquals("Missing required parameter: <params>", ex.getMessage());
+        }
+    }
+
+    @Test
+    public void testMissingPositionalParameters() {
+        class App {
+            @Parameters(index = "0", paramLabel = "PARAM1") String p1;
+            @Parameters(index = "1", paramLabel = "PARAM2") String p2;
+            @Parameters(index = "2", paramLabel = "PARAM3") String p3;
+        }
+        try {
+            CommandLine.populateCommand(new App(), "a");
+            fail("Should not accept input with missing parameter");
+        } catch (MissingParameterException ex) {
+            assertEquals("Missing required parameters: PARAM2, PARAM3", ex.getMessage());
         }
     }
 
@@ -914,7 +929,7 @@ public class CommandLineArityTest {
             CommandLine.populateCommand(new Arg(), "-o", "v1", "-o", "v2");
             fail("Expected MissingParameterException");
         } catch (MissingParameterException ex) {
-            assertEquals("Missing required parameters at positions 0..*: <parameters>", ex.getMessage());
+            assertEquals("Missing required parameter: <parameters>", ex.getMessage());
         }
     }
 
