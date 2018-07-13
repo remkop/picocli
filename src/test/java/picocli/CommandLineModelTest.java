@@ -289,7 +289,7 @@ public class CommandLineModelTest {
             commandLine.parse("-c", "1", "2", "3");
             fail("Expected exception");
         } catch (UnmatchedArgumentException ex) {
-            assertEquals("Unmatched arguments [2, 3]", ex.getMessage());
+            assertEquals("Unmatched arguments: 2, 3", ex.getMessage());
         }
     }
 
@@ -305,7 +305,7 @@ public class CommandLineModelTest {
             commandLine.parse("1", "2", "3");
             fail("Expected exception");
         } catch (UnmatchedArgumentException ex) {
-            assertEquals("Unmatched arguments [2, 3]", ex.getMessage());
+            assertEquals("Unmatched arguments: 2, 3", ex.getMessage());
         }
     }
 

@@ -2268,7 +2268,9 @@ try {
     return callable.call();
 } catch (ParameterException ex) {
     System.err.println(ex.getMessage());
-    ex.getCommandLine().usage(System.err);
+    if (!UnmatchedArgumentException.printSuggestions(ex, System.err)) {
+        ex.getCommandLine().usage(System.err);
+    }
     return null;
 } catch (Exception ex) {
     throw new ExecutionException(cmd, "Error while calling " + callable, ex);

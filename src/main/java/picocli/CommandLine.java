@@ -781,9 +781,10 @@ public class CommandLine {
 
         private void internalHandleParseException(ParameterException ex, PrintStream out, Help.Ansi ansi, String[] args) {
             out.println(ex.getMessage());
-            ex.getCommandLine().usage(out, ansi);
+            if (!UnmatchedArgumentException.printSuggestions(ex, out)) {
+                ex.getCommandLine().usage(out, ansi);
+            }
         }
-
         /** This implementation always simply rethrows the specified exception.
          * @param ex the ExecutionException describing the problem that occurred while executing the {@code Runnable} or {@code Callable} command
          * @param parseResult the result of parsing the command line arguments
@@ -3392,11 +3393,41 @@ public class CommandLine {
                 }
                 return null;
             }
-            private static String stripPrefix(String prefixed) {
+            static String stripPrefix(String prefixed) {
                 for (int i = 0; i < prefixed.length(); i++) {
                     if (Character.isJavaIdentifierPart(prefixed.charAt(i))) { return prefixed.substring(i); }
                 }
                 return prefixed;
+            }
+            List<String> findOptionNamesWithPrefix(String prefix) {
+                List<String> result = new ArrayList<String>();
+                for (OptionSpec option : options()) {
+                    for (String name : option.names()) {
+                        if (stripPrefix(name).startsWith(prefix)) { result.add(name); }
+                    }
+                }
+                return result;
+            }
+
+            boolean resemblesOption(String arg, Tracer tracer) {
+                if (parser().unmatchedOptionsArePositionalParams()) {
+                    if (tracer != null && tracer.isDebug()) {tracer.debug("Parser is configured to treat all unmatched options as positional parameter%n", arg);}
+                    return false;
+                }
+                if (options().isEmpty()) {
+                    boolean result = arg.startsWith("-");
+                    if (tracer != null && tracer.isDebug()) {tracer.debug("%s %s an option%n", arg, (result ? "resembles" : "doesn't resemble"));}
+                    return result;
+                }
+                int count = 0;
+                for (String optionName : optionsMap().keySet()) {
+                    for (int i = 0; i < arg.length(); i++) {
+                        if (optionName.length() > i && arg.charAt(i) == optionName.charAt(i)) { count++; } else { break; }
+                    }
+                }
+                boolean result = count > 0 && count * 10 >= optionsMap().size() * 9; // at least one prefix char in common with 9 out of 10 options
+                if (tracer != null && tracer.isDebug()) {tracer.debug("%s %s an option: %d matching prefix chars out of %d option names%n", arg, (result ? "resembles" : "doesn't resemble"), count, optionsMap().size());}
+                return result;
             }
         }
         private static boolean initializable(Object current, Object candidate, Object defaultValue) {
@@ -5562,7 +5593,7 @@ public class CommandLine {
                 else {
                     args.push(arg);
                     if (tracer.isDebug()) {tracer.debug("Could not find option '%s', deciding whether to treat as unmatched option or positional parameter...%n", arg);}
-                    if (resemblesOption(arg)) { handleUnmatchedArgument(args); continue; } // #149
+                    if (commandSpec.resemblesOption(arg, tracer)) { handleUnmatchedArgument(args); continue; } // #149
                     if (tracer.isDebug()) {tracer.debug("No option named '%s' found. Processing remainder as positional parameters%n", arg);}
                     processPositionalParameter(required, initialized, args);
                 }
@@ -5571,28 +5602,6 @@ public class CommandLine {
 
         private boolean isStandaloneOption(String arg) {
             return commandSpec.optionsMap().containsKey(arg);
-        }
-
-        private boolean resemblesOption(String arg) {
-            if (commandSpec.parser().unmatchedOptionsArePositionalParams()) {
-                if (tracer.isDebug()) {tracer.debug("Parser is configured to treat all unmatched options as positional parameter%n", arg);}
-                return false;
-            }
-            if (commandSpec.options().isEmpty()) {
-                boolean result = arg.startsWith("-");
-                if (tracer.isDebug()) {tracer.debug("%s %s an option%n", arg, (result ? "resembles" : "doesn't resemble"));}
-                return result;
-            }
-            int count = 0;
-            for (String optionName : commandSpec.optionsMap().keySet()) {
-                for (int i = 0; i < arg.length(); i++) {
-                    if (optionName.length() > i && arg.charAt(i) == optionName.charAt(i)) { count++; } else { break; }
-                }
-            }
-            boolean result = count > 0 && count * 10 >= commandSpec.optionsMap().size() * 9; // at least one prefix char in common with 9 out of 10 options
-            if (tracer.isDebug()) {tracer.debug("%s %s an option: %d matching prefix chars out of %d option names%n", arg, (result ? "resembles" : "doesn't resemble"), count, commandSpec
-                    .optionsMap().size());}
-            return result;
         }
         private void handleUnmatchedArgument(Stack<String> args) throws Exception {
             if (!args.isEmpty()) { handleUnmatchedArgument(args.pop()); }
@@ -5718,7 +5727,7 @@ public class CommandLine {
                         args.push(paramAttachedToOption ? prefix + cluster : cluster);
                         if (args.peek().equals(arg)) { // #149 be consistent between unmatched short and long options
                             if (tracer.isDebug()) {tracer.debug("Could not match any short options in %s, deciding whether to treat as unmatched option or positional parameter...%n", arg);}
-                            if (resemblesOption(arg)) { handleUnmatchedArgument(args); return; } // #149
+                            if (commandSpec.resemblesOption(arg, tracer)) { handleUnmatchedArgument(args); return; } // #149
                             processPositionalParameter(required, initialized, args);
                             return;
                         }
@@ -8513,6 +8522,45 @@ public class CommandLine {
         boolean isInfo()  { return level.isEnabled(TraceLevel.INFO); }
         boolean isDebug() { return level.isEnabled(TraceLevel.DEBUG); }
     }
+    /**
+     * Uses cosine similarity to find matches from a candidate set for a specified input.
+     * Based on code from http://www.nearinfinity.com/blogs/seth_schroeder/groovy_cosine_similarity_in_grails.html
+     *
+     * @author Burt Beckwith
+     */
+    private static class CosineSimilarity {
+        static List<String> mostSimilar(String pattern, Iterable<String> candidates) { return mostSimilar(pattern, candidates, 0); }
+        static List<String> mostSimilar(String pattern, Iterable<String> candidates, double threshold) {
+            pattern = pattern.toLowerCase();
+            SortedMap<Double, String> sorted = new TreeMap<Double, String>();
+            for (String candidate : candidates) {
+                double score = similarity(pattern, candidate.toLowerCase(), 2);
+                if (score > threshold) { sorted.put(score, candidate); }
+            }
+            return reverseList(new ArrayList<String>(sorted.values()));
+        }
+
+        private static double similarity(String sequence1, String sequence2, int degree) {
+            Map<String, Integer> m1 = countNgramFrequency(sequence1, degree);
+            Map<String, Integer> m2 = countNgramFrequency(sequence2, degree);
+            return dotProduct(m1, m2) / Math.sqrt(dotProduct(m1, m1) * dotProduct(m2, m2));
+        }
+
+        private static Map<String, Integer> countNgramFrequency(String sequence, int degree) {
+            Map<String, Integer> m = new HashMap<String, Integer>();
+            for (int i = 0; i + degree <= sequence.length(); i++) {
+                String gram = sequence.substring(i, i + degree);
+                m.put(gram, 1 + (m.containsKey(gram) ? m.get(gram) : 0));
+            }
+            return m;
+        }
+
+        private static double dotProduct(Map<String, Integer> m1, Map<String, Integer> m2) {
+            double result = 0;
+            for (String key : m1.keySet()) { result += m1.get(key) * (m2.containsKey(key) ? m2.get(key) : 0); }
+            return result;
+        }
+    }
     /** Base class of all exceptions thrown by {@code picocli.CommandLine}.
      * @since 2.0 */
     public static class PicocliException extends RuntimeException {
@@ -8683,9 +8731,60 @@ public class CommandLine {
      * {@link Option} or {@link Parameters}. */
     public static class UnmatchedArgumentException extends ParameterException {
         private static final long serialVersionUID = -8700426380701452440L;
+        private List<String> unmatched;
         public UnmatchedArgumentException(CommandLine commandLine, String msg) { super(commandLine, msg); }
         public UnmatchedArgumentException(CommandLine commandLine, Stack<String> args) { this(commandLine, new ArrayList<String>(reverse(args))); }
-        public UnmatchedArgumentException(CommandLine commandLine, List<String> args) { this(commandLine, "Unmatched argument" + (args.size() == 1 ? " " : "s ") + args); }
+        public UnmatchedArgumentException(CommandLine commandLine, List<String> args) {
+            this(commandLine, describe(args, commandLine) + (args.size() == 1 ? ": " : "s: ") + str(args));
+            unmatched = args;
+        }
+        /** Returns {@code true} and prints suggested solutions to the specified stream if such solutions exist, otherwise returns {@code false}.
+         * @since 3.3.0 */
+        public static boolean printSuggestions(ParameterException ex, PrintStream out) {
+            return ex instanceof UnmatchedArgumentException && ((UnmatchedArgumentException) ex).printSuggestions(out);
+        }
+        /** Returns the unmatched command line arguments.
+         * @since 3.3.0 */
+        public List<String> getUnmatched() { return Collections.unmodifiableList(unmatched); }
+        /** Returns {@code true} if the first unmatched command line arguments resembles an option, {@code false} otherwise.
+         * @since 3.3.0 */
+        public boolean isUnknownOption() { return isUnknownOption(unmatched, getCommandLine()); }
+        /** Returns {@code true} and prints suggested solutions to the specified stream if such solutions exist, otherwise returns {@code false}.
+         * @since 3.3.0 */
+        public boolean printSuggestions(PrintStream out) {
+            List<String> suggestions = getSuggestions();
+            if (!suggestions.isEmpty()) {
+                out.println(isUnknownOption()
+                        ? "Possible solutions: " + str(suggestions)
+                        : "Did you mean: " + str(suggestions).replace(", ", " or ") + "?");
+            }
+            return !suggestions.isEmpty();
+        }
+        /** Returns suggested solutions if such solutions exist, otherwise returns an empty list.
+         * @since 3.3.0 */
+        public List<String> getSuggestions() {
+            if (unmatched == null || unmatched.isEmpty()) { return Collections.emptyList(); }
+            String arg = unmatched.get(0);
+            String stripped = CommandSpec.stripPrefix(arg);
+            CommandSpec spec = getCommandLine().getCommandSpec();
+            if (spec.resemblesOption(arg, null)) {
+                return spec.findOptionNamesWithPrefix(stripped.substring(0, Math.min(2, stripped.length())));
+            } else if (!spec.subcommands().isEmpty()) {
+                List<String> mostSimilar = CosineSimilarity.mostSimilar(arg, spec.subcommands().keySet());
+                return mostSimilar.subList(0, Math.min(3, mostSimilar.size()));
+            }
+            return Collections.emptyList();
+        }
+        private static boolean isUnknownOption(List<String> unmatch, CommandLine cmd) {
+            return unmatch != null && !unmatch.isEmpty() && cmd.getCommandSpec().resemblesOption(unmatch.get(0), null);
+        }
+        private static String describe(List<String> unmatch, CommandLine cmd) {
+            return isUnknownOption(unmatch, cmd) ? "Unknown option" : "Unmatched argument";
+        }
+        static String str(List<String> list) {
+            String s = list.toString();
+            return s.substring(0, s.length() - 1).substring(1);
+        }
     }
     /** Exception indicating that more values were specified for an option or parameter than its {@link Option#arity() arity} allows. */
     public static class MaxValuesExceededException extends ParameterException {

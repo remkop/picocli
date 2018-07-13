@@ -68,7 +68,7 @@ import picocli.CommandLine.Parameters
         def string = bytes.toString("UTF-8")
         assert string == String.format("" +
                 "args: [--xyz]%n" +
-                "Unmatched argument [--xyz]%n" +
+                "Unknown option: --xyz%n" +
                 "Usage: test-command [-cp=<codepath>]... [<parameters>...]%n" +
                 "tests help from a command script%n" +
                 "      [<parameters>...]   some parameters%n" +

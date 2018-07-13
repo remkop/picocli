@@ -3,7 +3,7 @@
 # <a name="3.3.0"></a> Picocli 3.3.0 (UNRELEASED)
 The picocli community is pleased to announce picocli 3.3.0.
 
-This release contains a bugfix for the JLine TAB completion support and error message improvements.
+This release contains a bugfix for the JLine TAB completion support and improves the error messages for missing required parameters and unmatched arguments.
 
 This is the thirty-fourth public release.
 Picocli follows [semantic versioning](http://semver.org/).
@@ -16,7 +16,41 @@ Picocli follows [semantic versioning](http://semver.org/).
 * [Potential breaking changes](#3.3.0-breaking-changes)
 
 ## <a name="3.3.0-new"></a> New and Noteworthy
-### 
+### `UnmatchedArgumentException` Improvements
+The `UnmatchedArgumentException` class now has several methods that allow an application to offer suggestions for fixes to the end user.
+
+For example:
+```java
+class App {
+    @Option(names = "--file") File[] files;
+    @Option(names = "--find") String pattern;
+    
+    public static void main(String[] args) {
+        App app = new App();
+        try {
+            new CommandLine(app).parse(args);
+            // ...
+            
+        } catch (ParameterException ex) {
+            System.err.println(ex.getMessage());
+            if (!UnmatchedArgumentException.printSuggestions(ex, System.err)) { // new API
+                ex.getCommandLine().usage(System.err, ansi);
+            }
+        }
+    } 
+}
+```
+If you run this class with an invalid option that is similar to an actual option, the `UnmatchedArgumentException.printSuggestions` method will show the actual options. For example:
+```
+<cmd> -fi
+```
+Prints this output:
+```
+Unknown option: -fi
+Possible solutions: --file, --find
+```
+This is the behaviour for the `CommandLine` convenience methods `run`, `call` and `parseWithHandlers`. 
+Note that if possible fixes are found, the usage help message is not displayed.
 
 ## <a name="3.3.0-promoted"></a> Promoted Features
 Promoted features are features that were incubating in previous versions of picocli but are now supported and subject to backwards compatibility. 
@@ -26,12 +60,14 @@ No features have been promoted in this picocli release.
 ## <a name="3.3.0-fixes"></a> Fixed issues
 - [#411] Bugfix: Completion candidates were only generated for the first option, not for subsequent options.
 - [#409] Enhancement: Improve error message for missing required positional parameters. Thanks to [Mārtiņš Kalvāns](https://github.com/sisidra) and [Olle Lundberg](https://github.com/lndbrg).
+- [#298] Enhancement: Add help for mistyped commands and options. Added new API to `UnmatchedArgumentException`. Thanks to [Philippe Charles](https://github.com/charphi).
 
 ## <a name="3.3.0-deprecated"></a> Deprecations
 No features were deprecated in this release.
 
 ## <a name="3.3.0-breaking-changes"></a> Potential breaking changes
-This release has no breaking changes.
+The error message format has changed. This may impact client tests that expect a specific error message.
+
 
 
 # <a name="3.2.0"></a> Picocli 3.2.0
