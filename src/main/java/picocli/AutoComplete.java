@@ -579,12 +579,8 @@ public class AutoComplete {
             CommandLine parser = new CommandLine(spec);
             ParseResult parseResult = parser.parseArgs(args);
             if (argIndex >= parseResult.tentativeMatch.size()) {
-                int count = parseResult.tentativeMatch.size();
-                if (count == 0) {
-                    addCandidatesForArgsFollowing(spec, candidates);
-                } else {
-                    addCandidatesForArgsFollowing(parseResult.tentativeMatch.get(count - 1), candidates);
-                }
+                Object startPoint = findCompletionStartPoint(parseResult);
+                addCandidatesForArgsFollowing(startPoint, candidates);
             } else {
                 Object obj = parseResult.tentativeMatch.get(argIndex);
                 if (obj instanceof CommandSpec) { // subcommand
@@ -615,7 +611,28 @@ public class AutoComplete {
             spec.parser().collectErrors(reset);
         }
     }
+    private static Object findCompletionStartPoint(ParseResult parseResult) {
+        List<Object> tentativeMatches = parseResult.tentativeMatch;
+        for (int i = 1; i <= tentativeMatches.size(); i++) {
+            Object found = tentativeMatches.get(tentativeMatches.size() - i);
+            if (found instanceof CommandSpec) {
+                return found;
+            }
+            if (found instanceof ArgSpec) {
+                CommandLine.Range arity = ((ArgSpec) found).arity();
+                if (i < arity.min) {
+                    return found; // not all parameters have been supplied yet
+                } else {
+                    return findCommandFor((ArgSpec) found, parseResult.commandSpec());
+                }
+            }
+        }
+        return parseResult.commandSpec();
+    }
 
+    private static CommandSpec findCommandFor(ArgSpec arg, CommandSpec cmd) {
+        return (arg instanceof OptionSpec) ? findCommandFor((OptionSpec) arg, cmd) : findCommandFor((PositionalParamSpec) arg, cmd);
+    }
     private static CommandSpec findCommandFor(OptionSpec option, CommandSpec commandSpec) {
         OptionSpec found = commandSpec.findOption(option.longestName());
         if (found != null) { return commandSpec; }

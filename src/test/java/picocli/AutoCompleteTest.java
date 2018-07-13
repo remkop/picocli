@@ -508,32 +508,55 @@ public class AutoCompleteTest {
 
         CommandSpec spec = hierarchy.getCommandSpec();
         spec.parser().collectErrors(true);
-        List<CharSequence> result = new ArrayList<CharSequence>();
-        String[] args = new String[] {};
+        int cur = 500;
 
-        test(spec, a(),                           0, 0, 500, l("--help", "--version", "-V", "-h", "sub1", "sub2"));
-        test(spec, a("-"),                        0, 0, 500, l("--help", "--version", "-V", "-h", "sub1", "sub2"));
-        test(spec, a("-"),                        0, 1, 500, l("-help", "-version", "V", "h"));
-        test(spec, a("-h"),                       0, 1, 500, l("-help", "-version", "V", "h"));
-        test(spec, a("-h"),                       0, 2, 500, l(""));
-        test(spec, a("s"),                        0, 1, 500, l("ub1", "ub2"));
-        test(spec, a("sub1"),                     1, 0, 500, l("--candidates", "--num", "--str"));
-        test(spec, a("sub1", "-"),                1, 0, 500, l("--candidates", "--num", "--str"));
-        test(spec, a("sub1", "-"),                1, 1, 500, l("-candidates", "-num", "-str"));
-        test(spec, a("sub1", "--"),               1, 1, 500, l("-candidates", "-num", "-str"));
-        test(spec, a("sub1", "--"),               1, 2, 500, l("candidates", "num", "str"));
-        test(spec, a("sub1", "--c"),              1, 2, 500, l("candidates", "num", "str"));
-        test(spec, a("sub1", "--c"),              1, 3, 500, l("andidates"));
-        test(spec, a("sub1", "--candidates"),     2, 0, 500, l("a", "b", "c"));
-        test(spec, a("sub1", "--num"),            2, 0, 500, l());
-        test(spec, a("sub1", "--str"),            2, 0, 500, l());
-        test(spec, a("sub2"),                     1, 0, 500, l("--directory", "--num2", "-d", "subsub1", "subsub2"));
-        test(spec, a("sub2", "-"),                1, 1, 500, l("-directory", "-num2", "d"));
-        test(spec, a("sub2", "-d"),               2, 0, 500, l());
-        test(spec, a("sub2", "subsub1"),          2, 0, 500, l("--host", "-h"));
-        test(spec, a("sub2", "subsub2"),          2, 0, 500, l("--timeUnit", "--timeout", "-t", "-u", "a", "b", "c"));
-        test(spec, a("sub2", "subsub2", "-"),     2, 1, 500, l("-timeUnit", "-timeout", "t", "u"));
-        test(spec, a("sub2", "subsub2", "a"),     2, 1, 500, l(""));
+        test(spec, a(),                                       0, 0, cur, l("--help", "--version", "-V", "-h", "sub1", "sub2"));
+        test(spec, a("-"),                                    0, 0, cur, l("--help", "--version", "-V", "-h", "sub1", "sub2"));
+        test(spec, a("-"),                                    0, 1, cur, l("-help", "-version", "V", "h"));
+        test(spec, a("-h"),                                   0, 1, cur, l("-help", "-version", "V", "h"));
+        test(spec, a("-h"),                                   0, 2, cur, l(""));
+        test(spec, a("s"),                                    0, 1, cur, l("ub1", "ub2"));
+        test(spec, a("sub1"),                                 1, 0, cur, l("--candidates", "--num", "--str"));
+        test(spec, a("sub1", "-"),                            1, 0, cur, l("--candidates", "--num", "--str"));
+        test(spec, a("sub1", "-"),                            1, 1, cur, l("-candidates", "-num", "-str"));
+        test(spec, a("sub1", "--"),                           1, 1, cur, l("-candidates", "-num", "-str"));
+        test(spec, a("sub1", "--"),                           1, 2, cur, l("candidates", "num", "str"));
+        test(spec, a("sub1", "--c"),                          1, 2, cur, l("candidates", "num", "str"));
+        test(spec, a("sub1", "--c"),                          1, 3, cur, l("andidates"));
+        test(spec, a("sub1", "--candidates"),                 2, 0, cur, l("a", "b", "c"));
+        test(spec, a("sub1", "--candidates", "a"),            2, 1, cur, l(""));
+        test(spec, a("sub1", "--candidates", "a"),            3, 0, cur, l("--candidates", "--num", "--str"));
+        test(spec, a("sub1", "--candidates", "a", "-"),       3, 1, cur, l("-candidates", "-num", "-str"));
+        test(spec, a("sub1", "--candidates", "a", "--"),      3, 2, cur, l("candidates", "num", "str"));
+        test(spec, a("sub1", "--num"),                        2, 0, cur, l());
+        test(spec, a("sub1", "--str"),                        2, 0, cur, l());
+        test(spec, a("sub2"),                                 1, 0, cur, l("--directory", "--num2", "-d", "subsub1", "subsub2"));
+        test(spec, a("sub2", "-"),                            1, 1, cur, l("-directory", "-num2", "d"));
+        test(spec, a("sub2", "-d"),                           2, 0, cur, l());
+        test(spec, a("sub2", "-d", "/"),                      3, 0, cur, l("--directory", "--num2", "-d", "subsub1", "subsub2"));
+        test(spec, a("sub2", "-d", "/", "-"),                 3, 1, cur, l("-directory", "-num2", "d"));
+        test(spec, a("sub2", "-d", "/", "--"),                3, 2, cur, l("directory", "num2"));
+        test(spec, a("sub2", "-d", "/", "--n"),               3, 3, cur, l("um2"));
+        test(spec, a("sub2", "-d", "/", "--num2"),            3, 6, cur, l(""));
+        test(spec, a("sub2", "-d", "/", "--num2"),            4, 0, cur, l());
+        test(spec, a("sub2", "-d", "/", "--num2", "0"),       4, 1, cur, l());
+        test(spec, a("sub2", "-d", "/", "--num2", "0"),       5, 0, cur, l("--directory", "--num2", "-d", "subsub1", "subsub2"));
+        test(spec, a("sub2", "-d", "/", "--num2", "0", "s"),  5, 1, cur, l("ubsub1", "ubsub2"));
+        test(spec, a("sub2", "subsub1"),                      2, 0, cur, l("--host", "-h"));
+        test(spec, a("sub2", "subsub2"),                      2, 0, cur, l("--timeUnit", "--timeout", "-t", "-u", "a", "b", "c"));
+        test(spec, a("sub2", "subsub2", "-"),                 2, 1, cur, l("-timeUnit", "-timeout", "t", "u"));
+        test(spec, a("sub2", "subsub2", "-t"),                2, 2, cur, l(""));
+        test(spec, a("sub2", "subsub2", "-t"),                3, 0, cur, l());
+        test(spec, a("sub2", "subsub2", "-t", "0"),           3, 1, cur, l());
+        test(spec, a("sub2", "subsub2", "-t", "0"),           4, 0, cur, l("--timeUnit", "--timeout", "-t", "-u", "a", "b", "c"));
+        test(spec, a("sub2", "subsub2", "-t", "0", "-"),      4, 1, cur, l("-timeUnit", "-timeout", "t", "u"));
+        test(spec, a("sub2", "subsub2", "-t", "0", "--"),     4, 2, cur, l("timeUnit", "timeout"));
+        test(spec, a("sub2", "subsub2", "-t", "0", "--t"),    4, 3, cur, l("imeUnit", "imeout"));
+        test(spec, a("sub2", "subsub2", "-t", "0", "-u"),     4, 2, cur, l(""));
+        test(spec, a("sub2", "subsub2", "-t", "0", "-u"),     5, 0, cur, timeUnitValues());
+        test(spec, a("sub2", "subsub2", "-t", "0", "-u", "M"),5, 1, cur, l("ICROSECONDS", "ILLISECONDS", "INUTES"));
+        test(spec, a("sub2", "subsub2", "a"),                 2, 1, cur, l(""));
+        test(spec, a("sub2", "subsub2", "a"),                 3, 0, cur, l("--timeUnit", "--timeout", "-t", "-u", "a", "b", "c"));
     }
 
     private static void test(CommandSpec spec, String[] args, int argIndex, int positionInArg, int cursor, List<CharSequence> expected) {
@@ -550,6 +573,12 @@ public class AutoCompleteTest {
 
     private static List<CharSequence> l(CharSequence... args) {
         return Arrays.asList(args);
+    }
+
+    private static List<CharSequence> timeUnitValues() {
+        List<CharSequence> result = new ArrayList<CharSequence>();
+        for (TimeUnit tu : TimeUnit.values()) { result.add(tu.toString()); }
+        return result;
     }
 
     static class CharSequenceSort implements Comparator<CharSequence> {
