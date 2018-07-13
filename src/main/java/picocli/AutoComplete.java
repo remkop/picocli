@@ -634,8 +634,9 @@ public class AutoComplete {
         return (arg instanceof OptionSpec) ? findCommandFor((OptionSpec) arg, cmd) : findCommandFor((PositionalParamSpec) arg, cmd);
     }
     private static CommandSpec findCommandFor(OptionSpec option, CommandSpec commandSpec) {
-        OptionSpec found = commandSpec.findOption(option.longestName());
-        if (found != null) { return commandSpec; }
+        for (OptionSpec defined : commandSpec.options()) {
+            if (defined == option) { return commandSpec; }
+        }
         for (CommandLine sub : commandSpec.subcommands().values()) {
             CommandSpec result = findCommandFor(option, sub.getCommandSpec());
             if (result != null) { return result; }

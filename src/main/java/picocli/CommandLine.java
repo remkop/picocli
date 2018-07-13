@@ -5091,7 +5091,11 @@ public class CommandLine {
             /** Creates and returns a new {@code ParseResult} instance for this builder's configuration. */
             public ParseResult build() { return new ParseResult(this); }
 
-            private void nowProcessing(ArgSpec spec, Object value) { if (nowProcessing != null) { nowProcessing.add(spec.isPositional() ? spec : value); } }
+            private void nowProcessing(ArgSpec spec, Object value) {
+                if (nowProcessing != null && !isInitializingDefaultValues) {
+                    nowProcessing.add(spec.isPositional() ? spec : value);
+                }
+            }
 
             /** Adds the specified {@code OptionSpec} or {@code PositionalParamSpec} to the list of options and parameters
              * that were matched on the command line.
