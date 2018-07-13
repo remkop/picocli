@@ -554,7 +554,7 @@ public class AutoCompleteTest {
         test(spec, a("sub2", "subsub2", "-t", "0", "--t"),    4, 3, cur, l("imeUnit", "imeout"));
         test(spec, a("sub2", "subsub2", "-t", "0", "-u"),     4, 2, cur, l(""));
         test(spec, a("sub2", "subsub2", "-t", "0", "-u"),     5, 0, cur, timeUnitValues());
-        test(spec, a("sub2", "subsub2", "-t", "0", "-u", "M"),5, 1, cur, l("ICROSECONDS", "ILLISECONDS", "INUTES"));
+        test(spec, a("sub2", "subsub2", "-t", "0", "-u", "S"),5, 1, cur, l("ECONDS"));
         test(spec, a("sub2", "subsub2", "a"),                 2, 1, cur, l(""));
         test(spec, a("sub2", "subsub2", "a"),                 3, 0, cur, l("--timeUnit", "--timeout", "-t", "-u", "a", "b", "c"));
     }
