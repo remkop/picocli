@@ -40,15 +40,20 @@ class App {
     } 
 }
 ```
+
 If you run this class with an invalid option that is similar to an actual option, the `UnmatchedArgumentException.printSuggestions` method will show the actual options. For example:
+
 ```
 <cmd> -fi
 ```
+
 Prints this output:
+
 ```
 Unknown option: -fi
 Possible solutions: --file, --find
 ```
+
 This is the behaviour for the `CommandLine` convenience methods `run`, `call` and `parseWithHandlers`. 
 Note that if possible fixes are found, the usage help message is not displayed.
 
