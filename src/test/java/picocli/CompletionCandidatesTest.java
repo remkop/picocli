@@ -49,6 +49,11 @@ public class CompletionCandidatesTest {
     static class MyAbcdCandidates extends ArrayList<String> {
         MyAbcdCandidates() { super(Arrays.asList("A", "B", "C", "D")); }
     }
+
+    enum MyEfgEnum {
+                E, F, G
+    }
+
     private static List<String> extract(Iterable<String> generator) {
         List<String> result = new ArrayList<String>();
         for (String e : generator) {
@@ -57,24 +62,46 @@ public class CompletionCandidatesTest {
         return result;
     }
     @Test
-    public void testCompletionCandidatesClass_forOption() {
+    public void testCompletionCandidatesEnumValues_forOption() {
         class App {
-            @Option(names = "-x", completionCandidates = MyAbcdCandidates.class)
-            String x;
+            @Option(names = "-x")
+            MyEfgEnum x;
         }
         App app = new App();
         CommandLine cmd = new CommandLine(app);
-        assertEquals(MyAbcdCandidates.class, cmd.getCommandSpec().findOption("x").completionCandidates().getClass());
+        assertEquals(Arrays.asList("E", "F", "G"), cmd.getCommandSpec().findOption("x").completionCandidates());
     }
     @Test
-    public void testCompletionCandidatesClass_forParameters() {
+    public void testCompletionCandidatesEnumValues_forParameters() {
         class App {
-            @Parameters(completionCandidates = MyAbcdCandidates.class)
-            String x;
+            @Parameters
+            MyEfgEnum x;
         }
         App app = new App();
         CommandLine cmd = new CommandLine(app);
-        assertEquals(MyAbcdCandidates.class, cmd.getCommandSpec().positionalParameters().get(0).completionCandidates().getClass());
+        assertEquals(Arrays.asList("E", "F", "G"), cmd.getCommandSpec().positionalParameters().get(0).completionCandidates());
+    }
+    @Test
+    public void testCompletionCandidatesPriority_forOption() {
+
+        class App {
+            @Option(names = "-x", completionCandidates = MyAbcdCandidates.class)
+            MyEfgEnum x;
+        }
+        App app = new App();
+        CommandLine cmd = new CommandLine(app);
+        assertEquals(Arrays.asList("A", "B", "C", "D"), extract(cmd.getCommandSpec().findOption("x").completionCandidates()));
+    }
+    @Test
+    public void testCompletionCandidatesPriority_forParameters() {
+
+        class App {
+            @Parameters(completionCandidates = MyAbcdCandidates.class)
+            MyEfgEnum x;
+        }
+        App app = new App();
+        CommandLine cmd = new CommandLine(app);
+        assertEquals(Arrays.asList("A", "B", "C", "D"), cmd.getCommandSpec().positionalParameters().get(0).completionCandidates());
     }
     @Test
     public void testCompletionCandidatesValues_forOption() {
