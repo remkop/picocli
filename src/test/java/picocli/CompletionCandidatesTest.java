@@ -90,7 +90,7 @@ public class CompletionCandidatesTest {
         }
         App app = new App();
         CommandLine cmd = new CommandLine(app);
-        assertEquals(Arrays.asList("A", "B", "C", "D"), extract(cmd.getCommandSpec().findOption("x").completionCandidates()));
+        assertEquals(Arrays.asList("A", "B", "C", "D"), cmd.getCommandSpec().findOption("x").completionCandidates());
     }
     @Test
     public void testCompletionCandidatesPriority_forParameters() {
