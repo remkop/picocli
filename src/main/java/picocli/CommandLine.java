@@ -3894,14 +3894,12 @@ public class CommandLine {
             public String[] renderedDescription()  {
                 if (description == null || description.length == 0) { return description; }
                 StringBuilder candidates = new StringBuilder();
-                if (completionCandidates != null) {
-                    for (String candidate : completionCandidates) {
+                final Iterable<String> resolvedCompletionCandidates = completionCandidates();
+                if (resolvedCompletionCandidates != null) {
+                    for (String candidate : resolvedCompletionCandidates) {
                         if (candidates.length() > 0) { candidates.append(", "); }
                         candidates.append(candidate);
                     }
-                } else if (type != null && type.isEnum()) {
-                    candidates.append(Arrays.asList(type.getEnumConstants()));
-                    candidates.delete(0, 1).setLength(candidates.length() - 1);
                 }
                 String defaultValueString = defaultValueString = String.valueOf(defaultValue != null ? defaultValue : initialValue);
                 String[] result = new String[description.length];
@@ -3955,11 +3953,29 @@ public class CommandLine {
             /** Returns whether this option or positional parameter's default value should be shown in the usage help. */
             public Help.Visibility showDefaultValue() { return showDefaultValue; }
 
-            /** Returns the completion candidates for this option or positional parameter, or {@code null} if this option
-             * or positional parameter does not have any completion candidates.
-             * @return the completion candidates for this option or positional parameter, or {@code null}
+            /** Returns the explicitly set completion candidates for this option or positional parameter, valid enum
+             * constant names, or {@code null} if this option or positional parameter does not have any completion
+             * candidates and its type is not an enum.
+             * @return the completion candidates for this option or positional parameter, valid enum constant names,
+             * or {@code null}
              * @since 3.2 */
-            public Iterable<String> completionCandidates() { return completionCandidates; }
+            public Iterable<String> completionCandidates() {
+                if (completionCandidates != null) {
+                    final List<String> ret = new LinkedList<String>();
+                    for (String completionCandidate : completionCandidates) {
+                        ret.add(completionCandidate);
+                    }
+                    return ret;
+                } else if (type != null && type.isEnum()) {
+                    final List<String> ret = new LinkedList<String>();
+
+                    for (Object enumConstant : type.getEnumConstants()) {
+                        ret.add(enumConstant.toString());
+                    }
+                    return ret;
+                }
+                return null;
+            }
 
             /** Returns the {@link IGetter} that is responsible for supplying the value of this argument. */
             public IGetter getter()        { return getter; }
