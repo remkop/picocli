@@ -258,7 +258,7 @@ public class CommandLine {
         for (Method method : getCommand().getClass().getDeclaredMethods()) {
             Command[] annotations = method.getAnnotationsByType(Command.class);
             if (annotations != null && annotations.length > 0) {
-                addSubcommand(annotations[0].name(), method);
+                addSubcommand((empty(annotations[0].name()) || "<main class>".equals(annotations[0].name())) ? method.getName() : annotations[0].name(), method);
             }
         }
         return this;
@@ -900,8 +900,11 @@ public class CommandLine {
                     // invoke static method
                     executionResult.add(((Method) command).invoke(null, parsed.getCommandSpec().argValues()));
                     return executionResult;
+                } else if (parsed.getCommandSpec().parent() != null) {
+                    executionResult.add(((Method) command).invoke(parsed.getCommandSpec().parent().userObject(), parsed.getCommandSpec().argValues()));
+                    return executionResult;
                 } else {
-                    // TODO: allow ITypeConverter's to provide an instance
+                    // TODO: allow ITypeConverter's to provide an instance?
                     for (Constructor<?> constructor : ((Method) command).getDeclaringClass().getDeclaredConstructors()) {
                         if (constructor.getParameterTypes().length == 0) {
                             executionResult.add(((Method) command).invoke(constructor.newInstance(), parsed.getCommandSpec().argValues()));
