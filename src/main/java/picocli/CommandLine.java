@@ -246,6 +246,23 @@ public class CommandLine {
         CommandLine.Model.CommandReflection.initParentCommand(subcommandLine.getCommandSpec().userObject(), getCommandSpec().userObject());
         return this;
     }
+    /** Registers any class method(s) annotated with {@code @Command} as subcommands. See also {@link #addSubcommand(String, Object)}.
+    *
+    * @return this CommandLine object, to allow method chaining
+    * @see #addSubcommand(String, Object)
+    */
+    public CommandLine addMethodSubcommands() {
+        if (getCommand() instanceof Method) {
+             throw new UnsupportedOperationException("cannot discover methods of non-class: " + getCommand());
+        }
+        for (Method method : getCommand().getClass().getDeclaredMethods()) {
+            Command[] annotations = method.getAnnotationsByType(Command.class);
+            if (annotations != null && annotations.length > 0) {
+                addSubcommand(annotations[0].name(), method);
+            }
+        }
+        return this;
+    }
     /** Returns a map with the subcommands {@linkplain #addSubcommand(String, Object) registered} on this instance.
      * @return a map with the registered subcommands
      * @since 0.9.7
@@ -877,8 +894,31 @@ public class CommandLine {
             } catch (Exception ex) {
                 throw new ExecutionException(parsed, "Error while calling command (" + command + "): " + ex, ex);
             }
+        } else if (command instanceof Method) {
+            try {
+                if (Modifier.isStatic(((Method) command).getModifiers())) {
+                    // invoke static method
+                    executionResult.add(((Method) command).invoke(null, parsed.getCommandSpec().argValues()));
+                    return executionResult;
+                } else {
+                    // TODO: allow ITypeConverter's to provide an instance
+                    for (Constructor<?> constructor : ((Method) command).getDeclaringClass().getDeclaredConstructors()) {
+                        if (constructor.getParameterTypes().length == 0) {
+                            executionResult.add(((Method) command).invoke(constructor.newInstance(), parsed.getCommandSpec().argValues()));
+                            return executionResult;
+                        }
+                    }
+                    throw new UnsupportedOperationException("Invoking non-static method without default c'tor not implemented");
+                }
+            } catch (ParameterException ex) {
+                throw ex;
+            } catch (ExecutionException ex) {
+                throw ex;
+            } catch (Exception ex) {
+                throw new ExecutionException(parsed, "Error while calling command (" + command + "): " + ex, ex);
+            }
         }
-        throw new ExecutionException(parsed, "Parsed command (" + command + ") is not Runnable or Callable");
+        throw new ExecutionException(parsed, "Parsed command (" + command + ") is not Method, Runnable or Callable");
     }
     /** Command line parse result handler that returns a value. This handler prints help if requested, and otherwise calls
      * {@link #handle(CommandLine.ParseResult)} with the parse result. Facilitates implementation of the {@link IParseResultHandler2} interface.
@@ -1747,6 +1787,20 @@ public class CommandLine {
         cmd.parseWithHandlers(new RunLast().useOut(out).useAnsi(ansi), new DefaultExceptionHandler<List<Object>>().useErr(err).useAnsi(ansi), args);
     }
 
+    public static void run(Method method, String... args) {
+        run(method, System.out, System.err, Help.Ansi.AUTO, args);
+    }
+    public static void run(Method method, PrintStream out, String... args) {
+        run(method, out, System.err, Help.Ansi.AUTO, args);
+    }
+    public static void run(Method method, PrintStream out, Help.Ansi ansi, String... args) {
+        run(method, out, System.err, ansi, args);
+    }
+    public static void run(Method method, PrintStream out, PrintStream err, Help.Ansi ansi, String... args) {
+        CommandLine cmd = new CommandLine(method);
+        cmd.parseWithHandlers(new RunLast().useOut(out).useAnsi(ansi), new DefaultExceptionHandler<List<Object>>().useErr(err).useAnsi(ansi), args);
+    }
+
     /**
      * Registers the specified type converter for the specified class. When initializing fields annotated with
      * {@link Option}, the field's type is used as a lookup key to find the associated type converter, and this
@@ -1914,7 +1968,7 @@ public class CommandLine {
      * </p>
      */
     @Retention(RetentionPolicy.RUNTIME)
-    @Target({ElementType.FIELD, ElementType.METHOD})
+    @Target({ElementType.FIELD, ElementType.METHOD, ElementType.PARAMETER})
     public @interface Option {
         /**
          * One or more option names. At least one option name is required.
@@ -2216,7 +2270,7 @@ public class CommandLine {
      * is thrown.</p>
      */
     @Retention(RetentionPolicy.RUNTIME)
-    @Target({ElementType.FIELD, ElementType.METHOD})
+    @Target({ElementType.FIELD, ElementType.METHOD, ElementType.PARAMETER})
     public @interface Parameters {
         /** Specify an index ("0", or "1", etc.) to pick which of the command line arguments should be assigned to this
          * field. For array or Collection fields, you can also specify an index range ("0..3", or "2..*", etc.) to assign
@@ -2477,7 +2531,7 @@ public class CommandLine {
      *   <li>[footer]</li>
      * </ul> */
     @Retention(RetentionPolicy.RUNTIME)
-    @Target({ElementType.TYPE, ElementType.LOCAL_VARIABLE, ElementType.FIELD, ElementType.PACKAGE})
+    @Target({ElementType.TYPE, ElementType.LOCAL_VARIABLE, ElementType.FIELD, ElementType.PACKAGE, ElementType.METHOD})
     public @interface Command {
         /** Program name to show in the synopsis. If omitted, {@code "<main class>"} is used.
          * For {@linkplain #subcommands() declaratively added} subcommands, this attribute is also used
@@ -2809,6 +2863,8 @@ public class CommandLine {
         private static Range parameterArity(TypedMember member) {
             return member.isAnnotationPresent(Parameters.class)
                     ? adjustForType(Range.valueOf(member.getAnnotation(Parameters.class).arity()), member)
+                    : member.isMethodParameter()
+                    ? adjustForType(Range.valueOf(""), member)
                     : new Range(0, 0, false, true, "0");
         }
         /** Returns a new {@code Range} based on the {@link Parameters#index()} annotation on the specified field.
@@ -3013,6 +3069,7 @@ public class CommandLine {
             private final Map<Character, OptionSpec> posixOptionsByKeyMap = new LinkedHashMap<Character, OptionSpec>();
             private final Map<String, CommandSpec> mixins = new LinkedHashMap<String, CommandSpec>();
             private final List<ArgSpec> requiredArgs = new ArrayList<ArgSpec>();
+            private final List<ArgSpec> args = new ArrayList<ArgSpec>();
             private final List<OptionSpec> options = new ArrayList<OptionSpec>();
             private final List<PositionalParamSpec> positionalParameters = new ArrayList<PositionalParamSpec>();
             private final List<UnmatchedArgsBinding> unmatchedArgs = new ArrayList<UnmatchedArgsBinding>();
@@ -3172,6 +3229,7 @@ public class CommandLine {
              * @return this CommandSpec for method chaining
              * @throws DuplicateOptionAnnotationsException if any of the names of the specified option is the same as the name of another option */
             public CommandSpec addOption(OptionSpec option) {
+                args.add(option);
                 options.add(option);
                 for (String name : option.names()) { // cannot be null or empty
                     OptionSpec existing = optionsByNameMap.put(name, option);
@@ -3187,6 +3245,7 @@ public class CommandLine {
              * @param positional the positional parameter spec to add
              * @return this CommandSpec for method chaining */
             public CommandSpec addPositional(PositionalParamSpec positional) {
+                args.add(positional);
                 positionalParameters.add(positional);
                 if (positional.required()) { requiredArgs.add(positional); }
                 return this;
@@ -3270,6 +3329,15 @@ public class CommandLine {
             /** Returns the alias command names of this subcommand.
              * @since 3.1 */
             public String[] aliases() { return aliases.clone(); }
+
+            /** Returns the list of all options and positional parameters configured for this command.
+             * @return an immutable list of all options and positional parameters for this command. */
+            public List<ArgSpec> args() { return Collections.unmodifiableList(args); }
+            public Object[] argValues() {
+                Object[] values = new Object[args.size()];
+                for (int i = 0; i < values.length; i++) { values[i] = args.get(i).getValue(); }
+                return values;
+            }
 
             /** Returns the String to use as the program name in the synopsis line of the help message:
              * this command's {@link #name() name}, preceded by the qualified name of the parent command, if any.
@@ -4554,7 +4622,7 @@ public class CommandLine {
             }
         }
         static class TypedMember {
-            final AccessibleObject accessible;
+            final AnnotatedElement accessible;
             final String name;
             final Class<?> type;
             final Type genericType;
@@ -4563,7 +4631,7 @@ public class CommandLine {
             private ISetter setter;
             TypedMember(Field field) {
                 accessible = Assert.notNull(field, "field");
-                accessible.setAccessible(true);
+                field.setAccessible(true);
                 name = field.getName();
                 type = field.getType();
                 genericType = field.getGenericType();
@@ -4585,7 +4653,7 @@ public class CommandLine {
             }
             private TypedMember(Method method, Object scope) {
                 accessible = Assert.notNull(method, "method");
-                accessible.setAccessible(true);
+                method.setAccessible(true);
                 name = propertyName(method.getName());
                 Class<?>[] parameterTypes = method.getParameterTypes();
                 boolean isGetter = parameterTypes.length == 0 && method.getReturnType() != Void.TYPE && method.getReturnType() != Void.class;
@@ -4625,8 +4693,20 @@ public class CommandLine {
                     getter = binding; setter = binding;
                 }
             }
+            private TypedMember(Parameter param, Object scope) {
+                accessible = Assert.notNull(param, "command method parameter");
+                Assert.notNull(param.getDeclaringExecutable(), "command method").setAccessible(true);
+                name = param.getName();
+                type = param.getType();
+                genericType = param.getParameterizedType();
+                hasInitialValue = false;
+
+                // bind parameter
+                ObjectBinding binding = new ObjectBinding();
+                getter = binding; setter = binding;
+            }
             static boolean isAnnotated(AnnotatedElement e) {
-                return e.isAnnotationPresent(Command.class)
+                return false 
                         || e.isAnnotationPresent(Option.class)
                         || e.isAnnotationPresent(Parameters.class)
                         || e.isAnnotationPresent(Unmatched.class)
@@ -4637,7 +4717,7 @@ public class CommandLine {
             boolean isAnnotationPresent(Class<? extends Annotation> annotationClass) { return accessible.isAnnotationPresent(annotationClass); }
             <T extends Annotation> T getAnnotation(Class<T> annotationClass) { return accessible.getAnnotation(annotationClass); }
             String name()            { return name; }
-            boolean isArgSpec()      { return isOption() || isParameter(); }
+            boolean isArgSpec()      { return isOption() || isParameter() || isMethodParameter(); }
             boolean isOption()       { return isAnnotationPresent(Option.class); }
             boolean isParameter()    { return isAnnotationPresent(Parameters.class); }
             boolean isMixin()        { return isAnnotationPresent(Mixin.class); }
@@ -4649,7 +4729,8 @@ public class CommandLine {
             Class<?> getType()       { return type; }
             Type getGenericType()    { return genericType; }
             public String toString() { return accessible.toString(); }
-            String toGenericString() { return accessible instanceof Field ? ((Field) accessible).toGenericString() : ((Method) accessible).toGenericString(); }
+            String toGenericString() { return accessible instanceof Field ? ((Field) accessible).toGenericString() : accessible instanceof Method ? ((Method) accessible).toGenericString() : ((Parameter)accessible).toString(); }
+            boolean isMethodParameter() { return accessible instanceof Parameter; }
             String mixinName()    {
                 String annotationName = getAnnotation(Mixin.class).name();
                 return empty(annotationName) ? name() : annotationName;
@@ -4691,6 +4772,8 @@ public class CommandLine {
                             throw ex;
                         }
                     }
+                } else if (command instanceof Method) {
+                    cls = null;
                 }
 
                 CommandSpec result = CommandSpec.wrapWithoutInspection(Assert.notNull(instance, "command"));
@@ -4705,6 +4788,13 @@ public class CommandLine {
                     }
                     cls = cls.getSuperclass();
                 }
+                if (command instanceof Method) {
+                    Method method = (Method) command;
+                    t.debug("Using method %s as command %n", method);
+                    commandClassName = method.toString();
+                    hasCommandAnnotation |= updateCommandAttributes(method, result, factory);
+                    initFromMethodParameters(instance, method, result, factory);
+                }
                 if (annotationsAreMandatory) {validateCommandSpec(result, hasCommandAnnotation, commandClassName); }
                 result.withToString(commandClassName).validate();
                 return result;
@@ -4715,6 +4805,13 @@ public class CommandLine {
                 if (!cls.isAnnotationPresent(Command.class)) { return false; }
 
                 Command cmd = cls.getAnnotation(Command.class);
+                return updateCommandAttributes(cmd, commandSpec, factory);
+            }
+            private static boolean updateCommandAttributes(Method method, CommandSpec commandSpec, IFactory factory) {
+                Command cmd = method.getAnnotation(Command.class);
+                return updateCommandAttributes(cmd, commandSpec, factory);
+            }
+            private static boolean updateCommandAttributes(Command cmd, CommandSpec commandSpec, IFactory factory) {
                 commandSpec.aliases(cmd.aliases());
                 initSubcommands(cmd, commandSpec, factory);
 
@@ -4807,12 +4904,20 @@ public class CommandLine {
                 }
                 if (member.isArgSpec()) {
                     validateArgSpecField(member);
-                    if (member.isOption())    { receiver.addOption(ArgsReflection.extractOptionSpec(member, factory)); }
-                    if (member.isParameter()) { receiver.addPositional(ArgsReflection.extractPositionalParamSpec(member, factory)); }
+                    if (member.isOption())         { receiver.addOption(ArgsReflection.extractOptionSpec(member, factory)); }
+                    else if (member.isParameter()) { receiver.addPositional(ArgsReflection.extractPositionalParamSpec(member, factory)); }
+                    else                           { receiver.addPositional(ArgsReflection.extractUnannotatedPositionalParamSpec(member, factory)); }
                 }
                 if (member.isInjectSpec()) {
                     validateInjectSpec(member);
                     try { member.setter().set(receiver); } catch (Exception ex) { throw new InitializationException("Could not inject spec", ex); }
+                }
+                return result;
+            }
+            private static boolean initFromMethodParameters(Object scope, Method method, CommandSpec receiver, IFactory factory) {
+                boolean result = false;
+                for (int i = 0; i < method.getParameterCount(); i++) {
+                    result |= initFromAnnotatedTypedMembers(new TypedMember(method.getParameters()[i], scope), receiver, factory);
                 }
                 return result;
             }
@@ -4915,7 +5020,7 @@ public class CommandLine {
                 }
 
                 builder.arity(Range.optionArity(member));
-                builder.required(option.required());
+                builder.required(option.required() || member.isMethodParameter());  // TODO: handle defaultValue?
                 builder.description(option.description());
                 Class<?>[] elementTypes = inferTypes(member.getType(), option.type(), member.getGenericType());
                 builder.auxiliaryTypes(elementTypes);
@@ -4950,9 +5055,29 @@ public class CommandLine {
                 }
                 return builder.build();
             }
+            static PositionalParamSpec extractUnannotatedPositionalParamSpec(TypedMember member, IFactory factory) {
+                PositionalParamSpec.Builder builder = PositionalParamSpec.builder();
+                initCommon(builder, member);
+                Range arity = Range.parameterArity(member);
+                builder.arity(arity);
+                builder.index(Range.parameterIndex(member));
+                builder.capacity(Range.parameterCapacity(member));
+                builder.required(arity.min > 0);
+
+                builder.description(new String[0]);
+                Class<?>[] elementTypes = inferTypes(member.getType(), new Class<?>[] {}, member.getGenericType());
+                builder.auxiliaryTypes(elementTypes);
+                builder.paramLabel(inferLabel(null, member.name(), member.getType(), elementTypes));
+                builder.splitRegex("");
+                builder.hidden(false);
+                builder.defaultValue(null);
+                builder.converters();
+                builder.showDefaultValue(Help.Visibility.ON_DEMAND);
+                return builder.build();
+            }
             private static void initCommon(ArgSpec.Builder<?> builder, TypedMember member) {
                 builder.type(member.getType());
-                builder.withToString((member.accessible instanceof Field ? "field " : "method ") + abbreviate(member.toGenericString()));
+                builder.withToString((member.accessible instanceof Field ? "field " : member.accessible instanceof Method ? "method " : member.accessible.getClass().getSimpleName() + " ") + abbreviate(member.toGenericString()));
 
                 builder.getter(member.getter()).setter(member.setter());
                 builder.hasInitialValue(member.hasInitialValue);

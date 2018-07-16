@@ -24,6 +24,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.math.BigDecimal;
 import java.net.InetAddress;
 import java.net.Socket;
@@ -4111,4 +4112,84 @@ public class CommandLineTest {
         assertTrue(actual, actual.contains("Usage:"));
         assertFalse(actual, actual.contains("Possible solutions:"));
     }
+
+    @Command(name="method")
+    static class MethodApp {
+        static final int[] data = {-1};
+
+        @Command(name="run-0")
+        void run0() {}
+
+        @Command(name="run-1")
+        void run1(int a) {
+            data[0] = a;
+        }
+        @Command(name="run-2")
+        void run2(int a, @Option(names="-b") int b) {
+            data[0] = a*b;
+        }
+    }
+    @Test
+    public void testAnnotateMethod_noArg() throws Exception {
+        setTraceLevel("OFF");
+        Method m = MethodApp.class.getDeclaredMethod("run0", new Class<?>[] {});
+        CommandLine cmd1 = new CommandLine(m);
+        assertEquals("run-0", cmd1.getCommandName());
+        assertEquals(Arrays.asList(), cmd1.getCommandSpec().args());
+
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        cmd1.parseWithHandler(((IParseResultHandler)null), new PrintStream(baos), new String[]{"--y"});
+        assertEquals(Arrays.asList("--y"), cmd1.getUnmatchedArguments());
+        setTraceLevel("WARN");
+    }
+    @Test
+    public void testAnnotateMethod_unannotatedPositional() throws Exception {
+        Method m = MethodApp.class.getDeclaredMethod("run1", new Class<?>[] {int.class});
+
+        // test required
+        try {
+            CommandLine.populateCommand(m);
+            fail("Missing required field should have thrown exception");
+        } catch (MissingParameterException ex) {
+            assertEquals("Missing required parameter: <arg0>", ex.getMessage());
+        }
+
+        // test execute
+        MethodApp.data[0] = -1;
+        CommandLine.run(m, new PrintStream(new ByteArrayOutputStream()), "42");
+        assertEquals(42, MethodApp.data[0]);
+    }
+
+    @Test
+    public void testAnnotateMethod_annotated() throws Exception {
+        Method m = MethodApp.class.getDeclaredMethod("run2", new Class<?>[] {int.class, int.class});
+
+        // test required
+        try {
+            CommandLine.populateCommand(m, "0");
+            fail("Missing required option should have thrown exception");
+        } catch (MissingParameterException ex) {
+            assertEquals("Missing required option '-b=<arg1>'", ex.getMessage());
+        }
+
+        // test execute
+        MethodApp.data[0] = -1;
+        CommandLine.run(m, new PrintStream(new ByteArrayOutputStream()), "13", "-b", "-1");
+        assertEquals(-13, MethodApp.data[0]);
+    }
+
+    @Test
+    public void testAnnotateMethod_addMethodSubcommands() throws Exception {
+
+        CommandLine cmd = new CommandLine(MethodApp.class);
+        assertEquals("method", cmd.getCommandName());
+        assertEquals(0, cmd.getSubcommands().size());
+
+        cmd.addMethodSubcommands();
+        assertEquals(3, cmd.getSubcommands().size());
+        assertEquals(0, cmd.getSubcommands().get("run-0").getCommandSpec().args().size());
+        assertEquals(1, cmd.getSubcommands().get("run-1").getCommandSpec().args().size());
+        assertEquals(2, cmd.getSubcommands().get("run-2").getCommandSpec().args().size());
+    }
+
 }
