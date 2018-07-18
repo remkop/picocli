@@ -5,7 +5,7 @@
 # Pass the name of this command script when generating the autocompletion function.
 #
 # For example:
-# $ java -jar picocli-1.0.0.jar -n picocompletion-demo 'picocli.AutoCompleteTest$TopLevel'
+# $ java -jar picocli-1.0.0.jar -n picocompletion-demo.bash 'picocli.AutoCompleteTest$TopLevel'
 
 LIBS=`cygpath -w "/cygdrive/c/Users/remko/IdeaProjects/pico-cli/build/libs"`
 VERSION=1.0.0-SNAPSHOT

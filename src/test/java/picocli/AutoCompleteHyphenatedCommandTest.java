@@ -13,7 +13,7 @@ public class AutoCompleteHyphenatedCommandTest {
     @Test
     public void testCompletionScript() throws IOException {
         String actual = AutoComplete.bash("rcmd", new CommandLine(new HyphenatedCommand()));
-        String expected = format(AutoCompleteTest.loadTextFromClasspath("/hyphenated_completion"), CommandLine.VERSION);
+        String expected = format(AutoCompleteTest.loadTextFromClasspath("/hyphenated_completion.bash"), CommandLine.VERSION);
         assertEquals(expected, actual);
     }
 }

@@ -132,7 +132,7 @@ public class AutoCompleteTest {
                         .addSubcommand("subsub2", new Sub2Child2())
                 );
         String script = AutoComplete.bash("picocompletion-demo", hierarchy);
-        String expected = format(loadTextFromClasspath("/picocompletion-demo_completion"),
+        String expected = format(loadTextFromClasspath("/picocompletion-demo_completion.bash"),
                 CommandLine.VERSION, spaced(TimeUnit.values()));
         assertEquals(expected, script);
     }
