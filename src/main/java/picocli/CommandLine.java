@@ -256,9 +256,9 @@ public class CommandLine {
              throw new UnsupportedOperationException("cannot discover methods of non-class: " + getCommand());
         }
         for (Method method : getCommand().getClass().getDeclaredMethods()) {
-            Command[] annotations = method.getAnnotationsByType(Command.class);
-            if (annotations != null && annotations.length > 0) {
-                addSubcommand((empty(annotations[0].name()) || "<main class>".equals(annotations[0].name())) ? method.getName() : annotations[0].name(), method);
+            if (method.isAnnotationPresent(Command.class)) {
+                CommandLine cmd = new CommandLine(method);
+                addSubcommand(cmd.getCommandName(), cmd);
             }
         }
         return this;
@@ -4812,8 +4812,32 @@ public class CommandLine {
                 }
             }
         }
+        /** mock java.lang.reflect.Parameter (not available before Java 8) */
+        private static class Parameter extends AccessibleObject {
+            final Method method;
+            final int paramIndex;
+
+            public Parameter(Method method, int paramIndex) {
+                this.method = method;
+                this.paramIndex = paramIndex;
+            }
+            public Type getParameterizedType() { return method.getGenericParameterTypes()[paramIndex]; }
+            public String getName() { return "arg" + paramIndex; }
+            public Class<?> getType() { return method.getParameterTypes()[paramIndex]; }
+            public Method getDeclaringExecutable() { return method; }
+            @Override public <T extends Annotation> T getAnnotation(Class<T> annotationClass) {
+                for (Annotation annotation : getDeclaredAnnotations()) {
+                    if (annotationClass.isAssignableFrom(annotation.getClass())) { return annotationClass.cast(annotation); }
+                }
+                return null;
+            }
+            @Override public Annotation[] getDeclaredAnnotations() { return method.getParameterAnnotations()[paramIndex]; }
+            @Override public void setAccessible(boolean flag) throws SecurityException { method.setAccessible(flag); }
+            @Override public boolean isAccessible() throws SecurityException { return method.isAccessible(); }
+            @Override public String toString() { return method.toString() + ":" + getName(); }
+        }
         static class TypedMember {
-            final AnnotatedElement accessible;
+            final AccessibleObject accessible;
             final String name;
             final Class<?> type;
             final Type genericType;
@@ -4822,7 +4846,7 @@ public class CommandLine {
             private ISetter setter;
             TypedMember(Field field) {
                 accessible = Assert.notNull(field, "field");
-                field.setAccessible(true);
+                accessible.setAccessible(true);
                 name = field.getName();
                 type = field.getType();
                 genericType = field.getGenericType();
@@ -4844,7 +4868,7 @@ public class CommandLine {
             }
             private TypedMember(Method method, Object scope) {
                 accessible = Assert.notNull(method, "method");
-                method.setAccessible(true);
+                accessible.setAccessible(true);
                 name = propertyName(method.getName());
                 Class<?>[] parameterTypes = method.getParameterTypes();
                 boolean isGetter = parameterTypes.length == 0 && method.getReturnType() != Void.TYPE && method.getReturnType() != Void.class;
@@ -4886,15 +4910,30 @@ public class CommandLine {
             }
             private TypedMember(Parameter param, Object scope) {
                 accessible = Assert.notNull(param, "command method parameter");
-                Assert.notNull(param.getDeclaringExecutable(), "command method").setAccessible(true);
+                accessible.setAccessible(true);
                 name = param.getName();
                 type = param.getType();
                 genericType = param.getParameterizedType();
-                hasInitialValue = false;
 
                 // bind parameter
                 ObjectBinding binding = new ObjectBinding();
                 getter = binding; setter = binding;
+
+                // initial value
+                boolean initialized = true;
+                try {
+                    if      (type == Boolean.TYPE || type == Boolean.class) { setter.set(false); }
+                    else if (type == Byte.TYPE    || type == Byte.class)    { setter.set(Byte.valueOf((byte) 0)); }
+                    else if (type == Short.TYPE   || type == Short.class)   { setter.set(Short.valueOf((short) 0)); }
+                    else if (type == Integer.TYPE || type == Integer.class) { setter.set(Integer.valueOf(0)); }
+                    else if (type == Long.TYPE    || type == Long.class)    { setter.set(Long.valueOf(0L)); }
+                    else if (type == Float.TYPE   || type == Float.class)   { setter.set(Float.valueOf(0f)); }
+                    else if (type == Double.TYPE  || type == Double.class)  { setter.set(Double.valueOf(0d)); }
+                    else { initialized = false; }
+                } catch (Exception ex) {
+                    throw new InitializationException("Could not set initial value for " + param + ": " + ex.toString(), ex);
+                }
+                hasInitialValue = initialized;
             }
             static boolean isAnnotated(AnnotatedElement e) {
                 return false
@@ -4964,16 +5003,22 @@ public class CommandLine {
                         }
                     }
                 } else if (command instanceof Method) {
-                    cls = null;
+                    cls = ((Method) command).getDeclaringClass();
                 }
 
                 CommandSpec result = CommandSpec.wrapWithoutInspection(Assert.notNull(instance, "command"));
 
                 boolean hasCommandAnnotation = false;
                 while (cls != null) {
-                    boolean thisCommandHasAnnotation = updateCommandAttributes(cls, result, factory);
-                    hasCommandAnnotation |= thisCommandHasAnnotation;
-                    hasCommandAnnotation |= initFromAnnotatedFields(instance, cls, result, factory);
+                    final boolean thisCommandHasAnnotation;
+                    if (command instanceof Method) {
+                        // only get mixins from method's defining class, not subcommands, etc.
+                        thisCommandHasAnnotation = cls.isAnnotationPresent(Command.class);
+                    } else {
+                        thisCommandHasAnnotation = updateCommandAttributes(cls, result, factory);
+                        hasCommandAnnotation |= thisCommandHasAnnotation;
+                        hasCommandAnnotation |= initFromAnnotatedFields(instance, cls, result, factory);
+                    }
                     if (thisCommandHasAnnotation) { //#377 Standard help options should be added last
                         result.mixinStandardHelpOptions(cls.getAnnotation(Command.class).mixinStandardHelpOptions());
                     }
@@ -4985,6 +5030,8 @@ public class CommandLine {
                     commandClassName = method.toString();
                     hasCommandAnnotation |= updateCommandAttributes(method, result, factory);
                     initFromMethodParameters(instance, method, result, factory);
+                    // set command name to method name, unless @Command#name is set
+                    result.initName(((Method)command).getName());
                 }
                 if (annotationsAreMandatory) {validateCommandSpec(result, hasCommandAnnotation, commandClassName); }
                 result.withToString(commandClassName).validate();
@@ -5107,8 +5154,8 @@ public class CommandLine {
             }
             private static boolean initFromMethodParameters(Object scope, Method method, CommandSpec receiver, IFactory factory) {
                 boolean result = false;
-                for (int i = 0; i < method.getParameterCount(); i++) {
-                    result |= initFromAnnotatedTypedMembers(new TypedMember(method.getParameters()[i], scope), receiver, factory);
+                for (int i = 0; i < method.getParameterTypes().length; i++) {
+                    result |= initFromAnnotatedTypedMembers(new TypedMember(new Parameter(method, i), scope), receiver, factory);
                 }
                 return result;
             }
@@ -5211,7 +5258,7 @@ public class CommandLine {
                 }
 
                 builder.arity(Range.optionArity(member));
-                builder.required(option.required() || member.isMethodParameter());  // TODO: handle defaultValue?
+                builder.required(option.required());
                 builder.interactive(option.interactive());
                 builder.description(option.description());
                 Class<?>[] elementTypes = inferTypes(member.getType(), option.type(), member.getGenericType());
