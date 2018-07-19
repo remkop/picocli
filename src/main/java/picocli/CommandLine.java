@@ -3830,7 +3830,6 @@ public class CommandLine {
                 paramLabel = empty(builder.paramLabel) ? "PARAM" : builder.paramLabel;
                 converters = builder.converters == null ? new ITypeConverter<?>[0] : builder.converters;
                 showDefaultValue = builder.showDefaultValue == null ? Help.Visibility.ON_DEMAND : builder.showDefaultValue;
-                completionCandidates = builder.completionCandidates;
                 hidden = builder.hidden;
                 required = builder.required && builder.defaultValue == null; //#261 not required if it has a default
                 defaultValue = builder.defaultValue;
@@ -3878,6 +3877,13 @@ public class CommandLine {
                 } else {
                     auxiliaryTypes = builder.auxiliaryTypes;
                 }
+                if (builder.completionCandidates == null && type.isEnum()) {
+                    List<String> list = new ArrayList<String>();
+                    for (Object c : type.getEnumConstants()) { list.add(c.toString()); }
+                    completionCandidates = Collections.unmodifiableList(list);
+                } else {
+                    completionCandidates = builder.completionCandidates;
+                }
             }
 
             /** Returns whether this is a required option or positional parameter.
@@ -3894,11 +3900,10 @@ public class CommandLine {
             public String[] renderedDescription()  {
                 if (description == null || description.length == 0) { return description; }
                 StringBuilder candidates = new StringBuilder();
-                final Iterable<String> resolvedCompletionCandidates = completionCandidates();
-                if (resolvedCompletionCandidates != null) {
-                    for (String candidate : resolvedCompletionCandidates) {
+                if (completionCandidates() != null) {
+                    for (String c : completionCandidates()) {
                         if (candidates.length() > 0) { candidates.append(", "); }
-                        candidates.append(candidate);
+                        candidates.append(c);
                     }
                 }
                 String defaultValueString = defaultValueString = String.valueOf(defaultValue != null ? defaultValue : initialValue);
@@ -3959,23 +3964,7 @@ public class CommandLine {
              * @return the completion candidates for this option or positional parameter, valid enum constant names,
              * or {@code null}
              * @since 3.2 */
-            public Iterable<String> completionCandidates() {
-                if (completionCandidates != null) {
-                    final List<String> ret = new LinkedList<String>();
-                    for (String completionCandidate : completionCandidates) {
-                        ret.add(completionCandidate);
-                    }
-                    return ret;
-                } else if (type != null && type.isEnum()) {
-                    final List<String> ret = new LinkedList<String>();
-
-                    for (Object enumConstant : type.getEnumConstants()) {
-                        ret.add(enumConstant.toString());
-                    }
-                    return ret;
-                }
-                return null;
-            }
+            public Iterable<String> completionCandidates() { return completionCandidates; }
 
             /** Returns the {@link IGetter} that is responsible for supplying the value of this argument. */
             public IGetter getter()        { return getter; }
