@@ -228,13 +228,19 @@ public class AutoComplete {
             "# Installation\n" +
             "# ------------\n" +
             "#\n" +
-            "# 1. Place this file in a `bash-completion.d` folder:\n" +
+            "# 1. Source all completion scripts in your .bash_profile\n" +
+            "#\n" +
+            "#   cd $YOUR_APP_HOME/bin\n" +
+            "#   for f in $(find . -name \"*_completion\"); do line=\". $(pwd)/$f\"; grep \"$line\" ~/.bash_profile || echo \"$line\" >> ~/.bash_profile; done\n" +
+            "#\n" +
+            "# 2. Open a new bash console, and type `%1$s [TAB][TAB]`\n" +
+            "#\n" +
+            "# 1a. Alternatively, if you have [bash-completion](https://github.com/scop/bash-completion) installed:\n" +
+            "#     Place this file in a `bash-completion.d` folder:\n" +
             "#\n" +
             "#   * /etc/bash-completion.d\n" +
             "#   * /usr/local/etc/bash-completion.d\n" +
             "#   * ~/bash-completion.d\n" +
-            "#\n" +
-            "# 2. Open a new bash console, and type `%1$s [TAB][TAB]`\n" +
             "#\n" +
             "# Documentation\n" +
             "# -------------\n" +
