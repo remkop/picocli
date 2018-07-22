@@ -25,6 +25,7 @@ No features have been promoted in this picocli release.
 ## <a name="3.3.1-fixes"></a> Fixed issues
 - [#412] Enhancement: Enum constant names are now returned from `ArgSpec::completionCandidates()`. Thanks to [Radovan Panák](https://github.com/rpanak).
 - [#417] Enhancement: Ensure bash scripts have correct line separators. Thanks to [Holger Stenger](https://github.com/stengerh).
+- [#418] Doc: Improve installation instructions for autocompletion scripts.
 
 ## <a name="3.3.1-deprecated"></a> Deprecations
 No features were deprecated in this release.
