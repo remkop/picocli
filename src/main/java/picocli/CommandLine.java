@@ -3906,7 +3906,7 @@ public class CommandLine {
                         candidates.append(c);
                     }
                 }
-                String defaultValueString = defaultValueString = String.valueOf(defaultValue != null ? defaultValue : initialValue);
+                String defaultValueString = defaultValueString();
                 String[] result = new String[description.length];
                 for (int i = 0; i < description.length; i++) {
                     result[i] = String.format(description[i].replace(DESCRIPTION_VARIABLE_DEFAULT_VALUE, defaultValueString)
@@ -3957,6 +3957,19 @@ public class CommandLine {
     
             /** Returns whether this option or positional parameter's default value should be shown in the usage help. */
             public Help.Visibility showDefaultValue() { return showDefaultValue; }
+
+            /** Returns the default value String displayed in the description. */
+            public String defaultValueString() {
+                Object value = defaultValue() == null ? initialValue() : defaultValue();
+                if (value != null && value.getClass().isArray()) {
+                    StringBuilder sb = new StringBuilder();
+                    for (int i = 0; i < Array.getLength(value); i++) {
+                        sb.append(i > 0 ? ", " : "").append(Array.get(value, i));
+                    }
+                    return sb.insert(0, "[").append("]").toString();
+                }
+                return String.valueOf(value);
+            }
 
             /** Returns the explicitly set completion candidates for this option or positional parameter, valid enum
              * constant names, or {@code null} if this option or positional parameter does not have any completion
@@ -7421,23 +7434,14 @@ public class CommandLine {
 
         private static void addTrailingDefaultLine(List<Text[]> result, ArgSpec arg, ColorScheme scheme) {
             Text EMPTY = Ansi.EMPTY_TEXT;
-            Object defaultValue = arg.defaultValue() == null ? arg.initialValue() : arg.defaultValue();
-            if (defaultValue != null && defaultValue.getClass().isArray()) {
-                StringBuilder sb = new StringBuilder();
-                for (int i = 0; i < Array.getLength(defaultValue); i++) {
-                    sb.append(i > 0 ? ", " : "").append(Array.get(defaultValue, i));
-                }
-                defaultValue = sb.insert(0, "[").append("]").toString();
-            }
-            result.add(new Text[]{EMPTY, EMPTY, EMPTY, EMPTY, scheme.ansi().new Text("  Default: " + defaultValue)});
+            result.add(new Text[]{EMPTY, EMPTY, EMPTY, EMPTY, scheme.ansi().new Text("  Default: " + arg.defaultValueString())});
         }
 
         private static Text[] createDescriptionFirstLines(ColorScheme scheme, ArgSpec arg, String[] description, boolean[] showDefault) {
             Text[] result = scheme.ansi().new Text(str(description, 0)).splitLines();
             if (result.length == 0 || (result.length == 1 && result[0].plain.length() == 0)) {
                 if (showDefault[0]) {
-                    Object defaultValue = arg.defaultValue() == null ? arg.initialValue() : arg.defaultValue();
-                    result = new Text[]{scheme.ansi().new Text("  Default: " + defaultValue)};
+                    result = new Text[]{scheme.ansi().new Text("  Default: " + arg.defaultValueString())};
                     showDefault[0] = false; // don't show the default value twice
                 } else {
                     result = new Text[]{ Ansi.EMPTY_TEXT };

@@ -291,7 +291,21 @@ public class CommandLineHelpTest {
                 "  -y, --other=<other>   the other%n" +
                 "                          Default: null%n"), result);
     }
-
+    @Test
+    public void testCommandShowDefaultValuesVariableForArrayField() {
+        @Command
+        class Params {
+            @Option(names = {"-x", "--array"}, required = true, description = "null array: Default: ${DEFAULT-VALUE}")
+            int[] nil;
+            @Option(names = {"-y", "--other"}, required = true, description = "non-null: Default: ${DEFAULT-VALUE}")
+            int[] other = {1, 5, 11, 23};
+        }
+        String result = usageString(new Params(), Help.Ansi.OFF);
+        assertEquals(format("" +
+                "Usage: <main class> -x=<nil> [-x=<nil>]... -y=<other> [-y=<other>]...%n" +
+                "  -x, --array=<nil>     null array: Default: null%n" +
+                "  -y, --other=<other>   non-null: Default: [1, 5, 11, 23]%n"), result);
+    }
     @Test
     public void testOptionSpec_defaultValue_overwritesInitialValue() {
         @Command(showDefaultValues = true)
