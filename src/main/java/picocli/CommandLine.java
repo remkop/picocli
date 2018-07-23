@@ -255,11 +255,9 @@ public class CommandLine {
         if (getCommand() instanceof Method) {
              throw new UnsupportedOperationException("cannot discover methods of non-class: " + getCommand());
         }
-        for (Method method : getCommand().getClass().getDeclaredMethods()) {
-            if (method.isAnnotationPresent(Command.class)) {
-                CommandLine cmd = new CommandLine(method);
-                addSubcommand(cmd.getCommandName(), cmd);
-            }
+        for (Method method : getCommandMethods(getCommand().getClass(), null).keySet()) {
+            CommandLine cmd = new CommandLine(method);
+            addSubcommand(cmd.getCommandName(), cmd);
         }
         return this;
     }
@@ -1862,21 +1860,51 @@ public class CommandLine {
         cmd.parseWithHandlers(new RunLast().useOut(out).useAnsi(ansi), new DefaultExceptionHandler<List<Object>>().useErr(err).useAnsi(ansi), args);
     }
 
-    public static void run(Method method, String... args) {
-        run(method, System.out, System.err, Help.Ansi.AUTO, args);
+    public static Object invoke(String methodName, Class<?> cls, String... args) {
+        return invoke(methodName, cls, System.out, System.err, Help.Ansi.AUTO, args);
     }
-    public static void run(Method method, PrintStream out, String... args) {
-        run(method, out, System.err, Help.Ansi.AUTO, args);
+    public static Object invoke(String methodName, Class<?> cls, PrintStream out, String... args) {
+        return invoke(methodName, cls, out, System.err, Help.Ansi.AUTO, args);
     }
-    public static void run(Method method, PrintStream out, Help.Ansi ansi, String... args) {
-        run(method, out, System.err, ansi, args);
+    public static Object invoke(String methodName, Class<?> cls, PrintStream out, Help.Ansi ansi, String... args) {
+        return invoke(methodName, cls, out, System.err, ansi, args);
     }
-    public static void run(Method method, PrintStream out, PrintStream err, Help.Ansi ansi, String... args) {
+    public static Object invoke(String methodName, Class<?> cls, PrintStream out, PrintStream err, Help.Ansi ansi, String... args) {
+        Map<Method, Command> candidates = getCommandMethods(cls, methodName);
+        if (candidates.size() != 1) { throw new InitializationException("Expected exactly one candidate for " + cls.getName() + "::" + methodName + "(...) annotated by @Command, got: " + candidates); }
+        Method method = candidates.keySet().iterator().next();
         CommandLine cmd = new CommandLine(method);
-        cmd.parseWithHandlers(new RunLast().useOut(out).useAnsi(ansi), new DefaultExceptionHandler<List<Object>>().useErr(err).useAnsi(ansi), args);
+        return cmd.parseWithHandlers(new RunLast().useOut(out).useAnsi(ansi), new DefaultExceptionHandler<List<Object>>().useErr(err).useAnsi(ansi), args).get(0);
     }
 
     /**
+     * Helper to get methods of a class annotated with {@link Command @Command} via reflection, optionally filtered by method name (not {@link Command#name()}).
+     * The elements in the {@link Map} returned are not sorted and are not in any particular order.
+     * Methods have to be either public (inherited) members or be declared by {@code cls}, that is "inherited" static or protected methods will not be picked up.
+     *
+     * @param cls
+     * @param methodName optionally filter methods by method name (not {@link Command#name()})
+     * @return the matching methods and their annotations, an empty set if no such method exists
+     * @see #invoke(String, Class, String...)
+     */
+    public static Map<Method, Command> getCommandMethods(Class<?> cls, String methodName) {
+        Map<Method, Command> candidates = new HashMap<Method, Command>();
+        // traverse public member methods (excludes static/non-public, includes inherited)
+        for (Method method : Assert.notNull(cls, "class").getMethods()) {
+            if (methodName != null && !methodName.equals(method.getName())) continue;
+            Command command = method.getAnnotation(Command.class);
+            if (command != null) { candidates.put(method, command); }
+        }
+        // traverse directly declared methods (includes static/non-public, excludes inherited)
+        for (Method method : Assert.notNull(cls, "class").getDeclaredMethods()) {
+            if (methodName != null && !methodName.equals(method.getName())) continue;
+            Command command = method.getAnnotation(Command.class);
+            if (command != null) { candidates.put(method, command); }
+        }
+        return candidates;
+    }
+
+	/**
      * Registers the specified type converter for the specified class. When initializing fields annotated with
      * {@link Option}, the field's type is used as a lookup key to find the associated type converter, and this
      * type converter converts the original command line argument string value to the correct type.

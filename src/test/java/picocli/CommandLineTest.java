@@ -4367,208 +4367,29 @@ public class CommandLineTest {
         assertFalse(actual, actual.contains("Possible solutions:"));
     }
 
-    @Test
-    public void testInteractiveOptionReadsFromStdIn() {
-        class App {
-            @Option(names = "-x", description = {"Pwd", "line2"}, interactive = true) int x;
-            @Option(names = "-z") int z;
-        }
-
-        PrintStream out = System.out;
-        InputStream in = System.in;
-        try {
-            ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            System.setOut(new PrintStream(baos));
-            System.setIn(new ByteArrayInputStream("123".getBytes()));
-
-            App app = new App();
-            CommandLine cmd = new CommandLine(app);
-            cmd.parse("-x");
-
-            assertEquals("Enter value for -x (Pwd): ", baos.toString());
-            assertEquals(123, app.x);
-            assertEquals(0, app.z);
-
-            cmd.parse("-z", "678");
-
-            assertEquals(0, app.x);
-            assertEquals(678, app.z);
-        } finally {
-            System.setOut(out);
-            System.setIn(in);
-        }
-    }
-
-    @Test
-    public void testInteractiveOptionReadsFromStdInMultiLinePrompt() {
-        class App {
-            @Option(names = "-x", description = {"Pwd%nline2", "ignored"}, interactive = true) int x;
-            @Option(names = "-z") int z;
-        }
-
-        PrintStream out = System.out;
-        InputStream in = System.in;
-        try {
-            ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            System.setOut(new PrintStream(baos));
-            System.setIn(new ByteArrayInputStream("123".getBytes()));
-
-            App app = new App();
-            CommandLine cmd = new CommandLine(app);
-            cmd.parse("-x", "-z", "987");
-
-            String expectedPrompt = String.format("Enter value for -x (Pwd%nline2): ");
-            assertEquals(expectedPrompt, baos.toString());
-            assertEquals(123, app.x);
-            assertEquals(987, app.z);
-        } finally {
-            System.setOut(out);
-            System.setIn(in);
-        }
-    }
-
-    @Test
-    public void testInteractivePositionalReadsFromStdIn() {
-        class App {
-            @Parameters(index = "0", description = {"Pwd%nline2", "ignored"}, interactive = true) int x;
-            @Parameters(index = "1") int z;
-        }
-
-        PrintStream out = System.out;
-        InputStream in = System.in;
-        try {
-            ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            System.setOut(new PrintStream(baos));
-            System.setIn(new ByteArrayInputStream("123".getBytes()));
-
-            App app = new App();
-            CommandLine cmd = new CommandLine(app);
-            cmd.parse("987");
-
-            String expectedPrompt = String.format("Enter value for position 0 (Pwd%nline2): ");
-            assertEquals(expectedPrompt, baos.toString());
-            assertEquals(123, app.x);
-            assertEquals(987, app.z);
-        } finally {
-            System.setOut(out);
-            System.setIn(in);
-        }
-    }
-
-    @Test
-    public void testInteractivePositional2ReadsFromStdIn() {
-        class App {
-            @Parameters(index = "0") int a;
-            @Parameters(index = "1", description = {"Pwd%nline2", "ignored"}, interactive = true) int x;
-            @Parameters(index = "2") int z;
-        }
-
-        PrintStream out = System.out;
-        InputStream in = System.in;
-        try {
-            ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            System.setOut(new PrintStream(baos));
-            System.setIn(new ByteArrayInputStream("123".getBytes()));
-
-            App app = new App();
-            CommandLine cmd = new CommandLine(app);
-            cmd.parse("333", "987");
-
-            String expectedPrompt = String.format("Enter value for position 1 (Pwd%nline2): ");
-            assertEquals(expectedPrompt, baos.toString());
-            assertEquals(333, app.a);
-            assertEquals(123, app.x);
-            assertEquals(987, app.z);
-        } finally {
-            System.setOut(out);
-            System.setIn(in);
-        }
-    }
-
-    @Test
-    public void testLoginExample() {
-        class Login implements Callable<Object> {
-            @Option(names = {"-u", "--user"}, description = "User name")
-            String user;
-
-            @Option(names = {"-p", "--password"}, description = "Password or passphrase", interactive = true)
-            String password;
-
-            public Object call() throws Exception {
-                MessageDigest md = MessageDigest.getInstance("SHA-256");
-                md.update(password.getBytes());
-                System.out.printf("Hi %s, your password is hashed to %s.%n", user, base64(md.digest()));
-                return null;
-            }
-
-            private String base64(byte[] arr) {
-                return DatatypeConverter.printBase64Binary(arr);
-            }
-        }
-
-        PrintStream out = System.out;
-        InputStream in = System.in;
-        try {
-            ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            System.setOut(new PrintStream(baos));
-            System.setIn(new ByteArrayInputStream("password123".getBytes()));
-
-            Login login = new Login();
-            CommandLine.call(login, "-u", "user123", "-p");
-
-            String expectedPrompt = String.format("Enter value for --password (Password or passphrase): " +
-                    "Hi user123, your password is hashed to 75K3eLr+dx6JJFuJ7LwIpEpOFmwGZZkRiB84PURz6U8=.%n");
-            assertEquals(expectedPrompt, baos.toString());
-            assertEquals("user123", login.user);
-            assertEquals("password123", login.password);
-        } finally {
-            System.setOut(out);
-            System.setIn(in);
-        }
-    }
-
-    @Test
-    public void testIssue446NegativeIntegerPositionalArgsMistakenForOptions() {
-        class App {
-            @Parameters(arity="1..*", paramLabel = "nums")
-            List<Integer> numbers;
-        }
-        //System.setProperty("picocli.trace", "DEBUG");
-        App app = new App();
-        CommandLine cmd = new CommandLine(app);
-        try {
-            cmd.parseArgs("-23 -23 -24 -25 -26".split(" "));
-            fail("Expecting error: args starting with hyphen treated as options");
-        } catch (MissingParameterException ex) {
-            assertEquals("Missing required parameter: nums", ex.getMessage());
-        }
-
-        // change parser configuration
-        cmd.setUnmatchedOptionsArePositionalParams(true);
-        cmd.parseArgs("-23 -23 -24 -25 -26".split(" "));
-        assertEquals(Arrays.asList(-23, -23, -24, -25, -26), app.numbers);
+    static class MethodAppBase {
+        @Command(name="run-0")
+        public void run0() {}
     }
 
     @Command(name="method")
-    static class MethodApp {
-        static final int[] data = {-1};
-
-        @Command(name="run-0")
-        void run0() {}
+    static class MethodApp extends MethodAppBase {
 
         @Command(name="run-1")
-        void run1(int a) {
-            data[0] = a;
+        int run1(int a) {
+            return a;
         }
+
         @Command(name="run-2")
-        void run2(int a, @Option(names="-b", required=true) int b) {
-            data[0] = a*b;
+        int run2(int a, @Option(names="-b", required=true) int b) {
+            return a*b;
         }
     }
+    @SuppressWarnings("deprecation")
     @Test
     public void testAnnotateMethod_noArg() throws Exception {
         setTraceLevel("OFF");
-        Method m = MethodApp.class.getDeclaredMethod("run0", new Class<?>[] {});
+        Method m = CommandLine.getCommandMethods(MethodApp.class, "run0").keySet().iterator().next();
         CommandLine cmd1 = new CommandLine(m);
         assertEquals("run-0", cmd1.getCommandName());
         assertEquals(Arrays.asList(), cmd1.getCommandSpec().args());
@@ -4576,11 +4397,16 @@ public class CommandLineTest {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         cmd1.parseWithHandler(((IParseResultHandler)null), new PrintStream(baos), new String[]{"--y"});
         assertEquals(Arrays.asList("--y"), cmd1.getUnmatchedArguments());
+
+        // test execute
+        Object ret = CommandLine.invoke(m.getName(), MethodApp.class, new PrintStream(new ByteArrayOutputStream()));
+        assertNull("return value", ret);
+
         setTraceLevel("WARN");
     }
     @Test
     public void testAnnotateMethod_unannotatedPositional() throws Exception {
-        Method m = MethodApp.class.getDeclaredMethod("run1", new Class<?>[] {int.class});
+        Method m = CommandLine.getCommandMethods(MethodApp.class, "run1").keySet().iterator().next();
 
         // test required
         try {
@@ -4591,14 +4417,13 @@ public class CommandLineTest {
         }
 
         // test execute
-        MethodApp.data[0] = -1;
-        CommandLine.run(m, new PrintStream(new ByteArrayOutputStream()), "42");
-        assertEquals(42, MethodApp.data[0]);
+        Object ret = CommandLine.invoke(m.getName(), MethodApp.class, new PrintStream(new ByteArrayOutputStream()), "42");
+        assertEquals("return value", 42, ((Number)ret).intValue());
     }
 
     @Test
     public void testAnnotateMethod_annotated() throws Exception {
-        Method m = MethodApp.class.getDeclaredMethod("run2", new Class<?>[] {int.class, int.class});
+        Method m = CommandLine.getCommandMethods(MethodApp.class, "run2").keySet().iterator().next();
 
         // test required
         try {
@@ -4609,9 +4434,8 @@ public class CommandLineTest {
         }
 
         // test execute
-        MethodApp.data[0] = -1;
-        CommandLine.run(m, new PrintStream(new ByteArrayOutputStream()), "13", "-b", "-1");
-        assertEquals(-13, MethodApp.data[0]);
+        Object ret = CommandLine.invoke(m.getName(), MethodApp.class, new PrintStream(new ByteArrayOutputStream()), "13", "-b", "-1");
+        assertEquals("return value", -13, ((Number)ret).intValue());
     }
 
     @Test
