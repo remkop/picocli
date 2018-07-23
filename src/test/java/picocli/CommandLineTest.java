@@ -4367,26 +4367,28 @@ public class CommandLineTest {
         assertFalse(actual, actual.contains("Possible solutions:"));
     }
 
-    @Command(name="method")
-    static class MethodApp {
-        static final int[] data = {-1};
-
+    static class MethodAppBase {
         @Command(name="run-0")
-        void run0() {}
+        public void run0() {}
+    }
+
+    @Command(name="method")
+    static class MethodApp extends MethodAppBase {
 
         @Command(name="run-1")
-        void run1(int a) {
-            data[0] = a;
+        int run1(int a) {
+            return a;
         }
+
         @Command(name="run-2")
-        void run2(int a, @Option(names="-b", required=true) int b) {
-            data[0] = a*b;
+        int run2(int a, @Option(names="-b", required=true) int b) {
+            return a*b;
         }
     }
     @Test
     public void testAnnotateMethod_noArg() throws Exception {
         setTraceLevel("OFF");
-        Method m = MethodApp.class.getDeclaredMethod("run0", new Class<?>[] {});
+        Method m = CommandLine.getCommandMethods(MethodApp.class, "run0").keySet().iterator().next();
         CommandLine cmd1 = new CommandLine(m);
         assertEquals("run-0", cmd1.getCommandName());
         assertEquals(Arrays.asList(), cmd1.getCommandSpec().args());
@@ -4394,11 +4396,16 @@ public class CommandLineTest {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         cmd1.parseWithHandler(((IParseResultHandler)null), new PrintStream(baos), new String[]{"--y"});
         assertEquals(Arrays.asList("--y"), cmd1.getUnmatchedArguments());
+
+        // test execute
+        Object ret = CommandLine.invoke(m.getName(), MethodApp.class, new PrintStream(new ByteArrayOutputStream()));
+        assertNull("return value", ret);
+
         setTraceLevel("WARN");
     }
     @Test
     public void testAnnotateMethod_unannotatedPositional() throws Exception {
-        Method m = MethodApp.class.getDeclaredMethod("run1", new Class<?>[] {int.class});
+        Method m = CommandLine.getCommandMethods(MethodApp.class, "run1").keySet().iterator().next();
 
         // test required
         try {
@@ -4409,14 +4416,13 @@ public class CommandLineTest {
         }
 
         // test execute
-        MethodApp.data[0] = -1;
-        CommandLine.run(m, new PrintStream(new ByteArrayOutputStream()), "42");
-        assertEquals(42, MethodApp.data[0]);
+        Object ret = CommandLine.invoke(m.getName(), MethodApp.class, new PrintStream(new ByteArrayOutputStream()), "42");
+        assertEquals("return value", 42, ((Number)ret).intValue());
     }
 
     @Test
     public void testAnnotateMethod_annotated() throws Exception {
-        Method m = MethodApp.class.getDeclaredMethod("run2", new Class<?>[] {int.class, int.class});
+        Method m = CommandLine.getCommandMethods(MethodApp.class, "run2").keySet().iterator().next();
 
         // test required
         try {
@@ -4427,9 +4433,8 @@ public class CommandLineTest {
         }
 
         // test execute
-        MethodApp.data[0] = -1;
-        CommandLine.run(m, new PrintStream(new ByteArrayOutputStream()), "13", "-b", "-1");
-        assertEquals(-13, MethodApp.data[0]);
+        Object ret = CommandLine.invoke(m.getName(), MethodApp.class, new PrintStream(new ByteArrayOutputStream()), "13", "-b", "-1");
+        assertEquals("return value", -13, ((Number)ret).intValue());
     }
 
     @Test
