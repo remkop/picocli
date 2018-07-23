@@ -9,13 +9,19 @@
 # Installation
 # ------------
 #
-# 1. Place this file in a `bash-completion.d` folder:
+# 1. Source all completion scripts in your .bash_profile
+#
+#   cd $YOUR_APP_HOME/bin
+#   for f in $(find . -name "*_completion"); do line=". $(pwd)/$f"; grep "$line" ~/.bash_profile || echo "$line" >> ~/.bash_profile; done
+#
+# 2. Open a new bash console, and type `rcmd [TAB][TAB]`
+#
+# 1a. Alternatively, if you have [bash-completion](https://github.com/scop/bash-completion) installed:
+#     Place this file in a `bash-completion.d` folder:
 #
 #   * /etc/bash-completion.d
 #   * /usr/local/etc/bash-completion.d
 #   * ~/bash-completion.d
-#
-# 2. Open a new bash console, and type `rcmd [TAB][TAB]`
 #
 # Documentation
 # -------------
