@@ -633,7 +633,7 @@ The above example results in six `true` values being added to the `verbosity` ar
 
 === Split Regex
 Options and parameters may also specify a `split` regular expression used to split each option parameter into smaller substrings.
-Each of these strings is converted to the type of the collection or array. See <<Arrays and Collections>>.
+Each of these substrings is converted to the type of the collection or array. See <<Arrays and Collections>>.
 [source,java]
 ----
 @Option(names = "-option", split = ",")
