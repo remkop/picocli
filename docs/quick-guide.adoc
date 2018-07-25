@@ -339,3 +339,1414 @@ if (commandLine.isUsageHelpRequested()) {
 // ... run App's business logic
 ----
 See also <<Printing Help Automatically>>.
+
+== Version Help
+=== Static Version Information
+Applications can specify version information in the `version` attribute of the `@Command` annotation.
+
+[source,java]
+----
+@Command(version = "1.0")
+class VersionedCommand {
+    @Option(names = { "-V", "--version" }, versionHelp = true)
+    boolean versionRequested;
+    ...
+----
+
+The `CommandLine.printVersionHelp(PrintStream)` method extracts the version information from this
+annotation and prints it to the specified `PrintStream`.
+[source,java]
+----
+CommandLine commandLine = new CommandLine(new VersionedCommand());
+commandLine.parse(args);
+if (commandLine.isVersionHelpRequested()) {
+    commandLine.printVersionHelp(System.out);
+    return;
+}
+----
+
+The `version` may specify multiple Strings, and may contain <<Usage Help with Styles and Colors,markup>> to show ANSI styles and colors. For example:
+
+[source,java]
+----
+@Command(version = {
+        "@|yellow Versioned Command 1.0|@",
+        "@|blue Build 12345|@",
+        "@|red,bg(white) (c) 2017|@" })
+class VersionedCommand { ... }
+----
+The markup will be rendered as ANSI escape codes on supported systems.
+
+image:VersionInfoWithColors.png[Screenshot of version information containing markup with Ansi styles and colors]
+
+=== Dynamic Version Information
+The `@Command` annotation supports a `versionProvider` attribute.
+Applications may specify a `IVersionProvider` implementation in this attribute, and picocli will instantiate this class
+and invoke it to collect version information.
+
+
+The GitHub project has an
+https://github.com/remkop/picocli/blob/master/examples/src/main/java/picocli/examples/VersionProviderDemo2.java[example]
+implementation that gets the version from the manifest file and and an
+https://github.com/remkop/picocli/blob/master/examples/src/main/java/picocli/examples/VersionProviderDemo1.java[example]
+that gets version information from a build-generated version properties file.
+
+== Usage Help
+=== Overview
+The usage help message is constructed from `@command` annotations, as well as
+
+=== Compact Example
+A default picocli usage help message looks like this:
+----
+Usage: cat [-AbeEnstTuv] [--help] [--version] [FILE...]
+Concatenate FILE(s), or standard input, to standard output.
+      FILE                 Files whose contents to display
+  -A, --show-all           equivalent to -vET
+  -b, --number-nonblank    number nonempty output lines, overrides -n
+  -e                       equivalent to -vET
+  -E, --show-ends          display $ at end of each line
+  -n, --number             number all output lines
+  -s, --squeeze-blank      suppress repeated empty output lines
+  -t                       equivalent to -vT
+  -T, --show-tabs          display TAB characters as ^I
+  -u                       (ignored)
+  -v, --show-nonprinting   use ^ and M- notation, except for LDF and TAB
+      --help               display this help and exit
+      --version            output version information and exit
+Copyright(c) 2017
+----
+
+The usage help message is generated from annotation attributes, like below:
+[source,java]
+----
+@Command(name = "cat", footer = "Copyright(c) 2017",
+         description = "Concatenate FILE(s), or standard input, to standard output.")
+class Cat {
+
+  @Parameters(paramLabel = "FILE", description = "Files whose contents to display")
+  List<File> files;
+
+  @Option(names = "--help", usageHelp = true, description = "display this help and exit")
+  boolean help;
+
+  @Option(names = "-t",                 description = "equivalent to -vT")  boolean t;
+  @Option(names = "-e",                 description = "equivalent to -vET") boolean e;
+  @Option(names = {"-A", "--show-all"}, description = "equivalent to -vET") boolean all;
+
+  // ...
+}
+----
+
+=== Command Name
+In the above example, the program name is taken from the `name` attribute of the `Command` annotation:
+[source,java]
+----
+@Command(name = "cat")
+----
+Without a `name` attribute, picocli will show a generic `<main class>` in the synopsis:
+----
+Usage: <main class> [-AbeEnstTuv] [--help] [--version] [FILE...]
+----
+=== Parameter Labels
+Non-boolean options require a value. The usage help should explain this, and picocli shows the option parameter
+in the synopsis and in the option list. By default, the field name is shown in `<` and `>` fish brackets.
+Use the `paramLabel` attribute to display a different name. For example:
+----
+Usage: <main class> [-f=FILE] [-n=<number>] NUM <host>
+      NUM        number param
+      host       the host parameter
+  -f= FILE       a file
+  -n= <number>   a number option
+----
+Some annotated fields in the below example class have a `paramLabel` attribute and others don't:
+[source,java]
+----
+@Command()
+class ParamLabels {
+    @Option(names = "-f",    paramLabel = "FILE", description = "a file")      File f;
+    @Option(names = "-n",    description = "a number option")                  int number;
+    @Parameters(index = "0", paramLabel = "NUM", description = "number param") int n;
+    @Parameters(index = "1", description = "the host parameter")               InetAddress host;
+}
+----
+NOTE: For demonstration purposes the above example mixes the all-uppercase (e.g., `NUM`) style label and the fish bracket (e.g., `<number>`) style labels. For real applications, mixing these label styles should be avoided. An application should consistently use only one style.
+
+
+=== Unsorted Option List
+By default the options list displays options in alphabetical order. Use the `sortOptions = false` attribute to display options in the order they are declared in your class.
+[source,java]
+----
+@Command(sortOptions = false)
+----
+
+
+=== Abbreviated Synopsis
+If a command is very complex and has many options, it is sometimes desirable to suppress details from the synopsis with the `abbreviateSynopsis` attribute. For example:
+----
+Usage: <main class> [OPTIONS] [<files>...]
+----
+Note that the positional parameters are not abbreviated.
+[source,java]
+----
+@Command(abbreviateSynopsis = true)
+class App {
+    @Parameters File[] files;
+    @Option(names = {"--count", "-c"}) int count;
+    ....
+}
+----
+
+
+=== Custom Synopsis
+For even more control of the synopsis, use the `customSynopsis` attribute to specify one ore more synopsis lines. For example:
+----
+Usage: ln [OPTION]... [-T] TARGET LINK_NAME   (1st form)
+  or:  ln [OPTION]... TARGET                  (2nd form)
+  or:  ln [OPTION]... TARGET... DIRECTORY     (3rd form)
+  or:  ln [OPTION]... -t DIRECTORY TARGET...  (4th form)
+----
+To produce a synopsis like the above, specify the literal text in the `customSynopsis` attribute:
+[source,java]
+----
+@Command(synopsisHeading = "", customSynopsis = {
+        "Usage: ln [OPTION]... [-T] TARGET LINK_NAME   (1st form)",
+        "  or:  ln [OPTION]... TARGET                  (2nd form)",
+        "  or:  ln [OPTION]... TARGET... DIRECTORY     (3rd form)",
+        "  or:  ln [OPTION]... -t DIRECTORY TARGET...  (4th form)",
+})
+class Ln { ... }
+----
+
+=== Header and Footer
+The `header` will be shown at the top of the usage help message (before the synopsis). The first header line is also the line shown in the subcommand list if your command has subcommands (see <<Usage Help for Subcommands>>).
+
+Use the `footer` attribute to specify one or more lines to show below the generated usage help message.
+Each element of the attribute String array is displayed on a separate line.
+
+The `headerHeading` and `footerHeading` may contain format specifiers. See <<Section Headings>>.
+
+=== Section Headings
+Section headers can be used to make usage message layout appear more spacious. Section headings may contain embedded line separator (`%n`) format specifiers:
+[source,java]
+----
+@Command(name = "commit",
+        sortOptions = false,
+        headerHeading = "Usage:%n%n",
+        synopsisHeading = "%n",
+        descriptionHeading = "%nDescription:%n%n",
+        parameterListHeading = "%nParameters:%n",
+        optionListHeading = "%nOptions:%n",
+        header = "Record changes to the repository.",
+        description = "Stores the current contents of the index in a new commit " +
+                "along with a log message from the user describing the changes.")
+class GitCommit { ... }
+----
+The usage help message generated from this class is shown below in <<Expanded Example>>.
+
+
+=== Expanded Example
+The below example demonstrates what a customized usage message can look like.
+Note how section headings with line separators can create a more spacious usage message,
+and also that options are listed in declaration order (instead of in alphabetic order).
+----
+Usage:
+
+Record changes to the repository.
+
+git commit [-ap] [--fixup=<commit>] [--squash=<commit>] [-c=<commit>]
+           [-C=<commit>] [-F=<file>] [-m[=<msg>...]] [<files>...]
+
+Description:
+
+Stores the current contents of the index in a new commit along with a log
+message from the user describing the changes.
+
+Parameters:
+      <files>                 the files to commit
+
+Options:
+  -a, --all                   Tell the command to automatically stage files
+                                that have been modified and deleted, but new
+                                files you have not told Git about are not
+                                affected.
+  -p, --patch                 Use the interactive patch selection interface to
+                                chose which changes to commit
+  -C, --reuse-message=<commit>
+                              Take an existing commit object, and reuse the log
+                                message and the authorship information
+                                (including the timestamp) when creating the
+                                commit.
+  -c, --reedit-message=<commit>
+                              Like -C, but with -c the editor is invoked, so
+                                that the user canfurther edit the commit
+                                message.
+      --fixup=<commit>        Construct a commit message for use with rebase
+                                --autosquash.
+      --squash=<commit>        Construct a commit message for use with rebase
+                                --autosquash. The commitmessage subject line is
+                                taken from the specified commit with a prefix
+                                of "squash! ". Can be used with additional
+                                commit message options (-m/-c/-C/-F).
+  -F, --file=<file>           Take the commit message from the given file. Use
+                                - to read the message from the standard input.
+  -m, --message[=<msg>...]     Use the given <msg> as the commit message. If
+                                multiple -m options are given, their values are
+                                concatenated as separate paragraphs.
+----
+The annotated class that this usage help message is generated from is shown in <<Section Headings>>.
+
+
+=== Option-Parameter Separators
+The separator displayed between options and option parameters (`=` by default)
+in the synopsis and the option list can be configured with the `separator` attribute.
+[source,java]
+----
+@Command(separator = " ")
+----
+
+NOTE: the `@Command(separator = " ")` annotation also affects how picocli parses the command line.  See also <<Custom Separators>>.
+
+
+=== Hidden Options and Parameters
+Options and Parameters with the `hidden` attribute set to `true` will not be shown in the usage help message.
+This is useful for example when a parameter at some index is captured into multiple fields:
+by default each of these fields would be shown in the usage message, which would be confusing for users.
+
+For example, the `all` field below is annotated as `hidden = true`:
+
+[source,java]
+----
+@Command()
+class App {
+    @Parameters(index = "0",    description = "destination host")  InetAddress host;
+    @Parameters(index = "1",    description = "destination port")  int port;
+    @Parameters(index = "2..*", description = "files to transfer") String[] files;
+
+    @Parameters(hidden = true) String[] all;
+}
+----
+The above will generate the following usage help message, where the `all` field is not shown:
+----
+Usage: <main class> <host> <port> [<files>...]
+      host    destination host
+      port    destination port
+      files   files to transfer
+----
+
+=== Show Default Values
+==== `${DEFAULT-VALUE}` Variable
+From picocli 3.2, it is possible to embed the <<Default Values,default values>> in the description for an option or positional parameter by
+specifying the variable `${DEFAULT-VALUE}` in the description text.
+Picocli uses reflection to get the default values from the annotated fields.
+
+The variable is replaced with the default value regardless of the `@Command(showDefaultValues)` attribute
+and regardless of the `@Option(showDefaultValues)` or `@Parameters(showDefaultValues)` attribute.
+
+[source,java]
+----
+class DefaultValues {
+    @Option(names = {"-f", "--file"},
+            description = "the file to use (default: ${DEFAULT-VALUE})")
+    File file = new File("config.xml");
+}
+
+CommandLine.usage(new DefaultValues(), System.out);
+----
+This produces the following usage help:
+----
+Usage: <main class> -f=<file>
+  -f, --file=<file>   the file to use (default: config.xml)
+----
+
+==== `${COMPLETION-CANDIDATES}` Variable
+Similarly, it is possible to embed the completion candidates in the description for an option or positional parameter by
+specifying the variable `${COMPLETION-CANDIDATES}` in the description text.
+
+This works for java `enum` classes and for options or positional parameters of non-enum types for which completion candidates are specified.
+
+[source,java]
+----
+enum Lang { java, groovy, kotlin, javascript, frege, clojure }
+
+static class MyAbcCandidates extends ArrayList<String> {
+    MyAbcCandidates() { super(Arrays.asList("A", "B", "C")); }
+}
+
+class ValidValuesDemo {
+    @Option(names = "-l", description = "Enum values: ${COMPLETION-CANDIDATES}")
+    Lang lang = null;
+
+    @Option(names = "-o", completionCandidates = MyAbcCandidates.class,
+            description = "Candidates: ${COMPLETION-CANDIDATES}")
+    String option;
+}
+
+CommandLine.usage(new ValidValuesDemo(), System.out);
+----
+This produces the following usage help:
+----
+Usage: <main class> -l=<lang> -o=<option>
+  -l=<lang>     Enum values: java, groovy, kotlin, javascript, frege, clojure
+  -o=<option>   Candidates: A, B, C
+----
+=== Required-Option Marker
+Required options can be marked in the option list by the character specified with the `requiredOptionMarker` attribute. By default options are not marked because the synopsis shows users which options are required and which are optional. This feature may be useful in combination with `abbreviatedSynopsis`. For example:
+
+[source,java]
+----
+@Command(requiredOptionMarker = '*', abbreviateSynopsis = true)
+class Example {
+    @Option(names = {"-a", "--alpha"}, description = "optional alpha") String alpha;
+    @Option(names = {"-b", "--beta"}, required = true, description = "mandatory beta") String beta;
+}
+----
+Produces the following usage help message:
+----
+Usage: <main class> [OPTIONS]
+  -a, --alpha=<alpha>   optional alpha
+* -b, --beta=<beta>     mandatory beta
+----
+
+=== Usage Width
+The default width of the usage help message is 80 characters.
+System property `picocli.usage.width` can be used to specify a custom width.
+The minimum width that can be configured is 55 characters.
+
+Picocli 3.0 also introduced programmatic API for this via the `CommandLine::setUsageHelpWidth` and `UsageMessageSpec::width` methods.
+
+== ANSI Colors and Styles
+=== Colorized Example
+
+Below shows the same usage help message as shown in <<Expanded Example>>, with ANSI escape codes enabled.
+
+image:UsageHelpWithStyle.png[Screenshot of usage help with Ansi codes enabled]
+
+=== Usage Help with Styles and Colors
+You can use colors and styles in the descriptions, header and footer
+of the usage help message.
+
+Picocli supports a custom markup notation for mixing colors and styles in text,
+following a convention introduced by https://github.com/fusesource/jansi[Jansi], where
+`@|` starts a styled section, and `|@` ends it.
+Immediately following the `@|` is a comma-separated list of colors and styles, so `@|STYLE1[,STYLE2]... text|@`.
+For example:
+
+[source,java]
+----
+@Command(description = "Custom @|bold,underline styles|@ and @|fg(red) colors|@.")
+----
+image:DescriptionWithColors.png[Description with Ansi styles and colors]
+
+
+.Pre-defined styles and colors that can be used in descriptions and headers using the `@|STYLE1[,STYLE2]... text|@` notation
+[grid=cols,cols=2*,options="header"]
+|===
+|Pre-defined Styles | Pre-defined Colors
+| bold         | black
+| faint        | red
+| underline    | green
+| italic       | yellow
+| blink        | blue
+| reverse      | magenta
+| reset        | cyan
+|              | white
+|===
+
+
+Colors are applied as _foreground_ colors by default.
+You can set _background_ colors by specifying `bg(<color>)`.
+For example, `@|bg(red) text with red background|@`.
+Similarly, `fg(<color>)` explicitly sets the foreground color.
+
+
+The example below shows how this markup can be used to add colors and styles to the headings and descriptions of a usage help message:
+
+[source,java]
+----
+@Command(name = "commit",
+        sortOptions = false,
+        headerHeading = "@|bold,underline Usage|@:%n%n",
+        synopsisHeading = "%n",
+        descriptionHeading = "%n@|bold,underline Description|@:%n%n",
+        parameterListHeading = "%n@|bold,underline Parameters|@:%n",
+        optionListHeading = "%n@|bold,underline Options|@:%n",
+        header = "Record changes to the repository.",
+        description = "Stores the current contents of the index in a new commit " +
+                "along with a log message from the user describing the changes.")
+class GitCommit { ... }
+----
+
+CAUTION: Markup styles cannot be nested, for example: `@|bold this @|underline that|@|@` will not work. You can achieve the same by combining styles, for example: `@|bold this|@ @|bold,underline that|@` will work fine.
+=== More Colors
+Most terminals support a https://en.wikipedia.org/wiki/ANSI_escape_code#Colors[256 color indexed palette]:
+----
+0x00-0x07:  standard colors (the named colors)
+0x08-0x0F:  high intensity colors (often similar to named colors + bold style)
+0x10-0xE7:  6 × 6 × 6 cube (216 colors): 16 + 36 × r + 6 × g + b (0 ≤ r, g, b ≤ 5)
+0xE8-0xFF:  grayscale from black to white in 24 steps
+----
+
+Colors from the 256 color palette can be specified by their index values or by their RGB components.
+RGB components must be separated by a semicolon `;` and each component must be between `0` and `5`, inclusive.
+
+For example, `@|bg(0;5;0) text with red=0, green=5, blue=0 background|@`,
+or `@|fg(46) the same color by index, as foreground color|@`.
+
+image:256colors.png[256 color indexed palette]
+
+
+=== Configuring Fixed Elements
+==== Color Scheme
+Picocli uses a default color scheme for options, parameters and commands.
+There are no annotations to modify this color scheme, but it can be changed programmatically.
+
+The below code snippet shows how a custom color scheme can be specified to configure the usage help message style:
+
+[source,java]
+----
+// see also CommandLine.Help.defaultColorScheme()
+ColorScheme colorScheme = new ColorScheme()
+        .commands    (Style.bold, Style.underline)    // combine multiple styles
+        .options     (Style.fg_yellow)                // yellow foreground color
+        .parameters  (Style.fg_yellow)
+        .optionParams(Style.italic);
+
+CommandLine.usage(annotatedObject, System.out, colorScheme);
+...
+----
+
+==== Color Scheme Overrides
+
+The following system properties override the color scheme styles. This allows end users to adjust for their individual terminal color setup.
+
+.System Properties to Override the Color Scheme
+----
+picocli.color.commands
+picocli.color.options
+picocli.color.parameters
+picocli.color.optionParams
+----
+
+For example:
+
+```
+java -Dpicocli.color.options=blink,blue -Dpicocli.color.parameters=reverse com.app.Main
+```
+
+System property values may specify multiple comma separated styles.
+
+
+=== Supported Platforms
+Picocli will only emit ANSI escape codes on supported platforms.
+
+TODO
+
+=== Forcing ANSI On/Off
+You can force picocli to either always use ANSI codes or never use ANSI codes regardless of the platform:
+
+* Setting system property `picocli.ansi` to `true` forces picocli to use ANSI codes; setting `picocli.ansi` to `false` forces picocli to *not* use ANSI codes. This may be a useful facility for users of your command line application.
+* You can decide to force disable or force enable ANSI escape codes programmatically by specifying `Ansi.ON` or `Ansi.OFF` when invoking `CommandLine.usage`.
+This overrides the value of system property `picocli.ansi`. For example:
+
+[source,java]
+----
+import picocli.CommandLine.Help.Ansi;
+
+App app = CommandLine.usage(new App(), System.out, Ansi.OFF, args);
+----
+== Subcommands
+=== Registering Subcommands Programmatically
+Subcommands can be registered with the `CommandLine.addSubcommand` method.
+You pass in the name of the command and the annotated object to populate with the subcommand options.
+The specified name is used by the parser to recognize subcommands in the command line arguments.
+
+[source,java]
+----
+CommandLine commandLine = new CommandLine(new Git())
+        .addSubcommand("status",   new GitStatus())
+        .addSubcommand("commit",   new GitCommit())
+        .addSubcommand("add",      new GitAdd())
+        .addSubcommand("branch",   new GitBranch())
+        .addSubcommand("checkout", new GitCheckout())
+        .addSubcommand("clone",    new GitClone())
+        .addSubcommand("diff",     new GitDiff())
+        .addSubcommand("merge",    new GitMerge())
+        .addSubcommand("push",     new GitPush())
+        .addSubcommand("rebase",   new GitRebase())
+        .addSubcommand("tag",      new GitTag());
+----
+It is strongly recommended that subcommands have a `@Command` annotation with `name` and `description` attributes.
+
+From picocli 3.1, the usage help synopsis of the subcommand shows not only the subcommand name but also the parent command name.
+For example, if the `git` command has a `commit` subcommand, the usage help for the `commit` subcommand shows `Usage: git commit <options>`.
+
+
+CAUTION: _Note on custom type converters:_ custom type converters are registered only with the subcommands and nested
+sub-subcommands that were added _before_ the custom type was registered.
+To ensure a custom type converter is available to all subcommands, register the type converter last, after
+adding subcommands.
+
+=== Registering Subcommands Declaratively
+
+From v0.9.8, picocli supports registering subcommands declaratively with the `@Command` annotation's `subcommands` attribute.
+
+[source,java]
+----
+@Command(subcommands = {
+    GitStatus.class,
+    GitCommit.class,
+    GitAdd.class,
+    GitBranch.class,
+    GitCheckout.class,
+    GitClone.class,
+    GitDiff.class,
+    GitMerge.class,
+    GitPush.class,
+    GitRebase.class,
+    GitTag.class
+})
+public class Git { ... }
+----
+
+The declared subcommands are automatically instantiated and added when the `new CommandLine(new Git())` instance is constructed. The result is the same as if subcommands were added <<Registering Subcommands Programmatically,programmatically>>.
+
+Subcommands referenced in a `subcommands` attribute _must_ have a `@Command` annotation with a `name` attribute, or an exception is thrown from the `CommandLine` constructor. This name will be used both for generating usage help and for recognizing subcommands when parsing the command line.
+
+Custom type converters registered on a `CommandLine` instance will apply to all subcommands that were declared on the main command with the `subcommands` annotation.
+
+Subcommands referenced in a `subcommands` attribute need to have a public no-argument constructor to be instantiated, unless a <<Custom Factory>> is installed to instantiate classes.
+
+
+=== Parsing Subcommands
+For this example, we assume we created an alias `git` that invokes our Java application. This could also be a script or a function that calls our Java program:
+[source,bash]
+----
+alias git='java picocli.Demo$Git'
+----
+
+Next, we call our command with some arguments like this:
+
+[source,bash]
+----
+git --git-dir=/home/rpopma/picocli status -sb -uno
+----
+
+Where `git` (actually `java picocli.Demo$Git`) is the top-level command, followed by a global option and a subcommand `status` with its own options.
+
+Setting up the parser and parsing the command line could look like this:
+[source,java]
+----
+public static void main(String... args) {
+    // Set up the parser
+    CommandLine commandLine = new CommandLine(new Git());
+
+    // add subcommands programmatically (not necessary if the parent command
+    // declaratively registers the subcommands via annotation)
+    commandLine.addSubcommand("status",   new GitStatus())
+               .addSubcommand("commit",   new GitCommit())
+                ...
+
+    // Invoke the parse method to parse the arguments
+    List<CommandLine> parsed = commandLine.parse(args);
+    handleParseResult(parsed);
+}
+----
+
+The `CommandLine.parse` method returns a List with the recognized commands. The top-level command (the Java class invoked by `git` in this example) is always the first element in the returned list.
+
+The returned List also contains all matched subcommands. Your application needs to inspect this list to see what subcommand was invoked and take appropriate action. For example:
+
+[source,java]
+----
+private void handleParseResult(List<CommandLine> parsed) {
+    assert parsed.size() == 2 : "1 command and 1 subcommand found"
+
+    assert parsed.get(0).getCommand().getClass() == Git.class       : "main command"
+    assert parsed.get(1).getCommand().getClass() == GitStatus.class : "subcommand"
+
+    Git git = (Git) parsed.get(0).getCommand();
+    assert git.gitDir.equals(new File("/home/rpopma/picocli"));
+
+    GitStatus gitstatus = (GitStatus) parsed.get(1).getCommand();
+    assert  gitstatus.shortFormat              : "git status -s"
+    assert  gitstatus.branchInfo               : "git status -b"
+    assert !gitstatus.showIgnored              : "git status --showIgnored not specified"
+    assert  gitstatus.mode == GitStatusMode.no : "git status -u=no"
+}
+----
+
+You may be interested in the <<Convenience Methods for Subcommands,convenience methods for subcommands>> to reduce error handling and other boilerplate code in your application.
+
+
+=== `@ParentCommand` Annotation
+In command line applications with subcommands, options of the top level command are often intended as "global" options that apply to all the subcommands. Prior to picocli 2.2, subcommands had no easy way to access their parent command options unless the parent command made these values available in a global variable.
+
+The `@ParentCommand` annotation introduced in picocli 2.2 makes it easy for subcommands to access their parent command options: subcommand fields annotated with `@ParentCommand` are initialized with a reference to the parent command. For example:
+
+[source,java]
+----
+@Command(name = "fileutils", subcommands = List.class)
+class FileUtils {
+
+    @Option(names = {"-d", "--directory"},
+            description = "this option applies to all subcommands")
+    File baseDirectory;
+}
+----
+
+The above top-level command has a `--directory` option that applies to its subcommands.
+The `List` subcommand can use the `@ParentCommand` annotation to get a reference to the parent command, so it can easily access the parent command options.
+
+[source,java]
+----
+@Command(name = "list")
+class List implements Runnable {
+
+    @ParentCommand
+    private FileUtils parent; // picocli injects reference to parent command
+
+    @Option(names = {"-r", "--recursive"},
+            description = "Recursively list subdirectories")
+    private boolean recursive;
+
+    @Override
+    public void run() {
+        list(new File(parent.baseDirectory, "."));
+    }
+
+    private void list(File dir) {
+        System.out.println(dir.getAbsolutePath());
+        if (dir.isDirectory()) {
+            for (File f : dir.listFiles()) {
+                if (f.isDirectory() && recursive) {
+                    list(f);
+                } else {
+                    System.out.println(f.getAbsolutePath());
+                }
+            }
+        }
+    }
+}
+----
+
+
+=== Usage Help for Subcommands
+After registering subcommands, calling the `commandLine.usage` method will show a usage help message that includes all registered subcommands. For example:
+
+[source,java]
+----
+CommandLine commandLine = new CommandLine(new Git());
+
+// add subcommands programmatically (not necessary if the parent command
+// declaratively registers the subcommands via annotation)
+commandLine.addSubcommand("status",   new GitStatus());
+commandLine.addSubcommand("commit",   new GitCommit());
+...
+commandLine.usage(System.out);
+----
+The usage help message shows the commands in the order they were registered:
+----
+Usage: git [-hV] [--git-dir=<gitDir>]
+Git is a fast, scalable, distributed revision control system with an unusually
+rich command set that provides both high-level operations and full access to
+internals.
+      --git-dir=<gitDir>   Set the path to the repository.
+  -h, --help               Show this help message and exit.
+  -V, --version            Print version information and exit.
+
+Commands:
+
+The most commonly used git commands are:
+  help      Displays help information about the specified command
+  status    Show the working tree status.
+  commit    Record changes to the repository.
+  add       Add file contents to the index.
+  branch    List, create, or delete branches.
+  checkout  Checkout a branch or paths to the working tree.
+  clone     Clone a repository into a new directory.
+  diff      Show changes between commits, commit and working tree, etc.
+  merge     Join two or more development histories together.
+  push      Update remote refs along with associated objects.
+  rebase    Forward-port local commits to the updated upstream head.
+  tag       Create, list, delete or verify a tag object signed with GPG.
+----
+
+The above usage help message is produced from the annotations on the class below:
+[source,java]
+----
+@Command(name = "git", mixinStandardHelpOptions = true, version = "subcommand demo - picocli 3.0",
+        subcommands = HelpCommand.class,
+        description = "Git is a fast, scalable, distributed revision control " +
+                      "system with an unusually rich command set that provides both " +
+                      "high-level operations and full access to internals.",
+        commandListHeading = "%nCommands:%n%nThe most commonly used git commands are:%n")
+class Git {
+
+  @Option(names = "--git-dir", description = "Set the path to the repository.")
+  private File gitDir;
+}
+----
+
+The above example uses the <<Fully Automatic Help,mixinStandardHelpOptions>> attribute to mix in
+<<Help Options,`usageHelp`>> and <<Help Options,`versionHelp`>> options and registers the `help` subcommand.
+
+The usage help message for each subcommand is produced by calling `CommandLine.usage(new SubCommand(), out)`.
+For example, see <<Section Headings>> for an example subcommand (`git commit`), which produces the help message shown
+in <<Expanded Example>>.
+
+From picocli 3.1, the usage help synopsis of the subcommand shows not only the subcommand name but also the parent command name.
+For example, if the `git` command has a `commit` subcommand, the usage help for the `commit` subcommand shows `Usage: git commit <options>`.
+
+=== Hidden Subcommands
+
+Commands with the `hidden` attribute set to `true` will not be shown in the usage help message of their parent command.
+
+For example, the `bar` subcommand below is annotated as `hidden = true`:
+
+[source,java]
+----
+@Command(name = "foo", description = "This is a visible subcommand")
+class Foo { }
+
+@Command(name = "bar", description = "This is a hidden subcommand", hidden = true)
+class Bar { }
+
+@Command(name = "app", subcommands = {Foo.class, Bar.class})
+class App { }
+----
+The usage help message for `App` looks like the below. Note that the `bar` subcommand is not shown:
+----
+Usage: app
+Commands:
+  foo  This is a visible subcommand
+----
+
+=== Help Subcommands
+
+Commands with the `helpCommand` attribute set to `true` are treated as help commands.
+When picocli encounters a help command on the command line, required options and required positional parameters of the parent command
+are not validated (similar to <<Help Options,help options>>).
+
+See <<Custom Help Subcommands>> for more details on creating help subcommands.
+
+[source,java]
+----
+@Command(helpCommand = true)
+----
+
+=== Nested sub-Subcommands
+The specified object can be an annotated object or a
+`CommandLine` instance with its own nested subcommands. For example:
+
+[source,java]
+----
+CommandLine commandLine = new CommandLine(new MainCommand())
+    .addSubcommand("cmd1",                 new ChildCommand1())
+    .addSubcommand("cmd2",                 new ChildCommand2())
+    .addSubcommand("cmd3", new CommandLine(new ChildCommand3())
+        .addSubcommand("cmd3sub1",                 new GrandChild3Command1())
+        .addSubcommand("cmd3sub2",                 new GrandChild3Command2())
+        .addSubcommand("cmd3sub3", new CommandLine(new GrandChild3Command3())
+            .addSubcommand("cmd3sub3sub1", new GreatGrandChild3Command3_1())
+            .addSubcommand("cmd3sub3sub2", new GreatGrandChild3Command3_2())
+        )
+    );
+----
+
+Declaratively, subcommands can be nested by specifying the `subcommands` attribute on subcommand classes:
+[source,java]
+----
+@Command(name = "main", subcommands = {
+    ChildCommand1.class,
+    ChildCommand2.class,
+    ChildCommand3.class })
+class MainCommand { }
+
+@Command(name = "cmd3", subcommands = {
+    GrandChild3Command1.class,
+    GrandChild3Command2.class,
+    GrandChild3Command3.class })
+class ChildCommand3 { }
+
+@Command(name = "cmd3sub3", subcommands = {
+    GreatGrandChild3Command3_1.class,
+    GreatGrandChild3Command3_2.class })
+class GrandChild3Command3 { }
+...
+----
+
+== Reuse
+You may find yourself defining the same options, parameters or command attributes in many command line applications.
+To reduce duplication, picocli supports both subclassing and mixins as ways to reuse such options and attributes.
+
+For both mechanisms, the first step is to extract these options, parameters and command attributes into a separate class. Below is an example class, `ReusableOptions`, that we will use in example scenarios in this chapter:
+
+[source,java]
+----
+@Command(synopsisHeading      = "%nUsage:%n%n",
+         descriptionHeading   = "%nDescription:%n%n",
+         parameterListHeading = "%nParameters:%n%n",
+         optionListHeading    = "%nOptions:%n%n",
+         commandListHeading   = "%nCommands:%n%n")
+public class ReusableOptions {
+
+    @Option(names = { "-v", "--verbose" }, description = {
+        "Specify multiple -v options to increase verbosity.",
+        "For example, `-v -v -v` or `-vvv`" })
+    protected boolean[] verbosity = new boolean[0];
+}
+----
+This defines some usage help attributes that give a spacious layout, and a `verbosity` option that makes the operation more talkative.
+
+
+=== Subclassing
+One way to reuse the above option and attributes is to extend the class. Picocli will walk the class hierarchy to check for annotations, so `@Options`, `@Parameters` and `@Command` attributes declared on a superclass are available in all subclasses.
+
+For example, all commands that extend the <<Reuse,above sample>> `ReusableOptions` class will inherit the `--verbose` option, and generate a usage help message in the same spacious style. Example code:
+
+[source,java]
+----
+@Command(name = "zip", description = "Example reuse by subclassing")
+public class MyCommand extends ReusableOptions { ... }
+----
+
+=== Mixins
+Picocli 3.0 introduces the concept of "mixins". Mixins are a convenient alternative to subclassing:
+picocli annotations from _any_ class can be added to ("mixed in" with) another command.
+This includes options, positional parameters, subcommands and command attributes.
+Picocli <<Fully Automatic Help,mixinStandardHelpOptions>> internally uses a mixin.
+
+A mixin is a separate class with options, positional parameters, subcommands and command attributes
+that you want to reuse in other commands.
+Mixins can be installed by calling the `CommandLine.addMixin` method with an object of this class, or annotating a field in your command with `@Mixin`.
+
+==== Adding Mixins Programmatically
+The below example shows how a mixin can be added programmatically with the `CommandLine.addMixin` method.
+We use the sample `ReusableOptions` class <<Reuse,defined above>> as the mixin:
+
+[source,java]
+----
+CommandLine commandLine = new CommandLine(new MyCommand());
+
+ReusableOptions mixin = new ReusableOptions();
+commandline.addMixin("myMixin", mixin);
+----
+
+Programmatically added mixins can be accessed via the map returned by `CommandLine.getMixins`. Continuing from the previous example:
+
+[source,java]
+----
+commandLine.parse("-vvv");
+
+// the options defined in ReusableOptions have been added to the zip command
+assert mixin == commandLine.getMixins().get("myMixin");
+assert mixin.verbosity.length == 3;
+----
+
+==== `@Mixin` Annotation
+A command can also include a mixin by annotating a field with `@Mixin`. All picocli annotations found in the mixin class
+are added to the command that has a field annotated with `@Mixin`. For example, again using the sample `ReusableOptions` class <<Reuse,defined above>>:
+
+[source,java]
+----
+@Command(name = "zip", description = "Example reuse with @Mixin annotation.")
+public class MyCommand {
+
+    // adds the options defined in ReusableOptions to this command
+    @Mixin
+    private ReusableOptions myMixin;
+    ...
+}
+----
+In addition to adding the options, subcommands and command attributes of the mixed-in object to the command,
+the mixed-in object is also injected into the field annotated with `@Mixin`, making it trival for the command to reference the mixed-in object if necessary.
+
+[source,java]
+----
+MyCommand zip = new MyCommand();
+CommandLine commandLine = new CommandLine(zip);
+commandLine.parse("-vvv");
+
+// the options defined in ReusableOptions have been added to the zip command
+assert zip.myMixin.verbosity.length == 3;
+----
+
+Mixins added with the `@Mixin` annotation can also be accessed via the map returned by `CommandLine.getMixins`.
+
+
+=== Reuse Combinations
+
+The above mechanisms can be combined in any way. Mixins can be nested, and there is no limitation to how deeply mixins can be nested. A mixin may also inherit options, positional parameters and command attributes from a super class.
+
+An option with the same name should not be defined multiple times or a `DuplicateOptionAnnotationsException` is thrown during initialization. Positional parameters for the same position may be defined multiple times, they can co-exist.
+
+Command attributes may be defined multiple times, but only one value is preserved. In case a command attribute is defined multiple times, the definition earlier in the following list takes priority over later in the list:
+
+. @Command attributes of the command itself
+. Attributes on the @Mixin commands
+. Attributes on a @Mixin nested in a @Mixin of the command
+. Attributes on superclass of nested @Mixin
+. Attributes on superclass of @Mixin
+. Attributes on superclass of the command
+. Attributes on programmatically added mixins
+
+
+== Tips & Tricks
+=== Annotated Methods
+From version 3.2, `@Option` and `@Parameter` annotations can be added to methods as well as fields of a class.
+
+For concrete classes, annotate "setter" methods (methods that accept a parameter) and when the option is specified on the command line, picocli will invoke the method with the value specified on the command line, converted to the type of the method parameter.
+
+Alternatively, you may annotate "getter-like" methods (methods that return a value) on an interface, and picocli will create an instance of the interface that returns the values specified on the command line, converted to the method return type.
+
+==== Annotating Methods of an Interface
+The `@Option` and `@Parameters` annotations can be used on methods of an interface that return a value. For example:
+
+[source,java]
+----
+interface Counter {
+    @Option(names = "--count")
+    int getCount();
+}
+----
+You use it by specifying the class of the interface:
+[source,java]
+----
+CommandLine cmd = new CommandLine(Counter.class); // specify a class
+String[] args = new String[] {"--count", "3"};
+cmd.parse(args);
+Counter counter = cmd.getCommand(); // picocli created an instance
+assert counter.getCount() == 3; // method returns command line value
+----
+
+==== Annotating Methods of a Concrete Class
+The `@Option` and `@Parameters` annotations can be used on methods of a class that accept a parameter. For example:
+
+[source,java]
+----
+class Counter {
+    int count;
+
+    @Option(names = "--count")
+    void setCount(int count) {
+        this.count = count;
+    }
+}
+----
+You use it by passing an instance of the class:
+[source,java]
+----
+Counter counter = new Counter(); // the instance to populate
+CommandLine cmd = new CommandLine(counter);
+String[] args = new String[] {"--count", "3"};
+cmd.parse(args);
+assert counter.count == 3; // method was invoked with command line value
+----
+
+=== Less Boilerplate
+You can omit some of the boilerplate code from your application when the annotated object implements `Runnable` or `Callable`:
+
+.Before
+
+[source,java]
+----
+Callable<Object> callable = new MyCallable();
+CommandLine cmd = new CommandLine(callable);
+try {
+    cmd.parse(args);
+    if (cmd.isUsageHelpRequested()) {
+        cmd.usage(System.out);
+        return null;
+    } else if (cmd.isVersionHelpRequested()) {
+        cmd.printVersionHelp(System.out);
+        return null;
+    }
+    return callable.call();
+} catch (ParameterException ex) {
+    System.err.println(ex.getMessage());
+    if (!UnmatchedArgumentException.printSuggestions(ex, System.err)) {
+        ex.getCommandLine().usage(System.err);
+    }
+    return null;
+} catch (Exception ex) {
+    throw new ExecutionException(cmd, "Error while calling " + callable, ex);
+}
+----
+
+.After
+
+[source,java]
+----
+Object result = CommandLine.call(new MyCallable(), args);
+----
+The `CommandLine.call` method returns the result of the `Callable`, or `null` if the command line options were invalid. An error message and a usage help message are printed when the command line options were invalid. Exceptions thrown from the `Callable.call` method are caught, wrapped in an `ExecutionException` and rethrown.
+
+
+When the annotated object implements `Runnable`, use the `run` method. For example:
+[source,java]
+----
+CommandLine.run(new MyRunnable(), args);
+----
+
+If the command class has subcommands, the `CommandLine::call` and `CommandLine::run` convenience methods will execute the most specific subcommand on the command line. For example:
+
+----
+<command> -g global_option subcommand -x -y -z subsubcommand param1 param2
+----
+In the above example, the `subsubcommand` is the most specific subcommand, and only the `Runnable` or `Callable` associated with that subcommand will be executed by the `CommandLine::call` and `CommandLine::run` convenience methods.
+
+=== Convenience Methods for Subcommands
+Picocli v2.0 introduced the `CommandLine::parseWithHandler` and `CommandLine::parseWithHandlers` convenience methods.
+These methods are intended to offer the same ease of use as the `run` and `call` methods, but with more flexibility and better support for nested subcommands.
+
+For example:
+[source,java]
+----
+CommandLine cmd = new CommandLine(MyTopLevelCommand())
+        .addSubcommand("status",   new GitStatus())
+        .addSubcommand("commit",   new GitCommit())
+        .addSubcommand("add",      new GitAdd());
+List<Object> result = cmd.parseWithHandler(new RunAll(), args);
+----
+
+The `CommandLine::parseWithHandler` method will take care of the following:
+
+* parse the specified command line arguments
+* if the input was invalid, delegate to `DefaultExceptionHandler`, which will print the error message followed by the usage help message
+* otherwise, if the command line arguments were parsed successfully, let the specified `IParseResultHandler2` handle the parse result
+
+Picocli provides some default `IParseResultHandler2` implementations for common tasks:
+
+* the `RunLast` handler prints help if requested, and otherwise gets the last specified command or subcommand and tries to execute it as a `Runnable` or `Callable`
+* the `RunFirst` handler prints help if requested, and otherwise executes the top-level command as a `Runnable` or `Callable`
+* the `RunAll` handler prints help if requested, and otherwise executes all commands and subcommands that the user specified on the command line as `Runnable` or `Callable` tasks
+
+
+=== Stdout or Stderr
+From picocli v3.0, the `run` and `call` convenience methods follow unix conventions:
+print to stdout when the user requested help, and print to stderr when the input was invalid or an unexpected error occurred.
+
+Custom handlers can extend `AbstractHandler` to facilitate following this convention.
+`AbstractHandler` also provides `useOut` and `useErr` methods to allow customizing the target output streams,
+and `useAnsi` to customize the Ansi style to use:
+
+[source,java]
+----
+@Command class CustomizeTargetStreamsDemo implements Runnable {
+    public void run() { ... }
+
+    public static void main(String... args) {
+        CommandLine cmd = new CommandLine(new CustomizeTargetStreamsDemo());
+
+        PrintStream myOut = getOutputPrintStream(); // custom stream to send command output to
+        PrintStream myErr = getErrorPrintStream();  // custom stream for error messages
+
+        cmd.parseWithHandlers(
+                new RunLast().useOut(myOut).useAnsi(Help.Ansi.ON),
+                CommandLine.defaultExceptionHandler().useErr(myErr).useAnsi(Help.Ansi.OFF),
+                args);
+    }
+}
+----
+
+=== Exit Code
+From picocli v3.0, the built-in parse result handlers (`RunFirst`, `RunLast` and `RunAll`) and exception handler
+(`DefaultExceptionHandler`) can specify an exit code.
+If an exit code was specified, the handler terminates the JVM with the specified status code when finished.
+
+[source,java]
+----
+@Command class ExitCodeDemo implements Runnable {
+    public void run() { throw new ParameterException(new CommandLine(this), "exit code demo"); }
+
+    public static void main(String... args) {
+        CommandLine cmd = new CommandLine(new ExitCodeDemo());
+        cmd.parseWithHandlers(
+                new RunLast().andExit(123),
+                CommandLine.defaultExceptionHandler().andExit(456),
+                args);
+    }
+}
+----
+Running this command prints the following to stderr and exits the JVM with status code `456`.
+
+[source,bash]
+----
+exit code demo
+Usage: <main class>
+----
+
+Custom handlers can extend `AbstractHandler` to inherit this behaviour.
+
+=== `@Spec` Annotation
+Picocli 3.2 introduces a `@Spec` annotation for injecting the `CommandSpec` model of the command into a command field.
+
+This is useful when a command needs to use the picocli API, for example to walk the command hierarchy and iterate over its sibling commands.
+This complements the `@ParentCommand` annotation;  the `@ParentCommand` annotation injects a user-defined command object, whereas this annotation injects a picocli class.
+
+[source,java]
+----
+class InjectSpecExample implements Runnable {
+   @Spec CommandSpec commandSpec;
+
+   //...
+
+   public void run() {
+       // do something with the injected spec
+   }
+}
+----
+
+
+=== Custom Factory
+
+Declaratively registered <<Registering Subcommands Declaratively,subcommands>>, <<Option-specific Type Converters,type converters>> and <<Dynamic Version Information,version providers>> must be instantiated somehow. From picocli 2.2, a custom factory can be specified when constructing a `CommandLine` instance. This allows full control over object creation and opens possibilities for Inversion of Control and Dependency Injection (see <<Dependency Injection,next section>>). For example:
+
+[source,java]
+----
+IFactory myFactory = getCustomFactory();
+CommandLine cmdLine = new CommandLine(new Git(), myFactory);
+----
+
+Custom factories need to implement the `picocli.CommandLine.IFactory` interface:
+
+[source,java]
+----
+public interface IFactory {
+    /**
+     * Creates and returns an instance of the specified class.
+     * @param cls the class to instantiate
+     * @param <K> the type to instantiate
+     * @return the new instance
+     * @throws Exception an exception detailing what went wrong when creating the instance
+     */
+    <K> K create(Class<K> clazz) throws Exception;
+}
+----
+
+If no factory is specified, a default factory is used. The default factory requires that the classes to instantiate have a public no-argument constructor: it instantiates the class by calling first calling `clazz.newInstance()`, and if that fails, `clazz.getDeclaredConstructor().newInstance()`.
+
+=== Dependency Injection
+You can specify a <<Custom Factory>> to integrate with a Dependency Injection container.
+
+The below example shows how to create an `IFactory` implementation with a Guice `Injector`:
+
+[source,java]
+----
+import com.google.inject.*;
+import picocli.CommandLine.IFactory;
+
+public class GuiceFactory implements IFactory {
+    private final Injector injector = Guice.createInjector(new DemoModule());
+
+    @Override
+    public <K> K create(Class<K> aClass) throws Exception {
+        return injector.getInstance(aClass);
+    }
+
+    static class DemoModule extends AbstractModule {
+        @Override
+        protected void configure() {
+            bind(java.util.List.class).to(java.util.LinkedList.class);
+            bind(Runnable.class).to(InjectionDemo.class);
+        }
+    }
+}
+----
+
+Use the custom factory when creating a `CommandLine` instance, or when invoking the `run` or `call` convenience methods:
+
+[source,java]
+----
+import javax.inject.Inject;
+
+@Command(name = "di-demo")
+public class InjectionDemo implements Runnable {
+    @Inject java.util.List list;
+
+    @Option(names = "-x") int x;
+
+    public static void main(String[] args) {
+        CommandLine.run(Runnable.class, new GuiceFactory(), args);
+    }
+
+    @Override
+    public void run() {
+        assert list instanceof java.util.LinkedList;
+    }
+}
+----
+
+
+=== Boolean Options with Parameters
+By default the value of a boolean field is toggled to its logical negative when the field's option is specified on the command line.
+
+It is possible to let end users explicitly specify "true" or "false" as a parameter for a boolean option by defining an explicit <<Arity>> attribute. A boolean option with `arity = "0..1"` accepts zero to one parameters, `arity = "1"` means the option _must_ have one parameter. For example:
+
+[source, java]
+----
+class BooleanOptionWithParameters {
+    @Option(names = "-x", arity = "1", description = "1 mandatory parameter")
+    boolean x;
+
+    @Option(names = "-y", arity = "0..1", description = "min 0 and max 1 parameter")
+    boolean y;
+}
+----
+
+The following ways to invoke the program will be accepted (values are not case sensitive):
+----
+<command> -x true
+<command> -x FALSE
+<command> -x TRUE -y
+<command> -x True -y False
+----
+
+But trying to specify the `-x` option without a parameter, or with a value other than "true" or "false" (case insensitive) will result in a `ParameterException`.
+
+
+=== Hexadecimal Values
+Numeric values are interpreted as decimal numbers by default. If you want picocli to be more flexible, you can
+register a custom type converter that delegates to the https://docs.oracle.com/javase/8/docs/api/java/lang/Integer.html#decode-java.lang.String-[decode] method to convert strings to numbers.
+
+NOTE: The `decode` method looks at the prefix to determine the radix, so numbers
+starting with `0x`, `0X` or `#` are interpreted as hexadecimal numbers, numbers starting with `0` are interpreted
+as octal numbers, and otherwise the number is interpreted as a decimal number.
+
+Java 8-style lambdas:
+[source,java]
+----
+new CommandLine(obj)
+        .registerConverter(Byte.class,    s -> Byte::decode)
+        .registerConverter(Byte.TYPE,     s -> Byte::decode)
+        .registerConverter(Short.class,   s -> Short::decode)
+        .registerConverter(Short.TYPE,    s -> Short::decode)
+        .registerConverter(Integer.class, s -> Integer::decode)
+        .registerConverter(Integer.TYPE,  s -> Integer::decode)
+        .registerConverter(Long.class,    s -> Long::decode)
+        .registerConverter(Long.TYPE,     s -> Long::decode);
+----
+
+In Java 5:
+[source,java]
+----
+ITypeConverter<Integer> intConverter = new ITypeConverter<Integer>() {
+    public Integer convert(String s) {
+        return Integer.decode(s);
+    }
+};
+commandLine.registerConverter(Integer.class, intConverter);
+commandLine.registerConverter(Integer.TYPE,  intConverter);
+...
+----
+
+=== Option-Parameter Separators
+==== Default Separators
+Options may take an _option parameter_ (also called _option-argument_).
+For POSIX-style short options (like `-f` or `-c`), the option parameter may be attached to the option,
+or it may be separated by a space or the _separator string_ (`=` by default).
+That is, all of the below are equivalent:
+[source,java]
+----
+<command> -foutput.txt
+<command> -f output.txt
+<command> -f=output.txt
+----
+
+Long option names (like `--file`) must be separated from their option parameter by a space or the
+_separator string_ (`=` by default). That is, the first two below examples are valid but the last example is invalid:
+[source,java]
+----
+// valid (separator between --file and its parameter)
+<command> --file output.txt
+<command> --file=output.txt
+
+// invalid (picocli will not recognize the --file option when attached to its parameter)
+<command> --fileoutput.txt
+----
+
+==== Custom Separators
+The separator string can be customized programmatically or declaratively.
+
+Use the `separator` attribute of the `@Command` annotation to declaratively set a separator string:
+[source,java]
+----
+@Command(separator = ":")  // declaratively set a separator
+class OptionArg {
+    @Option(names = { "-f", "--file" }) String file;
+}
+----
+[source,java]
+----
+OptionArg optionArg = CommandLine.populateCommand(new OptionArg(), "-f:output.txt");
+assert optionArg.file.equals("output.txt");
+----
+
+
+Alternatively, the separator string can be changed programmatically with the `CommandLine.setSeparator(String separator)` method.
+For example:
+[source,java]
+----
+OptionArg optionArg     = new OptionArg();
+CommandLine commandLine = new CommandLine(optionArg);
+
+commandLine.setSeparator(":"); // programmatically set a separator
+commandLine.parse("-f:output.txt");
+assert optionArg.file.equals("output.txt");
+----
+
+
+=== Best Practices for Command Line Interfaces
+
+When designing your command line application,
+the https://www.gnu.org/prep/standards/html_node/Command_002dLine-Interfaces.html#Command_002dLine-Interfaces[GNU recommendations] for command line interfaces and http://pubs.opengroup.org/onlinepubs/9699919799/basedefs/V1_chap12.html#tag_12_02[POSIX Utility Guidelines] may be useful.
+
+Generally, many applications use options for optional values and parameters for mandatory values.
+However, picocli lets you make options required if you want to, see <<Required Arguments>>.
+
+== Tracing
+Picocli v1.0 introduced support for parser tracing to facilitate troubleshooting.
+
+System property `picocli.trace` controls the trace level. Supported levels are `OFF`, `WARN`, `INFO`, and `DEBUG`. The default trace level is `WARN`.
+
+Specifying system property `-Dpicocli.trace` without a value will set the trace level to `INFO`.
+
+* DEBUG: Shows details of the decisions made by the parser during command line parsing.
+* INFO: Shows a high-level overview of what happens during command line parsing.
+* WARN: The default. Shows warnings instead of errors when lenient parsing is enabled:
+ when single-value options were specified multiple times (and `CommandLine.overwrittenOptionsAllowed` is `true`),
+ or when command line arguments could not be matched as an option or positional parameter
+ (and `CommandLine.unmatchedArgumentsAllowed` is `true`).
+* OFF: Suppresses all tracing including warnings.
+
+Example:
+
+[source,bash]
+----
+# create a custom 'git' command that invokes picocli.Demo$Git with tracing switched on
+alias git='java -Dpicocli.trace -cp picocli-all.jar picocli.Demo$Git'
+
+# invoke our command with some parameters
+git --git-dir=/home/rpopma/picocli commit -m "Fixed typos" -- src1.java src2.java src3.java
+
+# remove our 'git' pseudonym from the current shell environment
+unalias git
+----
+
+Output:
+----
+[picocli INFO] Parsing 8 command line args [--git-dir=/home/rpopma/picocli, commit, -m, "Fixed typos", --, src1.java, src2.java, src3.java]
+[picocli INFO] Setting File field 'Git.gitDir' to '\home\rpopma\picocli' for option --git-dir
+[picocli INFO] Adding [Fixed typos] to List<String> field 'GitCommit.message' for option -m
+[picocli INFO] Found end-of-options delimiter '--'. Treating remainder as positional parameters.
+[picocli INFO] Adding [src1.java] to List<String> field 'GitCommit.files' for args[0..*]
+[picocli INFO] Adding [src2.java] to List<String> field 'GitCommit.files' for args[0..*]
+[picocli INFO] Adding [src3.java] to List<String> field 'GitCommit.files' for args[0..*]
+----
+
+== TAB Autocomplete
+Picocli-based applications can now have command line completion in Bash or Zsh Unix shells.
+See the link:autocomplete.html[Autocomplete for Java Command Line Applications] manual for how to generate an autocompletion script tailored to your application.
+
+
+
