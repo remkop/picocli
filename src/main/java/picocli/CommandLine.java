@@ -3824,7 +3824,7 @@ public class CommandLine {
             Map<Integer, Object> typedValueAtPosition = new TreeMap<Integer, Object>();
 
             /** Constructs a new {@code ArgSpec}. */
-            private ArgSpec(Builder builder) {
+            private <T extends Builder<T>> ArgSpec(Builder<T> builder) {
                 description = builder.description == null ? new String[0] : builder.description;
                 splitRegex = builder.splitRegex == null ? "" : builder.splitRegex;
                 paramLabel = empty(builder.paramLabel) ? "PARAM" : builder.paramLabel;

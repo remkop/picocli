@@ -82,6 +82,7 @@ public class CommandLineTest {
         final Sub1_testDeclarativelyAddSubcommands sub1Command = new Sub1_testDeclarativelyAddSubcommands();
         final SubSub1_testDeclarativelyAddSubcommands subsub1Command = new SubSub1_testDeclarativelyAddSubcommands();
         IFactory factory = new IFactory() {
+            @SuppressWarnings("unchecked")
             public <T> T create(Class<T> cls) throws Exception {
                 if (cls == Sub1_testDeclarativelyAddSubcommands.class) {
                     return (T) sub1Command;
@@ -234,7 +235,7 @@ public class CommandLineTest {
         assertNull(params.set);
         new CommandLine(params).parse("3", "2", "1");
         assertNotNull(params.set);
-        assertEquals(new HashSet(Arrays.asList(1, 2, 3)), params.set);
+        assertEquals(new HashSet<Integer>(Arrays.asList(1, 2, 3)), params.set);
     }
     @Test
     public void testSetPositionalParametersAreReusedIfNonNull() {
@@ -243,7 +244,7 @@ public class CommandLineTest {
         Set<Integer> list = params.set;
         new CommandLine(params).parse("3", "2", "1");
         assertSame(list, params.set);
-        assertEquals(new HashSet(Arrays.asList(1, 2, 3)), params.set);
+        assertEquals(new HashSet<Integer>(Arrays.asList(1, 2, 3)), params.set);
     }
     @Test
     public void testSetPositionalParametersAreReplacedIfNonNull() {
@@ -253,7 +254,7 @@ public class CommandLineTest {
         Set<Integer> list = params.set;
         new CommandLine(params).parse("3", "2", "1");
         assertNotSame(list, params.set);
-        assertEquals(new HashSet(Arrays.asList(3, 2, 1)), params.set);
+        assertEquals(new HashSet<Integer>(Arrays.asList(3, 2, 1)), params.set);
     }
     class QueuePositionalParams {
         @Parameters(type = Integer.class) Queue<Integer> queue;
@@ -264,7 +265,7 @@ public class CommandLineTest {
         assertNull(params.queue);
         new CommandLine(params).parse("3", "2", "1");
         assertNotNull(params.queue);
-        assertEquals(new LinkedList(Arrays.asList(3, 2, 1)), params.queue);
+        assertEquals(new LinkedList<Integer>(Arrays.asList(3, 2, 1)), params.queue);
     }
     @Test
     public void testQueuePositionalParametersAreReusedIfNonNull() {
@@ -273,7 +274,7 @@ public class CommandLineTest {
         Queue<Integer> list = params.queue;
         new CommandLine(params).parse("3", "2", "1");
         assertSame(list, params.queue);
-        assertEquals(new LinkedList(Arrays.asList(3, 2, 1)), params.queue);
+        assertEquals(new LinkedList<Integer>(Arrays.asList(3, 2, 1)), params.queue);
     }
     @Test
     public void testQueuePositionalParametersAreReplacedIfNonNull() {
@@ -283,7 +284,7 @@ public class CommandLineTest {
         Queue<Integer> list = params.queue;
         new CommandLine(params).parse("3", "2", "1");
         assertNotSame(list, params.queue);
-        assertEquals(new LinkedList(Arrays.asList(3, 2, 1)), params.queue);
+        assertEquals(new LinkedList<Integer>(Arrays.asList(3, 2, 1)), params.queue);
     }
     class CollectionPositionalParams {
         @Parameters(type = Integer.class) Collection<Integer> collection;

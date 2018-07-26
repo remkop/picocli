@@ -184,13 +184,10 @@ public class AutoComplete {
             }
         };
     }
-    private static <T> Predicate<T> and(final Predicate<T>... originals) {
+    private static <T> Predicate<T> and(final Predicate<T> left, final Predicate<T> right) {
         return new Predicate<T>() {
             public boolean test(T t) {
-                for (Predicate<T> p : originals) {
-                    if (!p.test(t)) { return false; }
-                }
-                return true;
+                return left.test(t) && right.test(t);
             }
         };
     }

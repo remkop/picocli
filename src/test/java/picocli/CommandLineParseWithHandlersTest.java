@@ -175,11 +175,11 @@ public class CommandLineParseWithHandlersTest {
     }
 
     private void verifyReturnValueForBuiltInHandlers2(CommandLineFactory factory, Object expected, String[] args) {
-        IParseResultHandler2[] handlers = new IParseResultHandler2[] {
+        IParseResultHandler2<?>[] handlers = new IParseResultHandler2[] {
                 new RunFirst(), new RunLast(), new RunAll()
         };
         PrintStream out = new PrintStream(new ByteArrayOutputStream());
-        for (IParseResultHandler2 handler : handlers) {
+        for (IParseResultHandler2<?> handler : handlers) {
             String descr = handler.getClass().getSimpleName();
             Object actual = factory.create().parseWithHandler(handler, args);
             assertEquals(descr + ": return value", expected, actual);
