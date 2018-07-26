@@ -464,14 +464,15 @@ By default the options list displays options in alphabetical order. Use the `sor
 
 ==== Abbreviated Synopsis
 If a command is very complex and has many options, it is sometimes desirable to suppress details from the synopsis with the `abbreviateSynopsis` attribute. For example:
-----
-Usage: <main class> [OPTIONS] [<files>...]
-----
-Note that the positional parameters are not abbreviated.
 [source,java]
 ----
 @Command(abbreviateSynopsis = true)
 class App { ... }
+----
+This shows the below synopsis.
+Positional parameters are not abbreviated.
+----
+Usage: <main class> [OPTIONS] [<files>...]
 ----
 
 
@@ -532,98 +533,29 @@ in the synopsis and the option list can be configured with the `separator` attri
 @Command(separator = ":")
 ----
 
-NOTE: the `@Command(separator = ":")` annotation also affects how picocli parses the command line.  See also <<Custom Separators>>.
-
 
 ==== Hidden Options and Parameters
 Options and Parameters with the `hidden` attribute set to `true` will not be shown in the usage help message.
 
-For example, the `all` field below is annotated as `hidden = true`:
+See the https://picocli.info/#_hidden_options_and_parameters[user manual] for details.
 
-[source,java]
-----
-@Command()
-class App {
-    @Parameters(index = "0",    description = "destination host")  InetAddress host;
-    @Parameters(index = "1",    description = "destination port")  int port;
-    @Parameters(index = "2..*", description = "files to transfer") String[] files;
-
-    @Parameters(hidden = true) String[] all;
-}
-----
-The above will generate the following usage help message, where the `all` field is not shown:
-----
-Usage: <main class> <host> <port> [<files>...]
-      host    destination host
-      port    destination port
-      files   files to transfer
-----
 
 ==== Show Default Values
-===== `${DEFAULT-VALUE}` Variable
 The link:http://picocli.info/#_default_values[default value] for an option or positional parameter
 can be embedded in the description by specifying the variable `${DEFAULT-VALUE}` in the description text.
 
-[source,java]
-----
-class DefaultValues {
-    @Option(names = {"-f", "--file"},
-            description = "the file to use (default: ${DEFAULT-VALUE})")
-    File file = new File("config.xml");
-}
-----
-This command has the following usage help message:
-----
-Usage: <main class> -f=<file>
-  -f, --file=<file>   the file to use (default: config.xml)
-----
+See the https://picocli.info/#_show_default_values[user manual] for details.
 
-===== `${COMPLETION-CANDIDATES}` Variable
 Similarly, it is possible to embed the completion candidates in the description for an option or positional parameter by
 specifying the variable `${COMPLETION-CANDIDATES}` in the description text.
 
-This works for java `enum` classes and for options or positional parameters of non-enum types for which completion candidates are specified.
+See the https://picocli.info/#_show_default_values[user manual] for details.
 
-[source,java]
-----
-enum Lang { java, groovy, kotlin, scala, javascript, frege, clojure }
 
-static class MyAbcCandidates extends ArrayList<String> {
-    MyAbcCandidates() { super(Arrays.asList("A", "B", "C")); }
-}
-
-class ValidValuesDemo {
-    @Option(names = "-l", description = "Enum values: ${COMPLETION-CANDIDATES}")
-    Lang lang = null;
-
-    @Option(names = "-o", completionCandidates = MyAbcCandidates.class,
-            description = "Candidates: ${COMPLETION-CANDIDATES}")
-    String option;
-}
-----
-This command has the following usage help message:
-----
-Usage: <main class> -l=<lang> -o=<option>
-  -l=<lang>     Enum values: java, groovy, kotlin, scala, javascript, frege, clojure
-  -o=<option>   Candidates: A, B, C
-----
 ==== Required-Option Marker
 Required options can be marked in the option list by the character specified with the `requiredOptionMarker` attribute.
 
-[source,java]
-----
-@Command(requiredOptionMarker = '*', abbreviateSynopsis = true)
-class Example {
-    @Option(names = {"-a", "--alpha"}, description = "optional") String alpha;
-    @Option(names = {"-b", "--beta"}, required = true, description = "mandatory") String beta;
-}
-----
-Produces the following usage help message:
-----
-Usage: <main class> [OPTIONS]
-  -a, --alpha=<alpha>   optional
-* -b, --beta=<beta>     mandatory
-----
+See the https://picocli.info/#_required_option_marker[user manual] for details.
 
 ==== Usage Width
 The default width of the usage help message is 80 characters.
