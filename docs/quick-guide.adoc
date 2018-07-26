@@ -377,8 +377,8 @@ https://github.com/remkop/picocli/blob/master/examples/src/main/java/picocli/exa
 that gets version information from a build-generated version properties file.
 
 == Usage Help
-=== Compact Example
-A default picocli usage help message looks like this:
+=== Example Usage Message
+Picocli makes it easy for your application to generate a usage help message like this:
 ----
 Usage: cat [-AbeEnstTuv] [--help] [--version] [FILE...]
 Concatenate FILE(s), or standard input, to standard output.
@@ -420,6 +420,8 @@ class Cat {
 ----
 
 === Usage Help Message Elements
+The various elements of the usage help message are easily customized with annotations.
+
 ==== Command Name
 In the above example, the program name is taken from the `name` attribute of the `Command` annotation:
 [source,java]
@@ -520,7 +522,7 @@ Section headers can be used to make usage message layout appear more spacious. S
                 "along with a log message from the user describing the changes.")
 class GitCommit { ... }
 ----
-The usage help message generated from this class is shown below in https://picocli.info/#_expanded_example[Expanded Example].
+The usage help message generated from this class is shown below in https://picocli.info/#_expanded_example[Expanded Example] in the user manual.
 
 
 
@@ -536,25 +538,21 @@ in the synopsis and the option list can be configured with the `separator` attri
 
 ==== Hidden Options and Parameters
 Options and Parameters with the `hidden` attribute set to `true` will not be shown in the usage help message.
-
 See the https://picocli.info/#_hidden_options_and_parameters[user manual] for details.
 
 
 ==== Show Default Values
 The link:http://picocli.info/#_default_values[default value] for an option or positional parameter
 can be embedded in the description by specifying the variable `${DEFAULT-VALUE}` in the description text.
-
 See the https://picocli.info/#_show_default_values[user manual] for details.
 
 Similarly, it is possible to embed the completion candidates in the description for an option or positional parameter by
 specifying the variable `${COMPLETION-CANDIDATES}` in the description text.
-
 See the https://picocli.info/#_show_default_values[user manual] for details.
 
 
 ==== Required-Option Marker
 Required options can be marked in the option list by the character specified with the `requiredOptionMarker` attribute.
-
 See the https://picocli.info/#_required_option_marker[user manual] for details.
 
 ==== Usage Width
