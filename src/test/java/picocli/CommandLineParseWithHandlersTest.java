@@ -87,6 +87,7 @@ public class CommandLineParseWithHandlersTest {
                 "): java.lang.IllegalStateException: TEST EXCEPTION2", new String[0]);
     }
 
+    @SuppressWarnings("deprecation")
     private void verifyAllFail(Factory factory, String prefix, String suffix, String[] args) {
         IParseResultHandler[] handlers = new IParseResultHandler[] {
                 new RunFirst(), new RunLast(), new RunAll()
@@ -135,6 +136,7 @@ public class CommandLineParseWithHandlersTest {
         CommandLine create();
     }
 
+    @SuppressWarnings("deprecation")
     private void verifyReturnValueForBuiltInHandlers(CommandLineFactory factory, Object expected, String[] args) {
         IParseResultHandler[] handlers = new IParseResultHandler[] {
                 new RunFirst(), new RunLast(), new RunAll()
@@ -198,15 +200,14 @@ public class CommandLineParseWithHandlersTest {
         CommandLineFactory factory = new CommandLineFactory() {
             public CommandLine create() {return new CommandLine(new App()).addSubcommand("sub", new Sub());}
         };
-        PrintStream out = new PrintStream(new ByteArrayOutputStream());
 
-        Object actual1 = factory.create().parseWithHandler(new RunFirst(), out, new String[] {"sub"});
+        Object actual1 = factory.create().parseWithHandler(new RunFirst(), new String[] {"sub"});
         assertEquals("RunFirst: return value", Arrays.asList("RETURN VALUE"), actual1);
 
-        Object actual2 = factory.create().parseWithHandler(new RunLast(), out, new String[] {"sub"});
+        Object actual2 = factory.create().parseWithHandler(new RunLast(), new String[] {"sub"});
         assertEquals("RunLast: return value", Arrays.asList("SUB RETURN VALUE"), actual2);
 
-        Object actual3 = factory.create().parseWithHandler(new RunAll(), out, new String[] {"sub"});
+        Object actual3 = factory.create().parseWithHandler(new RunAll(), new String[] {"sub"});
         assertEquals("RunAll: return value", Arrays.asList("RETURN VALUE", "SUB RETURN VALUE"), actual3);
     }
     @Test

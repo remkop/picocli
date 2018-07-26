@@ -4075,6 +4075,7 @@ public class CommandLineTest {
         }
     }
     @Test
+    @SuppressWarnings("deprecation")
     public void testUnmatchedArgumentSuggestsSubcommands() {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         Demo.mainCommand().parseWithHandler(((IParseResultHandler)null), new PrintStream(baos), new String[]{"chekcout"});
@@ -4084,6 +4085,7 @@ public class CommandLineTest {
         assertEquals(expected, baos.toString());
     }
     @Test
+    @SuppressWarnings("deprecation")
     public void testUnmatchedArgumentSuggestsSubcommands2() {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         Demo.mainCommand().parseWithHandler(((IParseResultHandler)null), new PrintStream(baos), new String[]{"me"});
@@ -4093,6 +4095,7 @@ public class CommandLineTest {
         assertEquals(expected, baos.toString());
     }
     @Test
+    @SuppressWarnings("deprecation")
     public void testUnmatchedArgumentSuggestsOptions() {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         CommandLine cmd = new CommandLine(new Demo.GitCommit());
@@ -4103,6 +4106,7 @@ public class CommandLineTest {
         assertEquals(expected, baos.toString());
     }
     @Test
+    @SuppressWarnings("deprecation")
     public void testUnmatchedArgumentDoesNotSuggestOptionsIfNoMatch() {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         CommandLine cmd = new CommandLine(new Demo.GitCommit());
