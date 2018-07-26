@@ -377,9 +377,6 @@ https://github.com/remkop/picocli/blob/master/examples/src/main/java/picocli/exa
 that gets version information from a build-generated version properties file.
 
 == Usage Help
-=== Overview
-The usage help message is constructed from `@Command` annotations, as well as
-
 === Compact Example
 A default picocli usage help message looks like this:
 ----
@@ -422,7 +419,8 @@ class Cat {
 }
 ----
 
-=== Command Name
+=== Usage Help Message Elements
+==== Command Name
 In the above example, the program name is taken from the `name` attribute of the `Command` annotation:
 [source,java]
 ----
@@ -432,7 +430,7 @@ Without a `name` attribute, picocli will show a generic `<main class>` in the sy
 ----
 Usage: <main class> [-AbeEnstTuv] [--help] [--version] [FILE...]
 ----
-=== Parameter Labels
+==== Parameter Labels
 Non-boolean options require a value. The usage help should explain this, and picocli shows the option parameter
 in the synopsis and in the option list. By default, the field name is shown in `<` and `>` fish brackets.
 Use the `paramLabel` attribute to display a different name. For example:
@@ -456,7 +454,7 @@ class ParamLabels {
 ----
 
 
-=== Unsorted Option List
+==== Unsorted Option List
 By default the options list displays options in alphabetical order. Use the `sortOptions = false` attribute to display options in the order they are declared in your class.
 [source,java]
 ----
@@ -464,7 +462,7 @@ By default the options list displays options in alphabetical order. Use the `sor
 ----
 
 
-=== Abbreviated Synopsis
+==== Abbreviated Synopsis
 If a command is very complex and has many options, it is sometimes desirable to suppress details from the synopsis with the `abbreviateSynopsis` attribute. For example:
 ----
 Usage: <main class> [OPTIONS] [<files>...]
@@ -477,7 +475,7 @@ class App { ... }
 ----
 
 
-=== Custom Synopsis
+==== Custom Synopsis
 For even more control of the synopsis, use the `customSynopsis` attribute to specify one ore more synopsis lines. For example:
 ----
 Usage: ln [OPTION]... [-T] TARGET LINK_NAME   (1st form)
@@ -497,7 +495,7 @@ To produce a synopsis like the above, specify the literal text in the `customSyn
 class Ln { ... }
 ----
 
-=== Header and Footer
+==== Header and Footer
 The `header` will be shown at the top of the usage help message (before the synopsis). The first header line is also the line shown in the subcommand list if your command has subcommands (see <<Usage Help for Subcommands>>).
 
 Use the `footer` attribute to specify one or more lines to show below the generated usage help message.
@@ -505,7 +503,7 @@ Each element of the attribute String array is displayed on a separate line.
 
 The `headerHeading` and `footerHeading` may contain format specifiers. See <<Section Headings>>.
 
-=== Section Headings
+==== Section Headings
 Section headers can be used to make usage message layout appear more spacious. Section headings may contain embedded line separator (`%n`) format specifiers:
 [source,java]
 ----
@@ -521,62 +519,12 @@ Section headers can be used to make usage message layout appear more spacious. S
                 "along with a log message from the user describing the changes.")
 class GitCommit { ... }
 ----
-The usage help message generated from this class is shown below in <<Expanded Example>>.
+The usage help message generated from this class is shown below in https://picocli.info/#_expanded_example[Expanded Example].
 
 
-=== Expanded Example
-The below example demonstrates what a customized usage message can look like.
-Note how section headings with line separators can create a more spacious usage message,
-and also that options are listed in declaration order (instead of in alphabetic order).
-----
-Usage:
-
-Record changes to the repository.
-
-git commit [-ap] [--fixup=<commit>] [--squash=<commit>] [-c=<commit>]
-           [-C=<commit>] [-F=<file>] [-m[=<msg>...]] [<files>...]
-
-Description:
-
-Stores the current contents of the index in a new commit along with a log
-message from the user describing the changes.
-
-Parameters:
-      <files>                 the files to commit
-
-Options:
-  -a, --all                   Tell the command to automatically stage files
-                                that have been modified and deleted, but new
-                                files you have not told Git about are not
-                                affected.
-  -p, --patch                 Use the interactive patch selection interface to
-                                chose which changes to commit
-  -C, --reuse-message=<commit>
-                              Take an existing commit object, and reuse the log
-                                message and the authorship information
-                                (including the timestamp) when creating the
-                                commit.
-  -c, --reedit-message=<commit>
-                              Like -C, but with -c the editor is invoked, so
-                                that the user canfurther edit the commit
-                                message.
-      --fixup=<commit>        Construct a commit message for use with rebase
-                                --autosquash.
-      --squash=<commit>        Construct a commit message for use with rebase
-                                --autosquash. The commitmessage subject line is
-                                taken from the specified commit with a prefix
-                                of "squash! ". Can be used with additional
-                                commit message options (-m/-c/-C/-F).
-  -F, --file=<file>           Take the commit message from the given file. Use
-                                - to read the message from the standard input.
-  -m, --message[=<msg>...]     Use the given <msg> as the commit message. If
-                                multiple -m options are given, their values are
-                                concatenated as separate paragraphs.
-----
-The annotated class that this usage help message is generated from is shown in <<Section Headings>>.
 
 
-=== Option-Parameter Separators
+==== Option-Parameter Separators
 The separator displayed between options and option parameters (`=` by default)
 in the synopsis and the option list can be configured with the `separator` attribute.
 [source,java]
@@ -587,7 +535,7 @@ in the synopsis and the option list can be configured with the `separator` attri
 NOTE: the `@Command(separator = ":")` annotation also affects how picocli parses the command line.  See also <<Custom Separators>>.
 
 
-=== Hidden Options and Parameters
+==== Hidden Options and Parameters
 Options and Parameters with the `hidden` attribute set to `true` will not be shown in the usage help message.
 
 For example, the `all` field below is annotated as `hidden = true`:
@@ -611,8 +559,8 @@ Usage: <main class> <host> <port> [<files>...]
       files   files to transfer
 ----
 
-=== Show Default Values
-==== `${DEFAULT-VALUE}` Variable
+==== Show Default Values
+===== `${DEFAULT-VALUE}` Variable
 The link:http://picocli.info/#_default_values[default value] for an option or positional parameter
 can be embedded in the description by specifying the variable `${DEFAULT-VALUE}` in the description text.
 
@@ -630,7 +578,7 @@ Usage: <main class> -f=<file>
   -f, --file=<file>   the file to use (default: config.xml)
 ----
 
-==== `${COMPLETION-CANDIDATES}` Variable
+===== `${COMPLETION-CANDIDATES}` Variable
 Similarly, it is possible to embed the completion candidates in the description for an option or positional parameter by
 specifying the variable `${COMPLETION-CANDIDATES}` in the description text.
 
@@ -659,7 +607,7 @@ Usage: <main class> -l=<lang> -o=<option>
   -l=<lang>     Enum values: java, groovy, kotlin, scala, javascript, frege, clojure
   -o=<option>   Candidates: A, B, C
 ----
-=== Required-Option Marker
+==== Required-Option Marker
 Required options can be marked in the option list by the character specified with the `requiredOptionMarker` attribute.
 
 [source,java]
@@ -677,7 +625,7 @@ Usage: <main class> [OPTIONS]
 * -b, --beta=<beta>     mandatory
 ----
 
-=== Usage Width
+==== Usage Width
 The default width of the usage help message is 80 characters.
 System property `picocli.usage.width` can be used to specify a custom width.
 The minimum width that can be configured is 55 characters.
