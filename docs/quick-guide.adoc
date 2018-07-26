@@ -11,12 +11,12 @@
 :icons: font
 :imagesdir: images
 
-The user manual for the latest release is at http://picocli.info[http://picocli.info].
+This is the Quick Guide. For more detail, see the full user manual at http://picocli.info[http://picocli.info].
 
 == What is picocli
 Picocli is a Java library and mini-framework for creating command line applications with almost no code.
 
-It supports a variety of command line syntax styles including POSIX, GNU, MS-DOS and more.
+Picocli supports a variety of command line syntax styles including POSIX, GNU, MS-DOS and more.
 It generates highly customizable usage help messages with <<ANSI Colors and Styles,ANSI colors and styles>>.
 Picocli-based applications can have link:autocomplete.html[command line TAB completion] showing available options, option parameters and subcommands, for any level of nested subcommands.
 
@@ -24,11 +24,11 @@ Picocli-based applications can have link:autocomplete.html[command line TAB comp
 image:ExampleUsageANSI.png[Screenshot of usage help with Ansi codes enabled]
 
 == How to use it
-The easiest is to create a class and annotate its fields or methods with `@Option` or `@Parameters` to declare what options and positional parameters your application expects.
+Create a class and annotate its fields or methods with `@Option` or `@Parameters` to declare what options and positional parameters your application expects.
 While parsing the command line, picocli will initialize these fields based on the command line arguments.
 If your class implements `Runnable` or `Callable`, you can let picocli kick off your application after parsing is successfully completed.
 
-NOTE: For applications that cannot use the annotations, there is also a programmatic API for defining what options and positional parameters to expect, and a programmatic API for handling parse results. The programmatic API is not covered in this Quick Guide.
+NOTE: For applications that cannot use the annotations, there is also a link:picocli-3.0-programmatic-api.html[programmatic API] for defining what options and positional parameters to expect, and a programmatic API for handling parse results. The programmatic API is not covered in this Quick Guide.
 
 === Example
 Here is a small example application that uses the `CommandLine.call` <<Less Boilerplate,convenience method>>
@@ -68,7 +68,7 @@ Command line arguments can be separated into _options_  and _positional paramete
 Options have a name, positional parameters are usually the values that follow the options,
 but they may be mixed.
 
-image:http://picocli.info/images/OptionsAndParameters2.png[Example command with annotated @Option and @Parameters]
+image:OptionsAndParameters2.png[Example command with annotated @Option and @Parameters]
 
 Picocli has separate annotations for options and positional parameters.
 
@@ -126,7 +126,7 @@ Use the (zero-based) `index` attribute to specify exactly which parameters to ca
 Omitting the `index` attribute means the field captures _all_ positional parameters.
 Array or collection fields can capture multiple values.
 
-The `index` attribute accepts _range_ values, so an annotation like `@Parameters(index="2..4")` captures the arguments at index 2, 3 and 4. Range values can be _open-ended_. For example, `@Parameters(index="3..*")` captures all arguments from index 3 and up.
+The `index` attribute accepts _range_ values, so an annotation like `@Parameters(index = "2..4")` captures the arguments at index 2, 3 and 4. Range values can be _open-ended_. For example, `@Parameters(index = "3..*")` captures all arguments from index 3 and up.
 
 For example:
 
@@ -150,7 +150,7 @@ assert params.port == 12345;
 assert params.files.equals(Arrays.asList(new File("file1.txt"), new File("file2.txt")));
 ----
 
-The user manual has more details about options and positional parameters, as well as the http://picocli.info/#_double_dash_code_code[`--` delimiter] and parameter files (http://picocli.info/#AtFiles[`@`-files]).
+The user manual has more details about options and positional parameters, as well as the `--` http://picocli.info/#_double_dash_code_code[end-of-options delimiter] and parameter files (http://picocli.info/#AtFiles[`@`-files]).
 
 == Strongly Typed Everything
 When command line options and positional parameters are mapped to the annotated fields,
@@ -305,19 +305,10 @@ For example:
 @Option(names = {"-V", "--version"}, versionHelp = true, description = "display version info")
 boolean versionInfoRequested;
 
-@Option(names = {"-h", "--help"}, usageHelp = true, description = "display this help message")
+@Option(names = {"?", "-h", "--help"}, usageHelp = true, description = "display this help message")
 boolean usageHelpRequested;
 ----
 Use these attributes for options that request the usage help message or version information to be shown on the console.
-
-[source,java]
-----
-App app = CommandLine.populateCommand(new App(), args);
-if (app.usageHelpRequested) {
-   CommandLine.usage(new App(), System.out);
-   return;
-}
-----
 
 The `CommandLine` class offers two methods that allow external components to detect whether
 usage help or version information was requested (without inspecting the annotated domain object):
@@ -347,10 +338,7 @@ Applications can specify version information in the `version` attribute of the `
 [source,java]
 ----
 @Command(version = "1.0")
-class VersionedCommand {
-    @Option(names = { "-V", "--version" }, versionHelp = true)
-    boolean versionRequested;
-    ...
+class VersionedCommand { ... }
 ----
 
 The `CommandLine.printVersionHelp(PrintStream)` method extracts the version information from this
@@ -358,11 +346,8 @@ annotation and prints it to the specified `PrintStream`.
 [source,java]
 ----
 CommandLine commandLine = new CommandLine(new VersionedCommand());
-commandLine.parse(args);
-if (commandLine.isVersionHelpRequested()) {
-    commandLine.printVersionHelp(System.out);
-    return;
-}
+//...
+commandLine.printVersionHelp(System.out);
 ----
 
 The `version` may specify multiple Strings, and may contain <<Usage Help with Styles and Colors,markup>> to show ANSI styles and colors. For example:
@@ -387,13 +372,13 @@ and invoke it to collect version information.
 
 The GitHub project has an
 https://github.com/remkop/picocli/blob/master/examples/src/main/java/picocli/examples/VersionProviderDemo2.java[example]
-implementation that gets the version from the manifest file and and an
+implementation that gets the version from the manifest file and another
 https://github.com/remkop/picocli/blob/master/examples/src/main/java/picocli/examples/VersionProviderDemo1.java[example]
 that gets version information from a build-generated version properties file.
 
 == Usage Help
 === Overview
-The usage help message is constructed from `@command` annotations, as well as
+The usage help message is constructed from `@Command` annotations, as well as
 
 === Compact Example
 A default picocli usage help message looks like this:
@@ -454,22 +439,21 @@ Use the `paramLabel` attribute to display a different name. For example:
 ----
 Usage: <main class> [-f=FILE] [-n=<number>] NUM <host>
       NUM        number param
-      host       the host parameter
+      host       the host
   -f= FILE       a file
-  -n= <number>   a number option
+  -n= <number>   number option
 ----
 Some annotated fields in the below example class have a `paramLabel` attribute and others don't:
 [source,java]
 ----
 @Command()
 class ParamLabels {
-    @Option(names = "-f",    paramLabel = "FILE", description = "a file")      File f;
-    @Option(names = "-n",    description = "a number option")                  int number;
-    @Parameters(index = "0", paramLabel = "NUM", description = "number param") int n;
-    @Parameters(index = "1", description = "the host parameter")               InetAddress host;
+    @Option(names = "-f",    description = "a file",       paramLabel = "FILE") File f;
+    @Option(names = "-n",    description = "number option")                     int number;
+    @Parameters(index = "0", description = "number param", paramLabel = "NUM")  int n;
+    @Parameters(index = "1", description = "the host")                          InetAddress host;
 }
 ----
-NOTE: For demonstration purposes the above example mixes the all-uppercase (e.g., `NUM`) style label and the fish bracket (e.g., `<number>`) style labels. For real applications, mixing these label styles should be avoided. An application should consistently use only one style.
 
 
 === Unsorted Option List
@@ -489,11 +473,7 @@ Note that the positional parameters are not abbreviated.
 [source,java]
 ----
 @Command(abbreviateSynopsis = true)
-class App {
-    @Parameters File[] files;
-    @Option(names = {"--count", "-c"}) int count;
-    ....
-}
+class App { ... }
 ----
 
 
@@ -601,16 +581,14 @@ The separator displayed between options and option parameters (`=` by default)
 in the synopsis and the option list can be configured with the `separator` attribute.
 [source,java]
 ----
-@Command(separator = " ")
+@Command(separator = ":")
 ----
 
-NOTE: the `@Command(separator = " ")` annotation also affects how picocli parses the command line.  See also <<Custom Separators>>.
+NOTE: the `@Command(separator = ":")` annotation also affects how picocli parses the command line.  See also <<Custom Separators>>.
 
 
 === Hidden Options and Parameters
 Options and Parameters with the `hidden` attribute set to `true` will not be shown in the usage help message.
-This is useful for example when a parameter at some index is captured into multiple fields:
-by default each of these fields would be shown in the usage message, which would be confusing for users.
 
 For example, the `all` field below is annotated as `hidden = true`:
 
@@ -635,12 +613,8 @@ Usage: <main class> <host> <port> [<files>...]
 
 === Show Default Values
 ==== `${DEFAULT-VALUE}` Variable
-From picocli 3.2, it is possible to embed the <<Default Values,default values>> in the description for an option or positional parameter by
-specifying the variable `${DEFAULT-VALUE}` in the description text.
-Picocli uses reflection to get the default values from the annotated fields.
-
-The variable is replaced with the default value regardless of the `@Command(showDefaultValues)` attribute
-and regardless of the `@Option(showDefaultValues)` or `@Parameters(showDefaultValues)` attribute.
+The link:http://picocli.info/#_default_values[default value] for an option or positional parameter
+can be embedded in the description by specifying the variable `${DEFAULT-VALUE}` in the description text.
 
 [source,java]
 ----
@@ -649,10 +623,8 @@ class DefaultValues {
             description = "the file to use (default: ${DEFAULT-VALUE})")
     File file = new File("config.xml");
 }
-
-CommandLine.usage(new DefaultValues(), System.out);
 ----
-This produces the following usage help:
+This command has the following usage help message:
 ----
 Usage: <main class> -f=<file>
   -f, --file=<file>   the file to use (default: config.xml)
@@ -666,7 +638,7 @@ This works for java `enum` classes and for options or positional parameters of n
 
 [source,java]
 ----
-enum Lang { java, groovy, kotlin, javascript, frege, clojure }
+enum Lang { java, groovy, kotlin, scala, javascript, frege, clojure }
 
 static class MyAbcCandidates extends ArrayList<String> {
     MyAbcCandidates() { super(Arrays.asList("A", "B", "C")); }
@@ -680,31 +652,29 @@ class ValidValuesDemo {
             description = "Candidates: ${COMPLETION-CANDIDATES}")
     String option;
 }
-
-CommandLine.usage(new ValidValuesDemo(), System.out);
 ----
-This produces the following usage help:
+This command has the following usage help message:
 ----
 Usage: <main class> -l=<lang> -o=<option>
-  -l=<lang>     Enum values: java, groovy, kotlin, javascript, frege, clojure
+  -l=<lang>     Enum values: java, groovy, kotlin, scala, javascript, frege, clojure
   -o=<option>   Candidates: A, B, C
 ----
 === Required-Option Marker
-Required options can be marked in the option list by the character specified with the `requiredOptionMarker` attribute. By default options are not marked because the synopsis shows users which options are required and which are optional. This feature may be useful in combination with `abbreviatedSynopsis`. For example:
+Required options can be marked in the option list by the character specified with the `requiredOptionMarker` attribute.
 
 [source,java]
 ----
 @Command(requiredOptionMarker = '*', abbreviateSynopsis = true)
 class Example {
-    @Option(names = {"-a", "--alpha"}, description = "optional alpha") String alpha;
-    @Option(names = {"-b", "--beta"}, required = true, description = "mandatory beta") String beta;
+    @Option(names = {"-a", "--alpha"}, description = "optional") String alpha;
+    @Option(names = {"-b", "--beta"}, required = true, description = "mandatory") String beta;
 }
 ----
 Produces the following usage help message:
 ----
 Usage: <main class> [OPTIONS]
-  -a, --alpha=<alpha>   optional alpha
-* -b, --beta=<beta>     mandatory beta
+  -a, --alpha=<alpha>   optional
+* -b, --beta=<beta>     mandatory
 ----
 
 === Usage Width
@@ -712,7 +682,7 @@ The default width of the usage help message is 80 characters.
 System property `picocli.usage.width` can be used to specify a custom width.
 The minimum width that can be configured is 55 characters.
 
-Picocli 3.0 also introduced programmatic API for this via the `CommandLine::setUsageHelpWidth` and `UsageMessageSpec::width` methods.
+The width can also be set programmatically via the `CommandLine::setUsageHelpWidth` and `UsageMessageSpec::width` methods.
 
 == ANSI Colors and Styles
 === Colorized Example
@@ -777,6 +747,7 @@ class GitCommit { ... }
 ----
 
 CAUTION: Markup styles cannot be nested, for example: `@|bold this @|underline that|@|@` will not work. You can achieve the same by combining styles, for example: `@|bold this|@ @|bold,underline that|@` will work fine.
+
 === More Colors
 Most terminals support a https://en.wikipedia.org/wiki/ANSI_escape_code#Colors[256 color indexed palette]:
 ----
