@@ -50,6 +50,9 @@ allprojects {
         // see https://stackoverflow.com/questions/18173908/error-compiling-a-groovy-project-using-grab-annotation
         groovyClasspath += configurations.ivy
     }
+    tasks.withType(JavaCompile) {
+        options.compilerArgs << '-Xlint:unchecked' << '-Xlint:deprecation'
+    }
 }
 project('examples') {
     dependencies {

@@ -810,7 +810,7 @@ public class CommandLineModelTest {
     public void testUnmatchedArgsBinding_forStringCollectionSupplier() {
         setTraceLevel("OFF");
         class ArrayBinding implements IGetter {
-            List<String> list = new ArrayList();
+            List<String> list = new ArrayList<String>();
             @SuppressWarnings("unchecked") public <T> T get() {
                 return (T) list;
             }
