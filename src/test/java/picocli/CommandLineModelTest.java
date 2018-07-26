@@ -1202,6 +1202,7 @@ public class CommandLineModelTest {
         assertTrue(new CommandLine(cmd).parseArgs("-x").isVersionHelpRequested());
     }
     @Test
+    @SuppressWarnings("deprecation")
     public void testGettersOnOptionBuilder() {
         ISetter setter = new ISetter() {
             public <T> T set(T value) throws Exception {
