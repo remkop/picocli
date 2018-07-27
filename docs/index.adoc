@@ -20,6 +20,7 @@ Every main method deserves picocli!
 image:logo/horizontal.png[picocli the Mighty Tiny Command Line Interface,width=800]
 
 The user manual for the latest release is at http://picocli.info.
+Busy and impatient people may be interested in the link:quick-guide.html[Quick Guide].
 
 == Introduction
 Picocli is a one-file framework for creating Java command line applications with almost zero code.
