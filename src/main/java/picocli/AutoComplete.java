@@ -252,12 +252,18 @@ public class AutoComplete {
             "# [1] http://stackoverflow.com/a/12495480/1440785\n" +
             "# [2] http://tiswww.case.edu/php/chet/bash/FAQ\n" +
             "# [3] https://www.gnu.org/software/bash/manual/html_node/The-Shopt-Builtin.html\n" +
-            "# [4] https://stackoverflow.com/questions/17042057/bash-check-element-in-array-for-elements-in-another-array/17042655#17042655\n" +
-            "# [5] https://www.gnu.org/software/bash/manual/html_node/Programmable-Completion.html#Programmable-Completion\n" +
+            "# [4] http://zsh.sourceforge.net/Doc/Release/Options.html#index-COMPLETE_005fALIASES\n" +
+            "# [5] https://stackoverflow.com/questions/17042057/bash-check-element-in-array-for-elements-in-another-array/17042655#17042655\n" +
+            "# [6] https://www.gnu.org/software/bash/manual/html_node/Programmable-Completion.html#Programmable-Completion\n" +
             "#\n" +
             "\n" +
-            "# Enable programmable completion facilities (see [3])\n" +
-            "shopt -s progcomp\n" +
+            "if [ -n \"$BASH_VERSION\" ]; then\n" +
+            "  # Enable programmable completion facilities when using bash (see [3])\n" +
+            "  shopt -s progcomp\n" +
+            "elif [ -n \"$ZSH_VERSION\" ]; then\n" +
+            "  # Make alias a distinct command for completion purposes when using zsh (see [4])\n" +
+            "  setopt COMPLETE_ALIASES\n" +
+            "fi\n" +
             "\n" +
             "# ArrContains takes two arguments, both of which are the name of arrays.\n" +
             "# It creates a temporary hash from lArr1 and then checks if all elements of lArr2\n" +
@@ -266,7 +272,7 @@ public class AutoComplete {
             "# Returns zero (no error) if all elements of the 2nd array are in the 1st array,\n" +
             "# otherwise returns 1 (error).\n" +
             "#\n" +
-            "# Modified from [4]\n" +
+            "# Modified from [5]\n" +
             "function ArrContains() {\n" +
             "  local lArr1 lArr2\n" +
             "  declare -A tmp\n" +
@@ -282,7 +288,7 @@ public class AutoComplete {
             "\n" +
             "# Define a completion specification (a compspec) for the\n" +
             "# `%1$s`, `%1$s.sh`, and `%1$s.bash` commands.\n" +
-            "# Uses the bash `complete` builtin (see [5]) to specify that shell function\n" +
+            "# Uses the bash `complete` builtin (see [6]) to specify that shell function\n" +
             "# `_complete_%1$s` is responsible for generating possible completions for the\n" +
             "# current word on the command line.\n" +
             "# The `-o default` option means that if the function generated no matches, the\n" +
