@@ -36,12 +36,18 @@
 # [1] http://stackoverflow.com/a/12495480/1440785
 # [2] http://tiswww.case.edu/php/chet/bash/FAQ
 # [3] https://www.gnu.org/software/bash/manual/html_node/The-Shopt-Builtin.html
-# [4] https://stackoverflow.com/questions/17042057/bash-check-element-in-array-for-elements-in-another-array/17042655#17042655
-# [5] https://www.gnu.org/software/bash/manual/html_node/Programmable-Completion.html#Programmable-Completion
+# [4] http://zsh.sourceforge.net/Doc/Release/Options.html#index-COMPLETE_005fALIASES
+# [5] https://stackoverflow.com/questions/17042057/bash-check-element-in-array-for-elements-in-another-array/17042655#17042655
+# [6] https://www.gnu.org/software/bash/manual/html_node/Programmable-Completion.html#Programmable-Completion
 #
 
-# Enable programmable completion facilities (see [3])
-shopt -s progcomp
+if [ -n "$BASH_VERSION" ]; then
+  # Enable programmable completion facilities when using bash (see [3])
+  shopt -s progcomp
+elif [ -n "$ZSH_VERSION" ]; then
+  # Make alias a distinct command for completion purposes when using zsh (see [4])
+  setopt COMPLETE_ALIASES
+fi
 
 # ArrContains takes two arguments, both of which are the name of arrays.
 # It creates a temporary hash from lArr1 and then checks if all elements of lArr2
@@ -50,7 +56,7 @@ shopt -s progcomp
 # Returns zero (no error) if all elements of the 2nd array are in the 1st array,
 # otherwise returns 1 (error).
 #
-# Modified from [4]
+# Modified from [5]
 function ArrContains() {
   local lArr1 lArr2
   declare -A tmp
@@ -102,7 +108,7 @@ function _picocli_basicExample() {
 
 # Define a completion specification (a compspec) for the
 # `basicExample`, `basicExample.sh`, and `basicExample.bash` commands.
-# Uses the bash `complete` builtin (see [5]) to specify that shell function
+# Uses the bash `complete` builtin (see [6]) to specify that shell function
 # `_complete_basicExample` is responsible for generating possible completions for the
 # current word on the command line.
 # The `-o default` option means that if the function generated no matches, the
