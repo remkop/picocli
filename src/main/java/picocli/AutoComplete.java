@@ -263,6 +263,7 @@ public class AutoComplete {
             "elif [ -n \"$ZSH_VERSION\" ]; then\n" +
             "  # Make alias a distinct command for completion purposes when using zsh (see [4])\n" +
             "  setopt COMPLETE_ALIASES\n" +
+            "  alias compopt=complete\n" +
             "fi\n" +
             "\n" +
             "# ArrContains takes two arguments, both of which are the name of arrays.\n" +

@@ -47,6 +47,7 @@ if [ -n "$BASH_VERSION" ]; then
 elif [ -n "$ZSH_VERSION" ]; then
   # Make alias a distinct command for completion purposes when using zsh (see [4])
   setopt COMPLETE_ALIASES
+  alias compopt=complete
 fi
 
 # ArrContains takes two arguments, both of which are the name of arrays.
