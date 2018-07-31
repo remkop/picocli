@@ -25,6 +25,7 @@ No features have been promoted in this picocli release.
 ## <a name="3.3.1-fixes"></a> Fixed issues
 - [#412] Enhancement: Enum constant names are now returned from `ArgSpec::completionCandidates()`. Thanks to [Radovan Panák](https://github.com/rpanak).
 - [#417] Enhancement: Ensure bash scripts have correct line separators. Thanks to [Holger Stenger](https://github.com/stengerh).
+- [#425] Enhancement: Fix autocomplete script errors in zsh. Thanks to [Anthony Keenan](https://github.com/anthonykeenan).
 - [#419] Bugfix: Default value for arrays was not rendered correctly with `@{DEFAULT-VALUE}`.
 - [#418] Doc: Improve installation instructions for autocompletion scripts.
 - [#420] Doc: Added a Quick Guide
