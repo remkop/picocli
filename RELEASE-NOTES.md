@@ -27,6 +27,8 @@ No features have been promoted in this picocli release.
 - [#417] Enhancement: Ensure bash scripts have correct line separators. Thanks to [Holger Stenger](https://github.com/stengerh).
 - [#419] Bugfix: Default value for arrays was not rendered correctly with `@{DEFAULT-VALUE}`.
 - [#418] Doc: Improve installation instructions for autocompletion scripts.
+- [#420] Doc: Added a Quick Guide
+  
 
 ## <a name="3.3.1-deprecated"></a> Deprecations
 No features were deprecated in this release.
