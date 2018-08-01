@@ -391,6 +391,87 @@ public class CommandLineTest {
         assertEquals(Long.valueOf(123456), fields.longValue);
     }
 
+    private static class PojoWithEnumOptions {
+        @Option(names = "-u") private final TimeUnit enumValue = TimeUnit.SECONDS;
+    }
+    @Test
+    public void testParserCaseInsensitiveEnumValuesAllowed_falseByDefault() throws Exception {
+        PojoWithEnumOptions fields = new PojoWithEnumOptions();
+        CommandLine cmd = new CommandLine(fields);
+        assertFalse(cmd.isCaseInsensitiveEnumValuesAllowed());
+
+        try {
+            cmd.parse("-u=milliseconds");
+            fail("Expected exception");
+        } catch (ParameterException ex) {
+            assertTrue(ex.getMessage(), ex.getMessage().startsWith("Could not convert 'milliseconds' to TimeUnit for option '-u'"));
+        }
+    }
+    @Test
+    public void testParserCaseInsensitiveEnumValuesAllowed_enabled() throws Exception {
+        PojoWithEnumOptions fields = new PojoWithEnumOptions();
+        new CommandLine(fields).setCaseInsensitiveEnumValuesAllowed(true).parse("-u=milliseconds");
+        assertSame(TimeUnit.MILLISECONDS, fields.enumValue);
+    }
+    @Test
+    public void testParserCaseInsensitiveEnumValuesAllowed_invalidInput() throws Exception {
+        PojoWithEnumOptions fields = new PojoWithEnumOptions();
+        CommandLine cmd = new CommandLine(fields).setCaseInsensitiveEnumValuesAllowed(true);
+
+        try {
+            cmd.parse("-u=millisecondINVALID");
+            fail("Expected exception");
+        } catch (ParameterException ex) {
+            assertTrue(ex.getMessage(), ex.getMessage().startsWith("Could not convert 'millisecondINVALID' to TimeUnit for option '-u'"));
+        }
+    }
+
+    @Test
+    public void testParserCaseInsensitiveEnumValuesAllowed_BeforeSubcommandsAdded() {
+        @Command class TopLevel {}
+        CommandLine commandLine = new CommandLine(new TopLevel());
+        assertEquals(false, commandLine.isCaseInsensitiveEnumValuesAllowed());
+        commandLine.setCaseInsensitiveEnumValuesAllowed(true);
+        assertEquals(true, commandLine.isCaseInsensitiveEnumValuesAllowed());
+
+        int childCount = 0;
+        int grandChildCount = 0;
+        commandLine.addSubcommand("main", createNestedCommand());
+        for (CommandLine sub : commandLine.getSubcommands().values()) {
+            childCount++;
+            assertEquals("subcommand added afterwards is not impacted", false, sub.isCaseInsensitiveEnumValuesAllowed());
+            for (CommandLine subsub : sub.getSubcommands().values()) {
+                grandChildCount++;
+                assertEquals("subcommand added afterwards is not impacted", false, subsub.isCaseInsensitiveEnumValuesAllowed());
+            }
+        }
+        assertTrue(childCount > 0);
+        assertTrue(grandChildCount > 0);
+    }
+
+    @Test
+    public void testParserCaseInsensitiveEnumValuesAllowed_AfterSubcommandsAdded() {
+        @Command class TopLevel {}
+        CommandLine commandLine = new CommandLine(new TopLevel());
+        commandLine.addSubcommand("main", createNestedCommand());
+        assertEquals(false, commandLine.isCaseInsensitiveEnumValuesAllowed());
+        commandLine.setCaseInsensitiveEnumValuesAllowed(true);
+        assertEquals(true, commandLine.isCaseInsensitiveEnumValuesAllowed());
+
+        int childCount = 0;
+        int grandChildCount = 0;
+        for (CommandLine sub : commandLine.getSubcommands().values()) {
+            childCount++;
+            assertEquals("subcommand added before IS impacted", true, sub.isCaseInsensitiveEnumValuesAllowed());
+            for (CommandLine subsub : sub.getSubcommands().values()) {
+                grandChildCount++;
+                assertEquals("subsubcommand added before IS impacted", true, sub.isCaseInsensitiveEnumValuesAllowed());
+            }
+        }
+        assertTrue(childCount > 0);
+        assertTrue(grandChildCount > 0);
+    }
+
     private static class RequiredField {
         @Option(names = {"-?", "/?"},        help = true)       boolean isHelpRequested;
         @Option(names = {"-V", "--version"}, versionHelp= true) boolean versionHelp;

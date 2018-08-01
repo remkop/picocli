@@ -361,6 +361,32 @@ public class CommandLine {
         return this;
     }
 
+    /** Returns whether the parser should ignore case when converting arguments to {@code enum} values. The default is {@code false}.
+     * @return {@code true} if enum values can be specified that don't match the {@code toString()} value of the enum constant, {@code false} otherwise;
+     * e.g., for an option of type <a href="https://docs.oracle.com/javase/8/docs/api/java/time/DayOfWeek.html">java.time.DayOfWeek</a>,
+     * values {@code MonDaY}, {@code monday} and {@code MONDAY} are all recognized if {@code true}.
+     * @since 3.4 */
+    public boolean isCaseInsensitiveEnumValuesAllowed() { return getCommandSpec().parser().caseInsensitiveEnumValuesAllowed(); }
+
+    /** Sets whether the parser should ignore case when converting arguments to {@code enum} values.
+     * E.g., for an option of type <a href="https://docs.oracle.com/javase/8/docs/api/java/time/DayOfWeek.html">java.time.DayOfWeek</a>,
+     * values {@code MonDaY}, {@code monday} and {@code MONDAY} are all recognized if {@code true}.
+     * <p>The specified setting will be registered with this {@code CommandLine} and the full hierarchy of its
+     * subcommands and nested sub-subcommands <em>at the moment this method is called</em>. Subcommands added
+     * later will have the default setting. To ensure a setting is applied to all
+     * subcommands, call the setter last, after adding subcommands.</p>
+     * @param newValue the new setting
+     * @return this {@code CommandLine} object, to allow method chaining
+     * @since 3.4
+     */
+    public CommandLine setCaseInsensitiveEnumValuesAllowed(boolean newValue) {
+        getCommandSpec().parser().caseInsensitiveEnumValuesAllowed(newValue);
+        for (CommandLine command : getCommandSpec().subcommands().values()) {
+            command.setCaseInsensitiveEnumValuesAllowed(newValue);
+        }
+        return this;
+    }
+
     /** Returns whether the parser interprets the first positional parameter as "end of options" so the remaining
      * arguments are all treated as positional parameters. The default is {@code false}.
      * @return {@code true} if all values following the first positional parameter should be treated as positional parameters, {@code false} otherwise
@@ -3705,6 +3731,7 @@ public class CommandLine {
             private boolean limitSplit = false;
             private boolean aritySatisfiedByAttachedOptionParam = false;
             private boolean collectErrors = false;
+            private boolean caseInsensitiveEnumValuesAllowed = false;
 
             /** Returns the String to use as the separator between options and option parameters. {@code "="} by default,
              * initialized from {@link Command#separator()} if defined.*/
@@ -3724,6 +3751,9 @@ public class CommandLine {
             public boolean expandAtFiles()                     { return expandAtFiles; }
             /** @see CommandLine#isPosixClusteredShortOptionsAllowed() */
             public boolean posixClusteredShortOptionsAllowed() { return posixClusteredShortOptionsAllowed; }
+            /** @see CommandLine#isCaseInsensitiveEnumValuesAllowed()
+             * @since 3.4 */
+            public boolean caseInsensitiveEnumValuesAllowed()  { return caseInsensitiveEnumValuesAllowed; }
             /** @see CommandLine#isUnmatchedOptionsArePositionalParams() */
             public boolean unmatchedOptionsArePositionalParams() { return unmatchedOptionsArePositionalParams; }
             private boolean splitFirst()                       { return limitSplit(); }
@@ -3754,6 +3784,9 @@ public class CommandLine {
             public ParserSpec expandAtFiles(boolean expandAtFiles)                         { this.expandAtFiles = expandAtFiles; return this; }
             /** @see CommandLine#setPosixClusteredShortOptionsAllowed(boolean) */
             public ParserSpec posixClusteredShortOptionsAllowed(boolean posixClusteredShortOptionsAllowed) { this.posixClusteredShortOptionsAllowed = posixClusteredShortOptionsAllowed; return this; }
+            /** @see CommandLine#setCaseInsensitiveEnumValuesAllowed(boolean) 
+             * @since 3.4 */
+            public ParserSpec caseInsensitiveEnumValuesAllowed(boolean caseInsensitiveEnumValuesAllowed) { this.caseInsensitiveEnumValuesAllowed = caseInsensitiveEnumValuesAllowed; return this; }
             /** @see CommandLine#setUnmatchedOptionsArePositionalParams(boolean) */
             public ParserSpec unmatchedOptionsArePositionalParams(boolean unmatchedOptionsArePositionalParams) { this.unmatchedOptionsArePositionalParams = unmatchedOptionsArePositionalParams; return this; }
             /** Sets whether exceptions during parsing should be collected instead of thrown.
@@ -6253,6 +6286,12 @@ public class CommandLine {
                 return new ITypeConverter<Object>() {
                     @SuppressWarnings("unchecked")
                     public Object convert(String value) throws Exception {
+                        if (commandSpec.parser().caseInsensitiveEnumValuesAllowed()) {
+                            String upper = value.toUpperCase();
+                            for (Object enumConstant : type.getEnumConstants()) {
+                                if (upper.equals(String.valueOf(enumConstant).toUpperCase())) { return enumConstant; }
+                            }
+                        }
                         return Enum.valueOf((Class<Enum>) type, value);
                     }
                 };

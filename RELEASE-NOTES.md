@@ -1,28 +1,29 @@
 # picocli Release Notes
 
-# <a name="3.3.1"></a> Picocli 3.3.1 (UNRELEASED)
-The picocli community is pleased to announce picocli 3.3.1.
+# <a name="3.4.0"></a> Picocli 3.4.0 (UNRELEASED)
+The picocli community is pleased to announce picocli 3.4.0.
 
-This release contains a bugfix and enhancements.
+This release contains bugfixes and enhancements.
 
 This is the thirty-fifth public release.
 Picocli follows [semantic versioning](http://semver.org/).
 
-## <a name="3.3.1"></a> Table of Contents
-* [New and noteworthy](#3.3.1-new)
-* [Promoted features](#3.3.1-promoted)
-* [Fixed issues](#3.3.1-fixes)
-* [Deprecations](#3.3.1-deprecated)
-* [Potential breaking changes](#3.3.1-breaking-changes)
+## <a name="3.4.0"></a> Table of Contents
+* [New and noteworthy](#3.4.0-new)
+* [Promoted features](#3.4.0-promoted)
+* [Fixed issues](#3.4.0-fixes)
+* [Deprecations](#3.4.0-deprecated)
+* [Potential breaking changes](#3.4.0-breaking-changes)
 
-## <a name="3.3.1-new"></a> New and Noteworthy
+## <a name="3.4.0-new"></a> New and Noteworthy
 
-## <a name="3.3.1-promoted"></a> Promoted Features
+## <a name="3.4.0-promoted"></a> Promoted Features
 Promoted features are features that were incubating in previous versions of picocli but are now supported and subject to backwards compatibility. 
 
 No features have been promoted in this picocli release.
 
-## <a name="3.3.1-fixes"></a> Fixed issues
+## <a name="3.4.0-fixes"></a> Fixed issues
+- [#14] New API: Support enum values to be parsed in an case-insensitive way.
 - [#412] Enhancement: Enum constant names are now returned from `ArgSpec::completionCandidates()`. Thanks to [Radovan Panák](https://github.com/rpanak).
 - [#417] Enhancement: Ensure bash scripts have correct line separators. Thanks to [Holger Stenger](https://github.com/stengerh).
 - [#425] Enhancement: Fix autocomplete script errors in zsh. Thanks to [Anthony Keenan](https://github.com/anthonykeenan).
@@ -31,10 +32,10 @@ No features have been promoted in this picocli release.
 - [#420] Doc: Added a Quick Guide
   
 
-## <a name="3.3.1-deprecated"></a> Deprecations
+## <a name="3.4.0-deprecated"></a> Deprecations
 No features were deprecated in this release.
 
-## <a name="3.3.1-breaking-changes"></a> Potential breaking changes
+## <a name="3.4.0-breaking-changes"></a> Potential breaking changes
 This release has no breaking changes.
 
 
