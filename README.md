@@ -14,61 +14,62 @@ In a single file, so you can include it _in source form_.
 This lets users run picocli-based applications without requiring picocli as an external dependency.
 
 How it works: annotate your class and picocli initializes it from the command line arguments,
-converting the input to strongly typed data. Supports git-like [subcommands](http://picocli.info/#_subcommands)
-(and nested [sub-subcommands](http://picocli.info/#_nested_sub_subcommands)),
-any option prefix style, POSIX-style [grouped short options](http://picocli.info/#_short_options),
-custom [type converters](http://picocli.info/#_custom_type_converters) and more.
-Parser [tracing](http://picocli.info/#_tracing) facilitates troubleshooting.
+converting the input to strongly typed data. Supports git-like [subcommands](https://picocli.info/#_subcommands)
+(and nested [sub-subcommands](https://picocli.info/#_nested_sub_subcommands)),
+any option prefix style, POSIX-style [grouped short options](https://picocli.info/#_short_options),
+custom [type converters](https://picocli.info/#_custom_type_converters) and more.
+Parser [tracing](https://picocli.info/#_tracing) facilitates troubleshooting.
 
-Distinguishes between [named options](http://picocli.info/#_options) and
-[positional parameters](http://picocli.info/#_positional_parameters) and allows _both_ to be 
-[strongly typed](http://picocli.info/#_strongly_typed_everything).
-[Multi-valued fields](http://picocli.info/#_multiple_values) can specify 
-an exact number of parameters or a [range](http://picocli.info/#_arity) (e.g., `0..*`, `1..2`).
-Supports [Map options](http://picocli.info/#_maps) like `-Dkey1=val1 -Dkey2=val2`, where both key and value can be strongly typed.
+Distinguishes between [named options](https://picocli.info/#_options) and
+[positional parameters](https://picocli.info/#_positional_parameters) and allows _both_ to be 
+[strongly typed](https://picocli.info/#_strongly_typed_everything).
+[Multi-valued fields](https://picocli.info/#_multiple_values) can specify 
+an exact number of parameters or a [range](https://picocli.info/#_arity) (e.g., `0..*`, `1..2`).
+Supports [Map options](https://picocli.info/#_maps) like `-Dkey1=val1 -Dkey2=val2`, where both key and value can be strongly typed.
 
-Generates polished and easily tailored [usage help](http://picocli.info/#_usage_help)
-and  [version help](http://picocli.info/#_version_help),
-using [ANSI colors](http://picocli.info/#_ansi_colors_and_styles) where possible.
+Generates polished and easily tailored [usage help](https://picocli.info/#_usage_help)
+and  [version help](https://picocli.info/#_version_help),
+using [ANSI colors](https://picocli.info/#_ansi_colors_and_styles) where possible.
 Works with Java 5 or higher (but is designed to facilitate the use of Java 8 lambdas).
 
-Picocli-based command line applications can have [TAB autocompletion](http://picocli.info/autocomplete.html),
+Picocli-based command line applications can have [TAB autocompletion](https://picocli.info/autocomplete.html),
 interactively showing users what options and subcommands are available.
-When an option has [`completionCandidates`](http://picocli.info/#__code_completion_candidates_code_variable) or has an `enum` type, autocompletion can also suggest option values.
+When an option has [`completionCandidates`](https://picocli.info/#__code_completion_candidates_code_variable) or has an `enum` type, autocompletion can also suggest option values.
 Picocli can generate completion scripts for bash and zsh, and offers an API to easily create a [JLine](https://github.com/jline/jline2) `Completer` for your application.
 
-Picocli-based applications can easily [integrate](http://picocli.info/#_dependency_injection) with Dependency Injection containers.
+Picocli-based applications can easily [integrate](https://picocli.info/#_dependency_injection) with Dependency Injection containers.
 
 <a id="picocli_demo"></a>
 ![Picocli Demo help message with ANSI colors](docs/images/picocli.Demo.png?raw=true)
 
 #### Releases
-* [Releases](https://github.com/remkop/picocli/releases) - latest: 3.3.0
+* [Releases](https://github.com/remkop/picocli/releases) - latest: 3.4.0
 * [Picocli 3.0.0 Release Notes](https://github.com/remkop/picocli/releases/tag/v3.0.0) - note there are some [potential breaking changes](https://github.com/remkop/picocli/releases/tag/v3.0.0#3.0.0-breaking-changes) from prior versions
 * [Picocli 2.0 Release Notes](https://github.com/remkop/picocli/releases/tag/v2.0.0) - note there are some [potential breaking changes](https://github.com/remkop/picocli/releases/tag/v2.0.0#2.0-breaking-changes) from prior versions
 
 #### Documentation
-* [3.x User manual: http://picocli.info](http://picocli.info)
-* [2.x User manual](http://picocli.info/man/2.x)
-* [Command line autocompletion](http://picocli.info/autocomplete.html)
-* [API Javadoc](http://picocli.info/apidocs/)
-* [3.0 Programmatic API](http://picocli.info/picocli-3.0-programmatic-api.html)
+* [3.x User manual: https://picocli.info](https://picocli.info)
+* [3.x Quick Guide](https://picocli.info/quick-guide.html)
+* [2.x User manual](https://picocli.info/man/2.x)
+* [Command line autocompletion](https://picocli.info/autocomplete.html)
+* [API Javadoc](https://picocli.info/apidocs/)
+* [3.0 Programmatic API](https://picocli.info/picocli-3.0-programmatic-api.html)
 * [FAQ](https://github.com/remkop/picocli/wiki/FAQ)
 
 #### Articles
-* Picocli is now part of Groovy. <img src="http://picocli.info/images/groovy-logo.png" height="50"> From Groovy 2.5, picocli is the underlying parser for Groovy's [CliBuilder DSL](http://groovy-lang.org/dsls.html#_clibuilder). Details: [Part 1](http://picocli.info/groovy-2.5-clibuilder-renewal-part1.html) (also on: [DZone](https://dzone.com/articles/groovy-25-clibuilder-renewal), [Java Code Geeks](https://www.javacodegeeks.com/2018/06/groovy-clibuilder-renewal-part-1.html)), [Part 2](http://picocli.info/groovy-2.5-clibuilder-renewal-part2.html) (also on: [DZone](https://dzone.com/articles/groovy-25-clibuilder-renewal-part-2), [Java Code Geeks](https://www.javacodegeeks.com/2018/06/groovy-clibuilder-renewal-part-2.html)), [all in one](http://picocli.info/groovy-2.5-clibuilder-renewal.html) (also on [blogs.apache.org](https://blogs.apache.org/logging/entry/groovy-2-5-clibuilder-renewal)). 
+* Picocli is now part of Groovy. <img src="https://picocli.info/images/groovy-logo.png" height="50"> From Groovy 2.5, picocli is the underlying parser for Groovy's [CliBuilder DSL](http://groovy-lang.org/dsls.html#_clibuilder). Details: [Part 1](https://picocli.info/groovy-2.5-clibuilder-renewal-part1.html) (also on: [DZone](https://dzone.com/articles/groovy-25-clibuilder-renewal), [Java Code Geeks](https://www.javacodegeeks.com/2018/06/groovy-clibuilder-renewal-part-1.html)), [Part 2](https://picocli.info/groovy-2.5-clibuilder-renewal-part2.html) (also on: [DZone](https://dzone.com/articles/groovy-25-clibuilder-renewal-part-2), [Java Code Geeks](https://www.javacodegeeks.com/2018/06/groovy-clibuilder-renewal-part-2.html)), [all in one](https://picocli.info/groovy-2.5-clibuilder-renewal.html) (also on [blogs.apache.org](https://blogs.apache.org/logging/entry/groovy-2-5-clibuilder-renewal)). 
 * Picocli is now part of Micronaut. <img src="http://micronaut.io/images/micronaut_mini_copy_tm.svg" height="50"> Micronaut M3 added support for microservices that can be [run standalone](https://docs.micronaut.io/snapshot/guide/index.html#commandLineApps) with picocli.
 * [Java Command-Line Interfaces (Part 30): Observations](http://marxsoftware.blogspot.jp/2017/11/java-cmd-line-observations.html) by Dustin Marx about picocli 2.0.1 (also on: [DZone](https://dzone.com/articles/java-command-line-interfaces-part-30-finale-observations), [Java Code Geeks](https://www.javacodegeeks.com/2017/11/java-command-line-interfaces-part-30-observations.html))
 * [Java Command-Line Interfaces (Part 10): Picocli](http://marxsoftware.blogspot.jp/2017/08/picocli.html) by Dustin Marx about picocli 0.9.7 (also on: [DZone](https://dzone.com/articles/java-command-line-interfaces-part-10-picocli), [Java Code Geeks](https://www.javacodegeeks.com/2017/08/java-command-line-interfaces-part-10-picocli.html)) 
-* [Picocli 2.0: Groovy Scripts on Steroids](http://picocli.info/picocli-2.0-groovy-scripts-on-steroids.html) (also on: [DZone](https://dzone.com/articles/picocli-v2-groovy-scripts-on-steroids), [Java Code Geeks](https://www.javacodegeeks.com/2018/01/picocli-2-0-groovy-scripts-steroids.html))
-* [Picocli 2.0: Do More With Less](http://picocli.info/picocli-2.0-do-more-with-less.html) (also on: [DZone](https://dzone.com/articles/whats-new-in-picocli-20), [Java Code Geeks](https://www.javacodegeeks.com/2018/01/picocli-2-0-less.html))
-* [Announcing picocli 1.0](http://picocli.info/announcing-picocli-1.0.html) (also on: [DZone](https://dzone.com/articles/announcing-picocli-10))
+* [Picocli 2.0: Groovy Scripts on Steroids](https://picocli.info/picocli-2.0-groovy-scripts-on-steroids.html) (also on: [DZone](https://dzone.com/articles/picocli-v2-groovy-scripts-on-steroids), [Java Code Geeks](https://www.javacodegeeks.com/2018/01/picocli-2-0-groovy-scripts-steroids.html))
+* [Picocli 2.0: Do More With Less](https://picocli.info/picocli-2.0-do-more-with-less.html) (also on: [DZone](https://dzone.com/articles/whats-new-in-picocli-20), [Java Code Geeks](https://www.javacodegeeks.com/2018/01/picocli-2-0-less.html))
+* [Announcing picocli 1.0](https://picocli.info/announcing-picocli-1.0.html) (also on: [DZone](https://dzone.com/articles/announcing-picocli-10))
 
 #### Related
 * Check out Thibaud Lepretre's [picocli Spring boot starter](https://github.com/kakawait/picocli-spring-boot-starter)!
 
 #### Credit
-<img src="http://picocli.info/images/logo/icon.png" height="50"> 
+<img src="https://picocli.info/images/logo/icon.png" height="50"> 
 
 [Reallinfo](https://github.com/reallinfo) designed the new picocli logo! Many thanks! 
 
@@ -139,7 +140,7 @@ See the [source code](https://github.com/remkop/picocli/blob/v0.9.4/src/test/jav
 
 Picocli annotations offer many ways to customize the usage help message.
 
-If annotations are not sufficient, you can use picocli's [Help API](http://picocli.info/#_usage_help_api) to customize even further.
+If annotations are not sufficient, you can use picocli's [Help API](https://picocli.info/#_usage_help_api) to customize even further.
 For example, your application can generate help like this with a custom layout:
 
 ![Usage help message with two options per row](docs/images/UsageHelpWithCustomLayout.png?raw=true)
@@ -152,35 +153,35 @@ See the [source code](https://github.com/remkop/picocli/blob/master/src/main/jav
 
 ### Gradle
 ```
-compile 'info.picocli:picocli:3.3.0'
+compile 'info.picocli:picocli:3.4.0'
 ```
 ### Maven
 ```
 <dependency>
   <groupId>info.picocli</groupId>
   <artifactId>picocli</artifactId>
-  <version>3.3.0</version>
+  <version>3.4.0</version>
 </dependency>
 ```
 ### Scala SBT
 ```
-libraryDependencies += "info.picocli" % "picocli" % "3.3.0"
+libraryDependencies += "info.picocli" % "picocli" % "3.4.0"
 ```
 ### Ivy
 ```
-<dependency org="info.picocli" name="picocli" rev="3.3.0" />
+<dependency org="info.picocli" name="picocli" rev="3.4.0" />
 ```
 ### Grape
 ```groovy
 @Grapes(
-    @Grab(group='info.picocli', module='picocli', version='3.3.0')
+    @Grab(group='info.picocli', module='picocli', version='3.4.0')
 )
 ```
 ### Leiningen
 ```
-[info.picocli/picocli "3.3.0"]
+[info.picocli/picocli "3.4.0"]
 ```
 ### Buildr
 ```
-'info.picocli:picocli:jar:3.3.0'
+'info.picocli:picocli:jar:3.4.0'
 ```
