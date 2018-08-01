@@ -3,7 +3,9 @@
 # <a name="3.4.0"></a> Picocli 3.4.0 (UNRELEASED)
 The picocli community is pleased to announce picocli 3.4.0.
 
-This release contains bugfixes and enhancements.
+This release contains new features, bugfixes and enhancements.
+The parser can now ignore case when parsing arguments for an Enum option or positional parameter.
+New methods `Help.Ansi.text(String)` and `Help.Ansi.string(String)` assist client code in easily creating ANSI messages outside usage help and version help.
 
 This is the thirty-fifth public release.
 Picocli follows [semantic versioning](http://semver.org/).
@@ -24,6 +26,7 @@ No features have been promoted in this picocli release.
 
 ## <a name="3.4.0-fixes"></a> Fixed issues
 - [#14] New API: Support enum values to be parsed in an case-insensitive way.
+- [#376] New API: `Help.Ansi.text(String)` and `Help.Ansi.string(String)` help client code easily create ANSI messages outside usage help and version help.
 - [#412] Enhancement: Enum constant names are now returned from `ArgSpec::completionCandidates()`. Thanks to [Radovan Panák](https://github.com/rpanak).
 - [#417] Enhancement: Ensure bash scripts have correct line separators. Thanks to [Holger Stenger](https://github.com/stengerh).
 - [#425] Enhancement: Fix autocomplete script errors in zsh. Thanks to [Anthony Keenan](https://github.com/anthonykeenan).

@@ -3570,4 +3570,27 @@ public class CommandLineHelpTest {
                 "  -l     use a long listing format%n" +
                 "  -t     sort by modification time%n"), actual);
     }
+
+    @Test
+    public void testAnsiText() {
+        String markup = "@|bg(red),white,underline some text|@";
+        Help.Ansi.Text txt = Help.Ansi.ON.text(markup);
+        Help.Ansi.Text txt2 = Help.Ansi.ON.new Text(markup);
+        assertEquals(txt, txt2);
+    }
+
+    @Test
+    public void testAnsiString() {
+        String msg = "some text";
+        String markup = "@|bg(red),white,underline " + msg + "|@";
+        String ansiTxt = Help.Ansi.ON.string(markup);
+        String ansiTxt2 = Help.Ansi.ON.new Text(markup).toString();
+        assertEquals(ansiTxt, ansiTxt2);
+    }
+
+    @Test
+    public void testAnsiValueOf() {
+        assertEquals("true=ON", Help.Ansi.ON, Help.Ansi.valueOf(true));
+        assertEquals("false=OFF", Help.Ansi.OFF, Help.Ansi.valueOf(false));
+    }
 }

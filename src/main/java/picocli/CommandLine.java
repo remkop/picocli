@@ -8175,6 +8175,29 @@ public class CommandLine {
                 if (this == OFF) { return false; }
                 return (System.getProperty("picocli.ansi") == null ? ansiPossible() : Boolean.getBoolean("picocli.ansi"));
             }
+            /**
+             * Returns a new Text object for this Ansi mode, encapsulating the specified string
+             * which may contain markup like {@code @|bg(red),white,underline some text|@}.
+             * <p>
+             * Calling {@code toString()} on the returned Text will either include ANSI escape codes
+             * (if this Ansi mode is ON), or suppress ANSI escape codes (if this Ansi mode is OFF).
+             * <p>
+             * Equivalent to {@code this.new Text(stringWithMarkup)}.
+             * @since 3.4 */
+            public Text text(String stringWithMarkup) { return this.new Text(stringWithMarkup); }
+
+            /**
+             * Returns a String where any markup like
+             * {@code @|bg(red),white,underline some text|@} is converted to ANSI escape codes
+             * if this Ansi is ON, or suppressed if this Ansi is OFF.
+             * <p>
+             * Equivalent to {@code this.new Text(stringWithMarkup).toString()}.
+             * @since 3.4 */
+            public String string(String stringWithMarkup) { return this.new Text(stringWithMarkup).toString(); }
+
+            /** Returns Ansi.ON if the specified {@code enabled} flag is true, Ansi.OFF otherwise.
+             * @since 3.4 */
+            public static Ansi valueOf(boolean enabled) {return enabled ? ON : OFF; }
 
             /** Defines the interface for an ANSI escape sequence. */
             public interface IStyle {
