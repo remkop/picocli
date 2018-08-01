@@ -24,6 +24,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.math.BigDecimal;
 import java.net.InetAddress;
 import java.net.Socket;
@@ -560,7 +561,7 @@ public class CommandLineTest {
         }
     }
 
-    private class CompactFields {
+    private static class CompactFields {
         @Option(names = "-v") boolean verbose;
         @Option(names = "-r") boolean recursive;
         @Option(names = "-o") File outputFile;
@@ -4197,4 +4198,173 @@ public class CommandLineTest {
         assertTrue(actual, actual.contains("Usage:"));
         assertFalse(actual, actual.contains("Possible solutions:"));
     }
+
+    static class MethodAppBase {
+        @Command(name="run-0")
+        public void run0() {}
+    }
+
+    @Command(name="method")
+    static class MethodApp extends MethodAppBase {
+
+        @Command(name="run-1")
+        int run1(int a) {
+            return a;
+        }
+
+        @Command(name="run-2")
+        int run2(int a, @Option(names="-b", required=true) int b) {
+            return a*b;
+        }
+    }
+    @Test
+    public void testAnnotateMethod_noArg() throws Exception {
+        setTraceLevel("OFF");
+        Method m = CommandLine.getCommandMethods(MethodApp.class, "run0").keySet().iterator().next();
+        CommandLine cmd1 = new CommandLine(m);
+        assertEquals("run-0", cmd1.getCommandName());
+        assertEquals(Arrays.asList(), cmd1.getCommandSpec().args());
+
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        cmd1.parseWithHandler(((IParseResultHandler)null), new PrintStream(baos), new String[]{"--y"});
+        assertEquals(Arrays.asList("--y"), cmd1.getUnmatchedArguments());
+
+        // test execute
+        Object ret = CommandLine.invoke(m.getName(), MethodApp.class, new PrintStream(new ByteArrayOutputStream()));
+        assertNull("return value", ret);
+
+        setTraceLevel("WARN");
+    }
+    @Test
+    public void testAnnotateMethod_unannotatedPositional() throws Exception {
+        Method m = CommandLine.getCommandMethods(MethodApp.class, "run1").keySet().iterator().next();
+
+        // test required
+        try {
+            CommandLine.populateCommand(m);
+            fail("Missing required field should have thrown exception");
+        } catch (MissingParameterException ex) {
+            assertEquals("Missing required parameter: <arg0>", ex.getMessage());
+        }
+
+        // test execute
+        Object ret = CommandLine.invoke(m.getName(), MethodApp.class, new PrintStream(new ByteArrayOutputStream()), "42");
+        assertEquals("return value", 42, ((Number)ret).intValue());
+    }
+
+    @Test
+    public void testAnnotateMethod_annotated() throws Exception {
+        Method m = CommandLine.getCommandMethods(MethodApp.class, "run2").keySet().iterator().next();
+
+        // test required
+        try {
+            CommandLine.populateCommand(m, "0");
+            fail("Missing required option should have thrown exception");
+        } catch (MissingParameterException ex) {
+            assertEquals("Missing required option '-b=<arg1>'", ex.getMessage());
+        }
+
+        // test execute
+        Object ret = CommandLine.invoke(m.getName(), MethodApp.class, new PrintStream(new ByteArrayOutputStream()), "13", "-b", "-1");
+        assertEquals("return value", -13, ((Number)ret).intValue());
+    }
+
+    @Test
+    public void testAnnotateMethod_addMethodSubcommands() throws Exception {
+
+        CommandLine cmd = new CommandLine(MethodApp.class);
+        assertEquals("method", cmd.getCommandName());
+        assertEquals(0, cmd.getSubcommands().size());
+
+        cmd.addMethodSubcommands();
+        assertEquals(3, cmd.getSubcommands().size());
+        assertEquals(0, cmd.getSubcommands().get("run-0").getCommandSpec().args().size());
+        assertEquals(1, cmd.getSubcommands().get("run-1").getCommandSpec().args().size());
+        assertEquals(2, cmd.getSubcommands().get("run-2").getCommandSpec().args().size());
+
+        //CommandLine.usage(cmd.getSubcommands().get("run-2"), System.out);
+    }
+
+    /** @see CompactFields */
+    private static class CompactFieldsMethod {
+        @Command
+        public CompactFields run(
+            @Option(names = "-v", paramLabel="<verbose>" /* useless, but required for Assert.equals() */) boolean verbose,
+            @Option(names = "-r", paramLabel="<recursive>" /* useless, but required for Assert.equals() */) boolean recursive,
+            @Option(names = "-o", paramLabel="<outputFile>" /* required only for Assert.equals() */) File outputFile,
+            @Parameters(paramLabel="<inputFiles>" /* required only for Assert.equals() */) File[] inputFiles) 
+        {
+            CompactFields ret = new CommandLineTest.CompactFields();
+            ret.verbose = verbose;
+            ret.recursive = recursive;
+            ret.outputFile = outputFile;
+            ret.inputFiles = inputFiles;
+            return ret;
+        }
+    }
+    @Test
+    public void testAnnotateMethod_matchesAnnotatedClass() throws Exception {
+        setTraceLevel("OFF");
+        CommandLine classCmd = new CommandLine(new CompactFields());
+        Method m = CompactFieldsMethod.class.getDeclaredMethod("run", new Class<?>[] {boolean.class, boolean.class, File.class, File[].class});
+        CommandLine methodCmd = new CommandLine(m);
+        assertEquals("run", methodCmd.getCommandName());
+        assertEquals("argument count", classCmd.getCommandSpec().args().size(), methodCmd.getCommandSpec().args().size());
+        for (int i = 0;  i < classCmd.getCommandSpec().args().size(); i++) {
+            Model.ArgSpec classArg = classCmd.getCommandSpec().args().get(i);
+            Model.ArgSpec methodArg = methodCmd.getCommandSpec().args().get(i);
+            assertEquals("arg #" + i, classArg, methodArg);
+        }
+        setTraceLevel("WARN");
+    }
+    /** replicate {@link #testCompactFieldsAnyOrder()} but using
+     * {@link CompactFieldsMethod#run(boolean, boolean, File, File[])}
+     * as source of the {@link Command} annotation. */
+    @Test
+    public void testCompactFieldsAnyOrder_method() throws Exception {
+        final Method m = CompactFieldsMethod.class.getDeclaredMethod("run", new Class<?>[] {boolean.class, boolean.class, File.class, File[].class});
+        String[] tests = {
+                "-rvoout",
+                "-vroout",
+                "-vro=out",
+                "-rv p1 p2",
+                "p1 p2",
+                "-voout p1 p2",
+                "-voout -r p1 p2",
+                "-r -v -oout p1 p2",
+                "-rv -o out p1 p2",
+                "-oout -r -v p1 p2",
+                "-rvo out p1 p2",
+        };
+        for (String test : tests) {
+            // parse
+            CompactFields compact = CommandLine.populateCommand(new CompactFields(), test.split(" "));
+            List<CommandLine> result = new CommandLine(m).parse(test.split(" "));
+
+            // extract arg values
+            assertEquals(1, result.size());
+            Object[] methodArgValues = result.get(0).getCommandSpec().argValues();
+            assertNotNull(methodArgValues);
+
+            // verify parsing had the same result
+            verifyCompact(compact, (Boolean)methodArgValues[0], (Boolean)methodArgValues[1], methodArgValues[2] == null ? null : String.valueOf(methodArgValues[2]), (File[])methodArgValues[3]);
+
+            // verify method is callable (args have the correct/assignable type)
+            CompactFields methodCompact = (CompactFields) m.invoke(new CompactFieldsMethod(), methodArgValues); // should not throw
+
+            // verify passed args are the same
+            assertNotNull(methodCompact);
+            assertEquals(compact.verbose, methodCompact.verbose);
+            assertEquals(compact.recursive, methodCompact.recursive);
+            assertEquals(compact.outputFile, methodCompact.outputFile);
+            assertArrayEquals(compact.inputFiles, methodCompact.inputFiles);
+        }
+        try {
+            CommandLine.populateCommand(m, "-oout -r -vp1 p2".split(" "));
+            fail("should fail: -v does not take an argument");
+        } catch (UnmatchedArgumentException ex) {
+            assertEquals("Unknown option: -p1", ex.getMessage());
+        }
+    }
+
 }
