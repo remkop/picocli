@@ -1,5 +1,37 @@
 # picocli Release Notes
 
+# <a name="3.4.1"></a> Picocli 3.4.1
+The picocli community is pleased to announce picocli 3.4.1.
+
+This release contains new features, bugfixes and enhancements.
+
+This is the thirty-sixth public release.
+Picocli follows [semantic versioning](http://semver.org/).
+
+## <a name="3.4.1"></a> Table of Contents
+* [New and noteworthy](#3.4.1-new)
+* [Promoted features](#3.4.1-promoted)
+* [Fixed issues](#3.4.1-fixes)
+* [Deprecations](#3.4.1-deprecated)
+* [Potential breaking changes](#3.4.1-breaking-changes)
+
+## <a name="3.4.1-new"></a> New and Noteworthy
+
+## <a name="3.4.1-promoted"></a> Promoted Features
+Promoted features are features that were incubating in previous versions of picocli but are now supported and subject to backwards compatibility. 
+
+No features have been promoted in this picocli release.
+
+## <a name="3.4.1-fixes"></a> Fixed issues
+- [#430] Bugfix: formatting was incorrect (did not break on embedded newlines) in the subcommands list descriptions. Thanks to [Benny Bottema](https://github.com/bbottema) for the bug report.
+
+
+## <a name="3.4.1-deprecated"></a> Deprecations
+No features were deprecated in this release.
+
+## <a name="3.4.1-breaking-changes"></a> Potential breaking changes
+This release has no breaking changes.
+
 # <a name="3.4.0"></a> Picocli 3.4.0
 The picocli community is pleased to announce picocli 3.4.0.
 

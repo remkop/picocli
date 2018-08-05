@@ -3593,4 +3593,32 @@ public class CommandLineHelpTest {
         assertEquals("true=ON", Help.Ansi.ON, Help.Ansi.valueOf(true));
         assertEquals("false=OFF", Help.Ansi.OFF, Help.Ansi.valueOf(false));
     }
+
+    @Test
+    public void testIssue430NewlineInSubcommandDescriptionList() { // courtesy [Benny Bottema](https://github.com/bbottema)
+        CommandSpec rootCmd = createCmd("newlines", "Displays subcommands, one of which contains description newlines");
+
+        rootCmd.addSubcommand("subA", createCmd("subA", "regular description for subA"));
+        rootCmd.addSubcommand("subB", createCmd("subB", "very,\nspecial,\nChristopher Walken style,\ndescription."));
+        rootCmd.addSubcommand("subC", createCmd("subC", "regular description for subC"));
+
+        assertEquals(String.format("" +
+                "Usage: newlines [-hV] [COMMAND]%n" +
+                "Displays subcommands, one of which contains description newlines%n" +
+                "  -h, --help      Show this help message and exit.%n" +
+                "  -V, --version   Print version information and exit.%n" +
+                "Commands:%n" +
+                "  subA  regular description for subA%n" +
+                "  subB  very,%n" +
+                "        special,%n" +
+                "        Christopher Walken style,%n" +
+                "        description.%n" +
+                "  subC  regular description for subC%n"), new CommandLine(rootCmd).getUsageMessage());
+    }
+
+    private static CommandSpec createCmd(String name, String description) {
+        CommandSpec cmd = CommandSpec.create().name(name).mixinStandardHelpOptions(true);
+        cmd.usageMessage().description(description);
+        return cmd;
+    }
 }
