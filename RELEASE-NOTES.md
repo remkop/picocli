@@ -5,6 +5,9 @@ The picocli community is pleased to announce picocli 3.4.1.
 
 This release contains new features, bugfixes and enhancements.
 
+From this release, the comment character in @-files (argument files) is configurable
+
+
 This is the thirty-sixth public release.
 Picocli follows [semantic versioning](http://semver.org/).
 
@@ -53,6 +56,7 @@ No features have been promoted in this picocli release.
 ## <a name="3.4.1-fixes"></a> Fixed issues
 - [#430] Bugfix: formatting was incorrect (did not break on embedded newlines) in the subcommands list descriptions. Thanks to [Benny Bottema](https://github.com/bbottema) for the bug report.
 - [#431] Better support for validation in setter methods: cleaner stack trace.
+- [#432] Make comment character in @-files (argument files) configurable.
 
 
 ## <a name="3.4.1-deprecated"></a> Deprecations

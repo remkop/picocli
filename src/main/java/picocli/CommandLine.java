@@ -1900,6 +1900,27 @@ public class CommandLine {
         getCommandSpec().parser().expandAtFiles(expandAtFiles);
         return this;
     }
+
+    /** Returns the character that starts a single-line comment or {@code null} if all content of argument files should
+     * be interpreted as arguments (without comments).
+     * If specified, all characters from the comment character to the end of the line are ignored.
+     * @return the character that starts a single-line comment or {@code null}. The default is {@code '#'}.
+     * @since 3.5 */
+    public Character getAtFileCommentChar() { return getCommandSpec().parser().atFileCommentChar(); }
+
+    /** Sets the character that starts a single-line comment or {@code null} if all content of argument files should
+     * be interpreted as arguments (without comments).
+     * If specified, all characters from the comment character to the end of the line are ignored.
+     * @param atFileCommentChar the character that starts a single-line comment or {@code null}. The default is {@code '#'}.
+     * @return this {@code CommandLine} object, to allow method chaining
+     * @since 3.5 */
+    public CommandLine setAtFileCommentChar(Character atFileCommentChar) {
+        getCommandSpec().parser().atFileCommentChar(atFileCommentChar);
+        for (CommandLine command : getCommandSpec().subcommands().values()) {
+            command.setAtFileCommentChar(atFileCommentChar);
+        }
+        return this;
+    }
     private static boolean empty(String str) { return str == null || str.trim().length() == 0; }
     private static boolean empty(Object[] array) { return array == null || array.length == 0; }
     private static String str(String[] arr, int i) { return (arr == null || arr.length == 0) ? "" : arr[i]; }
@@ -3726,6 +3747,7 @@ public class CommandLine {
             private boolean overwrittenOptionsAllowed = false;
             private boolean unmatchedArgumentsAllowed = false;
             private boolean expandAtFiles = true;
+            private Character atFileCommentChar = '#';
             private boolean posixClusteredShortOptionsAllowed = true;
             private boolean unmatchedOptionsArePositionalParams = false;
             private boolean limitSplit = false;
@@ -3749,6 +3771,9 @@ public class CommandLine {
             public boolean unmatchedArgumentsAllowed()         { return unmatchedArgumentsAllowed; }
             /** @see CommandLine#isExpandAtFiles() */
             public boolean expandAtFiles()                     { return expandAtFiles; }
+            /** @see CommandLine#getAtFileCommentChar()
+             * @since 3.5 */
+            public Character atFileCommentChar()               { return atFileCommentChar; }
             /** @see CommandLine#isPosixClusteredShortOptionsAllowed() */
             public boolean posixClusteredShortOptionsAllowed() { return posixClusteredShortOptionsAllowed; }
             /** @see CommandLine#isCaseInsensitiveEnumValuesAllowed()
@@ -3782,6 +3807,9 @@ public class CommandLine {
             public ParserSpec unmatchedArgumentsAllowed(boolean unmatchedArgumentsAllowed) { this.unmatchedArgumentsAllowed = unmatchedArgumentsAllowed; return this; }
             /** @see CommandLine#setExpandAtFiles(boolean) */
             public ParserSpec expandAtFiles(boolean expandAtFiles)                         { this.expandAtFiles = expandAtFiles; return this; }
+            /** @see CommandLine#setAtFileCommentChar(Character)
+             * @since 3.5 */
+            public ParserSpec atFileCommentChar(Character atFileCommentChar)               { this.atFileCommentChar = atFileCommentChar; return this; }
             /** @see CommandLine#setPosixClusteredShortOptionsAllowed(boolean) */
             public ParserSpec posixClusteredShortOptionsAllowed(boolean posixClusteredShortOptionsAllowed) { this.posixClusteredShortOptionsAllowed = posixClusteredShortOptionsAllowed; return this; }
             /** @see CommandLine#setCaseInsensitiveEnumValuesAllowed(boolean) 
@@ -5470,9 +5498,11 @@ public class CommandLine {
                 tok.resetSyntax();
                 tok.wordChars(' ', 255);
                 tok.whitespaceChars(0, ' ');
-                tok.commentChar('#');
                 tok.quoteChar('"');
                 tok.quoteChar('\'');
+                if (commandSpec.parser().atFileCommentChar() != null) {
+                    tok.commentChar(commandSpec.parser().atFileCommentChar());
+                }
                 while (tok.nextToken() != StreamTokenizer.TT_EOF) {
                     addOrExpand(tok.sval, result, visited);
                 }

@@ -3580,7 +3580,7 @@ public class CommandLineTest {
         File file = findFile("/argfile1.txt");
         App app = CommandLine.populateCommand(new App(), "@" + file.getAbsolutePath());
         assertTrue(app.verbose);
-        assertEquals(Arrays.asList("1111", "2222", "3333"), app.files);
+        assertEquals(Arrays.asList("1111", "2222", ";3333"), app.files);
     }
 
     @Test
@@ -3625,7 +3625,7 @@ public class CommandLineTest {
         }
         App app = CommandLine.populateCommand(new App(), "@" + relative);
         assertTrue(app.verbose);
-        assertEquals(Arrays.asList("1111", "2222", "3333"), app.files);
+        assertEquals(Arrays.asList("1111", "2222", ";3333"), app.files);
     }
 
     @Test
@@ -3646,7 +3646,59 @@ public class CommandLineTest {
         File file = findFile("/argfile1.txt");
         App app = CommandLine.populateCommand(new App(), "-f", "fVal1", "@" + file.getAbsolutePath(), "-x", "-f", "fVal2");
         assertTrue(app.verbose);
-        assertEquals(Arrays.asList("1111", "2222", "3333"), app.files);
+        assertEquals(Arrays.asList("1111", "2222", ";3333"), app.files);
+        assertTrue(app.xxx);
+        assertArrayEquals(new String[]{"fVal1", "fVal2"}, app.fff);
+    }
+
+    @Test
+    public void testAtFileExpandedWithCommentsOff() {
+        class App {
+            @Option(names = "-x")
+            private boolean xxx;
+
+            @Option(names = "-f")
+            private String[] fff;
+
+            @Option(names = "-v")
+            private boolean verbose;
+
+            @Parameters
+            private List<String> files;
+        }
+        File file = findFile("/argfile1.txt");
+        App app = new App();
+        CommandLine cmd = new CommandLine(app);
+        cmd.setAtFileCommentChar(null);
+        cmd.parse("-f", "fVal1", "@" + file.getAbsolutePath(), "-x", "-f", "fVal2");
+        assertTrue(app.verbose);
+        assertEquals(Arrays.asList("#", "first", "comment", "1111", "2222", "#another", "comment", ";3333"), app.files);
+        assertTrue(app.xxx);
+        assertArrayEquals(new String[]{"fVal1", "fVal2"}, app.fff);
+    }
+
+    @Test
+    public void testAtFileExpandedWithNonDefaultCommentChar() {
+        class App {
+            @Option(names = "-x")
+            private boolean xxx;
+
+            @Option(names = "-f")
+            private String[] fff;
+
+            @Option(names = "-v")
+            private boolean verbose;
+
+            @Parameters
+            private List<String> files;
+        }
+        File file = findFile("/argfile1.txt");
+        App app = new App();
+        CommandLine cmd = new CommandLine(app);
+        cmd.setAtFileCommentChar(';');
+        cmd.parse("-f", "fVal1", "@" + file.getAbsolutePath(), "-x", "-f", "fVal2");
+        assertTrue(app.verbose);
+        assertEquals(Arrays.asList("#", "first", "comment", "1111", "2222", "#another", "comment"), app.files);
         assertTrue(app.xxx);
         assertArrayEquals(new String[]{"fVal1", "fVal2"}, app.fff);
     }
@@ -3745,7 +3797,7 @@ public class CommandLineTest {
         CommandLine commandLine = new CommandLine(app).setOverwrittenOptionsAllowed(true);
         commandLine.parse("-f", "fVal1", "@" + file.getAbsolutePath(), "-x", "@" + file2.getAbsolutePath(),  "-f", "fVal2");
         assertFalse("invoked twice", app.verbose);
-        assertEquals(Arrays.asList("1111", "2222", "3333", "1111", "2222", "3333"), app.files);
+        assertEquals(Arrays.asList("1111", "2222", ";3333", "1111", "2222", "3333"), app.files);
         assertFalse("invoked twice", app.xxx);
         assertArrayEquals(new String[]{"fVal1", "FFFF", "F2F2F2", "fVal2"}, app.fff);
     }
@@ -3860,6 +3912,57 @@ public class CommandLineTest {
             if (in != null) { try { in.close(); } catch (Exception ignored) {} }
             if (out != null) { try { out.close(); } catch (Exception ignored) {} }
         }
+    }
+
+    @Test
+    public void testGetAtFileCommentChar_SharpByDefault() {
+        @Command class A {}
+        assertEquals((Character) '#', new CommandLine(new A()).getAtFileCommentChar());
+    }
+    @Test
+    public void testSetAtFileCommentChar_BeforeSubcommandsAdded() {
+        @Command class TopLevel {}
+        CommandLine commandLine = new CommandLine(new TopLevel());
+        assertEquals((Character) '#', commandLine.getAtFileCommentChar());
+        commandLine.setAtFileCommentChar(';');
+        assertEquals((Character) ';', commandLine.getAtFileCommentChar());
+
+        int childCount = 0;
+        int grandChildCount = 0;
+        commandLine.addSubcommand("main", createNestedCommand());
+        for (CommandLine sub : commandLine.getSubcommands().values()) {
+            childCount++;
+            assertEquals("subcommand added afterwards is not impacted", (Character) '#', sub.getAtFileCommentChar());
+            for (CommandLine subsub : sub.getSubcommands().values()) {
+                grandChildCount++;
+                assertEquals("subcommand added afterwards is not impacted", (Character) '#', subsub.getAtFileCommentChar());
+            }
+        }
+        assertTrue(childCount > 0);
+        assertTrue(grandChildCount > 0);
+    }
+
+    @Test
+    public void testSetAtFileCommentChar_AfterSubcommandsAdded() {
+        @Command class TopLevel {}
+        CommandLine commandLine = new CommandLine(new TopLevel());
+        commandLine.addSubcommand("main", createNestedCommand());
+        assertEquals((Character) '#', commandLine.getAtFileCommentChar());
+        commandLine.setAtFileCommentChar(';');
+        assertEquals((Character) ';', commandLine.getAtFileCommentChar());
+
+        int childCount = 0;
+        int grandChildCount = 0;
+        for (CommandLine sub : commandLine.getSubcommands().values()) {
+            childCount++;
+            assertEquals((Character) ';', sub.getAtFileCommentChar());
+            for (CommandLine subsub : sub.getSubcommands().values()) {
+                grandChildCount++;
+                assertEquals((Character) ';', subsub.getAtFileCommentChar());
+            }
+        }
+        assertTrue(childCount > 0);
+        assertTrue(grandChildCount > 0);
     }
 
     @Test
