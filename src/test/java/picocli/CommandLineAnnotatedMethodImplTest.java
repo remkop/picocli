@@ -3,6 +3,8 @@ package picocli;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.contrib.java.lang.system.ProvideSystemProperty;
+import picocli.CommandLine.ParameterException;
+import picocli.CommandLine.PicocliException;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -215,5 +217,60 @@ public class CommandLineAnnotatedMethodImplTest {
         set.add((short) 22);
         set.add((short) 33);
         assertEquals(set, objects.aSet);
+    }
+
+    @Test
+    public void testExceptionFromMethod() {
+        class App {
+            @Option(names = "--jvm")
+            public void jvmException(String value) { throw new IllegalArgumentException("Boo!"); }
+        }
+
+        CommandLine parser = new CommandLine(new App());
+        try {
+            parser.parse("--jvm", "abc");
+            fail("Expected exception");
+        } catch (ParameterException ex) {
+            assertNotNull(ex.getCause());
+            assertTrue(ex.getCause() instanceof IllegalArgumentException);
+            assertEquals("Boo!", ex.getCause().getMessage());
+            assertEquals("Could not invoke public void picocli.CommandLineAnnotatedMethodImplTest$1App.jvmException(java.lang.String) with abc", ex.getMessage());
+        }
+    }
+
+    @Test
+    public void testParameterExceptionFromMethod() {
+        class App {
+            @Option(names = "--param")
+            public void paramException(String value) { throw new ParameterException(new CommandLine(new App()), "Param!"); }
+        }
+
+        CommandLine parser = new CommandLine(new App());
+        try {
+            parser.parse("--param", "abc");
+            fail("Expected exception");
+        } catch (ParameterException ex) {
+            assertNull(ex.getCause());
+            assertEquals("Param!", ex.getMessage());
+        }
+    }
+
+    @Test
+    public void testPicocliExceptionFromMethod() {
+        class App {
+            @Option(names = "--pico")
+            public void picocliException(String value) { throw new PicocliException("Pico!"); }
+        }
+
+        CommandLine parser = new CommandLine(new App());
+        try {
+            parser.parse("--pico", "abc");
+            fail("Expected exception");
+        } catch (ParameterException ex) {
+            assertNotNull(ex.getCause());
+            assertTrue(ex.getCause() instanceof PicocliException);
+            assertEquals("Pico!", ex.getCause().getMessage());
+            assertEquals("PicocliException: Pico! while processing argument at or before arg[1] 'abc' in [--pico, abc]: picocli.CommandLine$PicocliException: Pico!", ex.getMessage());
+        }
     }
 }

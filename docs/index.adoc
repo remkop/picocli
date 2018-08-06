@@ -2248,6 +2248,32 @@ cmd.parse(args);
 assert counter.count == 3; // method was invoked with command line value
 ----
 
+Methods annotated with `@Option` and `@Parameters` can do simple input validation by throwing a `ParameterException` when invalid values are specified on the command line.
+
+[source,java
+----
+class ValidationExample {
+    private Map<String, String> properties = new LinkedHashMap<>();
+
+    @Spec private CommandSpec spec; // injected by picocli
+
+    @Option(names = {"-D", "--property"}, paramLabel = "KEY=VALUE")
+    public void setProperty(Map<String, String> keyValuePairs) {
+        for (Map.Entry<String, String> entry : keyValuePairs.entrySet()) {
+            String existing = properties.get(entry.getKey());
+            if (existing != null && !existing.equals(entry.getValue())) {
+                throw new ParameterException(spec.commandLine(),
+                        "Duplicate key '" + entry.getKey() + "' for values '" +
+                        existing + "' and '" + entry.getValue() + "'.");
+            }
+            properties.put(entry.getKey(), entry.getValue());
+        }
+    }
+    // ...
+}
+----
+
+
 === Less Boilerplate
 You can omit some of the boilerplate code from your application when the annotated object implements `Runnable` or `Callable`:
 

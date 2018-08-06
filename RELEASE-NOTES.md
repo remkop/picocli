@@ -16,6 +16,34 @@ Picocli follows [semantic versioning](http://semver.org/).
 * [Potential breaking changes](#3.4.1-breaking-changes)
 
 ## <a name="3.4.1-new"></a> New and Noteworthy
+### <a name="3.4.1-validation"></a> Simple Validation in Setter Methods
+Methods annotated with `@Option` and `@Parameters` can do simple input validation by throwing a `ParameterException` when invalid values are specified on the command line.
+
+```java
+class ValidationExample {
+    private Map<String, String> properties = new LinkedHashMap<>();
+    
+    @Spec private CommandSpec spec; // injected by picocli
+    
+    @Option(names = {"-D", "--property"}, paramLabel = "KEY=VALUE")
+    public void setProperty(Map<String, String> keyValuePairs) {
+        for (Map.Entry<String, String> entry : keyValuePairs.entrySet()) {
+            String existing = properties.get(entry.getKey());
+            if (existing != null && !existing.equals(entry.getValue())) {
+                throw new ParameterException(spec.commandLine(),
+                        "Duplicate key '" + entry.getKey() + "' for values '" +
+                        existing + "' and '" + entry.getValue() + "'.");
+            }
+            properties.put(entry.getKey(), entry.getValue());
+        }
+    }
+}
+```
+
+Prior to this release, the exception thrown from the method was wrapped in a `java.lang.reflect.InvocationTargetException`, which in turn was wrapped in a `PicocliException`, and finally in another `ParameterException`.
+
+By following the recipe above and throwing a `ParameterException` on invalid input, all these intermediate exceptions are skipped.
+
 
 ## <a name="3.4.1-promoted"></a> Promoted Features
 Promoted features are features that were incubating in previous versions of picocli but are now supported and subject to backwards compatibility. 
@@ -24,6 +52,7 @@ No features have been promoted in this picocli release.
 
 ## <a name="3.4.1-fixes"></a> Fixed issues
 - [#430] Bugfix: formatting was incorrect (did not break on embedded newlines) in the subcommands list descriptions. Thanks to [Benny Bottema](https://github.com/bbottema) for the bug report.
+- [#431] Better support for validation in setter methods: cleaner stack trace.
 
 
 ## <a name="3.4.1-deprecated"></a> Deprecations

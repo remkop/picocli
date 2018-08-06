@@ -4033,7 +4033,17 @@ public class CommandLine {
                 } catch (Exception ex) {        throw new PicocliException("Could not set value (" + newValue + ") for " + this + ": " + ex, ex);
                 }
             }
-    
+            /** Sets the value of this argument to the specified value and returns the previous value. Delegates to the current {@link #setter()}.
+             * @since 3.5 */
+            public <T> T setValue(T newValue, CommandLine commandLine) throws PicocliException {
+                if (setter instanceof MethodBinding) { ((MethodBinding) setter).commandLine = commandLine; }
+                try {
+                    return setter.set(newValue);
+                } catch (PicocliException ex) { throw ex;
+                } catch (Exception ex) {        throw new PicocliException("Could not set value (" + newValue + ") for " + this + ": " + ex, ex);
+                }
+            }
+
             /** Returns {@code true} if this argument's {@link #type()} is an array, a {@code Collection} or a {@code Map}, {@code false} otherwise. */
             public boolean isMultiValue()     { return CommandLine.isMultiValue(type()); }
             /** Returns {@code true} if this argument is a named option, {@code false} otherwise. */
@@ -5074,10 +5084,11 @@ public class CommandLine {
                 }
             }
         }
-        private static class MethodBinding implements IGetter, ISetter {
+        static class MethodBinding implements IGetter, ISetter {
             private final Object scope;
             private final Method method;
             private Object currentValue;
+            CommandLine commandLine;
             MethodBinding(Object scope, Method method) { this.scope = scope; this.method = method; }
             @SuppressWarnings("unchecked") public <T> T get() { return (T) currentValue; }
             public <T> T set(T value) throws PicocliException {
@@ -5086,8 +5097,11 @@ public class CommandLine {
                     method.invoke(scope, value);
                     currentValue = value;
                     return result;
+                } catch (InvocationTargetException ex) {
+                    if (ex.getCause() instanceof PicocliException) { throw (PicocliException) ex.getCause(); }
+                    throw new ParameterException(commandLine, "Could not invoke " + method + " with " + value, ex.getCause());
                 } catch (Exception ex) {
-                    throw new PicocliException("Could not invoke " + method + " with " + value, ex);
+                    throw new ParameterException(commandLine, "Could not invoke " + method + " with " + value, ex);
                 }
             }
         }
@@ -5892,7 +5906,7 @@ public class CommandLine {
                 initialized.add(argSpec);
             }
             if (tracer.isInfo()) { tracer.info(traceMessage, argSpec.toString(), String.valueOf(oldValue), String.valueOf(newValue), argDescription); }
-            argSpec.setValue(newValue);
+            argSpec.setValue(newValue, commandSpec.commandLine());
             parseResult.addOriginalStringValue(argSpec, value);// #279 track empty string value if no command line argument was consumed
             parseResult.addStringValue(argSpec, value);
             parseResult.addTypedValues(argSpec, position, newValue);
@@ -5912,13 +5926,13 @@ public class CommandLine {
             @SuppressWarnings("unchecked") Map<Object, Object> map = (Map<Object, Object>) argSpec.getValue();
             if (map == null || (!map.isEmpty() && !initialized.contains(argSpec))) {
                 map = createMap(argSpec.type()); // map class
-                argSpec.setValue(map);
+                argSpec.setValue(map, commandSpec.commandLine());
             }
             initialized.add(argSpec);
             int originalSize = map.size();
             consumeMapArguments(argSpec, lookBehind, arity, args, classes, keyConverter, valueConverter, map, argDescription);
             parseResult.add(argSpec, position);
-            argSpec.setValue(map);
+            argSpec.setValue(map, commandSpec.commandLine());
             return map.size() - originalSize;
         }
 
@@ -6052,7 +6066,7 @@ public class CommandLine {
                 }
             }
             Object array = Array.newInstance(type, newValues.size());
-            argSpec.setValue(array);
+            argSpec.setValue(array, commandSpec.commandLine());
             for (int i = 0; i < newValues.size(); i++) {
                 Array.set(array, i, newValues.get(i));
             }
@@ -6072,7 +6086,7 @@ public class CommandLine {
             List<Object> converted = consumeArguments(argSpec, lookBehind, arity, args, type, argDescription);
             if (collection == null || (!collection.isEmpty() && !initialized.contains(argSpec))) {
                 collection = createCollection(argSpec.type()); // collection type
-                argSpec.setValue(collection);
+                argSpec.setValue(collection, commandSpec.commandLine());
             }
             initialized.add(argSpec);
             for (Object element : converted) {
@@ -6083,7 +6097,7 @@ public class CommandLine {
                 }
             }
             parseResult.add(argSpec, position);
-            argSpec.setValue(collection);
+            argSpec.setValue(collection, commandSpec.commandLine());
             return converted.size();
         }
 
@@ -8645,7 +8659,7 @@ public class CommandLine {
     public static class PicocliException extends RuntimeException {
         private static final long serialVersionUID = -2574128880125050818L;
         public PicocliException(String msg) { super(msg); }
-        public PicocliException(String msg, Exception ex) { super(msg, ex); }
+        public PicocliException(String msg, Throwable t) { super(msg, t); }
     }
     /** Exception indicating a problem during {@code CommandLine} initialization.
      * @since 2.0 */
@@ -8697,22 +8711,22 @@ public class CommandLine {
         /** Constructs a new ParameterException with the specified CommandLine and error message.
          * @param commandLine the command or subcommand whose input was invalid
          * @param msg describes the problem
-         * @param ex the exception that caused this ParameterException
+         * @param t the throwable that caused this ParameterException
          * @since 2.0 */
-        public ParameterException(CommandLine commandLine, String msg, Exception ex) {
-            super(msg, ex);
+        public ParameterException(CommandLine commandLine, String msg, Throwable t) {
+            super(msg, t);
             this.commandLine = Assert.notNull(commandLine, "commandLine");
         }
 
         /** Constructs a new ParameterException with the specified CommandLine and error message.
          * @param commandLine the command or subcommand whose input was invalid
          * @param msg describes the problem
-         * @param ex the exception that caused this ParameterException
+         * @param t the throwable that caused this ParameterException
          * @param argSpec the argSpec that caused this ParameterException
          * @param value the value that caused this ParameterException
          * @since 3.2 */
-        public ParameterException(CommandLine commandLine, String msg, Exception ex, ArgSpec argSpec, String value) {
-            super(msg, ex);
+        public ParameterException(CommandLine commandLine, String msg, Throwable t, ArgSpec argSpec, String value) {
+            super(msg, t);
             this.commandLine = Assert.notNull(commandLine, "commandLine");
             if (argSpec == null && value == null) { throw new IllegalArgumentException("ArgSpec and value cannot both be null"); }
             this.argSpec = argSpec;
