@@ -1008,6 +1008,25 @@ public class CommandLineTest {
         verifyCompact(compact, false, false, "out", fileArray("-r", "-v", "p1", "p2"));
     }
 
+    @Test
+    public void testEndOfOptionsSeparatorConfigurable() {
+        CompactFields compact = new CompactFields();
+        CommandLine cmd = new CommandLine(compact);
+        cmd.setEndOfOptionsDelimiter(";;");
+        cmd.parse("-oout ;; ;; -- -r -v p1 p2".split(" "));
+        verifyCompact(compact, false, false, "out", fileArray(";;", "--","-r", "-v", "p1", "p2"));
+    }
+
+    @Test
+    public void testEndOfOptionsSeparatorCannotBeNull() {
+        try {
+            new CommandLine(new CompactFields()).setEndOfOptionsDelimiter(null);
+            fail("Expected exception");
+        } catch (Exception ok) {
+            assertEquals("java.lang.NullPointerException: end-of-options delimiter", ok.toString());
+        }
+    }
+
     private static void clearBuiltInTracingCache() throws Exception {
         Field field = Class.forName("picocli.CommandLine$BuiltIn").getDeclaredField("traced");
         field.setAccessible(true);
@@ -1050,7 +1069,7 @@ public class CommandLineTest {
         String expected = String.format("" +
                         "[picocli DEBUG] Creating CommandSpec for object of class picocli.CommandLineTest$CompactFields with factory picocli.CommandLine$DefaultFactory%n" +
                         "[picocli INFO] Parsing 6 command line args [-oout, --, -r, -v, p1, p2]%n" +
-                        "[picocli DEBUG] Parser configuration: posixClusteredShortOptionsAllowed=true, stopAtPositional=false, stopAtUnmatched=false, separator=null, overwrittenOptionsAllowed=false, unmatchedArgumentsAllowed=false, expandAtFiles=true, limitSplit=false, aritySatisfiedByAttachedOptionParam=false%n" +
+                        "[picocli DEBUG] Parser configuration: posixClusteredShortOptionsAllowed=true, stopAtPositional=false, stopAtUnmatched=false, separator=null, overwrittenOptionsAllowed=false, unmatchedArgumentsAllowed=false, expandAtFiles=true, atFileCommentChar=#, endOfOptionsDelimiter=--, limitSplit=false, aritySatisfiedByAttachedOptionParam=false%n" +
                         "[picocli DEBUG] Set initial value for field boolean picocli.CommandLineTest$CompactFields.verbose of type boolean to false.%n" +
                         "[picocli DEBUG] Set initial value for field boolean picocli.CommandLineTest$CompactFields.recursive of type boolean to false.%n" +
                         "[picocli DEBUG] Set initial value for field java.io.File picocli.CommandLineTest$CompactFields.outputFile of type class java.io.File to null.%n" +
@@ -2034,7 +2053,7 @@ public class CommandLineTest {
                         "[picocli DEBUG] Creating CommandSpec for object of class picocli.Demo$GitRebase with factory picocli.CommandLine$DefaultFactory%n" +
                         "[picocli DEBUG] Creating CommandSpec for object of class picocli.Demo$GitTag with factory picocli.CommandLine$DefaultFactory%n" +
                         "[picocli INFO] Parsing 8 command line args [--git-dir=/home/rpopma/picocli, commit, -m, \"Fixed typos\", --, src1.java, src2.java, src3.java]%n" +
-                        "[picocli DEBUG] Parser configuration: posixClusteredShortOptionsAllowed=true, stopAtPositional=false, stopAtUnmatched=false, separator=null, overwrittenOptionsAllowed=false, unmatchedArgumentsAllowed=false, expandAtFiles=true, limitSplit=false, aritySatisfiedByAttachedOptionParam=false%n" +
+                        "[picocli DEBUG] Parser configuration: posixClusteredShortOptionsAllowed=true, stopAtPositional=false, stopAtUnmatched=false, separator=null, overwrittenOptionsAllowed=false, unmatchedArgumentsAllowed=false, expandAtFiles=true, atFileCommentChar=#, endOfOptionsDelimiter=--, limitSplit=false, aritySatisfiedByAttachedOptionParam=false%n" +
                         "[picocli DEBUG] Set initial value for field java.io.File picocli.Demo$Git.gitDir of type class java.io.File to null.%n" +
                         "[picocli DEBUG] Set initial value for field boolean picocli.CommandLine$AutoHelpMixin.helpRequested of type boolean to false.%n" +
                         "[picocli DEBUG] Set initial value for field boolean picocli.CommandLine$AutoHelpMixin.versionRequested of type boolean to false.%n" +

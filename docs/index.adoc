@@ -267,6 +267,8 @@ assert demo.files == null;
 assert demo.params.equals(Arrays.asList("-files", "file1", "file2"));
 ----
 
+A custom delimiter can be configured with `CommandLine.setEndOfOptionsDelimiter(String)`.
+
 [[AtFiles]]
 === @-files
 Users sometimes run into system limitations on the length of a command line when creating a
@@ -283,6 +285,9 @@ If an argument contains embedded whitespace, put the whole argument in double or
 (`"-f=My Files\Stuff.java"`).
 
 Lines starting with `#` are comments and are ignored.
+The comment character can be configured with `CommandLine.setAtFileCommentChar(Character)`,
+and comments can be switched off by setting the comment character to `null`.
+
 The file may itself contain additional @-file arguments; any such arguments will be processed recursively.
 
 If the file does not exist, or cannot be read, then the argument will be treated literally, and not removed.

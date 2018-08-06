@@ -5,7 +5,7 @@ The picocli community is pleased to announce picocli 3.4.1.
 
 This release contains new features, bugfixes and enhancements.
 
-From this release, the comment character in @-files (argument files) is configurable
+From this release, the comment character in @-files (argument files) and the end-of-options delimiter (`--` by default) are configurable.
 
 
 This is the thirty-sixth public release.
@@ -57,7 +57,7 @@ No features have been promoted in this picocli release.
 - [#430] Bugfix: formatting was incorrect (did not break on embedded newlines) in the subcommands list descriptions. Thanks to [Benny Bottema](https://github.com/bbottema) for the bug report.
 - [#431] Better support for validation in setter methods: cleaner stack trace.
 - [#432] Make comment character in @-files (argument files) configurable.
-
+- [#359] Make end-of-options delimiter configurable.
 
 ## <a name="3.4.1-deprecated"></a> Deprecations
 No features were deprecated in this release.

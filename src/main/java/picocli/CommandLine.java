@@ -295,7 +295,7 @@ public class CommandLine {
         return getCommandSpec().parser().toggleBooleanFlags();
     }
 
-    /** Sets whether the value of boolean flag options should be "toggled" when the option is matched.
+    /** Sets whether the value of boolean flag options should be "toggled" when the option is matched. The default is {@code true}.
      * <p>The specified setting will be registered with this {@code CommandLine} and the full hierarchy of its
      * subcommands and nested sub-subcommands <em>at the moment this method is called</em>. Subcommands added
      * later will have the default setting. To ensure a setting is applied to all
@@ -323,6 +323,7 @@ public class CommandLine {
     }
 
     /** Sets whether options for single-value fields can be specified multiple times on the command line without a {@link OverwrittenOptionException} being thrown.
+     * The default is {@code false}.
      * <p>The specified setting will be registered with this {@code CommandLine} and the full hierarchy of its
      * subcommands and nested sub-subcommands <em>at the moment this method is called</em>. Subcommands added
      * later will have the default setting. To ensure a setting is applied to all
@@ -344,7 +345,7 @@ public class CommandLine {
      * @since 3.0 */
     public boolean isPosixClusteredShortOptionsAllowed() { return getCommandSpec().parser().posixClusteredShortOptionsAllowed(); }
 
-    /** Sets whether short options like {@code -x -v -f SomeFile} can be clustered together like {@code -xvfSomeFile}.
+    /** Sets whether short options like {@code -x -v -f SomeFile} can be clustered together like {@code -xvfSomeFile}. The default is {@code true}.
      * <p>The specified setting will be registered with this {@code CommandLine} and the full hierarchy of its
      * subcommands and nested sub-subcommands <em>at the moment this method is called</em>. Subcommands added
      * later will have the default setting. To ensure a setting is applied to all
@@ -368,8 +369,8 @@ public class CommandLine {
      * @since 3.4 */
     public boolean isCaseInsensitiveEnumValuesAllowed() { return getCommandSpec().parser().caseInsensitiveEnumValuesAllowed(); }
 
-    /** Sets whether the parser should ignore case when converting arguments to {@code enum} values.
-     * E.g., for an option of type <a href="https://docs.oracle.com/javase/8/docs/api/java/time/DayOfWeek.html">java.time.DayOfWeek</a>,
+    /** Sets whether the parser should ignore case when converting arguments to {@code enum} values. The default is {@code false}.
+     * When set to true, for example, for an option of type <a href="https://docs.oracle.com/javase/8/docs/api/java/time/DayOfWeek.html">java.time.DayOfWeek</a>,
      * values {@code MonDaY}, {@code monday} and {@code MONDAY} are all recognized if {@code true}.
      * <p>The specified setting will be registered with this {@code CommandLine} and the full hierarchy of its
      * subcommands and nested sub-subcommands <em>at the moment this method is called</em>. Subcommands added
@@ -383,6 +384,23 @@ public class CommandLine {
         getCommandSpec().parser().caseInsensitiveEnumValuesAllowed(newValue);
         for (CommandLine command : getCommandSpec().subcommands().values()) {
             command.setCaseInsensitiveEnumValuesAllowed(newValue);
+        }
+        return this;
+    }
+
+    /** Returns the end-of-options delimiter that signals that the remaining command line arguments should be treated as positional parameters.
+     * @return the end-of-options delimiter. The default is {@code "--"}.
+     * @since 3.5 */
+    public String getEndOfOptionsDelimiter() { return getCommandSpec().parser().endOfOptionsDelimiter(); }
+
+    /** Sets the end-of-options delimiter that signals that the remaining command line arguments should be treated as positional parameters.
+     * @param delimiter the end-of-options delimiter; must not be {@code null}. The default is {@code "--"}.
+     * @return this {@code CommandLine} object, to allow method chaining
+     * @since 3.5 */
+    public CommandLine setEndOfOptionsDelimiter(String delimiter) {
+        getCommandSpec().parser().endOfOptionsDelimiter(delimiter);
+        for (CommandLine command : getCommandSpec().subcommands().values()) {
+            command.setEndOfOptionsDelimiter(delimiter);
         }
         return this;
     }
@@ -461,6 +479,7 @@ public class CommandLine {
     }
 
     /** Sets whether arguments on the command line that resemble an option should be treated as positional parameters.
+     * The default is {@code false}.
      * <p>The specified setting will be registered with this {@code CommandLine} and the full hierarchy of its
      * subcommands and nested sub-subcommands <em>at the moment this method is called</em>. Subcommands added
      * later will have the default setting. To ensure a setting is applied to all
@@ -491,6 +510,7 @@ public class CommandLine {
     }
 
     /** Sets whether the end user may specify unmatched arguments on the command line without a {@link UnmatchedArgumentException} being thrown.
+     * The default is {@code false}.
      * <p>The specified setting will be registered with this {@code CommandLine} and the full hierarchy of its
      * subcommands and nested sub-subcommands <em>at the moment this method is called</em>. Subcommands added
      * later will have the default setting. To ensure a setting is applied to all
@@ -1846,7 +1866,7 @@ public class CommandLine {
         return this;
     }
 
-    /** Returns the maximum width of the usage help message.
+    /** Returns the maximum width of the usage help message. The default is 80.
      * @see UsageMessageSpec#width() */
     public int getUsageHelpWidth() { return getCommandSpec().usageMessage().width(); }
 
@@ -3743,6 +3763,7 @@ public class CommandLine {
             private String separator;
             private boolean stopAtUnmatched = false;
             private boolean stopAtPositional = false;
+            private String endOfOptionsDelimiter = "--";
             private boolean toggleBooleanFlags = true;
             private boolean overwrittenOptionsAllowed = false;
             private boolean unmatchedArgumentsAllowed = false;
@@ -3763,6 +3784,9 @@ public class CommandLine {
             public boolean stopAtUnmatched()                   { return stopAtUnmatched; }
             /** @see CommandLine#isStopAtPositional() */
             public boolean stopAtPositional()                  { return stopAtPositional; }
+            /** @see CommandLine#getEndOfOptionsDelimiter()
+             * @since 3.5 */
+            public String endOfOptionsDelimiter()             { return endOfOptionsDelimiter; }
             /** @see CommandLine#isToggleBooleanFlags() */
             public boolean toggleBooleanFlags()                { return toggleBooleanFlags; }
             /** @see CommandLine#isOverwrittenOptionsAllowed() */
@@ -3799,6 +3823,9 @@ public class CommandLine {
             public ParserSpec stopAtUnmatched(boolean stopAtUnmatched)                     { this.stopAtUnmatched = stopAtUnmatched; return this; }
             /** @see CommandLine#setStopAtPositional(boolean) */
             public ParserSpec stopAtPositional(boolean stopAtPositional)                   { this.stopAtPositional = stopAtPositional; return this; }
+            /** @see CommandLine#setEndOfOptionsDelimiter(String)
+             * @since 3.5 */
+            public ParserSpec endOfOptionsDelimiter(String delimiter)                      { this.endOfOptionsDelimiter = Assert.notNull(delimiter, "end-of-options delimiter"); return this; }
             /** @see CommandLine#setToggleBooleanFlags(boolean) */
             public ParserSpec toggleBooleanFlags(boolean toggleBooleanFlags)               { this.toggleBooleanFlags = toggleBooleanFlags; return this; }
             /** @see CommandLine#setOverwrittenOptionsAllowed(boolean) */
@@ -3832,20 +3859,22 @@ public class CommandLine {
             public String toString() {
                 return String.format("posixClusteredShortOptionsAllowed=%s, stopAtPositional=%s, stopAtUnmatched=%s, " +
                                 "separator=%s, overwrittenOptionsAllowed=%s, unmatchedArgumentsAllowed=%s, expandAtFiles=%s, " +
-                                "limitSplit=%s, aritySatisfiedByAttachedOptionParam=%s",
+                                "atFileCommentChar=%s, endOfOptionsDelimiter=%s, limitSplit=%s, aritySatisfiedByAttachedOptionParam=%s",
                         posixClusteredShortOptionsAllowed, stopAtPositional, stopAtUnmatched,
                         separator, overwrittenOptionsAllowed, unmatchedArgumentsAllowed, expandAtFiles,
-                        limitSplit, aritySatisfiedByAttachedOptionParam);
+                        atFileCommentChar, endOfOptionsDelimiter, limitSplit, aritySatisfiedByAttachedOptionParam);
             }
 
             void initFrom(ParserSpec settings) {
                 separator = settings.separator;
                 stopAtUnmatched = settings.stopAtUnmatched;
                 stopAtPositional = settings.stopAtPositional;
+                endOfOptionsDelimiter = settings.endOfOptionsDelimiter;
                 toggleBooleanFlags = settings.toggleBooleanFlags;
                 overwrittenOptionsAllowed = settings.overwrittenOptionsAllowed;
                 unmatchedArgumentsAllowed = settings.unmatchedArgumentsAllowed;
                 expandAtFiles = settings.expandAtFiles;
+                atFileCommentChar = settings.atFileCommentChar;
                 posixClusteredShortOptionsAllowed = settings.posixClusteredShortOptionsAllowed;
                 unmatchedOptionsArePositionalParams = settings.unmatchedOptionsArePositionalParams;
                 limitSplit = settings.limitSplit;
@@ -5637,7 +5666,7 @@ public class CommandLine {
 
                 // Double-dash separates options from positional arguments.
                 // If found, then interpret the remaining args as positional parameters.
-                if ("--".equals(arg)) {
+                if (commandSpec.parser.endOfOptionsDelimiter().equals(arg)) {
                     tracer.info("Found end-of-options delimiter '--'. Treating remainder as positional parameters.%n");
                     endOfOptions = true;
                     processRemainderAsPositionalParameters(required, initialized, args);
