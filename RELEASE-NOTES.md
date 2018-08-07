@@ -24,6 +24,7 @@ Picocli follows [semantic versioning](http://semver.org/).
 * [Potential breaking changes](#3.5.0-breaking-changes)
 
 ## <a name="3.5.0-new"></a> New and Noteworthy
+
 ### <a name="3.5.0-passwords"></a><a name="3.5.0-interactive"></a> `Interactive` Options for Passwords or Passphrases
 This release introduces password support: for options and positional parameters marked as `interactive`, the user is prompted to enter a value on the console.
 When running on Java 6 or higher, picocli will use the <a href="https://docs.oracle.com/javase/8/docs/api/java/io/Console.html#readPassword-java.lang.String-java.lang.Object...-"><code>Console.readPassword</code></a> API so that user input is not echoed to the console. 
