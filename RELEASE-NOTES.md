@@ -54,7 +54,7 @@ CommandLine.call(new Login(), "-u", "user123", "-p");
 ```
 Then the user will be prompted to enter a value:
 ```
-Enter value for --password (Password or passphrase): 
+Enter value for --password (Passphrase): 
 ```
 When running on Java 6 or higher, the user input is not echoed to the console.
 After the user enters a value and presses enter, the `call()` method is invoked, which prints the following:
