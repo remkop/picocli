@@ -66,7 +66,7 @@ When running on Java 6 or higher, the user input is not echoed to the console.
 After the user enters a value and presses enter, the `call()` method is invoked, which prints the following:
 
 ```bash
-Hi user123, your password is hashed to 75K3eLr+dx6JJFuJ7LwIpEpOFmwGZZkRiB84PURz6U8=.
+Hi user123, your passphrase is hashed to 75K3eLr+dx6JJFuJ7LwIpEpOFmwGZZkRiB84PURz6U8=.
 ```
 
 ### <a name="3.5.0-validation"></a> Simple Validation in Setter Methods
