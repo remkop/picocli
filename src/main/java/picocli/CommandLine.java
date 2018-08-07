@@ -1943,7 +1943,7 @@ public class CommandLine {
     }
     private static boolean empty(String str) { return str == null || str.trim().length() == 0; }
     private static boolean empty(Object[] array) { return array == null || array.length == 0; }
-    private static String str(String[] arr, int i) { return (arr == null || arr.length == 0) ? "" : arr[i]; }
+    private static String str(String[] arr, int i) { return (arr == null || arr.length <= i) ? "" : arr[i]; }
     private static boolean isBoolean(Class<?> type) { return type == Boolean.class || type == Boolean.TYPE; }
     private static CommandLine toCommandLine(Object obj, IFactory factory) { return obj instanceof CommandLine ? (CommandLine) obj : new CommandLine(obj, factory);}
     private static boolean isMultiValue(Class<?> cls) { return cls.isArray() || Collection.class.isAssignableFrom(cls) || Map.class.isAssignableFrom(cls); }
@@ -2259,6 +2259,15 @@ public class CommandLine {
          * @see picocli.CommandLine.IFactory
          * @since 3.2 */
         Class<? extends Iterable<String>> completionCandidates() default NoCompletionCandidates.class;
+
+        /**
+         * Set {@code interactive=true} if this option will prompt the end user for a value (like a password).
+         * Only supported for single-value options (not arrays, collections or maps).
+         * When running on Java 6 or greater, this will use the {@link Console#readPassword()} API to get a value without echoing input to the console.
+         * @return whether this option prompts the end user for a value to be entered on the command line
+         * @since 3.5
+         */
+        boolean interactive() default false;
     }
     /**
      * <p>
@@ -2411,6 +2420,15 @@ public class CommandLine {
          * @see picocli.CommandLine.IFactory
          * @since 3.2 */
         Class<? extends Iterable<String>> completionCandidates() default NoCompletionCandidates.class;
+
+        /**
+         * Set {@code interactive=true} if this positional parameter will prompt the end user for a value (like a password).
+         * Only supported for single-value positional parameters (not arrays, collections or maps).
+         * When running on Java 6 or greater, this will use the {@link Console#readPassword()} API to get a value without echoing input to the console.
+         * @return whether this positional parameter prompts the end user for a value to be entered on the command line
+         * @since 3.5
+         */
+        boolean interactive() default false;
     }
 
     /**
@@ -3895,6 +3913,7 @@ public class CommandLine {
             private final Help.Visibility showDefaultValue;
 
             // parser fields
+            private final boolean interactive;
             private final boolean required;
             private final String splitRegex;
             private final Class<?> type;
@@ -3921,6 +3940,7 @@ public class CommandLine {
                 converters = builder.converters == null ? new ITypeConverter<?>[0] : builder.converters;
                 showDefaultValue = builder.showDefaultValue == null ? Help.Visibility.ON_DEMAND : builder.showDefaultValue;
                 hidden = builder.hidden;
+                interactive = builder.interactive;
                 required = builder.required && builder.defaultValue == null; //#261 not required if it has a default
                 defaultValue = builder.defaultValue;
                 initialValue = builder.initialValue;
@@ -3974,12 +3994,19 @@ public class CommandLine {
                 } else {
                     completionCandidates = builder.completionCandidates;
                 }
+                if (interactive && (arity.min != 1 || arity.max != 1)) {
+                    throw new InitializationException("Interactive options and positional parameters are only supported for arity=1, not for arity=" + arity);
+                }
             }
 
             /** Returns whether this is a required option or positional parameter.
              * @see Option#required() */
             public boolean required()      { return required; }
-    
+
+            /** Returns whether this option will prompt the user to enter a value on the command line.
+             * @see Option#interactive() */
+            public boolean interactive()   { return interactive; }
+
             /** Returns the description template of this option, before variables are rendered.
              * @see Option#description() */
             public String[] description()  { return description.clone(); }
@@ -4178,6 +4205,7 @@ public class CommandLine {
                 private Range arity;
                 private String[] description;
                 private boolean required;
+                private boolean interactive;
                 private String paramLabel;
                 private String splitRegex;
                 private boolean hidden;
@@ -4205,6 +4233,7 @@ public class CommandLine {
                     hidden = original.hidden;
                     paramLabel = original.paramLabel;
                     required = original.required;
+                    interactive = original.interactive;
                     showDefaultValue = original.showDefaultValue;
                     completionCandidates = original.completionCandidates;
                     splitRegex = original.splitRegex;
@@ -4217,6 +4246,9 @@ public class CommandLine {
                 /** Returns whether this is a required option or positional parameter.
                  * @see Option#required() */
                 public boolean required()      { return required; }
+                /** Returns whether this option prompts the user to enter a value on the command line.
+                 * @see Option#interactive() */
+                public boolean interactive()   { return interactive; }
 
                 /** Returns the description of this option, used when generating the usage documentation.
                  * @see Option#description() */
@@ -4278,7 +4310,10 @@ public class CommandLine {
 
                 /** Sets whether this is a required option or positional parameter, and returns this builder. */
                 public T required(boolean required)          { this.required = required; return self(); }
-    
+
+                /** Sets whether this option prompts the user to enter a value on the command line, and returns this builder. */
+                public T interactive(boolean interactive)          { this.interactive = interactive; return self(); }
+
                 /** Sets the description of this option, used when generating the usage documentation, and returns this builder.
                  * @see Option#description() */
                 public T description(String... description)  { this.description = Assert.notNull(description, "description").clone(); return self(); }
@@ -5034,6 +5069,7 @@ public class CommandLine {
 
                 builder.arity(Range.optionArity(member));
                 builder.required(option.required());
+                builder.interactive(option.interactive());
                 builder.description(option.description());
                 Class<?>[] elementTypes = inferTypes(member.getType(), option.type(), member.getGenericType());
                 builder.auxiliaryTypes(elementTypes);
@@ -5054,6 +5090,7 @@ public class CommandLine {
                 builder.required(arity.min > 0);
 
                 Parameters parameters = member.getAnnotation(Parameters.class);
+                builder.interactive(parameters.interactive());
                 builder.description(parameters.description());
                 Class<?>[] elementTypes = inferTypes(member.getType(), parameters.type(), member.getGenericType());
                 builder.auxiliaryTypes(elementTypes);
@@ -5753,7 +5790,8 @@ public class CommandLine {
                 if (!endOfOptions && tracer.isDebug()) {tracer.debug("Parser was configured with stopAtPositional=true, treating remaining arguments as positional parameters.%n");}
                 endOfOptions = true;
             }
-            int consumed = 0;
+            int argsConsumed = 0;
+            int interactiveConsumed = 0;
             int originalNowProcessingSize = parseResult.nowProcessing.size();
             for (PositionalParamSpec positionalParam : commandSpec.positionalParameters()) {
                 Range indexRange = positionalParam.index();
@@ -5765,19 +5803,22 @@ public class CommandLine {
                 if (tracer.isDebug()) {tracer.debug("Position %d is in index range %s. Trying to assign args to %s, arity=%s%n", position, indexRange, positionalParam, arity);}
                 if (!assertNoMissingParameters(positionalParam, arity, argsCopy)) { break; } // #389 collectErrors parsing
                 int originalSize = argsCopy.size();
-                applyOption(positionalParam, LookBehind.SEPARATE, arity, argsCopy, initialized, "args[" + indexRange + "] at position " + position);
+                int actuallyConsumed = applyOption(positionalParam, LookBehind.SEPARATE, arity, argsCopy, initialized, "args[" + indexRange + "] at position " + position);
                 int count = originalSize - argsCopy.size();
-                if (count > 0) { required.remove(positionalParam); }
-                consumed = Math.max(consumed, count);
+                if (count > 0 || actuallyConsumed > 0) {
+                    required.remove(positionalParam);
+                    if (positionalParam.interactive()) { interactiveConsumed++; }
+                }
+                argsConsumed = Math.max(argsConsumed, count);
                 while (parseResult.nowProcessing.size() > originalNowProcessingSize + count) {
                     parseResult.nowProcessing.remove(parseResult.nowProcessing.size() - 1);
                 }
             }
             // remove processed args from the stack
-            for (int i = 0; i < consumed; i++) { args.pop(); }
-            position += consumed;
-            if (tracer.isDebug()) {tracer.debug("Consumed %d arguments, moving position to index %d.%n", consumed, position);}
-            if (consumed == 0 && !args.isEmpty()) {
+            for (int i = 0; i < argsConsumed; i++) { args.pop(); }
+            position += argsConsumed + interactiveConsumed;
+            if (tracer.isDebug()) {tracer.debug("Consumed %d arguments and %d interactive values, moving position to index %d.%n", argsConsumed, interactiveConsumed, position);}
+            if (argsConsumed == 0 && interactiveConsumed == 0 && !args.isEmpty()) {
                 handleUnmatchedArgument(args);
             }
         }
@@ -5885,6 +5926,15 @@ public class CommandLine {
                 workingStack = args.isEmpty() ? args : stack(args.pop());
             } else {
                 if (!assertNoMissingParameters(argSpec, arity, args)) { return 0; } // #389 collectErrors parsing
+            }
+
+            if (argSpec.interactive()) {
+                String name = argSpec.isOption() ? ((OptionSpec) argSpec).longestName() : "position " + position;
+                String prompt = String.format("Enter value for %s (%s): ", name, str(argSpec.renderedDescription(), 0));
+                if (tracer.isDebug()) {tracer.debug("Reading value for %s from console...%n", name);}
+                char[] value = readPassword(prompt, false);
+                if (tracer.isDebug()) {tracer.debug("User entered '%s' for %s.%n", value, name);}
+                workingStack.push(new String(value));
             }
 
             int result;
@@ -6373,6 +6423,7 @@ public class CommandLine {
         }
 
         private boolean assertNoMissingParameters(ArgSpec argSpec, Range arity, Stack<String> args) {
+            if (argSpec.interactive()) { return true; }
             int available = args.size();
             if (available > 0 && commandSpec.parser().splitFirst() && argSpec.splitRegex().length() > 0) {
                 available += argSpec.splitValue(args.peek(), commandSpec.parser(), arity, 0).length - 1;
@@ -6423,6 +6474,30 @@ public class CommandLine {
                     : (value.length() > 1 && value.startsWith("\"") && value.endsWith("\""))
                         ? value.substring(1, value.length() - 1)
                         : value;
+        }
+
+        char[] readPassword(String prompt, boolean echoInput) {
+            try {
+                Object console = System.class.getDeclaredMethod("console").invoke(null);
+                Method method;
+                if (echoInput) {
+                    method = console.getClass().getDeclaredMethod("readLine", String.class, Object[].class);
+                    String line = (String) method.invoke(console, prompt, new Object[0]);
+                    return line.toCharArray();
+                } else {
+                    method = console.getClass().getDeclaredMethod("readPassword", String.class, Object[].class);
+                    return (char[]) method.invoke(console, prompt, new Object[0]);
+                }
+            } catch (Exception e) {
+                System.out.print(prompt);
+                InputStreamReader isr = new InputStreamReader(System.in);
+                BufferedReader in = new BufferedReader(isr);
+                try {
+                    return in.readLine().toCharArray();
+                } catch (IOException ex2) {
+                    throw new IllegalStateException(ex2);
+                }
+            }
         }
     }
     private static class PositionalParametersSorter implements Comparator<ArgSpec> {

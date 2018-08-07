@@ -1690,4 +1690,98 @@ public class CommandLineModelTest {
             assertEquals("@picocli.CommandLine.Spec annotation is only supported on fields of type picocli.CommandLine$Model$CommandSpec", ex.getMessage());
         }
     }
+
+    @Test
+    public void testOptionInteractiveFalseByDefault() {
+        assertFalse(OptionSpec.builder("-x").interactive());
+        assertFalse(OptionSpec.builder("-x").build().interactive());
+    }
+
+    @Test
+    public void testOptionInteractiveIfSet() {
+        assertTrue(OptionSpec.builder("-x").interactive(true).interactive());
+        assertTrue(OptionSpec.builder("-x").arity("1").interactive(true).build().interactive());
+    }
+
+    @Test
+    public void testPositionalInteractiveFalseByDefault() {
+        assertFalse(PositionalParamSpec.builder().interactive());
+        assertFalse(PositionalParamSpec.builder().build().interactive());
+    }
+
+    @Test
+    public void testPositionalInteractiveIfSet() {
+        assertTrue(PositionalParamSpec.builder().interactive(true).interactive());
+        assertTrue(PositionalParamSpec.builder().interactive(true).build().interactive());
+    }
+
+    @Test
+    public void testOptionInteractiveReadFromAnnotation() {
+        class App {
+            @Option(names = "-x", interactive = true) int x;
+            @Option(names = "-y", interactive = false) int y;
+            @Option(names = "-z") int z;
+        }
+
+        CommandLine cmd = new CommandLine(new App());
+        assertTrue(cmd.getCommandSpec().findOption("x").interactive());
+        assertFalse(cmd.getCommandSpec().findOption("y").interactive());
+        assertFalse(cmd.getCommandSpec().findOption("z").interactive());
+    }
+
+    @Test
+    public void testOptionInteractiveNotSupportedForMultiValue() {
+        OptionSpec.Builder[] options = new OptionSpec.Builder[]{
+                OptionSpec.builder("-x").arity("0").interactive(true),
+                OptionSpec.builder("-x").arity("0..1").interactive(true),
+                OptionSpec.builder("-x").arity("2").interactive(true),
+                OptionSpec.builder("-x").arity("3").interactive(true),
+                OptionSpec.builder("-x").arity("1..2").interactive(true),
+                OptionSpec.builder("-x").arity("1..*").interactive(true),
+                OptionSpec.builder("-x").arity("0..*").interactive(true),
+        };
+        for (OptionSpec.Builder opt : options) {
+            try {
+                opt.build();
+                fail("Expected exception");
+            } catch (InitializationException ex) {
+                assertEquals("Interactive options and positional parameters are only supported for arity=1, not for arity=" + opt.arity(), ex.getMessage());
+            }
+        }
+    }
+
+    @Test
+    public void testPositionalInteractiveNotSupportedForMultiValue() {
+        PositionalParamSpec.Builder[] options = new PositionalParamSpec.Builder[]{
+                PositionalParamSpec.builder().arity("0").interactive(true),
+                PositionalParamSpec.builder().arity("0..1").interactive(true),
+                PositionalParamSpec.builder().arity("2").interactive(true),
+                PositionalParamSpec.builder().arity("3").interactive(true),
+                PositionalParamSpec.builder().arity("1..2").interactive(true),
+                PositionalParamSpec.builder().arity("1..*").interactive(true),
+                PositionalParamSpec.builder().arity("0..*").interactive(true),
+        };
+        for (PositionalParamSpec.Builder opt : options) {
+            try {
+                opt.build();
+                fail("Expected exception");
+            } catch (InitializationException ex) {
+                assertEquals("Interactive options and positional parameters are only supported for arity=1, not for arity=" + opt.arity(), ex.getMessage());
+            }
+        }
+    }
+
+    @Test
+    public void testPositionalInteractiveReadFromAnnotation() {
+        class App {
+            @Parameters(index = "0", interactive = true) int x;
+            @Parameters(index = "1", interactive = false) int y;
+            @Parameters(index = "2") int z;
+        }
+
+        CommandLine cmd = new CommandLine(new App());
+        assertTrue(cmd.getCommandSpec().positionalParameters().get(0).interactive());
+        assertFalse(cmd.getCommandSpec().positionalParameters().get(1).interactive());
+        assertFalse(cmd.getCommandSpec().positionalParameters().get(2).interactive());
+    }
 }

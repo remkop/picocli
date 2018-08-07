@@ -15,6 +15,7 @@
  */
 package picocli;
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -29,6 +30,7 @@ import java.net.InetAddress;
 import java.net.Socket;
 import java.net.URI;
 import java.net.URL;
+import java.security.MessageDigest;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -46,10 +48,13 @@ import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 
 import org.junit.*;
 import org.junit.contrib.java.lang.system.ProvideSystemProperty;
+
+import javax.xml.bind.DatatypeConverter;
 
 import static org.junit.Assert.*;
 import static picocli.CommandLine.*;
@@ -1086,19 +1091,19 @@ public class CommandLineTest {
                         "[picocli DEBUG] Processing next arg as a positional parameter at index=0. Remainder=[-r, -v, p1, p2]%n" +
                         "[picocli DEBUG] Position 0 is in index range 0..*. Trying to assign args to field java.io.File[] %1$s$CompactFields.inputFiles, arity=0..1%n" +
                         "[picocli INFO] Adding [-r] to field java.io.File[] picocli.CommandLineTest$CompactFields.inputFiles for args[0..*] at position 0%n" +
-                        "[picocli DEBUG] Consumed 1 arguments, moving position to index 1.%n" +
+                        "[picocli DEBUG] Consumed 1 arguments and 0 interactive values, moving position to index 1.%n" +
                         "[picocli DEBUG] Processing next arg as a positional parameter at index=1. Remainder=[-v, p1, p2]%n" +
                         "[picocli DEBUG] Position 1 is in index range 0..*. Trying to assign args to field java.io.File[] %1$s$CompactFields.inputFiles, arity=0..1%n" +
                         "[picocli INFO] Adding [-v] to field java.io.File[] picocli.CommandLineTest$CompactFields.inputFiles for args[0..*] at position 1%n" +
-                        "[picocli DEBUG] Consumed 1 arguments, moving position to index 2.%n" +
+                        "[picocli DEBUG] Consumed 1 arguments and 0 interactive values, moving position to index 2.%n" +
                         "[picocli DEBUG] Processing next arg as a positional parameter at index=2. Remainder=[p1, p2]%n" +
                         "[picocli DEBUG] Position 2 is in index range 0..*. Trying to assign args to field java.io.File[] %1$s$CompactFields.inputFiles, arity=0..1%n" +
                         "[picocli INFO] Adding [p1] to field java.io.File[] picocli.CommandLineTest$CompactFields.inputFiles for args[0..*] at position 2%n" +
-                        "[picocli DEBUG] Consumed 1 arguments, moving position to index 3.%n" +
+                        "[picocli DEBUG] Consumed 1 arguments and 0 interactive values, moving position to index 3.%n" +
                         "[picocli DEBUG] Processing next arg as a positional parameter at index=3. Remainder=[p2]%n" +
                         "[picocli DEBUG] Position 3 is in index range 0..*. Trying to assign args to field java.io.File[] %1$s$CompactFields.inputFiles, arity=0..1%n" +
                         "[picocli INFO] Adding [p2] to field java.io.File[] picocli.CommandLineTest$CompactFields.inputFiles for args[0..*] at position 3%n" +
-                        "[picocli DEBUG] Consumed 1 arguments, moving position to index 4.%n",
+                        "[picocli DEBUG] Consumed 1 arguments and 0 interactive values, moving position to index 4.%n",
                 CommandLineTest.class.getName(), new File("/home/rpopma/picocli"));
         String actual = new String(baos.toByteArray(), "UTF8");
         //System.out.println(actual);
@@ -2083,15 +2088,15 @@ public class CommandLineTest {
                         "[picocli DEBUG] Processing next arg as a positional parameter at index=0. Remainder=[src1.java, src2.java, src3.java]%n" +
                         "[picocli DEBUG] Position 0 is in index range 0..*. Trying to assign args to field java.util.List<java.io.File> %1$s$GitCommit.files, arity=0..1%n" +
                         "[picocli INFO] Adding [src1.java] to field java.util.List<java.io.File> picocli.Demo$GitCommit.files for args[0..*] at position 0%n" +
-                        "[picocli DEBUG] Consumed 1 arguments, moving position to index 1.%n" +
+                        "[picocli DEBUG] Consumed 1 arguments and 0 interactive values, moving position to index 1.%n" +
                         "[picocli DEBUG] Processing next arg as a positional parameter at index=1. Remainder=[src2.java, src3.java]%n" +
                         "[picocli DEBUG] Position 1 is in index range 0..*. Trying to assign args to field java.util.List<java.io.File> %1$s$GitCommit.files, arity=0..1%n" +
                         "[picocli INFO] Adding [src2.java] to field java.util.List<java.io.File> picocli.Demo$GitCommit.files for args[0..*] at position 1%n" +
-                        "[picocli DEBUG] Consumed 1 arguments, moving position to index 2.%n" +
+                        "[picocli DEBUG] Consumed 1 arguments and 0 interactive values, moving position to index 2.%n" +
                         "[picocli DEBUG] Processing next arg as a positional parameter at index=2. Remainder=[src3.java]%n" +
                         "[picocli DEBUG] Position 2 is in index range 0..*. Trying to assign args to field java.util.List<java.io.File> %1$s$GitCommit.files, arity=0..1%n" +
                         "[picocli INFO] Adding [src3.java] to field java.util.List<java.io.File> picocli.Demo$GitCommit.files for args[0..*] at position 2%n" +
-                        "[picocli DEBUG] Consumed 1 arguments, moving position to index 3.%n",
+                        "[picocli DEBUG] Consumed 1 arguments and 0 interactive values, moving position to index 3.%n",
                 Demo.class.getName(), new File("/home/rpopma/picocli"));
         String actual = new String(baos.toByteArray(), "UTF8");
         //System.out.println(actual);
@@ -4318,5 +4323,165 @@ public class CommandLineTest {
         assertTrue(actual, actual.startsWith("Unknown option: -x"));
         assertTrue(actual, actual.contains("Usage:"));
         assertFalse(actual, actual.contains("Possible solutions:"));
+    }
+
+    @Test
+    public void testInteractiveOptionReadsFromStdIn() {
+        class App {
+            @Option(names = "-x", description = {"Pwd", "line2"}, interactive = true) int x;
+            @Option(names = "-z") int z;
+        }
+
+        PrintStream out = System.out;
+        InputStream in = System.in;
+        try {
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            System.setOut(new PrintStream(baos));
+            System.setIn(new ByteArrayInputStream("123".getBytes()));
+
+            App app = new App();
+            CommandLine cmd = new CommandLine(app);
+            cmd.parse("-x");
+
+            assertEquals("Enter value for -x (Pwd): ", baos.toString());
+            assertEquals(123, app.x);
+            assertEquals(0, app.z);
+
+            cmd.parse("-z", "678");
+
+            assertEquals(0, app.x);
+            assertEquals(678, app.z);
+        } finally {
+            System.setOut(out);
+            System.setIn(in);
+        }
+    }
+
+    @Test
+    public void testInteractiveOptionReadsFromStdInMultiLinePrompt() {
+        class App {
+            @Option(names = "-x", description = {"Pwd%nline2", "ignored"}, interactive = true) int x;
+            @Option(names = "-z") int z;
+        }
+
+        PrintStream out = System.out;
+        InputStream in = System.in;
+        try {
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            System.setOut(new PrintStream(baos));
+            System.setIn(new ByteArrayInputStream("123".getBytes()));
+
+            App app = new App();
+            CommandLine cmd = new CommandLine(app);
+            cmd.parse("-x", "-z", "987");
+
+            String expectedPrompt = String.format("Enter value for -x (Pwd%nline2): ");
+            assertEquals(expectedPrompt, baos.toString());
+            assertEquals(123, app.x);
+            assertEquals(987, app.z);
+        } finally {
+            System.setOut(out);
+            System.setIn(in);
+        }
+    }
+
+    @Test
+    public void testInteractivePositionalReadsFromStdIn() {
+        class App {
+            @Parameters(index = "0", description = {"Pwd%nline2", "ignored"}, interactive = true) int x;
+            @Parameters(index = "1") int z;
+        }
+
+        PrintStream out = System.out;
+        InputStream in = System.in;
+        try {
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            System.setOut(new PrintStream(baos));
+            System.setIn(new ByteArrayInputStream("123".getBytes()));
+
+            App app = new App();
+            CommandLine cmd = new CommandLine(app);
+            cmd.parse("987");
+
+            String expectedPrompt = String.format("Enter value for position 0 (Pwd%nline2): ");
+            assertEquals(expectedPrompt, baos.toString());
+            assertEquals(123, app.x);
+            assertEquals(987, app.z);
+        } finally {
+            System.setOut(out);
+            System.setIn(in);
+        }
+    }
+
+    @Test
+    public void testInteractivePositional2ReadsFromStdIn() {
+        class App {
+            @Parameters(index = "0") int a;
+            @Parameters(index = "1", description = {"Pwd%nline2", "ignored"}, interactive = true) int x;
+            @Parameters(index = "2") int z;
+        }
+
+        PrintStream out = System.out;
+        InputStream in = System.in;
+        try {
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            System.setOut(new PrintStream(baos));
+            System.setIn(new ByteArrayInputStream("123".getBytes()));
+
+            App app = new App();
+            CommandLine cmd = new CommandLine(app);
+            cmd.parse("333", "987");
+
+            String expectedPrompt = String.format("Enter value for position 1 (Pwd%nline2): ");
+            assertEquals(expectedPrompt, baos.toString());
+            assertEquals(333, app.a);
+            assertEquals(123, app.x);
+            assertEquals(987, app.z);
+        } finally {
+            System.setOut(out);
+            System.setIn(in);
+        }
+    }
+
+    @Test
+    public void testLoginExample() {
+        class Login implements Callable<Object> {
+            @Option(names = {"-u", "--user"}, description = "User name")
+            String user;
+
+            @Option(names = {"-p", "--password"}, description = "Password or passphrase", interactive = true)
+            String password;
+
+            public Object call() throws Exception {
+                MessageDigest md = MessageDigest.getInstance("SHA-256");
+                md.update(password.getBytes());
+                System.out.printf("Hi %s, your password is hashed to %s.%n", user, base64(md.digest()));
+                return null;
+            }
+
+            private String base64(byte[] arr) {
+                return DatatypeConverter.printBase64Binary(arr);
+            }
+        }
+
+        PrintStream out = System.out;
+        InputStream in = System.in;
+        try {
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            System.setOut(new PrintStream(baos));
+            System.setIn(new ByteArrayInputStream("password123".getBytes()));
+
+            Login login = new Login();
+            CommandLine.call(login, "-u", "user123", "-p");
+
+            String expectedPrompt = String.format("Enter value for --password (Password or passphrase): " +
+                    "Hi user123, your password is hashed to 75K3eLr+dx6JJFuJ7LwIpEpOFmwGZZkRiB84PURz6U8=.%n");
+            assertEquals(expectedPrompt, baos.toString());
+            assertEquals("user123", login.user);
+            assertEquals("password123", login.password);
+        } finally {
+            System.setOut(out);
+            System.setIn(in);
+        }
     }
 }

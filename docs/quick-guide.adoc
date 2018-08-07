@@ -119,6 +119,13 @@ tar -cf result.tar f1.txt f2.txt
 tar -cfresult.tar f1.txt f2.txt
 ----
 
+=== Interactive (Password) Options
+For options and positional parameters marked as `interactive`, the user is prompted to enter a value on the console.
+When running on Java 6 or higher, picocli will use the https://docs.oracle.com/javase/8/docs/api/java/io/Console.html#readPassword-java.lang.String-java.lang.Object...-[`Console.readPassword`] API so that user input is not echoed to the console.
+
+The user manual has an link:http://picocli.info/#_interactive_password_options[example].
+
+
 === Positional Parameters
 Any command line arguments that are not subcommands, options or option parameters are interpreted as positional parameters.
 

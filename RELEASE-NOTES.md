@@ -5,7 +5,12 @@ The picocli community is pleased to announce picocli 3.5.0.
 
 This release contains new features, bugfixes and enhancements.
 
-From this release, the comment character in @-files (argument files) and the end-of-options delimiter (`--` by default) are configurable.
+Password support: for options and positional parameters marked as `interactive`, the user is prompted to enter a value on the console.
+When running on Java 6 or higher, picocli will use the <a href="https://docs.oracle.com/javase/8/docs/api/java/io/Console.html#readPassword-java.lang.String-java.lang.Object...-"><code>Console.readPassword</code></a> API so that user input is not echoed to the console. 
+
+Client code can now perform simple validation in annotated setter methods by throwing a `ParameterException` on invalid input. 
+
+Also, from this release, the comment character in @-files (argument files) and the end-of-options delimiter (`--` by default) are configurable.
 
 
 This is the thirty-sixth public release.
@@ -19,6 +24,44 @@ Picocli follows [semantic versioning](http://semver.org/).
 * [Potential breaking changes](#3.5.0-breaking-changes)
 
 ## <a name="3.5.0-new"></a> New and Noteworthy
+### <a name="3.5.0-passwords"></a><a name="3.5.0-interactive"></a> `Interactive` Options for Passwords or Passphrases
+This release introduces password support: for options and positional parameters marked as `interactive`, the user is prompted to enter a value on the console.
+When running on Java 6 or higher, picocli will use the <a href="https://docs.oracle.com/javase/8/docs/api/java/io/Console.html#readPassword-java.lang.String-java.lang.Object...-"><code>Console.readPassword</code></a> API so that user input is not echoed to the console. 
+
+Example usage:
+
+```java
+class Login implements Callable<Object> {
+    @Option(names = {"-u", "--user"}, description = "User name")
+    String user;
+
+    @Option(names = {"-p", "--password"}, description = "Passphrase", interactive = true)
+    String password;
+
+    public Object call() throws Exception {
+        MessageDigest md = MessageDigest.getInstance("SHA-256");
+        md.update(password.getBytes());
+        System.out.printf("Hi %s, your passphrase is hashed to %s.%n", user, base64(md.digest()));
+        return null;
+    }
+    
+    private String base64(byte[] arr) { /* ... */ }
+}
+```
+When this command is invoked like this:
+```java
+CommandLine.call(new Login(), "-u", "user123", "-p");
+```
+Then the user will be prompted to enter a value:
+```
+Enter value for --password (Password or passphrase): 
+```
+When running on Java 6 or higher, the user input is not echoed to the console.
+After the user enters a value and presses enter, the `call()` method is invoked, which prints the following:
+```bash
+Hi user123, your password is hashed to 75K3eLr+dx6JJFuJ7LwIpEpOFmwGZZkRiB84PURz6U8=.
+```
+
 ### <a name="3.5.0-validation"></a> Simple Validation in Setter Methods
 Methods annotated with `@Option` and `@Parameters` can do simple input validation by throwing a `ParameterException` when invalid values are specified on the command line.
 
@@ -58,6 +101,7 @@ No features have been promoted in this picocli release.
 - [#431] Better support for validation in setter methods: cleaner stack trace.
 - [#432] Make comment character in @-files (argument files) configurable.
 - [#359] Make end-of-options delimiter configurable.
+- [#82] Support reading passwords from the console with echoing disabled.
 
 ## <a name="3.5.0-deprecated"></a> Deprecations
 No features were deprecated in this release.
