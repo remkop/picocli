@@ -513,8 +513,8 @@ table.CodeRay td.code>pre{padding:0}
 <div id="header">
 <h1>Quick Guide</h1>
 <div class="details">
-<span id="revnumber">version 3.4.0,</span>
-<span id="revdate">2018-08-02</span>
+<span id="revnumber">version 3.5.0,</span>
+<span id="revdate">2018-08-07</span>
 </div>
 <div id="toc" class="toc2">
 <div id="toctitle">Features</div>
@@ -692,7 +692,17 @@ tar -cfresult.tar f1.txt f2.txt</pre>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_positional_parameters">3.2. Positional Parameters</h3>
+<h3 id="_interactive_password_options">3.2. Interactive (Password) Options</h3>
+<div class="paragraph">
+<p>For options and positional parameters marked as <code>interactive</code>, the user is prompted to enter a value on the console.
+When running on Java 6 or higher, picocli will use the <a href="https://docs.oracle.com/javase/8/docs/api/java/io/Console.html#readPassword-java.lang.String-java.lang.Object&#8230;&#8203;-"><code>Console.readPassword</code></a> API so that user input is not echoed to the console.</p>
+</div>
+<div class="paragraph">
+<p>The user manual has an <a href="http://picocli.info/#_interactive_password_options">example</a>.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_positional_parameters">3.3. Positional Parameters</h3>
 <div class="paragraph">
 <p>Any command line arguments that are not subcommands, options or option parameters are interpreted as positional parameters.</p>
 </div>
@@ -1986,8 +1996,8 @@ Your stars keep me going! :-)</p>
 </div>
 <div id="footer">
 <div id="footer-text">
-Version 3.4.0<br>
-Last updated 2018-08-02 00:31:50 +09:00
+Version 3.5.0<br>
+Last updated 2018-08-07 23:23:01 +09:00
 </div>
 </div>
 </body>

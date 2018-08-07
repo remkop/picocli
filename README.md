@@ -17,7 +17,8 @@ How it works: annotate your class and picocli initializes it from the command li
 converting the input to strongly typed data. Supports git-like [subcommands](https://picocli.info/#_subcommands)
 (and nested [sub-subcommands](https://picocli.info/#_nested_sub_subcommands)),
 any option prefix style, POSIX-style [grouped short options](https://picocli.info/#_short_options),
-custom [type converters](https://picocli.info/#_custom_type_converters) and more.
+custom [type converters](https://picocli.info/#_custom_type_converters),
+[password options](http://picocli.info/#_interactive_password_options) and more.
 Parser [tracing](https://picocli.info/#_tracing) facilitates troubleshooting.
 
 Distinguishes between [named options](https://picocli.info/#_options) and
@@ -43,7 +44,7 @@ Picocli-based applications can easily [integrate](https://picocli.info/#_depende
 ![Picocli Demo help message with ANSI colors](docs/images/picocli.Demo.png?raw=true)
 
 #### Releases
-* [Releases](https://github.com/remkop/picocli/releases) - latest: 3.4.0
+* [Releases](https://github.com/remkop/picocli/releases) - latest: 3.5.0
 * [Picocli 3.0.0 Release Notes](https://github.com/remkop/picocli/releases/tag/v3.0.0) - note there are some [potential breaking changes](https://github.com/remkop/picocli/releases/tag/v3.0.0#3.0.0-breaking-changes) from prior versions
 * [Picocli 2.0 Release Notes](https://github.com/remkop/picocli/releases/tag/v2.0.0) - note there are some [potential breaking changes](https://github.com/remkop/picocli/releases/tag/v2.0.0#2.0-breaking-changes) from prior versions
 
@@ -153,35 +154,35 @@ See the [source code](https://github.com/remkop/picocli/blob/master/src/main/jav
 
 ### Gradle
 ```
-compile 'info.picocli:picocli:3.4.0'
+compile 'info.picocli:picocli:3.5.0'
 ```
 ### Maven
 ```
 <dependency>
   <groupId>info.picocli</groupId>
   <artifactId>picocli</artifactId>
-  <version>3.4.0</version>
+  <version>3.5.0</version>
 </dependency>
 ```
 ### Scala SBT
 ```
-libraryDependencies += "info.picocli" % "picocli" % "3.4.0"
+libraryDependencies += "info.picocli" % "picocli" % "3.5.0"
 ```
 ### Ivy
 ```
-<dependency org="info.picocli" name="picocli" rev="3.4.0" />
+<dependency org="info.picocli" name="picocli" rev="3.5.0" />
 ```
 ### Grape
 ```groovy
 @Grapes(
-    @Grab(group='info.picocli', module='picocli', version='3.4.0')
+    @Grab(group='info.picocli', module='picocli', version='3.5.0')
 )
 ```
 ### Leiningen
 ```
-[info.picocli/picocli "3.4.0"]
+[info.picocli/picocli "3.5.0"]
 ```
 ### Buildr
 ```
-'info.picocli:picocli:jar:3.4.0'
+'info.picocli:picocli:jar:3.5.0'
 ```

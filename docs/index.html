@@ -513,8 +513,8 @@ table.CodeRay td.code>pre{padding:0}
 <div id="header">
 <h1>picocli - a mighty tiny command line interface</h1>
 <div class="details">
-<span id="revnumber">version 3.4.0,</span>
-<span id="revdate">2018-08-02</span>
+<span id="revnumber">version 3.5.0,</span>
+<span id="revdate">2018-08-07</span>
 </div>
 <div id="toc" class="toc2">
 <div id="toctitle">Features</div>
@@ -523,11 +523,12 @@ table.CodeRay td.code>pre{padding:0}
 <li><a href="#_options_and_parameters">2. Options and Parameters</a>
 <ul class="sectlevel2">
 <li><a href="#_options">2.1. Options</a></li>
-<li><a href="#_short_options">2.2. Short Options</a></li>
-<li><a href="#_positional_parameters">2.3. Positional Parameters</a></li>
-<li><a href="#_mixing_options_and_positional_parameters">2.4. Mixing Options and Positional Parameters</a></li>
-<li><a href="#_double_dash_code_code">2.5. Double dash (<code>--</code>)</a></li>
-<li><a href="#AtFiles">2.6. @-files</a></li>
+<li><a href="#_interactive_password_options">2.2. Interactive (Password) Options</a></li>
+<li><a href="#_short_options">2.3. Short Options</a></li>
+<li><a href="#_positional_parameters">2.4. Positional Parameters</a></li>
+<li><a href="#_mixing_options_and_positional_parameters">2.5. Mixing Options and Positional Parameters</a></li>
+<li><a href="#_double_dash_code_code">2.6. Double dash (<code>--</code>)</a></li>
+<li><a href="#AtFiles">2.7. @-files</a></li>
 </ul>
 </li>
 <li><a href="#_strongly_typed_everything">3. Strongly Typed Everything</a>
@@ -856,7 +857,62 @@ Tar tar = <span class="keyword">new</span> Tar();
 </div>
 </div>
 <div class="sect2">
-<h3 id="_short_options">2.2. Short Options</h3>
+<h3 id="_interactive_password_options">2.2. Interactive (Password) Options</h3>
+<div class="paragraph">
+<p>Picocli 3.5 introduced password support: for options and positional parameters marked as <code>interactive</code>, the user is prompted to enter a value on the console.
+When running on Java 6 or higher, picocli will use the <a href="https://docs.oracle.com/javase/8/docs/api/java/io/Console.html#readPassword-java.lang.String-java.lang.Object&#8230;&#8203;-"><code>Console.readPassword</code></a> API so that user input is not echoed to the console.</p>
+</div>
+<div class="paragraph">
+<p>Example usage:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="java"><span class="type">class</span> <span class="class">Login</span> <span class="directive">implements</span> <span class="predefined-type">Callable</span>&lt;<span class="predefined-type">Object</span>&gt; {
+    <span class="annotation">@Option</span>(names = {<span class="string"><span class="delimiter">&quot;</span><span class="content">-u</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">--user</span><span class="delimiter">&quot;</span></span>}, description = <span class="string"><span class="delimiter">&quot;</span><span class="content">User name</span><span class="delimiter">&quot;</span></span>)
+    <span class="predefined-type">String</span> user;
+
+    <span class="annotation">@Option</span>(names = {<span class="string"><span class="delimiter">&quot;</span><span class="content">-p</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">--password</span><span class="delimiter">&quot;</span></span>}, description = <span class="string"><span class="delimiter">&quot;</span><span class="content">Passphrase</span><span class="delimiter">&quot;</span></span>, interactive = <span class="predefined-constant">true</span>)
+    <span class="predefined-type">String</span> password;
+
+    <span class="directive">public</span> <span class="predefined-type">Object</span> call() <span class="directive">throws</span> <span class="exception">Exception</span> {
+        <span class="predefined-type">MessageDigest</span> md = <span class="predefined-type">MessageDigest</span>.getInstance(<span class="string"><span class="delimiter">&quot;</span><span class="content">SHA-256</span><span class="delimiter">&quot;</span></span>);
+        md.update(password.getBytes());
+        <span class="predefined-type">System</span>.out.printf(<span class="string"><span class="delimiter">&quot;</span><span class="content">Hi %s, your passphrase is hashed to %s.%n</span><span class="delimiter">&quot;</span></span>, user, base64(md.digest()));
+        <span class="keyword">return</span> <span class="predefined-constant">null</span>;
+    }
+
+    <span class="directive">private</span> <span class="predefined-type">String</span> base64(<span class="type">byte</span><span class="type">[]</span> arr) { <span class="comment">/* ... */</span> }
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>When this command is invoked like this:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="java">CommandLine.call(<span class="keyword">new</span> Login(), <span class="string"><span class="delimiter">&quot;</span><span class="content">-u</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">user123</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">-p</span><span class="delimiter">&quot;</span></span>);</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Then the user will be prompted to enter a value:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code>Enter value for --password (Passphrase):</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>When running on Java 6 or higher, the user input is not echoed to the console.
+After the user enters a value and presses enter, the <code>call()</code> method is invoked, which prints the following:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code>Hi user123, your password is hashed to 75K3eLr+dx6JJFuJ7LwIpEpOFmwGZZkRiB84PURz6U8=.</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_short_options">2.3. Short Options</h3>
 <div class="paragraph">
 <p>Picocli supports <a href="http://pubs.opengroup.org/onlinepubs/9699919799/basedefs/V1_chap12.html#tag_12_02">POSIX clustered short options</a>:
 one or more single-character options without option-arguments, followed by at most one option with an option-argument, can be grouped behind one '-' delimiter.</p>
@@ -891,7 +947,7 @@ one or more single-character options without option-arguments, followed by at mo
 </div>
 </div>
 <div class="sect2">
-<h3 id="_positional_parameters">2.3. Positional Parameters</h3>
+<h3 id="_positional_parameters">2.4. Positional Parameters</h3>
 <div class="paragraph">
 <p>Any command line arguments that are not subcommands or options (or option parameters) are interpreted as positional parameters.
 Positional parameters generally follow the options but from picocli v2.0, positional parameters can be mixed with options on the command line.</p>
@@ -938,7 +994,7 @@ PositionalParameters params = CommandLine.populateCommand(<span class="keyword">
 </div>
 </div>
 <div class="sect2">
-<h3 id="_mixing_options_and_positional_parameters">2.4. Mixing Options and Positional Parameters</h3>
+<h3 id="_mixing_options_and_positional_parameters">2.5. Mixing Options and Positional Parameters</h3>
 <div class="paragraph">
 <p>From picocli v2.0, positional parameters can be mixed with options on the command line.</p>
 </div>
@@ -971,7 +1027,7 @@ Mixed mixed = <span class="keyword">new</span> Mixed();
 </div>
 </div>
 <div class="sect2">
-<h3 id="_double_dash_code_code">2.5. Double dash (<code>--</code>)</h3>
+<h3 id="_double_dash_code_code">2.6. Double dash (<code>--</code>)</h3>
 <div class="paragraph">
 <p>When one of the command line arguments is just two dashes without any characters attached (<code>--</code>),
 picocli interprets all following arguments as positional parameters, even arguments that match an option name.</p>
@@ -999,9 +1055,12 @@ DoubleDashDemo demo = <span class="keyword">new</span> DoubleDashDemo();
 <span class="keyword">assert</span> demo.params.equals(<span class="predefined-type">Arrays</span>.asList(<span class="string"><span class="delimiter">&quot;</span><span class="content">-files</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">file1</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">file2</span><span class="delimiter">&quot;</span></span>));</code></pre>
 </div>
 </div>
+<div class="paragraph">
+<p>A custom delimiter can be configured with <code>CommandLine.setEndOfOptionsDelimiter(String)</code>.</p>
+</div>
 </div>
 <div class="sect2">
-<h3 id="AtFiles">2.6. @-files</h3>
+<h3 id="AtFiles">2.7. @-files</h3>
 <div class="paragraph">
 <p>Users sometimes run into system limitations on the length of a command line when creating a
 command line with lots of options or with long arguments for options.</p>
@@ -1020,7 +1079,11 @@ If an argument contains embedded whitespace, put the whole argument in double or
 </div>
 <div class="paragraph">
 <p>Lines starting with <code>#</code> are comments and are ignored.
-The file may itself contain additional @-file arguments; any such arguments will be processed recursively.</p>
+The comment character can be configured with <code>CommandLine.setAtFileCommentChar(Character)</code>,
+and comments can be switched off by setting the comment character to <code>null</code>.</p>
+</div>
+<div class="paragraph">
+<p>The file may itself contain additional @-file arguments; any such arguments will be processed recursively.</p>
 </div>
 <div class="paragraph">
 <p>If the file does not exist, or cannot be read, then the argument will be treated literally, and not removed.
@@ -3834,6 +3897,35 @@ cmd.parse(args);
 <span class="keyword">assert</span> counter.count == <span class="integer">3</span>; <span class="comment">// method was invoked with command line value</span></code></pre>
 </div>
 </div>
+<div class="paragraph">
+<p>Methods annotated with <code>@Option</code> and <code>@Parameters</code> can do simple input validation by throwing a <code>ParameterException</code> when invalid values are specified on the command line.</p>
+</div>
+<div class="paragraph">
+<p>[source,java</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre>class ValidationExample {
+    private Map&lt;String, String&gt; properties = new LinkedHashMap&lt;&gt;();
+
+    @Spec private CommandSpec spec; // injected by picocli
+
+    @Option(names = {"-D", "--property"}, paramLabel = "KEY=VALUE")
+    public void setProperty(Map&lt;String, String&gt; keyValuePairs) {
+        for (Map.Entry&lt;String, String&gt; entry : keyValuePairs.entrySet()) {
+            String existing = properties.get(entry.getKey());
+            if (existing != null &amp;&amp; !existing.equals(entry.getValue())) {
+                throw new ParameterException(spec.commandLine(),
+                        "Duplicate key '" + entry.getKey() + "' for values '" +
+                        existing + "' and '" + entry.getValue() + "'.");
+            }
+            properties.put(entry.getKey(), entry.getValue());
+        }
+    }
+    // ...
+}</pre>
+</div>
+</div>
 </div>
 </div>
 <div class="sect2">
@@ -4411,7 +4503,7 @@ The script body is executed if the user input was valid and did not request usag
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="CodeRay highlight"><code data-lang="groovy"><span class="annotation">@Grab</span>(<span class="string"><span class="delimiter">'</span><span class="content">info.picocli:picocli:3.4.0</span><span class="delimiter">'</span></span>)
+<pre class="CodeRay highlight"><code data-lang="groovy"><span class="annotation">@Grab</span>(<span class="string"><span class="delimiter">'</span><span class="content">info.picocli:picocli:3.5.0</span><span class="delimiter">'</span></span>)
 <span class="annotation">@Command</span>(name = <span class="string"><span class="delimiter">&quot;</span><span class="content">myScript</span><span class="delimiter">&quot;</span></span>,
         mixinStandardHelpOptions = <span class="predefined-constant">true</span>, <span class="comment">// add --help and --version options</span>
         description = <span class="string"><span class="delimiter">&quot;</span><span class="content">@|bold Groovy script|@ @|underline picocli|@ example</span><span class="delimiter">&quot;</span></span>)
@@ -4446,7 +4538,7 @@ When using a Groovy version older than 2.4.7, use this workaround for the <a hre
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="CodeRay highlight"><code data-lang="groovy"><span class="annotation">@Grab</span>(<span class="string"><span class="delimiter">'</span><span class="content">info.picocli:picocli:3.4.0</span><span class="delimiter">'</span></span>)
+<pre class="CodeRay highlight"><code data-lang="groovy"><span class="annotation">@Grab</span>(<span class="string"><span class="delimiter">'</span><span class="content">info.picocli:picocli:3.5.0</span><span class="delimiter">'</span></span>)
 <span class="annotation">@GrabExclude</span>(<span class="string"><span class="delimiter">'</span><span class="content">org.codehaus.groovy:groovy-all</span><span class="delimiter">'</span></span>) <span class="comment">// work around GROOVY-7613</span>
 ...</code></pre>
 </div>
@@ -4588,7 +4680,7 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
 <h3 id="_gradle">24.1. Gradle</h3>
 <div class="listingblock">
 <div class="content">
-<pre>compile 'info.picocli:picocli:3.4.0'</pre>
+<pre>compile 'info.picocli:picocli:3.5.0'</pre>
 </div>
 </div>
 </div>
@@ -4599,7 +4691,7 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
 <pre>&lt;dependency&gt;
   &lt;groupId&gt;info.picocli&lt;/groupId&gt;
   &lt;artifactId&gt;picocli&lt;/artifactId&gt;
-  &lt;version&gt;3.4.0&lt;/version&gt;
+  &lt;version&gt;3.5.0&lt;/version&gt;
 &lt;/dependency&gt;</pre>
 </div>
 </div>
@@ -4608,7 +4700,7 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
 <h3 id="_scala_sbt">24.3. Scala SBT</h3>
 <div class="listingblock">
 <div class="content">
-<pre>libraryDependencies += "info.picocli" % "picocli" % "3.4.0"</pre>
+<pre>libraryDependencies += "info.picocli" % "picocli" % "3.5.0"</pre>
 </div>
 </div>
 </div>
@@ -4616,7 +4708,7 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
 <h3 id="_ivy">24.4. Ivy</h3>
 <div class="listingblock">
 <div class="content">
-<pre>&lt;dependency org="info.picocli" name="picocli" rev="3.4.0" /&gt;</pre>
+<pre>&lt;dependency org="info.picocli" name="picocli" rev="3.5.0" /&gt;</pre>
 </div>
 </div>
 </div>
@@ -4632,8 +4724,8 @@ This facilitates including it in your project in source form to avoid having an 
 </div>
 <div id="footer">
 <div id="footer-text">
-Version 3.4.0<br>
-Last updated 2018-08-02 00:29:41 +09:00
+Version 3.5.0<br>
+Last updated 2018-08-07 23:23:01 +09:00
 </div>
 </div>
 </body>
