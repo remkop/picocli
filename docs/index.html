@@ -3900,35 +3900,32 @@ cmd.parse(args);
 <div class="paragraph">
 <p>Methods annotated with <code>@Option</code> and <code>@Parameters</code> can do simple input validation by throwing a <code>ParameterException</code> when invalid values are specified on the command line.</p>
 </div>
-<div class="paragraph">
-<p>[source,java</p>
-</div>
 <div class="listingblock">
 <div class="content">
-<pre>class ValidationExample {
-    private Map&lt;String, String&gt; properties = new LinkedHashMap&lt;&gt;();
+<pre class="CodeRay highlight"><code data-lang="java"><span class="type">class</span> <span class="class">ValidationExample</span> {
+    <span class="directive">private</span> <span class="predefined-type">Map</span>&lt;<span class="predefined-type">String</span>, <span class="predefined-type">String</span>&gt; properties = <span class="keyword">new</span> <span class="predefined-type">LinkedHashMap</span>&lt;&gt;();
 
-    @Spec private CommandSpec spec; // injected by picocli
+    <span class="annotation">@Spec</span> <span class="directive">private</span> CommandSpec spec; <span class="comment">// injected by picocli</span>
 
-    @Option(names = {"-D", "--property"}, paramLabel = "KEY=VALUE")
-    public void setProperty(Map&lt;String, String&gt; map) {
-        for (String key : map.keySet()) {
-            String newValue = map.get(key);
+    <span class="annotation">@Option</span>(names = {<span class="string"><span class="delimiter">&quot;</span><span class="content">-D</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">--property</span><span class="delimiter">&quot;</span></span>}, paramLabel = <span class="string"><span class="delimiter">&quot;</span><span class="content">KEY=VALUE</span><span class="delimiter">&quot;</span></span>)
+    <span class="directive">public</span> <span class="type">void</span> setProperty(<span class="predefined-type">Map</span>&lt;<span class="predefined-type">String</span>, <span class="predefined-type">String</span>&gt; map) {
+        <span class="keyword">for</span> (<span class="predefined-type">String</span> key : map.keySet()) {
+            <span class="predefined-type">String</span> newValue = map.get(key);
             validateUnique(key, newValue);
             properties.put(key, newValue);
         }
     }
 
-    private void validateUnique(String key, String newValue) {
-        String existing = properties.get(key);
-        if (existing != null &amp;&amp; !existing.equals(newValue)) {
-            throw new ParameterException(spec.commandLine(),
-                    String.format("Duplicate key '%s' for values '%s' and '%s'.",
+    <span class="directive">private</span> <span class="type">void</span> validateUnique(<span class="predefined-type">String</span> key, <span class="predefined-type">String</span> newValue) {
+        <span class="predefined-type">String</span> existing = properties.get(key);
+        <span class="keyword">if</span> (existing != <span class="predefined-constant">null</span> &amp;&amp; !existing.equals(newValue)) {
+            <span class="keyword">throw</span> <span class="keyword">new</span> ParameterException(spec.commandLine(),
+                    <span class="predefined-type">String</span>.format(<span class="string"><span class="delimiter">&quot;</span><span class="content">Duplicate key '%s' for values '%s' and '%s'.</span><span class="delimiter">&quot;</span></span>,
                     key, existing, newValue));
         }
     }
-    // ...
-}</pre>
+    <span class="comment">// ...</span>
+}</code></pre>
 </div>
 </div>
 </div>

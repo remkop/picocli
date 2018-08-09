@@ -2298,7 +2298,7 @@ assert counter.count == 3; // method was invoked with command line value
 
 Methods annotated with `@Option` and `@Parameters` can do simple input validation by throwing a `ParameterException` when invalid values are specified on the command line.
 
-[source,java
+[source,java]
 ----
 class ValidationExample {
     private Map<String, String> properties = new LinkedHashMap<>();
