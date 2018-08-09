@@ -79,15 +79,20 @@ class ValidationExample {
     @Spec private CommandSpec spec; // injected by picocli
     
     @Option(names = {"-D", "--property"}, paramLabel = "KEY=VALUE")
-    public void setProperty(Map<String, String> keyValuePairs) {
-        for (Map.Entry<String, String> entry : keyValuePairs.entrySet()) {
-            String existing = properties.get(entry.getKey());
-            if (existing != null && !existing.equals(entry.getValue())) {
-                throw new ParameterException(spec.commandLine(),
-                        "Duplicate key '" + entry.getKey() + "' for values '" +
-                        existing + "' and '" + entry.getValue() + "'.");
-            }
-            properties.put(entry.getKey(), entry.getValue());
+    public void setProperty(Map<String, String> map) {
+        for (String key : map.keySet()) {
+            String newValue = map.get(key);
+            validateUnique(key, newValue);
+            properties.put(key, newValue);
+        }
+    }
+
+    private void validateUnique(String key, String newValue) {
+        String existing = properties.get(key);
+        if (existing != null && !existing.equals(newValue)) {
+            throw new ParameterException(spec.commandLine(),
+                    String.format("Duplicate key '%s' for values '%s' and '%s'.",
+                    key, existing, newValue));
         }
     }
 }
