@@ -23,6 +23,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.PrintStream;
 import java.io.UnsupportedEncodingException;
+import java.util.concurrent.Callable;
 
 import static org.junit.Assert.*;
 import static picocli.HelpTestUtil.usageString;
@@ -785,4 +786,68 @@ public class CommandLineMixinTest {
         assertEquals(expected, baos.toString());
     }
 
+    static class Issue439Mixin {
+        @Spec CommandSpec spec;
+
+        @Option(names = "--trex")
+        void setTRexFences(final String value) {
+            throw new ParameterException(spec.commandLine(), "TREX error");
+        }
+    }
+
+    static class Issue439Command {
+        @Mixin Issue439Mixin mixin;
+        @Spec CommandSpec spec;
+
+        @Option(names = "--raptor")
+        void setRaptorFences(final String value) {
+            throw new ParameterException(spec.commandLine(), "RAPTOR error");
+        }
+    }
+
+    @Test
+    public void testIssue439InjectedSpecInMixinHasNullCommandLineAnnotations() {
+        CommandLine cmd = new CommandLine(new Issue439Command());
+        assertExceptionThrownFromSetter(cmd);
+    }
+
+    @Test
+    public void testIssue439InjectedSpecInMixinHasNullCommandLineProgrammatic() {
+        final CommandSpec mixinSpec = CommandSpec.create();
+        ISetter trexSetter = new ISetter() {
+            public <T> T set(T value) {
+                throw new ParameterException(mixinSpec.commandLine(), "TREX error");
+            }
+        };
+        mixinSpec.addOption(OptionSpec.builder("--trex").
+                type(String.class).setter(trexSetter).build());
+
+        final CommandSpec commandSpec = CommandSpec.create();
+        commandSpec.addMixin("mixin", mixinSpec);
+        ISetter raptorSetter = new ISetter() {
+            public <T> T set(T value) {
+                throw new ParameterException(commandSpec.commandLine(), "RAPTOR error");
+            }
+        };
+        commandSpec.addOption(OptionSpec.builder("--raptor").
+                type(String.class).setter(raptorSetter).build());
+
+        CommandLine cmd = new CommandLine(commandSpec);
+        assertExceptionThrownFromSetter(cmd);
+    }
+
+    private void assertExceptionThrownFromSetter(CommandLine cmd) {
+        try {
+            cmd.parse("--trex", "abc");
+            fail("expected ParameterException");
+        } catch (ParameterException ex) {
+            assertEquals("TREX error", ex.getMessage());
+        }
+        try {
+            cmd.parse("--raptor", "xyz");
+            fail("expected ParameterException");
+        } catch (ParameterException ex) {
+            assertEquals("RAPTOR error", ex.getMessage());
+        }
+    }
 }

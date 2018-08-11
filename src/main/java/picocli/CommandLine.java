@@ -3196,6 +3196,9 @@ public class CommandLine {
             /** Sets the CommandLine constructed with this {@code CommandSpec} model. */
             protected CommandSpec commandLine(CommandLine commandLine) {
                 this.commandLine = commandLine;
+                for (CommandSpec mixedInSpec : mixins.values()) {
+                    mixedInSpec.commandLine(commandLine);
+                }
                 for (CommandLine sub : commands.values()) {
                     sub.getCommandSpec().parent(this);
                 }
