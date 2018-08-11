@@ -1,8 +1,8 @@
 = picocli - a mighty tiny command line interface
 //:author: Remko Popma
 //:email: rpopma@apache.org
-:revnumber: 3.5.1-SNAPSHOT
-:revdate: 2018-08-07
+:revnumber: 3.5.1
+:revdate: 2018-08-11
 :toc: left
 :numbered:
 :toclevels: 2
@@ -29,8 +29,6 @@ Generates highly customizable usage help messages with <<ANSI Colors and Styles,
 Picocli-based applications can have link:autocomplete.html[command line TAB completion] showing available options, option parameters and subcommands, for any level of nested subcommands.
 
 image:ExampleUsageANSI.png[Screenshot of usage help with Ansi codes enabled]
-
-link:autocomplete.html[Command line autocompletion] is in BETA. Comments, bug reports, pull requests welcome!
 
 
 A distinguishing feature of picocli is how it aims
@@ -2772,7 +2770,7 @@ The script body is executed if the user input was valid and did not request usag
 
 [source,groovy]
 ----
-@Grab('info.picocli:picocli:3.5.1-SNAPSHOT')
+@Grab('info.picocli:picocli:3.5.1')
 @Command(name = "myScript",
         mixinStandardHelpOptions = true, // add --help and --version options
         description = "@|bold Groovy script|@ @|underline picocli|@ example")
@@ -2797,7 +2795,7 @@ CAUTION: When using a Groovy version older than 2.4.7, use this workaround for t
 
 [source,groovy]
 ----
-@Grab('info.picocli:picocli:3.5.1-SNAPSHOT')
+@Grab('info.picocli:picocli:3.5.1')
 @GrabExclude('org.codehaus.groovy:groovy-all') // work around GROOVY-7613
 ...
 ----
@@ -2899,7 +2897,7 @@ See the <<Source,source code>> below. Copy and paste it into a file called `Comm
 
 === Gradle
 ----
-compile 'info.picocli:picocli:3.5.1-SNAPSHOT'
+compile 'info.picocli:picocli:3.5.1'
 ----
 
 === Maven
@@ -2907,19 +2905,19 @@ compile 'info.picocli:picocli:3.5.1-SNAPSHOT'
 <dependency>
   <groupId>info.picocli</groupId>
   <artifactId>picocli</artifactId>
-  <version>3.5.1-SNAPSHOT</version>
+  <version>3.5.1</version>
 </dependency>
 ----
 
 === Scala SBT
 ----
-libraryDependencies += "info.picocli" % "picocli" % "3.5.1-SNAPSHOT"
+libraryDependencies += "info.picocli" % "picocli" % "3.5.1"
 ----
 
 === Ivy
 
 ----
-<dependency org="info.picocli" name="picocli" rev="3.5.1-SNAPSHOT" />
+<dependency org="info.picocli" name="picocli" rev="3.5.1" />
 ----
 
 === Source

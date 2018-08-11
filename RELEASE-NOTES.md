@@ -1,5 +1,39 @@
 # picocli Release Notes
 
+# <a name="3.5.1"></a> Picocli 3.5.1
+The picocli community is pleased to announce picocli 3.5.1.
+
+This is a bugfix release that fixes an issue where CommandSpec injected into Mixins had a `null` CommandLine.
+
+This is the thirty-seventh public release.
+Picocli follows [semantic versioning](http://semver.org/).
+
+## <a name="3.5.1"></a> Table of Contents
+* [New and noteworthy](#3.5.1-new)
+* [Promoted features](#3.5.1-promoted)
+* [Fixed issues](#3.5.1-fixes)
+* [Deprecations](#3.5.1-deprecated)
+* [Potential breaking changes](#3.5.1-breaking-changes)
+
+## <a name="3.5.1-new"></a> New and Noteworthy
+
+
+
+## <a name="3.5.1-promoted"></a> Promoted Features
+Promoted features are features that were incubating in previous versions of picocli but are now supported and subject to backwards compatibility. 
+
+No features have been promoted in this picocli release.
+
+## <a name="3.5.1-fixes"></a> Fixed issues
+- [#439] Bugfix: CommandSpec injected into Mixins had a `null` CommandLine. Thanks to [Adam Zegelin](https://github.com/zegelin) for the bug report.
+
+## <a name="3.5.1-deprecated"></a> Deprecations
+No features were deprecated in this release.
+
+## <a name="3.5.1-breaking-changes"></a> Potential breaking changes
+This release has no breaking changes.
+
+
 # <a name="3.5.0"></a> Picocli 3.5.0
 The picocli community is pleased to announce picocli 3.5.0.
 
