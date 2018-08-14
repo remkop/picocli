@@ -1,5 +1,39 @@
 # picocli Release Notes
 
+# <a name="3.5.2"></a> Picocli 3.5.2
+The picocli community is pleased to announce picocli 3.5.2.
+
+This is a bugfix release that fixes an issue where subcommand aliases were not recognized in some cases.
+
+This is the thirty-eighth public release.
+Picocli follows [semantic versioning](http://semver.org/).
+
+## <a name="3.5.2"></a> Table of Contents
+* [New and noteworthy](#3.5.2-new)
+* [Promoted features](#3.5.2-promoted)
+* [Fixed issues](#3.5.2-fixes)
+* [Deprecations](#3.5.2-deprecated)
+* [Potential breaking changes](#3.5.2-breaking-changes)
+
+## <a name="3.5.2-new"></a> New and Noteworthy
+
+
+## <a name="3.5.2-promoted"></a> Promoted Features
+Promoted features are features that were incubating in previous versions of picocli but are now supported and subject to backwards compatibility. 
+
+No features have been promoted in this picocli release.
+
+## <a name="3.5.2-fixes"></a> Fixed issues
+- [#443] Bugfix: Subcommand aliases were not recognized in some cases. Thanks to [K. Alex Mills](https://github.com/kalexmills) for the bug report.
+
+## <a name="3.5.2-deprecated"></a> Deprecations
+No features were deprecated in this release.
+
+## <a name="3.5.2-breaking-changes"></a> Potential breaking changes
+This release has no breaking changes.
+
+
+
 # <a name="3.5.1"></a> Picocli 3.5.1
 The picocli community is pleased to announce picocli 3.5.1.
 

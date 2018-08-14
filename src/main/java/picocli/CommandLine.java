@@ -241,7 +241,9 @@ public class CommandLine {
      */
     public CommandLine addSubcommand(String name, Object command, String... aliases) {
         CommandLine subcommandLine = toCommandLine(command, factory);
-        subcommandLine.getCommandSpec().aliases(aliases);
+        List<String> update = new ArrayList<String>(Arrays.asList(subcommandLine.getCommandSpec().aliases()));
+        update.addAll(Arrays.asList(aliases));
+        subcommandLine.getCommandSpec().aliases(update.toArray(new String[0]));
         getCommandSpec().addSubcommand(name, subcommandLine);
         CommandLine.Model.CommandReflection.initParentCommand(subcommandLine.getCommandSpec().userObject(), getCommandSpec().userObject());
         return this;

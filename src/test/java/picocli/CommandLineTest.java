@@ -2256,6 +2256,33 @@ public class CommandLineTest {
         assertSame(subMap.get("sub21"), subMap.get("sub21alias2"));
     }
 
+    @Command(name = "cb")
+    static class Issue443TopLevelCommand implements Runnable  {
+        boolean topWasExecuted;
+        public void run() {
+            topWasExecuted = true;
+        }
+    }
+
+    @Command(name = "task", aliases = {"t"})
+    static class SubCommandWithAlias implements Runnable {
+        boolean subWasExecuted;
+        public void run() {
+            subWasExecuted = true;
+        }
+    }
+
+    @Test
+    public void testIssue443SubcommandWithAliasAnnotation() {
+        Issue443TopLevelCommand top = new Issue443TopLevelCommand();
+        SubCommandWithAlias sub = new SubCommandWithAlias();
+        CommandLine cmd = new CommandLine(top).addSubcommand("task", sub);
+        String[] args = {"t"};
+        List<Object> result = cmd.parseWithHandler(new RunAll(), args);
+        assertTrue("top was executed", top.topWasExecuted);
+        assertTrue("sub was executed", sub.subWasExecuted);
+    }
+
     public static <T> Set<T> setOf(T... elements) {
         Set<T> result = new HashSet<T>();
         for (T t : elements) { result.add(t); }
