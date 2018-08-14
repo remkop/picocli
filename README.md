@@ -43,12 +43,12 @@ Picocli-based applications can easily [integrate](https://picocli.info/#_depende
 <a id="picocli_demo"></a>
 ![Picocli Demo help message with ANSI colors](docs/images/picocli.Demo.png?raw=true)
 
-#### Releases
+### Releases
 * [Releases](https://github.com/remkop/picocli/releases) - latest: 3.5.1
 * [Picocli 3.0.0 Release Notes](https://github.com/remkop/picocli/releases/tag/v3.0.0) - note there are some [potential breaking changes](https://github.com/remkop/picocli/releases/tag/v3.0.0#3.0.0-breaking-changes) from prior versions
 * [Picocli 2.0 Release Notes](https://github.com/remkop/picocli/releases/tag/v2.0.0) - note there are some [potential breaking changes](https://github.com/remkop/picocli/releases/tag/v2.0.0#2.0-breaking-changes) from prior versions
 
-#### Documentation
+### Documentation
 * [3.x User manual: https://picocli.info](https://picocli.info)
 * [3.x Quick Guide](https://picocli.info/quick-guide.html)
 * [2.x User manual](https://picocli.info/man/2.x)
@@ -57,7 +57,7 @@ Picocli-based applications can easily [integrate](https://picocli.info/#_depende
 * [3.0 Programmatic API](https://picocli.info/picocli-3.0-programmatic-api.html)
 * [FAQ](https://github.com/remkop/picocli/wiki/FAQ)
 
-#### Articles
+### Articles
 * [Groovy 2.5 CliBuilder Renewal](https://picocli.info/groovy-2.5-clibuilder-renewal.html) (also on [blogs.apache.org](https://blogs.apache.org/logging/entry/groovy-2-5-clibuilder-renewal)). In two parts: [Part 1](https://picocli.info/groovy-2.5-clibuilder-renewal-part1.html) (also on: [DZone](https://dzone.com/articles/groovy-25-clibuilder-renewal), [Java Code Geeks](https://www.javacodegeeks.com/2018/06/groovy-clibuilder-renewal-part-1.html)), [Part 2](https://picocli.info/groovy-2.5-clibuilder-renewal-part2.html) (also on: [DZone](https://dzone.com/articles/groovy-25-clibuilder-renewal-part-2), [Java Code Geeks](https://www.javacodegeeks.com/2018/06/groovy-clibuilder-renewal-part-2.html)). 
 * Micronaut user manual for running microservices [standalone with picocli](https://docs.micronaut.io/snapshot/guide/index.html#commandLineApps).
 * [Java Command-Line Interfaces (Part 30): Observations](http://marxsoftware.blogspot.jp/2017/11/java-cmd-line-observations.html) by Dustin Marx about picocli 2.0.1 (also on: [DZone](https://dzone.com/articles/java-command-line-interfaces-part-30-finale-observations), [Java Code Geeks](https://www.javacodegeeks.com/2017/11/java-command-line-interfaces-part-30-observations.html))
@@ -66,23 +66,25 @@ Picocli-based applications can easily [integrate](https://picocli.info/#_depende
 * [Picocli 2.0: Do More With Less](https://picocli.info/picocli-2.0-do-more-with-less.html) (also on: [DZone](https://dzone.com/articles/whats-new-in-picocli-20), [Java Code Geeks](https://www.javacodegeeks.com/2018/01/picocli-2-0-less.html))
 * [Announcing picocli 1.0](https://picocli.info/announcing-picocli-1.0.html) (also on: [DZone](https://dzone.com/articles/announcing-picocli-10))
 
-#### Related
+### Related
 * Check out Thibaud Lepretre's [picocli Spring boot starter](https://github.com/kakawait/picocli-spring-boot-starter)!
 
-#### Credit
+### Credit
 <img src="https://picocli.info/images/logo/horizontal-400x150.png" height="100"> 
 
 [Reallinfo](https://github.com/reallinfo) designed the new picocli logo! Many thanks! 
 
-#### Adoption
+## Adoption
+
+<img src="https://picocli.info/images/groovy-logo.png" height="50">  <img src="http://micronaut.io/images/micronaut_mini_copy_tm.svg" height="50">  <img src="http://picocli.info/images/junit5logo-172x50.png" height="50">
+
+* Picocli is now part of Groovy. From Groovy 2.5, all Groovy command line tools are picocli-based, and picocli is the underlying parser for Groovy's [CliBuilder DSL](http://groovy-lang.org/dsls.html#_clibuilder). 
+*  Picocli is now part of Micronaut. The Micronaut CLI has been rewritten with picocli, and Micronaut has dedicated support for running microservices [standalone with picocli](https://docs.micronaut.io/snapshot/guide/index.html#commandLineApps).
+*  Picocli is now part of JUnit 5. JUnit 5.3 migrated its `ConsoleLauncher` from jopt-simple to picocli to support @-files (argument files); this helps users who need to specify many tests on the command line and run into system limitations.
+
 <img src="https://picocli.info/images/downloads-201807.png">
 
 Glad to see more people are using picocli. We must be doing something right. :-) 
-
-
-* Picocli is now part of Groovy. <img src="https://picocli.info/images/groovy-logo.png" height="50"> From Groovy 2.5, all Groovy command line tools are picocli-based, and picocli is the underlying parser for Groovy's [CliBuilder DSL](http://groovy-lang.org/dsls.html#_clibuilder). 
-* Picocli is now part of Micronaut. <img src="http://micronaut.io/images/micronaut_mini_copy_tm.svg" height="50"> The Micronaut CLI has been rewritten with picocli, and Micronaut has dedicated support for running microservices [standalone with picocli](https://docs.micronaut.io/snapshot/guide/index.html#commandLineApps).
-* Picocli is now part of JUnit 5. <img src="http://micronaut.io/images/junit5logo-172x50.png" height="50"> JUnit 5.3 migrated its `ConsoleLauncher` from jopt-simple to picocli to support @-files (argument files); this helps users who need to specify many tests on the command line and run into system limitations.
 
 
 ## Example
