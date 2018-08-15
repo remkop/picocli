@@ -2264,7 +2264,7 @@ public class CommandLineTest {
         }
     }
 
-    @Command(name = "task", aliases = {"t"})
+    @Command(name = "task", aliases = {"t"}, description = "subcommand with alias")
     static class SubCommandWithAlias implements Runnable {
         boolean subWasExecuted;
         public void run() {
@@ -2281,6 +2281,20 @@ public class CommandLineTest {
         List<Object> result = cmd.parseWithHandler(new RunAll(), args);
         assertTrue("top was executed", top.topWasExecuted);
         assertTrue("sub was executed", sub.subWasExecuted);
+    }
+
+    @Test
+    public void testIssue444SubcommandWithDuplicateAliases() {
+        Issue443TopLevelCommand top = new Issue443TopLevelCommand();
+        SubCommandWithAlias sub = new SubCommandWithAlias();
+        CommandLine cmd = new CommandLine(top).addSubcommand("task", sub, "t", "t");
+        Model.CommandSpec subSpec = cmd.getSubcommands().get("task").getCommandSpec();
+        String expected = String.format("" +
+                "Usage: cb [COMMAND]%n" +
+                "Commands:%n" +
+                "  task, t  subcommand with alias%n");
+        assertEquals(expected, cmd.getUsageMessage());
+        assertArrayEquals(new String[]{"t"}, subSpec.aliases());
     }
 
     public static <T> Set<T> setOf(T... elements) {

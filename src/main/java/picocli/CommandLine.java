@@ -241,9 +241,7 @@ public class CommandLine {
      */
     public CommandLine addSubcommand(String name, Object command, String... aliases) {
         CommandLine subcommandLine = toCommandLine(command, factory);
-        List<String> update = new ArrayList<String>(Arrays.asList(subcommandLine.getCommandSpec().aliases()));
-        update.addAll(Arrays.asList(aliases));
-        subcommandLine.getCommandSpec().aliases(update.toArray(new String[0]));
+        subcommandLine.getCommandSpec().aliases.addAll(Arrays.asList(aliases));
         getCommandSpec().addSubcommand(name, subcommandLine);
         CommandLine.Model.CommandReflection.initParentCommand(subcommandLine.getCommandSpec().userObject(), getCommandSpec().userObject());
         return this;
@@ -3111,7 +3109,7 @@ public class CommandLine {
             private CommandSpec parent;
     
             private String name;
-            private String[] aliases = {};
+            private Set<String> aliases = new LinkedHashSet<String>();
             private Boolean isHelpCommand;
             private IVersionProvider versionProvider;
             private String[] version;
@@ -3359,7 +3357,7 @@ public class CommandLine {
 
             /** Returns the alias command names of this subcommand.
              * @since 3.1 */
-            public String[] aliases() { return aliases.clone(); }
+            public String[] aliases() { return aliases.toArray(new String[0]); }
 
             /** Returns the String to use as the program name in the synopsis line of the help message:
              * this command's {@link #name() name}, preceded by the qualified name of the parent command, if any.
@@ -3410,7 +3408,10 @@ public class CommandLine {
             /** Sets the alternative names by which this subcommand is recognized on the command line.
              * @return this CommandSpec for method chaining
              * @since 3.1 */
-            public CommandSpec aliases(String... aliases) { this.aliases = aliases == null ? new String[0] : aliases.clone(); return this; }
+            public CommandSpec aliases(String... aliases) {
+                this.aliases = new LinkedHashSet<String>(Arrays.asList(aliases == null ? new String[0] : aliases));
+                return this;
+            }
 
             /** Sets version information literals for this command, to print to the console when the user specifies an
              * {@linkplain OptionSpec#versionHelp() option} to request version help. Only used if no {@link #versionProvider() versionProvider} is set.
@@ -7358,7 +7359,7 @@ public class CommandLine {
             return result.toString();
         }
         private static String stringOf(char chr, int length) {
-            char[] buff = new char[length];
+                             char[] buff = new char[length];
             Arrays.fill(buff, chr);
             return new String(buff);
         }
