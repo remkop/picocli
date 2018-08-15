@@ -4090,6 +4090,7 @@ public class CommandLine {
             // help-related fields
             private final boolean hidden;
             private final String paramLabel;
+            private final boolean fixParamLabel;
             private final String[] description;
             private final Help.Visibility showDefaultValue;
 
@@ -4118,6 +4119,7 @@ public class CommandLine {
                 description = builder.description == null ? new String[0] : builder.description;
                 splitRegex = builder.splitRegex == null ? "" : builder.splitRegex;
                 paramLabel = empty(builder.paramLabel) ? "PARAM" : builder.paramLabel;
+                fixParamLabel = builder.fixParamLabel;
                 converters = builder.converters == null ? new ITypeConverter<?>[0] : builder.converters;
                 showDefaultValue = builder.showDefaultValue == null ? Help.Visibility.ON_DEMAND : builder.showDefaultValue;
                 hidden = builder.hidden;
@@ -4220,6 +4222,10 @@ public class CommandLine {
             /** Returns the name of the option or positional parameter used in the usage help message.
              * @see Option#paramLabel() {@link Parameters#paramLabel()} */
             public String paramLabel()     { return paramLabel; }
+    
+            /** Indicates whether paramLabel should be processed the regular way or that it should be rendered as-is.
+             * @see #paramLabel()  {@link #fixParamLabel()} */
+            public boolean fixParamLabel()     { return fixParamLabel; }
     
             /** Returns auxiliary type information used when the {@link #type()} is a generic {@code Collection}, {@code Map} or an abstract class.
              * @see Option#type() */
@@ -4388,6 +4394,7 @@ public class CommandLine {
                 private boolean required;
                 private boolean interactive;
                 private String paramLabel;
+                private boolean fixParamLabel;
                 private String splitRegex;
                 private boolean hidden;
                 private Class<?> type;
@@ -4413,6 +4420,7 @@ public class CommandLine {
                     setter = original.setter;
                     hidden = original.hidden;
                     paramLabel = original.paramLabel;
+                    fixParamLabel = original.fixParamLabel;
                     required = original.required;
                     interactive = original.interactive;
                     showDefaultValue = original.showDefaultValue;
@@ -4507,6 +4515,9 @@ public class CommandLine {
     
                 /** Sets the name of the option or positional parameter used in the usage help message, and returns this builder. */
                 public T paramLabel(String paramLabel)       { this.paramLabel = Assert.notNull(paramLabel, "paramLabel"); return self(); }
+    
+                /** Sets the name of the option or positional parameter used in the usage help message, and returns this builder. */
+                public T fixParamLabel(boolean fixParamLabel) { this.fixParamLabel = fixParamLabel; return self(); }
     
                 /** Sets auxiliary type information, and returns this builder.
                  * @param types  the element type(s) when the {@link #type()} is a generic {@code Collection} or a {@code Map};
@@ -7948,10 +7959,11 @@ public class CommandLine {
             }
             public String separator() { return commandSpec.parser().separator(); }
             public Text renderParameterLabel(ArgSpec argSpec, Ansi ansi, List<IStyle> styles) {
-                Text paramName = ansi.apply(argSpec.paramLabel(), styles);
                 Range capacity = argSpec.isOption() ? argSpec.arity() : ((PositionalParamSpec)argSpec).capacity();
                 if (capacity.max == 0) { return ansi.new Text(""); }
-
+                if (argSpec.fixParamLabel()) { return ansi.apply(" " + argSpec.paramLabel(), styles); }
+                
+                Text paramName = ansi.apply(argSpec.paramLabel(), styles);
                 String split = argSpec.splitRegex();
                 String mandatorySep = empty(split) ? " "  : split;
                 String optionalSep  = empty(split) ? " [" : "[" + split;
