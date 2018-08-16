@@ -1,5 +1,8 @@
+env:
+  global:
+  # for CodeClimate
+    - CC_TEST_REPORTER_ID=83a2e05f875e3a67f60a1969f20a558a3de03a7592052c8bf52807d0e317f01a
 language: java
-
 jdk:
   - oraclejdk8
 #  - openjdk7 # Disabled to avoid error java.security.NoSuchProviderException: no such provider: SunEC...
@@ -14,8 +17,13 @@ jdk:
 
 before_script:
   - chmod +x gradlew
+# for CodeClimate
+  - curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
+  - chmod +x ./cc-test-reporter
+  - ./cc-test-reporter before-build
 script:
   - ./gradlew check --info
   - ./gradlew jacocoTestReport
 after_success:
   - bash <(curl -s https://codecov.io/bash)
+  - ./cc-test-reporter after-build --exit-code $TRAVIS_TEST_RESULT
