@@ -4468,6 +4468,9 @@ public class CommandLine {
             /** Returns the longest {@linkplain #names() option name}. */
             public String longestName() { return Help.ShortestFirst.longestFirst(names.clone())[0]; }
 
+            /** Returns the shortest {@linkplain #names() option name}. */
+            String shortestName() { return Help.ShortestFirst.sort(names.clone())[0]; }
+
             /** Returns whether this option disables validation of the other arguments.
              * @see Option#help()
              * @deprecated Use {@link #usageHelp()} and {@link #versionHelp()} instead. */
@@ -7043,7 +7046,7 @@ public class CommandLine {
                 for (OptionSpec option : options) {
                     if (option.hidden()) { continue; }
                     if (option.type() == boolean.class || option.type() == Boolean.class) {
-                        String shortestName = ShortestFirst.sort(option.names())[0];
+                        String shortestName = option.shortestName();
                         if (shortestName.length() == 2 && shortestName.startsWith("-")) {
                             booleanOptions.add(option);
                             if (option.required()) {
@@ -7065,12 +7068,12 @@ public class CommandLine {
             for (OptionSpec option : options) {
                 if (!option.hidden()) {
                     if (option.required()) {
-                        optionText = appendOptionSynopsis(optionText, option, ShortestFirst.sort(option.names())[0], " ", "");
+                        optionText = appendOptionSynopsis(optionText, option, option.shortestName(), " ", "");
                         if (option.isMultiValue()) {
-                            optionText = appendOptionSynopsis(optionText, option, ShortestFirst.sort(option.names())[0], " [", "]...");
+                            optionText = appendOptionSynopsis(optionText, option, option.shortestName(), " [", "]...");
                         }
                     } else {
-                        optionText = appendOptionSynopsis(optionText, option, ShortestFirst.sort(option.names())[0], " [", "]");
+                        optionText = appendOptionSynopsis(optionText, option, option.shortestName(), " [", "]");
                         if (option.isMultiValue()) {
                             optionText = optionText.concat("...");
                         }
