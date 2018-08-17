@@ -1424,7 +1424,7 @@ public class CommandLineTest {
     @Test
     public void testPositionalParameterQuotesRemovedFromValue() {
         class TextParams {
-            @CommandLine.Parameters() String[] text;
+            @Parameters() String[] text;
         }
         TextParams opt = CommandLine.populateCommand(new TextParams(), "\"a text\"");
         assertEquals("a text", opt.text[0]);
@@ -1433,7 +1433,7 @@ public class CommandLineTest {
     @Test
     public void testPositionalMultiParameterQuotesRemovedFromValue() {
         class TextParams {
-            @CommandLine.Parameters() String[] text;
+            @Parameters() String[] text;
         }
         TextParams opt = CommandLine.populateCommand(new TextParams(), "\"a text\"", "\"another text\"", "\"x z\"");
         assertArrayEquals(new String[]{"a text", "another text", "x z"}, opt.text);
@@ -1442,7 +1442,7 @@ public class CommandLineTest {
     @Test
     public void testPositionalMultiQuotedParameterTypeConversion() {
         class TextParams {
-            @CommandLine.Parameters() int[] numbers;
+            @Parameters() int[] numbers;
         }
         TextParams opt = CommandLine.populateCommand(new TextParams(), "\"123\"", "\"456\"", "\"999\"");
         assertArrayEquals(new int[]{123, 456, 999}, opt.numbers);
@@ -4524,5 +4524,27 @@ public class CommandLineTest {
             System.setOut(out);
             System.setIn(in);
         }
+    }
+
+    @Test
+    public void testIssue446NegativeIntegerPositionalArgsMistakenForOptions() {
+        class App {
+            @Parameters(arity="1..*", paramLabel = "nums")
+            List<Integer> numbers;
+        }
+        //System.setProperty("picocli.trace", "DEBUG");
+        App app = new App();
+        CommandLine cmd = new CommandLine(app);
+        try {
+            cmd.parseArgs("-23 -23 -24 -25 -26".split(" "));
+            fail("Expecting error: args starting with hyphen treated as options");
+        } catch (MissingParameterException ex) {
+            assertEquals("Missing required parameter: nums", ex.getMessage());
+        }
+
+        // change parser configuration
+        cmd.setUnmatchedOptionsArePositionalParams(true);
+        cmd.parseArgs("-23 -23 -24 -25 -26".split(" "));
+        assertEquals(Arrays.asList(-23, -23, -24, -25, -26), app.numbers);
     }
 }
