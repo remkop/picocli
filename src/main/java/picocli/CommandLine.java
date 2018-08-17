@@ -7067,14 +7067,16 @@ public class CommandLine {
             }
             for (OptionSpec option : options) {
                 if (!option.hidden()) {
-                    if (option.required()) {
-                        optionText = appendOptionSynopsis(optionText, option, option.shortestName(), " ", "");
-                        if (option.isMultiValue()) {
-                            optionText = appendOptionSynopsis(optionText, option, option.shortestName(), " [", "]...");
+                    Text name = colorScheme.optionText(option.shortestName());
+                    Text param = parameterLabelRenderer().renderParameterLabel(option, colorScheme.ansi(), colorScheme.optionParamStyles);
+                    if (option.required()) { // e.g., -x=VAL
+                        optionText = optionText.concat(" ").concat(name).concat(param).concat("");
+                        if (option.isMultiValue()) { // e.g., -x=VAL [-x=VAL]...
+                            optionText = optionText.concat(" [").concat(name).concat(param).concat("]...");
                         }
                     } else {
-                        optionText = appendOptionSynopsis(optionText, option, option.shortestName(), " [", "]");
-                        if (option.isMultiValue()) {
+                        optionText = optionText.concat(" [").concat(name).concat(param).concat("]");
+                        if (option.isMultiValue()) { // add ellipsis to show option is repeatable
                             optionText = optionText.concat("...");
                         }
                     }
@@ -7106,14 +7108,6 @@ public class CommandLine {
             Text PADDING = Ansi.OFF.new Text(stringOf('X', synopsisHeadingLength));
             textTable.addRowValues(PADDING.concat(colorScheme.commandText(commandName)), optionText);
             return textTable.toString().substring(synopsisHeadingLength); // cut off leading synopsis heading spaces
-        }
-
-        private Text appendOptionSynopsis(Text optionText, OptionSpec option, String optionName, String prefix, String suffix) {
-            Text optionParamText = parameterLabelRenderer().renderParameterLabel(option, colorScheme.ansi(), colorScheme.optionParamStyles);
-            return optionText.concat(prefix)
-                    .concat(colorScheme.optionText(optionName))
-                    .concat(optionParamText)
-                    .concat(suffix);
         }
 
         /** Returns the number of characters the synopsis heading will take on the same line as the synopsis.
