@@ -1999,7 +1999,8 @@ The field must be of type <code>String[]</code> or <code>List&lt;String&gt;</cod
 </div>
 <div class="paragraph">
 <p>If picocli finds a field annotated with <code>@Unmatched</code>, it automatically sets <code>unmatchedArgumentsAllowed</code> to <code>true</code>
-so no <code>UnmatchedArgumentException</code> is thrown when a command line argument cannot be assigned to an option or positional parameter.</p>
+so no <code>UnmatchedArgumentException</code> is thrown when a command line argument cannot be assigned to an option or positional parameter. If no
+    unmatched arguments are found, the field annotated with <code>@Unmatched</code> remains <code>null</code></p>
 </div>
 </div>
 <div class="sect2">
