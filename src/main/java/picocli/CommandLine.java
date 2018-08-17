@@ -241,9 +241,7 @@ public class CommandLine {
      */
     public CommandLine addSubcommand(String name, Object command, String... aliases) {
         CommandLine subcommandLine = toCommandLine(command, factory);
-        List<String> update = new ArrayList<String>(Arrays.asList(subcommandLine.getCommandSpec().aliases()));
-        update.addAll(Arrays.asList(aliases));
-        subcommandLine.getCommandSpec().aliases(update.toArray(new String[0]));
+        subcommandLine.getCommandSpec().aliases.addAll(Arrays.asList(aliases));
         getCommandSpec().addSubcommand(name, subcommandLine);
         CommandLine.Model.CommandReflection.initParentCommand(subcommandLine.getCommandSpec().userObject(), getCommandSpec().userObject());
         return this;
@@ -881,17 +879,43 @@ public class CommandLine {
      * @see IHelpCommandInitializable
      * @since 3.0 */
     public static boolean printHelpIfRequested(List<CommandLine> parsedCommands, PrintStream out, PrintStream err, Help.Ansi ansi) {
+        return printHelpIfRequested(parsedCommands, out, err, new Help.ColorScheme(ansi));
+    }
+    /**
+     * Helper method that may be useful when processing the list of {@code CommandLine} objects that result from successfully
+     * {@linkplain #parse(String...) parsing} command line arguments. This method prints out
+     * {@linkplain #usage(PrintStream, Help.ColorScheme) usage help} if {@linkplain #isUsageHelpRequested() requested}
+     * or {@linkplain #printVersionHelp(PrintStream, Help.Ansi) version help} if {@linkplain #isVersionHelpRequested() requested}
+     * and returns {@code true}. If the command is a {@link Command#helpCommand()} and {@code runnable} or {@code callable},
+     * that command is executed and this method returns {@code true}.
+     * Otherwise, if none of the specified {@code CommandLine} objects have help requested,
+     * this method returns {@code false}.<p>
+     * Note that this method <em>only</em> looks at the {@link Option#usageHelp() usageHelp} and
+     * {@link Option#versionHelp() versionHelp} attributes. The {@link Option#help() help} attribute is ignored.
+     * </p><p><b>Implementation note:</b></p><p>
+     * When an error occurs while processing the help request, it is recommended custom Help commands throw a
+     * {@link ParameterException} with a reference to the parent command. This will print the error message and the
+     * usage for the parent command, and will use the exit code of the exception handler if one was set.
+     * </p>
+     * @param parsedCommands the list of {@code CommandLine} objects to check if help was requested
+     * @param out the {@code PrintStream} to print help to if requested
+     * @param err the error string to print diagnostic messages to, in addition to the output from the exception handler
+     * @param colorScheme for printing help messages using ANSI styles and colors
+     * @return {@code true} if help was printed, {@code false} otherwise
+     * @see IHelpCommandInitializable
+     * @since 3.6 */
+    public static boolean printHelpIfRequested(List<CommandLine> parsedCommands, PrintStream out, PrintStream err, Help.ColorScheme colorScheme) {
         for (int i = 0; i < parsedCommands.size(); i++) {
             CommandLine parsed = parsedCommands.get(i);
             if (parsed.isUsageHelpRequested()) {
-                parsed.usage(out, ansi);
+                parsed.usage(out, colorScheme);
                 return true;
             } else if (parsed.isVersionHelpRequested()) {
-                parsed.printVersionHelp(out, ansi);
+                parsed.printVersionHelp(out, colorScheme.ansi);
                 return true;
             } else if (parsed.getCommandSpec().helpCommand()) {
                 if (parsed.getCommand() instanceof IHelpCommandInitializable) {
-                    ((IHelpCommandInitializable) parsed.getCommand()).init(parsed, ansi, out, err);
+                    ((IHelpCommandInitializable) parsed.getCommand()).init(parsed, colorScheme.ansi, out, err);
                 }
                 execute(parsed, new ArrayList<Object>());
                 return true;
@@ -3111,7 +3135,7 @@ public class CommandLine {
             private CommandSpec parent;
     
             private String name;
-            private String[] aliases = {};
+            private Set<String> aliases = new LinkedHashSet<String>();
             private Boolean isHelpCommand;
             private IVersionProvider versionProvider;
             private String[] version;
@@ -3359,7 +3383,7 @@ public class CommandLine {
 
             /** Returns the alias command names of this subcommand.
              * @since 3.1 */
-            public String[] aliases() { return aliases.clone(); }
+            public String[] aliases() { return aliases.toArray(new String[0]); }
 
             /** Returns the String to use as the program name in the synopsis line of the help message:
              * this command's {@link #name() name}, preceded by the qualified name of the parent command, if any.
@@ -3410,7 +3434,10 @@ public class CommandLine {
             /** Sets the alternative names by which this subcommand is recognized on the command line.
              * @return this CommandSpec for method chaining
              * @since 3.1 */
-            public CommandSpec aliases(String... aliases) { this.aliases = aliases == null ? new String[0] : aliases.clone(); return this; }
+            public CommandSpec aliases(String... aliases) {
+                this.aliases = new LinkedHashSet<String>(Arrays.asList(aliases == null ? new String[0] : aliases));
+                return this;
+            }
 
             /** Sets version information literals for this command, to print to the console when the user specifies an
              * {@linkplain OptionSpec#versionHelp() option} to request version help. Only used if no {@link #versionProvider() versionProvider} is set.
@@ -4477,6 +4504,9 @@ public class CommandLine {
 
             /** Returns the longest {@linkplain #names() option name}. */
             public String longestName() { return Help.ShortestFirst.longestFirst(names.clone())[0]; }
+
+            /** Returns the shortest {@linkplain #names() option name}. */
+            String shortestName() { return Help.ShortestFirst.sort(names.clone())[0]; }
 
             /** Returns whether this option disables validation of the other arguments.
              * @see Option#help()
@@ -7053,7 +7083,7 @@ public class CommandLine {
                 for (OptionSpec option : options) {
                     if (option.hidden()) { continue; }
                     if (option.type() == boolean.class || option.type() == Boolean.class) {
-                        String shortestName = ShortestFirst.sort(option.names())[0];
+                        String shortestName = option.shortestName();
                         if (shortestName.length() == 2 && shortestName.startsWith("-")) {
                             booleanOptions.add(option);
                             if (option.required()) {
@@ -7074,14 +7104,16 @@ public class CommandLine {
             }
             for (OptionSpec option : options) {
                 if (!option.hidden()) {
-                    if (option.required()) {
-                        optionText = appendOptionSynopsis(optionText, option, ShortestFirst.sort(option.names())[0], " ", "");
-                        if (option.isMultiValue()) {
-                            optionText = appendOptionSynopsis(optionText, option, ShortestFirst.sort(option.names())[0], " [", "]...");
+                    Text name = colorScheme.optionText(option.shortestName());
+                    Text param = parameterLabelRenderer().renderParameterLabel(option, colorScheme.ansi(), colorScheme.optionParamStyles);
+                    if (option.required()) { // e.g., -x=VAL
+                        optionText = optionText.concat(" ").concat(name).concat(param).concat("");
+                        if (option.isMultiValue()) { // e.g., -x=VAL [-x=VAL]...
+                            optionText = optionText.concat(" [").concat(name).concat(param).concat("]...");
                         }
                     } else {
-                        optionText = appendOptionSynopsis(optionText, option, ShortestFirst.sort(option.names())[0], " [", "]");
-                        if (option.isMultiValue()) {
+                        optionText = optionText.concat(" [").concat(name).concat(param).concat("]");
+                        if (option.isMultiValue()) { // add ellipsis to show option is repeatable
                             optionText = optionText.concat("...");
                         }
                     }
@@ -7113,14 +7145,6 @@ public class CommandLine {
             Text PADDING = Ansi.OFF.new Text(stringOf('X', synopsisHeadingLength));
             textTable.addRowValues(PADDING.concat(colorScheme.commandText(commandName)), optionText);
             return textTable.toString().substring(synopsisHeadingLength); // cut off leading synopsis heading spaces
-        }
-
-        private Text appendOptionSynopsis(Text optionText, OptionSpec option, String optionName, String prefix, String suffix) {
-            Text optionParamText = parameterLabelRenderer().renderParameterLabel(option, colorScheme.ansi(), colorScheme.optionParamStyles);
-            return optionText.concat(prefix)
-                    .concat(colorScheme.optionText(optionName))
-                    .concat(optionParamText)
-                    .concat(suffix);
         }
 
         /** Returns the number of characters the synopsis heading will take on the same line as the synopsis.
@@ -7369,7 +7393,7 @@ public class CommandLine {
             return result.toString();
         }
         private static String stringOf(char chr, int length) {
-            char[] buff = new char[length];
+                             char[] buff = new char[length];
             Arrays.fill(buff, chr);
             return new String(buff);
         }

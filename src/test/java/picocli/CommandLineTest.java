@@ -1424,7 +1424,7 @@ public class CommandLineTest {
     @Test
     public void testPositionalParameterQuotesRemovedFromValue() {
         class TextParams {
-            @CommandLine.Parameters() String[] text;
+            @Parameters() String[] text;
         }
         TextParams opt = CommandLine.populateCommand(new TextParams(), "\"a text\"");
         assertEquals("a text", opt.text[0]);
@@ -1433,7 +1433,7 @@ public class CommandLineTest {
     @Test
     public void testPositionalMultiParameterQuotesRemovedFromValue() {
         class TextParams {
-            @CommandLine.Parameters() String[] text;
+            @Parameters() String[] text;
         }
         TextParams opt = CommandLine.populateCommand(new TextParams(), "\"a text\"", "\"another text\"", "\"x z\"");
         assertArrayEquals(new String[]{"a text", "another text", "x z"}, opt.text);
@@ -1442,7 +1442,7 @@ public class CommandLineTest {
     @Test
     public void testPositionalMultiQuotedParameterTypeConversion() {
         class TextParams {
-            @CommandLine.Parameters() int[] numbers;
+            @Parameters() int[] numbers;
         }
         TextParams opt = CommandLine.populateCommand(new TextParams(), "\"123\"", "\"456\"", "\"999\"");
         assertArrayEquals(new int[]{123, 456, 999}, opt.numbers);
@@ -2264,7 +2264,7 @@ public class CommandLineTest {
         }
     }
 
-    @Command(name = "task", aliases = {"t"})
+    @Command(name = "task", aliases = {"t"}, description = "subcommand with alias")
     static class SubCommandWithAlias implements Runnable {
         boolean subWasExecuted;
         public void run() {
@@ -2281,6 +2281,20 @@ public class CommandLineTest {
         List<Object> result = cmd.parseWithHandler(new RunAll(), args);
         assertTrue("top was executed", top.topWasExecuted);
         assertTrue("sub was executed", sub.subWasExecuted);
+    }
+
+    @Test
+    public void testIssue444SubcommandWithDuplicateAliases() {
+        Issue443TopLevelCommand top = new Issue443TopLevelCommand();
+        SubCommandWithAlias sub = new SubCommandWithAlias();
+        CommandLine cmd = new CommandLine(top).addSubcommand("task", sub, "t", "t");
+        Model.CommandSpec subSpec = cmd.getSubcommands().get("task").getCommandSpec();
+        String expected = String.format("" +
+                "Usage: cb [COMMAND]%n" +
+                "Commands:%n" +
+                "  task, t  subcommand with alias%n");
+        assertEquals(expected, cmd.getUsageMessage());
+        assertArrayEquals(new String[]{"t"}, subSpec.aliases());
     }
 
     public static <T> Set<T> setOf(T... elements) {
@@ -4510,5 +4524,27 @@ public class CommandLineTest {
             System.setOut(out);
             System.setIn(in);
         }
+    }
+
+    @Test
+    public void testIssue446NegativeIntegerPositionalArgsMistakenForOptions() {
+        class App {
+            @Parameters(arity="1..*", paramLabel = "nums")
+            List<Integer> numbers;
+        }
+        //System.setProperty("picocli.trace", "DEBUG");
+        App app = new App();
+        CommandLine cmd = new CommandLine(app);
+        try {
+            cmd.parseArgs("-23 -23 -24 -25 -26".split(" "));
+            fail("Expecting error: args starting with hyphen treated as options");
+        } catch (MissingParameterException ex) {
+            assertEquals("Missing required parameter: nums", ex.getMessage());
+        }
+
+        // change parser configuration
+        cmd.setUnmatchedOptionsArePositionalParams(true);
+        cmd.parseArgs("-23 -23 -24 -25 -26".split(" "));
+        assertEquals(Arrays.asList(-23, -23, -24, -25, -26), app.numbers);
     }
 }

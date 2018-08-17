@@ -903,6 +903,7 @@ The field must be of type `String[]` or `List<String>`.
 
 If picocli finds a field annotated with `@Unmatched`, it automatically sets `unmatchedArgumentsAllowed` to `true`
 so no `UnmatchedArgumentException` is thrown when a command line argument cannot be assigned to an option or positional parameter.
+If no unmatched arguments are found, the value of the field annotated with `@Unmatched` is unchanged.
 
 === Unknown Options
 A special case of unmatched input are arguments that resemble options but don't match any of the defined options.
