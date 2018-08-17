@@ -879,17 +879,43 @@ public class CommandLine {
      * @see IHelpCommandInitializable
      * @since 3.0 */
     public static boolean printHelpIfRequested(List<CommandLine> parsedCommands, PrintStream out, PrintStream err, Help.Ansi ansi) {
+        return printHelpIfRequested(parsedCommands, out, err, new Help.ColorScheme(ansi));
+    }
+    /**
+     * Helper method that may be useful when processing the list of {@code CommandLine} objects that result from successfully
+     * {@linkplain #parse(String...) parsing} command line arguments. This method prints out
+     * {@linkplain #usage(PrintStream, Help.ColorScheme) usage help} if {@linkplain #isUsageHelpRequested() requested}
+     * or {@linkplain #printVersionHelp(PrintStream, Help.Ansi) version help} if {@linkplain #isVersionHelpRequested() requested}
+     * and returns {@code true}. If the command is a {@link Command#helpCommand()} and {@code runnable} or {@code callable},
+     * that command is executed and this method returns {@code true}.
+     * Otherwise, if none of the specified {@code CommandLine} objects have help requested,
+     * this method returns {@code false}.<p>
+     * Note that this method <em>only</em> looks at the {@link Option#usageHelp() usageHelp} and
+     * {@link Option#versionHelp() versionHelp} attributes. The {@link Option#help() help} attribute is ignored.
+     * </p><p><b>Implementation note:</b></p><p>
+     * When an error occurs while processing the help request, it is recommended custom Help commands throw a
+     * {@link ParameterException} with a reference to the parent command. This will print the error message and the
+     * usage for the parent command, and will use the exit code of the exception handler if one was set.
+     * </p>
+     * @param parsedCommands the list of {@code CommandLine} objects to check if help was requested
+     * @param out the {@code PrintStream} to print help to if requested
+     * @param err the error string to print diagnostic messages to, in addition to the output from the exception handler
+     * @param colorScheme for printing help messages using ANSI styles and colors
+     * @return {@code true} if help was printed, {@code false} otherwise
+     * @see IHelpCommandInitializable
+     * @since 3.6 */
+    public static boolean printHelpIfRequested(List<CommandLine> parsedCommands, PrintStream out, PrintStream err, Help.ColorScheme colorScheme) {
         for (int i = 0; i < parsedCommands.size(); i++) {
             CommandLine parsed = parsedCommands.get(i);
             if (parsed.isUsageHelpRequested()) {
-                parsed.usage(out, ansi);
+                parsed.usage(out, colorScheme);
                 return true;
             } else if (parsed.isVersionHelpRequested()) {
-                parsed.printVersionHelp(out, ansi);
+                parsed.printVersionHelp(out, colorScheme.ansi);
                 return true;
             } else if (parsed.getCommandSpec().helpCommand()) {
                 if (parsed.getCommand() instanceof IHelpCommandInitializable) {
-                    ((IHelpCommandInitializable) parsed.getCommand()).init(parsed, ansi, out, err);
+                    ((IHelpCommandInitializable) parsed.getCommand()).init(parsed, colorScheme.ansi, out, err);
                 }
                 execute(parsed, new ArrayList<Object>());
                 return true;
