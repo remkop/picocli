@@ -3072,7 +3072,7 @@ public class CommandLineHelpTest {
                 "");
         assertEquals(expected, actual);
     }
-
+    
     @Test
     public void testPrintHelpIfRequestedReturnsTrueForUsageHelp() throws IOException {
         class App {
@@ -3082,10 +3082,30 @@ public class CommandLineHelpTest {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         final PrintStream out = new PrintStream(baos);
         assertTrue(CommandLine.printHelpIfRequested(list, out, out, Help.Ansi.OFF));
-
+        
         String expected = String.format("" +
                 "Usage: <main class> [-h]%n" +
                 "  -h%n");
+        assertEquals(expected, baos.toString());
+    }
+    
+    @Test
+    public void testPrintHelpIfRequestedCustomColorScheme() throws IOException {
+        ColorScheme customColorScheme = Help.defaultColorScheme(Help.Ansi.ON).optionParams(Style.fg_magenta);
+    
+        @Command(mixinStandardHelpOptions = true)
+        class App {
+            @Option(names = { "-f" }, paramLabel = "ARCHIVE", description = "the archive file") File archive;
+        }
+        List<CommandLine> list = new CommandLine(new App()).parse("--help");
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        final PrintStream out = new PrintStream(baos);
+        assertTrue(CommandLine.printHelpIfRequested(list, out, out, customColorScheme));
+    
+        String expected = String.format("Usage: \u001B[1m<main class>\u001B[21m\u001B[0m [\u001B[33m-hV\u001B[39m\u001B[0m] [\u001B[33m-f\u001B[39m\u001B[0m=\u001B[3m\u001B[35mARCHIVE\u001B[39m\u001B[23m\u001B[0m]%n" +
+                "  \u001B[33m-f\u001B[39m\u001B[0m= \u001B[3m\u001B[35mA\u001B[39m\u001B[23m\u001B[0m\u001B[3m\u001B[35mRCHIVE\u001B[39m\u001B[23m\u001B[0m     the archive file%n" +
+                "  \u001B[33m-h\u001B[39m\u001B[0m, \u001B[33m--help\u001B[39m\u001B[0m      Show this help message and exit.%n" +
+                "  \u001B[33m-V\u001B[39m\u001B[0m, \u001B[33m--version\u001B[39m\u001B[0m   Print version information and exit.%n");
         assertEquals(expected, baos.toString());
     }
 
