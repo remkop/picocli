@@ -59,19 +59,37 @@ public class CommandLineModelTest {
         commandLine.parse("-p", "123", "abc");
         assertEquals(Arrays.asList("-p", "123", "abc"), commandLine.getUnmatchedArguments());
     }
-
+    
     @Test
     public void testModelUsageHelp() throws Exception {
         CommandSpec spec = CommandSpec.create();
         spec.addOption(OptionSpec.builder("-h", "--help").usageHelp(true).description("show help and exit").build());
         spec.addOption(OptionSpec.builder("-V", "--version").versionHelp(true).description("show help and exit").build());
         spec.addOption(OptionSpec.builder("-c", "--count").paramLabel("COUNT").arity("1").type(int.class).description("number of times to execute").build());
-        spec.addOption(OptionSpec.builder("-f", "--fix").paramLabel("FIXED(=BOOLEAN)").arity("1").fixParamLabel(true).required(true).description("run with fixed option").build());
+        spec.addOption(OptionSpec.builder("-f", "--fix").paramLabel("FIXED(BOOLEAN)").arity("1").showParamSyntax(false).required(true).description("run with fixed option").build());
         CommandLine commandLine = new CommandLine(spec);
         String actual = usageString(commandLine, Ansi.OFF);
         String expected = String.format("" +
-                "Usage: <main class> [-hV] [-c=COUNT] -f FIXED(=BOOLEAN)%n" +
-                "  -c, --count=COUNT   number of times to execute%n" +
+                "Usage: <main class> [-hV] [-c=COUNT] -f=FIXED(BOOLEAN)%n" +
+                "  -c, --count=COUNT          number of times to execute%n" +
+                "  -f, --fix=FIXED(BOOLEAN)   run with fixed option%n" +
+                "  -h, --help                 show help and exit%n" +
+                "  -V, --version              show help and exit%n");
+        assertEquals(expected, actual);
+    }
+    
+    @Test
+    public void testModelUsageHelpWithCustomSeparator() throws Exception {
+        CommandSpec spec = CommandSpec.create();
+        spec.addOption(OptionSpec.builder("-h", "--help").usageHelp(true).description("show help and exit").build());
+        spec.addOption(OptionSpec.builder("-V", "--version").versionHelp(true).description("show help and exit").build());
+        spec.addOption(OptionSpec.builder("-c", "--count").paramLabel("COUNT").arity("1").type(int.class).description("number of times to execute").build());
+        spec.addOption(OptionSpec.builder("-f", "--fix").paramLabel("FIXED(=BOOLEAN)").arity("1").showParamSyntax(false).required(true).description("run with fixed option").build());
+        CommandLine commandLine = new CommandLine(spec).setSeparator(" ");
+        String actual = usageString(commandLine, Ansi.OFF);
+        String expected = String.format("" +
+                "Usage: <main class> [-hV] [-c COUNT] -f FIXED(=BOOLEAN)%n" +
+                "  -c, --count COUNT   number of times to execute%n" +
                 "  -f, --fix FIXED(=BOOLEAN)%n" +
                 "                      run with fixed option%n" +
                 "  -h, --help          show help and exit%n" +
@@ -499,7 +517,7 @@ public class CommandLineModelTest {
     }
     @Test
     public void testPositionalDefaultFixParamLabelIsFalse() throws Exception {
-        assertFalse(PositionalParamSpec.builder().build().fixParamLabel());
+        assertTrue(PositionalParamSpec.builder().build().showParamSyntax());
     }
 
     @Test
