@@ -3090,22 +3090,29 @@ public class CommandLineHelpTest {
     }
     
     @Test
-    public void testPrintHelpIfRequestedCustomColorScheme() throws IOException {
-        ColorScheme customColorScheme = Help.defaultColorScheme(Help.Ansi.ON).optionParams(Style.fg_magenta);
+    public void testPrintHelpIfRequestedWithCustomColorScheme() {
+        ColorScheme customColorScheme = new Help.ColorScheme(Help.Ansi.ON)
+                .optionParams(Style.fg_magenta)
+                .commands(Style.bg_cyan)
+                .options(Style.fg_green)
+                .parameters(Style.bg_white);
     
         @Command(mixinStandardHelpOptions = true)
         class App {
             @Option(names = { "-f" }, paramLabel = "ARCHIVE", description = "the archive file") File archive;
+            @Parameters(paramLabel = "POSITIONAL", description = "positional arg") String arg;
         }
         List<CommandLine> list = new CommandLine(new App()).parse("--help");
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         final PrintStream out = new PrintStream(baos);
         assertTrue(CommandLine.printHelpIfRequested(list, out, out, customColorScheme));
     
-        String expected = String.format("Usage: \u001B[1m<main class>\u001B[21m\u001B[0m [\u001B[33m-hV\u001B[39m\u001B[0m] [\u001B[33m-f\u001B[39m\u001B[0m=\u001B[3m\u001B[35mARCHIVE\u001B[39m\u001B[23m\u001B[0m]%n" +
-                "  \u001B[33m-f\u001B[39m\u001B[0m= \u001B[3m\u001B[35mA\u001B[39m\u001B[23m\u001B[0m\u001B[3m\u001B[35mRCHIVE\u001B[39m\u001B[23m\u001B[0m     the archive file%n" +
-                "  \u001B[33m-h\u001B[39m\u001B[0m, \u001B[33m--help\u001B[39m\u001B[0m      Show this help message and exit.%n" +
-                "  \u001B[33m-V\u001B[39m\u001B[0m, \u001B[33m--version\u001B[39m\u001B[0m   Print version information and exit.%n");
+        String expected = Help.Ansi.ON.string(String.format("" +
+                "Usage: @|bg_cyan <main class>|@ [@|green -hV|@] [@|green -f|@=@|magenta ARCHIVE|@] @|bg_white POSITIONAL|@%n" +
+                "@|bg_white  |@     @|bg_white POSITIONAL|@   positional arg%n" +
+                "  @|green -f|@= @|magenta A|@@|magenta RCHIVE|@      the archive file%n" +
+                "  @|green -h|@, @|green --help|@       Show this help message and exit.%n" +
+                "  @|green -V|@, @|green --version|@    Print version information and exit.%n"));
         assertEquals(expected, baos.toString());
     }
 

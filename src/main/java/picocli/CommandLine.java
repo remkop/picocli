@@ -879,7 +879,7 @@ public class CommandLine {
      * @see IHelpCommandInitializable
      * @since 3.0 */
     public static boolean printHelpIfRequested(List<CommandLine> parsedCommands, PrintStream out, PrintStream err, Help.Ansi ansi) {
-        return printHelpIfRequested(parsedCommands, out, err, new Help.ColorScheme(ansi));
+        return printHelpIfRequested(parsedCommands, out, err, Help.defaultColorScheme(ansi));
     }
     /**
      * Helper method that may be useful when processing the list of {@code CommandLine} objects that result from successfully
@@ -8242,10 +8242,11 @@ public class CommandLine {
             public final List<IStyle> optionParamStyles = new ArrayList<IStyle>();
             private final Ansi ansi;
 
-            /** Constructs a new ColorScheme with {@link Help.Ansi#AUTO}. */
+            /** Constructs a new empty ColorScheme with {@link Help.Ansi#AUTO}. */
             public ColorScheme() { this(Ansi.AUTO); }
 
-            /** Constructs a new ColorScheme with the specified Ansi enabled mode.
+            /** Constructs a new empty ColorScheme with the specified Ansi enabled mode.
+             * @see Help#defaultColorScheme(Ansi)
              * @param ansi whether to emit ANSI escape codes or not
              */
             public ColorScheme(Ansi ansi) {this.ansi = Assert.notNull(ansi, "ansi"); }
