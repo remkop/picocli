@@ -3941,7 +3941,7 @@ public class CommandLine {
             // help-related fields
             private final boolean hidden;
             private final String paramLabel;
-            private final boolean showParamSyntax;
+            private final boolean hideParamSyntax;
             private final String[] description;
             private final Help.Visibility showDefaultValue;
 
@@ -3970,7 +3970,7 @@ public class CommandLine {
                 description = builder.description == null ? new String[0] : builder.description;
                 splitRegex = builder.splitRegex == null ? "" : builder.splitRegex;
                 paramLabel = empty(builder.paramLabel) ? "PARAM" : builder.paramLabel;
-                showParamSyntax = builder.showParamSyntax;
+                hideParamSyntax = builder.hideParamSyntax;
                 converters = builder.converters == null ? new ITypeConverter<?>[0] : builder.converters;
                 showDefaultValue = builder.showDefaultValue == null ? Help.Visibility.ON_DEMAND : builder.showDefaultValue;
                 hidden = builder.hidden;
@@ -4076,7 +4076,7 @@ public class CommandLine {
     
             /** Indicates whether paramLabel should be processed the regular way or that it should be rendered as-is.
              * @see #paramLabel()  {@link #paramLabel()} */
-            public boolean showParamSyntax()     { return showParamSyntax; }
+            public boolean hideParamSyntax()     { return hideParamSyntax; }
     
             /** Returns auxiliary type information used when the {@link #type()} is a generic {@code Collection}, {@code Map} or an abstract class.
              * @see Option#type() */
@@ -4245,7 +4245,7 @@ public class CommandLine {
                 private boolean required;
                 private boolean interactive;
                 private String paramLabel;
-                private boolean showParamSyntax = true;
+                private boolean hideParamSyntax;
                 private String splitRegex;
                 private boolean hidden;
                 private Class<?> type;
@@ -4271,7 +4271,7 @@ public class CommandLine {
                     setter = original.setter;
                     hidden = original.hidden;
                     paramLabel = original.paramLabel;
-                    showParamSyntax = original.showParamSyntax;
+                    hideParamSyntax = original.hideParamSyntax;
                     required = original.required;
                     interactive = original.interactive;
                     showDefaultValue = original.showDefaultValue;
@@ -4369,7 +4369,7 @@ public class CommandLine {
 	
 				/** Indicates whether paramLabel should be processed the regular way or that it should be rendered as-is.
 				 * @see #paramLabel()  {@link #paramLabel()} */
-                public T showParamSyntax(boolean showParamSyntax) { this.showParamSyntax = showParamSyntax; return self(); }
+                public T hideParamSyntax(boolean hideParamSyntax) { this.hideParamSyntax = hideParamSyntax; return self(); }
     
                 /** Sets auxiliary type information, and returns this builder.
                  * @param types  the element type(s) when the {@link #type()} is a generic {@code Collection} or a {@code Map};
@@ -7715,7 +7715,7 @@ public class CommandLine {
             public Text renderParameterLabel(ArgSpec argSpec, Ansi ansi, List<IStyle> styles) {
                 Range capacity = argSpec.isOption() ? argSpec.arity() : ((PositionalParamSpec)argSpec).capacity();
                 if (capacity.max == 0) { return ansi.new Text(""); }
-                if (!argSpec.showParamSyntax()) { return ansi.apply(separator() + argSpec.paramLabel(), styles); }
+                if (argSpec.hideParamSyntax()) { return ansi.apply(separator() + argSpec.paramLabel(), styles); }
                 
                 Text paramName = ansi.apply(argSpec.paramLabel(), styles);
                 String split = argSpec.splitRegex();

@@ -66,7 +66,7 @@ public class CommandLineModelTest {
         spec.addOption(OptionSpec.builder("-h", "--help").usageHelp(true).description("show help and exit").build());
         spec.addOption(OptionSpec.builder("-V", "--version").versionHelp(true).description("show help and exit").build());
         spec.addOption(OptionSpec.builder("-c", "--count").paramLabel("COUNT").arity("1").type(int.class).description("number of times to execute").build());
-        spec.addOption(OptionSpec.builder("-f", "--fix").paramLabel("FIXED(BOOLEAN)").arity("1").showParamSyntax(false).required(true).description("run with fixed option").build());
+        spec.addOption(OptionSpec.builder("-f", "--fix").paramLabel("FIXED(BOOLEAN)").arity("1").hideParamSyntax(true).required(true).description("run with fixed option").build());
         CommandLine commandLine = new CommandLine(spec);
         String actual = usageString(commandLine, Ansi.OFF);
         String expected = String.format("" +
@@ -84,7 +84,7 @@ public class CommandLineModelTest {
         spec.addOption(OptionSpec.builder("-h", "--help").usageHelp(true).description("show help and exit").build());
         spec.addOption(OptionSpec.builder("-V", "--version").versionHelp(true).description("show help and exit").build());
         spec.addOption(OptionSpec.builder("-c", "--count").paramLabel("COUNT").arity("1").type(int.class).description("number of times to execute").build());
-        spec.addOption(OptionSpec.builder("-f", "--fix").paramLabel("FIXED(=BOOLEAN)").arity("1").showParamSyntax(false).required(true).description("run with fixed option").build());
+        spec.addOption(OptionSpec.builder("-f", "--fix").paramLabel("FIXED(=BOOLEAN)").arity("1").hideParamSyntax(true).required(true).description("run with fixed option").build());
         CommandLine commandLine = new CommandLine(spec).setSeparator(" ");
         String actual = usageString(commandLine, Ansi.OFF);
         String expected = String.format("" +
@@ -517,7 +517,7 @@ public class CommandLineModelTest {
     }
     @Test
     public void testPositionalDefaultFixParamLabelIsFalse() throws Exception {
-        assertTrue(PositionalParamSpec.builder().build().showParamSyntax());
+        assertTrue(PositionalParamSpec.builder().build().hideParamSyntax());
     }
 
     @Test
