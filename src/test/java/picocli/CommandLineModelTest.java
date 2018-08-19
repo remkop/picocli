@@ -517,7 +517,7 @@ public class CommandLineModelTest {
     }
     @Test
     public void testPositionalDefaultFixParamLabelIsFalse() throws Exception {
-        assertTrue(PositionalParamSpec.builder().build().hideParamSyntax());
+        assertFalse(PositionalParamSpec.builder().build().hideParamSyntax());
     }
 
     @Test
