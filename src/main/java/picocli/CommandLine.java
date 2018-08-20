@@ -3484,6 +3484,15 @@ public class CommandLine {
                 return values;
             }
 
+            /** Returns the list of all options and positional parameters configured for this command.
+             * @return an immutable list of all options and positional parameters for this command. */
+            public List<ArgSpec> args() { return Collections.unmodifiableList(args); }
+            public Object[] argValues() {
+                Object[] values = new Object[args.size()];
+                for (int i = 0; i < values.length; i++) { values[i] = args.get(i).getValue(); }
+                return values;
+            }
+
             /** Returns the String to use as the program name in the synopsis line of the help message:
              * this command's {@link #name() name}, preceded by the qualified name of the parent command, if any.
              * {@link #DEFAULT_COMMAND_NAME} by default, initialized from {@link Command#name()} if defined.

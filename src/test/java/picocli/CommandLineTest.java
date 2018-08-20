@@ -4460,7 +4460,7 @@ public class CommandLineTest {
             @Option(names = "-v", paramLabel="<verbose>" /* useless, but required for Assert.equals() */) boolean verbose,
             @Option(names = "-r", paramLabel="<recursive>" /* useless, but required for Assert.equals() */) boolean recursive,
             @Option(names = "-o", paramLabel="<outputFile>" /* required only for Assert.equals() */) File outputFile,
-            @Parameters(paramLabel="<inputFiles>" /* required only for Assert.equals() */) File[] inputFiles) 
+            @Parameters(paramLabel="<inputFiles>" /* required only for Assert.equals() */) File[] inputFiles)
         {
             CompactFields ret = new CommandLineTest.CompactFields();
             ret.verbose = verbose;
