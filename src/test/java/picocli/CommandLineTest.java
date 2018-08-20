@@ -4535,6 +4535,48 @@ public class CommandLineTest {
         }
     }
 
+    static class CommandMethod1 {
+        @Command(mixinStandardHelpOptions = true, version = "1.2.3")
+        public int times(@Option(names = "-l", defaultValue = "2") int left,
+                         @Option(names = "-r", defaultValue = "3") int right) {
+            return left * right;
+        }
+    }
+
+    @Test
+    public void testCommandMethodDefaults() {
+        Object timesResultBothDefault = CommandLine.invoke("times", CommandMethod1.class);
+        assertEquals("both default", 6, ((Integer) timesResultBothDefault).intValue());
+
+        Object timesResultLeftDefault = CommandLine.invoke("times", CommandMethod1.class, "-r", "8");
+        assertEquals("right default", 16, ((Integer) timesResultLeftDefault).intValue());
+
+        Object timesResultRightDefault = CommandLine.invoke("times", CommandMethod1.class, "-l", "8");
+        assertEquals("left default", 24, ((Integer) timesResultRightDefault).intValue());
+
+        Object timesResultNoDefault = CommandLine.invoke("times", CommandMethod1.class, "-r", "4", "-l", "5");
+        assertEquals("no default", 20, ((Integer) timesResultNoDefault).intValue());
+    }
+
+    @Test
+    public void testCommandMethodMixinHelp() {
+        PrintStream original = System.out;
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        try {
+            System.setOut(new PrintStream(baos));
+            CommandLine.invoke("times", CommandMethod1.class, "-h");
+            String expected = String.format("" +
+                    "Usage: times [-hV] [-l=<arg0>] [-r=<arg1>]%n" +
+                    "  -h, --help     Print this message and exit.%n" +
+                    "  -l= <arg0>%n" +
+                    "  -r= <arg1>%n" +
+                    "  -V, --version  Print version information and exit.%n" +
+                    "");
+            assertEquals(expected, baos.toString());
+        } finally {
+            System.setOut(original);
+        }
+    }
 
     @Test
     public void testInteractiveOptionReadsFromStdIn() {
