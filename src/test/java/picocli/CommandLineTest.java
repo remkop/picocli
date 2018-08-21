@@ -4385,6 +4385,19 @@ public class CommandLineTest {
             return a*b;
         }
     }
+    @Command(name="method", addMethodSubcommands=false)
+    static class MethodAppBare extends MethodAppBase {
+
+        @Command(name="run-1")
+        int run1(int a) {
+            return a;
+        }
+
+        @Command(name="run-2")
+        int run2(int a, @Option(names="-b", required=true) int b) {
+            return a*b;
+        }
+    }
     @SuppressWarnings("deprecation")
     @Test
     public void testAnnotateMethod_noArg() throws Exception {
@@ -4439,13 +4452,26 @@ public class CommandLineTest {
     }
 
     @Test
-    public void testAnnotateMethod_addMethodSubcommands() throws Exception {
+    public void testAnnotateMethod_addMethodSubcommands_false() throws Exception {
 
-        CommandLine cmd = new CommandLine(MethodApp.class);
+        CommandLine cmd = new CommandLine(MethodAppBare.class);
         assertEquals("method", cmd.getCommandName());
         assertEquals(0, cmd.getSubcommands().size());
 
         cmd.addMethodSubcommands();
+        assertEquals(3, cmd.getSubcommands().size());
+        assertEquals(0, cmd.getSubcommands().get("run-0").getCommandSpec().args().size());
+        assertEquals(1, cmd.getSubcommands().get("run-1").getCommandSpec().args().size());
+        assertEquals(2, cmd.getSubcommands().get("run-2").getCommandSpec().args().size());
+
+        //CommandLine.usage(cmd.getSubcommands().get("run-2"), System.out);
+    }
+
+    @Test
+    public void testAnnotateMethod_addMethodSubcommands_true() throws Exception {
+
+        CommandLine cmd = new CommandLine(MethodApp.class);
+        assertEquals("method", cmd.getCommandName());
         assertEquals(3, cmd.getSubcommands().size());
         assertEquals(0, cmd.getSubcommands().get("run-0").getCommandSpec().args().size());
         assertEquals(1, cmd.getSubcommands().get("run-1").getCommandSpec().args().size());
