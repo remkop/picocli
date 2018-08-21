@@ -250,6 +250,7 @@ public class CommandLine {
     *
     * @return this CommandLine object, to allow method chaining
     * @see #addSubcommand(String, Object)
+    * @since 3.5.3
     */
     public CommandLine addMethodSubcommands() {
         if (getCommand() instanceof Method) {
@@ -2716,6 +2717,33 @@ public class CommandLine {
          */
         Class<?>[] subcommands() default {};
 
+        /** Specify {@code false} not to register methods annotated with {@code @Command} as subcommands. When registering subcommands declaratively
+         * with the default {@code true}, you don't need to call the {@link CommandLine#addSubcommand(String, Object)} method
+         * or the {@link CommandLine#addMethodSubcommands()} method. For example, this:
+         * <pre>
+         * &#064;Command
+         * public class Git {
+         *     &#064;Command
+         *     void status() { ... }
+         * }
+         *
+         * CommandLine commandLine = new CommandLine(new Git());
+         * </pre> is equivalent to this:
+         * <pre>
+         * // alternative: programmatically add method as subcommand.
+         * &#064;Command(addMethodSubcommands=false) public class Git { ... }
+         *
+         * CommandLine commandLine = new CommandLine(new Git())
+         *         .addSubcommand("status",   CommandLine.getCommandMethods(Git.class, "status").keySet().iterator().next());
+         * </pre>
+         * @return whether methods annotated with {@code @Command} should be registered as subcommands
+         * @see CommandLine#addSubcommand(String, Object)
+         * @see CommandLine#getCommandMethods(Class, String)
+         * @see CommandLine#addMethodSubcommands()
+         * @see HelpCommand
+         * @since 3.5.3 */
+        boolean addMethodSubcommands() default true;
+
         /** String that separates options from option parameters. Default is {@code "="}. Spaces are also accepted.
          * @return the string that separates options from option parameters, used both when parsing and when generating usage help
          * @see CommandLine#setSeparator(String) */
@@ -3356,7 +3384,24 @@ public class CommandLine {
                 }
                 return this;
             }
-    
+
+            /** Registers any class method(s) annotated with {@code @Command} as subcommands. See also {@link #addSubcommand(String, CommandLine)}.
+            *
+            * @return this {@link CommandSpec} object for method chaining
+            * @see #addSubcommand(String, CommandLine)
+            * @since 3.5.3
+            */
+            public CommandSpec addMethodSubcommands() {
+                if (userObject() instanceof Method) {
+                     throw new UnsupportedOperationException("cannot discover methods of non-class: " + userObject());
+                }
+                for (Method method : getCommandMethods(userObject().getClass(), null).keySet()) {
+                    CommandLine cmd = new CommandLine(method);
+                    addSubcommand(cmd.getCommandName(), cmd);
+                }
+                return this;
+            }
+
             /** Returns the parent command of this subcommand, or {@code null} if this is a top-level command. */
             public CommandSpec parent() { return parent; }
     
@@ -5119,6 +5164,9 @@ public class CommandLine {
                         throw new InitializationException("Could not instantiate and add subcommand " +
                                 sub.getName() + ": " + ex, ex);
                     }
+                }
+                if (cmd.addMethodSubcommands() && !(parent.userObject() instanceof Method)) {
+                    parent.addMethodSubcommands();
                 }
             }
             static void initParentCommand(Object subcommand, Object parent) {
