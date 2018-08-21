@@ -4367,6 +4367,7 @@ public class CommandLine {
                         && Assert.equals(this.arity, other.arity)
                         && Assert.equals(this.hidden, other.hidden)
                         && Assert.equals(this.paramLabel, other.paramLabel)
+                        && Assert.equals(this.hideParamSyntax, other.hideParamSyntax)
                         && Assert.equals(this.required, other.required)
                         && Assert.equals(this.splitRegex, other.splitRegex)
                         && Arrays.equals(this.description, other.description)
@@ -4381,6 +4382,7 @@ public class CommandLine {
                         + 37 * Assert.hashCode(arity)
                         + 37 * Assert.hashCode(hidden)
                         + 37 * Assert.hashCode(paramLabel)
+                        + 37 * Assert.hashCode(hideParamSyntax)
                         + 37 * Assert.hashCode(required)
                         + 37 * Assert.hashCode(splitRegex)
                         + 37 * Arrays.hashCode(description)
@@ -4446,10 +4448,14 @@ public class CommandLine {
                 /** Returns how many arguments this option or positional parameter requires.
                  * @see Option#arity() */
                 public Range arity()           { return arity; }
-
+    
                 /** Returns the name of the option or positional parameter used in the usage help message.
                  * @see Option#paramLabel() {@link Parameters#paramLabel()} */
                 public String paramLabel()     { return paramLabel; }
+    
+                /** Indicates whether paramLabel should be processed the regular way or that it should be rendered as-is.
+                 * @see #paramLabel()  {@link #paramLabel()} */
+                public boolean hideParamSyntax()     { return hideParamSyntax; }
 
                 /** Returns auxiliary type information used when the {@link #type()} is a generic {@code Collection}, {@code Map} or an abstract class.
                  * @see Option#type() */
