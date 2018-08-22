@@ -1874,7 +1874,8 @@ public class CommandLine {
         if (candidates.size() != 1) { throw new InitializationException("Expected exactly one candidate for " + cls.getName() + "::" + methodName + "(...) annotated by @Command, got: " + candidates); }
         Method method = candidates.keySet().iterator().next();
         CommandLine cmd = new CommandLine(method);
-        return cmd.parseWithHandlers(new RunLast().useOut(out).useAnsi(ansi), new DefaultExceptionHandler<List<Object>>().useErr(err).useAnsi(ansi), args).get(0);
+        List<Object> list = cmd.parseWithHandlers(new RunLast().useOut(out).useAnsi(ansi), new DefaultExceptionHandler<List<Object>>().useErr(err).useAnsi(ansi), args);
+        return list == null ? null : list.get(0);
     }
 
     /**
