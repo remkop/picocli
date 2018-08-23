@@ -132,13 +132,10 @@ public class CommandLineCommandMethodTest {
     }
 
     @Test
-    public void testAnnotateMethod_addMethodSubcommands() throws Exception {
+    public void testCommandMethodsFromSuperclassAddedToSubcommands() throws Exception {
 
         CommandLine cmd = new CommandLine(MethodApp.class);
         assertEquals("method", cmd.getCommandName());
-        assertEquals(0, cmd.getSubcommands().size());
-
-        cmd.addMethodSubcommands();
         assertEquals(3, cmd.getSubcommands().size());
         assertEquals(0, cmd.getSubcommands().get("run-0").getCommandSpec().args().size());
         assertEquals(1, cmd.getSubcommands().get("run-1").getCommandSpec().args().size());
@@ -257,10 +254,10 @@ public class CommandLineCommandMethodTest {
         CommandLine.invoke("times", CommandMethod1.class, "-h");
         String expected = String.format("" +
                 "Usage: times [-hV] [-l=<arg0>] [-r=<arg1>]%n" +
-                "  -h, --help     Print this message and exit.%n" +
+                "  -h, --help      Show this help message and exit.%n" +
                 "  -l= <arg0>%n" +
                 "  -r= <arg1>%n" +
-                "  -V, --version  Print version information and exit.%n" +
+                "  -V, --version   Print version information and exit.%n" +
                 "");
         assertEquals(expected, systemOutRule.getLog());
     }
@@ -319,7 +316,11 @@ public class CommandLineCommandMethodTest {
         assertEquals(2, cmd.getSubcommands().size());
         assertEquals(set("cmd1", "cmd2"), cmd.getSubcommands().keySet());
 
-        String expected = String.format("");
+        String expected = String.format("" +
+                "Usage: <main class> [COMMAND]%n" +
+                "Commands:%n" +
+                "  cmd2%n" +
+                "  cmd1%n");
         assertEquals(expected, cmd.getUsageMessage()); // ansi OFF in this test by default
     }
 
