@@ -250,7 +250,6 @@ public class CommandLine {
     *
     * @return this CommandLine object, to allow method chaining
     * @see #addSubcommand(String, Object)
-    * @since 3.5.3
     */
     public CommandLine addMethodSubcommands() {
         if (getCommand() instanceof Method) {
@@ -1875,7 +1874,8 @@ public class CommandLine {
         if (candidates.size() != 1) { throw new InitializationException("Expected exactly one candidate for " + cls.getName() + "::" + methodName + "(...) annotated by @Command, got: " + candidates); }
         Method method = candidates.keySet().iterator().next();
         CommandLine cmd = new CommandLine(method);
-        return cmd.parseWithHandlers(new RunLast().useOut(out).useAnsi(ansi), new DefaultExceptionHandler<List<Object>>().useErr(err).useAnsi(ansi), args).get(0);
+        List<Object> list = cmd.parseWithHandlers(new RunLast().useOut(out).useAnsi(ansi), new DefaultExceptionHandler<List<Object>>().useErr(err).useAnsi(ansi), args);
+        return list == null ? null : list.get(0);
     }
 
     /**
@@ -4033,7 +4033,7 @@ public class CommandLine {
             public ParserSpec atFileCommentChar(Character atFileCommentChar)               { this.atFileCommentChar = atFileCommentChar; return this; }
             /** @see CommandLine#setPosixClusteredShortOptionsAllowed(boolean) */
             public ParserSpec posixClusteredShortOptionsAllowed(boolean posixClusteredShortOptionsAllowed) { this.posixClusteredShortOptionsAllowed = posixClusteredShortOptionsAllowed; return this; }
-            /** @see CommandLine#setCaseInsensitiveEnumValuesAllowed(boolean) 
+            /** @see CommandLine#setCaseInsensitiveEnumValuesAllowed(boolean)
              * @since 3.4 */
             public ParserSpec caseInsensitiveEnumValuesAllowed(boolean caseInsensitiveEnumValuesAllowed) { this.caseInsensitiveEnumValuesAllowed = caseInsensitiveEnumValuesAllowed; return this; }
             /** @see CommandLine#setUnmatchedOptionsArePositionalParams(boolean) */
@@ -4980,6 +4980,33 @@ public class CommandLine {
                     MethodBinding binding = new MethodBinding(scope, method);
                     getter = binding; setter = binding;
                 }
+            }
+            private TypedMember(Parameter param, Object scope) {
+                accessible = Assert.notNull(param, "command method parameter");
+                accessible.setAccessible(true);
+                name = param.getName();
+                type = param.getType();
+                genericType = param.getParameterizedType();
+
+                // bind parameter
+                ObjectBinding binding = new ObjectBinding();
+                getter = binding; setter = binding;
+
+                // initial value
+                boolean initialized = true;
+                try {
+                    if      (type == Boolean.TYPE || type == Boolean.class) { setter.set(false); }
+                    else if (type == Byte.TYPE    || type == Byte.class)    { setter.set(Byte.valueOf((byte) 0)); }
+                    else if (type == Short.TYPE   || type == Short.class)   { setter.set(Short.valueOf((short) 0)); }
+                    else if (type == Integer.TYPE || type == Integer.class) { setter.set(Integer.valueOf(0)); }
+                    else if (type == Long.TYPE    || type == Long.class)    { setter.set(Long.valueOf(0L)); }
+                    else if (type == Float.TYPE   || type == Float.class)   { setter.set(Float.valueOf(0f)); }
+                    else if (type == Double.TYPE  || type == Double.class)  { setter.set(Double.valueOf(0d)); }
+                    else { initialized = false; }
+                } catch (Exception ex) {
+                    throw new InitializationException("Could not set initial value for " + param + ": " + ex.toString(), ex);
+                }
+                hasInitialValue = initialized;
             }
             private TypedMember(Parameter param, Object scope) {
                 accessible = Assert.notNull(param, "command method parameter");

@@ -15,6 +15,12 @@
  */
 package picocli;
 
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.contrib.java.lang.system.ProvideSystemProperty;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -52,13 +58,29 @@ import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 
-import org.junit.*;
-import org.junit.contrib.java.lang.system.ProvideSystemProperty;
-
-import javax.xml.bind.DatatypeConverter;
-
 import static org.junit.Assert.*;
-import static picocli.CommandLine.*;
+import static picocli.CommandLine.Command;
+import static picocli.CommandLine.DuplicateOptionAnnotationsException;
+import static picocli.CommandLine.Help;
+import static picocli.CommandLine.HelpCommand;
+import static picocli.CommandLine.IFactory;
+import static picocli.CommandLine.IParseResultHandler;
+import static picocli.CommandLine.ITypeConverter;
+import static picocli.CommandLine.IVersionProvider;
+import static picocli.CommandLine.InitializationException;
+import static picocli.CommandLine.MissingParameterException;
+import static picocli.CommandLine.MissingTypeConverterException;
+import static picocli.CommandLine.Mixin;
+import static picocli.CommandLine.Model;
+import static picocli.CommandLine.Option;
+import static picocli.CommandLine.OverwrittenOptionException;
+import static picocli.CommandLine.ParameterException;
+import static picocli.CommandLine.ParameterIndexGapException;
+import static picocli.CommandLine.Parameters;
+import static picocli.CommandLine.ParseResult;
+import static picocli.CommandLine.RunAll;
+import static picocli.CommandLine.Unmatched;
+import static picocli.CommandLine.UnmatchedArgumentException;
 import static picocli.HelpTestUtil.setTraceLevel;
 
 /**
@@ -566,7 +588,7 @@ public class CommandLineTest {
         }
     }
 
-    private static class CompactFields {
+    static class CompactFields {
         @Option(names = "-v") boolean verbose;
         @Option(names = "-r") boolean recursive;
         @Option(names = "-o") File outputFile;
@@ -1125,7 +1147,7 @@ public class CommandLineTest {
         return result;
     }
 
-    private void verifyCompact(CompactFields compact, boolean verbose, boolean recursive, String out, File[] params) {
+    static void verifyCompact(CompactFields compact, boolean verbose, boolean recursive, String out, File[] params) {
         assertEquals("-v", verbose, compact.verbose);
         assertEquals("-r", recursive, compact.recursive);
         assertEquals("-o", out == null ? null : new File(out), compact.outputFile);
@@ -4487,7 +4509,7 @@ public class CommandLineTest {
             @Option(names = "-v", paramLabel="<verbose>" /* useless, but required for Assert.equals() */) boolean verbose,
             @Option(names = "-r", paramLabel="<recursive>" /* useless, but required for Assert.equals() */) boolean recursive,
             @Option(names = "-o", paramLabel="<outputFile>" /* required only for Assert.equals() */) File outputFile,
-            @Parameters(paramLabel="<inputFiles>" /* required only for Assert.equals() */) File[] inputFiles) 
+            @Parameters(paramLabel="<inputFiles>" /* required only for Assert.equals() */) File[] inputFiles)
         {
             CompactFields ret = new CommandLineTest.CompactFields();
             ret.verbose = verbose;
@@ -4498,17 +4520,30 @@ public class CommandLineTest {
         }
     }
     @Test
-    public void testAnnotateMethod_matchesAnnotatedClass() throws Exception {
-        setTraceLevel("OFF");
-        CommandLine classCmd = new CommandLine(new CompactFields());
-        Method m = CompactFieldsMethod.class.getDeclaredMethod("run", new Class<?>[] {boolean.class, boolean.class, File.class, File[].class});
-        CommandLine methodCmd = new CommandLine(m);
-        assertEquals("run", methodCmd.getCommandName());
-        assertEquals("argument count", classCmd.getCommandSpec().args().size(), methodCmd.getCommandSpec().args().size());
-        for (int i = 0;  i < classCmd.getCommandSpec().args().size(); i++) {
-            Model.ArgSpec classArg = classCmd.getCommandSpec().args().get(i);
-            Model.ArgSpec methodArg = methodCmd.getCommandSpec().args().get(i);
-            assertEquals("arg #" + i, classArg, methodArg);
+    public void testLoginExample() {
+        class Login implements Callable<Object> {
+            @Option(names = {"-u", "--user"}, description = "User name")
+            String user;
+
+            @Option(names = {"-p", "--password"}, description = "Password or passphrase", interactive = true)
+            String password;
+
+            public Object call() throws Exception {
+                MessageDigest md = MessageDigest.getInstance("SHA-256");
+                md.update(password.getBytes());
+                System.out.printf("Hi %s, your password is hashed to %s.%n", user, base64(md.digest()));
+                return null;
+            }
+
+            private String base64(byte[] arr) throws Exception {
+                //return javax.xml.bind.DatatypeConverter.printBase64Binary(arr);
+                try {
+                    Object enc = Class.forName("java.util.Base64").getDeclaredMethod("getEncoder").invoke(null, new Object[0]);
+                    return (String) Class.forName("java.util.Base64$Encoder").getDeclaredMethod("encodeToString", new Class[]{byte[].class}).invoke(enc, new Object[] {arr});
+                } catch (Exception beforeJava8) {
+                    return new sun.misc.BASE64Encoder().encode(arr);
+                }
+            }
         }
         setTraceLevel("WARN");
     }
