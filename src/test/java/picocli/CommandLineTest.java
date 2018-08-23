@@ -180,7 +180,7 @@ public class CommandLineTest {
     }
     @Test
     public void testVersion() {
-        assertEquals("3.5.3-SNAPSHOT", CommandLine.VERSION);
+        assertEquals("3.6.0-SNAPSHOT", CommandLine.VERSION);
     }
     @Test
     public void testArrayPositionalParametersAreReplacedNotAppendedTo() {
