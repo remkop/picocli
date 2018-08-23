@@ -3523,9 +3523,10 @@ public class CommandLine {
             /** Returns the list of all options and positional parameters configured for this command.
              * @return an immutable list of all options and positional parameters for this command. */
             public List<ArgSpec> args() { return Collections.unmodifiableList(args); }
-            public Object[] argValues() {
-                Object[] values = new Object[args.size()];
-                for (int i = 0; i < values.length; i++) { values[i] = args.get(i).getValue(); }
+            Object[] argValues() {
+                int shift = mixinStandardHelpOptions() ? 2 : 0;
+                Object[] values = new Object[args.size() - shift];
+                for (int i = 0; i < values.length; i++) { values[i] = args.get(i + shift).getValue(); }
                 return values;
             }
 
@@ -5066,22 +5067,16 @@ public class CommandLine {
                         }
                     }
                 } else if (command instanceof Method) {
-                    cls = ((Method) command).getDeclaringClass();
+                    cls = null; // don't mix in options/positional params from outer class @Command
                 }
 
                 CommandSpec result = CommandSpec.wrapWithoutInspection(Assert.notNull(instance, "command"));
 
                 boolean hasCommandAnnotation = false;
                 while (cls != null) {
-                    final boolean thisCommandHasAnnotation;
-                    if (command instanceof Method) {
-                        // only get mixins from method's defining class, not subcommands, etc.
-                        thisCommandHasAnnotation = cls.isAnnotationPresent(Command.class);
-                    } else {
-                        thisCommandHasAnnotation = updateCommandAttributes(cls, result, factory);
-                        hasCommandAnnotation |= thisCommandHasAnnotation;
-                        hasCommandAnnotation |= initFromAnnotatedFields(instance, cls, result, factory);
-                    }
+                    boolean thisCommandHasAnnotation = updateCommandAttributes(cls, result, factory);
+                    hasCommandAnnotation |= thisCommandHasAnnotation;
+                    hasCommandAnnotation |= initFromAnnotatedFields(instance, cls, result, factory);
                     if (thisCommandHasAnnotation) { //#377 Standard help options should be added last
                         result.mixinStandardHelpOptions(cls.getAnnotation(Command.class).mixinStandardHelpOptions());
                     }
@@ -5092,6 +5087,7 @@ public class CommandLine {
                     t.debug("Using method %s as command %n", method);
                     commandClassName = method.toString();
                     hasCommandAnnotation |= updateCommandAttributes(method, result, factory);
+                    result.mixinStandardHelpOptions(method.getAnnotation(Command.class).mixinStandardHelpOptions());
                     initFromMethodParameters(instance, method, result, factory);
                     // set command name to method name, unless @Command#name is set
                     result.initName(((Method)command).getName());
