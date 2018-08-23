@@ -4886,11 +4886,11 @@ public class CommandLine {
             }
         }
         /** mock java.lang.reflect.Parameter (not available before Java 8) */
-        private static class Parameter extends AccessibleObject {
+        private static class MethodParam extends AccessibleObject {
             final Method method;
             final int paramIndex;
 
-            public Parameter(Method method, int paramIndex) {
+            public MethodParam(Method method, int paramIndex) {
                 this.method = method;
                 this.paramIndex = paramIndex;
             }
@@ -4955,19 +4955,7 @@ public class CommandLine {
                         PicocliInvocationHandler handler = (PicocliInvocationHandler) Proxy.getInvocationHandler(scope);
                         PicocliInvocationHandler.ProxyBinding binding = handler.new ProxyBinding(method);
                         getter = binding; setter = binding;
-
-                        // initial value
-                        try {
-                            if      (type == Boolean.TYPE || type == Boolean.class) { setter.set(false); }
-                            else if (type == Byte.TYPE    || type == Byte.class)    { setter.set(Byte.valueOf((byte) 0)); }
-                            else if (type == Short.TYPE   || type == Short.class)   { setter.set(Short.valueOf((short) 0)); }
-                            else if (type == Integer.TYPE || type == Integer.class) { setter.set(Integer.valueOf(0)); }
-                            else if (type == Long.TYPE    || type == Long.class)    { setter.set(Long.valueOf(0L)); }
-                            else if (type == Float.TYPE   || type == Float.class)   { setter.set(Float.valueOf(0f)); }
-                            else if (type == Double.TYPE  || type == Double.class)  { setter.set(Double.valueOf(0d)); }
-                        } catch (Exception ex) {
-                            throw new InitializationException("Could not set initial value for " + method + ": " + ex.toString(), ex);
-                        }
+                        initializeInitialValue(method);
                     } else {
                         //throw new IllegalArgumentException("Getter method but not a proxy: " + scope + ": " + method);
                         MethodBinding binding = new MethodBinding(scope, method);
@@ -4981,7 +4969,7 @@ public class CommandLine {
                     getter = binding; setter = binding;
                 }
             }
-            private TypedMember(Parameter param, Object scope) {
+            private TypedMember(MethodParam param, Object scope) {
                 accessible = Assert.notNull(param, "command method parameter");
                 accessible.setAccessible(true);
                 name = param.getName();
@@ -4991,35 +4979,10 @@ public class CommandLine {
                 // bind parameter
                 ObjectBinding binding = new ObjectBinding();
                 getter = binding; setter = binding;
-
-                // initial value
-                boolean initialized = true;
-                try {
-                    if      (type == Boolean.TYPE || type == Boolean.class) { setter.set(false); }
-                    else if (type == Byte.TYPE    || type == Byte.class)    { setter.set(Byte.valueOf((byte) 0)); }
-                    else if (type == Short.TYPE   || type == Short.class)   { setter.set(Short.valueOf((short) 0)); }
-                    else if (type == Integer.TYPE || type == Integer.class) { setter.set(Integer.valueOf(0)); }
-                    else if (type == Long.TYPE    || type == Long.class)    { setter.set(Long.valueOf(0L)); }
-                    else if (type == Float.TYPE   || type == Float.class)   { setter.set(Float.valueOf(0f)); }
-                    else if (type == Double.TYPE  || type == Double.class)  { setter.set(Double.valueOf(0d)); }
-                    else { initialized = false; }
-                } catch (Exception ex) {
-                    throw new InitializationException("Could not set initial value for " + param + ": " + ex.toString(), ex);
-                }
-                hasInitialValue = initialized;
+                hasInitialValue = initializeInitialValue(param);
             }
-            private TypedMember(Parameter param, Object scope) {
-                accessible = Assert.notNull(param, "command method parameter");
-                accessible.setAccessible(true);
-                name = param.getName();
-                type = param.getType();
-                genericType = param.getParameterizedType();
 
-                // bind parameter
-                ObjectBinding binding = new ObjectBinding();
-                getter = binding; setter = binding;
-
-                // initial value
+            private boolean initializeInitialValue(Object arg) {
                 boolean initialized = true;
                 try {
                     if      (type == Boolean.TYPE || type == Boolean.class) { setter.set(false); }
@@ -5031,9 +4994,9 @@ public class CommandLine {
                     else if (type == Double.TYPE  || type == Double.class)  { setter.set(Double.valueOf(0d)); }
                     else { initialized = false; }
                 } catch (Exception ex) {
-                    throw new InitializationException("Could not set initial value for " + param + ": " + ex.toString(), ex);
+                    throw new InitializationException("Could not set initial value for " + arg + ": " + ex.toString(), ex);
                 }
-                hasInitialValue = initialized;
+                return initialized;
             }
             static boolean isAnnotated(AnnotatedElement e) {
                 return false
@@ -5059,8 +5022,8 @@ public class CommandLine {
             Class<?> getType()       { return type; }
             Type getGenericType()    { return genericType; }
             public String toString() { return accessible.toString(); }
-            String toGenericString() { return accessible instanceof Field ? ((Field) accessible).toGenericString() : accessible instanceof Method ? ((Method) accessible).toGenericString() : ((Parameter)accessible).toString(); }
-            boolean isMethodParameter() { return accessible instanceof Parameter; }
+            String toGenericString() { return accessible instanceof Field ? ((Field) accessible).toGenericString() : accessible instanceof Method ? ((Method) accessible).toGenericString() : ((MethodParam)accessible).toString(); }
+            boolean isMethodParameter() { return accessible instanceof MethodParam; }
             String mixinName()    {
                 String annotationName = getAnnotation(Mixin.class).name();
                 return empty(annotationName) ? name() : annotationName;
@@ -5258,7 +5221,7 @@ public class CommandLine {
             private static boolean initFromMethodParameters(Object scope, Method method, CommandSpec receiver, IFactory factory) {
                 boolean result = false;
                 for (int i = 0; i < method.getParameterTypes().length; i++) {
-                    result |= initFromAnnotatedTypedMembers(new TypedMember(new Parameter(method, i), scope), receiver, factory);
+                    result |= initFromAnnotatedTypedMembers(new TypedMember(new MethodParam(method, i), scope), receiver, factory);
                 }
                 return result;
             }
