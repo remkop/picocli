@@ -27,6 +27,7 @@ No features have been promoted in this picocli release.
 - [#433] API: Added method `printHelpIfRequested` that accepts a `ColorScheme` parameter. Thanks to [Benny Bottema](https://github.com/bbottema) for the suggestion.
 - [#416] API: Added support for @Command annotation on methods (in addition to classes). Thanks to [illes](https://github.com/illes) for the pull request.
 - [#444] Bugfix: Usage help shows duplicate aliases if registered with same alias multiple times.
+- [#452] Doc: Add UML class diagrams to picocli Javadoc.
 
 ## <a name="3.6.0-deprecated"></a> Deprecations
 No features were deprecated in this release.
