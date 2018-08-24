@@ -14,7 +14,7 @@
  * </p>
  * <h2>Class Diagram of the Picocli Exceptions</h2>
  * <p>
- * <img src="doc-files/class-diagram-excepitons.png" alt="Class Diagram of the Picocli Exceptions">
+ * <img src="doc-files/class-diagram-exceptions.png" alt="Class Diagram of the Picocli Exceptions">
  * </p>
  * <h2>Class Diagram of the CommandLine.Help API</h2>
  * <p>

@@ -105,7 +105,13 @@ javadoc {
     options.overview = "src/main/java/overview.html"
     destinationDir   = file("build/docs/apidocs")
 }
-javadoc.dependsOn('asciidoctor')
+// work around https://github.com/gradle/gradle/issues/4046
+javadoc.dependsOn('copyJavadocDocFiles')
+task copyJavadocDocFiles(type: Copy) {
+    from('src/main/java')
+    into 'build/docs/apidocs'
+    include '**/doc-files/*.*'
+}
 
 jacocoTestReport {
     reports {
@@ -129,6 +135,7 @@ task javadocJar(type: Jar, dependsOn: javadoc) {
     classifier = 'javadoc'
     from javadoc.destinationDir
 }
+javadoc.dependsOn('asciidoctor')
 asciidoctor {
     sourceDir = file('docs')
     outputDir = file('build/docs')

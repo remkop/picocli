@@ -7087,7 +7087,8 @@ public class CommandLine {
      * <img src="doc-files/class-diagram-help-api.png" alt="Class Diagram of the CommandLine.Help API">
      * </p>
      * <h2>Layered API</h2>
-     * <p>The {@link Command} annotation provides the easiest way to customize usage help messages. See
+     * <p>The {@link Command} annotation and the {@link UsageMessageSpec} programmatic API equivalent
+     * provide the easiest way to configure the usage help message. See
      * the <a href="https://remkop.github.io/picocli/index.html#_usage_help">Manual</a> for details.</p>
      * <p>This Help class provides high-level functions to create sections of the usage help message and headings
      * for these sections. Instead of calling the {@link CommandLine#usage(PrintStream, CommandLine.Help.ColorScheme)}
