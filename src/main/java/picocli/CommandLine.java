@@ -2290,6 +2290,12 @@ public class CommandLine {
          */
         String paramLabel() default "";
 
+        /** Returns whether usage syntax decorations around the {@linkplain #paramLabel() paramLabel} should be suppressed.
+         * The default is {@code false}: by default, the paramLabel is surrounded with {@code '['} and {@code ']'} characters
+         * if the value is optional and followed by ellipses ("...") when multiple values can be specified.
+         * @since 3.6.0 */
+        boolean hideParamSyntax() default false;
+
         /** <p>
          * Optionally specify a {@code type} to control exactly what Class the option parameter should be converted
          * to. This may be useful when the field type is an interface or an abstract class. For example, a field can
@@ -2454,6 +2460,12 @@ public class CommandLine {
          * @return name of the positional parameter used in the usage help message
          */
         String paramLabel() default "";
+
+        /** Returns whether usage syntax decorations around the {@linkplain #paramLabel() paramLabel} should be suppressed.
+         * The default is {@code false}: by default, the paramLabel is surrounded with {@code '['} and {@code ']'} characters
+         * if the value is optional and followed by ellipses ("...") when multiple values can be specified.
+         * @since 3.6.0 */
+        boolean hideParamSyntax() default false;
 
         /**
          * <p>
@@ -4223,8 +4235,10 @@ public class CommandLine {
              * @see Option#paramLabel() {@link Parameters#paramLabel()} */
             public String paramLabel()     { return paramLabel; }
     
-            /** Indicates whether paramLabel should be processed the regular way or that it should be rendered as-is.
-             * @see #paramLabel()  {@link #paramLabel()} */
+            /** Returns whether usage syntax decorations around the {@linkplain #paramLabel() paramLabel} should be suppressed.
+             * The default is {@code false}: by default, the paramLabel is surrounded with {@code '['} and {@code ']'} characters
+             * if the value is optional and followed by ellipses ("...") when multiple values can be specified.
+             * @since 3.6.0 */
             public boolean hideParamSyntax()     { return hideParamSyntax; }
     
             /** Returns auxiliary type information used when the {@link #type()} is a generic {@code Collection}, {@code Map} or an abstract class.
@@ -4452,9 +4466,11 @@ public class CommandLine {
                 /** Returns the name of the option or positional parameter used in the usage help message.
                  * @see Option#paramLabel() {@link Parameters#paramLabel()} */
                 public String paramLabel()     { return paramLabel; }
-    
-                /** Indicates whether paramLabel should be processed the regular way or that it should be rendered as-is.
-                 * @see #paramLabel()  {@link #paramLabel()} */
+
+                /** Returns whether usage syntax decorations around the {@linkplain #paramLabel() paramLabel} should be suppressed.
+                 * The default is {@code false}: by default, the paramLabel is surrounded with {@code '['} and {@code ']'} characters
+                 * if the value is optional and followed by ellipses ("...") when multiple values can be specified.
+                 * @since 3.6.0 */
                 public boolean hideParamSyntax()     { return hideParamSyntax; }
 
                 /** Returns auxiliary type information used when the {@link #type()} is a generic {@code Collection}, {@code Map} or an abstract class.
@@ -4521,9 +4537,11 @@ public class CommandLine {
     
                 /** Sets the name of the option or positional parameter used in the usage help message, and returns this builder. */
                 public T paramLabel(String paramLabel)       { this.paramLabel = Assert.notNull(paramLabel, "paramLabel"); return self(); }
-	
-				/** Indicates whether paramLabel should be processed the regular way or that it should be rendered as-is.
-				 * @see #paramLabel()  {@link #paramLabel()} */
+
+                /** Sets whether usage syntax decorations around the {@linkplain #paramLabel() paramLabel} should be suppressed.
+                 * The default is {@code false}: by default, the paramLabel is surrounded with {@code '['} and {@code ']'} characters
+                 * if the value is optional and followed by ellipses ("...") when multiple values can be specified.
+                 * @since 3.6.0 */
                 public T hideParamSyntax(boolean hideParamSyntax) { this.hideParamSyntax = hideParamSyntax; return self(); }
     
                 /** Sets auxiliary type information, and returns this builder.
@@ -5348,6 +5366,7 @@ public class CommandLine {
                 Class<?>[] elementTypes = inferTypes(member.getType(), option.type(), member.getGenericType());
                 builder.auxiliaryTypes(elementTypes);
                 builder.paramLabel(inferLabel(option.paramLabel(), member.name(), member.getType(), elementTypes));
+                builder.hideParamSyntax(option.hideParamSyntax());
                 builder.splitRegex(option.split());
                 builder.hidden(option.hidden());
                 builder.defaultValue(option.defaultValue());
@@ -5369,6 +5388,7 @@ public class CommandLine {
                 Class<?>[] elementTypes = inferTypes(member.getType(), parameters.type(), member.getGenericType());
                 builder.auxiliaryTypes(elementTypes);
                 builder.paramLabel(inferLabel(parameters.paramLabel(), member.name(), member.getType(), elementTypes));
+                builder.hideParamSyntax(parameters.hideParamSyntax());
                 builder.splitRegex(parameters.split());
                 builder.hidden(parameters.hidden());
                 builder.defaultValue(parameters.defaultValue());
@@ -5393,6 +5413,7 @@ public class CommandLine {
                 Class<?>[] elementTypes = inferTypes(member.getType(), new Class<?>[] {}, member.getGenericType());
                 builder.auxiliaryTypes(elementTypes);
                 builder.paramLabel(inferLabel(null, member.name(), member.getType(), elementTypes));
+                builder.hideParamSyntax(false);
                 builder.splitRegex("");
                 builder.hidden(false);
                 builder.defaultValue(null);
@@ -7719,8 +7740,9 @@ public class CommandLine {
                 public String separator() { return ""; }
             };
         }
-        /** Returns a new default value renderer that separates option parameters from their option name
-         * with the specified separator string, surrounds optional parameters with {@code '['} and {@code ']'}
+        /** Returns a new default param label renderer that separates option parameters from their option name
+         * with the specified separator string, and, unless {@link ArgSpec#hideParamSyntax()} is true,
+         * surrounds optional parameters with {@code '['} and {@code ']'}
          * characters and uses ellipses ("...") to indicate that any number of a parameter are allowed.
          * @return a new default ParamLabelRenderer
          */
@@ -7954,9 +7976,9 @@ public class CommandLine {
         }
         /**
          * DefaultParamLabelRenderer separates option parameters from their {@linkplain OptionSpec option names} with a
-         * {@linkplain CommandLine.Model.ParserSpec#separator() separator} string, surrounds optional values
-         * with {@code '['} and {@code ']'} characters and uses ellipses ("...") to indicate that any number of
-         * values is allowed for options or parameters with variable arity.
+         * {@linkplain CommandLine.Model.ParserSpec#separator() separator} string, and, unless
+         * {@link ArgSpec#hideParamSyntax()} is true, surrounds optional values with {@code '['} and {@code ']'} characters
+         * and uses ellipses ("...") to indicate that any number of values is allowed for options or parameters with variable arity.
          */
         static class DefaultParamLabelRenderer implements IParamLabelRenderer {
             private final CommandSpec commandSpec;
@@ -8020,50 +8042,6 @@ public class CommandLine {
                     result = ansi.new Text(optionSeparator).concat(result);
                 }
                 return result;
-//                String sep = initialSep;
-//                String nextSep = " ";
-//                boolean succinct = false;
-//                if (!empty(split)) {
-//                    if (commandSpec.parser().limitSplit()) {
-//                        nextSep = split;
-//                        succinct = true;
-//                    } else {
-//                        paramName = paramName.concat("[" + split).concat(paramName).concat("]..."); /* #194 */
-//                    }
-//                }
-//                for (int i = 0; i < capacity.min; i++) {
-//                    result = result.concat(sep).concat(paramName);
-//                    sep = nextSep;
-//                }
-//                if (capacity.isVariable) {
-//                    String suffix = commandSpec.parser().limitSplit() ? "" : "...";
-//                    if (result.length == 0 || (succinct && capacity.min <= 1)) { /*len=0: arity="*" or arity="0..*" */
-//                        if (succinct && capacity.min == 0) {
-//                            result = result.concat(sep + "[").concat(paramName).concat("[" + split).concat(paramName).concat("]]");
-////                        } else if (succinct && capacity.min == 1) {
-////                            result = result.concat(sep + "[").concat(paramName).concat("]" + suffix);
-//                        } else {
-//                            result = result.concat(sep + "[").concat(paramName).concat("]" + suffix);
-//                        }
-//                    } else if (!result.plainString().endsWith("...")) { // getSplitRegex param may already end with "..."
-//                        result = result.concat(suffix);
-//                    }
-//                } else {
-//                    sep = result.length == 0 ? initialSep : nextSep;
-//                    for (int i = capacity.min; i < capacity.max; i++) {
-//                        if (sep.trim().length() == 0) {
-//                            result = result.concat(sep + "[").concat(paramName);
-//                        } else {
-//                            result = result.concat("[" + sep).concat(paramName);
-//                        }
-//                        sep  = nextSep;
-//                    }
-//                    for (int i = capacity.min; i < capacity.max; i++) { result = result.concat("]"); }
-//                    if (succinct && capacity.min == capacity.max) {
-//                        result = result.concat("[" + sep).concat(paramName).concat("]");
-//                    }
-//                }
-//                return result;
             }
         }
         /** Use a Layout to format usage help text for options and parameters in tabular format.
