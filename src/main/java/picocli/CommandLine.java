@@ -7990,7 +7990,7 @@ public class CommandLine {
             public Text renderParameterLabel(ArgSpec argSpec, Ansi ansi, List<IStyle> styles) {
                 Range capacity = argSpec.isOption() ? argSpec.arity() : ((PositionalParamSpec)argSpec).capacity();
                 if (capacity.max == 0) { return ansi.new Text(""); }
-                if (argSpec.hideParamSyntax()) { return ansi.apply(separator() + argSpec.paramLabel(), styles); }
+                if (argSpec.hideParamSyntax()) { return ansi.apply((argSpec.isOption() ? separator() : "") + argSpec.paramLabel(), styles); }
                 
                 Text paramName = ansi.apply(argSpec.paramLabel(), styles);
                 String split = argSpec.splitRegex();

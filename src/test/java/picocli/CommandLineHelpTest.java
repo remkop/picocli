@@ -1526,6 +1526,87 @@ public class CommandLineHelpTest {
     }
 
     @Test
+    public void testUsageOptions_hideParamSyntax_on() {
+        class App {
+            @Option(names = "-x1") String single;
+            @Option(names = "-s1", arity = "2") String[] multi;
+            @Option(names = "-x2", hideParamSyntax = true) String singleHide;
+            @Option(names = "-s2", hideParamSyntax = true, arity = "2") String[] multiHide;
+            @Option(names = "-o3", hideParamSyntax = false, split = ",") String[] multiSplit;
+            @Option(names = "-s3", hideParamSyntax = true, split = ",") String[] multiHideSplit;
+        }
+        String actual = new CommandLine(new App()).getUsageMessage(Help.Ansi.OFF);
+        String expected = String.format("" +
+                "Usage: <main class> [-x1=<single>] [-x2=<singleHide>] [-o3=<multiSplit>[,%n" +
+                "                    <multiSplit>...]]... [-s3=<multiHideSplit>]... [-s1=<multi>%n" +
+                "                    <multi>]... [-s2=<multiHide>]...%n" +
+                "      -o3=<multiSplit>[,<multiSplit>...]%n" +
+                "%n" +
+                "      -s1=<multi> <multi>%n" +
+                "      -s2=<multiHide>%n" +
+                "      -s3=<multiHideSplit>%n" +
+                "      -x1=<single>%n" +
+                "      -x2=<singleHide>%n");
+        assertEquals(expected, actual);
+    }
+
+    @Test
+    public void testUsageParameters_hideParamSyntax_on() {
+        class App {
+            @Parameters() String single;
+            @Parameters(arity = "2") String[] multi;
+            @Parameters(hideParamSyntax = true) String singleHide;
+            @Parameters(hideParamSyntax = true, arity = "2") String[] multiHide;
+            @Parameters(hideParamSyntax = false, split = ",") String[] multiSplit;
+            @Parameters(hideParamSyntax = true, split = ",") String[] multiHideSplit;
+        }
+        String actual = new CommandLine(new App()).getUsageMessage(Help.Ansi.OFF);
+        String expected = String.format("" +
+                "Usage: <main class> [<multiSplit>[,<multiSplit>...]...] <multiHideSplit>%n" +
+                "                    <single> <singleHide> (<multi> <multi>)... <multiHide>%n" +
+                "      [<multiSplit>[,<multiSplit>...]...]%n" +
+                "%n" +
+                "      <multiHideSplit>%n" +
+                "      <single>%n" +
+                "      <singleHide>%n" +
+                "      (<multi> <multi>)...%n" +
+                "      <multiHide>%n");
+        assertEquals(expected, actual);
+    }
+
+    @Test
+    public void testDefaultParameterRenderer_hideParamSyntax_on() {
+        class App {
+            @Parameters(index = "0") String single;
+            @Parameters(index = "1", arity = "2") String[] multi;
+            @Parameters(index = "2", hideParamSyntax = true) String singleHide;
+            @Parameters(index = "3", hideParamSyntax = true,  arity = "2") String[] multiHide;
+            @Parameters(index = "4", hideParamSyntax = false, arity = "*", split = ",") String[] multiSplit;
+            @Parameters(index = "5", hideParamSyntax = true,  arity = "*", split = ",") String[] multiHideSplit;
+        }
+        Help withLabel = new Help(new App(), Help.Ansi.OFF);
+        withLabel.commandSpec().parser().separator("=");
+        Help.IParamLabelRenderer equals = withLabel.createDefaultParamLabelRenderer();
+        withLabel.commandSpec().parser().separator(" ");
+        Help.IParamLabelRenderer spaced = withLabel.createDefaultParamLabelRenderer();
+
+        String[] expected = new String[] {
+                "<single>", //
+                "<multi> <multi>", //
+                "<singleHide>", //
+                "<multiHide>", //
+                "[<multiSplit>[,<multiSplit>...]...]", //
+                "<multiHideSplit>", //
+        };
+        for (int i = 0; i < expected.length; i++) {
+            Text withEquals = equals.renderParameterLabel(withLabel.positionalParameters().get(i), withLabel.ansi(), Collections.<IStyle>emptyList());
+            Text withSpace = spaced.renderParameterLabel(withLabel.positionalParameters().get(i), withLabel.ansi(), Collections.<IStyle>emptyList());
+            assertEquals(withEquals.toString(), expected[i], withEquals.toString());
+            assertEquals(withSpace.toString(), expected[i], withSpace.toString());
+        }
+    }
+
+    @Test
     public void testDefaultLayout_addsEachRowToTable() {
         final Text[][] values = {
                 textArray(Help.Ansi.OFF, "a", "b", "c", "d"),
