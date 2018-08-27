@@ -4389,136 +4389,124 @@ public class CommandLineTest {
         assertFalse(actual, actual.contains("Possible solutions:"));
     }
 
-    static class MethodAppBase {
-        @Command(name="run-0")
-        public void run0() {}
-    }
-
-    @Command(name="method")
-    static class MethodApp extends MethodAppBase {
-
-        @Command(name="run-1")
-        int run1(int a) {
-            return a;
-        }
-
-        @Command(name="run-2")
-        int run2(int a, @Option(names="-b", required=true) int b) {
-            return a*b;
-        }
-    }
-    @Command(name="method", addMethodSubcommands=false)
-    static class MethodAppBare extends MethodAppBase {
-
-        @Command(name="run-1")
-        int run1(int a) {
-            return a;
-        }
-
-        @Command(name="run-2")
-        int run2(int a, @Option(names="-b", required=true) int b) {
-            return a*b;
-        }
-    }
-    @SuppressWarnings("deprecation")
     @Test
-    public void testAnnotateMethod_noArg() throws Exception {
-        setTraceLevel("OFF");
-        Method m = CommandLine.getCommandMethods(MethodApp.class, "run0").keySet().iterator().next();
-        CommandLine cmd1 = new CommandLine(m);
-        assertEquals("run-0", cmd1.getCommandName());
-        assertEquals(Arrays.asList(), cmd1.getCommandSpec().args());
+    public void testInteractiveOptionReadsFromStdIn() {
+        class App {
+            @Option(names = "-x", description = {"Pwd", "line2"}, interactive = true) int x;
+            @Option(names = "-z") int z;
+        }
 
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        cmd1.parseWithHandler(((IParseResultHandler)null), new PrintStream(baos), new String[]{"--y"});
-        assertEquals(Arrays.asList("--y"), cmd1.getUnmatchedArguments());
-
-        // test execute
-        Object ret = CommandLine.invoke(m.getName(), MethodApp.class, new PrintStream(new ByteArrayOutputStream()));
-        assertNull("return value", ret);
-
-        setTraceLevel("WARN");
-    }
-    @Test
-    public void testAnnotateMethod_unannotatedPositional() throws Exception {
-        Method m = CommandLine.getCommandMethods(MethodApp.class, "run1").keySet().iterator().next();
-
-        // test required
+        PrintStream out = System.out;
+        InputStream in = System.in;
         try {
-            CommandLine.populateCommand(m);
-            fail("Missing required field should have thrown exception");
-        } catch (MissingParameterException ex) {
-            assertEquals("Missing required parameter: <arg0>", ex.getMessage());
-        }
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            System.setOut(new PrintStream(baos));
+            System.setIn(new ByteArrayInputStream("123".getBytes()));
 
-        // test execute
-        Object ret = CommandLine.invoke(m.getName(), MethodApp.class, new PrintStream(new ByteArrayOutputStream()), "42");
-        assertEquals("return value", 42, ((Number)ret).intValue());
+            App app = new App();
+            CommandLine cmd = new CommandLine(app);
+            cmd.parse("-x");
+
+            assertEquals("Enter value for -x (Pwd): ", baos.toString());
+            assertEquals(123, app.x);
+            assertEquals(0, app.z);
+
+            cmd.parse("-z", "678");
+
+            assertEquals(0, app.x);
+            assertEquals(678, app.z);
+        } finally {
+            System.setOut(out);
+            System.setIn(in);
+        }
     }
 
     @Test
-    public void testAnnotateMethod_annotated() throws Exception {
-        Method m = CommandLine.getCommandMethods(MethodApp.class, "run2").keySet().iterator().next();
+    public void testInteractiveOptionReadsFromStdInMultiLinePrompt() {
+        class App {
+            @Option(names = "-x", description = {"Pwd%nline2", "ignored"}, interactive = true) int x;
+            @Option(names = "-z") int z;
+        }
 
-        // test required
+        PrintStream out = System.out;
+        InputStream in = System.in;
         try {
-            CommandLine.populateCommand(m, "0");
-            fail("Missing required option should have thrown exception");
-        } catch (MissingParameterException ex) {
-            assertEquals("Missing required option '-b=<arg1>'", ex.getMessage());
-        }
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            System.setOut(new PrintStream(baos));
+            System.setIn(new ByteArrayInputStream("123".getBytes()));
 
-        // test execute
-        Object ret = CommandLine.invoke(m.getName(), MethodApp.class, new PrintStream(new ByteArrayOutputStream()), "13", "-b", "-1");
-        assertEquals("return value", -13, ((Number)ret).intValue());
+            App app = new App();
+            CommandLine cmd = new CommandLine(app);
+            cmd.parse("-x", "-z", "987");
+
+            String expectedPrompt = String.format("Enter value for -x (Pwd%nline2): ");
+            assertEquals(expectedPrompt, baos.toString());
+            assertEquals(123, app.x);
+            assertEquals(987, app.z);
+        } finally {
+            System.setOut(out);
+            System.setIn(in);
+        }
     }
 
     @Test
-    public void testAnnotateMethod_addMethodSubcommands_false() throws Exception {
+    public void testInteractivePositionalReadsFromStdIn() {
+        class App {
+            @Parameters(index = "0", description = {"Pwd%nline2", "ignored"}, interactive = true) int x;
+            @Parameters(index = "1") int z;
+        }
 
-        CommandLine cmd = new CommandLine(MethodAppBare.class);
-        assertEquals("method", cmd.getCommandName());
-        assertEquals(0, cmd.getSubcommands().size());
+        PrintStream out = System.out;
+        InputStream in = System.in;
+        try {
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            System.setOut(new PrintStream(baos));
+            System.setIn(new ByteArrayInputStream("123".getBytes()));
 
-        cmd.addMethodSubcommands();
-        assertEquals(3, cmd.getSubcommands().size());
-        assertEquals(0, cmd.getSubcommands().get("run-0").getCommandSpec().args().size());
-        assertEquals(1, cmd.getSubcommands().get("run-1").getCommandSpec().args().size());
-        assertEquals(2, cmd.getSubcommands().get("run-2").getCommandSpec().args().size());
+            App app = new App();
+            CommandLine cmd = new CommandLine(app);
+            cmd.parse("987");
 
-        //CommandLine.usage(cmd.getSubcommands().get("run-2"), System.out);
+            String expectedPrompt = String.format("Enter value for position 0 (Pwd%nline2): ");
+            assertEquals(expectedPrompt, baos.toString());
+            assertEquals(123, app.x);
+            assertEquals(987, app.z);
+        } finally {
+            System.setOut(out);
+            System.setIn(in);
+        }
     }
 
     @Test
-    public void testAnnotateMethod_addMethodSubcommands_true() throws Exception {
+    public void testInteractivePositional2ReadsFromStdIn() {
+        class App {
+            @Parameters(index = "0") int a;
+            @Parameters(index = "1", description = {"Pwd%nline2", "ignored"}, interactive = true) int x;
+            @Parameters(index = "2") int z;
+        }
 
-        CommandLine cmd = new CommandLine(MethodApp.class);
-        assertEquals("method", cmd.getCommandName());
-        assertEquals(3, cmd.getSubcommands().size());
-        assertEquals(0, cmd.getSubcommands().get("run-0").getCommandSpec().args().size());
-        assertEquals(1, cmd.getSubcommands().get("run-1").getCommandSpec().args().size());
-        assertEquals(2, cmd.getSubcommands().get("run-2").getCommandSpec().args().size());
+        PrintStream out = System.out;
+        InputStream in = System.in;
+        try {
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            System.setOut(new PrintStream(baos));
+            System.setIn(new ByteArrayInputStream("123".getBytes()));
 
-        //CommandLine.usage(cmd.getSubcommands().get("run-2"), System.out);
-    }
+            App app = new App();
+            CommandLine cmd = new CommandLine(app);
+            cmd.parse("333", "987");
 
-    /** @see CompactFields */
-    private static class CompactFieldsMethod {
-        @Command
-        public CompactFields run(
-            @Option(names = "-v", paramLabel="<verbose>" /* useless, but required for Assert.equals() */) boolean verbose,
-            @Option(names = "-r", paramLabel="<recursive>" /* useless, but required for Assert.equals() */) boolean recursive,
-            @Option(names = "-o", paramLabel="<outputFile>" /* required only for Assert.equals() */) File outputFile,
-            @Parameters(paramLabel="<inputFiles>" /* required only for Assert.equals() */) File[] inputFiles)
-        {
-            CompactFields ret = new CommandLineTest.CompactFields();
-            ret.verbose = verbose;
-            ret.recursive = recursive;
-            ret.outputFile = outputFile;
-            ret.inputFiles = inputFiles;
-            return ret;
+            String expectedPrompt = String.format("Enter value for position 1 (Pwd%nline2): ");
+            assertEquals(expectedPrompt, baos.toString());
+            assertEquals(333, app.a);
+            assertEquals(123, app.x);
+            assertEquals(987, app.z);
+        } finally {
+            System.setOut(out);
+            System.setIn(in);
         }
     }
+
     @Test
     public void testLoginExample() {
         class Login implements Callable<Object> {
@@ -4541,10 +4529,30 @@ public class CommandLineTest {
                     Object enc = Class.forName("java.util.Base64").getDeclaredMethod("getEncoder").invoke(null, new Object[0]);
                     return (String) Class.forName("java.util.Base64$Encoder").getDeclaredMethod("encodeToString", new Class[]{byte[].class}).invoke(enc, new Object[] {arr});
                 } catch (Exception beforeJava8) {
-                    return new sun.misc.BASE64Encoder().encode(arr);
+                    //return new sun.misc.BASE64Encoder().encode(arr);
+                    return "75K3eLr+dx6JJFuJ7LwIpEpOFmwGZZkRiB84PURz6U8="; // :-)
                 }
             }
         }
-        setTraceLevel("WARN");
+
+        PrintStream out = System.out;
+        InputStream in = System.in;
+        try {
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            System.setOut(new PrintStream(baos));
+            System.setIn(new ByteArrayInputStream("password123".getBytes()));
+
+            Login login = new Login();
+            CommandLine.call(login, "-u", "user123", "-p");
+
+            String expectedPrompt = String.format("Enter value for --password (Password or passphrase): " +
+                    "Hi user123, your password is hashed to 75K3eLr+dx6JJFuJ7LwIpEpOFmwGZZkRiB84PURz6U8=.%n");
+            assertEquals(expectedPrompt, baos.toString());
+            assertEquals("user123", login.user);
+            assertEquals("password123", login.password);
+        } finally {
+            System.setOut(out);
+            System.setIn(in);
+        }
     }
 }
