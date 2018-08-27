@@ -181,17 +181,22 @@ Then the user will be prompted to enter a value:
 Enter value for --password (Passphrase):
 ----
 When running on Java 6 or higher, the user input is not echoed to the console.
-After the user enters a value and presses enter, the `call()` method is invoked, which prints the following:
+After the user enters a password value and presses enter, the `call()` method is invoked, which prints something like the following:
 [source]
 ----
 Hi user123, your passphrase is hashed to 75K3eLr+dx6JJFuJ7LwIpEpOFmwGZZkRiB84PURz6U8=.
 ----
 
-TIP: Interactive options will cause the application to wait for input on stdin. If your command also needs to be run in (non-interactive) batch mode, it should provide additional non-interactive alternative options to allow end users to run the command interactively as well as in batch mode.
-In the above example, a `--password:file` option that takes a `File` or `Path` parameter could be added where the application reads the password from a file.
-Another idea is to add a `--password:env` option that takes an environment variable name parameter, where gets the application get the password from the user’s environment variables.
-Combining either of these with an interactive `--password` option gives users a way to provide a password without specifying it in plain text on the command line, both interactively and in batch mode.
+[TIP]
+.Supporting both Interactive and Batch (Script) Mode
+====
+Interactive options will cause the application to wait for input on stdin. If your command also needs to be run in (non-interactive) batch mode, it should provide additional non-interactive alternative options to allow end users to run the command interactively as well as in batch mode.
 
+In the above example, one idea is to add a `--password:file` option that takes a `File` or `Path` parameter, where the application reads the password from the specified file.
+Another idea is to add a `--password:env` option that takes an environment variable name parameter, where the application gets the password from the user’s environment variables.
+
+A command that combines either of these with an interactive `--password` option allows end users to provide a password without specifying it in plain text on the command line, and can be executed both interactively and in batch mode.
+====
 
 === Short Options
 Picocli supports http://pubs.opengroup.org/onlinepubs/9699919799/basedefs/V1_chap12.html#tag_12_02[POSIX clustered short options]:
