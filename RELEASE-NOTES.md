@@ -53,6 +53,11 @@ Concatenate FILE(s) to standard output.
   -V, --version            Print version information and exit.
 ```
 
+For positional parameters, the `@Parameters` annotation may be omitted on method parameters.
+
+TIP: If compiled with the `-parameters` flag on Java 8 or higher, the `paramLabel` of positional parameters is obtained from the method parameter name using reflection instead of the generic arg0, arg1, etc.
+
+#### Subcommand Methods
 
 If the enclosing class is annotated with `@Command`, method commands are added as subcommands to the class command, unless the class command has attribute `@Command(addMethodSubcommands = false)`.
 For example:
