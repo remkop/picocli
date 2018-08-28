@@ -389,6 +389,83 @@ public class CommandLineCommandMethodTest {
         assertEquals(expected, cmd.getUsageMessage());
     }
 
+    /** Exemple from the documentation. */
+    static class Cat {
+        public static void main(String[] args) {
+            CommandLine.invoke("cat", Cat.class, args);
+        }
+
+        @Command(description = "Concatenate FILE(s) to standard output.",
+                mixinStandardHelpOptions = true, version = "3.6.0")
+        void cat(@Option(names = {"-E", "--show-ends"}) boolean showEnds,
+                 @Option(names = {"-n", "--number"}) boolean number,
+                 @Option(names = {"-T", "--show-tabs"}) boolean showTabs,
+                 @Option(names = {"-v", "--show-nonprinting"}) boolean showNonPrinting,
+                 @Parameters(paramLabel = "FILE") File[] files) {
+            // process files
+        }
+    }
+    @Test
+    public void testCatUsageHelpMessage() {
+        CommandLine cmd = new CommandLine(CommandLine.getCommandMethods(Cat.class, "cat").get(0));
+        String expected = String.format("" +
+                "Usage: cat [-EhnTvV] [FILE...]%n" +
+                "Concatenate FILE(s) to standard output.%n" +
+                "      [FILE...]%n" +
+                "  -E, --show-ends%n" +
+                "  -h, --help               Show this help message and exit.%n" +
+                "  -n, --number%n" +
+                "  -T, --show-tabs%n" +
+                "  -v, --show-nonprinting%n" +
+                "  -V, --version            Print version information and exit.%n");
+        assertEquals(expected, cmd.getUsageMessage());
+    }
+
+    @Command(name = "git", mixinStandardHelpOptions = true, version = "picocli-3.6.0",
+            description = "Version control system.")
+    static class Git {
+        @Option(names = "--git-dir", description = "Set the path to the repository")
+        File path;
+
+        @Command(description = "Clone a repository into a new directory")
+        void clone(@Option(names = {"-l", "--local"}) boolean local,
+                   @Option(names = "-q", description = "Operate quietly.") boolean quiet,
+                   @Option(names = "-v", description = "Run verbosely.") boolean verbose,
+                   @Option(names = {"-b", "--branch"}) String branch,
+                   @Parameters(paramLabel = "<repository>") String repo) {
+            // ... implement business logic
+        }
+
+        @Command(description = "Record changes to the repository")
+        void commit(@Option(names = {"-m", "--message"}) String commitMessage,
+                    @Option(names = "--squash", paramLabel = "<commit>") String squash,
+                    @Parameters(paramLabel = "<file>") File[] files) {
+            // ... implement business logic
+        }
+
+        @Command(description = "Update remote refs along with associated objects")
+        void push(@Option(names = {"-f", "--force"}) boolean force,
+                  @Option(names = "--tags") boolean tags,
+                  @Parameters(paramLabel = "<repository>") String repo) {
+            // ... implement business logic
+        }
+    }
+    @Test
+    public void testGitsageHelpMessage() {
+        CommandLine cmd = new CommandLine(new Git());
+        String expected = String.format("" +
+                "Usage: git [-hV] [--git-dir=<path>] [COMMAND]%n" +
+                "Version control system.%n" +
+                "      --git-dir=<path>   Set the path to the repository%n" +
+                "  -h, --help             Show this help message and exit.%n" +
+                "  -V, --version          Print version information and exit.%n" +
+                "Commands:%n" +
+                "  clone   Clone a repository into a new directory%n" +
+                "  commit  Record changes to the repository%n" +
+                "  push    Update remote refs along with associated objects%n");
+        assertEquals(expected, cmd.getUsageMessage());
+    }
+
     private static Set<String> set(String... elements) {
         return new HashSet<String>(Arrays.asList(elements));
     }

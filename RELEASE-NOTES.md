@@ -3,7 +3,10 @@
 # <a name="3.6.0"></a> Picocli 3.6.0 (UNRELEASED)
 The picocli community is pleased to announce picocli 3.6.0.
 
-This is a bugfix release.
+This release contains new features, bugfixes and enhancements.
+
+`@Command` Methods: From this release, methods can be annotated with `@Command`. The method parameters provide the command options and parameters.
+
 
 This is the thirty-nineth public release.
 Picocli follows [semantic versioning](http://semver.org/).
@@ -16,6 +19,92 @@ Picocli follows [semantic versioning](http://semver.org/).
 * [Potential breaking changes](#3.6.0-breaking-changes)
 
 ## <a name="3.6.0-new"></a> New and Noteworthy
+### `@Command` Methods
+From picocli 3.6, methods can be annotated with `@Command`. The method parameters provide the command options and parameters. For example:
+
+```java
+class Cat {
+    public static void main(String[] args) {
+        CommandLine.invoke("cat", Cat.class, args);
+    }
+
+    @Command(description = "Concatenate FILE(s) to standard output.",
+             mixinStandardHelpOptions = true, version = "3.6.0")
+    void cat(@Option(names = {"-E", "--show-ends"}) boolean showEnds,
+             @Option(names = {"-n", "--number"}) boolean number,
+             @Option(names = {"-T", "--show-tabs"}) boolean showTabs,
+             @Option(names = {"-v", "--show-nonprinting"}) boolean showNonPrinting,
+             @Parameters(paramLabel = "FILE") File[] files) {
+        // process files
+    }
+}
+```
+The usage help of the above command looks like this:
+
+```
+Usage: cat [-EhnTvV] [FILE...]
+Concatenate FILE(s) to standard output.
+      [FILE...]
+  -E, --show-ends
+  -h, --help               Show this help message and exit.
+  -n, --number
+  -T, --show-tabs
+  -v, --show-nonprinting
+  -V, --version            Print version information and exit.
+```
+
+
+If the enclosing class is annotated with `@Command`, method commands are added as subcommands to the class command, unless the class command has attribute `@Command(addMethodSubcommands = false)`.
+For example:
+
+```java
+@Command(name = "git", mixinStandardHelpOptions = true, version = "picocli-3.6.0",
+         description = "Version control system.")
+class Git {
+    @Option(names = "--git-dir", description = "Set the path to the repository")
+    Path path;
+
+    @Command(description = "Clone a repository into a new directory")
+    void clone(@Option(names = {"-l", "--local"}) boolean local,
+               @Option(names = "-q", description = "Operate quietly.") boolean quiet,
+               @Option(names = "-v", description = "Run verbosely.") boolean verbose,
+               @Option(names = {"-b", "--branch"}) String branch,
+               @Parameters(paramLabel = "<repository>") String repo) {
+        // ... implement business logic
+    }
+
+    @Command(description = "Record changes to the repository")
+    void commit(@Option(names = {"-m", "--message"}) String commitMessage,
+                @Option(names = "--squash", paramLabel = "<commit>") String squash,
+                @Parameters(paramLabel = "<file>") File[] files) {
+        // ... implement business logic
+    }
+
+    @Command(description = "Update remote refs along with associated objects")
+    void push(@Option(names = {"-f", "--force"}) boolean force,
+              @Option(names = "--tags") boolean tags,
+              @Parameters(paramLabel = "<repository>") String repo) {
+        // ... implement business logic
+    }
+}
+```
+
+The usage help of the top-level `git` command looks like this:
+
+```
+Usage: git [-hV] [--git-dir=<path>] [COMMAND]
+Version control system.
+      --git-dir=<path>   Set the path to the repository
+  -h, --help             Show this help message and exit.
+  -V, --version          Print version information and exit.
+Commands:
+  clone   Clone a repository into a new directory
+  commit  Record changes to the repository
+  push    Update remote refs along with associated objects
+```
+
+
+Use `@Command(addMethodSubcommands = false)` on the class `@Command` annotation if the `@Command`-annotated methods in this class should not be added as subcommands.
 
 
 ## <a name="3.6.0-promoted"></a> Promoted Features
