@@ -82,7 +82,7 @@ public class CommandLineCommandMethodTest {
     @Test
     public void testAnnotateMethod_noArg() throws Exception {
         setTraceLevel("OFF");
-        Method m = CommandLine.getCommandMethods(MethodApp.class, "run0").keySet().iterator().next();
+        Method m = CommandLine.getCommandMethods(MethodApp.class, "run0").get(0);
         CommandLine cmd1 = new CommandLine(m);
         assertEquals("run-0", cmd1.getCommandName());
         assertEquals(Arrays.asList(), cmd1.getCommandSpec().args());
@@ -99,7 +99,7 @@ public class CommandLineCommandMethodTest {
     }
     @Test
     public void testAnnotateMethod_unannotatedPositional() throws Exception {
-        Method m = CommandLine.getCommandMethods(MethodApp.class, "run1").keySet().iterator().next();
+        Method m = CommandLine.getCommandMethods(MethodApp.class, "run1").get(0);
 
         // test required
         try {
@@ -114,9 +114,57 @@ public class CommandLineCommandMethodTest {
         assertEquals("return value", 42, ((Number)ret).intValue());
     }
 
+    @Command
+    static class UnannotatedPositional {
+        @Command
+        public void x(int a, int b, int c, int[] x, String[] y) {}
+    }
+
+    @Test
+    public void testAnnotateMethod_unannotatedPositional_indexByParameterOrder() throws Exception {
+        Method m = CommandLine.getCommandMethods(UnannotatedPositional.class, "x").get(0);
+        CommandLine cmd = new CommandLine(m);
+        Model.CommandSpec spec = cmd.getCommandSpec();
+        List<Model.PositionalParamSpec> positionals = spec.positionalParameters();
+        String[] labels = { "<arg0>", "<arg1>", "<arg2>", "<arg3>", "<arg4>"};
+        assertEquals(positionals.size(), labels.length);
+
+        for (int i = 0; i < positionals.size(); i++) {
+            Model.PositionalParamSpec positional = positionals.get(i);
+            assertEquals(positional.paramLabel() + " at index " + i, CommandLine.Range.valueOf(i + ""), positional.index());
+            assertEquals(labels[i], positional.paramLabel());
+        }
+    }
+
+    @Command
+    static class PositionalsMixedWithOptions {
+        @Command
+        public void mixed(int a, @Option(names = "-b") int b, @Option(names = "-c") String c, int[] x, String[] y) {}
+    }
+
+    @Test
+    public void testAnnotateMethod_unannotatedPositionalMixedWithOptions_indexByParameterOrder() throws Exception {
+        Method m = CommandLine.getCommandMethods(PositionalsMixedWithOptions.class, "mixed").get(0);
+        CommandLine cmd = new CommandLine(m);
+        Model.CommandSpec spec = cmd.getCommandSpec();
+        List<Model.PositionalParamSpec> positionals = spec.positionalParameters();
+        String[] labels = { "<arg0>", "<arg3>", "<arg4>"};
+        assertEquals(positionals.size(), labels.length);
+
+        for (int i = 0; i < positionals.size(); i++) {
+            Model.PositionalParamSpec positional = positionals.get(i);
+            assertEquals(positional.paramLabel() + " at index " + i, CommandLine.Range.valueOf(i + ""), positional.index());
+            assertEquals(labels[i], positional.paramLabel());
+        }
+
+        assertEquals(2, spec.options().size());
+        assertEquals(int.class, spec.findOption("-b").type());
+        assertEquals(String.class, spec.findOption("-c").type());
+    }
+
     @Test
     public void testAnnotateMethod_annotated() throws Exception {
-        Method m = CommandLine.getCommandMethods(MethodApp.class, "run2").keySet().iterator().next();
+        Method m = CommandLine.getCommandMethods(MethodApp.class, "run2").get(0);
 
         // test required
         try {
@@ -319,9 +367,26 @@ public class CommandLineCommandMethodTest {
         String expected = String.format("" +
                 "Usage: <main class> [COMMAND]%n" +
                 "Commands:%n" +
-                "  cmd2%n" +
-                "  cmd1%n");
-        assertEquals(expected, cmd.getUsageMessage()); // ansi OFF in this test by default
+                "  cmd1%n" +
+                "  cmd2%n");
+        assertEquals(expected, cmd.getUsageMessage());
+    }
+
+    @Command(addMethodSubcommands = false)
+    static class SwitchedOff {
+        @Command public void cmd1(@Option(names = "-x") int x, File f) { }
+        @Command public void cmd2(@Option(names = "-x") int x, File f) { }
+    }
+
+    @Test
+    public void testMethodCommandsAreNotAddedAsSubcommandsIfAnnotationSaysSo() {
+        CommandLine cmd = new CommandLine(new SwitchedOff());
+
+        assertEquals(0, cmd.getSubcommands().size());
+
+        String expected = String.format("" +
+                "Usage: <main class>%n");
+        assertEquals(expected, cmd.getUsageMessage());
     }
 
     private static Set<String> set(String... elements) {

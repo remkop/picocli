@@ -250,21 +250,6 @@ public class CommandLine {
         CommandLine.Model.CommandReflection.initParentCommand(subcommandLine.getCommandSpec().userObject(), getCommandSpec().userObject());
         return this;
     }
-    /** Registers any class method(s) annotated with {@code @Command} as subcommands. See also {@link #addSubcommand(String, Object)}.
-    *
-    * @return this CommandLine object, to allow method chaining
-    * @see #addSubcommand(String, Object)
-    */
-    public CommandLine addMethodSubcommands() {
-        if (getCommand() instanceof Method) {
-             throw new UnsupportedOperationException("cannot discover methods of non-class: " + getCommand());
-        }
-        for (Method method : getCommandMethods(getCommand().getClass(), null).keySet()) {
-            CommandLine cmd = new CommandLine(method);
-            addSubcommand(cmd.getCommandName(), cmd);
-        }
-        return this;
-    }
     /** Returns a map with the subcommands {@linkplain #addSubcommand(String, Object) registered} on this instance.
      * @return a map with the registered subcommands
      * @since 0.9.7
@@ -1874,39 +1859,40 @@ public class CommandLine {
         return invoke(methodName, cls, out, System.err, ansi, args);
     }
     public static Object invoke(String methodName, Class<?> cls, PrintStream out, PrintStream err, Help.Ansi ansi, String... args) {
-        Map<Method, Command> candidates = getCommandMethods(cls, methodName);
-        if (candidates.size() != 1) { throw new InitializationException("Expected exactly one candidate for " + cls.getName() + "::" + methodName + "(...) annotated by @Command, got: " + candidates); }
-        Method method = candidates.keySet().iterator().next();
+        List<Method> candidates = getCommandMethods(cls, methodName);
+        if (candidates.size() != 1) { throw new InitializationException("Expected exactly one @Command-annotated method for " + cls.getName() + "::" + methodName + "(...), but got: " + candidates); }
+        Method method = candidates.get(0);
         CommandLine cmd = new CommandLine(method);
         List<Object> list = cmd.parseWithHandlers(new RunLast().useOut(out).useAnsi(ansi), new DefaultExceptionHandler<List<Object>>().useErr(err).useAnsi(ansi), args);
         return list == null ? null : list.get(0);
     }
 
     /**
-     * Helper to get methods of a class annotated with {@link Command @Command} via reflection, optionally filtered by method name (not {@link Command#name()}).
-     * The elements in the {@link Map} returned are not sorted and are not in any particular order.
+     * Helper to get methods of a class annotated with {@link Command @Command} via reflection, optionally filtered by method name (not {@link Command#name() @Command.name}).
      * Methods have to be either public (inherited) members or be declared by {@code cls}, that is "inherited" static or protected methods will not be picked up.
      *
-     * @param cls
-     * @param methodName optionally filter methods by method name (not {@link Command#name()})
-     * @return the matching methods and their annotations, an empty set if no such method exists
+     * @param cls the class to search for methods annotated with {@code @Command}
+     * @param methodName if not {@code null}, return only methods whose method name (not {@link Command#name() @Command.name}) equals this string. Ignored if {@code null}.
+     * @return the matching command methods, or an empty list
      * @see #invoke(String, Class, String...)
+     * @since 3.6.0
      */
-    public static Map<Method, Command> getCommandMethods(Class<?> cls, String methodName) {
-        Map<Method, Command> candidates = new HashMap<Method, Command>();
+    public static List<Method> getCommandMethods(Class<?> cls, String methodName) {
+        Set<Method> candidates = new TreeSet<Method>(new Comparator<Method>() {
+            public int compare(Method o1, Method o2) { return o1.getName().compareTo(o2.getName()); }
+        });
         // traverse public member methods (excludes static/non-public, includes inherited)
-        for (Method method : Assert.notNull(cls, "class").getMethods()) {
-            if (methodName != null && !methodName.equals(method.getName())) continue;
-            Command command = method.getAnnotation(Command.class);
-            if (command != null) { candidates.put(method, command); }
-        }
+        candidates.addAll(Arrays.asList(Assert.notNull(cls, "class").getMethods()));
         // traverse directly declared methods (includes static/non-public, excludes inherited)
-        for (Method method : Assert.notNull(cls, "class").getDeclaredMethods()) {
-            if (methodName != null && !methodName.equals(method.getName())) continue;
-            Command command = method.getAnnotation(Command.class);
-            if (command != null) { candidates.put(method, command); }
+        candidates.addAll(Arrays.asList(Assert.notNull(cls, "class").getDeclaredMethods()));
+
+        List<Method> result = new ArrayList<Method>();
+        for (Method method : candidates) {
+            if (method.isAnnotationPresent(Command.class)) {
+                if (methodName == null || methodName.equals(method.getName())) { result.add(method); }
+            }
         }
-        return candidates;
+        return result;
     }
 
 	/**
@@ -2070,9 +2056,10 @@ public class CommandLine {
     /**
      * <p>
      * Annotate fields in your class with {@code @Option} and picocli will initialize these fields when matching
-     * arguments are specified on the command line.
+     * arguments are specified on the command line. In the case of command methods (annotated with {@code @Command}),
+     * command options can be defined by annotating method parameters with {@code @Option}.
      * </p><p>
-     * For example:
+     * Command class example:
      * </p>
      * <pre>
      * import static picocli.CommandLine.*;
@@ -2397,7 +2384,10 @@ public class CommandLine {
      * {@link #index()} attribute you can pick the exact position or a range of positional parameters to apply. If no
      * index is specified, the field will get all positional parameters (and so it should be an array or a collection).
      * </p><p>
-     * For example:
+     * In the case of command methods (annotated with {@code @Command}), method parameters may be annotated with {@code @Parameters},
+     * but are are considered positional parameters by default, unless they are annotated with {@code @Option}.
+     * </p><p>
+     * Command class example:
      * </p>
      * <pre>
      * import static picocli.CommandLine.*;
@@ -2663,7 +2653,8 @@ public class CommandLine {
     public @interface Spec { }
     /**
      * <p>Annotate your class with {@code @Command} when you want more control over the format of the generated help
-     * message.
+     * message. From 3.6, methods can also be annotated with {@code @Command}, where the method parameters define the
+     * command options and positional parameters.
      * </p><pre>
      * &#064;Command(name      = "Encrypt", mixinStandardHelpOptions = true,
      *        description = "Encrypt FILE(s), or standard input, to standard output or to the output file.",
@@ -2733,9 +2724,9 @@ public class CommandLine {
          */
         Class<?>[] subcommands() default {};
 
-        /** Specify {@code false} not to register methods annotated with {@code @Command} as subcommands. When registering subcommands declaratively
-         * with the default {@code true}, you don't need to call the {@link CommandLine#addSubcommand(String, Object)} method
-         * or the {@link CommandLine#addMethodSubcommands()} method. For example, this:
+        /** Specify whether methods annotated with {@code @Command} should be registered as subcommands of their
+         * enclosing {@code @Command} class.
+         * The default is {@code true}. For example:
          * <pre>
          * &#064;Command
          * public class Git {
@@ -2743,21 +2734,26 @@ public class CommandLine {
          *     void status() { ... }
          * }
          *
-         * CommandLine commandLine = new CommandLine(new Git());
+         * CommandLine git = new CommandLine(new Git());
          * </pre> is equivalent to this:
          * <pre>
-         * // alternative: programmatically add method as subcommand.
-         * &#064;Command(addMethodSubcommands=false) public class Git { ... }
+         * // don't add command methods as subcommands automatically
+         * &#064;Command(addMethodSubcommands = false)
+         * public class Git {
+         *     &#064;Command
+         *     void status() { ... }
+         * }
          *
-         * CommandLine commandLine = new CommandLine(new Git())
-         *         .addSubcommand("status",   CommandLine.getCommandMethods(Git.class, "status").keySet().iterator().next());
+         * // add command methods as subcommands programmatically
+         * CommandLine git = new CommandLine(new Git());
+         * CommandLine status = new CommandLine(CommandLine.getCommandMethods(Git.class, "status").get(0));
+         * git.addSubcommand("status", status);
          * </pre>
          * @return whether methods annotated with {@code @Command} should be registered as subcommands
          * @see CommandLine#addSubcommand(String, Object)
          * @see CommandLine#getCommandMethods(Class, String)
-         * @see CommandLine#addMethodSubcommands()
-         * @see HelpCommand
-         * @since 3.5.3 */
+         * @see CommandSpec#addMethodSubcommands()
+         * @since 3.6.0 */
         boolean addMethodSubcommands() default true;
 
         /** String that separates options from option parameters. Default is {@code "="}. Spaces are also accepted.
@@ -3047,20 +3043,26 @@ public class CommandLine {
          * @return a new {@code Range} based on the Parameters arity annotation on the specified field */
         public static Range parameterArity(Field field) { return parameterArity(new TypedMember(field)); }
         private static Range parameterArity(TypedMember member) {
-            return member.isAnnotationPresent(Parameters.class)
-                    ? adjustForType(Range.valueOf(member.getAnnotation(Parameters.class).arity()), member)
-                    : member.isMethodParameter()
-                    ? adjustForType(Range.valueOf(""), member)
-                    : new Range(0, 0, false, true, "0");
+            if (member.isAnnotationPresent(Parameters.class)) {
+                return adjustForType(Range.valueOf(member.getAnnotation(Parameters.class).arity()), member);
+            } else {
+                return member.isMethodParameter()
+                        ? adjustForType(Range.valueOf(""), member)
+                        : new Range(0, 0, false, true, "0");
+            }
         }
         /** Returns a new {@code Range} based on the {@link Parameters#index()} annotation on the specified field.
          * @param field the field whose Parameters annotation to inspect
          * @return a new {@code Range} based on the Parameters index annotation on the specified field */
         public static Range parameterIndex(Field field) { return parameterIndex(new TypedMember(field)); }
         private static Range parameterIndex(TypedMember member) {
-            return member.isAnnotationPresent(Parameters.class)
-                    ? Range.valueOf(member.getAnnotation(Parameters.class).index())
-                    : new Range(0, 0, false, true, "0");
+            if (member.isAnnotationPresent(Parameters.class)) {
+                return Range.valueOf(member.getAnnotation(Parameters.class).index());
+            } else {
+                return member.isMethodParameter()
+                        ? Range.valueOf("" + ((MethodParam) member.accessible).position)
+                        : new Range(0, 0, false, true, "0");
+            }
         }
         static Range adjustForType(Range result, TypedMember member) {
             return result.isUnspecified ? defaultArity(member) : result;
@@ -3405,13 +3407,13 @@ public class CommandLine {
             *
             * @return this {@link CommandSpec} object for method chaining
             * @see #addSubcommand(String, CommandLine)
-            * @since 3.5.3
+            * @since 3.6.0
             */
             public CommandSpec addMethodSubcommands() {
                 if (userObject() instanceof Method) {
                      throw new UnsupportedOperationException("cannot discover methods of non-class: " + userObject());
                 }
-                for (Method method : getCommandMethods(userObject().getClass(), null).keySet()) {
+                for (Method method : getCommandMethods(userObject().getClass(), null)) {
                     CommandLine cmd = new CommandLine(method);
                     addSubcommand(cmd.getCommandName(), cmd);
                 }
@@ -4930,13 +4932,23 @@ public class CommandLine {
         private static class MethodParam extends AccessibleObject {
             final Method method;
             final int paramIndex;
+            final String name;
+            int position;
 
             public MethodParam(Method method, int paramIndex) {
                 this.method = method;
                 this.paramIndex = paramIndex;
+                String tmp = "arg" + paramIndex;
+                try {
+                    Method getParameters = Method.class.getMethod("getParameters");
+                    Object parameters = getParameters.invoke(method);
+                    Object parameter = Array.get(parameters, paramIndex);
+                    tmp = (String) Class.forName("java.lang.reflect.Parameter").getDeclaredMethod("getName").invoke(parameter);
+                } catch (Exception ignored) {}
+                this.name = tmp;
             }
             public Type getParameterizedType() { return method.getGenericParameterTypes()[paramIndex]; }
-            public String getName() { return "arg" + paramIndex; }
+            public String getName() { return name; }
             public Class<?> getType() { return method.getParameterTypes()[paramIndex]; }
             public Method getDeclaringExecutable() { return method; }
             @Override public <T extends Annotation> T getAnnotation(Class<T> annotationClass) {
@@ -5256,8 +5268,15 @@ public class CommandLine {
             }
             private static boolean initFromMethodParameters(Object scope, Method method, CommandSpec receiver, IFactory factory) {
                 boolean result = false;
-                for (int i = 0; i < method.getParameterTypes().length; i++) {
-                    result |= initFromAnnotatedTypedMembers(new TypedMember(new MethodParam(method, i), scope), receiver, factory);
+                int optionCount = 0;
+                for (int i = 0, count = method.getParameterTypes().length; i < count; i++) {
+                    MethodParam param = new MethodParam(method, i);
+                    if (param.isAnnotationPresent(Option.class)) {
+                        optionCount++;
+                    } else {
+                        param.position = i - optionCount;
+                    }
+                    result |= initFromAnnotatedTypedMembers(new TypedMember(param, scope), receiver, factory);
                 }
                 return result;
             }
