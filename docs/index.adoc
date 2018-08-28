@@ -1879,6 +1879,9 @@ Custom type converters registered on a `CommandLine` instance will apply to all 
 
 Subcommands referenced in a `subcommands` attribute need to have a public no-argument constructor to be instantiated, unless a <<Custom Factory>> is installed to instantiate classes.
 
+=== Subcommands as Methods
+From picocli 3.6 it is possible to register subcommands in a very compact manner by having a `@Command` class with `@Command`-annotated methods. The methods are automatically <<Subcommand Methods, registered as subcommands>> of the `@Command` class.
+
 
 === Parsing Subcommands
 For this example, we assume we created an alias `git` that invokes our Java application. This could also be a script or a function that calls our Java program:
@@ -2381,8 +2384,9 @@ For positional parameters, the `@Parameters` annotation may be omitted on method
 
 TIP: If compiled with the `-parameters` flag on Java 8 or higher, the `paramLabel` of positional parameters is obtained from the method parameter name using reflection instead of the generic arg0, arg1, etc.
 
+==== Subcommand Methods
 
-If the enclosing class is annotated with `@Command`, method commands are added as subcommands to the class command, unless the class command has attribute `@Command(addMethodSubcommands = false)`.
+If the enclosing class is annotated with `@Command`, method commands are automatically added as subcommands to the class command, unless the class command has attribute `@Command(addMethodSubcommands = false)`.
 For example:
 
 [source,java]
