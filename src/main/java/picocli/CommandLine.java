@@ -6036,18 +6036,24 @@ public class CommandLine {
 
         private void applyDefaultValues(List<ArgSpec> required) throws Exception {
             parseResult.isInitializingDefaultValues = true;
-            for (OptionSpec option              : commandSpec.options())              { applyDefault(option,     required); }
-            for (PositionalParamSpec positional : commandSpec.positionalParameters()) { applyDefault(positional, required); }
+            for (OptionSpec option              : commandSpec.options())              { applyDefault(commandSpec.defaultValueProvider, option,     required); }
+            for (PositionalParamSpec positional : commandSpec.positionalParameters()) { applyDefault(commandSpec.defaultValueProvider, positional, required); }
             parseResult.isInitializingDefaultValues = false;
         }
 
-        private void applyDefault(ArgSpec arg, List<ArgSpec> required) throws Exception {
-            if (arg.defaultValue() == null) { return; }
-            if (tracer.isDebug()) {tracer.debug("Applying defaultValue (%s) to %s%n", arg.defaultValue(), arg);}
+        private void applyDefault(IDefaultValueProvider defaultValueProvider,
+            ArgSpec arg, List<ArgSpec> required) throws Exception {
+
+            String defaultValue = defaultValueProvider == null ? arg.defaultValue() : defaultValueProvider.defaultValue(arg) ;
+
+            if (defaultValue == null) { return; }
+            if (tracer.isDebug()) {tracer.debug("Applying defaultValue (%s) to %s%n", defaultValue, arg);}
             Range arity = arg.arity().min(Math.max(1, arg.arity().min));
-            applyOption(arg, LookBehind.SEPARATE, arity, stack(arg.defaultValue()), new HashSet<ArgSpec>(), arg.toString);
+
+            applyOption(arg, LookBehind.SEPARATE, arity, stack(defaultValue), new HashSet<ArgSpec>(), arg.toString);
             required.remove(arg);
         }
+
         private Stack<String> stack(String value) {Stack<String> result = new Stack<String>(); result.push(value); return result;}
 
         private void processArguments(List<CommandLine> parsedCommands,
