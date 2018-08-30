@@ -2855,6 +2855,12 @@ public class CommandLine {
          * @return the character to show in the options list to mark required options */
         char requiredOptionMarker() default ' ';
 
+        /** Class that can provide default values dynamically at runtime. An implementation may return default
+         * value obtained from a configuration file like a properties file or some other source.
+         * @return a Class that can provide default values dynamically at runtime
+         * @since 3.6 */
+        Class<? extends IDefaultValueProvider> defaultValueProvider() default NoDefaultProvider.class;
+
         /** Specify {@code true} to show default values in the description column of the options list (except for
          * boolean options). False by default.
          * <p>Note that picocli 3.2 allows {@linkplain Option#description() embedding default values} anywhere in the
@@ -2950,6 +2956,22 @@ public class CommandLine {
     }
 
     /**
+     * Provides default value for a command. Commands may configure a provider with the
+     * {@link Command#defaultValueProvider()} annotation attribute.
+     * @since 3.6 */
+    public interface IDefaultValueProvider {
+        /**
+         * Returns default value for a command, option or parameter.
+         * @return default value
+         * @throws Exception an exception detailing what went wrong when obtaining default value
+         */
+        String defaultValue(ArgSpec argSpec) throws Exception;
+    }
+    private static class NoDefaultProvider implements IDefaultValueProvider {
+        public String defaultValue(ArgSpec argSpec) { throw new UnsupportedOperationException(); }
+    }
+
+    /**
      * Factory for instantiating classes that are registered declaratively with annotation attributes, like
      * {@link Command#subcommands()}, {@link Option#converter()}, {@link Parameters#converter()} and {@link Command#versionProvider()}.
      * <p>The default factory implementation simply creates a new instance of the specified class when {@link #create(Class)} is invoked.
@@ -2989,6 +3011,9 @@ public class CommandLine {
             return result;
         }
         static IVersionProvider createVersionProvider(IFactory factory, Class<? extends IVersionProvider> cls) {
+            return create(factory, cls);
+        }
+        static IDefaultValueProvider createDefaultValueProvider(IFactory factory, Class<? extends IDefaultValueProvider> cls) {
             return create(factory, cls);
         }
         static Iterable<String> createCompletionCandidates(IFactory factory, Class<? extends Iterable<String>> cls) {
@@ -3272,6 +3297,7 @@ public class CommandLine {
             private Set<String> aliases = new LinkedHashSet<String>();
             private Boolean isHelpCommand;
             private IVersionProvider versionProvider;
+            private IDefaultValueProvider defaultValueProvider;
             private String[] version;
             private String toString;
     
@@ -3471,6 +3497,7 @@ public class CommandLine {
                 initVersion(mixin.version());
                 initHelpCommand(mixin.helpCommand());
                 initVersionProvider(mixin.versionProvider());
+                initDefaultValueProvider(mixin.defaultValueProvider());
                 usageMessage.initSynopsisHeading(mixin.usageMessage.synopsisHeading());
                 usageMessage.initCommandListHeading(mixin.usageMessage.commandListHeading());
                 usageMessage.initRequiredOptionMarker(mixin.usageMessage.requiredOptionMarker());
@@ -3602,6 +3629,15 @@ public class CommandLine {
                 return this;
             }
 
+            /** Returns the default value provider for this command.
+             * @return the default value provider or {@code null}*/
+            public IDefaultValueProvider defaultValueProvider() { return defaultValueProvider; }
+
+            /** Sets default value provider for this command.
+             * @param defaultValueProvider the default value provider to use, or {@code null}.
+             * @return this CommandSpec for method chaining */
+            public CommandSpec defaultValueProvider(IDefaultValueProvider  defaultValueProvider) { this.defaultValueProvider = defaultValueProvider; return this; }
+
             /** Sets version information literals for this command, to print to the console when the user specifies an
              * {@linkplain OptionSpec#versionHelp() option} to request version help. Only used if no {@link #versionProvider() versionProvider} is set.
              * @return this CommandSpec for method chaining */
@@ -3649,7 +3685,10 @@ public class CommandLine {
             void initVersionProvider(Class<? extends IVersionProvider> value, IFactory factory) {
                 if (initializable(versionProvider, value, NoVersionProvider.class)) { versionProvider = (DefaultFactory.createVersionProvider(factory, value)); }
             }
-
+            void initDefaultValueProvider(IDefaultValueProvider value) { if (defaultValueProvider == null) { defaultValueProvider = value; } }
+            void initDefaultValueProvider(Class<? extends IDefaultValueProvider> value, IFactory factory) {
+                if (initializable(defaultValueProvider, value, NoDefaultProvider.class)) { defaultValueProvider = (DefaultFactory.createDefaultValueProvider(factory, value)); }
+            }
             /** Returns the option with the specified short name, or {@code null} if no option with that name is defined for this command. */
             public OptionSpec findOption(char shortName) { return findOption(shortName, options()); }
             /** Returns the option with the specified name, or {@code null} if no option with that name is defined for this command.
@@ -5169,6 +5208,7 @@ public class CommandLine {
                 commandSpec.initVersion(cmd.version());
                 commandSpec.initHelpCommand(cmd.helpCommand());
                 commandSpec.initVersionProvider(cmd.versionProvider(), factory);
+                commandSpec.initDefaultValueProvider(cmd.defaultValueProvider(), factory);
                 commandSpec.usageMessage().initSynopsisHeading(cmd.synopsisHeading());
                 commandSpec.usageMessage().initCommandListHeading(cmd.commandListHeading());
                 commandSpec.usageMessage().initRequiredOptionMarker(cmd.requiredOptionMarker());
