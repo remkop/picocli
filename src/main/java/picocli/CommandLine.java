@@ -2377,6 +2377,12 @@ public class CommandLine {
          * @since 3.5
          */
         boolean interactive() default false;
+
+        /** ResourceBundle key for this option. If not specified, (and a ResourceBundle exists for this command) an attempt
+         * is made to find the option description using any of the option names (without leading hyphens) as key.
+         * @since 3.6
+         */
+        String descriptionKey() default "";
     }
     /**
      * <p>
@@ -2547,6 +2553,11 @@ public class CommandLine {
          * @since 3.5
          */
         boolean interactive() default false;
+
+        /** ResourceBundle key for this positional parameter.
+         * @since 3.6
+         */
+        String descriptionKey() default "";
     }
 
     /**
@@ -2890,6 +2901,43 @@ public class CommandLine {
          * @since 3.0
          */
         boolean hidden() default false;
+
+        /** Set the base name of the ResourceBundle to find option and positional parameters descriptions, as well as
+         * usage help message sections and section headings. If no base name is specified, an attempt is made to use a
+         * ResourceBundle with a base name derived from the annotated class name: {@code annotatedClass.getName() + "_Messages"}.
+         * <p>Example:</p><pre>
+         * # Usage Help Message Sections
+         * # Numbered resource keys can be used to create multi-line sections.
+         * usage.description.0 = first line
+         * usage.description.1 = second line
+         * usage.description.2 = third line
+         * usage.customSynopsis.0 =      Usage: ln [OPTION]... [-T] TARGET LINK_NAME   (1st form)
+         * usage.customSynopsis.1 = &#92;u0020 or:  ln [OPTION]... TARGET                  (2nd form)
+         * usage.customSynopsis.2 = &#92;u0020 or:  ln [OPTION]... TARGET... DIRECTORY     (3rd form)
+         * usage.header   = header first line
+         * usage.header.0 = header second line
+         * usage.footer = footer
+         * usage.headerHeading = This is my app. There are many apps like it but this one is mine.
+         * usage.synopsisHeading = Usage:&#92;u0020
+         * usage.descriptionHeading = Description:%n
+         * usage.parameterListHeading = %nPositional parameters:%n
+         * usage.optionListHeading = %nOptions:%n
+         * usage.commandListHeading = %nCommands:%n
+         * usage.footerHeading = Powered by picocli
+         *
+         * # Option Descriptions
+         * # Use numbered keys to create multi-line descriptions.
+         * help = Show this help message and exit.
+         * version = Print version information and exit.
+         * </pre>
+         * <p>Resources for multiple commands can be specified in a single ResourceBundle. Keys and their value can be
+         * shared by multiple commands (so you don't need to repeat them for every command), but keys can be prefixed with
+         * {@code commandName + "."} to specify different values for different commands. The most specific key wins.</p>
+         *
+         * @return the base name of the ResourceBundle for usage help strings
+         * @since 3.6
+         */
+        String resourceBundle() default "";
     }
     /**
      * <p>
@@ -3804,6 +3852,8 @@ public class CommandLine {
             private String footerHeading;
             private int width = DEFAULT_USAGE_WIDTH;
 
+            private ResourceBundle resourceBundle;
+
             private static int getSysPropertyWidthOrDefault(int defaultWidth) {
                 String userValue = System.getProperty("picocli.usage.width");
                 if (userValue == null) { return defaultWidth; }
@@ -3969,6 +4019,58 @@ public class CommandLine {
             /** Sets the optional footer text lines displayed at the bottom of the help message.
              * @return this UsageMessageSpec for method chaining */
             public UsageMessageSpec footer(String... footer) { this.footer = footer; return this; }
+            /** Returns the resource bundle for this usage help message specification.
+             * @since 3.6 */
+            public ResourceBundle resourceBundle() { return resourceBundle; }
+            /** Initializes this usageMessage specification from the specified resource bundle and returns this UsageMessageSpec.
+             * Existing values are overwritten with values from the resource bundle.
+             * <p>Example:</p><pre>
+             * # Usage Help Message Sections
+             * # Numbered resource keys can be used to create multi-line sections.
+             * usage.description.0 = first line
+             * usage.description.1 = second line
+             * usage.description.2 = third line
+             * usage.customSynopsis.0 =      Usage: ln [OPTION]... [-T] TARGET LINK_NAME   (1st form)
+             * usage.customSynopsis.1 = &#92;u0020 or:  ln [OPTION]... TARGET                  (2nd form)
+             * usage.customSynopsis.2 = &#92;u0020 or:  ln [OPTION]... TARGET... DIRECTORY     (3rd form)
+             * usage.header   = header first line
+             * usage.header.0 = header second line
+             * usage.footer = footer
+             * usage.headerHeading = This is my app. There are many apps like it but this one is mine.
+             * usage.synopsisHeading = Usage:&#92;u0020
+             * usage.descriptionHeading = Description:%n
+             * usage.parameterListHeading = %nPositional parameters:%n
+             * usage.optionListHeading = %nOptions:%n
+             * usage.commandListHeading = %nCommands:%n
+             * usage.footerHeading = Powered by picocli
+             *
+             * # Option Descriptions
+             * # Use numbered keys to create multi-line descriptions.
+             * help = Show this help message and exit.
+             * version = Print version information and exit.
+             * </pre>
+             * <p>Resources for multiple commands can be specified in a single ResourceBundle. Keys and their value can be
+             * shared by multiple commands (so you don't need to repeat them for every command), but keys can be prefixed with
+             * {@code commandName + "."} to specify different values for different commands. The most specific key wins.</p>
+             *
+             * @since 3.6 */
+            public UsageMessageSpec resourceBundle(ResourceBundle rb, String commandName) {
+                resourceBundle = rb;
+                Set<String> keys = keys(rb);
+                description(getStringArray(rb, keys, commandName, "usage.description", description));
+                customSynopsis(getStringArray(rb, keys, commandName, "usage.customSynopsis", customSynopsis));
+                header(getStringArray(rb, keys, commandName, "usage.header", header));
+                footer(getStringArray(rb, keys, commandName, "usage.footer", footer));
+                headerHeading(getString(rb, keys, commandName, "usage.headerHeading", headerHeading));
+                synopsisHeading(getString(rb, keys, commandName, "usage.synopsisHeading", synopsisHeading));
+                descriptionHeading(getString(rb, keys, commandName, "usage.descriptionHeading", descriptionHeading));
+                parameterListHeading(getString(rb, keys, commandName, "usage.parameterListHeading", parameterListHeading));
+                optionListHeading(getString(rb, keys, commandName, "usage.optionListHeading", optionListHeading));
+                commandListHeading(getString(rb, keys, commandName, "usage.commandListHeading", commandListHeading));
+                footerHeading(getString(rb, keys, commandName, "usage.footerHeading", footerHeading));
+                return this;
+            }
+
             void initSynopsisHeading(String value)      { if (initializable(synopsisHeading, value, DEFAULT_SYNOPSIS_HEADING))            {synopsisHeading = value;} }
             void initCommandListHeading(String value)   { if (initializable(commandListHeading, value, DEFAULT_COMMAND_LIST_HEADING))     {commandListHeading = value;} }
             void initRequiredOptionMarker(char value)   { if (initializable(requiredOptionMarker, value, DEFAULT_REQUIRED_OPTION_MARKER)) {requiredOptionMarker = value;} }
@@ -4806,6 +4908,20 @@ public class CommandLine {
     
                 /** Sets whether this option allows the user to request version information, and returns this builder.*/
                 public Builder versionHelp(boolean versionHelp) { this.versionHelp = versionHelp; return self(); }
+
+                /** Sets the description from the resource bundle, and returns this builder.
+                 * If the resource bundle has no entry for the specified {@code descriptionKey} or for {@code commandName + "." + descriptionKey},
+                 * an attempt is made to find the option description using any of the option names (without leading hyphens) as key.
+                 * @since 3.6 */
+                public Builder description(String commandName, String descriptionKey, ResourceBundle rb) {
+                    String[] newValue = getStringArray(rb, keys(rb), commandName, descriptionKey, null);
+                    if (newValue != null) { return this.description(newValue); }
+                    for (String name : names()) {
+                        newValue = getStringArray(rb, keys(rb), commandName, CommandSpec.stripPrefix(name), null);
+                        if (newValue != null) { return this.description(newValue); }
+                    }
+                    return self();
+                }
             }
         }
         /** The {@code PositionalParamSpec} class models aspects of a <em>positional parameter</em> of a {@linkplain CommandSpec command}, including whether
@@ -4919,6 +5035,16 @@ public class CommandLine {
                 public Builder index(Range index)   { this.index = index; return self(); }
     
                 Builder capacity(Range capacity)   { this.capacity = capacity; return self(); }
+
+                /** Sets the description from the resource bundle, and returns this builder.
+                 * @since 3.6 */
+                public Builder description(String commandName, String descriptionKey, ResourceBundle rb) {
+                    String[] newValue = getStringArray(rb, keys(rb), commandName, descriptionKey, null);
+                    if (newValue != null) { return this.description(newValue); }
+                    newValue = getStringArray(rb, keys(rb), commandName, paramLabel() + "." + index(), null);
+                    if (newValue != null) { return this.description(newValue); }
+                    return self();
+                }
             }
         }
 
@@ -5132,6 +5258,42 @@ public class CommandLine {
                 return new String(chars);
             }
         }
+
+        private static ResourceBundle getBundleOrNull(String base) {
+            try { return ResourceBundle.getBundle(base); } catch (MissingResourceException notFond) { return null; }
+        }
+        private static Set<String> keys(ResourceBundle rb) {
+            if (rb == null) { return Collections.emptySet(); }
+            Set<String> keys = new LinkedHashSet<String>();
+            for (Enumeration<String> k = rb.getKeys(); k.hasMoreElements(); keys.add(k.nextElement()));
+            return keys;
+        }
+        private static String[] getStringArray(ResourceBundle rb, Set<String> keys, String cmd, String key, String[] defaultValues) {
+            if (rb == null || keys.isEmpty()) { return defaultValues; }
+            List<String> result = addAllWithPrefix(rb, cmd + "." + key, keys, new ArrayList<String>());
+            if (!result.isEmpty()) { return result.toArray(new String[0]); }
+            addAllWithPrefix(rb, key, keys, result);
+            return result.isEmpty() ? defaultValues : result.toArray(new String[0]);
+        }
+
+        private static String getString(ResourceBundle rb, Set<String> keys, String cmd, String key, String defaultValue) {
+            if (rb == null || keys.isEmpty()) { return defaultValue; }
+            if (keys.contains(cmd + "." + key)) { return rb.getString(cmd + "." + key); }
+            if (keys.contains(key)) { return rb.getString(key); }
+            return defaultValue;
+        }
+
+        private static List<String> addAllWithPrefix(ResourceBundle rb, String key, Set<String> keys, List<String> result) {
+            if (keys.contains(key)) { result.add(rb.getString(key)); }
+            for (int i = 0; true; i++) {
+                String elementKey = key + "." + i;
+                if (keys.contains(elementKey)) {
+                    result.add(rb.getString(elementKey));
+                } else {
+                    return result;
+                }
+            }
+        }
         private static class CommandReflection {
             static CommandSpec extractCommandSpec(Object command, IFactory factory, boolean annotationsAreMandatory) {
                 Class<?> cls = command.getClass();
@@ -5165,7 +5327,7 @@ public class CommandLine {
 
                 boolean hasCommandAnnotation = false;
                 while (cls != null) {
-                    boolean thisCommandHasAnnotation = updateCommandAttributes(cls, result, factory);
+                    boolean thisCommandHasAnnotation = updateCommandAttributes(cls, result, factory, getBundleOrNull(cls.getName() + "_Messages"));
                     hasCommandAnnotation |= thisCommandHasAnnotation;
                     hasCommandAnnotation |= initFromAnnotatedFields(instance, cls, result, factory);
                     if (thisCommandHasAnnotation) { //#377 Standard help options should be added last
@@ -5177,7 +5339,7 @@ public class CommandLine {
                     Method method = (Method) command;
                     t.debug("Using method %s as command %n", method);
                     commandClassName = method.toString();
-                    hasCommandAnnotation |= updateCommandAttributes(method, result, factory);
+                    hasCommandAnnotation |= updateCommandAttributes(method, result, factory, null);
                     result.mixinStandardHelpOptions(method.getAnnotation(Command.class).mixinStandardHelpOptions());
                     initFromMethodParameters(instance, method, result, factory);
                     // set command name to method name, unless @Command#name is set
@@ -5188,18 +5350,18 @@ public class CommandLine {
                 return result;
             }
 
-            private static boolean updateCommandAttributes(Class<?> cls, CommandSpec commandSpec, IFactory factory) {
+            private static boolean updateCommandAttributes(Class<?> cls, CommandSpec commandSpec, IFactory factory, ResourceBundle rb) {
                 // superclass values should not overwrite values if both class and superclass have a @Command annotation
                 if (!cls.isAnnotationPresent(Command.class)) { return false; }
 
                 Command cmd = cls.getAnnotation(Command.class);
-                return updateCommandAttributes(cmd, commandSpec, factory);
+                return updateCommandAttributes(cmd, commandSpec, factory, rb);
             }
-            private static boolean updateCommandAttributes(Method method, CommandSpec commandSpec, IFactory factory) {
+            private static boolean updateCommandAttributes(Method method, CommandSpec commandSpec, IFactory factory, ResourceBundle rb) {
                 Command cmd = method.getAnnotation(Command.class);
-                return updateCommandAttributes(cmd, commandSpec, factory);
+                return updateCommandAttributes(cmd, commandSpec, factory, rb);
             }
-            private static boolean updateCommandAttributes(Command cmd, CommandSpec commandSpec, IFactory factory) {
+            private static boolean updateCommandAttributes(Command cmd, CommandSpec commandSpec, IFactory factory, ResourceBundle rb) {
                 commandSpec.aliases(cmd.aliases());
                 initSubcommands(cmd, commandSpec, factory);
 
@@ -5208,23 +5370,25 @@ public class CommandLine {
                 commandSpec.initVersion(cmd.version());
                 commandSpec.initHelpCommand(cmd.helpCommand());
                 commandSpec.initVersionProvider(cmd.versionProvider(), factory);
-                commandSpec.initDefaultValueProvider(cmd.defaultValueProvider(), factory);
-                commandSpec.usageMessage().initSynopsisHeading(cmd.synopsisHeading());
-                commandSpec.usageMessage().initCommandListHeading(cmd.commandListHeading());
-                commandSpec.usageMessage().initRequiredOptionMarker(cmd.requiredOptionMarker());
-                commandSpec.usageMessage().initCustomSynopsis(cmd.customSynopsis());
-                commandSpec.usageMessage().initDescription(cmd.description());
-                commandSpec.usageMessage().initDescriptionHeading(cmd.descriptionHeading());
-                commandSpec.usageMessage().initHeader(cmd.header());
-                commandSpec.usageMessage().initHeaderHeading(cmd.headerHeading());
-                commandSpec.usageMessage().initFooter(cmd.footer());
-                commandSpec.usageMessage().initFooterHeading(cmd.footerHeading());
-                commandSpec.usageMessage().initParameterListHeading(cmd.parameterListHeading());
-                commandSpec.usageMessage().initOptionListHeading(cmd.optionListHeading());
-                commandSpec.usageMessage().initAbbreviateSynopsis(cmd.abbreviateSynopsis());
-                commandSpec.usageMessage().initSortOptions(cmd.sortOptions());
-                commandSpec.usageMessage().initShowDefaultValues(cmd.showDefaultValues());
-                commandSpec.usageMessage().initHidden(cmd.hidden());
+                UsageMessageSpec usageMessage = commandSpec.usageMessage();
+                usageMessage.initSynopsisHeading(cmd.synopsisHeading());
+                usageMessage.initCommandListHeading(cmd.commandListHeading());
+                usageMessage.initRequiredOptionMarker(cmd.requiredOptionMarker());
+                usageMessage.initCustomSynopsis(cmd.customSynopsis());
+                usageMessage.initDescription(cmd.description());
+                usageMessage.initDescriptionHeading(cmd.descriptionHeading());
+                usageMessage.initHeader(cmd.header());
+                usageMessage.initHeaderHeading(cmd.headerHeading());
+                usageMessage.initFooter(cmd.footer());
+                usageMessage.initFooterHeading(cmd.footerHeading());
+                usageMessage.initParameterListHeading(cmd.parameterListHeading());
+                usageMessage.initOptionListHeading(cmd.optionListHeading());
+                usageMessage.initAbbreviateSynopsis(cmd.abbreviateSynopsis());
+                usageMessage.initSortOptions(cmd.sortOptions());
+                usageMessage.initShowDefaultValues(cmd.showDefaultValues());
+                usageMessage.initHidden(cmd.hidden());
+                if (!empty(cmd.resourceBundle())) { rb = ResourceBundle.getBundle(cmd.resourceBundle()); }
+                usageMessage.resourceBundle(rb, commandSpec.name);
                 return true;
             }
             private static void initSubcommands(Command cmd, CommandSpec parent, IFactory factory) {
@@ -5296,9 +5460,11 @@ public class CommandLine {
                 }
                 if (member.isArgSpec()) {
                     validateArgSpecField(member);
-                    if (member.isOption())         { receiver.addOption(ArgsReflection.extractOptionSpec(member, factory)); }
-                    else if (member.isParameter()) { receiver.addPositional(ArgsReflection.extractPositionalParamSpec(member, factory)); }
-                    else                           { receiver.addPositional(ArgsReflection.extractUnannotatedPositionalParamSpec(member, factory)); }
+                    ResourceBundle rb = receiver.usageMessage.resourceBundle();
+                    String name = receiver.name();
+                    if (member.isOption())         { receiver.addOption(ArgsReflection.extractOptionSpec(member, factory, name, rb)); }
+                    else if (member.isParameter()) { receiver.addPositional(ArgsReflection.extractPositionalParamSpec(member, factory, name, rb)); }
+                    else                           { receiver.addPositional(ArgsReflection.extractUnannotatedPositionalParamSpec(member, factory, name, rb)); }
                 }
                 if (member.isInjectSpec()) {
                     validateInjectSpec(member);
@@ -5405,7 +5571,7 @@ public class CommandLine {
         /** Helper class to reflectively create OptionSpec and PositionalParamSpec objects from annotated elements.
          * Package protected for testing. CONSIDER THIS CLASS PRIVATE.  */
         static class ArgsReflection {
-            static OptionSpec extractOptionSpec(TypedMember member, IFactory factory) {
+            static OptionSpec extractOptionSpec(TypedMember member, IFactory factory, String commandName, ResourceBundle rb) {
                 Option option = member.getAnnotation(Option.class);
                 OptionSpec.Builder builder = OptionSpec.builder(option.names());
                 initCommon(builder, member);
@@ -5421,18 +5587,19 @@ public class CommandLine {
                 builder.arity(Range.optionArity(member));
                 builder.required(option.required());
                 builder.interactive(option.interactive());
-                builder.description(option.description());
                 Class<?>[] elementTypes = inferTypes(member.getType(), option.type(), member.getGenericType());
                 builder.auxiliaryTypes(elementTypes);
                 builder.paramLabel(inferLabel(option.paramLabel(), member.name(), member.getType(), elementTypes));
                 builder.hideParamSyntax(option.hideParamSyntax());
+                builder.description(option.description());
+                builder.description(commandName, option.descriptionKey(), rb);
                 builder.splitRegex(option.split());
                 builder.hidden(option.hidden());
                 builder.defaultValue(option.defaultValue());
                 builder.converters(DefaultFactory.createConverter(factory, option.converter()));
                 return builder.build();
             }
-            static PositionalParamSpec extractPositionalParamSpec(TypedMember member, IFactory factory) {
+            static PositionalParamSpec extractPositionalParamSpec(TypedMember member, IFactory factory, String commandName, ResourceBundle rb) {
                 PositionalParamSpec.Builder builder = PositionalParamSpec.builder();
                 initCommon(builder, member);
                 Range arity = Range.parameterArity(member);
@@ -5443,11 +5610,12 @@ public class CommandLine {
 
                 Parameters parameters = member.getAnnotation(Parameters.class);
                 builder.interactive(parameters.interactive());
-                builder.description(parameters.description());
                 Class<?>[] elementTypes = inferTypes(member.getType(), parameters.type(), member.getGenericType());
                 builder.auxiliaryTypes(elementTypes);
                 builder.paramLabel(inferLabel(parameters.paramLabel(), member.name(), member.getType(), elementTypes));
                 builder.hideParamSyntax(parameters.hideParamSyntax());
+                builder.description(parameters.description());
+                builder.description(commandName, parameters.descriptionKey(), rb);
                 builder.splitRegex(parameters.split());
                 builder.hidden(parameters.hidden());
                 builder.defaultValue(parameters.defaultValue());
@@ -5458,7 +5626,7 @@ public class CommandLine {
                 }
                 return builder.build();
             }
-            static PositionalParamSpec extractUnannotatedPositionalParamSpec(TypedMember member, IFactory factory) {
+            static PositionalParamSpec extractUnannotatedPositionalParamSpec(TypedMember member, IFactory factory, String commandName, ResourceBundle rb) {
                 PositionalParamSpec.Builder builder = PositionalParamSpec.builder();
                 initCommon(builder, member);
                 Range arity = Range.parameterArity(member);
@@ -5468,11 +5636,12 @@ public class CommandLine {
                 builder.required(arity.min > 0);
 
                 builder.interactive(false);
-                builder.description(new String[0]);
                 Class<?>[] elementTypes = inferTypes(member.getType(), new Class<?>[] {}, member.getGenericType());
                 builder.auxiliaryTypes(elementTypes);
                 builder.paramLabel(inferLabel(null, member.name(), member.getType(), elementTypes));
                 builder.hideParamSyntax(false);
+                builder.description(new String[0]);
+                builder.description(commandName, "", rb);
                 builder.splitRegex("");
                 builder.hidden(false);
                 builder.defaultValue(null);
