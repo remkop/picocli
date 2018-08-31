@@ -5394,6 +5394,7 @@ public class CommandLine {
                 commandSpec.initVersion(cmd.version());
                 commandSpec.initHelpCommand(cmd.helpCommand());
                 commandSpec.initVersionProvider(cmd.versionProvider(), factory);
+                commandSpec.initDefaultValueProvider(cmd.defaultValueProvider(), factory);
                 UsageMessageSpec usageMessage = commandSpec.usageMessage();
                 usageMessage.initSynopsisHeading(cmd.synopsisHeading());
                 usageMessage.initCommandListHeading(cmd.commandListHeading());
@@ -6237,7 +6238,12 @@ public class CommandLine {
         private void applyDefault(IDefaultValueProvider defaultValueProvider,
             ArgSpec arg, List<ArgSpec> required) throws Exception {
 
-            String defaultValue = defaultValueProvider == null ? arg.defaultValue() : defaultValueProvider.defaultValue(arg) ;
+            boolean isDefaultOrInitialVaLuePresent = arg.defaultValue() != null || arg.initialValue() != null;
+
+            // Default value provider is only used if the argSpec doesn't already have a default
+            // value or an initial value
+            String defaultValue = defaultValueProvider != null && !isDefaultOrInitialVaLuePresent ?
+                    defaultValueProvider.defaultValue(arg) : arg.defaultValue() ;
 
             if (defaultValue == null) { return; }
             if (tracer.isDebug()) {tracer.debug("Applying defaultValue (%s) to %s%n", defaultValue, arg);}
