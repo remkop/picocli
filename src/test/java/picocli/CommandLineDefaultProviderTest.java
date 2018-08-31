@@ -1,6 +1,7 @@
 package picocli;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -40,10 +41,30 @@ public class CommandLineDefaultProviderTest {
     void setString(String val) { stringForSetterDefault = val; }
   }
 
+  @Command(name = "sub")
+  static class Sub {
+    @Option(names = "-a")
+    private String optionStringFieldWithoutDefaultNorInitialValue;
+    @Option(names = "-b", defaultValue = "Annotated default value")
+    private String optionStringFieldWithAnnotatedDefault;
+    @Option(names = "-c")
+    private String optionStringFieldWithInitDefault = "Initial default value";
+
+    @Parameters(arity = "0..1")
+    private String paramStringFieldWithoutDefaultNorInitialValue;
+    @Parameters(arity = "0..1", defaultValue = "Annotated default value")
+    private String paramStringFieldWithAnnotatedDefault;
+    @Parameters(arity = "0..1")
+    private String paramStringFieldWithInitDefault = "Initial default value";
+
+    private String stringForSetterDefault;
+    @Option(names = "-d", defaultValue = "Annotated setter default value")
+    void setString(String val) { stringForSetterDefault = val; }
+  }
+
 
   @Test
   public void testCommandDefaultProviderByAnnotation() {
-
     CommandLine cmd = new CommandLine(App.class);
     cmd.parse();
 
@@ -60,12 +81,19 @@ public class CommandLineDefaultProviderTest {
     assertEquals("Initial default value",app.paramStringFieldWithInitDefault);
 
     assertEquals("Annotated setter default value",app.stringForSetterDefault);
-
   }
 
-  static class AppWithoutAnnotation {
-    @Option(names = "-a")
-    private String stringFieldWithoutDefaultNorInitialValue;
+  @Test
+  public void testDefaultProviderPropagatedToSubCommand() {
+    CommandLine cmd = new CommandLine(App.class);
+
+    cmd.addSubcommand("sub", new CommandLine(Sub.class));
+
+    CommandLine subCommandLine = cmd.getSubcommands().get("sub");
+    cmd.setDefaultValueProvider(new TestDefaultProvider());
+
+    assertNotNull(subCommandLine.getCommandSpec().defaultValueProvider());
+    assertEquals(TestDefaultProvider.class, subCommandLine.getCommandSpec().defaultValueProvider().getClass());
   }
 
   @Test
