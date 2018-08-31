@@ -409,6 +409,23 @@ public class CommandLine {
         return this;
     }
 
+    /** Sets a default value provider for the command and sub-commands
+     * <p>The specified setting will be registered with this {@code CommandLine} and the full hierarchy of its
+     * sub-commands and nested sub-subcommands <em>at the moment this method is called</em>. Sub-commands added
+     * later will have the default setting. To ensure a setting is applied to all
+     * sub-commands, call the setter last, after adding sub-commands.</p>
+     * @param newValue the default value provider to use
+     * @return this {@code CommandLine} object, to allow method chaining
+     * @since 3.6
+     */
+    public CommandLine setDefaultValueProvider(IDefaultValueProvider newValue) {
+      getCommandSpec().defaultValueProvider(newValue);
+      for (CommandLine command : getCommandSpec().subcommands().values()) {
+        command.setDefaultValueProvider(newValue);
+      }
+      return this;
+    }
+
     /** Returns whether the parser interprets the first positional parameter as "end of options" so the remaining
      * arguments are all treated as positional parameters. The default is {@code false}.
      * @return {@code true} if all values following the first positional parameter should be treated as positional parameters, {@code false} otherwise
@@ -3008,11 +3025,16 @@ public class CommandLine {
      * {@link Command#defaultValueProvider()} annotation attribute.
      * @since 3.6 */
     public interface IDefaultValueProvider {
-        /**
-         * Returns default value for a command, option or parameter.
-         * @return default value
-         * @throws Exception an exception detailing what went wrong when obtaining default value
-         */
+
+        /** Returns the default value for an option or positional parameter or {@code null}.
+        * The returned value is converted to the type of the option/positional parameter
+        * via the same type converter used when populating this option/positional
+        * parameter from a command line argument.
+        * @param argSpec the option or positional parameter, never {@code null}
+        * @return the default value for the option or positional parameter, or {@code null} if
+        *       this provider has no default value for the specified option or positional parameter
+        * @throws Exception an exception detailing what went wrong when obtaining default value
+        */
         String defaultValue(ArgSpec argSpec) throws Exception;
     }
     private static class NoDefaultProvider implements IDefaultValueProvider {
@@ -3678,12 +3700,14 @@ public class CommandLine {
             }
 
             /** Returns the default value provider for this command.
-             * @return the default value provider or {@code null}*/
+             * @return the default value provider or {@code null}
+             * @since 3.6 */
             public IDefaultValueProvider defaultValueProvider() { return defaultValueProvider; }
 
             /** Sets default value provider for this command.
              * @param defaultValueProvider the default value provider to use, or {@code null}.
-             * @return this CommandSpec for method chaining */
+             * @return this CommandSpec for method chaining
+             * @since 3.6 */
             public CommandSpec defaultValueProvider(IDefaultValueProvider  defaultValueProvider) { this.defaultValueProvider = defaultValueProvider; return this; }
 
             /** Sets version information literals for this command, to print to the console when the user specifies an
@@ -6205,8 +6229,8 @@ public class CommandLine {
 
         private void applyDefaultValues(List<ArgSpec> required) throws Exception {
             parseResult.isInitializingDefaultValues = true;
-            for (OptionSpec option              : commandSpec.options())              { applyDefault(commandSpec.defaultValueProvider, option,     required); }
-            for (PositionalParamSpec positional : commandSpec.positionalParameters()) { applyDefault(commandSpec.defaultValueProvider, positional, required); }
+            for (OptionSpec option              : commandSpec.options())              { applyDefault(commandSpec.defaultValueProvider(), option,     required); }
+            for (PositionalParamSpec positional : commandSpec.positionalParameters()) { applyDefault(commandSpec.defaultValueProvider(), positional, required); }
             parseResult.isInitializingDefaultValues = false;
         }
 
