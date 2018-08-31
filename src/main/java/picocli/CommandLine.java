@@ -2378,8 +2378,9 @@ public class CommandLine {
          */
         boolean interactive() default false;
 
-        /** ResourceBundle key for this option. If not specified, (and a ResourceBundle exists for this command) an attempt
+        /** ResourceBundle key for this option. If not specified, (and a ResourceBundle {@linkplain Command#resourceBundle() exists for this command}) an attempt
          * is made to find the option description using any of the option names (without leading hyphens) as key.
+         * @see OptionSpec.Builder#description(String, String, ResourceBundle)
          * @since 3.6
          */
         String descriptionKey() default "";
@@ -2554,7 +2555,10 @@ public class CommandLine {
          */
         boolean interactive() default false;
 
-        /** ResourceBundle key for this positional parameter.
+        /** ResourceBundle key for this option. If not specified, (and a ResourceBundle {@linkplain Command#resourceBundle() exists for this command}) an attempt
+         * is made to find the positional parameter description using {@code paramLabel() + "." + index()} as key.
+         *
+         * @see PositionalParamSpec.Builder#description(String, String, ResourceBundle)
          * @since 3.6
          */
         String descriptionKey() default "";
@@ -2896,23 +2900,27 @@ public class CommandLine {
          */
         boolean hidden() default false;
 
-        /** Set the base name of the ResourceBundle to find option and positional parameters descriptions, as well as
+        /** Set the base name of the <a href="https://docs.oracle.com/javase/8/docs/api/java/util/ResourceBundle.html">ResourceBundle</a>
+         * to find option and positional parameters descriptions, as well as
          * usage help message sections and section headings. If no base name is specified, an attempt is made to use a
          * ResourceBundle with a base name derived from the annotated class name: {@code annotatedClass.getName() + "_Messages"}.
          * <p>Example:</p><pre>
          * # Usage Help Message Sections
+         * # ---------------------------
          * # Numbered resource keys can be used to create multi-line sections.
          * usage.description.0 = first line
          * usage.description.1 = second line
          * usage.description.2 = third line
+         * # Leading whitespace is removed by default. Start with &#92;u0020 to keep the leading whitespace.
          * usage.customSynopsis.0 =      Usage: ln [OPTION]... [-T] TARGET LINK_NAME   (1st form)
          * usage.customSynopsis.1 = &#92;u0020 or:  ln [OPTION]... TARGET                  (2nd form)
          * usage.customSynopsis.2 = &#92;u0020 or:  ln [OPTION]... TARGET... DIRECTORY     (3rd form)
          * usage.header   = header first line
          * usage.header.0 = header second line
          * usage.footer = footer
-         * usage.headerHeading = This is my app. There are many apps like it but this one is mine.
+         * usage.headerHeading = This is my app. There are other apps like it but this one is mine.
          * usage.synopsisHeading = Usage:&#92;u0020
+         * # Headings can contain the %n character to create multi-line values.
          * usage.descriptionHeading = Description:%n
          * usage.parameterListHeading = %nPositional parameters:%n
          * usage.optionListHeading = %nOptions:%n
@@ -2920,6 +2928,7 @@ public class CommandLine {
          * usage.footerHeading = Powered by picocli
          *
          * # Option Descriptions
+         * # -------------------
          * # Use numbered keys to create multi-line descriptions.
          * help = Show this help message and exit.
          * version = Print version information and exit.
@@ -2929,6 +2938,7 @@ public class CommandLine {
          * {@code commandName + "."} to specify different values for different commands. The most specific key wins.</p>
          *
          * @return the base name of the ResourceBundle for usage help strings
+         * @see UsageMessageSpec#resourceBundle(ResourceBundle, String)
          * @since 3.6
          */
         String resourceBundle() default "";
@@ -3981,24 +3991,29 @@ public class CommandLine {
              * @return this UsageMessageSpec for method chaining */
             public UsageMessageSpec footer(String... footer) { this.footer = footer; return this; }
             /** Returns the resource bundle for this usage help message specification.
+             * @see #resourceBundle(ResourceBundle, String)
              * @since 3.6 */
             public ResourceBundle resourceBundle() { return resourceBundle; }
-            /** Initializes this usageMessage specification from the specified resource bundle and returns this UsageMessageSpec.
-             * Existing values are overwritten with values from the resource bundle.
+            /** Sets the <a href="https://docs.oracle.com/javase/8/docs/api/java/util/ResourceBundle.html">ResourceBundle</a>
+             * for this usageMessage specification, initializes attributes of this usageMessage specification from the specified resource bundle
+             * and returns this UsageMessageSpec. Existing values are overwritten with values from the resource bundle.
              * <p>Example:</p><pre>
              * # Usage Help Message Sections
+             * # ---------------------------
              * # Numbered resource keys can be used to create multi-line sections.
              * usage.description.0 = first line
              * usage.description.1 = second line
              * usage.description.2 = third line
+             * # Leading whitespace is removed by default. Start with &#92;u0020 to keep the leading whitespace.
              * usage.customSynopsis.0 =      Usage: ln [OPTION]... [-T] TARGET LINK_NAME   (1st form)
              * usage.customSynopsis.1 = &#92;u0020 or:  ln [OPTION]... TARGET                  (2nd form)
              * usage.customSynopsis.2 = &#92;u0020 or:  ln [OPTION]... TARGET... DIRECTORY     (3rd form)
              * usage.header   = header first line
              * usage.header.0 = header second line
              * usage.footer = footer
-             * usage.headerHeading = This is my app. There are many apps like it but this one is mine.
+             * usage.headerHeading = This is my app. There are other apps like it but this one is mine.
              * usage.synopsisHeading = Usage:&#92;u0020
+             * # Headings can contain the %n character to create multi-line values.
              * usage.descriptionHeading = Description:%n
              * usage.parameterListHeading = %nPositional parameters:%n
              * usage.optionListHeading = %nOptions:%n
@@ -4006,6 +4021,7 @@ public class CommandLine {
              * usage.footerHeading = Powered by picocli
              *
              * # Option Descriptions
+             * # -------------------
              * # Use numbered keys to create multi-line descriptions.
              * help = Show this help message and exit.
              * version = Print version information and exit.
@@ -4013,7 +4029,9 @@ public class CommandLine {
              * <p>Resources for multiple commands can be specified in a single ResourceBundle. Keys and their value can be
              * shared by multiple commands (so you don't need to repeat them for every command), but keys can be prefixed with
              * {@code commandName + "."} to specify different values for different commands. The most specific key wins.</p>
-             *
+             * @see Command#resourceBundle()
+             * @see OptionSpec.Builder#description(String, String, ResourceBundle)
+             * @see PositionalParamSpec.Builder#description(String, String, ResourceBundle)
              * @since 3.6 */
             public UsageMessageSpec resourceBundle(ResourceBundle rb, String commandName) {
                 resourceBundle = rb;
@@ -4871,8 +4889,10 @@ public class CommandLine {
                 public Builder versionHelp(boolean versionHelp) { this.versionHelp = versionHelp; return self(); }
 
                 /** Sets the description from the resource bundle, and returns this builder.
-                 * If the resource bundle has no entry for the specified {@code descriptionKey} or for {@code commandName + "." + descriptionKey},
-                 * an attempt is made to find the option description using any of the option names (without leading hyphens) as key.
+                 * If the resource bundle has no entry for the specified {@code commandName + "." + descriptionKey} or for {@code descriptionKey},
+                 * an attempt is made to find the option description using any of the option names (without leading hyphens) as key,
+                 * first with the specified {@code commandName + "."} prefix, then without.
+                 * @see Option#descriptionKey()
                  * @since 3.6 */
                 public Builder description(String commandName, String descriptionKey, ResourceBundle rb) {
                     String[] newValue = getStringArray(rb, keys(rb), commandName, descriptionKey, null);
@@ -4998,6 +5018,10 @@ public class CommandLine {
                 Builder capacity(Range capacity)   { this.capacity = capacity; return self(); }
 
                 /** Sets the description from the resource bundle, and returns this builder.
+                 * If the resource bundle has no entry for the specified {@code commandName + "." + descriptionKey} or for {@code descriptionKey},
+                 * an attempt is made to find the positional parameter description using {@code paramLabel() + "." + index()} as key,
+                 * first with the specified {@code commandName + "."} prefix, then without.
+                 * @see Parameters#descriptionKey()
                  * @since 3.6 */
                 public Builder description(String commandName, String descriptionKey, ResourceBundle rb) {
                     String[] newValue = getStringArray(rb, keys(rb), commandName, descriptionKey, null);
