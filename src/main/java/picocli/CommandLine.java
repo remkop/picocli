@@ -3349,7 +3349,7 @@ public class CommandLine {
              * @param userObject the user object annotated with {@link Command}, {@link Option} and/or {@link Parameters} annotations.
              * @throws InitializationException if the specified object has no picocli annotations or has invalid annotations
              */
-            public static CommandSpec forAnnotatedObject(Object userObject) { return forAnnotatedObject(userObject, new DefaultFactory()); }
+            public static CommandSpec forAnnotatedObject(Object userObject) { return forAnnotatedObject(userObject, new DefaultFactory(), null); }
 
             /** Creates and returns a new {@code CommandSpec} initialized from the specified associated user object. The specified
              * user object must have at least one {@link Command}, {@link Option} or {@link Parameters} annotation.
@@ -3357,7 +3357,21 @@ public class CommandLine {
              * @param factory the factory used to create instances of {@linkplain Command#subcommands() subcommands}, {@linkplain Option#converter() converters}, etc., that are registered declaratively with annotation attributes
              * @throws InitializationException if the specified object has no picocli annotations or has invalid annotations
              */
-            public static CommandSpec forAnnotatedObject(Object userObject, IFactory factory) { return CommandReflection.extractCommandSpec(userObject, factory, true); }
+            public static CommandSpec forAnnotatedObject(Object userObject, IFactory factory) { return forAnnotatedObject(userObject, factory, null); }
+
+            /** Creates and returns a new {@code CommandSpec} initialized from the specified associated user object. The specified
+             * user object must have at least one {@link Command}, {@link Option} or {@link Parameters} annotation.
+             * @param userObject the user object annotated with {@link Command}, {@link Option} and/or {@link Parameters} annotations.
+             * @param factory the factory used to create instances of {@linkplain Command#subcommands() subcommands}, {@linkplain Option#converter() converters}, etc., that are registered declaratively with annotation attributes
+             * @param rb the ResourceBundle to use to get descriptions and other usage help elements from.
+             *           If not {@code null}, this bundle overrides any default bundles found with {@code ResourceBundle.getBundle(userObject.getClass().getName() + "_Messages"}
+             *           as well as resource bundles specified with the {@code @Command(resourceBundle = "...")} annotation.
+             * @throws InitializationException if the specified object has no picocli annotations or has invalid annotations
+             * @since 3.6
+             */
+            public static CommandSpec forAnnotatedObject(Object userObject, IFactory factory, ResourceBundle rb) {
+                return CommandReflection.extractCommandSpec(userObject, factory, true, rb);
+            }
 
             /** Creates and returns a new {@code CommandSpec} initialized from the specified associated user object. If the specified
              * user object has no {@link Command}, {@link Option} or {@link Parameters} annotations, an empty {@code CommandSpec} is returned.
@@ -3372,7 +3386,7 @@ public class CommandLine {
              * @param factory the factory used to create instances of {@linkplain Command#subcommands() subcommands}, {@linkplain Option#converter() converters}, etc., that are registered declaratively with annotation attributes
              * @throws InitializationException if the specified object has invalid annotations
              */
-            public static CommandSpec forAnnotatedObjectLenient(Object userObject, IFactory factory) { return CommandReflection.extractCommandSpec(userObject, factory, false); }
+            public static CommandSpec forAnnotatedObjectLenient(Object userObject, IFactory factory) { return CommandReflection.extractCommandSpec(userObject, factory, false, null); }
 
             /** Ensures all attributes of this {@code CommandSpec} have a valid value; throws an {@link InitializationException} if this cannot be achieved. */
             void validate() {
@@ -3679,8 +3693,11 @@ public class CommandLine {
              * @return this CommandSpec for method chaining
              * @see Command#mixinStandardHelpOptions() */
             public CommandSpec mixinStandardHelpOptions(boolean newValue) {
-                if (newValue) { addMixin(AutoHelpMixin.KEY, CommandSpec.forAnnotatedObject(new AutoHelpMixin(), new DefaultFactory())); }
-                else {
+                if (newValue) {
+                    ResourceBundle rb = usageMessage().resourceBundle();
+                    CommandSpec mixin = CommandSpec.forAnnotatedObject(new AutoHelpMixin(), new DefaultFactory(), rb);
+                    addMixin(AutoHelpMixin.KEY, mixin);
+                } else {
                     CommandSpec helpMixin = mixins.remove(AutoHelpMixin.KEY);
                     if (helpMixin != null) {
                         options.removeAll(helpMixin.options);
@@ -3994,47 +4011,51 @@ public class CommandLine {
              * @see #resourceBundle(ResourceBundle, String)
              * @since 3.6 */
             public ResourceBundle resourceBundle() { return resourceBundle; }
-            /** Sets the <a href="https://docs.oracle.com/javase/8/docs/api/java/util/ResourceBundle.html">ResourceBundle</a>
-             * for this usageMessage specification, initializes attributes of this usageMessage specification from the specified resource bundle
-             * and returns this UsageMessageSpec. Existing values are overwritten with values from the resource bundle.
-             * <p>Example:</p><pre>
-             * # Usage Help Message Sections
-             * # ---------------------------
-             * # Numbered resource keys can be used to create multi-line sections.
-             * usage.description.0 = first line
-             * usage.description.1 = second line
-             * usage.description.2 = third line
-             * # Leading whitespace is removed by default. Start with &#92;u0020 to keep the leading whitespace.
-             * usage.customSynopsis.0 =      Usage: ln [OPTION]... [-T] TARGET LINK_NAME   (1st form)
-             * usage.customSynopsis.1 = &#92;u0020 or:  ln [OPTION]... TARGET                  (2nd form)
-             * usage.customSynopsis.2 = &#92;u0020 or:  ln [OPTION]... TARGET... DIRECTORY     (3rd form)
-             * usage.header   = header first line
-             * usage.header.0 = header second line
-             * usage.footer = footer
-             * usage.headerHeading = This is my app. There are other apps like it but this one is mine.
-             * usage.synopsisHeading = Usage:&#92;u0020
-             * # Headings can contain the %n character to create multi-line values.
-             * usage.descriptionHeading = Description:%n
-             * usage.parameterListHeading = %nPositional parameters:%n
-             * usage.optionListHeading = %nOptions:%n
-             * usage.commandListHeading = %nCommands:%n
-             * usage.footerHeading = Powered by picocli
-             *
-             * # Option Descriptions
-             * # -------------------
-             * # Use numbered keys to create multi-line descriptions.
-             * help = Show this help message and exit.
-             * version = Print version information and exit.
-             * </pre>
-             * <p>Resources for multiple commands can be specified in a single ResourceBundle. Keys and their value can be
-             * shared by multiple commands (so you don't need to repeat them for every command), but keys can be prefixed with
-             * {@code commandName + "."} to specify different values for different commands. The most specific key wins.</p>
-             * @see Command#resourceBundle()
-             * @see OptionSpec.Builder#description(String, String, ResourceBundle)
-             * @see PositionalParamSpec.Builder#description(String, String, ResourceBundle)
+            /** Sets the resource bundle for this usage help message specification. Does not initialize any description text.
+             * @see #resourceBundle(ResourceBundle, String)
              * @since 3.6 */
-            public UsageMessageSpec resourceBundle(ResourceBundle rb, String commandName) {
-                resourceBundle = rb;
+            public UsageMessageSpec resourceBundle(ResourceBundle rb) { resourceBundle = rb; return this; }
+                /** Sets the <a href="https://docs.oracle.com/javase/8/docs/api/java/util/ResourceBundle.html">ResourceBundle</a>
+                 * for this usageMessage specification, initializes attributes of this usageMessage specification from the specified resource bundle
+                 * and returns this UsageMessageSpec. Existing values are overwritten with values from the resource bundle.
+                 * <p>Example:</p><pre>
+                 * # Usage Help Message Sections
+                 * # ---------------------------
+                 * # Numbered resource keys can be used to create multi-line sections.
+                 * usage.description.0 = first line
+                 * usage.description.1 = second line
+                 * usage.description.2 = third line
+                 * # Leading whitespace is removed by default. Start with &#92;u0020 to keep the leading whitespace.
+                 * usage.customSynopsis.0 =      Usage: ln [OPTION]... [-T] TARGET LINK_NAME   (1st form)
+                 * usage.customSynopsis.1 = &#92;u0020 or:  ln [OPTION]... TARGET                  (2nd form)
+                 * usage.customSynopsis.2 = &#92;u0020 or:  ln [OPTION]... TARGET... DIRECTORY     (3rd form)
+                 * usage.header   = header first line
+                 * usage.header.0 = header second line
+                 * usage.footer = footer
+                 * usage.headerHeading = This is my app. There are other apps like it but this one is mine.
+                 * usage.synopsisHeading = Usage:&#92;u0020
+                 * # Headings can contain the %n character to create multi-line values.
+                 * usage.descriptionHeading = Description:%n
+                 * usage.parameterListHeading = %nPositional parameters:%n
+                 * usage.optionListHeading = %nOptions:%n
+                 * usage.commandListHeading = %nCommands:%n
+                 * usage.footerHeading = Powered by picocli
+                 *
+                 * # Option Descriptions
+                 * # -------------------
+                 * # Use numbered keys to create multi-line descriptions.
+                 * help = Show this help message and exit.
+                 * version = Print version information and exit.
+                 * </pre>
+                 * <p>Resources for multiple commands can be specified in a single ResourceBundle. Keys and their value can be
+                 * shared by multiple commands (so you don't need to repeat them for every command), but keys can be prefixed with
+                 * {@code commandName + "."} to specify different values for different commands. The most specific key wins.</p>
+                 * @see Command#resourceBundle()
+                 * @see OptionSpec.Builder#description(String, String, ResourceBundle)
+                 * @see PositionalParamSpec.Builder#description(String, String, ResourceBundle)
+                 * @since 3.6 */
+            public UsageMessageSpec initFromResourceBundle(ResourceBundle rb, String commandName) {
+                resourceBundle(rb);
                 Set<String> keys = keys(rb);
                 description(getStringArray(rb, keys, commandName, "usage.description", description));
                 customSynopsis(getStringArray(rb, keys, commandName, "usage.customSynopsis", customSynopsis));
@@ -5019,14 +5040,14 @@ public class CommandLine {
 
                 /** Sets the description from the resource bundle, and returns this builder.
                  * If the resource bundle has no entry for the specified {@code commandName + "." + descriptionKey} or for {@code descriptionKey},
-                 * an attempt is made to find the positional parameter description using {@code paramLabel() + "." + index()} as key,
+                 * an attempt is made to find the positional parameter description using {@code paramLabel() + "[" + index() + "]"} as key,
                  * first with the specified {@code commandName + "."} prefix, then without.
                  * @see Parameters#descriptionKey()
                  * @since 3.6 */
                 public Builder description(String commandName, String descriptionKey, ResourceBundle rb) {
                     String[] newValue = getStringArray(rb, keys(rb), commandName, descriptionKey, null);
                     if (newValue != null) { return this.description(newValue); }
-                    newValue = getStringArray(rb, keys(rb), commandName, paramLabel() + "." + index(), null);
+                    newValue = getStringArray(rb, keys(rb), commandName, paramLabel() + "[" + index() + "]", null);
                     if (newValue != null) { return this.description(newValue); }
                     return self();
                 }
@@ -5280,7 +5301,10 @@ public class CommandLine {
             }
         }
         private static class CommandReflection {
-            static CommandSpec extractCommandSpec(Object command, IFactory factory, boolean annotationsAreMandatory) {
+            static CommandSpec extractCommandSpec(Object command,
+                                                  IFactory factory,
+                                                  boolean annotationsAreMandatory,
+                                                  ResourceBundle rb) {
                 Class<?> cls = command.getClass();
                 Tracer t = new Tracer();
                 t.debug("Creating CommandSpec for object of class %s with factory %s%n", cls.getName(), factory.getClass().getName());
@@ -5312,7 +5336,7 @@ public class CommandLine {
 
                 boolean hasCommandAnnotation = false;
                 while (cls != null) {
-                    boolean thisCommandHasAnnotation = updateCommandAttributes(cls, result, factory, getBundleOrNull(cls.getName() + "_Messages"));
+                    boolean thisCommandHasAnnotation = updateCommandAttributes(cls, result, factory, rb, getBundleOrNull(cls.getName() + "_Messages"));
                     hasCommandAnnotation |= thisCommandHasAnnotation;
                     hasCommandAnnotation |= initFromAnnotatedFields(instance, cls, result, factory);
                     if (thisCommandHasAnnotation) { //#377 Standard help options should be added last
@@ -5324,7 +5348,7 @@ public class CommandLine {
                     Method method = (Method) command;
                     t.debug("Using method %s as command %n", method);
                     commandClassName = method.toString();
-                    hasCommandAnnotation |= updateCommandAttributes(method, result, factory, null);
+                    hasCommandAnnotation |= updateCommandAttributes(method, result, factory, rb, null);
                     result.mixinStandardHelpOptions(method.getAnnotation(Command.class).mixinStandardHelpOptions());
                     initFromMethodParameters(instance, method, result, factory);
                     // set command name to method name, unless @Command#name is set
@@ -5335,18 +5359,21 @@ public class CommandLine {
                 return result;
             }
 
-            private static boolean updateCommandAttributes(Class<?> cls, CommandSpec commandSpec, IFactory factory, ResourceBundle rb) {
+            private static boolean updateCommandAttributes(Class<?> cls, CommandSpec commandSpec, IFactory factory, ResourceBundle mandatory, ResourceBundle fallback) {
                 // superclass values should not overwrite values if both class and superclass have a @Command annotation
-                if (!cls.isAnnotationPresent(Command.class)) { return false; }
+                if (!cls.isAnnotationPresent(Command.class)) {
+                    commandSpec.usageMessage.resourceBundle(mandatory);
+                    return false;
+                }
 
                 Command cmd = cls.getAnnotation(Command.class);
-                return updateCommandAttributes(cmd, commandSpec, factory, rb);
+                return updateCommandAttributes(cmd, commandSpec, factory, mandatory, fallback);
             }
-            private static boolean updateCommandAttributes(Method method, CommandSpec commandSpec, IFactory factory, ResourceBundle rb) {
+            private static boolean updateCommandAttributes(Method method, CommandSpec commandSpec, IFactory factory, ResourceBundle mandatory, ResourceBundle fallback) {
                 Command cmd = method.getAnnotation(Command.class);
-                return updateCommandAttributes(cmd, commandSpec, factory, rb);
+                return updateCommandAttributes(cmd, commandSpec, factory, mandatory, fallback);
             }
-            private static boolean updateCommandAttributes(Command cmd, CommandSpec commandSpec, IFactory factory, ResourceBundle rb) {
+            private static boolean updateCommandAttributes(Command cmd, CommandSpec commandSpec, IFactory factory, ResourceBundle mandatory, ResourceBundle fallback) {
                 commandSpec.aliases(cmd.aliases());
                 initSubcommands(cmd, commandSpec, factory);
 
@@ -5372,8 +5399,12 @@ public class CommandLine {
                 usageMessage.initSortOptions(cmd.sortOptions());
                 usageMessage.initShowDefaultValues(cmd.showDefaultValues());
                 usageMessage.initHidden(cmd.hidden());
-                if (!empty(cmd.resourceBundle())) { rb = ResourceBundle.getBundle(cmd.resourceBundle()); }
-                usageMessage.resourceBundle(rb, commandSpec.name);
+                if (mandatory != null) {
+                    usageMessage.initFromResourceBundle(mandatory, commandSpec.name);
+                } else {
+                    ResourceBundle rb = empty(cmd.resourceBundle()) ? fallback : ResourceBundle.getBundle(cmd.resourceBundle());
+                    usageMessage.initFromResourceBundle(rb, commandSpec.name);
+                }
                 return true;
             }
             private static void initSubcommands(Command cmd, CommandSpec parent, IFactory factory) {
@@ -7248,10 +7279,10 @@ public class CommandLine {
     static class AutoHelpMixin {
         private static final String KEY = "mixinStandardHelpOptions";
 
-        @Option(names = {"-h", "--help"}, usageHelp = true, description = "Show this help message and exit.")
+        @Option(names = {"-h", "--help"}, usageHelp = true, descriptionKey = "mixinStandardHelpOptions.help", description = "Show this help message and exit.")
         private boolean helpRequested;
 
-        @Option(names = {"-V", "--version"}, versionHelp = true, description = "Print version information and exit.")
+        @Option(names = {"-V", "--version"}, versionHelp = true, descriptionKey = "mixinStandardHelpOptions.version", description = "Print version information and exit.")
         private boolean versionRequested;
     }
 
