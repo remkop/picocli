@@ -64,12 +64,92 @@ public class I18nTest {
                 "                  X option description[1] from bundle.%n" +
                 "  -y, --yyy=<y>   orig yyy description 1%n" +
                 "                  orig yyy description 2%n" +
-                "  -z, --zzz=<z>   orig zzz description%n" +
+                "  -z, --zzz=<z>   Z option description overwritten from bundle%n" +
                 "%n" +
                 "Commands from bundle:%n" +
                 "  help  Displays help information about the specified command%n" +
                 "Powered by picocli from bundle%n" +
                 "footer from bundle%n");
         assertEquals(expected, new CommandLine(new I18nBean()).getUsageMessage());
+    }
+
+    @Test
+    public void testLocalizedSubclassedCommand() {
+        String expected = String.format("" +
+                "orig sub header heading%n" +
+                "header first line from bundle%n" +
+                "header second line from bundle%n" +
+                "BundleUsage: ln [OPTION]... [-T] TARGET LINK_NAME   (1st form)%n" +
+                "  or:  ln [OPTION]... TARGET                  (2nd form)%n" +
+                "  or:  ln [OPTION]... TARGET... DIRECTORY     (3rd form)%n" +
+                "orig sub desc heading:%n" +
+                "orig sub desc 1%n" +
+                "orig sub desc 2%n" +
+                "%n" +
+                "Positional parameters from bundle:%n" +
+                "      <param0>    parameter 0 description[0] from bundle%n" +
+                "                  parameter 0 description[1] from bundle%n" +
+                "      <param1>    orig param1 description%n" +
+                "      <param2>    sub%n" +
+                "      <param3>    orig sub param1 description%n" +
+                "%n" +
+                "Options from bundle:%n" +
+                "  -a, --aaa=<a>%n" +
+                "  -b, --bbb=<b>   orig sub bbb description 1%n" +
+                "                  orig sub bbb description 2%n" +
+                "  -c, --ccc=<c>   orig sub ccc description%n" +
+                "  -h, --help      Help option description from bundle.%n" +
+                "  -V, --version   Version option description from bundle.%n" +
+                "  -x, --xxx=<x>   X option description[0] from bundle.%n" +
+                "                  X option description[1] from bundle.%n" +
+                "  -y, --yyy=<y>   orig yyy description 1%n" +
+                "                  orig yyy description 2%n" +
+                "  -z, --zzz=<z>   Z option description overwritten from bundle%n" +
+                "%n" +
+                "Commands from bundle:%n" +
+                "  help  Displays help information about the specified command%n" +
+                "Powered by picocli from bundle%n" +
+                "footer from bundle%n");
+        assertEquals(expected, new CommandLine(new I18nSubclassBean()).getUsageMessage());
+    }
+
+    @Test
+    public void testLocalizedSubclassedCommandWithResourceBundle() {
+        String expected = String.format("" +
+                "sub sub sub.%n" +
+                "header second line from subbundle%n" +
+                "BundleSubUsage: ln [OPTION]... [-T] TARGET LINK_NAME   (1st form)%n" +
+                "  or:  ln [OPTION]... TARGET                  (2nd form)%n" +
+                "  or:  ln [OPTION]... TARGET... DIRECTORY     (3rd form)%n" +
+                "orig sub2 desc heading%n" +
+                "subbundle line 0%n" +
+                "subbundle line 1%n" +
+                "subbundle line 2%n" +
+                "%n" +
+                "Positional parameters from bundle:%n" +
+                "      <param0>    parameter 0 description[0] from bundle%n" + // superclass option: ignores subclass bundle
+                "                  parameter 0 description[1] from bundle%n" + // superclass option: ignores subclass bundle
+                "      <param1>    orig param1 description%n" +
+                "      <param2>    sub2%n" +
+                "      <param3>    orig sub2 param1 description%n" +
+                "%n" +
+                "Options from bundle:%n" +
+                "  -a, --aaa=<a>%n" +
+                "  -b, --bbb=<b>   orig sub2 bbb description 1%n" +
+                "                  orig sub2 bbb description 2%n" +
+                "  -c, --ccc=<c>   orig sub2 ccc description%n" +
+                "  -h, --help      Help option description from subbundle.%n" +
+                "  -V, --version   Version option description from subbundle.%n" +
+                "  -x, --xxx=<x>   X option description[0] from bundle.%n" + // superclass option: ignores subclass bundle
+                "                  X option description[1] from bundle.%n" + // superclass option: ignores subclass bundle
+                "  -y, --yyy=<y>   orig yyy description 1%n" +
+                "                  orig yyy description 2%n" +
+                "  -z, --zzz=<z>   Z option description overwritten from bundle%n" + // superclass option: ignores subclass bundle
+                "%n" +
+                "Commands from bundle:%n" +
+                "  help  Displays help information about the specified command%n" +
+                "sub footer heading%n" +
+                "sub footer%n");
+        assertEquals(expected, new CommandLine(new I18nSubclassBean2()).getUsageMessage());
     }
 }
