@@ -409,6 +409,23 @@ public class CommandLine {
         return this;
     }
 
+    /** Sets a default value provider for the command and sub-commands
+     * <p>The specified setting will be registered with this {@code CommandLine} and the full hierarchy of its
+     * sub-commands and nested sub-subcommands <em>at the moment this method is called</em>. Sub-commands added
+     * later will have the default setting. To ensure a setting is applied to all
+     * sub-commands, call the setter last, after adding sub-commands.</p>
+     * @param newValue the default value provider to use
+     * @return this {@code CommandLine} object, to allow method chaining
+     * @since 3.6
+     */
+    public CommandLine setDefaultValueProvider(IDefaultValueProvider newValue) {
+      getCommandSpec().defaultValueProvider(newValue);
+      for (CommandLine command : getCommandSpec().subcommands().values()) {
+        command.setDefaultValueProvider(newValue);
+      }
+      return this;
+    }
+
     /** Returns whether the parser interprets the first positional parameter as "end of options" so the remaining
      * arguments are all treated as positional parameters. The default is {@code false}.
      * @return {@code true} if all values following the first positional parameter should be treated as positional parameters, {@code false} otherwise
@@ -2870,6 +2887,12 @@ public class CommandLine {
          * @return the character to show in the options list to mark required options */
         char requiredOptionMarker() default ' ';
 
+        /** Class that can provide default values dynamically at runtime. An implementation may return default
+         * value obtained from a configuration file like a properties file or some other source.
+         * @return a Class that can provide default values dynamically at runtime
+         * @since 3.6 */
+        Class<? extends IDefaultValueProvider> defaultValueProvider() default NoDefaultProvider.class;
+
         /** Specify {@code true} to show default values in the description column of the options list (except for
          * boolean options). False by default.
          * <p>Note that picocli 3.2 allows {@linkplain Option#description() embedding default values} anywhere in the
@@ -3008,6 +3031,27 @@ public class CommandLine {
     }
 
     /**
+     * Provides default value for a command. Commands may configure a provider with the
+     * {@link Command#defaultValueProvider()} annotation attribute.
+     * @since 3.6 */
+    public interface IDefaultValueProvider {
+
+        /** Returns the default value for an option or positional parameter or {@code null}.
+        * The returned value is converted to the type of the option/positional parameter
+        * via the same type converter used when populating this option/positional
+        * parameter from a command line argument.
+        * @param argSpec the option or positional parameter, never {@code null}
+        * @return the default value for the option or positional parameter, or {@code null} if
+        *       this provider has no default value for the specified option or positional parameter
+        * @throws Exception an exception detailing what went wrong when obtaining default value
+        */
+        String defaultValue(ArgSpec argSpec) throws Exception;
+    }
+    private static class NoDefaultProvider implements IDefaultValueProvider {
+        public String defaultValue(ArgSpec argSpec) { throw new UnsupportedOperationException(); }
+    }
+
+    /**
      * Factory for instantiating classes that are registered declaratively with annotation attributes, like
      * {@link Command#subcommands()}, {@link Option#converter()}, {@link Parameters#converter()} and {@link Command#versionProvider()}.
      * <p>The default factory implementation simply creates a new instance of the specified class when {@link #create(Class)} is invoked.
@@ -3047,6 +3091,9 @@ public class CommandLine {
             return result;
         }
         static IVersionProvider createVersionProvider(IFactory factory, Class<? extends IVersionProvider> cls) {
+            return create(factory, cls);
+        }
+        static IDefaultValueProvider createDefaultValueProvider(IFactory factory, Class<? extends IDefaultValueProvider> cls) {
             return create(factory, cls);
         }
         static Iterable<String> createCompletionCandidates(IFactory factory, Class<? extends Iterable<String>> cls) {
@@ -3330,6 +3377,7 @@ public class CommandLine {
             private Set<String> aliases = new LinkedHashSet<String>();
             private Boolean isHelpCommand;
             private IVersionProvider versionProvider;
+            private IDefaultValueProvider defaultValueProvider;
             private String[] version;
             private String toString;
     
@@ -3543,6 +3591,7 @@ public class CommandLine {
                 initVersion(mixin.version());
                 initHelpCommand(mixin.helpCommand());
                 initVersionProvider(mixin.versionProvider());
+                initDefaultValueProvider(mixin.defaultValueProvider());
                 usageMessage.initSynopsisHeading(mixin.usageMessage.synopsisHeading());
                 usageMessage.initCommandListHeading(mixin.usageMessage.commandListHeading());
                 usageMessage.initRequiredOptionMarker(mixin.usageMessage.requiredOptionMarker());
@@ -3674,6 +3723,17 @@ public class CommandLine {
                 return this;
             }
 
+            /** Returns the default value provider for this command.
+             * @return the default value provider or {@code null}
+             * @since 3.6 */
+            public IDefaultValueProvider defaultValueProvider() { return defaultValueProvider; }
+
+            /** Sets default value provider for this command.
+             * @param defaultValueProvider the default value provider to use, or {@code null}.
+             * @return this CommandSpec for method chaining
+             * @since 3.6 */
+            public CommandSpec defaultValueProvider(IDefaultValueProvider  defaultValueProvider) { this.defaultValueProvider = defaultValueProvider; return this; }
+
             /** Sets version information literals for this command, to print to the console when the user specifies an
              * {@linkplain OptionSpec#versionHelp() option} to request version help. Only used if no {@link #versionProvider() versionProvider} is set.
              * @return this CommandSpec for method chaining */
@@ -3724,7 +3784,10 @@ public class CommandLine {
             void initVersionProvider(Class<? extends IVersionProvider> value, IFactory factory) {
                 if (initializable(versionProvider, value, NoVersionProvider.class)) { versionProvider = (DefaultFactory.createVersionProvider(factory, value)); }
             }
-
+            void initDefaultValueProvider(IDefaultValueProvider value) { if (defaultValueProvider == null) { defaultValueProvider = value; } }
+            void initDefaultValueProvider(Class<? extends IDefaultValueProvider> value, IFactory factory) {
+                if (initializable(defaultValueProvider, value, NoDefaultProvider.class)) { defaultValueProvider = (DefaultFactory.createDefaultValueProvider(factory, value)); }
+            }
             /** Returns the option with the specified short name, or {@code null} if no option with that name is defined for this command. */
             public OptionSpec findOption(char shortName) { return findOption(shortName, options()); }
             /** Returns the option with the specified name, or {@code null} if no option with that name is defined for this command.
@@ -5382,6 +5445,7 @@ public class CommandLine {
                 commandSpec.initVersion(cmd.version());
                 commandSpec.initHelpCommand(cmd.helpCommand());
                 commandSpec.initVersionProvider(cmd.versionProvider(), factory);
+                commandSpec.initDefaultValueProvider(cmd.defaultValueProvider(), factory);
                 UsageMessageSpec usageMessage = commandSpec.usageMessage();
                 usageMessage.initSynopsisHeading(cmd.synopsisHeading());
                 usageMessage.initCommandListHeading(cmd.commandListHeading());
@@ -6221,18 +6285,29 @@ public class CommandLine {
 
         private void applyDefaultValues(List<ArgSpec> required) throws Exception {
             parseResult.isInitializingDefaultValues = true;
-            for (OptionSpec option              : commandSpec.options())              { applyDefault(option,     required); }
-            for (PositionalParamSpec positional : commandSpec.positionalParameters()) { applyDefault(positional, required); }
+            for (OptionSpec option              : commandSpec.options())              { applyDefault(commandSpec.defaultValueProvider(), option,     required); }
+            for (PositionalParamSpec positional : commandSpec.positionalParameters()) { applyDefault(commandSpec.defaultValueProvider(), positional, required); }
             parseResult.isInitializingDefaultValues = false;
         }
 
-        private void applyDefault(ArgSpec arg, List<ArgSpec> required) throws Exception {
-            if (arg.defaultValue() == null) { return; }
-            if (tracer.isDebug()) {tracer.debug("Applying defaultValue (%s) to %s%n", arg.defaultValue(), arg);}
+        private void applyDefault(IDefaultValueProvider defaultValueProvider,
+            ArgSpec arg, List<ArgSpec> required) throws Exception {
+
+            boolean isDefaultOrInitialVaLuePresent = arg.defaultValue() != null || arg.initialValue() != null;
+
+            // Default value provider is only used if the argSpec doesn't already have a default
+            // value or an initial value
+            String defaultValue = defaultValueProvider != null && !isDefaultOrInitialVaLuePresent ?
+                    defaultValueProvider.defaultValue(arg) : arg.defaultValue() ;
+
+            if (defaultValue == null) { return; }
+            if (tracer.isDebug()) {tracer.debug("Applying defaultValue (%s) to %s%n", defaultValue, arg);}
             Range arity = arg.arity().min(Math.max(1, arg.arity().min));
-            applyOption(arg, LookBehind.SEPARATE, arity, stack(arg.defaultValue()), new HashSet<ArgSpec>(), arg.toString);
+
+            applyOption(arg, LookBehind.SEPARATE, arity, stack(defaultValue), new HashSet<ArgSpec>(), arg.toString);
             required.remove(arg);
         }
+
         private Stack<String> stack(String value) {Stack<String> result = new Stack<String>(); result.push(value); return result;}
 
         private void processArguments(List<CommandLine> parsedCommands,
