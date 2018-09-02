@@ -16,7 +16,7 @@ import picocli.CommandLine.Parameters;
         commandListHeading = "Orig command list heading",
         optionListHeading = "Orig option list heading",
         parameterListHeading = "Orig param list heading")
-public class Localized {
+public class I18nBean {
     @Option(names = {"-x", "--xxx"})
     String x;
 

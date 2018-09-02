@@ -20,18 +20,6 @@ import org.junit.Test;
 import org.junit.contrib.java.lang.system.ProvideSystemProperty;
 import org.junit.contrib.java.lang.system.SystemErrRule;
 import org.junit.contrib.java.lang.system.SystemOutRule;
-import picocli.CommandLine.Model.CommandSpec;
-import picocli.CommandLine.Model.OptionSpec;
-import picocli.CommandLine.Model.PositionalParamSpec;
-import picocli.CommandLine.Option;
-import picocli.CommandLine.Parameters;
-
-import java.io.File;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
 
 import static org.junit.Assert.*;
 import static picocli.HelpTestUtil.usageString;
@@ -39,7 +27,7 @@ import static picocli.HelpTestUtil.usageString;
 /**
  * Tests valid values-related functionality.
  */
-public class ResourceBundleTest {
+public class I18nTest {
 
     @Rule
     public final ProvideSystemProperty ansiOFF = new ProvideSystemProperty("picocli.ansi", "false");
@@ -82,6 +70,6 @@ public class ResourceBundleTest {
                 "  help  Displays help information about the specified command%n" +
                 "Powered by picocli from bundle%n" +
                 "footer from bundle%n");
-        assertEquals(expected, new CommandLine(new Localized()).getUsageMessage());
+        assertEquals(expected, new CommandLine(new I18nBean()).getUsageMessage());
     }
 }
