@@ -3788,6 +3788,13 @@ public class CommandLine {
             void initDefaultValueProvider(Class<? extends IDefaultValueProvider> value, IFactory factory) {
                 if (initializable(defaultValueProvider, value, NoDefaultProvider.class)) { defaultValueProvider = (DefaultFactory.createDefaultValueProvider(factory, value)); }
             }
+            void updateName(String value)               { if (isNonDefault(value, DEFAULT_COMMAND_NAME))                 {name = value;} }
+            void updateHelpCommand(boolean value)       { if (isNonDefault(value, DEFAULT_IS_HELP_COMMAND))              {isHelpCommand = value;} }
+            void updateVersion(String[] value)          { if (isNonDefault(value, UsageMessageSpec.DEFAULT_MULTI_LINE))  {version = value.clone();} }
+            void updateVersionProvider(Class<? extends IVersionProvider> value, IFactory factory) {
+                if (isNonDefault(value, NoVersionProvider.class)) { versionProvider = (DefaultFactory.createVersionProvider(factory, value)); }
+            }
+
             /** Returns the option with the specified short name, or {@code null} if no option with that name is defined for this command. */
             public OptionSpec findOption(char shortName) { return findOption(shortName, options()); }
             /** Returns the option with the specified name, or {@code null} if no option with that name is defined for this command.
@@ -3849,10 +3856,16 @@ public class CommandLine {
             }
         }
         private static boolean initializable(Object current, Object candidate, Object defaultValue) {
-            return current == null && !Assert.notNull(defaultValue, "defaultValue").equals(candidate);
+            return current == null && isNonDefault(candidate, defaultValue);
         }
         private static boolean initializable(Object current, Object[] candidate, Object[] defaultValue) {
-            return current == null && !Arrays.equals(Assert.notNull(defaultValue, "defaultValue"), candidate);
+            return current == null && isNonDefault(candidate, defaultValue);
+        }
+        private static boolean isNonDefault(Object candidate, Object defaultValue) {
+            return !Assert.notNull(defaultValue, "defaultValue").equals(candidate);
+        }
+        private static boolean isNonDefault(Object[] candidate, Object[] defaultValue) {
+            return !Arrays.equals(Assert.notNull(defaultValue, "defaultValue"), candidate);
         }
         /** Models the usage help message specification.
          * @since 3.0 */
@@ -4133,6 +4146,42 @@ public class CommandLine {
                 footerHeading(getString(rb, keys, commandName, "usage.footerHeading", footerHeading));
                 return this;
             }
+            UsageMessageSpec updateFromResourceBundle(ResourceBundle rb, String commandName) {
+                if (rb != null) { resourceBundle(rb); }
+                Set<String> keys = keys(rb);
+                String[] arr = null;
+                if ((arr = getStringArray(rb, keys, commandName, "usage.description", description)) != null) { description(arr);}
+                if ((arr = getStringArray(rb, keys, commandName, "usage.customSynopsis", customSynopsis)) != null) {customSynopsis(arr);}
+                if ((arr = getStringArray(rb, keys, commandName, "usage.header", header)) != null) {header(arr);}
+                if ((arr = getStringArray(rb, keys, commandName, "usage.footer", footer)) != null) {footer(arr); }
+                String str = null;
+                if ((str = getString(rb, keys, commandName, "usage.headerHeading", headerHeading)) != null) {headerHeading(str);}
+                if ((str = getString(rb, keys, commandName, "usage.synopsisHeading", synopsisHeading)) != null) {synopsisHeading(str);}
+                if ((str = getString(rb, keys, commandName, "usage.descriptionHeading", descriptionHeading)) != null) {descriptionHeading(str);}
+                if ((str = getString(rb, keys, commandName, "usage.parameterListHeading", parameterListHeading)) != null) {parameterListHeading(str);}
+                if ((str = getString(rb, keys, commandName, "usage.optionListHeading", optionListHeading)) != null) {optionListHeading(str);}
+                if ((str = getString(rb, keys, commandName, "usage.commandListHeading", commandListHeading)) != null) {commandListHeading(str);}
+                if ((str = getString(rb, keys, commandName, "usage.footerHeading", footerHeading)) != null) {footerHeading(str);}
+                return this;
+            }
+            void updateFromCommand(Command cmd) {
+                if (isNonDefault(cmd.synopsisHeading(), DEFAULT_SYNOPSIS_HEADING))            {synopsisHeading = cmd.synopsisHeading();}
+                if (isNonDefault(cmd.commandListHeading(), DEFAULT_COMMAND_LIST_HEADING))     {commandListHeading = cmd.commandListHeading();}
+                if (isNonDefault(cmd.requiredOptionMarker(), DEFAULT_REQUIRED_OPTION_MARKER)) {requiredOptionMarker = cmd.requiredOptionMarker();}
+                if (isNonDefault(cmd.abbreviateSynopsis(), DEFAULT_ABBREVIATE_SYNOPSIS))      {abbreviateSynopsis = cmd.abbreviateSynopsis();}
+                if (isNonDefault(cmd.sortOptions(), DEFAULT_SORT_OPTIONS))                    {sortOptions = cmd.sortOptions();}
+                if (isNonDefault(cmd.showDefaultValues(), DEFAULT_SHOW_DEFAULT_VALUES))       {showDefaultValues = cmd.showDefaultValues();}
+                if (isNonDefault(cmd.hidden(), DEFAULT_HIDDEN))                               {hidden = cmd.hidden();}
+                if (isNonDefault(cmd.customSynopsis(), DEFAULT_MULTI_LINE))                   {customSynopsis = cmd.customSynopsis().clone();}
+                if (isNonDefault(cmd.description(), DEFAULT_MULTI_LINE))                      {description = cmd.description().clone();}
+                if (isNonDefault(cmd.descriptionHeading(), DEFAULT_SINGLE_VALUE))             {descriptionHeading = cmd.descriptionHeading();}
+                if (isNonDefault(cmd.header(), DEFAULT_MULTI_LINE))                           {header = cmd.header().clone();}
+                if (isNonDefault(cmd.headerHeading(), DEFAULT_SINGLE_VALUE))                  {headerHeading = cmd.headerHeading();}
+                if (isNonDefault(cmd.footer(), DEFAULT_MULTI_LINE))                           {footer = cmd.footer().clone();}
+                if (isNonDefault(cmd.footerHeading(), DEFAULT_SINGLE_VALUE))                  {footerHeading = cmd.footerHeading();}
+                if (isNonDefault(cmd.parameterListHeading(), DEFAULT_SINGLE_VALUE))           {parameterListHeading = cmd.parameterListHeading();}
+                if (isNonDefault(cmd.optionListHeading(), DEFAULT_SINGLE_VALUE))              {optionListHeading = cmd.optionListHeading();}
+            }
 
             void initSynopsisHeading(String value)      { if (initializable(synopsisHeading, value, DEFAULT_SYNOPSIS_HEADING))            {synopsisHeading = value;} }
             void initCommandListHeading(String value)   { if (initializable(commandListHeading, value, DEFAULT_COMMAND_LIST_HEADING))     {commandListHeading = value;} }
@@ -4272,7 +4321,8 @@ public class CommandLine {
             /** Sets whether arguments should be {@linkplain ArgSpec#splitRegex() split} first before any further processing.
              * If true, the original argument will only be split into as many parts as allowed by max arity. */
             public ParserSpec limitSplit(boolean limitSplit)                               { this.limitSplit = limitSplit; return this; }
-            void initSeparator(String value) { if (initializable(separator, value, DEFAULT_SEPARATOR)) {separator = value;} }
+            void initSeparator(String value)   { if (initializable(separator, value, DEFAULT_SEPARATOR)) {separator = value;} }
+            void updateSeparator(String value) { if (isNonDefault(value, DEFAULT_SEPARATOR))             {separator = value;} }
             public String toString() {
                 return String.format("posixClusteredShortOptionsAllowed=%s, stopAtPositional=%s, stopAtUnmatched=%s, " +
                                 "separator=%s, overwrittenOptionsAllowed=%s, unmatchedArgumentsAllowed=%s, expandAtFiles=%s, " +
@@ -5397,16 +5447,20 @@ public class CommandLine {
 
                 CommandSpec result = CommandSpec.wrapWithoutInspection(Assert.notNull(instance, "command"));
 
+                Stack<Class> hierarchy = new Stack<Class>();
+                while (cls != null) { hierarchy.add(cls); cls = cls.getSuperclass(); }
                 boolean hasCommandAnnotation = false;
-                while (cls != null) {
+                boolean mixinStandardHelpOptions = false;
+                while (!hierarchy.isEmpty()) {
+                    cls = hierarchy.pop();
                     boolean thisCommandHasAnnotation = updateCommandAttributes(cls, result, factory, rb, getBundleOrNull(cls.getName() + "_Messages"));
                     hasCommandAnnotation |= thisCommandHasAnnotation;
                     hasCommandAnnotation |= initFromAnnotatedFields(instance, cls, result, factory);
-                    if (thisCommandHasAnnotation) { //#377 Standard help options should be added last
-                        result.mixinStandardHelpOptions(cls.getAnnotation(Command.class).mixinStandardHelpOptions());
+                    if (cls.isAnnotationPresent(Command.class)) {
+                        mixinStandardHelpOptions |= cls.getAnnotation(Command.class).mixinStandardHelpOptions();
                     }
-                    cls = cls.getSuperclass();
                 }
+                result.mixinStandardHelpOptions(mixinStandardHelpOptions); //#377 Standard help options should be added last
                 if (command instanceof Method) {
                     Method method = (Method) command;
                     t.debug("Using method %s as command %n", method);
@@ -5440,34 +5494,19 @@ public class CommandLine {
                 commandSpec.aliases(cmd.aliases());
                 initSubcommands(cmd, commandSpec, factory);
 
-                commandSpec.parser().initSeparator(cmd.separator());
-                commandSpec.initName(cmd.name());
-                commandSpec.initVersion(cmd.version());
-                commandSpec.initHelpCommand(cmd.helpCommand());
-                commandSpec.initVersionProvider(cmd.versionProvider(), factory);
+                commandSpec.parser().updateSeparator(cmd.separator());
+                commandSpec.updateName(cmd.name());
+                commandSpec.updateVersion(cmd.version());
+                commandSpec.updateHelpCommand(cmd.helpCommand());
+                commandSpec.updateVersionProvider(cmd.versionProvider(), factory);
                 commandSpec.initDefaultValueProvider(cmd.defaultValueProvider(), factory);
                 UsageMessageSpec usageMessage = commandSpec.usageMessage();
-                usageMessage.initSynopsisHeading(cmd.synopsisHeading());
-                usageMessage.initCommandListHeading(cmd.commandListHeading());
-                usageMessage.initRequiredOptionMarker(cmd.requiredOptionMarker());
-                usageMessage.initCustomSynopsis(cmd.customSynopsis());
-                usageMessage.initDescription(cmd.description());
-                usageMessage.initDescriptionHeading(cmd.descriptionHeading());
-                usageMessage.initHeader(cmd.header());
-                usageMessage.initHeaderHeading(cmd.headerHeading());
-                usageMessage.initFooter(cmd.footer());
-                usageMessage.initFooterHeading(cmd.footerHeading());
-                usageMessage.initParameterListHeading(cmd.parameterListHeading());
-                usageMessage.initOptionListHeading(cmd.optionListHeading());
-                usageMessage.initAbbreviateSynopsis(cmd.abbreviateSynopsis());
-                usageMessage.initSortOptions(cmd.sortOptions());
-                usageMessage.initShowDefaultValues(cmd.showDefaultValues());
-                usageMessage.initHidden(cmd.hidden());
+                usageMessage.updateFromCommand(cmd);
                 if (mandatory != null) {
-                    usageMessage.initFromResourceBundle(mandatory, commandSpec.name);
+                    usageMessage.updateFromResourceBundle(mandatory, commandSpec.name);
                 } else {
                     ResourceBundle rb = empty(cmd.resourceBundle()) ? fallback : ResourceBundle.getBundle(cmd.resourceBundle());
-                    usageMessage.initFromResourceBundle(rb, commandSpec.name);
+                    usageMessage.updateFromResourceBundle(rb, commandSpec.name);
                 }
                 return true;
             }

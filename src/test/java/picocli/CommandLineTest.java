@@ -1497,7 +1497,7 @@ public class CommandLineTest {
             fail("expected CommandLine$DuplicateOptionAnnotationsException");
         } catch (DuplicateOptionAnnotationsException ex) {
             String expected = String.format("Option name '-p' is used by both field String %s.path and field String %s.text",
-                    ParentOption.class.getName(), ChildOption.class.getName());
+                    ChildOption.class.getName(), ParentOption.class.getName());
             assertEquals(expected, ex.getMessage());
         }
     }
