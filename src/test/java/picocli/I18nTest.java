@@ -25,7 +25,7 @@ import static org.junit.Assert.*;
 import static picocli.HelpTestUtil.usageString;
 
 /**
- * Tests valid values-related functionality.
+ * Tests internationalization (i18n) and localization (l12n)-related functionality.
  */
 public class I18nTest {
 

@@ -2938,7 +2938,7 @@ public class CommandLine {
          * {@code commandName + "."} to specify different values for different commands. The most specific key wins.</p>
          *
          * @return the base name of the ResourceBundle for usage help strings
-         * @see UsageMessageSpec#resourceBundle(ResourceBundle, String)
+         * @see UsageMessageSpec#initFromResourceBundle(ResourceBundle, String)
          * @since 3.6
          */
         String resourceBundle() default "";
@@ -4008,52 +4008,52 @@ public class CommandLine {
              * @return this UsageMessageSpec for method chaining */
             public UsageMessageSpec footer(String... footer) { this.footer = footer; return this; }
             /** Returns the resource bundle for this usage help message specification.
-             * @see #resourceBundle(ResourceBundle, String)
+             * @see #resourceBundle(ResourceBundle)
              * @since 3.6 */
             public ResourceBundle resourceBundle() { return resourceBundle; }
             /** Sets the resource bundle for this usage help message specification. Does not initialize any description text.
-             * @see #resourceBundle(ResourceBundle, String)
+             * @see #initFromResourceBundle(ResourceBundle, String)
              * @since 3.6 */
             public UsageMessageSpec resourceBundle(ResourceBundle rb) { resourceBundle = rb; return this; }
-                /** Sets the <a href="https://docs.oracle.com/javase/8/docs/api/java/util/ResourceBundle.html">ResourceBundle</a>
-                 * for this usageMessage specification, initializes attributes of this usageMessage specification from the specified resource bundle
-                 * and returns this UsageMessageSpec. Existing values are overwritten with values from the resource bundle.
-                 * <p>Example:</p><pre>
-                 * # Usage Help Message Sections
-                 * # ---------------------------
-                 * # Numbered resource keys can be used to create multi-line sections.
-                 * usage.description.0 = first line
-                 * usage.description.1 = second line
-                 * usage.description.2 = third line
-                 * # Leading whitespace is removed by default. Start with &#92;u0020 to keep the leading whitespace.
-                 * usage.customSynopsis.0 =      Usage: ln [OPTION]... [-T] TARGET LINK_NAME   (1st form)
-                 * usage.customSynopsis.1 = &#92;u0020 or:  ln [OPTION]... TARGET                  (2nd form)
-                 * usage.customSynopsis.2 = &#92;u0020 or:  ln [OPTION]... TARGET... DIRECTORY     (3rd form)
-                 * usage.header   = header first line
-                 * usage.header.0 = header second line
-                 * usage.footer = footer
-                 * usage.headerHeading = This is my app. There are other apps like it but this one is mine.
-                 * usage.synopsisHeading = Usage:&#92;u0020
-                 * # Headings can contain the %n character to create multi-line values.
-                 * usage.descriptionHeading = Description:%n
-                 * usage.parameterListHeading = %nPositional parameters:%n
-                 * usage.optionListHeading = %nOptions:%n
-                 * usage.commandListHeading = %nCommands:%n
-                 * usage.footerHeading = Powered by picocli
-                 *
-                 * # Option Descriptions
-                 * # -------------------
-                 * # Use numbered keys to create multi-line descriptions.
-                 * help = Show this help message and exit.
-                 * version = Print version information and exit.
-                 * </pre>
-                 * <p>Resources for multiple commands can be specified in a single ResourceBundle. Keys and their value can be
-                 * shared by multiple commands (so you don't need to repeat them for every command), but keys can be prefixed with
-                 * {@code commandName + "."} to specify different values for different commands. The most specific key wins.</p>
-                 * @see Command#resourceBundle()
-                 * @see OptionSpec.Builder#description(String, String, ResourceBundle)
-                 * @see PositionalParamSpec.Builder#description(String, String, ResourceBundle)
-                 * @since 3.6 */
+            /** Sets the <a href="https://docs.oracle.com/javase/8/docs/api/java/util/ResourceBundle.html">ResourceBundle</a>
+             * for this usageMessage specification, initializes attributes of this usageMessage specification from the specified resource bundle
+             * and returns this UsageMessageSpec. Existing values are overwritten with values from the resource bundle.
+             * <p>Example:</p><pre>
+             * # Usage Help Message Sections
+             * # ---------------------------
+             * # Numbered resource keys can be used to create multi-line sections.
+             * usage.description.0 = first line
+             * usage.description.1 = second line
+             * usage.description.2 = third line
+             * # Leading whitespace is removed by default. Start with &#92;u0020 to keep the leading whitespace.
+             * usage.customSynopsis.0 =      Usage: ln [OPTION]... [-T] TARGET LINK_NAME   (1st form)
+             * usage.customSynopsis.1 = &#92;u0020 or:  ln [OPTION]... TARGET                  (2nd form)
+             * usage.customSynopsis.2 = &#92;u0020 or:  ln [OPTION]... TARGET... DIRECTORY     (3rd form)
+             * usage.header   = header first line
+             * usage.header.0 = header second line
+             * usage.footer = footer
+             * usage.headerHeading = This is my app. There are other apps like it but this one is mine.
+             * usage.synopsisHeading = Usage:&#92;u0020
+             * # Headings can contain the %n character to create multi-line values.
+             * usage.descriptionHeading = Description:%n
+             * usage.parameterListHeading = %nPositional parameters:%n
+             * usage.optionListHeading = %nOptions:%n
+             * usage.commandListHeading = %nCommands:%n
+             * usage.footerHeading = Powered by picocli
+             *
+             * # Option Descriptions
+             * # -------------------
+             * # Use numbered keys to create multi-line descriptions.
+             * help = Show this help message and exit.
+             * version = Print version information and exit.
+             * </pre>
+             * <p>Resources for multiple commands can be specified in a single ResourceBundle. Keys and their value can be
+             * shared by multiple commands (so you don't need to repeat them for every command), but keys can be prefixed with
+             * {@code commandName + "."} to specify different values for different commands. The most specific key wins.</p>
+             * @see Command#resourceBundle()
+             * @see OptionSpec.Builder#description(String, String, ResourceBundle)
+             * @see PositionalParamSpec.Builder#description(String, String, ResourceBundle)
+             * @since 3.6 */
             public UsageMessageSpec initFromResourceBundle(ResourceBundle rb, String commandName) {
                 resourceBundle(rb);
                 Set<String> keys = keys(rb);
