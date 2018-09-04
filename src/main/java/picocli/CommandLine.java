@@ -6332,12 +6332,12 @@ public class CommandLine {
         private void applyDefault(IDefaultValueProvider defaultValueProvider,
             ArgSpec arg, List<ArgSpec> required) throws Exception {
 
-            boolean isDefaultOrInitialVaLuePresent = arg.defaultValue() != null || arg.initialValue() != null;
-
-            // Default value provider is only used if the argSpec doesn't already have a default
-            // value or an initial value
-            String defaultValue = defaultValueProvider != null && !isDefaultOrInitialVaLuePresent ?
-                    defaultValueProvider.defaultValue(arg) : arg.defaultValue() ;
+            // Default value provider return value is only used if provider exists and if value
+            // is not null otherwise the original default or initial value are used
+            String defaultValue =
+                    defaultValueProvider != null && defaultValueProvider.defaultValue(arg) != null
+                        ? defaultValueProvider.defaultValue(arg)
+                        : arg.defaultValue();
 
             if (defaultValue == null) { return; }
             if (tracer.isDebug()) {tracer.debug("Applying defaultValue (%s) to %s%n", defaultValue, arg);}
