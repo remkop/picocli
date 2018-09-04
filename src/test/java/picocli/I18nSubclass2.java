@@ -5,10 +5,11 @@ import picocli.CommandLine.Option;
 import picocli.CommandLine.Parameters;
 
 @Command(name = "i18l-sub2",
+        resourceBundle = "picocli.I18nSubclass2_Messages",
         description = {"orig sub2 desc 1", "orig sub2 desc 2"},
         descriptionHeading = "orig sub2 desc heading%n",
         headerHeading = "orig sub2 header heading%n")
-public class I18nSubclassBean2 extends I18nBean {
+public class I18nSubclass2 extends I18nSuperclass {
     @Option(names = {"-a", "--aaa"})
     String a;
 

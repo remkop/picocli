@@ -8,7 +8,7 @@ import picocli.CommandLine.Parameters;
         description = {"orig sub desc 1", "orig sub desc 2"},
         descriptionHeading = "orig sub desc heading:%n",
         headerHeading = "orig sub header heading%n")
-public class I18nSubclassBean extends I18nBean {
+public class I18nSubclass extends I18nSuperclass {
     @Option(names = {"-a", "--aaa"})
     String a;
 

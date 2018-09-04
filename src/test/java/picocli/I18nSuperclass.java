@@ -5,6 +5,7 @@ import picocli.CommandLine.Option;
 import picocli.CommandLine.Parameters;
 
 @Command(name = "i18l",
+        resourceBundle = "picocli.I18nSuperclass_Messages",
         subcommands = CommandLine.HelpCommand.class,
         mixinStandardHelpOptions = true,
         description = {"orig desc 1", "orig desc 2", "orig desc 3"},
@@ -16,7 +17,7 @@ import picocli.CommandLine.Parameters;
         commandListHeading = "Orig command list heading",
         optionListHeading = "Orig option list heading",
         parameterListHeading = "Orig param list heading")
-public class I18nBean {
+public class I18nSuperclass {
     @Option(names = {"-x", "--xxx"})
     String x;
 
