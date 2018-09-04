@@ -2,6 +2,7 @@ package picocli;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -18,6 +19,10 @@ public class CommandLineDefaultProviderTest {
     public String defaultValue(ArgSpec argSpec) {
       return "Default provider string value";
     }
+  }
+
+  static class TestNullDefaultProvider implements IDefaultValueProvider {
+    public String defaultValue(ArgSpec argSpec) {  return null; }
   }
 
   @Command(defaultValueProvider = TestDefaultProvider.class)
@@ -64,7 +69,7 @@ public class CommandLineDefaultProviderTest {
 
 
   @Test
-  public void testCommandDefaultProviderByAnnotation() {
+  public void testCommandDefaultProviderByAnnotationOverridesValues() {
     CommandLine cmd = new CommandLine(App.class);
     cmd.parse();
 
@@ -72,6 +77,29 @@ public class CommandLineDefaultProviderTest {
     // if no default defined on the option, command default provider should be used
     assertEquals("Default provider string value",app.optionStringFieldWithoutDefaultNorInitialValue);
     assertEquals("Default provider string value",app.paramStringFieldWithoutDefaultNorInitialValue);
+    // if a default is defined on the option either by annotation or by initial value, it must
+    // override the default provider.
+    assertEquals("Default provider string value",app.optionStringFieldWithAnnotatedDefault);
+    assertEquals("Default provider string value",app.paramStringFieldWithAnnotatedDefault);
+
+    assertEquals("Default provider string value",app.optionStringFieldWithInitDefault);
+    assertEquals("Default provider string value",app.paramStringFieldWithInitDefault);
+
+    assertEquals("Default provider string value",app.stringForSetterDefault);
+  }
+
+  @Test
+  public void testCommandDefaultProviderDoesntOverridesDefaultsIfValueIsNull() {
+    CommandLine cmd = new CommandLine(App.class);
+
+    cmd.setDefaultValueProvider(new TestNullDefaultProvider());
+
+    cmd.parse();
+
+    App app = cmd.getCommand();
+    // if no default defined on the option, command default provider should be used
+    assertNull(app.optionStringFieldWithoutDefaultNorInitialValue);
+    assertNull(app.paramStringFieldWithoutDefaultNorInitialValue);
     // if a default is defined on the option either by annotation or by initial value, it must
     // override the default provider.
     assertEquals("Annotated default value",app.optionStringFieldWithAnnotatedDefault);
