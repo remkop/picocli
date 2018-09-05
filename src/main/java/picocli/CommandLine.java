@@ -1210,7 +1210,7 @@ public class CommandLine {
     /** @deprecated use {@link #parseWithHandler(IParseResultHandler2,  String[])} instead
      * @since 2.0 */
     @Deprecated public List<Object> parseWithHandler(IParseResultHandler handler, PrintStream out, String... args) {
-        return parseWithHandlers(handler, out, Help.Ansi.AUTO, new DefaultExceptionHandler(), args);
+        return parseWithHandlers(handler, out, Help.Ansi.AUTO, defaultExceptionHandler(), args);
     }
     /**
      * Returns the result of calling {@link #parseWithHandlers(IParseResultHandler2,  IExceptionHandler2, String...)} with
@@ -1312,7 +1312,7 @@ public class CommandLine {
             parseResult = parseArgs(args);
             return handler.handleParseResult(parseResult);
         } catch (ParameterException ex) {
-            return exceptionHandler.handleParseException(ex, (String[]) args);
+            return exceptionHandler.handleParseException(ex, args);
         } catch (ExecutionException ex) {
             return exceptionHandler.handleExecutionException(ex, parseResult);
         }
@@ -2813,6 +2813,9 @@ public class CommandLine {
          * and {@code --version} {@linkplain Option#versionHelp() versionHelp} options to the options of this command.
          * <p>
          * Note that if no {@link #version()} or {@link #versionProvider()} is specified, the {@code --version} option will not print anything.
+         * </p><p>
+         * For {@linkplain #resourceBundle() internationalization}: the help option has {@code descriptionKey = "mixinStandardHelpOptions.help"},
+         * and the version option has {@code descriptionKey = "mixinStandardHelpOptions.version"}.
          * </p>
          * @return whether the auto-help mixin should be added to this command
          * @since 3.0 */
@@ -2956,12 +2959,13 @@ public class CommandLine {
          * </pre>
          * <p>Resources for multiple commands can be specified in a single ResourceBundle. Keys and their value can be
          * shared by multiple commands (so you don't need to repeat them for every command), but keys can be prefixed with
-         * {@code commandName + "."} to specify different values for different commands. The most specific key wins.</p>
+         * {@code fully qualified commandName + "."} to specify different values for different commands. The most specific key wins.</p>
          *
          * @return the base name of the ResourceBundle for usage help strings
          * @see ArgSpec#messages()
          * @see UsageMessageSpec#messages()
          * @see Messages
+         * @see CommandSpec#qualifiedName(String)
          * @since 3.6
          */
         String resourceBundle() default "";
@@ -3479,7 +3483,7 @@ public class CommandLine {
             /** Returns the usage help message specification for this command. */
             public UsageMessageSpec usageMessage() { return usageMessage; }
             /** Initializes the usageMessage specification for this command from the specified settings and returns this commandSpec.*/
-            public CommandSpec usageMessage(UsageMessageSpec settings) { usageMessage.initFrom(settings); return this; }
+            public CommandSpec usageMessage(UsageMessageSpec settings) { usageMessage.initFrom(settings, this); return this; }
 
             /** Returns a read-only view of the subcommand map. */
             public Map<String, CommandLine> subcommands() { return Collections.unmodifiableMap(commands); }
@@ -3506,7 +3510,21 @@ public class CommandLine {
                     previous = commands.put(alias, subCommandLine);
                     if (previous != null && previous != subCommandLine) { throw new InitializationException("Alias '" + alias + "' for subcommand '" + name + "' is already used by another subcommand of '" + this.name() + "'"); }
                 }
+                subSpec.updateMessages(usageMessage().messages());
                 return this;
+            }
+            private void updateMessages(Messages parentCommandMessages) {
+                if (Messages.empty(usageMessage().messages())) {
+                    usageMessage().messages(Messages.copy(this, parentCommandMessages));
+                }
+                updateArgSpecMessages();
+                for (CommandLine sub : commands.values()) { // perculate down the hierarchy
+                    sub.getCommandSpec().updateMessages(usageMessage().messages());
+                }
+            }
+            private void updateArgSpecMessages() {
+                for (OptionSpec opt : options()) { opt.messages(usageMessage().messages()); }
+                for (PositionalParamSpec pos : positionalParameters()) { pos.messages(usageMessage().messages()); }
             }
 
             /** Registers any class method(s) annotated with {@code @Command} as subcommands. See also {@link #addSubcommand(String, CommandLine)}.
@@ -3539,6 +3557,8 @@ public class CommandLine {
             public CommandSpec add(ArgSpec arg) { return arg.isOption() ? addOption((OptionSpec) arg) : addPositional((PositionalParamSpec) arg); }
     
             /** Adds the specified option spec to the list of configured arguments to expect.
+             * The option's {@linkplain OptionSpec#description()} may now return Strings from this
+             * CommandSpec's {@linkplain UsageMessageSpec#messages() messages}.
              * @param option the option spec to add
              * @return this CommandSpec for method chaining
              * @throws DuplicateOptionAnnotationsException if any of the names of the specified option is the same as the name of another option */
@@ -3553,15 +3573,19 @@ public class CommandLine {
                     if (name.length() == 2 && name.startsWith("-")) { posixOptionsByKeyMap.put(name.charAt(1), option); }
                 }
                 if (option.required()) { requiredArgs.add(option); }
+                option.messages(usageMessage().messages());
                 return this;
             }
             /** Adds the specified positional parameter spec to the list of configured arguments to expect.
+             * The positional parameter's {@linkplain PositionalParamSpec#description()} may
+             * now return Strings from this CommandSpec's {@linkplain UsageMessageSpec#messages() messages}.
              * @param positional the positional parameter spec to add
              * @return this CommandSpec for method chaining */
             public CommandSpec addPositional(PositionalParamSpec positional) {
                 args.add(positional);
                 positionalParameters.add(positional);
                 if (positional.required()) { requiredArgs.add(positional); }
+                positional.messages(usageMessage().messages());
                 return this;
             }
     
@@ -3578,8 +3602,7 @@ public class CommandLine {
                 initHelpCommand(mixin.helpCommand());
                 initVersionProvider(mixin.versionProvider());
                 initDefaultValueProvider(mixin.defaultValueProvider());
-                usageMessage.initFromMixin(mixin.usageMessage);
-                if (usageMessage.messages() == null) { usageMessage.messages(mixin.usageMessage.messages()); }
+                usageMessage.initFromMixin(mixin.usageMessage, this);
 
                 for (Map.Entry<String, CommandLine> entry : mixin.subcommands().entrySet()) {
                     addSubcommand(entry.getKey(), entry.getValue());
@@ -3646,8 +3669,8 @@ public class CommandLine {
              * @return {@link #DEFAULT_COMMAND_NAME} by default, initialized from {@link Command#name()} and the parent command if defined.
              * @since 3.0.1 */
             public String qualifiedName() { return qualifiedName(" "); }
-            /** Returns this command's {@link #name() name}, preceded by the specified separator and the qualified name of the parent command, if any.
-             * @return {@link #DEFAULT_COMMAND_NAME} by default, initialized from {@link Command#name()} and the parent command if defined.
+            /** Returns this command's fully qualified name, which is its {@link #name() name}, preceded by the qualified name of the parent command, if this command has a parent command.
+             * @return {@link #DEFAULT_COMMAND_NAME} by default, initialized from {@link Command#name()} and the parent command if any.
              * @param separator the string to put between the names of the commands in the hierarchy
              * @since 3.6 */
             public String qualifiedName(String separator) {
@@ -4075,7 +4098,7 @@ public class CommandLine {
              * @param msgs the new Messages value, may be {@code null}
              * @since 3.6 */
             public UsageMessageSpec messages(Messages msgs) { messages = msgs; return this; }
-            void updateFromCommand(Command cmd) {
+            void updateFromCommand(Command cmd, CommandSpec commandSpec) {
                 if (isNonDefault(cmd.synopsisHeading(), DEFAULT_SYNOPSIS_HEADING))            {synopsisHeading = cmd.synopsisHeading();}
                 if (isNonDefault(cmd.commandListHeading(), DEFAULT_COMMAND_LIST_HEADING))     {commandListHeading = cmd.commandListHeading();}
                 if (isNonDefault(cmd.requiredOptionMarker(), DEFAULT_REQUIRED_OPTION_MARKER)) {requiredOptionMarker = cmd.requiredOptionMarker();}
@@ -4092,8 +4115,11 @@ public class CommandLine {
                 if (isNonDefault(cmd.footerHeading(), DEFAULT_SINGLE_VALUE))                  {footerHeading = cmd.footerHeading();}
                 if (isNonDefault(cmd.parameterListHeading(), DEFAULT_SINGLE_VALUE))           {parameterListHeading = cmd.parameterListHeading();}
                 if (isNonDefault(cmd.optionListHeading(), DEFAULT_SINGLE_VALUE))              {optionListHeading = cmd.optionListHeading();}
+
+                ResourceBundle rb = empty(cmd.resourceBundle()) ? null : ResourceBundle.getBundle(cmd.resourceBundle());
+                if (rb != null) { messages(new Messages(commandSpec, rb)); } // else preserve superclass bundle
             }
-            void initFromMixin(UsageMessageSpec mixin) {
+            void initFromMixin(UsageMessageSpec mixin, CommandSpec commandSpec) {
                 if (initializable(synopsisHeading, mixin.synopsisHeading(), DEFAULT_SYNOPSIS_HEADING))                 {synopsisHeading = mixin.synopsisHeading();}
                 if (initializable(commandListHeading, mixin.commandListHeading(), DEFAULT_COMMAND_LIST_HEADING))       {commandListHeading = mixin.commandListHeading();}
                 if (initializable(requiredOptionMarker, mixin.requiredOptionMarker(), DEFAULT_REQUIRED_OPTION_MARKER)) {requiredOptionMarker = mixin.requiredOptionMarker();}
@@ -4110,8 +4136,9 @@ public class CommandLine {
                 if (initializable(footerHeading, mixin.footerHeading(), DEFAULT_SINGLE_VALUE))                         {footerHeading = mixin.footerHeading();}
                 if (initializable(parameterListHeading, mixin.parameterListHeading(), DEFAULT_SINGLE_VALUE))           {parameterListHeading = mixin.parameterListHeading();}
                 if (initializable(optionListHeading, mixin.optionListHeading(), DEFAULT_SINGLE_VALUE))                 {optionListHeading = mixin.optionListHeading();}
+                if (Messages.empty(messages)) { messages(Messages.copy(commandSpec, mixin.messages())); }
             }
-            void initFrom(UsageMessageSpec settings) {
+            void initFrom(UsageMessageSpec settings, CommandSpec commandSpec) {
                 description = settings.description;
                 customSynopsis = settings.customSynopsis;
                 header = settings.header;
@@ -4129,6 +4156,7 @@ public class CommandLine {
                 commandListHeading = settings.commandListHeading;
                 footerHeading = settings.footerHeading;
                 width = settings.width;
+                messages = Messages.copy(commandSpec, settings.messages());
             }
         }
         /** Models parser configuration specification.
@@ -4730,7 +4758,7 @@ public class CommandLine {
                  * @see Option#descriptionKey()
                  * @see Parameters#descriptionKey()
                  * @since 3.6 */
-                public Builder descriptionKey(String descriptionKey) { this.descriptionKey = descriptionKey; return self(); }
+                public T descriptionKey(String descriptionKey) { this.descriptionKey = descriptionKey; return self(); }
 
                 /** Sets how many arguments this option or positional parameter requires, and returns this builder. */
                 public T arity(String range)                 { return arity(Range.valueOf(range)); }
@@ -4875,11 +4903,12 @@ public class CommandLine {
                 return super.internalShowDefaultValue(usageMessageShowDefaults) && !help() && !versionHelp() && !usageHelp();
             }
 
-            /** Returns the description template of this option, before variables are rendered.
-             * If a resource bundle has been set, this method will first try to find a value in the resource bundle:
-             * If the resource bundle has no entry for the specified {@code commandName + "." + descriptionKey} or for {@code descriptionKey},
+            /** Returns the description template of this option, before variables are {@linkplain Option#description() rendered}.
+             * If a resource bundle has been {@linkplain ArgSpec#messages(Messages) set}, this method will first try to find a value in the resource bundle:
+             * If the resource bundle has no entry for the {@code fully qualified commandName + "." + descriptionKey} or for the unqualified {@code descriptionKey},
              * an attempt is made to find the option description using any of the option names (without leading hyphens) as key,
-             * first with the specified {@code commandName + "."} prefix, then without.
+             * first with the {@code fully qualified commandName + "."} prefix, then without.
+             * @see CommandSpec#qualifiedName(String)
              * @see Option#description() */
             @Override public String[] description() {
                 if (messages() == null) { return super.description(); }
@@ -5046,12 +5075,13 @@ public class CommandLine {
             @Override public boolean isOption()     { return false; }
             @Override public boolean isPositional() { return true; }
 
-            /** Returns the description template of this positional parameter, before variables are rendered.
-             * If a resource bundle has been set, this method will first try to find a value in the resource bundle:
-             * If the resource bundle has no entry for the specified {@code commandName + "." + descriptionKey} or for {@code descriptionKey},
+            /** Returns the description template of this positional parameter, before variables are {@linkplain Parameters#description() rendered}.
+             * If a resource bundle has been {@linkplain ArgSpec#messages(Messages) set}, this method will first try to find a value in the resource bundle:
+             * If the resource bundle has no entry for the {@code fully qualified commandName + "." + descriptionKey} or for the unqualified {@code descriptionKey},
              * an attempt is made to find the positional parameter description using {@code paramLabel() + "[" + index() + "]"} as key,
-             * first with the specified {@code commandName + "."} prefix, then without.
+             * first with the {@code fully qualified commandName + "."} prefix, then without.
              * @see Parameters#description()
+             * @see CommandSpec#qualifiedName(String)
              * @since 3.6 */
             @Override public String[] description() {
                 if (messages() == null) { return super.description(); }
@@ -5383,6 +5413,17 @@ public class CommandLine {
                 return keys;
             }
 
+            /** Returns a copy of the specified Messages object with the CommandSpec replaced by the specified one.
+             * @param spec the CommandSpec of the returned Messages
+             * @param original the Messages object whose ResourceBundle to reference
+             * @return a Messages object with the specified CommandSpec and the ResourceBundle of the specified Messages object
+             */
+            public static Messages copy(CommandSpec spec, Messages original) {
+                return original == null ? null : new Messages(spec, original.rb);
+            }
+            /** Returns {@code true} if the specified {@code Messages} is {@code null} or has a {@code null ResourceBundle}. */
+            public static boolean empty(Messages messages) { return messages == null || messages.rb == null; }
+
             /** Returns the String value found in the resource bundle for the specified key, or the specified default value if not found.
              * @param key unqualified resource bundle key. This method will first try to find a value by qualifying the key with the command's fully qualified name,
              *             and if not found, it will try with the unqualified key.
@@ -5422,6 +5463,10 @@ public class CommandLine {
                     }
                 }
             }
+            /** Returns the ResourceBundle of this object or {@code null}. */
+            public ResourceBundle resourceBundle() { return rb; }
+            /** Returns the CommandSpec of this object or {@code null}. */
+            public CommandSpec commandSpec() { return spec; }
         }
         private static class CommandReflection {
             static CommandSpec extractCommandSpec(Object command, IFactory factory, boolean annotationsAreMandatory) {
@@ -5443,7 +5488,7 @@ public class CommandLine {
                     } catch (InitializationException ex) {
                         if (cls.isInterface()) {
                             t.debug("%s. Creating Proxy for interface %s%n", ex.getCause(), cls.getName());
-                            instance = Proxy.newProxyInstance(cls.getClassLoader(), new Class[]{cls}, new PicocliInvocationHandler());
+                            instance = Proxy.newProxyInstance(cls.getClassLoader(), new Class<?>[]{cls}, new PicocliInvocationHandler());
                         } else {
                             throw ex;
                         }
@@ -5454,7 +5499,7 @@ public class CommandLine {
 
                 CommandSpec result = CommandSpec.wrapWithoutInspection(Assert.notNull(instance, "command"));
 
-                Stack<Class> hierarchy = new Stack<Class>();
+                Stack<Class<?>> hierarchy = new Stack<Class<?>>();
                 while (cls != null) { hierarchy.add(cls); cls = cls.getSuperclass(); }
                 boolean hasCommandAnnotation = false;
                 boolean mixinStandardHelpOptions = false;
@@ -5478,6 +5523,8 @@ public class CommandLine {
                     // set command name to method name, unless @Command#name is set
                     result.initName(((Method)command).getName());
                 }
+                result.updateArgSpecMessages();
+
                 if (annotationsAreMandatory) {validateCommandSpec(result, hasCommandAnnotation, commandClassName); }
                 result.withToString(commandClassName).validate();
                 return result;
@@ -5496,17 +5543,15 @@ public class CommandLine {
             }
             private static boolean updateCommandAttributes(Command cmd, CommandSpec commandSpec, IFactory factory) {
                 commandSpec.aliases(cmd.aliases());
-                initSubcommands(cmd, commandSpec, factory);
-
                 commandSpec.parser().updateSeparator(cmd.separator());
                 commandSpec.updateName(cmd.name());
                 commandSpec.updateVersion(cmd.version());
                 commandSpec.updateHelpCommand(cmd.helpCommand());
                 commandSpec.updateVersionProvider(cmd.versionProvider(), factory);
                 commandSpec.initDefaultValueProvider(cmd.defaultValueProvider(), factory);
-                commandSpec.usageMessage().updateFromCommand(cmd);
-                ResourceBundle rb = empty(cmd.resourceBundle()) ? null : ResourceBundle.getBundle(cmd.resourceBundle());
-                commandSpec.usageMessage().messages(new Messages(commandSpec, rb));
+                commandSpec.usageMessage().updateFromCommand(cmd, commandSpec);
+
+                initSubcommands(cmd, commandSpec, factory);
                 return true;
             }
             private static void initSubcommands(Command cmd, CommandSpec parent, IFactory factory) {
@@ -5579,9 +5624,9 @@ public class CommandLine {
                 if (member.isArgSpec()) {
                     validateArgSpecField(member);
                     Messages msg = receiver.usageMessage.messages();
-                    if (member.isOption())         { receiver.add(ArgsReflection.extractOptionSpec(member, factory).messages(msg)); }
-                    else if (member.isParameter()) { receiver.add(ArgsReflection.extractPositionalParamSpec(member, factory).messages(msg)); }
-                    else                           { receiver.add(ArgsReflection.extractUnannotatedPositionalParamSpec(member, factory).messages(msg)); }
+                    if (member.isOption())         { receiver.addOption(ArgsReflection.extractOptionSpec(member, factory)); }
+                    else if (member.isParameter()) { receiver.addPositional(ArgsReflection.extractPositionalParamSpec(member, factory)); }
+                    else                           { receiver.addPositional(ArgsReflection.extractUnannotatedPositionalParamSpec(member, factory)); }
                 }
                 if (member.isInjectSpec()) {
                     validateInjectSpec(member);
@@ -5879,7 +5924,7 @@ public class CommandLine {
             private Object value;
             @SuppressWarnings("unchecked") public <T> T get() { return (T) value; }
             public <T> T set(T value) {
-                @SuppressWarnings("unchecked") T result = (T) value;
+                @SuppressWarnings("unchecked") T result = value;
                 this.value = value;
                 return result;
             }
@@ -7390,10 +7435,12 @@ public class CommandLine {
     static class AutoHelpMixin {
         private static final String KEY = "mixinStandardHelpOptions";
 
-        @Option(names = {"-h", "--help"}, usageHelp = true, descriptionKey = "mixinStandardHelpOptions.help", description = "Show this help message and exit.")
+        @Option(names = {"-h", "--help"}, usageHelp = true, descriptionKey = "mixinStandardHelpOptions.help",
+                description = "Show this help message and exit.")
         private boolean helpRequested;
 
-        @Option(names = {"-V", "--version"}, versionHelp = true, descriptionKey = "mixinStandardHelpOptions.version", description = "Print version information and exit.")
+        @Option(names = {"-V", "--version"}, versionHelp = true, descriptionKey = "mixinStandardHelpOptions.version",
+                description = "Print version information and exit.")
         private boolean versionRequested;
     }
 
@@ -7409,6 +7456,8 @@ public class CommandLine {
      * // print help for command
      * command help
      * </pre>
+     * For {@linkplain Messages internationalization}: this command has a {@code --help} option with {@code descriptionKey = "helpCommand.help"},
+     * and a {@code COMMAND} positional parameter with {@code descriptionKey = "helpCommand.command"}.
      * @since 3.0
      */
     @Command(name = "help", header = "Displays help information about the specified command",
@@ -7417,10 +7466,12 @@ public class CommandLine {
                     "If a COMMAND is specified, the help for that command is shown.%n"})
     public static final class HelpCommand implements IHelpCommandInitializable, Runnable {
 
-        @Option(names = {"-h", "--help"}, usageHelp = true, description = "Show usage help for the help command and exit.")
+        @Option(names = {"-h", "--help"}, usageHelp = true, descriptionKey = "helpCommand.help",
+                description = "Show usage help for the help command and exit.")
         private boolean helpRequested;
 
-        @Parameters(paramLabel = "COMMAND", description = "The COMMAND to display the usage help message for.")
+        @Parameters(paramLabel = "COMMAND", descriptionKey = "helpCommand.command",
+                    description = "The COMMAND to display the usage help message for.")
         private String[] commands = new String[0];
 
         private CommandLine self;

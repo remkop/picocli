@@ -1809,4 +1809,16 @@ public class CommandLineModelTest {
         assertFalse(cmd.getCommandSpec().positionalParameters().get(1).interactive());
         assertFalse(cmd.getCommandSpec().positionalParameters().get(2).interactive());
     }
+
+    @Test
+    public void testCommandSpecQualifiedName_topLevelCommand() {
+        CommandLine cmd = new CommandLine(new I18nCommand());
+        assertEquals("i18n-top", cmd.getCommandSpec().qualifiedName("."));
+        Map<String, CommandLine> subcommands = cmd.getSubcommands();
+        assertEquals("i18n-top.help", subcommands.get("help").getCommandSpec().qualifiedName("."));
+
+        CommandLine sub = subcommands.get("i18n-sub");
+        assertEquals("i18n-top.i18n-sub", sub.getCommandSpec().qualifiedName("."));
+        assertEquals("i18n-top.i18n-sub.help", sub.getSubcommands().get("help").getCommandSpec().qualifiedName("."));
+    }
 }

@@ -4,7 +4,7 @@ import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 import picocli.CommandLine.Parameters;
 
-@Command(name = "i18l-sub",
+@Command(name = "i18n-sub",
         description = {"orig sub desc 1", "orig sub desc 2"},
         descriptionHeading = "orig sub desc heading:%n",
         headerHeading = "orig sub header heading%n")

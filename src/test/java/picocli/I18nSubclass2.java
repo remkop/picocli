@@ -4,7 +4,7 @@ import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 import picocli.CommandLine.Parameters;
 
-@Command(name = "i18l-sub2",
+@Command(name = "i18n-sub2",
         resourceBundle = "picocli.I18nSubclass2_Messages",
         description = {"orig sub2 desc 1", "orig sub2 desc 2"},
         descriptionHeading = "orig sub2 desc heading%n",
