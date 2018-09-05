@@ -82,7 +82,7 @@ Picocli-based applications can easily [integrate](https://picocli.info/#_depende
 *  Picocli is now part of Micronaut. The Micronaut CLI has been rewritten with picocli, and Micronaut has dedicated support for running microservices [standalone with picocli](https://docs.micronaut.io/snapshot/guide/index.html#commandLineApps).
 *  Picocli is now part of JUnit 5. JUnit 5.3 migrated its `ConsoleLauncher` from jopt-simple to picocli to support @-files (argument files); this helps users who need to specify many tests on the command line and run into system limitations.
 
-<img src="https://picocli.info/images/downloads-201807.png">
+<img src="https://picocli.info/images/downloads-201808.png">
 
 Glad to see more people are using picocli. We must be doing something right. :-) 
 
