@@ -1985,6 +1985,28 @@ public class CommandLine {
         return this;
     }
 
+    /** Returns the ResourceBundle of this command or {@code null} if no resource bundle is set.
+     * @see Command#resourceBundle()
+     * @since 3.6 */
+    public ResourceBundle getResourceBundle() { return getCommandSpec().resourceBundle(); }
+
+    /** Sets the ResourceBundle containing usage help message strings.
+     * <p>The specified bundle will be registered with this {@code CommandLine} and the full hierarchy of its
+     * subcommands and nested sub-subcommands <em>at the moment this method is called</em>. Subcommands added
+     * later will not be impacted. To ensure a setting is applied to all
+     * subcommands, call the setter last, after adding subcommands.</p>
+     * @param bundle the ResourceBundle containing usage help message strings
+     * @return this {@code CommandLine} object, to allow method chaining
+     * @see Command#resourceBundle()
+     * @since 3.6 */
+    public CommandLine setResourceBundle(ResourceBundle bundle) {
+        getCommandSpec().resourceBundle(bundle);
+        for (CommandLine command : getCommandSpec().subcommands().values()) {
+            command.getCommandSpec().resourceBundle(bundle);
+        }
+        return this;
+    }
+
     /** Returns the maximum width of the usage help message. The default is 80.
      * @see UsageMessageSpec#width() */
     public int getUsageHelpWidth() { return getCommandSpec().usageMessage().width(); }
@@ -2926,46 +2948,12 @@ public class CommandLine {
          */
         boolean hidden() default false;
 
-        /** Set the base name of the <a href="https://docs.oracle.com/javase/8/docs/api/java/util/ResourceBundle.html">ResourceBundle</a>
-         * to find option and positional parameters descriptions, as well as usage help message sections and section headings.
-         * <p>Example:</p><pre>
-         * # Usage Help Message Sections
-         * # ---------------------------
-         * # Numbered resource keys can be used to create multi-line sections.
-         * usage.description.0 = first line
-         * usage.description.1 = second line
-         * usage.description.2 = third line
-         * # Leading whitespace is removed by default. Start with &#92;u0020 to keep the leading whitespace.
-         * usage.customSynopsis.0 =      Usage: ln [OPTION]... [-T] TARGET LINK_NAME   (1st form)
-         * usage.customSynopsis.1 = &#92;u0020 or:  ln [OPTION]... TARGET                  (2nd form)
-         * usage.customSynopsis.2 = &#92;u0020 or:  ln [OPTION]... TARGET... DIRECTORY     (3rd form)
-         * usage.header   = header first line
-         * usage.header.0 = header second line
-         * usage.footer = footer
-         * usage.headerHeading = This is my app. There are other apps like it but this one is mine.
-         * usage.synopsisHeading = Usage:&#92;u0020
-         * # Headings can contain the %n character to create multi-line values.
-         * usage.descriptionHeading = Description:%n
-         * usage.parameterListHeading = %nPositional parameters:%n
-         * usage.optionListHeading = %nOptions:%n
-         * usage.commandListHeading = %nCommands:%n
-         * usage.footerHeading = Powered by picocli
-         *
-         * # Option Descriptions
-         * # -------------------
-         * # Use numbered keys to create multi-line descriptions.
-         * help = Show this help message and exit.
-         * version = Print version information and exit.
-         * </pre>
-         * <p>Resources for multiple commands can be specified in a single ResourceBundle. Keys and their value can be
-         * shared by multiple commands (so you don't need to repeat them for every command), but keys can be prefixed with
-         * {@code fully qualified commandName + "."} to specify different values for different commands. The most specific key wins.</p>
-         *
+        /** Set the base name of the ResourceBundle to find option and positional parameters descriptions, as well as
+         * usage help message sections and section headings. <p>See {@link Messages} for more details and an example.</p>
          * @return the base name of the ResourceBundle for usage help strings
          * @see ArgSpec#messages()
          * @see UsageMessageSpec#messages()
          * @see Messages
-         * @see CommandSpec#qualifiedName(String)
          * @since 3.6
          */
         String resourceBundle() default "";
@@ -3485,10 +3473,32 @@ public class CommandLine {
             /** Initializes the usageMessage specification for this command from the specified settings and returns this commandSpec.*/
             public CommandSpec usageMessage(UsageMessageSpec settings) { usageMessage.initFrom(settings, this); return this; }
 
+            /** Returns the resource bundle for this command.
+             * @since 3.6 */
+            public ResourceBundle resourceBundle() { return Messages.resourceBundle(usageMessage.messages()); }
+            /** Initializes the resource bundle for this command: sets the {@link UsageMessageSpec#messages(Messages) UsageMessageSpec.messages} to
+             * a {@link Messages Messages} object created from this command spec and the specified bundle, and then sets the
+             * {@link ArgSpec#messages(Messages) ArgSpec.messages} of all options and positional parameters in this command
+             * to the same {@code Messages} instance. Subcommands are not modified.
+             * @param bundle the ResourceBundle to set, may be {@code null}
+             * @return this commandSpec
+             * @see #addSubcommand(String, CommandSpec)
+             * @since 3.6 */
+            public CommandSpec resourceBundle(ResourceBundle bundle) {
+                usageMessage().messages(new Messages(this, bundle));
+                updateArgSpecMessages();
+                return this;
+            }
+            private void updateArgSpecMessages() {
+                for (OptionSpec opt : options()) { opt.messages(usageMessage().messages()); }
+                for (PositionalParamSpec pos : positionalParameters()) { pos.messages(usageMessage().messages()); }
+            }
+
             /** Returns a read-only view of the subcommand map. */
             public Map<String, CommandLine> subcommands() { return Collections.unmodifiableMap(commands); }
     
             /** Adds the specified subcommand with the specified name.
+             * If the specified subcommand does not have a ResourceBundle set, it is initialized to the ResourceBundle of this command spec.
              * @param name subcommand name - when this String is encountered in the command line arguments the subcommand is invoked
              * @param subcommand describes the subcommand to envoke when the name is encountered on the command line
              * @return this {@code CommandSpec} object for method chaining */
@@ -3497,6 +3507,7 @@ public class CommandLine {
             }
     
             /** Adds the specified subcommand with the specified name.
+             * If the specified subcommand does not have a ResourceBundle set, it is initialized to the ResourceBundle of this command spec.
              * @param name subcommand name - when this String is encountered in the command line arguments the subcommand is invoked
              * @param subCommandLine the subcommand to envoke when the name is encountered on the command line
              * @return this {@code CommandSpec} object for method chaining */
@@ -3510,21 +3521,16 @@ public class CommandLine {
                     previous = commands.put(alias, subCommandLine);
                     if (previous != null && previous != subCommandLine) { throw new InitializationException("Alias '" + alias + "' for subcommand '" + name + "' is already used by another subcommand of '" + this.name() + "'"); }
                 }
-                subSpec.updateMessages(usageMessage().messages());
+                subSpec.initResourceBundle(resourceBundle());
                 return this;
             }
-            private void updateMessages(Messages parentCommandMessages) {
-                if (Messages.empty(usageMessage().messages())) {
-                    usageMessage().messages(Messages.copy(this, parentCommandMessages));
+            private void initResourceBundle(ResourceBundle bundle) {
+                if (resourceBundle() == null) {
+                    resourceBundle(bundle);
                 }
-                updateArgSpecMessages();
-                for (CommandLine sub : commands.values()) { // perculate down the hierarchy
-                    sub.getCommandSpec().updateMessages(usageMessage().messages());
+                for (CommandLine sub : commands.values()) { // percolate down the hierarchy
+                    sub.getCommandSpec().initResourceBundle(resourceBundle());
                 }
-            }
-            private void updateArgSpecMessages() {
-                for (OptionSpec opt : options()) { opt.messages(usageMessage().messages()); }
-                for (PositionalParamSpec pos : positionalParameters()) { pos.messages(usageMessage().messages()); }
             }
 
             /** Registers any class method(s) annotated with {@code @Command} as subcommands. See also {@link #addSubcommand(String, CommandLine)}.
@@ -5361,28 +5367,28 @@ public class CommandLine {
         /** Utility class for getting resource bundle strings.
          * Enhances the standard <a href="https://docs.oracle.com/javase/8/docs/api/java/util/ResourceBundle.html">ResourceBundle</a>
          * with support for String arrays and qualified keys: keys that may or may not be prefixed with the fully qualified command name.
-         * <p>Example:</p><pre>
+         * <p>Example properties resource bundle:</p><pre>
          * # Usage Help Message Sections
          * # ---------------------------
          * # Numbered resource keys can be used to create multi-line sections.
+         * usage.headerHeading = This is my app. There are other apps like it but this one is mine.%n
+         * usage.header   = header first line
+         * usage.header.0 = header second line
+         * usage.descriptionHeading = Description:%n
          * usage.description.0 = first line
          * usage.description.1 = second line
          * usage.description.2 = third line
+         * usage.synopsisHeading = Usage:&#92;u0020
          * # Leading whitespace is removed by default. Start with &#92;u0020 to keep the leading whitespace.
          * usage.customSynopsis.0 =      Usage: ln [OPTION]... [-T] TARGET LINK_NAME   (1st form)
          * usage.customSynopsis.1 = &#92;u0020 or:  ln [OPTION]... TARGET                  (2nd form)
          * usage.customSynopsis.2 = &#92;u0020 or:  ln [OPTION]... TARGET... DIRECTORY     (3rd form)
-         * usage.header   = header first line
-         * usage.header.0 = header second line
-         * usage.footer = footer
-         * usage.headerHeading = This is my app. There are other apps like it but this one is mine.
-         * usage.synopsisHeading = Usage:&#92;u0020
          * # Headings can contain the %n character to create multi-line values.
-         * usage.descriptionHeading = Description:%n
          * usage.parameterListHeading = %nPositional parameters:%n
          * usage.optionListHeading = %nOptions:%n
          * usage.commandListHeading = %nCommands:%n
-         * usage.footerHeading = Powered by picocli
+         * usage.footerHeading = Powered by picocli%n
+         * usage.footer = footer
          *
          * # Option Descriptions
          * # -------------------
@@ -5392,10 +5398,27 @@ public class CommandLine {
          * </pre>
          * <p>Resources for multiple commands can be specified in a single ResourceBundle. Keys and their value can be
          * shared by multiple commands (so you don't need to repeat them for every command), but keys can be prefixed with
-         * {@code commandName + "."} to specify different values for different commands. The most specific key wins.</p>
+         * {@code fully qualified command name + "."} to specify different values for different commands.
+         * The most specific key wins. For example: </p>
+         * <pre>
+         * jfrog.rt.usage.header = Artifactory commands
+         * jfrog.rt.config.usage.header = Configure Artifactory details.
+         * jfrog.rt.upload.usage.header = Upload files.
+         *
+         * jfrog.bt.usage.header = Bintray commands
+         * jfrog.bt.config.usage.header = Configure Bintray details.
+         * jfrog.bt.upload.usage.header = Upload files.
+         *
+         * # shared between all commands
+         * usage.footerHeading = Environment Variables:
+         * usage.footer.0 = footer line 0
+         * usage.footer.1 = footer line 1
+         * </pre>
          * @see Command#resourceBundle()
+         * @see Option#descriptionKey()
          * @see OptionSpec#description()
          * @see PositionalParamSpec#description()
+         * @see CommandSpec#qualifiedName(String)
          * @since 3.6 */
         public static class Messages {
             private final CommandSpec spec;
@@ -5463,6 +5486,8 @@ public class CommandLine {
                     }
                 }
             }
+            /** Returns the ResourceBundle of the specified Messages object or {@code null} if the specified Messages object is {@code null}. */
+            public static ResourceBundle resourceBundle(Messages messages) { return messages == null ? null : messages.resourceBundle(); }
             /** Returns the ResourceBundle of this object or {@code null}. */
             public ResourceBundle resourceBundle() { return rb; }
             /** Returns the CommandSpec of this object or {@code null}. */

@@ -19,6 +19,17 @@ import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.contrib.java.lang.system.ProvideSystemProperty;
+import picocli.CommandLine.Command;
+import picocli.CommandLine.Model.ArgSpec;
+import picocli.CommandLine.Model.OptionSpec;
+import picocli.CommandLine.Model.PositionalParamSpec;
+import picocli.CommandLine.Option;
+import picocli.CommandLine.Parameters;
+
+import java.io.File;
+import java.util.List;
+import java.util.Locale;
+import java.util.ResourceBundle;
 
 import static org.junit.Assert.*;
 
@@ -172,7 +183,49 @@ public class I18nTest {
                 "  i18n-sub  i18n-sub header (only one line)%n" +
                 "Shared footer heading%n" +
                 "footer for i18n-top%n");
-        assertEquals(expected, new CommandLine(new I18nCommand()).getUsageMessage());
+        Locale original = Locale.getDefault();
+        Locale.setDefault(Locale.ENGLISH);
+        try {
+            assertEquals(expected, new CommandLine(new I18nCommand()).getUsageMessage());
+        } finally {
+            Locale.setDefault(original);
+        }
+    }
+
+    @Test
+    public void testParentCommandWithSharedResourceBundle_ja() {
+        String expected = String.format("" +
+                "i18n-top \u30d8\u30c3\u30c0\u30fc\u898b\u51fa\u3057%n" +
+                "\u5171\u901a\u30d8\u30c3\u30c0\u30fc\uff11\u884c\u76ee%n" +
+                "\u5171\u901a\u30d8\u30c3\u30c0\u30fc\uff12\u884c\u76ee%n" +
+                "Usage: i18n-top [-hV] [-x=<x>] [-y=<y>] [-z=<z>] <param0> <param1> [COMMAND]%n" +
+                "i18n-top \u8aac\u660e\u898b\u51fa\u3057:%n" +
+                "\u5171\u901a\u8aac\u660e0%n" +
+                "\u5171\u901a\u8aac\u660e1%n" +
+                "\u5171\u901a\u8aac\u660e2%n" +
+                "top param list heading%n" +
+                "      <param0>    i18n-top\u7528 param0 \u8aac\u660e%n" +
+                "      <param1>    \u5171\u901a param1 \u8aac\u660e\uff11\u884c\u76ee%n" +
+                "                  \u5171\u901a param1 \u8aac\u660e\uff12\u884c\u76ee%n" +
+                "top option list heading%n" +
+                "  -h, --help      \u5171\u901a help \u30aa\u30d7\u30b7\u30e7\u30f3\u8aac\u660e.%n" +
+                "  -V, --version   Print version information and exit.%n" +
+                "  -x, --xxx=<x>   i18n-top\u7528 X \u30aa\u30d7\u30b7\u30e7\u30f3\u8aac\u660e%n" +
+                "  -y, --yyy=<y>   top yyy description 1%n" +
+                "                  top yyy description 2%n" +
+                "  -z, --zzz=<z>   top zzz description%n" +
+                "top command list heading%n" +
+                "  help      i18n-top\u7528 HELP \u30b3\u30de\u30f3\u30c9\u30d8\u30c3\u30c0\u30fc%n" +
+                "  i18n-sub  i18n-sub \u30d8\u30c3\u30c0\u30fc\uff08\u4e00\u884c\u306e\u307f\uff09%n" +
+                "\u5171\u901a\u30d5\u30c3\u30bf\u30fc\u898b\u51fa\u3057%n" +
+                "i18n-top\u7528\u30d5\u30c3\u30bf\u30fc%n");
+        Locale original = Locale.getDefault();
+        Locale.setDefault(Locale.JAPAN);
+        try {
+            assertEquals(expected, new CommandLine(new I18nCommand()).getUsageMessage());
+        } finally {
+            Locale.setDefault(original);
+        }
     }
 
     @Test
@@ -201,9 +254,266 @@ public class I18nTest {
                 "  help  i18n-sub HELP command header%n" +
                 "Shared footer heading%n" +
                 "footer for i18n-sub%n");
-        CommandLine top = new CommandLine(new I18nCommand());
-        CommandLine sub = top.getSubcommands().get("i18n-sub");
-        assertEquals(expected, sub.getUsageMessage());
+        Locale original = Locale.getDefault();
+        Locale.setDefault(Locale.ENGLISH);
+        try {
+            CommandLine top = new CommandLine(new I18nCommand());
+            CommandLine sub = top.getSubcommands().get("i18n-sub");
+            assertEquals(expected, sub.getUsageMessage());
+        } finally {
+            Locale.setDefault(original);
+        }
     }
 
+    @Test
+    public void testGetResourceBundle_nullIfNotSpecified() {
+        @Command class Noop {}
+        CommandLine cmd = new CommandLine(new Noop());
+        assertNull(cmd.getResourceBundle());
+    }
+
+    @Test
+    public void testGetResourceBundle_notNullIfSpecified() {
+        Locale original = Locale.getDefault();
+        Locale.setDefault(Locale.ENGLISH);
+        try {
+            CommandLine cmd = new CommandLine(new I18nCommand());
+            ResourceBundle rb = cmd.getResourceBundle();
+            assertNotNull(rb);
+            assertEquals("Shared footer heading%n", rb.getString("usage.footerHeading"));
+        } finally {
+            Locale.setDefault(original);
+        }
+    }
+
+    @Test
+    public void testSetResourceBundle_canBeObtainedWithGet() {
+        @Command class Noop {}
+        CommandLine cmd = new CommandLine(new Noop());
+        assertNull(cmd.getResourceBundle());
+
+        ResourceBundle rb = ResourceBundle.getBundle("picocli.SharedMessages");
+        cmd.setResourceBundle(rb);
+        assertSame(rb, cmd.getResourceBundle());
+    }
+
+    @Test
+    public void testSetResourceBundle_descriptionsFromBundle() {
+        @Command class Noop {}
+        CommandLine cmd = new CommandLine(new Noop());
+        assertNull(cmd.getResourceBundle());
+        assertArrayEquals(new String[0], cmd.getCommandSpec().usageMessage().header());
+
+        Locale original = Locale.getDefault();
+        Locale.setDefault(Locale.ENGLISH);
+        try {
+            ResourceBundle rb = ResourceBundle.getBundle("picocli.SharedMessages");
+            cmd.setResourceBundle(rb);
+            assertArrayEquals(new String[]{"Shared header first line", "Shared header second line"}, cmd.getCommandSpec().usageMessage().header());
+        } finally {
+            Locale.setDefault(original);
+        }
+    }
+
+    @Test
+    public void testSetResourceBundle_overwritesSubcommandBundle() {
+        Locale original = Locale.getDefault();
+        Locale.setDefault(Locale.ENGLISH);
+        try {
+            // init
+            CommandLine top = new CommandLine(new I18nCommand());
+            CommandLine sub = top.getSubcommands().get("i18n-sub");
+            CommandLine help = top.getSubcommands().get("i18n-sub");
+            ResourceBundle orig = top.getResourceBundle();
+            assertSame(orig, sub.getResourceBundle());
+            assertArgsHaveBundle(orig, sub.getCommandSpec().options());
+            assertArgsHaveBundle(orig, sub.getCommandSpec().positionalParameters());
+
+            assertSame(orig, help.getResourceBundle());
+            assertArgsHaveBundle(orig, help.getCommandSpec().options());
+            assertArgsHaveBundle(orig, help.getCommandSpec().positionalParameters());
+
+            ResourceBundle update = ResourceBundle.getBundle("picocli.I18nSuperclass_Messages");
+            assertNotSame(update, orig);
+            assertNotEquals(orig.getString("usage.header"), update.getString("usage.header"));
+
+            // exercise SUT
+            top.setResourceBundle(update);
+
+            // verify: command and subcommands modified
+            assertSame(update, top.getResourceBundle());
+            assertArgsHaveBundle(update, top.getCommandSpec().options());
+            assertArgsHaveBundle(update, top.getCommandSpec().positionalParameters());
+
+            assertSame(update, sub.getResourceBundle());
+            assertArgsHaveBundle(update, sub.getCommandSpec().options());
+            assertArgsHaveBundle(update, sub.getCommandSpec().positionalParameters());
+
+            assertSame(update, help.getResourceBundle());
+            assertArgsHaveBundle(update, help.getCommandSpec().options());
+            assertArgsHaveBundle(update, help.getCommandSpec().positionalParameters());
+
+        } finally {
+            Locale.setDefault(original);
+        }
+    }
+
+    @Test
+    public void testCommandSpecSetResourceBundle_doesNotOverwriteSubcommandBundle() {
+        Locale original = Locale.getDefault();
+        Locale.setDefault(Locale.ENGLISH);
+        try {
+            // init
+            CommandLine top = new CommandLine(new I18nCommand());
+            CommandLine sub = top.getSubcommands().get("i18n-sub");
+            CommandLine help = top.getSubcommands().get("i18n-sub");
+            ResourceBundle orig = top.getResourceBundle();
+
+            ResourceBundle update = ResourceBundle.getBundle("picocli.I18nSuperclass_Messages");
+            assertNotSame(update, orig);
+
+            // exercise SUT
+            top.getCommandSpec().resourceBundle(update);
+
+            // verify: command was modified
+            assertSame(update, top.getResourceBundle());
+            assertSame(update, top.getCommandSpec().resourceBundle());
+            assertArgsHaveBundle(update, top.getCommandSpec().options());
+            assertArgsHaveBundle(update, top.getCommandSpec().positionalParameters());
+
+            // verify: subcommands not modified
+            assertSame(orig, sub.getResourceBundle());
+            assertArgsHaveBundle(orig, sub.getCommandSpec().options());
+            assertArgsHaveBundle(orig, sub.getCommandSpec().positionalParameters());
+
+            assertSame(orig, help.getResourceBundle());
+            assertArgsHaveBundle(orig, help.getCommandSpec().options());
+            assertArgsHaveBundle(orig, help.getCommandSpec().positionalParameters());
+
+        } finally {
+            Locale.setDefault(original);
+        }
+    }
+
+    private void assertArgsHaveBundle(ResourceBundle orig, List<? extends ArgSpec> args) {
+        assertFalse("args should not be empty", args.isEmpty());
+        for (ArgSpec arg : args) {
+            assertNotNull("Messages for " + arg.toString(), arg.messages());
+            assertSame(arg.toString(), orig, arg.messages().resourceBundle());
+        }
+    }
+
+    @Command(name = "git", mixinStandardHelpOptions = true, version = "picocli-3.6.0")
+    static class Git {
+        @Option(names = "--git-dir", descriptionKey = "GITDIR")
+        File path;
+
+        @Command
+        void clone(@Option(names = {"-l", "--local"}) boolean local,
+                   @Option(names = "-q") boolean quiet,
+                   @Option(names = "-v") boolean verbose,
+                   @Option(names = {"-b", "--branch"}) String branch,
+                   @Parameters(index = "0", paramLabel = "<repository>") String repo) {
+            // ... implement business logic
+        }
+
+        @Command
+        void commit(@Option(names = {"-m", "--message"}) String commitMessage,
+                    @Option(names = "--squash", paramLabel = "<commit>") String squash,
+                    @Parameters(paramLabel = "<file>") File[] files) {
+            // ... implement business logic
+        }
+
+        @Command
+        void push(@Option(names = {"-f", "--force"}) boolean force,
+                  @Option(names = "--tags") boolean tags,
+                  @Parameters(index = "0", paramLabel = "<repository>") String repo) {
+            // ... implement business logic
+        }
+    }
+
+    @Test
+    public void testCommandMethodWithoutResources() {
+
+        CommandLine git = new CommandLine(new Git());
+        String gitUsage = String.format("" +
+                "Usage: git [-hV] [--git-dir=<path>] [COMMAND]%n" +
+                "      --git-dir=<path>%n" +
+                "  -h, --help             Show this help message and exit.%n" +
+                "  -V, --version          Print version information and exit.%n" +
+                "Commands:%n" +
+                "  clone%n" +
+                "  commit%n" +
+                "  push%n");
+        assertEquals(gitUsage, git.getUsageMessage());
+
+        String cloneUsage = String.format("" +
+                "Usage: git clone [-lqv] [-b=<arg3>] <repository>%n" +
+                "      <repository>%n" +
+                "  -b, --branch=<arg3>%n" +
+                "  -l, --local%n" +
+                "  -q%n" +
+                "  -v%n");
+        assertEquals(cloneUsage, git.getSubcommands().get("clone").getUsageMessage());
+
+        String commitUsage = String.format("" +
+                "Usage: git commit [--squash=<commit>] [-m=<arg0>] [<file>...]%n" +
+                "      [<file>...]%n" +
+                "      --squash=<commit>%n" +
+                "  -m, --message=<arg0>%n");
+        assertEquals(commitUsage, git.getSubcommands().get("commit").getUsageMessage());
+
+        String pushUsage = String.format("" +
+                "Usage: git push [-f] [--tags] <repository>%n" +
+                "      <repository>%n" +
+                "      --tags%n" +
+                "  -f, --force%n");
+        assertEquals(pushUsage, git.getSubcommands().get("push").getUsageMessage());
+    }
+
+    @Test
+    public void testCommandMethodWithResources() {
+
+        CommandLine git = new CommandLine(new Git());
+        git.setResourceBundle(ResourceBundle.getBundle("picocli.command-method-demo"));
+
+        String gitUsage = String.format("" +
+                "Usage: git [-hV] [--git-dir=<path>] [COMMAND]%n" +
+                "Version control system%n" +
+                "      --git-dir=<path>   Set the path to the repository%n" +
+                "  -h, --help             Show this help message and exit.%n" +
+                "  -V, --version          Print version information and exit.%n" +
+                "Commands:%n" +
+                "  clone   Clone a repository into a new directory%n" +
+                "  commit  Record changes to the repository%n" +
+                "  push    Update remote refs along with associated objects%n");
+        assertEquals(gitUsage, git.getUsageMessage());
+
+        String cloneUsage = String.format("" +
+                "Usage: git clone [-lqv] [-b=<arg3>] <repository>%n" +
+                "Clone a repository into a new directory%n" +
+                "      <repository>      The (possibly remote) repository to clone from.%n" +
+                "  -b, --branch=<arg3>   Point to <name> branch instead of HEAD.%n" +
+                "  -l, --local           Bypass the normal \"Git aware\" transport mechanism.%n" +
+                "  -q                    Operate quietly.%n" +
+                "  -v                    Run verbosely.%n");
+        assertEquals(cloneUsage, git.getSubcommands().get("clone").getUsageMessage());
+
+        String commitUsage = String.format("" +
+                "Usage: git commit [--squash=<commit>] [-m=<arg0>] [<file>...]%n" +
+                "Record changes to the repository%n" +
+                "      [<file>...]         The files to commit.%n" +
+                "      --squash=<commit>   Construct a commit message for use with rebase%n" +
+                "                            --autosquash.%n" +
+                "  -m, --message=<arg0>    Use the given <msg> as the commit message.%n");
+        assertEquals(commitUsage, git.getSubcommands().get("commit").getUsageMessage());
+
+        String pushUsage = String.format("" +
+                "Usage: git push [-f] [--tags] <repository>%n" +
+                "Update remote refs along with associated objects%n" +
+                "      <repository>   The \"remote\" repository that is destination of a push operation.%n" +
+                "      --tags         All refs under refs/tags are pushed.%n" +
+                "  -f, --force        Disable checks.%n");
+        assertEquals(pushUsage, git.getSubcommands().get("push").getUsageMessage());
+    }
 }

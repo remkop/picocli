@@ -2269,6 +2269,85 @@ Command attributes may be defined multiple times, but only one value is preserve
 . Attributes on programmatically added mixins
 
 
+== Internationalization
+
+From version 3.6, usage help message sections and the description for options and positional parameters can be specified in a resource bundle.
+A resource bundle can be set via annotations and programmatically.
+
+Annotation example:
+
+[source,java]
+----
+@Command(name = "i18n-demo", resourceBundle = "my.org.I18nDemo_Messages")
+class I18nDemo {}
+----
+
+Programmatic example:
+
+[source,java]
+----
+@Command class I18nDemo2 {}
+
+CommandLine cmd = new CommandLine(new I18nDemo2());
+cmd.setResourceBundle(ResourceBundle.getBundle("my.org.I18nDemo2_Messages"));
+----
+
+Example properties resource bundle:
+
+[source]
+----
+# Usage Help Message Sections
+# ---------------------------
+# Numbered resource keys can be used to create multi-line sections.
+usage.headerHeading = This is my app. It does stuff.%n
+usage.header   = header first line
+usage.header.0 = header second line
+usage.descriptionHeading = Description:%n
+usage.description.0 = first line
+usage.description.1 = second line
+usage.description.2 = third line
+usage.synopsisHeading = Usage:\u0020
+
+# Leading whitespace is removed by default.
+# Start with \u0020 to keep the leading whitespace.
+usage.customSynopsis.0 =      Usage: ln [OPTION]... [-T] TARGET LINK_NAME   (1st form)
+usage.customSynopsis.1 = \u0020 or:  ln [OPTION]... TARGET                  (2nd form)
+usage.customSynopsis.2 = \u0020 or:  ln [OPTION]... TARGET... DIRECTORY     (3rd form)
+
+# Headings can contain the %n character to create multi-line values.
+usage.parameterListHeading = %nPositional parameters:%n
+usage.optionListHeading = %nOptions:%n
+usage.commandListHeading = %nCommands:%n
+usage.footerHeading = Powered by picocli%n
+usage.footer = footer
+
+# Option Descriptions
+# -------------------
+# Use numbered keys to create multi-line descriptions.
+help = Show this help message and exit.
+version = Print version information and exit.
+----
+
+
+Resources for multiple commands can be specified in a single ResourceBundle. Keys and their value can be
+shared by multiple commands (so you don't need to repeat them for every command), but keys can be prefixed with
+`command name + "."` to specify different values for different commands.
+The most specific key wins. For example:
+
+[source]
+----
+jfrog.rt.usage.header = Artifactory commands
+jfrog.rt.config.usage.header = Configure Artifactory details.
+jfrog.rt.upload.usage.header = Upload files.
+
+# shared between all commands
+usage.footerHeading = Environment Variables:
+usage.footer.0 = footer line 0
+usage.footer.1 = footer line 1
+----
+
+
+
 == Tips & Tricks
 
 [#option-parameters-methods]
@@ -2392,6 +2471,8 @@ Concatenate FILE(s) to standard output.
   -V, --version            Print version information and exit.
 ----
 
+See below for an example that uses a <<Internationalization,resource bundle>> to define usage help descriptions outside the code.
+
 For positional parameters, the `@Parameters` annotation may be omitted on method parameters.
 
 TIP: If compiled with the `-parameters` flag on Java 8 or higher, the `paramLabel` of positional parameters is obtained from the method parameter name using reflection instead of the generic arg0, arg1, etc.
@@ -2403,42 +2484,87 @@ For example:
 
 [source,java]
 ----
-@Command(name = "git", mixinStandardHelpOptions = true, version = "picocli-3.6.0",
-         description = "Version control system.")
+@Command(name = "git", mixinStandardHelpOptions = true, version = "picocli-3.6.0")
 class Git {
-    @Option(names = "--git-dir", description = "Set the path to the repository")
+    @Option(names = "--git-dir", descriptionKey = "GITDIR")
     Path path;
 
-    @Command(description = "Clone a repository into a new directory")
+    @Command
     void clone(@Option(names = {"-l", "--local"}) boolean local,
-               @Option(names = "-q", description = "Operate quietly.") boolean quiet,
-               @Option(names = "-v", description = "Run verbosely.") boolean verbose,
+               @Option(names = "-q") boolean quiet,
+               @Option(names = "-v") boolean verbose,
                @Option(names = {"-b", "--branch"}) String branch,
-               @Parameters(paramLabel = "<repository>") String repo) {
+               @Parameters(index = "0", paramLabel = "<repository>") String repo) {
         // ... implement business logic
     }
 
-    @Command(description = "Record changes to the repository")
+    @Command
     void commit(@Option(names = {"-m", "--message"}) String commitMessage,
                 @Option(names = "--squash", paramLabel = "<commit>") String squash,
                 @Parameters(paramLabel = "<file>") File[] files) {
         // ... implement business logic
     }
 
-    @Command(description = "Update remote refs along with associated objects")
+    @Command
     void push(@Option(names = {"-f", "--force"}) boolean force,
               @Option(names = "--tags") boolean tags,
-              @Parameters(paramLabel = "<repository>") String repo) {
+              @Parameters(index = "0", paramLabel = "<repository>") String repo) {
         // ... implement business logic
     }
 }
 ----
 
-The usage help of the above top-level `git` example command looks like this:
+Use `@Command(addMethodSubcommands = false)` on the class `@Command` annotation if the `@Command`-annotated methods in this class should not be added as subcommands.
+
+==== Description Text in ResourceBundle
+
+The usage help of the above top-level `git` example command is very minimal:
 
 ----
 Usage: git [-hV] [--git-dir=<path>] [COMMAND]
-Version control system.
+      --git-dir=<path>
+  -h, --help             Show this help message and exit.
+  -V, --version          Print version information and exit.
+Commands:
+  clone
+  commit
+  push
+----
+
+You can use a <<Internationalization,resource bundle>> to move the descriptions out of the code:
+
+----
+# shared between all commands
+help = Show this help message and exit.
+version = Print version information and exit.
+
+# command-specific strings
+git.usage.description = Version control system
+git.GITDIR = Set the path to the repository
+
+git.clone.usage.description = Clone a repository into a new directory
+git.clone.local = Bypass the normal "Git aware" transport mechanism.
+git.clone.q = Operate quietly.
+git.clone.v = Run verbosely.
+git.clone.branch = Point to <name> branch instead of HEAD.
+git.clone.<repository>[0] = The (possibly remote) repository to clone from.
+
+git.commit.usage.description = Record changes to the repository
+git.commit.message = Use the given <msg> as the commit message.
+git.commit.squash = Construct a commit message for use with rebase --autosquash.
+git.commit.<file>[0..*] = The files to commit.
+
+git.push.usage.description = Update remote refs along with associated objects
+git.push.force = Disable checks.
+git.push.tags = All refs under refs/tags are pushed.
+git.push.<repository>[0] = The "remote" repository that is destination of a push operation.
+----
+
+With this resource bundle, the usage help for the `git` command looks like this:
+
+----
+Usage: git [-hV] [--git-dir=<path>] [COMMAND]
+Version control system
       --git-dir=<path>   Set the path to the repository
   -h, --help             Show this help message and exit.
   -V, --version          Print version information and exit.
@@ -2447,9 +2573,6 @@ Commands:
   commit  Record changes to the repository
   push    Update remote refs along with associated objects
 ----
-
-
-Use `@Command(addMethodSubcommands = false)` on the class `@Command` annotation if the `@Command`-annotated methods in this class should not be added as subcommands.
 
 === Less Boilerplate
 You can omit some of the boilerplate code from your application when the annotated object implements `Runnable` or `Callable`:

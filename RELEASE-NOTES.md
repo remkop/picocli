@@ -7,6 +7,9 @@ This release contains new features, bugfixes and enhancements.
 
 `@Command` Methods: From this release, methods can be annotated with `@Command`. The method parameters provide the command options and parameters.
 
+Internationalization: from this release, usage help message sections and the description for options and positional parameters can be specified in a resource bundle. A resource bundle can be set via annotations and programmatically.
+
+
 
 This is the thirty-nineth public release.
 Picocli follows [semantic versioning](http://semver.org/).
@@ -52,6 +55,7 @@ Concatenate FILE(s) to standard output.
   -v, --show-nonprinting
   -V, --version            Print version information and exit.
 ```
+See below for an example that uses a resource bundle to define usage help descriptions outside the code.
 
 For positional parameters, the `@Parameters` annotation may be omitted on method parameters.
 
@@ -63,38 +67,108 @@ If the enclosing class is annotated with `@Command`, method commands are added a
 For example:
 
 ```java
-@Command(name = "git", mixinStandardHelpOptions = true, version = "picocli-3.6.0",
-         description = "Version control system.")
+@Command(name = "git", mixinStandardHelpOptions = true, version = "picocli-3.6.0")
 class Git {
-    @Option(names = "--git-dir", description = "Set the path to the repository")
+    @Option(names = "--git-dir", descriptionKey = "GITDIR")
     Path path;
 
-    @Command(description = "Clone a repository into a new directory")
+    @Command
     void clone(@Option(names = {"-l", "--local"}) boolean local,
-               @Option(names = "-q", description = "Operate quietly.") boolean quiet,
-               @Option(names = "-v", description = "Run verbosely.") boolean verbose,
+               @Option(names = "-q") boolean quiet,
+               @Option(names = "-v") boolean verbose,
                @Option(names = {"-b", "--branch"}) String branch,
-               @Parameters(paramLabel = "<repository>") String repo) {
+               @Parameters(index = "0", paramLabel = "<repository>") String repo) {
         // ... implement business logic
     }
 
-    @Command(description = "Record changes to the repository")
+    @Command
     void commit(@Option(names = {"-m", "--message"}) String commitMessage,
                 @Option(names = "--squash", paramLabel = "<commit>") String squash,
                 @Parameters(paramLabel = "<file>") File[] files) {
         // ... implement business logic
     }
 
-    @Command(description = "Update remote refs along with associated objects")
+    @Command
     void push(@Option(names = {"-f", "--force"}) boolean force,
               @Option(names = "--tags") boolean tags,
-              @Parameters(paramLabel = "<repository>") String repo) {
+              @Parameters(index = "0", paramLabel = "<repository>") String repo) {
         // ... implement business logic
     }
 }
 ```
 
+Use `@Command(addMethodSubcommands = false)` on the class `@Command` annotation if the `@Command`-annotated methods in this class should not be added as subcommands.
+
 The usage help of the top-level `git` command looks like this:
+
+```
+Usage: git [-hV] [--git-dir=<path>] [COMMAND]
+      --git-dir=<path>
+  -h, --help             Show this help message and exit.
+  -V, --version          Print version information and exit.
+Commands:
+  clone
+  commit
+  push
+```
+
+
+### Internationalization
+
+From version 3.6, usage help message sections and the description for options and positional parameters can be specified in a resource bundle. A resource bundle can be set via annotations and programmatically.
+
+Annotation example:
+
+```java
+@Command(name = "i18n-demo", resourceBundle = "my.org.I18nDemo_Messages")
+class I18nDemo {}
+```
+
+Programmatic example:
+
+```java
+@Command class I18nDemo2 {}
+
+CommandLine cmd = new CommandLine(new I18nDemo2());
+cmd.setResourceBundle(ResourceBundle.getBundle("my.org.I18nDemo2_Messages"));
+```
+
+
+Resources for multiple commands can be specified in a single ResourceBundle. Keys and their value can be shared by multiple commands (so you don't need to repeat them for every command), but keys can be prefixed with `fully qualified command name + "."` to specify different values for different commands. The most specific key wins. 
+
+This is especially convenient for `@Command` methods where long description annotations would make the code less easy to read. 
+
+You can use a resource bundle to move the descriptions out of the code:
+
+```
+# shared between all commands
+help = Show this help message and exit.
+version = Print version information and exit.
+
+# command-specific strings
+git.usage.description = Version control system
+git.GITDIR = Set the path to the repository
+
+git.clone.usage.description = Clone a repository into a new directory
+git.clone.local = Bypass the normal "Git aware" transport mechanism.
+git.clone.q = Operate quietly.
+git.clone.v = Run verbosely.
+git.clone.branch = Point to <name> branch instead of HEAD.
+git.clone.<repository>[0] = The (possibly remote) repository to clone from.
+
+git.commit.usage.description = Record changes to the repository
+git.commit.message = Use the given <msg> as the commit message.
+git.commit.squash = Construct a commit message for use with rebase --autosquash.
+git.commit.<file>[0..*] = The files to commit.
+
+git.push.usage.description = Update remote refs along with associated objects
+git.push.force = Disable checks.
+git.push.tags = All refs under refs/tags are pushed.
+git.push.<repository>[0] = The "remote" repository that is destination of a push operation.
+```
+
+With this resource bundle, the usage help for the above `git` command looks like this:
+
 
 ```
 Usage: git [-hV] [--git-dir=<path>] [COMMAND]
@@ -109,7 +183,6 @@ Commands:
 ```
 
 
-Use `@Command(addMethodSubcommands = false)` on the class `@Command` annotation if the `@Command`-annotated methods in this class should not be added as subcommands.
 
 
 ## <a name="3.6.0-promoted"></a> Promoted Features
@@ -121,6 +194,7 @@ No features have been promoted in this picocli release.
 - [#433] API: Added method `printHelpIfRequested` that accepts a `ColorScheme` parameter. Thanks to [Benny Bottema](https://github.com/bbottema) for the suggestion.
 - [#416] API: Added support for `@Command` annotation on methods (in addition to classes). Thanks to [illes](https://github.com/illes) for the pull request.
 - [#441] API: Added `hideParamSyntax` attribute to `@Option` and `@Parameters` to allow suppressing usage syntax decorations around the param label. Thanks to [Benny Bottema](https://github.com/bbottema) for the pull request.
+- [#22], [#415], [#436] API: Internationalization and Localization support via resource bundles. 
 - [#444] Bugfix: Usage help shows duplicate aliases if registered with same alias multiple times.
 - [#452] Doc: Add UML class diagrams to picocli Javadoc.
 
