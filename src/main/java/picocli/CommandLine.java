@@ -2457,7 +2457,7 @@ public class CommandLine {
          * a subset of the command line arguments to this field. The default is "*", meaning all command line arguments.
          * @return an index or range specifying which of the command line arguments should be assigned to this field
          */
-        String index() default "*";
+        String index() default "";
 
         /** Description of the parameter(s), used when generating the usage documentation.
          * <p>
@@ -3154,12 +3154,15 @@ public class CommandLine {
         public static Range parameterIndex(Field field) { return parameterIndex(new TypedMember(field)); }
         private static Range parameterIndex(TypedMember member) {
             if (member.isAnnotationPresent(Parameters.class)) {
-                return Range.valueOf(member.getAnnotation(Parameters.class).index());
-            } else {
-                return member.isMethodParameter()
-                        ? Range.valueOf("" + ((MethodParam) member.accessible).position)
-                        : new Range(0, 0, false, true, "0");
+                Range result = Range.valueOf(member.getAnnotation(Parameters.class).index());
+                if (!result.isUnspecified) { return result; }
             }
+            if (member.isMethodParameter()) {
+                int min = ((MethodParam) member.accessible).position;
+                int max = member.isMultiValue() ? Integer.MAX_VALUE : min;
+                return new Range(min, max, member.isMultiValue(), false, "");
+            }
+            return Range.valueOf("*"); // the default
         }
         static Range adjustForType(Range result, TypedMember member) {
             return result.isUnspecified ? defaultArity(member) : result;
@@ -5199,7 +5202,7 @@ public class CommandLine {
             }
         }
         /** mock java.lang.reflect.Parameter (not available before Java 8) */
-        private static class MethodParam extends AccessibleObject {
+        static class MethodParam extends AccessibleObject {
             final Method method;
             final int paramIndex;
             final String name;

@@ -129,9 +129,11 @@ public class CommandLineCommandMethodTest {
         String[] labels = { "<arg0>", "<arg1>", "<arg2>", "<arg3>", "<arg4>"};
         assertEquals(positionals.size(), labels.length);
 
+        String[] ranges = { "0", "1", "2", "3..*", "4..*" };
+
         for (int i = 0; i < positionals.size(); i++) {
             Model.PositionalParamSpec positional = positionals.get(i);
-            assertEquals(positional.paramLabel() + " at index " + i, CommandLine.Range.valueOf(i + ""), positional.index());
+            assertEquals(positional.paramLabel() + " at index " + i, CommandLine.Range.valueOf(ranges[i]), positional.index());
             assertEquals(labels[i], positional.paramLabel());
         }
     }
@@ -151,9 +153,11 @@ public class CommandLineCommandMethodTest {
         String[] labels = { "<arg0>", "<arg3>", "<arg4>"};
         assertEquals(positionals.size(), labels.length);
 
+        String[] ranges = { "0", "1..*", "2..*" };
+
         for (int i = 0; i < positionals.size(); i++) {
             Model.PositionalParamSpec positional = positionals.get(i);
-            assertEquals(positional.paramLabel() + " at index " + i, CommandLine.Range.valueOf(i + ""), positional.index());
+            assertEquals(positional.paramLabel() + " at index " + i, CommandLine.Range.valueOf(ranges[i]), positional.index());
             assertEquals(labels[i], positional.paramLabel());
         }
 
@@ -451,7 +455,7 @@ public class CommandLineCommandMethodTest {
         }
     }
     @Test
-    public void testGitsageHelpMessage() {
+    public void testGitUsageHelpMessage() {
         CommandLine cmd = new CommandLine(new Git());
         String expected = String.format("" +
                 "Usage: git [-hV] [--git-dir=<path>] [COMMAND]%n" +
@@ -464,6 +468,35 @@ public class CommandLineCommandMethodTest {
                 "  commit  Record changes to the repository%n" +
                 "  push    Update remote refs along with associated objects%n");
         assertEquals(expected, cmd.getUsageMessage());
+    }
+
+    @Test
+    public void testParamIndex() {
+        CommandLine git = new CommandLine(new Git());
+        CommandLine clone = git.getSubcommands().get("clone");
+        Model.PositionalParamSpec repo = clone.getCommandSpec().positionalParameters().get(0);
+        assertEquals(CommandLine.Range.valueOf("0"), repo.index());
+    }
+
+    @Command
+    static class AnnotatedParams {
+        @Command
+        public void method(@Parameters int a,
+                           @Parameters int b,
+                           @Parameters int c,
+                           int x,
+                           int y,
+                           int z) {}
+    }
+
+    @Test
+    public void testParamIndexAnnotatedAndUnAnnotated() {
+        CommandLine git = new CommandLine(new AnnotatedParams());
+        CommandLine method = git.getSubcommands().get("method");
+        List<Model.PositionalParamSpec> positionals = method.getCommandSpec().positionalParameters();
+        for (int i = 0; i < positionals.size(); i++) {
+            assertEquals(CommandLine.Range.valueOf("" + i), positionals.get(i).index());
+        }
     }
 
     private static Set<String> set(String... elements) {
