@@ -97,7 +97,11 @@ function _picocli_picocompletion-demo() {
   FLAG_OPTS="-V --version -h --help"
   ARG_OPTS=""
 
-  COMPREPLY=( $(compgen -W "${FLAG_OPTS} ${ARG_OPTS} ${COMMANDS}" -- ${CURR_WORD}) )
+  if [[ "${CURR_WORD}" == -* ]]; then
+    COMPREPLY=( $(compgen -W "${FLAG_OPTS} ${ARG_OPTS}" -- ${CURR_WORD}) )
+  else
+    COMPREPLY=( $(compgen -W "${COMMANDS}" -- ${CURR_WORD}) )
+  fi
 }
 
 # Generates completions for the options and subcommands of the `sub1` subcommand.
@@ -125,7 +129,11 @@ function _picocli_picocompletion-demo_sub1() {
       esac
   esac
 
-  COMPREPLY=( $(compgen -W "${FLAG_OPTS} ${ARG_OPTS} ${COMMANDS}" -- ${CURR_WORD}) )
+  if [[ "${CURR_WORD}" == -* ]]; then
+    COMPREPLY=( $(compgen -W "${FLAG_OPTS} ${ARG_OPTS}" -- ${CURR_WORD}) )
+  else
+    COMPREPLY=( $(compgen -W "${COMMANDS}" -- ${CURR_WORD}) )
+  fi
 }
 
 # Generates completions for the options and subcommands of the `sub2` subcommand.
@@ -154,7 +162,11 @@ function _picocli_picocompletion-demo_sub2() {
       esac
   esac
 
-  COMPREPLY=( $(compgen -W "${FLAG_OPTS} ${ARG_OPTS} ${COMMANDS}" -- ${CURR_WORD}) )
+  if [[ "${CURR_WORD}" == -* ]]; then
+    COMPREPLY=( $(compgen -W "${FLAG_OPTS} ${ARG_OPTS}" -- ${CURR_WORD}) )
+  else
+    COMPREPLY=( $(compgen -W "${COMMANDS}" -- ${CURR_WORD}) )
+  fi
 }
 
 # Generates completions for the options and subcommands of the `subsub1` subcommand.
@@ -183,7 +195,11 @@ function _picocli_picocompletion-demo_sub2_subsub1() {
       esac
   esac
 
-  COMPREPLY=( $(compgen -W "${FLAG_OPTS} ${ARG_OPTS} ${COMMANDS}" -- ${CURR_WORD}) )
+  if [[ "${CURR_WORD}" == -* ]]; then
+    COMPREPLY=( $(compgen -W "${FLAG_OPTS} ${ARG_OPTS}" -- ${CURR_WORD}) )
+  else
+    COMPREPLY=( $(compgen -W "${COMMANDS}" -- ${CURR_WORD}) )
+  fi
 }
 
 # Generates completions for the options and subcommands of the `subsub2` subcommand.
@@ -211,7 +227,11 @@ function _picocli_picocompletion-demo_sub2_subsub2() {
       esac
   esac
 
-  COMPREPLY=( $(compgen -W "${FLAG_OPTS} ${ARG_OPTS} ${COMMANDS}" -- ${CURR_WORD}) )
+  if [[ "${CURR_WORD}" == -* ]]; then
+    COMPREPLY=( $(compgen -W "${FLAG_OPTS} ${ARG_OPTS}" -- ${CURR_WORD}) )
+  else
+    COMPREPLY=( $(compgen -W "${COMMANDS}" -- ${CURR_WORD}) )
+  fi
 }
 
 # Define a completion specification (a compspec) for the

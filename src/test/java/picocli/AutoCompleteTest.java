@@ -412,7 +412,11 @@ public class AutoCompleteTest {
                 "      esac\n" +
                 "  esac\n" +
                 "\n" +
-                "  COMPREPLY=( $(compgen -W \"${FLAG_OPTS} ${ARG_OPTS} ${COMMANDS}\" -- ${CURR_WORD}) )\n" +
+                "  if [[ \"${CURR_WORD}\" == -* ]]; then\n" +
+                "    COMPREPLY=( $(compgen -W \"${FLAG_OPTS} ${ARG_OPTS}\" -- ${CURR_WORD}) )\n" +
+                "  else\n" +
+                "    COMPREPLY=( $(compgen -W \"${COMMANDS}\" -- ${CURR_WORD}) )\n" +
+                "  fi\n" +
                 "}\n" +
                 "\n" +
                 "# Define a completion specification (a compspec) for the\n" +
