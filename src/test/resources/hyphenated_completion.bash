@@ -93,7 +93,11 @@ function _picocli_rcmd() {
   FLAG_OPTS="-h --help -V --version"
   ARG_OPTS=""
 
-  COMPREPLY=( $(compgen -W "${FLAG_OPTS} ${ARG_OPTS} ${COMMANDS}" -- ${CURR_WORD}) )
+  if [[ "${CURR_WORD}" == -* ]]; then
+    COMPREPLY=( $(compgen -W "${FLAG_OPTS} ${ARG_OPTS}" -- ${CURR_WORD}) )
+  else
+    COMPREPLY=( $(compgen -W "${COMMANDS}" -- ${CURR_WORD}) )
+  fi
 }
 
 # Generates completions for the options and subcommands of the `sub-1` subcommand.
@@ -106,7 +110,11 @@ function _picocli_rcmd_sub1() {
   FLAG_OPTS="flag1 -h --help -V --version"
   ARG_OPTS="option1"
 
-  COMPREPLY=( $(compgen -W "${FLAG_OPTS} ${ARG_OPTS} ${COMMANDS}" -- ${CURR_WORD}) )
+  if [[ "${CURR_WORD}" == -* ]]; then
+    COMPREPLY=( $(compgen -W "${FLAG_OPTS} ${ARG_OPTS}" -- ${CURR_WORD}) )
+  else
+    COMPREPLY=( $(compgen -W "${COMMANDS}" -- ${CURR_WORD}) )
+  fi
 }
 
 # Generates completions for the options and subcommands of the `sub-2` subcommand.
@@ -119,7 +127,11 @@ function _picocli_rcmd_sub2() {
   FLAG_OPTS="flag-2 -h --help -V --version"
   ARG_OPTS="option-2"
 
-  COMPREPLY=( $(compgen -W "${FLAG_OPTS} ${ARG_OPTS} ${COMMANDS}" -- ${CURR_WORD}) )
+  if [[ "${CURR_WORD}" == -* ]]; then
+    COMPREPLY=( $(compgen -W "${FLAG_OPTS} ${ARG_OPTS}" -- ${CURR_WORD}) )
+  else
+    COMPREPLY=( $(compgen -W "${COMMANDS}" -- ${CURR_WORD}) )
+  fi
 }
 
 # Define a completion specification (a compspec) for the

@@ -104,7 +104,11 @@ function _picocli_basicExample() {
       esac
   esac
 
-  COMPREPLY=( $(compgen -W "${FLAG_OPTS} ${ARG_OPTS} ${COMMANDS}" -- ${CURR_WORD}) )
+  if [[ "${CURR_WORD}" == -* ]]; then
+    COMPREPLY=( $(compgen -W "${FLAG_OPTS} ${ARG_OPTS}" -- ${CURR_WORD}) )
+  else
+    COMPREPLY=( $(compgen -W "${COMMANDS}" -- ${CURR_WORD}) )
+  fi
 }
 
 # Define a completion specification (a compspec) for the
