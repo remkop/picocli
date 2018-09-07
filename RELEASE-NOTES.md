@@ -16,7 +16,6 @@ Picocli follows [semantic versioning](http://semver.org/).
 
 ## <a name="3.6.0"></a> Table of Contents
 * [New and noteworthy](#3.6.0-new)
-* [Promoted features](#3.6.0-promoted)
 * [Fixed issues](#3.6.0-fixes)
 * [Deprecations](#3.6.0-deprecated)
 * [Potential breaking changes](#3.6.0-breaking-changes)
@@ -182,13 +181,6 @@ Commands:
   push    Update remote refs along with associated objects
 ```
 
-
-
-
-## <a name="3.6.0-promoted"></a> Promoted Features
-Promoted features are features that were incubating in previous versions of picocli but are now supported and subject to backwards compatibility. 
-
-No features have been promoted in this picocli release.
 
 ## <a name="3.6.0-fixes"></a> Fixed issues
 - [#433] API: Added method `printHelpIfRequested` that accepts a `ColorScheme` parameter. Thanks to [Benny Bottema](https://github.com/bbottema) for the suggestion.
