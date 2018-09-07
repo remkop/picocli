@@ -2299,7 +2299,7 @@ Example properties resource bundle:
 # Usage Help Message Sections
 # ---------------------------
 # Numbered resource keys can be used to create multi-line sections.
-usage.headerHeading = This is my app. It does stuff.%n
+usage.headerHeading = This is my app. It does stuff. Good stuff.%n
 usage.header   = header first line
 usage.header.0 = header second line
 usage.descriptionHeading = Description:%n
@@ -2490,25 +2490,9 @@ class Git {
     Path path;
 
     @Command
-    void clone(@Option(names = {"-l", "--local"}) boolean local,
-               @Option(names = "-q") boolean quiet,
-               @Option(names = "-v") boolean verbose,
-               @Option(names = {"-b", "--branch"}) String branch,
-               @Parameters(index = "0", paramLabel = "<repository>") String repo) {
-        // ... implement business logic
-    }
-
-    @Command
     void commit(@Option(names = {"-m", "--message"}) String commitMessage,
                 @Option(names = "--squash", paramLabel = "<commit>") String squash,
                 @Parameters(paramLabel = "<file>") File[] files) {
-        // ... implement business logic
-    }
-
-    @Command
-    void push(@Option(names = {"-f", "--force"}) boolean force,
-              @Option(names = "--tags") boolean tags,
-              @Parameters(index = "0", paramLabel = "<repository>") String repo) {
         // ... implement business logic
     }
 }
@@ -2518,17 +2502,13 @@ Use `@Command(addMethodSubcommands = false)` on the class `@Command` annotation 
 
 ==== Description Text in ResourceBundle
 
-The usage help of the above top-level `git` example command is very minimal:
+The usage help of the above `git commit` example command is very minimal:
 
 ----
-Usage: git [-hV] [--git-dir=<path>] [COMMAND]
-      --git-dir=<path>
-  -h, --help             Show this help message and exit.
-  -V, --version          Print version information and exit.
-Commands:
-  clone
-  commit
-  push
+Usage: git commit [--squash=<commit>] [-m=<arg0>] [<file>...]
+      [<file>...]
+      --squash=<commit>
+  -m, --message=<arg0>
 ----
 
 You can use a <<Internationalization,resource bundle>> to move the descriptions out of the code:
@@ -2542,36 +2522,21 @@ version = Print version information and exit.
 git.usage.description = Version control system
 git.GITDIR = Set the path to the repository
 
-git.clone.usage.description = Clone a repository into a new directory
-git.clone.local = Bypass the normal "Git aware" transport mechanism.
-git.clone.q = Operate quietly.
-git.clone.v = Run verbosely.
-git.clone.branch = Point to <name> branch instead of HEAD.
-git.clone.<repository>[0] = The (possibly remote) repository to clone from.
-
 git.commit.usage.description = Record changes to the repository
 git.commit.message = Use the given <msg> as the commit message.
 git.commit.squash = Construct a commit message for use with rebase --autosquash.
 git.commit.<file>[0..*] = The files to commit.
-
-git.push.usage.description = Update remote refs along with associated objects
-git.push.force = Disable checks.
-git.push.tags = All refs under refs/tags are pushed.
-git.push.<repository>[0] = The "remote" repository that is destination of a push operation.
 ----
 
-With this resource bundle, the usage help for the `git` command looks like this:
+With this resource bundle, the usage help for the `git commit` command looks like this:
 
 ----
-Usage: git [-hV] [--git-dir=<path>] [COMMAND]
-Version control system
-      --git-dir=<path>   Set the path to the repository
-  -h, --help             Show this help message and exit.
-  -V, --version          Print version information and exit.
-Commands:
-  clone   Clone a repository into a new directory
-  commit  Record changes to the repository
-  push    Update remote refs along with associated objects
+Usage: git commit [--squash=<commit>] [-m=<arg0>] [<file>...]
+Record changes to the repository
+      [<file>...]         The files to commit.
+      --squash=<commit>   Construct a commit message for use with rebase
+                            --autosquash.
+  -m, --message=<arg0>    Use the given <msg> as the commit message.
 ----
 
 === Less Boilerplate

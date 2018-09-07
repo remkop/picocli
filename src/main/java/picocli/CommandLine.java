@@ -1987,6 +1987,7 @@ public class CommandLine {
 
     /** Returns the ResourceBundle of this command or {@code null} if no resource bundle is set.
      * @see Command#resourceBundle()
+     * @see CommandSpec#resourceBundle()
      * @since 3.6 */
     public ResourceBundle getResourceBundle() { return getCommandSpec().resourceBundle(); }
 
@@ -1998,6 +1999,7 @@ public class CommandLine {
      * @param bundle the ResourceBundle containing usage help message strings
      * @return this {@code CommandLine} object, to allow method chaining
      * @see Command#resourceBundle()
+     * @see CommandSpec#resourceBundle(ResourceBundle)
      * @since 3.6 */
     public CommandLine setResourceBundle(ResourceBundle bundle) {
         getCommandSpec().resourceBundle(bundle);
@@ -2595,7 +2597,7 @@ public class CommandLine {
         boolean interactive() default false;
 
         /** ResourceBundle key for this option. If not specified, (and a ResourceBundle {@linkplain Command#resourceBundle() exists for this command}) an attempt
-         * is made to find the positional parameter description using {@code paramLabel() + "." + index()} as key.
+         * is made to find the positional parameter description using {@code paramLabel() + "[" + index() + "]"} as key.
          *
          * @see PositionalParamSpec#description()
          * @since 3.6
@@ -2953,7 +2955,8 @@ public class CommandLine {
          * @return the base name of the ResourceBundle for usage help strings
          * @see ArgSpec#messages()
          * @see UsageMessageSpec#messages()
-         * @see Messages
+         * @see CommandSpec#resourceBundle()
+         * @see CommandLine#setResourceBundle(ResourceBundle)
          * @since 3.6
          */
         String resourceBundle() default "";
@@ -3477,6 +3480,7 @@ public class CommandLine {
             public CommandSpec usageMessage(UsageMessageSpec settings) { usageMessage.initFrom(settings, this); return this; }
 
             /** Returns the resource bundle for this command.
+             * @return the resource bundle from the {@linkplain UsageMessageSpec#messages()}
              * @since 3.6 */
             public ResourceBundle resourceBundle() { return Messages.resourceBundle(usageMessage.messages()); }
             /** Initializes the resource bundle for this command: sets the {@link UsageMessageSpec#messages(Messages) UsageMessageSpec.messages} to
@@ -3485,7 +3489,7 @@ public class CommandLine {
              * to the same {@code Messages} instance. Subcommands are not modified.
              * @param bundle the ResourceBundle to set, may be {@code null}
              * @return this commandSpec
-             * @see #addSubcommand(String, CommandSpec)
+             * @see #addSubcommand(String, CommandLine)
              * @since 3.6 */
             public CommandSpec resourceBundle(ResourceBundle bundle) {
                 usageMessage().messages(new Messages(this, bundle));
@@ -3536,12 +3540,13 @@ public class CommandLine {
                 }
             }
 
-            /** Registers any class method(s) annotated with {@code @Command} as subcommands. See also {@link #addSubcommand(String, CommandLine)}.
-            *
-            * @return this {@link CommandSpec} object for method chaining
-            * @see #addSubcommand(String, CommandLine)
-            * @since 3.6.0
-            */
+            /** Reflects on the class of the {@linkplain #userObject() user object} and registers any command methods
+             * (class methods annotated with {@code @Command}) as subcommands.
+             *
+             * @return this {@link CommandSpec} object for method chaining
+             * @see #addSubcommand(String, CommandLine)
+             * @since 3.6.0
+             */
             public CommandSpec addMethodSubcommands() {
                 if (userObject() instanceof Method) {
                      throw new UnsupportedOperationException("cannot discover methods of non-class: " + userObject());
@@ -4101,10 +4106,11 @@ public class CommandLine {
              * @return this UsageMessageSpec for method chaining */
             public UsageMessageSpec footer(String... footer) { this.footer = footer; return this; }
             /** Returns the Messages for this usage help message specification, or {@code null}.
+             * @return the Messages object that encapsulates this {@linkplain CommandSpec#resourceBundle() command's resource bundle}
              * @since 3.6 */
             public Messages messages() { return messages; }
             /** Sets the Messages for this usageMessage specification, and returns this UsageMessageSpec.
-             * @param msgs the new Messages value, may be {@code null}
+             * @param msgs the new Messages value that encapsulates this {@linkplain CommandSpec#resourceBundle() command's resource bundle}, may be {@code null}
              * @since 3.6 */
             public UsageMessageSpec messages(Messages msgs) { messages = msgs; return this; }
             void updateFromCommand(Command cmd, CommandSpec commandSpec) {
@@ -5493,7 +5499,7 @@ public class CommandLine {
             public static ResourceBundle resourceBundle(Messages messages) { return messages == null ? null : messages.resourceBundle(); }
             /** Returns the ResourceBundle of this object or {@code null}. */
             public ResourceBundle resourceBundle() { return rb; }
-            /** Returns the CommandSpec of this object or {@code null}. */
+            /** Returns the CommandSpec of this object, never {@code null}. */
             public CommandSpec commandSpec() { return spec; }
         }
         private static class CommandReflection {

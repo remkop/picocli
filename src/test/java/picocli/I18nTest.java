@@ -413,7 +413,7 @@ public class I18nTest {
                    @Option(names = "-q") boolean quiet,
                    @Option(names = "-v") boolean verbose,
                    @Option(names = {"-b", "--branch"}) String branch,
-                   @Parameters(index = "0", paramLabel = "<repository>") String repo) {
+                   @Parameters(paramLabel = "<repository>") String repo) {
             // ... implement business logic
         }
 
@@ -427,7 +427,7 @@ public class I18nTest {
         @Command
         void push(@Option(names = {"-f", "--force"}) boolean force,
                   @Option(names = "--tags") boolean tags,
-                  @Parameters(index = "0", paramLabel = "<repository>") String repo) {
+                  @Parameters(paramLabel = "<repository>") String repo) {
             // ... implement business logic
         }
     }

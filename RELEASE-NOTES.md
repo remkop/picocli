@@ -72,25 +72,9 @@ class Git {
     Path path;
 
     @Command
-    void clone(@Option(names = {"-l", "--local"}) boolean local,
-               @Option(names = "-q") boolean quiet,
-               @Option(names = "-v") boolean verbose,
-               @Option(names = {"-b", "--branch"}) String branch,
-               @Parameters(index = "0", paramLabel = "<repository>") String repo) {
-        // ... implement business logic
-    }
-
-    @Command
     void commit(@Option(names = {"-m", "--message"}) String commitMessage,
                 @Option(names = "--squash", paramLabel = "<commit>") String squash,
                 @Parameters(paramLabel = "<file>") File[] files) {
-        // ... implement business logic
-    }
-
-    @Command
-    void push(@Option(names = {"-f", "--force"}) boolean force,
-              @Option(names = "--tags") boolean tags,
-              @Parameters(index = "0", paramLabel = "<repository>") String repo) {
         // ... implement business logic
     }
 }
@@ -98,17 +82,13 @@ class Git {
 
 Use `@Command(addMethodSubcommands = false)` on the class `@Command` annotation if the `@Command`-annotated methods in this class should not be added as subcommands.
 
-The usage help of the top-level `git` command looks like this:
+The usage help of the `git commit` command looks like this:
 
 ```
-Usage: git [-hV] [--git-dir=<path>] [COMMAND]
-      --git-dir=<path>
-  -h, --help             Show this help message and exit.
-  -V, --version          Print version information and exit.
-Commands:
-  clone
-  commit
-  push
+Usage: git commit [--squash=<commit>] [-m=<arg0>] [<file>...]
+      [<file>...]
+      --squash=<commit>
+  -m, --message=<arg0>
 ```
 
 
@@ -148,46 +128,31 @@ version = Print version information and exit.
 git.usage.description = Version control system
 git.GITDIR = Set the path to the repository
 
-git.clone.usage.description = Clone a repository into a new directory
-git.clone.local = Bypass the normal "Git aware" transport mechanism.
-git.clone.q = Operate quietly.
-git.clone.v = Run verbosely.
-git.clone.branch = Point to <name> branch instead of HEAD.
-git.clone.<repository>[0] = The (possibly remote) repository to clone from.
-
 git.commit.usage.description = Record changes to the repository
 git.commit.message = Use the given <msg> as the commit message.
 git.commit.squash = Construct a commit message for use with rebase --autosquash.
 git.commit.<file>[0..*] = The files to commit.
-
-git.push.usage.description = Update remote refs along with associated objects
-git.push.force = Disable checks.
-git.push.tags = All refs under refs/tags are pushed.
-git.push.<repository>[0] = The "remote" repository that is destination of a push operation.
 ```
 
-With this resource bundle, the usage help for the above `git` command looks like this:
+With this resource bundle, the usage help for the above `git commit` command looks like this:
 
 
 ```
-Usage: git [-hV] [--git-dir=<path>] [COMMAND]
-Version control system.
-      --git-dir=<path>   Set the path to the repository
-  -h, --help             Show this help message and exit.
-  -V, --version          Print version information and exit.
-Commands:
-  clone   Clone a repository into a new directory
-  commit  Record changes to the repository
-  push    Update remote refs along with associated objects
+Usage: git commit [--squash=<commit>] [-m=<arg0>] [<file>...]
+Record changes to the repository
+      [<file>...]         The files to commit.
+      --squash=<commit>   Construct a commit message for use with rebase
+                            --autosquash.
+  -m, --message=<arg0>    Use the given <msg> as the commit message.
 ```
 
 
 ## <a name="3.6.0-fixes"></a> Fixed issues
-- [#433] API: Added method `printHelpIfRequested` that accepts a `ColorScheme` parameter. Thanks to [Benny Bottema](https://github.com/bbottema) for the suggestion.
-- [#416] API: Added support for `@Command` annotation on methods (in addition to classes). Thanks to [illes](https://github.com/illes) for the pull request.
-- [#441] API: Added `hideParamSyntax` attribute to `@Option` and `@Parameters` to allow suppressing usage syntax decorations around the param label. Thanks to [Benny Bottema](https://github.com/bbottema) for the pull request.
 - [#321] API: Add support for IDefaultValueProvider. Thanks to [Nicolas MASSART](https://github.com/NicolasMassart) for the pull request.
-- [#22], [#415], [#436] API: Internationalization and Localization support via resource bundles.
+- [#416] API: Added support for `@Command` annotation on methods (in addition to classes). Thanks to [illes](https://github.com/illes) for the pull request.
+- [#433] API: Added method `printHelpIfRequested` that accepts a `ColorScheme` parameter. Thanks to [Benny Bottema](https://github.com/bbottema) for the suggestion.
+- [#441] API: Added `hideParamSyntax` attribute to `@Option` and `@Parameters` to allow suppressing usage syntax decorations around the param label. Thanks to [Benny Bottema](https://github.com/bbottema) for the pull request.
+- [#22], [#415], [#436] API: Added internationalization and localization support via resource bundles.
 - [#461] Bugfix: Script auto-completion only suggests options and never default bash completions. Thanks to [David Walluck](https://github.com/dwalluck) for the pull request.
 - [#444] Bugfix: Usage help shows duplicate aliases if registered with same alias multiple times.
 - [#452] Doc: Add UML class diagrams to picocli Javadoc.
