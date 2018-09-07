@@ -90,16 +90,24 @@ function _picocli_basicExample() {
   ARG_OPTS="-u --timeUnit -t --timeout"
   timeUnit_OPTION_ARGS="%2$s" # TimeUnit values
 
+  compopt +o default
+
   case ${CURR_WORD} in
     -u|--timeUnit)
       COMPREPLY=( $( compgen -W "${timeUnit_OPTION_ARGS}" -- "" ) )
       return $?
+      ;;
+    -t|--timeout)
+      return
       ;;
     *)
       case ${PREV_WORD} in
         -u|--timeUnit)
           COMPREPLY=( $( compgen -W "${timeUnit_OPTION_ARGS}" -- $CURR_WORD ) )
           return $?
+          ;;
+        -t|--timeout)
+          return
           ;;
       esac
   esac

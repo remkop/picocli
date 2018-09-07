@@ -525,6 +525,8 @@ public class AutoComplete {
     private static String generateOptionsSwitch(List<OptionSpec> argOptions, List<OptionSpec> enumOptions) {
         StringBuilder buff = new StringBuilder(1024);
         buff.append("\n");
+        buff.append("  compopt +o default\n");
+        buff.append("\n");
         buff.append("  case ${CURR_WORD} in\n"); // outer case
         String outerCases = generateOptionsCases(argOptions, enumOptions, "", "\"\"");
         if (outerCases.length() == 0) {
@@ -558,6 +560,10 @@ public class AutoComplete {
                 buff.append(format("%s      compopt -o filenames\n", indent));
                 buff.append(format("%s      COMPREPLY=( $( compgen -A hostname -- %s ) )\n", indent, currWord));
                 buff.append(format("%s      return $?\n", indent));
+                buff.append(format("%s      ;;\n", indent));
+            } else {
+                buff.append(format("%s    %s)\n", indent, concat("|", option.names()))); // no completions available
+                buff.append(format("%s      return\n", indent));
                 buff.append(format("%s      ;;\n", indent));
             }
         }

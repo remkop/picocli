@@ -115,13 +115,27 @@ function _picocli_picocompletion-demo_sub1() {
   ARG_OPTS="--num --str --candidates"
   str2_OPTION_ARGS="a b c" # --candidates values
 
+  compopt +o default
+
   case ${CURR_WORD} in
+    --num)
+      return
+      ;;
+    --str)
+      return
+      ;;
     --candidates)
       COMPREPLY=( $( compgen -W "${str2_OPTION_ARGS}" -- "" ) )
       return $?
       ;;
     *)
       case ${PREV_WORD} in
+        --num)
+          return
+          ;;
+        --str)
+          return
+          ;;
         --candidates)
           COMPREPLY=( $( compgen -W "${str2_OPTION_ARGS}" -- $CURR_WORD ) )
           return $?
@@ -146,7 +160,12 @@ function _picocli_picocompletion-demo_sub2() {
   FLAG_OPTS=""
   ARG_OPTS="--num2 --directory -d"
 
+  compopt +o default
+
   case ${CURR_WORD} in
+    --num2)
+      return
+      ;;
     --directory|-d)
       compopt -o filenames
       COMPREPLY=( $( compgen -f -- "" ) ) # files
@@ -154,6 +173,9 @@ function _picocli_picocompletion-demo_sub2() {
       ;;
     *)
       case ${PREV_WORD} in
+        --num2)
+          return
+          ;;
         --directory|-d)
           compopt -o filenames
           COMPREPLY=( $( compgen -f -- $CURR_WORD ) ) # files
@@ -178,6 +200,8 @@ function _picocli_picocompletion-demo_sub2_subsub1() {
   COMMANDS=""
   FLAG_OPTS=""
   ARG_OPTS="-h --host"
+
+  compopt +o default
 
   case ${CURR_WORD} in
     -h|--host)
@@ -213,16 +237,24 @@ function _picocli_picocompletion-demo_sub2_subsub2() {
   ARG_OPTS="-u --timeUnit -t --timeout"
   timeUnit_OPTION_ARGS="%2$s" # TimeUnit values
 
+  compopt +o default
+
   case ${CURR_WORD} in
     -u|--timeUnit)
       COMPREPLY=( $( compgen -W "${timeUnit_OPTION_ARGS}" -- "" ) )
       return $?
+      ;;
+    -t|--timeout)
+      return
       ;;
     *)
       case ${PREV_WORD} in
         -u|--timeUnit)
           COMPREPLY=( $( compgen -W "${timeUnit_OPTION_ARGS}" -- $CURR_WORD ) )
           return $?
+          ;;
+        -t|--timeout)
+          return
           ;;
       esac
   esac
