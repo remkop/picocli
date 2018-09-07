@@ -396,7 +396,12 @@ public class AutoCompleteTest {
                 "  FLAG_OPTS=\"-w --writeCommandScript -f --force -h --help\"\n" +
                 "  ARG_OPTS=\"-n --name -o --completionScript\"\n" +
                 "\n" +
+                "  compopt +o default\n" +
+                "\n" +
                 "  case ${CURR_WORD} in\n" +
+                "    -n|--name)\n" +
+                "      return\n" +
+                "      ;;\n" +
                 "    -o|--completionScript)\n" +
                 "      compopt -o filenames\n" +
                 "      COMPREPLY=( $( compgen -f -- \"\" ) ) # files\n" +
@@ -404,6 +409,9 @@ public class AutoCompleteTest {
                 "      ;;\n" +
                 "    *)\n" +
                 "      case ${PREV_WORD} in\n" +
+                "        -n|--name)\n" +
+                "          return\n" +
+                "          ;;\n" +
                 "        -o|--completionScript)\n" +
                 "          compopt -o filenames\n" +
                 "          COMPREPLY=( $( compgen -f -- $CURR_WORD ) ) # files\n" +

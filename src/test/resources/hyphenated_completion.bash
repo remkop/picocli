@@ -110,6 +110,20 @@ function _picocli_rcmd_sub1() {
   FLAG_OPTS="flag1 -h --help -V --version"
   ARG_OPTS="option1"
 
+  compopt +o default
+
+  case ${CURR_WORD} in
+    option1)
+      return
+      ;;
+    *)
+      case ${PREV_WORD} in
+        option1)
+          return
+          ;;
+      esac
+  esac
+
   if [[ "${CURR_WORD}" == -* ]]; then
     COMPREPLY=( $(compgen -W "${FLAG_OPTS} ${ARG_OPTS}" -- ${CURR_WORD}) )
   else
@@ -126,6 +140,20 @@ function _picocli_rcmd_sub2() {
   COMMANDS=""
   FLAG_OPTS="flag-2 -h --help -V --version"
   ARG_OPTS="option-2"
+
+  compopt +o default
+
+  case ${CURR_WORD} in
+    option-2)
+      return
+      ;;
+    *)
+      case ${PREV_WORD} in
+        option-2)
+          return
+          ;;
+      esac
+  esac
 
   if [[ "${CURR_WORD}" == -* ]]; then
     COMPREPLY=( $(compgen -W "${FLAG_OPTS} ${ARG_OPTS}" -- ${CURR_WORD}) )
