@@ -54,7 +54,7 @@ allprojects {
         options.compilerArgs << '-Xlint:unchecked' << '-Xlint:deprecation'
     }
 }
-project('examples') {
+project('picocli-examples') {
     dependencies {
         compile rootProject
         compile 'org.apache.ivy:ivy:2.4.0', // for Intelli/J
@@ -71,7 +71,7 @@ project('examples') {
 
     //a task that generates the resources for the example VersionProviderDemo1:
     task generateVersionTxt {
-        description 'Creates a version.txt file with build info that is added to the root of the examples jar'
+        description 'Creates a version.txt file with build info that is added to the root of the picocli-examples jar'
         doLast {
             new File(generatedResources).mkdirs()
             def generated = new File(generatedResources, "version.txt")
