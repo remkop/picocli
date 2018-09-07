@@ -9,7 +9,7 @@ This release contains new features, bugfixes and enhancements.
 
 Internationalization: from this release, usage help message sections and the description for options and positional parameters can be specified in a resource bundle. A resource bundle can be set via annotations and programmatically.
 
-
+Many thanks to the many members of the picocli community who raised issues and contributed solutions! 
 
 This is the thirty-nineth public release.
 Picocli follows [semantic versioning](http://semver.org/).
@@ -194,6 +194,7 @@ No features have been promoted in this picocli release.
 - [#433] API: Added method `printHelpIfRequested` that accepts a `ColorScheme` parameter. Thanks to [Benny Bottema](https://github.com/bbottema) for the suggestion.
 - [#416] API: Added support for `@Command` annotation on methods (in addition to classes). Thanks to [illes](https://github.com/illes) for the pull request.
 - [#441] API: Added `hideParamSyntax` attribute to `@Option` and `@Parameters` to allow suppressing usage syntax decorations around the param label. Thanks to [Benny Bottema](https://github.com/bbottema) for the pull request.
+- [#321] API: Add support for IDefaultValueProvider. Thanks to [Nicolas MASSART](https://github.com/NicolasMassart) for the pull request.
 - [#22], [#415], [#436] API: Internationalization and Localization support via resource bundles.
 - [#461] Bugfix: Script auto-completion only suggests options and never default bash completions. Thanks to [David Walluck](https://github.com/dwalluck) for the pull request.
 - [#444] Bugfix: Usage help shows duplicate aliases if registered with same alias multiple times.
