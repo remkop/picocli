@@ -117,7 +117,7 @@ function _picocli_picocompletion-demo_sub1() {
 
   compopt +o default
 
-  case ${CURR_WORD} in
+  case ${PREV_WORD} in
     --num)
       return
       ;;
@@ -125,22 +125,9 @@ function _picocli_picocompletion-demo_sub1() {
       return
       ;;
     --candidates)
-      COMPREPLY=( $( compgen -W "${str2_OPTION_ARGS}" -- "" ) )
+      COMPREPLY=( $( compgen -W "${str2_OPTION_ARGS}" -- ${CURR_WORD} ) )
       return $?
       ;;
-    *)
-      case ${PREV_WORD} in
-        --num)
-          return
-          ;;
-        --str)
-          return
-          ;;
-        --candidates)
-          COMPREPLY=( $( compgen -W "${str2_OPTION_ARGS}" -- $CURR_WORD ) )
-          return $?
-          ;;
-      esac
   esac
 
   if [[ "${CURR_WORD}" == -* ]]; then
@@ -162,26 +149,15 @@ function _picocli_picocompletion-demo_sub2() {
 
   compopt +o default
 
-  case ${CURR_WORD} in
+  case ${PREV_WORD} in
     --num2)
       return
       ;;
     --directory|-d)
       compopt -o filenames
-      COMPREPLY=( $( compgen -f -- "" ) ) # files
+      COMPREPLY=( $( compgen -f -- ${CURR_WORD} ) ) # files
       return $?
       ;;
-    *)
-      case ${PREV_WORD} in
-        --num2)
-          return
-          ;;
-        --directory|-d)
-          compopt -o filenames
-          COMPREPLY=( $( compgen -f -- $CURR_WORD ) ) # files
-          return $?
-          ;;
-      esac
   esac
 
   if [[ "${CURR_WORD}" == -* ]]; then
@@ -203,20 +179,12 @@ function _picocli_picocompletion-demo_sub2_subsub1() {
 
   compopt +o default
 
-  case ${CURR_WORD} in
+  case ${PREV_WORD} in
     -h|--host)
       compopt -o filenames
-      COMPREPLY=( $( compgen -A hostname -- "" ) )
+      COMPREPLY=( $( compgen -A hostname -- ${CURR_WORD} ) )
       return $?
       ;;
-    *)
-      case ${PREV_WORD} in
-        -h|--host)
-          compopt -o filenames
-          COMPREPLY=( $( compgen -A hostname -- $CURR_WORD ) )
-          return $?
-          ;;
-      esac
   esac
 
   if [[ "${CURR_WORD}" == -* ]]; then
@@ -239,24 +207,14 @@ function _picocli_picocompletion-demo_sub2_subsub2() {
 
   compopt +o default
 
-  case ${CURR_WORD} in
+  case ${PREV_WORD} in
     -u|--timeUnit)
-      COMPREPLY=( $( compgen -W "${timeUnit_OPTION_ARGS}" -- "" ) )
+      COMPREPLY=( $( compgen -W "${timeUnit_OPTION_ARGS}" -- ${CURR_WORD} ) )
       return $?
       ;;
     -t|--timeout)
       return
       ;;
-    *)
-      case ${PREV_WORD} in
-        -u|--timeUnit)
-          COMPREPLY=( $( compgen -W "${timeUnit_OPTION_ARGS}" -- $CURR_WORD ) )
-          return $?
-          ;;
-        -t|--timeout)
-          return
-          ;;
-      esac
   esac
 
   if [[ "${CURR_WORD}" == -* ]]; then

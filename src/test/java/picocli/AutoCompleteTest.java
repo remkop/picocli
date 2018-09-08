@@ -398,26 +398,15 @@ public class AutoCompleteTest {
                 "\n" +
                 "  compopt +o default\n" +
                 "\n" +
-                "  case ${CURR_WORD} in\n" +
+                "  case ${PREV_WORD} in\n" +
                 "    -n|--name)\n" +
                 "      return\n" +
                 "      ;;\n" +
                 "    -o|--completionScript)\n" +
                 "      compopt -o filenames\n" +
-                "      COMPREPLY=( $( compgen -f -- \"\" ) ) # files\n" +
+                "      COMPREPLY=( $( compgen -f -- ${CURR_WORD} ) ) # files\n" +
                 "      return $?\n" +
                 "      ;;\n" +
-                "    *)\n" +
-                "      case ${PREV_WORD} in\n" +
-                "        -n|--name)\n" +
-                "          return\n" +
-                "          ;;\n" +
-                "        -o|--completionScript)\n" +
-                "          compopt -o filenames\n" +
-                "          COMPREPLY=( $( compgen -f -- $CURR_WORD ) ) # files\n" +
-                "          return $?\n" +
-                "          ;;\n" +
-                "      esac\n" +
                 "  esac\n" +
                 "\n" +
                 "  if [[ \"${CURR_WORD}\" == -* ]]; then\n" +

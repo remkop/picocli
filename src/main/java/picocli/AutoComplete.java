@@ -527,17 +527,13 @@ public class AutoComplete {
         buff.append("\n");
         buff.append("  compopt +o default\n");
         buff.append("\n");
-        buff.append("  case ${CURR_WORD} in\n"); // outer case
-        String outerCases = generateOptionsCases(argOptions, enumOptions, "", "\"\"");
+        buff.append("  case ${PREV_WORD} in\n");
+        String outerCases = generateOptionsCases(argOptions, enumOptions, "", "${CURR_WORD}");
         if (outerCases.length() == 0) {
             return "";
         }
         buff.append(outerCases);
-        buff.append("    *)\n");
-        buff.append("      case ${PREV_WORD} in\n"); // inner case
-        buff.append(generateOptionsCases(argOptions, enumOptions, "    ", "$CURR_WORD"));
-        buff.append("      esac\n"); // end inner case
-        buff.append("  esac\n"); // end outer case
+        buff.append("  esac\n");
         return buff.toString();
     }
 
