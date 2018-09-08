@@ -92,24 +92,14 @@ function _picocli_basicExample() {
 
   compopt +o default
 
-  case ${CURR_WORD} in
+  case ${PREV_WORD} in
     -u|--timeUnit)
-      COMPREPLY=( $( compgen -W "${timeUnit_OPTION_ARGS}" -- "" ) )
+      COMPREPLY=( $( compgen -W "${timeUnit_OPTION_ARGS}" -- ${CURR_WORD} ) )
       return $?
       ;;
     -t|--timeout)
       return
       ;;
-    *)
-      case ${PREV_WORD} in
-        -u|--timeUnit)
-          COMPREPLY=( $( compgen -W "${timeUnit_OPTION_ARGS}" -- $CURR_WORD ) )
-          return $?
-          ;;
-        -t|--timeout)
-          return
-          ;;
-      esac
   esac
 
   if [[ "${CURR_WORD}" == -* ]]; then

@@ -112,16 +112,10 @@ function _picocli_rcmd_sub1() {
 
   compopt +o default
 
-  case ${CURR_WORD} in
+  case ${PREV_WORD} in
     option1)
       return
       ;;
-    *)
-      case ${PREV_WORD} in
-        option1)
-          return
-          ;;
-      esac
   esac
 
   if [[ "${CURR_WORD}" == -* ]]; then
@@ -143,16 +137,10 @@ function _picocli_rcmd_sub2() {
 
   compopt +o default
 
-  case ${CURR_WORD} in
+  case ${PREV_WORD} in
     option-2)
       return
       ;;
-    *)
-      case ${PREV_WORD} in
-        option-2)
-          return
-          ;;
-      esac
   esac
 
   if [[ "${CURR_WORD}" == -* ]]; then
