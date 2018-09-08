@@ -9,6 +9,8 @@ This release contains new features, bugfixes and enhancements.
 
 Internationalization: from this release, usage help message sections and the description for options and positional parameters can be specified in a resource bundle. A resource bundle can be set via annotations and programmatically.
 
+This release also contains various improvements the the bash/zsh completion script generation to be more consistent with standard completion on these shells.
+
 Many thanks to the many members of the picocli community who raised issues and contributed solutions! 
 
 This is the thirty-nineth public release.
@@ -154,6 +156,7 @@ Record changes to the repository
 - [#441] API: Added `hideParamSyntax` attribute to `@Option` and `@Parameters` to allow suppressing usage syntax decorations around the param label. Thanks to [Benny Bottema](https://github.com/bbottema) for the pull request.
 - [#22], [#415], [#436] API: Added internationalization and localization support via resource bundles.
 - [#461] Bugfix: Script auto-completion only suggests options and never default bash completions. Thanks to [David Walluck](https://github.com/dwalluck) for the pull request.
+- [#466] Bugfix: Script auto-completion should not generate suggestions for options with arguments that have no known completions. Thanks to [David Walluck](https://github.com/dwalluck) for the pull request.
 - [#444] Bugfix: Usage help shows duplicate aliases if registered with same alias multiple times.
 - [#452] Doc: Add UML class diagrams to picocli Javadoc.
 
