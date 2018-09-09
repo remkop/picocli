@@ -613,13 +613,16 @@ class TypeDemo {
 == Default Values
 It is possible to define a default value for an option or positional parameter, that is assigned when the user did not specify this option or positional parameter on the command line.
 
+=== Field Values
 For annotated fields, it is simplest to declare the field with a value:
 [source,java]
 ----
 @Option(names = "-c", description = "The count (default: ${DEFAULT-VALUE})")
 int count = 123; // default value is 123
 ----
-For <<option-parameters-methods,`@Option` and `@Parameters`-annotated methods>> and <<command-methods,`@Command`-annotated methods>>, use the `defaultValue` annotation attribute. For example, for an annotated interface:
+
+=== `defaultValue` Annotation
+For <<option-parameters-methods,@Option and @Parameters-annotated methods>> and <<command-methods,@Command-annotated methods>>, use the `defaultValue` annotation attribute. For example, for an annotated interface:
 [source,java]
 ----
 interface Spec {
@@ -651,6 +654,38 @@ class CommandMethod {
 ----
 
 Note that you can use the `${DEFAULT-VALUE}` variable in the `description` of the option or positional parameter and picocli will <<Show Default Values,show>> the actual default value.
+
+=== Default Provider
+Finally, you can specify a default provider in the `@Command` annotation:
+
+[source,java]
+----
+@Command(defaultValueProvider = MyDefaultProvider.class)
+class MyCommand // ...
+----
+
+The default provider allows you to get default values from a configuration file or some other central place.
+Default providers need to implement the `picocli.CommandLine.IDefaultValueProvider` interface:
+
+[source,java]
+----
+public interface IDefaultValueProvider {
+
+    /**
+     * Returns the default value for an option or positional parameter or {@code null}.
+     * The returned value is converted to the type of the option/positional parameter
+     * via the same type converter used when populating this option/positional
+     * parameter from a command line argument.
+     *
+     * @param argSpec the option or positional parameter, never {@code null}
+     * @return the default value for the option or positional parameter, or {@code null} if
+     *       this provider has no default value for the specified option or positional parameter
+     * @throws Exception when there was a problem obtaining the default value
+     */
+    String defaultValue(ArgSpec argSpec) throws Exception;
+}
+----
+
 
 == Multiple Values
 Multi-valued options and positional parameters are annotated fields that can capture multiple values from the command line.

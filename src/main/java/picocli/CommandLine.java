@@ -3038,7 +3038,7 @@ public class CommandLine {
         * @param argSpec the option or positional parameter, never {@code null}
         * @return the default value for the option or positional parameter, or {@code null} if
         *       this provider has no default value for the specified option or positional parameter
-        * @throws Exception an exception detailing what went wrong when obtaining default value
+        * @throws Exception when there was a problem obtaining the default value
         */
         String defaultValue(ArgSpec argSpec) throws Exception;
     }

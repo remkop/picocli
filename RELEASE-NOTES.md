@@ -5,6 +5,8 @@ The picocli community is pleased to announce picocli 3.6.0.
 
 This release contains new features, bugfixes and enhancements.
 
+New interface: `IDefaultProvider` allows you to get default values from a configuration file or some other central place.
+
 `@Command` Methods: From this release, methods can be annotated with `@Command`. The method parameters provide the command options and parameters.
 
 Internationalization: from this release, usage help message sections and the description for options and positional parameters can be specified in a resource bundle. A resource bundle can be set via annotations and programmatically.
@@ -23,6 +25,36 @@ Picocli follows [semantic versioning](http://semver.org/).
 * [Potential breaking changes](#3.6.0-breaking-changes)
 
 ## <a name="3.6.0-new"></a> New and Noteworthy
+### Default Provider
+
+This release allows you to specify a default provider in the `@Command` annotation:
+
+```java
+@Command(defaultValueProvider = MyDefaultProvider.class)
+class MyCommand // ...
+```
+
+The default provider allows you to get default values from a configuration file or some other central place.
+Default providers need to implement the `picocli.CommandLine.IDefaultValueProvider` interface:
+
+```java
+public interface IDefaultValueProvider {
+
+    /**
+     * Returns the default value for an option or positional parameter or {@code null}.
+     * The returned value is converted to the type of the option/positional parameter
+     * via the same type converter used when populating this option/positional
+     * parameter from a command line argument.
+     *
+     * @param argSpec the option or positional parameter, never {@code null}
+     * @return the default value for the option or positional parameter, or {@code null} if
+     *       this provider has no default value for the specified option or positional parameter
+     * @throws Exception when there was a problem obtaining the default value
+     */
+    String defaultValue(ArgSpec argSpec) throws Exception;
+}
+```
+
 ### `@Command` Methods
 From picocli 3.6, methods can be annotated with `@Command`. The method parameters provide the command options and parameters. For example:
 
