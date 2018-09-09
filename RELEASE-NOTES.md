@@ -157,6 +157,7 @@ Record changes to the repository
 - [#22], [#415], [#436] API: Added internationalization and localization support via resource bundles.
 - [#461] Bugfix: Script auto-completion only suggests options and never default bash completions. Thanks to [David Walluck](https://github.com/dwalluck) for the pull request.
 - [#466] Bugfix: Script auto-completion should not generate suggestions for options with arguments that have no known completions. Thanks to [David Walluck](https://github.com/dwalluck) for the pull request.
+- [#470] Bugfix: Script auto-completion should generate suggestions for short options with arguments. Thanks to [David Walluck](https://github.com/dwalluck) for the pull request.
 - [#444] Bugfix: Usage help shows duplicate aliases if registered with same alias multiple times.
 - [#452] Doc: Add UML class diagrams to picocli Javadoc.
 
