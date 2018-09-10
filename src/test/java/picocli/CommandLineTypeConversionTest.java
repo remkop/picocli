@@ -511,7 +511,7 @@ public class CommandLineTypeConversionTest {
                 if (actual.getMessage().equals(errMsg)) { return; } // that is okay also
             }
             String type = option.substring(1);
-            String expected = String.format("Invalid value for option '%s': cannot convert '%s' to %s (%s)", option, value, type, errorMessage[0]);
+            String expected = String.format("Invalid value for option '%s': cannot convert '%s' to %s (%s", option, value, type, errorMessage[0]);
             assertTrue("expected:<" + expected + "> but was:<" + actual.getMessage() + ">",
                     actual.getMessage().startsWith(expected));
         }
