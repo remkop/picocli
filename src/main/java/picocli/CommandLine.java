@@ -3573,6 +3573,8 @@ public class CommandLine {
             /** Adds the specified option spec to the list of configured arguments to expect.
              * The option's {@linkplain OptionSpec#description()} may now return Strings from this
              * CommandSpec's {@linkplain UsageMessageSpec#messages() messages}.
+             * The option parameter's {@linkplain OptionSpec#defaultValueString()} may
+             * now return Strings from this CommandSpec's {@link CommandSpec#defaultValueProvider()} IDefaultValueProvider}.
              * @param option the option spec to add
              * @return this CommandSpec for method chaining
              * @throws DuplicateOptionAnnotationsException if any of the names of the specified option is the same as the name of another option */
@@ -3588,11 +3590,14 @@ public class CommandLine {
                 }
                 if (option.required()) { requiredArgs.add(option); }
                 option.messages(usageMessage().messages());
+                option.commandSpec = this;
                 return this;
             }
             /** Adds the specified positional parameter spec to the list of configured arguments to expect.
              * The positional parameter's {@linkplain PositionalParamSpec#description()} may
              * now return Strings from this CommandSpec's {@linkplain UsageMessageSpec#messages() messages}.
+             * The positional parameter's {@linkplain PositionalParamSpec#defaultValueString()} may
+             * now return Strings from this CommandSpec's {@link CommandSpec#defaultValueProvider()} IDefaultValueProvider}.
              * @param positional the positional parameter spec to add
              * @return this CommandSpec for method chaining */
             public CommandSpec addPositional(PositionalParamSpec positional) {
@@ -3600,6 +3605,7 @@ public class CommandLine {
                 positionalParameters.add(positional);
                 if (positional.required()) { requiredArgs.add(positional); }
                 positional.messages(usageMessage().messages());
+                positional.commandSpec = this;
                 return this;
             }
     
@@ -4317,6 +4323,7 @@ public class CommandLine {
             private final String descriptionKey;
             private final Help.Visibility showDefaultValue;
             private Messages messages;
+            CommandSpec commandSpec;
 
             // parser fields
             private final boolean interactive;
@@ -4483,7 +4490,13 @@ public class CommandLine {
             public Class<?> type()         { return type; }
     
             /** Returns the default value of this option or positional parameter, before splitting and type conversion.
-             * A value of {@code null} means this option or positional parameter does not have a default. */
+             * This method returns the programmatically set value; this may differ from the default value that is actually used:
+             * if this ArgSpec is part of a CommandSpec with a {@link IDefaultValueProvider}, picocli will first try to obtain
+             * the default value from the default value provider, and this method is only called if the default provider is
+             * {@code null} or returned a {@code null} value.
+             * @return the programmatically set default value of this option/positional parameter,
+             *      returning {@code null} means this option or positional parameter does not have a default
+             */
             public String defaultValue()   { return defaultValue; }
             /** Returns the initial value this option or positional parameter. If {@link #hasInitialValue()} is true,
              * the option will be reset to the initial value before parsing (regardless of whether a default value exists),
@@ -4496,9 +4509,22 @@ public class CommandLine {
             /** Returns whether this option or positional parameter's default value should be shown in the usage help. */
             public Help.Visibility showDefaultValue() { return showDefaultValue; }
 
-            /** Returns the default value String displayed in the description. */
+            /** Returns the default value String displayed in the description. If this ArgSpec is part of a
+             * CommandSpec with a {@link IDefaultValueProvider}, this method will first try to obtain
+             * the default value from the default value provider; if the provider is {@code null} or if it
+             * returns a {@code null} value, then next any value set to {@link ArgSpec#defaultValue()}
+             * is returned, and if this is also {@code null}, finally the {@linkplain ArgSpec#initialValue() initial value} is returned. */
             public String defaultValueString() {
-                Object value = defaultValue() == null ? initialValue() : defaultValue();
+                String fromProvider = null;
+                IDefaultValueProvider defaultValueProvider = null;
+                try {
+                    defaultValueProvider = commandSpec.defaultValueProvider();
+                    fromProvider = defaultValueProvider == null ? null : defaultValueProvider.defaultValue(this);
+                } catch (Exception ex) {
+                    new Tracer().info("Error getting default value for %s from %s: %s", this, defaultValueProvider, ex);
+                }
+                String defaultVal = fromProvider == null ? this.defaultValue() : fromProvider;
+                Object value = defaultVal == null ? initialValue() : defaultVal;
                 if (value != null && value.getClass().isArray()) {
                     StringBuilder sb = new StringBuilder();
                     for (int i = 0; i < Array.getLength(value); i++) {
@@ -6410,10 +6436,8 @@ public class CommandLine {
 
             // Default value provider return value is only used if provider exists and if value
             // is not null otherwise the original default or initial value are used
-            String defaultValue =
-                    defaultValueProvider != null && defaultValueProvider.defaultValue(arg) != null
-                        ? defaultValueProvider.defaultValue(arg)
-                        : arg.defaultValue();
+            String fromProvider = defaultValueProvider == null ? null : defaultValueProvider.defaultValue(arg);
+            String defaultValue = fromProvider == null ? arg.defaultValue() : fromProvider;
 
             if (defaultValue == null) { return; }
             if (tracer.isDebug()) {tracer.debug("Applying defaultValue (%s) to %s%n", defaultValue, arg);}
