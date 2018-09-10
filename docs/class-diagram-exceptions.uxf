@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<diagram program="umlet" version="14.2">
+<diagram program="umlet" version="14.3.0">
   <zoom_level>10</zoom_level>
   <element>
     <id>UMLClass</id>
@@ -270,8 +270,8 @@ bg=#99FF99</panel_attributes>
       <w>140</w>
       <h>50</h>
     </coordinates>
-    <panel_attributes>picocli 3.5.2
-2018-08-24
+    <panel_attributes>picocli 3.6.0
+2018-09-10
 bg=#FFFF66</panel_attributes>
     <additional_attributes/>
   </element>
