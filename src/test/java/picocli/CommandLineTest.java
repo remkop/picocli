@@ -432,7 +432,7 @@ public class CommandLineTest {
             cmd.parse("-u=milliseconds");
             fail("Expected exception");
         } catch (ParameterException ex) {
-            assertTrue(ex.getMessage(), ex.getMessage().startsWith("Could not convert 'milliseconds' to TimeUnit for option '-u'"));
+            assertTrue(ex.getMessage(), ex.getMessage().startsWith("Invalid value for option '-u': expected one of "));
         }
     }
     @Test
@@ -450,7 +450,7 @@ public class CommandLineTest {
             cmd.parse("-u=millisecondINVALID");
             fail("Expected exception");
         } catch (ParameterException ex) {
-            assertTrue(ex.getMessage(), ex.getMessage().startsWith("Could not convert 'millisecondINVALID' to TimeUnit for option '-u'"));
+            assertTrue(ex.getMessage(), ex.getMessage().startsWith("Invalid value for option '-u': expected one of "));
         }
     }
 
@@ -1311,16 +1311,14 @@ public class CommandLineTest {
             params = CommandLine.populateCommand(new VariousPrefixCharacters(), "--dash=".split(" "));
             fail("int option (with sep but no value) needs arg");
         } catch (ParameterException ex) {
-            assertEquals("Could not convert '' to int for option '--dash'" +
-                    ": java.lang.NumberFormatException: For input string: \"\"", ex.getMessage());
+            assertEquals("Invalid value for option '--dash': '' is not an int", ex.getMessage());
         }
 
         try {
             params = CommandLine.populateCommand(new VariousPrefixCharacters(), "--dash= /4".split(" "));
             fail("int option (with sep but no value, followed by other option) needs arg");
         } catch (ParameterException ex) {
-            assertEquals("Could not convert '' to int for option '--dash'" +
-                    ": java.lang.NumberFormatException: For input string: \"\"", ex.getMessage());
+            assertEquals("Invalid value for option '--dash': '' is not an int", ex.getMessage());
         }
     }
 

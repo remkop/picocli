@@ -496,7 +496,7 @@ public class CommandLineArityTest {
             CommandLine.populateCommand(new BooleanOptionsArity0_nAndParameters(), "-bool=123 -other".split(" "));
             fail("was able to assign 123 to boolean");
         } catch (CommandLine.ParameterException ex) {
-            assertEquals("'123' is not a boolean for option '-bool'", ex.getMessage());
+            assertEquals("Invalid value for option '-bool': '123' is not a boolean", ex.getMessage());
         }
     }
     @Test
@@ -521,7 +521,7 @@ public class CommandLineArityTest {
             CommandLine.populateCommand(new BooleanOptionsArity0_nAndParameters(), "-rv=234 -bool".split(" "));
             fail("was able to assign 234 to boolean");
         } catch (CommandLine.ParameterException ex) {
-            assertEquals("'234' is not a boolean for option '-other'", ex.getMessage());
+            assertEquals("Invalid value for option '-other': '234' is not a boolean", ex.getMessage());
         }
     }
 
@@ -561,7 +561,7 @@ public class CommandLineArityTest {
             CommandLine.populateCommand(new BooleanOptionsArity1_nAndParameters(), "-bool abc".split(" "));
             fail("Invalid format abc was accepted for boolean");
         } catch (CommandLine.ParameterException expected) {
-            assertEquals("'abc' is not a boolean for option '-bool'", expected.getMessage());
+            assertEquals("Invalid value for option '-bool': 'abc' is not a boolean", expected.getMessage());
         }
     }
     @Test
@@ -600,8 +600,7 @@ public class CommandLineArityTest {
             CommandLine.populateCommand(new App(),  "-Long", "-boolean");
             fail("should fail");
         } catch (CommandLine.ParameterException ex) {
-            assertEquals("Could not convert '-boolean' to Long for option '-Long'" +
-                    ": java.lang.NumberFormatException: For input string: \"-boolean\"", ex.getMessage());
+            assertEquals("Invalid value for option '-Long': '-boolean' is not a long", ex.getMessage());
         }
     }
     /** see <a href="https://github.com/remkop/picocli/issues/279">issue #279</a>  */

@@ -11,6 +11,8 @@ New interface: `IDefaultProvider` allows you to get default values from a config
 
 Internationalization: from this release, usage help message sections and the description for options and positional parameters can be specified in a resource bundle. A resource bundle can be set via annotations and programmatically.
 
+The error message on invalid user input has been improved.
+
 This release also contains various improvements the the bash/zsh completion script generation to be more consistent with standard completion on these shells.
 
 Many thanks to the many members of the picocli community who raised issues and contributed solutions! 
@@ -180,6 +182,26 @@ Record changes to the repository
   -m, --message=<arg0>    Use the given <msg> as the commit message.
 ```
 
+### Improved Error Messages
+
+The error messages on invalid input have been improved. For example:
+
+Previously, if an argument could not be converted to a primitive type, the error looked like this:
+
+`Could not convert 'abc' to int for option '-num': java.lang.NumberFormatException: For input string: \"abc\"`
+
+The new error message for primitive types looks like this:
+
+`Invalid value for option '-num': 'abc' is not an int`
+
+Previously, if an argument could not be converted to an enum, the error looked like this:
+
+`Could not convert 'xyz' to TimeUnit for option '-timeUnit': java.lang.IllegalArgumentException: No enum constant java.util.concurrent.TimeUnit.xyz`
+
+The new error message for enums looks like this:
+
+`Invalid value for option '-timeUnit': expected one of [NANOSECONDS, MILLISECONDS, MICROSECONDS, SECONDS, MINUTES, HOURS, DAYS] but was 'xyz'`
+
 
 ## <a name="3.6.0-fixes"></a> Fixed issues
 - [#321] API: Add support for IDefaultValueProvider. Thanks to [Nicolas MASSART](https://github.com/NicolasMassart) for the pull request.
@@ -187,6 +209,7 @@ Record changes to the repository
 - [#433] API: Added method `printHelpIfRequested` that accepts a `ColorScheme` parameter. Thanks to [Benny Bottema](https://github.com/bbottema) for the suggestion.
 - [#441] API: Added `hideParamSyntax` attribute to `@Option` and `@Parameters` to allow suppressing usage syntax decorations around the param label. Thanks to [Benny Bottema](https://github.com/bbottema) for the pull request.
 - [#22], [#415], [#436] API: Added internationalization and localization support via resource bundles.
+- [#473] Enhancement: Improved error messages for invalid input.
 - [#461] Bugfix: Script auto-completion only suggests options and never default bash completions. Thanks to [David Walluck](https://github.com/dwalluck) for the pull request.
 - [#466] Bugfix: Script auto-completion should not generate suggestions for options with arguments that have no known completions. Thanks to [David Walluck](https://github.com/dwalluck) for the pull request.
 - [#470] Bugfix: Script auto-completion should generate suggestions for short options with arguments. Thanks to [David Walluck](https://github.com/dwalluck) for the pull request.
@@ -197,7 +220,7 @@ Record changes to the repository
 No features were deprecated in this release.
 
 ## <a name="3.6.0-breaking-changes"></a> Potential breaking changes
-This release has no breaking changes.
+The error message displayed on invalid input is different from previous releases. This may break unit tests that expect an exact error message.
 
 
 # <a name="3.5.2"></a> Picocli 3.5.2

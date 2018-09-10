@@ -7113,10 +7113,12 @@ public class CommandLine {
             try {
                 return converter.convert(value);
             } catch (TypeConversionException ex) {
-                throw new ParameterException(CommandLine.this, ex.getMessage() + optionDescription(" for ", argSpec, index), argSpec, value);
+                String msg = String.format("Invalid value for %s: %s", optionDescription("", argSpec, index), ex.getMessage());
+                throw new ParameterException(CommandLine.this, msg, argSpec, value);
             } catch (Exception other) {
-                String desc = optionDescription(" for ", argSpec, index) + ": " + other;
-                throw new ParameterException(CommandLine.this, "Could not convert '" + value + "' to " + type.getSimpleName() + desc, other, argSpec, value);
+                String desc = optionDescription("", argSpec, index);
+                String msg = String.format("Invalid value for %s: cannot convert '%s' to %s (%s)", desc, value, type.getSimpleName(), other);
+                throw new ParameterException(CommandLine.this, msg, other, argSpec, value);
             }
         }
 
@@ -7189,7 +7191,9 @@ public class CommandLine {
                                 if (upper.equals(String.valueOf(enumConstant).toUpperCase())) { return enumConstant; }
                             }
                         }
-                        return Enum.valueOf((Class<Enum>) type, value);
+                        try { return Enum.valueOf((Class<Enum>) type, value); }
+                        catch (Exception ex) { throw new TypeConversionException(
+                                String.format("expected one of %s but was '%s'", Arrays.asList(type.getEnumConstants()), value)); }
                     }
                 };
             }
@@ -7295,10 +7299,6 @@ public class CommandLine {
         static class CharSequenceConverter implements ITypeConverter<CharSequence> {
             public String convert(String value) { return value; }
         }
-        /** Converts text to a {@code Byte} by delegating to {@link Byte#valueOf(String)}.*/
-        static class ByteConverter implements ITypeConverter<Byte> {
-            public Byte convert(String value) { return Byte.valueOf(value); }
-        }
         /** Converts {@code "true"} or {@code "false"} to a {@code Boolean}. Other values result in a ParameterException.*/
         static class BooleanConverter implements ITypeConverter<Boolean> {
             public Boolean convert(String value) {
@@ -7317,23 +7317,31 @@ public class CommandLine {
                 return value.charAt(0);
             }
         }
+        private static TypeConversionException fail(String value, Class<?> c) { return fail(value, c, "'%s' is not a %s"); }
+        private static TypeConversionException fail(String value, Class<?> c, String template) {
+            return new TypeConversionException(String.format(template, value, c.getSimpleName()));
+        }
+        /** Converts text to a {@code Byte} by delegating to {@link Byte#valueOf(String)}.*/
+        static class ByteConverter implements ITypeConverter<Byte> {
+            public Byte convert(String value) { try {return Byte.valueOf(value);} catch (Exception ex) {throw fail(value, Byte.TYPE);} }
+        }
         /** Converts text to a {@code Short} by delegating to {@link Short#valueOf(String)}.*/
         static class ShortConverter implements ITypeConverter<Short> {
-            public Short convert(String value) { return Short.valueOf(value); }
+            public Short convert(String value) { try {return Short.valueOf(value);} catch (Exception ex) {throw fail(value, Short.TYPE);}  }
         }
         /** Converts text to an {@code Integer} by delegating to {@link Integer#valueOf(String)}.*/
         static class IntegerConverter implements ITypeConverter<Integer> {
-            public Integer convert(String value) { return Integer.valueOf(value); }
+            public Integer convert(String value) { try {return Integer.valueOf(value);} catch (Exception ex) {throw fail(value, Integer.TYPE, "'%s' is not an %s");}  }
         }
         /** Converts text to a {@code Long} by delegating to {@link Long#valueOf(String)}.*/
         static class LongConverter implements ITypeConverter<Long> {
-            public Long convert(String value) { return Long.valueOf(value); }
+            public Long convert(String value) { try {return Long.valueOf(value);} catch (Exception ex) {throw fail(value, Long.TYPE);}  }
         }
         static class FloatConverter implements ITypeConverter<Float> {
-            public Float convert(String value) { return Float.valueOf(value); }
+            public Float convert(String value) { try {return Float.valueOf(value);} catch (Exception ex) {throw fail(value, Float.TYPE);}  }
         }
         static class DoubleConverter implements ITypeConverter<Double> {
-            public Double convert(String value) { return Double.valueOf(value); }
+            public Double convert(String value) { try {return Double.valueOf(value);} catch (Exception ex) {throw fail(value, Double.TYPE);}  }
         }
         static class FileConverter implements ITypeConverter<File> {
             public File convert(String value) { return new File(value); }
@@ -7481,9 +7489,9 @@ public class CommandLine {
                         return method.invoke(null, s);
                     }
                 } catch (InvocationTargetException e) {
-                    throw new TypeConversionException("Unable to convert '" + s + "' to " + method.getReturnType() + ": " + e.getTargetException().toString());
+                    throw new TypeConversionException(String.format("cannot convert '%s' to %s (%s)", s, method.getReturnType(), e.getTargetException()));
                 } catch (Exception e) {
-                    throw new TypeConversionException("Unable to convert '" + s + "' to " + method.getReturnType() + ": " + e.toString());
+                    throw new TypeConversionException(String.format("cannot convert '%s' to %s (%s)", s, method.getReturnType(), e));
                 }
             }
         }

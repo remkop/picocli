@@ -198,8 +198,7 @@ public class LenientParsingTest {
         cmd.getCommandSpec().parser().collectErrors(true);
         cmd.parse("-Long", "-boolean");
         assertEquals(1, cmd.getParseResult().errors().size());
-        assertEquals("Could not convert '-boolean' to Long for option '-Long'" +
-                ": java.lang.NumberFormatException: For input string: \"-boolean\"", cmd.getParseResult().errors().get(0).getMessage());
+        assertEquals("Invalid value for option '-Long': '-boolean' is not a long", cmd.getParseResult().errors().get(0).getMessage());
     }
     @Test
     public void testBooleanOptionsArity0_nFailsIfAttachedParamNotABoolean() { // ignores varargs
@@ -207,7 +206,7 @@ public class LenientParsingTest {
         cmd.getCommandSpec().parser().collectErrors(true);
         cmd.parse("-bool=123 -other".split(" "));
         assertEquals(1, cmd.getParseResult().errors().size());
-        assertEquals("'123' is not a boolean for option '-bool'", cmd.getParseResult().errors().get(0).getMessage());
+        assertEquals("Invalid value for option '-bool': '123' is not a boolean", cmd.getParseResult().errors().get(0).getMessage());
     }
     @Test
     public void testBooleanOptionsArity0_nShortFormFailsIfAttachedParamNotABoolean() { // ignores varargs
@@ -298,9 +297,8 @@ public class LenientParsingTest {
         cmd.parse("-timeUnitList", "SECONDS", "b", "c");
         assertEquals(2, cmd.getParseResult().errors().size());
         Exception ex = cmd.getParseResult().errors().get(0);
-        String prefix = "Could not convert 'b' to TimeUnit for option '-timeUnitList' at index 1 (<timeUnitList>)" +
-                ": java.lang.IllegalArgumentException: No enum const";
-        String suffix = " java.util.concurrent.TimeUnit.b";
+        String prefix = "Invalid value for option '-timeUnitList' at index 1 (<timeUnitList>): expected one of ";
+        String suffix = " but was 'b'";
         assertEquals(prefix, ex.getMessage().substring(0, prefix.length()));
         assertEquals(suffix, ex.getMessage().substring(ex.getMessage().length() - suffix.length(), ex.getMessage().length()));
 
@@ -312,7 +310,7 @@ public class LenientParsingTest {
         cmd.getCommandSpec().parser().collectErrors(true);
         cmd.parse("-Time", "23:59:58;123");
         assertEquals(1, cmd.getParseResult().errors().size());
-        assertEquals("'23:59:58;123' is not a HH:mm[:ss[.SSS]] time for option '-Time'", cmd.getParseResult().errors().get(0).getMessage());
+        assertEquals("Invalid value for option '-Time': '23:59:58;123' is not a HH:mm[:ss[.SSS]] time", cmd.getParseResult().errors().get(0).getMessage());
     }
     @Test
     public void testByteFieldsAreDecimal() {
@@ -320,9 +318,7 @@ public class LenientParsingTest {
         cmd.getCommandSpec().parser().collectErrors(true);
         cmd.parse("-byte", "0x1F", "-Byte", "0x0F");
         assertEquals(2, cmd.getParseResult().errors().size());
-        assertEquals("Could not convert '0x1F' to byte for option '-byte'" +
-                ": java.lang.NumberFormatException: For input string: \"0x1F\"", cmd.getParseResult().errors().get(0).getMessage());
-
-        assertEquals("Could not convert '0x0F' to Byte for option '-Byte': java.lang.NumberFormatException: For input string: \"0x0F\"", cmd.getParseResult().errors().get(1).getMessage());
+        assertEquals("Invalid value for option '-byte': '0x1F' is not a byte", cmd.getParseResult().errors().get(0).getMessage());
+        assertEquals("Invalid value for option '-Byte': '0x0F' is not a byte", cmd.getParseResult().errors().get(1).getMessage());
     }
 }

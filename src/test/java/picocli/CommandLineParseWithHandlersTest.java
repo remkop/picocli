@@ -264,7 +264,7 @@ public class CommandLineParseWithHandlersTest {
 
         assertFalse(runWasCalled[0]);
         assertEquals(String.format(
-                "Could not convert 'not a number' to int for option '-number': java.lang.NumberFormatException: For input string: \"not a number\"%n" +
+                "Invalid value for option '-number': 'not a number' is not an int%n" +
                         "Usage: <main class> [-number=<number>]%n" +
                         "      -number=<number>%n"), sps.toString());
     }
@@ -299,7 +299,7 @@ public class CommandLineParseWithHandlersTest {
 
         assertNull(callResult);
         assertEquals(String.format(
-                "Could not convert 'not a number' to int for option '-number': java.lang.NumberFormatException: For input string: \"not a number\"%n" +
+                "Invalid value for option '-number': 'not a number' is not an int%n" +
                         "Usage: <main class> [-number=<number>]%n" +
                         "      -number=<number>%n"), sps.toString());
     }
