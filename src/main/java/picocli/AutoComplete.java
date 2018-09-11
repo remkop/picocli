@@ -603,13 +603,13 @@ public class AutoComplete {
                     addCandidatesForArgsFollowing(((CommandSpec) obj).parent(), candidates);
 
                 } else if (obj instanceof OptionSpec) { // option
-				    int sep = args[argIndex].indexOf(spec.parser().separator());
-					if (sep < 0 || positionInArg < sep) { // no '=' or cursor before '='
-						addCandidatesForArgsFollowing(findCommandFor((OptionSpec) obj, spec), candidates);
-					} else {
-						committedPrefix = args[argIndex].substring(sep + 1, positionInArg);
-						addCandidatesForArgsFollowing((OptionSpec) obj, candidates);
-					}
+                    int sep = args[argIndex].indexOf(spec.parser().separator());
+                    if (sep < 0 || positionInArg < sep) { // no '=' or cursor before '='
+                        addCandidatesForArgsFollowing(findCommandFor((OptionSpec) obj, spec), candidates);
+                    } else {
+                        committedPrefix = args[argIndex].substring(sep + 1, positionInArg);
+                        addCandidatesForArgsFollowing((OptionSpec) obj, candidates);
+                    }
 
                 } else if (obj instanceof PositionalParamSpec) { // positional
                     addCandidatesForArgsFollowing(findCommandFor((PositionalParamSpec) obj, spec), candidates);
@@ -674,25 +674,25 @@ public class AutoComplete {
     }
 
     private static void filterAndTrimMatchingPrefix(String prefix, List<CharSequence> candidates) {
-		List<CharSequence> replace = new ArrayList<CharSequence>();
-		for (CharSequence seq : candidates) {
-			if (seq.toString().startsWith(prefix)) {
+        List<CharSequence> replace = new ArrayList<CharSequence>();
+        for (CharSequence seq : candidates) {
+            if (seq.toString().startsWith(prefix)) {
                 replace.add(seq.subSequence(prefix.length(), seq.length()));
-			}
-		}
-		candidates.clear();
+            }
+        }
+        candidates.clear();
         candidates.addAll(replace);
-	}
-	private static void addCandidatesForArgsFollowing(Object obj, List<CharSequence> candidates) {
-		if (obj == null) { return; }
-		if (obj instanceof CommandSpec) {
-			addCandidatesForArgsFollowing((CommandSpec) obj, candidates);
-		} else if (obj instanceof OptionSpec) {
-			addCandidatesForArgsFollowing((OptionSpec) obj, candidates);
-		} else if (obj instanceof PositionalParamSpec) {
-			addCandidatesForArgsFollowing((PositionalParamSpec) obj, candidates);
-		}
-	}
+    }
+    private static void addCandidatesForArgsFollowing(Object obj, List<CharSequence> candidates) {
+        if (obj == null) { return; }
+        if (obj instanceof CommandSpec) {
+            addCandidatesForArgsFollowing((CommandSpec) obj, candidates);
+        } else if (obj instanceof OptionSpec) {
+            addCandidatesForArgsFollowing((OptionSpec) obj, candidates);
+        } else if (obj instanceof PositionalParamSpec) {
+            addCandidatesForArgsFollowing((PositionalParamSpec) obj, candidates);
+        }
+    }
     private static void addCandidatesForArgsFollowing(CommandSpec commandSpec, List<CharSequence> candidates) {
         if (commandSpec == null) { return; }
         for (Map.Entry<String, CommandLine> entry : commandSpec.subcommands().entrySet()) {
@@ -704,12 +704,12 @@ public class AutoComplete {
             addCandidatesForArgsFollowing(positional, candidates);
         }
     }
-	private static void addCandidatesForArgsFollowing(OptionSpec optionSpec, List<CharSequence> candidates) {
+    private static void addCandidatesForArgsFollowing(OptionSpec optionSpec, List<CharSequence> candidates) {
         if (optionSpec != null) {
             addCompletionCandidates(optionSpec.completionCandidates(), optionSpec.type(), candidates);
         }
-	}
-	private static void addCandidatesForArgsFollowing(PositionalParamSpec positionalSpec, List<CharSequence> candidates) {
+    }
+    private static void addCandidatesForArgsFollowing(PositionalParamSpec positionalSpec, List<CharSequence> candidates) {
         if (positionalSpec != null) {
             addCompletionCandidates(positionalSpec.completionCandidates(), positionalSpec.type(), candidates);
         }

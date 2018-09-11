@@ -78,7 +78,7 @@ public class CommandLineCommandMethodTest {
             return a*b;
         }
     }
-	@SuppressWarnings("deprecation")
+    @SuppressWarnings("deprecation")
     @Test
     public void testAnnotateMethod_noArg() throws Exception {
         setTraceLevel("OFF");

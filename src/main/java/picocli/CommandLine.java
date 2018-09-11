@@ -1912,7 +1912,7 @@ public class CommandLine {
         return result;
     }
 
-	/**
+    /**
      * Registers the specified type converter for the specified class. When initializing fields annotated with
      * {@link Option}, the field's type is used as a lookup key to find the associated type converter, and this
      * type converter converts the original command line argument string value to the correct type.
@@ -9129,7 +9129,7 @@ public class CommandLine {
                 public String on() { return CSI + startCode + "m"; }
                 public String off() { return CSI + endCode + "m"; }
 
-				/** Returns the concatenated ANSI escape codes for turning all specified styles on.
+                /** Returns the concatenated ANSI escape codes for turning all specified styles on.
                  * @param styles the styles to generate ANSI escape codes for
                  * @return the concatenated ANSI escape codes for turning all specified styles on */
                 public static String on(IStyle... styles) {
@@ -9139,7 +9139,7 @@ public class CommandLine {
                     }
                     return result.toString();
                 }
-				/** Returns the concatenated ANSI escape codes for turning all specified styles off.
+                /** Returns the concatenated ANSI escape codes for turning all specified styles off.
                  * @param styles the styles to generate ANSI escape codes for
                  * @return the concatenated ANSI escape codes for turning all specified styles off */
                 public static String off(IStyle... styles) {
@@ -9149,25 +9149,25 @@ public class CommandLine {
                     }
                     return result.toString();
                 }
-				/** Parses the specified style markup and returns the associated style.
-				 *  The markup may be one of the Style enum value names, or it may be one of the Style enum value
-				 *  names when {@code "fg_"} is prepended, or it may be one of the indexed colors in the 256 color palette.
+                /** Parses the specified style markup and returns the associated style.
+                 *  The markup may be one of the Style enum value names, or it may be one of the Style enum value
+                 *  names when {@code "fg_"} is prepended, or it may be one of the indexed colors in the 256 color palette.
                  * @param str the case-insensitive style markup to convert, e.g. {@code "blue"} or {@code "fg_blue"},
                  *          or {@code "46"} (indexed color) or {@code "0;5;0"} (RGB components of an indexed color)
-				 * @return the IStyle for the specified converter
-				 */
+                 * @return the IStyle for the specified converter
+                 */
                 public static IStyle fg(String str) {
                     try { return Style.valueOf(str.toLowerCase(ENGLISH)); } catch (Exception ignored) {}
                     try { return Style.valueOf("fg_" + str.toLowerCase(ENGLISH)); } catch (Exception ignored) {}
                     return new Palette256Color(true, str);
                 }
-				/** Parses the specified style markup and returns the associated style.
-				 *  The markup may be one of the Style enum value names, or it may be one of the Style enum value
-				 *  names when {@code "bg_"} is prepended, or it may be one of the indexed colors in the 256 color palette.
-				 * @param str the case-insensitive style markup to convert, e.g. {@code "blue"} or {@code "bg_blue"},
+                /** Parses the specified style markup and returns the associated style.
+                 *  The markup may be one of the Style enum value names, or it may be one of the Style enum value
+                 *  names when {@code "bg_"} is prepended, or it may be one of the indexed colors in the 256 color palette.
+                 * @param str the case-insensitive style markup to convert, e.g. {@code "blue"} or {@code "bg_blue"},
                  *          or {@code "46"} (indexed color) or {@code "0;5;0"} (RGB components of an indexed color)
-				 * @return the IStyle for the specified converter
-				 */
+                 * @return the IStyle for the specified converter
+                 */
                 public static IStyle bg(String str) {
                     try { return Style.valueOf(str.toLowerCase(ENGLISH)); } catch (Exception ignored) {}
                     try { return Style.valueOf("bg_" + str.toLowerCase(ENGLISH)); } catch (Exception ignored) {}
