@@ -100,9 +100,12 @@ import static picocli.CommandLine.Help.Column.Overflow.WRAP;
  * -v -ooutfile in1 in2
  * -vooutfile in1 in2
  * </pre>
- * <h2>Class Diagram of the CommandLine Facade</h2>
+ * <h2>Class Diagram of the CommandLine Facade (Definition Phase)</h2>
  * <p>
- * <img src="doc-files/class-diagram.png" alt="Class Diagram of the CommandLine Facade">
+ * <img src="doc-files/class-diagram-definition.png" alt="Class Diagram of the CommandLine Facade (Definition Phase)">
+ * <h2>Class Diagram of the CommandLine Facade (Parsing Phase)</h2>
+ * <p>
+ * <img src="doc-files/class-diagram-parsing.png" alt="Class Diagram of the CommandLine Facade (Parsing Phase)">
  * </p>
  */
 public class CommandLine {
