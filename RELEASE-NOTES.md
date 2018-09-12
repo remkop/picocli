@@ -215,6 +215,7 @@ The new error message for enums looks like this:
 - [#470] Bugfix: Script auto-completion should generate suggestions for short options with arguments. Thanks to [David Walluck](https://github.com/dwalluck) for the pull request.
 - [#444] Bugfix: Usage help shows duplicate aliases if registered with same alias multiple times.
 - [#452] Doc: Add UML class diagrams to picocli Javadoc.
+- [#475] Doc: Renamed module `examples` to `picocli-examples`.
 
 ## <a name="3.6.0-deprecated"></a> Deprecations
 No features were deprecated in this release.
