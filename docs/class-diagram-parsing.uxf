@@ -349,8 +349,8 @@ group=8</panel_attributes>
     <coordinates>
       <x>20</x>
       <y>0</y>
-      <w>880</w>
-      <h>720</h>
+      <w>850</w>
+      <h>750</h>
     </coordinates>
     <panel_attributes>&lt;&lt;facade&gt;&gt;
 CommandLine</panel_attributes>
@@ -656,7 +656,7 @@ group=9</panel_attributes>
   <element>
     <id>UMLNote</id>
     <coordinates>
-      <x>760</x>
+      <x>740</x>
       <y>10</y>
       <w>110</w>
       <h>40</h>
@@ -733,14 +733,16 @@ bg=#FFFF66</panel_attributes>
   <element>
     <id>UMLNote</id>
     <coordinates>
-      <x>70</x>
+      <x>50</x>
       <y>570</y>
-      <w>270</w>
-      <h>130</h>
+      <w>300</w>
+      <h>160</h>
     </coordinates>
-    <panel_attributes>"Convenience" API: command classes
-implementing Runnable or Callable can
-write one line of code that takes care of:
+    <panel_attributes>"Convenience" API: use the CommandLine
+invoke, run or call methods with @Command
+methods or @Command classes implementing
+Runnable or Callable to do all of the below
+with one line of code:
 * parsing user input
 * error handling
 * requests for help or version info
@@ -778,7 +780,7 @@ bg=#FFFF66</panel_attributes>
       <w>210</w>
       <h>70</h>
     </coordinates>
-    <panel_attributes>Under the hood, the Interpreter
+    <panel_attributes>Internally, the Interpreter
 class is responsible for parsing
 the input.
 bg=#FFFF66</panel_attributes>

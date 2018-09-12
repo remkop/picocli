@@ -8,10 +8,12 @@
  * {@code CommandLine} is in a single file, so it can be included in source form.
  * This lets users run picocli-based applications without requiring picocli as an external dependency.
  * </p>
- * <h2>Class Diagram of the CommandLine Facade</h2>
+ * <h2>Class Diagram of the CommandLine Facade (Definition Phase)</h2>
  * <p>
- * <img src="doc-files/class-diagram.png" alt="Class Diagram of the CommandLine Facade">
- * </p>
+ * <img src="doc-files/class-diagram-definition.png" alt="Class Diagram of the CommandLine Facade (Definition Phase)">
+ * <h2>Class Diagram of the CommandLine Facade (Parsing Phase)</h2>
+ * <p>
+ * <img src="doc-files/class-diagram-parsing.png" alt="Class Diagram of the CommandLine Facade (Parsing Phase)">
  * <h2>Class Diagram of the Picocli Exceptions</h2>
  * <p>
  * <img src="doc-files/class-diagram-exceptions.png" alt="Class Diagram of the Picocli Exceptions">
