@@ -8,6 +8,8 @@
 :toclevels: 2
 :toc-title: Features
 :source-highlighter: coderay
+//:source-highlighter: highlightjs
+//:highlightjs-theme: darkula
 :icons: font
 :imagesdir: images
 
@@ -2519,7 +2521,8 @@ For example:
 
 [source,java]
 ----
-@Command(name = "git", mixinStandardHelpOptions = true, version = "picocli-3.6.0")
+@Command(name = "git", mixinStandardHelpOptions = true,
+         resourceBundle = "Git_Messages", version = "picocli-3.6.0")
 class Git {
     @Option(names = "--git-dir", descriptionKey = "GITDIR")
     Path path;
