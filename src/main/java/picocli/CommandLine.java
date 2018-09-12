@@ -442,6 +442,17 @@ public class CommandLine {
         return this;
     }
 
+    /** Returns the default value provider for the command, or {@code null} if none has been set.
+     * @return the default value provider for this command, or {@code null}
+     * @since 3.6
+     * @see Command#defaultValueProvider()
+     * @see CommandSpec#defaultValueProvider()
+     * @see ArgSpec#defaultValueString()
+     */
+    public IDefaultValueProvider getDefaultValueProvider() {
+        return getCommandSpec().defaultValueProvider();
+    }
+
     /** Sets a default value provider for the command and sub-commands
      * <p>The specified setting will be registered with this {@code CommandLine} and the full hierarchy of its
      * sub-commands and nested sub-subcommands <em>at the moment this method is called</em>. Sub-commands added
@@ -452,11 +463,11 @@ public class CommandLine {
      * @since 3.6
      */
     public CommandLine setDefaultValueProvider(IDefaultValueProvider newValue) {
-      getCommandSpec().defaultValueProvider(newValue);
-      for (CommandLine command : getCommandSpec().subcommands().values()) {
-        command.setDefaultValueProvider(newValue);
-      }
-      return this;
+        getCommandSpec().defaultValueProvider(newValue);
+        for (CommandLine command : getCommandSpec().subcommands().values()) {
+            command.setDefaultValueProvider(newValue);
+        }
+        return this;
     }
 
     /** Returns whether the parser interprets the first positional parameter as "end of options" so the remaining
@@ -4529,6 +4540,7 @@ public class CommandLine {
              * {@code null} or returned a {@code null} value.
              * @return the programmatically set default value of this option/positional parameter,
              *      returning {@code null} means this option or positional parameter does not have a default
+             * @see CommandSpec#defaultValueProvider()
              */
             public String defaultValue()   { return defaultValue; }
             /** Returns the initial value this option or positional parameter. If {@link #hasInitialValue()} is true,
@@ -4546,7 +4558,9 @@ public class CommandLine {
              * CommandSpec with a {@link IDefaultValueProvider}, this method will first try to obtain
              * the default value from the default value provider; if the provider is {@code null} or if it
              * returns a {@code null} value, then next any value set to {@link ArgSpec#defaultValue()}
-             * is returned, and if this is also {@code null}, finally the {@linkplain ArgSpec#initialValue() initial value} is returned. */
+             * is returned, and if this is also {@code null}, finally the {@linkplain ArgSpec#initialValue() initial value} is returned.
+             * @see CommandSpec#defaultValueProvider()
+             * @see ArgSpec#defaultValue() */
             public String defaultValueString() {
                 String fromProvider = null;
                 IDefaultValueProvider defaultValueProvider = null;

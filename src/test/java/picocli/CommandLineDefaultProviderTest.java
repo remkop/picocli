@@ -117,6 +117,20 @@ public class CommandLineDefaultProviderTest {
     }
 
     @Test
+    public void testDefaultProviderNullByDefault() {
+        CommandLine cmd = new CommandLine(Sub.class);
+        assertNull(cmd.getDefaultValueProvider());
+    }
+
+    @Test
+    public void testDefaultProviderReturnsSetValue() {
+        CommandLine cmd = new CommandLine(Sub.class);
+        TestDefaultProvider provider = new TestDefaultProvider();
+        cmd.setDefaultValueProvider(provider);
+        assertSame(provider, cmd.getDefaultValueProvider());
+    }
+
+    @Test
     public void testDefaultProviderPropagatedToSubCommand() {
         CommandLine cmd = new CommandLine(App.class);
 
