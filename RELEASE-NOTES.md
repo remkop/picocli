@@ -1,6 +1,6 @@
 # picocli Release Notes
 
-# <a name="3.6.0"></a> Picocli 3.6.0 (UNRELEASED)
+# <a name="3.6.0"></a> Picocli 3.6.0
 The picocli community is pleased to announce picocli 3.6.0.
 
 This release contains new features, bugfixes and enhancements.
