@@ -1910,15 +1910,86 @@ public class CommandLine {
         cmd.parseWithHandlers(new RunLast().useOut(out).useAnsi(ansi), new DefaultExceptionHandler<List<Object>>().useErr(err).useAnsi(ansi), args);
     }
 
+    /**
+     * Delegates to {@link #invoke(String, Class, PrintStream, PrintStream, Help.Ansi, String...)} with {@code System.out} for
+     * requested usage help messages, {@code System.err} for diagnostic error messages, and {@link Help.Ansi#AUTO}.
+     * @param methodName the {@code @Command}-annotated method to build a {@link CommandSpec} model from,
+     *                   and run when {@linkplain #parseArgs(String...) parsing} succeeds.
+     * @param cls the class where the {@code @Command}-annotated method is declared, or a subclass
+     * @param args the command line arguments to parse
+     * @see #invoke(String, Class, PrintStream, PrintStream, Help.Ansi, String...)
+     * @throws InitializationException if the specified method does not have a {@link Command} annotation,
+     *      or if the specified class contains multiple {@code @Command}-annotated methods with the specified name
+     * @throws ExecutionException if the Runnable throws an exception
+     * @see #parseWithHandlers(IParseResultHandler2, IExceptionHandler2, String...)
+     * @since 3.6
+     */
     public static Object invoke(String methodName, Class<?> cls, String... args) {
         return invoke(methodName, cls, System.out, System.err, Help.Ansi.AUTO, args);
     }
+    /**
+     * Delegates to {@link #invoke(String, Class, PrintStream, PrintStream, Help.Ansi, String...)} with the specified stream for
+     * requested usage help messages, {@code System.err} for diagnostic error messages, and {@link Help.Ansi#AUTO}.
+     * @param methodName the {@code @Command}-annotated method to build a {@link CommandSpec} model from,
+     *                   and run when {@linkplain #parseArgs(String...) parsing} succeeds.
+     * @param cls the class where the {@code @Command}-annotated method is declared, or a subclass
+     * @param out the printstream to print requested help message to
+     * @param args the command line arguments to parse
+     * @see #invoke(String, Class, PrintStream, PrintStream, Help.Ansi, String...)
+     * @throws InitializationException if the specified method does not have a {@link Command} annotation,
+     *      or if the specified class contains multiple {@code @Command}-annotated methods with the specified name
+     * @throws ExecutionException if the Runnable throws an exception
+     * @see #parseWithHandlers(IParseResultHandler2, IExceptionHandler2, String...)
+     * @since 3.6
+     */
     public static Object invoke(String methodName, Class<?> cls, PrintStream out, String... args) {
         return invoke(methodName, cls, out, System.err, Help.Ansi.AUTO, args);
     }
+    /**
+     * Delegates to {@link #invoke(String, Class, PrintStream, PrintStream, Help.Ansi, String...)} with the specified stream for
+     * requested usage help messages, {@code System.err} for diagnostic error messages, and the specified Ansi mode.
+     * @param methodName the {@code @Command}-annotated method to build a {@link CommandSpec} model from,
+     *                   and run when {@linkplain #parseArgs(String...) parsing} succeeds.
+     * @param cls the class where the {@code @Command}-annotated method is declared, or a subclass
+     * @param out the printstream to print requested help message to
+     * @param ansi whether the usage message should include ANSI escape codes or not
+     * @param args the command line arguments to parse
+     * @see #invoke(String, Class, PrintStream, PrintStream, Help.Ansi, String...)
+     * @throws InitializationException if the specified method does not have a {@link Command} annotation,
+     *      or if the specified class contains multiple {@code @Command}-annotated methods with the specified name
+     * @throws ExecutionException if the Runnable throws an exception
+     * @see #parseWithHandlers(IParseResultHandler2, IExceptionHandler2, String...)
+     * @since 3.6
+     */
     public static Object invoke(String methodName, Class<?> cls, PrintStream out, Help.Ansi ansi, String... args) {
         return invoke(methodName, cls, out, System.err, ansi, args);
     }
+    /**
+     * Convenience method to allow command line application authors to avoid some boilerplate code in their application.
+     * Constructs a {@link CommandSpec} model from the {@code @Option} and {@code @Parameters}-annotated method parameters
+     * of the {@code @Command}-annotated method, parses the specified command line arguments and invokes the specified method.
+     * Calling this method is equivalent to:
+     * <pre>{@code
+     * Method commandMethod = getCommandMethods(cls, methodName).get(0);
+     * CommandLine cmd = new CommandLine(commandMethod);
+     * List<Object> list = cmd.parseWithHandlers(new RunLast().useOut(out).useAnsi(ansi),
+     *                                           new DefaultExceptionHandler().useErr(err).useAnsi(ansi),
+     *                                           args);
+     * return list == null ? null : list.get(0);
+     * }</pre>
+     * @param methodName the {@code @Command}-annotated method to build a {@link CommandSpec} model from,
+     *                   and run when {@linkplain #parseArgs(String...) parsing} succeeds.
+     * @param cls the class where the {@code @Command}-annotated method is declared, or a subclass
+     * @param out the printStream to print the usage help message to when the user requested help
+     * @param err the printStream to print diagnostic messages to
+     * @param ansi whether the usage message should include ANSI escape codes or not
+     * @param args the command line arguments to parse
+     * @throws InitializationException if the specified method does not have a {@link Command} annotation,
+     *      or if the specified class contains multiple {@code @Command}-annotated methods with the specified name
+     * @throws ExecutionException if the method throws an exception
+     * @see #parseWithHandlers(IParseResultHandler2, IExceptionHandler2, String...)
+     * @since 3.6
+     */
     public static Object invoke(String methodName, Class<?> cls, PrintStream out, PrintStream err, Help.Ansi ansi, String... args) {
         List<Method> candidates = getCommandMethods(cls, methodName);
         if (candidates.size() != 1) { throw new InitializationException("Expected exactly one @Command-annotated method for " + cls.getName() + "::" + methodName + "(...), but got: " + candidates); }
