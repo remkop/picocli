@@ -597,11 +597,11 @@ bg=#FFFF66</panel_attributes>
     <coordinates>
       <x>30</x>
       <y>10</y>
-      <w>210</w>
+      <w>230</w>
       <h>40</h>
     </coordinates>
     <panel_attributes>Classes and interfaces used
-during the "definition" phase.
+to define a CommandSpec model.
 bg=#FFFF66</panel_attributes>
     <additional_attributes/>
   </element>

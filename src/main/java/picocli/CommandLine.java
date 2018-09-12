@@ -130,12 +130,13 @@ import static picocli.CommandLine.Help.Column.Overflow.WRAP;
  *     }
  * }
  * </pre>
- * <h2>Class Diagram of the CommandLine Facade (Definition Phase)</h2>
+ * <h2>Classes and Interfaces for Defining a CommandSpec Model</h2>
  * <p>
- * <img src="doc-files/class-diagram-definition.png" alt="Class Diagram of the CommandLine Facade (Definition Phase)">
- * <h2>Class Diagram of the CommandLine Facade (Parsing Phase)</h2>
+ * <img src="doc-files/class-diagram-definition.png" alt="Classes and Interfaces for Defining a CommandSpec Model">
+ * </p>
+ * <h2>Classes Related to Parsing Command Line Arguments</h2>
  * <p>
- * <img src="doc-files/class-diagram-parsing.png" alt="Class Diagram of the CommandLine Facade (Parsing Phase)">
+ * <img src="doc-files/class-diagram-parsing.png" alt="Classes Related to Parsing Command Line Arguments">
  * </p>
  */
 public class CommandLine {

@@ -726,7 +726,7 @@ ParseResult</panel_attributes>
       <h>40</h>
     </coordinates>
     <panel_attributes>Classes and interfaces used
-during the parsing phase.
+to parse command line arguments.
 bg=#FFFF66</panel_attributes>
     <additional_attributes/>
   </element>
