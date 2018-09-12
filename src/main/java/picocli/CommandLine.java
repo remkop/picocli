@@ -100,6 +100,36 @@ import static picocli.CommandLine.Help.Column.Overflow.WRAP;
  * -v -ooutfile in1 in2
  * -vooutfile in1 in2
  * </pre>
+ * <p>
+ * Another example that implements {@code Callable} and uses the {@link #call(Callable, String...) CommandLine.call} convenience API to run in a single line of code:
+ * </p>
+ * <pre>
+ *  &#064;Command(description = "Prints the checksum (MD5 by default) of a file to STDOUT.",
+ *          name = "checksum", mixinStandardHelpOptions = true, version = "checksum 3.0")
+ * class CheckSum implements Callable&lt;Void&gt; {
+ *
+ *     &#064;Parameters(index = "0", description = "The file whose checksum to calculate.")
+ *     private File file;
+ *
+ *     &#064;Option(names = {"-a", "--algorithm"}, description = "MD5, SHA-1, SHA-256, ...")
+ *     private String algorithm = "MD5";
+ *
+ *     public static void main(String[] args) throws Exception {
+ *         // CheckSum implements Callable, so parsing, error handling and handling user
+ *         // requests for usage help or version help can be done with one line of code.
+ *         CommandLine.call(new CheckSum(), args);
+ *     }
+ *
+ *     &#064;Override
+ *     public Void call() throws Exception {
+ *         // your business logic goes here...
+ *         byte[] fileContents = Files.readAllBytes(file.toPath());
+ *         byte[] digest = MessageDigest.getInstance(algorithm).digest(fileContents);
+ *         System.out.println(javax.xml.bind.DatatypeConverter.printHexBinary(digest));
+ *         return null;
+ *     }
+ * }
+ * </pre>
  * <h2>Class Diagram of the CommandLine Facade (Definition Phase)</h2>
  * <p>
  * <img src="doc-files/class-diagram-definition.png" alt="Class Diagram of the CommandLine Facade (Definition Phase)">

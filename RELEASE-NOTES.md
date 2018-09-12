@@ -216,6 +216,7 @@ The new error message for enums looks like this:
 - [#444] Bugfix: Usage help shows duplicate aliases if registered with same alias multiple times.
 - [#452] Doc: Add UML class diagrams to picocli Javadoc.
 - [#475] Doc: Renamed module `examples` to `picocli-examples`.
+- [#478] Doc: Add convenience API example to `CommandLine` class Javadoc.
 
 ## <a name="3.6.0-deprecated"></a> Deprecations
 No features were deprecated in this release.
