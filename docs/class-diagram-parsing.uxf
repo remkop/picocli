@@ -662,7 +662,7 @@ group=9</panel_attributes>
       <h>40</h>
     </coordinates>
     <panel_attributes>picocli 3.6.0
-2018-09-10
+2018-09-12
 bg=#FFFF66</panel_attributes>
     <additional_attributes/>
   </element>
@@ -743,10 +743,10 @@ invoke, run or call methods with @Command
 methods or @Command classes implementing
 Runnable or Callable to do all of the below
 with one line of code:
-* parsing user input
-* error handling
-* requests for help or version info
-* invoking the business logic
+* parse user input
+* handle invalid arguments
+* handle requests for help or version info
+* invoke the business logic
 bg=#FFFF66</panel_attributes>
     <additional_attributes/>
   </element>
