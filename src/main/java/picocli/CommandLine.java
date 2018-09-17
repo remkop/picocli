@@ -9182,8 +9182,18 @@ public class CommandLine {
                 try { return System.class.getDeclaredMethod("console").invoke(null) != null; }
                 catch (Throwable reflectionFailed) { return true; }
             }
-            private static boolean ansiPossible() { return ISATTY && (!isWindows || isXterm); }
+            private static boolean ansiPossible() { return (ISATTY && (!isWindows || isXterm)) || isJansiEnabled(); }
 
+            private static boolean isJansiEnabled() {
+                try {
+                    Class<?> ansiConsole = Class.forName("org.fusesource.jansi.AnsiConsole");
+                    Field out = ansiConsole.getField("out");
+                    return out.get(null) == System.out;
+                } catch (Exception reflectionFailed) {
+                    return false;
+                }
+            }
+            
             /** Returns {@code true} if ANSI escape codes should be emitted, {@code false} otherwise.
              * @return ON: {@code true}, OFF: {@code false}, AUTO: if system property {@code "picocli.ansi"} is
              *      defined then return its boolean value, otherwise return whether the platform supports ANSI escape codes */
