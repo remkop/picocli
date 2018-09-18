@@ -523,16 +523,18 @@ public class AutoComplete {
     }
 
     private static String generateOptionsSwitch(List<OptionSpec> argOptions, List<OptionSpec> enumOptions) {
+        String optionsCases = generateOptionsCases(argOptions, enumOptions, "", "${CURR_WORD}");
+
+        if (optionsCases.length() == 0) {
+            return "";
+        }
+
         StringBuilder buff = new StringBuilder(1024);
         buff.append("\n");
         buff.append("  compopt +o default\n");
         buff.append("\n");
         buff.append("  case ${PREV_WORD} in\n");
-        String outerCases = generateOptionsCases(argOptions, enumOptions, "", "${CURR_WORD}");
-        if (outerCases.length() == 0) {
-            return "";
-        }
-        buff.append(outerCases);
+        buff.append(optionsCases);
         buff.append("  esac\n");
         return buff.toString();
     }
