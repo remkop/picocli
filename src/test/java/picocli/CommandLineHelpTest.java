@@ -37,7 +37,9 @@ import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 import static java.lang.String.format;
+import org.fusesource.jansi.AnsiConsole;
 import static org.junit.Assert.*;
+import static picocli.CommandLine.Help.Ansi.ISATTY;
 import static picocli.CommandLine.Help.Visibility.*;
 import static picocli.HelpTestUtil.textArray;
 import static picocli.HelpTestUtil.usageString;
@@ -2800,6 +2802,12 @@ public class CommandLineHelpTest {
         boolean isAtty    = (isWindows && isXterm) // cygwin pseudo-tty
                           || hasConsole();
         assertEquals(isAtty && (!isWindows || isXterm), Help.Ansi.AUTO.enabled());
+
+        if (isWindows) {
+            AnsiConsole.systemInstall();
+            assertTrue(Help.Ansi.AUTO.enabled());
+            AnsiConsole.systemUninstall();
+        }
     }
 
     private boolean hasConsole() {
