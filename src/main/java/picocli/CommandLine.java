@@ -9174,15 +9174,16 @@ public class CommandLine {
             static Text EMPTY_TEXT = OFF.new Text(0);
             static final boolean isWindows  = System.getProperty("os.name").startsWith("Windows");
             static final boolean isXterm    = System.getenv("TERM") != null && System.getenv("TERM").startsWith("xterm");
+            static final boolean hasOsType  = System.getenv("OSTYPE") != null; // null on Windows unless on Cygwin or MSYS
             static final boolean ISATTY = calcTTY();
 
             // http://stackoverflow.com/questions/1403772/how-can-i-check-if-a-java-programs-input-output-streams-are-connected-to-a-term
             static final boolean calcTTY() {
-                if (isWindows && isXterm) { return true; } // Cygwin uses pseudo-tty and console is always null...
+                if (isWindows && (isXterm || hasOsType)) { return true; } // Cygwin uses pseudo-tty and console is always null...
                 try { return System.class.getDeclaredMethod("console").invoke(null) != null; }
                 catch (Throwable reflectionFailed) { return true; }
             }
-            private static boolean ansiPossible() { return (ISATTY && (!isWindows || isXterm)) || isJansiConsoleInstalled(); }
+            private static boolean ansiPossible() { return (ISATTY && (!isWindows || isXterm || hasOsType)) || isJansiConsoleInstalled(); }
 
             private static boolean isJansiConsoleInstalled() {
                 try {

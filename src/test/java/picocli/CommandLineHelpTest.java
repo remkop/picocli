@@ -2799,11 +2799,12 @@ public class CommandLineHelpTest {
         System.clearProperty("picocli.ansi");
         boolean isWindows = System.getProperty("os.name").startsWith("Windows");
         boolean isXterm   = System.getenv("TERM") != null && System.getenv("TERM").startsWith("xterm");
-        boolean isAtty    = (isWindows && isXterm) // cygwin pseudo-tty
+        boolean hasOsType  = System.getenv("OSTYPE") != null; // null on Windows unless on Cygwin or MSYS
+        boolean isAtty    = (isWindows && (isXterm || hasOsType)) // cygwin pseudo-tty
                           || hasConsole();
-        assertEquals(isAtty && (!isWindows || isXterm), Help.Ansi.AUTO.enabled());
+        assertEquals((isAtty && (!isWindows || isXterm || hasOsType)) || isJansiConsoleInstalled(), Help.Ansi.AUTO.enabled());
 
-        if (isWindows) {
+        if (isWindows && !Help.Ansi.AUTO.enabled()) {
             AnsiConsole.systemInstall();
             assertTrue(Help.Ansi.AUTO.enabled());
             AnsiConsole.systemUninstall();
@@ -2813,6 +2814,15 @@ public class CommandLineHelpTest {
     private boolean hasConsole() {
         try { return System.class.getDeclaredMethod("console").invoke(null) != null; }
         catch (Throwable reflectionFailed) { return true; }
+    }
+    private static boolean isJansiConsoleInstalled() {
+        try {
+            Class<?> ansiConsole = Class.forName("org.fusesource.jansi.AnsiConsole");
+            Field out = ansiConsole.getField("out");
+            return out.get(null) == System.out;
+        } catch (Exception reflectionFailed) {
+            return false;
+        }
     }
 
     @Test
