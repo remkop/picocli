@@ -9182,9 +9182,9 @@ public class CommandLine {
                 try { return System.class.getDeclaredMethod("console").invoke(null) != null; }
                 catch (Throwable reflectionFailed) { return true; }
             }
-            private static boolean ansiPossible() { return (ISATTY && (!isWindows || isXterm)) || isJansiEnabled(); }
+            private static boolean ansiPossible() { return (ISATTY && (!isWindows || isXterm)) || isJansiConsoleInstalled(); }
 
-            private static boolean isJansiEnabled() {
+            private static boolean isJansiConsoleInstalled() {
                 try {
                     Class<?> ansiConsole = Class.forName("org.fusesource.jansi.AnsiConsole");
                     Field out = ansiConsole.getField("out");
