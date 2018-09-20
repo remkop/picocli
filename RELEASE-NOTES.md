@@ -1,5 +1,33 @@
 # picocli Release Notes
 
+# <a name="3.6.1"></a> Picocli 3.6.1 (UNRELEASED)
+The picocli community is pleased to announce picocli 3.6.1.
+
+This release contains bugfixes.
+
+Many thanks to the many members of the picocli community who contributed! 
+
+This is the fortieth public release.
+Picocli follows [semantic versioning](http://semver.org/).
+
+## <a name="3.6.1"></a> Table of Contents
+* [New and noteworthy](#3.6.1-new)
+* [Fixed issues](#3.6.1-fixes)
+* [Deprecations](#3.6.1-deprecated)
+* [Potential breaking changes](#3.6.1-breaking-changes)
+
+## <a name="3.6.1-new"></a> New and Noteworthy
+
+## <a name="3.6.1-fixes"></a> Fixed issues
+- [#487] Enhancement: Auto-completion script should return from `generateOptionsSwitch` immediately if there is nothing to generate. Thanks to [David Walluck](https://github.com/dwalluck) for the pull request.
+
+## <a name="3.6.1-deprecated"></a> Deprecations
+No features were deprecated in this release.
+
+## <a name="3.6.1-breaking-changes"></a> Potential breaking changes
+This release has no breaking changes.
+
+
 # <a name="3.6.0"></a> Picocli 3.6.0
 The picocli community is pleased to announce picocli 3.6.0.
 
