@@ -628,13 +628,14 @@ table.CodeRay td.code>pre{padding:0}
 <ul class="sectlevel2">
 <li><a href="#_registering_subcommands_programmatically">13.1. Registering Subcommands Programmatically</a></li>
 <li><a href="#_registering_subcommands_declaratively">13.2. Registering Subcommands Declaratively</a></li>
-<li><a href="#_subcommands_as_methods">13.3. Subcommands as Methods</a></li>
-<li><a href="#_parsing_subcommands">13.4. Parsing Subcommands</a></li>
-<li><a href="#__code_parentcommand_code_annotation">13.5. <code>@ParentCommand</code> Annotation</a></li>
-<li><a href="#_usage_help_for_subcommands">13.6. Usage Help for Subcommands</a></li>
-<li><a href="#_hidden_subcommands">13.7. Hidden Subcommands</a></li>
-<li><a href="#_help_subcommands">13.8. Help Subcommands</a></li>
-<li><a href="#_nested_sub_subcommands">13.9. Nested sub-Subcommands</a></li>
+<li><a href="#_subcommand_aliases">13.3. Subcommand aliases</a></li>
+<li><a href="#_subcommands_as_methods">13.4. Subcommands as Methods</a></li>
+<li><a href="#_parsing_subcommands">13.5. Parsing Subcommands</a></li>
+<li><a href="#__code_parentcommand_code_annotation">13.6. <code>@ParentCommand</code> Annotation</a></li>
+<li><a href="#_usage_help_for_subcommands">13.7. Usage Help for Subcommands</a></li>
+<li><a href="#_hidden_subcommands">13.8. Hidden Subcommands</a></li>
+<li><a href="#_help_subcommands">13.9. Help Subcommands</a></li>
+<li><a href="#_nested_sub_subcommands">13.10. Nested sub-Subcommands</a></li>
 </ul>
 </li>
 <li><a href="#_reuse">14. Reuse</a>
@@ -3454,13 +3455,33 @@ adding subcommands.
 </div>
 </div>
 <div class="sect2">
-<h3 id="_subcommands_as_methods">13.3. Subcommands as Methods</h3>
+<h3 id="_subcommand_aliases">13.3. Subcommand aliases</h3>
+<div class="paragraph">
+<p>Commands may optionally define an <code>aliases</code> attribute to provide alternate names for commands that will be recognized by the parser. Aliases are displayed in the default help output. For example:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="java"><span class="annotation">@Command</span>(name = <span class="string"><span class="delimiter">&quot;</span><span class="content">status</span><span class="delimiter">&quot;</span></span>, aliases = {<span class="string"><span class="delimiter">&quot;</span><span class="content">st</span><span class="delimiter">&quot;</span></span>}, description = <span class="string"><span class="delimiter">&quot;</span><span class="content">Show the working tree status.</span><span class="delimiter">&quot;</span></span>)
+<span class="type">class</span> <span class="class">GitStatus</span> { ... }</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Would result in this help fragment:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre>status, st    Show the working tree status.</pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_subcommands_as_methods">13.4. Subcommands as Methods</h3>
 <div class="paragraph">
 <p>From picocli 3.6 it is possible to register subcommands in a very compact manner by having a <code>@Command</code> class with <code>@Command</code>-annotated methods. The methods are automatically <a href="#_subcommand_methods">registered as subcommands</a> of the <code>@Command</code> class.</p>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_parsing_subcommands">13.4. Parsing Subcommands</h3>
+<h3 id="_parsing_subcommands">13.5. Parsing Subcommands</h3>
 <div class="paragraph">
 <p>For this example, we assume we created an alias <code>git</code> that invokes our Java application. This could also be a script or a function that calls our Java program:</p>
 </div>
@@ -3531,7 +3552,7 @@ adding subcommands.
 </div>
 </div>
 <div class="sect2">
-<h3 id="__code_parentcommand_code_annotation">13.5. <code>@ParentCommand</code> Annotation</h3>
+<h3 id="__code_parentcommand_code_annotation">13.6. <code>@ParentCommand</code> Annotation</h3>
 <div class="paragraph">
 <p>In command line applications with subcommands, options of the top level command are often intended as "global" options that apply to all the subcommands. Prior to picocli 2.2, subcommands had no easy way to access their parent command options unless the parent command made these values available in a global variable.</p>
 </div>
@@ -3587,7 +3608,7 @@ The <code>List</code> subcommand can use the <code>@ParentCommand</code> annotat
 </div>
 </div>
 <div class="sect2">
-<h3 id="_usage_help_for_subcommands">13.6. Usage Help for Subcommands</h3>
+<h3 id="_usage_help_for_subcommands">13.7. Usage Help for Subcommands</h3>
 <div class="paragraph">
 <p>After registering subcommands, calling the <code>commandLine.usage</code> method will show a usage help message that includes all registered subcommands. For example:</p>
 </div>
@@ -3667,7 +3688,7 @@ For example, if the <code>git</code> command has a <code>commit</code> subcomman
 </div>
 </div>
 <div class="sect2">
-<h3 id="_hidden_subcommands">13.7. Hidden Subcommands</h3>
+<h3 id="_hidden_subcommands">13.8. Hidden Subcommands</h3>
 <div class="paragraph">
 <p>Commands with the <code>hidden</code> attribute set to <code>true</code> will not be shown in the usage help message of their parent command.</p>
 </div>
@@ -3698,7 +3719,7 @@ Commands:
 </div>
 </div>
 <div class="sect2">
-<h3 id="_help_subcommands">13.8. Help Subcommands</h3>
+<h3 id="_help_subcommands">13.9. Help Subcommands</h3>
 <div class="paragraph">
 <p>Commands with the <code>helpCommand</code> attribute set to <code>true</code> are treated as help commands.
 When picocli encounters a help command on the command line, required options and required positional parameters of the parent command
@@ -3714,7 +3735,7 @@ are not validated (similar to <a href="#_help_options">help options</a>).</p>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_nested_sub_subcommands">13.9. Nested sub-Subcommands</h3>
+<h3 id="_nested_sub_subcommands">13.10. Nested sub-Subcommands</h3>
 <div class="paragraph">
 <p>The specified object can be an annotated object or a
 <code>CommandLine</code> instance with its own nested subcommands. For example:</p>
