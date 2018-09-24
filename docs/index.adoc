@@ -1927,6 +1927,19 @@ Custom type converters registered on a `CommandLine` instance will apply to all 
 
 Subcommands referenced in a `subcommands` attribute need to have a public no-argument constructor to be instantiated, unless a <<Custom Factory>> is installed to instantiate classes.
 
+=== Subcommand Aliases
+Commands may optionally define an `aliases` attribute to provide alternate names for commands that will be recognized by the parser. Aliases are displayed in the default help output. For example:
+[source,java]
+----
+@Command(name = "status", aliases = {"st"}, description = "Show the working tree status.")
+class GitStatus { ... }
+----
+
+Would result in this help fragment:
+
+----
+status, st    Show the working tree status.
+----
 === Subcommands as Methods
 From picocli 3.6 it is possible to register subcommands in a very compact manner by having a `@Command` class with `@Command`-annotated methods. The methods are automatically <<Subcommand Methods, registered as subcommands>> of the `@Command` class.
 
