@@ -2175,7 +2175,8 @@ If toggling is off, flags are simply set to <code>true</code> when the option is
 <h3 id="_posix_clustered_short_options">7.8. POSIX Clustered Short Options</h3>
 <div class="paragraph">
 <p>By default, the picocli parser allows POSIX clustered short options, so short options like <code>-x -v -f SomeFile</code> can be clustered together like <code>-xvfSomeFile</code>.
-From picocli 3.0, applications can call <code>CommandLine.setPosixClusteredShortOptionsAllowed(false)</code> to enforce that options must be separated with whitespace on the command line.</p>
+From picocli 3.0, applications can call <code>CommandLine.setPosixClusteredShortOptionsAllowed(false)</code> to enforce that options must be separated with whitespace on the command line.
+(This also means that option parameters must be separated from the option name by whitespace or the <code>=</code> <a href="#_option_parameter_separators">separator</a> character, so <code>-D key=value</code> and <code>-D=key=value</code> will be recognized but <code>-Dkey=value</code> will not.)</p>
 </div>
 </div>
 <div class="sect2">
@@ -3455,7 +3456,7 @@ adding subcommands.
 </div>
 </div>
 <div class="sect2">
-<h3 id="_subcommand_aliases">13.3. Subcommand aliases</h3>
+<h3 id="_subcommand_aliases">13.3. Subcommand Aliases</h3>
 <div class="paragraph">
 <p>Commands may optionally define an <code>aliases</code> attribute to provide alternate names for commands that will be recognized by the parser. Aliases are displayed in the default help output. For example:</p>
 </div>

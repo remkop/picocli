@@ -22,7 +22,9 @@ Picocli follows [semantic versioning](http://semver.org/).
 - [#487] Enhancement: Auto-completion script should return from `generateOptionsSwitch` immediately if there is nothing to generate. Thanks to [David Walluck](https://github.com/dwalluck) for the pull request.
 - [#483][#486] Enhancement: Improve `Help.Ansi.AUTO`: automatically enable ANSI on Windows if Jansi's `AnsiConsole` has been installed. Thanks to [Philippe Charles](https://github.com/charphi) for the pull request.
 - [#491] Enhancement: Improve `Help.Ansi.AUTO` cygwin/msys detection on Windows.
+- [#488] Doc: Clarify in user manual that `CommandLine.setPosixClusteredShortOptionsAllowed(false)` means that option parameters cannot be attached to the option name. Thanks to [Maryam Ziyad](https://github.com/MaryamZi) for raising this.
 - [#492][#493] Doc: Add section on `@Command(aliases)` attribute to user manual. Thanks to [marinier](https://github.com/marinier) for the pull request.
+
 
 ## <a name="3.6.1-deprecated"></a> Deprecations
 No features were deprecated in this release.
