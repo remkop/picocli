@@ -3,7 +3,7 @@
 # <a name="3.6.1"></a> Picocli 3.6.1 (UNRELEASED)
 The picocli community is pleased to announce picocli 3.6.1.
 
-This release contains bugfixes.
+This release contains bugfixes, minor enhancements and documentation improvements.
 
 Many thanks to the many members of the picocli community who contributed! 
 
@@ -24,7 +24,7 @@ Picocli follows [semantic versioning](http://semver.org/).
 - [#491] Enhancement: Improve `Help.Ansi.AUTO` cygwin/msys detection on Windows.
 - [#488] Doc: Clarify in user manual that `CommandLine.setPosixClusteredShortOptionsAllowed(false)` means that option parameters cannot be attached to the option name. Thanks to [Maryam Ziyad](https://github.com/MaryamZi) for raising this.
 - [#492][#493] Doc: Add section on `@Command(aliases)` attribute to user manual. Thanks to [marinier](https://github.com/marinier) for the pull request.
-
+- [#494] Bugfix: Enum values were not rendered in `${COMPLETION-CANDIDATES}` for collection type options.
 
 ## <a name="3.6.1-deprecated"></a> Deprecations
 No features were deprecated in this release.

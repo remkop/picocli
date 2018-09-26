@@ -27,7 +27,11 @@ import picocli.CommandLine.Option;
 import picocli.CommandLine.Parameters;
 
 import java.io.File;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 
 import static java.lang.String.format;
 import static org.junit.Assert.*;
@@ -204,5 +208,24 @@ public class CompletionCandidatesTest {
                 "                           key3=very3very3very3longlonglongvaluevaluevalue3}%n", new File("/a/b/c"));
         String actual = usageString(new CommandLine(new App(), new InnerClassFactory(this)), CommandLine.Help.Ansi.OFF);
         assertEquals(expected, actual);
+    }
+
+    @Test
+    public void testEnumInCollection() {
+        class EnumTest {
+
+            @Option(names = "-list", description = "Multiple languages. Valid values: ${COMPLETION-CANDIDATES}")
+            List<Lang> langList;
+
+            @Option(names = "-single", description = "Single language. Valid values: ${COMPLETION-CANDIDATES}")
+            Lang lang;
+        }
+        String expected = String.format("" +
+                "Usage: <main class> [-single=<lang>] [-list=<langList>]...%n" +
+                "      -list=<langList>   Multiple languages. Valid values: java, kotlin, groovy,%n" +
+                "                           javascript, frege, clojure%n" +
+                "      -single=<lang>     Single language. Valid values: java, kotlin, groovy,%n" +
+                "                           javascript, frege, clojure%n");
+        assertEquals(expected, new CommandLine(new EnumTest()).getUsageMessage());
     }
 }

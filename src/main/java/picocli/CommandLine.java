@@ -4518,9 +4518,9 @@ public class CommandLine {
                 } else {
                     auxiliaryTypes = builder.auxiliaryTypes;
                 }
-                if (builder.completionCandidates == null && type.isEnum()) {
+                if (builder.completionCandidates == null && auxiliaryTypes[0].isEnum()) {
                     List<String> list = new ArrayList<String>();
-                    for (Object c : type.getEnumConstants()) { list.add(c.toString()); }
+                    for (Object c : auxiliaryTypes[0].getEnumConstants()) { list.add(c.toString()); }
                     completionCandidates = Collections.unmodifiableList(list);
                 } else {
                     completionCandidates = builder.completionCandidates;
