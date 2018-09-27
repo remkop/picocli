@@ -5,6 +5,12 @@ The picocli community is pleased to announce picocli 3.6.1.
 
 This release contains bugfixes, minor enhancements and documentation improvements.
 
+ANSI is automatically enabled on Windows if Jansi's `AnsiConsole` has been installed.
+
+It is now possible to selectively avoid loading type converters with reflection.
+
+Bugfix: Enum values were not rendered in `${COMPLETION-CANDIDATES}` for collection type options.
+
 Many thanks to the many members of the picocli community who contributed! 
 
 This is the fortieth public release.
@@ -22,6 +28,7 @@ Picocli follows [semantic versioning](http://semver.org/).
 - [#487] Enhancement: Auto-completion script should return from `generateOptionsSwitch` immediately if there is nothing to generate. Thanks to [David Walluck](https://github.com/dwalluck) for the pull request.
 - [#483][#486] Enhancement: Improve `Help.Ansi.AUTO`: automatically enable ANSI on Windows if Jansi's `AnsiConsole` has been installed. Thanks to [Philippe Charles](https://github.com/charphi) for the pull request.
 - [#491] Enhancement: Improve `Help.Ansi.AUTO` cygwin/msys detection on Windows.
+- [#451] Enhancement: Selectively disable reflective type converter registration. Thanks to [Paolo Di Tommaso](https://github.com/pditommaso) for the suggestion.
 - [#488] Doc: Clarify in user manual that `CommandLine.setPosixClusteredShortOptionsAllowed(false)` means that option parameters cannot be attached to the option name. Thanks to [Maryam Ziyad](https://github.com/MaryamZi) for raising this.
 - [#492][#493] Doc: Add section on `@Command(aliases)` attribute to user manual. Thanks to [marinier](https://github.com/marinier) for the pull request.
 - [#494] Bugfix: Enum values were not rendered in `${COMPLETION-CANDIDATES}` for collection type options.

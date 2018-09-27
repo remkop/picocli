@@ -818,4 +818,56 @@ public class CommandLineTypeConversionTest {
         CustomConverter withValue2 = CommandLine.populateCommand(new CustomConverter(), "-x=987");
         assertEquals(Short.valueOf((short) 987), withValue2.x);
     }
+
+    private Map<Class<?>, ITypeConverter<?>> createSampleRegistry() throws Exception {
+        CommandLine commandLine = new CommandLine(new EnumParams());
+        Map<Class<?>, ITypeConverter<?>> registry = extractRegistry(commandLine);
+        System.clearProperty("picocli.converters.excludes");
+        return registry;
+    }
+
+    @Test
+    public void testWithoutExcludes() throws Exception {
+        Map<Class<?>, ITypeConverter<?>> registry = createSampleRegistry();
+
+        assertTrue("at least 39 (actual " + registry.size() +")", registry.size() >= 39);
+        assertTrue("java.sql.Time", registry.containsKey(java.sql.Time.class));
+        assertTrue("java.sql.Timestamp", registry.containsKey(java.sql.Timestamp.class));
+        assertTrue("java.sql.Connection", registry.containsKey(java.sql.Connection.class));
+        assertTrue("java.sql.Driver", registry.containsKey(java.sql.Driver.class));
+    }
+
+    @Test
+    public void testExcludesRegexByPackage() throws Exception {
+        System.setProperty("picocli.converters.excludes", "java.sql.*");
+        Map<Class<?>, ITypeConverter<?>> registry = createSampleRegistry();
+
+        assertFalse("java.sql.Time", registry.containsKey(java.sql.Time.class));
+        assertFalse("java.sql.Timestamp", registry.containsKey(java.sql.Timestamp.class));
+        assertFalse("java.sql.Connection", registry.containsKey(java.sql.Connection.class));
+        assertFalse("java.sql.Driver", registry.containsKey(java.sql.Driver.class));
+    }
+
+    @Test
+    public void testExcludesRegex() throws Exception {
+        System.setProperty("picocli.converters.excludes", "java.sql.Ti.*");
+        Map<Class<?>, ITypeConverter<?>> registry = createSampleRegistry();
+
+        assertFalse("java.sql.Time", registry.containsKey(java.sql.Time.class));
+        assertFalse("java.sql.Timestamp", registry.containsKey(java.sql.Timestamp.class));
+        assertTrue("java.sql.Connection", registry.containsKey(java.sql.Connection.class));
+        assertTrue("java.sql.Driver", registry.containsKey(java.sql.Driver.class));
+    }
+
+    @Test
+    public void testExcludesCommaSeparatedRegex() throws Exception {
+        //System.setProperty("picocli.trace", "DEBUG");
+        System.setProperty("picocli.converters.excludes", "java.sql.Time,java.sql.Connection");
+        Map<Class<?>, ITypeConverter<?>> registry = createSampleRegistry();
+
+        assertFalse("java.sql.Time", registry.containsKey(java.sql.Time.class));
+        assertTrue("java.sql.Timestamp", registry.containsKey(java.sql.Timestamp.class));
+        assertFalse("java.sql.Connection", registry.containsKey(java.sql.Connection.class));
+        assertTrue("java.sql.Driver", registry.containsKey(java.sql.Driver.class));
+    }
 }

@@ -7516,6 +7516,7 @@ public class CommandLine {
             }
 
             public static void registerIfAvailable(Map<Class<?>, ITypeConverter<?>> registry, Tracer tracer) {
+                if (excluded(FQCN, tracer)) { return; }
                 try {
                     registry.put(Class.forName(FQCN), new ISO8601TimeConverter());
                 } catch (Exception e) {
@@ -7578,6 +7579,7 @@ public class CommandLine {
             registerIfAvailable(registry, tracer, fqcn, fqcn, factoryMethodName, paramTypes);
         }
         static void registerIfAvailable(Map<Class<?>, ITypeConverter<?>> registry, Tracer tracer, String fqcn, String factoryClass, String factoryMethodName, Class<?>... paramTypes) {
+            if (excluded(fqcn, tracer)) { return; }
             try {
                 Class<?> cls = Class.forName(fqcn);
                 Class<?> factory = Class.forName(factoryClass);
@@ -7589,6 +7591,16 @@ public class CommandLine {
                 }
                 traced.add(fqcn);
             }
+        }
+        static boolean excluded(String fqcn, Tracer tracer) {
+            String[] excludes = System.getProperty("picocli.converters.excludes", "").split(",");
+            for (String regex : excludes) {
+                if (fqcn.matches(regex)) {
+                    tracer.debug("BuiltIn type converter for %s is not loaded: (picocli.converters.excludes=%s)%n", fqcn, System.getProperty("picocli.converters.excludes"));
+                    return true;
+                }
+            }
+            return false;
         }
         static Set<String> traced = new HashSet<String>();
         static class ReflectionConverter implements ITypeConverter<Object> {
