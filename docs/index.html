@@ -513,8 +513,8 @@ table.CodeRay td.code>pre{padding:0}
 <div id="header">
 <h1>picocli - a mighty tiny command line interface</h1>
 <div class="details">
-<span id="revnumber">version 3.6.0,</span>
-<span id="revdate">2018-09-12</span>
+<span id="revnumber">version 3.6.1,</span>
+<span id="revdate">2018-09-28</span>
 </div>
 <div id="toc" class="toc2">
 <div id="toctitle">Features</div>
@@ -628,7 +628,7 @@ table.CodeRay td.code>pre{padding:0}
 <ul class="sectlevel2">
 <li><a href="#_registering_subcommands_programmatically">13.1. Registering Subcommands Programmatically</a></li>
 <li><a href="#_registering_subcommands_declaratively">13.2. Registering Subcommands Declaratively</a></li>
-<li><a href="#_subcommand_aliases">13.3. Subcommand aliases</a></li>
+<li><a href="#_subcommand_aliases">13.3. Subcommand Aliases</a></li>
 <li><a href="#_subcommands_as_methods">13.4. Subcommands as Methods</a></li>
 <li><a href="#_parsing_subcommands">13.5. Parsing Subcommands</a></li>
 <li><a href="#__code_parentcommand_code_annotation">13.6. <code>@ParentCommand</code> Annotation</a></li>
@@ -1169,7 +1169,7 @@ the text value is converted to the type of the annotated field.</p>
 <p>Out of the box, picocli can convert command line argument strings to a number of common data types.</p>
 </div>
 <div class="paragraph">
-<p>Most of the built-in types work with Java 5, but picocli also has some default converters for Java 7 types like <code>Path</code> and Java 8 types like <code>Duration</code>, etc. These converters are only available when running on a Java version that supports them. See the below list for details.</p>
+<p>Most of the built-in types work with Java 5, but picocli also has some default converters for Java 7 types like <code>Path</code> and Java 8 types like <code>Duration</code>, etc. These converters are loaded using reflection and are only available when running on a Java version that supports them. See the below list for details.</p>
 </div>
 <div class="ulist">
 <ul>
@@ -1192,9 +1192,6 @@ the text value is converted to the type of the annotated field.</p>
 <p><code>java.io.File</code></p>
 </li>
 <li>
-<p><code>java.nio.file.Path</code> (from picocli 2.2, requires Java 7 or higher)</p>
-</li>
-<li>
 <p><code>java.net.InetAddress</code></p>
 </li>
 <li>
@@ -1204,19 +1201,10 @@ the text value is converted to the type of the annotated field.</p>
 <p><code>java.util.Date</code> (for values in <code>"yyyy-MM-dd"</code> format)</p>
 </li>
 <li>
-<p><code>java.sql.Time</code> (for values in any of the <code>"HH:mm"</code>, <code>"HH:mm:ss"</code>, <code>"HH:mm:ss.SSS"</code>, or <code>"HH:mm:ss,SSS"</code> formats)</p>
-</li>
-<li>
-<p><code>java.sql.Timestamp</code> (from picocli 2.2, for values in the <code>"yyyy-MM-dd HH:mm:ss"</code> or <code>"yyyy-MM-dd HH:mm:ss.fffffffff"</code> formats)</p>
-</li>
-<li>
 <p><code>java.net.URL</code>, <code>java.net.URI</code></p>
 </li>
 <li>
 <p><code>java.util.UUID</code></p>
-</li>
-<li>
-<p><code>java.time</code> value objects: <code>Duration</code>, <code>Instant</code>, <code>LocalDate</code>, <code>LocalDateTime</code>, <code>LocalTime</code>, <code>MonthDay</code>, <code>OffsetDateTime</code>, <code>OffsetTime</code>, <code>Period</code>, <code>Year</code>, <code>YearMonth</code>, <code>ZonedDateTime</code>, <code>ZoneId</code>, <code>ZoneOffset</code>  (from picocli 2.2, requires Java 8 or higher, invokes the <code>parse</code> method of these classes)</p>
 </li>
 <li>
 <p><code>java.lang.Class</code> (from picocli 2.2, for the fully qualified class name)</p>
@@ -1233,6 +1221,25 @@ the text value is converted to the type of the annotated field.</p>
 <li>
 <p><code>java.util.TimeZoneConverter</code> (from picocli 2.2, for the ID for a TimeZone)</p>
 </li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Converters loaded using reflection:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>java.nio.file.Path</code> (from picocli 2.2, requires Java 7 or higher)</p>
+</li>
+<li>
+<p><code>java.time</code> value objects: <code>Duration</code>, <code>Instant</code>, <code>LocalDate</code>, <code>LocalDateTime</code>, <code>LocalTime</code>, <code>MonthDay</code>, <code>OffsetDateTime</code>, <code>OffsetTime</code>, <code>Period</code>, <code>Year</code>, <code>YearMonth</code>, <code>ZonedDateTime</code>, <code>ZoneId</code>, <code>ZoneOffset</code>  (from picocli 2.2, requires Java 8 or higher, invokes the <code>parse</code> method of these classes)</p>
+</li>
+<li>
+<p><code>java.sql.Time</code> (for values in any of the <code>"HH:mm"</code>, <code>"HH:mm:ss"</code>, <code>"HH:mm:ss.SSS"</code>, or <code>"HH:mm:ss,SSS"</code> formats)</p>
+</li>
+<li>
+<p><code>java.sql.Timestamp</code> (from picocli 2.2, for values in the <code>"yyyy-MM-dd HH:mm:ss"</code> or <code>"yyyy-MM-dd HH:mm:ss.fffffffff"</code> formats)</p>
+</li>
 <li>
 <p><code>java.sql.Connection</code> (from picocli 2.2, for a database url of the form <code>jdbc:subprotocol:subname</code>)</p>
 </li>
@@ -1240,6 +1247,21 @@ the text value is converted to the type of the annotated field.</p>
 <p><code>java.sql.Driver</code> (from picocli 2.2, for a database URL of the form <code>jdbc:subprotocol:subname</code>)</p>
 </li>
 </ul>
+</div>
+<div class="admonitionblock tip">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-tip" title="Tip"></i>
+</td>
+<td class="content">
+Sometimes loading converters with reflection is not desirable.
+Use system property <code>picocli.converters.excludes</code> to specify a comma-separated list of fully qualified class names for which the converter should not be loaded.
+Regular expressions are supported.
+For example, invoking the program with <code>-Dpicocli.converters.excludes=java.sql.Ti.*</code> will not load type converters for <code>java.sql.Time</code> and <code>java.sql.Timestamp</code>.
+</td>
+</tr>
+</table>
 </div>
 </div>
 <div class="sect2">
@@ -4196,7 +4218,8 @@ For example:</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="CodeRay highlight"><code data-lang="java"><span class="annotation">@Command</span>(name = <span class="string"><span class="delimiter">&quot;</span><span class="content">git</span><span class="delimiter">&quot;</span></span>, mixinStandardHelpOptions = <span class="predefined-constant">true</span>, version = <span class="string"><span class="delimiter">&quot;</span><span class="content">picocli-3.6.0</span><span class="delimiter">&quot;</span></span>)
+<pre class="CodeRay highlight"><code data-lang="java"><span class="annotation">@Command</span>(name = <span class="string"><span class="delimiter">&quot;</span><span class="content">git</span><span class="delimiter">&quot;</span></span>, mixinStandardHelpOptions = <span class="predefined-constant">true</span>,
+         resourceBundle = <span class="string"><span class="delimiter">&quot;</span><span class="content">Git_Messages</span><span class="delimiter">&quot;</span></span>, version = <span class="string"><span class="delimiter">&quot;</span><span class="content">picocli-3.6.0</span><span class="delimiter">&quot;</span></span>)
 <span class="type">class</span> <span class="class">Git</span> {
     <span class="annotation">@Option</span>(names = <span class="string"><span class="delimiter">&quot;</span><span class="content">--git-dir</span><span class="delimiter">&quot;</span></span>, descriptionKey = <span class="string"><span class="delimiter">&quot;</span><span class="content">GITDIR</span><span class="delimiter">&quot;</span></span>)
     Path path;
@@ -4836,7 +4859,7 @@ The script body is executed if the user input was valid and did not request usag
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="CodeRay highlight"><code data-lang="groovy"><span class="annotation">@Grab</span>(<span class="string"><span class="delimiter">'</span><span class="content">info.picocli:picocli:3.6.0</span><span class="delimiter">'</span></span>)
+<pre class="CodeRay highlight"><code data-lang="groovy"><span class="annotation">@Grab</span>(<span class="string"><span class="delimiter">'</span><span class="content">info.picocli:picocli:3.6.1</span><span class="delimiter">'</span></span>)
 <span class="annotation">@Command</span>(name = <span class="string"><span class="delimiter">&quot;</span><span class="content">myScript</span><span class="delimiter">&quot;</span></span>,
         mixinStandardHelpOptions = <span class="predefined-constant">true</span>, <span class="comment">// add --help and --version options</span>
         description = <span class="string"><span class="delimiter">&quot;</span><span class="content">@|bold Groovy script|@ @|underline picocli|@ example</span><span class="delimiter">&quot;</span></span>)
@@ -4871,7 +4894,7 @@ When using a Groovy version older than 2.4.7, use this workaround for the <a hre
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="CodeRay highlight"><code data-lang="groovy"><span class="annotation">@Grab</span>(<span class="string"><span class="delimiter">'</span><span class="content">info.picocli:picocli:3.6.0</span><span class="delimiter">'</span></span>)
+<pre class="CodeRay highlight"><code data-lang="groovy"><span class="annotation">@Grab</span>(<span class="string"><span class="delimiter">'</span><span class="content">info.picocli:picocli:3.6.1</span><span class="delimiter">'</span></span>)
 <span class="annotation">@GrabExclude</span>(<span class="string"><span class="delimiter">'</span><span class="content">org.codehaus.groovy:groovy-all</span><span class="delimiter">'</span></span>) <span class="comment">// work around GROOVY-7613</span>
 ...</code></pre>
 </div>
@@ -5013,7 +5036,7 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
 <h3 id="_gradle">25.1. Gradle</h3>
 <div class="listingblock">
 <div class="content">
-<pre>compile 'info.picocli:picocli:3.6.0'</pre>
+<pre>compile 'info.picocli:picocli:3.6.1'</pre>
 </div>
 </div>
 </div>
@@ -5024,7 +5047,7 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
 <pre>&lt;dependency&gt;
   &lt;groupId&gt;info.picocli&lt;/groupId&gt;
   &lt;artifactId&gt;picocli&lt;/artifactId&gt;
-  &lt;version&gt;3.6.0&lt;/version&gt;
+  &lt;version&gt;3.6.1&lt;/version&gt;
 &lt;/dependency&gt;</pre>
 </div>
 </div>
@@ -5033,7 +5056,7 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
 <h3 id="_scala_sbt">25.3. Scala SBT</h3>
 <div class="listingblock">
 <div class="content">
-<pre>libraryDependencies += "info.picocli" % "picocli" % "3.6.0"</pre>
+<pre>libraryDependencies += "info.picocli" % "picocli" % "3.6.1"</pre>
 </div>
 </div>
 </div>
@@ -5041,7 +5064,7 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
 <h3 id="_ivy">25.4. Ivy</h3>
 <div class="listingblock">
 <div class="content">
-<pre>&lt;dependency org="info.picocli" name="picocli" rev="3.6.0" /&gt;</pre>
+<pre>&lt;dependency org="info.picocli" name="picocli" rev="3.6.1" /&gt;</pre>
 </div>
 </div>
 </div>
@@ -5057,8 +5080,8 @@ This facilitates including it in your project in source form to avoid having an 
 </div>
 <div id="footer">
 <div id="footer-text">
-Version 3.6.0<br>
-Last updated 2018-09-12 21:48:34 +09:00
+Version 3.6.1<br>
+Last updated 2018-09-28 07:04:36 +09:00
 </div>
 </div>
 </body>
