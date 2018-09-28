@@ -357,9 +357,9 @@ public class BashCompletionAutoComplete {
                 "    fi\n" +
                 "}";
 
-        String flagOptionNames = optionNames(filter(commandSpec.options(), new BooleanArgFilter()));
+        String flagOptionNames = optionNames(filter(commandSpec.options(), new BooleanArgFilter()), commandLine.getSeparator());
         List<OptionSpec> argOptionFields = filter(commandSpec.options(), negate(new BooleanArgFilter()));
-        String argOptionNames = optionNames(argOptionFields);
+        String argOptionNames = optionNames(argOptionFields, commandLine.getSeparator());
         String commands = concat(" ", new ArrayList<String>(commandLine.getSubcommands().keySet())).trim();
 
         StringBuilder buff = new StringBuilder(1024);
@@ -518,10 +518,6 @@ public class BashCompletionAutoComplete {
         return buff.toString();
     }
 
-    private static String optionNames(List<OptionSpec> options) {
-        return optionNames(options, null);
-    }
-
     private static String optionNames(List<OptionSpec> options, String separator) {
         List<String> result = new ArrayList<String>();
         for (OptionSpec option : options) {
@@ -532,9 +528,11 @@ public class BashCompletionAutoComplete {
                 List<String> optionsList = new ArrayList<String>(names.length);
                 for (String name : names) {
                     if (name.equals(option.longestName())) {
-                        optionsList.add(name + separator);
-                    } else {
-                        optionsList.add(name);
+                        if (name.startsWith("--") && option.type() != Boolean.TYPE && option.type() != Boolean.class) {
+                            optionsList.add(name + separator);
+                        } else {
+                            optionsList.add(name);
+                        }
                     }
                 }
                 result.addAll(optionsList);

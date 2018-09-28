@@ -51,7 +51,7 @@ public class BashCompletionAutoCompleteTest {
                 "\n" +
                 "    local commands options\n" +
                 "    commands='foo bar'\n" +
-                "    options='-h --help -V --version -i --interface'\n" +
+                "    options='--help --version --interface='\n" +
                 "\n" +
                 "    case $prev in\n" +
                 "        -i|--interface)\n" +
@@ -101,7 +101,7 @@ public class BashCompletionAutoCompleteTest {
                 "\n" +
                 "    local commands options\n" +
                 "    commands=''\n" +
-                "    options='-f --foo1'\n" +
+                "    options='--foo1'\n" +
                 "\n" +
                 "    if [[ \"$cur\" == -* ]]; then\n" +
                 "        COMPREPLY=( $(compgen -W '${options}' -- \"$cur\" ) )\n" +
@@ -129,7 +129,7 @@ public class BashCompletionAutoCompleteTest {
                 "\n" +
                 "    local commands options\n" +
                 "    commands=''\n" +
-                "    options='-b --bar1'\n" +
+                "    options='--bar1'\n" +
                 "\n" +
                 "    local bar_parameter_args\n" +
                 "    bar_parameter_args=\"foo bar baz\"\n" +
