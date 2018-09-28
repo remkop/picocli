@@ -155,12 +155,6 @@ public class BashCompletionAutoComplete {
         return builder.toString();
     }
 
-    private static class EnumNameFunction implements Function<Enum<?>, String> {
-        public String apply(final Enum<?> anEnum) {
-            return anEnum.name();
-        }
-    }
-
     private static class NullFunction implements Function<CharSequence, String> {
         public String apply(CharSequence value) { return value.toString(); }
     }
@@ -187,13 +181,6 @@ public class BashCompletionAutoComplete {
         return new Predicate<T>() {
             public boolean test(T t) {
                 return !original.test(t);
-            }
-        };
-    }
-    private static <T> Predicate<T> and(final Predicate<T> left, final Predicate<T> right) {
-        return new Predicate<T>() {
-            public boolean test(T t) {
-                return left.test(t) && right.test(t);
             }
         };
     }
@@ -379,29 +366,19 @@ public class BashCompletionAutoComplete {
         String optionNames = flagOptionNames + (!argOptionNames.isEmpty() ? " " + argOptionNames : "");
         buff.append(format(HEADER, functionName, commands, optionNames));
 
-        List<OptionSpec> enumOptions = filter(commandSpec.options(), new EnumArgFilter());
-
-        for (OptionSpec f : enumOptions) {
-            generateEnumCompetionCandidates(buff, f);
-        }
-
-        List<OptionSpec> optionsWithCompletionCandidates = filter(commandSpec.options(), and(new HasCompletions(), negate(new EnumArgFilter())));
+        List<OptionSpec> optionsWithCompletionCandidates = filter(commandSpec.options(), new HasCompletions());
 
         for (OptionSpec f : optionsWithCompletionCandidates) {
-            generateNonEnumCompetionCandidates(buff, f);
+            generateCompetionCandidates(buff, f);
         }
 
-        for (PositionalParamSpec f : enumPositionalParams) {
-            generateEnumCompetionCandidates(buff, f);
-        }
-
-        List<PositionalParamSpec> positionalParametersWithCompletionCandidates = filter(commandSpec.positionalParameters(), and(new HasCompletions(), negate(new EnumArgFilter())));
+        List<PositionalParamSpec> positionalParametersWithCompletionCandidates = filter(commandSpec.positionalParameters(), new HasCompletions());
 
         for (PositionalParamSpec f : positionalParametersWithCompletionCandidates) {
-            generateNonEnumCompetionCandidates(buff, f);
+            generateCompetionCandidates(buff, f);
         }
 
-        buff.append(generateOptionsSwitch(argOptionFields, enumOptions));
+        buff.append(generateOptionsSwitch(argOptionFields));
 
         buff.append(generateSubcommandsSwitch(commandLine, functionName));
 
@@ -440,23 +417,8 @@ public class BashCompletionAutoComplete {
 
         return buff.toString();
     }
-    private static void generateEnumCompetionCandidates(StringBuilder buff, ArgSpec f) {
-        if (f instanceof OptionSpec) {
-            buff.append("\n");
-            buff.append(format("    local %s_option_args\n", bashify(f.paramLabel().toLowerCase(ENGLISH))));
-            buff.append(format("    %s_option_args=\'%s\'\n",
-                    bashify(f.paramLabel().toLowerCase(ENGLISH)),
-                    concat(" ", Arrays.asList((Enum[]) f.type().getEnumConstants()), null, new EnumNameFunction()).trim()));
-        } else if (f instanceof PositionalParamSpec) {
-            buff.append("\n");
-            buff.append(format("    local %s_parameter_args\n", bashify(f.paramLabel().toLowerCase(ENGLISH))));
-            buff.append(format("    %s_parameter_args=\"%s\"\n",
-                    bashify(f.paramLabel().toLowerCase(ENGLISH)),
-                    concat(" ", Arrays.asList((Enum[]) f.type().getEnumConstants()), null, new EnumNameFunction()).trim()));
-        }
-    }
 
-    private static void generateNonEnumCompetionCandidates(StringBuilder buff, ArgSpec f) {
+    private static void generateCompetionCandidates(StringBuilder buff, ArgSpec f) {
         if (f instanceof OptionSpec) {
             buff.append("\n");
             buff.append(format("    local %s_option_args\n", bashify(f.paramLabel().toLowerCase(ENGLISH))));
@@ -479,8 +441,8 @@ public class BashCompletionAutoComplete {
         return result;
     }
 
-    private static String generateOptionsSwitch(List<OptionSpec> argOptions, List<OptionSpec> enumOptions) {
-        String outerCases = generateOptionsCases(argOptions, enumOptions);
+    private static String generateOptionsSwitch(List<OptionSpec> argOptions) {
+        String outerCases = generateOptionsCases(argOptions);
 
         if (outerCases.length() == 0) {
             return "";
@@ -518,11 +480,11 @@ public class BashCompletionAutoComplete {
         return false;
     }
 
-    private static String generateOptionsCases(List<OptionSpec> argOptionFields, List<OptionSpec> enumOptions) {
+    private static String generateOptionsCases(List<OptionSpec> argOptionFields) {
         StringBuilder buff = new StringBuilder(1024);
 
         for (OptionSpec option : argOptionFields) {
-            if (enumOptions.contains(option) || option.completionCandidates() != null) {
+            if (option.completionCandidates() != null) {
                 buff.append(format("        %s)\n", concat("|", option.names())));
                 buff.append(format("            COMPREPLY=( $( compgen -W \'${%s_option_args}\' -- \"$cur\" ) )\n", bashify(option.paramLabel().toLowerCase(ENGLISH))));
                 buff.append("            return\n");

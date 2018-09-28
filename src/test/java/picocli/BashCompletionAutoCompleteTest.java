@@ -131,8 +131,8 @@ public class BashCompletionAutoCompleteTest {
                 "    commands=''\n" +
                 "    options='-b --bar1'\n" +
                 "\n" +
-                "    local bar_bar_parameter_args\n" +
-                "    bar_bar_parameter_args=\"foo bar baz\"\n" +
+                "    local bar_parameter_args\n" +
+                "    bar_parameter_args=\"foo bar baz\"\n" +
                 "\n" +
                 "    if [[ \"$cur\" == -* ]]; then\n" +
                 "        COMPREPLY=( $(compgen -W '${options}' -- \"$cur\" ) )\n" +
@@ -142,7 +142,7 @@ public class BashCompletionAutoCompleteTest {
                 "        _count_args =\n" +
                 "\n" +
                 "        if (( $args >= 2 && $args <= 3 )); then\n" +
-                "            COMPREPLY=( $(compgen -W \"${bar_bar_parameter_args}\" -- \"$cur\" ) )\n" +
+                "            COMPREPLY=( $(compgen -W \"${bar_parameter_args}\" -- \"$cur\" ) )\n" +
                 "            return\n" +
                 "        fi\n" +
                 "    fi\n" +
