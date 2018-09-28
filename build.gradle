@@ -1,14 +1,6 @@
 group 'info.picocli'
 description 'Java command line parser with both an annotations API and a programmatic API. Usage help with ANSI styles and colors. Autocomplete. Nested subcommands. Easily included as source to avoid adding a dependency.'
-version '3.7.0-SNAPSHOT'
-
-// for bumpVersion task
-def oldVersion = '3\\.6\\.1'
-def oldRevdate = '2018\\-09\\-28'
-def revDate    = '2018-09-28'
-
-// for bumpReadmeVersion task
-def previousReleaseVersion = '3.6.1'
+version "$projectVersion"
 
 buildscript {
     repositories {
@@ -19,6 +11,11 @@ buildscript {
         classpath 'org.asciidoctor:asciidoctor-gradle-plugin:1.5.3'
     }
 }
+
+apply plugin: 'org.asciidoctor.convert'
+apply plugin: 'jacoco'
+apply plugin: 'distribution'
+apply plugin: 'maven-publish'
 
 allprojects {
     apply plugin: 'groovy'
@@ -34,13 +31,13 @@ allprojects {
         ivy
     }
     dependencies {
-        compileOnly 'org.codehaus.groovy:groovy-all:2.4.10'
-        ivy         'org.apache.ivy:ivy:2.4.0' // for Gradle
-        testCompile 'junit:junit:4.12',
-                    'org.hamcrest:hamcrest-core:1.3',
-                    'org.fusesource.jansi:jansi:1.15',
-                    'org.codehaus.groovy:groovy-all:2.4.10',
-                    'com.github.stefanbirkner:system-rules:1.17.1'
+        compileOnly "org.codehaus.groovy:groovy-all:$groovyVersion"
+        ivy         "org.apache.ivy:ivy:$ivyVersion" // for Gradle
+        testCompile "junit:junit:$junitVersion",
+                    "org.hamcrest:hamcrest-core:$hamcrestCoreVersion",
+                    "org.fusesource.jansi:jansi:$jansiVersion",
+                    "org.codehaus.groovy:groovy-all:$groovyVersion",
+                    "com.github.stefanbirkner:system-rules:$systemRulesVersion"
 
     }
     tasks.withType(GroovyCompile) {
@@ -53,41 +50,42 @@ allprojects {
     tasks.withType(JavaCompile) {
         options.compilerArgs << '-Xlint:unchecked' << '-Xlint:deprecation'
     }
-}
-project('picocli-examples') {
-    dependencies {
-        compile rootProject
-        compile 'org.apache.ivy:ivy:2.4.0', // for Intelli/J
-                'org.codehaus.groovy:groovy-all:2.4.10'
+
+    javadoc {
+        destinationDir   = file("build/docs/apidocs")
     }
-    def generatedResources = "$buildDir/generated-resources/main"
-    sourceSets {
-        main {
-            //register an output folder on the main SourceSet:
-            output.dir(generatedResources, builtBy: 'generateVersionTxt')
-            //it is now a part of the 'main' classpath and will be a part of the jar
-        }
+    // work around https://github.com/gradle/gradle/issues/4046
+    javadoc.dependsOn('copyJavadocDocFiles')
+    task copyJavadocDocFiles(type: Copy) {
+        from('src/main/java')
+        into 'build/docs/apidocs'
+        include '**/doc-files/*.*'
     }
 
-    //a task that generates the resources for the example VersionProviderDemo1:
-    task generateVersionTxt {
-        description 'Creates a version.txt file with build info that is added to the root of the picocli-examples jar'
-        doLast {
-            new File(generatedResources).mkdirs()
-            def generated = new File(generatedResources, "version.txt")
-            generated.text = """
-Version: $rootProject.version
-Buildtime: ${new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date())}
-Application-name: $rootProject.name $project.name
-"""
-        }
+    task javadocJar(type: Jar, dependsOn: javadoc) {
+        classifier = 'javadoc'
+        from javadoc.destinationDir
+    }
+    task testJar(type: Jar, dependsOn: compileTestJava) {
+        from sourceSets.test.output
+        classifier = 'tests'
+    }
+    task sourcesJar(type: Jar) {
+        from sourceSets.main.java.srcDirs
+        classifier = 'sources'
+    }
+    task testSourcesJar(type: Jar) {
+        from sourceSets.test.java.srcDirs
+        classifier = 'test-sources'
+    }
+    artifacts {
+        archives javadocJar
+        archives sourcesJar
+        archives testSourcesJar
+        archives testJar
+        archives jar
     }
 }
-apply plugin: 'org.asciidoctor.convert'
-apply plugin: 'jacoco'
-apply plugin: 'distribution'
-apply plugin: 'maven-publish'
-
 
 jar {
     manifest {
@@ -101,52 +99,19 @@ jar {
                    'Automatic-Module-Name' : 'info.picocli'
     }
 }
-javadoc {
-    options.overview = "src/main/java/overview.html"
-    destinationDir   = file("build/docs/apidocs")
-}
-// work around https://github.com/gradle/gradle/issues/4046
-javadoc.dependsOn('copyJavadocDocFiles')
-task copyJavadocDocFiles(type: Copy) {
-    from('src/main/java')
-    into 'build/docs/apidocs'
-    include '**/doc-files/*.*'
-}
 
-jacocoTestReport {
-    reports {
-        xml.enabled true
-        html.enabled false
-    }
-}
-task testJar(type: Jar, dependsOn: compileTestJava) {
-    from sourceSets.test.output
-    classifier = 'tests'
-}
-task sourcesJar(type: Jar) {
-    from sourceSets.main.java.srcDirs
-    classifier = 'sources'
-}
-task testSourcesJar(type: Jar) {
-    from sourceSets.test.java.srcDirs
-    classifier = 'test-sources'
-}
-task javadocJar(type: Jar, dependsOn: javadoc) {
-    classifier = 'javadoc'
-    from javadoc.destinationDir
-}
+javadoc.options.overview = "src/main/java/overview.html"
 javadoc.dependsOn('asciidoctor')
 asciidoctor {
     sourceDir = file('docs')
     outputDir = file('build/docs')
     logDocuments = true
 }
-artifacts {
-    archives javadocJar
-    archives sourcesJar
-    archives testSourcesJar
-    archives testJar
-    archives jar
+jacocoTestReport {
+    reports {
+        xml.enabled true
+        html.enabled false
+    }
 }
 task bumpReadmeVersion {
     doLast {
@@ -158,37 +123,37 @@ task bumpReadmeVersion {
 }
 task bumpVersion {
     doLast {
-        ant.replaceregexp(match: "\"$oldVersion\"", replace: "\"$version\"", flags: 'g', byline: true, encoding: 'UTF8') {
+        ant.replaceregexp(match: "\"$previousReleaseVersionRegex\"", replace: "\"$version\"", flags: 'g', byline: true, encoding: 'UTF8') {
             fileset(dir: 'src/main/java/picocli', includes: 'CommandLine.java')
             fileset(dir: 'src/test/java/picocli', includes: 'CommandLineTest.java')
         }
-        ant.replaceregexp(match: "version $oldVersion", replace: "version $version", flags: 'g', byline: true, encoding: 'UTF8') {
+        ant.replaceregexp(match: "version $previousReleaseVersionRegex", replace: "version $version", flags: 'g', byline: true, encoding: 'UTF8') {
             fileset(dir: 'src/test/java/picocli', includes: 'AutoCompleteTest.java')
         }
         // Doc header
-        ant.replaceregexp(match: ":revnumber: $oldVersion", replace: ":revnumber: $version", flags: 'g', byline: true, encoding: 'UTF8') {
+        ant.replaceregexp(match: ":revnumber: $previousReleaseVersionRegex", replace: ":revnumber: $version", flags: 'g', byline: true, encoding: 'UTF8') {
             fileset(dir: 'docs', includes: 'index.adoc')
             fileset(dir: 'docs', includes: 'quick-guide.adoc')
             fileset(dir: 'docs', includes: 'autocomplete.adoc')
             fileset(dir: 'docs', includes: 'picocli-3.0-programmatic-api.adoc')
         }
         // Downloads section, Gradle
-        ant.replaceregexp(match: ":picocli:$oldVersion", replace: ":picocli:$version", flags: 'g', byline: true, encoding: 'UTF8') {
+        ant.replaceregexp(match: ":picocli:$previousReleaseVersionRegex", replace: ":picocli:$version", flags: 'g', byline: true, encoding: 'UTF8') {
             fileset(dir: 'docs', includes: 'index.adoc')
         }
         // Downloads section, Maven
-        ant.replaceregexp(match: "<version>$oldVersion</version>", replace: "<version>$version</version>", flags: 'g', byline: true, encoding: 'UTF8') {
+        ant.replaceregexp(match: "<version>$previousReleaseVersionRegex</version>", replace: "<version>$version</version>", flags: 'g', byline: true, encoding: 'UTF8') {
             fileset(dir: 'docs', includes: 'index.adoc')
         }
         // Downloads section, SBT
-        ant.replaceregexp(match: "\"picocli\" % \"$oldVersion\"", replace: "\\\"picocli\\\" % \\\"$version\\\"", flags: 'g', byline: true, encoding: 'UTF8') {
+        ant.replaceregexp(match: "\"picocli\" % \"$previousReleaseVersionRegex\"", replace: "\\\"picocli\\\" % \\\"$version\\\"", flags: 'g', byline: true, encoding: 'UTF8') {
             fileset(dir: 'docs', includes: 'index.adoc')
         }
         // Downloads section, Ivy
-        ant.replaceregexp(match: "rev=\"$oldVersion\"", replace: "rev=\\\"$version\\\"", flags: 'g', byline: true, encoding: 'UTF8') {
+        ant.replaceregexp(match: "rev=\"$previousReleaseVersionRegex\"", replace: "rev=\\\"$version\\\"", flags: 'g', byline: true, encoding: 'UTF8') {
             fileset(dir: 'docs', includes: 'index.adoc')
         }
-        ant.replaceregexp(match: oldRevdate, replace: revDate, flags: 'g', byline: true, encoding: 'UTF8') {
+        ant.replaceregexp(match: releaseDatePreviousRegex, replace: releaseDate, flags: 'g', byline: true, encoding: 'UTF8') {
             fileset(dir: 'docs', includes: 'index.adoc')
             fileset(dir: 'docs', includes: 'quick-guide.adoc')
             fileset(dir: 'docs', includes: 'autocomplete.adoc')
@@ -259,7 +224,7 @@ publishing {
     repositories {
         maven {
             name 'myLocal'
-            url "file://$projectDir/../repo/$bintrayUsername"
+            url "file://$rootDir/../repo/$bintrayUsername"
         }
         maven {
             name 'Bintray'

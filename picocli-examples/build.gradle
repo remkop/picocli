@@ -1,0 +1,30 @@
+description 'Java and Groovy examples for the picocli project.'
+
+dependencies {
+    compile rootProject
+    compile "org.apache.ivy:ivy:$ivyVersion", // for Intelli/J
+            "org.codehaus.groovy:groovy-all:$groovyVersion"
+}
+
+def generatedResources = "$buildDir/generated-resources/main"
+sourceSets {
+    main {
+        //register an output folder on the main SourceSet:
+        output.dir(generatedResources, builtBy: 'generateVersionTxt')
+        //it is now a part of the 'main' classpath and will be a part of the jar
+    }
+}
+
+//a task that generates the resources for the example VersionProviderDemo1:
+task generateVersionTxt {
+    description 'Creates a version.txt file with build info that is added to the root of the picocli-examples jar'
+    doLast {
+        new File(generatedResources).mkdirs()
+        def generated = new File(generatedResources, "version.txt")
+        generated.text = """
+Version: $rootProject.version
+Buildtime: ${new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date())}
+Application-name: $rootProject.name $project.name
+"""
+    }
+}

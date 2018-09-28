@@ -1,2 +1,4 @@
 rootProject.name = 'picocli'
 include 'picocli-examples'
+include 'picocli-jline2-completer'
+
