@@ -162,11 +162,6 @@ public class BashCompletionAutoComplete {
     private static interface Predicate<T> {
         boolean test(T t);
     }
-    private static class BooleanArgFilter implements Predicate<ArgSpec> {
-        public boolean test(ArgSpec f) {
-            return f.type() == Boolean.TYPE || f.type() == Boolean.class;
-        }
-    }
     private static class EnumArgFilter implements Predicate<ArgSpec> {
         public boolean test(ArgSpec f) {
             return f.type().isEnum();
@@ -176,13 +171,6 @@ public class BashCompletionAutoComplete {
         public boolean test(ArgSpec f) {
             return f.completionCandidates() != null;
         }
-    }
-    private static <T> Predicate<T> negate(final Predicate<T> original) {
-        return new Predicate<T>() {
-            public boolean test(T t) {
-                return !original.test(t);
-            }
-        };
     }
     private static <K, T extends K> List<T> filter(List<T> list, Predicate<K> filter) {
         List<T> result = new ArrayList<T>();
@@ -357,13 +345,10 @@ public class BashCompletionAutoComplete {
                 "    fi\n" +
                 "}";
 
-        String flagOptionNames = optionNames(filter(commandSpec.options(), new BooleanArgFilter()), commandLine.getSeparator());
-        List<OptionSpec> argOptionFields = filter(commandSpec.options(), negate(new BooleanArgFilter()));
-        String argOptionNames = optionNames(argOptionFields, commandLine.getSeparator());
         String commands = concat(" ", new ArrayList<String>(commandLine.getSubcommands().keySet())).trim();
 
         StringBuilder buff = new StringBuilder(1024);
-        String optionNames = flagOptionNames + (!argOptionNames.isEmpty() ? " " + argOptionNames : "");
+        String optionNames = optionNames(commandSpec.options(), commandLine.getSeparator());
         buff.append(format(HEADER, functionName, commands, optionNames));
 
         List<OptionSpec> optionsWithCompletionCandidates = filter(commandSpec.options(), new HasCompletions());
@@ -378,7 +363,7 @@ public class BashCompletionAutoComplete {
             generateCompetionCandidates(buff, f);
         }
 
-        buff.append(generateOptionsSwitch(argOptionFields));
+        buff.append(generateOptionsSwitch(commandSpec.options()));
 
         buff.append(generateSubcommandsSwitch(commandLine, functionName));
 
