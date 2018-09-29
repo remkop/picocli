@@ -1,5 +1,35 @@
 # picocli Release Notes
 
+
+# <a name="3.7.0"></a> Picocli 3.7.0 (UNRELEASED)
+The picocli community is pleased to announce picocli 3.7.0.
+
+This release contains bugfixes and enhancements.
+
+
+Many thanks to the many members of the picocli community who contributed! 
+
+This is the forty-first public release.
+Picocli follows [semantic versioning](http://semver.org/).
+
+## <a name="3.7.0"></a> Table of Contents
+* [New and noteworthy](#3.7.0-new)
+* [Fixed issues](#3.7.0-fixes)
+* [Deprecations](#3.7.0-deprecated)
+* [Potential breaking changes](#3.7.0-breaking-changes)
+
+## <a name="3.7.0-new"></a> New and Noteworthy
+
+## <a name="3.7.0-fixes"></a> Fixed issues
+- [#503] Build: Upgrade to gradle 4.10.2.
+
+## <a name="3.7.0-deprecated"></a> Deprecations
+No features were deprecated in this release.
+
+## <a name="3.7.0-breaking-changes"></a> Potential breaking changes
+This release has no breaking changes.
+
+
 # <a name="3.6.1"></a> Picocli 3.6.1
 The picocli community is pleased to announce picocli 3.6.1.
 
