@@ -629,8 +629,8 @@ public class CommandTokenizer {
 	}
 
 	/**
-	 * Loads the Linux Bourne Shell preset. <br />
-	 * <table summary="Bourne preset special characters/strings">
+	 * Loads the POSIX preset. <br />
+	 * <table summary="POSIX preset special characters/strings">
 	 * 	<tr>
 	 * 		<td>comments</td>
 	 * 		<td>{@code #}</td>
@@ -659,7 +659,7 @@ public class CommandTokenizer {
 	 * 
 	 * @return         This tokenizer, for method chaining.
 	 */
-	public CommandTokenizer presetSh() {
+	public CommandTokenizer presetPosix() {
 		clearAll();
 		commentString("#");
 		escapeString("\\");
@@ -675,7 +675,7 @@ public class CommandTokenizer {
 	 * <table summary="Batch preset special characters/strings">
 	 * 	<tr>
 	 * 		<td>comments</td>
-	 * 		<td>{@code ::}</td>
+	 * 		<td>{@code ::,REM}</td>
 	 * 	</tr>
 	 * 	<tr>
 	 * 		<td>eol</td>
@@ -683,7 +683,49 @@ public class CommandTokenizer {
 	 * 	</tr>
 	 * 	<tr>
 	 * 		<td>escape</td>
-	 * 		<td>{@code \}</td>
+	 * 		<td>{@code ^}</td>
+	 * 	</tr>
+	 * 	<tr>
+	 * 		<td>escaped</td>
+	 * 		<td>none</td>
+	 * 	</tr>
+	 * 	<tr>
+	 * 		<td>quote</td>
+	 * 		<td>{@code "}</td>
+	 * 	</tr>
+	 * 	<tr>
+	 * 		<td>whitespace</td>
+	 * 		<td>{@code  ,\t}</td>
+	 * 	</tr>
+	 * </table>
+	 * 
+	 * @return         This tokenizer, for method chaining.
+	 */
+	public CommandTokenizer presetBatch() {
+		clearAll();
+		commentStrings("::", "REM");
+		escapeString("^");
+		quoteStrings("\"");
+		whitespaceStrings(" ", "\t");
+		eolStrings("\r\n", "\r", "\n");
+		trimBlanks = true;
+		return this;
+	}
+	
+	/**
+	 * Loads the Windows PowerShell preset. <br />
+	 * <table summary="PowerShell preset special characters/strings">
+	 * 	<tr>
+	 * 		<td>comments</td>
+	 * 		<td>{@code #}</td>
+	 * 	</tr>
+	 * 	<tr>
+	 * 		<td>eol</td>
+	 * 		<td>{@code \r\n,\r,\n}</td>
+	 * 	</tr>
+	 * 	<tr>
+	 * 		<td>escape</td>
+	 * 		<td>{@code `}</td>
 	 * 	</tr>
 	 * 	<tr>
 	 * 		<td>escaped</td>
@@ -701,12 +743,12 @@ public class CommandTokenizer {
 	 * 
 	 * @return         This tokenizer, for method chaining.
 	 */
-	public CommandTokenizer presetBatch() {
+	public CommandTokenizer presetPowershell() {
 		clearAll();
-		commentString("::");
-		escapeString("^");
-		quoteStrings("\"", "'");
-		whitespaceStrings(" ", "\t", ",", ";", "=");
+		commentString("#");
+		escapeString("`");
+		quoteStrings("\"",  "'");
+		whitespaceStrings(" ", "\t");
 		eolStrings("\r\n", "\r", "\n");
 		trimBlanks = true;
 		return this;
