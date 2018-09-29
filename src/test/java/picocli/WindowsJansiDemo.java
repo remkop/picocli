@@ -27,12 +27,10 @@ import picocli.CommandLine.Help.Ansi;
 public class WindowsJansiDemo extends Demo {
     public static void main(String[] args) {
 
-        // On Windows without Cygwin or similar, picocli will not emit ANSI escape codes by default.
-        // Force ANSI ON if no user preference, otherwise let user decide.
-        Ansi ansi = System.getProperty("picocli.ansi") == null ? Ansi.ON : Ansi.AUTO;
-
+        // Since https://github.com/remkop/picocli/issues/491 was fixed in picocli 3.6.0,
+        // Ansi.AUTO is automatically enabled if the AnsiConsole is installed.
         AnsiConsole.systemInstall(); // Jansi magic
-        CommandLine.run(new WindowsJansiDemo(), System.err, ansi, args);
+        CommandLine.run(new WindowsJansiDemo(), System.out, Ansi.AUTO, args);
         AnsiConsole.systemUninstall();
     }
 }
