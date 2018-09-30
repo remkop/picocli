@@ -4,7 +4,7 @@
 # Picocli JLine2 Shell - build interactive shells with ease
 
 Picocli JLine2 Shell contains components and documentation for building
-interactive shell-like command line applications with JLine 2 and picocli.
+interactive shell command line applications with JLine 2 and picocli.
 
 JLine and picocli complement each other perfectly.
 
