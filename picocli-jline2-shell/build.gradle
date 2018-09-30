@@ -1,5 +1,6 @@
 plugins {
     id 'java'
+    id 'distribution'
     id 'maven-publish'
 }
 
@@ -44,10 +45,10 @@ publishing {
             pom.withXml {
                 def root = asNode()
                 root.appendNode('packaging',     'jar')
-                root.appendNode('name',          'picocli-jline2-shell - easily build interactive shell applications with JLine 2 and picocli')
+                root.appendNode('name',          'picocli-jline2-shell')
                 root.appendNode('description',   description)
                 root.appendNode('url',           'http://picocli.info')
-                root.appendNode('inceptionYear', '2017')
+                root.appendNode('inceptionYear', '2018')
 
                 def license = root.appendNode('licenses').appendNode('license')
                 license.appendNode('name',         'The Apache Software License, version 2.0')

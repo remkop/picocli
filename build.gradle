@@ -85,6 +85,20 @@ allprojects {
         archives testJar
         archives jar
     }
+    distributions {
+        main {
+            baseName = "$archivesBaseName-all"
+            contents {
+                from jar
+                from sourcesJar
+                from testJar
+                from testSourcesJar
+                from javadocJar
+                from ('LICENSE')
+                from ("$rootDir/RELEASE-NOTES.md")
+            }
+        }
+    }
 }
 
 jar {
@@ -167,20 +181,6 @@ task copyDocs(type: Copy) {
     into 'docs'
 }
 
-distributions {
-    main {
-        baseName = "$archivesBaseName-all"
-        contents {
-            from jar
-            from sourcesJar
-            from testJar
-            from testSourcesJar
-            from javadocJar
-            from ('LICENSE')
-            from ('RELEASE-NOTES.md')
-        }
-    }
-}
 ext {
     bintrayBaseUrl    = 'https://api.bintray.com/maven'
     bintrayRepository = 'picocli'
