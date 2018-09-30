@@ -6,12 +6,12 @@
 Picocli JLine2 Shell contains components and documentation for building
 interactive shell command line applications with JLine 2 and picocli.
 
-JLine and picocli complement each other perfectly.
+JLine and picocli complement each other very well and have little or none functional overlap.
 
 JLine provides interactive shell functionality but has no built-in command line parsing functionality.
 What it does provide is a tokenizer for splitting a single command line String into an array of command line argument Strings.
 
-This array of Strings is enough to execute a picocli command.
+Given an array of Strings, picocli can execute a command or subcommand.
 Combining these two libraries makes it easy to build powerful interactive shell applications.
 
 
