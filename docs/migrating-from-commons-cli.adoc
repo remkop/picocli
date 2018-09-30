@@ -1,0 +1,400 @@
+= Migrating from Commons CLI to picocli
+
+Commons CLI, initially released in 2002, is perhaps the most widely used java command line parser, but its API shows its age.
+Applications looking for a modern approach with a minimum of boilerplate code may be interested in picocli. Picocli offers a fluent API with strong typing, usage help with ANSI colors, autocompletion and a host of other features. How do you migrate your Commons CLI-based application to picocli? Let's take a look using http://checkstyle.sourceforge.net[Checkstyle] as an example.
+
+== Command Line Application Patterns
+Many command line applications follow a pattern that looks roughly like this:
+
+. Define the supported options.
+. Parse the command line arguments.
+. Process the results:
+  - Was version help or usage help requested? If so, print out the requested information and quit.
+  - Validate the user input. If invalid, print an error message and the usage help message and quit.
+  - Run the business logic of the application, based on the values specified by the user.
+
+Let's go over these and compare how this is done in Commond CLI and in picocli, using https://github.com/checkstyle/checkstyle/blob/master/src/main/java/com/puppycrawl/tools/checkstyle/Main.java[`com.puppycrawl.tools.checkstyle.Main`] as an example.
+
+=== Defining Options and Positional Parameters
+
+==== Commons CLI Example
+Commons CLI has multiple ways to define options: `Options.addOption`, calling `new Options(...)` and invoking setter methods on this object, the deprecated `OptionBuilder` class, and the recommended `Option.Builder` class.
+
+The Checkstyle `Main` class uses the `Options.addOption` method. It starts by defining a number of constants for the option names:
+
+[source,java]
+----
+/** Name for the option 's'. */
+private static final String OPTION_S_NAME = "s";
+
+/** Name for the option 't'. */
+private static final String OPTION_T_NAME = "t";
+
+/** Name for the option '--tree'. */
+private static final String OPTION_TREE_NAME = "tree";
+
+... // and more. Checkstyle Main has 26 options in total.
+----
+The `Main.buildOptions` method uses these constants to construct and return a Commons CLI `Options` object that defines the supported options:
+[source,java]
+----
+private static Options buildOptions() {
+    final Options options = new Options();
+    options.addOption(OPTION_C_NAME, true, "Sets the check configuration file to use.");
+    options.addOption(OPTION_O_NAME, true, "Sets the output file. Defaults to stdout");
+    ...
+    options.addOption(OPTION_V_NAME, false, "Print product version and exit");
+    options.addOption(OPTION_T_NAME, OPTION_TREE_NAME, false,
+            "Print Abstract Syntax Tree(AST) of the file");
+    ...
+    return options;
+}
+----
+
+==== Picocli Example
+
+In picocli you can define supported options either programmatically with builders, similar to the Commons CLI approach, or declaratively with annotations.
+
+The annotations style (example follows below), is likely the preferred option for most applications because it is more declarative and results in less code. The programmatic API is useful for dynamic applications where not all options are known in advance. If you're interested in the programmatic approach, take a look at the the `CommandSpec` and adding `OptionSpec` and `PositionalParamSpec` classes. See also https://github.com/remkop/picocli/wiki/Programmatic-API[Programmatic API] for more detail.
+
+In this article we will use the picocli annotations. For the CheckStyle example, this would look something like the below:
+
+[source,java]
+----
+@Option(names = "-c", description = "Sets the check configuration file to use.")
+File configurationFile;
+
+@Option(names = "-o", description = "Sets the output file. Defaults to stdout")
+File outputFile;
+
+@Option(names = "-v", versionHelp = true, description = "Print product version and exit")
+boolean versionHelpRequested;
+
+@Option(names = {"-t", "--tree"}, description = "Print Abstract Syntax Tree(AST) of the file")
+boolean printAST;
+----
+
+==== Declarative
+
+image:https://picocli.info/images/declare.jpg[width=200]
+
+You immediately note a few things. First, all information is now in one place.
+
+With Commons CLI, you build a specification by calling a method with String values. One drawback of a Commons CLI-like API is that good style compels client code to define constants to avoid "magic values", like the Checkstyle `Main` class dutifully does. Annotations only accept String literals, so definition and usage are automatically placed together without the need to declare constants. In this case, that arguably results in cleaner code.
+
+==== Types
+
+image::https://picocli.info/images/Type.jpg[width=200]
+
+Another thing that is interesting is that we went from using `true` or `false` in Commons CLI to denote whether the option takes an argument or not:
+
+[source,java]
+----
+// declaring an option with Commons CLI
+final Options options = new Options();
+options.addOption(OPTION_C_NAME, true, "Sets the check configuration file to use.");
+----
+
+to declaring fields with types in picocli:
+
+[source,java]
+----
+// declaring an option with picocli
+@Option(names = "-c", description = "Sets the check configuration file to use.")
+File configurationFile;
+----
+
+This has a number of advantages:
+
+* automatic type conversion
+* no need to specify if an option requires arguments (usually)
+* assists command line auto-completion
+
+Picocli automatically converts the command line argument to an object of the specified type. We will talk more about how this works below.
+
+Based on the type, picocli "knows" how many arguments the option needs: `boolean` fields don't have an argument, `Collection`, `Map` and array fields can have zero to any number of arguments, and any other type means the options takes a single argument. This can be customized (see `arity`) but most of the time the default is good enough.
+
+Picocli can generate bash completion scripts and JLine Completer candidates, to make your application easier to use for end users. This works best when the options are strongly typed. For example, enums will allow picocli to generate completions with all valid parameters for a given option.
+
+==== Type Conversion
+image:https://picocli.info/images/convert.png[width=200]
+
+Picocli converts the option parameter String value to the field type. This is convenient: not only does it save the application from doing this work, it also provides some minimal validation on the user input. If the conversion fails, a `ParameterException` is thrown with a user-friendly error message. We will take another look at error handling later. Picocli comes with built-in converters for many, many types, but you can easily provide a custom type converter.
+
+One example: the Checkstyle `Main` class defines a `-x`, `--exclude-regexp` option that allows uses to specify a number of regular expressions for directories to exclude. With Commons CLI, you need to convert the values to `Pattern` objects in the application:
+[source,java]
+----
+private static List<Pattern> getExclusions(CommandLine commandLine) {
+    final List<Pattern> result = new ArrayList<>();
+
+    // ...
+
+    if (commandLine.hasOption(OPTION_X_NAME)) {
+        for (String value : commandLine.getOptionValues(OPTION_X_NAME)) {
+            result.add(Pattern.compile(value));
+        }
+    }
+
+    return result;
+}
+----
+By contract, in picocli you would simply declare the option on a `List<Pattern>` (or a `Pattern[]` array) field:
+[source,java]
+----
+@Option(names = {"-x", "--exclude-regexp"},
+        description = "Regular expression of directory to exclude from CheckStyle")
+List<Pattern> exclusionPatterns;
+----
+Since picocli has a built-in converter for `java.util.regex.Pattern`, this is all that is needed.
+Picocli will instantiate and populate the list if one or more `-x` options are specified on the command line.
+
+==== Option Names
+image:https://picocli.info/images/name.jpg[width=200]
+
+Finally, Commons CLI supports "short" and "long" options, like `-t` and `--tree`. (Interestingly, the Commons CLI  `DefaultParser` will also accept user input where the `-tree` long option is specified with a single hyphen, even though this is not shown in the usage help message.)
+
+Picocli lets you have any number of options, with any prefix. For example, this is perfectly fine in picocli:
+
+[source,java]
+----
+@Option(names = {"-t", "-tree", "--tree", "/t", "/tree"}) boolean printAST;
+----
+
+==== Positional Parameters
+image:https://picocli.info/images/location.jpg[width=200]
+
+A final thing to notice is how positional parameters are handled. In Commons CLI you cannot define positional parameters up front. Instead, its `CommandLine` parse result class has a method `getArgs` that returns the positional parameters as an array of Strings. The Checkstyle `Main` class uses this to create the list of `File` objects to process.
+
+In picocli, positional parameters are first-class citizens, like named options. Not only can they be strongly typed, parameters at different positions can have different types, and each will have a separate description displayed in the usage help message.
+
+For the Checkstyle use case, all that is needed is a list or array of `File` objects, so we declare a field and annotate it with `@picocli.CommandLine.Parameters` to capture the files to process:
+[source,java]
+----
+@Parameters(paramLabel = "file", arity = "1..*", description = "The files to process")
+List<File> filesToProcess;
+----
+
+The `arity = "1..*"` here means that at least one file must be specified, or picocli will show an error message to the user that this argument is missing, followed by the usage help message.
+
+Unline Commons CLI, picocli's usage help message will show an entry for all positional parameters, using the specified parameter label and description. (If the parameter label is omitted picocli will use the field name in `<` and `>` fish brackets.) We will revisit the usage help message later.
+
+=== Parsing the Command Line Arguments
+image:https://picocli.info/images/pipeline.jpg[width=400]
+
+Commons CLI has a `CommandLineParser` interface with a `parse` method that returns a `CommandLine` representing the parse result. The application then calls `CommandLine.hasOption(String)` to see if a flag was set, or `CommandLine.getOptionValue(String)` to get the option value.
+
+Picocli populates the annotated fields as it parses the command line arguments. Picocli's `parse...` methods also return a `ParseResult` that can be queried on what options were specified and what value they had, but most applications don't actually need to use the `ParseResult` class since they can simply inspect the value of the annotated fields.
+
+
+=== Process the Results
+When the parser is done, the application needs to run its business logic, but first there are some things to check:
+
+- Was version info or usage help requested? If so, print out the requested information and quit.
+- Was the user input invalid? Print out an error message with the details, print the usage help message and quit.
+- Finally run the business logic - and deal with errors thrown by the business logic.
+
+With Commons CLI, this looks something like this:
+[source,java]
+----
+int exitStatus;
+try {
+    CommandLine commandLine = new DefaultParser().parse(buildOptions(), args);
+
+    // show version and exit if it is requested
+    if (commandLine.hasOption(OPTION_VERSION)) {
+        System.out.println("Checkstyle version: " + version());
+        exitStatus = 0;
+    } else if (commandLine.hasOption(OPTION_HELP)) {
+        printUsage(System.out);
+        exitStatus = 0;
+    } else {
+        exitStatus = runBusinessLogic();
+    }
+} catch (ParseException pex) {
+    exitStatus = EXIT_WITH_CLI_VIOLATION;
+    System.err.println(pex.getMessage());
+    printUsage(System.err);
+} catch (CheckstyleException ex) {
+    exitStatus = EXIT_WITH_CHECKSTYLE_EXCEPTION_CODE;
+    ex.printStackTrace();
+}
+System.exit(exitStatus);
+----
+
+
+By making your command implement `Runnable` or `Callable`, you can take advantage of picocli's convenience methods that take care of most of the above, so the application can focus on the business logic. At its simplest, this can look something like this:
+
+[source,java]
+----
+public class Main implements Callable<Integer> {
+    public static void main(String[] args) {
+        CommandLine.call(new Main(), args);
+    }
+
+    public Integer call() throws CheckstyleException { ...
+----
+
+Checkstyle needs to control the exit code, and the code below shows one way to accomplish this:
+
+[source,java]
+----
+public static void main(String[] args) {
+    Integer exitCode;
+    try {
+        ParseResult parseResult = new CommandLine(new Main())
+                .setUsageHelpWidth(HELP_WIDTH).parse(args);
+        if (!CommandLine.printHelpIfRequested(parseResult)) {
+            exitCode = call();
+        }
+    } catch (ParameterException ex) {
+        exitCode = EXIT_WITH_INVALID_USER_INPUT_CODE;
+        System.err.println(ex.getMessage());
+        ex.getCommandLine().usage(System.err);
+    } catch (CheckstyleException ex) {
+        exitCode = EXIT_WITH_CHECKSTYLE_EXCEPTION_CODE;
+        ex.printStackTrace();
+    }
+    System.exit(exitCode);
+}
+----
+
+==== Automatic Help
+
+image::https://picocli.info/images/AskingForHelp.jpg[width=200]
+
+If the user requested version information or usage help, picocli's `CommandLine.call` method automatically prints the user requested information, and returns a `null` result. Otherwise, the method returns the result of invoking `CliOptions.call()`.
+
+Picocli does need a little help here: applications need to specify `usageHelp = true` or `versionHelp = true` for options that should trigger the usage help message or version information, respectively. For example:
+[source,java]
+----
+@Option(names = {"-h", "--help"}, usageHelp = true, description = "Print help")
+boolean usageHelpRequested;
+----
+
+==== Business Logic Exceptions
+Any exceptions thrown by the business logic in the `call` method are caught by picocli and rethrown as an `ExecutionException`. For applications with nested subcommands, this exception allows them to detect which subcommand threw the error.
+
+==== Standard Error and Standard Out
+A nice bonus is that picocli carefully follows command line application conventions in the above: if help is requested, it is printed to _standard out_, so that users can pipe it to utilities like `grep` or `less`.
+
+However, if an error occurs, picocli will print the error message and usage help to the _standard error_ stream. This way, the output of the application can safely be piped to another application. There is no risk that the next application will receive and parse an error message instead of the expected output by accident.
+
+== Usage Help Message
+Commons CLI offers a `HelpFormatter` class to customize the usage help message, but its functionality is mostly limited to laying out option names and option descriptions. It does not generate a synopsis from the options, so users need to provide the synopsis themselves:
+
+[source,java]
+----
+Options options = new Options();
+options.addOption(OPTION_C_NAME, true, "Sets the check configuration file to use.");
+...
+
+HelpFormatter formatter = new HelpFormatter();
+formatter.setWidth(HELP_WIDTH);
+formatter.printHelp(String.format("java %s [options] -c <config.xml> file...",
+        Main.class.getName()), options);
+----
+
+In contrast, a picocli-based application can easily customize the usage help message with annotations. For example, picocli generates a detailed synopsis automatically, but there is a `customSynopsis` annotation attribute to specify your own synopsis if desired.
+
+For Checkstyle, we kept it simple and just added a better description. The source code looks like this:
+[source,java]
+----
+@Command(name = "checkstyle", description = "Checkstyle verifies that the specified "
+         + "source code files adhere to the specified rules. By default errors are "
+         + "reported to standard out in plain format. Checkstyle requires a configuration "
+         + "XML file that configures the checks to apply.",
+     mixinStandardHelpOptions = true, versionProvider = Main.VersionProvider.class)
+public final class Main { // ...
+----
+
+A fun bonus is that picocli uses ANSI colors and styles in the usage help message on supported platforms.
+Applications can also use ANSI colors and styles in the description or other sections of the usage help message with a simple markup like `@|bg(red) text with red background|@`. See the https://picocli.info/#_usage_help_with_styles_and_colors[relevant section] of the user manual.
+
+
+The resulting output looks like this:
+
+INSERT IMAGE
+
+== Warnings from Static Code Checkers
+
+When writing this article, I submitted a pull request to the Checkstyle project with the changes discussed above, to put all this in practice and share the results. The Checkstyle project applies all of its rules to its own code, and on top of that checks its own source with a combination of Intelli/J Idea inspections, PMD checks and Spotbug checks.
+
+It turns out that static code checkers will generate a number of "false positive" warnings for idiomatic picocli code, since fields annotated with `@Option`, `@Parameters` or `@Spec` appear to never be assigned a value, other than the initial value. This causes a number of warnings, most commonly these:
+
+* "field never written", "field can be final": the static code checker is not aware that picocli will inject values into these fields with reflection
+* "unused field", especially for boolean fields for `@Option(names = "--help")` or `@Option(names = "--version")`: these fields appear to never even be read by the application - you may be interested in using the `@Command(mixinStandardHelpOptions = true)` annotation to avoid the need to declare these fields altogether.
+
+=== Checkstyle
+Interestingly, the Checkstyle checks did not report any warnings.
+
+=== Intelli/J Idea Inspections
+
+The Checkstyle configuration enables many Intelli/J inspections, some of which are false positives in this case. For example, in a CLI application it is normal to write to `System.out` and `System.err`. The inspections also caught that there was a `List` field that was queried while nowhere in the code values were added to this list: the `List<File>` positional parameters populated by picocli.
+
+Intelli/J inspections can be suppressed in comments in the source code:
+
+[source,java]
+----
+/**
+ * Wrapper command line program for the Checker.
+ * @noinspection UseOfSystemOutOrSystemErr, unused, FieldMayBeFinal, CanBeFinal,
+ *              MismatchedQueryAndUpdateOfCollection
+ **
+@Command(name = "checkstyle", description = "...")
+public final class Main
+----
+
+=== Spotbugs
+
+Spotbugs configuration to suppress false positive warnings:
+
+[source,xml]
+----
+<FindBugsFilter>
+    <Match>
+        <!-- false-positive: field values are injected by picocli -->
+        <Or>
+            <Class name="com.puppycrawl.tools.checkstyle.Main"/>
+            <Class name="com.puppycrawl.tools.checkstyle.JavadocPropertiesGenerator"/>
+        </Or>
+        <Or>
+            <Bug pattern="NP_UNWRITTEN_FIELD"/>
+            <Bug pattern="UWF_UNWRITTEN_FIELD"/>
+            <Bug pattern="MS_SHOULD_BE_FINAL"/>
+            <Bug pattern="MS_SHOULD_BE_REFACTORED_TO_BE_FINAL"/>
+            <Bug pattern="SS_SHOULD_BE_STATIC"/>
+        </Or>
+    </Match>
+    ...
+----
+
+=== PMD
+
+Out of the box, PMD knows it should not apply its "ImmutableField" and "UnusedPrivateField" rules to fields annotated with Lombok annotations. However, it is not (yet? PR, anyone?) picocli-aware, so you'll need to explicitly ignore the picocli annotations:
+
+[source,xml]
+----
+<rule ref="category/java/design.xml/ImmutableField">
+    <property name="ignoredAnnotations"
+              value="picocli.CommandLine.Option
+                    |picocli.CommandLine.Parameters
+                    |picocli.CommandLine.Spec"/>
+</rule>
+<rule ref="category/java/bestpractices.xml/UnusedPrivateField">
+    <property name="ignoredAnnotations"
+              value="picocli.CommandLine.Option
+                    |picocli.CommandLine.Parameters
+                    |picocli.CommandLine.Spec"/>
+</rule>
+----
+
+== Wrapping Up
+
+To summarize some of the main points when converting an application from Commons CLI to picocli:
+
+* Use annotated fields to define options and positional parameters.
+* You can use https://picocli.info/#option-parameters-methods[annotated methods] for options and positional parameters that require more validation than just type conversion.
+* Use strong types like `java.nio.file.Path` or `java.util.regex.Pattern` where possible for option and positional parameter fields.
+* Use `enum` types for options or positional parameters with a limited set of valid values. Not only will picocli validate the input for you, you can also https://picocli.info/#_show_default_values[show all values] in the usage help message with `@Option(description = "Option x. Valid values: ${COMPLETION-CANDIDATES}")`.
+* Be aware that the Commons CLI default parser will recognize both single hyphen and double hyphen long options, even though the usage help message will only show options with double hyphens. You need to decide whether to continue to support this. Use `@Option(names = "-xxx", hidden = true)` to declare long options with a single hyphen if you want to mimic the exact same behaviour as Commons CLI: hidden options picocli https://picocli.info/#_hidden_options_and_parameters[won't be shown] in the usage help message.
+
