@@ -81,7 +81,7 @@ Picocli-based applications can easily [integrate](https://picocli.info/#_depende
 * Picocli is now part of Groovy. From Groovy 2.5, all Groovy command line tools are picocli-based, and picocli is the underlying parser for Groovy's [CliBuilder DSL](http://groovy-lang.org/dsls.html#_clibuilder). 
 * Picocli is now part of Micronaut. The Micronaut CLI has been rewritten with picocli, and Micronaut has dedicated support for running microservices [standalone with picocli](https://docs.micronaut.io/snapshot/guide/index.html#commandLineApps).
 * Picocli is now part of JUnit 5. JUnit 5.3 migrated its `ConsoleLauncher` from jopt-simple to picocli to support @-files (argument files); this helps users who need to specify many tests on the command line and run into system limitations.
-* Debian now offers a [libpicocli-java package](https://packages.debian.org/unstable/java/libpicocli-java). Thanks to [Miroslav Kravec](https://salsa.debian.org/kravemir-guest).
+* Debian now offers a [libpicocli-java package](https://tracker.debian.org/pkg/picocli). Thanks to [Miroslav Kravec](https://udd.debian.org/dmd/?kravec.miroslav%40gmail.com).
 * Picocli is used in the Intuit [Karate](https://github.com/intuit/karate) standalone JAR / executable.
 
 <img src="https://picocli.info/images/downloads-201808.png">
