@@ -43,7 +43,8 @@ public class Example {
      * A command with some options to demonstrate completion.
      */
     @Command(name = "cmd", mixinStandardHelpOptions = true, version = "1.0",
-            description = "Command with some options to demonstrate TAB-completion (note that enum values also get completed)")
+            description = "Command with some options to demonstrate TAB-completion" +
+                    " (note that enum values also get completed)")
     static class MyCommand implements Runnable {
         @Option(names = {"-v", "--verbose"})
         private boolean[] verbosity = {};

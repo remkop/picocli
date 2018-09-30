@@ -1,7 +1,7 @@
 <p align="center"><img src="https://picocli.info/images/logo/horizontal-400x150.png" alt="picocli" height="150px"></p>
 
 
-# Picocli JLine2 Completer - a perfect match
+# Picocli JLine2 Completer - build interactive shells with ease
 
 Picocli JLine2 Completer is a small component that generates completion candidates to allow users to
 get command line TAB auto-completion for a picocli-based application running in a JLine 2 shell.
@@ -74,7 +74,8 @@ public class Example {
      * A command with some options to demonstrate completion.
      */
     @Command(name = "cmd", mixinStandardHelpOptions = true, version = "1.0",
-            description = "Command with some options to demonstrate TAB-completion (note that enum values also get completed)")
+            description = "Command with some options to demonstrate TAB-completion" +
+                    " (note that enum values also get completed)")
     static class MyCommand implements Runnable {
         @Option(names = {"-v", "--verbose"})
         private boolean[] verbosity = {};
