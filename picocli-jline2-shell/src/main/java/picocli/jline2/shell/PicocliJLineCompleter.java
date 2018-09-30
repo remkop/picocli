@@ -1,4 +1,4 @@
-package picocli.jline2.completer;
+package picocli.jline2.shell;
 
 import jline.console.completer.ArgumentCompleter;
 import jline.console.completer.Completer;
@@ -28,7 +28,7 @@ public class PicocliJLineCompleter implements Completer {
 
     /**
      * Populates the specified list with completion candidates for the specified buffer
-     * based on the command specification that this completer was constructed with.
+     * based on the command specification that this shell was constructed with.
      *
      * @param buffer the command line string
      * @param cursor the position of the cursor in the command line string
