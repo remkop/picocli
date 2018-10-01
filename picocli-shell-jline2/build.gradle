@@ -5,7 +5,7 @@ plugins {
 }
 
 group 'info.picocli'
-description 'Picocli JLine2 Shell - easily build interactive shell applications with JLine 2 and picocli.'
+description 'Picocli Shell JLine2 - easily build interactive shell applications with JLine 2 and picocli.'
 version "$projectVersion"
 sourceCompatibility = 1.5
 
@@ -17,20 +17,20 @@ dependencies {
 
 jar {
     manifest {
-        attributes  'Specification-Title'   : 'Picocli JLine2 Shell',
+        attributes  'Specification-Title'   : 'Picocli Shell JLine2',
                     'Specification-Vendor'  : 'Remko Popma',
                     'Specification-Version' : version,
-                    'Implementation-Title'  : 'Picocli JLine2 Shell',
+                    'Implementation-Title'  : 'Picocli Shell JLine2',
                     'Implementation-Vendor' : 'Remko Popma',
                     'Implementation-Version': version,
-                    'Automatic-Module-Name' : 'info.picocli.jline2.shell'
+                    'Automatic-Module-Name' : 'info.picocli.shell.jline2'
     }
 }
 
 ext {
     bintrayBaseUrl    = 'https://api.bintray.com/maven'
     bintrayRepository = 'picocli'
-    bintrayPackage    = 'picocli-jline2-shell'
+    bintrayPackage    = 'picocli-shell-jline2'
     bintrayUsername   = System.getenv('BINTRAY_USER')
     bintrayApiKey     = System.getenv('BINTRAY_KEY')
 }
@@ -45,7 +45,7 @@ publishing {
             pom.withXml {
                 def root = asNode()
                 root.appendNode('packaging',     'jar')
-                root.appendNode('name',          'picocli-jline2-shell')
+                root.appendNode('name',          'picocli-shell-jline2')
                 root.appendNode('description',   description)
                 root.appendNode('url',           'http://picocli.info')
                 root.appendNode('inceptionYear', '2018')

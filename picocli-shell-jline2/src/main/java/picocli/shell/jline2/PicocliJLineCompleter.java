@@ -1,4 +1,4 @@
-package picocli.jline2.shell;
+package picocli.shell.jline2;
 
 import jline.console.completer.ArgumentCompleter;
 import jline.console.completer.Completer;

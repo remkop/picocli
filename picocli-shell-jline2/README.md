@@ -1,9 +1,9 @@
 <p align="center"><img src="https://picocli.info/images/logo/horizontal-400x150.png" alt="picocli" height="150px"></p>
 
 
-# Picocli JLine2 Shell - build interactive shells with ease
+# Picocli Shell JLine2 - build interactive shells with ease
 
-Picocli JLine2 Shell contains components and documentation for building
+Picocli Shell JLine2 contains components and documentation for building
 interactive shell command line applications with JLine 2 and picocli.
 
 JLine and picocli complement each other very well and have little or none functional overlap.
@@ -46,7 +46,7 @@ import picocli.CommandLine;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 import picocli.CommandLine.ParentCommand;
-import picocli.jline2.shell.PicocliJLineCompleter;
+import picocli.shell.jline2.PicocliJLineCompleter;
 
 /**
  * Example that demonstrates how to build an interactive shell with JLine and picocli.

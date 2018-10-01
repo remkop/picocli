@@ -1,4 +1,4 @@
-package picocli.jline2.shell.example;
+package picocli.shell.jline2.example;
 
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -12,7 +12,7 @@ import picocli.CommandLine;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 import picocli.CommandLine.ParentCommand;
-import picocli.jline2.shell.PicocliJLineCompleter;
+import picocli.shell.jline2.PicocliJLineCompleter;
 
 /**
  * Example that demonstrates how to build an interactive shell with JLine and picocli.
