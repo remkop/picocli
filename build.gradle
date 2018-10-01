@@ -130,41 +130,41 @@ jacocoTestReport {
 task bumpReadmeVersion {
     doLast {
         // README.md
-        ant.replaceregexp(match: "$previousReleaseVersion", replace: "$version", flags: 'g', byline: true, encoding: 'UTF8') {
+        ant.replaceregexp(match: "$projectPreviousVersion", replace: "$version", flags: 'g', byline: true, encoding: 'UTF8') {
             fileset(dir: '.', includes: 'README.md')
         }
     }
 }
 task bumpVersion {
     doLast {
-        ant.replaceregexp(match: "\"$previousReleaseVersionRegex\"", replace: "\"$version\"", flags: 'g', byline: true, encoding: 'UTF8') {
+        ant.replaceregexp(match: "\"$projectPreviousVersionRegex\"", replace: "\"$version\"", flags: 'g', byline: true, encoding: 'UTF8') {
             fileset(dir: 'src/main/java/picocli', includes: 'CommandLine.java')
             fileset(dir: 'src/test/java/picocli', includes: 'CommandLineTest.java')
         }
-        ant.replaceregexp(match: "version $previousReleaseVersionRegex", replace: "version $version", flags: 'g', byline: true, encoding: 'UTF8') {
+        ant.replaceregexp(match: "version $projectPreviousVersionRegex", replace: "version $version", flags: 'g', byline: true, encoding: 'UTF8') {
             fileset(dir: 'src/test/java/picocli', includes: 'AutoCompleteTest.java')
         }
         // Doc header
-        ant.replaceregexp(match: ":revnumber: $previousReleaseVersionRegex", replace: ":revnumber: $version", flags: 'g', byline: true, encoding: 'UTF8') {
+        ant.replaceregexp(match: ":revnumber: $projectPreviousVersionRegex", replace: ":revnumber: $version", flags: 'g', byline: true, encoding: 'UTF8') {
             fileset(dir: 'docs', includes: 'index.adoc')
             fileset(dir: 'docs', includes: 'quick-guide.adoc')
             fileset(dir: 'docs', includes: 'autocomplete.adoc')
             fileset(dir: 'docs', includes: 'picocli-3.0-programmatic-api.adoc')
         }
         // Downloads section, Gradle
-        ant.replaceregexp(match: ":picocli:$previousReleaseVersionRegex", replace: ":picocli:$version", flags: 'g', byline: true, encoding: 'UTF8') {
+        ant.replaceregexp(match: ":picocli:$projectPreviousVersionRegex", replace: ":picocli:$version", flags: 'g', byline: true, encoding: 'UTF8') {
             fileset(dir: 'docs', includes: 'index.adoc')
         }
         // Downloads section, Maven
-        ant.replaceregexp(match: "<version>$previousReleaseVersionRegex</version>", replace: "<version>$version</version>", flags: 'g', byline: true, encoding: 'UTF8') {
+        ant.replaceregexp(match: "<version>$projectPreviousVersionRegex</version>", replace: "<version>$version</version>", flags: 'g', byline: true, encoding: 'UTF8') {
             fileset(dir: 'docs', includes: 'index.adoc')
         }
         // Downloads section, SBT
-        ant.replaceregexp(match: "\"picocli\" % \"$previousReleaseVersionRegex\"", replace: "\\\"picocli\\\" % \\\"$version\\\"", flags: 'g', byline: true, encoding: 'UTF8') {
+        ant.replaceregexp(match: "\"picocli\" % \"$projectPreviousVersionRegex\"", replace: "\\\"picocli\\\" % \\\"$version\\\"", flags: 'g', byline: true, encoding: 'UTF8') {
             fileset(dir: 'docs', includes: 'index.adoc')
         }
         // Downloads section, Ivy
-        ant.replaceregexp(match: "rev=\"$previousReleaseVersionRegex\"", replace: "rev=\\\"$version\\\"", flags: 'g', byline: true, encoding: 'UTF8') {
+        ant.replaceregexp(match: "rev=\"$projectPreviousVersionRegex\"", replace: "rev=\\\"$version\\\"", flags: 'g', byline: true, encoding: 'UTF8') {
             fileset(dir: 'docs', includes: 'index.adoc')
         }
         ant.replaceregexp(match: releaseDatePreviousRegex, replace: releaseDate, flags: 'g', byline: true, encoding: 'UTF8') {
@@ -271,7 +271,7 @@ Release procedure:
 25. Switch to master
 26. Update RELEASE-NOTES.md (insert changes from branch)
 27. Update last release version in README
-28. Update `previousReleaseVersion` in build.gradle
+28. Update `projectPreviousVersion` in build.gradle
 29. gradlew copyDocs
 30. commit -m "Update master for release x.x (from branch x.x)"
 */
