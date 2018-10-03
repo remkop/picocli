@@ -1,0 +1,82 @@
+plugins {
+    id 'java'
+    id 'distribution'
+    id 'maven-publish'
+}
+
+group 'info.picocli'
+description 'Picocli Code Generation - Tools to generate documentation, configuration, source code and other files from a picocli model.'
+version "$projectVersion"
+sourceCompatibility = 1.5
+
+dependencies {
+    compile rootProject
+    testCompile "junit:junit:$junitVersion"
+}
+jar {
+    manifest {
+        attributes  'Specification-Title'   : 'Picocli Code Generation',
+                'Specification-Vendor'  : 'Remko Popma',
+                'Specification-Version' : version,
+                'Implementation-Title'  : 'Picocli Code Generation',
+                'Implementation-Vendor' : 'Remko Popma',
+                'Implementation-Version': version,
+                'Automatic-Module-Name' : 'info.picocli.codegen'
+    }
+}
+
+ext {
+    bintrayBaseUrl    = 'https://api.bintray.com/maven'
+    bintrayRepository = 'picocli'
+    bintrayPackage    = 'picocli-codegen'
+    bintrayUsername   = System.getenv('BINTRAY_USER')
+    bintrayApiKey     = System.getenv('BINTRAY_KEY')
+}
+publishing {
+    publications {
+        plugin(MavenPublication) {
+            from components.java
+            artifact sourcesJar
+            artifact testJar
+            artifact testSourcesJar
+            artifact javadocJar
+            pom.withXml {
+                def root = asNode()
+                root.appendNode('packaging',     'jar')
+                root.appendNode('name',          'picocli-codegen')
+                root.appendNode('description',   description)
+                root.appendNode('url',           'http://picocli.info')
+                root.appendNode('inceptionYear', '2018')
+
+                def license = root.appendNode('licenses').appendNode('license')
+                license.appendNode('name',         'The Apache Software License, version 2.0')
+                license.appendNode('url',          'http://www.apache.org/licenses/LICENSE-2.0.txt')
+                license.appendNode('distribution', 'repo')
+
+                def developer = root.appendNode('developers').appendNode('developer')
+                developer.appendNode('id',    'rpopma')
+                developer.appendNode('name',  'Remko Popma')
+                developer.appendNode('email', 'rpopma@apache.org')
+
+                def scm = root.appendNode('scm')
+                scm.appendNode('connection',          'scm:git:https://github.com/remkop/picocli.git')
+                scm.appendNode('developerConnection', 'scm:git:ssh://github.com:remkop/picocli.git')
+                scm.appendNode('url',                 'https://github.com/remkop/picocli/tree/master')
+            }
+        }
+    }
+    repositories {
+        maven {
+            name 'myLocal'
+            url "file://$rootDir/../repo/$bintrayUsername"
+        }
+        maven {
+            name 'Bintray'
+            url "$bintrayBaseUrl/$bintrayUsername/$bintrayRepository/$bintrayPackage"
+            credentials {
+                username = bintrayUsername
+                password = bintrayApiKey
+            }
+        }
+    }
+}
