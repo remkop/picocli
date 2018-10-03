@@ -34,6 +34,7 @@ allprojects {
         compileOnly "org.codehaus.groovy:groovy-all:$groovyVersion"
         ivy         "org.apache.ivy:ivy:$ivyVersion" // for Gradle
         testCompile "junit:junit:$junitVersion",
+                    "junit:junit-dep:$junitDepVersion", // for stefanbirkner:system-rules
                     "org.hamcrest:hamcrest-core:$hamcrestCoreVersion",
                     "org.fusesource.jansi:jansi:$jansiVersion",
                     "org.codehaus.groovy:groovy-all:$groovyVersion",
