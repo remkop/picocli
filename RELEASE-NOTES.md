@@ -22,6 +22,7 @@ Picocli follows [semantic versioning](http://semver.org/).
 
 ## <a name="3.7.0-fixes"></a> Fixed issues
 - [#503] Build: Upgrade to gradle 4.10.2.
+- [#497] add module `picocli-shell-jline2` for components and documentation for building interactive shell command line applications with JLine 2 and picocli.
 
 ## <a name="3.7.0-deprecated"></a> Deprecations
 No features were deprecated in this release.
