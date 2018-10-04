@@ -16,13 +16,32 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Callable;
 
+/**
+ * {@code ReflectionConfigGenerator} generates a JSON String with the program elements that will be accessed
+ * reflectively in a picocli-based application, in order to compile this application ahead-of-time into a native
+ * executable with GraalVM.
+ * <p>
+ * GraalVM has <a href="https://github.com/oracle/graal/blob/master/substratevm/REFLECTION.md">limited support for Java
+ * reflection</a> and it needs to know ahead of time the reflectively accessed program elements.
+ * </p><p>
+ * The output of {@code ReflectionConfigGenerator} is intended to be passed to the {@code -H:ReflectionConfigurationFiles=/path/to/reflectconfig}
+ * option of the {@code native-image} <a href="https://www.graalvm.org/docs/reference-manual/aot-compilation/">GraalVM utility</a>.
+ * This allows picocli-based applications to be compiled to a native image.
+ * </p><p>
+ * If necessary, it is possible to exclude classes with system property {@code picocli.converters.excludes},
+ * which accepts a comma-separated list of regular expressions of the fully qualified class names that should
+ * <em>not</em> be included in the resulting JSON String.
+ * </p>
+ *
+ * @since 3.7
+ */
 public class ReflectionConfigGenerator {
 
     @Command(name = "ReflectionConfigGenerator",
@@ -33,6 +52,7 @@ public class ReflectionConfigGenerator {
                     "See https://github.com/oracle/graal/blob/master/substratevm/REFLECTION.md"},
             mixinStandardHelpOptions = true, version = "picocli-codegen 3.7.0")
     private static class App implements Callable<String> {
+
         @Parameters(arity = "1..*", description = "One or more classes to generate a GraalVM ReflectionConfiguration for.")
         Class<?>[] classes = new Class<?>[0];
 
@@ -45,6 +65,11 @@ public class ReflectionConfigGenerator {
             return new ReflectionConfigGenerator().generateReflectionConfig(specs.toArray(new CommandSpec[0]));
         }
     }
+
+    /**
+     * Runs this class as a standalone application, printing the resulting JSON String to {@code System.out}.
+     * @param args one or more fully qualified class names of {@code @Command}-annotated classes.
+     */
     public static void main(String... args) {
         String result = CommandLine.call(new App(), args);
         if (result != null) {
@@ -52,10 +77,20 @@ public class ReflectionConfigGenerator {
         }
     }
 
+    /**
+     * Returns a JSON String with the program elements that will be accessed reflectively for the specified
+     * {@code CommandSpec} objects.
+     *
+     * @param specs one or more {@code CommandSpec} objects to inspect
+     * @return a JSON String in the <a href="https://github.com/oracle/graal/blob/master/substratevm/REFLECTION.md#manual-configuration">format</a>
+     *       required by the {@code -H:ReflectionConfigurationFiles=/path/to/reflectconfig} option of the GraalVM {@code native-image} utility.
+     * @throws NoSuchFieldException if a problem occurs while processing the specified specs
+     * @throws IllegalAccessException if a problem occurs while processing the specified specs
+     */
     public String generateReflectionConfig(CommandSpec... specs) throws NoSuchFieldException, IllegalAccessException {
         Visitor visitor = new Visitor();
         for (CommandSpec spec : specs) {
-            visitor.visit(spec);
+            visitor.visitCommandSpec(spec);
         }
         return generateReflectionConfig(visitor).toString();
     }
@@ -72,23 +107,49 @@ public class ReflectionConfigGenerator {
     }
 
     static final class Visitor {
-        Map<String, ReflectedClass> visited = new HashMap<String, ReflectedClass>();
+        Map<String, ReflectedClass> visited = new LinkedHashMap<String, ReflectedClass>();
 
         Visitor() {
-            getOrCreate(Method.class.getName()).addMethod("getParameters");
-            getOrCreate("java.lang.reflect.Parameter").addMethod("getName");
+            getOrCreateClass(Method.class);
+            getOrCreateClassName("java.lang.reflect.Executable").addMethod("getParameters");
+            getOrCreateClassName("java.lang.reflect.Parameter").addMethod("getName");
+
+            // type converters registered with reflection
+            getOrCreateClassName("java.time.Duration").addMethod("parse", CharSequence.class);
+            getOrCreateClassName("java.time.Instant").addMethod("parse", CharSequence.class);
+            getOrCreateClassName("java.time.LocalDate").addMethod("parse", CharSequence.class);
+            getOrCreateClassName("java.time.LocalDateTime").addMethod("parse", CharSequence.class);
+            getOrCreateClassName("java.time.LocalTime").addMethod("parse", CharSequence.class);
+            getOrCreateClassName("java.time.MonthDay").addMethod("parse", CharSequence.class);
+            getOrCreateClassName("java.time.OffsetDateTime").addMethod("parse", CharSequence.class);
+            getOrCreateClassName("java.time.OffsetTime").addMethod("parse", CharSequence.class);
+            getOrCreateClassName("java.time.Period").addMethod("parse", CharSequence.class);
+            getOrCreateClassName("java.time.Year").addMethod("parse", CharSequence.class);
+            getOrCreateClassName("java.time.YearMonth").addMethod("parse", CharSequence.class);
+            getOrCreateClassName("java.time.ZonedDateTime").addMethod("parse", CharSequence.class);
+            getOrCreateClassName("java.time.ZoneId").addMethod("of", String.class);
+            getOrCreateClassName("java.time.ZoneOffset").addMethod("of", String.class);
+            getOrCreateClassName("java.nio.file.Path");
+            getOrCreateClassName("java.nio.file.Paths").addMethod("get", String.class, String[].class);
+
+            getOrCreateClassName("java.sql.Connection");
+            getOrCreateClassName("java.sql.Driver");
+            getOrCreateClassName("java.sql.DriverManager")
+                    .addMethod("getConnection", String.class)
+                    .addMethod("getDriver", String.class);
+            getOrCreateClassName("java.sql.Timestamp").addMethod("valueOf", String.class);
         }
 
-        void visit(CommandSpec spec) throws NoSuchFieldException, IllegalAccessException {
+        void visitCommandSpec(CommandSpec spec) throws NoSuchFieldException, IllegalAccessException {
             if (spec.userObject() != null) {
                 if (spec.userObject() instanceof Method) {
                     Method method = (Method) spec.userObject();
-                    ReflectedClass cls = getOrCreate(method.getDeclaringClass().getName());
+                    ReflectedClass cls = getOrCreateClass(method.getDeclaringClass());
                     cls.addMethod(method.getName(), method.getParameterTypes());
                 } else if (Proxy.isProxyClass(spec.userObject().getClass())) {
                     // do nothing
                 } else {
-                    getOrCreate(spec.userObject().getClass().getName());
+                    visitAnnotatedFields(spec.userObject().getClass());
                 }
             }
             visitObjectType(spec.versionProvider());
@@ -105,11 +166,31 @@ public class ReflectionConfigGenerator {
                 visitArgSpec(positional);
             }
             for (CommandSpec mixin : spec.mixins().values()) {
-                visit(mixin);
+                visitCommandSpec(mixin);
             }
             for (CommandLine sub : spec.subcommands().values()) {
-                visit(sub.getCommandSpec());
+                visitCommandSpec(sub.getCommandSpec());
             }
+        }
+
+        private void visitAnnotatedFields(Class<?> cls) {
+            if (cls == null) {
+                return;
+            }
+            ReflectedClass reflectedClass = getOrCreateClass(cls);
+            Field[] declaredFields = cls.getDeclaredFields();
+            for (Field f : declaredFields) {
+                if (f.isAnnotationPresent(CommandLine.Spec.class)) {
+                    reflectedClass.addField(f.getName());
+                }
+                if (f.isAnnotationPresent(CommandLine.ParentCommand.class)) {
+                    reflectedClass.addField(f.getName());
+                }
+                if (f.isAnnotationPresent(CommandLine.Unmatched.class)) {
+                    reflectedClass.addField(f.getName());
+                }
+            }
+            visitAnnotatedFields(cls.getSuperclass());
         }
 
         private void visitArgSpec(ArgSpec argSpec) throws NoSuchFieldException, IllegalAccessException {
@@ -126,7 +207,7 @@ public class ReflectionConfigGenerator {
         }
 
         private void visitType(Class<?> type) {
-            if (type != null) { getOrCreate(type.getName()); }
+            if (type != null) { getOrCreateClass(type); }
         }
 
         private void visitObjectType(Object object) {
@@ -140,6 +221,9 @@ public class ReflectionConfigGenerator {
         }
 
         private void visitGetter(IGetter getter) throws NoSuchFieldException, IllegalAccessException {
+            if (getter == null) {
+                return;
+            }
             if ("picocli.CommandLine$Model$FieldBinding".equals(getter.getClass().getName())) {
                 visitFieldBinding(getter);
             }
@@ -149,6 +233,9 @@ public class ReflectionConfigGenerator {
         }
 
         private void visitSetter(ISetter setter) throws NoSuchFieldException, IllegalAccessException {
+            if (setter == null) {
+                return;
+            }
             if ("picocli.CommandLine$Model$FieldBinding".equals(setter.getClass().getName())) {
                 visitFieldBinding(setter);
             }
@@ -160,16 +247,16 @@ public class ReflectionConfigGenerator {
         private void visitFieldBinding(Object fieldBinding) throws IllegalAccessException, NoSuchFieldException {
             Field field = (Field) accessibleField(fieldBinding.getClass(), "field").get(fieldBinding);
             Object scope = accessibleField(fieldBinding.getClass(),"scope").get(fieldBinding);
-            getOrCreate(scope.getClass().getName()).addField(field.getName());
+            getOrCreateClass(scope.getClass()).addField(field.getName());
         }
 
         private void visitMethodBinding(Object methodBinding) throws IllegalAccessException, NoSuchFieldException {
             Method method = (Method) accessibleField(methodBinding.getClass(), "method").get(methodBinding);
-            ReflectedClass cls = getOrCreate(method.getDeclaringClass().getName());
+            ReflectedClass cls = getOrCreateClass(method.getDeclaringClass());
             cls.addMethod(method.getName(), method.getParameterTypes());
 
             Object scope = accessibleField(methodBinding.getClass(),"scope").get(methodBinding);
-            ReflectedClass scopeClass = getOrCreate(scope.getClass().getName());
+            ReflectedClass scopeClass = getOrCreateClass(scope.getClass());
             if (!scope.getClass().equals(method.getDeclaringClass())) {
                 scopeClass.addMethod(method.getName(), method.getParameterTypes());
             }
@@ -181,13 +268,32 @@ public class ReflectionConfigGenerator {
             return field;
         }
 
-        ReflectedClass getOrCreate(String name) {
+        ReflectedClass getOrCreateClass(Class<?> cls) {
+            if (cls.isPrimitive()) {
+                return new ReflectedClass(cls.getName()); // don't store
+            }
+            return getOrCreateClassName(cls.getName());
+        }
+        private ReflectedClass getOrCreateClassName(String name) {
             ReflectedClass result = visited.get(name);
             if (result == null) {
                 result = new ReflectedClass(name);
-                visited.put(name, result);
+                if (!excluded(name)) {
+                    visited.put(name, result);
+                }
             }
             return result;
+        }
+
+        static boolean excluded(String fqcn) {
+            String[] excludes = System.getProperty("picocli.converters.excludes", "").split(",");
+            for (String regex : excludes) {
+                if (fqcn.matches(regex)) {
+                    System.err.printf("Class %s is excluded: (picocli.converters.excludes=%s)%n", fqcn, System.getProperty("picocli.converters.excludes"));
+                    return true;
+                }
+            }
+            return false;
         }
     }
     static class ReflectedClass {
@@ -212,7 +318,7 @@ public class ReflectionConfigGenerator {
         ReflectedClass addMethod(String methodName, Class... paramClasses) {
             String[] paramTypes = new String[paramClasses.length];
             for (int i = 0; i < paramClasses.length; i++) {
-                paramTypes[i] = String.valueOf(paramClasses[i]);
+                paramTypes[i] = paramClasses[i].getName();
             }
             return addMethod0(methodName, paramTypes);
         }
@@ -230,7 +336,7 @@ public class ReflectionConfigGenerator {
                 result += String.format(",%n    \"fields\" : ");
                 String prefix = String.format("[%n"); // start JSON array
                 for (ReflectedField field : fields) {
-                    result += String.format("%s    %s", prefix, field);
+                    result += String.format("%s      %s", prefix, field);
                     prefix = String.format(",%n");
                 }
                 result += String.format("%n    ]"); // end JSON array
@@ -239,7 +345,7 @@ public class ReflectionConfigGenerator {
                 result += String.format(",%n    \"methods\" : ");
                 String prefix = String.format("[%n"); // start JSON array
                 for (ReflectedMethod method : methods) {
-                    result += String.format("%s    %s", prefix, method);
+                    result += String.format("%s      %s", prefix, method);
                     prefix = String.format(",%n");
                 }
                 result += String.format("%n    ]"); // end JSON array
@@ -265,7 +371,7 @@ public class ReflectionConfigGenerator {
 
         @Override
         public String toString() {
-            return String.format("    { \"name\" : \"%s\", \"parameterTypes\" : [%s] }", name, formatParamTypes());
+            return String.format("{ \"name\" : \"%s\", \"parameterTypes\" : [%s] }", name, formatParamTypes());
         }
 
         private String formatParamTypes() {
@@ -292,7 +398,7 @@ public class ReflectionConfigGenerator {
 
         @Override
         public String toString() {
-            return String.format("    { \"name\" : \"%s\" }", name);
+            return String.format("{ \"name\" : \"%s\" }", name);
         }
     }
 }
