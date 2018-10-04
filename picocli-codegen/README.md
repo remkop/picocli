@@ -7,7 +7,7 @@ Picocli Code Generation contains tools for generating source code, documentation
 for picocli-based applications.
 
 
-## ReflectionConfigGenerator Tool
+## ReflectionConfigGenerator Tool for AOT Compilation to Native Image on GraalVM
 
 `ReflectionConfigGenerator` generates a JSON String with the program elements that will be accessed reflectively in a picocli-based application, in order to compile this application ahead-of-time into a native executable with GraalVM.
 
