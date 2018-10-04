@@ -56,6 +56,7 @@ Picocli-based applications can easily [integrate](https://picocli.info/#_depende
 * [API Javadoc](https://picocli.info/apidocs/)
 * [3.0 Programmatic API](https://picocli.info/picocli-3.0-programmatic-api.html)
 * [FAQ](https://github.com/remkop/picocli/wiki/FAQ)
+* [GraalVM AOT Compilation to Native Image](https://github.com/remkop/picocli/wiki/Picocli-on-GraalVM:-Blazingly-Fast-Command-Line-Apps) <img src="https://www.graalvm.org/resources/img/logo-colored.svg" > 
 
 ### Articles
 * [Groovy 2.5 CliBuilder Renewal](https://picocli.info/groovy-2.5-clibuilder-renewal.html) (also on [blogs.apache.org](https://blogs.apache.org/logging/entry/groovy-2-5-clibuilder-renewal)). In two parts: [Part 1](https://picocli.info/groovy-2.5-clibuilder-renewal-part1.html) (also on: [DZone](https://dzone.com/articles/groovy-25-clibuilder-renewal), [Java Code Geeks](https://www.javacodegeeks.com/2018/06/groovy-clibuilder-renewal-part-1.html)), [Part 2](https://picocli.info/groovy-2.5-clibuilder-renewal-part2.html) (also on: [DZone](https://dzone.com/articles/groovy-25-clibuilder-renewal-part-2), [Java Code Geeks](https://www.javacodegeeks.com/2018/06/groovy-clibuilder-renewal-part-2.html)). 
@@ -121,12 +122,12 @@ public class Example implements Runnable {
     }
     
     public static void main(String[] args) {
-        CommandLine.run(new Example(), System.out, args);
+        CommandLine.run(new Example(), args);
     }
 }
 ```
 
-If your command implements `Runnable`, all the code that is necessary to parse the command line and execute the command is a call to `CommandLine.run` with the command line parameters and the `Runnable` command. When the program is run on the command line, the command line arguments are converted to Java objects and assigned to the annotated fields. After the arguments are successfully parsed, picocli calls the command's `run` method.
+If your command implements `Runnable`, all that is necessary to parse the command line and execute the command is a call to `CommandLine.run` with the command line parameters and the `Runnable` command. When the program is run on the command line, the command line arguments are converted to Java objects and assigned to the annotated fields. After the arguments are successfully parsed, picocli calls the command's `run` method.
 
 ```bash
 $ java Example -v inputFile1 inputFile2
