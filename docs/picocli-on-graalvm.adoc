@@ -6,15 +6,19 @@
 
 image::https://www.graalvm.org/resources/img/logo-colored.svg[]
 
-GraalVM allows you to compile your programs ahead-of-time into a native executable. The resulting program has faster startup time and lower runtime memory overhead compared to a Java VM. This is especially useful for command line utilities, which are often short-lived.
+https://www.graalvm.org/[GraalVM] allows you to compile your programs ahead-of-time into a native executable. The resulting program has faster startup time and lower runtime memory overhead compared to a Java VM. This is especially useful for command line utilities, which are often short-lived.
 
 GraalVM has limited support for Java reflection and it needs to know ahead of time the reflectively accessed program elements.
 
 == Reflective Access
-Picocli currently uses reflection to discover classes and methods annotated with `@Command`, and fields, methods or method parameters annotated with `@Option` and `@Parameters` and other picocli annotations. A future picocli release may include an annotation processor to do this work at compile time, but as it stands, it uses reflection.
+https://github.com/remkop/picocli[Picocli] currently uses reflection to discover
+https://picocli.info/#CheckSum-application[classes] and https://picocli.info/#command-methods[methods]
+annotated with `@Command`, and https://picocli.info/#_options_and_parameters[fields],
+https://picocli.info/#option-parameters-methods[methods] or
+https://picocli.info/#command-methods[method parameters] annotated with `@Option` and `@Parameters` and other picocli annotations. A future picocli release may include an annotation processor to do this work at compile time, but as it stands, it uses reflection.
 
 == ReflectionConfigGenerator Tool
-Picocli 3.7 includes a `picocli-codegen` module, with a tool that generates a GraalVM configuration file.
+Picocli 3.7 includes a https://github.com/remkop/picocli/tree/master/picocli-codegen[`picocli-codegen` module], with a tool that generates a GraalVM configuration file.
 
 `ReflectionConfigGenerator` generates a JSON String with the program elements that will be accessed reflectively in a picocli-based application, in order to compile this application ahead-of-time into a native executable with GraalVM.
 
@@ -131,3 +135,5 @@ All command line parsing functionality works as expected, with type conversion, 
 GraalVM is an exciting new technology that allows Java programs to run as native code. This gives reduced memory usage and startup time, which is especially useful for short-running programs like command line utilities.
 
 The `ReflectionConfigGenerator` tool included in the `picocli-codegen` module allows picocli-based applications to be compiled to native executables with extremely fast startup times.
+
+Please star &#x2606; https://github.com/oracle/graal[GraalVM] and https://github.com/remkop/picocli[picocli on GitHub] if you like the projects!

@@ -431,7 +431,7 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 </div>
 </div>
 <div class="paragraph">
-<p>GraalVM allows you to compile your programs ahead-of-time into a native executable. The resulting program has faster startup time and lower runtime memory overhead compared to a Java VM. This is especially useful for command line utilities, which are often short-lived.</p>
+<p><a href="https://www.graalvm.org/">GraalVM</a> allows you to compile your programs ahead-of-time into a native executable. The resulting program has faster startup time and lower runtime memory overhead compared to a Java VM. This is especially useful for command line utilities, which are often short-lived.</p>
 </div>
 <div class="paragraph">
 <p>GraalVM has limited support for Java reflection and it needs to know ahead of time the reflectively accessed program elements.</p>
@@ -442,7 +442,11 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <h2 id="_reflective_access">Reflective Access</h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>Picocli currently uses reflection to discover classes and methods annotated with <code>@Command</code>, and fields, methods or method parameters annotated with <code>@Option</code> and <code>@Parameters</code> and other picocli annotations. A future picocli release may include an annotation processor to do this work at compile time, but as it stands, it uses reflection.</p>
+<p><a href="https://github.com/remkop/picocli">Picocli</a> currently uses reflection to discover
+<a href="https://picocli.info/#CheckSum-application">classes</a> and <a href="https://picocli.info/#command-methods">methods</a>
+annotated with <code>@Command</code>, and <a href="https://picocli.info/#_options_and_parameters">fields</a>,
+<a href="https://picocli.info/#option-parameters-methods">methods</a> or
+<a href="https://picocli.info/#command-methods">method parameters</a> annotated with <code>@Option</code> and <code>@Parameters</code> and other picocli annotations. A future picocli release may include an annotation processor to do this work at compile time, but as it stands, it uses reflection.</p>
 </div>
 </div>
 </div>
@@ -450,7 +454,7 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <h2 id="_reflectionconfiggenerator_tool">ReflectionConfigGenerator Tool</h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>Picocli 3.7 includes a <code>picocli-codegen</code> module, with a tool that generates a GraalVM configuration file.</p>
+<p>Picocli 3.7 includes a <a href="https://github.com/remkop/picocli/tree/master/picocli-codegen"><code>picocli-codegen</code> module</a>, with a tool that generates a GraalVM configuration file.</p>
 </div>
 <div class="paragraph">
 <p><code>ReflectionConfigGenerator</code> generates a JSON String with the program elements that will be accessed reflectively in a picocli-based application, in order to compile this application ahead-of-time into a native executable with GraalVM.</p>
@@ -618,12 +622,15 @@ sys     0m0.004s</code></pre>
 <div class="paragraph">
 <p>The <code>ReflectionConfigGenerator</code> tool included in the <code>picocli-codegen</code> module allows picocli-based applications to be compiled to native executables with extremely fast startup times.</p>
 </div>
+<div class="paragraph">
+<p>Please star &#x2606; <a href="https://github.com/oracle/graal">GraalVM</a> and <a href="https://github.com/remkop/picocli">picocli on GitHub</a> if you like the projects!</p>
+</div>
 </div>
 </div>
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2018-10-05 01:02:04 +09:00
+Last updated 2018-10-05 07:46:13 +09:00
 </div>
 </div>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/8.9.1/styles/darkula.min.css">
