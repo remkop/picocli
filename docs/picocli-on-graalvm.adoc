@@ -1,0 +1,133 @@
+= Picocli on GraalVM: Blazingly Fast Command Line Apps
+:source-highlighter: highlightjs
+:highlightjs-theme: darkula
+
+== GraalVM
+
+image::https://www.graalvm.org/resources/img/logo-colored.svg[]
+
+GraalVM allows you to compile your programs ahead-of-time into a native executable. The resulting program has faster startup time and lower runtime memory overhead compared to a Java VM. This is especially useful for command line utilities, which are often short-lived.
+
+GraalVM has limited support for Java reflection and it needs to know ahead of time the reflectively accessed program elements.
+
+== Reflective Access
+Picocli currently uses reflection to discover classes and methods annotated with `@Command`, and fields, methods or method parameters annotated with `@Option` and `@Parameters` and other picocli annotations. A future picocli release may include an annotation processor to do this work at compile time, but as it stands, it uses reflection.
+
+== ReflectionConfigGenerator Tool
+Picocli 3.7 includes a `picocli-codegen` module, with a tool that generates a GraalVM configuration file.
+
+`ReflectionConfigGenerator` generates a JSON String with the program elements that will be accessed reflectively in a picocli-based application, in order to compile this application ahead-of-time into a native executable with GraalVM.
+
+The output of `ReflectionConfigGenerator` is intended to be passed to the `-H:ReflectionConfigurationFiles=/path/to/reflectconfig` option of the `native-image` GraalVM utility. This allows picocli-based applications to be compiled to a native image.
+
+=== Example Usage
+We will use the `picocli.codegen.aot.graalvm.Example` class that is in the tests for the `picocli-codegen` module as an example. First, we will generate a `reflect.json` configuration file with the `ReflectionConfigGenerator` tool. Next, we will compile the `Example` class to a native application, and finally we will run this application and see what the difference is in startup time between the native application and running on Hotspot.
+
+=== Generating the Configuration File
+Run the `ReflectionConfigGenerator` tool and specify one or more fully qualified class names of the `@Command`-annotated classes. The output is printed to `System.out`, so you will want to redirect it to a file:
+
+[source,bash]
+----
+java -cp \
+picocli-3.7.0-SNAPSHOT.jar:picocli-codegen-3.7.0-SNAPSHOT-tests.jar:picocli-codegen-3.7.0-SNAPSHOT.jar \
+picocli.codegen.aot.graalvm.ReflectionConfigGenerator picocli.codegen.aot.graalvm.Example > reflect.json
+----
+
+The generated `reflect.json` files looks something like this:
+
+[source,json]
+----
+[
+  {
+    "name" : "picocli.codegen.aot.graalvm.Example",
+    "allDeclaredConstructors" : true,
+    "allPublicConstructors" : true,
+    "allDeclaredMethods" : true,
+    "allPublicMethods" : true,
+    "fields" : [
+        { "name" : "spec" },
+        { "name" : "unmatched" },
+        { "name" : "timeUnit" },
+        { "name" : "file" }
+    ],
+    "methods" : [
+        { "name" : "setMinimum", "parameterTypes" : ["int"] },
+        { "name" : "setOtherFiles", "parameterTypes" : ["[Ljava.io.File;"] },
+        { "name" : "multiply", "parameterTypes" : ["int", "int"] }
+    ]
+  },
+...
+]
+----
+
+
+TIP: If necessary, it is possible to exclude classes with system property `picocli.converters.excludes`, which accepts a comma-separated list of regular expressions of the fully qualified class names that should not be included in the resulting JSON String.
+
+=== Compiling a Native Image
+This assumes you have GraalVM installed, with prerequisites. From https://www.graalvm.org/docs/reference-manual/aot-compilation/[the site]:
+
+[quote]
+____
+To build a native image of the program use the `native-image` utility located in the `bin` directory of the GraalVM distribution. For compilation `native-image` depends on the local toolchain, so please make sure: `glibc-devel`, `zlib-devel` (header files for the C library and `zlib`) and `gcc` are available on your system.
+____
+
+I also needed the static packages `glibc-static` and  `zlib-static`, other than the devel packages.
+
+We compile the example class with the following command:
+
+[source,bash]
+----
+graalvm-ce-1.0.0-rc6/bin/native-image \
+    -cp picocli-3.7.0-SNAPSHOT.jar:picocli-codegen-3.7.0-SNAPSHOT-tests.jar \
+    -H:ReflectionConfigurationFiles=reflect.json -H:+ReportUnsupportedElementsAtRuntime \
+    --static --no-server picocli.codegen.aot.graalvm.Example
+----
+
+The `reflect.json` is in the current directory, and I added `-H:+ReportUnsupportedElementsAtRuntime` to get a useful error message in case something goes wrong.
+
+TIP: `native-image --expert-options` shows a list of other compilation options not shown in the output of `native-image --help`.
+
+=== Running the Native Image
+If compilation went well, we now have a native executable `picocli.codegen.aot.graalvm.example` in the current directory:
+
+[source,bash]
+----
+$ ls -alh picocli*
+-rwxrwxr-x 1 remko remko 15M Oct  4 21:35 picocli.codegen.aot.graalvm.example
+----
+
+The name of the executable is derived from the main class name. If the jar is an executable jar (with the Main-Class specified in the manifest), we could have run `native-image [options] -jar jarfile` to build an image for the jar file.
+
+Let's first run the application in Java, and time it to see how long it takes to start up.
+
+[source]
+----
+$ time java -cp  picocli-3.7.0-SNAPSHOT.jar:picocli-codegen-3.7.0-SNAPSHOT-tests.jar \
+    picocli.codegen.aot.graalvm.Example --version
+3.7.0-SNAPSHOT
+
+real    0m0.492s
+user    0m0.847s
+sys     0m0.070s
+----
+
+On Java Hotspot, it takes about half a second to run. Now, we run the native image:
+
+[source]
+----
+$ time ./picocli.codegen.aot.graalvm.example --version
+3.7.0-SNAPSHOT
+
+real    0m0.003s
+user    0m0.000s
+sys     0m0.004s
+----
+
+The startup time is now down to 3 milliseconds!
+
+All command line parsing functionality works as expected, with type conversion, validation and help with ANSI colors. This is exciting news when you want to write command line applications and services in Java and have them run instantaneously.
+
+== Conclusion
+GraalVM is an exciting new technology that allows Java programs to run as native code. This gives reduced memory usage and startup time, which is especially useful for short-running programs like command line utilities.
+
+The `ReflectionConfigGenerator` tool included in the `picocli-codegen` module allows picocli-based applications to be compiled to native executables with extremely fast startup times.
