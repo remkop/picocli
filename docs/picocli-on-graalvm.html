@@ -471,7 +471,7 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-shell" data-lang="shell">java -cp \
+<pre class="highlightjs highlight"><code class="language-bash" data-lang="bash">java -cp \
 picocli-3.7.0-SNAPSHOT.jar:picocli-codegen-3.7.0-SNAPSHOT-tests.jar:picocli-codegen-3.7.0-SNAPSHOT.jar \
 picocli.codegen.aot.graalvm.ReflectionConfigGenerator picocli.codegen.aot.graalvm.Example &gt; reflect.json</code></pre>
 </div>
@@ -537,7 +537,7 @@ If necessary, it is possible to exclude classes with system property <code>picoc
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-sh" data-lang="sh">graalvm-ce-1.0.0-rc6/bin/native-image \
+<pre class="highlightjs highlight"><code class="language-bash" data-lang="bash">graalvm-ce-1.0.0-rc6/bin/native-image \
     -cp picocli-3.7.0-SNAPSHOT.jar:picocli-codegen-3.7.0-SNAPSHOT-tests.jar \
     -H:ReflectionConfigurationFiles=reflect.json -H:+ReportUnsupportedElementsAtRuntime \
     --static --no-server picocli.codegen.aot.graalvm.Example</code></pre>
@@ -566,7 +566,7 @@ If necessary, it is possible to exclude classes with system property <code>picoc
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-c" data-lang="c">$ ls -alh picocli*
+<pre class="highlightjs highlight"><code class="language-bash" data-lang="bash">$ ls -alh picocli*
 -rwxrwxr-x 1 remko remko 15M Oct  4 21:35 picocli.codegen.aot.graalvm.example</code></pre>
 </div>
 </div>
@@ -623,7 +623,7 @@ sys     0m0.004s</code></pre>
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2018-10-05 01:00:17 +09:00
+Last updated 2018-10-05 01:02:04 +09:00
 </div>
 </div>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/8.9.1/styles/darkula.min.css">
