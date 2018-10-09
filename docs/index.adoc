@@ -1296,9 +1296,9 @@ public interface IVersionProvider {
 Version providers declared with the `versionProvider` attribute need to have a public no-argument constructor to be instantiated, unless a <<Custom Factory>> is installed to instantiate classes.
 
 The GitHub project has a manifest file-based
-https://github.com/remkop/picocli/blob/master/examples/src/main/java/picocli/examples/VersionProviderDemo2.java[example]
+https://github.com/remkop/picocli/blob/master/picocli-examples/src/main/java/picocli/examples/VersionProviderDemo2.java[example]
 and a build-generated version properties file-based
-https://github.com/remkop/picocli/blob/master/examples/src/main/java/picocli/examples/VersionProviderDemo1.java[example] version provider implementation.
+https://github.com/remkop/picocli/blob/master/picocli-examples/src/main/java/picocli/examples/VersionProviderDemo1.java[example] version provider implementation.
 
 == Usage Help
 === Compact Example
