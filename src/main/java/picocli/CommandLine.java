@@ -3299,19 +3299,20 @@ public class CommandLine {
                 Class<?>[] typeAttribute = ArgsReflection
                         .inferTypes(type, member.getAnnotation(Option.class).type(), member.getGenericType());
                 boolean zeroArgs = isBoolean(type) || (isMultiValue(type) && isBoolean(typeAttribute[0]));
-                return zeroArgs ? Range.valueOf("0") : Range.valueOf("1");
+                return zeroArgs ? Range.valueOf("0").unspecified(true)
+                                : Range.valueOf("1").unspecified(true);
             }
             if (isMultiValue(type)) {
-                return Range.valueOf("0..1");
+                return Range.valueOf("0..1").unspecified(true);
             }
-            return Range.valueOf("1");// for single-valued fields (incl. boolean positional parameters)
+            return Range.valueOf("1").unspecified(true);// for single-valued fields (incl. boolean positional parameters)
         }
         /** Returns the default arity {@code Range} for {@link Option options}: booleans have arity 0, other types have arity 1.
          * @param type the type whose default arity to return
          * @return a new {@code Range} indicating the default arity of the specified type
          * @deprecated use {@link #defaultArity(Field)} instead */
         @Deprecated public static Range defaultArity(Class<?> type) {
-            return isBoolean(type) ? Range.valueOf("0") : Range.valueOf("1");
+            return isBoolean(type) ? Range.valueOf("0").unspecified(true) : Range.valueOf("1").unspecified(true);
         }
         private int size() { return 1 + max - min; }
         static Range parameterCapacity(TypedMember member) {
@@ -3371,6 +3372,11 @@ public class CommandLine {
          * @param newMax the {@code max} value of the returned Range object
          * @return a new Range object with the specified {@code max} value */
         public Range max(int newMax) { return new Range(Math.min(min, newMax), newMax, isVariable, isUnspecified, originalValue); }
+
+        /** Returns a new Range object with the {@code isUnspecified} value replaced by the specified value.
+         * @param unspecified the {@code unspecified} value of the returned Range object
+         * @return a new Range object with the specified {@code unspecified} value */
+        public Range unspecified(boolean unspecified) { return new Range(min, max, isVariable, unspecified, originalValue); }
 
         /**
          * Returns {@code true} if this Range includes the specified value, {@code false} otherwise.
@@ -4487,6 +4493,7 @@ public class CommandLine {
                     } else {
                         tempArity = Range.valueOf("1");
                     }
+                    tempArity = tempArity.unspecified(true);
                 }
                 arity = tempArity;
     
@@ -5050,6 +5057,10 @@ public class CommandLine {
                     throw new InitializationException("Invalid names: " + Arrays.toString(names));
                 }
                 if (toString() == null) { toString = "option " + longestName(); }
+
+//                if (arity().max == 0 && !(isBoolean(type()) || (isMultiValue() && isBoolean(auxiliaryTypes()[0])))) {
+//                    throw new InitializationException("Option " + longestName() + " is not a boolean so should not be defined with arity=" + arity());
+//                }
             }
     
             /** Returns a new Builder initialized with the attributes from this {@code OptionSpec}. Calling {@code build} immediately will return a copy of this {@code OptionSpec}.
@@ -6751,7 +6762,7 @@ public class CommandLine {
                     required.remove(argSpec);
                     cluster = cluster.length() > 0 ? cluster.substring(1) : "";
                     paramAttachedToOption = cluster.length() > 0;
-                    LookBehind lookBehind = paramAttachedToOption ? LookBehind.ATTACHED_WITH_SEPARATOR : LookBehind.SEPARATE;
+                    LookBehind lookBehind = paramAttachedToOption ? LookBehind.ATTACHED : LookBehind.SEPARATE;
                     if (cluster.startsWith(config().separator())) {// attached with separator, like -f=FILE or -v=true
                         lookBehind = LookBehind.ATTACHED_WITH_SEPARATOR;
                         cluster = cluster.substring(config().separator().length());
@@ -6849,25 +6860,31 @@ public class CommandLine {
 
         private int applyValueToSingleValuedField(ArgSpec argSpec,
                                                   LookBehind lookBehind,
-                                                  Range arity,
+                                                  Range derivedArity,
                                                   Stack<String> args,
                                                   Set<ArgSpec> initialized,
                                                   String argDescription) throws Exception {
             boolean noMoreValues = args.isEmpty();
             String value = args.isEmpty() ? null : trim(args.pop()); // unquote the value
+            Range arity = argSpec.arity().isUnspecified ? derivedArity : argSpec.arity(); // #509
+            if (arity.max == 0 && !arity.isUnspecified && lookBehind == LookBehind.ATTACHED_WITH_SEPARATOR) { // #509
+                throw new MaxValuesExceededException(CommandLine.this, optionDescription("", argSpec, 0) +
+                        " should be specified without '" + value + "' parameter");
+            }
             int result = arity.min; // the number or args we need to consume
 
             Class<?> cls = argSpec.auxiliaryTypes()[0]; // field may be interface/abstract type, use annotation to get concrete type
-            if (arity.min <= 0) { // value is optional
+            if (arity.min <= 0) { // value may be optional
 
                 // special logic for booleans: BooleanConverter accepts only "true" or "false".
                 if (cls == Boolean.class || cls == Boolean.TYPE) {
 
                     // boolean option with arity = 0..1 or 0..*: value MAY be a param
-                    if (arity.max > 0 && ("true".equalsIgnoreCase(value) || "false".equalsIgnoreCase(value))) {
+                    if (arity.max > 0 && "true".equalsIgnoreCase(value) || "false".equalsIgnoreCase(value)) {
                         result = 1;            // if it is a varargs we only consume 1 argument if it is a boolean value
                         if (!lookBehind.isAttached()) { parseResult.nowProcessing(argSpec, value); }
-                    } else {
+                    } else if (lookBehind != LookBehind.ATTACHED_WITH_SEPARATOR) { // if attached, try converting the value to boolean (and fail if invalid value)
+                        // it's okay to ignore value if not attached to option
                         if (value != null) {
                             args.push(value); // we don't consume the value
                         }
@@ -6878,7 +6895,7 @@ public class CommandLine {
                             value = "true";
                         }
                     }
-                } else { // option with optional value #325
+                } else { // non-boolean option with optional value #325
                     if (isOption(value)) {
                         args.push(value); // we don't consume the value
                         value = "";

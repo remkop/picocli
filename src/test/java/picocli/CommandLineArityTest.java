@@ -1313,4 +1313,18 @@ public class CommandLineArityTest {
         assertEquals("destination", app.destination);
         //CommandLine.usage(new App(), System.out);
     }
+
+    @Test
+    public void testArityZeroForBooleanOption() {
+        class App {
+            @Option(names = "--explicit", arity = "0") boolean explicit;
+            @Option(names = "--implicit") boolean implicit;
+        }
+        try {
+            new CommandLine(new App()).parseArgs("--implicit=false --explicit=false".split(" "));
+            fail("--explicit option should not accept parameters");
+        } catch (ParameterException ex) {
+            assertEquals("option '--explicit' (<explicit>) should be specified without 'false' parameter", ex.getMessage());
+        }
+    }
 }
