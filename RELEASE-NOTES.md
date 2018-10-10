@@ -26,6 +26,7 @@ Picocli follows [semantic versioning](http://semver.org/).
 - [#499] add module `picocli-codegen` for tools to generate documentation, configuration, source code and other files from a picocli model
 - [#410] add `ReflectionConfigGenerator` class for GraalVM `native-image`
 - [#509] Bugfix: Long boolean options with arity 0 should not allow parameters.  Thanks to [Adam Zegelin](https://github.com/zegelin) for the bug report.
+- [#510] Documentation: Fix broken link for moved example files. Thanks to [Anthony Keenan](https://github.com/anthonykeenan) for the pull request.
 
 ## <a name="3.7.0-deprecated"></a> Deprecations
 No features were deprecated in this release.
