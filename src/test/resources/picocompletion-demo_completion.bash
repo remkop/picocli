@@ -203,7 +203,7 @@ function _picocli_picocompletion-demo_sub2_subsub2() {
   COMMANDS=""
   FLAG_OPTS=""
   ARG_OPTS="-u --timeUnit -t --timeout"
-  timeUnit_OPTION_ARGS="%2$s" # TimeUnit values
+  timeUnit_OPTION_ARGS="%2$s" # --timeUnit values
 
   compopt +o default
 

@@ -477,15 +477,10 @@ public class AutoComplete {
         String sub = functionName.equals("_picocli_" + commandName) ? "" : "sub";
         buff.append(format(HEADER, commandName, sub, functionName, commands, flagOptionNames, argOptionNames));
 
-        // Generate completion lists for options with a known set of valid values.
-        // Starting with java enums.
-        List<OptionSpec> enumOptions = filter(commandSpec.options(), new EnumArgFilter());
-        for (OptionSpec f : enumOptions) {
-            generateEnumCompetionCandidates(buff, f);
-        }
-        List<OptionSpec> optionsWithCompletionCandidates = filter(commandSpec.options(), and(new HasCompletions(), negate(new EnumArgFilter())));
+        // Generate completion lists for options with a known set of valid values (including java enums)
+        List<OptionSpec> optionsWithCompletionCandidates = filter(commandSpec.options(), new HasCompletions());
         for (OptionSpec f : optionsWithCompletionCandidates) {
-            generateNonEnumCompetionCandidates(buff, f);
+            generateCompletionCandidates(buff, f);
         }
         // TODO generate completion lists for other option types:
         // Charset, Currency, Locale, TimeZone, ByteOrder,
@@ -494,21 +489,14 @@ public class AutoComplete {
         // sql.Types?
 
         // Now generate the "case" switches for the options whose arguments we can generate completions for
-        buff.append(generateOptionsSwitch(argOptionFields, enumOptions));
+        buff.append(generateOptionsSwitch(argOptionFields, optionsWithCompletionCandidates));
 
         // Generate the footer: a default COMPREPLY to fall back to, and the function closing brace.
         buff.append(format(FOOTER));
         return buff.toString();
     }
 
-    private static void generateEnumCompetionCandidates(StringBuilder buff, OptionSpec f) {
-        buff.append(format("  %s_OPTION_ARGS=\"%s\" # %s values\n",
-                bashify(f.paramLabel()),
-                concat(" ", Arrays.asList((Enum[]) f.type().getEnumConstants()), null, new EnumNameFunction()).trim(),
-                f.type().getSimpleName()));
-    }
-
-    private static void generateNonEnumCompetionCandidates(StringBuilder buff, OptionSpec f) {
+    private static void generateCompletionCandidates(StringBuilder buff, OptionSpec f) {
         buff.append(format("  %s_OPTION_ARGS=\"%s\" # %s values\n",
                 bashify(f.paramLabel()),
                 concat(" ", extract(f.completionCandidates())).trim(),
