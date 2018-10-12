@@ -696,19 +696,17 @@ public class AutoComplete {
     }
     private static void addCandidatesForArgsFollowing(OptionSpec optionSpec, List<CharSequence> candidates) {
         if (optionSpec != null) {
-            addCompletionCandidates(optionSpec.completionCandidates(), optionSpec.type(), candidates);
+            addCompletionCandidates(optionSpec.completionCandidates(), candidates);
         }
     }
     private static void addCandidatesForArgsFollowing(PositionalParamSpec positionalSpec, List<CharSequence> candidates) {
         if (positionalSpec != null) {
-            addCompletionCandidates(positionalSpec.completionCandidates(), positionalSpec.type(), candidates);
+            addCompletionCandidates(positionalSpec.completionCandidates(), candidates);
         }
     }
-    private static void addCompletionCandidates(Iterable<String> completionCandidates, Class<?> type, List<CharSequence> candidates) {
+    private static void addCompletionCandidates(Iterable<String> completionCandidates, List<CharSequence> candidates) {
         if (completionCandidates != null) {
             for (String candidate : completionCandidates) { candidates.add(candidate); }
-        } else if (type != null && type.isEnum()) {
-            for (Object constant : type.getEnumConstants()) { candidates.add(String.valueOf(constant)); }
         }
     }
 }
