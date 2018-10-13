@@ -1,0 +1,217 @@
+= Picocli 2.0: Steroids上的Groovy脚本
+//:作者: Remko Popma
+//:邮箱: rpopma@apache.org
+//:版本号: 2.1.0-SNAPSHOT
+//:版本日期: 2017-11-04
+:prewrap!:
+:source-highlighter: coderay
+:icons: font
+:imagesdir: ../images/
+
+Picocli 2.0 增加了对其他 JVM 语言的支持，尤其是 Groovy。
+当Groovy语言拥有带 http://docs.groovy-lang.org/2.4.7/html/gapi/groovy/util/CliBuilder.html[CliBuilder]类的内置CLI支持时，有什么理由不选择 Picocli 呢？
+
+您可能喜欢Picocli的使用帮助，它默认显示ANSI http://picocli.info/#_ansi_colors_and_styles[颜色和样式]
+另一个您可能喜欢的功能是命令行
+http://picocli.info/autocomplete.html[TAB autocompletion]。 最后，还有一些小功能，
+比如说您的脚本需要零行解析代码的命令行， 
+Picocli的 http://picocli.info/#subcommands[子命令]支持，
+选项和位置参数的 http://picocli.info/#_strongly_typed_everything[类型转换]，
+以及 http://picocli.info/#tracing[解析器跟踪]，只是举几个例子。
+
+[.text-center]
+image:cli.jpg[Alt="Picocli强大的微型命令行接口",width='20%']
+
+== 案例
+
+让我们来看个例子。下面的 checksum.groovy 脚本采用一个或多个文件参数，每个文件输出一个校验和文件名。默认情况下，
+`checksum.groovy` 算法是 MD5，但是用户可能会指定一个不同的 MessageDigest 算法。用户可以通过 `-h` 或 `--help` 选项请
+求使用帮助 。 
+
+[source,groovy]
+----
+@Grab('info.picocli:picocli:2.0.3')
+@picocli.groovy.PicocliScript
+import groovy.transform.Field
+import java.security.MessageDigest
+import static picocli.CommandLine.*
+
+@Parameters(arity="1", paramLabel="FILE", description="The file(s) whose checksum to calculate.")
+@Field File[] files
+
+@Option(names = ["-a", "--algorithm"], description = [
+        "MD2, MD5, SHA-1, SHA-256, SHA-384, SHA-512,",
+        "  or any other MessageDigest algorithm."])
+@Field String algorithm = "MD5"
+
+@Option(names= ["-h", "--help"], usageHelp= true, description= "Show this help message and exit.")
+@Field boolean helpRequested
+
+files.each {
+  println MessageDigest.getInstance(algorithm).digest(it.bytes).encodeHex().toString() + "\t" + it
+}
+----
+当在 `$picocli-home/examples/src/main/groovy/picocli/examples` 目录中运行时，本示例脚本给
+出以下结果: 
+
+[source,bash]
+----
+$ groovy checksum.groovy *.*
+4995d24bbb3adf67e2120c36dd3027b7        checksum.groovy
+a03c852de017f9303fcc373c7adafac6        checksum-with-banner.groovy
+1ee567193bf41cc835ce76b6ca29ed30        checksum-without-base.groovy
+----
+
+使用 `-h` 或 `--help` 选项调用脚本，可以显示如下ANSI颜色和样式的使用帮助消息:
+
+image:GroovyChecksum.png[带ANSI颜色和样式的使用帮助]
+
+== 代码去哪儿了？
+
+您可能已经注意到，上面的脚本不包含任何用于解析命令行参数或处理使用帮助请求的逻辑。
+
+[.text-center]
+image:WhereIsMyCode.png[兄弟，我的代码去哪儿了？,width='35%']
+
+没有 `@picocli.groovy.PicocliScript` 注释，脚本代码看起来是这样的:
+
+[source,groovy]
+----
+class Checksum {
+    @Parameters(arity = "1", paramLabel = "FILE", description = "...")
+    File[] files
+
+    @Option(names = ["-a", "--algorithm"], description = ["..."])
+    String algorithm = "MD5"
+
+    @Option(names = ["-h", "--help"], usageHelp = true, description = "...")
+    boolean helpRequested
+}
+Checksum checksum = new Checksum()
+CommandLine commandLine = new CommandLine(checksum)
+try {
+    commandLine.parse(args)
+    if (commandLine.usageHelpRequested) {
+        commandLine.usage(System.out)
+    } else {
+        checksum.files.each {
+            byte[] digest = MessageDigest.getInstance(checksum.algorithm).digest(it.bytes)
+            println digest.encodeHex().toString() + "\t" + it
+        }
+    }
+} catch (ParameterException ex) {
+    println ex.message
+    commandLine.usage(System.out)
+}
+----
+
+上面的示例具有明确的代码来解析命令行、处理无效用户输入和检查使用帮助请求。
+脚本的第一版没有这种样板代码。
+
+让我们看看它的原理是什么。
+
+== 基础脚本
+
+带有 `@picocli.groovy.PicocliScript` 注释的脚本被自动转换为使用 `picocli.groovy.PicocliBaseScript`
+作为它们的基类。
+这将把Groovy脚本转换为基于Picocli的命令行应用。
+
+[.text-center]
+image:AllYourBase.png[Alt="你们所有的基地都属于我们",width='35%']
+
+当脚本运行时，Groovy调用脚本的 `run` 方法。
+`PicocliBaseScript::run` 方法负责解析命令行并使用结果填充脚本字段。运行方法执行以下操作:
+
+* 首先，用 `@Option` 或 `@Parameters` 注释的 `@Field` 变量通过命令行参数初始化。
+
+* 如果用户输入无效，则输出错误消息，后面跟着使用帮助消息。
+
+* 如果用户请求使用帮助或版本信息，将输出到控制台，脚本退出。
+
+* 否则，执行脚本主体。
+
+此行为可以自定义，有关更多详情，请参见 http://picocli.info/apidocs/picocli/groovy/PicocliBaseScript.html#run--[Picocli基础脚本文档]。
+
+除了修改脚本基类之外， `@PicocliScript` 注释还允许Groovy脚本直接使用 `@Command` 注释，而无需引入助手类。
+Picocli解析器将在含有 `@Option` 和 `@Parameters` 注释字段的类中寻找此注释。
+更改脚本基类的相同的自定义 http://picocli.info/apidocs/picocli/groovy/PicocliScriptASTTransformation.html[AST转换]还将脚本中的任何 `@Command` 注释移动到此转换后的类中，以便Picocli解析器能够提取它。
+
+== 带颜色的使用帮助
+
+`@Command` 注释允许您自定义 http://picocli.info/#_usage_help[使用帮助]消息的部分，比如命令名、描述、标题、页脚等。
+
+让我们在示例脚本中添加一些有趣的东西。
+(感谢 http://patorjk.com/software/taag/ 的ASCII艺术字生成器。)
+
+[source,groovy]
+----
+@Grab('info.picocli:picocli:2.0.3')
+@Command(header = [
+        $/@|bold,green    ___                            ___ _           _                  |@/$,
+        $/@|bold,green   / __|_ _ ___  _____ ___  _     / __| |_  ___ __| |__ ____  _ _ __  |@/$,
+        $/@|bold,green  | (_ | '_/ _ \/ _ \ V / || |   | (__| ' \/ -_) _| / /(_-< || | '  \ |@/$,
+        $/@|bold,green   \___|_| \___/\___/\_/ \_, |    \___|_||_\___\__|_\_\/__/\_,_|_|_|_||@/$,
+        $/@|bold,green                         |__/                                         |@/$
+        ],
+        description = "Print a checksum of each specified FILE.",
+        version = 'checksum v1.2.3', showDefaultValues = true,
+        footerHeading = "%nFor more details, see:%n",
+        footer = ["[1] https://docs.oracle.com/javase/9/docs/specs/security/standard-names.html",
+                "ASCII Art thanks to http://patorjk.com/software/taag/"]
+)
+@picocli.groovy.PicocliScript
+import groovy.transform.Field
+import java.security.MessageDigest
+import static picocli.CommandLine.*
+
+@Parameters(arity="1", paramLabel="FILE", description="The file(s) whose checksum to calculate.")
+@Field private File[] files
+
+@Option(names = ["-a", "--algorithm"], description = [
+        "MD2, MD5, SHA-1, SHA-256, SHA-384, SHA-512, or",
+        "  any other MessageDigest algorithm. See [1] for more details."])
+@Field private String algorithm = "MD5"
+
+@Option(names= ["-h", "--help"], usageHelp=true, description="Show this help message and exit.")
+@Field private boolean helpRequested
+
+@Option(names= ["-V", "--version"], versionHelp=true, description="Show version info and exit.")
+@Field private boolean versionInfoRequested
+
+files.each {
+  println MessageDigest.getInstance(algorithm).digest(it.bytes).encodeHex().toString() + "\t" + it
+}
+----
+
+新版本的脚本添加了页眉和页脚，还加入了输出版本信息功能。
+在使用帮助消息和版本信息中显示的所有文本都可能包含像`%n`行分隔符之类的格式说明符。
+
+使用帮助消息还可以显示ANSI颜色和风格。
+Picocli支持简单的标记语法，其中 `@|` 用于开始ANSI风格的部分， `|@` 用于结束它。
+紧接着 `@|` 的是一个用逗号分隔的颜色和风格列表，
+如 `@|STYLE1[,STYLE2]... text|@` 。
+查看Picocli http://picocli.info/#_usage_help_with_styles_and_colors[用户手册]以了解可用颜色和风格的详细信息。
+
+新脚本的使用帮助消息如下:
+
+image:GroovyChecksumWithBanner.png[自定义的页眉和页脚，带有各种风格和颜色]
+
+'@Command' 注释还有一个 `version = "checksum v1.2.3"` 属性。
+当用户在命令行上输入 `--version` 时，将输出此版本字符串，因为我们声明了一个 `@Option` ，属性为 `versionHelp = true` 。
+
+[source,bash]
+----
+$ groovy checksum-with-banner.groovy --version
+checksum v1.2.3
+----
+
+有关详细信息，请参阅用户手册的 http://picocli.info/#_version_help[版本帮助]部分。
+
+== 总结
+
+`@PicocliScript` 注释在允许Groovy脚本省略样板代码的同时，还增加了强大的通用命令行应用功能。
+在示例脚本的最终版中，大多数代码实际上是使用帮助消息的说明文本。
+
+Picocli还有很多值得探索，试试看吧!
+
+如果喜欢的话，请点击 https://github.com/remkop/picocli[GitHub项目]给我们五星，并告诉您的朋友！
