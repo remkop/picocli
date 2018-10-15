@@ -296,4 +296,4 @@ public static void main(String... args) {
 
 其中许多改进源于用户反馈和随后的讨论。请不要犹豫，在picocli https://github.com/remkop/picocli/issues[问题跟踪器]上提出问题、请求添加新功能或提供其他反馈。
 
-如果喜欢的话，请点击 https://github.com/remkop/picocli[GitHub项目]给我们五星，并告诉您的朋友！
+如果喜欢的话，请点击 https://github.com/remkop/picocli[GitHub项目]给我们星，并告诉您的朋友！

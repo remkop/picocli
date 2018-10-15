@@ -196,7 +196,7 @@ Picocli支持简单的标记语法，其中 `@|` 用于开始ANSI风格的部分
 
 image:GroovyChecksumWithBanner.png[自定义的页眉和页脚，带有各种风格和颜色]
 
-'@Command' 注释还有一个 `version = "checksum v1.2.3"` 属性。
+`@Command` 注释还有一个 `version = "checksum v1.2.3"` 属性。
 当用户在命令行上输入 `--version` 时，将输出此版本字符串，因为我们声明了一个 `@Option` ，属性为 `versionHelp = true` 。
 
 [source,bash]
@@ -214,4 +214,4 @@ checksum v1.2.3
 
 Picocli还有很多值得探索，试试看吧!
 
-如果喜欢的话，请点击 https://github.com/remkop/picocli[GitHub项目]给我们五星，并告诉您的朋友！
+如果喜欢的话，请点击 https://github.com/remkop/picocli[GitHub项目]给我们星，并告诉您的朋友！
