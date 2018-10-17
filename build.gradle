@@ -27,6 +27,12 @@ allprojects {
         jcenter()
     }
 
+    configurations.all {
+        resolutionStrategy {
+            // avoid "Could not resolve junit:junit-dep:[4.9,)" caused by stefanbirkner:system-rules when building offline
+            force "junit:junit-dep:$junitDepVersion"
+        }
+    }
     configurations {
         ivy
     }
@@ -34,7 +40,6 @@ allprojects {
         compileOnly "org.codehaus.groovy:groovy-all:$groovyVersion"
         ivy         "org.apache.ivy:ivy:$ivyVersion" // for Gradle
         testCompile "junit:junit:$junitVersion",
-                    "junit:junit-dep:$junitDepVersion", // for stefanbirkner:system-rules
                     "org.hamcrest:hamcrest-core:$hamcrestCoreVersion",
                     "org.fusesource.jansi:jansi:$jansiVersion",
                     "org.codehaus.groovy:groovy-all:$groovyVersion",
