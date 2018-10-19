@@ -2,9 +2,10 @@
 :source-highlighter: highlightjs
 :highlightjs-theme: darkula
 
+image::https://picocli.info/images/picocli-on-graalvm.png[]
+
 == GraalVM
 
-image::https://www.graalvm.org/resources/img/logo-colored.svg[]
 
 https://www.graalvm.org/[GraalVM] allows you to compile your programs ahead-of-time into a native executable. The resulting program has faster startup time and lower runtime memory overhead compared to a Java VM. This is especially useful for command line utilities, which are often short-lived.
 
@@ -18,7 +19,7 @@ https://picocli.info/#option-parameters-methods[methods] or
 https://picocli.info/#command-methods[method parameters] annotated with `@Option` and `@Parameters` and other picocli annotations. A future picocli release may include an annotation processor to do this work at compile time, but as it stands, it uses reflection.
 
 == ReflectionConfigGenerator Tool
-Picocli 3.7 includes a https://github.com/remkop/picocli/tree/master/picocli-codegen[`picocli-codegen` module], with a tool that generates a GraalVM configuration file.
+Picocli 3.7.0 includes a https://github.com/remkop/picocli/tree/master/picocli-codegen[`picocli-codegen` module], with a tool that generates a GraalVM configuration file.
 
 `ReflectionConfigGenerator` generates a JSON String with the program elements that will be accessed reflectively in a picocli-based application, in order to compile this application ahead-of-time into a native executable with GraalVM.
 
@@ -33,7 +34,7 @@ Run the `ReflectionConfigGenerator` tool and specify one or more fully qualified
 [source,bash]
 ----
 java -cp \
-picocli-3.7.0-SNAPSHOT.jar:picocli-codegen-3.7.0-SNAPSHOT-tests.jar:picocli-codegen-3.7.0-SNAPSHOT.jar \
+picocli-3.7.0.jar:picocli-codegen-3.7.0-tests.jar:picocli-codegen-3.7.0.jar \
 picocli.codegen.aot.graalvm.ReflectionConfigGenerator picocli.codegen.aot.graalvm.Example > reflect.json
 ----
 
@@ -65,7 +66,7 @@ The generated `reflect.json` files looks something like this:
 ----
 
 
-TIP: If necessary, it is possible to exclude classes with system property `picocli.converters.excludes`, which accepts a comma-separated list of regular expressions of the fully qualified class names that should not be included in the resulting JSON String.
+TIP: If necessary, it is possible to exclude classes with system property `picocli.codegen.excludes`, which accepts a comma-separated list of regular expressions of the fully qualified class names that should not be included in the resulting JSON String.
 
 === Compiling a Native Image
 This assumes you have GraalVM installed, with prerequisites. From https://www.graalvm.org/docs/reference-manual/aot-compilation/[the site]:
@@ -82,7 +83,7 @@ We compile the example class with the following command:
 [source,bash]
 ----
 graalvm-ce-1.0.0-rc6/bin/native-image \
-    -cp picocli-3.7.0-SNAPSHOT.jar:picocli-codegen-3.7.0-SNAPSHOT-tests.jar \
+    -cp picocli-3.7.0.jar:picocli-codegen-3.7.0-tests.jar \
     -H:ReflectionConfigurationFiles=reflect.json -H:+ReportUnsupportedElementsAtRuntime \
     --static --no-server picocli.codegen.aot.graalvm.Example
 ----
@@ -106,9 +107,9 @@ Let's first run the application in Java, and time it to see how long it takes to
 
 [source]
 ----
-$ time java -cp  picocli-3.7.0-SNAPSHOT.jar:picocli-codegen-3.7.0-SNAPSHOT-tests.jar \
+$ time java -cp  picocli-3.7.0.jar:picocli-codegen-3.7.0-tests.jar \
     picocli.codegen.aot.graalvm.Example --version
-3.7.0-SNAPSHOT
+3.7.0
 
 real    0m0.492s
 user    0m0.847s
@@ -120,7 +121,7 @@ On Java Hotspot, it takes about half a second to run. Now, we run the native ima
 [source]
 ----
 $ time ./picocli.codegen.aot.graalvm.example --version
-3.7.0-SNAPSHOT
+3.7.0
 
 real    0m0.003s
 user    0m0.000s

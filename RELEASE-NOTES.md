@@ -4,8 +4,14 @@
 # <a name="3.7.0"></a> Picocli 3.7.0 (UNRELEASED)
 The picocli community is pleased to announce picocli 3.7.0.
 
-This release contains bugfixes and enhancements.
+This release contains bugfixes and enhancements in the main picocli module, and adds two new modules: 
+`picocli-codegen` and `picocli-shell-jline2`.
 
+Picocli Code Generation contains tools for generating source code, documentation and configuration files 
+for picocli-based applications.
+
+Picocli Shell JLine2 contains components and documentation for building
+interactive shell command line applications with JLine 2 and picocli.
 
 Many thanks to the many members of the picocli community who contributed! 
 
@@ -19,6 +25,30 @@ Picocli follows [semantic versioning](http://semver.org/).
 * [Potential breaking changes](#3.7.0-breaking-changes)
 
 ## <a name="3.7.0-new"></a> New and Noteworthy
+
+### <a name="3.7.0-picocli-codegen"></a> New Module `picocli-codegen`
+Picocli Code Generation contains tools for generating source code, documentation and configuration files 
+for picocli-based applications.
+
+This release contains the `ReflectionConfigGenerator` class.
+`ReflectionConfigGenerator` generates a JSON String with the program elements that will be accessed reflectively in a picocli-based application, in order to compile this application ahead-of-time into a native executable with GraalVM.
+
+The output of `ReflectionConfigGenerator` is intended to be passed to the `-H:ReflectionConfigurationFiles=/path/to/reflectconfig` option of the `native-image` GraalVM utility. This allows picocli-based applications to be compiled to a native image.
+
+See [Picocli on GraalVM: Blazingly Fast Command Line Apps](https://github.com/remkop/picocli/wiki/Picocli-on-GraalVM:-Blazingly-Fast-Command-Line-Apps) for details.
+
+The module's [README](https://github.com/remkop/picocli/blob/master/picocli-codegen/README.md) explains how to configure your build to generate the configuration file automatically as part of your build.
+
+
+### <a name="3.7.0-picocli-shell-jline2"></a> New Module `picocli-shell-jline2`
+Picocli Shell JLine2 contains components and documentation for building
+interactive shell command line applications with JLine 2 and picocli.
+
+This release contains the `PicocliJLineCompleter` class.
+`PicocliJLineCompleter` is a small component that generates completion candidates to allow users to
+get command line TAB auto-completion for a picocli-based application running in a JLine 2 shell.
+
+See the module's [README](https://github.com/remkop/picocli/blob/master/picocli-shell-jline2/README.md) for more details.
 
 ## <a name="3.7.0-fixes"></a> Fixed issues
 - [#503] Build: Upgrade to gradle 4.10.2.

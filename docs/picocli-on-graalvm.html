@@ -422,14 +422,18 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <h1>Picocli on GraalVM: Blazingly Fast Command Line Apps</h1>
 </div>
 <div id="content">
-<div class="sect1">
-<h2 id="_graalvm">GraalVM</h2>
+<div id="preamble">
 <div class="sectionbody">
 <div class="imageblock">
 <div class="content">
-<img src="https://www.graalvm.org/resources/img/logo-colored.svg" alt="logo colored">
+<img src="https://picocli.info/images/picocli-on-graalvm.png" alt="picocli on graalvm">
 </div>
 </div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_graalvm">GraalVM</h2>
+<div class="sectionbody">
 <div class="paragraph">
 <p><a href="https://www.graalvm.org/">GraalVM</a> allows you to compile your programs ahead-of-time into a native executable. The resulting program has faster startup time and lower runtime memory overhead compared to a Java VM. This is especially useful for command line utilities, which are often short-lived.</p>
 </div>
@@ -454,7 +458,7 @@ annotated with <code>@Command</code>, and <a href="https://picocli.info/#_option
 <h2 id="_reflectionconfiggenerator_tool">ReflectionConfigGenerator Tool</h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>Picocli 3.7 includes a <a href="https://github.com/remkop/picocli/tree/master/picocli-codegen"><code>picocli-codegen</code> module</a>, with a tool that generates a GraalVM configuration file.</p>
+<p>Picocli 3.7.0 includes a <a href="https://github.com/remkop/picocli/tree/master/picocli-codegen"><code>picocli-codegen</code> module</a>, with a tool that generates a GraalVM configuration file.</p>
 </div>
 <div class="paragraph">
 <p><code>ReflectionConfigGenerator</code> generates a JSON String with the program elements that will be accessed reflectively in a picocli-based application, in order to compile this application ahead-of-time into a native executable with GraalVM.</p>
@@ -476,7 +480,7 @@ annotated with <code>@Command</code>, and <a href="https://picocli.info/#_option
 <div class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight"><code class="language-bash" data-lang="bash">java -cp \
-picocli-3.7.0-SNAPSHOT.jar:picocli-codegen-3.7.0-SNAPSHOT-tests.jar:picocli-codegen-3.7.0-SNAPSHOT.jar \
+picocli-3.7.0.jar:picocli-codegen-3.7.0-tests.jar:picocli-codegen-3.7.0.jar \
 picocli.codegen.aot.graalvm.ReflectionConfigGenerator picocli.codegen.aot.graalvm.Example &gt; reflect.json</code></pre>
 </div>
 </div>
@@ -515,7 +519,7 @@ picocli.codegen.aot.graalvm.ReflectionConfigGenerator picocli.codegen.aot.graalv
 <div class="title">Tip</div>
 </td>
 <td class="content">
-If necessary, it is possible to exclude classes with system property <code>picocli.converters.excludes</code>, which accepts a comma-separated list of regular expressions of the fully qualified class names that should not be included in the resulting JSON String.
+If necessary, it is possible to exclude classes with system property <code>picocli.codegen.excludes</code>, which accepts a comma-separated list of regular expressions of the fully qualified class names that should not be included in the resulting JSON String.
 </td>
 </tr>
 </table>
@@ -542,7 +546,7 @@ If necessary, it is possible to exclude classes with system property <code>picoc
 <div class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight"><code class="language-bash" data-lang="bash">graalvm-ce-1.0.0-rc6/bin/native-image \
-    -cp picocli-3.7.0-SNAPSHOT.jar:picocli-codegen-3.7.0-SNAPSHOT-tests.jar \
+    -cp picocli-3.7.0.jar:picocli-codegen-3.7.0-tests.jar \
     -H:ReflectionConfigurationFiles=reflect.json -H:+ReportUnsupportedElementsAtRuntime \
     --static --no-server picocli.codegen.aot.graalvm.Example</code></pre>
 </div>
@@ -582,9 +586,9 @@ If necessary, it is possible to exclude classes with system property <code>picoc
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code>$ time java -cp  picocli-3.7.0-SNAPSHOT.jar:picocli-codegen-3.7.0-SNAPSHOT-tests.jar \
+<pre class="highlightjs highlight"><code>$ time java -cp  picocli-3.7.0.jar:picocli-codegen-3.7.0-tests.jar \
     picocli.codegen.aot.graalvm.Example --version
-3.7.0-SNAPSHOT
+3.7.0
 
 real    0m0.492s
 user    0m0.847s
@@ -597,7 +601,7 @@ sys     0m0.070s</code></pre>
 <div class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight"><code>$ time ./picocli.codegen.aot.graalvm.example --version
-3.7.0-SNAPSHOT
+3.7.0
 
 real    0m0.003s
 user    0m0.000s
@@ -630,7 +634,7 @@ sys     0m0.004s</code></pre>
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2018-10-05 07:46:13 +09:00
+Last updated 2018-10-19 21:57:06 +09:00
 </div>
 </div>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/8.9.1/styles/darkula.min.css">

@@ -9,8 +9,12 @@ import picocli.CommandLine.Model.ISetter;
 import picocli.CommandLine.Model.OptionSpec;
 import picocli.CommandLine.Model.PositionalParamSpec;
 import picocli.CommandLine.Model.UnmatchedArgsBinding;
+import picocli.CommandLine.Option;
 import picocli.CommandLine.Parameters;
 
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
@@ -35,14 +39,21 @@ import java.util.concurrent.Callable;
  * option of the {@code native-image} <a href="https://www.graalvm.org/docs/reference-manual/aot-compilation/">GraalVM utility</a>.
  * This allows picocli-based applications to be compiled to a native image.
  * </p><p>
- * If necessary, it is possible to exclude classes with system property {@code picocli.converters.excludes},
+ * If necessary, it is possible to exclude classes with system property {@code picocli.codegen.excludes},
  * which accepts a comma-separated list of regular expressions of the fully qualified class names that should
  * <em>not</em> be included in the resulting JSON String.
  * </p>
  *
- * @since 3.7
+ * @since 3.7.0
  */
 public class ReflectionConfigGenerator {
+
+    private static final String SYSPROP_CODEGEN_EXCLUDES = "picocli.codegen.excludes";
+    private static final String REFLECTED_FIELD_BINDING_CLASS = "picocli.CommandLine$Model$FieldBinding";
+    private static final String REFLECTED_METHOD_BINDING_CLASS = "picocli.CommandLine$Model$MethodBinding";
+    private static final String REFLECTED_FIELD_BINDING_FIELD = "field";
+    private static final String REFLECTED_METHOD_BINDING_METHOD = "method";
+    private static final String REFLECTED_BINDING_FIELD_SCOPE = "scope";
 
     @Command(name = "ReflectionConfigGenerator",
             description = {"Generates a JSON file with the program elements that will be " +
@@ -50,31 +61,51 @@ public class ReflectionConfigGenerator {
                     "The generated JSON file can be passed to the -H:ReflectionConfigurationFiles=/path/to/reflectconfig " +
                     "option of the `native-image` GraalVM utility.",
                     "See https://github.com/oracle/graal/blob/master/substratevm/REFLECTION.md"},
-            mixinStandardHelpOptions = true, version = "picocli-codegen 3.7.0")
-    private static class App implements Callable<String> {
+            mixinStandardHelpOptions = true, version = "picocli-codegen ReflectionConfigGenerator 3.7.0")
+    private static class App implements Callable<Void> {
 
         @Parameters(arity = "1..*", description = "One or more classes to generate a GraalVM ReflectionConfiguration for.")
         Class<?>[] classes = new Class<?>[0];
 
-        //@Override
-        public String call() throws NoSuchFieldException, IllegalAccessException {
+        @Option(names = {"-o", "--output"}, description = "Output file to write the configuration to. " +
+                "If not specified, the configuration is written to the standard output stream.")
+        File outputFile;
+
+        public Void call() throws NoSuchFieldException, IllegalAccessException, IOException {
             List<CommandSpec> specs = new ArrayList<CommandSpec>();
             for (Class<?> cls : classes) {
                 specs.add(new CommandLine(cls).getCommandSpec());
             }
-            return new ReflectionConfigGenerator().generateReflectionConfig(specs.toArray(new CommandSpec[0]));
+            String result = new ReflectionConfigGenerator().generateReflectionConfig(specs.toArray(new CommandSpec[0]));
+            if (result != null) {
+                if (outputFile == null) {
+                    System.out.print(result);
+                } else {
+                    writeToFile(result);
+                }
+            }
+            return null;
+        }
+
+        private void writeToFile(String result) throws IOException {
+            FileWriter writer = null;
+            try {
+                writer = new FileWriter(outputFile);
+                writer.write(result);
+            } finally {
+                if (writer != null) {
+                    writer.close();
+                }
+            }
         }
     }
 
     /**
-     * Runs this class as a standalone application, printing the resulting JSON String to {@code System.out}.
+     * Runs this class as a standalone application, printing the resulting JSON String to a file or to {@code System.out}.
      * @param args one or more fully qualified class names of {@code @Command}-annotated classes.
      */
     public static void main(String... args) {
-        String result = CommandLine.call(new App(), args);
-        if (result != null) {
-            System.out.println(result);
-        }
+        CommandLine.call(new App(), args);
     }
 
     /**
@@ -224,10 +255,10 @@ public class ReflectionConfigGenerator {
             if (getter == null) {
                 return;
             }
-            if ("picocli.CommandLine$Model$FieldBinding".equals(getter.getClass().getName())) {
+            if (REFLECTED_FIELD_BINDING_CLASS.equals(getter.getClass().getName())) {
                 visitFieldBinding(getter);
             }
-            if ("picocli.CommandLine$Model$MethodBinding".equals(getter.getClass().getName())) {
+            if (REFLECTED_METHOD_BINDING_CLASS.equals(getter.getClass().getName())) {
                 visitMethodBinding(getter);
             }
         }
@@ -236,26 +267,26 @@ public class ReflectionConfigGenerator {
             if (setter == null) {
                 return;
             }
-            if ("picocli.CommandLine$Model$FieldBinding".equals(setter.getClass().getName())) {
+            if (REFLECTED_FIELD_BINDING_CLASS.equals(setter.getClass().getName())) {
                 visitFieldBinding(setter);
             }
-            if ("picocli.CommandLine$Model$MethodBinding".equals(setter.getClass().getName())) {
+            if (REFLECTED_METHOD_BINDING_CLASS.equals(setter.getClass().getName())) {
                 visitMethodBinding(setter);
             }
         }
 
         private void visitFieldBinding(Object fieldBinding) throws IllegalAccessException, NoSuchFieldException {
-            Field field = (Field) accessibleField(fieldBinding.getClass(), "field").get(fieldBinding);
-            Object scope = accessibleField(fieldBinding.getClass(),"scope").get(fieldBinding);
+            Field field = (Field) accessibleField(fieldBinding.getClass(), REFLECTED_FIELD_BINDING_FIELD).get(fieldBinding);
+            Object scope = accessibleField(fieldBinding.getClass(), REFLECTED_BINDING_FIELD_SCOPE).get(fieldBinding);
             getOrCreateClass(scope.getClass()).addField(field.getName());
         }
 
         private void visitMethodBinding(Object methodBinding) throws IllegalAccessException, NoSuchFieldException {
-            Method method = (Method) accessibleField(methodBinding.getClass(), "method").get(methodBinding);
+            Method method = (Method) accessibleField(methodBinding.getClass(), REFLECTED_METHOD_BINDING_METHOD).get(methodBinding);
             ReflectedClass cls = getOrCreateClass(method.getDeclaringClass());
             cls.addMethod(method.getName(), method.getParameterTypes());
 
-            Object scope = accessibleField(methodBinding.getClass(),"scope").get(methodBinding);
+            Object scope = accessibleField(methodBinding.getClass(), REFLECTED_BINDING_FIELD_SCOPE).get(methodBinding);
             ReflectedClass scopeClass = getOrCreateClass(scope.getClass());
             if (!scope.getClass().equals(method.getDeclaringClass())) {
                 scopeClass.addMethod(method.getName(), method.getParameterTypes());
@@ -286,10 +317,10 @@ public class ReflectionConfigGenerator {
         }
 
         static boolean excluded(String fqcn) {
-            String[] excludes = System.getProperty("picocli.converters.excludes", "").split(",");
+            String[] excludes = System.getProperty(SYSPROP_CODEGEN_EXCLUDES, "").split(",");
             for (String regex : excludes) {
                 if (fqcn.matches(regex)) {
-                    System.err.printf("Class %s is excluded: (picocli.converters.excludes=%s)%n", fqcn, System.getProperty("picocli.converters.excludes"));
+                    System.err.printf("Class %s is excluded: (%s=%s)%n", fqcn, SYSPROP_CODEGEN_EXCLUDES, System.getProperty(SYSPROP_CODEGEN_EXCLUDES));
                     return true;
                 }
             }
