@@ -42,7 +42,6 @@ public class ParentCommandDemo {
         @Option(names = {"-r", "--recursive"}, description = "Recursively list subdirectories")
         private boolean recursive;
 
-        @Override
         public void run() {
             list(new File(parent.baseDirectory, "."));
         }
