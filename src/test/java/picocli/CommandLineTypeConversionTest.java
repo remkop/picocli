@@ -669,10 +669,10 @@ public class CommandLineTypeConversionTest {
             assertEquals(suffix, ex.getMessage().substring(ex.getMessage().length() - suffix.length(), ex.getMessage().length()));
         }
     }
-    @Ignore("Requires #14 case-insensitive enum parsing")
     @Test
-    public void testEnumTypeConversionIsCaseInsensitive() {
-        EnumParams params = CommandLine.populateCommand(new EnumParams(),
+    public void testEnumTypeConversionIsCaseInsensitiveIfConfigured() {
+        EnumParams params = new EnumParams();
+        new CommandLine(params).setCaseInsensitiveEnumValuesAllowed(true).parse(
                 "-timeUnit sEcONds -timeUnitArray milliSeconds miCroSeConds -timeUnitList SEConds MiCROsEconds nanoSEConds".split(" "));
         assertEquals(SECONDS, params.timeUnit);
         assertArrayEquals(new TimeUnit[]{MILLISECONDS, TimeUnit.MICROSECONDS}, params.timeUnitArray);
