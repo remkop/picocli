@@ -1123,7 +1123,6 @@ public class CommandLineArityTest {
         assertEquals(Arrays.asList("xx", "--alpha", "--beta"), cmd.params);
     }
 
-//    @Ignore
     @Test
     public void testPosixAttachedOnly1() {
         class ValSepC {
@@ -1213,7 +1212,6 @@ public class CommandLineArityTest {
         assertArrayEquals(new String[]{"-d"}, app.remaining);
     }
 
-    @Ignore
     @Test
     public void testPosixAttachedOnly3() {
         class ValSepC {
@@ -1225,8 +1223,9 @@ public class CommandLineArityTest {
 
         try {
             parseCommonsCliCompatible(new ValSepC(), "-a 1 -a 2".split(" "));
-            fail();
+            fail("Expected exception: Arity not satisfied");
         } catch (Exception ok) {
+            assertEquals("Expected parameter 2 (of 2 mandatory parameters) for option '-a' but found '-a'", ok.getMessage());
         }
     }
 
@@ -1265,7 +1264,6 @@ public class CommandLineArityTest {
         assertArrayEquals(new String[]{"2"}, val1.remaining);
     }
 
-    //@Ignore
     @Test
     public void testCommonsCliCompatibleSeparatorHandling() {
         class ValSepC {
