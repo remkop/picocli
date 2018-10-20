@@ -253,8 +253,8 @@ public class CommandLineArityTest {
             @Option(names = "-v") boolean verbose;
             @Option(names = "-f") File file;
         }
-        ArrayOptionArity2_nAndParameters
-                params = CommandLine.populateCommand(new ArrayOptionArity2_nAndParameters(), "-s 1.1 2.2 3.3 4.4 \"-v\" \"-f\" \"FILE\" 5.5".split(" "));
+        ArrayOptionArity2_nAndParameters params = new ArrayOptionArity2_nAndParameters();
+        new CommandLine(params).setTrimQuotes(true).parseArgs("-s 1.1 2.2 3.3 4.4 \"-v\" \"-f\" \"FILE\" 5.5".split(" "));
         assertArrayEquals(Arrays.toString(params.stringOptions),
                 new String[] {"1.1", "2.2", "3.3", "4.4", "-v", "-f", "FILE", "5.5"}, params.stringOptions);
         assertFalse("verbose", params.verbose);
@@ -270,8 +270,8 @@ public class CommandLineArityTest {
             @Option(names = "-v") boolean verbose;
             @Option(names = "-f") File file;
         }
-        ArrayOptionArity2_nAndParameters
-                params = CommandLine.populateCommand(new ArrayOptionArity2_nAndParameters(), "-s 1.1 2.2 3.3 4.4 \"-vfFILE\" 5.5".split(" "));
+        ArrayOptionArity2_nAndParameters params = new ArrayOptionArity2_nAndParameters();
+        new CommandLine(params).setTrimQuotes(true).parseArgs("-s 1.1 2.2 3.3 4.4 \"-vfFILE\" 5.5".split(" "));
         assertArrayEquals(Arrays.toString(params.stringOptions),
                 new String[] {"1.1", "2.2", "3.3", "4.4", "-vfFILE", "5.5"}, params.stringOptions);
         assertFalse("verbose", params.verbose);

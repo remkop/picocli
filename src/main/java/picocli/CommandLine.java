@@ -426,6 +426,30 @@ public class CommandLine {
         return this;
     }
 
+     /** Returns whether the parser should trim quotes from command line arguments before processing them. The default is {@code false}.
+     * @return {@code true} if enum values can be specified that don't match the {@code toString()} value of the enum constant, {@code false} otherwise;
+     * e.g., for an option of type <a href="https://docs.oracle.com/javase/8/docs/api/java/time/DayOfWeek.html">java.time.DayOfWeek</a>,
+     * values {@code MonDaY}, {@code monday} and {@code MONDAY} are all recognized if {@code true}.
+     * @since 3.7 */
+    public boolean isTrimQuotes() { return getCommandSpec().parser().trimQuotes(); }
+
+    /** Sets whether the parser should trim quotes from command line arguments before processing them. The default is {@code false}.
+     * <p>The specified setting will be registered with this {@code CommandLine} and the full hierarchy of its
+     * subcommands and nested sub-subcommands <em>at the moment this method is called</em>. Subcommands added
+     * later will have the default setting. To ensure a setting is applied to all
+     * subcommands, call the setter last, after adding subcommands.</p>
+     * @param newValue the new setting
+     * @return this {@code CommandLine} object, to allow method chaining
+     * @since 3.7
+     */
+    public CommandLine setTrimQuotes(boolean newValue) {
+        getCommandSpec().parser().trimQuotes(newValue);
+        for (CommandLine command : getCommandSpec().subcommands().values()) {
+            command.setTrimQuotes(newValue);
+        }
+        return this;
+    }
+
     /** Returns the end-of-options delimiter that signals that the remaining command line arguments should be treated as positional parameters.
      * @return the end-of-options delimiter. The default is {@code "--"}.
      * @since 3.5 */
@@ -4323,6 +4347,7 @@ public class CommandLine {
             private boolean aritySatisfiedByAttachedOptionParam = false;
             private boolean collectErrors = false;
             private boolean caseInsensitiveEnumValuesAllowed = false;
+            private boolean trimQuotes = false;
 
             /** Returns the String to use as the separator between options and option parameters. {@code "="} by default,
              * initialized from {@link Command#separator()} if defined.*/
@@ -4351,6 +4376,9 @@ public class CommandLine {
             /** @see CommandLine#isCaseInsensitiveEnumValuesAllowed()
              * @since 3.4 */
             public boolean caseInsensitiveEnumValuesAllowed()  { return caseInsensitiveEnumValuesAllowed; }
+            /** @see CommandLine#isTrimQuotes()
+             * @since 3.7 */
+            public boolean trimQuotes()  { return trimQuotes; }
             /** @see CommandLine#isUnmatchedOptionsArePositionalParams() */
             public boolean unmatchedOptionsArePositionalParams() { return unmatchedOptionsArePositionalParams; }
             private boolean splitFirst()                       { return limitSplit(); }
@@ -4390,6 +4418,9 @@ public class CommandLine {
             /** @see CommandLine#setCaseInsensitiveEnumValuesAllowed(boolean)
              * @since 3.4 */
             public ParserSpec caseInsensitiveEnumValuesAllowed(boolean caseInsensitiveEnumValuesAllowed) { this.caseInsensitiveEnumValuesAllowed = caseInsensitiveEnumValuesAllowed; return this; }
+            /** @see CommandLine#setTrimQuotes(boolean)
+             * @since 3.7 */
+            public ParserSpec trimQuotes(boolean trimQuotes) { this.trimQuotes = trimQuotes; return this; }
             /** @see CommandLine#setUnmatchedOptionsArePositionalParams(boolean) */
             public ParserSpec unmatchedOptionsArePositionalParams(boolean unmatchedOptionsArePositionalParams) { this.unmatchedOptionsArePositionalParams = unmatchedOptionsArePositionalParams; return this; }
             /** Sets whether exceptions during parsing should be collected instead of thrown.
@@ -7383,6 +7414,7 @@ public class CommandLine {
         }
 
         private String unquote(String value) {
+            if (!commandSpec.parser().trimQuotes()) { return value; }
             return value == null
                     ? null
                     : (value.length() > 1 && value.startsWith("\"") && value.endsWith("\""))

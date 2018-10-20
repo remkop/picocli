@@ -56,6 +56,7 @@ See the module's [README](https://github.com/remkop/picocli/blob/master/picocli-
 - [#499] add module `picocli-codegen` for tools to generate documentation, configuration, source code and other files from a picocli model
 - [#410] add `ReflectionConfigGenerator` class for GraalVM `native-image`
 - [#513] Enhancement: Simplify AutoCompletion script generator code.
+- [#514] Bugfix/Enhancement: picocli no longer removes opening and closing quotes around arguments by default. This is configurable with `CommandLine::setTrimQuotes`. Thanks to [mshatalov](https://github.com/mshatalov) for the bug report.
 - [#509] Bugfix: Long boolean options with arity 0 should not allow parameters.  Thanks to [Adam Zegelin](https://github.com/zegelin) for the bug report.
 - [#510] Documentation: Fix broken link for moved example files. Thanks to [Anthony Keenan](https://github.com/anthonykeenan) for the pull request.
 -  [#24] Documentation: Added Chinese translations of "Picocli 2.0 Do More With Less" and "Picocli 2.0 Groovy Scripts on Steroids".
@@ -64,7 +65,9 @@ See the module's [README](https://github.com/remkop/picocli/blob/master/picocli-
 No features were deprecated in this release.
 
 ## <a name="3.7.0-breaking-changes"></a> Potential breaking changes
-This release has no breaking changes.
+
+From this release, picocli no longer removes opening and closing quotes around arguments by default.
+This is configurable with `CommandLine::setTrimQuotes`.
 
 
 # <a name="3.6.1"></a> Picocli 3.6.1

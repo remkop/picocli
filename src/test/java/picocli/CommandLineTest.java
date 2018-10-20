@@ -17,6 +17,7 @@ package picocli;
 
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.contrib.java.lang.system.ProvideSystemProperty;
@@ -817,6 +818,52 @@ public class CommandLineTest {
     }
 
     @Test
+    public void testParserTrimQuotes_BeforeSubcommandsAdded() {
+        @Command class TopLevel {}
+        CommandLine commandLine = new CommandLine(new TopLevel());
+        assertEquals(false, commandLine.isTrimQuotes());
+        commandLine.setTrimQuotes(true);
+        assertEquals(true, commandLine.isTrimQuotes());
+
+        int childCount = 0;
+        int grandChildCount = 0;
+        commandLine.addSubcommand("main", createNestedCommand());
+        for (CommandLine sub : commandLine.getSubcommands().values()) {
+            childCount++;
+            assertEquals("subcommand added afterwards is not impacted", false, sub.isTrimQuotes());
+            for (CommandLine subsub : sub.getSubcommands().values()) {
+                grandChildCount++;
+                assertEquals("subcommand added afterwards is not impacted", false, subsub.isTrimQuotes());
+            }
+        }
+        assertTrue(childCount > 0);
+        assertTrue(grandChildCount > 0);
+    }
+
+    @Test
+    public void testParserTrimQuotes_AfterSubcommandsAdded() {
+        @Command class TopLevel {}
+        CommandLine commandLine = new CommandLine(new TopLevel());
+        commandLine.addSubcommand("main", createNestedCommand());
+        assertEquals(false, commandLine.isTrimQuotes());
+        commandLine.setTrimQuotes(true);
+        assertEquals(true, commandLine.isTrimQuotes());
+
+        int childCount = 0;
+        int grandChildCount = 0;
+        for (CommandLine sub : commandLine.getSubcommands().values()) {
+            childCount++;
+            assertEquals("subcommand added before IS impacted", true, sub.isTrimQuotes());
+            for (CommandLine subsub : sub.getSubcommands().values()) {
+                grandChildCount++;
+                assertEquals("subsubcommand added before IS impacted", true, sub.isTrimQuotes());
+            }
+        }
+        assertTrue(childCount > 0);
+        assertTrue(grandChildCount > 0);
+    }
+
+    @Test
     public void testParserUnmatchedOptionsArePositionalParams_BeforeSubcommandsAdded() {
         @Command class TopLevel {}
         CommandLine commandLine = new CommandLine(new TopLevel());
@@ -924,22 +971,22 @@ public class CommandLineTest {
         }
     }
     @Test
-    public void testShortOptionsWithSeparatorButNoValueAssignsQuotedEmptyStringEvenIfNotLast() {
+    public void testShortOptionsWithSeparatorAndQuotedEmptyStringValueNotLast() {
         CompactFields compact = CommandLine.populateCommand(new CompactFields(), "-ro=\"\" -v".split(" "));
-        verifyCompact(compact, true, true, "", null);
+        verifyCompact(compact, true, true, "\"\"", null);
     }
     @Test
-    public void testShortOptionsWithColonSeparatorButNoValueAssignsQuotedEmptyStringEvenIfNotLast() {
+    public void testShortOptionsWithColonSeparatorAndQuotedEmptyStringValueNotLast() {
         CompactFields compact = new CompactFields();
         CommandLine cmd = new CommandLine(compact);
         cmd.setSeparator(":");
         cmd.parse("-ro:\"\" -v".split(" "));
-        verifyCompact(compact, true, true, "", null);
+        verifyCompact(compact, true, true, "\"\"", null);
     }
     @Test
-    public void testShortOptionsWithSeparatorButNoValueAssignsEmptyQuotedStringIfLast() {
+    public void testShortOptionsWithSeparatorQuotedEmptyStringValueIfLast() {
         CompactFields compact = CommandLine.populateCommand(new CompactFields(), "-rvo=\"\"".split(" "));
-        verifyCompact(compact, true, true, "", null);
+        verifyCompact(compact, true, true, "\"\"", null);
     }
     @Test
     public void testParserPosixClustedShortOptions_false_resultsInShortClusteredOptionsNotRecognized() {
@@ -1372,32 +1419,46 @@ public class CommandLineTest {
     }
 
     @Test
-    public void testOptionParameterQuotesRemovedFromValue() {
+    public void testOptionParameterQuotesNotRemovedFromValue() {
         class TextOption {
             @Option(names = "-t") String text;
         }
         TextOption opt = CommandLine.populateCommand(new TextOption(), "-t", "\"a text\"");
-        assertEquals("a text", opt.text);
+        assertEquals("\"a text\"", opt.text);
     }
 
     @Test
-    public void testLongOptionAttachedQuotedParameterQuotesRemovedFromValue() {
+    public void testLongOptionAttachedQuotedParameterQuotesNotRemovedFromValue() {
         class TextOption {
             @Option(names = "--text") String text;
         }
         TextOption opt = CommandLine.populateCommand(new TextOption(), "--text=\"a text\"");
-        assertEquals("a text", opt.text);
+        assertEquals("\"a text\"", opt.text);
     }
 
     @Test
-    public void testShortOptionAttachedQuotedParameterQuotesRemovedFromValue() {
+    public void testShortOptionAttachedQuotedParameterQuotesNotRemovedFromValue() {
         class TextOption {
             @Option(names = "-t") String text;
         }
         TextOption opt = CommandLine.populateCommand(new TextOption(), "-t\"a text\"");
-        assertEquals("a text", opt.text);
+        assertEquals("\"a text\"", opt.text);
 
         opt = CommandLine.populateCommand(new TextOption(), "-t=\"a text\"");
+        assertEquals("\"a text\"", opt.text);
+    }
+
+    @Test
+    public void testShortOptionAttachedQuotedParameterQuotesTrimmedIfRequested() {
+        class TextOption {
+            @Option(names = "-t") String text;
+        }
+        TextOption opt = new TextOption();
+        new CommandLine(opt).setTrimQuotes(true).parseArgs("-t\"a text\"");
+        assertEquals("a text", opt.text);
+
+        opt = new TextOption();
+        new CommandLine(opt).setTrimQuotes(true).parseArgs("-t=\"a text\"");
         assertEquals("a text", opt.text);
     }
 
@@ -1407,32 +1468,35 @@ public class CommandLineTest {
             @Option(names = "-t") int[] number;
             @Option(names = "-v", arity = "1") boolean verbose;
         }
-        TextOption opt = CommandLine.populateCommand(new TextOption(), "-t", "\"123\"", "-v", "\"true\"");
+        TextOption opt = new TextOption();
+        new CommandLine(opt).setTrimQuotes(true).parseArgs("-t", "\"123\"", "-v", "\"true\"");
         assertEquals(123, opt.number[0]);
         assertTrue(opt.verbose);
 
-        opt = CommandLine.populateCommand(new TextOption(), "-t\"123\"", "-v\"true\"");
+        opt = new TextOption();
+        new CommandLine(opt).setTrimQuotes(true).parseArgs("-t\"123\"", "-v\"true\"");
         assertEquals(123, opt.number[0]);
         assertTrue(opt.verbose);
 
-        opt = CommandLine.populateCommand(new TextOption(), "-t=\"345\"", "-v=\"true\"");
+        opt = new TextOption();
+        new CommandLine(opt).setTrimQuotes(true).parseArgs("-t=\"345\"", "-v=\"true\"");
         assertEquals(345, opt.number[0]);
         assertTrue(opt.verbose);
     }
 
     @Test
-    public void testOptionMultiParameterQuotesRemovedFromValue() {
+    public void testOptionMultiParameterQuotesNotRemovedFromValue() {
         class TextOption {
             @Option(names = "-t") String[] text;
         }
         TextOption opt = CommandLine.populateCommand(new TextOption(), "-t", "\"a text\"", "-t", "\"another text\"", "-t", "\"x z\"");
-        assertArrayEquals(new String[]{"a text", "another text", "x z"}, opt.text);
+        assertArrayEquals(new String[]{"\"a text\"", "\"another text\"", "\"x z\""}, opt.text);
 
         opt = CommandLine.populateCommand(new TextOption(), "-t\"a text\"", "-t\"another text\"", "-t\"x z\"");
-        assertArrayEquals(new String[]{"a text", "another text", "x z"}, opt.text);
+        assertArrayEquals(new String[]{"\"a text\"", "\"another text\"", "\"x z\""}, opt.text);
 
         opt = CommandLine.populateCommand(new TextOption(), "-t=\"a text\"", "-t=\"another text\"", "-t=\"x z\"");
-        assertArrayEquals(new String[]{"a text", "another text", "x z"}, opt.text);
+        assertArrayEquals(new String[]{"\"a text\"", "\"another text\"", "\"x z\""}, opt.text);
 
         try {
             opt = CommandLine.populateCommand(new TextOption(), "-t=\"a text\"", "-t=\"another text\"", "\"x z\"");
@@ -1443,20 +1507,58 @@ public class CommandLineTest {
     }
 
     @Test
-    public void testPositionalParameterQuotesRemovedFromValue() {
+    public void testOptionMultiParameterQuotesTrimmedIfRequested() {
+        class TextOption {
+            @Option(names = "-t") String[] text;
+        }
+        TextOption opt = new TextOption();
+        new CommandLine(opt).setTrimQuotes(true).parseArgs("-t", "\"a text\"", "-t", "\"another text\"", "-t", "\"x z\"");
+        assertArrayEquals(new String[]{"a text", "another text", "x z"}, opt.text);
+
+        opt = new TextOption();
+        new CommandLine(opt).setTrimQuotes(true).parseArgs("-t\"a text\"", "-t\"another text\"", "-t\"x z\"");
+        assertArrayEquals(new String[]{"a text", "another text", "x z"}, opt.text);
+
+        opt = new TextOption();
+        new CommandLine(opt).setTrimQuotes(true).parseArgs("-t=\"a text\"", "-t=\"another text\"", "-t=\"x z\"");
+        assertArrayEquals(new String[]{"a text", "another text", "x z"}, opt.text);
+    }
+
+    @Test
+    public void testPositionalParameterQuotesNotRemovedFromValue() {
         class TextParams {
             @Parameters() String[] text;
         }
         TextParams opt = CommandLine.populateCommand(new TextParams(), "\"a text\"");
+        assertEquals("\"a text\"", opt.text[0]);
+    }
+
+    @Test
+    public void testPositionalParameterQuotesTrimmedIfRequested() {
+        class TextParams {
+            @Parameters() String[] text;
+        }
+        TextParams opt = new TextParams();
+        new CommandLine(opt).setTrimQuotes(true).parseArgs("\"a text\"");
         assertEquals("a text", opt.text[0]);
     }
 
     @Test
-    public void testPositionalMultiParameterQuotesRemovedFromValue() {
+    public void testPositionalMultiParameterQuotesNotRemovedFromValue() {
         class TextParams {
             @Parameters() String[] text;
         }
         TextParams opt = CommandLine.populateCommand(new TextParams(), "\"a text\"", "\"another text\"", "\"x z\"");
+        assertArrayEquals(new String[]{"\"a text\"", "\"another text\"", "\"x z\""}, opt.text);
+    }
+
+    @Test
+    public void testPositionalMultiParameterQuotesTrimmedIfRequested() {
+        class TextParams {
+            @Parameters() String[] text;
+        }
+        TextParams opt = new TextParams();
+        new CommandLine(opt).setTrimQuotes(true).parseArgs("\"a text\"", "\"another text\"", "\"x z\"");
         assertArrayEquals(new String[]{"a text", "another text", "x z"}, opt.text);
     }
 
@@ -1465,7 +1567,8 @@ public class CommandLineTest {
         class TextParams {
             @Parameters() int[] numbers;
         }
-        TextParams opt = CommandLine.populateCommand(new TextParams(), "\"123\"", "\"456\"", "\"999\"");
+        TextParams opt = new TextParams();
+        new CommandLine(opt).setTrimQuotes(true).parseArgs("\"123\"", "\"456\"", "\"999\"");
         assertArrayEquals(new int[]{123, 456, 999}, opt.numbers);
     }
 
@@ -1479,7 +1582,7 @@ public class CommandLineTest {
         }
         ChildOption opt = CommandLine.populateCommand(new ChildOption(), "-p", "somePath", "-t", "\"a text\"");
         assertEquals("somePath", opt.path);
-        assertEquals("a text", opt.text);
+        assertEquals("\"a text\"", opt.text);
     }
 
     @Test
@@ -1806,6 +1909,7 @@ public class CommandLineTest {
         }
     }
 
+    @Ignore("Until #379 is fixed: quoted strings should not be split")
     @Test
     public void testSplitInOptionArrayWithSpaces() {
         class Args {
@@ -2019,7 +2123,7 @@ public class CommandLineTest {
         String expected = String.format("" +
                         "[picocli INFO] Parsing 8 command line args [--git-dir=/home/rpopma/picocli, commit, -m, \"Fixed typos\", --, src1.java, src2.java, src3.java]%n" +
                         "[picocli INFO] Setting field java.io.File picocli.Demo$Git.gitDir to '%s' (was 'null') for option --git-dir%n" +
-                        "[picocli INFO] Adding [Fixed typos] to field java.util.List<String> picocli.Demo$GitCommit.message for option -m%n" +
+                        "[picocli INFO] Adding [\"Fixed typos\"] to field java.util.List<String> picocli.Demo$GitCommit.message for option -m%n" +
                         "[picocli INFO] Found end-of-options delimiter '--'. Treating remainder as positional parameters.%n" +
                         "[picocli INFO] Adding [src1.java] to field java.util.List<java.io.File> picocli.Demo$GitCommit.files for args[0..*] at position 0%n" +
                         "[picocli INFO] Adding [src2.java] to field java.util.List<java.io.File> picocli.Demo$GitCommit.files for args[0..*] at position 1%n" +
@@ -2103,7 +2207,7 @@ public class CommandLineTest {
                         "[picocli DEBUG] Processing argument '-m'. Remainder=[\"Fixed typos\", --, src1.java, src2.java, src3.java]%n" +
                         "[picocli DEBUG] '-m' cannot be separated into <option>=<option-parameter>%n" +
                         "[picocli DEBUG] Found option named '-m': field java.util.List<String> %1$s$GitCommit.message, arity=1%n" +
-                        "[picocli INFO] Adding [Fixed typos] to field java.util.List<String> picocli.Demo$GitCommit.message for option -m%n" +
+                        "[picocli INFO] Adding [\"Fixed typos\"] to field java.util.List<String> picocli.Demo$GitCommit.message for option -m%n" +
                         "[picocli DEBUG] Processing argument '--'. Remainder=[src1.java, src2.java, src3.java]%n" +
                         "[picocli INFO] Found end-of-options delimiter '--'. Treating remainder as positional parameters.%n" +
                         "[picocli DEBUG] Processing next arg as a positional parameter at index=0. Remainder=[src1.java, src2.java, src3.java]%n" +
@@ -4317,8 +4421,16 @@ public class CommandLineTest {
         MyCommand c = CommandLine.populateCommand(new MyCommand(), args);
         assertEquals("\"-Dspring.profiles.active=test -Dspring.mail.host=smtp.mailtrap.io\"", c.parameters.get("AppOptions"));
 
+        c = new MyCommand();
+        new CommandLine(c).setTrimQuotes(true).parseArgs(args);
+        assertEquals("\"-Dspring.profiles.active=test -Dspring.mail.host=smtp.mailtrap.io\"", c.parameters.get("AppOptions"));
+
         args = new String[] {"-p", "\"AppOptions=-Dspring.profiles.active=test -Dspring.mail.host=smtp.mailtrap.io\""};
         c = CommandLine.populateCommand(new MyCommand(), args);
+        assertNull(c.parameters.get("AppOptions"));
+
+        c = new MyCommand();
+        new CommandLine(c).setTrimQuotes(true).parseArgs(args);
         assertEquals("-Dspring.profiles.active=test -Dspring.mail.host=smtp.mailtrap.io", c.parameters.get("AppOptions"));
     }
 
