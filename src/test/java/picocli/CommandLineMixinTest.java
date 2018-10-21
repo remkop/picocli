@@ -93,6 +93,20 @@ public class CommandLineMixinTest {
     }
 
     @Test
+    public void testAddMixinMustBeValidCommand_SubCommandMethod() {
+        @Command class ValidMixin {  // valid command because it has @Command annotation
+        }
+        @Command class Receiver {
+            @Command void sub(@Mixin ValidMixin mixin) {
+            }
+        }
+        CommandLine commandLine = new CommandLine(new Receiver(), new InnerClassFactory(this));
+        CommandSpec commandSpec = commandLine.getCommandSpec().subcommands().get("sub").getCommandSpec().mixins().get("arg0");
+        assertEquals(ValidMixin.class, commandSpec.userObject().getClass());
+        commandLine.addMixin("valid", new ValidMixin()); // no exception
+    }
+
+    @Test
     public void testMixinAnnotationRejectedIfNotAValidCommand() {
         class Invalid {}
         class Receiver {

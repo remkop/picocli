@@ -22,6 +22,7 @@ import org.junit.Test;
 import org.junit.contrib.java.lang.system.ProvideSystemProperty;
 import org.junit.contrib.java.lang.system.SystemErrRule;
 import org.junit.contrib.java.lang.system.SystemOutRule;
+import picocli.CommandLine.Mixin;
 import picocli.CommandLineTest.CompactFields;
 
 import java.io.ByteArrayOutputStream;
@@ -164,6 +165,226 @@ public class CommandLineCommandMethodTest {
         assertEquals(2, spec.options().size());
         assertEquals(int.class, spec.findOption("-b").type());
         assertEquals(String.class, spec.findOption("-c").type());
+    }
+
+    @Command static class SomeMixin {
+        @Option(names = "-a") int a;
+        @Option(names = "-b") long b;
+    }
+
+    static class UnannotatedClassWithMixinParameters {
+        @Command
+        void withMixin(@Mixin SomeMixin mixin) {
+        }
+
+        @Command
+        void posAndMixin(int[] x, @Mixin SomeMixin mixin) {
+        }
+
+        @Command
+        void posAndOptAndMixin(int[] x, @Option(names = "-y") String[] y, @Mixin SomeMixin mixin) {
+        }
+
+        @Command
+        void mixinFirst(@Mixin SomeMixin mixin, int[] x, @Option(names = "-y") String[] y) {
+        }
+    }
+
+    @Test
+    public void testAnnotateMethod_mixinParameter() {
+        Method m = CommandLine.getCommandMethods(UnannotatedClassWithMixinParameters.class, "withMixin").get(0);
+        CommandLine cmd = new CommandLine(m);
+        Model.CommandSpec spec = cmd.getCommandSpec();
+        assertEquals(1, spec.mixins().size());
+        spec = spec.mixins().get("arg0");
+        assertEquals(SomeMixin.class, spec.userObject().getClass());
+    }
+
+    @Test
+    public void testAnnotateMethod_positionalAndMixinParameter() {
+        Method m = CommandLine.getCommandMethods(UnannotatedClassWithMixinParameters.class, "posAndMixin").get(0);
+        CommandLine cmd = new CommandLine(m);
+        Model.CommandSpec spec = cmd.getCommandSpec();
+        assertEquals(1, spec.mixins().size());
+        assertEquals(1, spec.positionalParameters().size());
+        spec = spec.mixins().get("arg1");
+        assertEquals(SomeMixin.class, spec.userObject().getClass());
+    }
+
+    @Test
+    public void testAnnotateMethod_positionalAndOptionsAndMixinParameter() {
+        Method m = CommandLine.getCommandMethods(UnannotatedClassWithMixinParameters.class, "posAndOptAndMixin").get(0);
+        CommandLine cmd = new CommandLine(m);
+        Model.CommandSpec spec = cmd.getCommandSpec();
+        assertEquals(1, spec.mixins().size());
+        assertEquals(1, spec.positionalParameters().size());
+        assertEquals(3, spec.options().size());
+        spec = spec.mixins().get("arg2");
+        assertEquals(SomeMixin.class, spec.userObject().getClass());
+    }
+
+    @Test
+    public void testAnnotateMethod_mixinParameterFirst() {
+        Method m = CommandLine.getCommandMethods(UnannotatedClassWithMixinParameters.class, "mixinFirst").get(0);
+        CommandLine cmd = new CommandLine(m);
+        Model.CommandSpec spec = cmd.getCommandSpec();
+        assertEquals(1, spec.mixins().size());
+        assertEquals(1, spec.positionalParameters().size());
+        assertEquals(3, spec.options().size());
+        spec = spec.mixins().get("arg0");
+        assertEquals(SomeMixin.class, spec.userObject().getClass());
+    }
+
+    static class UnannotatedClassWithMixinAndOptionsAndPositionals {
+        @Command(name="sum")
+        long sum(@Option(names = "-y") String[] y, @Mixin SomeMixin subMixin, int[] x) {
+            return y.length + subMixin.a + subMixin.b + x.length;
+        }
+    }
+
+    @Test
+    public void testUnannotatedCommandWithMixin() throws Exception {
+        Method m = CommandLine.getCommandMethods(UnannotatedClassWithMixinAndOptionsAndPositionals.class, "sum").get(0);
+        CommandLine commandLine = new CommandLine(m);
+        List<CommandLine> parsed = commandLine.parse("-y foo -y bar -a 7 -b 11 13 42".split(" "));
+        assertEquals(1, parsed.size());
+
+        // get method args
+        Object[] methodArgValues = parsed.get(0).getCommandSpec().argValues();
+        assertNotNull(methodArgValues);
+
+        // verify args
+        String[] arg0 = (String[]) methodArgValues[0];
+        assertArrayEquals(new String[] {"foo", "bar"}, arg0);
+        SomeMixin arg1 = (SomeMixin) methodArgValues[1];
+        assertEquals(7, arg1.a);
+        assertEquals(11, arg1.b);
+        int[] arg2 = (int[]) methodArgValues[2];
+        assertArrayEquals(new int[] {13, 42}, arg2);
+
+        // verify method is callable with args
+        long result = (Long) m.invoke(new UnannotatedClassWithMixinAndOptionsAndPositionals(), methodArgValues);
+        assertEquals(22, result);
+
+        // verify same result with result handler
+        List<Object> results = new CommandLine.RunLast().handleParseResult(parsed, System.out, CommandLine.Help.Ansi.OFF);
+        assertEquals(1, results.size());
+        assertEquals(22L, results.get(0));
+    }
+
+    @Command
+    static class AnnotatedClassWithMixinParameters {
+        @Mixin SomeMixin mixin;
+
+        @Command(name="sum")
+        long sum(@Option(names = "-y") String[] y, @Mixin SomeMixin subMixin, int[] x) {
+            return mixin.a + mixin.b + y.length + subMixin.a + subMixin.b + x.length;
+        }
+    }
+
+    @Test
+    public void testAnnotatedSubcommandWithDoubleMixin() throws Exception {
+        AnnotatedClassWithMixinParameters command = new AnnotatedClassWithMixinParameters();
+        CommandLine commandLine = new CommandLine(command);
+        List<CommandLine> parsed = commandLine.parse("-a 3 -b 5 sum -y foo -y bar -a 7 -b 11 13 42".split(" "));
+        assertEquals(2, parsed.size());
+
+        // get method args
+        Object[] methodArgValues = parsed.get(1).getCommandSpec().argValues();
+        assertNotNull(methodArgValues);
+
+        // verify args
+        String[] arg0 = (String[]) methodArgValues[0];
+        assertArrayEquals(new String[] {"foo", "bar"}, arg0);
+        SomeMixin arg1 = (SomeMixin) methodArgValues[1];
+        assertEquals(7, arg1.a);
+        assertEquals(11, arg1.b);
+        int[] arg2 = (int[]) methodArgValues[2];
+        assertArrayEquals(new int[] {13, 42}, arg2);
+
+        // verify method is callable with args
+        Method m = AnnotatedClassWithMixinParameters.class.getDeclaredMethod("sum", String[].class, SomeMixin.class, int[].class);
+        long result = (Long) m.invoke(command, methodArgValues);
+        assertEquals(30, result);
+
+        // verify same result with result handler
+        List<Object> results = new CommandLine.RunLast().handleParseResult(parsed, System.out, CommandLine.Help.Ansi.OFF);
+        assertEquals(1, results.size());
+        assertEquals(30L, results.get(0));
+    }
+
+    @Command static class OtherMixin {
+        @Option(names = "-c") int c;
+    }
+
+    static class AnnotatedClassWithMultipleMixinParameters {
+        @Command(name="sum")
+        long sum(@Mixin SomeMixin mixin1, @Mixin OtherMixin mixin2) {
+            return mixin1.a + mixin1.b + mixin2.c;
+        }
+    }
+
+    @Test
+    public void testAnnotatedMethodMultipleMixinsSubcommandWithDoubleMixin() throws Exception {
+        Method m = CommandLine.getCommandMethods(AnnotatedClassWithMultipleMixinParameters.class, "sum").get(0);
+        CommandLine commandLine = new CommandLine(m);
+        List<CommandLine> parsed = commandLine.parse("-a 3 -b 5 -c 7".split(" "));
+        assertEquals(1, parsed.size());
+
+        // get method args
+        Object[] methodArgValues = parsed.get(0).getCommandSpec().argValues();
+        assertNotNull(methodArgValues);
+
+        // verify args
+        SomeMixin arg0 = (SomeMixin) methodArgValues[0];
+        assertEquals(3, arg0.a);
+        assertEquals(5, arg0.b);
+        OtherMixin arg1 = (OtherMixin) methodArgValues[1];
+        assertEquals(7, arg1.c);
+
+        // verify method is callable with args
+        long result = (Long) m.invoke(new AnnotatedClassWithMultipleMixinParameters(), methodArgValues);
+        assertEquals(15, result);
+
+        // verify same result with result handler
+        List<Object> results = new CommandLine.RunLast().handleParseResult(parsed, System.out, CommandLine.Help.Ansi.OFF);
+        assertEquals(1, results.size());
+        assertEquals(15L, results.get(0));
+    }
+
+    @Command static class EmptyMixin {}
+
+    static class AnnotatedClassWithMultipleEmptyParameters {
+        @Command(name="sum")
+        long sum(@Option(names = "-a") int a, @Mixin EmptyMixin mixin) {
+            return a;
+        }
+    }
+
+    @Test
+    public void testAnnotatedMethodMultipleMixinsSubcommandWithEmptyMixin() throws Exception {
+        Method m = CommandLine.getCommandMethods(AnnotatedClassWithMultipleEmptyParameters.class, "sum").get(0);
+        CommandLine commandLine = new CommandLine(m);
+        List<CommandLine> parsed = commandLine.parse("-a 3".split(" "));
+        assertEquals(1, parsed.size());
+
+        // get method args
+        Object[] methodArgValues = parsed.get(0).getCommandSpec().argValues();
+        assertNotNull(methodArgValues);
+
+        // verify args
+        int arg0 = (Integer) methodArgValues[0];
+        assertEquals(3, arg0);
+        EmptyMixin arg1 = (EmptyMixin) methodArgValues[1];
+
+        // verify method is callable with args
+        long result = (Long) m.invoke(new AnnotatedClassWithMultipleEmptyParameters(), methodArgValues);
+        assertEquals(3, result);
+
+        // verify same result with result handler
+        List<Object> results = new CommandLine.RunLast().handleParseResult(parsed, System.out, CommandLine.Help.Ansi.OFF);
+        assertEquals(1, results.size());
+        assertEquals(3L, results.get(0));
     }
 
     @Test
