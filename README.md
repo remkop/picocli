@@ -44,7 +44,7 @@ Picocli-based applications can easily [integrate](https://picocli.info/#_depende
 ![Picocli Demo help message with ANSI colors](docs/images/picocli.Demo.png?raw=true)
 
 ### Releases
-* [Releases](https://github.com/remkop/picocli/releases) - latest: 3.6.1
+* [Releases](https://github.com/remkop/picocli/releases) - latest: 3.7.0
 * [Picocli 3.0.0 Release Notes](https://github.com/remkop/picocli/releases/tag/v3.0.0) - note there are some [potential breaking changes](https://github.com/remkop/picocli/releases/tag/v3.0.0#3.0.0-breaking-changes) from prior versions
 * [Picocli 2.0 Release Notes](https://github.com/remkop/picocli/releases/tag/v2.0.0) - note there are some [potential breaking changes](https://github.com/remkop/picocli/releases/tag/v2.0.0#2.0-breaking-changes) from prior versions
 
