@@ -513,8 +513,8 @@ table.CodeRay td.code>pre{padding:0}
 <div id="header">
 <h1>picocli - a mighty tiny command line interface</h1>
 <div class="details">
-<span id="revnumber">version 3.6.1,</span>
-<span id="revdate">2018-09-28</span>
+<span id="revnumber">version 3.7.0,</span>
+<span id="revdate">2018-10-21</span>
 </div>
 <div id="toc" class="toc2">
 <div id="toctitle">Features</div>
@@ -573,6 +573,7 @@ table.CodeRay td.code>pre{padding:0}
 <li><a href="#_toggle_boolean_flags">7.7. Toggle Boolean Flags</a></li>
 <li><a href="#_posix_clustered_short_options">7.8. POSIX Clustered Short Options</a></li>
 <li><a href="#_lenient_mode_incubating">7.9. Lenient Mode (Incubating)</a></li>
+<li><a href="#_quoted_values">7.10. Quoted Values</a></li>
 </ul>
 </li>
 <li><a href="#_help">8. Help</a>
@@ -1771,6 +1772,9 @@ Each of these substrings is converted to the type of the collection or array. Se
 <pre>-fix 8=FIX.4.4|9=69|35=A|49=MBT|56=TargetCompID|34=9|52=20130625-04:05:32.682|98=0|108=30|10=052</pre>
 </div>
 </div>
+<div class="paragraph">
+<p>See <a href="#_quoted_values">Quoted Values</a> for details on handling more complex cases.</p>
+</div>
 </div>
 <div class="sect2">
 <h3 id="_arity">5.3. Arity</h3>
@@ -2213,6 +2217,65 @@ languages like Clojure where idiomatic error handling does not involve throwing 
 </div>
 <div class="paragraph">
 <p>When using this feature, applications are responsible for actively verifying that no errors occurred before executing the business logic. Use with care!</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_quoted_values">7.10. Quoted Values</h3>
+<div class="paragraph">
+<p>From picocli 3.7, quotes around command line parameters are preserved by default (previously they were removed). This can be configured with <code>CommandLine::setTrimQuotes</code>.</p>
+</div>
+<div class="paragraph">
+<p>Also, when <a href="#_split_regex">splitting</a> parameters, quoted strings are no longer split. This can be configured with <code>CommandLine::setSplitQuotedStrings</code>.</p>
+</div>
+<div class="paragraph">
+<p>Example:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code>@Option(names = "-x", split = ",")
+String[] parts;</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Given input like below:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code>&lt;command&gt; -x "-Dvalues=a,b,c","-Dother=1,2"</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>This results in the <code>parts</code> array having the following values:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code>"-Dvalues=a,b,c"
+"-Dother=1,2"</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Given input like below:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code>&lt;command&gt; -x a,b,"c,d,e",f,"xxx,yyy"</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>This results in the <code>parts</code> array having the following values:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code>a
+b
+"c,d,e"
+f
+"xxx,yyy"</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>When the <code>splitQuotedStrings</code> parser attribute is set to <code>true</code> the <code>split</code> regex is applied to the parameter value regardless of quotes.
+This can be useful when using a regular expression that is designed to handle quotes.</p>
 </div>
 </div>
 </div>
@@ -4859,7 +4922,7 @@ The script body is executed if the user input was valid and did not request usag
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="CodeRay highlight"><code data-lang="groovy"><span class="annotation">@Grab</span>(<span class="string"><span class="delimiter">'</span><span class="content">info.picocli:picocli:3.6.1</span><span class="delimiter">'</span></span>)
+<pre class="CodeRay highlight"><code data-lang="groovy"><span class="annotation">@Grab</span>(<span class="string"><span class="delimiter">'</span><span class="content">info.picocli:picocli:3.7.0</span><span class="delimiter">'</span></span>)
 <span class="annotation">@Command</span>(name = <span class="string"><span class="delimiter">&quot;</span><span class="content">myScript</span><span class="delimiter">&quot;</span></span>,
         mixinStandardHelpOptions = <span class="predefined-constant">true</span>, <span class="comment">// add --help and --version options</span>
         description = <span class="string"><span class="delimiter">&quot;</span><span class="content">@|bold Groovy script|@ @|underline picocli|@ example</span><span class="delimiter">&quot;</span></span>)
@@ -4894,7 +4957,7 @@ When using a Groovy version older than 2.4.7, use this workaround for the <a hre
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="CodeRay highlight"><code data-lang="groovy"><span class="annotation">@Grab</span>(<span class="string"><span class="delimiter">'</span><span class="content">info.picocli:picocli:3.6.1</span><span class="delimiter">'</span></span>)
+<pre class="CodeRay highlight"><code data-lang="groovy"><span class="annotation">@Grab</span>(<span class="string"><span class="delimiter">'</span><span class="content">info.picocli:picocli:3.7.0</span><span class="delimiter">'</span></span>)
 <span class="annotation">@GrabExclude</span>(<span class="string"><span class="delimiter">'</span><span class="content">org.codehaus.groovy:groovy-all</span><span class="delimiter">'</span></span>) <span class="comment">// work around GROOVY-7613</span>
 ...</code></pre>
 </div>
@@ -5036,7 +5099,7 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
 <h3 id="_gradle">25.1. Gradle</h3>
 <div class="listingblock">
 <div class="content">
-<pre>compile 'info.picocli:picocli:3.6.1'</pre>
+<pre>compile 'info.picocli:picocli:3.7.0'</pre>
 </div>
 </div>
 </div>
@@ -5047,7 +5110,7 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
 <pre>&lt;dependency&gt;
   &lt;groupId&gt;info.picocli&lt;/groupId&gt;
   &lt;artifactId&gt;picocli&lt;/artifactId&gt;
-  &lt;version&gt;3.6.1&lt;/version&gt;
+  &lt;version&gt;3.7.0&lt;/version&gt;
 &lt;/dependency&gt;</pre>
 </div>
 </div>
@@ -5056,7 +5119,7 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
 <h3 id="_scala_sbt">25.3. Scala SBT</h3>
 <div class="listingblock">
 <div class="content">
-<pre>libraryDependencies += "info.picocli" % "picocli" % "3.6.1"</pre>
+<pre>libraryDependencies += "info.picocli" % "picocli" % "3.7.0"</pre>
 </div>
 </div>
 </div>
@@ -5064,7 +5127,7 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
 <h3 id="_ivy">25.4. Ivy</h3>
 <div class="listingblock">
 <div class="content">
-<pre>&lt;dependency org="info.picocli" name="picocli" rev="3.6.1" /&gt;</pre>
+<pre>&lt;dependency org="info.picocli" name="picocli" rev="3.7.0" /&gt;</pre>
 </div>
 </div>
 </div>
@@ -5080,8 +5143,8 @@ This facilitates including it in your project in source form to avoid having an 
 </div>
 <div id="footer">
 <div id="footer-text">
-Version 3.6.1<br>
-Last updated 2018-10-10 18:29:29 +09:00
+Version 3.7.0<br>
+Last updated 2018-10-21 14:35:49 +09:00
 </div>
 </div>
 </body>
