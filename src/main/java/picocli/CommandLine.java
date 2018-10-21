@@ -2847,7 +2847,7 @@ public class CommandLine {
      * @since 3.0
      */
     @Retention(RetentionPolicy.RUNTIME)
-    @Target(ElementType.FIELD)
+    @Target({ElementType.FIELD, ElementType.PARAMETER})
     public @interface Mixin {
         /** Optionally specify a name that the mixin object can be retrieved with from the {@code CommandSpec}.
          * If not specified the name of the annotated field is used.
@@ -3718,15 +3718,28 @@ public class CommandLine {
              * (class methods annotated with {@code @Command}) as subcommands.
              *
              * @return this {@link CommandSpec} object for method chaining
+             * @see #addMethodSubcommands(IFactory)
              * @see #addSubcommand(String, CommandLine)
              * @since 3.6.0
              */
             public CommandSpec addMethodSubcommands() {
+                addMethodSubcommands(new DefaultFactory());
+                return this;
+            }
+
+            /** Reflects on the class of the {@linkplain #userObject() user object} and registers any command methods
+             * (class methods annotated with {@code @Command}) as subcommands.
+             *
+             * @return this {@link CommandSpec} object for method chaining
+             * @see #addSubcommand(String, CommandLine)
+             * @since 3.7.0
+             */
+            public CommandSpec addMethodSubcommands(IFactory factory) {
                 if (userObject() instanceof Method) {
                      throw new UnsupportedOperationException("cannot discover methods of non-class: " + userObject());
                 }
                 for (Method method : getCommandMethods(userObject().getClass(), null)) {
-                    CommandLine cmd = new CommandLine(method);
+                    CommandLine cmd = new CommandLine(method, factory);
                     addSubcommand(cmd.getCommandName(), cmd);
                 }
                 return this;
@@ -3852,9 +3865,41 @@ public class CommandLine {
              * @return an immutable list of all options and positional parameters for this command. */
             public List<ArgSpec> args() { return Collections.unmodifiableList(args); }
             Object[] argValues() {
-                int shift = mixinStandardHelpOptions() ? 2 : 0;
-                Object[] values = new Object[args.size() - shift];
-                for (int i = 0; i < values.length; i++) { values[i] = args.get(i + shift).getValue(); }
+                Map<Class<?>, CommandSpec> allMixins = null;
+                int argsLength = args.size();
+                int shift = 0;
+                for (Map.Entry<String, CommandSpec> mixinEntry : mixins.entrySet()) {
+                    if (mixinEntry.getKey().equals(AutoHelpMixin.KEY)) {
+                        shift = 2;
+                        argsLength -= shift;
+                        continue;
+                    }
+                    CommandSpec mixin = mixinEntry.getValue();
+                    int mixinArgs = mixin.args.size();
+                    argsLength -= (mixinArgs - 1); // sub 1 less b/c that's the mixin
+                    if (allMixins == null) {
+                        allMixins = new IdentityHashMap<Class<?>, CommandSpec>(mixins.size());
+                    }
+                    allMixins.put(mixin.userObject.getClass(), mixin);
+                }
+
+                Object[] values = new Object[argsLength];
+                if (allMixins == null) {
+                    for (int i = 0; i < values.length; i++) { values[i] = args.get(i + shift).getValue(); }
+                } else {
+                    int argIndex = shift;
+                    Class<?>[] methodParams = ((Method) userObject).getParameterTypes();
+                    for (int i = 0; i < methodParams.length; i++) {
+                        final Class<?> param = methodParams[i];
+                        CommandSpec mixin = allMixins.remove(param);
+                        if (mixin == null) {
+                            values[i] = args.get(argIndex++).getValue();
+                        } else {
+                            values[i] = mixin.userObject;
+                            argIndex += mixin.args.size();
+                        }
+                    }
+                }
                 return values;
             }
 
@@ -5640,7 +5685,7 @@ public class CommandLine {
             boolean isAnnotationPresent(Class<? extends Annotation> annotationClass) { return accessible.isAnnotationPresent(annotationClass); }
             <T extends Annotation> T getAnnotation(Class<T> annotationClass) { return accessible.getAnnotation(annotationClass); }
             String name()            { return name; }
-            boolean isArgSpec()      { return isOption() || isParameter() || isMethodParameter(); }
+            boolean isArgSpec()      { return isOption() || isParameter() || (isMethodParameter() && !isMixin()); }
             boolean isOption()       { return isAnnotationPresent(Option.class); }
             boolean isParameter()    { return isAnnotationPresent(Parameters.class); }
             boolean isMixin()        { return isAnnotationPresent(Mixin.class); }
@@ -5903,7 +5948,7 @@ public class CommandLine {
                     }
                 }
                 if (cmd.addMethodSubcommands() && !(parent.userObject() instanceof Method)) {
-                    parent.addMethodSubcommands();
+                    parent.addMethodSubcommands(factory);
                 }
             }
             static void initParentCommand(Object subcommand, Object parent) {
@@ -5971,7 +6016,7 @@ public class CommandLine {
                 int optionCount = 0;
                 for (int i = 0, count = method.getParameterTypes().length; i < count; i++) {
                     MethodParam param = new MethodParam(method, i);
-                    if (param.isAnnotationPresent(Option.class)) {
+                    if (param.isAnnotationPresent(Option.class) || param.isAnnotationPresent(Mixin.class)) {
                         optionCount++;
                     } else {
                         param.position = i - optionCount;
