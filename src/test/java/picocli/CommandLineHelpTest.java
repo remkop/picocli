@@ -3594,6 +3594,45 @@ public class CommandLineHelpTest {
     }
 
     @Test
+    public void testUsageWidthFromCommandAttribute() {
+        @Command(usageHelpWidth = 60,
+        description = "0123456789012345678901234567890123456789012345678901234567890123456789")
+        class App {}
+        CommandLine cmd = new CommandLine(new App());
+
+        assertEquals(60, cmd.getUsageHelpWidth());
+        assertEquals(60, cmd.getCommandSpec().usageMessage().width());
+    }
+
+    @Test
+    public void testUsageWidthFromSystemPropertyOverridesCommandAttribute() {
+        @Command(usageHelpWidth = 60,
+                description = "0123456789012345678901234567890123456789012345678901234567890123456789")
+        class App {}
+        System.setProperty("picocli.usage.width", "123");
+        try {
+            CommandLine cmd = new CommandLine(new App());
+
+            assertEquals(123, cmd.getUsageHelpWidth());
+            assertEquals(123, cmd.getCommandSpec().usageMessage().width());
+        } finally {
+            System.clearProperty("picocli.usage.width");
+        }
+    }
+
+    @Test
+    public void testInvalidUsageWidthCommandAttribute() throws UnsupportedEncodingException {
+        @Command(usageHelpWidth = 40)
+        class App {}
+        try {
+            new CommandLine(new App());
+            fail("Expected exception");
+        } catch (InitializationException ex) {
+            assertEquals("Invalid usage message width 40. Minimum value is 55", ex.getMessage());
+        };
+    }
+
+    @Test
     public void testTooSmallUsageWidthPropertyValue() throws UnsupportedEncodingException {
         PrintStream originalErr = System.err;
         ByteArrayOutputStream baos = new ByteArrayOutputStream(2500);

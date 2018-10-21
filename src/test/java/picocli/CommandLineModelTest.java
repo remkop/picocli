@@ -229,7 +229,7 @@ public class CommandLineModelTest {
         assertEquals(67, spec.width());
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test(expected = InitializationException.class)
     public void testUsageHelp_width_setterDisallowsValuesBelow55() {
         new UsageMessageSpec().width(54);
     }

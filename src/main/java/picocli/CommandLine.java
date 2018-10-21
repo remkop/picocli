@@ -3123,6 +3123,11 @@ public class CommandLine {
          * @since 3.6
          */
         String resourceBundle() default "";
+
+        /** Set the {@link UsageMessageSpec#width(int) usage help message width}. The default is 80.
+         * @since 3.7
+         */
+        int usageHelpWidth() default 80;
     }
     /**
      * <p>
@@ -4135,7 +4140,7 @@ public class CommandLine {
              */
             public UsageMessageSpec width(int newValue) {
                 if (newValue < MINIMUM_USAGE_WIDTH) {
-                    throw new IllegalArgumentException("Invalid usage message width " + newValue + ". Minimum value is " + MINIMUM_USAGE_WIDTH);
+                    throw new InitializationException("Invalid usage message width " + newValue + ". Minimum value is " + MINIMUM_USAGE_WIDTH);
                 }
                 width = newValue; return this;
             }
@@ -4305,6 +4310,7 @@ public class CommandLine {
                 if (isNonDefault(cmd.footerHeading(), DEFAULT_SINGLE_VALUE))                  {footerHeading = cmd.footerHeading();}
                 if (isNonDefault(cmd.parameterListHeading(), DEFAULT_SINGLE_VALUE))           {parameterListHeading = cmd.parameterListHeading();}
                 if (isNonDefault(cmd.optionListHeading(), DEFAULT_SINGLE_VALUE))              {optionListHeading = cmd.optionListHeading();}
+                if (isNonDefault(cmd.usageHelpWidth(), DEFAULT_USAGE_WIDTH))                  {width(cmd.usageHelpWidth());} // validate
 
                 ResourceBundle rb = empty(cmd.resourceBundle()) ? null : ResourceBundle.getBundle(cmd.resourceBundle());
                 if (rb != null) { messages(new Messages(commandSpec, rb)); } // else preserve superclass bundle

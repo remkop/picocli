@@ -82,6 +82,7 @@ See the module's [README](https://github.com/remkop/picocli/blob/master/picocli-
 - [#499] add module `picocli-codegen` for tools to generate documentation, configuration, source code and other files from a picocli model
 - [#410] add `ReflectionConfigGenerator` class for GraalVM `native-image`
 - [#513] Enhancement: Simplify AutoCompletion script generator code.
+- [#481] Enhancement: Add `@Command(usageHelpWidth = <int>)` annotation attribute.
 - [#379] Option with split property should not split quoted strings. Thanks to [Markus Kramer](https://github.com/MarkusKramer) for the feature request.
 - [#514] Bugfix/Enhancement: picocli no longer removes opening and closing quotes around arguments by default. This is configurable with `CommandLine::setTrimQuotes`. Thanks to [mshatalov](https://github.com/mshatalov) for the bug report.
 - [#509] Bugfix: Long boolean options with arity 0 should not allow parameters.  Thanks to [Adam Zegelin](https://github.com/zegelin) for the bug report.
