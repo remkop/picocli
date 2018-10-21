@@ -173,35 +173,35 @@ See the [source code](https://github.com/remkop/picocli/blob/master/src/main/jav
 
 ### Gradle
 ```
-compile 'info.picocli:picocli:3.6.1'
+compile 'info.picocli:picocli:3.7.0'
 ```
 ### Maven
 ```
 <dependency>
   <groupId>info.picocli</groupId>
   <artifactId>picocli</artifactId>
-  <version>3.6.1</version>
+  <version>3.7.0</version>
 </dependency>
 ```
 ### Scala SBT
 ```
-libraryDependencies += "info.picocli" % "picocli" % "3.6.1"
+libraryDependencies += "info.picocli" % "picocli" % "3.7.0"
 ```
 ### Ivy
 ```
-<dependency org="info.picocli" name="picocli" rev="3.6.1" />
+<dependency org="info.picocli" name="picocli" rev="3.7.0" />
 ```
 ### Grape
 ```groovy
 @Grapes(
-    @Grab(group='info.picocli', module='picocli', version='3.6.1')
+    @Grab(group='info.picocli', module='picocli', version='3.7.0')
 )
 ```
 ### Leiningen
 ```
-[info.picocli/picocli "3.6.1"]
+[info.picocli/picocli "3.7.0"]
 ```
 ### Buildr
 ```
-'info.picocli:picocli:jar:3.6.1'
+'info.picocli:picocli:jar:3.7.0'
 ```
