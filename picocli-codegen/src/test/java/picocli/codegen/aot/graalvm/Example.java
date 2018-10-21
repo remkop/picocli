@@ -2,6 +2,7 @@ package picocli.codegen.aot.graalvm;
 
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
+import picocli.CommandLine.Mixin;
 import picocli.CommandLine.Model.CommandSpec;
 import picocli.CommandLine.Option;
 import picocli.CommandLine.ParameterException;
@@ -17,6 +18,13 @@ import java.util.concurrent.TimeUnit;
 @Command(name = "example", version = "3.7.0",
         mixinStandardHelpOptions = true, subcommands = CommandLine.HelpCommand.class)
 public class Example implements Runnable {
+
+    @Command public static class ExampleMixin {
+
+        @Option(names = "-l")
+        int length;
+    }
+
     @Option(names = "-t")
     TimeUnit timeUnit;
 
@@ -25,6 +33,9 @@ public class Example implements Runnable {
 
     @Spec
     CommandSpec spec;
+
+    @Mixin
+    ExampleMixin mixin;
 
     @Unmatched
     List<String> unmatched;
@@ -58,8 +69,8 @@ public class Example implements Runnable {
     }
 
     public void run() {
-        System.out.printf("timeUnit=%s, file=%s, unmatched=%s, minimum=%s, otherFiles=%s%n",
-                timeUnit, file, unmatched, minimum, Arrays.toString(otherFiles));
+        System.out.printf("timeUnit=%s, length=%s, file=%s, unmatched=%s, minimum=%s, otherFiles=%s%n",
+                timeUnit, mixin.length, file, unmatched, minimum, Arrays.toString(otherFiles));
     }
 
     public static void main(String[] args) {
