@@ -217,6 +217,9 @@ public class ReflectionConfigGenerator {
                 if (f.isAnnotationPresent(CommandLine.ParentCommand.class)) {
                     reflectedClass.addField(f.getName());
                 }
+                if (f.isAnnotationPresent(CommandLine.Mixin.class)) {
+                    reflectedClass.addField(f.getName());
+                }
                 if (f.isAnnotationPresent(CommandLine.Unmatched.class)) {
                     reflectedClass.addField(f.getName());
                 }
