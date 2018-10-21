@@ -766,6 +766,7 @@ With the above option, command line arguments like the following are interpreted
 -fix 8=FIX.4.4|9=69|35=A|49=MBT|56=TargetCompID|34=9|52=20130625-04:05:32.682|98=0|108=30|10=052
 ----
 
+See <<Quoted Values>> for details on handling more complex cases.
 
 === Arity
 Sometimes you want to define an option that requires more than one option parameter _for each option occurrence_ on the command line.
@@ -1039,6 +1040,45 @@ This is useful when generating completion candidates on partial input, and is al
 languages like Clojure where idiomatic error handling does not involve throwing and catching exceptions.
 
 When using this feature, applications are responsible for actively verifying that no errors occurred before executing the business logic. Use with care!
+
+=== Quoted Values
+From picocli 3.7, quotes around command line parameters are preserved by default (previously they were removed). This can be configured with `CommandLine::setTrimQuotes`.
+
+Also, when <<Split Regex,splitting>> parameters, quoted strings are no longer split. This can be configured with `CommandLine::setSplitQuotedStrings`.
+
+Example:
+```
+@Option(names = "-x", split = ",")
+String[] parts;
+```
+
+Given input like below:
+
+```
+<command> -x "-Dvalues=a,b,c","-Dother=1,2"
+```
+This results in the `parts` array having the following values:
+```
+"-Dvalues=a,b,c"
+"-Dother=1,2"
+```
+
+Given input like below:
+
+```
+<command> -x a,b,"c,d,e",f,"xxx,yyy"
+```
+This results in the `parts` array having the following values:
+```
+a
+b
+"c,d,e"
+f
+"xxx,yyy"
+```
+
+When the `splitQuotedStrings` parser attribute is set to `true` the `split` regex is applied to the parameter value regardless of quotes.
+This can be useful when using a regular expression that is designed to handle quotes.
 
 
 == Help

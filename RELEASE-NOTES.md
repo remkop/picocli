@@ -7,10 +7,10 @@ The picocli community is pleased to announce picocli 3.7.0.
 This release contains bugfixes and enhancements in the main picocli module, and adds two new modules: 
 `picocli-codegen` and `picocli-shell-jline2`.
 
-Picocli Code Generation contains tools for generating source code, documentation and configuration files 
+Picocli Code Generation (`picocli-codegen`) contains tools for generating source code, documentation and configuration files 
 for picocli-based applications.
 
-Picocli Shell JLine2 contains components and documentation for building
+Picocli Shell JLine2 (`picocli-shell-jline2`) contains components and documentation for building
 interactive shell command line applications with JLine 2 and picocli.
 
 Many thanks to the many members of the picocli community who contributed! 
@@ -25,6 +25,32 @@ Picocli follows [semantic versioning](http://semver.org/).
 * [Potential breaking changes](#3.7.0-breaking-changes)
 
 ## <a name="3.7.0-new"></a> New and Noteworthy
+
+### <a name="3.7.0-quoting"></a> Improved Parsing of Quoted Values
+This release improves parser behaviour of quoted arguments:
+
+* Quotes around command line parameters are now preserved by default (previously they were removed). This can be configured with `CommandLine::setTrimQuotes`.
+* When [splitting](https://picocli.info/#_split_regex) parameters, quoted strings are no longer split. This can be configured with `CommandLine::setSplitQuotedStrings`.
+
+Example:
+```
+@Option(names = "-x", split = ",")
+String[] parts;
+```
+
+Given input like below:
+
+```
+<command> -x a,b,"c,d,e",f,"xxx,yyy"
+```
+This results in the `parts` array having the following values:
+```
+a
+b
+"c,d,e"
+f
+"xxx,yyy"
+```
 
 ### <a name="3.7.0-picocli-codegen"></a> New Module `picocli-codegen`
 Picocli Code Generation contains tools for generating source code, documentation and configuration files 
@@ -56,6 +82,7 @@ See the module's [README](https://github.com/remkop/picocli/blob/master/picocli-
 - [#499] add module `picocli-codegen` for tools to generate documentation, configuration, source code and other files from a picocli model
 - [#410] add `ReflectionConfigGenerator` class for GraalVM `native-image`
 - [#513] Enhancement: Simplify AutoCompletion script generator code.
+- [#379] Option with split property should not split quoted strings. Thanks to [Markus Kramer](https://github.com/MarkusKramer) for the feature request.
 - [#514] Bugfix/Enhancement: picocli no longer removes opening and closing quotes around arguments by default. This is configurable with `CommandLine::setTrimQuotes`. Thanks to [mshatalov](https://github.com/mshatalov) for the bug report.
 - [#509] Bugfix: Long boolean options with arity 0 should not allow parameters.  Thanks to [Adam Zegelin](https://github.com/zegelin) for the bug report.
 - [#510] Documentation: Fix broken link for moved example files. Thanks to [Anthony Keenan](https://github.com/anthonykeenan) for the pull request.

@@ -864,6 +864,52 @@ public class CommandLineTest {
     }
 
     @Test
+    public void testParserSplitQuotedStrings_BeforeSubcommandsAdded() {
+        @Command class TopLevel {}
+        CommandLine commandLine = new CommandLine(new TopLevel());
+        assertEquals(false, commandLine.isSplitQuotedStrings());
+        commandLine.setSplitQuotedStrings(true);
+        assertEquals(true, commandLine.isSplitQuotedStrings());
+
+        int childCount = 0;
+        int grandChildCount = 0;
+        commandLine.addSubcommand("main", createNestedCommand());
+        for (CommandLine sub : commandLine.getSubcommands().values()) {
+            childCount++;
+            assertEquals("subcommand added afterwards is not impacted", false, sub.isSplitQuotedStrings());
+            for (CommandLine subsub : sub.getSubcommands().values()) {
+                grandChildCount++;
+                assertEquals("subcommand added afterwards is not impacted", false, subsub.isSplitQuotedStrings());
+            }
+        }
+        assertTrue(childCount > 0);
+        assertTrue(grandChildCount > 0);
+    }
+
+    @Test
+    public void testParserSplitQuotedStrings_AfterSubcommandsAdded() {
+        @Command class TopLevel {}
+        CommandLine commandLine = new CommandLine(new TopLevel());
+        commandLine.addSubcommand("main", createNestedCommand());
+        assertEquals(false, commandLine.isSplitQuotedStrings());
+        commandLine.setSplitQuotedStrings(true);
+        assertEquals(true, commandLine.isSplitQuotedStrings());
+
+        int childCount = 0;
+        int grandChildCount = 0;
+        for (CommandLine sub : commandLine.getSubcommands().values()) {
+            childCount++;
+            assertEquals("subcommand added before IS impacted", true, sub.isSplitQuotedStrings());
+            for (CommandLine subsub : sub.getSubcommands().values()) {
+                grandChildCount++;
+                assertEquals("subsubcommand added before IS impacted", true, sub.isSplitQuotedStrings());
+            }
+        }
+        assertTrue(childCount > 0);
+        assertTrue(grandChildCount > 0);
+    }
+
+    @Test
     public void testParserUnmatchedOptionsArePositionalParams_BeforeSubcommandsAdded() {
         @Command class TopLevel {}
         CommandLine commandLine = new CommandLine(new TopLevel());
@@ -1144,7 +1190,7 @@ public class CommandLineTest {
         String expected = String.format("" +
                         "[picocli DEBUG] Creating CommandSpec for object of class picocli.CommandLineTest$CompactFields with factory picocli.CommandLine$DefaultFactory%n" +
                         "[picocli INFO] Parsing 6 command line args [-oout, --, -r, -v, p1, p2]%n" +
-                        "[picocli DEBUG] Parser configuration: posixClusteredShortOptionsAllowed=true, stopAtPositional=false, stopAtUnmatched=false, separator=null, overwrittenOptionsAllowed=false, unmatchedArgumentsAllowed=false, expandAtFiles=true, atFileCommentChar=#, endOfOptionsDelimiter=--, limitSplit=false, aritySatisfiedByAttachedOptionParam=false%n" +
+                        "[picocli DEBUG] Parser configuration: posixClusteredShortOptionsAllowed=true, stopAtPositional=false, stopAtUnmatched=false, separator=null, overwrittenOptionsAllowed=false, unmatchedArgumentsAllowed=false, expandAtFiles=true, atFileCommentChar=#, endOfOptionsDelimiter=--, limitSplit=false, aritySatisfiedByAttachedOptionParam=false, toggleBooleanFlags=true, unmatchedOptionsArePositionalParams=false, collectErrors=false,caseInsensitiveEnumValuesAllowed=false, trimQuotes=false, splitQuotedStrings=false%n" +
                         "[picocli DEBUG] Set initial value for field boolean picocli.CommandLineTest$CompactFields.verbose of type boolean to false.%n" +
                         "[picocli DEBUG] Set initial value for field boolean picocli.CommandLineTest$CompactFields.recursive of type boolean to false.%n" +
                         "[picocli DEBUG] Set initial value for field java.io.File picocli.CommandLineTest$CompactFields.outputFile of type class java.io.File to null.%n" +
@@ -1454,12 +1500,20 @@ public class CommandLineTest {
             @Option(names = "-t") String text;
         }
         TextOption opt = new TextOption();
+        new CommandLine(opt).parseArgs("-t\"a text\"");
+        assertEquals("Not trimmed by default","\"a text\"", opt.text);
+
+        opt = new TextOption();
         new CommandLine(opt).setTrimQuotes(true).parseArgs("-t\"a text\"");
-        assertEquals("a text", opt.text);
+        assertEquals("trimmed if requested","a text", opt.text);
 
         opt = new TextOption();
         new CommandLine(opt).setTrimQuotes(true).parseArgs("-t=\"a text\"");
         assertEquals("a text", opt.text);
+
+        opt = new TextOption();
+        new CommandLine(opt).parseArgs("-t=\"a text\"");
+        assertEquals("Not trimmed by default", "\"a text\"", opt.text);
     }
 
     @Test
@@ -1879,213 +1933,6 @@ public class CommandLineTest {
     }
 
     @Test
-    public void testSplitInOptionArray() {
-        class Args {
-            @Option(names = "-a", split = ",") String[] values;
-        }
-        Args args = CommandLine.populateCommand(new Args(), "-a=a,b,c");
-        assertArrayEquals(new String[] {"a", "b", "c"}, args.values);
-
-        args = CommandLine.populateCommand(new Args(), "-a=a,b,c", "-a=B", "-a", "C");
-        assertArrayEquals(new String[] {"a", "b", "c", "B", "C"}, args.values);
-
-        args = CommandLine.populateCommand(new Args(), "-a", "a,b,c", "-a", "B", "-a", "C");
-        assertArrayEquals(new String[] {"a", "b", "c", "B", "C"}, args.values);
-
-        args = CommandLine.populateCommand(new Args(), "-a=a,b,c", "-a", "B", "-a", "C", "-a", "D,E,F");
-        assertArrayEquals(new String[] {"a", "b", "c", "B", "C", "D", "E", "F"}, args.values);
-
-        try {
-            args = CommandLine.populateCommand(new Args(), "-a=a,b,c", "B", "C");
-            fail("Expected UnmatchedArgEx");
-        } catch (UnmatchedArgumentException ok) {
-            assertEquals("Unmatched arguments: B, C", ok.getMessage());
-        }
-        try {
-            args = CommandLine.populateCommand(new Args(), "-a=a,b,c", "B", "-a=C");
-            fail("Expected UnmatchedArgEx");
-        } catch (UnmatchedArgumentException ok) {
-            assertEquals("Unmatched argument: B", ok.getMessage());
-        }
-    }
-
-    @Ignore("Until #379 is fixed: quoted strings should not be split")
-    @Test
-    public void testSplitInOptionArrayWithSpaces() {
-        class Args {
-            @Option(names = "-a", split = " ") String[] values;
-        }
-        Args args = CommandLine.populateCommand(new Args(), "-a=\"a b c\"");
-        assertArrayEquals(new String[] {"a", "b", "c"}, args.values);
-
-        args = CommandLine.populateCommand(new Args(), "-a=a b c", "-a", "B", "-a", "C");
-        assertArrayEquals(new String[] {"a", "b", "c", "B", "C"}, args.values);
-
-        args = CommandLine.populateCommand(new Args(), "-a", "\"a b c\"", "-a=B", "-a=C");
-        assertArrayEquals(new String[] {"a", "b", "c", "B", "C"}, args.values);
-
-        args = CommandLine.populateCommand(new Args(), "-a=\"a b c\"", "-a=B", "-a", "C", "-a=D E F");
-        assertArrayEquals(new String[] {"a", "b", "c", "B", "C", "D", "E", "F"}, args.values);
-
-        try {
-            args = CommandLine.populateCommand(new Args(), "-a=a b c", "B", "C");
-            fail("Expected UnmatchedArgEx");
-        } catch (UnmatchedArgumentException ok) {
-            assertEquals("Unmatched arguments: B, C", ok.getMessage());
-        }
-        try {
-            args = CommandLine.populateCommand(new Args(), "-a=a b c", "B", "-a=C");
-            fail("Expected UnmatchedArgEx");
-        } catch (UnmatchedArgumentException ok) {
-            assertEquals("Unmatched argument: B", ok.getMessage());
-        }
-    }
-
-    @Test
-    public void testSplitInOptionArrayWithArity() {
-        class Args {
-            @Option(names = "-a", split = ",", arity = "0..4") String[] values;
-            @Parameters() String[] params;
-        }
-        Args args = CommandLine.populateCommand(new Args(), "-a=a,b,c"); // 1 args
-        assertArrayEquals(new String[] {"a", "b", "c"}, args.values);
-
-        args = CommandLine.populateCommand(new Args(), "-a"); // 0 args
-        assertArrayEquals(new String[0], args.values);
-        assertNull(args.params);
-
-        args = CommandLine.populateCommand(new Args(), "-a=a,b,c", "B", "C"); // 3 args
-        assertArrayEquals(new String[] {"a", "b", "c", "B", "C"}, args.values);
-        assertNull(args.params);
-
-        args = CommandLine.populateCommand(new Args(), "-a", "a,b,c", "B", "C"); // 3 args
-        assertArrayEquals(new String[] {"a", "b", "c", "B", "C"}, args.values);
-        assertNull(args.params);
-
-        args = CommandLine.populateCommand(new Args(), "-a=a,b,c", "B", "C", "D,E,F"); // 4 args
-        assertArrayEquals(new String[] {"a", "b", "c", "B", "C", "D", "E", "F"}, args.values);
-        assertNull(args.params);
-
-        args = CommandLine.populateCommand(new Args(), "-a=a,b,c,d", "B", "C", "D", "E,F"); // 5 args
-        assertArrayEquals(new String[] {"a", "b", "c", "d", "B", "C", "D"}, args.values);
-        assertArrayEquals(new String[] {"E,F"}, args.params);
-    }
-
-    @Test
-    public void testSplitInOptionCollection() {
-        class Args {
-            @Option(names = "-a", split = ",") List<String> values;
-        }
-        Args args = CommandLine.populateCommand(new Args(), "-a=a,b,c");
-        assertEquals(Arrays.asList("a", "b", "c"), args.values);
-
-        args = CommandLine.populateCommand(new Args(), "-a=a,b,c", "-a", "B", "-a=C");
-        assertEquals(Arrays.asList("a", "b", "c", "B", "C"), args.values);
-
-        args = CommandLine.populateCommand(new Args(), "-a", "a,b,c", "-a", "B", "-a", "C");
-        assertEquals(Arrays.asList("a", "b", "c", "B", "C"), args.values);
-
-        args = CommandLine.populateCommand(new Args(), "-a=a,b,c", "-a", "B", "-a", "C", "-a", "D,E,F");
-        assertEquals(Arrays.asList("a", "b", "c", "B", "C", "D", "E", "F"), args.values);
-
-        try {
-            args = CommandLine.populateCommand(new Args(), "-a=a,b,c", "B", "C");
-            fail("Expected UnmatchedArgumentException");
-        } catch (UnmatchedArgumentException ok) {
-            assertEquals("Unmatched arguments: B, C", ok.getMessage());
-        }
-    }
-
-    @Test
-    public void testSplitInParametersArray() {
-        class Args {
-            @Parameters(split = ",") String[] values;
-        }
-        Args args = CommandLine.populateCommand(new Args(), "a,b,c");
-        assertArrayEquals(new String[] {"a", "b", "c"}, args.values);
-
-        args = CommandLine.populateCommand(new Args(), "a,b,c", "B", "C");
-        assertArrayEquals(new String[] {"a", "b", "c", "B", "C"}, args.values);
-
-        args = CommandLine.populateCommand(new Args(), "a,b,c", "B", "C");
-        assertArrayEquals(new String[] {"a", "b", "c", "B", "C"}, args.values);
-
-        args = CommandLine.populateCommand(new Args(), "a,b,c", "B", "C", "D,E,F");
-        assertArrayEquals(new String[] {"a", "b", "c", "B", "C", "D", "E", "F"}, args.values);
-    }
-
-    @Test
-    public void testSplitInParametersArrayWithArity() {
-        class Args {
-            @Parameters(arity = "2..4", split = ",") String[] values;
-        }
-        Args args = CommandLine.populateCommand(new Args(), "a,b", "c,d"); // 2 args
-        assertArrayEquals(new String[] {"a", "b", "c", "d"}, args.values);
-
-        args = CommandLine.populateCommand(new Args(), "a,b", "c,d", "e,f"); // 3 args
-        assertArrayEquals(new String[] {"a", "b", "c", "d", "e", "f"}, args.values);
-
-        args = CommandLine.populateCommand(new Args(), "a,b,c", "B", "d", "e,f"); // 4 args
-        assertArrayEquals(new String[] {"a", "b", "c", "B", "d", "e", "f"}, args.values);
-        try {
-            CommandLine.populateCommand(new Args(), "a,b,c,d,e"); // 1 arg: should fail
-            fail("MissingParameterException expected");
-        } catch (MissingParameterException ex) {
-            assertEquals("positional parameter at index 0..* (<values>) requires at least 2 values, but only 1 were specified: [a,b,c,d,e]", ex.getMessage());
-            assertEquals(1, ex.getMissing().size());
-            assertTrue(ex.getMissing().get(0).toString(), ex.getMissing().get(0) instanceof Model.PositionalParamSpec);
-        }
-        try {
-            CommandLine.populateCommand(new Args()); // 0 arg: should fail
-            fail("MissingParameterException expected");
-        } catch (MissingParameterException ex) {
-            assertEquals("positional parameter at index 0..* (<values>) requires at least 2 values, but none were specified.", ex.getMessage());
-        }
-        try {
-            CommandLine.populateCommand(new Args(), "a,b,c", "B,C", "d", "e", "f,g"); // 5 args
-            fail("MissingParameterException expected");
-        } catch (MissingParameterException ex) {
-            assertEquals("positional parameter at index 0..* (<values>) requires at least 2 values, but only 1 were specified: [f,g]", ex.getMessage());
-        }
-    }
-
-    @Test
-    public void testSplitInParametersCollection() {
-        class Args {
-            @Parameters(split = ",") List<String> values;
-        }
-        Args args = CommandLine.populateCommand(new Args(), "a,b,c");
-        assertEquals(Arrays.asList("a", "b", "c"), args.values);
-
-        args = CommandLine.populateCommand(new Args(), "a,b,c", "B", "C");
-        assertEquals(Arrays.asList("a", "b", "c", "B", "C"), args.values);
-
-        args = CommandLine.populateCommand(new Args(), "a,b,c", "B", "C");
-        assertEquals(Arrays.asList("a", "b", "c", "B", "C"), args.values);
-
-        args = CommandLine.populateCommand(new Args(), "a,b,c", "B", "C", "D,E,F");
-        assertEquals(Arrays.asList("a", "b", "c", "B", "C", "D", "E", "F"), args.values);
-    }
-
-    @Test
-    public void testSplitIgnoredInOptionSingleValueField() {
-        class Args {
-            @Option(names = "-a", split = ",") String value;
-        }
-        Args args = CommandLine.populateCommand(new Args(), "-a=a,b,c");
-        assertEquals("a,b,c", args.value);
-    }
-
-    @Test
-    public void testSplitIgnoredInParameterSingleValueField() {
-        class Args {
-            @Parameters(split = ",") String value;
-        }
-        Args args = CommandLine.populateCommand(new Args(), "a,b,c");
-        assertEquals("a,b,c", args.value);
-    }
-
-    @Test
     public void testParseSubCommands() {
         CommandLine commandLine = Demo.mainCommand();
 
@@ -2183,7 +2030,7 @@ public class CommandLineTest {
                         "[picocli DEBUG] Creating CommandSpec for object of class picocli.Demo$GitRebase with factory picocli.CommandLine$DefaultFactory%n" +
                         "[picocli DEBUG] Creating CommandSpec for object of class picocli.Demo$GitTag with factory picocli.CommandLine$DefaultFactory%n" +
                         "[picocli INFO] Parsing 8 command line args [--git-dir=/home/rpopma/picocli, commit, -m, \"Fixed typos\", --, src1.java, src2.java, src3.java]%n" +
-                        "[picocli DEBUG] Parser configuration: posixClusteredShortOptionsAllowed=true, stopAtPositional=false, stopAtUnmatched=false, separator=null, overwrittenOptionsAllowed=false, unmatchedArgumentsAllowed=false, expandAtFiles=true, atFileCommentChar=#, endOfOptionsDelimiter=--, limitSplit=false, aritySatisfiedByAttachedOptionParam=false%n" +
+                        "[picocli DEBUG] Parser configuration: posixClusteredShortOptionsAllowed=true, stopAtPositional=false, stopAtUnmatched=false, separator=null, overwrittenOptionsAllowed=false, unmatchedArgumentsAllowed=false, expandAtFiles=true, atFileCommentChar=#, endOfOptionsDelimiter=--, limitSplit=false, aritySatisfiedByAttachedOptionParam=false, toggleBooleanFlags=true, unmatchedOptionsArePositionalParams=false, collectErrors=false,caseInsensitiveEnumValuesAllowed=false, trimQuotes=false, splitQuotedStrings=false%n" +
                         "[picocli DEBUG] Set initial value for field java.io.File picocli.Demo$Git.gitDir of type class java.io.File to null.%n" +
                         "[picocli DEBUG] Set initial value for field boolean picocli.CommandLine$AutoHelpMixin.helpRequested of type boolean to false.%n" +
                         "[picocli DEBUG] Set initial value for field boolean picocli.CommandLine$AutoHelpMixin.versionRequested of type boolean to false.%n" +
@@ -2989,62 +2836,9 @@ public class CommandLineTest {
         }
     }
     @Test
-    public void testMapFieldWithSplitRegex() {
-        class App {
-            @Option(names = "-fix", split = "\\|", type = {Integer.class, String.class})
-            Map<Integer,String> message;
-            private void validate() {
-                assertEquals(10, message.size());
-                assertEquals(LinkedHashMap.class, message.getClass());
-                assertEquals("FIX.4.4", message.get(8));
-                assertEquals("69", message.get(9));
-                assertEquals("A", message.get(35));
-                assertEquals("MBT", message.get(49));
-                assertEquals("TargetCompID", message.get(56));
-                assertEquals("9", message.get(34));
-                assertEquals("20130625-04:05:32.682", message.get(52));
-                assertEquals("0", message.get(98));
-                assertEquals("30", message.get(108));
-                assertEquals("052", message.get(10));
-            }
-        }
-        CommandLine.populateCommand(new App(), "-fix", "8=FIX.4.4|9=69|35=A|49=MBT|56=TargetCompID|34=9|52=20130625-04:05:32.682|98=0|108=30|10=052").validate();
-    }
-    @Test
-    public void testMapFieldArityWithSplitRegex() {
-        class App {
-            @Option(names = "-fix", arity = "2", split = "\\|", type = {Integer.class, String.class})
-            Map<Integer,String> message;
-            private void validate() {
-                assertEquals(message.toString(), 4, message.size());
-                assertEquals(LinkedHashMap.class, message.getClass());
-                assertEquals("a", message.get(1));
-                assertEquals("b", message.get(2));
-                assertEquals("c", message.get(3));
-                assertEquals("d", message.get(4));
-            }
-        }
-        CommandLine.populateCommand(new App(), "-fix", "1=a", "2=b|3=c|4=d").validate(); // 2 args
-        //Arity should not limit the total number of values put in an array or collection #191
-        CommandLine.populateCommand(new App(), "-fix", "1=a", "2=b", "-fix", "3=c", "4=d").validate(); // 2 args
-
-        try {
-            CommandLine.populateCommand(new App(), "-fix", "1=a|2=b|3=c|4=d"); // 1 arg
-            fail("MissingParameterException expected");
-        } catch (MissingParameterException ex) {
-            assertEquals("option '-fix' at index 0 (<Integer=String>) requires at least 2 values, but only 1 were specified: [1=a|2=b|3=c|4=d]", ex.getMessage());
-        }
-        try {
-            CommandLine.populateCommand(new App(), "-fix", "1=a", "2=b", "3=c|4=d"); // 3 args
-            fail("UnmatchedArgumentException expected");
-        } catch (UnmatchedArgumentException ex) {
-            assertEquals("Unmatched argument: 3=c|4=d", ex.getMessage());
-        }
-    }
-    @Test
     public void testMapPositionalParameterFieldMaxArity() {
         class App {
-            @Parameters(index = "0", arity = "2", split = "\\|", type = {Integer.class, String.class})
+            @Parameters(index = "0", arity = "2", type = {Integer.class, String.class})
             Map<Integer,String> message;
         }
         try {
@@ -3061,7 +2855,7 @@ public class CommandLineTest {
     @Test
     public void testMapPositionalParameterFieldArity3() {
         class App {
-            @Parameters(index = "0", arity = "3", split = "\\|", type = {Integer.class, String.class})
+            @Parameters(index = "0", arity = "3", type = {Integer.class, String.class})
             Map<Integer,String> message;
         }
         try {
@@ -3283,14 +3077,14 @@ public class CommandLineTest {
 
         String expected = String.format("" +
                 "[picocli INFO] Parsing 2 command line args [-yy, -a=A]%n" +
-                "[picocli INFO] Setting field String picocli.CommandLineTest$47App.first to 'A' (was 'null') for option -a%n" +
+                "[picocli INFO] Setting field String %1$s.first to 'A' (was 'null') for option -a%n" +
                 "[picocli INFO] Unmatched arguments: [-yy]%n" +
                 "[picocli INFO] Parsing 2 command line args [-y, -b=B]%n" +
-                "[picocli INFO] Setting field String picocli.CommandLineTest$47App.second to 'B' (was 'null') for option -b%n" +
+                "[picocli INFO] Setting field String %1$s.second to 'B' (was 'null') for option -b%n" +
                 "[picocli INFO] Unmatched arguments: [-y]%n" +
                 "[picocli INFO] Parsing 2 command line args [--y, -c=C]%n" +
-                "[picocli INFO] Setting field String picocli.CommandLineTest$47App.third to 'C' (was 'null') for option -c%n" +
-                "[picocli INFO] Unmatched arguments: [--y]%n");
+                "[picocli INFO] Setting field String %1$s.third to 'C' (was 'null') for option -c%n" +
+                "[picocli INFO] Unmatched arguments: [--y]%n", App.class.getName());
         String actual = new String(baos.toByteArray(), "UTF8");
         assertEquals(expected, actual);
         setTraceLevel("WARN");

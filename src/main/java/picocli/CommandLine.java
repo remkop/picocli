@@ -426,10 +426,8 @@ public class CommandLine {
         return this;
     }
 
-     /** Returns whether the parser should trim quotes from command line arguments before processing them. The default is {@code false}.
-     * @return {@code true} if enum values can be specified that don't match the {@code toString()} value of the enum constant, {@code false} otherwise;
-     * e.g., for an option of type <a href="https://docs.oracle.com/javase/8/docs/api/java/time/DayOfWeek.html">java.time.DayOfWeek</a>,
-     * values {@code MonDaY}, {@code monday} and {@code MONDAY} are all recognized if {@code true}.
+    /** Returns whether the parser should trim quotes from command line arguments before processing them. The default is {@code false}.
+     * @return {@code true} if the parser should trim quotes from command line arguments before processing them, {@code false} otherwise;
      * @since 3.7 */
     public boolean isTrimQuotes() { return getCommandSpec().parser().trimQuotes(); }
 
@@ -446,6 +444,31 @@ public class CommandLine {
         getCommandSpec().parser().trimQuotes(newValue);
         for (CommandLine command : getCommandSpec().subcommands().values()) {
             command.setTrimQuotes(newValue);
+        }
+        return this;
+    }
+
+    /** Returns whether the parser is allowed to split quoted Strings or not. The default is {@code false},
+     * so quoted strings are treated as a single value that cannot be split.
+     * @return {@code true} if the parser is allowed to split quoted Strings, {@code false} otherwise;
+     * @see ArgSpec#splitRegex()
+     * @since 3.7 */
+    public boolean isSplitQuotedStrings() { return getCommandSpec().parser().splitQuotedStrings(); }
+
+    /** Sets whether the parser is allowed to split quoted Strings. The default is {@code false}.
+     * <p>The specified setting will be registered with this {@code CommandLine} and the full hierarchy of its
+     * subcommands and nested sub-subcommands <em>at the moment this method is called</em>. Subcommands added
+     * later will have the default setting. To ensure a setting is applied to all
+     * subcommands, call the setter last, after adding subcommands.</p>
+     * @param newValue the new setting
+     * @return this {@code CommandLine} object, to allow method chaining
+     * @see ArgSpec#splitRegex()
+     * @since 3.7
+     */
+    public CommandLine setSplitQuotedStrings(boolean newValue) {
+        getCommandSpec().parser().splitQuotedStrings(newValue);
+        for (CommandLine command : getCommandSpec().subcommands().values()) {
+            command.setSplitQuotedStrings(newValue);
         }
         return this;
     }
@@ -4348,6 +4371,7 @@ public class CommandLine {
             private boolean collectErrors = false;
             private boolean caseInsensitiveEnumValuesAllowed = false;
             private boolean trimQuotes = false;
+            private boolean splitQuotedStrings = false;
 
             /** Returns the String to use as the separator between options and option parameters. {@code "="} by default,
              * initialized from {@link Command#separator()} if defined.*/
@@ -4379,6 +4403,9 @@ public class CommandLine {
             /** @see CommandLine#isTrimQuotes()
              * @since 3.7 */
             public boolean trimQuotes()  { return trimQuotes; }
+            /** @see CommandLine#isSplitQuotedStrings()
+             * @since 3.7 */
+            public boolean splitQuotedStrings()  { return splitQuotedStrings; }
             /** @see CommandLine#isUnmatchedOptionsArePositionalParams() */
             public boolean unmatchedOptionsArePositionalParams() { return unmatchedOptionsArePositionalParams; }
             private boolean splitFirst()                       { return limitSplit(); }
@@ -4421,6 +4448,9 @@ public class CommandLine {
             /** @see CommandLine#setTrimQuotes(boolean)
              * @since 3.7 */
             public ParserSpec trimQuotes(boolean trimQuotes) { this.trimQuotes = trimQuotes; return this; }
+            /** @see CommandLine#setSplitQuotedStrings(boolean)
+             * @since 3.7 */
+            public ParserSpec splitQuotedStrings(boolean splitQuotedStrings)  { this.splitQuotedStrings = splitQuotedStrings; return this; }
             /** @see CommandLine#setUnmatchedOptionsArePositionalParams(boolean) */
             public ParserSpec unmatchedOptionsArePositionalParams(boolean unmatchedOptionsArePositionalParams) { this.unmatchedOptionsArePositionalParams = unmatchedOptionsArePositionalParams; return this; }
             /** Sets whether exceptions during parsing should be collected instead of thrown.
@@ -4439,10 +4469,14 @@ public class CommandLine {
             public String toString() {
                 return String.format("posixClusteredShortOptionsAllowed=%s, stopAtPositional=%s, stopAtUnmatched=%s, " +
                                 "separator=%s, overwrittenOptionsAllowed=%s, unmatchedArgumentsAllowed=%s, expandAtFiles=%s, " +
-                                "atFileCommentChar=%s, endOfOptionsDelimiter=%s, limitSplit=%s, aritySatisfiedByAttachedOptionParam=%s",
+                                "atFileCommentChar=%s, endOfOptionsDelimiter=%s, limitSplit=%s, aritySatisfiedByAttachedOptionParam=%s, " +
+                                "toggleBooleanFlags=%s, unmatchedOptionsArePositionalParams=%s, collectErrors=%s," +
+                                "caseInsensitiveEnumValuesAllowed=%s, trimQuotes=%s, splitQuotedStrings=%s",
                         posixClusteredShortOptionsAllowed, stopAtPositional, stopAtUnmatched,
                         separator, overwrittenOptionsAllowed, unmatchedArgumentsAllowed, expandAtFiles,
-                        atFileCommentChar, endOfOptionsDelimiter, limitSplit, aritySatisfiedByAttachedOptionParam);
+                        atFileCommentChar, endOfOptionsDelimiter, limitSplit, aritySatisfiedByAttachedOptionParam,
+                        toggleBooleanFlags, unmatchedOptionsArePositionalParams, collectErrors,
+                        caseInsensitiveEnumValuesAllowed, trimQuotes, splitQuotedStrings);
             }
 
             void initFrom(ParserSpec settings) {
@@ -4459,6 +4493,10 @@ public class CommandLine {
                 unmatchedOptionsArePositionalParams = settings.unmatchedOptionsArePositionalParams;
                 limitSplit = settings.limitSplit;
                 aritySatisfiedByAttachedOptionParam = settings.aritySatisfiedByAttachedOptionParam;
+                collectErrors = settings.collectErrors;
+                caseInsensitiveEnumValuesAllowed = settings.caseInsensitiveEnumValuesAllowed;
+                trimQuotes = settings.trimQuotes;
+                splitQuotedStrings = settings.splitQuotedStrings;
             }
         }
         /** Models the shared attributes of {@link OptionSpec} and {@link PositionalParamSpec}.
@@ -4782,11 +4820,78 @@ public class CommandLine {
             /** Returns a string respresentation of this option or positional parameter. */
             public String toString() { return toString; }
     
-            private String[] splitValue(String value, ParserSpec parser, Range arity, int consumed) {
+            String[] splitValue(String value, ParserSpec parser, Range arity, int consumed) {
                 if (splitRegex().length() == 0) { return new String[] {value}; }
                 int limit = parser.limitSplit() ? Math.max(arity.max - consumed, 0) : 0;
-                return value.split(splitRegex(), limit);
+                if (parser.splitQuotedStrings()) {
+                    return value.split(splitRegex(), limit);
+                }
+                return splitRespectingQuotedStrings(value, limit, parser);
             }
+            // @since 3.7
+            private String[] splitRespectingQuotedStrings(String value, int limit, ParserSpec parser) {
+                StringBuilder splittable = new StringBuilder();
+                StringBuilder temp = new StringBuilder();
+                StringBuilder current = splittable;
+                Queue<String> quotedValues = new LinkedList<String>();
+                boolean escaping = false, inQuote = false;
+                for (char c : value.toCharArray()) {
+                    switch (c) {
+                        case '\\': escaping = !escaping; break;
+                        case '\"':
+                            if (!escaping) {
+                                inQuote = !inQuote;
+                                current = inQuote ? temp : splittable;
+                                if (inQuote) {
+                                    splittable.append(c);
+                                    continue;
+                                } else {
+                                    quotedValues.add(temp.toString());
+                                    temp.setLength(0);
+                                }
+                            }
+                            break;
+                        default: escaping = false; break;
+                    }
+                    current.append(c);
+                }
+                if (temp.length() > 0) {
+                    new Tracer().warn("Unbalanced quotes in [%s] for %s (value=%s)%n", temp, this, value);
+                    quotedValues.add(temp.toString());
+                    temp.setLength(0);
+                }
+                String[] result = splittable.toString().split(splitRegex(), limit);
+                for (int i = 0; i < result.length; i++) {
+                    result[i] = restoreQuotedValues(result[i], quotedValues, parser);
+                }
+                if (!quotedValues.isEmpty()) {
+                    new Tracer().warn("Unable to respect quotes while splitting value %s for %s (unprocessed remainder: %s)%n", value, this, quotedValues);
+                    return value.split(splitRegex(), limit);
+                }
+                return result;
+            }
+
+            private String restoreQuotedValues(String part, Queue<String> quotedValues, ParserSpec parser) {
+                StringBuilder result = new StringBuilder();
+                boolean escaping = false, inQuote = false, skip = false;
+                for (char c : part.toCharArray()) {
+                    switch (c) {
+                        case '\\': escaping = !escaping; break;
+                        case '\"':
+                            if (!escaping) {
+                                inQuote = !inQuote;
+                                if (!inQuote) { result.append(quotedValues.remove()); }
+                                skip = parser.trimQuotes();
+                            }
+                            break;
+                        default: escaping = false; break;
+                    }
+                    if (!skip) { result.append(c); }
+                    skip = false;
+                }
+                return result.toString();
+            }
+
             protected boolean equalsImpl(ArgSpec other) {
                 if (other == this) { return true; }
                 boolean result = Assert.equals(this.defaultValue, other.defaultValue)
