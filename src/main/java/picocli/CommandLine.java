@@ -7227,10 +7227,10 @@ public class CommandLine {
                 }
             }
             Object array = Array.newInstance(type, newValues.size());
-            argSpec.setValue(array, commandSpec.commandLine());
             for (int i = 0; i < newValues.size(); i++) {
                 Array.set(array, i, newValues.get(i));
             }
+            argSpec.setValue(array, commandSpec.commandLine());
             parseResult.add(argSpec, position);
             return converted.size(); // return how many args were consumed
         }

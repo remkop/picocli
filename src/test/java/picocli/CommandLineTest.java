@@ -195,6 +195,38 @@ public class CommandLineTest {
         assertNotSame(array, params.array);
         assertArrayEquals(new int[]{3, 2, 1}, params.array);
     }
+    @Test
+    public void testArrayPositionalParametersAreFilledWithValues() {
+        @Command
+        class ArrayPositionalParams {
+            String string;
+            @Parameters()
+            void setString( String[] array) {
+                StringBuilder sb = new StringBuilder();
+                for (String s : array) { sb.append(s); }
+                string = sb.toString();
+            }
+        }
+        ArrayPositionalParams params = new ArrayPositionalParams();
+        new CommandLine(params).parse("foo", "bar", "baz");
+        assertEquals("foobarbaz", params.string);
+    }
+    @Test
+    public void testArrayOptionsAreFilledWithValues() {
+        @Command
+        class ArrayPositionalParams {
+            String string;
+            @Option(names="-s")
+            void setString( String[] array) {
+                StringBuilder sb = new StringBuilder();
+                for (String s : array) { sb.append(s); }
+                string = sb.toString();
+            }
+        }
+        ArrayPositionalParams params = new ArrayPositionalParams();
+        new CommandLine(params).parse("-s", "foo", "-s", "bar", "-s", "baz");
+        assertEquals("foobarbaz", params.string);
+    }
     private class ListPositionalParams {
         @Parameters(type = Integer.class) List<Integer> list;
     }
