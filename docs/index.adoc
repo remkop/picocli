@@ -67,7 +67,7 @@ assert  app.inputFiles != null && app.inputFiles.length == 2;
 ----
 
 Here is a small example application that uses the `CommandLine.call` <<Less Boilerplate,convenience method>>
-to do parsing and error handling in one line of code. The <<Fully Automatic Help,mixinStandardHelpOptions>> attribute is all
+to do parsing and error handling in one line of code. The <<Mixin Standard Help Options,mixinStandardHelpOptions>> attribute is all
 that is needed to give your application usage help and version help.
 
 [[CheckSum-application]]
@@ -1181,7 +1181,7 @@ myapp help
 ----
 
 === Custom Help Subcommands
-Custom help subcommands should mark themselves as a <<Help subcommands,help command>> to tell picocli not to throw a `MissingParameterException` when required options are missing.
+Custom help subcommands should mark themselves as a <<Help Subcommands,help command>> to tell picocli not to throw a `MissingParameterException` when required options are missing.
 
 [source,java]
 ----
@@ -1212,7 +1212,7 @@ public interface IHelpCommandInitializable {
 From picocli v2.0, the <<Less Boilerplate,convenience methods>> will automatically print usage help and version information
 when a help option was specified on the command line (options annotated with the `versionHelp` or `usageHelp` attribute - but not the `help` attribute).
 
-The same holds for the `mixinStandardHelpOptions` attribute, the built-in `HelpCommand` and any custom help subcommands marked as a <<Help subcommands,help command>>.
+The same holds for the `mixinStandardHelpOptions` attribute, the built-in `HelpCommand` and any custom help subcommands marked as a <<Help Subcommands,help command>>.
 
 The following <<Less Boilerplate,convenience methods>> automatically print help:
 
@@ -2162,7 +2162,7 @@ class Git {
 }
 ----
 
-The above example uses the <<Fully Automatic Help,mixinStandardHelpOptions>> attribute to mix in
+The above example uses the <<Mixin Standard Help Options,mixinStandardHelpOptions>> attribute to mix in
 <<Help Options,`usageHelp`>> and <<Help Options,`versionHelp`>> options and registers the `help` subcommand.
 
 The usage help message for each subcommand is produced by calling `CommandLine.usage(new SubCommand(), out)`.
@@ -2289,7 +2289,7 @@ public class MyCommand extends ReusableOptions { ... }
 Picocli 3.0 introduces the concept of "mixins". Mixins are a convenient alternative to subclassing:
 picocli annotations from _any_ class can be added to ("mixed in" with) another command.
 This includes options, positional parameters, subcommands and command attributes.
-Picocli <<Fully Automatic Help,mixinStandardHelpOptions>> internally uses a mixin.
+Picocli <<Mixin Standard Help Options,mixinStandardHelpOptions>> internally uses a mixin.
 
 A mixin is a separate class with options, positional parameters, subcommands and command attributes
 that you want to reuse in other commands.
