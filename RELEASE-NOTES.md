@@ -1,6 +1,38 @@
 # picocli Release Notes
 
 
+# <a name="3.7.1"></a> Picocli 3.7.1 (UNRELEASED)
+The picocli community is pleased to announce picocli 3.7.1.
+
+This release contains bugfixes and minor enhancements.
+
+
+Many thanks to the many members of the picocli community who contributed! 
+
+This is the forty-second public release.
+Picocli follows [semantic versioning](http://semver.org/).
+
+## <a name="3.7.1"></a> Table of Contents
+* [New and noteworthy](#3.7.1-new)
+* [Fixed issues](#3.7.1-fixes)
+* [Deprecations](#3.7.1-deprecated)
+* [Potential breaking changes](#3.7.1-breaking-changes)
+
+## <a name="3.7.1-new"></a> New and Noteworthy
+
+## <a name="3.7.1-fixes"></a> Fixed issues
+- [#525] Enhancement: Allow `@Mixin` parameters in `@Command` methods. Thanks to [Paul Horn](https://github.com/knutwalker) for the pull request.
+- [#524] Enhancement/Bugfix: `ReflectionConfigGenerator` in `picocli-codegen` should generate configuration for `@Mixin` fields. Thanks to [Paul Horn](https://github.com/knutwalker) for the pull request.
+- [#523] Bugfix: Array should be initialized before calling setter method. Thanks to [Paul Horn](https://github.com/knutwalker) for the pull request.
+
+## <a name="3.7.1-deprecated"></a> Deprecations
+No features were deprecated in this release.
+
+## <a name="3.7.1-breaking-changes"></a> Potential breaking changes
+This release has no breaking changes.
+
+
+
 # <a name="3.7.0"></a> Picocli 3.7.0
 The picocli community is pleased to announce picocli 3.7.0.
 
