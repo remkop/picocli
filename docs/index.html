@@ -762,7 +762,7 @@ Example app = CommandLine.populateCommand(<span class="keyword">new</span> Examp
 </div>
 <div class="paragraph">
 <p>Here is a small example application that uses the <code>CommandLine.call</code> <a href="#_less_boilerplate">convenience method</a>
-to do parsing and error handling in one line of code. The <a href="#Fully Automatic Help">mixinStandardHelpOptions</a> attribute is all
+to do parsing and error handling in one line of code. The <a href="#_mixin_standard_help_options">mixinStandardHelpOptions</a> attribute is all
 that is needed to give your application usage help and version help.</p>
 </div>
 <div id="CheckSum-application" class="listingblock">
@@ -2412,7 +2412,7 @@ on any application command. It prints usage help for the parent command or sibli
 <div class="sect2">
 <h3 id="_custom_help_subcommands">8.4. Custom Help Subcommands</h3>
 <div class="paragraph">
-<p>Custom help subcommands should mark themselves as a <a href="#Help subcommands">help command</a> to tell picocli not to throw a <code>MissingParameterException</code> when required options are missing.</p>
+<p>Custom help subcommands should mark themselves as a <a href="#_help_subcommands">help command</a> to tell picocli not to throw a <code>MissingParameterException</code> when required options are missing.</p>
 </div>
 <div class="listingblock">
 <div class="content">
@@ -2447,7 +2447,7 @@ commands with access to the parent command and sibling commands, whether to use 
 when a help option was specified on the command line (options annotated with the <code>versionHelp</code> or <code>usageHelp</code> attribute - but not the <code>help</code> attribute).</p>
 </div>
 <div class="paragraph">
-<p>The same holds for the <code>mixinStandardHelpOptions</code> attribute, the built-in <code>HelpCommand</code> and any custom help subcommands marked as a <a href="#Help subcommands">help command</a>.</p>
+<p>The same holds for the <code>mixinStandardHelpOptions</code> attribute, the built-in <code>HelpCommand</code> and any custom help subcommands marked as a <a href="#_help_subcommands">help command</a>.</p>
 </div>
 <div class="paragraph">
 <p>The following <a href="#_less_boilerplate">convenience methods</a> automatically print help:</p>
@@ -3760,7 +3760,7 @@ The most commonly used git commands are:
 </div>
 </div>
 <div class="paragraph">
-<p>The above example uses the <a href="#Fully Automatic Help">mixinStandardHelpOptions</a> attribute to mix in
+<p>The above example uses the <a href="#_mixin_standard_help_options">mixinStandardHelpOptions</a> attribute to mix in
 <a href="#_help_options"><code>usageHelp</code></a> and <a href="#_help_options"><code>versionHelp</code></a> options and registers the <code>help</code> subcommand.</p>
 </div>
 <div class="paragraph">
@@ -3918,7 +3918,7 @@ To reduce duplication, picocli supports both subclassing and mixins as ways to r
 <p>Picocli 3.0 introduces the concept of "mixins". Mixins are a convenient alternative to subclassing:
 picocli annotations from <em>any</em> class can be added to ("mixed in" with) another command.
 This includes options, positional parameters, subcommands and command attributes.
-Picocli <a href="#Fully Automatic Help">mixinStandardHelpOptions</a> internally uses a mixin.</p>
+Picocli <a href="#_mixin_standard_help_options">mixinStandardHelpOptions</a> internally uses a mixin.</p>
 </div>
 <div class="paragraph">
 <p>A mixin is a separate class with options, positional parameters, subcommands and command attributes
