@@ -4886,15 +4886,16 @@ public class CommandLine {
                 StringBuilder current = splittable;
                 Queue<String> quotedValues = new LinkedList<String>();
                 boolean escaping = false, inQuote = false;
-                for (char c : value.toCharArray()) {
-                    switch (c) {
+                for (int ch = 0, i = 0; i < value.length(); i += Character.charCount(ch)) {
+                    ch = value.codePointAt(i);
+                    switch (ch) {
                         case '\\': escaping = !escaping; break;
                         case '\"':
                             if (!escaping) {
                                 inQuote = !inQuote;
                                 current = inQuote ? temp : splittable;
                                 if (inQuote) {
-                                    splittable.append(c);
+                                    splittable.appendCodePoint(ch);
                                     continue;
                                 } else {
                                     quotedValues.add(temp.toString());
@@ -4904,7 +4905,7 @@ public class CommandLine {
                             break;
                         default: escaping = false; break;
                     }
-                    current.append(c);
+                    current.appendCodePoint(ch);
                 }
                 if (temp.length() > 0) {
                     new Tracer().warn("Unbalanced quotes in [%s] for %s (value=%s)%n", temp, this, value);
@@ -4925,8 +4926,9 @@ public class CommandLine {
             private String restoreQuotedValues(String part, Queue<String> quotedValues, ParserSpec parser) {
                 StringBuilder result = new StringBuilder();
                 boolean escaping = false, inQuote = false, skip = false;
-                for (char c : part.toCharArray()) {
-                    switch (c) {
+                for (int ch = 0, i = 0; i < part.length(); i += Character.charCount(ch)) {
+                    ch = part.codePointAt(i);
+                    switch (ch) {
                         case '\\': escaping = !escaping; break;
                         case '\"':
                             if (!escaping) {
@@ -4937,7 +4939,7 @@ public class CommandLine {
                             break;
                         default: escaping = false; break;
                     }
-                    if (!skip) { result.append(c); }
+                    if (!skip) { result.appendCodePoint(ch); }
                     skip = false;
                 }
                 return result.toString();
