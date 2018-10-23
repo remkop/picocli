@@ -136,8 +136,9 @@ jacocoTestReport {
 task bumpReadmeVersion {
     doLast {
         // README.md
-        ant.replaceregexp(match: "$projectPreviousVersion", replace: "$version", flags: 'g', byline: true, encoding: 'UTF8') {
+        ant.replaceregexp(match: "$projectPreviousReleaseVersion", replace: "$version", flags: 'g', byline: true, encoding: 'UTF8') {
             fileset(dir: '.', includes: 'README.md')
+            fileset(dir: './picocli-codegen/README.md', includes: 'README.md')
         }
     }
 }
