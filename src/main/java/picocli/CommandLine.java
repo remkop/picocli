@@ -1079,7 +1079,7 @@ public class CommandLine {
                             return executionResult;
                         }
                     }
-                    throw new UnsupportedOperationException("Invoking non-static method without default c'tor not implemented");
+                    throw new UnsupportedOperationException("Invoking non-static method without default constructor not implemented");
                 }
             } catch (ParameterException ex) {
                 throw ex;
@@ -3722,14 +3722,11 @@ public class CommandLine {
              * @see #addSubcommand(String, CommandLine)
              * @since 3.6.0
              */
-            public CommandSpec addMethodSubcommands() {
-                addMethodSubcommands(new DefaultFactory());
-                return this;
-            }
+            public CommandSpec addMethodSubcommands() { return addMethodSubcommands(new DefaultFactory()); }
 
             /** Reflects on the class of the {@linkplain #userObject() user object} and registers any command methods
              * (class methods annotated with {@code @Command}) as subcommands.
-             *
+             * @param factory the factory used to create instances of subcommands, converters, etc., that are registered declaratively with annotation attributes
              * @return this {@link CommandSpec} object for method chaining
              * @see #addSubcommand(String, CommandLine)
              * @since 3.7.0
@@ -3876,7 +3873,7 @@ public class CommandLine {
                     }
                     CommandSpec mixin = mixinEntry.getValue();
                     int mixinArgs = mixin.args.size();
-                    argsLength -= (mixinArgs - 1); // sub 1 less b/c that's the mixin
+                    argsLength -= (mixinArgs - 1); // subtract 1 because that's the mixin
                     if (allMixins == null) {
                         allMixins = new IdentityHashMap<Class<?>, CommandSpec>(mixins.size());
                     }
