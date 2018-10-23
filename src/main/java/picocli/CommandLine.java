@@ -919,7 +919,7 @@ public class CommandLine {
      * <pre>
      *     err().println(paramException.getMessage());
      *     paramException.getCommandLine().usage(err(), ansi());
-     *     if (hasExitCode()) System.exit(exitCode()); else return prototypeReturnValue;
+     *     if (hasExitCode()) System.exit(exitCode()); else return returnValue;
      * </pre>
      * <p>{@code ExecutionExceptions} that occurred while executing the {@code Runnable} or {@code Callable} command are simply rethrown and not handled.</p>
      * @since 2.0 */
@@ -1109,7 +1109,7 @@ public class CommandLine {
          * Finally, either a list of result objects is returned, or the JVM is terminated if an exit code {@linkplain #andExit(int) was set}.
          *
          * @param parseResult the {@code ParseResult} that resulted from successfully parsing the command line arguments
-         * @return the result of processing parse results, may be the specified prototype or some other object
+         * @return the result of {@link #handle(ParseResult) processing parse results}
          * @throws ParameterException if the {@link HelpCommand HelpCommand} was invoked for an unknown subcommand. Any {@code ParameterExceptions}
          *      thrown from this method are treated as if this exception was thrown during parsing and passed to the {@link IExceptionHandler2}
          * @throws ExecutionException if a problem occurred while processing the parse results; client code can use
@@ -1127,7 +1127,7 @@ public class CommandLine {
          * rethrowing an {@code ExecutionException} that details the problem and captures the offending {@code CommandLine} object.
          *
          * @param parseResult the {@code ParseResult} that resulted from successfully parsing the command line arguments
-         * @return the result of processing parse results, may be the specified prototype or some other object
+         * @return the result of processing parse results
          * @throws ExecutionException if a problem occurred while processing the parse results; client code can use
          *      {@link ExecutionException#getCommandLine()} to get the command or subcommand where processing failed
          */
@@ -1288,13 +1288,13 @@ public class CommandLine {
          *      {@link ExecutionException#getCommandLine()} to get the command or subcommand where processing failed
          * @since 3.0 */
         protected List<Object> handle(ParseResult parseResult) throws ExecutionException {
-            List<Object> prototypeResult = new ArrayList<Object>();
-            execute(parseResult.commandSpec().commandLine(), prototypeResult);
+            List<Object> result = new ArrayList<Object>();
+            execute(parseResult.commandSpec().commandLine(), result);
             while (parseResult.hasSubcommand()) {
                 parseResult = parseResult.subcommand();
-                execute(parseResult.commandSpec().commandLine(), prototypeResult);
+                execute(parseResult.commandSpec().commandLine(), result);
             }
-            return returnResultOrExit(prototypeResult);
+            return returnResultOrExit(result);
         }
         @Override protected RunAll self() { return this; }
     }
@@ -1369,11 +1369,11 @@ public class CommandLine {
      * ParseResult parseResult = null;
      * try {
      *     parseResult = parseArgs(args);
-     *     return handler.handleParseResult(parseResult, prototypeReturnValue);
+     *     return handler.handleParseResult(parseResult);
      * } catch (ParameterException ex) {
-     *     return exceptionHandler.handleParseException(ex, prototypeReturnValue, (String[]) args);
+     *     return exceptionHandler.handleParseException(ex, (String[]) args);
      * } catch (ExecutionException ex) {
-     *     return exceptionHandler.handleExecutionException(ex, prototypeReturnValue, parseResult);
+     *     return exceptionHandler.handleExecutionException(ex, parseResult);
      * }
      * </pre>
      * <p>

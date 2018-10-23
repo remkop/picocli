@@ -24,6 +24,7 @@ Picocli follows [semantic versioning](http://semver.org/).
 - [#525] Enhancement: Allow `@Mixin` parameters in `@Command` methods. Thanks to [Paul Horn](https://github.com/knutwalker) for the pull request.
 - [#524] Enhancement/Bugfix: `ReflectionConfigGenerator` in `picocli-codegen` should generate configuration for `@Mixin` fields. Thanks to [Paul Horn](https://github.com/knutwalker) for the pull request.
 - [#523] Bugfix: Array should be initialized before calling setter method. Thanks to [Paul Horn](https://github.com/knutwalker) for the pull request.
+- [#528] Doc: javadoc for xxxHandler API referred to non-existant prototypeReturnValue.
 
 ## <a name="3.7.1-deprecated"></a> Deprecations
 No features were deprecated in this release.
