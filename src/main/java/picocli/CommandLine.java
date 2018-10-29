@@ -39,10 +39,14 @@ import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.regex.Pattern;
 
+import picocli.CommandLine.Help.Ansi;
 import picocli.CommandLine.Help.Ansi.IStyle;
 import picocli.CommandLine.Help.Ansi.Style;
 import picocli.CommandLine.Help.Ansi.Text;
+import picocli.CommandLine.Help.ColorScheme;
 import picocli.CommandLine.Model.*;
+import picocli.CommandLine.Model.OptionSpec;
+import picocli.CommandLine.Model.PositionalParamSpec;
 
 import static java.util.Locale.ENGLISH;
 import static picocli.CommandLine.Model.ArgsReflection.abbreviate;
@@ -147,6 +151,7 @@ public class CommandLine {
     private final CommandSpec commandSpec;
     private final Interpreter interpreter;
     private final IFactory factory;
+    private IHelpFactory helpFactory;
 
     /**
      * Constructs a new {@code CommandLine} interpreter with the specified object (which may be an annotated user object or a {@link CommandSpec CommandSpec}) and a default subcommand factory.
@@ -311,6 +316,15 @@ public class CommandLine {
     @SuppressWarnings("unchecked")
     public <T> T getCommand() {
         return (T) getCommandSpec().userObject();
+    }
+
+    public IHelpFactory helpFactory() {
+        return helpFactory != null ? helpFactory : (helpFactory = new DefaultHelpFactory());
+    }
+
+    public CommandLine helpFactory(IHelpFactory helpFactory) {
+        this.helpFactory = helpFactory;
+        return this;
     }
 
     /** Returns {@code true} if an option annotated with {@link Option#usageHelp()} was specified on the command line.
@@ -1500,43 +1514,27 @@ public class CommandLine {
      * @param colorScheme the {@code ColorScheme} defining the styles for options, parameters and commands when ANSI is enabled
      */
     public void usage(PrintStream out, Help.ColorScheme colorScheme) {
-        out.print(usage(new StringBuilder(), new Help(getCommandSpec(), colorScheme)));
+        out.print(getUsageMessage(colorScheme));
     }
     /** Similar to {@link #usage(PrintStream, Help.ColorScheme)}, but with the specified {@code PrintWriter} instead of a {@code PrintStream}.
      * @since 3.0 */
     public void usage(PrintWriter writer, Help.ColorScheme colorScheme) {
-        writer.print(usage(new StringBuilder(), new Help(getCommandSpec(), colorScheme)));
+        writer.print(getUsageMessage(colorScheme));
     }
     /** Similar to {@link #usage(PrintStream)}, but returns the usage help message as a String instead of printing it to the {@code PrintStream}.
      * @since 3.2 */
     public String getUsageMessage() {
-        return usage(new StringBuilder(), new Help(getCommandSpec())).toString();
+        return helpFactory().createHelp(getCommandSpec()).buildUsageMessage();
     }
     /** Similar to {@link #usage(PrintStream, Help.Ansi)}, but returns the usage help message as a String instead of printing it to the {@code PrintStream}.
      * @since 3.2 */
     public String getUsageMessage(Help.Ansi ansi) {
-        return usage(new StringBuilder(), new Help(getCommandSpec(), ansi)).toString();
+        return helpFactory().createHelp(getCommandSpec(), ansi).buildUsageMessage();
     }
     /** Similar to {@link #usage(PrintStream, Help.ColorScheme)}, but returns the usage help message as a String instead of printing it to the {@code PrintStream}.
      * @since 3.2 */
     public String getUsageMessage(Help.ColorScheme colorScheme) {
-        return usage(new StringBuilder(), new Help(getCommandSpec(), colorScheme)).toString();
-    }
-    private static StringBuilder usage(StringBuilder sb, Help help) {
-        return sb.append(help.headerHeading())
-                .append(help.header())
-                .append(help.synopsisHeading())      //e.g. Usage:
-                .append(help.synopsis(help.synopsisHeadingLength())) //e.g. &lt;main class&gt; [OPTIONS] &lt;command&gt; [COMMAND-OPTIONS] [ARGUMENTS]
-                .append(help.descriptionHeading())   //e.g. %nDescription:%n%n
-                .append(help.description())          //e.g. {"Converts foos to bars.", "Use options to control conversion mode."}
-                .append(help.parameterListHeading()) //e.g. %nPositional parameters:%n%n
-                .append(help.parameterList())        //e.g. [FILE...] the files to convert
-                .append(help.optionListHeading())    //e.g. %nOptions:%n%n
-                .append(help.optionList())           //e.g. -h, --help   displays this help and exits
-                .append(help.commandListHeading())   //e.g. %nCommands:%n%n
-                .append(help.commandList())          //e.g.    add       adds the frup to the frooble
-                .append(help.footerHeading())
-                .append(help.footer());
+        return helpFactory().createHelp(getCommandSpec(), colorScheme).buildUsageMessage();
     }
 
     /**
@@ -3267,6 +3265,34 @@ public class CommandLine {
             catch (Exception ex) { throw new InitializationException("Could not instantiate " + cls + ": " + ex, ex); }
         }
     }
+
+    public interface IHelpFactory {
+        public Help createHelp(Object command);
+        public Help createHelp(CommandSpec commandSpec);
+        public Help createHelp(CommandSpec commandSpec, Help.Ansi ansi);
+        public Help createHelp(CommandSpec commandSpec, Help.ColorScheme colorScheme);
+    }
+
+    public static abstract class BaseHelpFactory implements IHelpFactory {
+        public Help createHelp(Object command) {
+            return createHelp(CommandSpec.forAnnotatedObject(command, new DefaultFactory()));
+        }
+
+        public Help createHelp(CommandSpec commandSpec) {
+            return createHelp(commandSpec, Ansi.AUTO);
+        }
+
+        public Help createHelp(CommandSpec commandSpec, Ansi ansi) {
+            return createHelp(commandSpec, Help.defaultColorScheme(ansi));
+        }
+    }
+
+    private static class DefaultHelpFactory extends BaseHelpFactory {
+        public Help createHelp(CommandSpec commandSpec, ColorScheme colorScheme) {
+            return new Help(commandSpec, colorScheme);
+        }
+    }
+
     /** Describes the number of parameters required and accepted by an option or a positional parameter.
      * @since 0.9.7
      */
@@ -5500,7 +5526,7 @@ public class CommandLine {
                 /** Sets the index or range specifying which of the command line arguments should be assigned to this positional parameter, and returns this builder. */
                 public Builder index(Range index)   { this.index = index; return self(); }
     
-                Builder capacity(Range capacity)   { this.capacity = capacity; return self(); }
+                public Builder capacity(Range capacity)   { this.capacity = capacity; return self(); }
             }
         }
 
@@ -7971,12 +7997,19 @@ public class CommandLine {
         protected static final String DEFAULT_SEPARATOR = ParserSpec.DEFAULT_SEPARATOR;
 
         private final static int defaultOptionsColumnWidth = 24;
-        private final CommandSpec commandSpec;
-        private final ColorScheme colorScheme;
-        private final Map<String, Help> commands = new LinkedHashMap<String, Help>();
-        private List<String> aliases = Collections.emptyList();
+        protected final CommandSpec commandSpec;
+        protected final ColorScheme colorScheme;
+        protected final Map<String, Help> commands = new LinkedHashMap<String, Help>();
+        protected List<String> aliases = Collections.emptyList();
+        protected List<ISectionRenderer> sections;
 
+        private ICommandListRenderer commandListRenderer;
+        private ISectionHeadingRenderer headingRenderer;
+        private IArgumentListRenderer<OptionSpec> optionListRenderer;
         private IParamLabelRenderer parameterLabelRenderer;
+        private IArgumentListRenderer<PositionalParamSpec> parameterListRenderer;
+        private ISimpleSectionMemberRenderer simpleSectionBodyRenderer;
+        private ISynopsisRenderer synopsisRenderer;
 
         /** Constructs a new {@code Help} instance with a default color scheme, initialized from annotatations
          * on the specified class and superclasses.
@@ -7992,6 +8025,7 @@ public class CommandLine {
         public Help(Object command, Ansi ansi) {
             this(command, defaultColorScheme(ansi));
         }
+
         /** Constructs a new {@code Help} instance with the specified color scheme, initialized from annotatations
          * on the specified class and superclasses.
          * @param command the annotated object to create usage help for
@@ -8000,6 +8034,7 @@ public class CommandLine {
         @Deprecated public Help(Object command, ColorScheme colorScheme) {
             this(CommandSpec.forAnnotatedObject(command, new DefaultFactory()), colorScheme);
         }
+
         /** Constructs a new {@code Help} instance with the specified color scheme, initialized from annotatations
          * on the specified class and superclasses.
          * @param commandSpec the command model to create usage help for
@@ -8010,7 +8045,6 @@ public class CommandLine {
             this.aliases.add(0, commandSpec.name());
             this.colorScheme = Assert.notNull(colorScheme, "colorScheme").applySystemProperties();
             parameterLabelRenderer = createDefaultParamLabelRenderer(); // uses help separator
-
             this.addAllSubcommands(commandSpec.subcommands());
         }
 
@@ -8071,7 +8105,7 @@ public class CommandLine {
          * @return this Help instance (for method chaining) */
         Help addSubcommand(List<String> commandNames, CommandLine commandLine) {
             String all = commandNames.toString();
-            commands.put(all.substring(1, all.length() - 1), new Help(commandLine.commandSpec, colorScheme).withCommandNames(commandNames));
+            commands.put(all.substring(1, all.length() - 1), commandLine.helpFactory().createHelp(commandLine.commandSpec, colorScheme).withCommandNames(commandNames));
             return this;
         }
 
@@ -8082,7 +8116,7 @@ public class CommandLine {
          * @deprecated
          */
         @Deprecated public Help addSubcommand(String commandName, Object command) {
-            commands.put(commandName, new Help(CommandSpec.forAnnotatedObject(command, commandSpec.commandLine().factory)));
+            commands.put(commandName, commandSpec.commandLine().helpFactory().createHelp(CommandSpec.forAnnotatedObject(command, commandSpec.commandLine().factory)));
             return this;
         }
 
@@ -8107,34 +8141,16 @@ public class CommandLine {
          * @see #synopsisHeading
          */
         public String synopsis(int synopsisHeadingLength) {
-            if (!empty(commandSpec.usageMessage().customSynopsis())) { return customSynopsis(); }
-            return commandSpec.usageMessage().abbreviateSynopsis() ? abbreviatedSynopsis()
-                    : detailedSynopsis(synopsisHeadingLength, createShortOptionArityAndNameComparator(), true);
+            return synopsisRenderer().render(commandSpec, colorScheme, synopsisHeadingLength);
         }
 
         /** Generates a generic synopsis like {@code <command name> [OPTIONS] [PARAM1 [PARAM2]...]}, omitting parts
          * that don't apply to the command (e.g., does not show [OPTIONS] if the command has no options).
          * @return a generic synopsis */
         public String abbreviatedSynopsis() {
-            StringBuilder sb = new StringBuilder();
-            if (!commandSpec.optionsMap().isEmpty()) { // only show if annotated object actually has options
-                sb.append(" [OPTIONS]");
-            }
-            // sb.append(" [--] "); // implied
-            for (PositionalParamSpec positionalParam : commandSpec.positionalParameters()) {
-                if (!positionalParam.hidden()) {
-                    sb.append(' ').append(parameterLabelRenderer().renderParameterLabel(positionalParam, ansi(), colorScheme.parameterStyles));
-                }
-            }
-
-            // only show if object has subcommands
-            if (!commandSpec.subcommands().isEmpty()) {
-                sb.append(" [COMMAND]");
-            }
-
-            return colorScheme.commandText(commandSpec.qualifiedName()).toString()
-                    + (sb.toString()) + System.getProperty("line.separator");
+            return synopsisRenderer().renderAbbreviated();
         }
+
         /** Generates a detailed synopsis message showing all options and parameters. Follows the unix convention of
          * showing optional options and parameters in square brackets ({@code [ ]}).
          * @param optionSort comparator to sort options or {@code null} if options should not be sorted
@@ -8153,80 +8169,7 @@ public class CommandLine {
          * @return a detailed synopsis
          * @since 3.0 */
         public String detailedSynopsis(int synopsisHeadingLength, Comparator<OptionSpec> optionSort, boolean clusterBooleanOptions) {
-            Text optionText = ansi().new Text(0);
-            List<OptionSpec> options = new ArrayList<OptionSpec>(commandSpec.options()); // iterate in declaration order
-            if (optionSort != null) {
-                Collections.sort(options, optionSort);// iterate in specified sort order
-            }
-            if (clusterBooleanOptions) { // cluster all short boolean options into a single string
-                List<OptionSpec> booleanOptions = new ArrayList<OptionSpec>();
-                StringBuilder clusteredRequired = new StringBuilder("-");
-                StringBuilder clusteredOptional = new StringBuilder("-");
-                for (OptionSpec option : options) {
-                    if (option.hidden()) { continue; }
-                    if (option.type() == boolean.class || option.type() == Boolean.class) {
-                        String shortestName = option.shortestName();
-                        if (shortestName.length() == 2 && shortestName.startsWith("-")) {
-                            booleanOptions.add(option);
-                            if (option.required()) {
-                                clusteredRequired.append(shortestName.substring(1));
-                            } else {
-                                clusteredOptional.append(shortestName.substring(1));
-                            }
-                        }
-                    }
-                }
-                options.removeAll(booleanOptions);
-                if (clusteredRequired.length() > 1) { // initial length was 1
-                    optionText = optionText.concat(" ").concat(colorScheme.optionText(clusteredRequired.toString()));
-                }
-                if (clusteredOptional.length() > 1) { // initial length was 1
-                    optionText = optionText.concat(" [").concat(colorScheme.optionText(clusteredOptional.toString())).concat("]");
-                }
-            }
-            for (OptionSpec option : options) {
-                if (!option.hidden()) {
-                    Text name = colorScheme.optionText(option.shortestName());
-                    Text param = parameterLabelRenderer().renderParameterLabel(option, colorScheme.ansi(), colorScheme.optionParamStyles);
-                    if (option.required()) { // e.g., -x=VAL
-                        optionText = optionText.concat(" ").concat(name).concat(param).concat("");
-                        if (option.isMultiValue()) { // e.g., -x=VAL [-x=VAL]...
-                            optionText = optionText.concat(" [").concat(name).concat(param).concat("]...");
-                        }
-                    } else {
-                        optionText = optionText.concat(" [").concat(name).concat(param).concat("]");
-                        if (option.isMultiValue()) { // add ellipsis to show option is repeatable
-                            optionText = optionText.concat("...");
-                        }
-                    }
-                }
-            }
-            for (PositionalParamSpec positionalParam : commandSpec.positionalParameters()) {
-                if (!positionalParam.hidden()) {
-                    optionText = optionText.concat(" ");
-                    Text label = parameterLabelRenderer().renderParameterLabel(positionalParam, colorScheme.ansi(), colorScheme.parameterStyles);
-                    optionText = optionText.concat(label);
-                }
-            }
-
-            if(!commandSpec.subcommands().isEmpty()){
-                optionText = optionText.concat(" [")
-                        .concat("COMMAND")
-                        .concat("]");
-            }
-
-            // Fix for #142: first line of synopsis overshoots max. characters
-            String commandName = commandSpec.qualifiedName();
-            int firstColumnLength = commandName.length() + synopsisHeadingLength;
-
-            // synopsis heading ("Usage: ") may be on the same line, so adjust column width
-            TextTable textTable = TextTable.forColumnWidths(ansi(), firstColumnLength, width() - firstColumnLength);
-            textTable.indentWrappedLines = 1; // don't worry about first line: options (2nd column) always start with a space
-
-            // right-adjust the command name by length of synopsis heading
-            Text PADDING = Ansi.OFF.new Text(stringOf('X', synopsisHeadingLength));
-            textTable.addRowValues(PADDING.concat(colorScheme.commandText(commandName)), optionText);
-            return textTable.toString().substring(synopsisHeadingLength); // cut off leading synopsis heading spaces
+            return synopsisRenderer().renderDetailed(synopsisHeadingLength, optionSort, clusterBooleanOptions);
         }
 
         /** Returns the number of characters the synopsis heading will take on the same line as the synopsis.
@@ -8234,9 +8177,10 @@ public class CommandLine {
          * @see #detailedSynopsis(int, Comparator, boolean)
          */
         public int synopsisHeadingLength() {
-            String[] lines = Ansi.OFF.new Text(commandSpec.usageMessage().synopsisHeading()).toString().split("\\r?\\n|\\r|%n", -1);
+            String[] lines = synopsisHeading().split("\\r?\\n|\\r|%n", -1);
             return lines[lines.length - 1].length();
         }
+
         /**
          * <p>Returns a description of the {@linkplain Option options} supported by the application.
          * This implementation {@linkplain #createShortOptionNameComparator() sorts options alphabetically}, and shows
@@ -8246,28 +8190,7 @@ public class CommandLine {
          * @see #optionList(Layout, Comparator, IParamLabelRenderer)
          */
         public String optionList() {
-            Comparator<OptionSpec> sortOrder = commandSpec.usageMessage().sortOptions()
-                    ? createShortOptionNameComparator()
-                    : null;
-
-            return optionList(createLayout(calcLongOptionColumnWidth()), sortOrder, parameterLabelRenderer());
-        }
-
-        private int calcLongOptionColumnWidth() {
-            int max = 0;
-            IOptionRenderer optionRenderer = new DefaultOptionRenderer(false, " ");
-            for (OptionSpec option : commandSpec.options()) {
-                Text[][] values = optionRenderer.render(option, parameterLabelRenderer(), colorScheme);
-                int len = values[0][3].length;
-                if (len < Help.defaultOptionsColumnWidth - 3) { max = Math.max(max, len); }
-            }
-            IParameterRenderer paramRenderer = new DefaultParameterRenderer(false, " ");
-            for (PositionalParamSpec positional : commandSpec.positionalParameters()) {
-                Text[][] values = paramRenderer.render(positional, parameterLabelRenderer(), colorScheme);
-                int len = values[0][3].length;
-                if (len < Help.defaultOptionsColumnWidth - 3) { max = Math.max(max, len); }
-            }
-            return max + 3;
+            return optionList(null, null, null);
         }
 
         /** Sorts all {@code Options} with the specified {@code comparator} (if the comparator is non-{@code null}),
@@ -8279,12 +8202,7 @@ public class CommandLine {
          * @return the fully formatted option list
          * @since 3.0 */
         public String optionList(Layout layout, Comparator<OptionSpec> optionSort, IParamLabelRenderer valueLabelRenderer) {
-            List<OptionSpec> options = new ArrayList<OptionSpec>(commandSpec.options()); // options are stored in order of declaration
-            if (optionSort != null) {
-                Collections.sort(options, optionSort); // default: sort options ABC
-            }
-            layout.addOptions(options, valueLabelRenderer);
-            return layout.toString();
+            return optionListRenderer().render(commandSpec, colorScheme, layout, optionSort, valueLabelRenderer);
         }
 
         /**
@@ -8292,8 +8210,9 @@ public class CommandLine {
          * @return the section of the usage help message that lists the parameters
          */
         public String parameterList() {
-            return parameterList(createLayout(calcLongOptionColumnWidth()), parameterLabelRenderer());
+            return parameterList(null, null);
         }
+
         /**
          * Returns the section of the usage help message that lists the parameters with their descriptions.
          * @param layout the layout to use
@@ -8301,18 +8220,11 @@ public class CommandLine {
          * @return the section of the usage help message that lists the parameters
          */
         public String parameterList(Layout layout, IParamLabelRenderer paramLabelRenderer) {
-            layout.addPositionalParameters(commandSpec.positionalParameters(), paramLabelRenderer);
-            return layout.toString();
+            return parameterListRenderer().render(commandSpec, colorScheme, layout, null, paramLabelRenderer);
         }
 
-        private static String heading(Ansi ansi, int usageWidth, String values, Object... params) {
-            StringBuilder sb = join(ansi, usageWidth, new String[] {values}, new StringBuilder(), params);
-            String result = sb.toString();
-            result = result.endsWith(System.getProperty("line.separator"))
-                    ? result.substring(0, result.length() - System.getProperty("line.separator").length()) : result;
-            return result + new String(spaces(countTrailingSpaces(values)));
-        }
         private static char[] spaces(int length) { char[] result = new char[length]; Arrays.fill(result, ' '); return result; }
+
         private static int countTrailingSpaces(String str) {
             if (str == null) {return 0;}
             int trailingSpaces = 0;
@@ -8339,10 +8251,13 @@ public class CommandLine {
             }
             return sb;
         }
+
         private static String format(String formatString,  Object... params) {
             return formatString == null ? "" : String.format(formatString, params);
         }
-        private int width() { return commandSpec.usageMessage().width(); }
+
+        protected int width() { return commandSpec.usageMessage().width(); }
+
         /** Returns command custom synopsis as a string. A custom synopsis can be zero or more lines, and can be
          * specified declaratively with the {@link Command#customSynopsis()} annotation attribute or programmatically
          * by setting the Help instance's {@link Help#customSynopsis} field.
@@ -8350,8 +8265,9 @@ public class CommandLine {
          * @return the custom synopsis lines combined into a single String (which may be empty)
          */
         public String customSynopsis(Object... params) {
-            return join(ansi(), width(), commandSpec.usageMessage().customSynopsis(), new StringBuilder(), params).toString();
+            return simpleSectionBodyRenderer().render(commandSpec.usageMessage().customSynopsis(), ansi(), width(), params);
         }
+
         /** Returns command description text as a string. Description text can be zero or more lines, and can be specified
          * declaratively with the {@link Command#description()} annotation attribute or programmatically by
          * setting the Help instance's {@link Help#description} field.
@@ -8359,8 +8275,9 @@ public class CommandLine {
          * @return the description lines combined into a single String (which may be empty)
          */
         public String description(Object... params) {
-            return join(ansi(), width(), commandSpec.usageMessage().description(), new StringBuilder(), params).toString();
+            return simpleSectionBodyRenderer().render(commandSpec.usageMessage().description(), ansi(), width(), params);
         }
+
         /** Returns the command header text as a string. Header text can be zero or more lines, and can be specified
          * declaratively with the {@link Command#header()} annotation attribute or programmatically by
          * setting the Help instance's {@link Help#header} field.
@@ -8368,8 +8285,9 @@ public class CommandLine {
          * @return the header lines combined into a single String (which may be empty)
          */
         public String header(Object... params) {
-            return join(ansi(), width(), commandSpec.usageMessage().header(), new StringBuilder(), params).toString();
+            return simpleSectionBodyRenderer().render(commandSpec.usageMessage().header(), ansi(), width(), params);
         }
+
         /** Returns command footer text as a string. Footer text can be zero or more lines, and can be specified
          * declaratively with the {@link Command#footer()} annotation attribute or programmatically by
          * setting the Help instance's {@link Help#footer} field.
@@ -8377,21 +8295,21 @@ public class CommandLine {
          * @return the footer lines combined into a single String (which may be empty)
          */
         public String footer(Object... params) {
-            return join(ansi(), width(), commandSpec.usageMessage().footer(), new StringBuilder(), params).toString();
+            return simpleSectionBodyRenderer().render(commandSpec.usageMessage().footer(), params);
         }
 
         /** Returns the text displayed before the header text; the result of {@code String.format(headerHeading, params)}.
          * @param params the parameters to use to format the header heading
          * @return the formatted header heading */
         public String headerHeading(Object... params) {
-            return heading(ansi(), width(), commandSpec.usageMessage().headerHeading(), params);
+            return headingRenderer().render(new String[] {commandSpec.usageMessage().headerHeading()}, params);
         }
 
         /** Returns the text displayed before the synopsis text; the result of {@code String.format(synopsisHeading, params)}.
          * @param params the parameters to use to format the synopsis heading
          * @return the formatted synopsis heading */
         public String synopsisHeading(Object... params) {
-            return heading(ansi(), width(), commandSpec.usageMessage().synopsisHeading(), params);
+            return headingRenderer().render(new String[] {commandSpec.usageMessage().synopsisHeading()}, params);
         }
 
         /** Returns the text displayed before the description text; an empty string if there is no description,
@@ -8399,7 +8317,7 @@ public class CommandLine {
          * @param params the parameters to use to format the description heading
          * @return the formatted description heading */
         public String descriptionHeading(Object... params) {
-            return empty(commandSpec.usageMessage().descriptionHeading()) ? "" : heading(ansi(), width(), commandSpec.usageMessage().descriptionHeading(), params);
+            return commandSpec.usageMessage().description().length == 0 ? "" : headingRenderer().render(new String[] {commandSpec.usageMessage().descriptionHeading()}, ansi(), width(), params);
         }
 
         /** Returns the text displayed before the positional parameter list; an empty string if there are no positional
@@ -8407,7 +8325,7 @@ public class CommandLine {
          * @param params the parameters to use to format the parameter list heading
          * @return the formatted parameter list heading */
         public String parameterListHeading(Object... params) {
-            return commandSpec.positionalParameters().isEmpty() ? "" : heading(ansi(), width(), commandSpec.usageMessage().parameterListHeading(), params);
+            return commandSpec.positionalParameters().isEmpty() ? "" : headingRenderer().render(new String[] {commandSpec.usageMessage().parameterListHeading()}, ansi(), width(), params);
         }
 
         /** Returns the text displayed before the option list; an empty string if there are no options,
@@ -8415,7 +8333,7 @@ public class CommandLine {
          * @param params the parameters to use to format the option list heading
          * @return the formatted option list heading */
         public String optionListHeading(Object... params) {
-            return commandSpec.optionsMap().isEmpty() ? "" : heading(ansi(), width(), commandSpec.usageMessage().optionListHeading(), params);
+            return commandSpec.optionsMap().isEmpty() ? "" : headingRenderer().render(new String[] {commandSpec.usageMessage().optionListHeading()}, params);
         }
 
         /** Returns the text displayed before the command list; an empty string if there are no commands,
@@ -8423,49 +8341,28 @@ public class CommandLine {
          * @param params the parameters to use to format the command list heading
          * @return the formatted command list heading */
         public String commandListHeading(Object... params) {
-            return commands.isEmpty() ? "" : heading(ansi(), width(), commandSpec.usageMessage().commandListHeading(), params);
+            return commands.isEmpty() ? "" : headingRenderer().render(new String[] {commandSpec.usageMessage().commandListHeading()}, params);
         }
 
         /** Returns the text displayed before the footer text; the result of {@code String.format(footerHeading, params)}.
          * @param params the parameters to use to format the footer heading
          * @return the formatted footer heading */
         public String footerHeading(Object... params) {
-            return heading(ansi(), width(), commandSpec.usageMessage().footerHeading(), params);
+            return commandSpec.usageMessage().footer().length == 0 ? "" : headingRenderer().render(new String[] {commandSpec.usageMessage().footerHeading()}, params);
         }
+
         /** Returns a 2-column list with command names and the first line of their header or (if absent) description.
          * @return a usage help section describing the added commands */
         public String commandList() {
-            if (commands.isEmpty()) { return ""; }
-            int commandLength = maxLength(commands.keySet());
-            Help.TextTable textTable = Help.TextTable.forColumns(ansi(),
-                    new Help.Column(commandLength + 2, 2, Help.Column.Overflow.SPAN),
-                    new Help.Column(width() - (commandLength + 2), 2, Help.Column.Overflow.WRAP));
-
-            for (Map.Entry<String, Help> entry : commands.entrySet()) {
-                Help help = entry.getValue();
-                CommandSpec command = help.commandSpec;
-                String header = command.usageMessage().header() != null && command.usageMessage().header().length > 0 ? command.usageMessage().header()[0]
-                        : (command.usageMessage().description() != null && command.usageMessage().description().length > 0 ? command.usageMessage().description()[0] : "");
-                Text[] lines = ansi().text(header).splitLines();
-                textTable.addRowValues(help.commandNamesText(), lines[0]);
-                for (int i = 1; i < lines.length; i++) {
-                    textTable.addRowValues(Ansi.EMPTY_TEXT, lines[i]);
-                }
-            }
-            return textTable.toString();
+            return commandListRenderer().render(commandSpec, colorScheme);
         }
+
         private static int maxLength(Collection<String> any) {
             List<String> strings = new ArrayList<String>(any);
             Collections.sort(strings, Collections.reverseOrder(Help.shortestFirst()));
             return strings.get(0).length();
         }
-        private Text commandNamesText() {
-            Text result = colorScheme.commandText(aliases.get(0));
-            for (int i = 1; i < aliases.size(); i++) {
-                result = result.concat(", ").concat(colorScheme.commandText(aliases.get(i)));
-            }
-            return result;
-        }
+
         private static String join(String[] names, int offset, int length, String separator) {
             if (names == null) { return ""; }
             StringBuilder result = new StringBuilder();
@@ -8474,8 +8371,9 @@ public class CommandLine {
             }
             return result.toString();
         }
+
         private static String stringOf(char chr, int length) {
-                             char[] buff = new char[length];
+            char[] buff = new char[length];
             Arrays.fill(buff, chr);
             return new String(buff);
         }
@@ -8507,6 +8405,7 @@ public class CommandLine {
         public IOptionRenderer createDefaultOptionRenderer() {
             return new DefaultOptionRenderer(commandSpec.usageMessage.showDefaultValues(), "" +commandSpec.usageMessage().requiredOptionMarker());
         }
+
         /** Returns a new minimal OptionRenderer which converts {@link OptionSpec Options} to a single row with two columns
          * of text: an option name and a description. If multiple names or descriptions exist, the first value is used.
          * @return a new minimal OptionRenderer */
@@ -8530,6 +8429,7 @@ public class CommandLine {
         public IParameterRenderer createDefaultParameterRenderer() {
             return new DefaultParameterRenderer(commandSpec.usageMessage.showDefaultValues(), "" + commandSpec.usageMessage().requiredOptionMarker());
         }
+
         /** Returns a new minimal ParameterRenderer which converts {@linkplain PositionalParamSpec positional parameters}
          * to a single row with two columns of text: an option name and a description. If multiple descriptions exist, the first value is used.
          * @return a new minimal ParameterRenderer */
@@ -8547,6 +8447,7 @@ public class CommandLine {
                 public String separator() { return ""; }
             };
         }
+
         /** Returns a new default param label renderer that separates option parameters from their option name
          * with the specified separator string, and, unless {@link ArgSpec#hideParamSyntax()} is true,
          * surrounds optional parameters with {@code '['} and {@code ']'}
@@ -8556,18 +8457,21 @@ public class CommandLine {
         public IParamLabelRenderer createDefaultParamLabelRenderer() {
             return new DefaultParamLabelRenderer(commandSpec);
         }
+
         /** Sorts {@link OptionSpec OptionSpecs} by their option name in case-insensitive alphabetic order. If an
          * option has multiple names, the shortest name is used for the sorting. Help options follow non-help options.
          * @return a comparator that sorts OptionSpecs by their option name in case-insensitive alphabetic order */
         public static Comparator<OptionSpec> createShortOptionNameComparator() {
             return new SortByShortestOptionNameAlphabetically();
         }
+
         /** Sorts {@link OptionSpec OptionSpecs} by their option {@linkplain Range#max max arity} first, by
          * {@linkplain Range#min min arity} next, and by {@linkplain #createShortOptionNameComparator() option name} last.
          * @return a comparator that sorts OptionSpecs by arity first, then their option name */
         public static Comparator<OptionSpec> createShortOptionArityAndNameComparator() {
             return new SortByOptionArityAndNameAlphabetically();
         }
+
         /** Sorts short strings before longer strings.
          * @return a comparators that sorts short strings before longer strings */
         public static Comparator<String> shortestFirst() { return new ShortestFirst(); }
@@ -8576,6 +8480,140 @@ public class CommandLine {
          * @return whether ANSI escape codes are enabled or not
          */
         public Ansi ansi() { return colorScheme.ansi; }
+
+        public List<ISectionRenderer> sections() {
+            if (sections == null) {
+                sections = new ArrayList<ISectionRenderer>();
+                sections.add(new SectionRenderer() {
+                    public String name() { return "header"; }
+                    @Override protected String renderHeading(CommandSpec commandSpec, ColorScheme colorScheme) { return headerHeading(); }
+                    @Override protected String renderBody(CommandSpec commandSpec, ColorScheme colorScheme) { return header(); }
+                });
+                sections.add(new SectionRenderer() {
+                    public String name() { return "synopsis"; }
+                    @Override protected String renderHeading(CommandSpec commandSpec, ColorScheme colorScheme) { return synopsisHeading(); }
+                    @Override protected String renderBody(CommandSpec commandSpec, ColorScheme colorScheme) { return synopsis(synopsisHeadingLength()); }
+                });
+                sections.add(new SectionRenderer() {
+                    public String name() { return "description"; }
+                    @Override protected String renderHeading(CommandSpec commandSpec, ColorScheme colorScheme) { return descriptionHeading(); }
+                    @Override protected String renderBody(CommandSpec commandSpec, ColorScheme colorScheme) { return description(); }
+                });
+                sections.add(new SectionRenderer() {
+                    public String name() { return "parameterList"; }
+                    @Override protected String renderHeading(CommandSpec commandSpec, ColorScheme colorScheme) { return parameterListHeading(); }
+                    @Override protected String renderBody(CommandSpec commandSpec, ColorScheme colorScheme) { return parameterList(); }
+                });
+                sections.add(new SectionRenderer() {
+                    public String name() { return "optionList"; }
+                    @Override protected String renderHeading(CommandSpec commandSpec, ColorScheme colorScheme) { return optionListHeading(); }
+                    @Override protected String renderBody(CommandSpec commandSpec, ColorScheme colorScheme) { return optionList(); }
+                });
+                sections.add(new SectionRenderer() {
+                    public String name() { return "commandList"; }
+                    @Override protected String renderHeading(CommandSpec commandSpec, ColorScheme colorScheme) { return commandListHeading(); }
+                    @Override protected String renderBody(CommandSpec commandSpec, ColorScheme colorScheme) { return commandList(); }
+                });
+                sections.add(new SectionRenderer() {
+                    public String name() { return "footer"; }
+                    @Override protected String renderHeading(CommandSpec commandSpec, ColorScheme colorScheme) { return footerHeading(); }
+                    @Override protected String renderBody(CommandSpec commandSpec, ColorScheme colorScheme) { return footer(); }
+                });
+            }
+            return sections;
+        }
+
+        public String buildUsageMessage() {
+            StringBuilder sb = new StringBuilder();
+            for (ISectionRenderer section : sections()) {
+                sb.append(section.render(commandSpec(), colorScheme()));
+            }
+            return sb.toString();
+        }
+
+        public ICommandListRenderer commandListRenderer() {
+            if(commandListRenderer == null) {
+                commandListRenderer(createCommandListRenderer());
+            }
+            return commandListRenderer;
+        }
+        public Help commandListRenderer(ICommandListRenderer commandListRenderer) {
+            this.commandListRenderer = commandListRenderer;
+            return this;
+        }
+        protected ICommandListRenderer createCommandListRenderer() {
+            return new CommandListRenderer();
+        }
+
+        public ISynopsisRenderer synopsisRenderer() {
+            if(synopsisRenderer == null) {
+                synopsisRenderer(createSynopsisRenderer());
+            }
+            return synopsisRenderer;
+        }
+        public Help synopsisRenderer(ISynopsisRenderer synopsisRenderer) {
+            this.synopsisRenderer = synopsisRenderer;
+            return this;
+        }
+        protected ISynopsisRenderer createSynopsisRenderer() {
+            return new SynopsisRenderer();
+        }
+
+        public IArgumentListRenderer<PositionalParamSpec> parameterListRenderer() {
+            if(parameterListRenderer == null) {
+                parameterListRenderer(createParameterListRenderer());
+            }
+            return parameterListRenderer;
+        }
+        public Help parameterListRenderer(IArgumentListRenderer<PositionalParamSpec> parameterListRenderer) {
+            this.parameterListRenderer = parameterListRenderer;
+            return this;
+        }
+        protected IArgumentListRenderer<PositionalParamSpec> createParameterListRenderer() {
+            return new ParameterListRenderer();
+        }
+
+        public IArgumentListRenderer<OptionSpec> optionListRenderer() {
+            if(optionListRenderer == null) {
+                optionListRenderer(createOptionListRenderer());
+            }
+            return optionListRenderer;
+        }
+        public Help optionListRenderer(IArgumentListRenderer<OptionSpec> optionListRenderer) {
+            this.optionListRenderer = optionListRenderer;
+            return this;
+        }
+        protected IArgumentListRenderer<OptionSpec> createOptionListRenderer() {
+            return new OptionListRenderer();
+        }
+
+        public ISectionHeadingRenderer headingRenderer() {
+            if(headingRenderer == null) {
+                headingRenderer(createSectionHeadingRenderer());
+            }
+            return headingRenderer;
+        }
+        public Help headingRenderer(ISectionHeadingRenderer headingRenderer) {
+            this.headingRenderer = headingRenderer;
+            return this;
+        }
+        protected ISectionHeadingRenderer createSectionHeadingRenderer() {
+            return new SectionHeadingRenderer();
+        }
+
+        protected ISimpleSectionMemberRenderer createSectionBodyRenderer() {
+            return new SimpleSectionMemberRenderer();
+        }
+        public ISimpleSectionMemberRenderer simpleSectionBodyRenderer() {
+            if(simpleSectionBodyRenderer == null) {
+                simpleSectionBodyRenderer(createSectionBodyRenderer());
+            }
+            return simpleSectionBodyRenderer;
+        }
+        public Help simpleSectionBodyRenderer(ISimpleSectionMemberRenderer simpleSectionBodyRenderer) {
+            this.simpleSectionBodyRenderer = simpleSectionBodyRenderer;
+            return this;
+        }
 
         /** Controls the visibility of certain aspects of the usage help message. */
         public enum Visibility { ALWAYS, NEVER, ON_DEMAND }
@@ -9797,6 +9835,336 @@ public class CommandLine {
                     }
                     return null;
                 }
+            }
+        }
+
+        public interface IArgumentListRenderer<T extends ArgSpec> {
+            String render(CommandSpec commandSpec, ColorScheme colorScheme, Layout layout, Comparator<T> comparator, IParamLabelRenderer labelRenderer);
+        }
+
+        public abstract class ArgumentListRenderer<T extends ArgSpec> implements IArgumentListRenderer<T> {
+            public String render(CommandSpec commandSpec, ColorScheme colorScheme, Layout layout, Comparator<T> comparator, IParamLabelRenderer labelRenderer) {
+                List<T> arguments = getModel(commandSpec);
+                if ((comparator = getComparator(commandSpec, comparator)) != null) {
+                    Collections.sort(arguments = new ArrayList<T>(arguments), comparator);
+                }
+                layout = getLayout(layout, colorScheme);
+                labelRenderer = getLabelRenderer(labelRenderer);
+                populate(layout, arguments, labelRenderer);
+                return layout.toString();
+            }
+
+            protected abstract Comparator<T> getComparator(CommandSpec commandSpec, Comparator<T> comparator);
+
+            protected IParamLabelRenderer getLabelRenderer(IParamLabelRenderer labelRenderer) {
+                return labelRenderer != null ? labelRenderer : parameterLabelRenderer();
+            }
+
+            protected Layout getLayout(Layout layout, ColorScheme colorScheme) {
+                return layout != null ? layout : createLayout(getNameColumnWidth());
+            }
+
+            protected abstract List<T> getModel(CommandSpec commandSpec);
+
+            protected int getNameColumnWidth() {
+                int max = 0;
+                IOptionRenderer optionRenderer = new DefaultOptionRenderer(false, " ");
+                for (OptionSpec option : commandSpec.options()) {
+                    Text[][] values = optionRenderer.render(option, parameterLabelRenderer(), colorScheme);
+                    int len = values[0][3].length;
+                    if (len < Help.defaultOptionsColumnWidth - 3) { max = Math.max(max, len); }
+                }
+                IParameterRenderer paramRenderer = new DefaultParameterRenderer(false, " ");
+                for (PositionalParamSpec positional : commandSpec.positionalParameters()) {
+                    Text[][] values = paramRenderer.render(positional, parameterLabelRenderer(), colorScheme);
+                    int len = values[0][3].length;
+                    if (len < Help.defaultOptionsColumnWidth - 3) { max = Math.max(max, len); }
+                }
+                return max + 3;
+            }
+
+            protected abstract void populate(Layout layout, List<T> arguments, IParamLabelRenderer labelRenderer);
+        }
+
+        public class ParameterListRenderer extends ArgumentListRenderer<PositionalParamSpec> {
+            @Override
+            protected Comparator<PositionalParamSpec> getComparator(CommandSpec commandSpec, Comparator<PositionalParamSpec> comparator) {
+                return null;
+            }
+
+            @Override
+            protected List<PositionalParamSpec> getModel(CommandSpec commandSpec) {
+                return commandSpec.positionalParameters();
+            }
+
+            @Override
+            protected void populate(Layout layout, List<PositionalParamSpec> arguments, IParamLabelRenderer labelRenderer) {
+                layout.addPositionalParameters(arguments, labelRenderer);
+            }
+        }
+
+        public class OptionListRenderer extends ArgumentListRenderer<OptionSpec> {
+            @Override
+            protected Comparator<OptionSpec> getComparator(CommandSpec commandSpec, Comparator<OptionSpec> comparator) {
+                return comparator != null ? comparator : (commandSpec.usageMessage().sortOptions() ? createShortOptionNameComparator() : null);
+            }
+
+            @Override
+            protected List<OptionSpec> getModel(CommandSpec commandSpec) {
+                return commandSpec.options();
+            }
+
+            @Override
+            protected void populate(Layout layout, List<OptionSpec> arguments, IParamLabelRenderer labelRenderer) {
+                layout.addOptions(arguments, labelRenderer);
+            }
+        }
+
+        public interface ISectionRenderer {
+            String name();
+
+            String render(CommandSpec commandSpec, ColorScheme colorScheme);
+        }
+
+        public abstract class SectionRenderer implements ISectionRenderer{
+            public String render(CommandSpec commandSpec, ColorScheme colorScheme) {
+                return renderHeading(commandSpec, colorScheme) + renderBody(commandSpec, colorScheme);
+            }
+
+            protected abstract String renderBody(CommandSpec commandSpec, ColorScheme colorScheme);
+
+            protected abstract String renderHeading(CommandSpec commandSpec, ColorScheme colorScheme);
+        }
+
+        public interface ISimpleSectionMemberRenderer {
+            String render(String[] values, Object... params);
+        }
+
+        public class SimpleSectionMemberRenderer implements ISimpleSectionMemberRenderer {
+            public String render(String[] values, Object... params) {
+                if (values == null)
+                    return "";
+
+                TextTable table = getTable(commandSpec, colorScheme);
+                for (String value : values) {
+                    Text[] lines = ansi().new Text(format(value, params)).splitLines();
+                    for (Text line : lines) {  table.addRowValues(line); }
+                }
+                return table.toString();
+            }
+
+            protected TextTable getTable(CommandSpec commandSpec, ColorScheme colorScheme) {
+                TextTable table = TextTable.forColumnWidths(ansi(), width());
+                table.indentWrappedLines = 0;
+                return table;
+            }
+        }
+
+        public interface ISectionHeadingRenderer extends ISimpleSectionMemberRenderer {
+            ISectionHeadingRenderer withAfter(String after);
+            ISectionHeadingRenderer withBefore(String before);
+        }
+
+        public class SectionHeadingRenderer extends SimpleSectionMemberRenderer implements ISectionHeadingRenderer {
+            private String after;
+            private String before;
+
+            public ISectionHeadingRenderer withAfter(String after) {
+                this.after = after;
+                return this;
+            }
+
+            public ISectionHeadingRenderer withBefore(String before) {
+                this.before = before;
+                return this;
+            }
+
+            public String render(String[] values, Object... params) {
+                if(values[0] == "")
+                    return "";
+
+                if(before != null || after != null) {
+                    values[0] = before + values[0] + after;
+                }
+                String result = super.render(values, params);
+                result = result.endsWith(System.getProperty("line.separator"))
+                        ? result.substring(0, result.length() - System.getProperty("line.separator").length()) : result;
+                return result + new String(spaces(countTrailingSpaces(values[0])));
+            }
+        }
+
+        public interface ISynopsisRenderer {
+            String render(CommandSpec commandSpec, ColorScheme colorScheme, int synopsisHeadingLength);
+
+            String renderAbbreviated();
+
+            String renderDetailed(int synopsisHeadingLength, Comparator<OptionSpec> optionSort, boolean clusterBooleanOptions);
+        }
+
+        public class SynopsisRenderer implements ISynopsisRenderer {
+            public String render(CommandSpec commandSpec, ColorScheme colorScheme, int synopsisHeadingLength) {
+                if (!empty(commandSpec.usageMessage().customSynopsis()))
+                    return customSynopsis();
+                else
+                    return commandSpec.usageMessage().abbreviateSynopsis() ? renderAbbreviated()
+                        : renderDetailed(synopsisHeadingLength, createShortOptionArityAndNameComparator(), true);
+            }
+
+            public String renderAbbreviated() {
+                Text text = Help.this.ansi().new Text(0);
+                text = renderOptions(commandSpec.options(), text, false);
+                text = renderParameters(commandSpec.positionalParameters(), text, false);
+                text = renderSubcommands(commandSpec.subcommands(), text, false);
+                return colorScheme.commandText(commandSpec.qualifiedName())
+                        .concat(text).concat(System.getProperty("line.separator")).toString();
+            }
+
+            public String renderDetailed(int synopsisHeadingLength, Comparator<OptionSpec> optionSort, boolean clusterBooleanOptions) {
+                Text text = Help.this.ansi().new Text(0);
+                List<OptionSpec> options = new ArrayList<OptionSpec>(commandSpec.options());
+                if (optionSort != null) {
+                    Collections.sort(options, optionSort);
+                }
+                if (clusterBooleanOptions) {
+                    text = renderClusteredOptions(options, text);
+                }
+                text = renderOptions(options, text, true);
+                text = renderParameters(commandSpec.positionalParameters(), text, true);
+                text = renderSubcommands(commandSpec.subcommands(), text, true);
+                return renderDetailedValues(commandSpec.qualifiedName(), text, synopsisHeadingLength);
+            }
+
+            protected Text renderClusteredOptions(List<OptionSpec> options, Text text) {
+                List<OptionSpec> booleanOptions = new ArrayList<OptionSpec>();
+                StringBuilder clusteredRequired = new StringBuilder("-");
+                StringBuilder clusteredOptional = new StringBuilder("-");
+                for (OptionSpec option : options) {
+                    if (option.hidden()) { continue; }
+                    if (option.type() == boolean.class || option.type() == Boolean.class) {
+                        String shortestName = option.shortestName();
+                        if (shortestName.length() == 2 && shortestName.startsWith("-")) {
+                            booleanOptions.add(option);
+                            if (option.required()) {
+                                clusteredRequired.append(shortestName.substring(1));
+                            } else {
+                                clusteredOptional.append(shortestName.substring(1));
+                            }
+                        }
+                    }
+                }
+                options.removeAll(booleanOptions);
+                if (clusteredRequired.length() > 1) { // initial length was 1
+                    text = text.concat(" ").concat(colorScheme.optionText(clusteredRequired.toString()));
+                }
+                if (clusteredOptional.length() > 1) { // initial length was 1
+                    text = text.concat(" [").concat(colorScheme.optionText(clusteredOptional.toString())).concat("]");
+                }
+                return text;
+            }
+
+            protected String renderDetailedValues(String commandName, Text optionText, int synopsisHeadingLength) {
+                // Fix for #142: first line of synopsis overshoots max. characters
+                int firstColumnLength = commandName.length() + synopsisHeadingLength;
+
+                // synopsis heading ("Usage: ") may be on the same line, so adjust column width
+                TextTable textTable = TextTable.forColumnWidths(ansi(), firstColumnLength, width() - firstColumnLength);
+                textTable.indentWrappedLines = 1; // don't worry about first line: options (2nd column) always start with a space
+
+                // right-adjust the command name by length of synopsis heading
+                Text PADDING = Ansi.OFF.new Text(stringOf('X', synopsisHeadingLength));
+                textTable.addRowValues(PADDING.concat(colorScheme.commandText(commandName)), optionText);
+                return textTable.toString().substring(synopsisHeadingLength); // cut off leading synopsis heading spaces
+            }
+
+            protected Text renderOption(OptionSpec option, Text text) {
+                if (!option.hidden()) {
+                    Text name = colorScheme.optionText(option.shortestName());
+                    Text param = parameterLabelRenderer().renderParameterLabel(option, colorScheme.ansi(), colorScheme.optionParamStyles);
+                    if (option.required()) { // e.g., -x=VAL
+                        text = text.concat(" ").concat(name).concat(param).concat("");
+                        if (option.isMultiValue()) { // e.g., -x=VAL [-x=VAL]...
+                            text = text.concat(" [").concat(name).concat(param).concat("]...");
+                        }
+                    } else {
+                        text = text.concat(" [").concat(name).concat(param).concat("]");
+                        if (option.isMultiValue()) { // add ellipsis to show option is repeatable
+                            text = text.concat("...");
+                        }
+                    }
+                }
+                return text;
+            }
+
+            protected Text renderOptions(List<OptionSpec> options, Text text, boolean detailed) {
+                if (!options.isEmpty()) {
+                    if (detailed) {
+                        for (OptionSpec option : options) {
+                            text = renderOption(option, text);
+                        }
+                    } else {
+                        text = text.concat(" [OPTIONS]");
+                    }
+                }
+                return text;
+            }
+
+            protected Text renderParameter(PositionalParamSpec parameter, Text text) {
+                if (!parameter.hidden()) {
+                    text = text.concat(" ");
+                    Text label = parameterLabelRenderer().renderParameterLabel(parameter, colorScheme.ansi(), colorScheme.parameterStyles);
+                    text = text.concat(label);
+                }
+                return text;
+            }
+
+            protected Text renderParameters(List<PositionalParamSpec> parameters, Text text, boolean detailed) {
+                for (PositionalParamSpec parameter : parameters) {
+                    text = renderParameter(parameter, text);
+                }
+                return text;
+            }
+
+            protected Text renderSubcommands(Map<String, CommandLine> subcommands, Text text, boolean detailed) {
+                if(!subcommands.isEmpty()){
+                    text = text.concat(" [").concat("COMMAND").concat("]");
+                }
+                return text;
+            }
+        }
+
+        public interface ICommandListRenderer {
+            String render(CommandSpec commandSpec, ColorScheme colorScheme);
+        }
+
+        public class CommandListRenderer implements ICommandListRenderer {
+            public String render(CommandSpec commandSpec, ColorScheme colorScheme) {
+                if (commands.isEmpty())
+                    return "";
+
+                int commandLength = maxLength(commands.keySet());
+                Help.TextTable textTable = Help.TextTable.forColumns(ansi(),
+                        new Help.Column(commandLength + 2, 2, Help.Column.Overflow.SPAN),
+                        new Help.Column(width() - (commandLength + 2), 2, Help.Column.Overflow.WRAP));
+                for (Map.Entry<String, Help> entry : commands.entrySet()) {
+                    Help help = entry.getValue();
+                    CommandSpec command = help.commandSpec;
+                    String header = command.usageMessage().header() != null && command.usageMessage().header().length > 0 ? command.usageMessage().header()[0]
+                            : (command.usageMessage().description() != null && command.usageMessage().description().length > 0 ? command.usageMessage().description()[0] : "");
+                    Text[] lines = ansi().text(header).splitLines();
+                    textTable.addRowValues(renderCommandNames(help), lines[0]);
+                    for (int i = 1; i < lines.length; i++) {
+                        textTable.addRowValues(Ansi.EMPTY_TEXT, lines[i]);
+                    }
+                }
+                return textTable.toString();
+            }
+
+            protected Text renderCommandNames(Help help) {
+                Text result = help.colorScheme.commandText(help.aliases.get(0));
+                for (int i = 1; i < help.aliases.size(); i++) {
+                    result = result.concat(", ").concat(help.colorScheme.commandText(help.aliases.get(i)));
+                }
+                return result;
             }
         }
     }
