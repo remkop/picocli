@@ -10122,7 +10122,8 @@ public class CommandLine {
         	super(commandLine, msg);
         	overwrittenArg = overwritten;
         }
-        /** Returns the {@link ArgSpec} for the option which was being overwritten. */
+        /** Returns the {@link ArgSpec} for the option which was being overwritten.
+         * @since 3.8 */
         public ArgSpec getOverwritten() { return overwrittenArg; }
     }
     /**
