@@ -7130,7 +7130,7 @@ public class CommandLine {
             if (initialized != null) {
                 if (initialized.contains(argSpec)) {
                     if (!isOverwrittenOptionsAllowed()) {
-                        throw new OverwrittenOptionException(CommandLine.this, optionDescription("", argSpec, 0) +  " should be specified only once");
+                        throw new OverwrittenOptionException(CommandLine.this, argSpec, optionDescription("", argSpec, 0) +  " should be specified only once");
                     }
                     traceMessage = "Overwriting %s value '%s' with '%s' for %s%n";
                 }
@@ -10485,7 +10485,14 @@ public class CommandLine {
     /** Exception indicating that an option for a single-value option field has been specified multiple times on the command line. */
     public static class OverwrittenOptionException extends ParameterException {
         private static final long serialVersionUID = 1338029208271055776L;
-        public OverwrittenOptionException(CommandLine commandLine, String msg) { super(commandLine, msg); }
+        private final ArgSpec overwrittenArg;
+        public OverwrittenOptionException(CommandLine commandLine, ArgSpec overwritten, String msg) {
+        	super(commandLine, msg);
+        	overwrittenArg = overwritten;
+        }
+        /** Returns the {@link ArgSpec} for the option which was being overwritten.
+         * @since 3.8 */
+        public ArgSpec getOverwritten() { return overwrittenArg; }
     }
     /**
      * Exception indicating that an annotated field had a type for which no {@link ITypeConverter} was

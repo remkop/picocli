@@ -2568,6 +2568,26 @@ public class CommandLineTest {
     }
 
     @Test
+    public void testOverwrittenOptionExceptionContainsCorrectArgSpec() {
+        class App {
+            @Option(names = "-s") String string;
+            @Option(names = "-v") boolean bool;
+        }
+        try {
+            CommandLine.populateCommand(new App(), "-s", "1", "-s", "2");
+            fail("expected exception");
+        } catch (OverwrittenOptionException ex) {
+            assertEquals(ex.getCommandLine().getCommandSpec().optionsMap().get("-s"), ex.getOverwritten());
+        }
+        try {
+            CommandLine.populateCommand(new App(), "-v", "-v");
+            fail("expected exception");
+        } catch (OverwrittenOptionException ex) {
+            assertEquals(ex.getCommandLine().getCommandSpec().optionsMap().get("-v"), ex.getOverwritten());
+        }
+    }
+
+    @Test
     public void testOverwrittenOptionSetsLastValueIfAllowed() {
         class App {
             @Option(names = {"-s", "--str"})      String string;
