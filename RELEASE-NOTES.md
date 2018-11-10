@@ -1,8 +1,8 @@
 # picocli Release Notes
 
 
-# <a name="3.7.1"></a> Picocli 3.7.1 (UNRELEASED)
-The picocli community is pleased to announce picocli 3.7.1.
+# <a name="3.8.0"></a> Picocli 3.8.0 (UNRELEASED)
+The picocli community is pleased to announce picocli 3.8.0.
 
 This release contains bugfixes and minor enhancements.
 
@@ -10,29 +10,45 @@ This release contains bugfixes and minor enhancements.
 Many thanks to the many members of the picocli community who contributed! 
 
 This is the forty-second public release.
-Picocli follows [semantic versioning](http://semver.org/).
+Picocli follows [semantic versioning](http://semver.org/). (This release could have been called 3.7.1 except that it has a minor additional API change, which means it cannot be called a patch release by semver rules.)
 
-## <a name="3.7.1"></a> Table of Contents
-* [New and noteworthy](#3.7.1-new)
-* [Fixed issues](#3.7.1-fixes)
-* [Deprecations](#3.7.1-deprecated)
-* [Potential breaking changes](#3.7.1-breaking-changes)
+## <a name="3.8.0"></a> Table of Contents
+* [New and noteworthy](#3.8.0-new)
+* [Fixed issues](#3.8.0-fixes)
+* [Deprecations](#3.8.0-deprecated)
+* [Potential breaking changes](#3.8.0-breaking-changes)
 
-## <a name="3.7.1-new"></a> New and Noteworthy
+## <a name="3.8.0-new"></a> New and Noteworthy
 
-## <a name="3.7.1-fixes"></a> Fixed issues
+## <a name="3.8.0-fixes"></a> Fixed issues
 - [#525] Enhancement: Allow `@Mixin` parameters in `@Command` methods. Thanks to [Paul Horn](https://github.com/knutwalker) for the pull request.
 - [#532] Enhancement: `OverwrittenOptionException` now has an accessor for the `ArgSpec` that was overwritten. Thanks to [Steven Fontaine](https://github.com/acid1103) for the pull request.
 - [#524] Enhancement/Bugfix: `ReflectionConfigGenerator` in `picocli-codegen` should generate configuration for `@Mixin` fields. Thanks to [Paul Horn](https://github.com/knutwalker) for the pull request.
 - [#523] Bugfix: Array should be initialized before calling setter method. Thanks to [Paul Horn](https://github.com/knutwalker) for the pull request.
-- [#527] Bugfix: Quoting logic did not work for some Unicode code points
+- [#527] Bugfix: Quoting logic did not work for some Unicode code points.
+- [#531] Bugfix: Usage help should not show space between short option name and parameter (for options that only have a short name).
 - [#528] Doc: javadoc for xxxHandler API referred to non-existant prototypeReturnValue.
 
-## <a name="3.7.1-deprecated"></a> Deprecations
+## <a name="3.8.0-deprecated"></a> Deprecations
 No features were deprecated in this release.
 
-## <a name="3.7.1-breaking-changes"></a> Potential breaking changes
-This release has no breaking changes.
+## <a name="3.8.0-breaking-changes"></a> Potential breaking changes
+The usage help no longer shows a space between short option names and the parameter (for options that only have a short name).
+This may break tests that rely on the exact output format.
+
+Before:
+```
+Usage: times [-l=<arg0>] [-r=<arg1>]
+  -l= <arg0>
+  -r= <arg1>
+```
+
+After:
+```
+Usage: times [-l=<arg0>] [-r=<arg1>]
+  -l=<arg0>
+  -r=<arg1>
+```
 
 
 

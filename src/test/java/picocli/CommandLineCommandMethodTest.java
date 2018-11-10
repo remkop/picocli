@@ -528,8 +528,8 @@ public class CommandLineCommandMethodTest {
         String expected = String.format("" +
                 "Usage: times [-hV] [-l=<arg0>] [-r=<arg1>]%n" +
                 "  -h, --help      Show this help message and exit.%n" +
-                "  -l= <arg0>%n" +
-                "  -r= <arg1>%n" +
+                "  -l=<arg0>%n" +
+                "  -r=<arg1>%n" +
                 "  -V, --version   Print version information and exit.%n" +
                 "");
         assertEquals(expected, systemOutRule.getLog());

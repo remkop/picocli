@@ -9016,6 +9016,9 @@ public class CommandLine {
                 public Cell(int column, int row) { this.column = column; this.row = row; }
             }
 
+            private static final int OPTION_SEPARATOR_COLUMN = 2;
+            private static final int LONG_OPTION_COLUMN = 3;
+
             /** The column definitions of this table. */
             private final Column[] columns;
 
@@ -9138,6 +9141,7 @@ public class CommandLine {
                             columns.length + " columns");
                 }
                 addEmptyRow();
+                int oldIndent = unindent(values);
                 for (int col = 0; col < values.length; col++) {
                     int row = rowCount() - 1;// write to last row: previous value may have wrapped to next row
                     Cell cell = putValue(row, col, values[col]);
@@ -9147,7 +9151,21 @@ public class CommandLine {
                         addEmptyRow();
                     }
                 }
+                reindent(oldIndent);
             }
+            private int unindent(Text[] values) {
+                if (columns.length <= LONG_OPTION_COLUMN) { return 0; }
+                int oldIndent = columns[LONG_OPTION_COLUMN].indent;
+                if ("=".equals(values[OPTION_SEPARATOR_COLUMN].toString())) {
+                    columns[LONG_OPTION_COLUMN].indent = 0;
+                }
+                return oldIndent;
+            }
+            private void reindent(int oldIndent) {
+                if (columns.length <= LONG_OPTION_COLUMN) { return; }
+                columns[LONG_OPTION_COLUMN].indent = oldIndent;
+            }
+
             /**
              * Writes the specified value into the cell at the specified row and column and returns the last row and
              * column written to. Depending on the Column's {@link Column#overflow Overflow} policy, the value may span
@@ -9268,7 +9286,7 @@ public class CommandLine {
             public final int width;
 
             /** Indent (number of empty spaces at the start of the column preceding the text value) */
-            public final int indent;
+            public int indent;
 
             /** Policy that determines how to handle values larger than the column width. */
             public final Overflow overflow;

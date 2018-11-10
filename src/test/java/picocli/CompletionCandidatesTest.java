@@ -202,7 +202,7 @@ public class CompletionCandidatesTest {
                 "      --y=<y>            Test long default. Default: This is a very long default%n" +
                 "                           value that is intended to wrap to the next line. I wonder%n" +
                 "                           if it is long enough.%n" +
-                "  -P= [<key=ppp>...]     Use value for project key.%n" +
+                "  -P=[<key=ppp>...]      Use value for project key.%n" +
                 "                         Default={key1=veryveryverylonglonglongvaluevaluevalue,%n" +
                 "                           key2=very2very2very2longlonglongvaluevaluevalue2,%n" +
                 "                           key3=very3very3very3longlonglongvaluevaluevalue3}%n", new File("/a/b/c"));
