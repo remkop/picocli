@@ -3786,6 +3786,53 @@ public class CommandLineHelpTest {
                 "  subD  regular description for subD%n"), new CommandLine(rootCmd).getUsageMessage());
     }
 
+    @Test
+    public void testMultiLineWrappedDescription() {
+        CommandSpec rootCmd = createCmd("wrapDescriptions", "Displays sub commands, with extra long descriptions");
+
+        CommandSpec oneLineCmd = createCmd("oneLine", "The quick brown fox jumped over the lazy dog. The quick brown fox jumped over the lazy dog. The quick brown fox jumped over the lazy dog. The quick brown fox jumped over the lazy dog. The quick brown fox jumped over the lazy dog. The quick brown fox jumped over the lazy dog.");
+        CommandSpec multiLineCmd = createCmd("multiLine", "The quick brown fox jumped over the lazy dog.%nThe quick brown fox jumped over the lazy dog. The quick brown fox jumped over the lazy dog. The quick brown fox jumped over the lazy dog. The quick brown fox jumped over the lazy dog.%n%nThe quick brown fox jumped over the lazy dog.");
+
+        rootCmd.addSubcommand("oneLine", oneLineCmd);
+        rootCmd.addSubcommand("multiLine", multiLineCmd);
+
+        assertEquals(String.format("" +
+                "Usage: wrapDescriptions [-hV] [COMMAND]%n" +
+                "Displays sub commands, with extra long descriptions%n" +
+                "  -h, --help      Show this help message and exit.%n" +
+                "  -V, --version   Print version information and exit.%n" +
+                "Commands:%n" +
+                "  oneLine    The quick brown fox jumped over the lazy dog. The quick brown fox%n" +
+                "               jumped over the lazy dog. The quick brown fox jumped over the%n" +
+                "               lazy dog. The quick brown fox jumped over the lazy dog. The%n" +
+                "               quick brown fox jumped over the lazy dog. The quick brown fox%n" +
+                "               jumped over the lazy dog.%n" +
+                "  multiLine  The quick brown fox jumped over the lazy dog.%n" +
+                "             The quick brown fox jumped over the lazy dog. The quick brown fox%n" +
+                "               jumped over the lazy dog. The quick brown fox jumped over the%n" +
+                "               lazy dog. The quick brown fox jumped over the lazy dog.%n%n" +
+                "             The quick brown fox jumped over the lazy dog.%n"), new CommandLine(rootCmd).getUsageMessage());
+
+        assertEquals(String.format(
+                "Usage: wrapDescriptions oneLine [-hV]%n" +
+                "The quick brown fox jumped over the lazy dog. The quick brown fox jumped over%n" +
+                "the lazy dog. The quick brown fox jumped over the lazy dog. The quick brown fox%n" +
+                "jumped over the lazy dog. The quick brown fox jumped over the lazy dog. The%n" +
+                "quick brown fox jumped over the lazy dog.%n" +
+                "  -h, --help      Show this help message and exit.%n" +
+                "  -V, --version   Print version information and exit.%n"), new CommandLine(oneLineCmd).getUsageMessage());
+
+        assertEquals(String.format(
+                "Usage: wrapDescriptions multiLine [-hV]%n" +
+                "The quick brown fox jumped over the lazy dog.%n" +
+                "The quick brown fox jumped over the lazy dog. The quick brown fox jumped over%n" +
+                "the lazy dog. The quick brown fox jumped over the lazy dog. The quick brown fox%n" +
+                "jumped over the lazy dog.%n%n" +
+                "The quick brown fox jumped over the lazy dog.%n" +
+                "  -h, --help      Show this help message and exit.%n" +
+                "  -V, --version   Print version information and exit.%n"), new CommandLine(multiLineCmd).getUsageMessage());
+    }
+
     private static CommandSpec createCmd(String name, String description) {
         CommandSpec cmd = CommandSpec.create().name(name).mixinStandardHelpOptions(true);
         cmd.usageMessage().description(description);
