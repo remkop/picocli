@@ -8446,7 +8446,7 @@ public class CommandLine {
                 CommandSpec command = help.commandSpec;
                 String header = command.usageMessage().header() != null && command.usageMessage().header().length > 0 ? command.usageMessage().header()[0]
                         : (command.usageMessage().description() != null && command.usageMessage().description().length > 0 ? command.usageMessage().description()[0] : "");
-                Text[] lines = ansi().text(header).splitLines();
+                Text[] lines = ansi().text(format(header)).splitLines();
                 textTable.addRowValues(help.commandNamesText(), lines[0]);
                 for (int i = 1; i < lines.length; i++) {
                     textTable.addRowValues(Ansi.EMPTY_TEXT, lines[i]);
