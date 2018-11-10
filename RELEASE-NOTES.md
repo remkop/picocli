@@ -24,6 +24,7 @@ Picocli follows [semantic versioning](http://semver.org/). (This release could h
 - [#525] Enhancement: Allow `@Mixin` parameters in `@Command` methods. Thanks to [Paul Horn](https://github.com/knutwalker) for the pull request.
 - [#532] Enhancement: `OverwrittenOptionException` now has an accessor for the `ArgSpec` that was overwritten. Thanks to [Steven Fontaine](https://github.com/acid1103) for the pull request.
 - [#524] Enhancement/Bugfix: `ReflectionConfigGenerator` in `picocli-codegen` should generate configuration for `@Mixin` fields. Thanks to [Paul Horn](https://github.com/knutwalker) for the pull request.
+- [#301] Enhancement/Bugfix: The subcommand listing now correctly renders `%n` as line breaks in the brief description for each subcommand. Thanks to [Vlad Topala](https://github.com/topalavlad) for the pull request.
 - [#523] Bugfix: Array should be initialized before calling setter method. Thanks to [Paul Horn](https://github.com/knutwalker) for the pull request.
 - [#527] Bugfix: Quoting logic did not work for some Unicode code points.
 - [#531] Bugfix: Usage help should not show space between short option name and parameter (for options that only have a short name).
