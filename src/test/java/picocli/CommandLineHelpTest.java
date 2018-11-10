@@ -3765,7 +3765,8 @@ public class CommandLineHelpTest {
 
         rootCmd.addSubcommand("subA", createCmd("subA", "regular description for subA"));
         rootCmd.addSubcommand("subB", createCmd("subB", "very,\nspecial,\nChristopher Walken style,\ndescription."));
-        rootCmd.addSubcommand("subC", createCmd("subC", "regular description for subC"));
+        rootCmd.addSubcommand("subC", createCmd("subC", "not so,%nspecial,%nJon Voight style,%ndescription."));
+        rootCmd.addSubcommand("subD", createCmd("subD", "regular description for subD"));
 
         assertEquals(String.format("" +
                 "Usage: newlines [-hV] [COMMAND]%n" +
@@ -3778,7 +3779,11 @@ public class CommandLineHelpTest {
                 "        special,%n" +
                 "        Christopher Walken style,%n" +
                 "        description.%n" +
-                "  subC  regular description for subC%n"), new CommandLine(rootCmd).getUsageMessage());
+                "  subC  not so,%n" +
+                "        special,%n" +
+                "        Jon Voight style,%n" +
+                "        description.%n" +
+                "  subD  regular description for subD%n"), new CommandLine(rootCmd).getUsageMessage());
     }
 
     private static CommandSpec createCmd(String name, String description) {
