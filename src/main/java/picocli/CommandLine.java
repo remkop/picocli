@@ -5659,13 +5659,13 @@ public class CommandLine {
             private boolean initializeInitialValue(Object arg) {
                 boolean initialized = true;
                 try {
-                    if      (type == Boolean.TYPE || type == Boolean.class) { setter.set(false); }
-                    else if (type == Byte.TYPE    || type == Byte.class)    { setter.set(Byte.valueOf((byte) 0)); }
-                    else if (type == Short.TYPE   || type == Short.class)   { setter.set(Short.valueOf((short) 0)); }
-                    else if (type == Integer.TYPE || type == Integer.class) { setter.set(Integer.valueOf(0)); }
-                    else if (type == Long.TYPE    || type == Long.class)    { setter.set(Long.valueOf(0L)); }
-                    else if (type == Float.TYPE   || type == Float.class)   { setter.set(Float.valueOf(0f)); }
-                    else if (type == Double.TYPE  || type == Double.class)  { setter.set(Double.valueOf(0d)); }
+                    if      (type == Boolean.TYPE) { setter.set(false); }
+                    else if (type == Byte.TYPE   ) { setter.set(Byte.valueOf((byte) 0)); }
+                    else if (type == Short.TYPE  ) { setter.set(Short.valueOf((short) 0)); }
+                    else if (type == Integer.TYPE) { setter.set(Integer.valueOf(0)); }
+                    else if (type == Long.TYPE   ) { setter.set(Long.valueOf(0L)); }
+                    else if (type == Float.TYPE  ) { setter.set(Float.valueOf(0f)); }
+                    else if (type == Double.TYPE ) { setter.set(Double.valueOf(0d)); }
                     else { initialized = false; }
                 } catch (Exception ex) {
                     throw new InitializationException("Could not set initial value for " + arg + ": " + ex.toString(), ex);

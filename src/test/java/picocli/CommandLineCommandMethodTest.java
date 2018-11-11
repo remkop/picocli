@@ -30,9 +30,12 @@ import java.io.File;
 import java.io.PrintStream;
 import java.lang.reflect.Method;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 import static org.junit.Assert.*;
 import static picocli.CommandLine.Command;
@@ -718,6 +721,65 @@ public class CommandLineCommandMethodTest {
         for (int i = 0; i < positionals.size(); i++) {
             assertEquals(CommandLine.Range.valueOf("" + i), positionals.get(i).index());
         }
+    }
+
+    /** https://github.com/remkop/picocli/issues/538 */
+    static class CommandMethodWithDefaults {
+        @Command
+        public String cmd(@Option(names = "-a", defaultValue = "2") Integer a,
+                          @Option(names = "-b"                    ) Integer b,
+                          @Option(names = "-c", defaultValue = "abc") String c,
+                          @Option(names = "-d"                      ) String d,
+                          @Option(names = "-e", defaultValue = "a=b") Map<String, String> e,
+                          @Option(names = "-f"                      ) Map<String, String> f) {
+            return String.format("a=%s, b=%s, c=%s, d=%s, e=%s, f=%s", a, b, c, d, e, f);
+        }
+    }
+
+    @Test // for #538
+    public void testCommandMethodObjectDefaults() {
+        Object s1 = CommandLine.invoke("cmd", CommandMethodWithDefaults.class);
+        assertEquals("nothing matched", "a=2, b=null, c=abc, d=null, e={a=b}, f=null", s1); // fails
+
+        Object s2 = CommandLine.invoke("cmd", CommandMethodWithDefaults.class,
+                "-a1", "-b2", "-cX", "-dY", "-eX=Y", "-fA=B");
+        assertEquals("all matched", "a=1, b=2, c=X, d=Y, e={X=Y}, f={A=B}", s2);
+    }
+
+    private static class PrimitiveWrapper {
+        @Option(names = "-0") private boolean aBool;
+        @Option(names = "-1") private Boolean boolWrapper;
+        @Option(names = "-b") private byte aByte;
+        @Option(names = "-B") private Byte byteWrapper;
+        @Option(names = "-s") private short aShort;
+        @Option(names = "-S") private Short shortWrapper;
+        @Option(names = "-i") private int anInt;
+        @Option(names = "-I") private Integer intWrapper;
+        @Option(names = "-l") private long aLong;
+        @Option(names = "-L") private Long longWrapper;
+        @Option(names = "-d") private double aDouble;
+        @Option(names = "-D") private Double doubleWrapper;
+        @Option(names = "-f") private float aFloat;
+        @Option(names = "-F") private Float floatWrapper;
+    }
+
+    @Test // for #538: check no regression
+    public void testPrimitiveWrappersNotInitializedIfNotMatched() {
+        PrimitiveWrapper s1 = CommandLine.populateCommand(new PrimitiveWrapper());
+        assertEquals(false, s1.aBool);
+        assertNull(s1.boolWrapper);
+        assertEquals(0, s1.aByte);
+        assertNull(s1.byteWrapper);
+        assertEquals(0, s1.aShort);
+        assertNull(s1.shortWrapper);
+        assertEquals(0, s1.anInt);
+        assertNull(s1.intWrapper);
+        assertEquals(0, s1.aLong);
+        assertNull(s1.longWrapper);
+        assertEquals(0d, s1.aDouble, 0.00001D);
+        assertNull(s1.doubleWrapper);
+        assertEquals(0f, s1.aFloat, 0.00001F);
+        assertNull(s1.floatWrapper);
     }
 
     private static Set<String> set(String... elements) {

@@ -28,6 +28,7 @@ Picocli follows [semantic versioning](http://semver.org/). (This release could h
 - [#523] Bugfix: Array should be initialized before calling setter method. Thanks to [Paul Horn](https://github.com/knutwalker) for the pull request.
 - [#527] Bugfix: Quoting logic did not work for some Unicode code points.
 - [#531] Bugfix: Usage help should not show space between short option name and parameter (for options that only have a short name).
+- [#538] Bugfix: Command methods and interface methods should pass `null` for unmatched primitive wrapper options.
 - [#528] Doc: javadoc for xxxHandler API referred to non-existant prototypeReturnValue.
 
 ## <a name="3.8.0-deprecated"></a> Deprecations
@@ -51,7 +52,10 @@ Usage: times [-l=<arg0>] [-r=<arg1>]
   -r=<arg1>
 ```
 
+Another behaviour change is that command methods now pass in `null` for primitive wrapper options that were not matched on the command line.
+This impacts methods annotated with `@Command`, and interface methods annotated with `@Option`. Classes annotated with `@Command` already behaved like this and this has not changed.
 
+This behaviour is now consistent for all annotation-based and programmatic ways of defining commands.
 
 # <a name="3.7.0"></a> Picocli 3.7.0
 The picocli community is pleased to announce picocli 3.7.0.
