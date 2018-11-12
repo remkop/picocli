@@ -3845,7 +3845,6 @@ public class CommandLineHelpTest {
                 "                 Default:%n" +
                 "                 /long/value/length/equals/columnValue/maxlength/and/non/null/offset/%n" +
                 "                 xxx%n");
-        //CommandLine.usage(new Args(), System.out);
         assertEquals(expected, usageString(new Args(), Help.Ansi.OFF));
     }
 
