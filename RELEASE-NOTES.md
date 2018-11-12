@@ -29,7 +29,9 @@ Picocli follows [semantic versioning](http://semver.org/). (This release could h
 - [#527] Bugfix: Quoting logic did not work for some Unicode code points.
 - [#531] Bugfix: Usage help should not show space between short option name and parameter (for options that only have a short name).
 - [#538] Bugfix: Command methods and interface methods should pass `null` for unmatched primitive wrapper options.
-- [#528] Doc: javadoc for xxxHandler API referred to non-existant prototypeReturnValue.
+- [#528] Doc: Javadoc for xxxHandler API referred to non-existant prototypeReturnValue.
+- [#545] Doc: Include mention of command methods for options using collections. Thanks to [Bob Tiernay](https://github.com/bobtiernay-okta) for the pull request.
+
 
 ## <a name="3.8.0-deprecated"></a> Deprecations
 No features were deprecated in this release.
