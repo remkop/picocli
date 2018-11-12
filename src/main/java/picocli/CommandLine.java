@@ -9240,7 +9240,7 @@ public class CommandLine {
                         break;
                     }
                 }
-                if (done == 0 && length(text) > columnValue.maxLength) {
+                if (done == 0 && length(text) + offset > columnValue.maxLength) {
                     // The value is a single word that is too big to be written to the column. Write as much as we can.
                     done = copy(text, columnValue, offset);
                 }
