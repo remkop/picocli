@@ -2637,6 +2637,27 @@ Record changes to the repository
   -m, --message=<arg0>    Use the given <msg> as the commit message.
 ----
 
+==== Mixin Support in `@Command` Methods
+
+From picocli 3.8, `@Command` methods accept `@Mixin` parameters.
+All options and positional parameters defined in the mixin class are added to the command.
+
+Example:
+
+```java
+class CommonParams {
+    @Option(names = "-x") int x;
+    @Option(names = "-y") int y;
+}
+
+class App {
+    @Command
+    public void doit(@Mixin CommonParams params, @Option(names = "-z") int z) {}
+}
+```
+
+In the above example, the `-x` and `-y` options are added to the other options of the `doit` command.
+
 === Less Boilerplate
 You can omit some of the boilerplate code from your application when the annotated object implements `Runnable` or `Callable`:
 

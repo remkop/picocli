@@ -6,6 +6,9 @@ The picocli community is pleased to announce picocli 3.8.0.
 
 This release contains bugfixes and minor enhancements.
 
+`@Command` methods now support `@Mixin` parameters. `OverwrittenOptionException` now has an accessor for the `ArgSpec` that was overwritten.
+
+The `ReflectionConfigGenerator` tool in the `picocli-codegen` module now correctly generates configuration for `@Mixin` fields.
 
 Many thanks to the many members of the picocli community who contributed! 
 
@@ -20,6 +23,26 @@ Picocli follows [semantic versioning](http://semver.org/). (This release could h
 
 ## <a name="3.8.0-new"></a> New and Noteworthy
 
+### Mixin Support in `@Command` Methods
+
+`@Command` methods now accept `@Mixin` parameters. All options and positional parameters defined in the mixin class are added to the command.
+
+Example:
+
+```java
+class CommonParams {
+    @Option(names = "-x") int x;
+    @Option(names = "-y") int y;
+}
+
+class App {
+    @Command
+    public void doit(@Mixin CommonParams params, @Option(names = "-z") int z) {}
+}
+```
+
+In the above example, the `-x` and `-y` options are added to the other options of the `doit` command.
+ 
 ## <a name="3.8.0-fixes"></a> Fixed issues
 - [#525] Enhancement: Allow `@Mixin` parameters in `@Command` methods. Thanks to [Paul Horn](https://github.com/knutwalker) for the pull request.
 - [#532] Enhancement: `OverwrittenOptionException` now has an accessor for the `ArgSpec` that was overwritten. Thanks to [Steven Fontaine](https://github.com/acid1103) for the pull request.
