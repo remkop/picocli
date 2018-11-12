@@ -3833,6 +3833,22 @@ public class CommandLineHelpTest {
                 "  -V, --version   Print version information and exit.%n"), new CommandLine(multiLineCmd).getUsageMessage());
     }
 
+    @Test
+    public void testMultiLineWrappedDefaultValueWontRunIntoInfiniteLoop(){
+        class Args {
+            @Parameters(arity = "1..*", description = "description", defaultValue = "/long/value/length/equals/columnValue/maxlength/and/non/null/offset/xxx", showDefaultValue = ALWAYS)
+            String[] c;
+        }
+        String expected = String.format("" +
+                "Usage: <main class> <c>...%n" +
+                "      <c>...   description%n" +
+                "                 Default:%n" +
+                "                 /long/value/length/equals/columnValue/maxlength/and/non/null/offset/%n" +
+                "                 xxx%n");
+        //CommandLine.usage(new Args(), System.out);
+        assertEquals(expected, usageString(new Args(), Help.Ansi.OFF));
+    }
+
     private static CommandSpec createCmd(String name, String description) {
         CommandSpec cmd = CommandSpec.create().name(name).mixinStandardHelpOptions(true);
         cmd.usageMessage().description(description);
