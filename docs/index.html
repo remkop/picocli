@@ -513,8 +513,8 @@ table.CodeRay td.code>pre{padding:0}
 <div id="header">
 <h1>picocli - a mighty tiny command line interface</h1>
 <div class="details">
-<span id="revnumber">version 3.7.0,</span>
-<span id="revdate">2018-10-21</span>
+<span id="revnumber">version 3.8.0,</span>
+<span id="revdate">2018-11-13</span>
 </div>
 <div id="toc" class="toc2">
 <div id="toctitle">Features</div>
@@ -1445,13 +1445,13 @@ Convert convert = CommandLine.populateCommand(<span class="keyword">new</span> C
 <i class="fa icon-note" title="Note"></i>
 </td>
 <td class="content">
-If a collection is returned from a type converter, the <em>contents</em> of the collection are added to the field, not the collection itself.
+If a collection is returned from a type converter, the <em>contents</em> of the collection are added to the field or method parameter, not the collection itself.
 </td>
 </tr>
 </table>
 </div>
 <div class="paragraph">
-<p>If the field is <code>null</code>, picocli will instantiate it when the option or positional parameter is matched.
+<p>If the field or method parameter is <code>null</code>, picocli will instantiate it when the option or positional parameter is successfully matched.
 If the <code>Collection</code> type is not a concrete class, picocli will make a best effort to instantiate it based on the field type:
 <code>List &#8594; ArrayList</code>, <code>OrderedSet &#8594; TreeSet</code>, <code>Set &#8594; LinkedHashSet</code>, <code>Queue &#8594; LinkedList</code>, otherwise, <code>ArrayList</code>.</p>
 </div>
@@ -4346,6 +4346,32 @@ Record changes to the repository
 </div>
 </div>
 </div>
+<div class="sect3">
+<h4 id="_mixin_support_in_code_command_code_methods">16.2.3. Mixin Support in <code>@Command</code> Methods</h4>
+<div class="paragraph">
+<p>From picocli 3.8, <code>@Command</code> methods accept <code>@Mixin</code> parameters.
+All options and positional parameters defined in the mixin class are added to the command.</p>
+</div>
+<div class="paragraph">
+<p>Example:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="java"><span class="type">class</span> <span class="class">CommonParams</span> {
+    <span class="annotation">@Option</span>(names = <span class="string"><span class="delimiter">&quot;</span><span class="content">-x</span><span class="delimiter">&quot;</span></span>) <span class="type">int</span> x;
+    <span class="annotation">@Option</span>(names = <span class="string"><span class="delimiter">&quot;</span><span class="content">-y</span><span class="delimiter">&quot;</span></span>) <span class="type">int</span> y;
+}
+
+<span class="type">class</span> <span class="class">App</span> {
+    <span class="annotation">@Command</span>
+    <span class="directive">public</span> <span class="type">void</span> doit(<span class="annotation">@Mixin</span> CommonParams params, <span class="annotation">@Option</span>(names = <span class="string"><span class="delimiter">&quot;</span><span class="content">-z</span><span class="delimiter">&quot;</span></span>) <span class="type">int</span> z) {}
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>In the above example, the <code>-x</code> and <code>-y</code> options are added to the other options of the <code>doit</code> command.</p>
+</div>
+</div>
 </div>
 <div class="sect2">
 <h3 id="_less_boilerplate">16.3. Less Boilerplate</h3>
@@ -4922,7 +4948,7 @@ The script body is executed if the user input was valid and did not request usag
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="CodeRay highlight"><code data-lang="groovy"><span class="annotation">@Grab</span>(<span class="string"><span class="delimiter">'</span><span class="content">info.picocli:picocli:3.7.0</span><span class="delimiter">'</span></span>)
+<pre class="CodeRay highlight"><code data-lang="groovy"><span class="annotation">@Grab</span>(<span class="string"><span class="delimiter">'</span><span class="content">info.picocli:picocli:3.8.0</span><span class="delimiter">'</span></span>)
 <span class="annotation">@Command</span>(name = <span class="string"><span class="delimiter">&quot;</span><span class="content">myScript</span><span class="delimiter">&quot;</span></span>,
         mixinStandardHelpOptions = <span class="predefined-constant">true</span>, <span class="comment">// add --help and --version options</span>
         description = <span class="string"><span class="delimiter">&quot;</span><span class="content">@|bold Groovy script|@ @|underline picocli|@ example</span><span class="delimiter">&quot;</span></span>)
@@ -4957,7 +4983,7 @@ When using a Groovy version older than 2.4.7, use this workaround for the <a hre
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="CodeRay highlight"><code data-lang="groovy"><span class="annotation">@Grab</span>(<span class="string"><span class="delimiter">'</span><span class="content">info.picocli:picocli:3.7.0</span><span class="delimiter">'</span></span>)
+<pre class="CodeRay highlight"><code data-lang="groovy"><span class="annotation">@Grab</span>(<span class="string"><span class="delimiter">'</span><span class="content">info.picocli:picocli:3.8.0</span><span class="delimiter">'</span></span>)
 <span class="annotation">@GrabExclude</span>(<span class="string"><span class="delimiter">'</span><span class="content">org.codehaus.groovy:groovy-all</span><span class="delimiter">'</span></span>) <span class="comment">// work around GROOVY-7613</span>
 ...</code></pre>
 </div>
@@ -5099,7 +5125,7 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
 <h3 id="_gradle">25.1. Gradle</h3>
 <div class="listingblock">
 <div class="content">
-<pre>compile 'info.picocli:picocli:3.7.0'</pre>
+<pre>compile 'info.picocli:picocli:3.8.0'</pre>
 </div>
 </div>
 </div>
@@ -5110,7 +5136,7 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
 <pre>&lt;dependency&gt;
   &lt;groupId&gt;info.picocli&lt;/groupId&gt;
   &lt;artifactId&gt;picocli&lt;/artifactId&gt;
-  &lt;version&gt;3.7.0&lt;/version&gt;
+  &lt;version&gt;3.8.0&lt;/version&gt;
 &lt;/dependency&gt;</pre>
 </div>
 </div>
@@ -5119,7 +5145,7 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
 <h3 id="_scala_sbt">25.3. Scala SBT</h3>
 <div class="listingblock">
 <div class="content">
-<pre>libraryDependencies += "info.picocli" % "picocli" % "3.7.0"</pre>
+<pre>libraryDependencies += "info.picocli" % "picocli" % "3.8.0"</pre>
 </div>
 </div>
 </div>
@@ -5127,7 +5153,7 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
 <h3 id="_ivy">25.4. Ivy</h3>
 <div class="listingblock">
 <div class="content">
-<pre>&lt;dependency org="info.picocli" name="picocli" rev="3.7.0" /&gt;</pre>
+<pre>&lt;dependency org="info.picocli" name="picocli" rev="3.8.0" /&gt;</pre>
 </div>
 </div>
 </div>
@@ -5143,8 +5169,8 @@ This facilitates including it in your project in source form to avoid having an 
 </div>
 <div id="footer">
 <div id="footer-text">
-Version 3.7.0<br>
-Last updated 2018-10-21 14:35:49 +09:00
+Version 3.8.0<br>
+Last updated 2018-11-13 21:03:41 +09:00
 </div>
 </div>
 </body>

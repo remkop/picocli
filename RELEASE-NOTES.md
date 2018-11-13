@@ -1,7 +1,7 @@
 # picocli Release Notes
 
 
-# <a name="3.8.0"></a> Picocli 3.8.0 (UNRELEASED)
+# <a name="3.8.0"></a> Picocli 3.8.0
 The picocli community is pleased to announce picocli 3.8.0.
 
 This release contains bugfixes and minor enhancements.
@@ -61,6 +61,9 @@ In the above example, the `-x` and `-y` options are added to the other options o
 No features were deprecated in this release.
 
 ## <a name="3.8.0-breaking-changes"></a> Potential breaking changes
+
+### Help Layout
+
 The usage help no longer shows a space between short option names and the parameter (for options that only have a short name).
 This may break tests that rely on the exact output format.
 
@@ -78,10 +81,13 @@ Usage: times [-l=<arg0>] [-r=<arg1>]
   -r=<arg1>
 ```
 
-Another behaviour change is that command methods now pass in `null` for primitive wrapper options that were not matched on the command line.
+### Unmatched Primitive Wrapper Type Options
+
+Another behavioral change is that command methods now pass in `null` for primitive wrapper options that were not matched on the command line.
 This impacts methods annotated with `@Command`, and interface methods annotated with `@Option`. Classes annotated with `@Command` already behaved like this and this has not changed.
 
 This behaviour is now consistent for all annotation-based and programmatic ways of defining commands.
+
 
 # <a name="3.7.0"></a> Picocli 3.7.0
 The picocli community is pleased to announce picocli 3.7.0.

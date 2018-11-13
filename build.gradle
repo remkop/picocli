@@ -138,7 +138,8 @@ task bumpReadmeVersion {
         // README.md
         ant.replaceregexp(match: "$projectPreviousReleaseVersion", replace: "$version", flags: 'g', byline: true, encoding: 'UTF8') {
             fileset(dir: '.', includes: 'README.md')
-            fileset(dir: './picocli-codegen/README.md', includes: 'README.md')
+            fileset(dir: './picocli-codegen/', includes: 'README.md')
+            fileset(dir: './picocli-shell-jline2/', includes: 'README.md')
         }
     }
 }
