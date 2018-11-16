@@ -66,7 +66,7 @@ Let's go over these and compare how this is done in Commond CLI and in picocli, 
 
 === Defining Options and Positional Parameters
 
-image:images/pexels-photo-97077.jpeg[width=200]
+image:https://picocli.info/images/pexels-photo-97077.jpeg[width=200]
 
 // image:https://greenbookblog.org/wp-content/uploads/2018/02/pexels-photo-533189-768x576.jpeg[width=200]
 
@@ -298,7 +298,7 @@ Applications can also use ANSI colors and styles in the description or other sec
 
 For CheckStyle, we kept it to the bare minimum, and the resulting output for CheckStyle looks like this:
 
-image:images/checkstyle-usage.png[]
+image:https://picocli.info/images/checkstyle-usage.png[]
 
 
 == Wrapping Up: Quick Tips
