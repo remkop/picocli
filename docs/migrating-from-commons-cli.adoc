@@ -152,7 +152,7 @@ Commons CLI uses a boolean flag to denote whether the option takes an argument o
 
 Picocli lets you use types directly. Based on the type, picocli "knows" how many arguments the option needs: `boolean` fields don't have an argument, `Collection`, `Map` and array fields can have zero to any number of arguments, and any other type means the options takes a single argument. This can be customized (see https://picocli.info/#_arity[`arity`]) but most of the time the default is good enough.
 
-Picocli encourages you to use `enum` types for options or positional parameters with a limited set of valid values. Not only will picocli validate the input for you, you can also https://picocli.info/#_show_default_values[show all values] in the usage help message with `@Option(description = "Option x. Valid values: ${COMPLETION-CANDIDATES}")`.
+Picocli encourages you to use `enum` types for options or positional parameters with a limited set of valid values. Not only will picocli validate the input for you, you can also https://picocli.info/#_show_default_values[show all values] in the usage help message with `@Option(description = "Valid values: ${COMPLETION-CANDIDATES}")`.
 
 ===== Less Code
 
