@@ -293,7 +293,7 @@ Checkstyle needs to control the exit code, and has some strict internal requirem
 == Usage Help Message
 
 Picocli uses ANSI colors and styles in the usage help message on supported platforms.
-This doesn't just look good, it also reduces the cognitive load on the user: the contrast make the important information like commands, options, and parameters stand out from the surrounding text.
+This doesn't just look good, it also *reduces the cognitive load* on the user: the contrast make the important information like commands, options, and parameters stand out from the surrounding text.
 
 Applications can also use ANSI colors and styles in the description or other sections of the usage help message with a simple markup like `@|bg(red) text with red background|@`. See the https://picocli.info/#_usage_help_with_styles_and_colors[relevant section] of the user manual.
 
