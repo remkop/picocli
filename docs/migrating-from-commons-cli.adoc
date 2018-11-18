@@ -1,8 +1,8 @@
 = Migrating from Commons CLI to picocli
-//:author: Remko Popma
+:author: Remko Popma
 //:email: rpopma@apache.org
-:revnumber: 4.0.0-SNAPSHOT
-:revdate: 2018-11-18
+//:revnumber: 4.0.0-SNAPSHOT
+:revdate: 2018-11-19
 //:toc: left
 //:numbered:
 //:toclevels: 4

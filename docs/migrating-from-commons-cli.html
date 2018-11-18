@@ -5,6 +5,7 @@
 <!--[if IE]><meta http-equiv="X-UA-Compatible" content="IE=edge"><![endif]-->
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="generator" content="Asciidoctor 1.5.3">
+<meta name="author" content="Remko Popma">
 <title>Migrating from Commons CLI to picocli</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Open+Sans:300,300italic,400,400italic,600,600italic%7CNoto+Serif:400,400italic,700,700italic%7CDroid+Sans+Mono:400,700">
 <style>
@@ -513,8 +514,8 @@ table.CodeRay td.code>pre{padding:0}
 <div id="header">
 <h1>Migrating from Commons CLI to picocli</h1>
 <div class="details">
-<span id="revnumber">version 4.0.0-SNAPSHOT,</span>
-<span id="revdate">2018-11-18</span>
+<span id="author" class="author">Remko Popma</span><br>
+<span id="revdate">2018-11-19</span>
 </div>
 </div>
 <div id="content">
@@ -711,7 +712,7 @@ Applications looking for a modern approach with a minimum of boilerplate code ma
 <p>Picocli lets you use types directly. Based on the type, picocli "knows" how many arguments the option needs: <code>boolean</code> fields don&#8217;t have an argument, <code>Collection</code>, <code>Map</code> and array fields can have zero to any number of arguments, and any other type means the options takes a single argument. This can be customized (see <a href="https://picocli.info/#_arity"><code>arity</code></a>) but most of the time the default is good enough.</p>
 </div>
 <div class="paragraph">
-<p>Picocli encourages you to use <code>enum</code> types for options or positional parameters with a limited set of valid values. Not only will picocli validate the input for you, you can also <a href="https://picocli.info/#_show_default_values">show all values</a> in the usage help message with <code>@Option(description = "Option x. Valid values: ${COMPLETION-CANDIDATES}")</code>.</p>
+<p>Picocli encourages you to use <code>enum</code> types for options or positional parameters with a limited set of valid values. Not only will picocli validate the input for you, you can also <a href="https://picocli.info/#_show_default_values">show all values</a> in the usage help message with <code>@Option(description = "Valid values: ${COMPLETION-CANDIDATES}")</code>.</p>
 </div>
 </div>
 <div class="sect4">
@@ -945,8 +946,7 @@ This doesn&#8217;t just look good, it also <strong>reduces the cognitive load</s
 </div>
 <div id="footer">
 <div id="footer-text">
-Version 4.0.0-SNAPSHOT<br>
-Last updated 2018-11-19 07:32:41 +09:00
+Last updated 2018-11-19 08:11:25 +09:00
 </div>
 </div>
 </body>

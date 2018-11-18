@@ -620,7 +620,7 @@ class TypeDemo {
 
 === Enum Types
 It is encouraged to use `enum` types for options or positional parameters with a limited set of valid values.
-Not only will picocli validate the input, it allows you to <<Show Default Values,show all values>> in the usage help message with `@Option(description = "Valid values: ${COMPLETION-CANDIDATES}")`.
+Not only will picocli validate the input, it allows you to <<Show Default Values,show all values>> in the usage help message with `@Option(description = "Valid values: ${COMPLETION-CANDIDATES}")`. It also allows command line completion to suggest completion candidates for the values of this option.
 
 Enum value matching is case-sensitive by default, but from 3.4 this can be controlled with `CommandLine::setCaseInsensitiveEnumValuesAllowed` and `CommandSpec::caseInsensitiveEnumValuesAllowed`.
 
