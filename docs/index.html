@@ -538,6 +538,7 @@ table.CodeRay td.code>pre{padding:0}
 <li><a href="#_option_specific_type_converters">3.3. Option-specific Type Converters</a></li>
 <li><a href="#_arrays_collections_maps">3.4. Arrays, Collections, Maps</a></li>
 <li><a href="#_abstract_field_types">3.5. Abstract Field Types</a></li>
+<li><a href="#_enum_types">3.6. Enum Types</a></li>
 </ul>
 </li>
 <li><a href="#_default_values">4. Default Values</a>
@@ -1552,6 +1553,16 @@ For example:</p>
 }</code></pre>
 </div>
 </div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_enum_types">3.6. Enum Types</h3>
+<div class="paragraph">
+<p>It is encouraged to use <code>enum</code> types for options or positional parameters with a limited set of valid values.
+Not only will picocli validate the input, it allows you to <a href="#_show_default_values">show all values</a> in the usage help message with <code>@Option(description = "Option x. Valid values: ${COMPLETION-CANDIDATES}")</code>.</p>
+</div>
+<div class="paragraph">
+<p>Enum value matching is case-sensitive by default, but from 3.4 this can be controlled with <code>CommandLine::setCaseInsensitiveEnumValuesAllowed</code> and <code>CommandSpec::caseInsensitiveEnumValuesAllowed</code>.</p>
 </div>
 </div>
 </div>
