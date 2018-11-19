@@ -578,10 +578,10 @@ Applications looking for a modern approach with a minimum of boilerplate code ma
 <p>Finally, other than the immediate pay-off, are there any future benefits to be gained by migrating from Commons CLI to picocli?</p>
 </div>
 <div class="paragraph">
-<p>Picocli has a lot of <strong>advanced features</strong>. Your application may not use these features yet, but if you want to expand your application in the future, picocli has support for nested <a href="https://picocli.info/#_subcommands">subcommands</a> (and sub-subcommands to any depth), <a href="https://picocli.info/#_mixins">mixins</a> for reuse, can easily <a href="https://picocli.info/#_dependency_injection">integrate with</a> Dependency Injection containers, and a growing tool framework to <a href="https://github.com/remkop/picocli/tree/master/picocli-codegen">generate</a> documentation and configuration files from a picocli <code>CommandSpec</code> model.</p>
+<p>Picocli has a lot of <strong>advanced features</strong>. Your application may not use these features yet, but if you want to expand your application in the future, picocli has support for nested <a href="https://picocli.info/#_subcommands">subcommands</a> (and sub-subcommands to any depth), <a href="https://picocli.info/#_mixins">mixins</a> for reuse, can easily <a href="https://picocli.info/#_dependency_injection">integrate with</a> Dependency Injection containers, and a growing tool framework to <a href="https://github.com/remkop/picocli/tree/master/picocli-codegen">generate</a> source code, documentation and configuration files from a picocli <code>CommandSpec</code> model.</p>
 </div>
 <div class="paragraph">
-<p>Finally, picocli is <strong>actively maintained</strong>, whereas Commons CLI seems to be near-dormant with 4 releases in 16 years.</p>
+<p>Finally, picocli is <strong>actively maintained</strong>, whereas Commons CLI seems to be near-dormant with 6 releases in 16 years.</p>
 </div>
 </div>
 </div>
@@ -663,7 +663,7 @@ Applications looking for a modern approach with a minimum of boilerplate code ma
 <p>In picocli you can define supported options either programmatically with builders, similar to the Commons CLI approach, or declaratively with annotations.</p>
 </div>
 <div class="paragraph">
-<p>Picocli’s programmatic API may be useful for dynamic applications where not all options are known in advance. If you&#8217;re interested in the programmatic approach, take a look at the the <code>CommandSpec</code>, <code>OptionSpec</code> and <code>PositionalParamSpec</code> classes. See also <a href="https://github.com/remkop/picocli/wiki/Programmatic-API">Programmatic API</a> for more detail.</p>
+<p>Picocli’s programmatic API may be useful for dynamic applications where not all options are known in advance. If you&#8217;re interested in the programmatic approach, take a look at the <code>CommandSpec</code>, <code>OptionSpec</code> and <code>PositionalParamSpec</code> classes. See also <a href="https://github.com/remkop/picocli/wiki/Programmatic-API">Programmatic API</a> for more detail.</p>
 </div>
 <div class="paragraph">
 <p>In this article we will use the picocli annotations. For the CheckStyle example, this would look something like the below:</p>
@@ -712,7 +712,7 @@ Applications looking for a modern approach with a minimum of boilerplate code ma
 <p>Picocli lets you use types directly. Based on the type, picocli "knows" how many arguments the option needs: <code>boolean</code> fields don&#8217;t have an argument, <code>Collection</code>, <code>Map</code> and array fields can have zero to any number of arguments, and any other type means the options takes a single argument. This can be customized (see <a href="https://picocli.info/#_arity"><code>arity</code></a>) but most of the time the default is good enough.</p>
 </div>
 <div class="paragraph">
-<p>Picocli encourages you to use <code>enum</code> types for options or positional parameters with a limited set of valid values. Not only will picocli validate the input for you, you can also <a href="https://picocli.info/#_show_default_values">show all values</a> in the usage help message with <code>@Option(description = "Valid values: ${COMPLETION-CANDIDATES}")</code>.</p>
+<p>Picocli encourages you to use <code>enum</code> types for options or positional parameters with a limited set of valid values. Not only will picocli validate the input for you, you can also <a href="https://picocli.info/#_show_default_values">show all values</a> in the usage help message with <code>@Option(description = "Valid values: ${COMPLETION-CANDIDATES}")</code>. Enums also allow command line completion to suggest completion candidates for the values of the option.</p>
 </div>
 </div>
 <div class="sect4">
@@ -727,11 +727,16 @@ Applications looking for a modern approach with a minimum of boilerplate code ma
 <p>Let&#8217;s look at an example to see how useful this is.  The Checkstyle <code>Main</code> class defines a <code>-x</code>, <code>--exclude-regexp</code> option that allows uses to specify a number of regular expressions for directories to exclude.</p>
 </div>
 <div class="paragraph">
-<p>With Commons CLI, you need to convert the String values to <code>java.util.regex.Pattern</code> objects in the application:</p>
+<p>With Commons CLI, you need to convert the String values that were matched on the command line to <code>java.util.regex.Pattern</code> objects in the application:</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="CodeRay highlight"><code data-lang="java"><span class="directive">private</span> <span class="directive">static</span> <span class="predefined-type">List</span>&lt;<span class="predefined-type">Pattern</span>&gt; getExclusions(CommandLine commandLine) {
+<pre class="CodeRay highlight"><code data-lang="java"><span class="comment">/**
+ * Gets the list of exclusions from the parse results.
+ * @param commandLine object representing the result of parsing the command line
+ * @return List of exclusion patterns.
+ */</span>
+<span class="directive">private</span> <span class="directive">static</span> <span class="predefined-type">List</span>&lt;<span class="predefined-type">Pattern</span>&gt; getExclusions(CommandLine commandLine) {
     <span class="directive">final</span> <span class="predefined-type">List</span>&lt;<span class="predefined-type">Pattern</span>&gt; result = <span class="keyword">new</span> <span class="predefined-type">ArrayList</span>&lt;&gt;();
 
     <span class="keyword">if</span> (commandLine.hasOption(OPTION_X_NAME)) {
@@ -785,7 +790,7 @@ Since picocli has a built-in converter for <code>java.util.regex.Pattern</code>,
 <p>In picocli, <a href="https://picocli.info/#_positional_parameters">positional parameters</a> are first-class citizens, like named options. Not only can they be strongly typed, parameters at different positions can have different types, and each will have a separate entry and description listed in the usage help message.</p>
 </div>
 <div class="paragraph">
-<p>For example, Checkstyle needs a list of files to process, so we declare a field and annotate it with <code>@Parameters</code>. The <code>arity = "1..*"</code> attribute means that at least one file must be specified, or picocli will show an error message about the missing argument.</p>
+<p>For example, the Checkstyle <code>Main</code> class needs a list of files to process, so we declare a field and annotate it with <code>@Parameters</code>. The <code>arity = "1..*"</code> attribute means that at least one file must be specified, or picocli will show an error message about the missing argument.</p>
 </div>
 <div class="listingblock">
 <div class="content">
@@ -887,7 +892,7 @@ Since picocli has a built-in converter for <code>java.util.regex.Pattern</code>,
 </div>
 </div>
 <div class="paragraph">
-<p>Checkstyle needs to control the exit code, and has some strict internal requirements for error handling, so we ended up not using the convenience methods and kept the parse result processing very similar to what it was with Commons CLI.</p>
+<p>The Checkstyle <code>Main</code> class needs to control the exit code, and has some strict internal requirements for error handling, so we ended up not using the convenience methods and kept the parse result processing very similar to what it was with Commons CLI. Improving this area is on the picocli todo list.</p>
 </div>
 </div>
 </div>
@@ -914,7 +919,10 @@ This doesn&#8217;t just look good, it also <strong>reduces the cognitive load</s
 <h2 id="_wrapping_up_a_final_tip">Wrapping Up: a Final Tip</h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>Be aware that the Commons CLI default parser will recognize both single hyphen and double hyphen long options, even though the usage help message will only show options with double hyphens. You need to decide whether to continue to support this. Use <code>@Option(names = "-xxx", hidden = true)</code> to declare long options with a single hyphen if you want to mimic the exact same behaviour as Commons CLI: hidden options picocli <a href="https://picocli.info/#_hidden_options_and_parameters">won&#8217;t be shown</a> in the usage help message.</p>
+<p>Be aware that the Commons CLI default parser will recognize both single hyphen (<code>-</code>) and double hyphen (<code>--</code>) long options, even though the usage help message will only show options with double hyphens. You need to decide whether to continue to support this.</p>
+</div>
+<div class="paragraph">
+<p>In picocli you can use <code>@Option(names = "-xxx", hidden = true)</code> to declare long options with a single hyphen if you want to mimic the exact same behaviour as Commons CLI: hidden options in picocli <a href="https://picocli.info/#_hidden_options_and_parameters">are not shown</a> in the usage help message.</p>
 </div>
 </div>
 </div>
@@ -925,7 +933,7 @@ This doesn&#8217;t just look good, it also <strong>reduces the cognitive load</s
 <p>Migrating from Commons CLI to picocli can give end users a better user experience, and can give developers significant benefits in increased maintainability and potential for future expansion. Migration is a manual process, but is relatively straightforward.</p>
 </div>
 <div class="paragraph">
-<p>Update: the CheckStyle project accepted a pull request with the changes in this article. From CheckStyle 8.15 its command line tools will be using picocli. It looks like the CheckStyle maintainers were happy with the result:</p>
+<p>Update: the CheckStyle project accepted a pull request with the changes in this article. From CheckStyle 8.15 its command line tools will use picocli. It looks like the CheckStyle maintainers were happy with the result:</p>
 </div>
 <div class="quoteblock">
 <blockquote>
@@ -946,7 +954,7 @@ This doesn&#8217;t just look good, it also <strong>reduces the cognitive load</s
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2018-11-19 08:11:25 +09:00
+Last updated 2018-11-19 20:29:37 +09:00
 </div>
 </div>
 </body>

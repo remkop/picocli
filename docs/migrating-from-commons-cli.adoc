@@ -49,9 +49,11 @@ image:https://picocli.info/images/seeing-the-future.jpg[width=200]
 
 Finally, other than the immediate pay-off, are there any future benefits to be gained by migrating from Commons CLI to picocli?
 
-Picocli has a lot of *advanced features*. Your application may not use these features yet, but if you want to expand your application in the future, picocli has support for nested https://picocli.info/#_subcommands[subcommands] (and sub-subcommands to any depth), https://picocli.info/#_mixins[mixins] for reuse, can easily https://picocli.info/#_dependency_injection[integrate with] Dependency Injection containers, and a growing tool framework to https://github.com/remkop/picocli/tree/master/picocli-codegen[generate] documentation and configuration files from a picocli `CommandSpec` model.
+Picocli has a lot of *advanced features*. Your application may not use these features yet, but if you want to expand your application in the future, picocli has support for nested https://picocli.info/#_subcommands[subcommands] (and sub-subcommands to any depth), https://picocli.info/#_mixins[mixins] for reuse, can easily https://picocli.info/#_dependency_injection[integrate with] Dependency Injection containers, and a growing tool framework to https://github.com/remkop/picocli/tree/master/picocli-codegen[generate] source code, documentation and configuration files from a picocli `CommandSpec` model.
 
-Finally, picocli is *actively maintained*, whereas Commons CLI seems to be near-dormant with 4 releases in 16 years.
+Finally, picocli is *actively maintained*, whereas Commons CLI seems to be near-dormant with 6 releases in 16 years.
+
+// and many outstanding https://issues.apache.org/jira/browse/CLI-275?jql=project%20%3D%20CLI%20AND%20resolution%20%3D%20Unresolved%20ORDER%20BY%20issuetype%20ASC[open issues].
 
 == An Example Migration: CheckStyle
 
@@ -115,7 +117,7 @@ private static Options buildOptions() {
 
 In picocli you can define supported options either programmatically with builders, similar to the Commons CLI approach, or declaratively with annotations.
 
-Picocli’s programmatic API may be useful for dynamic applications where not all options are known in advance. If you're interested in the programmatic approach, take a look at the the `CommandSpec`, `OptionSpec` and `PositionalParamSpec` classes. See also https://github.com/remkop/picocli/wiki/Programmatic-API[Programmatic API] for more detail.
+Picocli’s programmatic API may be useful for dynamic applications where not all options are known in advance. If you're interested in the programmatic approach, take a look at the `CommandSpec`, `OptionSpec` and `PositionalParamSpec` classes. See also https://github.com/remkop/picocli/wiki/Programmatic-API[Programmatic API] for more detail.
 
 In this article we will use the picocli annotations. For the CheckStyle example, this would look something like the below:
 
@@ -152,7 +154,7 @@ Commons CLI uses a boolean flag to denote whether the option takes an argument o
 
 Picocli lets you use types directly. Based on the type, picocli "knows" how many arguments the option needs: `boolean` fields don't have an argument, `Collection`, `Map` and array fields can have zero to any number of arguments, and any other type means the options takes a single argument. This can be customized (see https://picocli.info/#_arity[`arity`]) but most of the time the default is good enough.
 
-Picocli encourages you to use `enum` types for options or positional parameters with a limited set of valid values. Not only will picocli validate the input for you, you can also https://picocli.info/#_show_default_values[show all values] in the usage help message with `@Option(description = "Valid values: ${COMPLETION-CANDIDATES}")`.
+Picocli encourages you to use `enum` types for options or positional parameters with a limited set of valid values. Not only will picocli validate the input for you, you can also https://picocli.info/#_show_default_values[show all values] in the usage help message with `@Option(description = "Valid values: ${COMPLETION-CANDIDATES}")`. Enums also allow command line completion to suggest completion candidates for the values of the option.
 
 ===== Less Code
 
@@ -162,9 +164,14 @@ Picocli https://picocli.info/#_strongly_typed_everything[converts] the option pa
 
 Let's look at an example to see how useful this is.  The Checkstyle `Main` class defines a `-x`, `--exclude-regexp` option that allows uses to specify a number of regular expressions for directories to exclude.
 
-With Commons CLI, you need to convert the String values to `java.util.regex.Pattern` objects in the application:
+With Commons CLI, you need to convert the String values that were matched on the command line to `java.util.regex.Pattern` objects in the application:
 [source,java]
 ----
+/**
+ * Gets the list of exclusions from the parse results.
+ * @param commandLine object representing the result of parsing the command line
+ * @return List of exclusion patterns.
+ */
 private static List<Pattern> getExclusions(CommandLine commandLine) {
     final List<Pattern> result = new ArrayList<>();
 
@@ -208,7 +215,7 @@ In Commons CLI you cannot define positional parameters up front. Instead, its `C
 
 In picocli, https://picocli.info/#_positional_parameters[positional parameters] are first-class citizens, like named options. Not only can they be strongly typed, parameters at different positions can have different types, and each will have a separate entry and description listed in the usage help message.
 
-For example, Checkstyle needs a list of files to process, so we declare a field and annotate it with `@Parameters`. The `arity = "1..*"` attribute means that at least one file must be specified, or picocli will show an error message about the missing argument.
+For example, the Checkstyle `Main` class needs a list of files to process, so we declare a field and annotate it with `@Parameters`. The `arity = "1..*"` attribute means that at least one file must be specified, or picocli will show an error message about the missing argument.
 
 [source,java]
 ----
@@ -287,7 +294,7 @@ public class Main implements Callable<Integer> {
 }
 ----
 
-Checkstyle needs to control the exit code, and has some strict internal requirements for error handling, so we ended up not using the convenience methods and kept the parse result processing very similar to what it was with Commons CLI.
+The Checkstyle `Main` class needs to control the exit code, and has some strict internal requirements for error handling, so we ended up not using the convenience methods and kept the parse result processing very similar to what it was with Commons CLI. Improving this area is on the picocli todo list.
 
 
 == Usage Help Message
@@ -304,13 +311,15 @@ image:https://picocli.info/images/checkstyle-usage.png[]
 
 == Wrapping Up: a Final Tip
 
-Be aware that the Commons CLI default parser will recognize both single hyphen and double hyphen long options, even though the usage help message will only show options with double hyphens. You need to decide whether to continue to support this. Use `@Option(names = "-xxx", hidden = true)` to declare long options with a single hyphen if you want to mimic the exact same behaviour as Commons CLI: hidden options picocli https://picocli.info/#_hidden_options_and_parameters[won't be shown] in the usage help message.
+Be aware that the Commons CLI default parser will recognize both single hyphen (`-`) and double hyphen (`--`) long options, even though the usage help message will only show options with double hyphens. You need to decide whether to continue to support this.
+
+In picocli you can use `@Option(names = "-xxx", hidden = true)` to declare long options with a single hyphen if you want to mimic the exact same behaviour as Commons CLI: hidden options in picocli https://picocli.info/#_hidden_options_and_parameters[are not shown] in the usage help message.
 
 == Conclusion
 
 Migrating from Commons CLI to picocli can give end users a better user experience, and can give developers significant benefits in increased maintainability and potential for future expansion. Migration is a manual process, but is relatively straightforward.
 
-Update: the CheckStyle project accepted a pull request with the changes in this article. From CheckStyle 8.15 its command line tools will be using picocli. It looks like the CheckStyle maintainers were happy with the result:
+Update: the CheckStyle project accepted a pull request with the changes in this article. From CheckStyle 8.15 its command line tools will use picocli. It looks like the CheckStyle maintainers were happy with the result:
 
 [quote, CheckStyle maintainer Roman Ivanov, https://twitter.com/checkstyle_java/status/1057246772089606144]
 ____
