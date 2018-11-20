@@ -20,6 +20,7 @@ any option prefix style, POSIX-style [grouped short options](https://picocli.inf
 custom [type converters](https://picocli.info/#_custom_type_converters),
 [password options](http://picocli.info/#_interactive_password_options) and more.
 Parser [tracing](https://picocli.info/#_tracing) facilitates troubleshooting.
+Command-line [argument files](https://picocli.info/#AtFiles) (@-files) allow applications to handle very long command lines.
 
 Distinguishes between [named options](https://picocli.info/#_options) and
 [positional parameters](https://picocli.info/#_positional_parameters) and allows _both_ to be 
