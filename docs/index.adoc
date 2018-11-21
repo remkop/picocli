@@ -3261,6 +3261,6 @@ libraryDependencies += "info.picocli" % "picocli" % "4.0.0-SNAPSHOT"
 
 === Source
 
-Picocli has only one source file: link:../src/main/java/picocli/CommandLine.java[CommandLine.java].
+Picocli has only one source file: link:https://github.com/remkop/picocli/blob/master/src/main/java/picocli/CommandLine.java[CommandLine.java].
 This facilitates including it in your project in source form to avoid having an external dependency on picocli.
 
