@@ -1,6 +1,37 @@
 # picocli Release Notes
 
 
+# <a name="3.8.1"></a> Picocli 3.8.1
+The picocli community is pleased to announce picocli 3.8.1.
+
+This release contains bugfixes and minor enhancements.
+
+
+Many thanks to the many members of the picocli community who contributed! 
+
+This is the forty-third public release.
+Picocli follows [semantic versioning](http://semver.org/). (This release could have been called 3.7.1 except that it has a minor additional API change, which means it cannot be called a patch release by semver rules.)
+
+## <a name="3.8.1"></a> Table of Contents
+* [New and noteworthy](#3.8.1-new)
+* [Fixed issues](#3.8.1-fixes)
+* [Deprecations](#3.8.1-deprecated)
+* [Potential breaking changes](#3.8.1-breaking-changes)
+
+## <a name="3.8.1-new"></a> New and Noteworthy
+
+ 
+## <a name="3.8.1-fixes"></a> Fixed issues
+- [#553] Doc: Fix broken link to CommandLine.java source code. Thanks to [Simon Legner](https://github.com/simon04) for the pull request.
+
+
+## <a name="3.8.1-deprecated"></a> Deprecations
+No features were deprecated in this release.
+
+## <a name="3.8.1-breaking-changes"></a> Potential breaking changes
+This is a patch release and has no breaking changes.
+
+
 # <a name="3.8.0"></a> Picocli 3.8.0
 The picocli community is pleased to announce picocli 3.8.0.
 
