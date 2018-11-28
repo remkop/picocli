@@ -22,8 +22,8 @@ Picocli follows [semantic versioning](http://semver.org/). (This release could h
 
  
 ## <a name="3.8.1-fixes"></a> Fixed issues
+- [#554] Bugfix: Convenience method error handling was broken for command methods that explicitly throw an ParameterException: InvocationTargetException hides the ParameterException. Thanks to [SysLord](https://github.com/SysLord) for the bug report.
 - [#553] Doc: Fix broken link to CommandLine.java source code. Thanks to [Simon Legner](https://github.com/simon04) for the pull request.
-
 
 ## <a name="3.8.1-deprecated"></a> Deprecations
 No features were deprecated in this release.

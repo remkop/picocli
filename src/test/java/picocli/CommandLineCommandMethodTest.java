@@ -23,6 +23,8 @@ import org.junit.contrib.java.lang.system.ProvideSystemProperty;
 import org.junit.contrib.java.lang.system.SystemErrRule;
 import org.junit.contrib.java.lang.system.SystemOutRule;
 import picocli.CommandLine.Mixin;
+import picocli.CommandLine.Model.CommandSpec;
+import picocli.CommandLine.Spec;
 import picocli.CommandLineTest.CompactFields;
 
 import java.io.ByteArrayOutputStream;
@@ -128,7 +130,7 @@ public class CommandLineCommandMethodTest {
     public void testAnnotateMethod_unannotatedPositional_indexByParameterOrder() throws Exception {
         Method m = CommandLine.getCommandMethods(UnannotatedPositional.class, "x").get(0);
         CommandLine cmd = new CommandLine(m);
-        Model.CommandSpec spec = cmd.getCommandSpec();
+        CommandSpec spec = cmd.getCommandSpec();
         List<Model.PositionalParamSpec> positionals = spec.positionalParameters();
         String[] labels = { "<arg0>", "<arg1>", "<arg2>", "<arg3>", "<arg4>"};
         assertEquals(positionals.size(), labels.length);
@@ -152,7 +154,7 @@ public class CommandLineCommandMethodTest {
     public void testAnnotateMethod_unannotatedPositionalMixedWithOptions_indexByParameterOrder() throws Exception {
         Method m = CommandLine.getCommandMethods(PositionalsMixedWithOptions.class, "mixed").get(0);
         CommandLine cmd = new CommandLine(m);
-        Model.CommandSpec spec = cmd.getCommandSpec();
+        CommandSpec spec = cmd.getCommandSpec();
         List<Model.PositionalParamSpec> positionals = spec.positionalParameters();
         String[] labels = { "<arg0>", "<arg3>", "<arg4>"};
         assertEquals(positionals.size(), labels.length);
@@ -197,7 +199,7 @@ public class CommandLineCommandMethodTest {
     public void testAnnotateMethod_mixinParameter() {
         Method m = CommandLine.getCommandMethods(UnannotatedClassWithMixinParameters.class, "withMixin").get(0);
         CommandLine cmd = new CommandLine(m);
-        Model.CommandSpec spec = cmd.getCommandSpec();
+        CommandSpec spec = cmd.getCommandSpec();
         assertEquals(1, spec.mixins().size());
         spec = spec.mixins().get("arg0");
         assertEquals(SomeMixin.class, spec.userObject().getClass());
@@ -207,7 +209,7 @@ public class CommandLineCommandMethodTest {
     public void testAnnotateMethod_positionalAndMixinParameter() {
         Method m = CommandLine.getCommandMethods(UnannotatedClassWithMixinParameters.class, "posAndMixin").get(0);
         CommandLine cmd = new CommandLine(m);
-        Model.CommandSpec spec = cmd.getCommandSpec();
+        CommandSpec spec = cmd.getCommandSpec();
         assertEquals(1, spec.mixins().size());
         assertEquals(1, spec.positionalParameters().size());
         spec = spec.mixins().get("arg1");
@@ -218,7 +220,7 @@ public class CommandLineCommandMethodTest {
     public void testAnnotateMethod_positionalAndOptionsAndMixinParameter() {
         Method m = CommandLine.getCommandMethods(UnannotatedClassWithMixinParameters.class, "posAndOptAndMixin").get(0);
         CommandLine cmd = new CommandLine(m);
-        Model.CommandSpec spec = cmd.getCommandSpec();
+        CommandSpec spec = cmd.getCommandSpec();
         assertEquals(1, spec.mixins().size());
         assertEquals(1, spec.positionalParameters().size());
         assertEquals(3, spec.options().size());
@@ -230,7 +232,7 @@ public class CommandLineCommandMethodTest {
     public void testAnnotateMethod_mixinParameterFirst() {
         Method m = CommandLine.getCommandMethods(UnannotatedClassWithMixinParameters.class, "mixinFirst").get(0);
         CommandLine cmd = new CommandLine(m);
-        Model.CommandSpec spec = cmd.getCommandSpec();
+        CommandSpec spec = cmd.getCommandSpec();
         assertEquals(1, spec.mixins().size());
         assertEquals(1, spec.positionalParameters().size());
         assertEquals(3, spec.options().size());
@@ -784,5 +786,49 @@ public class CommandLineCommandMethodTest {
 
     private static Set<String> set(String... elements) {
         return new HashSet<String>(Arrays.asList(elements));
+    }
+
+    /** Test for https://github.com/remkop/picocli/issues/554 */
+    @Command(name = "maincommand")
+    class MainCommand implements Runnable {
+        @Spec
+        CommandSpec spec;
+
+        public void run() { throw new UnsupportedOperationException("must specify a subcommand"); }
+
+        @Command
+        public void subcommand(@Option(names = "-x") String x) {
+            System.out.println("x=" + x);
+        }
+
+        @Command
+        public void explicit(@Option(names = "-v") boolean v) {
+            CommandLine commandLine = spec.subcommands().get("explicit");
+            throw new CommandLine.ParameterException(commandLine, "Validation failed");
+        }
+    }
+
+    @Test
+    public void testSubcommandMethodInvalidInputHandling() {
+        String expected = String.format("" +
+                "Unknown option: -y%n" +
+                "Usage: maincommand subcommand [-x=<arg0>]%n" +
+                "  -x=<arg0>%n");
+
+        CommandLine.run(new MainCommand(), "subcommand", "-y");
+        assertEquals(expected, this.systemErrRule.getLog());
+        assertEquals("", this.systemOutRule.getLog());
+    }
+
+    @Test
+    public void testSubcommandMethodThrowingParameterException() {
+        String expected = String.format("" +
+                "Validation failed%n" +
+                "Usage: maincommand explicit [-v]%n" +
+                "  -v%n");
+
+        CommandLine.run(new MainCommand(), "explicit", "-v");
+        assertEquals(expected, this.systemErrRule.getLog());
+        assertEquals("", this.systemOutRule.getLog());
     }
 }

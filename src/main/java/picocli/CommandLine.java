@@ -1081,12 +1081,17 @@ public class CommandLine {
                     }
                     throw new UnsupportedOperationException("Invoking non-static method without default constructor not implemented");
                 }
-            } catch (ParameterException ex) {
-                throw ex;
-            } catch (ExecutionException ex) {
-                throw ex;
+            } catch (InvocationTargetException ex) {
+                Throwable t = ex.getTargetException();
+                if (t instanceof ParameterException) {
+                    throw (ParameterException) t;
+                } else if (t instanceof ExecutionException) {
+                    throw (ExecutionException) t;
+                } else {
+                    throw new ExecutionException(parsed, "Error while calling command (" + command + "): " + t, t);
+                }
             } catch (Exception ex) {
-                throw new ExecutionException(parsed, "Error while calling command (" + command + "): " + ex, ex);
+                throw new ExecutionException(parsed, "Unhandled error while calling command (" + command + "): " + ex, ex);
             }
         }
         throw new ExecutionException(parsed, "Parsed command (" + command + ") is not Method, Runnable or Callable");
@@ -9925,8 +9930,8 @@ public class CommandLine {
             super(msg);
             this.commandLine = Assert.notNull(commandLine, "commandLine");
         }
-        public ExecutionException(CommandLine commandLine, String msg, Exception ex) {
-            super(msg, ex);
+        public ExecutionException(CommandLine commandLine, String msg, Throwable t) {
+            super(msg, t);
             this.commandLine = Assert.notNull(commandLine, "commandLine");
         }
         /** Returns the {@code CommandLine} object for the (sub)command that could not be invoked.
