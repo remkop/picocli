@@ -6646,17 +6646,26 @@ public class CommandLine {
             LineNumberReader reader = null;
             try {
                 reader = new LineNumberReader(new FileReader(file));
-                StreamTokenizer tok = new StreamTokenizer(reader);
-                tok.resetSyntax();
-                tok.wordChars(' ', 255);
-                tok.whitespaceChars(0, ' ');
-                tok.quoteChar('"');
-                tok.quoteChar('\'');
-                if (commandSpec.parser().atFileCommentChar() != null) {
-                    tok.commentChar(commandSpec.parser().atFileCommentChar());
-                }
-                while (tok.nextToken() != StreamTokenizer.TT_EOF) {
-                    addOrExpand(tok.sval, result, visited);
+                if (useSimplifiedAtFiles()) {
+                    String token;
+                    while ((token = reader.readLine()) != null) {
+                        if (!token.startsWith("#")) {
+                            addOrExpand(token, result, visited);
+                        }
+                    }
+                } else {
+                    StreamTokenizer tok = new StreamTokenizer(reader);
+                    tok.resetSyntax();
+                    tok.wordChars(' ', 255);
+                    tok.whitespaceChars(0, ' ');
+                    tok.quoteChar('"');
+                    tok.quoteChar('\'');
+                    if (commandSpec.parser().atFileCommentChar() != null) {
+                        tok.commentChar(commandSpec.parser().atFileCommentChar());
+                    }
+                    while (tok.nextToken() != StreamTokenizer.TT_EOF) {
+                        addOrExpand(tok.sval, result, visited);
+                    }
                 }
             } catch (Exception ex) {
                 throw new InitializationException("Could not read argument file @" + fileName, ex);
@@ -6665,6 +6674,13 @@ public class CommandLine {
             }
             if (tracer.isInfo()) {tracer.info("Expanded file @%s to arguments %s%n", fileName, result);}
             arguments.addAll(result);
+        }
+
+        private boolean useSimplifiedAtFiles() {
+            //return commandSpec.parser.useSimplifiedAtFiles();
+            String value = System.getProperty("picocli.useSimplifiedAtFiles");
+            if ("".equals(value)) { value = "true"; }
+            return Boolean.valueOf(value);
         }
 
         private void clear() {

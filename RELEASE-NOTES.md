@@ -22,6 +22,7 @@ Picocli follows [semantic versioning](http://semver.org/). (This release could h
 
  
 ## <a name="3.8.1-fixes"></a> Fixed issues
+- [#551] Enhancement: Add support for JCommander-style argument files (one argument per line, no quoting). Thanks to [Lukáš Petrovický](https://github.com/triceo) for the bug report and unit tests.
 - [#554] Bugfix: Convenience method error handling was broken for command methods that explicitly throw an ParameterException: InvocationTargetException hides the ParameterException. Thanks to [SysLord](https://github.com/SysLord) for the bug report.
 - [#553] Doc: Fix broken link to CommandLine.java source code. Thanks to [Simon Legner](https://github.com/simon04) for the pull request.
 
