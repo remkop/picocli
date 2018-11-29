@@ -9434,9 +9434,14 @@ public class CommandLine {
 
             // http://stackoverflow.com/questions/1403772/how-can-i-check-if-a-java-programs-input-output-streams-are-connected-to-a-term
             static final boolean calcTTY() {
-                if (isWindows && (isXterm || hasOsType)) { return true; } // Cygwin uses pseudo-tty and console is always null...
-                try { return System.class.getDeclaredMethod("console").invoke(null) != null; }
-                catch (Throwable reflectionFailed) { return true; }
+                Tracer t = new Tracer();
+                String msg = "Checking if ANSI possible: isTTY=%s: %s";
+                if (isWindows && (isXterm || hasOsType)) { t.debug(msg, true, "on Windows with pseudo-terminal"); return true; } // Cygwin uses pseudo-tty and console is always null...
+                try {
+                    Object console = System.class.getDeclaredMethod("console").invoke(null);
+                    t.debug(msg, console != null, "console is " + console);
+                    return console != null;
+                } catch (Throwable reflectionFailed) { t.debug(msg, true, "Unable to get console with reflection"); return true; }
             }
             private static boolean ansiPossible() { return (ISATTY && (!isWindows || isXterm || hasOsType)) || isJansiConsoleInstalled(); }
 
