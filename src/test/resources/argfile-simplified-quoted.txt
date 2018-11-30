@@ -4,4 +4,3 @@
 "https://picocli.info/"
 --unescapedBackslashArg
 "C:\Program Files\picocli.txt"
-
