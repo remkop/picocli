@@ -15,13 +15,6 @@
  */
 package picocli;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.contrib.java.lang.system.ProvideSystemProperty;
-
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -32,7 +25,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.lang.reflect.Field;
-import java.lang.reflect.Method;
 import java.math.BigDecimal;
 import java.net.InetAddress;
 import java.net.Socket;
@@ -50,6 +42,7 @@ import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Queue;
 import java.util.Set;
 import java.util.SortedSet;
@@ -59,7 +52,21 @@ import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 
-import static org.junit.Assert.*;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.contrib.java.lang.system.ProvideSystemProperty;
+
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNotSame;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 import static picocli.CommandLine.Command;
 import static picocli.CommandLine.DuplicateOptionAnnotationsException;
 import static picocli.CommandLine.Help;
@@ -92,11 +99,13 @@ import static picocli.HelpTestUtil.setTraceLevel;
 // TODO test superclass bean and child class bean where child class field shadows super class and have same annotation Option name
 // TODO test superclass bean and child class bean where child class field shadows super class and have different annotation Option name
 public class CommandLineTest {
+
+    private final Properties originalProperties = System.getProperties();
     @Rule
     public final ProvideSystemProperty ansiOFF = new ProvideSystemProperty("picocli.ansi", "false");
 
     @Before public void setUp() { System.clearProperty("picocli.trace"); }
-    @After public void tearDown() { System.clearProperty("picocli.trace"); }
+    @After public void tearDown() { System.setProperties(originalProperties); }
 
     @Test(expected = NullPointerException.class)
     public void testConstructorRejectsNullObject() {
@@ -3617,6 +3626,38 @@ public class CommandLineTest {
         App app = CommandLine.populateCommand(new App(), "@" + file.getAbsolutePath());
         assertTrue(app.verbose);
         assertEquals(Arrays.asList("1111", "2222", ";3333"), app.files);
+    }
+
+    @Test
+    public void testAtFileSimplified() {
+        System.setProperty("picocli.useSimplifiedAtFiles", "true");
+        class App {
+            @Option(names = "--simpleArg")
+            private boolean simple;
+
+            @Option(names = "--argWithSpaces")
+            private String withSpaces;
+
+            @Option(names = "--quotedArg")
+            private String quoted;
+
+            @Option(names = "--multiArg")
+            private List<String> strings;
+
+            @Option(names = "--urlArg")
+            private URL url;
+
+            @Option(names = "--unescapedBackslashArg")
+            private String unescaped;
+        }
+        File file = findFile("/argfile-simplified.txt");
+        App app = CommandLine.populateCommand(new App(), "@" + file.getAbsolutePath());
+        assertTrue(app.simple);
+        assertEquals("something with spaces", app.withSpaces);
+        assertEquals("\"something else\"", app.quoted);
+        assertEquals(Arrays.asList("something else", "yet something else"), app.strings);
+        assertEquals("https://picocli.info/", app.url);
+        assertEquals("C:\\Program Files\\picocli.txt", app.unescaped);
     }
 
     @Test

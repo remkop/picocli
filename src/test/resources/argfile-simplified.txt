@@ -1,0 +1,12 @@
+--simpleArg
+--argWithSpaces
+something with spaces
+--quotedArg
+"something else"
+--multiArg
+something else
+yet something else
+--urlArg
+https://picocli.info/
+--unescapedBackslashArg
+C:\Program Files\picocli.txt
