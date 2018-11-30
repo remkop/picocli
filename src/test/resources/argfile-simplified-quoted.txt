@@ -1,0 +1,7 @@
+--quotedArg
+"something else"
+--urlArg
+"https://picocli.info/"
+--unescapedBackslashArg
+"C:\Program Files\picocli.txt"
+
