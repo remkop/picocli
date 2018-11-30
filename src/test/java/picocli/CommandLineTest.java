@@ -58,15 +58,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.contrib.java.lang.system.ProvideSystemProperty;
 
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNotSame;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertSame;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
 import static picocli.CommandLine.Command;
 import static picocli.CommandLine.DuplicateOptionAnnotationsException;
 import static picocli.CommandLine.Help;
@@ -104,8 +96,10 @@ public class CommandLineTest {
     @Rule
     public final ProvideSystemProperty ansiOFF = new ProvideSystemProperty("picocli.ansi", "false");
 
-    @Before public void setUp() { System.clearProperty("picocli.trace"); }
-    @After public void tearDown() { System.setProperties(originalProperties); }
+    @Before
+    public void setUp() { System.clearProperty("picocli.trace"); }
+    @After
+    public void tearDown() { System.setProperties(originalProperties); }
 
     @Test(expected = NullPointerException.class)
     public void testConstructorRejectsNullObject() {
