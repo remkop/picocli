@@ -42,7 +42,6 @@ import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 import java.util.Queue;
 import java.util.Set;
 import java.util.SortedSet;
@@ -52,11 +51,12 @@ import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.contrib.java.lang.system.ProvideSystemProperty;
+import org.junit.contrib.java.lang.system.RestoreSystemProperties;
+import org.junit.rules.TestRule;
 
 import static org.junit.Assert.*;
 import static picocli.CommandLine.Command;
@@ -93,14 +93,15 @@ import static picocli.PicocliTestUtil.stripAnsiTrace;
 // TODO test superclass bean and child class bean where child class field shadows super class and have different annotation Option name
 public class CommandLineTest {
 
-    private final Properties originalProperties = System.getProperties();
     @Rule
     public final ProvideSystemProperty ansiOFF = new ProvideSystemProperty("picocli.ansi", "false");
-
+    // allows tests to set any kind of properties they like, without having to individually roll them back
+    @Rule
+    public final TestRule restoreSystemProperties = new RestoreSystemProperties();
     @Before
-    public void setUp() { System.clearProperty("picocli.trace"); }
-    @After
-    public void tearDown() { System.setProperties(originalProperties); }
+    public void setUp() {
+        System.clearProperty("picocli.trace");
+    }
 
     @Test(expected = NullPointerException.class)
     public void testConstructorRejectsNullObject() {
