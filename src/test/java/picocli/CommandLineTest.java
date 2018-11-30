@@ -3656,6 +3656,29 @@ public class CommandLineTest {
     }
 
     @Test
+    public void testAtFileSimplifiedWithQuotesTrimmed() {
+        System.setProperty("picocli.useSimplifiedAtFiles", "true");
+        class App {
+            @Option(names = "--quotedArg")
+            private String quoted;
+
+            @Option(names = "--urlArg")
+            private URL url;
+
+            @Option(names = "--unescapedBackslashArg")
+            private String unescaped;
+        }
+        File file = findFile("/argfile-simplified-quoted.txt");
+        final App app = new App();
+        final CommandLine cli = new CommandLine(app);
+        cli.setTrimQuotes(true);
+        cli.parse("@" + file.getAbsolutePath());
+        assertEquals("something else", app.quoted);
+        assertEquals("https://picocli.info/", app.url);
+        assertEquals("C:\\Program Files\\picocli.txt", app.unescaped);
+    }
+
+    @Test
     public void testAtFileNotExpandedIfDisabled() {
         class App {
             @Option(names = "-v")
