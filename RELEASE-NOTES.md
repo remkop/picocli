@@ -6,6 +6,8 @@ The picocli community is pleased to announce picocli 3.8.1.
 
 This release contains bugfixes and minor enhancements.
 
+This release adds support for JCommander-style argument files (one argument per line, no quoting) and better tracing.
+
 
 Many thanks to the many members of the picocli community who contributed! 
 
@@ -20,9 +22,27 @@ Picocli follows [semantic versioning](http://semver.org/). (This release could h
 
 ## <a name="3.8.1-new"></a> New and Noteworthy
 
+### <a name="3.8.0-simplified-argument-files"></a> Simplified Argument Files
+
+In this argument file format every line (except comment lines) is interpreted as a single argument. Arguments containing whitespace do not need to be quoted, but it is not possible to have arguments with embedded newlines.
  
+Set system property `picocli.useSimplifiedAtFiles` without a value or with value `"true"` (case-insensitive) to enable this simpler argument file format.
+
+This format is similar to the way JCommander processes argument files, which makes it easier for command line applications to migrate from JCommander to picocli.
+
+### <a name="3.8.1-improved-tracing"></a> Improved Tracing
+
+The following information has been added to the tracing output in this release:
+
+* Version information (picocli version, java version, os version), logged at INFO level
+* ANSI enabled status, logged at DEBUG level
+* Log at DEBUG level when a Map or Collection binding for an option or positional parameter is initialized with a new instance
+* Log at DEBUG level when parameters are being split (into how many parts, show resulting parts)
+
+
 ## <a name="3.8.1-fixes"></a> Fixed issues
 - [#551] Enhancement: Add support for JCommander-style argument files (one argument per line, no quoting). Thanks to [Lukáš Petrovický](https://github.com/triceo) for the bug report and unit tests.
+- [#560] Enhancement: Better tracing.
 - [#554] Bugfix: Convenience method error handling was broken for command methods that explicitly throw an ParameterException: InvocationTargetException hides the ParameterException. Thanks to [SysLord](https://github.com/SysLord) for the bug report.
 - [#553] Doc: Fix broken link to CommandLine.java source code. Thanks to [Simon Legner](https://github.com/simon04) for the pull request.
 
@@ -55,7 +75,7 @@ Picocli follows [semantic versioning](http://semver.org/). (This release could h
 
 ## <a name="3.8.0-new"></a> New and Noteworthy
 
-### Mixin Support in `@Command` Methods
+### <a name="3.8.0-command-method-mixins"></a> Mixin Support in `@Command` Methods
 
 `@Command` methods now accept `@Mixin` parameters. All options and positional parameters defined in the mixin class are added to the command.
 
