@@ -426,16 +426,21 @@ public class CommandLine {
         return this;
     }
 
-    /** Returns whether the parser should trim quotes from command line arguments before processing them. The default is {@code false}.
+    /** Returns whether the parser should trim quotes from command line arguments before processing them. The default is
+     * read from the system property "picocli.trimQuotes" and will be {@code true} if the property is present and empty,
+     * or if its value is "true".
      * @return {@code true} if the parser should trim quotes from command line arguments before processing them, {@code false} otherwise;
      * @since 3.7 */
     public boolean isTrimQuotes() { return getCommandSpec().parser().trimQuotes(); }
 
-    /** Sets whether the parser should trim quotes from command line arguments before processing them. The default is {@code false}.
+    /** Sets whether the parser should trim quotes from command line arguments before processing them. The default is
+     * read from the system property "picocli.trimQuotes" and will be {@code true} if the property is set and empty, or
+     * if its value is "true".
      * <p>The specified setting will be registered with this {@code CommandLine} and the full hierarchy of its
      * subcommands and nested sub-subcommands <em>at the moment this method is called</em>. Subcommands added
      * later will have the default setting. To ensure a setting is applied to all
      * subcommands, call the setter last, after adding subcommands.</p>
+     * <p>Calling this method will cause the "picocli.trimQuotes" property to have no effect.</p>
      * @param newValue the new setting
      * @return this {@code CommandLine} object, to allow method chaining
      * @since 3.7
@@ -4427,7 +4432,7 @@ public class CommandLine {
             private boolean aritySatisfiedByAttachedOptionParam = false;
             private boolean collectErrors = false;
             private boolean caseInsensitiveEnumValuesAllowed = false;
-            private boolean trimQuotes = false;
+            private boolean trimQuotes = shouldTrimQuotes();
             private boolean splitQuotedStrings = false;
 
             /** Returns the String to use as the separator between options and option parameters. {@code "="} by default,
@@ -4521,6 +4526,13 @@ public class CommandLine {
             /** Sets whether arguments should be {@linkplain ArgSpec#splitRegex() split} first before any further processing.
              * If true, the original argument will only be split into as many parts as allowed by max arity. */
             public ParserSpec limitSplit(boolean limitSplit)                               { this.limitSplit = limitSplit; return this; }
+
+            private boolean shouldTrimQuotes() {
+                String value = System.getProperty("picocli.trimQuotes");
+                if ("".equals(value)) { value = "true"; }
+                return Boolean.valueOf(value);
+            }
+
             void initSeparator(String value)   { if (initializable(separator, value, DEFAULT_SEPARATOR)) {separator = value;} }
             void updateSeparator(String value) { if (isNonDefault(value, DEFAULT_SEPARATOR))             {separator = value;} }
             public String toString() {
