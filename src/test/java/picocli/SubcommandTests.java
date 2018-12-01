@@ -1,6 +1,16 @@
 package picocli;
 
 import org.junit.Test;
+import picocli.CommandLine.Command;
+import picocli.CommandLine.IFactory;
+import picocli.CommandLine.ITypeConverter;
+import picocli.CommandLine.InitializationException;
+import picocli.CommandLine.MissingTypeConverterException;
+import picocli.CommandLine.Model.CommandSpec;
+import picocli.CommandLine.Model.UsageMessageSpec;
+import picocli.CommandLine.Option;
+import picocli.CommandLine.RunAll;
+import picocli.CommandLine.UnmatchedArgumentException;
 
 import java.util.Arrays;
 import java.util.HashSet;
@@ -19,20 +29,20 @@ import static picocli.HelpTestUtil.setTraceLevel;
 
 public class SubcommandTests {
 
-    static class MainCommand { @CommandLine.Option(names = "-a") boolean a; public boolean equals(Object o) { return getClass().equals(o.getClass()); }}
-    static class ChildCommand1 { @CommandLine.Option(names = "-b") boolean b; public boolean equals(Object o) { return getClass().equals(o.getClass()); }}
-    static class ChildCommand2 { @CommandLine.Option(names = "-c") boolean c; public boolean equals(Object o) { return getClass().equals(o.getClass()); }}
-    static class GrandChild1Command1 { @CommandLine.Option(names = "-d") boolean d; public boolean equals(Object o) { return getClass().equals(o.getClass()); }}
-    static class GrandChild1Command2 { @CommandLine.Option(names = "-e") CustomType e; public boolean equals(Object o) { return getClass().equals(o.getClass()); }}
-    static class GrandChild2Command1 { @CommandLine.Option(names = "-f") boolean f; public boolean equals(Object o) { return getClass().equals(o.getClass()); }}
-    static class GrandChild2Command2 { @CommandLine.Option(names = "-g") boolean g; public boolean equals(Object o) { return getClass().equals(o.getClass()); }}
+    static class MainCommand { @Option(names = "-a") boolean a; public boolean equals(Object o) { return getClass().equals(o.getClass()); }}
+    static class ChildCommand1 { @Option(names = "-b") boolean b; public boolean equals(Object o) { return getClass().equals(o.getClass()); }}
+    static class ChildCommand2 { @Option(names = "-c") boolean c; public boolean equals(Object o) { return getClass().equals(o.getClass()); }}
+    static class GrandChild1Command1 { @Option(names = "-d") boolean d; public boolean equals(Object o) { return getClass().equals(o.getClass()); }}
+    static class GrandChild1Command2 { @Option(names = "-e") CustomType e; public boolean equals(Object o) { return getClass().equals(o.getClass()); }}
+    static class GrandChild2Command1 { @Option(names = "-f") boolean f; public boolean equals(Object o) { return getClass().equals(o.getClass()); }}
+    static class GrandChild2Command2 { @Option(names = "-g") boolean g; public boolean equals(Object o) { return getClass().equals(o.getClass()); }}
     static class GreatGrandChild2Command2_1 {
-        @CommandLine.Option(names = "-h") boolean h;
-        @CommandLine.Option(names = {"-t", "--type"}) CustomType customType;
+        @Option(names = "-h") boolean h;
+        @Option(names = {"-t", "--type"}) CustomType customType;
         public boolean equals(Object o) { return getClass().equals(o.getClass()); }
     }
 
-    static class CustomType implements CommandLine.ITypeConverter<CustomType> {
+    static class CustomType implements ITypeConverter<CustomType> {
         private final String val;
         private CustomType(String val) { this.val = val; }
         public CustomType convert(String value) { return new CustomType(value); }
@@ -102,7 +112,7 @@ public class SubcommandTests {
         assertSame(subMap.get("sub21"), subMap.get("sub21alias2"));
     }
 
-    @CommandLine.Command(name = "cb")
+    @Command(name = "cb")
     static class Issue443TopLevelCommand implements Runnable  {
         boolean topWasExecuted;
         public void run() {
@@ -110,7 +120,7 @@ public class SubcommandTests {
         }
     }
 
-    @CommandLine.Command(name = "task", aliases = {"t"}, description = "subcommand with alias")
+    @Command(name = "task", aliases = {"t"}, description = "subcommand with alias")
     static class SubCommandWithAlias implements Runnable {
         boolean subWasExecuted;
         public void run() {
@@ -124,7 +134,7 @@ public class SubcommandTests {
         SubCommandWithAlias sub = new SubCommandWithAlias();
         CommandLine cmd = new CommandLine(top).addSubcommand("task", sub);
         String[] args = {"t"};
-        List<Object> result = cmd.parseWithHandler(new CommandLine.RunAll(), args);
+        List<Object> result = cmd.parseWithHandler(new RunAll(), args);
         assertTrue("top was executed", top.topWasExecuted);
         assertTrue("sub was executed", sub.subWasExecuted);
     }
@@ -134,7 +144,7 @@ public class SubcommandTests {
         Issue443TopLevelCommand top = new Issue443TopLevelCommand();
         SubCommandWithAlias sub = new SubCommandWithAlias();
         CommandLine cmd = new CommandLine(top).addSubcommand("task", sub, "t", "t");
-        CommandLine.Model.CommandSpec subSpec = cmd.getSubcommands().get("task").getCommandSpec();
+        CommandSpec subSpec = cmd.getSubcommands().get("task").getCommandSpec();
         String expected = String.format("" +
                 "Usage: cb [COMMAND]%n" +
                 "Commands:%n" +
@@ -178,7 +188,7 @@ public class SubcommandTests {
         try {
             createNestedCommand().parse("cmd1", "sub11", "sub12");
             fail("Expected exception for sub12");
-        } catch (CommandLine.UnmatchedArgumentException ex) {
+        } catch (UnmatchedArgumentException ex) {
             assertEquals("Unmatched argument: sub12", ex.getMessage());
         }
         List<CommandLine> sub22sub1 = createNestedCommand().parse("cmd2", "sub22", "sub22sub1");
@@ -199,37 +209,37 @@ public class SubcommandTests {
         try {
             createNestedCommand().parse("-a", "-b", "cmd1");
             fail("unmatched option should prevents remainder to be parsed as command");
-        } catch (CommandLine.UnmatchedArgumentException ex) {
+        } catch (UnmatchedArgumentException ex) {
             assertEquals("Unknown option: -b", ex.getMessage());
         }
         try {
             createNestedCommand().parse("cmd1", "sub21");
             fail("sub-commands for different parent command");
-        } catch (CommandLine.UnmatchedArgumentException ex) {
+        } catch (UnmatchedArgumentException ex) {
             assertEquals("Unmatched argument: sub21", ex.getMessage());
         }
         try {
             createNestedCommand().parse("cmd1", "sub22sub1");
             fail("sub-sub-commands for different parent command");
-        } catch (CommandLine.UnmatchedArgumentException ex) {
+        } catch (UnmatchedArgumentException ex) {
             assertEquals("Unmatched argument: sub22sub1", ex.getMessage());
         }
         try {
             createNestedCommand().parse("sub11");
             fail("sub-commands without preceding parent command");
-        } catch (CommandLine.UnmatchedArgumentException ex) {
+        } catch (UnmatchedArgumentException ex) {
             assertEquals("Unmatched argument: sub11", ex.getMessage());
         }
         try {
             createNestedCommand().parse("sub21");
             fail("sub-commands without preceding parent command");
-        } catch (CommandLine.UnmatchedArgumentException ex) {
+        } catch (UnmatchedArgumentException ex) {
             assertEquals("Unmatched argument: sub21", ex.getMessage());
         }
         try {
             createNestedCommand().parse("sub22sub1");
             fail("sub-sub-commands without preceding parent/grandparent command");
-        } catch (CommandLine.UnmatchedArgumentException ex) {
+        } catch (UnmatchedArgumentException ex) {
             assertEquals("Unmatched argument: sub22sub1", ex.getMessage());
         }
     }
@@ -263,7 +273,7 @@ public class SubcommandTests {
         try {
             createNestedCommandWithAliases().parse("cmd1alias1", "sub11alias1", "sub12alias1");
             fail("Expected exception for sub12alias1");
-        } catch (CommandLine.UnmatchedArgumentException ex) {
+        } catch (UnmatchedArgumentException ex) {
             assertEquals("Unmatched argument: sub12alias1", ex.getMessage());
         }
         List<CommandLine> sub22sub1 = createNestedCommandWithAliases().parse("cmd2alias1", "sub22alias2", "sub22sub1alias1");
@@ -309,19 +319,19 @@ public class SubcommandTests {
         assertEquals(Arrays.asList("sub22sub1"), result6.get(0).getUnmatchedArguments());
     }
     /** Subcommand with default constructor */
-    @CommandLine.Command(name = "subsub1")
+    @Command(name = "subsub1")
     static class SubSub1_testDeclarativelyAddSubcommands {}
 
-    @CommandLine.Command(name = "sub1", subcommands = {SubSub1_testDeclarativelyAddSubcommands.class})
+    @Command(name = "sub1", subcommands = {SubSub1_testDeclarativelyAddSubcommands.class})
     static class Sub1_testDeclarativelyAddSubcommands {public Sub1_testDeclarativelyAddSubcommands(){}}
 
-    @CommandLine.Command(subcommands = {Sub1_testDeclarativelyAddSubcommands.class})
+    @Command(subcommands = {Sub1_testDeclarativelyAddSubcommands.class})
     static class MainCommand_testDeclarativelyAddSubcommands {}
     @Test
     public void testFactory() {
         final Sub1_testDeclarativelyAddSubcommands sub1Command = new Sub1_testDeclarativelyAddSubcommands();
         final SubSub1_testDeclarativelyAddSubcommands subsub1Command = new SubSub1_testDeclarativelyAddSubcommands();
-        CommandLine.IFactory factory = new CommandLine.IFactory() {
+        IFactory factory = new IFactory() {
             @SuppressWarnings("unchecked")
             public <T> T create(Class<T> cls) throws Exception {
                 if (cls == Sub1_testDeclarativelyAddSubcommands.class) {
@@ -342,14 +352,14 @@ public class SubcommandTests {
     }
     @Test
     public void testFailingFactory() {
-        CommandLine.IFactory factory = new CommandLine.IFactory() {
+        IFactory factory = new IFactory() {
             public <T> T create(Class<T> cls) throws Exception {
                 throw new IllegalStateException("bad class");
             }
         };
         try {
             new CommandLine(new MainCommand_testDeclarativelyAddSubcommands(), factory);
-        } catch (CommandLine.InitializationException ex) {
+        } catch (InitializationException ex) {
             assertEquals("Could not instantiate and add subcommand " +
                     "picocli.CommandLineTest$Sub1_testDeclarativelyAddSubcommands: " +
                     "java.lang.IllegalStateException: bad class", ex.getMessage());
@@ -395,24 +405,24 @@ public class SubcommandTests {
 
     @Test
     public void testGetParentIsNullForTopLevelCommands() {
-        @CommandLine.Command
+        @Command
         class Top {}
         assertNull(new CommandLine(new Top()).getParent());
     }
     @Test
     public void testDeclarativelyAddSubcommandsSucceedsWithDefaultConstructorForDefaultFactory() {
-        @CommandLine.Command(subcommands = {SubSub1_testDeclarativelyAddSubcommands.class}) class MainCommand {}
+        @Command(subcommands = {SubSub1_testDeclarativelyAddSubcommands.class}) class MainCommand {}
         CommandLine cmdLine = new CommandLine(new MainCommand());
         assertEquals(SubSub1_testDeclarativelyAddSubcommands.class.getName(), cmdLine.getSubcommands().get("subsub1").getCommand().getClass().getName());
     }
     @Test
     public void testDeclarativelyAddSubcommandsFailsWithoutNoArgConstructor() {
-        @CommandLine.Command(name = "sub1") class ABC { public ABC(String constructorParam) {} }
-        @CommandLine.Command(subcommands = {ABC.class}) class MainCommand {}
+        @Command(name = "sub1") class ABC { public ABC(String constructorParam) {} }
+        @Command(subcommands = {ABC.class}) class MainCommand {}
         try {
             new CommandLine(new MainCommand(), new InnerClassFactory(this));
             fail("Expected exception");
-        } catch (CommandLine.InitializationException ex) {
+        } catch (InitializationException ex) {
             String prefix = String.format("Could not instantiate %s either with or without construction parameter picocli.CommandLineTest@", ABC.class.getName());
             String suffix = String.format("java.lang.NoSuchMethodException: %s.<init>(picocli.CommandLineTest)", ABC.class.getName());
 
@@ -422,46 +432,46 @@ public class SubcommandTests {
     }
     @Test
     public void testDeclarativelyAddSubcommandsSucceedsWithDefaultConstructor() {
-        @CommandLine.Command(name = "sub1") class ABCD {}
-        @CommandLine.Command(subcommands = {ABCD.class}) class MainCommand {}
+        @Command(name = "sub1") class ABCD {}
+        @Command(subcommands = {ABCD.class}) class MainCommand {}
         CommandLine cmdLine = new CommandLine(new MainCommand(), new InnerClassFactory(this));
         assertEquals("picocli.CommandLineTest$1ABCD", cmdLine.getSubcommands().get("sub1").getCommand().getClass().getName());
     }
     @Test
     public void testDeclarativelyAddSubcommandsFailsWithoutAnnotation() {
         class MissingCommandAnnotation { public MissingCommandAnnotation() {} }
-        @CommandLine.Command(subcommands = {MissingCommandAnnotation.class}) class MainCommand {}
+        @Command(subcommands = {MissingCommandAnnotation.class}) class MainCommand {}
         try {
             new CommandLine(new MainCommand(), new InnerClassFactory(this));
             fail("Expected exception");
-        } catch (CommandLine.InitializationException ex) {
+        } catch (InitializationException ex) {
             String expected = String.format("%s is not a command: it has no @Command, @Option, @Parameters or @Unmatched annotations", MissingCommandAnnotation.class.getName());
             assertEquals(expected, ex.getMessage());
         }
     }
     @Test
     public void testDeclarativelyAddSubcommandsFailsWithoutNameOnCommandAnnotation() {
-        @CommandLine.Command
+        @Command
         class MissingNameAttribute{ public MissingNameAttribute() {} }
-        @CommandLine.Command(subcommands = {MissingNameAttribute.class}) class MainCommand {}
+        @Command(subcommands = {MissingNameAttribute.class}) class MainCommand {}
         try {
             new CommandLine(new MainCommand(), new InnerClassFactory(this));
             fail("Expected exception");
-        } catch (CommandLine.InitializationException ex) {
+        } catch (InitializationException ex) {
             String expected = String.format("Subcommand %s is missing the mandatory @Command annotation with a 'name' attribute", MissingNameAttribute.class.getName());
             assertEquals(expected, ex.getMessage());
         }
     }
 
-    @Test(expected = CommandLine.MissingTypeConverterException.class)
+    @Test(expected = MissingTypeConverterException.class)
     public void testCustomTypeConverterNotRegisteredAtAll() {
         CommandLine commandLine = createNestedCommand();
         commandLine.parse("cmd1", "sub12", "-e", "TXT");
     }
 
-    @Test(expected = CommandLine.MissingTypeConverterException.class)
+    @Test(expected = MissingTypeConverterException.class)
     public void testCustomTypeConverterRegisteredBeforeSubcommandsAdded() {
-        @CommandLine.Command
+        @Command
         class TopLevel {}
         CommandLine commandLine = new CommandLine(new TopLevel());
         commandLine.registerConverter(CustomType.class, new CustomType(null));
@@ -472,7 +482,7 @@ public class SubcommandTests {
 
     @Test
     public void testCustomTypeConverterRegisteredAfterSubcommandsAdded() {
-        @CommandLine.Command
+        @Command
         class TopLevel { public boolean equals(Object o) {return getClass().equals(o.getClass());}}
         CommandLine commandLine = new CommandLine(new TopLevel());
         commandLine.addSubcommand("main", createNestedCommand());
@@ -487,7 +497,7 @@ public class SubcommandTests {
 
     @Test
     public void testSetSeparator_BeforeSubcommandsAdded() {
-        @CommandLine.Command
+        @Command
         class TopLevel {}
         CommandLine commandLine = new CommandLine(new TopLevel());
         assertEquals("=", commandLine.getSeparator());
@@ -511,7 +521,7 @@ public class SubcommandTests {
 
     @Test
     public void testSetSeparator_AfterSubcommandsAdded() {
-        @CommandLine.Command
+        @Command
         class TopLevel {}
         CommandLine commandLine = new CommandLine(new TopLevel());
         commandLine.addSubcommand("main", createNestedCommand());
@@ -535,10 +545,10 @@ public class SubcommandTests {
 
     @Test
     public void testSetUsageHelpWidth_BeforeSubcommandsAdded() {
-        @CommandLine.Command
+        @Command
         class TopLevel {}
         CommandLine commandLine = new CommandLine(new TopLevel());
-        int DEFAULT = CommandLine.Model.UsageMessageSpec.DEFAULT_USAGE_WIDTH;
+        int DEFAULT = UsageMessageSpec.DEFAULT_USAGE_WIDTH;
         assertEquals(DEFAULT, commandLine.getUsageHelpWidth());
         commandLine.setUsageHelpWidth(120);
         assertEquals(120, commandLine.getUsageHelpWidth());
@@ -560,11 +570,11 @@ public class SubcommandTests {
 
     @Test
     public void testSetUsageHelpWidth_AfterSubcommandsAdded() {
-        @CommandLine.Command
+        @Command
         class TopLevel {}
         CommandLine commandLine = new CommandLine(new TopLevel());
         commandLine.addSubcommand("main", createNestedCommand());
-        int DEFAULT = CommandLine.Model.UsageMessageSpec.DEFAULT_USAGE_WIDTH;
+        int DEFAULT = UsageMessageSpec.DEFAULT_USAGE_WIDTH;
         assertEquals(DEFAULT, commandLine.getUsageHelpWidth());
         commandLine.setUsageHelpWidth(120);
         assertEquals(120, commandLine.getUsageHelpWidth());
@@ -585,7 +595,7 @@ public class SubcommandTests {
 
     @Test
     public void testParserToggleBooleanFlags_BeforeSubcommandsAdded() {
-        @CommandLine.Command
+        @Command
         class TopLevel {}
         CommandLine commandLine = new CommandLine(new TopLevel());
         assertEquals(true, commandLine.isToggleBooleanFlags());
@@ -609,7 +619,7 @@ public class SubcommandTests {
 
     @Test
     public void testParserToggleBooleanFlags_AfterSubcommandsAdded() {
-        @CommandLine.Command
+        @Command
         class TopLevel {}
         CommandLine commandLine = new CommandLine(new TopLevel());
         commandLine.addSubcommand("main", createNestedCommand());
@@ -633,7 +643,7 @@ public class SubcommandTests {
 
     @Test
     public void testParserCaseInsensitiveEnumValuesAllowed_BeforeSubcommandsAdded() {
-        @CommandLine.Command
+        @Command
         class TopLevel {}
         CommandLine commandLine = new CommandLine(new TopLevel());
         assertEquals(false, commandLine.isCaseInsensitiveEnumValuesAllowed());
@@ -657,7 +667,7 @@ public class SubcommandTests {
 
     @Test
     public void testParserCaseInsensitiveEnumValuesAllowed_AfterSubcommandsAdded() {
-        @CommandLine.Command
+        @Command
         class TopLevel {}
         CommandLine commandLine = new CommandLine(new TopLevel());
         commandLine.addSubcommand("main", createNestedCommand());
@@ -681,7 +691,7 @@ public class SubcommandTests {
 
     @Test
     public void testParserTrimQuotes_BeforeSubcommandsAdded() {
-        @CommandLine.Command
+        @Command
         class TopLevel {}
         CommandLine commandLine = new CommandLine(new TopLevel());
         assertEquals(false, commandLine.isTrimQuotes());
@@ -705,7 +715,7 @@ public class SubcommandTests {
 
     @Test
     public void testParserTrimQuotes_AfterSubcommandsAdded() {
-        @CommandLine.Command
+        @Command
         class TopLevel {}
         CommandLine commandLine = new CommandLine(new TopLevel());
         commandLine.addSubcommand("main", createNestedCommand());
@@ -729,7 +739,7 @@ public class SubcommandTests {
 
     @Test
     public void testParserSplitQuotedStrings_BeforeSubcommandsAdded() {
-        @CommandLine.Command
+        @Command
         class TopLevel {}
         CommandLine commandLine = new CommandLine(new TopLevel());
         assertEquals(false, commandLine.isSplitQuotedStrings());
@@ -753,7 +763,7 @@ public class SubcommandTests {
 
     @Test
     public void testParserSplitQuotedStrings_AfterSubcommandsAdded() {
-        @CommandLine.Command
+        @Command
         class TopLevel {}
         CommandLine commandLine = new CommandLine(new TopLevel());
         commandLine.addSubcommand("main", createNestedCommand());
@@ -777,7 +787,7 @@ public class SubcommandTests {
 
     @Test
     public void testParserUnmatchedOptionsArePositionalParams_BeforeSubcommandsAdded() {
-        @CommandLine.Command
+        @Command
         class TopLevel {}
         CommandLine commandLine = new CommandLine(new TopLevel());
         assertEquals(false, commandLine.isUnmatchedOptionsArePositionalParams());
@@ -801,7 +811,7 @@ public class SubcommandTests {
 
     @Test
     public void testParserUnmatchedOptionsArePositionalParams_AfterSubcommandsAdded() {
-        @CommandLine.Command
+        @Command
         class TopLevel {}
         CommandLine commandLine = new CommandLine(new TopLevel());
         commandLine.addSubcommand("main", createNestedCommand());
@@ -825,7 +835,7 @@ public class SubcommandTests {
 
     @Test
     public void testParserPosixClustedShortOptions_BeforeSubcommandsAdded() {
-        @CommandLine.Command
+        @Command
         class TopLevel {}
         CommandLine commandLine = new CommandLine(new TopLevel());
         assertEquals(true, commandLine.isPosixClusteredShortOptionsAllowed());
@@ -849,7 +859,7 @@ public class SubcommandTests {
 
     @Test
     public void testParserPosixClustedShortOptions_AfterSubcommandsAdded() {
-        @CommandLine.Command
+        @Command
         class TopLevel {}
         CommandLine commandLine = new CommandLine(new TopLevel());
         commandLine.addSubcommand("main", createNestedCommand());
@@ -873,7 +883,7 @@ public class SubcommandTests {
 
     @Test
     public void testSetStopAtUnmatched_BeforeSubcommandsAdded() {
-        @CommandLine.Command
+        @Command
         class TopLevel {}
         CommandLine commandLine = new CommandLine(new TopLevel());
         assertFalse(commandLine.isStopAtUnmatched());
@@ -897,7 +907,7 @@ public class SubcommandTests {
 
     @Test
     public void testSetStopAtUnmatched_AfterSubcommandsAdded() {
-        @CommandLine.Command
+        @Command
         class TopLevel {}
         CommandLine commandLine = new CommandLine(new TopLevel());
         commandLine.addSubcommand("main", createNestedCommand());
@@ -921,7 +931,7 @@ public class SubcommandTests {
 
     @Test
     public void testSetStopAtPositional_BeforeSubcommandsAdded() {
-        @CommandLine.Command
+        @Command
         class TopLevel {}
         CommandLine commandLine = new CommandLine(new TopLevel());
         assertFalse(commandLine.isStopAtPositional());
@@ -945,7 +955,7 @@ public class SubcommandTests {
 
     @Test
     public void testSetStopAtPositional_AfterSubcommandsAdded() {
-        @CommandLine.Command
+        @Command
         class TopLevel {}
         CommandLine commandLine = new CommandLine(new TopLevel());
         commandLine.addSubcommand("main", createNestedCommand());
@@ -968,7 +978,7 @@ public class SubcommandTests {
     }
     @Test
     public void testSetAtFileCommentChar_BeforeSubcommandsAdded() {
-        @CommandLine.Command
+        @Command
         class TopLevel {}
         CommandLine commandLine = new CommandLine(new TopLevel());
         assertEquals((Character) '#', commandLine.getAtFileCommentChar());
@@ -992,7 +1002,7 @@ public class SubcommandTests {
 
     @Test
     public void testSetAtFileCommentChar_AfterSubcommandsAdded() {
-        @CommandLine.Command
+        @Command
         class TopLevel {}
         CommandLine commandLine = new CommandLine(new TopLevel());
         commandLine.addSubcommand("main", createNestedCommand());
