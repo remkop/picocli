@@ -1072,7 +1072,6 @@ public class CommandLine {
                     executionResult.add(((Method) command).invoke(parsed.getCommandSpec().parent().userObject(), parsed.getCommandSpec().argValues()));
                     return executionResult;
                 } else {
-                    // TODO: allow ITypeConverter's to provide an instance?
                     for (Constructor<?> constructor : ((Method) command).getDeclaringClass().getDeclaredConstructors()) {
                         if (constructor.getParameterTypes().length == 0) {
                             executionResult.add(((Method) command).invoke(constructor.newInstance(), parsed.getCommandSpec().argValues()));
@@ -1413,6 +1412,11 @@ public class CommandLine {
         } catch (ExecutionException ex) {
             return exceptionHandler.handleExecutionException(ex, parseResult);
         }
+    }
+    static String versionString() {
+        return String.format("%s, JVM: %s (%s %s %s), OS: %s %s %s", VERSION,
+                System.getProperty("java.version"), System.getProperty("java.vendor"), System.getProperty("java.vm.name"), System.getProperty("java.vm.version"),
+                System.getProperty("os.name"), System.getProperty("os.version"), System.getProperty("os.arch"));
     }
     /**
      * Equivalent to {@code new CommandLine(command).usage(out)}. See {@link #usage(PrintStream)} for details.
@@ -4877,9 +4881,14 @@ public class CommandLine {
                 if (splitRegex().length() == 0) { return new String[] {value}; }
                 int limit = parser.limitSplit() ? Math.max(arity.max - consumed, 0) : 0;
                 if (parser.splitQuotedStrings()) {
-                    return value.split(splitRegex(), limit);
+                    return debug(value.split(splitRegex(), limit), "Split (ignoring quotes)", value);
                 }
-                return splitRespectingQuotedStrings(value, limit, parser);
+                return debug(splitRespectingQuotedStrings(value, limit, parser), "Split", value);
+            }
+            private String[] debug(String[] result, String msg, String value) {
+                Tracer t = new Tracer();
+                if (t.isDebug()) {t.debug("%s with regex '%s' resulted in %s parts: %s%n", msg, splitRegex(), result.length, Arrays.asList(result));}
+                return result;
             }
             // @since 3.7
             private String[] splitRespectingQuotedStrings(String value, int limit, ParserSpec parser) {
@@ -6605,8 +6614,10 @@ public class CommandLine {
          */
         List<CommandLine> parse(String... args) {
             Assert.notNull(args, "argument array");
+            if (tracer.isInfo()) {tracer.info("Picocli version: %s%n", versionString());}
             if (tracer.isInfo()) {tracer.info("Parsing %d command line args %s%n", args.length, Arrays.toString(args));}
             if (tracer.isDebug()){tracer.debug("Parser configuration: %s%n", config());}
+            if (tracer.isDebug()){tracer.debug("(ANSI is %s by default: TTY=%s, isXTERM=%s, hasOSTYPE=%s, isWindows=%s, JansiConsoleInstalled=%s)%n", Help.Ansi.ansiPossible() ? "enabled" : "disabled", Help.Ansi.ISATTY, Help.Ansi.isXterm, Help.Ansi.hasOsType, Help.Ansi.isWindows, Help.Ansi.isJansiConsoleInstalled());}
             List<String> expanded = new ArrayList<String>();
             for (String arg : args) { addOrExpand(arg, expanded, new LinkedHashSet<String>()); }
             Stack<String> arguments = new Stack<String>();
@@ -7151,6 +7162,7 @@ public class CommandLine {
             ITypeConverter<?> valueConverter = getTypeConverter(classes[1], argSpec, 1);
             @SuppressWarnings("unchecked") Map<Object, Object> map = (Map<Object, Object>) argSpec.getValue();
             if (map == null || (!map.isEmpty() && !initialized.contains(argSpec))) {
+                tracer.debug("Initializing binding for %s with empty %s%n", optionDescription("", argSpec, 0), argSpec.type().getSimpleName());
                 map = createMap(argSpec.type()); // map class
                 argSpec.setValue(map, commandSpec.commandLine());
             }
@@ -7311,6 +7323,7 @@ public class CommandLine {
             Class<?> type = argSpec.auxiliaryTypes()[0];
             List<Object> converted = consumeArguments(argSpec, lookBehind, arity, args, type, argDescription);
             if (collection == null || (!collection.isEmpty() && !initialized.contains(argSpec))) {
+                tracer.debug("Initializing binding for %s with empty %s%n", optionDescription("", argSpec, 0), argSpec.type().getSimpleName());
                 collection = createCollection(argSpec.type()); // collection type
                 argSpec.setValue(collection, commandSpec.commandLine());
             }
@@ -9434,14 +9447,9 @@ public class CommandLine {
 
             // http://stackoverflow.com/questions/1403772/how-can-i-check-if-a-java-programs-input-output-streams-are-connected-to-a-term
             static final boolean calcTTY() {
-                Tracer t = new Tracer();
-                String msg = "Checking if ANSI possible: isTTY=%s: %s";
-                if (isWindows && (isXterm || hasOsType)) { t.debug(msg, true, "on Windows with pseudo-terminal"); return true; } // Cygwin uses pseudo-tty and console is always null...
-                try {
-                    Object console = System.class.getDeclaredMethod("console").invoke(null);
-                    t.debug(msg, console != null, "console is " + console);
-                    return console != null;
-                } catch (Throwable reflectionFailed) { t.debug(msg, true, "Unable to get console with reflection"); return true; }
+                if (isWindows && (isXterm || hasOsType)) { return true; } // Cygwin uses pseudo-tty and console is always null...
+                try { return System.class.getDeclaredMethod("console").invoke(null) != null; }
+                catch (Throwable reflectionFailed) { return true; }
             }
             private static boolean ansiPossible() { return (ISATTY && (!isWindows || isXterm || hasOsType)) || isJansiConsoleInstalled(); }
 

@@ -83,6 +83,7 @@ import static picocli.CommandLine.RunAll;
 import static picocli.CommandLine.Unmatched;
 import static picocli.CommandLine.UnmatchedArgumentException;
 import static picocli.HelpTestUtil.setTraceLevel;
+import static picocli.PicocliTestUtil.stripAnsiTrace;
 
 /**
  * Tests for the CommandLine argument parsing interpreter functionality.
@@ -1221,8 +1222,10 @@ public class CommandLineTest {
                 "[picocli DEBUG] Could not register converter for java.nio.file.Path: java.lang.ClassNotFoundException: java.nio.file.Path%n");
         String expected = String.format("" +
                         "[picocli DEBUG] Creating CommandSpec for object of class picocli.CommandLineTest$CompactFields with factory picocli.CommandLine$DefaultFactory%n" +
+                        "[picocli INFO] Picocli version: %3$s%n" +
                         "[picocli INFO] Parsing 6 command line args [-oout, --, -r, -v, p1, p2]%n" +
                         "[picocli DEBUG] Parser configuration: posixClusteredShortOptionsAllowed=true, stopAtPositional=false, stopAtUnmatched=false, separator=null, overwrittenOptionsAllowed=false, unmatchedArgumentsAllowed=false, expandAtFiles=true, atFileCommentChar=#, endOfOptionsDelimiter=--, limitSplit=false, aritySatisfiedByAttachedOptionParam=false, toggleBooleanFlags=true, unmatchedOptionsArePositionalParams=false, collectErrors=false,caseInsensitiveEnumValuesAllowed=false, trimQuotes=false, splitQuotedStrings=false%n" +
+                        "[picocli DEBUG] (ANSI is disabled by default: TTY=...)%n" +
                         "[picocli DEBUG] Set initial value for field boolean picocli.CommandLineTest$CompactFields.verbose of type boolean to false.%n" +
                         "[picocli DEBUG] Set initial value for field boolean picocli.CommandLineTest$CompactFields.recursive of type boolean to false.%n" +
                         "[picocli DEBUG] Set initial value for field java.io.File picocli.CommandLineTest$CompactFields.outputFile of type class java.io.File to null.%n" +
@@ -1252,7 +1255,9 @@ public class CommandLineTest {
                         "[picocli DEBUG] Position 3 is in index range 0..*. Trying to assign args to field java.io.File[] %1$s$CompactFields.inputFiles, arity=0..1%n" +
                         "[picocli INFO] Adding [p2] to field java.io.File[] picocli.CommandLineTest$CompactFields.inputFiles for args[0..*] at position 3%n" +
                         "[picocli DEBUG] Consumed 1 arguments and 0 interactive values, moving position to index 4.%n",
-                CommandLineTest.class.getName(), new File("/home/rpopma/picocli"));
+                CommandLineTest.class.getName(),
+                new File("/home/rpopma/picocli"),
+                CommandLine.versionString());
         String actual = new String(baos.toByteArray(), "UTF8");
         //System.out.println(actual);
         if (System.getProperty("java.version").compareTo("1.7.0") < 0) {
@@ -1261,7 +1266,7 @@ public class CommandLineTest {
         if (System.getProperty("java.version").compareTo("1.8.0") < 0) {
             expected = prefix8 + expected;
         }
-        assertEquals(expected, actual);
+        assertEquals(stripAnsiTrace(expected), stripAnsiTrace(actual));
     }
 
     private File[] fileArray(final String ... paths) {
@@ -2000,6 +2005,7 @@ public class CommandLineTest {
             System.setProperty(PROPERTY, old);
         }
         String expected = String.format("" +
+                        "[picocli INFO] Picocli version: %s%n" +
                         "[picocli INFO] Parsing 8 command line args [--git-dir=/home/rpopma/picocli, commit, -m, \"Fixed typos\", --, src1.java, src2.java, src3.java]%n" +
                         "[picocli INFO] Setting field java.io.File picocli.Demo$Git.gitDir to '%s' (was 'null') for option --git-dir%n" +
                         "[picocli INFO] Adding [\"Fixed typos\"] to field java.util.List<String> picocli.Demo$GitCommit.message for option -m%n" +
@@ -2007,6 +2013,7 @@ public class CommandLineTest {
                         "[picocli INFO] Adding [src1.java] to field java.util.List<java.io.File> picocli.Demo$GitCommit.files for args[0..*] at position 0%n" +
                         "[picocli INFO] Adding [src2.java] to field java.util.List<java.io.File> picocli.Demo$GitCommit.files for args[0..*] at position 1%n" +
                         "[picocli INFO] Adding [src3.java] to field java.util.List<java.io.File> picocli.Demo$GitCommit.files for args[0..*] at position 2%n",
+                CommandLine.versionString(),
                 new File("/home/rpopma/picocli"));
         String actual = new String(baos.toByteArray(), "UTF8");
         //System.out.println(actual);
@@ -2061,8 +2068,10 @@ public class CommandLineTest {
                         "[picocli DEBUG] Creating CommandSpec for object of class picocli.Demo$GitPush with factory picocli.CommandLine$DefaultFactory%n" +
                         "[picocli DEBUG] Creating CommandSpec for object of class picocli.Demo$GitRebase with factory picocli.CommandLine$DefaultFactory%n" +
                         "[picocli DEBUG] Creating CommandSpec for object of class picocli.Demo$GitTag with factory picocli.CommandLine$DefaultFactory%n" +
+                        "[picocli INFO] Picocli version: %3$s%n" +
                         "[picocli INFO] Parsing 8 command line args [--git-dir=/home/rpopma/picocli, commit, -m, \"Fixed typos\", --, src1.java, src2.java, src3.java]%n" +
                         "[picocli DEBUG] Parser configuration: posixClusteredShortOptionsAllowed=true, stopAtPositional=false, stopAtUnmatched=false, separator=null, overwrittenOptionsAllowed=false, unmatchedArgumentsAllowed=false, expandAtFiles=true, atFileCommentChar=#, endOfOptionsDelimiter=--, limitSplit=false, aritySatisfiedByAttachedOptionParam=false, toggleBooleanFlags=true, unmatchedOptionsArePositionalParams=false, collectErrors=false,caseInsensitiveEnumValuesAllowed=false, trimQuotes=false, splitQuotedStrings=false%n" +
+                        "[picocli DEBUG] (ANSI is disabled by default: TTY=...)%n" +
                         "[picocli DEBUG] Set initial value for field java.io.File picocli.Demo$Git.gitDir of type class java.io.File to null.%n" +
                         "[picocli DEBUG] Set initial value for field boolean picocli.CommandLine$AutoHelpMixin.helpRequested of type boolean to false.%n" +
                         "[picocli DEBUG] Set initial value for field boolean picocli.CommandLine$AutoHelpMixin.versionRequested of type boolean to false.%n" +
@@ -2101,7 +2110,9 @@ public class CommandLineTest {
                         "[picocli DEBUG] Position 2 is in index range 0..*. Trying to assign args to field java.util.List<java.io.File> %1$s$GitCommit.files, arity=0..1%n" +
                         "[picocli INFO] Adding [src3.java] to field java.util.List<java.io.File> picocli.Demo$GitCommit.files for args[0..*] at position 2%n" +
                         "[picocli DEBUG] Consumed 1 arguments and 0 interactive values, moving position to index 3.%n",
-                Demo.class.getName(), new File("/home/rpopma/picocli"));
+                Demo.class.getName(),
+                new File("/home/rpopma/picocli"),
+                CommandLine.versionString());
         String actual = new String(baos.toByteArray(), "UTF8");
         //System.out.println(actual);
         if (System.getProperty("java.version").compareTo("1.7.0") < 0) {
@@ -2110,7 +2121,7 @@ public class CommandLineTest {
         if (System.getProperty("java.version").compareTo("1.8.0") < 0) {
             expected = prefix8 + expected;
         }
-        assertEquals(expected, actual);
+        assertEquals(stripAnsiTrace(expected), stripAnsiTrace(actual));
     }
     @Test
     public void testTraceWarningIfOptionOverwrittenWhenOverwrittenOptionsAllowed() throws Exception {
@@ -2130,10 +2141,12 @@ public class CommandLineTest {
         System.setErr(originalErr);
 
         String expected = String.format("" +
+                        "[picocli INFO] Picocli version: %s%n" +
                         "[picocli INFO] Parsing 6 command line args [-f, 111, -f, 222, -f, 333]%n" +
                         "[picocli INFO] Setting field String picocli.CommandLineTest$16App.field to '111' (was 'null') for option -f%n" +
                         "[picocli INFO] Overwriting field String picocli.CommandLineTest$16App.field value '111' with '222' for option -f%n" +
                         "[picocli INFO] Overwriting field String picocli.CommandLineTest$16App.field value '222' with '333' for option -f%n",
+                CommandLine.versionString(),
                 App.class.getName());
         String actual = new String(baos.toByteArray(), "UTF8");
         assertEquals(expected, actual);
@@ -2154,10 +2167,12 @@ public class CommandLineTest {
         assertEquals(Arrays.asList("3=c", "4=d"), cmd.getUnmatchedArguments());
         System.setErr(originalErr);
 
-        String expected = String.format("[picocli INFO] Parsing 4 command line args [1=a, 2=b, 3=c, 4=d]%n" +
+        String expected = String.format("" +
+                "[picocli INFO] Picocli version: %s%n" +
+                "[picocli INFO] Parsing 4 command line args [1=a, 2=b, 3=c, 4=d]%n" +
                 "[picocli INFO] Putting [1 : a] in LinkedHashMap<Integer, String> field java.util.Map<Integer, String> picocli.CommandLineTest$17App.message for args[0] at position 0%n" +
                 "[picocli INFO] Putting [2 : b] in LinkedHashMap<Integer, String> field java.util.Map<Integer, String> picocli.CommandLineTest$17App.message for args[0] at position 0%n" +
-                "[picocli INFO] Unmatched arguments: [3=c, 4=d]%n");
+                "[picocli INFO] Unmatched arguments: [3=c, 4=d]%n", CommandLine.versionString());
         String actual = new String(baos.toByteArray(), "UTF8");
         //System.out.println(actual);
         assertEquals(expected, actual);
@@ -3128,15 +3143,20 @@ public class CommandLineTest {
         assertEquals("C", ((App) cmd.getCommand()).third);
 
         String expected = String.format("" +
+                "[picocli INFO] Picocli version: %2$s%n" +
                 "[picocli INFO] Parsing 2 command line args [-yy, -a=A]%n" +
                 "[picocli INFO] Setting field String %1$s.first to 'A' (was 'null') for option -a%n" +
                 "[picocli INFO] Unmatched arguments: [-yy]%n" +
+                "[picocli INFO] Picocli version: %2$s%n" +
                 "[picocli INFO] Parsing 2 command line args [-y, -b=B]%n" +
                 "[picocli INFO] Setting field String %1$s.second to 'B' (was 'null') for option -b%n" +
                 "[picocli INFO] Unmatched arguments: [-y]%n" +
+                "[picocli INFO] Picocli version: %2$s%n" +
                 "[picocli INFO] Parsing 2 command line args [--y, -c=C]%n" +
                 "[picocli INFO] Setting field String %1$s.third to 'C' (was 'null') for option -c%n" +
-                "[picocli INFO] Unmatched arguments: [--y]%n", App.class.getName());
+                "[picocli INFO] Unmatched arguments: [--y]%n",
+                App.class.getName(),
+                CommandLine.versionString());
         String actual = new String(baos.toByteArray(), "UTF8");
         assertEquals(expected, actual);
         setTraceLevel("WARN");
