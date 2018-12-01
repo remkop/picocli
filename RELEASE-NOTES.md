@@ -1,7 +1,7 @@
 # picocli Release Notes
 
 
-# <a name="3.8.1"></a> Picocli 3.8.1
+# <a name="3.8.1"></a> Picocli 3.8.1 (UNRELEASED)
 The picocli community is pleased to announce picocli 3.8.1.
 
 This release contains bugfixes and minor enhancements.
@@ -42,6 +42,7 @@ The following information has been added to the tracing output in this release:
 
 ## <a name="3.8.1-fixes"></a> Fixed issues
 - [#551] Enhancement: Add support for JCommander-style argument files (one argument per line, no quoting). Thanks to [Lukáš Petrovický](https://github.com/triceo) for the bug report and unit tests.
+- [#562] Enhancement: Allow for enabling quote trimming via system property `picocli.trimQuotes`. Thanks to [Lukáš Petrovický](https://github.com/triceo) for the pull request.
 - [#560] Enhancement: Better tracing.
 - [#554] Bugfix: Convenience method error handling was broken for command methods that explicitly throw an ParameterException: InvocationTargetException hides the ParameterException. Thanks to [SysLord](https://github.com/SysLord) for the bug report.
 - [#553] Doc: Fix broken link to CommandLine.java source code. Thanks to [Simon Legner](https://github.com/simon04) for the pull request.
