@@ -3656,7 +3656,7 @@ public class CommandLineTest {
             @Option(names = "--quotedArg")
             private String quoted;
 
-            @Option(names = "--multiArg")
+            @Option(names = "--multiArg", arity = "1..*")
             private List<String> strings;
 
             @Option(names = "--urlArg")
@@ -3671,7 +3671,7 @@ public class CommandLineTest {
         assertEquals("something with spaces", app.withSpaces);
         assertEquals("\"something else\"", app.quoted);
         assertEquals(Arrays.asList("something else", "yet something else"), app.strings);
-        assertEquals("https://picocli.info/", app.url);
+        assertEquals("https://picocli.info/", app.url.toString());
         assertEquals("C:\\Program Files\\picocli.txt", app.unescaped);
     }
 
