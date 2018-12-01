@@ -3694,7 +3694,7 @@ public class CommandLineTest {
         cli.setTrimQuotes(true);
         cli.parse("@" + file.getAbsolutePath());
         assertEquals("something else", app.quoted);
-        assertEquals("https://picocli.info/", app.url);
+        assertEquals("https://picocli.info/", app.url.toString());
         assertEquals("C:\\Program Files\\picocli.txt", app.unescaped);
     }
 
