@@ -855,6 +855,30 @@ public class CommandLineTest {
     }
 
     @Test
+    public void testTrimQuotesWhenPropertyTrue() {
+        System.setProperty("picocli.trimQuotes", "true");
+        @Command class TopLevel {}
+        CommandLine commandLine = new CommandLine(new TopLevel());
+        assertEquals(true, commandLine.isTrimQuotes());
+    }
+
+    @Test
+    public void testTrimQuotesWhenPropertyEmpty() {
+        System.setProperty("picocli.trimQuotes", "");
+        @Command class TopLevel {}
+        CommandLine commandLine = new CommandLine(new TopLevel());
+        assertEquals(true, commandLine.isTrimQuotes());
+    }
+
+    @Test
+    public void testTrimQuotesWhenPropertyFalse() {
+        System.setProperty("picocli.trimQuotes", "false");
+        @Command class TopLevel {}
+        CommandLine commandLine = new CommandLine(new TopLevel());
+        assertEquals(false, commandLine.isTrimQuotes());
+    }
+
+    @Test
     public void testParserTrimQuotes_BeforeSubcommandsAdded() {
         @Command class TopLevel {}
         CommandLine commandLine = new CommandLine(new TopLevel());
@@ -3678,6 +3702,7 @@ public class CommandLineTest {
     @Test
     public void testAtFileSimplifiedWithQuotesTrimmed() {
         System.setProperty("picocli.useSimplifiedAtFiles", "true");
+        System.setProperty("picocli.trimQuotes", "true");
         class App {
             @Option(names = "--quotedArg")
             private String quoted;
@@ -3689,10 +3714,7 @@ public class CommandLineTest {
             private String unescaped;
         }
         File file = findFile("/argfile-simplified-quoted.txt");
-        final App app = new App();
-        final CommandLine cli = new CommandLine(app);
-        cli.setTrimQuotes(true);
-        cli.parse("@" + file.getAbsolutePath());
+        App app = CommandLine.populateCommand(new App(), "@" + file.getAbsolutePath());
         assertEquals("something else", app.quoted);
         assertEquals("https://picocli.info/", app.url.toString());
         assertEquals("C:\\Program Files\\picocli.txt", app.unescaped);
