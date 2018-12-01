@@ -1,6 +1,9 @@
 package picocli;
 
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.contrib.java.lang.system.SystemErrRule;
+import org.junit.contrib.java.lang.system.SystemOutRule;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.IFactory;
 import picocli.CommandLine.ITypeConverter;
@@ -18,16 +21,17 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertSame;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
 import static picocli.HelpTestUtil.setTraceLevel;
+import static picocli.HelpTestUtil.textArray;
+import static picocli.PicocliTestUtil.setOf;
 
 public class SubcommandTests {
+    @Rule
+    public final SystemErrRule systemErrRule = new SystemErrRule().enableLog().muteForSuccessfulTests();
+
+    @Rule
+    public final SystemOutRule systemOutRule = new SystemOutRule().enableLog().muteForSuccessfulTests();
 
     static class MainCommand { @Option(names = "-a") boolean a; public boolean equals(Object o) { return getClass().equals(o.getClass()); }}
     static class ChildCommand1 { @Option(names = "-b") boolean b; public boolean equals(Object o) { return getClass().equals(o.getClass()); }}
@@ -151,12 +155,6 @@ public class SubcommandTests {
                 "  task, t  subcommand with alias%n");
         assertEquals(expected, cmd.getUsageMessage());
         assertArrayEquals(new String[]{"t"}, subSpec.aliases());
-    }
-
-    public static <T> Set<T> setOf(T... elements) {
-        Set<T> result = new HashSet<T>();
-        for (T t : elements) { result.add(t); }
-        return result;
     }
 
     @Test
@@ -361,7 +359,7 @@ public class SubcommandTests {
             new CommandLine(new MainCommand_testDeclarativelyAddSubcommands(), factory);
         } catch (InitializationException ex) {
             assertEquals("Could not instantiate and add subcommand " +
-                    "picocli.CommandLineTest$Sub1_testDeclarativelyAddSubcommands: " +
+                    "picocli.SubcommandTests$Sub1_testDeclarativelyAddSubcommands: " +
                     "java.lang.IllegalStateException: bad class", ex.getMessage());
         }
     }
@@ -423,8 +421,8 @@ public class SubcommandTests {
             new CommandLine(new MainCommand(), new InnerClassFactory(this));
             fail("Expected exception");
         } catch (InitializationException ex) {
-            String prefix = String.format("Could not instantiate %s either with or without construction parameter picocli.CommandLineTest@", ABC.class.getName());
-            String suffix = String.format("java.lang.NoSuchMethodException: %s.<init>(picocli.CommandLineTest)", ABC.class.getName());
+            String prefix = String.format("Could not instantiate %s either with or without construction parameter picocli.SubcommandTests@", ABC.class.getName());
+            String suffix = String.format("java.lang.NoSuchMethodException: %s.<init>(picocli.SubcommandTests)", ABC.class.getName());
 
             assertTrue(ex.getMessage(), ex.getMessage().startsWith(prefix));
             assertTrue(ex.getMessage(), ex.getMessage().endsWith(suffix));
@@ -435,7 +433,7 @@ public class SubcommandTests {
         @Command(name = "sub1") class ABCD {}
         @Command(subcommands = {ABCD.class}) class MainCommand {}
         CommandLine cmdLine = new CommandLine(new MainCommand(), new InnerClassFactory(this));
-        assertEquals("picocli.CommandLineTest$1ABCD", cmdLine.getSubcommands().get("sub1").getCommand().getClass().getName());
+        assertEquals("picocli.SubcommandTests$1ABCD", cmdLine.getSubcommands().get("sub1").getCommand().getClass().getName());
     }
     @Test
     public void testDeclarativelyAddSubcommandsFailsWithoutAnnotation() {
@@ -1024,4 +1022,25 @@ public class SubcommandTests {
         assertTrue(grandChildCount > 0);
     }
 
+    @Command(mixinStandardHelpOptions = true) class Top563 {}
+    @Command(mixinStandardHelpOptions = true) class Sub563 {}
+
+    // test for https://github.com/remkop/picocli/issues/563
+    @Test
+    public void testSubcommandWithoutAnnotationName() {
+        CommandLine top = new CommandLine(new Top563());
+        top.addSubcommand("subname", new Sub563());
+
+        CommandLine sub = top.getSubcommands().get("subname");
+        assertEquals("subname", sub.getCommandName());
+        assertEquals("subname", sub.getCommandSpec().name());
+        assertEquals("<main class> subname", sub.getCommandSpec().qualifiedName());
+
+        String expected = String.format("" +
+                "Usage: <main class> subname [-hV]%n" +
+                "  -h, --help      Show this help message and exit.%n" +
+                "  -V, --version   Print version information and exit.%n");
+        sub.usage(System.out);
+        assertEquals(expected, systemOutRule.getLog());
+    }
 }

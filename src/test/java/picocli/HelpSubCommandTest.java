@@ -5,11 +5,11 @@ import org.junit.Test;
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
 import static picocli.CommandLine.*;
 import static picocli.CommandLine.Model.*;
 import static picocli.HelpTestUtil.usageString;
-
+import static picocli.PicocliTestUtil.setOf;
 
 public class HelpSubCommandTest {
 
@@ -69,13 +69,13 @@ public class HelpSubCommandTest {
     @Test
     public void testCommandAliasRegistrationByAnnotation() {
         CommandLine commandLine = new CommandLine(new TopLevelCommand());
-        assertEquals(CommandLineTest.setOf("sub", "s", "sb", "sub2", "s2", "sb2"), commandLine.getSubcommands().keySet());
+        assertEquals(setOf("sub", "s", "sb", "sub2", "s2", "sb2"), commandLine.getSubcommands().keySet());
 
         CommandLine sub1 = commandLine.getSubcommands().get("sub");
-        assertEquals(CommandLineTest.setOf("subsub", "ss", "sbsb"), sub1.getSubcommands().keySet());
+        assertEquals(setOf("subsub", "ss", "sbsb"), sub1.getSubcommands().keySet());
 
         CommandLine sub2 = commandLine.getSubcommands().get("sub2");
-        assertEquals(CommandLineTest.setOf("subsub", "ss", "sbsb"), sub2.getSubcommands().keySet());
+        assertEquals(setOf("subsub", "ss", "sbsb"), sub2.getSubcommands().keySet());
     }
 
     @Test

@@ -1,5 +1,8 @@
 package picocli;
 
+import java.util.HashSet;
+import java.util.Set;
+
 public class PicocliTestUtil {
     // gives access to package-protected method {@code versionString}
     public static String versionString() {
@@ -34,4 +37,11 @@ public class PicocliTestUtil {
         }
         return original;
     }
+
+    public static <T> Set<T> setOf(T... elements) {
+        Set<T> result = new HashSet<T>();
+        for (T t : elements) { result.add(t); }
+        return result;
+    }
+
 }
