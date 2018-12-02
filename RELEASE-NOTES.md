@@ -12,7 +12,7 @@ This release adds support for JCommander-style argument files (one argument per 
 Many thanks to the many members of the picocli community who contributed! 
 
 This is the forty-third public release.
-Picocli follows [semantic versioning](http://semver.org/). (This release could have been called 3.7.1 except that it has a minor additional API change, which means it cannot be called a patch release by semver rules.)
+Picocli follows [semantic versioning](http://semver.org/).
 
 ## <a name="3.8.1"></a> Table of Contents
 * [New and noteworthy](#3.8.1-new)
