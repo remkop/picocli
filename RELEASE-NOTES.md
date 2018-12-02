@@ -1,7 +1,7 @@
 # picocli Release Notes
 
 
-# <a name="3.8.1"></a> Picocli 3.8.1 (UNRELEASED)
+# <a name="3.8.1"></a> Picocli 3.8.1
 The picocli community is pleased to announce picocli 3.8.1.
 
 This release contains bugfixes and minor enhancements.
