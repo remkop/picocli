@@ -6,7 +6,7 @@ The picocli community is pleased to announce picocli 3.8.1.
 
 This release contains bugfixes and minor enhancements.
 
-Convenience methods (like `run` or `call`) explicitly throwing a `ParametersException` is now correctly handled by picocli, showing the error message and the usage help message.
+Command methods explicitly throwing a `ParametersException` is now correctly handled by picocli, showing the error message and the usage help message.
 
 This release adds support for JCommander-style argument files (one argument per line, no quoting) and better tracing.
 
