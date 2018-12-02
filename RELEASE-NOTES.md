@@ -46,6 +46,7 @@ The following information has been added to the tracing output in this release:
 - [#560] Enhancement: Better tracing.
 - [#554] Bugfix: Convenience method error handling was broken for command methods that explicitly throw an ParameterException: InvocationTargetException hides the ParameterException. Thanks to [SysLord](https://github.com/SysLord) for the bug report.
 - [#553] Doc: Fix broken link to CommandLine.java source code. Thanks to [Simon Legner](https://github.com/simon04) for the pull request.
+- [#563] Doc: Improve documentation for explicitly showing usage help from subcommands. Thanks to [Steve Johnson](https://github.com/Blatwurst) for raising this issue.
 
 ## <a name="3.8.1-deprecated"></a> Deprecations
 No features were deprecated in this release.

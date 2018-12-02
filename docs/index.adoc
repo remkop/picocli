@@ -2184,12 +2184,31 @@ class Git {
 The above example uses the <<Mixin Standard Help Options,mixinStandardHelpOptions>> attribute to mix in
 <<Help Options,`usageHelp`>> and <<Help Options,`versionHelp`>> options and registers the `help` subcommand.
 
-The usage help message for each subcommand is produced by calling `CommandLine.usage(new SubCommand(), out)`.
-For example, see <<Section Headings>> for an example subcommand (`git commit`), which produces the help message shown
-in <<Expanded Example>>.
+TIP: Use the `@Spec` annotation for subcommands that need to show the usage help message explicitly.
 
 From picocli 3.1, the usage help synopsis of the subcommand shows not only the subcommand name but also the parent command name.
 For example, if the `git` command has a `commit` subcommand, the usage help for the `commit` subcommand shows `Usage: git commit <options>`.
+
+If a subcommand explicitly wants to show the usage help message, the `@Spec` annotation may be useful.
+The injected `CommandSpec` has its parent command initialized correctly, so the usage help can show the fully qualified name of the subcommand.
+
+[source,java]
+----
+@Command(name = "commit", description = "...")
+class Commit implements Runnable {
+    @Spec CommandSpec spec;
+
+    public void run() {
+        if (shouldShowHelp()) {
+            new CommandLine(spec).usage(System.out);
+        }
+    }
+}
+----
+
+For example, see <<Section Headings>> for an example subcommand (`git commit`), which produces the help message shown
+in <<Expanded Example>>.
+
 
 === Hidden Subcommands
 
