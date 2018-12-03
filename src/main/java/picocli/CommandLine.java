@@ -6629,7 +6629,7 @@ public class CommandLine {
             if (tracer.isInfo()) {tracer.info("Picocli version: %s%n", versionString());}
             if (tracer.isInfo()) {tracer.info("Parsing %d command line args %s%n", args.length, Arrays.toString(args));}
             if (tracer.isDebug()){tracer.debug("Parser configuration: %s%n", config());}
-            if (tracer.isDebug()){tracer.debug("(ANSI is %s by default: TTY=%s, isXTERM=%s, hasOSTYPE=%s, isWindows=%s, JansiConsoleInstalled=%s)%n", Help.Ansi.ansiPossible() ? "enabled" : "disabled", Help.Ansi.ISATTY, Help.Ansi.isXterm, Help.Ansi.hasOsType, Help.Ansi.isWindows, Help.Ansi.isJansiConsoleInstalled());}
+            if (tracer.isDebug()){tracer.debug("(ANSI is %s by default: TTY=%s, isXTERM=%s, hasOSTYPE=%s, isWindows=%s, JansiConsoleInstalled=%s)%n", Help.Ansi.ansiPossible() ? "enabled" : "disabled", Help.Ansi.isTTY(), Help.Ansi.isXterm, Help.Ansi.hasOsType, Help.Ansi.isWindows, Help.Ansi.isJansiConsoleInstalled());}
             List<String> expanded = new ArrayList<String>();
             for (String arg : args) { addOrExpand(arg, expanded, new LinkedHashSet<String>()); }
             Stack<String> arguments = new Stack<String>();
@@ -9455,15 +9455,18 @@ public class CommandLine {
             static final boolean isWindows  = System.getProperty("os.name").startsWith("Windows");
             static final boolean isXterm    = System.getenv("TERM") != null && System.getenv("TERM").startsWith("xterm");
             static final boolean hasOsType  = System.getenv("OSTYPE") != null; // null on Windows unless on Cygwin or MSYS
-            static final boolean ISATTY = calcTTY();
-
+            static Boolean tty;
+            static boolean isTTY() {
+                if (tty == null) { tty = calcTTY(); new Tracer().debug("Calculated TTY=%s%n", tty); }
+                return tty;
+            }
             // http://stackoverflow.com/questions/1403772/how-can-i-check-if-a-java-programs-input-output-streams-are-connected-to-a-term
-            static final boolean calcTTY() {
+            static boolean calcTTY() {
                 if (isWindows && (isXterm || hasOsType)) { return true; } // Cygwin uses pseudo-tty and console is always null...
                 try { return System.class.getDeclaredMethod("console").invoke(null) != null; }
                 catch (Throwable reflectionFailed) { return true; }
             }
-            private static boolean ansiPossible() { return (ISATTY && (!isWindows || isXterm || hasOsType)) || isJansiConsoleInstalled(); }
+            private static boolean ansiPossible() { return (isTTY() && (!isWindows || isXterm || hasOsType)) || isJansiConsoleInstalled(); }
 
             private static boolean isJansiConsoleInstalled() {
                 try {
@@ -10183,8 +10186,8 @@ public class CommandLine {
         private static final long serialVersionUID = 1338029208271055776L;
         private final ArgSpec overwrittenArg;
         public OverwrittenOptionException(CommandLine commandLine, ArgSpec overwritten, String msg) {
-        	super(commandLine, msg);
-        	overwrittenArg = overwritten;
+            super(commandLine, msg);
+            overwrittenArg = overwritten;
         }
         /** Returns the {@link ArgSpec} for the option which was being overwritten.
          * @since 3.8 */
