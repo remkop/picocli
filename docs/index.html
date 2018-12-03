@@ -3817,7 +3817,7 @@ The injected <code>CommandSpec</code> has its parent command initialized correct
 
     <span class="directive">public</span> <span class="type">void</span> run() {
         <span class="keyword">if</span> (shouldShowHelp()) {
-            <span class="keyword">new</span> CommandLine(spec).usage(<span class="predefined-type">System</span>.out);
+            spec.commandLine().usage(<span class="predefined-type">System</span>.out);
         }
     }
 }</code></pre>

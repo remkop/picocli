@@ -2200,7 +2200,7 @@ class Commit implements Runnable {
 
     public void run() {
         if (shouldShowHelp()) {
-            new CommandLine(spec).usage(System.out);
+            spec.commandLine().usage(System.out);
         }
     }
 }
