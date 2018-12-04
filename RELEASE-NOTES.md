@@ -1,5 +1,33 @@
 # picocli Release Notes
 
+# <a name="3.8.2"></a> Picocli 3.8.2
+The picocli community is pleased to announce picocli 3.8.2.
+
+This release contains bugfixes only.
+
+When running a native image with Graal, ANSI colors are now shown correctly.
+
+This is the forty-forth public release.
+Picocli follows [semantic versioning](http://semver.org/).
+
+## <a name="3.8.2"></a> Table of Contents
+* [New and noteworthy](#3.8.2-new)
+* [Fixed issues](#3.8.2-fixes)
+* [Deprecations](#3.8.2-deprecated)
+* [Potential breaking changes](#3.8.2-breaking-changes)
+
+## <a name="3.8.2-new"></a> New and Noteworthy
+
+
+## <a name="3.8.2-fixes"></a> Fixed issues
+- [#557] Bugfix: No colors are shown when compiling to a native image with Graal on MacOS. Thanks to [Oliver Weiler](https://github.com/helpermethod) for the bug report.
+ 
+## <a name="3.8.2-deprecated"></a> Deprecations
+No features were deprecated in this release.
+
+## <a name="3.8.2-breaking-changes"></a> Potential breaking changes
+This is a patch release and has no breaking changes.
+
 
 # <a name="3.8.1"></a> Picocli 3.8.1
 The picocli community is pleased to announce picocli 3.8.1.

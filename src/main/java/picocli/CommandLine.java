@@ -141,7 +141,7 @@ import static picocli.CommandLine.Help.Column.Overflow.WRAP;
  */
 public class CommandLine {
     /** This is picocli version {@value}. */
-    public static final String VERSION = "4.0.0-SNAPSHOT";
+    public static final String VERSION = "3.8.2";
 
     private final Tracer tracer = new Tracer();
     private final CommandSpec commandSpec;
@@ -9457,7 +9457,7 @@ public class CommandLine {
             static final boolean hasOsType  = System.getenv("OSTYPE") != null; // null on Windows unless on Cygwin or MSYS
             static Boolean tty;
             static boolean isTTY() {
-                if (tty == null) { tty = calcTTY(); new Tracer().debug("Calculated TTY=%s%n", tty); }
+                if (tty == null) { tty = calcTTY(); }
                 return tty;
             }
             // http://stackoverflow.com/questions/1403772/how-can-i-check-if-a-java-programs-input-output-streams-are-connected-to-a-term

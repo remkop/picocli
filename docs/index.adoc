@@ -1,8 +1,8 @@
 = picocli - a mighty tiny command line interface
 //:author: Remko Popma
 //:email: rpopma@apache.org
-:revnumber: 4.0.0-SNAPSHOT
-:revdate: 2018-12-02
+:revnumber: 3.8.2
+:revdate: 2018-12-05
 :toc: left
 :numbered:
 :toclevels: 2
@@ -3141,7 +3141,7 @@ The script body is executed if the user input was valid and did not request usag
 
 [source,groovy]
 ----
-@Grab('info.picocli:picocli:4.0.0-SNAPSHOT')
+@Grab('info.picocli:picocli:3.8.2')
 @Command(name = "myScript",
         mixinStandardHelpOptions = true, // add --help and --version options
         description = "@|bold Groovy script|@ @|underline picocli|@ example")
@@ -3166,7 +3166,7 @@ CAUTION: When using a Groovy version older than 2.4.7, use this workaround for t
 
 [source,groovy]
 ----
-@Grab('info.picocli:picocli:4.0.0-SNAPSHOT')
+@Grab('info.picocli:picocli:3.8.2')
 @GrabExclude('org.codehaus.groovy:groovy-all') // work around GROOVY-7613
 ...
 ----
@@ -3193,6 +3193,24 @@ class MyApp : Runnable {
 }
 fun main(args: Array<String>) = CommandLine.run(MyApp(), *args)
 ----
+
+When specify a class as an argument of an annotation, use a Kotlin class (https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.reflect/-k-class/index.html[KClass]).
+The Kotlin compiler will automatically convert it to a Java class, so that the Java code will be able to see the annotations and arguments normally.
+
+[source,kotlin]
+----
+@Command(name = "top", // ...
+        subcommands = [SubCmd::class, picocli.CommandLine.HelpCommand::class])
+class TopCmd { // ...
+}
+
+@Command(name = "sub", /* ... */)
+class SubCmd { // ...
+}
+----
+
+
+
 
 Kotlin versions prior to 1.2 did not allow the https://kotlinlang.org/docs/reference/annotations.html[array literal syntax in annotations], so with older versions of Kotlin you will have to write `arrayOf(...)` for the `names`, `description` and `type` attributes.
 
@@ -3268,7 +3286,7 @@ See the <<Source,source code>> below. Copy and paste it into a file called `Comm
 
 === Gradle
 ----
-compile 'info.picocli:picocli:4.0.0-SNAPSHOT'
+compile 'info.picocli:picocli:3.8.2'
 ----
 
 === Maven
@@ -3276,19 +3294,19 @@ compile 'info.picocli:picocli:4.0.0-SNAPSHOT'
 <dependency>
   <groupId>info.picocli</groupId>
   <artifactId>picocli</artifactId>
-  <version>4.0.0-SNAPSHOT</version>
+  <version>3.8.2</version>
 </dependency>
 ----
 
 === Scala SBT
 ----
-libraryDependencies += "info.picocli" % "picocli" % "4.0.0-SNAPSHOT"
+libraryDependencies += "info.picocli" % "picocli" % "3.8.2"
 ----
 
 === Ivy
 
 ----
-<dependency org="info.picocli" name="picocli" rev="4.0.0-SNAPSHOT" />
+<dependency org="info.picocli" name="picocli" rev="3.8.2" />
 ----
 
 === Source
