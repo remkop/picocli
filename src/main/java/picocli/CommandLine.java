@@ -38,7 +38,7 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.regex.Pattern;
-
+import java.util.stream.Collectors;
 import picocli.CommandLine.Help.Ansi.IStyle;
 import picocli.CommandLine.Help.Ansi.Style;
 import picocli.CommandLine.Help.Ansi.Text;
@@ -140,6 +140,23 @@ import static picocli.CommandLine.Help.Column.Overflow.WRAP;
  * </p>
  */
 public class CommandLine {
+
+    /** Predefined section keys. */
+    public static final String HEADER_HEADING = "headerHeading";
+    public static final String HEADER = "header";
+    public static final String SYNOPSIS_HEADING = "synopsisHeading";
+    public static final String SYNOPSIS = "synopsis";
+    public static final String DESCRIPTION_HEADING = "descriptionHeading";
+    public static final String DESCRIPTION = "description";
+    public static final String PARAMETER_LIST_HEADING = "parameterListHeading";
+    public static final String PARAMETER_LIST = "parameterList";
+    public static final String OPTION_LIST_HEADING = "optionListHeading";
+    public static final String OPTION_LIST = "optionList";
+    public static final String COMMAND_LIST_HEADING = "commandListHeading";
+    public static final String COMMAND_LIST = "commandList";
+    public static final String FOOTER_HEADING = "footerHeading";
+    public static final String FOOTER = "footer";
+    
     /** This is picocli version {@value}. */
     public static final String VERSION = "4.0.0-SNAPSHOT";
 
@@ -149,6 +166,24 @@ public class CommandLine {
     private final IFactory factory;
     private IHelpFactory helpFactory;
 
+    private List<String> sectionKeys = Collections.unmodifiableList(Arrays.asList(
+            HEADER_HEADING,
+            HEADER,
+            SYNOPSIS_HEADING,
+            SYNOPSIS,
+            DESCRIPTION_HEADING,
+            DESCRIPTION,
+            PARAMETER_LIST_HEADING,
+            PARAMETER_LIST,
+            OPTION_LIST_HEADING,
+            OPTION_LIST,
+            COMMAND_LIST_HEADING,
+            COMMAND_LIST,
+            FOOTER_HEADING,
+            FOOTER));
+    
+    private Map<String, IHelpSectionRenderer> helpSectionRendererMap = createHelpSectionRendererMap();
+    
     /**
      * Constructs a new {@code CommandLine} interpreter with the specified object (which may be an annotated user object or a {@link CommandSpec CommandSpec}) and a default subcommand factory.
      * <p>The specified object may be a {@link CommandSpec CommandSpec} object, or it may be a {@code @Command}-annotated
@@ -1535,23 +1570,85 @@ public class CommandLine {
     public String getUsageMessage(Help.ColorScheme colorScheme) {
         return usage(new StringBuilder(), getHelpFactory().create(getCommandSpec(), colorScheme)).toString();
     }
-    private static StringBuilder usage(StringBuilder sb, Help help) {
-        return sb.append(help.headerHeading())
-                .append(help.header())
-                .append(help.synopsisHeading())      //e.g. Usage:
-                .append(help.synopsis(help.synopsisHeadingLength())) //e.g. &lt;main class&gt; [OPTIONS] &lt;command&gt; [COMMAND-OPTIONS] [ARGUMENTS]
-                .append(help.descriptionHeading())   //e.g. %nDescription:%n%n
-                .append(help.description())          //e.g. {"Converts foos to bars.", "Use options to control conversion mode."}
-                .append(help.parameterListHeading()) //e.g. %nPositional parameters:%n%n
-                .append(help.parameterList())        //e.g. [FILE...] the files to convert
-                .append(help.optionListHeading())    //e.g. %nOptions:%n%n
-                .append(help.optionList())           //e.g. -h, --help   displays this help and exits
-                .append(help.commandListHeading())   //e.g. %nCommands:%n%n
-                .append(help.commandList())          //e.g.    add       adds the frup to the frooble
-                .append(help.footerHeading())
-                .append(help.footer());
+
+    private StringBuilder usage(StringBuilder sb, Help help) {
+        for (String key : getSectionKeys()) {
+            IHelpSectionRenderer renderer = helpSectionRendererMap.get(key);
+            if (renderer != null) { sb.append(renderer.render(help)); }
+        }
+        return sb;
+    }
+    
+    /**
+     * Returns the section keys in the order that the usage help message should render the sections.
+     * This ordering may be modified with {@link #setSectionKeys(List) setSectionKeys}. The default keys are:
+     * <pre>
+     * "headerHeading",
+     * "header",
+     * "synopsisHeading",
+     * "synopsis",
+     * "descriptionHeading",
+     * "description",
+     * "parameterListHeading",
+     * "parameterList",
+     * "optionListHeading",
+     * "optionList",
+     * "commandListHeading",
+     * "commandList",
+     * "footerHeading",
+     * "footer"
+     * </pre>
+     * @since 3.9
+     */
+    public List<String> getSectionKeys() { return sectionKeys; }
+   
+    /**
+     * Sets the section keys in the order that the usage help message should render the sections.
+     * @see #getSectionKeys
+     * @since 3.9
+     */
+    public void setSectionKeys(List<String> keys) { sectionKeys = Collections.unmodifiableList(keys); }
+    
+    /** Returns the help section renderers for the predefined section keys. see: {@link #getSectionKeys()} */
+    private Map<String, IHelpSectionRenderer> createHelpSectionRendererMap() { 
+        Map<String, IHelpSectionRenderer> result = new HashMap<String, IHelpSectionRenderer>();
+        
+        result.put(HEADER_HEADING,       new IHelpSectionRenderer() { public String render(Help help) { return help.headerHeading(); } });
+        result.put(HEADER,               new IHelpSectionRenderer() { public String render(Help help) { return help.header(); } });
+        //e.g. Usage:
+        result.put(SYNOPSIS_HEADING,     new IHelpSectionRenderer() { public String render(Help help) { return help.synopsisHeading(); } });
+        //e.g. &lt;main class&gt; [OPTIONS] &lt;command&gt; [COMMAND-OPTIONS] [ARGUMENTS]
+        result.put(SYNOPSIS,             new IHelpSectionRenderer() { public String render(Help help) { return help.synopsis(help.synopsisHeadingLength()); } });
+        //e.g. %nDescription:%n%n
+        result.put(DESCRIPTION_HEADING,  new IHelpSectionRenderer() { public String render(Help help) { return help.descriptionHeading(); } });
+        //e.g. {"Converts foos to bars.", "Use options to control conversion mode."}
+        result.put(DESCRIPTION,          new IHelpSectionRenderer() { public String render(Help help) { return help.description(); } });
+        //e.g. %nPositional parameters:%n%n
+        result.put(PARAMETER_LIST_HEADING, new IHelpSectionRenderer() { public String render(Help help) { return help.parameterListHeading(); } });
+        //e.g. [FILE...] the files to convert
+        result.put(PARAMETER_LIST,       new IHelpSectionRenderer() { public String render(Help help) { return help.parameterList(); } });
+        //e.g. %nOptions:%n%n
+        result.put(OPTION_LIST_HEADING,  new IHelpSectionRenderer() { public String render(Help help) { return help.optionListHeading(); } });
+        //e.g. -h, --help   displays this help and exits
+        result.put(OPTION_LIST,          new IHelpSectionRenderer() { public String render(Help help) { return help.optionList(); } });
+        //e.g. %nCommands:%n%n
+        result.put(COMMAND_LIST_HEADING, new IHelpSectionRenderer() { public String render(Help help) { return help.commandListHeading(); } });
+        //e.g.    add       adds the frup to the frooble
+        result.put(COMMAND_LIST,         new IHelpSectionRenderer() { public String render(Help help) { return help.commandList(); } });
+        result.put(FOOTER_HEADING,       new IHelpSectionRenderer() { public String render(Help help) { return help.footerHeading(); } });
+        result.put(FOOTER,               new IHelpSectionRenderer() { public String render(Help help) { return help.footer(); } });
+        return result;
     }
 
+    /**
+     * Returns the map of section keys and renderers used to construct the usage help message.
+     * The usage help message can be customized by adding, replacing and removing section renderers from this map.
+     * Sections can be reordered with {@link #setSectionKeys(List) setSectionKeys}.
+     * Sections that are either not in this map or not in the list returned by {@link #getSectionKeys() getSectionKeys} are omitted.
+     * @since 3.9
+     */
+    public Map<String, IHelpSectionRenderer> getSectionMap() { return helpSectionRendererMap; }
+    
     /**
      * Delegates to {@link #printVersionHelp(PrintStream, Help.Ansi)} with the {@linkplain Help.Ansi#AUTO platform default}.
      * @param out the printStream to print to
@@ -7950,6 +8047,18 @@ public class CommandLine {
         void init(CommandLine helpCommandLine, Help.Ansi ansi, PrintStream out, PrintStream err);
     }
 
+    
+    public interface IHelpSectionRenderer {
+        
+        /**
+         * Renders a section of the usage help, like header heading, header, synopsis heading,
+         * synopsis, description heading, description, etc.
+         * @since 3.9
+         */
+        String render(Help help);
+        
+    }
+    
     /**
      * A collection of methods and inner classes that provide fine-grained control over the contents and layout of
      * the usage help message to display to end users when help is requested or invalid input values were specified.
@@ -8054,7 +8163,7 @@ public class CommandLine {
          * of the {@link ParserSpec#separator()} at construction time. If the separator is modified after Help construction, you
          * may need to re-initialize this field by calling {@link #createDefaultParamLabelRenderer()} again. */
         public IParamLabelRenderer parameterLabelRenderer() {return parameterLabelRenderer;}
-
+        
         /** Registers all specified subcommands with this Help.
          * @param commands maps the command names to the associated CommandLine object
          * @return this Help instance (for method chaining)
@@ -10162,8 +10271,8 @@ public class CommandLine {
         private static final long serialVersionUID = 1338029208271055776L;
         private final ArgSpec overwrittenArg;
         public OverwrittenOptionException(CommandLine commandLine, ArgSpec overwritten, String msg) {
-        	super(commandLine, msg);
-        	overwrittenArg = overwritten;
+            super(commandLine, msg);
+            overwrittenArg = overwritten;
         }
         /** Returns the {@link ArgSpec} for the option which was being overwritten.
          * @since 3.8 */

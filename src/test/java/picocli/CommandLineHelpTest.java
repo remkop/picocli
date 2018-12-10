@@ -2786,6 +2786,51 @@ public class CommandLineHelpTest {
     }
 
     @Test
+    public void testHelpFactoryIsUsedWhenSet() {
+        @Command() class TestCommand { }
+        
+        IHelpFactory helpFactoryWithOverridenHelpMethod = new IHelpFactory() {
+            public Help create(CommandSpec commandSpec, ColorScheme colorScheme) {
+                return new Help(commandSpec, colorScheme) {
+                    @Override
+                    public String detailedSynopsis(int synopsisHeadingLength, Comparator<OptionSpec> optionSort, boolean clusterBooleanOptions) {
+                        return "<custom detailed synopsis>";
+                    }
+                };
+            }
+        };
+        CommandLine commandLineWithCustomHelpFactory = new CommandLine(new TestCommand()).setHelpFactory(helpFactoryWithOverridenHelpMethod);
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        commandLineWithCustomHelpFactory.usage(new PrintStream(baos, true));
+        
+        assertEquals("Usage: <custom detailed synopsis>", baos.toString());
+    }
+    
+    @Test
+    public void testCustomizableHelpSections() {
+        @Command(header="<header> (%s)", description="<description>") class TestCommand { }
+        CommandLine commandLineWithCustomHelpSections = new CommandLine(new TestCommand());
+        
+        IHelpSectionRenderer renderer = new IHelpSectionRenderer() { public String render(Help help) {
+            return help.header("<custom header param>"); 
+        } };
+        commandLineWithCustomHelpSections.getSectionMap().put("customSectionExtendsHeader", renderer);
+        
+        commandLineWithCustomHelpSections.setSectionKeys(Arrays.asList( 
+                CommandLine.DESCRIPTION, 
+                CommandLine.SYNOPSIS_HEADING, 
+                "customSectionExtendsHeader"));
+        
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        commandLineWithCustomHelpSections.usage(new PrintStream(baos, true));
+        
+        String expected = String.format("" +
+                "<description>%n" +
+                "Usage: <header> (<custom header param>)%n");
+        assertEquals(expected, baos.toString());
+    }
+    
+    @Test
     public void testAnsiEnabled() {
         assertTrue(Help.Ansi.ON.enabled());
         assertFalse(Help.Ansi.OFF.enabled());
