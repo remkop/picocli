@@ -147,6 +147,7 @@ public class CommandLine {
     private final CommandSpec commandSpec;
     private final Interpreter interpreter;
     private final IFactory factory;
+    private IHelpFactory helpFactory;
 
     /**
      * Constructs a new {@code CommandLine} interpreter with the specified object (which may be an annotated user object or a {@link CommandSpec CommandSpec}) and a default subcommand factory.
@@ -1481,6 +1482,18 @@ public class CommandLine {
      * @since 3.0 */
     public void usage(PrintWriter writer, Help.Ansi ansi) { usage(writer, Help.defaultColorScheme(ansi)); }
 
+    public CommandLine setHelpFactory(IHelpFactory helpFactory) {
+        this.helpFactory = helpFactory;
+        return this;
+    }
+
+    public IHelpFactory getHelpFactory() {
+        if (helpFactory == null) {
+            helpFactory = new DefaultHelpFactory();
+        }
+        return helpFactory;
+    }
+
     /**
      * Prints a usage help message for the annotated command class to the specified {@code PrintStream}.
      * Delegates construction of the usage help message to the {@link Help} inner class and is equivalent to:
@@ -1514,27 +1527,27 @@ public class CommandLine {
      * @param colorScheme the {@code ColorScheme} defining the styles for options, parameters and commands when ANSI is enabled
      */
     public void usage(PrintStream out, Help.ColorScheme colorScheme) {
-        out.print(usage(new StringBuilder(), new Help(getCommandSpec(), colorScheme)));
+        out.print(usage(new StringBuilder(), getHelpFactory().create(getCommandSpec(), colorScheme)));
     }
     /** Similar to {@link #usage(PrintStream, Help.ColorScheme)}, but with the specified {@code PrintWriter} instead of a {@code PrintStream}.
      * @since 3.0 */
     public void usage(PrintWriter writer, Help.ColorScheme colorScheme) {
-        writer.print(usage(new StringBuilder(), new Help(getCommandSpec(), colorScheme)));
+        writer.print(usage(new StringBuilder(), getHelpFactory().create(getCommandSpec(), colorScheme)));
     }
     /** Similar to {@link #usage(PrintStream)}, but returns the usage help message as a String instead of printing it to the {@code PrintStream}.
      * @since 3.2 */
     public String getUsageMessage() {
-        return usage(new StringBuilder(), new Help(getCommandSpec())).toString();
+        return usage(new StringBuilder(), getHelpFactory().create(getCommandSpec(), Help.defaultColorScheme(Help.Ansi.AUTO))).toString();
     }
     /** Similar to {@link #usage(PrintStream, Help.Ansi)}, but returns the usage help message as a String instead of printing it to the {@code PrintStream}.
      * @since 3.2 */
     public String getUsageMessage(Help.Ansi ansi) {
-        return usage(new StringBuilder(), new Help(getCommandSpec(), ansi)).toString();
+        return usage(new StringBuilder(), getHelpFactory().create(getCommandSpec(), Help.defaultColorScheme(ansi))).toString();
     }
     /** Similar to {@link #usage(PrintStream, Help.ColorScheme)}, but returns the usage help message as a String instead of printing it to the {@code PrintStream}.
      * @since 3.2 */
     public String getUsageMessage(Help.ColorScheme colorScheme) {
-        return usage(new StringBuilder(), new Help(getCommandSpec(), colorScheme)).toString();
+        return usage(new StringBuilder(), getHelpFactory().create(getCommandSpec(), colorScheme)).toString();
     }
     private static StringBuilder usage(StringBuilder sb, Help help) {
         return sb.append(help.headerHeading())
@@ -3228,6 +3241,18 @@ public class CommandLine {
         public String defaultValue(ArgSpec argSpec) { throw new UnsupportedOperationException(); }
     }
 
+    public interface IHelpFactory {
+        Help create(CommandSpec commandSpec, Help.ColorScheme colorScheme);
+    }
+    
+    public static class DefaultHelpFactory implements IHelpFactory {
+
+        public Help create(CommandSpec commandSpec, Help.ColorScheme colorScheme) {
+            return new Help(commandSpec, colorScheme);
+        }
+        
+    }
+    
     /**
      * Factory for instantiating classes that are registered declaratively with annotation attributes, like
      * {@link Command#subcommands()}, {@link Option#converter()}, {@link Parameters#converter()} and {@link Command#versionProvider()}.
