@@ -2813,11 +2813,11 @@ public class CommandLineHelpTest {
         IHelpSectionRenderer renderer = new IHelpSectionRenderer() { public String render(Help help) {
             return help.header("<custom header param>"); 
         } };
-        commandLineWithCustomHelpSections.getSectionMap().put("customSectionExtendsHeader", renderer);
+        commandLineWithCustomHelpSections.getHelpSectionMap().put("customSectionExtendsHeader", renderer);
         
-        commandLineWithCustomHelpSections.setSectionKeys(Arrays.asList( 
-                CommandLine.DESCRIPTION, 
-                CommandLine.SYNOPSIS_HEADING, 
+        commandLineWithCustomHelpSections.setHelpSectionKeys(Arrays.asList(
+                CommandLine.Help.DESCRIPTION,
+                CommandLine.Help.SYNOPSIS_HEADING,
                 "customSectionExtendsHeader"));
         
         ByteArrayOutputStream baos = new ByteArrayOutputStream();

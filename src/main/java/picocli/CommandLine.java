@@ -38,7 +38,6 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 import picocli.CommandLine.Help.Ansi.IStyle;
 import picocli.CommandLine.Help.Ansi.Style;
 import picocli.CommandLine.Help.Ansi.Text;
@@ -140,50 +139,15 @@ import static picocli.CommandLine.Help.Column.Overflow.WRAP;
  * </p>
  */
 public class CommandLine {
-
-    /** Predefined section keys. */
-    public static final String HEADER_HEADING = "headerHeading";
-    public static final String HEADER = "header";
-    public static final String SYNOPSIS_HEADING = "synopsisHeading";
-    public static final String SYNOPSIS = "synopsis";
-    public static final String DESCRIPTION_HEADING = "descriptionHeading";
-    public static final String DESCRIPTION = "description";
-    public static final String PARAMETER_LIST_HEADING = "parameterListHeading";
-    public static final String PARAMETER_LIST = "parameterList";
-    public static final String OPTION_LIST_HEADING = "optionListHeading";
-    public static final String OPTION_LIST = "optionList";
-    public static final String COMMAND_LIST_HEADING = "commandListHeading";
-    public static final String COMMAND_LIST = "commandList";
-    public static final String FOOTER_HEADING = "footerHeading";
-    public static final String FOOTER = "footer";
     
     /** This is picocli version {@value}. */
-    public static final String VERSION = "4.0.0-SNAPSHOT";
+    public static final String VERSION = "3.9.0-SNAPSHOT";
 
     private final Tracer tracer = new Tracer();
     private final CommandSpec commandSpec;
     private final Interpreter interpreter;
     private final IFactory factory;
-    private IHelpFactory helpFactory;
 
-    private List<String> sectionKeys = Collections.unmodifiableList(Arrays.asList(
-            HEADER_HEADING,
-            HEADER,
-            SYNOPSIS_HEADING,
-            SYNOPSIS,
-            DESCRIPTION_HEADING,
-            DESCRIPTION,
-            PARAMETER_LIST_HEADING,
-            PARAMETER_LIST,
-            OPTION_LIST_HEADING,
-            OPTION_LIST,
-            COMMAND_LIST_HEADING,
-            COMMAND_LIST,
-            FOOTER_HEADING,
-            FOOTER));
-    
-    private Map<String, IHelpSectionRenderer> helpSectionRendererMap = createHelpSectionRendererMap();
-    
     /**
      * Constructs a new {@code CommandLine} interpreter with the specified object (which may be an annotated user object or a {@link CommandSpec CommandSpec}) and a default subcommand factory.
      * <p>The specified object may be a {@link CommandSpec CommandSpec} object, or it may be a {@code @Command}-annotated
@@ -358,6 +322,80 @@ public class CommandLine {
      * @return whether the parser encountered an option annotated with {@link Option#versionHelp()}.
      * @since 0.9.8 */
     public boolean isVersionHelpRequested() { return interpreter.parseResult != null && interpreter.parseResult.versionHelpRequested; }
+
+    /** Returns the {@code IHelpFactory} that is used to construct the usage help message.
+     * @see #setHelpFactory(IHelpFactory)
+     * @since 3.9
+     */
+    public IHelpFactory getHelpFactory() {
+        return getCommandSpec().usageMessage().helpFactory();
+    }
+
+    /** Sets a new {@code IHelpFactory} to customize the usage help message.
+     * @param helpFactory the new help factory. Must be non-{@code null}.
+     * <p>The specified setting will be registered with this {@code CommandLine} and the full hierarchy of its
+     * subcommands and nested sub-subcommands <em>at the moment this method is called</em>. Subcommands added
+     * later will have the default setting. To ensure a setting is applied to all
+     * subcommands, call the setter last, after adding subcommands.</p>
+     * @return this {@code CommandLine} object, to allow method chaining
+     * @since 3.9
+     */
+    public CommandLine setHelpFactory(IHelpFactory helpFactory) {
+        getCommandSpec().usageMessage().helpFactory(helpFactory);
+        for (CommandLine command : getCommandSpec().subcommands().values()) {
+            command.setHelpFactory(helpFactory);
+        }
+        return this;
+    }
+
+    /**
+     * Returns the section keys in the order that the usage help message should render the sections.
+     * This ordering may be modified with {@link #setHelpSectionKeys(List) setSectionKeys}. The default keys are:
+     * <pre>
+     * "headerHeading",
+     * "header",
+     * "synopsisHeading",
+     * "synopsis",
+     * "descriptionHeading",
+     * "description",
+     * "parameterListHeading",
+     * "parameterList",
+     * "optionListHeading",
+     * "optionList",
+     * "commandListHeading",
+     * "commandList",
+     * "footerHeading",
+     * "footer"
+     * </pre>
+     * @since 3.9
+     */
+    public List<String> getHelpSectionKeys() { return getCommandSpec().usageMessage().sectionKeys(); }
+
+    /**
+     * Sets the section keys in the order that the usage help message should render the sections.
+     * <p>The specified setting will be registered with this {@code CommandLine} and the full hierarchy of its
+     * subcommands and nested sub-subcommands <em>at the moment this method is called</em>. Subcommands added
+     * later will have the default setting. To ensure a setting is applied to all
+     * subcommands, call the setter last, after adding subcommands.</p>
+     * @see #getHelpSectionKeys
+     * @since 3.9
+     */
+    public CommandLine setHelpSectionKeys(List<String> keys) {
+        getCommandSpec().usageMessage().sectionKeys(keys);
+        for (CommandLine command : getCommandSpec().subcommands().values()) {
+            command.setHelpSectionKeys(keys);
+        }
+        return this;
+    }
+
+    /**
+     * Returns the map of section keys and renderers used to construct the usage help message.
+     * The usage help message can be customized by adding, replacing and removing section renderers from this map.
+     * Sections can be reordered with {@link #setHelpSectionKeys(List) setSectionKeys}.
+     * Sections that are either not in this map or not in the list returned by {@link #getHelpSectionKeys() getSectionKeys} are omitted.
+     * @since 3.9
+     */
+    public Map<String, IHelpSectionRenderer> getHelpSectionMap() { return getCommandSpec().usageMessage().helpSectionMap(); }
 
     /** Returns whether the value of boolean flag options should be "toggled" when the option is matched.
      * By default, flags are toggled, so if the value is {@code true} it is set to {@code false}, and when the value is
@@ -1517,18 +1555,6 @@ public class CommandLine {
      * @since 3.0 */
     public void usage(PrintWriter writer, Help.Ansi ansi) { usage(writer, Help.defaultColorScheme(ansi)); }
 
-    public CommandLine setHelpFactory(IHelpFactory helpFactory) {
-        this.helpFactory = helpFactory;
-        return this;
-    }
-
-    public IHelpFactory getHelpFactory() {
-        if (helpFactory == null) {
-            helpFactory = new DefaultHelpFactory();
-        }
-        return helpFactory;
-    }
-
     /**
      * Prints a usage help message for the annotated command class to the specified {@code PrintStream}.
      * Delegates construction of the usage help message to the {@link Help} inner class and is equivalent to:
@@ -1586,83 +1612,13 @@ public class CommandLine {
     }
 
     private StringBuilder usage(StringBuilder sb, Help help) {
-        for (String key : getSectionKeys()) {
-            IHelpSectionRenderer renderer = helpSectionRendererMap.get(key);
+        for (String key : getHelpSectionKeys()) {
+            IHelpSectionRenderer renderer = getHelpSectionMap().get(key);
             if (renderer != null) { sb.append(renderer.render(help)); }
         }
         return sb;
     }
-    
-    /**
-     * Returns the section keys in the order that the usage help message should render the sections.
-     * This ordering may be modified with {@link #setSectionKeys(List) setSectionKeys}. The default keys are:
-     * <pre>
-     * "headerHeading",
-     * "header",
-     * "synopsisHeading",
-     * "synopsis",
-     * "descriptionHeading",
-     * "description",
-     * "parameterListHeading",
-     * "parameterList",
-     * "optionListHeading",
-     * "optionList",
-     * "commandListHeading",
-     * "commandList",
-     * "footerHeading",
-     * "footer"
-     * </pre>
-     * @since 3.9
-     */
-    public List<String> getSectionKeys() { return sectionKeys; }
-   
-    /**
-     * Sets the section keys in the order that the usage help message should render the sections.
-     * @see #getSectionKeys
-     * @since 3.9
-     */
-    public void setSectionKeys(List<String> keys) { sectionKeys = Collections.unmodifiableList(keys); }
-    
-    /** Returns the help section renderers for the predefined section keys. see: {@link #getSectionKeys()} */
-    private Map<String, IHelpSectionRenderer> createHelpSectionRendererMap() { 
-        Map<String, IHelpSectionRenderer> result = new HashMap<String, IHelpSectionRenderer>();
-        
-        result.put(HEADER_HEADING,       new IHelpSectionRenderer() { public String render(Help help) { return help.headerHeading(); } });
-        result.put(HEADER,               new IHelpSectionRenderer() { public String render(Help help) { return help.header(); } });
-        //e.g. Usage:
-        result.put(SYNOPSIS_HEADING,     new IHelpSectionRenderer() { public String render(Help help) { return help.synopsisHeading(); } });
-        //e.g. &lt;main class&gt; [OPTIONS] &lt;command&gt; [COMMAND-OPTIONS] [ARGUMENTS]
-        result.put(SYNOPSIS,             new IHelpSectionRenderer() { public String render(Help help) { return help.synopsis(help.synopsisHeadingLength()); } });
-        //e.g. %nDescription:%n%n
-        result.put(DESCRIPTION_HEADING,  new IHelpSectionRenderer() { public String render(Help help) { return help.descriptionHeading(); } });
-        //e.g. {"Converts foos to bars.", "Use options to control conversion mode."}
-        result.put(DESCRIPTION,          new IHelpSectionRenderer() { public String render(Help help) { return help.description(); } });
-        //e.g. %nPositional parameters:%n%n
-        result.put(PARAMETER_LIST_HEADING, new IHelpSectionRenderer() { public String render(Help help) { return help.parameterListHeading(); } });
-        //e.g. [FILE...] the files to convert
-        result.put(PARAMETER_LIST,       new IHelpSectionRenderer() { public String render(Help help) { return help.parameterList(); } });
-        //e.g. %nOptions:%n%n
-        result.put(OPTION_LIST_HEADING,  new IHelpSectionRenderer() { public String render(Help help) { return help.optionListHeading(); } });
-        //e.g. -h, --help   displays this help and exits
-        result.put(OPTION_LIST,          new IHelpSectionRenderer() { public String render(Help help) { return help.optionList(); } });
-        //e.g. %nCommands:%n%n
-        result.put(COMMAND_LIST_HEADING, new IHelpSectionRenderer() { public String render(Help help) { return help.commandListHeading(); } });
-        //e.g.    add       adds the frup to the frooble
-        result.put(COMMAND_LIST,         new IHelpSectionRenderer() { public String render(Help help) { return help.commandList(); } });
-        result.put(FOOTER_HEADING,       new IHelpSectionRenderer() { public String render(Help help) { return help.footerHeading(); } });
-        result.put(FOOTER,               new IHelpSectionRenderer() { public String render(Help help) { return help.footer(); } });
-        return result;
-    }
 
-    /**
-     * Returns the map of section keys and renderers used to construct the usage help message.
-     * The usage help message can be customized by adding, replacing and removing section renderers from this map.
-     * Sections can be reordered with {@link #setSectionKeys(List) setSectionKeys}.
-     * Sections that are either not in this map or not in the list returned by {@link #getSectionKeys() getSectionKeys} are omitted.
-     * @since 3.9
-     */
-    public Map<String, IHelpSectionRenderer> getSectionMap() { return helpSectionRendererMap; }
-    
     /**
      * Delegates to {@link #printVersionHelp(PrintStream, Help.Ansi)} with the {@linkplain Help.Ansi#AUTO platform default}.
      * @param out the printStream to print to
@@ -4269,6 +4225,26 @@ public class CommandLine {
             static final String DEFAULT_SINGLE_VALUE = "";
             static final String[] DEFAULT_MULTI_LINE = {};
 
+            private IHelpFactory helpFactory;
+
+            private List<String> sectionKeys = Collections.unmodifiableList(Arrays.asList(
+                    Help.HEADER_HEADING,
+                    Help.HEADER,
+                    Help.SYNOPSIS_HEADING,
+                    Help.SYNOPSIS,
+                    Help.DESCRIPTION_HEADING,
+                    Help.DESCRIPTION,
+                    Help.PARAMETER_LIST_HEADING,
+                    Help.PARAMETER_LIST,
+                    Help.OPTION_LIST_HEADING,
+                    Help.OPTION_LIST,
+                    Help.COMMAND_LIST_HEADING,
+                    Help.COMMAND_LIST,
+                    Help.FOOTER_HEADING,
+                    Help.FOOTER));
+
+            private Map<String, IHelpSectionRenderer> helpSectionRendererMap = createHelpSectionRendererMap();
+
             private String[] description;
             private String[] customSynopsis;
             private String[] header;
@@ -4288,6 +4264,19 @@ public class CommandLine {
             private int width = DEFAULT_USAGE_WIDTH;
 
             private Messages messages;
+
+            /**
+             * Sets the maximum usage help message width to the specified value. Longer values are wrapped.
+             * @param newValue the new maximum usage help message width. Must be 55 or greater.
+             * @return this {@code UsageMessageSpec} for method chaining
+             * @throws IllegalArgumentException if the specified width is less than 55
+             */
+            public UsageMessageSpec width(int newValue) {
+                if (newValue < MINIMUM_USAGE_WIDTH) {
+                    throw new InitializationException("Invalid usage message width " + newValue + ". Minimum value is " + MINIMUM_USAGE_WIDTH);
+                }
+                width = newValue; return this;
+            }
 
             private static int getSysPropertyWidthOrDefault(int defaultWidth) {
                 String userValue = System.getProperty("picocli.usage.width");
@@ -4310,17 +4299,94 @@ public class CommandLine {
              * @return the maximum usage help message width. Never returns less than 55. */
             public int width() { return getSysPropertyWidthOrDefault(width); }
 
+            /** Returns the help section renderers for the predefined section keys. see: {@link #sectionKeys()} */
+            private Map<String, IHelpSectionRenderer> createHelpSectionRendererMap() {
+                Map<String, IHelpSectionRenderer> result = new HashMap<String, IHelpSectionRenderer>();
+
+                result.put(Help.HEADER_HEADING,       new IHelpSectionRenderer() { public String render(Help help) { return help.headerHeading(); } });
+                result.put(Help.HEADER,               new IHelpSectionRenderer() { public String render(Help help) { return help.header(); } });
+                //e.g. Usage:
+                result.put(Help.SYNOPSIS_HEADING,     new IHelpSectionRenderer() { public String render(Help help) { return help.synopsisHeading(); } });
+                //e.g. &lt;main class&gt; [OPTIONS] &lt;command&gt; [COMMAND-OPTIONS] [ARGUMENTS]
+                result.put(Help.SYNOPSIS,             new IHelpSectionRenderer() { public String render(Help help) { return help.synopsis(help.synopsisHeadingLength()); } });
+                //e.g. %nDescription:%n%n
+                result.put(Help.DESCRIPTION_HEADING,  new IHelpSectionRenderer() { public String render(Help help) { return help.descriptionHeading(); } });
+                //e.g. {"Converts foos to bars.", "Use options to control conversion mode."}
+                result.put(Help.DESCRIPTION,          new IHelpSectionRenderer() { public String render(Help help) { return help.description(); } });
+                //e.g. %nPositional parameters:%n%n
+                result.put(Help.PARAMETER_LIST_HEADING, new IHelpSectionRenderer() { public String render(Help help) { return help.parameterListHeading(); } });
+                //e.g. [FILE...] the files to convert
+                result.put(Help.PARAMETER_LIST,       new IHelpSectionRenderer() { public String render(Help help) { return help.parameterList(); } });
+                //e.g. %nOptions:%n%n
+                result.put(Help.OPTION_LIST_HEADING,  new IHelpSectionRenderer() { public String render(Help help) { return help.optionListHeading(); } });
+                //e.g. -h, --help   displays this help and exits
+                result.put(Help.OPTION_LIST,          new IHelpSectionRenderer() { public String render(Help help) { return help.optionList(); } });
+                //e.g. %nCommands:%n%n
+                result.put(Help.COMMAND_LIST_HEADING, new IHelpSectionRenderer() { public String render(Help help) { return help.commandListHeading(); } });
+                //e.g.    add       adds the frup to the frooble
+                result.put(Help.COMMAND_LIST,         new IHelpSectionRenderer() { public String render(Help help) { return help.commandList(); } });
+                result.put(Help.FOOTER_HEADING,       new IHelpSectionRenderer() { public String render(Help help) { return help.footerHeading(); } });
+                result.put(Help.FOOTER,               new IHelpSectionRenderer() { public String render(Help help) { return help.footer(); } });
+                return result;
+            }
+
             /**
-             * Sets the maximum usage help message width to the specified value. Longer values are wrapped.
-             * @param newValue the new maximum usage help message width. Must be 55 or greater.
-             * @return this {@code UsageMessageSpec} for method chaining
-             * @throws IllegalArgumentException if the specified width is less than 55
+             * Returns the section keys in the order that the usage help message should render the sections.
+             * This ordering may be modified with the {@link #sectionKeys(List) sectionKeys setter}. The default keys are:
+             * <pre>
+             * "headerHeading",
+             * "header",
+             * "synopsisHeading",
+             * "synopsis",
+             * "descriptionHeading",
+             * "description",
+             * "parameterListHeading",
+             * "parameterList",
+             * "optionListHeading",
+             * "optionList",
+             * "commandListHeading",
+             * "commandList",
+             * "footerHeading",
+             * "footer"
+             * </pre>
+             * @since 3.9
              */
-            public UsageMessageSpec width(int newValue) {
-                if (newValue < MINIMUM_USAGE_WIDTH) {
-                    throw new InitializationException("Invalid usage message width " + newValue + ". Minimum value is " + MINIMUM_USAGE_WIDTH);
+            public List<String> sectionKeys() { return sectionKeys; }
+
+            /**
+             * Sets the section keys in the order that the usage help message should render the sections.
+             * @see #sectionKeys
+             * @since 3.9
+             */
+            public UsageMessageSpec sectionKeys(List<String> keys) { sectionKeys = Collections.unmodifiableList(new ArrayList<String>(keys)); return this; }
+
+            /**
+             * Returns the map of section keys and renderers used to construct the usage help message.
+             * The usage help message can be customized by adding, replacing and removing section renderers from this map.
+             * Sections can be reordered with the {@link #sectionKeys(List) sectionKeys setter}.
+             * Sections that are either not in this map or not in the list returned by {@link #sectionKeys() sectionKeys} are omitted.
+             * @since 3.9
+             */
+            public Map<String, IHelpSectionRenderer> helpSectionMap() { return helpSectionRendererMap; }
+
+            /** Returns the {@code IHelpFactory} that is used to construct the usage help message.
+             * @see #setHelpFactory(IHelpFactory)
+             * @since 3.9
+             */
+            public IHelpFactory helpFactory() {
+                if (helpFactory == null) {
+                    helpFactory = new DefaultHelpFactory();
                 }
-                width = newValue; return this;
+                return helpFactory;
+            }
+
+            /** Sets a new {@code IHelpFactory} to customize the usage help message.
+             * @param helpFactory the new help factory. Must be non-{@code null}.
+             * @return this {@code UsageMessageSpec} object, to allow method chaining
+             */
+            public UsageMessageSpec helpFactory(IHelpFactory helpFactory) {
+                this.helpFactory = Assert.notNull(helpFactory, "helpFactory");
+                return this;
             }
 
             private String str(String localized, String value, String defaultValue) {
@@ -8144,6 +8210,23 @@ public class CommandLine {
      * unaware of the embedded ANSI escape codes.</p>
      */
     public static class Help {
+
+        /* Predefined section keys. */
+        public static final String HEADER_HEADING = "headerHeading";
+        public static final String HEADER = "header";
+        public static final String SYNOPSIS_HEADING = "synopsisHeading";
+        public static final String SYNOPSIS = "synopsis";
+        public static final String DESCRIPTION_HEADING = "descriptionHeading";
+        public static final String DESCRIPTION = "description";
+        public static final String PARAMETER_LIST_HEADING = "parameterListHeading";
+        public static final String PARAMETER_LIST = "parameterList";
+        public static final String OPTION_LIST_HEADING = "optionListHeading";
+        public static final String OPTION_LIST = "optionList";
+        public static final String COMMAND_LIST_HEADING = "commandListHeading";
+        public static final String COMMAND_LIST = "commandList";
+        public static final String FOOTER_HEADING = "footerHeading";
+        public static final String FOOTER = "footer";
+
         /** Constant String holding the default program name, value defined in {@link CommandSpec#DEFAULT_COMMAND_NAME}. */
         protected static final String DEFAULT_COMMAND_NAME = CommandSpec.DEFAULT_COMMAND_NAME;
 
