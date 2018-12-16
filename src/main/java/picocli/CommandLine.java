@@ -8155,6 +8155,7 @@ public class CommandLine {
         private final ColorScheme colorScheme;
         private final Map<String, Help> commands = new LinkedHashMap<String, Help>();
         private List<String> aliases = Collections.emptyList();
+        private IHelpFactory helpFactory;
 
         private IParamLabelRenderer parameterLabelRenderer;
 
@@ -8190,7 +8191,8 @@ public class CommandLine {
             this.aliases.add(0, commandSpec.name());
             this.colorScheme = Assert.notNull(colorScheme, "colorScheme").applySystemProperties();
             parameterLabelRenderer = createDefaultParamLabelRenderer(); // uses help separator
-
+            this.helpFactory = commandSpec.commandLine() != null ? commandSpec.commandLine().getHelpFactory() : new DefaultHelpFactory();
+            
             this.addAllSubcommands(commandSpec.subcommands());
         }
 
@@ -8203,6 +8205,10 @@ public class CommandLine {
         /** Returns the {@code ColorScheme} model that this Help was constructed with.
          * @since 3.0 */
         public ColorScheme colorScheme() { return colorScheme; }
+        
+        /** Returns the {@code ColorScheme} model that this Help was constructed with.
+         * @since 2.9 */
+        private IHelpFactory getHelpFactory() { return helpFactory; }
 
         /** Option and positional parameter value label renderer used for the synopsis line(s) and the option list.
          * By default initialized to the result of {@link #createDefaultParamLabelRenderer()}, which takes a snapshot
@@ -8251,7 +8257,7 @@ public class CommandLine {
          * @return this Help instance (for method chaining) */
         Help addSubcommand(List<String> commandNames, CommandLine commandLine) {
             String all = commandNames.toString();
-            commands.put(all.substring(1, all.length() - 1), new Help(commandLine.commandSpec, colorScheme).withCommandNames(commandNames));
+            commands.put(all.substring(1, all.length() - 1), getHelpFactory().create(commandLine.commandSpec, colorScheme).withCommandNames(commandNames));
             return this;
         }
 
@@ -8262,7 +8268,8 @@ public class CommandLine {
          * @deprecated
          */
         @Deprecated public Help addSubcommand(String commandName, Object command) {
-            commands.put(commandName, new Help(CommandSpec.forAnnotatedObject(command, commandSpec.commandLine().factory)));
+            commands.put(commandName, 
+                    getHelpFactory().create(CommandSpec.forAnnotatedObject(command, commandSpec.commandLine().factory), defaultColorScheme(Ansi.AUTO)));
             return this;
         }
 
