@@ -15,15 +15,14 @@
  */
 package picocli;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.*;
 import org.junit.contrib.java.lang.system.ProvideSystemProperty;
 import org.junit.contrib.java.lang.system.SystemErrRule;
 import org.junit.contrib.java.lang.system.SystemOutRule;
+import picocli.CommandLine.DefaultExceptionHandler;
 import picocli.CommandLine.Mixin;
 import picocli.CommandLine.Model.CommandSpec;
+import picocli.CommandLine.RunLast;
 import picocli.CommandLine.Spec;
 import picocli.CommandLineTest.CompactFields;
 
@@ -37,6 +36,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 
 import static org.junit.Assert.*;
@@ -272,7 +272,7 @@ public class CommandLineCommandMethodTest {
         assertEquals(22, result);
 
         // verify same result with result handler
-        List<Object> results = new CommandLine.RunLast().handleParseResult(parsed, System.out, CommandLine.Help.Ansi.OFF);
+        List<Object> results = new RunLast().handleParseResult(parsed, System.out, CommandLine.Help.Ansi.OFF);
         assertEquals(1, results.size());
         assertEquals(22L, results.get(0));
     }
@@ -313,7 +313,7 @@ public class CommandLineCommandMethodTest {
         assertEquals(30, result);
 
         // verify same result with result handler
-        List<Object> results = new CommandLine.RunLast().handleParseResult(parsed, System.out, CommandLine.Help.Ansi.OFF);
+        List<Object> results = new RunLast().handleParseResult(parsed, System.out, CommandLine.Help.Ansi.OFF);
         assertEquals(1, results.size());
         assertEquals(30L, results.get(0));
     }
@@ -352,7 +352,7 @@ public class CommandLineCommandMethodTest {
         assertEquals(15, result);
 
         // verify same result with result handler
-        List<Object> results = new CommandLine.RunLast().handleParseResult(parsed, System.out, CommandLine.Help.Ansi.OFF);
+        List<Object> results = new RunLast().handleParseResult(parsed, System.out, CommandLine.Help.Ansi.OFF);
         assertEquals(1, results.size());
         assertEquals(15L, results.get(0));
     }
@@ -387,7 +387,7 @@ public class CommandLineCommandMethodTest {
         assertEquals(3, result);
 
         // verify same result with result handler
-        List<Object> results = new CommandLine.RunLast().handleParseResult(parsed, System.out, CommandLine.Help.Ansi.OFF);
+        List<Object> results = new RunLast().handleParseResult(parsed, System.out, CommandLine.Help.Ansi.OFF);
         assertEquals(1, results.size());
         assertEquals(3L, results.get(0));
     }
@@ -830,5 +830,54 @@ public class CommandLineCommandMethodTest {
         CommandLine.run(new MainCommand(), "explicit", "-v");
         assertEquals(expected, this.systemErrRule.getLog());
         assertEquals("", this.systemOutRule.getLog());
+    }
+
+    // test (1/2) for https://github.com/remkop/picocli/issues/570
+    @Test
+    public void testOptionalListParameterInCommandClass() {
+        @Command() class TestCommand implements Callable<String> {
+            @Parameters(arity="0..*") private List<String> values;
+            public String call() throws Exception { return values == null ? "null" : values.toString(); }
+        }
+
+        // seems to be working for @Command-class @Parameters
+        CommandLine commandLine = new CommandLine(new TestCommand());
+        List<Object> firstExecutionResultWithParametersGiven = commandLine.parseWithHandlers(
+                new RunLast(),
+                new DefaultExceptionHandler<List<Object>>(),
+                new String[] {"arg0", "arg1"});
+        List<Object> secondExecutionResultWithoutParameters = commandLine.parseWithHandlers(
+                new RunLast(),
+                new DefaultExceptionHandler<List<Object>>(),
+                new String[] {});
+        assertEquals("[arg0, arg1]", firstExecutionResultWithParametersGiven.get(0));
+        assertEquals("null", secondExecutionResultWithoutParameters.get(0));
+    }
+
+    // test (2/2) for https://github.com/remkop/picocli/issues/570
+    @Ignore("Until #570 is fixed")
+    @Test
+    public void testOptionalListParameterShouldNotRememberValuesInCommandMethods() {
+        @Command() class TestCommand {
+            @Command(name="method")
+            public String methodCommand(@Parameters(arity="0..*") List<String> methodValues) {
+                return methodValues == null ? "null" : methodValues.toString();
+            }
+        }
+        CommandLine commandLine = new CommandLine(new TestCommand());
+
+        // problematic for @Command-method @Parameters
+        List<Object> methodFirstExecutionResultWithParametersGiven = commandLine.parseWithHandlers(
+                new RunLast(),
+                new DefaultExceptionHandler<List<Object>>(),
+                new String[] {"method","arg0", "arg1"});
+        List<Object> methodSecondExecutionResultWithoutParameters = commandLine.parseWithHandlers(
+                new RunLast(),
+                new DefaultExceptionHandler<List<Object>>(),
+                new String[] {"method"});
+
+        assertEquals("[arg0, arg1]", methodFirstExecutionResultWithParametersGiven.get(0));
+        // fails, still "[arg0, arg1]"
+        assertEquals("null", methodSecondExecutionResultWithoutParameters.get(0));
     }
 }
