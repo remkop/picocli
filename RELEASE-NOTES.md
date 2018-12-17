@@ -63,7 +63,7 @@ Applications can add, remove or replace sections in this map. The `CommandLine::
 This ordering may be modified with the `CommandLine::setHelpSectionKeys` setter method (or `UsageMessageSpec::sectionKeys(List)` for a single `CommandSpec`).
 
 ## <a name="3.9.0-fixes"></a> Fixed issues
-- [#567] Usage message customization initial implementation. Thanks to [SysLord](https://github.com/SysLord) for the pull request.
+- [#567] Usage message customization initial implementation. Thanks to [Christian Helmer](https://github.com/SysLord) for the pull request.
 - [#530] Usage message customization. Thanks to [stechio](https://github.com/stechio) for raising the request and productive discussions.
 
 ## <a name="3.9.0-deprecated"></a> Deprecations
