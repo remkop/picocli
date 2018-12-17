@@ -8388,7 +8388,6 @@ public class CommandLine {
         private final ColorScheme colorScheme;
         private final Map<String, Help> commands = new LinkedHashMap<String, Help>();
         private List<String> aliases = Collections.emptyList();
-        private IHelpFactory helpFactory;
 
         private IParamLabelRenderer parameterLabelRenderer;
 
@@ -8424,8 +8423,7 @@ public class CommandLine {
             this.aliases.add(0, commandSpec.name());
             this.colorScheme = Assert.notNull(colorScheme, "colorScheme").applySystemProperties();
             parameterLabelRenderer = createDefaultParamLabelRenderer(); // uses help separator
-            this.helpFactory = commandSpec.commandLine() != null ? commandSpec.commandLine().getHelpFactory() : new DefaultHelpFactory();
-            
+
             this.addAllSubcommands(commandSpec.subcommands());
         }
 
@@ -8439,9 +8437,17 @@ public class CommandLine {
          * @since 3.0 */
         public ColorScheme colorScheme() { return colorScheme; }
         
-        /** Returns the {@code ColorScheme} model that this Help was constructed with.
-         * @since 2.9 */
-        private IHelpFactory getHelpFactory() { return helpFactory; }
+        /** Returns the {@code IHelpFactory} that this Help was constructed with.
+         * @since 3.9 */
+        private IHelpFactory getHelpFactory() { return commandSpec.usageMessage().helpFactory(); }
+
+        /** Returns the map of subcommand {@code Help} instances for this command Help.
+         * @since 3.9 */
+        protected Map<String, Help> subcommands() { return Collections.unmodifiableMap(commands); }
+
+        /** Returns the list of aliases for the command in this Help.
+         * @since 3.9 */
+        protected List<String> aliases() { return Collections.unmodifiableList(aliases); }
 
         /** Option and positional parameter value label renderer used for the synopsis line(s) and the option list.
          * By default initialized to the result of {@link #createDefaultParamLabelRenderer()}, which takes a snapshot
@@ -8855,17 +8861,18 @@ public class CommandLine {
         /** Returns a 2-column list with command names and the first line of their header or (if absent) description.
          * @return a usage help section describing the added commands */
         public String commandList() {
-            if (commands.isEmpty()) { return ""; }
-            int commandLength = maxLength(commands.keySet());
+            if (subcommands().isEmpty()) { return ""; }
+            int commandLength = maxLength(subcommands().keySet());
             Help.TextTable textTable = Help.TextTable.forColumns(ansi(),
                     new Help.Column(commandLength + 2, 2, Help.Column.Overflow.SPAN),
                     new Help.Column(width() - (commandLength + 2), 2, Help.Column.Overflow.WRAP));
 
-            for (Map.Entry<String, Help> entry : commands.entrySet()) {
+            for (Map.Entry<String, Help> entry : subcommands().entrySet()) {
                 Help help = entry.getValue();
                 UsageMessageSpec usage = help.commandSpec().usageMessage();
-                String header = usage.header() != null && usage.header().length > 0 ? usage.header()[0]
-                        : (usage.description() != null && usage.description().length > 0 ? usage.description()[0] : "");
+                String header = !empty(usage.header())
+                        ? usage.header()[0]
+                        : (!empty(usage.description()) ? usage.description()[0] : "");
                 Text[] lines = ansi().text(format(header)).splitLines();
                 for (int i = 0; i < lines.length; i++) {
                     textTable.addRowValues(i == 0 ? help.commandNamesText(", ") : Ansi.EMPTY_TEXT, lines[i]);
@@ -8883,9 +8890,9 @@ public class CommandLine {
          * Command names will use the {@link ColorScheme#commandText(String) command style} for the color scheme of this Help.
          * @since 3.9 */
         public Text commandNamesText(String separator) {
-            Text result = colorScheme.commandText(aliases.get(0));
-            for (int i = 1; i < aliases.size(); i++) {
-                result = result.concat(separator).concat(colorScheme.commandText(aliases.get(i)));
+            Text result = colorScheme().commandText(aliases().get(0));
+            for (int i = 1; i < aliases().size(); i++) {
+                result = result.concat(separator).concat(colorScheme().commandText(aliases().get(i)));
             }
             return result;
         }
