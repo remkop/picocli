@@ -8863,13 +8863,12 @@ public class CommandLine {
 
             for (Map.Entry<String, Help> entry : commands.entrySet()) {
                 Help help = entry.getValue();
-                CommandSpec command = help.commandSpec;
-                String header = command.usageMessage().header() != null && command.usageMessage().header().length > 0 ? command.usageMessage().header()[0]
-                        : (command.usageMessage().description() != null && command.usageMessage().description().length > 0 ? command.usageMessage().description()[0] : "");
+                UsageMessageSpec usage = help.commandSpec().usageMessage();
+                String header = usage.header() != null && usage.header().length > 0 ? usage.header()[0]
+                        : (usage.description() != null && usage.description().length > 0 ? usage.description()[0] : "");
                 Text[] lines = ansi().text(format(header)).splitLines();
-                textTable.addRowValues(help.commandNamesText(), lines[0]);
-                for (int i = 1; i < lines.length; i++) {
-                    textTable.addRowValues(Ansi.EMPTY_TEXT, lines[i]);
+                for (int i = 0; i < lines.length; i++) {
+                    textTable.addRowValues(i == 0 ? help.commandNamesText(", ") : Ansi.EMPTY_TEXT, lines[i]);
                 }
             }
             return textTable.toString();
@@ -8879,10 +8878,14 @@ public class CommandLine {
             Collections.sort(strings, Collections.reverseOrder(Help.shortestFirst()));
             return strings.get(0).length();
         }
-        private Text commandNamesText() {
+
+        /** Returns a {@code Text} object containing the command name and all aliases, separated with the specified separator.
+         * Command names will use the {@link ColorScheme#commandText(String) command style} for the color scheme of this Help.
+         * @since 3.9 */
+        public Text commandNamesText(String separator) {
             Text result = colorScheme.commandText(aliases.get(0));
             for (int i = 1; i < aliases.size(); i++) {
-                result = result.concat(", ").concat(colorScheme.commandText(aliases.get(i)));
+                result = result.concat(separator).concat(colorScheme.commandText(aliases.get(i)));
             }
             return result;
         }
