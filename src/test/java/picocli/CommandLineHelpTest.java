@@ -2785,51 +2785,6 @@ public class CommandLineHelpTest {
     }
 
     @Test
-    public void testHelpFactoryIsUsedWhenSet() {
-        @Command() class TestCommand { }
-        
-        IHelpFactory helpFactoryWithOverridenHelpMethod = new IHelpFactory() {
-            public Help create(CommandSpec commandSpec, ColorScheme colorScheme) {
-                return new Help(commandSpec, colorScheme) {
-                    @Override
-                    public String detailedSynopsis(int synopsisHeadingLength, Comparator<OptionSpec> optionSort, boolean clusterBooleanOptions) {
-                        return "<custom detailed synopsis>";
-                    }
-                };
-            }
-        };
-        CommandLine commandLineWithCustomHelpFactory = new CommandLine(new TestCommand()).setHelpFactory(helpFactoryWithOverridenHelpMethod);
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        commandLineWithCustomHelpFactory.usage(new PrintStream(baos, true));
-        
-        assertEquals("Usage: <custom detailed synopsis>", baos.toString());
-    }
-    
-    @Test
-    public void testCustomizableHelpSections() {
-        @Command(header="<header> (%s)", description="<description>") class TestCommand { }
-        CommandLine commandLineWithCustomHelpSections = new CommandLine(new TestCommand());
-        
-        IHelpSectionRenderer renderer = new IHelpSectionRenderer() { public String render(Help help) {
-            return help.header("<custom header param>"); 
-        } };
-        commandLineWithCustomHelpSections.getHelpSectionMap().put("customSectionExtendsHeader", renderer);
-        
-        commandLineWithCustomHelpSections.setHelpSectionKeys(Arrays.asList(
-                CommandLine.Help.DESCRIPTION,
-                CommandLine.Help.SYNOPSIS_HEADING,
-                "customSectionExtendsHeader"));
-        
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        commandLineWithCustomHelpSections.usage(new PrintStream(baos, true));
-        
-        String expected = String.format("" +
-                "<description>%n" +
-                "Usage: <header> (<custom header param>)%n");
-        assertEquals(expected, baos.toString());
-    }
-    
-    @Test
     public void testAnsiEnabled() {
         assertTrue(Help.Ansi.ON.enabled());
         assertFalse(Help.Ansi.OFF.enabled());
@@ -2843,7 +2798,7 @@ public class CommandLineHelpTest {
         System.clearProperty("picocli.ansi");
         boolean isWindows = System.getProperty("os.name").startsWith("Windows");
         boolean isXterm   = System.getenv("TERM") != null && System.getenv("TERM").startsWith("xterm");
-        boolean hasOsType  = System.getenv("OSTYPE") != null; // null on Windows unless on Cygwin or MSYS
+        boolean hasOsType = System.getenv("OSTYPE") != null; // null on Windows unless on Cygwin or MSYS
         boolean isAtty    = (isWindows && (isXterm || hasOsType)) // cygwin pseudo-tty
                           || hasConsole();
         assertEquals((isAtty && (!isWindows || isXterm || hasOsType)) || isJansiConsoleInstalled(), Help.Ansi.AUTO.enabled());
@@ -3896,5 +3851,48 @@ public class CommandLineHelpTest {
         CommandSpec cmd = CommandSpec.create().name(name).mixinStandardHelpOptions(true);
         cmd.usageMessage().description(description);
         return cmd;
+    }
+
+    @Test
+    public void testHelpFactoryIsUsedWhenSet() {
+        @Command() class TestCommand { }
+
+        IHelpFactory helpFactoryWithOverridenHelpMethod = new IHelpFactory() {
+            public Help create(CommandSpec commandSpec, ColorScheme colorScheme) {
+                return new Help(commandSpec, colorScheme) {
+                    @Override
+                    public String detailedSynopsis(int synopsisHeadingLength, Comparator<OptionSpec> optionSort, boolean clusterBooleanOptions) {
+                        return "<custom detailed synopsis>";
+                    }
+                };
+            }
+        };
+        CommandLine commandLineWithCustomHelpFactory = new CommandLine(new TestCommand()).setHelpFactory(helpFactoryWithOverridenHelpMethod);
+        assertEquals("Usage: <custom detailed synopsis>", commandLineWithCustomHelpFactory.getUsageMessage(Help.Ansi.OFF));
+
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        commandLineWithCustomHelpFactory.usage(new PrintStream(baos, true));
+        assertEquals("Usage: <custom detailed synopsis>", baos.toString());
+    }
+
+    @Test
+    public void testCustomizableHelpSections() {
+        @Command(header="<header> (%s)", description="<description>") class TestCommand { }
+        CommandLine commandLineWithCustomHelpSections = new CommandLine(new TestCommand());
+
+        IHelpSectionRenderer renderer = new IHelpSectionRenderer() { public String render(Help help) {
+            return help.header("<custom header param>");
+        } };
+        commandLineWithCustomHelpSections.getHelpSectionMap().put("customSectionExtendsHeader", renderer);
+
+        commandLineWithCustomHelpSections.setHelpSectionKeys(Arrays.asList(
+                UsageMessageSpec.SECTION_KEY_DESCRIPTION,
+                UsageMessageSpec.SECTION_KEY_SYNOPSIS_HEADING,
+                "customSectionExtendsHeader"));
+
+        String expected = String.format("" +
+                "<description>%n" +
+                "Usage: <header> (<custom header param>)%n");
+        assertEquals(expected, commandLineWithCustomHelpSections.getUsageMessage(Help.Ansi.OFF));
     }
 }

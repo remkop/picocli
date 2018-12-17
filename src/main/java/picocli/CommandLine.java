@@ -350,23 +350,23 @@ public class CommandLine {
 
     /**
      * Returns the section keys in the order that the usage help message should render the sections.
-     * This ordering may be modified with {@link #setHelpSectionKeys(List) setSectionKeys}. The default keys are:
-     * <pre>
-     * "headerHeading",
-     * "header",
-     * "synopsisHeading",
-     * "synopsis",
-     * "descriptionHeading",
-     * "description",
-     * "parameterListHeading",
-     * "parameterList",
-     * "optionListHeading",
-     * "optionList",
-     * "commandListHeading",
-     * "commandList",
-     * "footerHeading",
-     * "footer"
-     * </pre>
+     * This ordering may be modified with {@link #setHelpSectionKeys(List) setSectionKeys}. The default keys are (in order):
+     * <ol>
+     *   <li>{@link UsageMessageSpec#SECTION_KEY_HEADER_HEADING SECTION_KEY_HEADER_HEADING}</li>
+     *   <li>{@link UsageMessageSpec#SECTION_KEY_HEADER SECTION_KEY_HEADER}</li>
+     *   <li>{@link UsageMessageSpec#SECTION_KEY_SYNOPSIS_HEADING SECTION_KEY_SYNOPSIS_HEADING}</li>
+     *   <li>{@link UsageMessageSpec#SECTION_KEY_SYNOPSIS SECTION_KEY_SYNOPSIS}</li>
+     *   <li>{@link UsageMessageSpec#SECTION_KEY_DESCRIPTION_HEADING SECTION_KEY_DESCRIPTION_HEADING}</li>
+     *   <li>{@link UsageMessageSpec#SECTION_KEY_DESCRIPTION SECTION_KEY_DESCRIPTION}</li>
+     *   <li>{@link UsageMessageSpec#SECTION_KEY_PARAMETER_LIST_HEADING SECTION_KEY_PARAMETER_LIST_HEADING}</li>
+     *   <li>{@link UsageMessageSpec#SECTION_KEY_PARAMETER_LIST SECTION_KEY_PARAMETER_LIST}</li>
+     *   <li>{@link UsageMessageSpec#SECTION_KEY_OPTION_LIST_HEADING SECTION_KEY_OPTION_LIST_HEADING}</li>
+     *   <li>{@link UsageMessageSpec#SECTION_KEY_OPTION_LIST SECTION_KEY_OPTION_LIST}</li>
+     *   <li>{@link UsageMessageSpec#SECTION_KEY_COMMAND_LIST_HEADING SECTION_KEY_COMMAND_LIST_HEADING}</li>
+     *   <li>{@link UsageMessageSpec#SECTION_KEY_COMMAND_LIST SECTION_KEY_COMMAND_LIST}</li>
+     *   <li>{@link UsageMessageSpec#SECTION_KEY_FOOTER_HEADING SECTION_KEY_FOOTER_HEADING}</li>
+     *   <li>{@link UsageMessageSpec#SECTION_KEY_FOOTER SECTION_KEY_FOOTER}</li>
+     * </ol>
      * @since 3.9
      */
     public List<String> getHelpSectionKeys() { return getCommandSpec().usageMessage().sectionKeys(); }
@@ -377,6 +377,7 @@ public class CommandLine {
      * subcommands and nested sub-subcommands <em>at the moment this method is called</em>. Subcommands added
      * later will have the default setting. To ensure a setting is applied to all
      * subcommands, call the setter last, after adding subcommands.</p>
+     * <p>Use {@link UsageMessageSpec#sectionKeys(List)} to customize a command without affecting its subcommands.</p>
      * @see #getHelpSectionKeys
      * @since 3.9
      */
@@ -393,9 +394,31 @@ public class CommandLine {
      * The usage help message can be customized by adding, replacing and removing section renderers from this map.
      * Sections can be reordered with {@link #setHelpSectionKeys(List) setSectionKeys}.
      * Sections that are either not in this map or not in the list returned by {@link #getHelpSectionKeys() getSectionKeys} are omitted.
+     * <p>
+     * NOTE: By modifying the returned {@code Map}, only the usage help message <em>of this command</em> is affected.
+     * Use {@link #setHelpSectionMap(Map)} to customize the usage help message for this command <em>and all subcommands</em>.
+     * </p>
      * @since 3.9
      */
-    public Map<String, IHelpSectionRenderer> getHelpSectionMap() { return getCommandSpec().usageMessage().helpSectionMap(); }
+    public Map<String, IHelpSectionRenderer> getHelpSectionMap() { return getCommandSpec().usageMessage().sectionMap(); }
+
+    /**
+     * Sets the map of section keys and renderers used to construct the usage help message.
+     * <p>The specified setting will be registered with this {@code CommandLine} and the full hierarchy of its
+     * subcommands and nested sub-subcommands <em>at the moment this method is called</em>. Subcommands added
+     * later will have the default setting. To ensure a setting is applied to all
+     * subcommands, call the setter last, after adding subcommands.</p>
+     * <p>Use {@link UsageMessageSpec#sectionMap(Map)} to customize a command without affecting its subcommands.</p>
+     * @see #getHelpSectionMap
+     * @since 3.9
+     */
+    public CommandLine setHelpSectionMap(Map<String, IHelpSectionRenderer> map) {
+        getCommandSpec().usageMessage().sectionMap(map);
+        for (CommandLine command : getCommandSpec().subcommands().values()) {
+            command.setHelpSectionMap(map);
+        }
+        return this;
+    }
 
     /** Returns whether the value of boolean flag options should be "toggled" when the option is matched.
      * By default, flags are toggled, so if the value is {@code true} it is set to {@code false}, and when the value is
@@ -3294,16 +3317,23 @@ public class CommandLine {
         public String defaultValue(ArgSpec argSpec) { throw new UnsupportedOperationException(); }
     }
 
+    /**
+     * Creates the {@link Help} instance used to render the usage help message.
+     * @since 3.9
+     */
     public interface IHelpFactory {
+        /** Returns a {@code Help} instance to assist in rendering the usage help message
+         * @param commandSpec the command to create usage help for
+         * @param colorScheme the color scheme to use when rendering usage help
+         * @return a {@code Help} instance
+         */
         Help create(CommandSpec commandSpec, Help.ColorScheme colorScheme);
     }
     
-    public static class DefaultHelpFactory implements IHelpFactory {
-
+    private static class DefaultHelpFactory implements IHelpFactory {
         public Help create(CommandSpec commandSpec, Help.ColorScheme colorScheme) {
             return new Help(commandSpec, colorScheme);
         }
-        
     }
     
     /**
@@ -4194,9 +4224,96 @@ public class CommandLine {
         private static boolean isNonDefault(Object[] candidate, Object[] defaultValue) {
             return !Arrays.equals(Assert.notNull(defaultValue, "defaultValue"), candidate);
         }
-        /** Models the usage help message specification.
+        /** Models the usage help message specification and can be used to customize the usage help message.
+         * <p>
+         * This class provides two ways to customize the usage help message:
+         * </p>
+         * <ul>
+         *     <li>Change the text of the pre-defined sections (this may also be done declaratively using the annotations)</li>
+         *     <li>Remove or re-order pre-defined sections, or add custom sections</li>
+         * </ul>
+         * <p>
+         * The pre-defined sections have getters and setters that return a String (or array of Strings). For example:
+         * {@link #description()} and {@link #description(String...)} or {@link #header()} and {@link #header(String...)}.
+         * </p><p>
+         * Changing the section order, or adding custom sections can be accomplished with {@link #sectionKeys(List)} and {@link #sectionMap(Map)}.
+         * This gives complete freedom on how a usage help message section is rendered, but it also means that the {@linkplain IHelpSectionRenderer section renderer}
+         * is responsible for all aspects of rendering the section, including layout and emitting ANSI escape codes.
+         * The {@link Help.TextTable} and {@link Help.Ansi.Text} classes, and the {@link CommandLine.Help.Ansi#string(String)} and {@link CommandLine.Help.Ansi#text(String)} methods may be useful.
+         * </p>
          * @since 3.0 */
         public static class UsageMessageSpec {
+
+            /** {@linkplain #sectionKeys() Section key} to {@linkplain #sectionMap() control} the {@linkplain IHelpSectionRenderer section renderer} for the Header Heading section.
+             * The default renderer for this section calls {@link Help#headerHeading(Object...)}.
+             * @since 3.9 */
+            public static final String SECTION_KEY_HEADER_HEADING = "headerHeading";
+
+            /** {@linkplain #sectionKeys() Section key} to {@linkplain #sectionMap() control} the {@linkplain IHelpSectionRenderer section renderer} for the Header section.
+             * The default renderer for this section calls {@link Help#header(Object...)}.
+             * @since 3.9 */
+            public static final String SECTION_KEY_HEADER = "header";
+
+            /** {@linkplain #sectionKeys() Section key} to {@linkplain #sectionMap() control} the {@linkplain IHelpSectionRenderer section renderer} for the Synopsis Heading section.
+             * The default renderer for this section calls {@link Help#synopsisHeading(Object...)}.
+             * @since 3.9 */
+            public static final String SECTION_KEY_SYNOPSIS_HEADING = "synopsisHeading";
+
+            /** {@linkplain #sectionKeys() Section key} to {@linkplain #sectionMap() control} the {@linkplain IHelpSectionRenderer section renderer} for the Synopsis section.
+             * The default renderer for this section calls {@link Help#synopsis(int)}.
+             * @since 3.9 */
+            public static final String SECTION_KEY_SYNOPSIS = "synopsis";
+
+            /** {@linkplain #sectionKeys() Section key} to {@linkplain #sectionMap() control} the {@linkplain IHelpSectionRenderer section renderer} for the Description Heading section.
+             * The default renderer for this section calls {@link Help#descriptionHeading(Object...)}.
+             * @since 3.9 */
+            public static final String SECTION_KEY_DESCRIPTION_HEADING = "descriptionHeading";
+
+            /** {@linkplain #sectionKeys() Section key} to {@linkplain #sectionMap() control} the {@linkplain IHelpSectionRenderer section renderer} for the Description section.
+             * The default renderer for this section calls {@link Help#description(Object...)}.
+             * @since 3.9 */
+            public static final String SECTION_KEY_DESCRIPTION = "description";
+
+            /** {@linkplain #sectionKeys() Section key} to {@linkplain #sectionMap() control} the {@linkplain IHelpSectionRenderer section renderer} for the Parameter List Heading section.
+             * The default renderer for this section calls {@link Help#parameterListHeading(Object...)}.
+             * @since 3.9 */
+            public static final String SECTION_KEY_PARAMETER_LIST_HEADING = "parameterListHeading";
+
+            /** {@linkplain #sectionKeys() Section key} to {@linkplain #sectionMap() control} the {@linkplain IHelpSectionRenderer section renderer} for the Parameter List section.
+             * The default renderer for this section calls {@link Help#parameterList()}.
+             * @since 3.9 */
+            public static final String SECTION_KEY_PARAMETER_LIST = "parameterList";
+
+            /** {@linkplain #sectionKeys() Section key} to {@linkplain #sectionMap() control} the {@linkplain IHelpSectionRenderer section renderer} for the Option List Heading section.
+             * The default renderer for this section calls {@link Help#optionListHeading(Object...)}.
+             * @since 3.9 */
+            public static final String SECTION_KEY_OPTION_LIST_HEADING = "optionListHeading";
+
+            /** {@linkplain #sectionKeys() Section key} to {@linkplain #sectionMap() control} the {@linkplain IHelpSectionRenderer section renderer} for the Option List section.
+             * The default renderer for this section calls {@link Help#optionList()}.
+             * @since 3.9 */
+            public static final String SECTION_KEY_OPTION_LIST = "optionList";
+
+            /** {@linkplain #sectionKeys() Section key} to {@linkplain #sectionMap() control} the {@linkplain IHelpSectionRenderer section renderer} for the Subcommand List Heading section.
+             * The default renderer for this section calls {@link Help#commandListHeading(Object...)}.
+             * @since 3.9 */
+            public static final String SECTION_KEY_COMMAND_LIST_HEADING = "commandListHeading";
+
+            /** {@linkplain #sectionKeys() Section key} to {@linkplain #sectionMap() control} the {@linkplain IHelpSectionRenderer section renderer} for the Subcommand List section.
+             * The default renderer for this section calls {@link Help#commandList()}.
+             * @since 3.9 */
+            public static final String SECTION_KEY_COMMAND_LIST = "commandList";
+
+            /** {@linkplain #sectionKeys() Section key} to {@linkplain #sectionMap() control} the {@linkplain IHelpSectionRenderer section renderer} for the Footer Heading section.
+             * The default renderer for this section calls {@link Help#footerHeading(Object...)}.
+             * @since 3.9 */
+            public static final String SECTION_KEY_FOOTER_HEADING = "footerHeading";
+
+            /** {@linkplain #sectionKeys() Section key} to {@linkplain #sectionMap() control} the {@linkplain IHelpSectionRenderer section renderer} for the Footer section.
+             * The default renderer for this section calls {@link Help#footer(Object...)}.
+             * @since 3.9 */
+            public static final String SECTION_KEY_FOOTER = "footer";
+
             /** Constant holding the default usage message width: <code>{@value}</code>. */
             public  final static int DEFAULT_USAGE_WIDTH = 80;
             private final static int MINIMUM_USAGE_WIDTH = 55;
@@ -4228,20 +4345,20 @@ public class CommandLine {
             private IHelpFactory helpFactory;
 
             private List<String> sectionKeys = Collections.unmodifiableList(Arrays.asList(
-                    Help.HEADER_HEADING,
-                    Help.HEADER,
-                    Help.SYNOPSIS_HEADING,
-                    Help.SYNOPSIS,
-                    Help.DESCRIPTION_HEADING,
-                    Help.DESCRIPTION,
-                    Help.PARAMETER_LIST_HEADING,
-                    Help.PARAMETER_LIST,
-                    Help.OPTION_LIST_HEADING,
-                    Help.OPTION_LIST,
-                    Help.COMMAND_LIST_HEADING,
-                    Help.COMMAND_LIST,
-                    Help.FOOTER_HEADING,
-                    Help.FOOTER));
+                    SECTION_KEY_HEADER_HEADING,
+                    SECTION_KEY_HEADER,
+                    SECTION_KEY_SYNOPSIS_HEADING,
+                    SECTION_KEY_SYNOPSIS,
+                    SECTION_KEY_DESCRIPTION_HEADING,
+                    SECTION_KEY_DESCRIPTION,
+                    SECTION_KEY_PARAMETER_LIST_HEADING,
+                    SECTION_KEY_PARAMETER_LIST,
+                    SECTION_KEY_OPTION_LIST_HEADING,
+                    SECTION_KEY_OPTION_LIST,
+                    SECTION_KEY_COMMAND_LIST_HEADING,
+                    SECTION_KEY_COMMAND_LIST,
+                    SECTION_KEY_FOOTER_HEADING,
+                    SECTION_KEY_FOOTER));
 
             private Map<String, IHelpSectionRenderer> helpSectionRendererMap = createHelpSectionRendererMap();
 
@@ -4303,52 +4420,52 @@ public class CommandLine {
             private Map<String, IHelpSectionRenderer> createHelpSectionRendererMap() {
                 Map<String, IHelpSectionRenderer> result = new HashMap<String, IHelpSectionRenderer>();
 
-                result.put(Help.HEADER_HEADING,       new IHelpSectionRenderer() { public String render(Help help) { return help.headerHeading(); } });
-                result.put(Help.HEADER,               new IHelpSectionRenderer() { public String render(Help help) { return help.header(); } });
+                result.put(SECTION_KEY_HEADER_HEADING,         new IHelpSectionRenderer() { public String render(Help help) { return help.headerHeading(); } });
+                result.put(SECTION_KEY_HEADER,                 new IHelpSectionRenderer() { public String render(Help help) { return help.header(); } });
                 //e.g. Usage:
-                result.put(Help.SYNOPSIS_HEADING,     new IHelpSectionRenderer() { public String render(Help help) { return help.synopsisHeading(); } });
+                result.put(SECTION_KEY_SYNOPSIS_HEADING,       new IHelpSectionRenderer() { public String render(Help help) { return help.synopsisHeading(); } });
                 //e.g. &lt;main class&gt; [OPTIONS] &lt;command&gt; [COMMAND-OPTIONS] [ARGUMENTS]
-                result.put(Help.SYNOPSIS,             new IHelpSectionRenderer() { public String render(Help help) { return help.synopsis(help.synopsisHeadingLength()); } });
+                result.put(SECTION_KEY_SYNOPSIS,               new IHelpSectionRenderer() { public String render(Help help) { return help.synopsis(help.synopsisHeadingLength()); } });
                 //e.g. %nDescription:%n%n
-                result.put(Help.DESCRIPTION_HEADING,  new IHelpSectionRenderer() { public String render(Help help) { return help.descriptionHeading(); } });
+                result.put(SECTION_KEY_DESCRIPTION_HEADING,    new IHelpSectionRenderer() { public String render(Help help) { return help.descriptionHeading(); } });
                 //e.g. {"Converts foos to bars.", "Use options to control conversion mode."}
-                result.put(Help.DESCRIPTION,          new IHelpSectionRenderer() { public String render(Help help) { return help.description(); } });
+                result.put(SECTION_KEY_DESCRIPTION,            new IHelpSectionRenderer() { public String render(Help help) { return help.description(); } });
                 //e.g. %nPositional parameters:%n%n
-                result.put(Help.PARAMETER_LIST_HEADING, new IHelpSectionRenderer() { public String render(Help help) { return help.parameterListHeading(); } });
+                result.put(SECTION_KEY_PARAMETER_LIST_HEADING, new IHelpSectionRenderer() { public String render(Help help) { return help.parameterListHeading(); } });
                 //e.g. [FILE...] the files to convert
-                result.put(Help.PARAMETER_LIST,       new IHelpSectionRenderer() { public String render(Help help) { return help.parameterList(); } });
+                result.put(SECTION_KEY_PARAMETER_LIST,         new IHelpSectionRenderer() { public String render(Help help) { return help.parameterList(); } });
                 //e.g. %nOptions:%n%n
-                result.put(Help.OPTION_LIST_HEADING,  new IHelpSectionRenderer() { public String render(Help help) { return help.optionListHeading(); } });
+                result.put(SECTION_KEY_OPTION_LIST_HEADING,    new IHelpSectionRenderer() { public String render(Help help) { return help.optionListHeading(); } });
                 //e.g. -h, --help   displays this help and exits
-                result.put(Help.OPTION_LIST,          new IHelpSectionRenderer() { public String render(Help help) { return help.optionList(); } });
+                result.put(SECTION_KEY_OPTION_LIST,            new IHelpSectionRenderer() { public String render(Help help) { return help.optionList(); } });
                 //e.g. %nCommands:%n%n
-                result.put(Help.COMMAND_LIST_HEADING, new IHelpSectionRenderer() { public String render(Help help) { return help.commandListHeading(); } });
+                result.put(SECTION_KEY_COMMAND_LIST_HEADING,   new IHelpSectionRenderer() { public String render(Help help) { return help.commandListHeading(); } });
                 //e.g.    add       adds the frup to the frooble
-                result.put(Help.COMMAND_LIST,         new IHelpSectionRenderer() { public String render(Help help) { return help.commandList(); } });
-                result.put(Help.FOOTER_HEADING,       new IHelpSectionRenderer() { public String render(Help help) { return help.footerHeading(); } });
-                result.put(Help.FOOTER,               new IHelpSectionRenderer() { public String render(Help help) { return help.footer(); } });
+                result.put(SECTION_KEY_COMMAND_LIST,           new IHelpSectionRenderer() { public String render(Help help) { return help.commandList(); } });
+                result.put(SECTION_KEY_FOOTER_HEADING,         new IHelpSectionRenderer() { public String render(Help help) { return help.footerHeading(); } });
+                result.put(SECTION_KEY_FOOTER,                 new IHelpSectionRenderer() { public String render(Help help) { return help.footer(); } });
                 return result;
             }
 
             /**
              * Returns the section keys in the order that the usage help message should render the sections.
-             * This ordering may be modified with the {@link #sectionKeys(List) sectionKeys setter}. The default keys are:
-             * <pre>
-             * "headerHeading",
-             * "header",
-             * "synopsisHeading",
-             * "synopsis",
-             * "descriptionHeading",
-             * "description",
-             * "parameterListHeading",
-             * "parameterList",
-             * "optionListHeading",
-             * "optionList",
-             * "commandListHeading",
-             * "commandList",
-             * "footerHeading",
-             * "footer"
-             * </pre>
+             * This ordering may be modified with the {@link #sectionKeys(List) sectionKeys setter}. The default keys are (in order):
+             * <ol>
+             *   <li>{@link UsageMessageSpec#SECTION_KEY_HEADER_HEADING SECTION_KEY_HEADER_HEADING}</li>
+             *   <li>{@link UsageMessageSpec#SECTION_KEY_HEADER SECTION_KEY_HEADER}</li>
+             *   <li>{@link UsageMessageSpec#SECTION_KEY_SYNOPSIS_HEADING SECTION_KEY_SYNOPSIS_HEADING}</li>
+             *   <li>{@link UsageMessageSpec#SECTION_KEY_SYNOPSIS SECTION_KEY_SYNOPSIS}</li>
+             *   <li>{@link UsageMessageSpec#SECTION_KEY_DESCRIPTION_HEADING SECTION_KEY_DESCRIPTION_HEADING}</li>
+             *   <li>{@link UsageMessageSpec#SECTION_KEY_DESCRIPTION SECTION_KEY_DESCRIPTION}</li>
+             *   <li>{@link UsageMessageSpec#SECTION_KEY_PARAMETER_LIST_HEADING SECTION_KEY_PARAMETER_LIST_HEADING}</li>
+             *   <li>{@link UsageMessageSpec#SECTION_KEY_PARAMETER_LIST SECTION_KEY_PARAMETER_LIST}</li>
+             *   <li>{@link UsageMessageSpec#SECTION_KEY_OPTION_LIST_HEADING SECTION_KEY_OPTION_LIST_HEADING}</li>
+             *   <li>{@link UsageMessageSpec#SECTION_KEY_OPTION_LIST SECTION_KEY_OPTION_LIST}</li>
+             *   <li>{@link UsageMessageSpec#SECTION_KEY_COMMAND_LIST_HEADING SECTION_KEY_COMMAND_LIST_HEADING}</li>
+             *   <li>{@link UsageMessageSpec#SECTION_KEY_COMMAND_LIST SECTION_KEY_COMMAND_LIST}</li>
+             *   <li>{@link UsageMessageSpec#SECTION_KEY_FOOTER_HEADING SECTION_KEY_FOOTER_HEADING}</li>
+             *   <li>{@link UsageMessageSpec#SECTION_KEY_FOOTER SECTION_KEY_FOOTER}</li>
+             * </ol>
              * @since 3.9
              */
             public List<String> sectionKeys() { return sectionKeys; }
@@ -4365,9 +4482,20 @@ public class CommandLine {
              * The usage help message can be customized by adding, replacing and removing section renderers from this map.
              * Sections can be reordered with the {@link #sectionKeys(List) sectionKeys setter}.
              * Sections that are either not in this map or not in the list returned by {@link #sectionKeys() sectionKeys} are omitted.
+             * @see #sectionKeys
              * @since 3.9
              */
-            public Map<String, IHelpSectionRenderer> helpSectionMap() { return helpSectionRendererMap; }
+            public Map<String, IHelpSectionRenderer> sectionMap() { return helpSectionRendererMap; }
+
+            /**
+             * Sets the map of section keys and renderers used to construct the usage help message to a copy of the specified map.
+             * @param map the mapping of section keys to their renderers, must be non-{@code null}.
+             * @return this UsageMessageSpec for method chaining
+             * @see #sectionKeys
+             * @see #setHelpSectionMap(Map)
+             * @since 3.9
+             */
+            public UsageMessageSpec sectionMap(Map<String, IHelpSectionRenderer> map) { this.helpSectionRendererMap = new HashMap<String, IHelpSectionRenderer>(map); return this; }
 
             /** Returns the {@code IHelpFactory} that is used to construct the usage help message.
              * @see #setHelpFactory(IHelpFactory)
@@ -8159,16 +8287,27 @@ public class CommandLine {
         void init(CommandLine helpCommandLine, Help.Ansi ansi, PrintStream out, PrintStream err);
     }
 
-    
+    /**
+     * Renders a section of the usage help message. The usage help message can be customized:
+     * use the {@link #setHelpSectionKeys(List)} and {@link #setHelpSectionMap(Map)} to change the order of sections,
+     * delete standard sections, add custom sections or replace the renderer of a standard sections with a custom one.
+     * <p>
+     * This gives complete freedom on how a usage help message section is rendered, but it also means that the section renderer
+     * is responsible for all aspects of rendering the section, including layout and emitting ANSI escape codes.
+     * The {@link Help.TextTable} and {@link Help.Ansi.Text} classes, and the {@link CommandLine.Help.Ansi#string(String)} and {@link CommandLine.Help.Ansi#text(String)} methods may be useful.
+     * </p>
+     * @see UsageMessageSpec
+     * @since 3.9
+     */
     public interface IHelpSectionRenderer {
-        
         /**
          * Renders a section of the usage help, like header heading, header, synopsis heading,
          * synopsis, description heading, description, etc.
+         * @param help the {@code Help} instance for which to render a section
+         * @return the text for this section; may contain {@linkplain Help.Ansi ANSI} escape codes
          * @since 3.9
          */
         String render(Help help);
-        
     }
     
     /**
@@ -8210,22 +8349,6 @@ public class CommandLine {
      * unaware of the embedded ANSI escape codes.</p>
      */
     public static class Help {
-
-        /* Predefined section keys. */
-        public static final String HEADER_HEADING = "headerHeading";
-        public static final String HEADER = "header";
-        public static final String SYNOPSIS_HEADING = "synopsisHeading";
-        public static final String SYNOPSIS = "synopsis";
-        public static final String DESCRIPTION_HEADING = "descriptionHeading";
-        public static final String DESCRIPTION = "description";
-        public static final String PARAMETER_LIST_HEADING = "parameterListHeading";
-        public static final String PARAMETER_LIST = "parameterList";
-        public static final String OPTION_LIST_HEADING = "optionListHeading";
-        public static final String OPTION_LIST = "optionList";
-        public static final String COMMAND_LIST_HEADING = "commandListHeading";
-        public static final String COMMAND_LIST = "commandList";
-        public static final String FOOTER_HEADING = "footerHeading";
-        public static final String FOOTER = "footer";
 
         /** Constant String holding the default program name, value defined in {@link CommandSpec#DEFAULT_COMMAND_NAME}. */
         protected static final String DEFAULT_COMMAND_NAME = CommandSpec.DEFAULT_COMMAND_NAME;
@@ -8282,8 +8405,8 @@ public class CommandLine {
         Help withCommandNames(List<String> aliases) { this.aliases = aliases; return this; }
 
         /** Returns the {@code CommandSpec} model that this Help was constructed with.
-         * @since 3.0 */
-        CommandSpec commandSpec() { return commandSpec; }
+         * @since 3.9 */
+        public CommandSpec commandSpec() { return commandSpec; }
 
         /** Returns the {@code ColorScheme} model that this Help was constructed with.
          * @since 3.0 */

@@ -1,5 +1,34 @@
 # picocli Release Notes
 
+# <a name="3.9.0"></a> Picocli 3.9.0
+The picocli community is pleased to announce picocli 3.9.0.
+
+This release contains API enhancements to allow customization of the usage help message.
+
+
+This is the forty-fifth public release.
+Picocli follows [semantic versioning](http://semver.org/).
+
+## <a name="3.9.0"></a> Table of Contents
+* [New and noteworthy](#3.9.0-new)
+* [Fixed issues](#3.9.0-fixes)
+* [Deprecations](#3.9.0-deprecated)
+* [Potential breaking changes](#3.9.0-breaking-changes)
+
+## <a name="3.9.0-new"></a> New and Noteworthy
+
+
+## <a name="3.9.0-fixes"></a> Fixed issues
+- [#567] Usage message customization initial implementation. Thanks to [SysLord](https://github.com/SysLord) for the pull request.
+- [#530] Usage message customization. Thanks to [stechio](https://github.com/stechio) for raising the request and productive discussions.
+
+## <a name="3.9.0-deprecated"></a> Deprecations
+No features were deprecated in this release.
+
+## <a name="3.9.0-breaking-changes"></a> Potential breaking changes
+This is release has no breaking changes.
+
+
 # <a name="3.8.2"></a> Picocli 3.8.2
 The picocli community is pleased to announce picocli 3.8.2.
 
