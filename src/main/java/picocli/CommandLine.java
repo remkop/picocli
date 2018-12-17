@@ -1582,22 +1582,13 @@ public class CommandLine {
      * Prints a usage help message for the annotated command class to the specified {@code PrintStream}.
      * Delegates construction of the usage help message to the {@link Help} inner class and is equivalent to:
      * <pre>
-     * Help help = new Help(command).addAllSubcommands(getSubcommands());
-     * StringBuilder sb = new StringBuilder()
-     *         .append(help.headerHeading())
-     *         .append(help.header())
-     *         .append(help.synopsisHeading())      //e.g. Usage:
-     *         .append(help.synopsis())             //e.g. &lt;main class&gt; [OPTIONS] &lt;command&gt; [COMMAND-OPTIONS] [ARGUMENTS]
-     *         .append(help.descriptionHeading())   //e.g. %nDescription:%n%n
-     *         .append(help.description())          //e.g. {"Converts foos to bars.", "Use options to control conversion mode."}
-     *         .append(help.parameterListHeading()) //e.g. %nPositional parameters:%n%n
-     *         .append(help.parameterList())        //e.g. [FILE...] the files to convert
-     *         .append(help.optionListHeading())    //e.g. %nOptions:%n%n
-     *         .append(help.optionList())           //e.g. -h, --help   displays this help and exits
-     *         .append(help.commandListHeading())   //e.g. %nCommands:%n%n
-     *         .append(help.commandList())          //e.g.    add       adds the frup to the frooble
-     *         .append(help.footerHeading())
-     *         .append(help.footer());
+     * Help.ColorScheme colorScheme = Help.defaultColorScheme(Help.Ansi.AUTO);
+     * Help help = getHelpFactory().create(getCommandSpec(), colorScheme)
+     * StringBuilder sb = new StringBuilder();
+     * for (String key : getHelpSectionKeys()) {
+     *     IHelpSectionRenderer renderer = getHelpSectionMap().get(key);
+     *     if (renderer != null) { sb.append(renderer.render(help)); }
+     * }
      * out.print(sb);
      * </pre>
      * <p>Annotate your class with {@link Command} to control many aspects of the usage help message, including
@@ -1609,6 +1600,7 @@ public class CommandLine {
      * for ultimate control over which aspects of an Option or Field are displayed where.</p>
      * @param out the {@code PrintStream} to print the usage help message to
      * @param colorScheme the {@code ColorScheme} defining the styles for options, parameters and commands when ANSI is enabled
+     * @see UsageMessageSpec
      */
     public void usage(PrintStream out, Help.ColorScheme colorScheme) {
         out.print(usage(new StringBuilder(), getHelpFactory().create(getCommandSpec(), colorScheme)));
@@ -4229,8 +4221,8 @@ public class CommandLine {
          * This class provides two ways to customize the usage help message:
          * </p>
          * <ul>
-         *     <li>Change the text of the pre-defined sections (this may also be done declaratively using the annotations)</li>
-         *     <li>Remove or re-order pre-defined sections, or add custom sections</li>
+         *     <li>Change the text of the predefined sections (this may also be done declaratively using the annotations)</li>
+         *     <li>Add custom sections, or remove or re-order predefined sections</li>
          * </ul>
          * <p>
          * The pre-defined sections have getters and setters that return a String (or array of Strings). For example:
@@ -4240,7 +4232,42 @@ public class CommandLine {
          * This gives complete freedom on how a usage help message section is rendered, but it also means that the {@linkplain IHelpSectionRenderer section renderer}
          * is responsible for all aspects of rendering the section, including layout and emitting ANSI escape codes.
          * The {@link Help.TextTable} and {@link Help.Ansi.Text} classes, and the {@link CommandLine.Help.Ansi#string(String)} and {@link CommandLine.Help.Ansi#text(String)} methods may be useful.
+         * </p><p>
+         * The usage help message is created more or less like this:
          * </p>
+         * <pre>
+         * // CommandLine.usage(...) or CommandLine.getUsageMessage(...)
+         * Help.ColorScheme colorScheme = Help.defaultColorScheme(Help.Ansi.AUTO);
+         * Help help = getHelpFactory().create(getCommandSpec(), colorScheme)
+         * StringBuilder result = new StringBuilder();
+         * for (String key : getHelpSectionKeys()) {
+         *     IHelpSectionRenderer renderer = getHelpSectionMap().get(key);
+         *     if (renderer != null) { result.append(renderer.render(help)); }
+         * }
+         * // return or print result
+         * </pre>
+         * <p>
+         * Where the default {@linkplain #sectionMap() help section map} is constructed like this:</p>
+         * <pre>{@code
+         * // The default section renderers delegate to methods in Help for their implementation
+         * // (using Java 8 lambda notation for brevity):
+         * Map<String, IHelpSectionRenderer> sectionMap = new HashMap<>();
+         * sectionMap.put(SECTION_KEY_HEADER_HEADING,         help -> help.headerHeading());
+         * sectionMap.put(SECTION_KEY_HEADER,                 help -> help.header());
+         * sectionMap.put(SECTION_KEY_SYNOPSIS_HEADING,       help -> help.synopsisHeading());      //e.g. Usage:
+         * sectionMap.put(SECTION_KEY_SYNOPSIS,               help -> help.synopsis(help.synopsisHeadingLength())); //e.g. <cmd> [OPTIONS] <subcmd> [COMMAND-OPTIONS] [ARGUMENTS]
+         * sectionMap.put(SECTION_KEY_DESCRIPTION_HEADING,    help -> help.descriptionHeading());   //e.g. %nDescription:%n%n
+         * sectionMap.put(SECTION_KEY_DESCRIPTION,            help -> help.description());          //e.g. {"Converts foos to bars.", "Use options to control conversion mode."}
+         * sectionMap.put(SECTION_KEY_PARAMETER_LIST_HEADING, help -> help.parameterListHeading()); //e.g. %nPositional parameters:%n%n
+         * sectionMap.put(SECTION_KEY_PARAMETER_LIST,         help -> help.parameterList());        //e.g. [FILE...] the files to convert
+         * sectionMap.put(SECTION_KEY_OPTION_LIST_HEADING,    help -> help.optionListHeading());    //e.g. %nOptions:%n%n
+         * sectionMap.put(SECTION_KEY_OPTION_LIST,            help -> help.optionList());           //e.g. -h, --help   displays this help and exits
+         * sectionMap.put(SECTION_KEY_COMMAND_LIST_HEADING,   help -> help.commandListHeading());   //e.g. %nCommands:%n%n
+         * sectionMap.put(SECTION_KEY_COMMAND_LIST,           help -> help.commandList());          //e.g.    add       adds the frup to the frooble
+         * sectionMap.put(SECTION_KEY_FOOTER_HEADING,         help -> help.footerHeading());
+         * sectionMap.put(SECTION_KEY_FOOTER,                 help -> help.footer());
+         * }</pre>
+         *
          * @since 3.0 */
         public static class UsageMessageSpec {
 

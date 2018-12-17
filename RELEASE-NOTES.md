@@ -17,6 +17,50 @@ Picocli follows [semantic versioning](http://semver.org/).
 
 ## <a name="3.9.0-new"></a> New and Noteworthy
 
+This release introduces new API to facilitate customizing the usage help message:
+`IHelpFactory` allows applications to plug in `Help` subclasses, and 
+`IHelpSectionRenderer` allows applications to add custom sections to the usage help message, or redefine existing sections.
+
+The usage help message is no longer hard-coded, but is now constructed from the section renderers defined in `CommandLine::getHelpSectionMap` (or `UsageMessageSpec::sectionMap` for a single `CommandSpec`).
+By default this map contains the predefined section renderers:
+
+```java
+// The default section renderers delegate to methods in Help for their implementation
+// (using Java 8 lambda notation for brevity):
+Map<String, IHelpSectionRenderer> map = new HashMap<>();
+map.put(SECTION_KEY_HEADER_HEADING,         help -> help.headerHeading());
+map.put(SECTION_KEY_HEADER,                 help -> help.header());
+map.put(SECTION_KEY_SYNOPSIS_HEADING,       help -> help.synopsisHeading());      //e.g. Usage:
+map.put(SECTION_KEY_SYNOPSIS,               help -> help.synopsis(help.synopsisHeadingLength())); //e.g. <cmd> [OPTIONS] <subcmd> [COMMAND-OPTIONS] [ARGUMENTS]
+map.put(SECTION_KEY_DESCRIPTION_HEADING,    help -> help.descriptionHeading());   //e.g. %nDescription:%n%n
+map.put(SECTION_KEY_DESCRIPTION,            help -> help.description());          //e.g. {"Converts foos to bars.", "Use options to control conversion mode."}
+map.put(SECTION_KEY_PARAMETER_LIST_HEADING, help -> help.parameterListHeading()); //e.g. %nPositional parameters:%n%n
+map.put(SECTION_KEY_PARAMETER_LIST,         help -> help.parameterList());        //e.g. [FILE...] the files to convert
+map.put(SECTION_KEY_OPTION_LIST_HEADING,    help -> help.optionListHeading());    //e.g. %nOptions:%n%n
+map.put(SECTION_KEY_OPTION_LIST,            help -> help.optionList());           //e.g. -h, --help   displays this help and exits
+map.put(SECTION_KEY_COMMAND_LIST_HEADING,   help -> help.commandListHeading());   //e.g. %nCommands:%n%n
+map.put(SECTION_KEY_COMMAND_LIST,           help -> help.commandList());          //e.g.    add       adds the frup to the frooble
+map.put(SECTION_KEY_FOOTER_HEADING,         help -> help.footerHeading());
+map.put(SECTION_KEY_FOOTER,                 help -> help.footer());
+```
+
+Applications can add, remove or replace sections in this map. The `CommandLine::getHelpSectionKeys` method (or `UsageMessageSpec::sectionKeys` for a single `CommandSpec`) returns the section keys in the order that the usage help message should render the sections. The default keys are (in order):
+1. SECTION_KEY_HEADER_HEADING
+1. SECTION_KEY_HEADER
+1. SECTION_KEY_SYNOPSIS_HEADING
+1. SECTION_KEY_SYNOPSIS
+1. SECTION_KEY_DESCRIPTION_HEADING
+1. SECTION_KEY_DESCRIPTION
+1. SECTION_KEY_PARAMETER_LIST_HEADING
+1. SECTION_KEY_PARAMETER_LIST
+1. SECTION_KEY_OPTION_LIST_HEADING
+1. SECTION_KEY_OPTION_LIST
+1. SECTION_KEY_COMMAND_LIST_HEADING
+1. SECTION_KEY_COMMAND_LIST
+1. SECTION_KEY_FOOTER_HEADING
+1. SECTION_KEY_FOOTER
+
+This ordering may be modified with the `CommandLine::setHelpSectionKeys` setter method (or `UsageMessageSpec::sectionKeys(List)` for a single `CommandSpec`).
 
 ## <a name="3.9.0-fixes"></a> Fixed issues
 - [#567] Usage message customization initial implementation. Thanks to [SysLord](https://github.com/SysLord) for the pull request.
