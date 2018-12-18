@@ -1170,7 +1170,7 @@ public class SubcommandTests {
         NEW_MAP.put("b", null);
         NEW_MAP.put("c", null);
         commandLine.setHelpSectionMap(NEW_MAP);
-        assertEquals(NEW_MAP, commandLine.getHelpSectionMap().keySet());
+        assertEquals(NEW_MAP.keySet(), commandLine.getHelpSectionMap().keySet());
 
         int childCount = 0;
         int grandChildCount = 0;
@@ -1204,16 +1204,16 @@ public class SubcommandTests {
         NEW_MAP.put("b", null);
         NEW_MAP.put("c", null);
         commandLine.setHelpSectionMap(NEW_MAP);
-        assertEquals(NEW_MAP, commandLine.getHelpSectionMap().keySet());
+        assertEquals(NEW_MAP.keySet(), commandLine.getHelpSectionMap().keySet());
 
         int childCount = 0;
         int grandChildCount = 0;
         for (CommandLine sub : commandLine.getSubcommands().values()) {
             childCount++;
-            assertEquals("subcommand added before IS impacted", NEW_MAP, sub.getHelpSectionMap().keySet());
+            assertEquals("subcommand added before IS impacted", NEW_MAP.keySet(), sub.getHelpSectionMap().keySet());
             for (CommandLine subsub : sub.getSubcommands().values()) {
                 grandChildCount++;
-                assertEquals("subsubcommand added before IS impacted", NEW_MAP, sub.getHelpSectionMap().keySet());
+                assertEquals("subsubcommand added before IS impacted", NEW_MAP.keySet(), sub.getHelpSectionMap().keySet());
             }
         }
         assertTrue(childCount > 0);
