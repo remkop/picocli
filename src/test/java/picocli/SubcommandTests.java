@@ -15,11 +15,7 @@ import picocli.CommandLine.Option;
 import picocli.CommandLine.RunAll;
 import picocli.CommandLine.UnmatchedArgumentException;
 
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import static org.junit.Assert.*;
 import static picocli.HelpTestUtil.setTraceLevel;
@@ -1043,4 +1039,185 @@ public class SubcommandTests {
         sub.usage(System.out);
         assertEquals(expected, systemOutRule.getLog());
     }
+
+    static class MyHelpFactory implements CommandLine.IHelpFactory {
+        public CommandLine.Help create(CommandSpec commandSpec, CommandLine.Help.ColorScheme colorScheme) {
+            return null;
+        }
+    }
+
+    @Test
+    public void testSetHelpFactory_BeforeSubcommandsAdded() {
+        @Command
+        class TopLevel {}
+        CommandLine commandLine = new CommandLine(new TopLevel());
+        assertEquals("picocli.CommandLine$DefaultHelpFactory", commandLine.getHelpFactory().getClass().getName());
+        commandLine.setHelpFactory(new MyHelpFactory());
+        assertEquals("picocli.SubcommandTests$MyHelpFactory", commandLine.getHelpFactory().getClass().getName());
+
+        int childCount = 0;
+        int grandChildCount = 0;
+        commandLine.addSubcommand("main", createNestedCommand());
+        for (CommandLine sub : commandLine.getSubcommands().values()) {
+            childCount++;
+            assertEquals("subcommand added afterwards is not impacted", "picocli.CommandLine$DefaultHelpFactory", sub.getHelpFactory().getClass().getName());
+            for (CommandLine subsub : sub.getSubcommands().values()) {
+                grandChildCount++;
+                assertEquals("subcommand added afterwards is not impacted", "picocli.CommandLine$DefaultHelpFactory", subsub.getHelpFactory().getClass().getName());
+            }
+        }
+        assertTrue(childCount > 0);
+        assertTrue(grandChildCount > 0);
+    }
+
+    @Test
+    public void testSetHelpFactory_AfterSubcommandsAdded() {
+        @Command
+        class TopLevel {}
+        CommandLine commandLine = new CommandLine(new TopLevel());
+        commandLine.addSubcommand("main", createNestedCommand());
+        assertEquals("picocli.CommandLine$DefaultHelpFactory", commandLine.getHelpFactory().getClass().getName());
+        commandLine.setHelpFactory(new MyHelpFactory());
+        assertEquals("picocli.SubcommandTests$MyHelpFactory", commandLine.getHelpFactory().getClass().getName());
+
+        int childCount = 0;
+        int grandChildCount = 0;
+        for (CommandLine sub : commandLine.getSubcommands().values()) {
+            childCount++;
+            assertEquals("subcommand added before IS impacted", "picocli.SubcommandTests$MyHelpFactory", sub.getHelpFactory().getClass().getName());
+            for (CommandLine subsub : sub.getSubcommands().values()) {
+                grandChildCount++;
+                assertEquals("subsubcommand added before IS impacted", "picocli.SubcommandTests$MyHelpFactory", sub.getHelpFactory().getClass().getName());
+            }
+        }
+        assertTrue(childCount > 0);
+        assertTrue(grandChildCount > 0);
+    }
+
+    @Test
+    public void testSetHelpSectionKeys_BeforeSubcommandsAdded() {
+        @Command
+        class TopLevel {}
+        CommandLine commandLine = new CommandLine(new TopLevel());
+
+        final List<String> DEFAULT_LIST = Arrays.asList("headerHeading", "header", "synopsisHeading", "synopsis",
+                "descriptionHeading", "description", "parameterListHeading", "parameterList", "optionListHeading",
+                "optionList", "commandListHeading", "commandList", "footerHeading", "footer");
+        assertEquals(DEFAULT_LIST, commandLine.getHelpSectionKeys());
+
+        final List<String> NEW_LIST = Arrays.asList("a", "b", "c");
+        commandLine.setHelpSectionKeys(NEW_LIST);
+        assertEquals(NEW_LIST, commandLine.getHelpSectionKeys());
+
+        int childCount = 0;
+        int grandChildCount = 0;
+        commandLine.addSubcommand("main", createNestedCommand());
+        for (CommandLine sub : commandLine.getSubcommands().values()) {
+            childCount++;
+            assertEquals("subcommand added afterwards is not impacted", DEFAULT_LIST, sub.getHelpSectionKeys());
+            for (CommandLine subsub : sub.getSubcommands().values()) {
+                grandChildCount++;
+                assertEquals("subcommand added afterwards is not impacted", DEFAULT_LIST, subsub.getHelpSectionKeys());
+            }
+        }
+        assertTrue(childCount > 0);
+        assertTrue(grandChildCount > 0);
+    }
+
+    @Test
+    public void testSetHelpSectionKeys_AfterSubcommandsAdded() {
+        @Command
+        class TopLevel {}
+        CommandLine commandLine = new CommandLine(new TopLevel());
+        commandLine.addSubcommand("main", createNestedCommand());
+        
+        final List<String> DEFAULT_LIST = Arrays.asList("headerHeading", "header", "synopsisHeading", "synopsis",
+                "descriptionHeading", "description", "parameterListHeading", "parameterList", "optionListHeading",
+                "optionList", "commandListHeading", "commandList", "footerHeading", "footer");
+        assertEquals(DEFAULT_LIST, commandLine.getHelpSectionKeys());
+
+        final List<String> NEW_LIST = Arrays.asList("a", "b", "c");
+        commandLine.setHelpSectionKeys(NEW_LIST);
+        assertEquals(NEW_LIST, commandLine.getHelpSectionKeys());
+
+        int childCount = 0;
+        int grandChildCount = 0;
+        for (CommandLine sub : commandLine.getSubcommands().values()) {
+            childCount++;
+            assertEquals("subcommand added before IS impacted", NEW_LIST, sub.getHelpSectionKeys());
+            for (CommandLine subsub : sub.getSubcommands().values()) {
+                grandChildCount++;
+                assertEquals("subsubcommand added before IS impacted", NEW_LIST, sub.getHelpSectionKeys());
+            }
+        }
+        assertTrue(childCount > 0);
+        assertTrue(grandChildCount > 0);
+    }
+
+    @Test
+    public void testSetHelpSectionMap_BeforeSubcommandsAdded() {
+        @Command
+        class TopLevel {}
+        CommandLine commandLine = new CommandLine(new TopLevel());
+
+        final Set<String> DEFAULT_KEYS = new HashSet<String>(Arrays.asList("headerHeading", "header", "synopsisHeading", "synopsis",
+                "descriptionHeading", "description", "parameterListHeading", "parameterList", "optionListHeading",
+                "optionList", "commandListHeading", "commandList", "footerHeading", "footer"));
+        assertEquals(DEFAULT_KEYS, commandLine.getHelpSectionMap().keySet());
+
+        Map<String, CommandLine.IHelpSectionRenderer> NEW_MAP = new HashMap<String, CommandLine.IHelpSectionRenderer>();
+        NEW_MAP.put("a", null);
+        NEW_MAP.put("b", null);
+        NEW_MAP.put("c", null);
+        commandLine.setHelpSectionMap(NEW_MAP);
+        assertEquals(NEW_MAP, commandLine.getHelpSectionMap().keySet());
+
+        int childCount = 0;
+        int grandChildCount = 0;
+        commandLine.addSubcommand("main", createNestedCommand());
+        for (CommandLine sub : commandLine.getSubcommands().values()) {
+            childCount++;
+            assertEquals("subcommand added afterwards is not impacted", DEFAULT_KEYS, sub.getHelpSectionMap().keySet());
+            for (CommandLine subsub : sub.getSubcommands().values()) {
+                grandChildCount++;
+                assertEquals("subcommand added afterwards is not impacted", DEFAULT_KEYS, subsub.getHelpSectionMap().keySet());
+            }
+        }
+        assertTrue(childCount > 0);
+        assertTrue(grandChildCount > 0);
+    }
+
+    @Test
+    public void testSetHelpSectionMap_AfterSubcommandsAdded() {
+        @Command
+        class TopLevel {}
+        CommandLine commandLine = new CommandLine(new TopLevel());
+        commandLine.addSubcommand("main", createNestedCommand());
+
+        final Set<String> DEFAULT_KEYS = new HashSet<String>(Arrays.asList("headerHeading", "header", "synopsisHeading", "synopsis",
+                "descriptionHeading", "description", "parameterListHeading", "parameterList", "optionListHeading",
+                "optionList", "commandListHeading", "commandList", "footerHeading", "footer"));
+        assertEquals(DEFAULT_KEYS, commandLine.getHelpSectionMap().keySet());
+
+        Map<String, CommandLine.IHelpSectionRenderer> NEW_MAP = new HashMap<String, CommandLine.IHelpSectionRenderer>();
+        NEW_MAP.put("a", null);
+        NEW_MAP.put("b", null);
+        NEW_MAP.put("c", null);
+        commandLine.setHelpSectionMap(NEW_MAP);
+        assertEquals(NEW_MAP, commandLine.getHelpSectionMap().keySet());
+
+        int childCount = 0;
+        int grandChildCount = 0;
+        for (CommandLine sub : commandLine.getSubcommands().values()) {
+            childCount++;
+            assertEquals("subcommand added before IS impacted", NEW_MAP, sub.getHelpSectionMap().keySet());
+            for (CommandLine subsub : sub.getSubcommands().values()) {
+                grandChildCount++;
+                assertEquals("subsubcommand added before IS impacted", NEW_MAP, sub.getHelpSectionMap().keySet());
+            }
+        }
+        assertTrue(childCount > 0);
+        assertTrue(grandChildCount > 0);
+    }
+
 }
