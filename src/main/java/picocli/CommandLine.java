@@ -6022,24 +6022,24 @@ public class CommandLine {
                 // bind parameter
                 ObjectBinding binding = new ObjectBinding();
                 getter = binding; setter = binding;
-                hasInitialValue = initializeInitialValue(param);
+                initializeInitialValue(param);
+                hasInitialValue = true;
             }
 
-            private boolean initializeInitialValue(Object arg) {
-                boolean initialized = true;
+            private void initializeInitialValue(Object arg) {
                 try {
-                    if      (type == Boolean.TYPE) { setter.set(false); }
-                    else if (type == Byte.TYPE   ) { setter.set(Byte.valueOf((byte) 0)); }
-                    else if (type == Short.TYPE  ) { setter.set(Short.valueOf((short) 0)); }
-                    else if (type == Integer.TYPE) { setter.set(Integer.valueOf(0)); }
-                    else if (type == Long.TYPE   ) { setter.set(Long.valueOf(0L)); }
-                    else if (type == Float.TYPE  ) { setter.set(Float.valueOf(0f)); }
-                    else if (type == Double.TYPE ) { setter.set(Double.valueOf(0d)); }
-                    else { initialized = false; }
+                    if      (type == Boolean.TYPE  ) { setter.set(false); }
+                    else if (type == Byte.TYPE     ) { setter.set(Byte.valueOf((byte) 0)); }
+                    else if (type == Character.TYPE) { setter.set(Character.valueOf((char) 0)); }
+                    else if (type == Short.TYPE    ) { setter.set(Short.valueOf((short) 0)); }
+                    else if (type == Integer.TYPE  ) { setter.set(Integer.valueOf(0)); }
+                    else if (type == Long.TYPE     ) { setter.set(Long.valueOf(0L)); }
+                    else if (type == Float.TYPE    ) { setter.set(Float.valueOf(0f)); }
+                    else if (type == Double.TYPE   ) { setter.set(Double.valueOf(0d)); }
+                    else {                             setter.set(null); }
                 } catch (Exception ex) {
                     throw new InitializationException("Could not set initial value for " + arg + ": " + ex.toString(), ex);
                 }
-                return initialized;
             }
             static boolean isAnnotated(AnnotatedElement e) {
                 return false

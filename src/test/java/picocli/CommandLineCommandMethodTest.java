@@ -855,7 +855,6 @@ public class CommandLineCommandMethodTest {
     }
 
     // test (2/2) for https://github.com/remkop/picocli/issues/570
-    @Ignore("Until #570 is fixed")
     @Test
     public void testOptionalListParameterShouldNotRememberValuesInCommandMethods() {
         @Command() class TestCommand {
