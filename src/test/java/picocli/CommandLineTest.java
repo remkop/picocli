@@ -25,6 +25,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.math.BigDecimal;
 import java.net.InetAddress;
 import java.net.Socket;
@@ -3657,5 +3658,23 @@ public class CommandLineTest {
             System.setOut(out);
             System.setIn(in);
         }
+    }
+
+    @Test
+    public void testEmptyObjectArray() throws Exception {
+        Method m = CommandLine.class.getDeclaredMethod("empty", new Class[] {Object[].class});
+        m.setAccessible(true);
+
+        assertTrue((Boolean) m.invoke(null, new Object[] {null}));
+        assertTrue((Boolean) m.invoke(null, new Object[] {new String[0]}));
+    }
+
+    @Test
+    public void testStr() throws Exception {
+        Method m = CommandLine.class.getDeclaredMethod("str", String[].class, int.class);
+        m.setAccessible(true);
+
+        assertEquals("", m.invoke(null, null, 0));
+        assertEquals("", m.invoke(null, new String[0], 1));
     }
 }

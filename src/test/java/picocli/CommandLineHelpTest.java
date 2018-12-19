@@ -3945,4 +3945,21 @@ public class CommandLineHelpTest {
                 "Usage: <header> (<custom header param>)%n");
         assertEquals(expected, commandLineWithCustomHelpSections.getUsageMessage(Help.Ansi.OFF));
     }
+
+    @Test
+    public void testNullSectionRenderer() {
+        CommandLine cmd = new CommandLine(new UsageDemo());
+
+        cmd.getHelpSectionMap().clear();
+        cmd.getHelpSectionMap().put(UsageMessageSpec.SECTION_KEY_HEADER, null);
+        cmd.getHelpSectionMap().put(UsageMessageSpec.SECTION_KEY_DESCRIPTION, new IHelpSectionRenderer() {
+            public String render(Help help) {
+                return "abc";
+            }
+        });
+
+        String actual = cmd.getUsageMessage();
+        String expected = "abc";
+        assertEquals(expected, actual);
+    }
 }

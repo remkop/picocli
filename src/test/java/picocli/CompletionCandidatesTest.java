@@ -228,4 +228,24 @@ public class CompletionCandidatesTest {
                 "                           javascript, frege, clojure%n");
         assertEquals(expected, new CommandLine(new EnumTest()).getUsageMessage());
     }
+
+    @Test
+    public void testDefaultCompletionCandidatesNull() {
+        class App {
+            @Option(names = "-x") int x;
+        }
+
+        CommandLine cmd = new CommandLine(new App());
+        Iterable<String> candidates = cmd.getCommandSpec().findOption('x').completionCandidates();
+        assertNull(candidates);
+    }
+
+    @Test(expected = UnsupportedOperationException.class)
+    public void testNoCompletionCandidatesThrowsUnsupportedOperation() throws Exception {
+        Class<Iterable<String>> c = (Class<Iterable<String>>) Class.forName("picocli.CommandLine$NoCompletionCandidates");
+
+        Iterable<String> iterable = CommandLine.defaultFactory().create(c);
+        assertNotNull(iterable);
+        iterable.iterator();
+    }
 }

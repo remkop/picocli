@@ -910,6 +910,11 @@ public class CommandLineCommandMethodTest {
     }
 
     @Test
+    public void testInvokeMethodClassPrintStreamAnsi() {
+        assertEquals(9, CommandLine.invoke("staticCommand", StaticMethodCommand.class, System.out, Help.Ansi.OFF, "-x", "3"));
+    }
+
+    @Test
     public void testCommandMethodsRequireNonArgConstructor() {
         try {
             CommandLine.invoke("cannotBeCalled", StaticMethodCommand.class);
@@ -967,6 +972,21 @@ public class CommandLineCommandMethodTest {
         } catch (InvocationTargetException ex) {
             ExecutionException actual = (ExecutionException) ex.getCause();
             assertTrue(actual.getMessage(), actual.getMessage().startsWith("Unhandled error while calling command ("));
+        }
+    }
+
+    static class Duplicate {
+        @Command int mycommand() { return 1; }
+
+        @Command int mycommand(String[] args) { return 2;}
+    }
+
+    @Test
+    public void testDuplicateCommandMethodNames() {
+        try {
+            CommandLine.invoke("mycommand", Duplicate.class, System.out, System.out, Help.Ansi.OFF, "abd");
+        } catch (InitializationException ex) {
+            assertTrue(ex.getMessage().startsWith("Expected exactly one @Command-annotated method for "));
         }
     }
 }

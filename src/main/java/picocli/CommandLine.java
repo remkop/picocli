@@ -2153,9 +2153,7 @@ public class CommandLine {
      * @since 3.6.0
      */
     public static List<Method> getCommandMethods(Class<?> cls, String methodName) {
-        Set<Method> candidates = new TreeSet<Method>(new Comparator<Method>() {
-            public int compare(Method o1, Method o2) { return o1.getName().compareTo(o2.getName()); }
-        });
+        Set<Method> candidates = new HashSet<Method>();
         // traverse public member methods (excludes static/non-public, includes inherited)
         candidates.addAll(Arrays.asList(Assert.notNull(cls, "class").getMethods()));
         // traverse directly declared methods (includes static/non-public, excludes inherited)
@@ -2167,6 +2165,9 @@ public class CommandLine {
                 if (methodName == null || methodName.equals(method.getName())) { result.add(method); }
             }
         }
+        Collections.sort(result, new Comparator<Method>() {
+            public int compare(Method o1, Method o2) { return o1.getName().compareTo(o2.getName()); }
+        });
         return result;
     }
 
@@ -2350,7 +2351,7 @@ public class CommandLine {
     private static boolean isMultiValue(Class<?> cls) { return cls.isArray() || Collection.class.isAssignableFrom(cls) || Map.class.isAssignableFrom(cls); }
 
     private static class NoCompletionCandidates implements Iterable<String> {
-        public Iterator<String> iterator() { return Collections.<String>emptyList().iterator(); }
+        public Iterator<String> iterator() { throw new UnsupportedOperationException(); }
     }
     /**
      * <p>

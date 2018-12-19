@@ -806,4 +806,60 @@ public class CommandLineParseWithHandlersTest {
         RunAll runAll = new RunAll();
         assertSame(runAll, runAll.self());
     }
+
+    @Test
+    public void testHandlerThrowsOtherException() {
+        @Command
+        class App { }
+
+        try {
+            new CommandLine(new App()).parseWithHandler(new IParseResultHandler2<Object>() {
+                public Object handleParseResult(ParseResult parseResult) throws ExecutionException {
+                    throw new IllegalArgumentException("abc");
+                }
+            }, new String[0]);
+        } catch (IllegalArgumentException ex) {
+            assertEquals("abc", ex.getMessage());
+        }
+    }
+
+    @Test
+    public void testHandlerThrowsExecutionException() {
+        @Command
+        class App { }
+
+        try {
+            new CommandLine(new App()).parseWithHandler(new IParseResultHandler2<Object>() {
+                public Object handleParseResult(ParseResult parseResult) throws ExecutionException {
+                    throw new ExecutionException(new CommandLine(new App()), "xyz");
+                }
+            }, new String[0]);
+        } catch (ExecutionException ex) {
+            assertEquals("xyz", ex.getMessage());
+        }
+    }
+
+    @Command
+    static class Executable implements Runnable, Callable<Void> {
+
+        @Option(names = "-x") int x;
+
+        public void run() { }
+
+        public Void call() throws Exception {
+            return null;
+        }
+    }
+
+    @Test
+    public void testCallNullResult() {
+        Object result = CommandLine.call(new Executable(), "-x");
+        assertNull(result);
+    }
+
+    @Test
+    public void testCallableClassNullResult() {
+        Object result = CommandLine.call(Executable.class, CommandLine.defaultFactory(), "-x");
+        assertNull(result);
+    }
 }

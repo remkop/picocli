@@ -122,6 +122,15 @@ public class CommandLineDefaultProviderTest {
         assertNull(cmd.getDefaultValueProvider());
     }
 
+    @Test(expected = UnsupportedOperationException.class)
+    public void testNoDefaultProviderThrowsUnsupportedOperation() throws Exception {
+        Class<IDefaultValueProvider> c = (Class<IDefaultValueProvider>) Class.forName("picocli.CommandLine$NoDefaultProvider");
+
+        IDefaultValueProvider provider = CommandLine.defaultFactory().create(c);
+        assertNotNull(provider);
+        provider.defaultValue(CommandLine.Model.PositionalParamSpec.builder().build());
+    }
+
     @Test
     public void testDefaultProviderReturnsSetValue() {
         CommandLine cmd = new CommandLine(Sub.class);
