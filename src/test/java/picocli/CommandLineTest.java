@@ -1573,6 +1573,19 @@ public class CommandLineTest {
     }
 
     @Test
+    public void testUnmatchedArgsInitiallyEmpty() throws Exception {
+        class SingleValue {
+            @Parameters(index = "0..2") String[] str;
+        }
+        setTraceLevel("OFF");
+        CommandLine cmd = new CommandLine(new SingleValue());
+        assertTrue(cmd.getUnmatchedArguments().isEmpty());
+
+        CommandLine cmd2 = new CommandLine(new SingleValue()).setUnmatchedArgumentsAllowed(true);
+        assertTrue(cmd2.getUnmatchedArguments().isEmpty());
+    }
+
+    @Test
     public void testPositionalParamSingleValueButWithoutIndex() throws Exception {
         class SingleValue {
             @Parameters String str;

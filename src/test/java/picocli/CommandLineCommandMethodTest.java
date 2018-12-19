@@ -19,16 +19,14 @@ import org.junit.*;
 import org.junit.contrib.java.lang.system.ProvideSystemProperty;
 import org.junit.contrib.java.lang.system.SystemErrRule;
 import org.junit.contrib.java.lang.system.SystemOutRule;
-import picocli.CommandLine.DefaultExceptionHandler;
-import picocli.CommandLine.Mixin;
+import picocli.CommandLine.*;
 import picocli.CommandLine.Model.CommandSpec;
-import picocli.CommandLine.RunLast;
-import picocli.CommandLine.Spec;
 import picocli.CommandLineTest.CompactFields;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.PrintStream;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.Date;
@@ -878,5 +876,97 @@ public class CommandLineCommandMethodTest {
         assertEquals("[arg0, arg1]", methodFirstExecutionResultWithParametersGiven.get(0));
         // fails, still "[arg0, arg1]"
         assertEquals("null", methodSecondExecutionResultWithoutParameters.get(0));
+    }
+
+    @Command(addMethodSubcommands = false)
+    static class StaticMethodCommand {
+        @Spec static CommandSpec spec;
+
+        public StaticMethodCommand(int constructorParam) {}
+
+        @Command
+        public static int staticCommand(@Option(names = "-x") int x) {
+            return x * 3;
+        }
+
+        @Command
+        public void cannotBeCalled(@Option(names = "-v") boolean v) {
+        }
+
+        @Command
+        public static void throwsExecutionException() {
+            throw new ExecutionException(new CommandLine(new StaticMethodCommand(8)), "abc");
+        }
+
+        @Command
+        public static void throwsOtherException() {
+            throw new IndexOutOfBoundsException();
+        }
+    }
+
+    @Test
+    public void testStaticCommandMethod() {
+        assertEquals(9, CommandLine.invoke("staticCommand", StaticMethodCommand.class, "-x", "3"));
+    }
+
+    @Test
+    public void testCommandMethodsRequireNonArgConstructor() {
+        try {
+            CommandLine.invoke("cannotBeCalled", StaticMethodCommand.class);
+        } catch (ExecutionException ex) {
+            assertTrue(ex.getCause() instanceof UnsupportedOperationException);
+        }
+    }
+
+    @Test
+    public void testCommandMethodsThatThrowsExecutionException() {
+        try {
+            CommandLine.invoke("throwsExecutionException", StaticMethodCommand.class);
+        } catch (ExecutionException ex) {
+            assertEquals("abc", ex.getMessage());
+        }
+    }
+
+    @Test
+    public void testCommandMethodsThatThrowsException() {
+        try {
+            CommandLine.invoke("throwsOtherException", StaticMethodCommand.class);
+        } catch (ExecutionException ex) {
+            assertTrue(ex.getCause() instanceof IndexOutOfBoundsException);
+        }
+    }
+
+    @Command(addMethodSubcommands = false)
+    static class ErroringCommand {
+        public ErroringCommand() { // InvocationTargetException when invoking constructor
+            throw new IllegalStateException("boom");
+        }
+        @Command
+        public void cannotBeCalled() { }
+    }
+
+    @Test
+    public void testCommandMethodsWhereConstructorThrowsException() {
+        try {
+            CommandLine.invoke("cannotBeCalled", ErroringCommand.class);
+        } catch (ExecutionException ex) { // InvocationTargetException when invoking constructor
+            assertTrue(ex.getCause() instanceof IllegalStateException);
+            assertTrue(ex.getMessage(), ex.getMessage().startsWith("Error while calling command ("));
+        }
+    }
+
+    @Test
+    public void testCommandMethodsUnexpectedError() throws Exception {
+        Method method = CommandMethod1.class.getDeclaredMethod("times", int.class, int.class);
+        CommandLine cmd = new CommandLine(method);
+
+        Method execute = CommandLine.class.getDeclaredMethod("execute", CommandLine.class, List.class);
+        execute.setAccessible(true);
+        try {
+            execute.invoke(null, cmd, null);
+        } catch (InvocationTargetException ex) {
+            ExecutionException actual = (ExecutionException) ex.getCause();
+            assertTrue(actual.getMessage(), actual.getMessage().startsWith("Unhandled error while calling command ("));
+        }
     }
 }

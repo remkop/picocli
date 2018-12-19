@@ -266,6 +266,16 @@ public class CommandLineParseResultTest {
     }
 
     @Test
+    public void testIsUsageHelpRequested_initiallyFalse() {
+        @Command(mixinStandardHelpOptions = true)
+        class App {
+            @Option(names = "-x") String x;
+        }
+        CommandLine cmd = new CommandLine(new App());
+        assertFalse(cmd.isUsageHelpRequested());
+    }
+
+    @Test
     public void testIsUsageHelpRequested() {
         @Command(mixinStandardHelpOptions = true)
         class App {
@@ -283,6 +293,16 @@ public class CommandLineParseResultTest {
     }
 
     @Test
+    public void testIsVersionHelpRequested_initiallyFalse() {
+        @Command(mixinStandardHelpOptions = true)
+        class App {
+            @Option(names = "-x") String x;
+        }
+        CommandLine cmd = new CommandLine(new App());
+        assertFalse(cmd.isVersionHelpRequested());
+    }
+
+    @Test
     public void testIsVersionHelpRequested() {
         @Command(mixinStandardHelpOptions = true)
         class App {
@@ -294,6 +314,16 @@ public class CommandLineParseResultTest {
         assertTrue(parseResult.isVersionHelpRequested());
 
         assertSame(cmd.getCommandSpec().optionsMap().get("--version"), parseResult.matchedOption('V'));
+    }
+
+    @Test
+    public void testGetParseResult_initiallyNull() {
+        @Command(mixinStandardHelpOptions = true)
+        class App {
+            @Option(names = "-x") String x;
+        }
+        CommandLine cmd = new CommandLine(new App());
+        assertNull(cmd.getParseResult());
     }
 
     @Test

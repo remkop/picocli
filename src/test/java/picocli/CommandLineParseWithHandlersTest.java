@@ -21,6 +21,7 @@ import org.junit.contrib.java.lang.system.ExpectedSystemExit;
 import org.junit.contrib.java.lang.system.ProvideSystemProperty;
 import org.junit.contrib.java.lang.system.SystemErrRule;
 import org.junit.contrib.java.lang.system.SystemOutRule;
+import picocli.CommandLine.Model.CommandSpec;
 
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
@@ -750,5 +751,59 @@ public class CommandLineParseWithHandlersTest {
         assertEquals(expected, baos.toString());
         assertEquals("", systemOutRule.getLog());
         assertEquals("", systemErrRule.getLog());
+    }
+
+    @Test
+    public void testExecutionExceptionIfRunnableThrowsExecutionException() {
+        @Command
+        class App implements Runnable {
+            @Spec CommandSpec spec;
+            public void run() {
+                throw new ExecutionException(spec.commandLine(), "abc");
+            }
+        }
+        try {
+            CommandLine.run(new App());
+        } catch (ExecutionException ex) {
+            assertEquals("abc", ex.getMessage());
+        }
+    }
+
+    @Test
+    public void testExecutionExceptionIfCallableThrowsExecutionException() {
+        @Command
+        class App implements Callable<Void> {
+            @Spec CommandSpec spec;
+            public Void call() {
+                throw new ExecutionException(spec.commandLine(), "abc");
+            }
+        }
+        try {
+            CommandLine.call(new App());
+        } catch (ExecutionException ex) {
+            assertEquals("abc", ex.getMessage());
+        }
+    }
+
+    @Test
+    public void testParameterExceptionIfCallableThrowsParameterException() {
+        @Command
+        class App implements Callable<Void> {
+            @Spec CommandSpec spec;
+            public Void call() {
+                throw new ParameterException(spec.commandLine(), "xxx");
+            }
+        }
+        try {
+            CommandLine.call(new App());
+        } catch (ParameterException ex) {
+            assertEquals("xxx", ex.getMessage());
+        }
+    }
+
+    @Test
+    public void testRunAllSelf() {
+        RunAll runAll = new RunAll();
+        assertSame(runAll, runAll.self());
     }
 }

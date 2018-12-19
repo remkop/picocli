@@ -19,6 +19,7 @@ import org.junit.After;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.contrib.java.lang.system.ProvideSystemProperty;
+import org.junit.contrib.java.lang.system.SystemOutRule;
 import picocli.CommandLine.*;
 import picocli.CommandLine.Model.*;
 import picocli.CommandLine.Help.Ansi.IStyle;
@@ -52,6 +53,8 @@ public class CommandLineHelpTest {
 
     @Rule
     public final ProvideSystemProperty ansiOFF = new ProvideSystemProperty("picocli.ansi", "false");
+    @Rule
+    public final SystemOutRule systemOutRule = new SystemOutRule().enableLog().muteForSuccessfulTests();
 
     @After
     public void after() {
@@ -3172,7 +3175,37 @@ public class CommandLineHelpTest {
     }
     
     @Test
-    public void testPrintHelpIfRequestedReturnsTrueForUsageHelp() throws IOException {
+    public void testPrintHelpIfRequested1ReturnsTrueForUsageHelp() throws IOException {
+        class App {
+            @Option(names = "-h", usageHelp = true) boolean usageRequested;
+        }
+        List<CommandLine> list = new CommandLine(new App()).parse("-h");
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        final PrintStream out = new PrintStream(baos);
+        assertTrue(CommandLine.printHelpIfRequested(list, out, Help.Ansi.OFF));
+        
+        String expected = String.format("" +
+                "Usage: <main class> [-h]%n" +
+                "  -h%n");
+        assertEquals(expected, baos.toString());
+    }
+
+    @Test
+    public void testPrintHelpIfRequestedWithParseResultReturnsTrueForUsageHelp() throws IOException {
+        class App {
+            @Option(names = "-h", usageHelp = true) boolean usageRequested;
+        }
+        ParseResult parseResult = new CommandLine(new App()).parseArgs("-h");
+        assertTrue(CommandLine.printHelpIfRequested(parseResult));
+
+        String expected = String.format("" +
+                "Usage: <main class> [-h]%n" +
+                "  -h%n");
+        assertEquals(expected, systemOutRule.getLog());
+    }
+
+    @Test
+    public void testPrintHelpIfRequested2ReturnsTrueForUsageHelp() throws IOException {
         class App {
             @Option(names = "-h", usageHelp = true) boolean usageRequested;
         }
@@ -3180,13 +3213,13 @@ public class CommandLineHelpTest {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         final PrintStream out = new PrintStream(baos);
         assertTrue(CommandLine.printHelpIfRequested(list, out, out, Help.Ansi.OFF));
-        
+
         String expected = String.format("" +
                 "Usage: <main class> [-h]%n" +
                 "  -h%n");
         assertEquals(expected, baos.toString());
     }
-    
+
     @Test
     public void testPrintHelpIfRequestedWithCustomColorScheme() {
         ColorScheme customColorScheme = new Help.ColorScheme(Help.Ansi.ON)
@@ -3241,6 +3274,23 @@ public class CommandLineHelpTest {
 
         String expected = "";
         assertEquals(expected, baos.toString());
+    }
+
+    @Test
+    public void testPrintHelpIfRequestedForHelpCommandThatDoesNotImplementIHelpCommandInitializable() {
+        @Command(name = "help", helpCommand = true)
+        class MyHelp implements Runnable {
+            public void run() {
+            }
+        }
+        @Command(subcommands = MyHelp.class)
+        class App implements Runnable {
+            public void run() {
+            }
+        }
+        CommandLine cmd = new CommandLine(new App(), new InnerClassFactory(this));
+        ParseResult result = cmd.parseArgs("help");
+        assertTrue(CommandLine.printHelpIfRequested(result));
     }
 
     @Command(name = "top", subcommands = {Sub.class})
