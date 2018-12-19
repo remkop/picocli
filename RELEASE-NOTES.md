@@ -67,6 +67,7 @@ This ordering may be modified with the `CommandLine::setHelpSectionKeys` setter 
 - [#567] Usage message customization initial implementation. Thanks to [Christian Helmer](https://github.com/SysLord) for the pull request.
 - [#530] Usage message customization. Thanks to [stechio](https://github.com/stechio) for raising the request and productive discussions.
 - [#570] Command method options and positional parameter Object values are now cleared correctly when reusing CommandLine. Thanks to [Christian Helmer](https://github.com/SysLord) for the pull request.
+- [#569] Facilitate customization of the synopsis: split `Help.detailedSynopsis()` into protected methods.
 
 ## <a name="3.9.0-deprecated"></a> Deprecations
 No features were deprecated in this release.

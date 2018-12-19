@@ -8579,6 +8579,22 @@ public class CommandLine {
          * @return a detailed synopsis
          * @since 3.0 */
         public String detailedSynopsis(int synopsisHeadingLength, Comparator<OptionSpec> optionSort, boolean clusterBooleanOptions) {
+            Text optionText = createDetailedSynopsisOptionsText(optionSort, clusterBooleanOptions);
+            Text positionalParamText = createDetailedSynopsisPositionalsText();
+            Text commandText = createDetailedSynopsisCommandText();
+
+            Text text = optionText.concat(positionalParamText).concat(commandText);
+
+            return insertSynopsisCommandName(synopsisHeadingLength, text);
+        }
+
+        /** Returns a Text object containing a partial detailed synopsis showing only the options, starting with a {@code " "} space.
+         * Follows the unix convention of showing optional options and parameters in square brackets ({@code [ ]}).
+         * @param optionSort comparator to sort options or {@code null} if options should not be sorted
+         * @param clusterBooleanOptions {@code true} if boolean short options should be clustered into a single string
+         * @return the formatted options, starting with a {@code " "} space, or an empty Text if this command has no named options
+         * @since 3.9 */
+        protected Text createDetailedSynopsisOptionsText(Comparator<OptionSpec> optionSort, boolean clusterBooleanOptions) {
             Text optionText = ansi().new Text(0);
             List<OptionSpec> options = new ArrayList<OptionSpec>(commandSpec.options()); // iterate in declaration order
             if (optionSort != null) {
@@ -8627,20 +8643,48 @@ public class CommandLine {
                     }
                 }
             }
+            return optionText;
+        }
+
+        /** Returns a Text object containing a partial detailed synopsis showing only the positional parameters, starting with a {@code " "} space.
+         * Follows the unix convention of showing optional options and parameters in square brackets ({@code [ ]}).
+         * @return the formatted positional parameters, starting with a {@code " "} space, or an empty Text if this command has no positional parameters
+         * @since 3.9 */
+        protected Text createDetailedSynopsisPositionalsText() {
+            Text positionalParamText = ansi().new Text(0);
             for (PositionalParamSpec positionalParam : commandSpec.positionalParameters()) {
                 if (!positionalParam.hidden()) {
-                    optionText = optionText.concat(" ");
+                    positionalParamText = positionalParamText.concat(" ");
                     Text label = parameterLabelRenderer().renderParameterLabel(positionalParam, colorScheme.ansi(), colorScheme.parameterStyles);
-                    optionText = optionText.concat(label);
+                    positionalParamText = positionalParamText.concat(label);
                 }
             }
+            return positionalParamText;
+        }
 
-            if(!commandSpec.subcommands().isEmpty()){
-                optionText = optionText.concat(" [")
+        /** Returns a Text object containing a partial detailed synopsis showing only the subcommands, starting with a {@code " "} space.
+         * Follows the unix convention of showing optional elements in square brackets ({@code [ ]}).
+         * @return this implementation returns a hard-coded string {@code " [COMMAND]"} if this command has subcommands, an empty Text otherwise
+         * @since 3.9 */
+        protected Text createDetailedSynopsisCommandText() {
+            Text commandText = ansi().new Text(0);
+            if (!commandSpec.subcommands().isEmpty()){
+                commandText = commandText.concat(" [")
                         .concat("COMMAND")
                         .concat("]");
             }
+            return commandText;
+        }
 
+        /**
+         * Returns the detailed synopsis text by inserting the command name before the specified text with options and positional parameters details.
+         * @param synopsisHeadingLength length of the synopsis heading string to be displayed on the same line as the first synopsis line.
+         *                              For example, if the synopsis heading is {@code "Usage: "}, this value is 7.
+         * @param optionsAndPositionalsAndCommandsDetails formatted string with options, positional parameters and subcommands.
+         *          Follows the unix convention of showing optional options and parameters in square brackets ({@code [ ]}).
+         * @return the detailed synopsis text, in multiple lines if the length exceeds the usage width
+         */
+        protected String insertSynopsisCommandName(int synopsisHeadingLength, Text optionsAndPositionalsAndCommandsDetails) {
             // Fix for #142: first line of synopsis overshoots max. characters
             String commandName = commandSpec.qualifiedName();
             int firstColumnLength = commandName.length() + synopsisHeadingLength;
@@ -8651,7 +8695,7 @@ public class CommandLine {
 
             // right-adjust the command name by length of synopsis heading
             Text PADDING = Ansi.OFF.new Text(stringOf('X', synopsisHeadingLength));
-            textTable.addRowValues(PADDING.concat(colorScheme.commandText(commandName)), optionText);
+            textTable.addRowValues(PADDING.concat(colorScheme.commandText(commandName)), optionsAndPositionalsAndCommandsDetails);
             return textTable.toString().substring(synopsisHeadingLength); // cut off leading synopsis heading spaces
         }
 
