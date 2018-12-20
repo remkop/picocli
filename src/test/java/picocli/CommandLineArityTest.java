@@ -254,7 +254,7 @@ public class CommandLineArityTest {
 
     @Test
     public void testRangeEquals_OtherType()  {
-        assertNotEquals("x", Range.valueOf("0"));
+        assertNotEquals(123, Range.valueOf("0"));
     }
 
     @Test
@@ -263,6 +263,11 @@ public class CommandLineArityTest {
         assertNotEquals(Range.valueOf("2..2"), Range.valueOf("1..2"));
         assertNotEquals(Range.valueOf("1..*"), Range.valueOf("1..2"));
         assertEquals(Range.valueOf("1..*"), Range.valueOf("1..*"));
+
+        assertFalse(Range.valueOf("1..1").equals(Range.valueOf("1..2")));
+        assertFalse(Range.valueOf("2..2").equals(Range.valueOf("1..2")));
+        assertFalse(Range.valueOf("1..*").equals(Range.valueOf("1..2")));
+        assertTrue(Range.valueOf("1..*").equals(Range.valueOf("1..*")));
     }
 
     @Test
