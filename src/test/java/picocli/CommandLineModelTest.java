@@ -15,23 +15,21 @@
  */
 package picocli;
 
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.contrib.java.lang.system.SystemErrRule;
+import org.junit.contrib.java.lang.system.SystemOutRule;
+import picocli.CommandLine.*;
+import picocli.CommandLine.Help.Ansi;
+import picocli.CommandLine.Model.*;
+
 import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.sql.Types;
 import java.util.*;
 
-import org.junit.Rule;
-import org.junit.Test;
-
-import org.junit.contrib.java.lang.system.SystemErrRule;
-import org.junit.contrib.java.lang.system.SystemOutRule;
-import picocli.CommandLine.*;
-import picocli.CommandLine.Model.*;
-import picocli.CommandLine.Help.Ansi;
-
 import static org.junit.Assert.*;
-import static picocli.HelpTestUtil.setTraceLevel;
-import static picocli.HelpTestUtil.usageString;
+import static picocli.HelpTestUtil.*;
 import static picocli.HelpTestUtil.versionString;
 
 
@@ -1891,4 +1889,137 @@ public class CommandLineModelTest {
 
         assertSame(rb, sub.resourceBundle());
     }
+
+    @Test
+    public void testAliasesWithEmptyArray() {
+        CommandSpec spec = CommandSpec.wrapWithoutInspection(null);
+        assertArrayEquals(new String[0], spec.aliases());
+        spec.aliases(null);
+        assertArrayEquals(new String[0], spec.aliases());
+    }
+
+    @Test
+    public void testInitHelpCommand() {
+        CommandSpec spec = CommandSpec.wrapWithoutInspection(null);
+        assertFalse(spec.helpCommand());
+
+        CommandSpec mixin = CommandSpec.wrapWithoutInspection(null);
+        mixin.helpCommand(true);
+
+        spec.addMixin("helper", mixin);
+        assertTrue(spec.helpCommand());
+    }
+
+    @Test
+    public void testInitVersionProvider() {
+        IVersionProvider versionProvider1 = new IVersionProvider() {
+            public String[] getVersion() { return new String[0]; }
+        };
+        IVersionProvider versionProvider2 = new IVersionProvider() {
+            public String[] getVersion() { return new String[0];  }
+        };
+
+        CommandSpec spec = CommandSpec.wrapWithoutInspection(null);
+        spec.versionProvider(versionProvider1);
+
+        CommandSpec mixin = CommandSpec.wrapWithoutInspection(null);
+        mixin.versionProvider(versionProvider2);
+
+        spec.addMixin("helper", mixin);
+        assertSame(versionProvider1, spec.versionProvider());
+    }
+
+    @Test
+    public void testDefaultValueProvider() {
+        IDefaultValueProvider provider1 = new IDefaultValueProvider() {
+            public String defaultValue(ArgSpec argSpec) { return null; }
+        };
+        IDefaultValueProvider provider2 = new IDefaultValueProvider() {
+            public String defaultValue(ArgSpec argSpec) { return null; }
+        };
+
+        CommandSpec spec = CommandSpec.wrapWithoutInspection(null);
+        spec.defaultValueProvider(provider1);
+
+        CommandSpec mixin = CommandSpec.wrapWithoutInspection(null);
+        mixin.defaultValueProvider(provider2);
+
+        spec.addMixin("helper", mixin);
+        assertSame(provider1, spec.defaultValueProvider());
+    }
+
+    @Test
+    public void testResemblesOption_WhenUnmatchedArePositional() {
+        CommandSpec spec = CommandSpec.wrapWithoutInspection(null);
+        spec.parser().unmatchedOptionsArePositionalParams(true);
+        assertFalse(spec.resemblesOption("blah", null));
+
+        System.setProperty("picocli.trace", "DEBUG");
+        Tracer tracer = new Tracer();
+        System.clearProperty("picocli.trace");
+        assertFalse(spec.resemblesOption("blah", tracer));
+
+        Tracer tracer2 = new Tracer();
+        assertFalse(spec.resemblesOption("blah", tracer2));
+    }
+
+    @Test
+    public void testResemblesOption_WithoutOptions() {
+        CommandSpec spec = CommandSpec.wrapWithoutInspection(null);
+        spec.parser().unmatchedOptionsArePositionalParams(false);
+        assertFalse(spec.resemblesOption("blah", null));
+
+        System.setProperty("picocli.trace", "DEBUG");
+        Tracer tracer = new Tracer();
+        System.clearProperty("picocli.trace");
+        assertFalse(spec.resemblesOption("blah", tracer));
+        assertTrue(spec.resemblesOption("-a", tracer));
+
+        Tracer tracer2 = new Tracer();
+        assertFalse(spec.resemblesOption("blah", tracer2));
+        assertTrue(spec.resemblesOption("-a", tracer));
+    }
+
+    @Test
+    public void testResemblesOption_WithOptionsDash() {
+        CommandSpec spec = CommandSpec.wrapWithoutInspection(null);
+        spec.addOption(OptionSpec.builder("-x").build());
+
+        spec.parser().unmatchedOptionsArePositionalParams(false);
+        assertFalse(spec.resemblesOption("blah", null));
+
+        System.setProperty("picocli.trace", "DEBUG");
+        Tracer tracer = new Tracer();
+        System.clearProperty("picocli.trace");
+        assertFalse(spec.resemblesOption("blah", tracer));
+        assertTrue(spec.resemblesOption("-a", tracer));
+        assertFalse(spec.resemblesOption("/a", tracer));
+
+        Tracer tracer2 = new Tracer();
+        assertFalse(spec.resemblesOption("blah", tracer2));
+        assertTrue(spec.resemblesOption("-a", tracer));
+        assertFalse(spec.resemblesOption("/a", tracer));
+    }
+
+    @Test
+    public void testResemblesOption_WithOptionsNonDash() {
+        CommandSpec spec = CommandSpec.wrapWithoutInspection(null);
+        spec.addOption(OptionSpec.builder("/x").build());
+
+        spec.parser().unmatchedOptionsArePositionalParams(false);
+        assertFalse(spec.resemblesOption("blah", null));
+
+        System.setProperty("picocli.trace", "DEBUG");
+        Tracer tracer = new Tracer();
+        System.clearProperty("picocli.trace");
+        assertFalse(spec.resemblesOption("blah", tracer));
+        assertFalse(spec.resemblesOption("-a", tracer));
+        assertTrue(spec.resemblesOption("/a", tracer));
+
+        Tracer tracer2 = new Tracer();
+        assertFalse(spec.resemblesOption("blah", tracer2));
+        assertFalse(spec.resemblesOption("-a", tracer));
+        assertTrue(spec.resemblesOption("/a", tracer));
+    }
+
 }
