@@ -721,11 +721,16 @@ public class CommandLineModelTest {
     @Test
     public void testOptionSpecRequiresNonNullName() throws Exception {
         try {
-            OptionSpec.builder(null).build();
+            OptionSpec.builder(null, "-s").build();
             fail("Expected exception");
-        } catch (InitializationException ex) {
-            assertEquals("Invalid names: []", ex.getMessage());
+        } catch (NullPointerException ex) {
+            assertEquals("name", ex.getMessage());
         }
+    }
+
+    @Test(expected = NullPointerException.class)
+    public void testOptionSpecRequiresNonNullNameArray() throws Exception {
+        OptionSpec.builder(null).build();
     }
 
     @Test
