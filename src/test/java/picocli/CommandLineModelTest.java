@@ -729,6 +729,16 @@ public class CommandLineModelTest {
     }
 
     @Test
+    public void testOptionSpecRequiresNonEmptyName() throws Exception {
+        try {
+            OptionSpec.builder("").build();
+            fail("Expected exception");
+        } catch (InitializationException ex) {
+            assertEquals("Invalid names: []", ex.getMessage());
+        }
+    }
+
+    @Test
     public void testConversion_TODO() {
         // TODO convertion with aux types (abstract field types, generic map with and without explicit type attribute etc)
     }
@@ -2130,6 +2140,17 @@ public class CommandLineModelTest {
     }
 
     @Test
+    public void testArgSpecSetValueCallsSetter() {
+        final Object[] newVal = new Object[1];
+        ISetter setter = new ISetter() {
+            public <T> T set(T value) throws Exception { newVal[0] = value; return null; }
+        };
+        PositionalParamSpec positional = PositionalParamSpec.builder().setter(setter).build();
+        positional.setValue("abc");
+        assertEquals("abc", newVal[0]);
+    }
+
+    @Test
     public void testArgSpecSetterWrapNonPicocliException() {
         final Exception expected = new Exception("boom");
         ISetter setter = new ISetter() {
@@ -2190,5 +2211,65 @@ public class CommandLineModelTest {
         System.clearProperty("picocli.trace");
 
         assertArrayEquals(new String[] {"\"abc\\\"", "def"}, values);
+    }
+
+    @Test
+    public void testArgSpecEquals() {
+        PositionalParamSpec.Builder positional = PositionalParamSpec.builder()
+                .arity("1")
+                .hideParamSyntax(true)
+                .required(true)
+                .splitRegex(";")
+                .description("desc")
+                .descriptionKey("key")
+                .auxiliaryTypes(Integer.class);
+
+        PositionalParamSpec p1 = positional.build();
+        assertEquals(p1, p1);
+        assertEquals(p1, positional.build());
+        assertNotEquals(p1, positional.arity("2").build());
+        assertNotEquals(p1, positional.arity("1").hideParamSyntax(false).build());
+        assertNotEquals(p1, positional.hideParamSyntax(true).required(false).build());
+        assertNotEquals(p1, positional.required(true).splitRegex(",").build());
+        assertNotEquals(p1, positional.splitRegex(";").description("xyz").build());
+        assertNotEquals(p1, positional.description("desc").descriptionKey("XX").build());
+        assertNotEquals(p1, positional.descriptionKey("key").auxiliaryTypes(Short.class).build());
+        assertEquals(p1, positional.auxiliaryTypes(Integer.class).build());
+    }
+
+    @Test
+    public void testArgSpecBuilderDescriptionKey() {
+        PositionalParamSpec.Builder positional = PositionalParamSpec.builder()
+                .descriptionKey("key");
+
+        assertEquals("key", positional.descriptionKey());
+        assertEquals("xxx", positional.descriptionKey("xxx").descriptionKey());
+    }
+
+    @Test
+    public void testArgSpecBuilderHideParamSyntax() {
+        PositionalParamSpec.Builder positional = PositionalParamSpec.builder()
+                .hideParamSyntax(true);
+
+        assertEquals(true, positional.hideParamSyntax());
+        assertEquals(false, positional.hideParamSyntax(false).hideParamSyntax());
+    }
+
+    @Test
+    public void testArgSpecBuilderHasInitialValue() {
+        PositionalParamSpec.Builder positional = PositionalParamSpec.builder()
+                .hasInitialValue(true);
+
+        assertEquals(true, positional.hasInitialValue());
+        assertEquals(false, positional.hasInitialValue(false).hasInitialValue());
+    }
+
+    @Test
+    public void testArgSpecBuilderCompletionCandidates() {
+        List<String> candidates = Arrays.asList("a", "b");
+        PositionalParamSpec.Builder positional = PositionalParamSpec.builder()
+                .completionCandidates(candidates);
+
+        assertEquals(candidates, positional.completionCandidates());
     }
 }
