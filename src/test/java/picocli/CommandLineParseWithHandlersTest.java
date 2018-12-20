@@ -839,6 +839,31 @@ public class CommandLineParseWithHandlersTest {
         }
     }
 
+    @Test
+    public void testHandlerThrowsExecutionException2() {
+        @Command
+        class App { }
+
+        IParseResultHandler2<Void> handler = new IParseResultHandler2<Void>() {
+            public Void handleParseResult(ParseResult parseResult) throws ExecutionException {
+                throw new ExecutionException(new CommandLine(new App()), "xyz");
+            }
+        };
+        IExceptionHandler2<Void> exceptionHandler = new IExceptionHandler2<Void>() {
+            public Void handleParseException(ParameterException ex, String[] args) {
+                return null;
+            }
+            public Void handleExecutionException(ExecutionException ex, ParseResult parseResult) {
+                return null;
+            }
+        };
+        try {
+            new CommandLine(new App()).parseWithHandlers(handler, exceptionHandler, new String[0]);
+        } catch (ExecutionException ex) {
+            assertEquals("xyz", ex.getMessage());
+        }
+    }
+
     @Command
     static class Executable implements Runnable, Callable<Void> {
 
