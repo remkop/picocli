@@ -719,6 +719,16 @@ public class CommandLineModelTest {
     }
 
     @Test
+    public void testOptionSpecRequiresNonNullName() throws Exception {
+        try {
+            OptionSpec.builder(null).build();
+            fail("Expected exception");
+        } catch (InitializationException ex) {
+            assertEquals("Invalid names: []", ex.getMessage());
+        }
+    }
+
+    @Test
     public void testOptionSpecRequiresAtLeastOneName() throws Exception {
         try {
             OptionSpec.builder(new String[0]).build();
