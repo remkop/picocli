@@ -1821,4 +1821,74 @@ public class CommandLineModelTest {
         assertEquals("i18n-top.i18n-sub", sub.getCommandSpec().qualifiedName("."));
         assertEquals("i18n-top.i18n-sub.help", sub.getSubcommands().get("help").getCommandSpec().qualifiedName("."));
     }
+
+    @Test
+    public void testCommandSpecParserSetter() {
+        CommandSpec spec = CommandSpec.wrapWithoutInspection(null);
+        ParserSpec old = spec.parser();
+        assertSame(old, spec.parser());
+        assertFalse(spec.parser().collectErrors());
+        assertFalse(spec.parser().caseInsensitiveEnumValuesAllowed());
+
+        ParserSpec update = new ParserSpec().collectErrors(true).caseInsensitiveEnumValuesAllowed(true);
+        spec.parser(update);
+        assertSame(old, spec.parser());
+        assertTrue(spec.parser().collectErrors());
+        assertTrue(spec.parser().caseInsensitiveEnumValuesAllowed());
+    }
+
+    @Test
+    public void testCommandSpecUsageMessageSetter() {
+        CommandSpec spec = CommandSpec.wrapWithoutInspection(null);
+        UsageMessageSpec old = spec.usageMessage();
+        assertSame(old, spec.usageMessage());
+        assertArrayEquals(new String[0], spec.usageMessage().description());
+
+        UsageMessageSpec update = new UsageMessageSpec().description("hi");
+        spec.usageMessage(update);
+        assertSame(old, spec.usageMessage());
+        assertArrayEquals(new String[] {"hi"}, spec.usageMessage().description());
+    }
+
+    @Test
+    public void testCommandSpecAddSubcommand_DisallowsDuplicateSubcommandNames() {
+        CommandSpec spec = CommandSpec.wrapWithoutInspection(null);
+        CommandSpec sub = CommandSpec.wrapWithoutInspection(null);
+
+        spec.addSubcommand("a", new CommandLine(sub));
+        try {
+            spec.addSubcommand("a", new CommandLine(sub));
+        } catch (InitializationException ex) {
+            assertEquals("Another subcommand named 'a' already exists for command '<main class>'", ex.getMessage());
+        }
+    }
+
+    @Test
+    public void testCommandSpecAddSubcommand_DisallowsDuplicateSubcommandAliases() {
+        CommandSpec spec = CommandSpec.wrapWithoutInspection(null);
+        CommandSpec sub = CommandSpec.wrapWithoutInspection(null);
+
+        spec.addSubcommand("a", new CommandLine(sub));
+
+        CommandSpec sub2 = CommandSpec.wrapWithoutInspection(null);
+        sub2.aliases("a");
+        try {
+            spec.addSubcommand("x", new CommandLine(sub2));
+        } catch (InitializationException ex) {
+            assertEquals("Alias 'a' for subcommand 'x' is already used by another subcommand of '<main class>'", ex.getMessage());
+        }
+    }
+
+    @Test
+    public void testCommandSpecAddSubcommand_SubcommandInheritsResourceBundle() {
+        ResourceBundle rb = ResourceBundle.getBundle("picocli.SharedMessages");
+        CommandSpec spec = CommandSpec.wrapWithoutInspection(null);
+        spec.resourceBundle(rb);
+        assertSame(rb, spec.resourceBundle());
+
+        CommandSpec sub = CommandSpec.wrapWithoutInspection(null);
+        spec.addSubcommand("a", new CommandLine(sub));
+
+        assertSame(rb, sub.resourceBundle());
+    }
 }
