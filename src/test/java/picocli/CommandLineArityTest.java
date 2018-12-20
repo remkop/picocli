@@ -20,8 +20,10 @@ import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 import picocli.CommandLine.*;
+import picocli.CommandLine.Model.PositionalParamSpec;
 
 import java.io.File;
+import java.lang.reflect.Method;
 import java.net.InetAddress;
 import java.util.Arrays;
 import java.util.List;
@@ -117,11 +119,21 @@ public class CommandLineArityTest {
     }
 
     private static class SupportedTypes2 {
+        String nonOptionField;
+
         @Option(names = "-boolean")       boolean booleanField;
         @Option(names = "-int")           int intField;
     }
 
-     @Test
+    @Test
+    public void testOptionArity_forNonAnnotatedField() throws Exception {
+        Range arity = Range.optionArity(SupportedTypes2.class.getDeclaredField("nonOptionField"));
+        assertEquals(0, arity.max);
+        assertEquals(0, arity.min);
+        assertEquals(false, arity.isVariable);
+        assertEquals("0", arity.toString());
+    }
+    @Test
     public void testArityForOption_booleanFieldImplicitArity0() throws Exception {
         Range arity = Range.optionArity(SupportedTypes2.class.getDeclaredField("booleanField"));
         assertEquals(Range.valueOf("0"), arity);
@@ -156,6 +168,103 @@ public class CommandLineArityTest {
         assertEquals(Range.valueOf("1"), arity);
         assertEquals("1", arity.toString());
     }
+
+    @Test
+    public void testParameterArityWithOptionMember() throws Exception {
+        class ImplicitBoolField { @Option(names = "-x") boolean boolSingleValue; }
+        Range arity = Range.parameterArity(ImplicitBoolField.class.getDeclaredField("boolSingleValue"));
+        assertEquals(0, arity.max);
+        assertEquals(0, arity.min);
+        assertEquals(false, arity.isVariable);
+        assertEquals("0", arity.toString());
+    }
+
+    @Test
+    public void testParameterIndex_WhenUndefined() throws Exception {
+        class ImplicitBoolField { @Parameters boolean boolSingleValue; }
+        Range arity = Range.parameterIndex(ImplicitBoolField.class.getDeclaredField("boolSingleValue"));
+        assertEquals(Integer.MAX_VALUE, arity.max);
+        assertEquals(0, arity.min);
+        assertEquals(true, arity.isVariable);
+        assertEquals("0..*", arity.toString());
+    }
+
+    @Test
+    public void testParameterIndex_WhenDefined() throws Exception {
+        class ImplicitBoolField { @Parameters(index = "2..3") boolean boolSingleValue; }
+        Range arity = Range.parameterIndex(ImplicitBoolField.class.getDeclaredField("boolSingleValue"));
+        assertEquals(3, arity.max);
+        assertEquals(2, arity.min);
+        assertEquals(false, arity.isVariable);
+        assertEquals("2..3", arity.toString());
+    }
+
+    @Test
+    public void testDefaultArity_Field() throws Exception {
+        class ImplicitBoolField {
+            @Option(names = "-x") boolean x;
+            @Option(names = "-y") int y;
+            @Option(names = "-z") List<String> z;
+            @Parameters boolean a;
+            @Parameters int b;
+            @Parameters List<String> c;
+        }
+        assertEquals(Range.valueOf("0"),    Range.defaultArity(ImplicitBoolField.class.getDeclaredField("x")));
+        assertEquals(Range.valueOf("1"),    Range.defaultArity(ImplicitBoolField.class.getDeclaredField("y")));
+        assertEquals(Range.valueOf("1"),    Range.defaultArity(ImplicitBoolField.class.getDeclaredField("z")));
+        assertEquals(Range.valueOf("1"),    Range.defaultArity(ImplicitBoolField.class.getDeclaredField("a")));
+        assertEquals(Range.valueOf("1"),    Range.defaultArity(ImplicitBoolField.class.getDeclaredField("b")));
+        assertEquals(Range.valueOf("0..1"), Range.defaultArity(ImplicitBoolField.class.getDeclaredField("c")));
+    }
+
+    @Test
+    public void testDefaultArity_Class() {
+        assertEquals(Range.valueOf("0"), Range.defaultArity(Boolean.TYPE));
+        assertEquals(Range.valueOf("0"), Range.defaultArity(Boolean.class));
+        assertEquals(Range.valueOf("1"), Range.defaultArity(Integer.TYPE));
+        assertEquals(Range.valueOf("1"), Range.defaultArity(Integer.class));
+        assertEquals(Range.valueOf("1"), Range.defaultArity(List.class));
+        assertEquals(Range.valueOf("1"), Range.defaultArity(String[].class));
+        assertEquals(Range.valueOf("1"), Range.defaultArity(Map.class));
+    }
+
+    @Test
+    public void testParameterCapacity() throws Exception {
+        PositionalParamSpec paramSpec = PositionalParamSpec.builder().index(Range.valueOf("1..2")).arity(Range.valueOf("*")).build();
+        Method capacity = PositionalParamSpec.class.getDeclaredMethod("capacity");
+        capacity.setAccessible(true);
+        Range c = (Range) capacity.invoke(paramSpec);
+        assertEquals(Range.valueOf("*"), c);
+    }
+
+    @Test
+    public void testValueOf_EmptyString() throws Exception {
+        assertEquals(Range.valueOf("*"), Range.valueOf(""));
+    }
+
+    @Test
+    public void testValueOf_Invalid() throws Exception {
+        assertEquals(Range.valueOf("0..3"), Range.valueOf("..3"));
+    }
+
+    @Test
+    public void testMaxSetter()  {
+        assertEquals(Range.valueOf("0..3"), Range.valueOf("0").max(3));
+    }
+
+    @Test
+    public void testRangeEquals_OtherType()  {
+        assertNotEquals("x", Range.valueOf("0"));
+    }
+
+    @Test
+    public void testRangeEquals_MinMaxVariable()  {
+        assertNotEquals(Range.valueOf("1..1"), Range.valueOf("1..2"));
+        assertNotEquals(Range.valueOf("2..2"), Range.valueOf("1..2"));
+        assertNotEquals(Range.valueOf("1..*"), Range.valueOf("1..2"));
+        assertEquals(Range.valueOf("1..*"), Range.valueOf("1..*"));
+    }
+
     @Test
     public void testArityForParameters_booleanFieldImplicitArity1() throws Exception {
         class ImplicitBoolField { @Parameters boolean boolSingleValue; }
@@ -975,7 +1084,7 @@ public class CommandLineArityTest {
         } catch (MissingParameterException ex) {
             assertEquals("Expected parameter 2 (of 2 mandatory parameters) for positional parameter at index 0..* (<parameters>) but found '-o'", ex.getMessage());
             assertEquals(1, ex.getMissing().size());
-            assertTrue(ex.getMissing().get(0).toString(), ex.getMissing().get(0) instanceof Model.PositionalParamSpec);
+            assertTrue(ex.getMissing().get(0).toString(), ex.getMissing().get(0) instanceof PositionalParamSpec);
         }
 
         try {
@@ -984,7 +1093,7 @@ public class CommandLineArityTest {
         } catch (MissingParameterException ex) {
             assertEquals("positional parameter at index 0..* (<parameters>) requires at least 2 values, but only 1 were specified: [p3]", ex.getMessage());
             assertEquals(1, ex.getMissing().size());
-            assertTrue(ex.getMissing().get(0).toString(), ex.getMissing().get(0) instanceof Model.PositionalParamSpec);
+            assertTrue(ex.getMissing().get(0).toString(), ex.getMissing().get(0) instanceof PositionalParamSpec);
         }
     }
 
@@ -1324,5 +1433,15 @@ public class CommandLineArityTest {
         } catch (ParameterException ex) {
             assertEquals("option '--explicit' (<explicit>) should be specified without 'false' parameter", ex.getMessage());
         }
+    }
+
+    @Test(expected = InitializationException.class)
+    public void testRangeConstructorDisallowsNegativeMin() {
+        new Range(-1, 2, false, false, "");
+    }
+
+    @Test(expected = InitializationException.class)
+    public void testRangeConstructorDisallowsNegativeMax() {
+        new Range(0, -2, false, false, "");
     }
 }
