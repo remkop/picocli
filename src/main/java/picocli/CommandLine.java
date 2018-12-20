@@ -4131,9 +4131,6 @@ public class CommandLine {
             void initHelpCommand(boolean value)         { if (initializable(isHelpCommand, value, DEFAULT_IS_HELP_COMMAND))               {isHelpCommand = value;} }
             void initVersion(String[] value)            { if (initializable(version, value, UsageMessageSpec.DEFAULT_MULTI_LINE))         {version = value.clone();} }
             void initVersionProvider(IVersionProvider value) { if (versionProvider == null) { versionProvider = value; } }
-            void initVersionProvider(Class<? extends IVersionProvider> value, IFactory factory) {
-                if (initializable(versionProvider, value, NoVersionProvider.class)) { versionProvider = (DefaultFactory.createVersionProvider(factory, value)); }
-            }
             void initDefaultValueProvider(IDefaultValueProvider value) { if (defaultValueProvider == null) { defaultValueProvider = value; } }
             void initDefaultValueProvider(Class<? extends IDefaultValueProvider> value, IFactory factory) {
                 if (initializable(defaultValueProvider, value, NoDefaultProvider.class)) { defaultValueProvider = (DefaultFactory.createDefaultValueProvider(factory, value)); }
@@ -10327,7 +10324,7 @@ public class CommandLine {
         private String prefix(String msg) { return "[picocli " + this + "] " + msg; }
         static TraceLevel lookup(String key) { return key == null ? WARN : empty(key) || "true".equalsIgnoreCase(key) ? INFO : valueOf(key); }
     }
-    private static class Tracer {
+    static class Tracer {
         TraceLevel level = TraceLevel.lookup(System.getProperty("picocli.trace"));
         PrintStream stream = System.err;
         void warn (String msg, Object... params) { TraceLevel.WARN.print(this, msg, params); }
