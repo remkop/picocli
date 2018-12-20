@@ -2022,4 +2022,42 @@ public class CommandLineModelTest {
         assertTrue(spec.resemblesOption("/a", tracer));
     }
 
+    @Test
+    public void testUsageSpec_CustomSynopsisSetter() {
+        UsageMessageSpec usage = new UsageMessageSpec();
+        assertArrayEquals(new String[0], usage.customSynopsis());
+
+        usage.customSynopsis("abc", "def");
+        assertArrayEquals(new String[] {"abc", "def"}, usage.customSynopsis());
+    }
+
+    @Test
+    public void testUsageSpec_HiddenSetter() {
+        UsageMessageSpec usage = new UsageMessageSpec();
+        assertFalse(usage.hidden());
+
+        usage.hidden(true);
+        assertTrue(usage.hidden());
+    }
+
+    @Test
+    public void testUsageSpec_commandListHeading() {
+        UsageMessageSpec usage = new UsageMessageSpec();
+        assertEquals("Commands:%n", usage.commandListHeading());
+
+        usage.commandListHeading("abcdef");
+        assertEquals("abcdef", usage.commandListHeading());
+    }
+
+    @Test
+    public void testUsageSpec_InitFromMixin() {
+        UsageMessageSpec usage = new UsageMessageSpec();
+        assertFalse(usage.hidden());
+
+        UsageMessageSpec mixin = new UsageMessageSpec();
+        mixin.hidden(true);
+        usage.initFromMixin(mixin, null);
+
+        assertTrue(usage.hidden());
+    }
 }
