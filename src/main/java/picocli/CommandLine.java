@@ -3848,7 +3848,7 @@ public class CommandLine {
              */
             public CommandSpec addMethodSubcommands(IFactory factory) {
                 if (userObject() instanceof Method) {
-                     throw new UnsupportedOperationException("cannot discover methods of non-class: " + userObject());
+                     throw new InitializationException("Cannot discover subcommand methods of this Command Method: " + userObject());
                 }
                 for (Method method : getCommandMethods(userObject().getClass(), null)) {
                     CommandLine cmd = new CommandLine(method, factory);

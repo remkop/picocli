@@ -989,4 +989,25 @@ public class CommandLineCommandMethodTest {
             assertTrue(ex.getMessage().startsWith("Expected exactly one @Command-annotated method for "));
         }
     }
+
+    @Test
+    public void testAddMethodSubcommands() {
+        CommandSpec spec = CommandSpec.wrapWithoutInspection(new StaticMethodCommand(1));
+        assertEquals(0, spec.subcommands().size());
+
+        spec.addMethodSubcommands();
+        assertEquals(4, spec.subcommands().size());
+    }
+
+    @Test
+    public void testAddMethodSubcommands_DisallowedIfUserObjectIsMethod() throws Exception{
+        Method m = MethodApp.class.getDeclaredMethod("run1", int.class);
+        CommandSpec spec = CommandSpec.wrapWithoutInspection(m);
+
+        try {
+            spec.addMethodSubcommands();
+        } catch (InitializationException ex) {
+            assertEquals("Cannot discover subcommand methods of this Command Method: int picocli.CommandLineCommandMethodTest$MethodApp.run1(int)", ex.getMessage());
+        }
+    }
 }

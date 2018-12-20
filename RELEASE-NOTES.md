@@ -68,12 +68,13 @@ This ordering may be modified with the `CommandLine::setHelpSectionKeys` setter 
 - [#530] Usage message customization. Thanks to [stechio](https://github.com/stechio) for raising the request and productive discussions.
 - [#570] Command method options and positional parameter Object values are now cleared correctly when reusing CommandLine. Thanks to [Christian Helmer](https://github.com/SysLord) for the pull request.
 - [#569] Facilitate customization of the synopsis: split `Help.detailedSynopsis()` into protected methods.
+- [#572] `CommandSpec.addMethodSubcommands` now throws `picocli.CommandLine.InitializationException` instead of `java.lang.UnsupportedOperationException` when the user object of the parent command is a `java.lang.reflect.Method`.
 
 ## <a name="3.9.0-deprecated"></a> Deprecations
 No features were deprecated in this release.
 
 ## <a name="3.9.0-breaking-changes"></a> Potential breaking changes
-This is release has no breaking changes.
+`CommandSpec.addMethodSubcommands` now throws `InitializationException` instead of `java.lang.UnsupportedOperationException` when the user object of the parent command is a `java.lang.reflect.Method`.
 
 
 # <a name="3.8.2"></a> Picocli 3.8.2
