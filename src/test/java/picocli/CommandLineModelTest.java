@@ -2060,4 +2060,135 @@ public class CommandLineModelTest {
 
         assertTrue(usage.hidden());
     }
+
+    @Test
+    public void testArgSpecConstructorWithEmptyAuxTypes() {
+        PositionalParamSpec positional = PositionalParamSpec.builder().auxiliaryTypes(new Class[0]).build();
+        assertEquals(Range.valueOf("1"), positional.arity());
+        assertEquals(String.class, positional.type());
+        assertArrayEquals(new Class[] {String.class}, positional.auxiliaryTypes());
+    }
+
+    @Test
+    public void testArgSpecRenderedDescriptionInitial() {
+        PositionalParamSpec positional = PositionalParamSpec.builder().build();
+        assertArrayEquals(new String[0], positional.renderedDescription());
+
+        PositionalParamSpec positional2 = PositionalParamSpec.builder().description(new String[0]).build();
+        assertArrayEquals(new String[0], positional2.renderedDescription());
+    }
+
+    @Test
+    public void testArgSpecGetter() {
+        IGetter getter = new IGetter() {
+            public <T> T get() { return null; }
+        };
+        PositionalParamSpec positional = PositionalParamSpec.builder().getter(getter).build();
+        assertSame(getter, positional.getter());
+    }
+
+    @Test
+    public void testArgSpecGetterRethrowsPicocliException() {
+        final PicocliException expected = new PicocliException("boom");
+        IGetter getter = new IGetter() {
+            public <T> T get() { throw expected; }
+        };
+        PositionalParamSpec positional = PositionalParamSpec.builder().getter(getter).build();
+        try {
+            positional.getValue();
+        } catch (PicocliException ex) {
+            assertSame(expected, ex);
+        }
+    }
+
+    @Test
+    public void testArgSpecGetterWrapNonPicocliException() {
+        final Exception expected = new Exception("boom");
+        IGetter getter = new IGetter() {
+            public <T> T get() throws Exception { throw expected; }
+        };
+        PositionalParamSpec positional = PositionalParamSpec.builder().getter(getter).build();
+        try {
+            positional.getValue();
+        } catch (PicocliException ex) {
+            assertSame(expected, ex.getCause());
+        }
+    }
+
+    @Test
+    public void testArgSpecSetterRethrowsPicocliException() {
+        final PicocliException expected = new PicocliException("boom");
+        ISetter setter = new ISetter() {
+            public <T> T set(T value) throws Exception { throw expected; }
+        };
+        PositionalParamSpec positional = PositionalParamSpec.builder().setter(setter).build();
+        try {
+            positional.setValue("abc");
+        } catch (PicocliException ex) {
+            assertSame(expected, ex);
+        }
+    }
+
+    @Test
+    public void testArgSpecSetterWrapNonPicocliException() {
+        final Exception expected = new Exception("boom");
+        ISetter setter = new ISetter() {
+            public <T> T set(T value) throws Exception { throw expected; }
+        };
+        PositionalParamSpec positional = PositionalParamSpec.builder().setter(setter).build();
+        try {
+            positional.setValue("abc");
+        } catch (PicocliException ex) {
+            assertSame(expected, ex.getCause());
+        }
+    }
+
+    @Test
+    public void testArgSpecSetter2WrapNonPicocliException() {
+        final Exception expected = new Exception("boom");
+        ISetter setter = new ISetter() {
+            public <T> T set(T value) throws Exception { throw expected; }
+        };
+        PositionalParamSpec positional = PositionalParamSpec.builder().setter(setter).build();
+        try {
+            positional.setValue("abc", new CommandLine(CommandSpec.create()));
+        } catch (PicocliException ex) {
+            assertSame(expected, ex.getCause());
+        }
+    }
+
+    @Test
+    public void testArgSpecSplitValueDebug() {
+        PositionalParamSpec positional = PositionalParamSpec.builder().splitRegex("b").build();
+
+        System.setProperty("picocli.trace", "DEBUG");
+        String[] values = positional.splitValue("abc", new ParserSpec().splitQuotedStrings(true), Range.valueOf("1"), 1);
+        System.clearProperty("picocli.trace");
+
+        assertArrayEquals(new String[] {"a", "c"}, values);
+    }
+
+    @Test
+    public void testArgSpecSplitBalancedQuotedValueDebug() {
+        PositionalParamSpec positional = PositionalParamSpec.builder().splitRegex(";").build();
+
+        System.setProperty("picocli.trace", "DEBUG");
+        String value = "\"abc\\\";def\"";
+        String[] values = positional.splitValue(value, new ParserSpec().splitQuotedStrings(false), Range.valueOf("1"), 1);
+        System.clearProperty("picocli.trace");
+
+        assertArrayEquals(new String[] {"\"abc\\\";def\""}, values);
+    }
+
+    @Test
+    public void testArgSpecSplitUnbalancedQuotedValueDebug() {
+        PositionalParamSpec positional = PositionalParamSpec.builder().splitRegex(";").build();
+
+        System.setProperty("picocli.trace", "DEBUG");
+        String value = "\"abc\\\";def";
+        String[] values = positional.splitValue(value, new ParserSpec().splitQuotedStrings(false), Range.valueOf("1"), 1);
+        System.clearProperty("picocli.trace");
+
+        assertArrayEquals(new String[] {"\"abc\\\"", "def"}, values);
+    }
 }

@@ -5039,7 +5039,7 @@ public class CommandLine {
              * @since 3.2 */
             public String[] renderedDescription()  {
                 String[] desc = description();
-                if (desc == null || desc.length == 0) { return desc; }
+                if (desc.length == 0) { return desc; }
                 StringBuilder candidates = new StringBuilder();
                 if (completionCandidates() != null) {
                     for (String c : completionCandidates()) {
