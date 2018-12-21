@@ -25,6 +25,8 @@ import picocli.CommandLine.Model.*;
 
 import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.sql.Types;
 import java.util.*;
 
@@ -2420,5 +2422,121 @@ public class CommandLineModelTest {
         assertSame(def, new Messages(CommandSpec.create(), rb).getStringArray(null, def));
 
         assertNotEquals(def, new Messages(CommandSpec.create(), rb).getStringArray("usage.description", def));
+    }
+
+    @Test
+    public void testCommandReflection() throws Exception {
+        Class<?> reflection = Class.forName("picocli.CommandLine$Model$CommandReflection");
+        Method extractCommandSpec = reflection.getDeclaredMethod("extractCommandSpec", Object.class, IFactory.class, boolean.class);
+
+        IFactory myFactory = new IFactory() {
+            public <K> K create(Class<K> cls) throws Exception {
+                throw new InitializationException("boom");
+            }
+        };
+
+        try {
+            extractCommandSpec.invoke(null, Object.class, myFactory, false);
+            fail("expected Exception");
+        } catch (InvocationTargetException ite) {
+            InitializationException ex = (InitializationException) ite.getCause();
+            assertEquals("Could not instantiate class java.lang.Object: picocli.CommandLine$InitializationException: boom", ex.getMessage());
+        }
+    }
+
+    @Command(subcommands = InvalidSub.class)
+    static class InvalidTop {}
+
+    @Command(name = "invalidsub")
+    static class InvalidSub {
+        public InvalidSub(int x) {}
+    }
+
+    @Test
+    public void testCommandReflection_initSubcommands() throws Exception {
+        try {
+            CommandSpec.forAnnotatedObject(InvalidTop.class);
+        } catch (InitializationException ex) {
+            assertEquals("Cannot instantiate subcommand picocli.CommandLineModelTest$InvalidSub: the class has no constructor", ex.getMessage());
+        }
+    }
+
+    @Command(subcommands = InvalidSub2.class)
+    static class InvalidTop2 {}
+
+    @Command(name = "<main class>")
+    static class InvalidSub2 {
+    }
+
+    @Test
+    public void testCommandReflection_subcommandName() throws Exception {
+        try {
+            CommandSpec.forAnnotatedObject(InvalidTop2.class);
+        } catch (InitializationException ex) {
+            assertEquals("Subcommand picocli.CommandLineModelTest$InvalidSub2 is missing the mandatory @Command annotation with a 'name' attribute", ex.getMessage());
+        }
+    }
+
+    static class TypedMemberObj {
+        int x;
+    }
+    @Test
+    public void testCommandReflection_validateMixin() throws Exception {
+        Class<?> reflection = Class.forName("picocli.CommandLine$Model$CommandReflection");
+        Method validateMixin = reflection.getDeclaredMethod("validateMixin", TypedMember.class);
+        validateMixin.setAccessible(true);
+
+        TypedMember typedMember = new TypedMember(TypedMemberObj.class.getDeclaredField("x"));
+        try {
+            validateMixin.invoke(null, typedMember);
+            fail("expected Exception");
+        } catch (InvocationTargetException ite) {
+            IllegalStateException ex = (IllegalStateException) ite.getCause();
+            assertEquals("Bug: validateMixin() should only be called with mixins", ex.getMessage());
+        }
+    }
+    @Test
+    public void testCommandReflection_validateUnmatched() throws Exception {
+        Class<?> reflection = Class.forName("picocli.CommandLine$Model$CommandReflection");
+        Method validateUnmatched = reflection.getDeclaredMethod("validateUnmatched", TypedMember.class);
+        validateUnmatched.setAccessible(true);
+
+        TypedMember typedMember = new TypedMember(TypedMemberObj.class.getDeclaredField("x"));
+        validateUnmatched.invoke(null, typedMember); // no error
+    }
+
+    static class ValidateArgSpecField {
+        @Mixin
+        @Option(names = "-x")
+        int x;
+
+        @Option(names = "-final")
+        final Object f = new Object();
+    }
+
+    @Test
+    public void testCommandReflection_validateArgSpecField() throws Exception {
+        Class<?> reflection = Class.forName("picocli.CommandLine$Model$CommandReflection");
+        Method validateArgSpecField = reflection.getDeclaredMethod("validateArgSpecField", TypedMember.class);
+        validateArgSpecField.setAccessible(true);
+
+        TypedMember typedMember = new TypedMember(ValidateArgSpecField.class.getDeclaredField("x"));
+        try {
+            validateArgSpecField.invoke(null, typedMember);
+            fail("expected Exception");
+        } catch (InvocationTargetException ite) {
+            DuplicateOptionAnnotationsException ex = (DuplicateOptionAnnotationsException) ite.getCause();
+            assertEquals("A member cannot be both a @Mixin command and an @Option or @Parameters, but 'int picocli.CommandLineModelTest$ValidateArgSpecField.x' is both.", ex.getMessage());
+        }
+    }
+
+    @Test
+    public void testCommandReflection_validateArgSpecField_final() throws Exception {
+        Class<?> reflection = Class.forName("picocli.CommandLine$Model$CommandReflection");
+        Method validateArgSpecField = reflection.getDeclaredMethod("validateArgSpecField", TypedMember.class);
+        validateArgSpecField.setAccessible(true);
+
+        TypedMember typedMember = new TypedMember(ValidateArgSpecField.class.getDeclaredField("f"));
+        validateArgSpecField.invoke(null, typedMember); // no error
     }
 }
