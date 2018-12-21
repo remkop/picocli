@@ -19,7 +19,7 @@ public class I18nSubclass2 extends I18nSuperclass {
     @Option(names = {"-c", "--ccc"}, description = "orig sub2 ccc description")
     String c;
 
-    @Parameters(index = "2", description = "sub2")
+    @Parameters(index = "2", description = "sub2", descriptionKey = "SUB2PARAMDESC")
     String param2;
 
     @Parameters(index = "3", description = "orig sub2 param1 description")

@@ -2301,6 +2301,34 @@ public class CommandLineModelTest {
     }
 
     @Test
+    public void testPositionalParamSpecEquals() {
+        PositionalParamSpec.Builder positional = PositionalParamSpec.builder()
+                .arity("1")
+                .hideParamSyntax(true)
+                .required(true)
+                .splitRegex(";")
+                .description("desc")
+                .descriptionKey("key")
+                .auxiliaryTypes(Integer.class, Double.class)
+                .index("1..3");
+
+        PositionalParamSpec p1 = positional.build();
+        assertEquals(p1, p1);
+        assertEquals(p1, positional.build());
+        assertNotEquals(p1, positional.arity("2").build());
+        assertNotEquals(p1, positional.arity("1").hideParamSyntax(false).build());
+        assertNotEquals(p1, positional.hideParamSyntax(true).required(false).build());
+        assertNotEquals(p1, positional.required(true).splitRegex(",").build());
+        assertNotEquals(p1, positional.splitRegex(";").description("xyz").build());
+        assertNotEquals(p1, positional.description("desc").descriptionKey("XX").build());
+        assertNotEquals(p1, positional.descriptionKey("key").auxiliaryTypes(Short.class).build());
+        assertEquals(p1, positional.auxiliaryTypes(Integer.class, Double.class).build());
+
+        assertNotEquals(p1, positional.index("0..*").build());
+        assertEquals(p1, positional.index("1..3").build());
+    }
+
+    @Test
     public void testArgSpecBuilderDescriptionKey() {
         PositionalParamSpec.Builder positional = PositionalParamSpec.builder()
                 .descriptionKey("key");

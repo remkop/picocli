@@ -132,7 +132,8 @@ public class I18nTest {
                 "      <param0>    parameter 0 description[0] from subbundle%n" +
                 "                  parameter 0 description[1] from subbundle%n" +
                 "      <param1>    super param1 description%n" +
-                "      <param2>    sub2%n" +
+                "      <param2>    parameter with descriptionKey line 1%n" +
+                "                  parameter with descriptionKey line 2%n" +
                 "      <param3>    orig sub2 param1 description%n" +
                 "super option list heading%n" +
                 "  -a, --aaa=<a>%n" +
