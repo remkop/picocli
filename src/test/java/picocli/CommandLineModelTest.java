@@ -839,6 +839,15 @@ public class CommandLineModelTest {
     }
 
     @Test
+    public void testUnmatchedArgsBinding_GetterAndSetterBothNull() {
+        try {
+            UnmatchedArgsBinding.forStringArrayConsumer(null);
+        } catch (IllegalArgumentException ex) {
+            assertEquals("Getter and setter cannot both be null", ex.getMessage());
+        }
+    }
+
+    @Test
     public void testUnmatchedArgsBinding_forStringArrayConsumer() {
         setTraceLevel("OFF");
         class ArrayBinding implements ISetter {
