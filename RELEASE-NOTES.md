@@ -3,7 +3,10 @@
 # <a name="3.9.0"></a> Picocli 3.9.0 (UNRELEASED)
 The picocli community is pleased to announce picocli 3.9.0.
 
-This release contains API enhancements to allow customization of the usage help message.
+This release contains API enhancements to allow customization of the usage help message:
+
+* help section renderer API
+* option order attribute
 
 Bugfix: Command method options and positional parameter Object values are now cleared correctly when reusing a CommandLine instance.
 
@@ -18,11 +21,12 @@ Picocli follows [semantic versioning](http://semver.org/).
 
 ## <a name="3.9.0-new"></a> New and Noteworthy
 
-This release introduces new API to facilitate customizing the usage help message:
-`IHelpFactory` allows applications to plug in `Help` subclasses, and 
-`IHelpSectionRenderer` allows applications to add custom sections to the usage help message, or redefine existing sections.
+### <a name="3.9.0-helpsectionrenderer"></a> Help Section Renderer API
+
+This release introduces new API to facilitate customizing the usage help message: `IHelpFactory` allows applications to plug in `Help` subclasses, and `IHelpSectionRenderer` allows applications to add custom sections to the usage help message, or redefine existing sections.
 
 The usage help message is no longer hard-coded, but is now constructed from the section renderers defined in `CommandLine::getHelpSectionMap` (or `UsageMessageSpec::sectionMap` for a single `CommandSpec`).
+
 By default this map contains the predefined section renderers:
 
 ```java
@@ -63,12 +67,23 @@ Applications can add, remove or replace sections in this map. The `CommandLine::
 
 This ordering may be modified with the `CommandLine::setHelpSectionKeys` setter method (or `UsageMessageSpec::sectionKeys(List)` for a single `CommandSpec`).
 
+
+### <a name="3.9.0-order"></a> Option `order` Attribute
+
+Options are sorted alphabetically by default, but this can be switched off by specifying `@Command(sortOptions = false)` on the command declaration. This displays options in the order they are declared.
+
+However, when mixing `@Option` methods and `@Option` fields, options do not reliably appear in declaration order.
+
+The `@Option(order = <int>)` attribute can be used to explicitly control the position in the usage help message at which the option should be shown. Options with a lower number are shown before options with a higher number.
+
+
 ## <a name="3.9.0-fixes"></a> Fixed issues
 - [#567] Usage message customization initial implementation. Thanks to [Christian Helmer](https://github.com/SysLord) for the pull request.
 - [#530] Usage message customization. Thanks to [stechio](https://github.com/stechio) for raising the request and productive discussions.
 - [#570] Command method options and positional parameter Object values are now cleared correctly when reusing CommandLine. Thanks to [Christian Helmer](https://github.com/SysLord) for the pull request.
 - [#569] Facilitate customization of the synopsis: split `Help.detailedSynopsis()` into protected methods.
 - [#572] `CommandSpec.addMethodSubcommands` now throws `picocli.CommandLine.InitializationException` instead of `java.lang.UnsupportedOperationException` when the user object of the parent command is a `java.lang.reflect.Method`.
+- [#508] Added `@Option(order = <int>)` attribute to allow explicit control of option ordering in the usage help message; useful when mixing methods and fields with `@Option` annotation.
 
 ## <a name="3.9.0-deprecated"></a> Deprecations
 No features were deprecated in this release.

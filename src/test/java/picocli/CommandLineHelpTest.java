@@ -1243,6 +1243,106 @@ public class CommandLineHelpTest {
     }
 
     @Test
+    public void testSortByOptionOrder() throws Exception {
+        class App {
+            @Option(names = {"-a"}, order = 9) boolean a;
+            @Option(names = {"-b"}, order = 8) boolean b;
+            @Option(names = {"-c"}, order = 7) boolean c;
+            @Option(names = {"-d"}, order = 6) int d;
+            @Option(names = {"-e"}, order = 5) String[] e;
+            @Option(names = {"-f"}, order = 4) String[] f;
+            @Option(names = {"-g"}, order = 3) boolean g;
+        }
+        OptionSpec[] fields = options(new App(), "a", "b", "c", "d", "e", "f", "g");
+        Arrays.sort(fields, Help.createOrderComparator());
+        OptionSpec[] expected = options(new App(), "g", "f", "e", "d", "c", "b", "a");
+        assertArrayEquals(expected, fields);
+    }
+
+    @Test
+    public void testSortByOptionOrderAllowsGaps() throws Exception {
+        @Command(sortOptions = false)
+        class App {
+            @Option(names = {"-a"}, order = 9) boolean a;
+            @Option(names = {"-b"}, order = 8) boolean b;
+            @Option(names = {"-c"}, order = 7) boolean c;
+            @Option(names = {"-d"}, order = 6) int d;
+            @Option(names = {"-e"}, order = 3) String[] e;
+            @Option(names = {"-f"}, order = 1) String[] f;
+            @Option(names = {"-g"}, order = 0) boolean g;
+        }
+        OptionSpec[] fields = options(new App(), "a", "b", "c", "d", "e", "f", "g");
+        Arrays.sort(fields, Help.createOrderComparator());
+        OptionSpec[] expected = options(new App(), "g", "f", "e", "d", "c", "b", "a");
+        assertArrayEquals(expected, fields);
+
+        String expectedUsage = String.format("" +
+                "Usage: <main class> [-abcg] [-d=<d>] [-e=<e>]... [-f=<f>]...%n" +
+                "  -g%n" +
+                "  -f=<f>%n" +
+                "  -e=<e>%n" +
+                "  -d=<d>%n" +
+                "  -c%n" +
+                "  -b%n" +
+                "  -a%n");
+        assertEquals(expectedUsage, new CommandLine(new App()).getUsageMessage());
+    }
+
+    @Test
+    public void testSortByOptionOrderStableSortWhenEqualOrder() throws Exception {
+        @Command(sortOptions = false)
+        class App {
+            @Option(names = {"-a"}, order = 9) boolean a;
+            @Option(names = {"-b"}, order = 8) boolean b;
+            @Option(names = {"-c"}, order = 7) boolean c;
+            @Option(names = {"-d"}, order = 7) int d;
+            @Option(names = {"-e"}, order = 7) String[] e;
+            @Option(names = {"-f"}, order = 7) String[] f;
+            @Option(names = {"-g"}, order = 0) boolean g;
+        }
+        OptionSpec[] fields = options(new App(), "a", "b", "c", "d", "e", "f", "g");
+        Arrays.sort(fields, Help.createOrderComparator());
+        OptionSpec[] expected = options(new App(), "g", "c", "d", "e", "f", "b", "a");
+        assertArrayEquals(expected, fields);
+
+        String expectedUsage = String.format("" +
+                "Usage: <main class> [-abcg] [-d=<d>] [-e=<e>]... [-f=<f>]...%n" +
+                "  -g%n" +
+                "  -c%n" +
+                "  -d=<d>%n" +
+                "  -e=<e>%n" +
+                "  -f=<f>%n" +
+                "  -b%n" +
+                "  -a%n");
+        assertEquals(expectedUsage, new CommandLine(new App()).getUsageMessage());
+    }
+
+    @Test
+    public void testSortDeclarationOrderWhenOrderAttributeOmitted() {
+        @Command(sortOptions = false)
+        class App {
+            @Option(names = {"-a"}) boolean a;
+            @Option(names = {"-b"}) boolean b;
+            @Option(names = {"-c"}) boolean c;
+            @Option(names = {"-d"}) int d;
+            @Option(names = {"-e"}) String[] e;
+            @Option(names = {"-f"}) String[] f;
+            @Option(names = {"-g"}) boolean g;
+        }
+
+        String expectedUsage = String.format("" +
+                "Usage: <main class> [-abcg] [-d=<d>] [-e=<e>]... [-f=<f>]...%n" +
+                "  -a%n" +
+                "  -b%n" +
+                "  -c%n" +
+                "  -d=<d>%n" +
+                "  -e=<e>%n" +
+                "  -f=<f>%n" +
+                "  -g%n");
+        assertEquals(expectedUsage, new CommandLine(new App()).getUsageMessage());
+    }
+
+    @Test
     public void testCreateMinimalOptionRenderer_ReturnsMinimalOptionRenderer() {
         assertEquals(Help.MinimalOptionRenderer.class, Help.createMinimalOptionRenderer().getClass());
     }

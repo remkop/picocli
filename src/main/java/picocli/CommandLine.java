@@ -2684,6 +2684,13 @@ public class CommandLine {
          * @since 3.6
          */
         String descriptionKey() default "";
+
+        /**
+         * When {@link Command#sortOptions() @Command(sortOptions = false)} is specified, this attribute can be used to control the order in which options are listed in the usage help message.
+         * @return the position in the options list at which this option should be shown. Options with a lower number are shown before options with a higher number. Gaps are allowed.
+         * @since 3.9
+         */
+        int order() default -1;
     }
     /**
      * <p>
@@ -5585,10 +5592,12 @@ public class CommandLine {
          * </p>
          * @since 3.0 */
         public static class OptionSpec extends ArgSpec {
+            static final int DEFAULT_ORDER = -1;
             private String[] names;
             private boolean help;
             private boolean usageHelp;
             private boolean versionHelp;
+            private int order;
     
             public static OptionSpec.Builder builder(String name, String... names) {
                 String[] copy = new String[Assert.notNull(names, "names").length + 1];
@@ -5605,6 +5614,7 @@ public class CommandLine {
                 help = builder.help;
                 usageHelp = builder.usageHelp;
                 versionHelp = builder.versionHelp;
+                order = builder.order;
     
                 if (names == null || names.length == 0 || Arrays.asList(names).contains("")) {
                     throw new InitializationException("Invalid names: " + Arrays.toString(names));
@@ -5647,13 +5657,20 @@ public class CommandLine {
 
             /** Returns one or more option names. The returned array will contain at least one option name.
              * @see Option#names() */
-            public String[] names()       { return names.clone(); }
+            public String[] names() { return names.clone(); }
 
             /** Returns the longest {@linkplain #names() option name}. */
             public String longestName() { return Help.ShortestFirst.longestFirst(names.clone())[0]; }
 
             /** Returns the shortest {@linkplain #names() option name}. */
             String shortestName() { return Help.ShortestFirst.sort(names.clone())[0]; }
+
+            /** Returns the position in the options list in the usage help message at which this option should be shown.
+             * Options with a lower number are shown before options with a higher number.
+             * This attribute is only honored if {@link UsageMessageSpec#sortOptions()} is {@code false} for this command.
+             * @see Option#order()
+             * @since 3.9 */
+            public int order() { return this.order; }
 
             /** Returns whether this option disables validation of the other arguments.
              * @see Option#help()
@@ -5675,6 +5692,7 @@ public class CommandLine {
                         && help == other.help
                         && usageHelp == other.usageHelp
                         && versionHelp == other.versionHelp
+                        && order == other.order
                         && new HashSet<String>(Arrays.asList(names)).equals(new HashSet<String>(Arrays.asList(other.names)));
                 return result;
             }
@@ -5683,7 +5701,8 @@ public class CommandLine {
                         + 37 * Assert.hashCode(help)
                         + 37 * Assert.hashCode(usageHelp)
                         + 37 * Assert.hashCode(versionHelp)
-                        + 37 * Arrays.hashCode(names);
+                        + 37 * Arrays.hashCode(names)
+                        + 37 * order;
             }
     
             /** Builder responsible for creating valid {@code OptionSpec} objects.
@@ -5694,6 +5713,7 @@ public class CommandLine {
                 private boolean help;
                 private boolean usageHelp;
                 private boolean versionHelp;
+                private int order = DEFAULT_ORDER;
     
                 private Builder(String[] names) { this.names = names.clone(); }
                 private Builder(OptionSpec original) {
@@ -5702,6 +5722,7 @@ public class CommandLine {
                     help = original.help;
                     usageHelp = original.usageHelp;
                     versionHelp = original.versionHelp;
+                    order = original.order;
                 }
     
                 /** Returns a valid {@code OptionSpec} instance. */
@@ -5726,6 +5747,13 @@ public class CommandLine {
                  * @see Option#versionHelp()  */
                 public boolean versionHelp()  { return versionHelp; }
 
+                /** Returns the position in the options list in the usage help message at which this option should be shown.
+                 * Options with a lower number are shown before options with a higher number.
+                 * This attribute is only honored if {@link UsageMessageSpec#sortOptions()} is {@code false} for this command.
+                 * @see Option#order()
+                 * @since 3.9 */
+                public int order()  { return order; }
+
                 /** Replaces the option names with the specified values. At least one option name is required, and returns this builder.
                  * @return this builder instance to provide a fluent interface */
                 public Builder names(String... names)           { this.names = Assert.notNull(names, "names").clone(); return self(); }
@@ -5738,6 +5766,10 @@ public class CommandLine {
     
                 /** Sets whether this option allows the user to request version information, and returns this builder.*/
                 public Builder versionHelp(boolean versionHelp) { this.versionHelp = versionHelp; return self(); }
+
+                /** Sets the position in the options list in the usage help message at which this option should be shown, and returns this builder.
+                 * @since 3.9 */
+                public Builder order(int order) { this.order = order; return self(); }
             }
         }
         /** The {@code PositionalParamSpec} class models aspects of a <em>positional parameter</em> of a {@linkplain CommandSpec command}, including whether
@@ -6481,6 +6513,7 @@ public class CommandLine {
                 OptionSpec.Builder builder = OptionSpec.builder(option.names());
                 initCommon(builder, member);
 
+                builder.order(option.order());
                 builder.help(option.help());
                 builder.usageHelp(option.usageHelp());
                 builder.versionHelp(option.versionHelp());
@@ -8716,9 +8749,14 @@ public class CommandLine {
         public String optionList() {
             Comparator<OptionSpec> sortOrder = commandSpec.usageMessage().sortOptions()
                     ? createShortOptionNameComparator()
-                    : null;
+                    : createOrderComparatorIfNecessary(commandSpec.options());
 
             return optionList(createLayout(calcLongOptionColumnWidth()), sortOrder, parameterLabelRenderer());
+        }
+
+        private static Comparator<OptionSpec> createOrderComparatorIfNecessary(List<OptionSpec> options) {
+            for (OptionSpec option : options) { if (option.order() != OptionSpec.DEFAULT_ORDER) { return createOrderComparator(); } }
+            return null;
         }
 
         private int calcLongOptionColumnWidth() {
@@ -9043,6 +9081,12 @@ public class CommandLine {
         /** Sorts short strings before longer strings.
          * @return a comparators that sorts short strings before longer strings */
         public static Comparator<String> shortestFirst() { return new ShortestFirst(); }
+        /** Sorts {@link OptionSpec OptionSpecs} by their option {@linkplain Option#order() order}, lowest first, highest last.
+         * @return a comparator that sorts OptionSpecs by their order
+         * @since 3.9*/
+        static Comparator<OptionSpec> createOrderComparator() {
+            return new SortByOptionOrder();
+        }
 
         /** Returns whether ANSI escape codes are enabled or not.
          * @return whether ANSI escape codes are enabled or not
@@ -9465,6 +9509,11 @@ public class CommandLine {
                     if (!o1.isMultiValue() && o2.isMultiValue()) { result = -1; } // f1 < f2
                 }
                 return result == 0 ? super.compare(o1, o2) : result;
+            }
+        }
+        static class SortByOptionOrder implements Comparator<OptionSpec> {
+            public int compare(OptionSpec o1, OptionSpec o2) {
+                return Integer.signum(o1.order() - o2.order());
             }
         }
         /**

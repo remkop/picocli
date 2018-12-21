@@ -485,6 +485,11 @@ public class CommandLineModelTest {
     }
 
     @Test
+    public void testOptionDefaultOrderIsMinusOne() {
+        assertEquals(OptionSpec.DEFAULT_ORDER, OptionSpec.builder("-x").build().order());
+    }
+
+    @Test
     public void testOptionDefaultUsageHelpIsFalse() throws Exception {
         assertFalse(OptionSpec.builder("-x").build().usageHelp());
     }
@@ -913,7 +918,8 @@ public class CommandLineModelTest {
             new CommandLine(cmd).parseArgs("-x", "a", "b", "c");
         } catch (Exception ex) {
             assertTrue(ex.getMessage(), ex.getMessage().startsWith("Could not add unmatched argument array '[-x, a, b, c]' to collection returned by getter ("));
-            assertTrue(ex.getMessage(), ex.getMessage().contains("): java.lang.ClassCastException: java.lang.Object"));
+            assertTrue(ex.getMessage(), ex.getMessage().contains("): java.lang.ClassCastException: "));
+            assertTrue(ex.getMessage(), ex.getMessage().contains("java.lang.Object"));
         }
     }
 
@@ -1279,6 +1285,7 @@ public class CommandLineModelTest {
                 .help(true)
                 .versionHelp(true)
                 .usageHelp(true)
+                .order(123)
                 .hidden(true)
                 .setter(setter)
                 .getter(getter)
@@ -1297,6 +1304,7 @@ public class CommandLineModelTest {
         assertTrue(builder.help());
         assertTrue(builder.versionHelp());
         assertTrue(builder.usageHelp());
+        assertEquals(123, builder.order());
         assertTrue(builder.hidden());
         assertSame(getter, builder.getter());
         assertSame(setter, builder.setter());

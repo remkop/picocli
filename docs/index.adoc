@@ -1444,6 +1444,11 @@ By default the options list displays options in alphabetical order. Use the `sor
 @Command(sortOptions = false)
 ----
 
+=== Reordering Options
+When mixing `@Option` methods and `@Option` fields, options do not reliably appear in declaration order.
+
+The `@Option(order = <int>)` attribute can be used to explicitly control the position in the usage help message at which the option should be shown.
+Options with a lower number are shown before options with a higher number.
 
 === Abbreviated Synopsis
 If a command is very complex and has many options, it is sometimes desirable to suppress details from the synopsis with the `abbreviateSynopsis` attribute. For example:
