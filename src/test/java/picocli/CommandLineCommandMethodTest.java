@@ -21,6 +21,7 @@ import org.junit.contrib.java.lang.system.SystemErrRule;
 import org.junit.contrib.java.lang.system.SystemOutRule;
 import picocli.CommandLine.*;
 import picocli.CommandLine.Model.CommandSpec;
+import picocli.CommandLine.Model.MethodParam;
 import picocli.CommandLineTest.CompactFields;
 
 import java.io.ByteArrayOutputStream;
@@ -1000,7 +1001,7 @@ public class CommandLineCommandMethodTest {
     }
 
     @Test
-    public void testAddMethodSubcommands_DisallowedIfUserObjectIsMethod() throws Exception{
+    public void testAddMethodSubcommands_DisallowedIfUserObjectIsMethod() throws Exception {
         Method m = MethodApp.class.getDeclaredMethod("run1", int.class);
         CommandSpec spec = CommandSpec.wrapWithoutInspection(m);
 
@@ -1009,5 +1010,22 @@ public class CommandLineCommandMethodTest {
         } catch (InitializationException ex) {
             assertEquals("Cannot discover subcommand methods of this Command Method: int picocli.CommandLineCommandMethodTest$MethodApp.run1(int)", ex.getMessage());
         }
+    }
+
+    @Test
+    public void testMethodParam_getDeclaringExecutable() throws Exception {
+        Method m = MethodApp.class.getDeclaredMethod("run1", int.class);
+        MethodParam param = new MethodParam(m, 0);
+        assertSame(m, param.getDeclaringExecutable());
+    }
+
+    @Test
+    public void testMethodParam_isAccessible() throws Exception {
+        Method m = MethodApp.class.getDeclaredMethod("run1", int.class);
+        MethodParam param = new MethodParam(m, 0);
+        assertFalse(param.isAccessible());
+
+        m.setAccessible(true);
+        assertTrue(param.isAccessible());
     }
 }
