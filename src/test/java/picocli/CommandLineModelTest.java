@@ -2512,6 +2512,8 @@ public class CommandLineModelTest {
 
         @Option(names = "-final")
         final Object f = new Object();
+
+        int neither;
     }
 
     @Test
@@ -2537,6 +2539,16 @@ public class CommandLineModelTest {
         validateArgSpecField.setAccessible(true);
 
         TypedMember typedMember = new TypedMember(ValidateArgSpecField.class.getDeclaredField("f"));
+        validateArgSpecField.invoke(null, typedMember); // no error
+    }
+
+    @Test
+    public void testCommandReflection_validateArgSpecField_neither() throws Exception {
+        Class<?> reflection = Class.forName("picocli.CommandLine$Model$CommandReflection");
+        Method validateArgSpecField = reflection.getDeclaredMethod("validateArgSpecField", TypedMember.class);
+        validateArgSpecField.setAccessible(true);
+
+        TypedMember typedMember = new TypedMember(ValidateArgSpecField.class.getDeclaredField("neither"));
         validateArgSpecField.invoke(null, typedMember); // no error
     }
 
