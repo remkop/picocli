@@ -22,11 +22,13 @@ import org.junit.contrib.java.lang.system.SystemOutRule;
 import picocli.CommandLine.*;
 import picocli.CommandLine.Model.CommandSpec;
 import picocli.CommandLine.Model.MethodParam;
+import picocli.CommandLine.Model.TypedMember;
 import picocli.CommandLineTest.CompactFields;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.PrintStream;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Arrays;
@@ -752,6 +754,8 @@ public class CommandLineCommandMethodTest {
         @Option(names = "-1") private Boolean boolWrapper;
         @Option(names = "-b") private byte aByte;
         @Option(names = "-B") private Byte byteWrapper;
+        @Option(names = "-c") private char aChar;
+        @Option(names = "-C") private Character aCharacter;
         @Option(names = "-s") private short aShort;
         @Option(names = "-S") private Short shortWrapper;
         @Option(names = "-i") private int anInt;
@@ -771,6 +775,8 @@ public class CommandLineCommandMethodTest {
         assertNull(s1.boolWrapper);
         assertEquals(0, s1.aByte);
         assertNull(s1.byteWrapper);
+        assertEquals(0, s1.aChar);
+        assertNull(s1.aCharacter);
         assertEquals(0, s1.aShort);
         assertNull(s1.shortWrapper);
         assertEquals(0, s1.anInt);
@@ -1028,4 +1034,84 @@ public class CommandLineCommandMethodTest {
         m.setAccessible(true);
         assertTrue(param.isAccessible());
     }
+
+    static class TypedMemberObj {
+        void getterNorSetter1() {}
+        Void getterNorSetter2() {return null;}
+        int getter() { return 0; }
+        void setter(String str) { throw new IllegalStateException(); }
+    }
+
+    @Test
+    public void testTypedMemberConstructorRejectsGetterNorSetter() throws Exception {
+        Constructor<TypedMember> constructor = TypedMember.class.getDeclaredConstructor(Method.class, Object.class);
+        constructor.setAccessible(true);
+
+        Method getterNorSetter1 = TypedMemberObj.class.getDeclaredMethod("getterNorSetter1");
+        Method getterNorSetter2 = TypedMemberObj.class.getDeclaredMethod("getterNorSetter2");
+
+        try {
+            constructor.newInstance(getterNorSetter1, new TypedMemberObj());
+            fail("expect exception");
+        } catch (InvocationTargetException ex) {
+            InitializationException ex2 = (InitializationException) ex.getCause();
+            assertEquals("Invalid method, must be either getter or setter: void picocli.CommandLineCommandMethodTest$TypedMemberObj.getterNorSetter1()", ex2.getMessage());
+        }
+        try {
+            constructor.newInstance(getterNorSetter2, new TypedMemberObj());
+            fail("expect exception");
+        } catch (InvocationTargetException ex) {
+            InitializationException ex2 = (InitializationException) ex.getCause();
+            assertEquals("Invalid method, must be either getter or setter: java.lang.Void picocli.CommandLineCommandMethodTest$TypedMemberObj.getterNorSetter2()", ex2.getMessage());
+        }
+    }
+
+    @Test
+    public void testTypedMemberConstructorNonProxyObject() throws Exception {
+        Constructor<TypedMember> constructor = TypedMember.class.getDeclaredConstructor(Method.class, Object.class);
+        constructor.setAccessible(true);
+
+        Method getter = TypedMemberObj.class.getDeclaredMethod("getter");
+        TypedMember typedMember = constructor.newInstance(getter, new TypedMemberObj());
+        assertSame(typedMember.getter(), typedMember.setter());
+        assertTrue(typedMember.getter() instanceof Model.MethodBinding);
+    }
+
+    @Test
+    public void testTypedMemberInitializeInitialValue() throws Exception {
+        Constructor<TypedMember> constructor = TypedMember.class.getDeclaredConstructor(Method.class, Object.class);
+        constructor.setAccessible(true);
+
+        Method setter = TypedMemberObj.class.getDeclaredMethod("setter", String.class);
+        TypedMember typedMember = constructor.newInstance(setter, new TypedMemberObj());
+
+        Method initializeInitialValue = TypedMember.class.getDeclaredMethod("initializeInitialValue", Object.class);
+        initializeInitialValue.setAccessible(true);
+
+        try {
+            initializeInitialValue.invoke(typedMember, "boom");
+        } catch (InvocationTargetException ite) {
+            InitializationException ex = (InitializationException) ite.getCause();
+            assertTrue(ex.getMessage().startsWith("Could not set initial value for boom"));
+        }
+    }
+
+    @Test
+    public void testTypedMemberPropertyName() {
+        assertEquals("aBC", TypedMember.propertyName("ABC"));
+        assertEquals("blah", TypedMember.propertyName("setBlah"));
+        assertEquals("blah", TypedMember.propertyName("getBlah"));
+        assertEquals("isBlah", TypedMember.propertyName("isBlah"));
+        assertEquals("isBlah", TypedMember.propertyName("IsBlah"));
+        assertEquals("", TypedMember.propertyName(""));
+    }
+
+    @Test
+    public void testTypedMemberDecapitalize() throws Exception {
+        Method decapitalize = TypedMember.class.getDeclaredMethod("decapitalize", String.class);
+        decapitalize.setAccessible(true);
+
+        assertNull(decapitalize.invoke(null, (String) null));
+    }
+
 }
