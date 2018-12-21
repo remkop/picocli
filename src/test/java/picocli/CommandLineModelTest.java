@@ -2464,8 +2464,8 @@ public class CommandLineModelTest {
     @Command(subcommands = InvalidSub2.class)
     static class InvalidTop2 {}
 
-    @Command(name = "<main class>")
     static class InvalidSub2 {
+        @Option(names = "-x") int x;
     }
 
     @Test
@@ -2541,9 +2541,15 @@ public class CommandLineModelTest {
     }
 
     static class ValidateInjectSpec {
+        int notAnnotated;
+
         @Spec
         @Option(names = "-x")
         int x;
+
+        @Spec
+        @Parameters
+        int y;
 
         @Spec
         @Unmatched
@@ -2556,9 +2562,24 @@ public class CommandLineModelTest {
         @Spec
         Object invalidType;
     }
+    @Test
+    public void testCommandReflection_ValidateInjectSpec() throws Exception {
+        Class<?> reflection = Class.forName("picocli.CommandLine$Model$CommandReflection");
+        Method validateInjectSpec = reflection.getDeclaredMethod("validateInjectSpec", TypedMember.class);
+        validateInjectSpec.setAccessible(true);
+
+        TypedMember typedMember = new TypedMember(ValidateInjectSpec.class.getDeclaredField("notAnnotated"));
+        try {
+            validateInjectSpec.invoke(null, typedMember);
+            fail("expected Exception");
+        } catch (InvocationTargetException ite) {
+            IllegalStateException ex = (IllegalStateException) ite.getCause();
+            assertEquals("Bug: validateInjectSpec() should only be called with @Spec members", ex.getMessage());
+        }
+    }
 
     @Test
-    public void testCommandReflection_ValidateInjectSpec_Arg() throws Exception {
+    public void testCommandReflection_ValidateInjectSpec_Option() throws Exception {
         Class<?> reflection = Class.forName("picocli.CommandLine$Model$CommandReflection");
         Method validateInjectSpec = reflection.getDeclaredMethod("validateInjectSpec", TypedMember.class);
         validateInjectSpec.setAccessible(true);
@@ -2570,6 +2591,22 @@ public class CommandLineModelTest {
         } catch (InvocationTargetException ite) {
             DuplicateOptionAnnotationsException ex = (DuplicateOptionAnnotationsException) ite.getCause();
             assertEquals("A member cannot have both @Spec and @Option or @Parameters annotations, but 'int picocli.CommandLineModelTest$ValidateInjectSpec.x' has both.", ex.getMessage());
+        }
+    }
+
+    @Test
+    public void testCommandReflection_ValidateInjectSpec_Positional() throws Exception {
+        Class<?> reflection = Class.forName("picocli.CommandLine$Model$CommandReflection");
+        Method validateInjectSpec = reflection.getDeclaredMethod("validateInjectSpec", TypedMember.class);
+        validateInjectSpec.setAccessible(true);
+
+        TypedMember typedMember = new TypedMember(ValidateInjectSpec.class.getDeclaredField("y"));
+        try {
+            validateInjectSpec.invoke(null, typedMember);
+            fail("expected Exception");
+        } catch (InvocationTargetException ite) {
+            DuplicateOptionAnnotationsException ex = (DuplicateOptionAnnotationsException) ite.getCause();
+            assertEquals("A member cannot have both @Spec and @Option or @Parameters annotations, but 'int picocli.CommandLineModelTest$ValidateInjectSpec.y' has both.", ex.getMessage());
         }
     }
 
