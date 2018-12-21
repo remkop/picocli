@@ -733,9 +733,14 @@ public class CommandLineModelTest {
         }
     }
 
-    @Test(expected = NullPointerException.class)
+    @Test()
     public void testOptionSpecRequiresNonNullNameArray() throws Exception {
-        OptionSpec.builder(null).build();
+        try {
+            OptionSpec.builder(null).build();
+            fail("Expected exception");
+        } catch (InitializationException ex) {
+            assertEquals("OptionSpec names cannot be null. Specify at least one option name.", ex.getMessage());
+        }
     }
 
     @Test
@@ -2237,6 +2242,41 @@ public class CommandLineModelTest {
     }
 
     @Test
+    public void testOptionSpecEquals() {
+        OptionSpec.Builder option = OptionSpec.builder("-x")
+                .arity("1")
+                .hideParamSyntax(true)
+                .required(true)
+                .splitRegex(";")
+                .description("desc")
+                .descriptionKey("key")
+                .auxiliaryTypes(Integer.class, Double.class)
+                .help(true)
+                .usageHelp(true)
+                .versionHelp(true)
+                .order(123);
+
+        OptionSpec p1 = option.build();
+        assertEquals(p1, p1);
+        assertEquals(p1, option.build());
+        assertNotEquals(p1, option.arity("2").build());
+        assertNotEquals(p1, option.arity("1").hideParamSyntax(false).build());
+        assertNotEquals(p1, option.hideParamSyntax(true).required(false).build());
+        assertNotEquals(p1, option.required(true).splitRegex(",").build());
+        assertNotEquals(p1, option.splitRegex(";").description("xyz").build());
+        assertNotEquals(p1, option.description("desc").descriptionKey("XX").build());
+        assertNotEquals(p1, option.descriptionKey("key").auxiliaryTypes(Short.class).build());
+        assertEquals(p1, option.auxiliaryTypes(Integer.class, Double.class).build());
+
+        assertNotEquals(p1, option.help(false).build());
+        assertNotEquals(p1, option.help(true).usageHelp(false).build());
+        assertNotEquals(p1, option.usageHelp(true).versionHelp(false).build());
+        assertNotEquals(p1, option.versionHelp(true).order(999).build());
+        assertNotEquals(p1, option.order(123).names("-a", "-b", "-c").build());
+        assertEquals(p1, option.names("-x").build());
+    }
+
+    @Test
     public void testArgSpecEquals() {
         PositionalParamSpec.Builder positional = PositionalParamSpec.builder()
                 .arity("1")
@@ -2245,7 +2285,7 @@ public class CommandLineModelTest {
                 .splitRegex(";")
                 .description("desc")
                 .descriptionKey("key")
-                .auxiliaryTypes(Integer.class);
+                .auxiliaryTypes(Integer.class, Double.class);
 
         PositionalParamSpec p1 = positional.build();
         assertEquals(p1, p1);
@@ -2257,7 +2297,7 @@ public class CommandLineModelTest {
         assertNotEquals(p1, positional.splitRegex(";").description("xyz").build());
         assertNotEquals(p1, positional.description("desc").descriptionKey("XX").build());
         assertNotEquals(p1, positional.descriptionKey("key").auxiliaryTypes(Short.class).build());
-        assertEquals(p1, positional.auxiliaryTypes(Integer.class).build());
+        assertEquals(p1, positional.auxiliaryTypes(Integer.class, Double.class).build());
     }
 
     @Test

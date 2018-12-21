@@ -5610,13 +5610,16 @@ public class CommandLine {
             /** Ensures all attributes of this {@code OptionSpec} have a valid value; throws an {@link InitializationException} if this cannot be achieved. */
             private OptionSpec(Builder builder) {
                 super(builder);
-                names = builder.names;
+                if (builder.names == null) {
+                    throw new InitializationException("OptionSpec names cannot be null. Specify at least one option name.");
+                }
+                names = builder.names.clone();
                 help = builder.help;
                 usageHelp = builder.usageHelp;
                 versionHelp = builder.versionHelp;
                 order = builder.order;
     
-                if (names == null || names.length == 0 || Arrays.asList(names).contains("")) {
+                if (names.length == 0 || Arrays.asList(names).contains("")) {
                     throw new InitializationException("Invalid names: " + Arrays.toString(names));
                 }
                 if (toString() == null) { toString = "option " + longestName(); }
@@ -5715,7 +5718,7 @@ public class CommandLine {
                 private boolean versionHelp;
                 private int order = DEFAULT_ORDER;
     
-                private Builder(String[] names) { this.names = names.clone(); }
+                private Builder(String[] names) { this.names = names; }
                 private Builder(OptionSpec original) {
                     super(original);
                     names = original.names;
