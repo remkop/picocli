@@ -2539,4 +2539,85 @@ public class CommandLineModelTest {
         TypedMember typedMember = new TypedMember(ValidateArgSpecField.class.getDeclaredField("f"));
         validateArgSpecField.invoke(null, typedMember); // no error
     }
+
+    static class ValidateInjectSpec {
+        @Spec
+        @Option(names = "-x")
+        int x;
+
+        @Spec
+        @Unmatched
+        List<String> unmatched;
+
+        @Spec
+        @Mixin
+        Object mixin = new Object();
+
+        @Spec
+        Object invalidType;
+    }
+
+    @Test
+    public void testCommandReflection_ValidateInjectSpec_Arg() throws Exception {
+        Class<?> reflection = Class.forName("picocli.CommandLine$Model$CommandReflection");
+        Method validateInjectSpec = reflection.getDeclaredMethod("validateInjectSpec", TypedMember.class);
+        validateInjectSpec.setAccessible(true);
+
+        TypedMember typedMember = new TypedMember(ValidateInjectSpec.class.getDeclaredField("x"));
+        try {
+            validateInjectSpec.invoke(null, typedMember);
+            fail("expected Exception");
+        } catch (InvocationTargetException ite) {
+            DuplicateOptionAnnotationsException ex = (DuplicateOptionAnnotationsException) ite.getCause();
+            assertEquals("A member cannot have both @Spec and @Option or @Parameters annotations, but 'int picocli.CommandLineModelTest$ValidateInjectSpec.x' has both.", ex.getMessage());
+        }
+    }
+
+    @Test
+    public void testCommandReflection_ValidateInjectSpec_Unmatched() throws Exception {
+        Class<?> reflection = Class.forName("picocli.CommandLine$Model$CommandReflection");
+        Method validateInjectSpec = reflection.getDeclaredMethod("validateInjectSpec", TypedMember.class);
+        validateInjectSpec.setAccessible(true);
+
+        TypedMember typedMember = new TypedMember(ValidateInjectSpec.class.getDeclaredField("unmatched"));
+        try {
+            validateInjectSpec.invoke(null, typedMember);
+            fail("expected Exception");
+        } catch (InvocationTargetException ite) {
+            DuplicateOptionAnnotationsException ex = (DuplicateOptionAnnotationsException) ite.getCause();
+            assertEquals("A member cannot have both @Spec and @Unmatched annotations, but 'java.util.List picocli.CommandLineModelTest$ValidateInjectSpec.unmatched' has both.", ex.getMessage());
+        }
+    }
+
+    @Test
+    public void testCommandReflection_ValidateInjectSpec_Mixin() throws Exception {
+        Class<?> reflection = Class.forName("picocli.CommandLine$Model$CommandReflection");
+        Method validateInjectSpec = reflection.getDeclaredMethod("validateInjectSpec", TypedMember.class);
+        validateInjectSpec.setAccessible(true);
+
+        TypedMember typedMember = new TypedMember(ValidateInjectSpec.class.getDeclaredField("mixin"));
+        try {
+            validateInjectSpec.invoke(null, typedMember);
+            fail("expected Exception");
+        } catch (InvocationTargetException ite) {
+            DuplicateOptionAnnotationsException ex = (DuplicateOptionAnnotationsException) ite.getCause();
+            assertEquals("A member cannot have both @Spec and @Mixin annotations, but 'java.lang.Object picocli.CommandLineModelTest$ValidateInjectSpec.mixin' has both.", ex.getMessage());
+        }
+    }
+
+    @Test
+    public void testCommandReflection_ValidateInjectSpec_FieldType() throws Exception {
+        Class<?> reflection = Class.forName("picocli.CommandLine$Model$CommandReflection");
+        Method validateInjectSpec = reflection.getDeclaredMethod("validateInjectSpec", TypedMember.class);
+        validateInjectSpec.setAccessible(true);
+
+        TypedMember typedMember = new TypedMember(ValidateInjectSpec.class.getDeclaredField("invalidType"));
+        try {
+            validateInjectSpec.invoke(null, typedMember);
+            fail("expected Exception");
+        } catch (InvocationTargetException ite) {
+            InitializationException ex = (InitializationException) ite.getCause();
+            assertEquals("@picocli.CommandLine.Spec annotation is only supported on fields of type picocli.CommandLine$Model$CommandSpec", ex.getMessage());
+        }
+    }
 }

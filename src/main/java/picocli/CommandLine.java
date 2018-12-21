@@ -6427,10 +6427,11 @@ public class CommandLine {
                 return result;
             }
             private static void validateMixin(TypedMember member) {
-                if (member.isMixin() && member.isArgSpec()) {
+                if (!member.isMixin()) { throw new IllegalStateException("Bug: validateMixin() should only be called with mixins"); }
+                if (member.isArgSpec()) {
                     throw new DuplicateOptionAnnotationsException("A member cannot be both a @Mixin command and an @Option or @Parameters, but '" + member + "' is both.");
                 }
-                if (member.isMixin() && member.isUnmatched()) {
+                if (member.isUnmatched()) {
                     throw new DuplicateOptionAnnotationsException("A member cannot be both a @Mixin command and an @Unmatched but '" + member + "' is both.");
                 }
             }
@@ -6459,13 +6460,14 @@ public class CommandLine {
                 }
             }
             private static void validateInjectSpec(TypedMember member) {
-                if (member.isInjectSpec() && (member.isOption() || member.isParameter())) {
+                if (!member.isInjectSpec()) { throw new IllegalStateException("Bug: validateInjectSpec() should only be called with @Spec members"); }
+                if (member.isOption() || member.isParameter()) {
                     throw new DuplicateOptionAnnotationsException("A member cannot have both @Spec and @Option or @Parameters annotations, but '" + member + "' has both.");
                 }
-                if (member.isInjectSpec() && member.isUnmatched()) {
+                if (member.isUnmatched()) {
                     throw new DuplicateOptionAnnotationsException("A member cannot have both @Spec and @Unmatched annotations, but '" + member + "' has both.");
                 }
-                if (member.isInjectSpec() && member.isMixin()) {
+                if (member.isMixin()) {
                     throw new DuplicateOptionAnnotationsException("A member cannot have both @Spec and @Mixin annotations, but '" + member + "' has both.");
                 }
                 if (member.getType() != CommandSpec.class) { throw new InitializationException("@picocli.CommandLine.Spec annotation is only supported on fields of type " + CommandSpec.class.getName()); }
