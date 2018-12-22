@@ -31,7 +31,7 @@ import picocli.CommandLine.ParseResult;
 import static org.junit.Assert.*;
 import static picocli.CommandLine.*;
 
-public class CommandLineParseResultTest {
+public class ModelParseResultTest {
     @Test
     public void testCommandSpec_IsCommandLineCommandSpec() {
         class App {
