@@ -5177,6 +5177,7 @@ public class CommandLine {
                 }
             }
             /** Sets the value of this argument to the specified value and returns the previous value. Delegates to the current {@link #setter()}.
+             * @deprecated use {@link #setValue(Object)} instead. This was a design mistake.
              * @since 3.5 */
             public <T> T setValue(T newValue, CommandLine commandLine) throws PicocliException {
                 return setValue(newValue);
@@ -7538,7 +7539,7 @@ public class CommandLine {
                 initialized.add(argSpec);
             }
             if (tracer.isInfo()) { tracer.info(traceMessage, argSpec.toString(), String.valueOf(oldValue), String.valueOf(newValue), argDescription); }
-            argSpec.setValue(newValue, commandSpec.commandLine());
+            argSpec.setValue(newValue);
             parseResult.addOriginalStringValue(argSpec, value);// #279 track empty string value if no command line argument was consumed
             parseResult.addStringValue(argSpec, value);
             parseResult.addTypedValues(argSpec, position, newValue);
@@ -7559,13 +7560,13 @@ public class CommandLine {
             if (map == null || (!map.isEmpty() && !initialized.contains(argSpec))) {
                 tracer.debug("Initializing binding for %s with empty %s%n", optionDescription("", argSpec, 0), argSpec.type().getSimpleName());
                 map = createMap(argSpec.type()); // map class
-                argSpec.setValue(map, commandSpec.commandLine());
+                argSpec.setValue(map);
             }
             initialized.add(argSpec);
             int originalSize = map.size();
             consumeMapArguments(argSpec, lookBehind, arity, args, classes, keyConverter, valueConverter, map, argDescription);
             parseResult.add(argSpec, position);
-            argSpec.setValue(map, commandSpec.commandLine());
+            argSpec.setValue(map);
             return map.size() - originalSize;
         }
 
@@ -7702,7 +7703,7 @@ public class CommandLine {
             for (int i = 0; i < newValues.size(); i++) {
                 Array.set(array, i, newValues.get(i));
             }
-            argSpec.setValue(array, commandSpec.commandLine());
+            argSpec.setValue(array);
             parseResult.add(argSpec, position);
             return converted.size(); // return how many args were consumed
         }
@@ -7720,7 +7721,7 @@ public class CommandLine {
             if (collection == null || (!collection.isEmpty() && !initialized.contains(argSpec))) {
                 tracer.debug("Initializing binding for %s with empty %s%n", optionDescription("", argSpec, 0), argSpec.type().getSimpleName());
                 collection = createCollection(argSpec.type()); // collection type
-                argSpec.setValue(collection, commandSpec.commandLine());
+                argSpec.setValue(collection);
             }
             initialized.add(argSpec);
             for (Object element : converted) {
@@ -7731,7 +7732,7 @@ public class CommandLine {
                 }
             }
             parseResult.add(argSpec, position);
-            argSpec.setValue(collection, commandSpec.commandLine());
+            argSpec.setValue(collection);
             return converted.size();
         }
 

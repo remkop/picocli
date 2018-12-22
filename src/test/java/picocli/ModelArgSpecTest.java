@@ -94,6 +94,17 @@ public class ModelArgSpecTest {
     }
 
     @Test
+    public void testArgSpecSetValueWithCommandLineCallsSetter() {
+        final Object[] newVal = new Object[1];
+        ISetter setter = new ISetter() {
+            public <T> T set(T value) { newVal[0] = value; return null; }
+        };
+        PositionalParamSpec positional = PositionalParamSpec.builder().setter(setter).build();
+        positional.setValue("abc", new CommandLine(CommandLine.Model.CommandSpec.create()));
+        assertEquals("abc", newVal[0]);
+    }
+
+    @Test
     public void testArgSpecSetterWrapNonPicocliException() {
         final Exception expected = new Exception("boom");
         ISetter setter = new ISetter() {
@@ -115,7 +126,7 @@ public class ModelArgSpecTest {
         };
         PositionalParamSpec positional = PositionalParamSpec.builder().setter(setter).build();
         try {
-            positional.setValue("abc", new CommandLine(CommandLine.Model.CommandSpec.create()));
+            positional.setValue("abc");
         } catch (CommandLine.PicocliException ex) {
             assertSame(expected, ex.getCause());
         }

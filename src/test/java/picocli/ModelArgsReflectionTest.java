@@ -9,6 +9,12 @@ import java.util.Map;
 import static org.junit.Assert.assertEquals;
 
 public class ModelArgsReflectionTest {
+
+    @Test
+    public void testInstantiatable() {
+        new CommandLine.Model.ArgsReflection(); // no error
+    }
+
     @Test
     public void testInferLabel() throws Exception{
         Method m = CommandLine.Model.ArgsReflection.class.getDeclaredMethod("inferLabel", String.class, String.class, Class.class, Class[].class);
