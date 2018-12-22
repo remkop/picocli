@@ -5179,12 +5179,7 @@ public class CommandLine {
             /** Sets the value of this argument to the specified value and returns the previous value. Delegates to the current {@link #setter()}.
              * @since 3.5 */
             public <T> T setValue(T newValue, CommandLine commandLine) throws PicocliException {
-                if (setter instanceof MethodBinding) { ((MethodBinding) setter).commandLine = commandLine; }
-                try {
-                    return setter.set(newValue);
-                } catch (PicocliException ex) { throw ex;
-                } catch (Exception ex) {        throw new PicocliException("Could not set value (" + newValue + ") for " + this + ": " + ex, ex);
-                }
+                return setValue(newValue);
             }
 
             /** Returns {@code true} if this argument's {@link #type()} is an array, a {@code Collection} or a {@code Map}, {@code false} otherwise. */
@@ -6012,10 +6007,10 @@ public class CommandLine {
                 FieldBinding binding = new FieldBinding(scope, field);
                 getter = binding; setter = binding;
             }
-            static TypedMember createIfAnnotated(Method method, Object scope) {
-                return isAnnotated(method) ? new TypedMember(method, scope) : null;
+            static TypedMember createIfAnnotated(Method method, Object scope, CommandSpec spec) {
+                return isAnnotated(method) ? new TypedMember(method, scope, spec) : null;
             }
-            private TypedMember(Method method, Object scope) {
+            private TypedMember(Method method, Object scope, CommandSpec spec) {
                 accessible = Assert.notNull(method, "method");
                 accessible.setAccessible(true);
                 name = propertyName(method.getName());
@@ -6034,14 +6029,14 @@ public class CommandLine {
                         initializeInitialValue(method);
                     } else {
                         //throw new IllegalArgumentException("Getter method but not a proxy: " + scope + ": " + method);
-                        MethodBinding binding = new MethodBinding(scope, method);
+                        MethodBinding binding = new MethodBinding(scope, method, spec);
                         getter = binding; setter = binding;
                     }
                 } else {
                     hasInitialValue = false;
                     type = parameterTypes[0];
                     genericType = method.getGenericParameterTypes()[0];
-                    MethodBinding binding = new MethodBinding(scope, method);
+                    MethodBinding binding = new MethodBinding(scope, method, spec);
                     getter = binding; setter = binding;
                 }
             }
@@ -6383,7 +6378,7 @@ public class CommandLine {
                     result |= initFromAnnotatedTypedMembers(TypedMember.createIfAnnotated(field, scope), receiver, factory);
                 }
                 for (Method method : cls.getDeclaredMethods()) {
-                    result |= initFromAnnotatedTypedMembers(TypedMember.createIfAnnotated(method, scope), receiver, factory);
+                    result |= initFromAnnotatedTypedMembers(TypedMember.createIfAnnotated(method, scope, receiver), receiver, factory);
                 }
                 return result;
             }
@@ -6643,7 +6638,7 @@ public class CommandLine {
                 return new Class<?>[] {propertyType}; // not a multi-value field
             }
         }
-        private static class FieldBinding implements IGetter, ISetter {
+        static class FieldBinding implements IGetter, ISetter {
             private final Object scope;
             private final Field field;
             FieldBinding(Object scope, Field field) { this.scope = scope; this.field = field; }
@@ -6668,9 +6663,13 @@ public class CommandLine {
         static class MethodBinding implements IGetter, ISetter {
             private final Object scope;
             private final Method method;
+            private final CommandSpec spec;
             private Object currentValue;
-            CommandLine commandLine;
-            MethodBinding(Object scope, Method method) { this.scope = scope; this.method = method; }
+            MethodBinding(Object scope, Method method, CommandSpec spec) {
+                this.scope = scope;
+                this.method = method;
+                this.spec = spec;
+            }
             @SuppressWarnings("unchecked") public <T> T get() { return (T) currentValue; }
             public <T> T set(T value) throws PicocliException {
                 try {
@@ -6680,10 +6679,14 @@ public class CommandLine {
                     return result;
                 } catch (InvocationTargetException ex) {
                     if (ex.getCause() instanceof PicocliException) { throw (PicocliException) ex.getCause(); }
-                    throw new ParameterException(commandLine, "Could not invoke " + method + " with " + value, ex.getCause());
+                    throw createParameterException(value, ex.getCause());
                 } catch (Exception ex) {
-                    throw new ParameterException(commandLine, "Could not invoke " + method + " with " + value, ex);
+                    throw createParameterException(value, ex);
                 }
+            }
+            private ParameterException createParameterException(Object value, Throwable t) {
+                CommandLine cmd = spec.commandLine() == null ? new CommandLine(spec) : spec.commandLine();
+                return new ParameterException(cmd, "Could not invoke " + method + " with " + value, t);
             }
         }
         private static class PicocliInvocationHandler implements InvocationHandler {
