@@ -2739,4 +2739,23 @@ public class CommandLineModelTest {
     public void testCommandReflection_buildUnmatchedForField_valid() throws Exception {
         CommandSpec.forAnnotatedObject(new MyUnmatched2());
     }
+    @Test
+    public void testArgsReflection_inferLabel() throws Exception{
+        Method m = ArgsReflection.class.getDeclaredMethod("inferLabel", String.class, String.class, Class.class, Class[].class);
+        m.setAccessible(true);
+        assertEquals("<String=String>", m.invoke(null, "", "fieldName", Map.class, new Class[0]));
+        assertEquals("<String=String>", m.invoke(null, "", "fieldName", Map.class, new Class[]{Integer.class}));
+        assertEquals("<String=String>", m.invoke(null, "", "fieldName", Map.class, new Class[]{null, Integer.class}));
+        assertEquals("<String=String>", m.invoke(null, "", "fieldName", Map.class, new Class[]{Integer.class, null}));
+        assertEquals("<Integer=Integer>", m.invoke(null, "", "fieldName", Map.class, new Class[]{Integer.class, Integer.class}));
+    }
+
+    @Test
+    public void testArgsReflection_inferTypes() {
+        class App {
+            @Parameters
+            List<Class<? extends Class<? extends String>[]>> list;
+        }
+        assertEquals("<list>", CommandSpec.forAnnotatedObject(new App()).positionalParameters().get(0).paramLabel());
+    }
 }
