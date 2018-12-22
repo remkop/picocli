@@ -15,6 +15,7 @@
  */
 package picocli;
 
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.contrib.java.lang.system.SystemErrRule;
@@ -2542,6 +2543,7 @@ public class CommandLineModelTest {
         validateArgSpecField.invoke(null, typedMember); // no error
     }
 
+    @Ignore
     @Test
     public void testCommandReflection_validateArgSpecField_neither() throws Exception {
         Class<?> reflection = Class.forName("picocli.CommandLine$Model$CommandReflection");
@@ -2669,6 +2671,21 @@ public class CommandLineModelTest {
             assertEquals("@picocli.CommandLine.Spec annotation is only supported on fields of type picocli.CommandLine$Model$CommandSpec", ex.getMessage());
         }
     }
+    @Test
+    public void testCommandReflection_ValidateArgSpec() throws Exception {
+        Class<?> reflection = Class.forName("picocli.CommandLine$Model$CommandReflection");
+        Method validateArgSpec = reflection.getDeclaredMethod("validateArgSpecField", TypedMember.class);
+        validateArgSpec.setAccessible(true);
+
+        TypedMember typedMember = new TypedMember(ValidateInjectSpec.class.getDeclaredField("notAnnotated"));
+        try {
+            validateArgSpec.invoke(null, typedMember);
+            fail("expected Exception");
+        } catch (InvocationTargetException ite) {
+            IllegalStateException ex = (IllegalStateException) ite.getCause();
+            assertEquals("Bug: validateArgSpecField() should only be called with an @Option or @Parameters member", ex.getMessage());
+        }
+    }
 
     @Command(mixinStandardHelpOptions = true)
     static class ValidMixin {
@@ -2701,5 +2718,25 @@ public class CommandLineModelTest {
         } catch (InitializationException ex) {
             assertEquals("Could not access or modify mixin member picocli.CommandLineModelTest$ValidMixin picocli.CommandLineModelTest$MixeeUninstantiated.mixin: java.lang.IllegalStateException: boom", ex.getMessage());
         }
+    }
+
+    @Command
+    class MyUnmatched {
+        @CommandLine.Unmatched
+        List raw;
+    }
+    @Test(expected = InitializationException.class)
+    public void testCommandReflection_buildUnmatchedForField_raw() throws Exception {
+        CommandSpec.forAnnotatedObject(new MyUnmatched());
+    }
+
+    @Command
+    class MyUnmatched2 {
+        @CommandLine.Unmatched
+        List<String> raw = new ArrayList<String>();
+    }
+    @Test
+    public void testCommandReflection_buildUnmatchedForField_valid() throws Exception {
+        CommandSpec.forAnnotatedObject(new MyUnmatched2());
     }
 }

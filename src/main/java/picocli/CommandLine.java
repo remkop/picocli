@@ -6441,10 +6441,11 @@ public class CommandLine {
                 }
             }
             private static void validateArgSpecField(TypedMember member) {
+                if (!member.isArgSpec()) { throw new IllegalStateException("Bug: validateArgSpecField() should only be called with an @Option or @Parameters member"); }
                 if (member.isOption() && member.isParameter()) {
                     throw new DuplicateOptionAnnotationsException("A member can be either @Option or @Parameters, but '" + member + "' is both.");
                 }
-                if (member.isMixin() && member.isArgSpec()) {
+                if (member.isMixin()) {
                     throw new DuplicateOptionAnnotationsException("A member cannot be both a @Mixin command and an @Option or @Parameters, but '" + member + "' is both.");
                 }
                 if (!(member.accessible instanceof Field)) { return; }
