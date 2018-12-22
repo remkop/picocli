@@ -48,7 +48,7 @@ public class ModelCommandReflectionTest {
         try {
             CommandSpec.forAnnotatedObject(InvalidTop.class);
         } catch (InitializationException ex) {
-            assertEquals("Cannot instantiate subcommand picocli.CommandLineModelTest$InvalidSub: the class has no constructor", ex.getMessage());
+            assertEquals("Cannot instantiate subcommand picocli.ModelCommandReflectionTest$InvalidSub: the class has no constructor", ex.getMessage());
         }
     }
 
@@ -64,7 +64,7 @@ public class ModelCommandReflectionTest {
         try {
             CommandSpec.forAnnotatedObject(InvalidTop2.class);
         } catch (InitializationException ex) {
-            assertEquals("Subcommand picocli.CommandLineModelTest$InvalidSub2 is missing the mandatory @Command annotation with a 'name' attribute", ex.getMessage());
+            assertEquals("Subcommand picocli.ModelCommandReflectionTest$InvalidSub2 is missing the mandatory @Command annotation with a 'name' attribute", ex.getMessage());
         }
     }
 
@@ -119,7 +119,7 @@ public class ModelCommandReflectionTest {
             fail("expected Exception");
         } catch (InvocationTargetException ite) {
             CommandLine.DuplicateOptionAnnotationsException ex = (CommandLine.DuplicateOptionAnnotationsException) ite.getCause();
-            assertEquals("A member cannot be both a @Mixin command and an @Option or @Parameters, but 'int picocli.CommandLineModelTest$ValidateArgSpecField.x' is both.", ex.getMessage());
+            assertEquals("A member cannot be both a @Mixin command and an @Option or @Parameters, but 'int picocli.ModelCommandReflectionTest$ValidateArgSpecField.x' is both.", ex.getMessage());
         }
     }
 
@@ -194,7 +194,7 @@ public class ModelCommandReflectionTest {
             fail("expected Exception");
         } catch (InvocationTargetException ite) {
             CommandLine.DuplicateOptionAnnotationsException ex = (CommandLine.DuplicateOptionAnnotationsException) ite.getCause();
-            assertEquals("A member cannot have both @Spec and @Option or @Parameters annotations, but 'int picocli.CommandLineModelTest$ValidateInjectSpec.x' has both.", ex.getMessage());
+            assertEquals("A member cannot have both @Spec and @Option or @Parameters annotations, but 'int picocli.ModelCommandReflectionTest$ValidateInjectSpec.x' has both.", ex.getMessage());
         }
     }
 
@@ -210,7 +210,7 @@ public class ModelCommandReflectionTest {
             fail("expected Exception");
         } catch (InvocationTargetException ite) {
             CommandLine.DuplicateOptionAnnotationsException ex = (CommandLine.DuplicateOptionAnnotationsException) ite.getCause();
-            assertEquals("A member cannot have both @Spec and @Option or @Parameters annotations, but 'int picocli.CommandLineModelTest$ValidateInjectSpec.y' has both.", ex.getMessage());
+            assertEquals("A member cannot have both @Spec and @Option or @Parameters annotations, but 'int picocli.ModelCommandReflectionTest$ValidateInjectSpec.y' has both.", ex.getMessage());
         }
     }
 
@@ -226,7 +226,7 @@ public class ModelCommandReflectionTest {
             fail("expected Exception");
         } catch (InvocationTargetException ite) {
             CommandLine.DuplicateOptionAnnotationsException ex = (CommandLine.DuplicateOptionAnnotationsException) ite.getCause();
-            assertEquals("A member cannot have both @Spec and @Unmatched annotations, but 'java.util.List picocli.CommandLineModelTest$ValidateInjectSpec.unmatched' has both.", ex.getMessage());
+            assertEquals("A member cannot have both @Spec and @Unmatched annotations, but 'java.util.List picocli.ModelCommandReflectionTest$ValidateInjectSpec.unmatched' has both.", ex.getMessage());
         }
     }
 
@@ -242,7 +242,7 @@ public class ModelCommandReflectionTest {
             fail("expected Exception");
         } catch (InvocationTargetException ite) {
             CommandLine.DuplicateOptionAnnotationsException ex = (CommandLine.DuplicateOptionAnnotationsException) ite.getCause();
-            assertEquals("A member cannot have both @Spec and @Mixin annotations, but 'java.lang.Object picocli.CommandLineModelTest$ValidateInjectSpec.mixin' has both.", ex.getMessage());
+            assertEquals("A member cannot have both @Spec and @Mixin annotations, but 'java.lang.Object picocli.ModelCommandReflectionTest$ValidateInjectSpec.mixin' has both.", ex.getMessage());
         }
     }
 
@@ -308,7 +308,7 @@ public class ModelCommandReflectionTest {
         try {
             CommandSpec.forAnnotatedObject(new MixeeUninstantiated(), myFactory);
         } catch (InitializationException ex) {
-            assertEquals("Could not access or modify mixin member picocli.CommandLineModelTest$ValidMixin picocli.CommandLineModelTest$MixeeUninstantiated.mixin: java.lang.IllegalStateException: boom", ex.getMessage());
+            assertEquals("Could not access or modify mixin member picocli.ModelCommandReflectionTest$ValidMixin picocli.ModelCommandReflectionTest$MixeeUninstantiated.mixin: java.lang.IllegalStateException: boom", ex.getMessage());
         }
     }
 
