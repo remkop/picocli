@@ -2669,4 +2669,37 @@ public class CommandLineModelTest {
             assertEquals("@picocli.CommandLine.Spec annotation is only supported on fields of type picocli.CommandLine$Model$CommandSpec", ex.getMessage());
         }
     }
+
+    @Command(mixinStandardHelpOptions = true)
+    static class ValidMixin {
+    }
+    @Command
+    static class MixeeInstantiated {
+        @Mixin ValidMixin mixin = new ValidMixin();
+    }
+    @Command
+    static class MixeeUninstantiated {
+        @Mixin ValidMixin mixin;
+    }
+
+    @Test
+    public void testCommandReflection_buildMixinForField_valid() throws Exception {
+        CommandSpec commandSpec = CommandSpec.forAnnotatedObject(new MixeeInstantiated());
+        assertNotNull(commandSpec.findOption("h"));
+    }
+
+    @Test
+    public void testCommandReflection_buildMixinForField_invalid() throws Exception {
+        IFactory myFactory = new IFactory() {
+            public <K> K create(Class<K> cls) throws Exception {
+                throw new IllegalStateException("boom");
+            }
+        };
+
+        try {
+            CommandSpec.forAnnotatedObject(new MixeeUninstantiated(), myFactory);
+        } catch (InitializationException ex) {
+            assertEquals("Could not access or modify mixin member picocli.CommandLineModelTest$ValidMixin picocli.CommandLineModelTest$MixeeUninstantiated.mixin: java.lang.IllegalStateException: boom", ex.getMessage());
+        }
+    }
 }
