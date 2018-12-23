@@ -18,10 +18,7 @@ package picocli;
 import org.junit.Test;
 
 import java.io.File;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import picocli.CommandLine.Model.CommandSpec;
 import picocli.CommandLine.Model.OptionSpec;
@@ -191,6 +188,34 @@ public class ModelParseResultTest {
 
         assertSame(parseResult.matchedPositional(0), found.get(0));
         assertSame(parseResult.matchedPositional(1), found.get(1));
+    }
+
+    @Test
+    public void testMatchedPositionalsByIndex() {
+        class App {
+            @Option(names = "-x") String x;
+            @Parameters(index = "0", arity = "0..1") int index0 = -1;
+            @Parameters(index = "1", arity = "0..1") int index1 = -1;
+            @Parameters(index = "2", arity = "0..1") int index2 = -1;
+        }
+        CommandLine cmd = new CommandLine(new App());
+        ParseResult parseResult = cmd.parseArgs("-x", "xval", "0", "1");
+
+        List<PositionalParamSpec> all = cmd.getCommandSpec().positionalParameters();
+        assertEquals(3, all.size());
+
+        List<PositionalParamSpec> foundFirst = parseResult.matchedPositionals(0);
+        assertEquals(1, foundFirst.size());
+        assertSame(all.get(0), foundFirst.get(0));
+        assertSame(parseResult.matchedPositional(0), foundFirst.get(0));
+
+        List<PositionalParamSpec> foundSecond = parseResult.matchedPositionals(1);
+        assertEquals(1, foundSecond.size());
+        assertSame(all.get(1), foundSecond.get(0));
+        assertSame(parseResult.matchedPositional(1), foundSecond.get(0));
+
+        List<PositionalParamSpec> foundThird = parseResult.matchedPositionals(2);
+        assertEquals(0, foundThird.size());
     }
 
     @Test
@@ -630,5 +655,26 @@ public class ModelParseResultTest {
         // for examples in Programmatic API wiki page
         assert expected.equals(pr.matchedOptionValue('f', Collections.<File>emptyList()));
         assert expected.equals(pr.matchedOptionValue("--file", Collections.<File>emptyList()));
+    }
+
+    @Test
+    public void testBuilderAddUnmatched() {
+        ParseResult.Builder builder = ParseResult.builder(CommandSpec.create());
+        builder.addUnmatched("abc");
+        ParseResult parseResult = builder.build();
+        assertEquals(Arrays.asList("abc"), parseResult.unmatched());
+    }
+
+    @Test
+    public void testBuilderAddUnmatchedStack() {
+        Stack<String> stack = new Stack<String>();
+        stack.push("a");
+        stack.push("b");
+        stack.push("c");
+
+        ParseResult.Builder builder = ParseResult.builder(CommandSpec.create());
+        builder.addUnmatched(stack);
+        ParseResult parseResult = builder.build();
+        assertEquals(Arrays.asList("c", "b", "a"), parseResult.unmatched());
     }
 }
