@@ -7048,10 +7048,10 @@ public class CommandLine {
             }
         }
         private void expandValidArgumentFile(String fileName, File file, List<String> arguments, Set<String> visited) {
-            visited.add(file.getAbsolutePath());
             List<String> result = new ArrayList<String>();
             LineNumberReader reader = null;
             try {
+                visited.add(file.getAbsolutePath());
                 reader = new LineNumberReader(new FileReader(file));
                 if (useSimplifiedAtFiles()) {
                     String token;

@@ -25,6 +25,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.math.BigDecimal;
 import java.net.InetAddress;
@@ -2760,6 +2761,16 @@ public class CommandLineTest {
     }
 
     @Test
+    public void testAtFileExpansionIgnoresSingleAtCharacter() {
+        class App {
+            @Parameters
+            private List<String> files;
+        }
+        App app = CommandLine.populateCommand(new App(), "@", "abc");
+        assertEquals(Arrays.asList("@", "abc"), app.files);
+    }
+
+    @Test
     public void testAtFileSimplified() {
         System.setProperty("picocli.useSimplifiedAtFiles", "true");
         class App {
@@ -3147,6 +3158,31 @@ public class CommandLineTest {
     public void testGetAtFileCommentChar_SharpByDefault() {
         @Command class A {}
         assertEquals((Character) '#', new CommandLine(new A()).getAtFileCommentChar());
+    }
+
+    @Test
+    public void testAtFileExpansionExceptionHandling() throws Exception {
+        Class<?> interpreterClass = Class.forName("picocli.CommandLine$Interpreter");
+        Method m = interpreterClass.getDeclaredMethod("expandValidArgumentFile", String.class, File.class, List.class, Set.class);
+        m.setAccessible(true);
+
+        class App {
+            @Parameters private List<String> files;
+        }
+        App app = new App();
+        CommandLine commandLine = new CommandLine(app);
+
+        Field f = CommandLine.class.getDeclaredField("interpreter");
+        f.setAccessible(true);
+        Object interpreter = f.get(commandLine);
+        try {
+            m.invoke(interpreter, "fileName", null, new ArrayList<String>(), new HashSet<String>());
+            fail("Expected exception");
+        } catch (InvocationTargetException ex) {
+            InitializationException actual = (InitializationException) ex.getCause();
+            assertEquals("Could not read argument file @fileName", actual.getMessage());
+            assertTrue(String.valueOf(actual.getCause()), actual.getCause() instanceof NullPointerException);
+        }
     }
 
     @Test

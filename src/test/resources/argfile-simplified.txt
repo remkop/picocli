@@ -1,3 +1,5 @@
+# comment: this is a simplified args file where every line is a separate argument
+#          This means quotes are preserved and escaping is not needed.
 --simpleArg
 --argWithSpaces
 something with spaces
