@@ -22,31 +22,13 @@ import org.junit.contrib.java.lang.system.SystemErrRule;
 import org.junit.contrib.java.lang.system.SystemOutRule;
 import picocli.CommandLine.*;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintStream;
-import java.io.UnsupportedEncodingException;
-import java.lang.reflect.Field;
-import java.net.InetAddress;
-import java.net.URL;
 import java.text.ParseException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.Callable;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.ArrayBlockingQueue;
 
-import static java.lang.String.format;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
 
 /**
  * Tests collecting errors instead of throwing them.
@@ -341,4 +323,27 @@ public class LenientParsingTest {
         assertEquals("positional parameter at index 0..* (<all>) should be specified only once", parseResult.errors().get(4).getMessage());
         assertEquals("Unmatched arguments: NOT_AN_INT, -unknown, 2, 3", parseResult.errors().get(5).getMessage());
     }
+    @Test
+    public void testAnyExceptionWrappedInParameterException() {
+        class App {
+            @Option(names = "-queue", type = String.class, split = ",")
+            ArrayBlockingQueue<String> queue = new ArrayBlockingQueue<String>(2);
+        }
+        CommandLine cmd = new CommandLine(new App());
+        cmd.getCommandSpec().parser().collectErrors(true);
+        cmd.parse("-queue", "a,b,c");
+
+        ParseResult parseResult = cmd.getParseResult();
+        assertTrue(parseResult.unmatched().isEmpty());
+        assertEquals(1, parseResult.errors().size());
+
+        assertTrue(parseResult.errors().get(0) instanceof ParameterException);
+        assertTrue(parseResult.errors().get(0).getCause() instanceof IllegalStateException);
+
+        assertEquals("IllegalStateException: Queue full while processing argument " +
+                        "at or before arg[1] 'a,b,c' in [-queue, a,b,c]: java.lang.IllegalStateException: Queue full",
+                parseResult.errors().get(0).getMessage());
+        assertEquals("Queue full", parseResult.errors().get(0).getCause().getMessage());
+    }
+
 }

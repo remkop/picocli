@@ -188,6 +188,7 @@ public class ModelParseResultTest {
 
         assertSame(parseResult.matchedPositional(0), found.get(0));
         assertSame(parseResult.matchedPositional(1), found.get(1));
+        assertNull(parseResult.matchedPositional(2));
     }
 
     @Test
