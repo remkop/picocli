@@ -58,14 +58,16 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.contrib.java.lang.system.ProvideSystemProperty;
 import org.junit.contrib.java.lang.system.RestoreSystemProperties;
+import org.junit.contrib.java.lang.system.SystemErrRule;
 import org.junit.rules.TestRule;
 
+import static org.hamcrest.CoreMatchers.containsString;
+import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.*;
 import static picocli.CommandLine.Command;
 import static picocli.CommandLine.DuplicateOptionAnnotationsException;
 import static picocli.CommandLine.Help;
 import static picocli.CommandLine.HelpCommand;
-import static picocli.CommandLine.IFactory;
 import static picocli.CommandLine.IParseResultHandler;
 import static picocli.CommandLine.ITypeConverter;
 import static picocli.CommandLine.IVersionProvider;
@@ -100,6 +102,9 @@ public class CommandLineTest {
     // allows tests to set any kind of properties they like, without having to individually roll them back
     @Rule
     public final TestRule restoreSystemProperties = new RestoreSystemProperties();
+    @Rule
+    public final SystemErrRule systemErrRule = new SystemErrRule().enableLog().muteForSuccessfulTests();
+
     @Before
     public void setUp() {
         System.clearProperty("picocli.trace");
@@ -3096,7 +3101,7 @@ public class CommandLineTest {
         assertFalse("does not exist yet", localCopy.exists());
         copyFile(file, localCopy);
 
-        setTraceLevel("OFF");
+        setTraceLevel("INFO");
         App app = new App();
         CommandLine commandLine = new CommandLine(app).setOverwrittenOptionsAllowed(true);
         commandLine.parse("-f", "fVal1", "@" + localCopy.getAbsolutePath(),  "-f", "fVal2");
@@ -3105,6 +3110,12 @@ public class CommandLineTest {
         assertFalse("not invoked", app.verbose);
         assertFalse("not invoked", app.xxx);
         assertTrue("Deleted " + localCopy, localCopy.delete());
+
+        assertThat(systemErrRule.getLog(), containsString("[picocli INFO] Parsing 5 command line args [-f, fVal1, @"));
+        assertThat(systemErrRule.getLog(), containsString("[picocli INFO] Expanding argument file @"));
+        assertThat(systemErrRule.getLog(), containsString("[picocli INFO] Expanding argument file @argfile-with-recursive-at-file.txt"));
+        assertThat(systemErrRule.getLog(), containsString("[picocli INFO] Already visited file "));
+        assertThat(systemErrRule.getLog(), containsString("; ignoring..."));
     }
 
     @Test
@@ -3127,7 +3138,7 @@ public class CommandLineTest {
         nested.delete();
         assertFalse(nested + " does not exist", nested.exists());
 
-        setTraceLevel("OFF");
+        setTraceLevel("INFO");
         App app = new App();
         CommandLine commandLine = new CommandLine(app).setOverwrittenOptionsAllowed(true);
         commandLine.parse("-f", "fVal1", "@" + file.getAbsolutePath(),  "-f", "fVal2");
@@ -3135,6 +3146,11 @@ public class CommandLineTest {
         assertArrayEquals(new String[]{"fVal1", "fVal2"}, app.fff);
         assertFalse("never invoked", app.verbose);
         assertFalse("never invoked", app.xxx);
+
+        assertThat(systemErrRule.getLog(), containsString("[picocli INFO] Parsing 5 command line args [-f, fVal1, @"));
+        assertThat(systemErrRule.getLog(), containsString("[picocli INFO] Expanding argument file @"));
+        assertThat(systemErrRule.getLog(), containsString("[picocli INFO] Expanding argument file @argfile2.txt"));
+        assertThat(systemErrRule.getLog(), containsString("[picocli INFO] File argfile2.txt does not exist or cannot be read; treating argument literally"));
     }
 
     private void copyFile(File source, File destination) throws IOException {
