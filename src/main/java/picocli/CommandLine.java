@@ -7132,7 +7132,7 @@ public class CommandLine {
             List<ArgSpec> required = new ArrayList<ArgSpec>(commandSpec.requiredArgs());
             Set<ArgSpec> initialized = new HashSet<ArgSpec>();
             Collections.sort(required, new PositionalParametersSorter());
-            boolean continueOnError = commandSpec.parser().collectErrors;
+            boolean continueOnError = commandSpec.parser().collectErrors();
             do {
                 int stackSize = argumentStack.size();
                 try {

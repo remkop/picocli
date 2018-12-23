@@ -20,8 +20,7 @@ import org.junit.Test;
 import org.junit.contrib.java.lang.system.ProvideSystemProperty;
 import org.junit.contrib.java.lang.system.SystemErrRule;
 import org.junit.contrib.java.lang.system.SystemOutRule;
-import picocli.CommandLine.Command;
-import picocli.CommandLine.Option;
+import picocli.CommandLine.*;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -93,8 +92,8 @@ public class LenientParsingTest {
     @Test
     public void testMissingRequiredParams() {
         class Example {
-            @CommandLine.Parameters(index = "1", arity = "0..1") String optional;
-            @CommandLine.Parameters(index = "0") String mandatory;
+            @Parameters(index = "1", arity = "0..1") String optional;
+            @Parameters(index = "0") String mandatory;
         }
 
         CommandLine cmd = new CommandLine(new Example());
@@ -107,9 +106,9 @@ public class LenientParsingTest {
     @Test
     public void testMissingRequiredParams1() {
         class Tricky1 {
-            @CommandLine.Parameters(index = "2") String anotherMandatory;
-            @CommandLine.Parameters(index = "1", arity = "0..1") String optional;
-            @CommandLine.Parameters(index = "0") String mandatory;
+            @Parameters(index = "2") String anotherMandatory;
+            @Parameters(index = "1", arity = "0..1") String optional;
+            @Parameters(index = "0") String mandatory;
         }
         CommandLine cmd = new CommandLine(new Tricky1());
         cmd.getCommandSpec().parser().collectErrors(true);
@@ -126,9 +125,9 @@ public class LenientParsingTest {
     @Test
     public void testMissingRequiredParams2() {
         class Tricky2 {
-            @CommandLine.Parameters(index = "2", arity = "0..1") String anotherOptional;
-            @CommandLine.Parameters(index = "1", arity = "0..1") String optional;
-            @CommandLine.Parameters(index = "0") String mandatory;
+            @Parameters(index = "2", arity = "0..1") String anotherOptional;
+            @Parameters(index = "1", arity = "0..1") String optional;
+            @Parameters(index = "0") String mandatory;
         }
         CommandLine cmd = new CommandLine(new Tricky2());
         cmd.getCommandSpec().parser().collectErrors(true);
@@ -142,8 +141,8 @@ public class LenientParsingTest {
         class Tricky3 {
             @Option(names="-v", required = true) boolean more;
             @Option(names="-t", required = true) boolean any;
-            @CommandLine.Parameters(index = "1") String alsoMandatory;
-            @CommandLine.Parameters(index = "0") String mandatory;
+            @Parameters(index = "1") String alsoMandatory;
+            @Parameters(index = "0") String mandatory;
         }
         CommandLine cmd = new CommandLine(new Tricky3());
         cmd.getCommandSpec().parser().collectErrors(true);
@@ -162,7 +161,7 @@ public class LenientParsingTest {
     public void testMissingRequiredParamWithOption() {
         class Tricky3 {
             @Option(names="-t") boolean any;
-            @CommandLine.Parameters(index = "0") String mandatory;
+            @Parameters(index = "0") String mandatory;
         }
         CommandLine cmd = new CommandLine(new Tricky3());
         cmd.getCommandSpec().parser().collectErrors(true);
@@ -175,7 +174,7 @@ public class LenientParsingTest {
     @Test
     public void testNonVarargArrayParametersWithArity0() {
         class NonVarArgArrayParamsZeroArity {
-            @CommandLine.Parameters(arity = "0")
+            @Parameters(arity = "0")
             List<String> params;
         }
         CommandLine cmd = new CommandLine(new NonVarArgArrayParamsZeroArity());
@@ -320,5 +319,26 @@ public class LenientParsingTest {
         assertEquals(2, cmd.getParseResult().errors().size());
         assertEquals("Invalid value for option '-byte': '0x1F' is not a byte", cmd.getParseResult().errors().get(0).getMessage());
         assertEquals("Invalid value for option '-Byte': '0x0F' is not a byte", cmd.getParseResult().errors().get(1).getMessage());
+    }
+    @Test
+    public void testUnknownOption() {
+        class App {
+            @Option(names = "-x") int x;
+            @Parameters(index = "0") int first;
+            @Parameters(index = "*") String all;
+        }
+
+        CommandLine cmd = new CommandLine(new App());
+        cmd.getCommandSpec().parser().collectErrors(true);
+        cmd.parse("NOT_AN_INT", "-x=b", "-unknown", "1", "2", "3");
+        ParseResult parseResult = cmd.getParseResult();
+        assertEquals(Arrays.asList("NOT_AN_INT", "-unknown", "2", "3"), parseResult.unmatched());
+        assertEquals(6, parseResult.errors().size());
+        assertEquals("Invalid value for positional parameter at index 0 (<first>): 'NOT_AN_INT' is not an int", parseResult.errors().get(0).getMessage());
+        assertEquals("Invalid value for option '-x': 'b' is not an int", parseResult.errors().get(1).getMessage());
+        assertEquals("positional parameter at index 0..* (<all>) should be specified only once", parseResult.errors().get(2).getMessage());
+        assertEquals("positional parameter at index 0..* (<all>) should be specified only once", parseResult.errors().get(3).getMessage());
+        assertEquals("positional parameter at index 0..* (<all>) should be specified only once", parseResult.errors().get(4).getMessage());
+        assertEquals("Unmatched arguments: NOT_AN_INT, -unknown, 2, 3", parseResult.errors().get(5).getMessage());
     }
 }
