@@ -2804,7 +2804,7 @@ public class CommandLineTest {
 
     @Test
     public void testAtFileSimplifiedWithQuotesTrimmed() {
-        System.setProperty("picocli.useSimplifiedAtFiles", "true");
+        System.setProperty("picocli.useSimplifiedAtFiles", "");
         System.setProperty("picocli.trimQuotes", "true");
         class App {
             @Option(names = "--quotedArg")
