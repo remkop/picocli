@@ -25,9 +25,7 @@ import picocli.CommandLine.Model.PositionalParamSpec;
 import java.io.File;
 import java.lang.reflect.Method;
 import java.net.InetAddress;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 import static org.junit.Assert.*;
@@ -1448,5 +1446,20 @@ public class CommandLineArityTest {
     @Test(expected = InitializationException.class)
     public void testRangeConstructorDisallowsNegativeMax() {
         new Range(0, -2, false, false, "");
+    }
+
+    @Test
+    public void testVariableArityMap() {
+        class App {
+            @Option(names = "-D", arity = "1..*")
+            TreeMap<Integer, String> map;
+        }
+
+        App app = CommandLine.populateCommand(new App(), "-D", "1=a", "2=b", "3=c");
+        TreeMap<Integer, String> map = new TreeMap<Integer, String>();
+        map.put(1, "a");
+        map.put(2, "b");
+        map.put(3, "c");
+        assertEquals(map, app.map);
     }
 }
