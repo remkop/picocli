@@ -11,7 +11,7 @@ sourceCompatibility = 1.5
 
 dependencies {
     compile rootProject
-    compile "jline:jline:$jlineVersion"
+    compile "org.jline:jline:$jline3Version"
     testCompile "junit:junit:$junitVersion"
 }
 

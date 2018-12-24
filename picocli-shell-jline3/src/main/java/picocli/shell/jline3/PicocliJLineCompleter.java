@@ -1,6 +1,5 @@
 package picocli.shell.jline3;
 
-import org.jline.reader.impl.completer.ArgumentCompleter;
 import org.jline.reader.LineReader;
 import org.jline.reader.Completer;
 import org.jline.reader.Candidate;
