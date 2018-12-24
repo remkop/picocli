@@ -32,14 +32,7 @@ import java.sql.Timestamp;
 import java.sql.Types;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Currency;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-import java.util.TimeZone;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 
@@ -719,13 +712,30 @@ public class CommandLineTypeConversionTest {
         assertEquals(Arrays.asList(SECONDS, MICROSECONDS, MILLISECONDS), params.timeUnitList);
     }
     @Test
-    public void testListOptionParametersAreReusedInstantiatedIfNonNull() {
+    public void testListOptionParametersAreReusedIfNonNull() {
         EnumParams params = new EnumParams();
         List<TimeUnit> list = new ArrayList<TimeUnit>();
         params.timeUnitList = list;
         new CommandLine(params).parse("-timeUnitList", "SECONDS", "MICROSECONDS", "SECONDS");
         assertEquals(Arrays.asList(SECONDS, MICROSECONDS, SECONDS), params.timeUnitList);
         assertSame(list, params.timeUnitList);
+    }
+    @Test
+    public void testConcreteCollectionParametersAreInstantiatedIfNull() {
+        class App {
+            @Option(names = "-map")
+            HashMap<String, String> map;
+
+            @Option(names = "-list")
+            ArrayList<String> list;
+        }
+        App params = new App();
+        new CommandLine(params).parse("-list", "a", "-list", "b", "-map", "a=b");
+        assertEquals(Arrays.asList("a", "b"), params.list);
+
+        HashMap<String, String> expected = new HashMap<String, String>();
+        expected.put("a", "b");
+        assertEquals(expected, params.map);
     }
 
     @Test
