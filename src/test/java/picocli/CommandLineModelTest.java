@@ -539,6 +539,25 @@ public class CommandLineModelTest {
         assertEquals("optional option typed value when specified without args", "value", option3.typedValues().get(0));
     }
 
+    /** see <a href="https://github.com/remkop/picocli/issues/279">issue #279</a>  */
+    @Test
+    public void testSingleValueFieldWithOptionalParameterFollowedByOption_279() {
+        @Command(name="sample")
+        class Sample {
+            @Option(names = "-x") boolean x;
+            @Option(names="--foo", arity="0..1") String foo;
+        }
+
+        Sample sample = new Sample();
+        List<CommandLine> parsed3 = new CommandLine(sample).parse("--foo", "-x");// specified without value
+        OptionSpec option3 = parsed3.get(0).getCommandSpec().optionsMap().get("--foo");
+        assertEquals("optional option is empty string when specified without args", "", option3.getValue());
+        assertEquals("optional option string value when specified without args", "", option3.stringValues().get(0));
+        assertEquals("optional option typed value when specified without args", "", option3.typedValues().get(0));
+        assertEquals("", sample.foo);
+        assertEquals(true, sample.x);
+    }
+
     @Test
     public void testMixinStandardHelpOptions_FalseByDefault() {
         CommandSpec spec = CommandSpec.create();

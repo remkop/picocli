@@ -7511,7 +7511,7 @@ public class CommandLine {
                             value = "true";
                         }
                     }
-                } else { // non-boolean option with optional value #325
+                } else { // non-boolean option with optional value #325, #279
                     if (isOption(value)) {
                         args.push(value); // we don't consume the value
                         value = "";
