@@ -61,6 +61,7 @@ import org.junit.contrib.java.lang.system.RestoreSystemProperties;
 import org.junit.contrib.java.lang.system.SystemErrRule;
 import org.junit.rules.TestRule;
 
+import static java.lang.String.format;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.*;
@@ -830,7 +831,7 @@ public class CommandLineTest {
         } else {
             System.setProperty(PROPERTY, old);
         }
-        String prefix8 = String.format("" +
+        String prefix8 = format("" +
                 "[picocli DEBUG] Could not register converter for java.time.Duration: java.lang.ClassNotFoundException: java.time.Duration%n" +
                 "[picocli DEBUG] Could not register converter for java.time.Instant: java.lang.ClassNotFoundException: java.time.Instant%n" +
                 "[picocli DEBUG] Could not register converter for java.time.LocalDate: java.lang.ClassNotFoundException: java.time.LocalDate%n" +
@@ -845,9 +846,9 @@ public class CommandLineTest {
                 "[picocli DEBUG] Could not register converter for java.time.ZonedDateTime: java.lang.ClassNotFoundException: java.time.ZonedDateTime%n" +
                 "[picocli DEBUG] Could not register converter for java.time.ZoneId: java.lang.ClassNotFoundException: java.time.ZoneId%n" +
                 "[picocli DEBUG] Could not register converter for java.time.ZoneOffset: java.lang.ClassNotFoundException: java.time.ZoneOffset%n");
-        String prefix7 = String.format("" +
+        String prefix7 = format("" +
                 "[picocli DEBUG] Could not register converter for java.nio.file.Path: java.lang.ClassNotFoundException: java.nio.file.Path%n");
-        String expected = String.format("" +
+        String expected = format("" +
                         "[picocli DEBUG] Creating CommandSpec for object of class picocli.CommandLineTest$CompactFields with factory picocli.CommandLine$DefaultFactory%n" +
                         "[picocli INFO] Picocli version: %3$s%n" +
                         "[picocli INFO] Parsing 6 command line args [-oout, --, -r, -v, p1, p2]%n" +
@@ -1315,7 +1316,7 @@ public class CommandLineTest {
             CommandLine.populateCommand(new ChildOption(), "");
             fail("expected CommandLine$DuplicateOptionAnnotationsException");
         } catch (DuplicateOptionAnnotationsException ex) {
-            String expected = String.format("Option name '-p' is used by both field String %s.text and field String %s.path",
+            String expected = format("Option name '-p' is used by both field String %s.text and field String %s.path",
                     ChildOption.class.getName(), ParentOption.class.getName());
             assertEquals(expected, ex.getMessage());
         }
@@ -1644,7 +1645,7 @@ public class CommandLineTest {
         } else {
             System.setProperty(PROPERTY, old);
         }
-        String expected = String.format("" +
+        String expected = format("" +
                         "[picocli INFO] Picocli version: %s%n" +
                         "[picocli INFO] Parsing 8 command line args [--git-dir=/home/rpopma/picocli, commit, -m, \"Fixed typos\", --, src1.java, src2.java, src3.java]%n" +
                         "[picocli INFO] Setting field java.io.File picocli.Demo$Git.gitDir to '%s' (was 'null') for option --git-dir%n" +
@@ -1676,7 +1677,7 @@ public class CommandLineTest {
         } else {
             System.setProperty(PROPERTY, old);
         }
-        String prefix8 = String.format("" +
+        String prefix8 = format("" +
                 "[picocli DEBUG] Could not register converter for java.time.Duration: java.lang.ClassNotFoundException: java.time.Duration%n" +
                 "[picocli DEBUG] Could not register converter for java.time.Instant: java.lang.ClassNotFoundException: java.time.Instant%n" +
                 "[picocli DEBUG] Could not register converter for java.time.LocalDate: java.lang.ClassNotFoundException: java.time.LocalDate%n" +
@@ -1691,9 +1692,9 @@ public class CommandLineTest {
                 "[picocli DEBUG] Could not register converter for java.time.ZonedDateTime: java.lang.ClassNotFoundException: java.time.ZonedDateTime%n" +
                 "[picocli DEBUG] Could not register converter for java.time.ZoneId: java.lang.ClassNotFoundException: java.time.ZoneId%n" +
                 "[picocli DEBUG] Could not register converter for java.time.ZoneOffset: java.lang.ClassNotFoundException: java.time.ZoneOffset%n");
-        String prefix7 = String.format("" +
+        String prefix7 = format("" +
                 "[picocli DEBUG] Could not register converter for java.nio.file.Path: java.lang.ClassNotFoundException: java.nio.file.Path%n");
-        String expected = String.format("" +
+        String expected = format("" +
                         "[picocli DEBUG] Creating CommandSpec for object of class picocli.Demo$Git with factory picocli.CommandLine$DefaultFactory%n" +
                         "[picocli DEBUG] Creating CommandSpec for object of class picocli.CommandLine$AutoHelpMixin with factory picocli.CommandLine$DefaultFactory%n" +
                         "[picocli DEBUG] Creating CommandSpec for object of class picocli.CommandLine$HelpCommand with factory picocli.CommandLine$DefaultFactory%n" +
@@ -1780,7 +1781,7 @@ public class CommandLineTest {
         assertEquals("333", ff.field);
         System.setErr(originalErr);
 
-        String expected = String.format("" +
+        String expected = format("" +
                         "[picocli INFO] Picocli version: %s%n" +
                         "[picocli INFO] Parsing 6 command line args [-f, 111, -f, 222, -f, 333]%n" +
                         "[picocli INFO] Setting field String picocli.CommandLineTest$16App.field to '111' (was 'null') for option -f%n" +
@@ -1807,7 +1808,7 @@ public class CommandLineTest {
         assertEquals(Arrays.asList("3=c", "4=d"), cmd.getUnmatchedArguments());
         System.setErr(originalErr);
 
-        String expected = String.format("" +
+        String expected = format("" +
                 "[picocli INFO] Picocli version: %s%n" +
                 "[picocli INFO] Parsing 4 command line args [1=a, 2=b, 3=c, 4=d]%n" +
                 "[picocli INFO] Putting [1 : a] in LinkedHashMap<Integer, String> field java.util.Map<Integer, String> picocli.CommandLineTest$17App.message for args[0] at position 0%n" +
@@ -2360,7 +2361,7 @@ public class CommandLineTest {
         assertEquals(Arrays.asList("--y"), cmd.getUnmatchedArguments());
         assertEquals("C", ((App) cmd.getCommand()).third);
 
-        String expected = String.format("" +
+        String expected = format("" +
                 "[picocli INFO] Picocli version: %2$s%n" +
                 "[picocli INFO] Parsing 2 command line args [-yy, -a=A]%n" +
                 "[picocli INFO] Setting field String %1$s.first to 'A' (was 'null') for option -a%n" +
@@ -3271,7 +3272,7 @@ public class CommandLineTest {
         } catch (InitializationException ex) {
             String pattern = "Invalid type for %s: must be either String[] or List<String>";
             Field f = App.class.getDeclaredField("unmatched");
-            assertEquals(String.format(pattern, f), ex.getMessage());
+            assertEquals(format(pattern, f), ex.getMessage());
         }
     }
 
@@ -3286,7 +3287,7 @@ public class CommandLineTest {
         } catch (InitializationException ex) {
             String pattern = "Invalid type for %s: must be either String[] or List<String>";
             Field f = App.class.getDeclaredField("unmatched");
-            assertEquals(String.format(pattern, f), ex.getMessage());
+            assertEquals(format(pattern, f), ex.getMessage());
         }
     }
 
@@ -3301,7 +3302,7 @@ public class CommandLineTest {
         } catch (InitializationException ex) {
             String pattern = "A member cannot have both @Unmatched and @Option or @Parameters annotations, but '%s' has both.";
             Field f = App.class.getDeclaredField("unmatched");
-            assertEquals(String.format(pattern, f), ex.getMessage());
+            assertEquals(format(pattern, f), ex.getMessage());
         }
     }
 
@@ -3316,7 +3317,7 @@ public class CommandLineTest {
         } catch (InitializationException ex) {
             String pattern = "A member cannot have both @Unmatched and @Option or @Parameters annotations, but '%s' has both.";
             Field f = App.class.getDeclaredField("unmatched");
-            assertEquals(String.format(pattern, f), ex.getMessage());
+            assertEquals(format(pattern, f), ex.getMessage());
         }
     }
 
@@ -3331,7 +3332,7 @@ public class CommandLineTest {
         } catch (InitializationException ex) {
             String pattern = "A member cannot be both a @Mixin command and an @Unmatched but '%s' is both.";
             Field f = App.class.getDeclaredField("unmatched");
-            assertEquals(String.format(pattern, f), ex.getMessage());
+            assertEquals(format(pattern, f), ex.getMessage());
         }
     }
 
@@ -3346,7 +3347,7 @@ public class CommandLineTest {
         } catch (InitializationException ex) {
             String pattern = "A member cannot be both a @Mixin command and an @Option or @Parameters, but '%s' is both.";
             Field f = App.class.getDeclaredField("unmatched");
-            assertEquals(String.format(pattern, f), ex.getMessage());
+            assertEquals(format(pattern, f), ex.getMessage());
         }
     }
 
@@ -3361,7 +3362,7 @@ public class CommandLineTest {
         } catch (InitializationException ex) {
             String pattern = "A member cannot be both a @Mixin command and an @Option or @Parameters, but '%s' is both.";
             Field f = App.class.getDeclaredField("unmatched");
-            assertEquals(String.format(pattern, f), ex.getMessage());
+            assertEquals(format(pattern, f), ex.getMessage());
         }
     }
 
@@ -3507,7 +3508,7 @@ public class CommandLineTest {
     public void testUnmatchedArgumentSuggestsSubcommands() {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         Demo.mainCommand().parseWithHandler(((IParseResultHandler)null), new PrintStream(baos), new String[]{"chekcout"});
-        String expected = String.format("" +
+        String expected = format("" +
                 "Unmatched argument: chekcout%n" +
                 "Did you mean: checkout or help or branch?%n");
         assertEquals(expected, baos.toString());
@@ -3517,7 +3518,7 @@ public class CommandLineTest {
     public void testUnmatchedArgumentSuggestsSubcommands2() {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         Demo.mainCommand().parseWithHandler(((IParseResultHandler)null), new PrintStream(baos), new String[]{"me"});
-        String expected = String.format("" +
+        String expected = format("" +
                 "Unmatched argument: me%n" +
                 "Did you mean: merge?%n");
         assertEquals(expected, baos.toString());
@@ -3528,7 +3529,7 @@ public class CommandLineTest {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         CommandLine cmd = new CommandLine(new Demo.GitCommit());
         cmd.parseWithHandler(((IParseResultHandler)null), new PrintStream(baos), new String[]{"-fi"});
-        String expected = String.format("" +
+        String expected = format("" +
                 "Unknown option: -fi%n" +
                 "Possible solutions: --fixup, --file%n");
         assertEquals(expected, baos.toString());
@@ -3595,7 +3596,7 @@ public class CommandLineTest {
             CommandLine cmd = new CommandLine(app);
             cmd.parse("-x", "-z", "987");
 
-            String expectedPrompt = String.format("Enter value for -x (Pwd%nline2): ");
+            String expectedPrompt = format("Enter value for -x (Pwd%nline2): ");
             assertEquals(expectedPrompt, baos.toString());
             assertEquals(123, app.x);
             assertEquals(987, app.z);
@@ -3623,7 +3624,7 @@ public class CommandLineTest {
             CommandLine cmd = new CommandLine(app);
             cmd.parse("987");
 
-            String expectedPrompt = String.format("Enter value for position 0 (Pwd%nline2): ");
+            String expectedPrompt = format("Enter value for position 0 (Pwd%nline2): ");
             assertEquals(expectedPrompt, baos.toString());
             assertEquals(123, app.x);
             assertEquals(987, app.z);
@@ -3652,7 +3653,7 @@ public class CommandLineTest {
             CommandLine cmd = new CommandLine(app);
             cmd.parse("333", "987");
 
-            String expectedPrompt = String.format("Enter value for position 1 (Pwd%nline2): ");
+            String expectedPrompt = format("Enter value for position 1 (Pwd%nline2): ");
             assertEquals(expectedPrompt, baos.toString());
             assertEquals(333, app.a);
             assertEquals(123, app.x);
@@ -3701,7 +3702,7 @@ public class CommandLineTest {
             Login login = new Login();
             CommandLine.call(login, "-u", "user123", "-p");
 
-            String expectedPrompt = String.format("Enter value for --password (Password or passphrase): " +
+            String expectedPrompt = format("Enter value for --password (Password or passphrase): " +
                     "Hi user123, your password is hashed to 75K3eLr+dx6JJFuJ7LwIpEpOFmwGZZkRiB84PURz6U8=.%n");
             assertEquals(expectedPrompt, baos.toString());
             assertEquals("user123", login.user);
@@ -3728,5 +3729,31 @@ public class CommandLineTest {
 
         assertEquals("", m.invoke(null, null, 0));
         assertEquals("", m.invoke(null, new String[0], 1));
+    }
+
+    @Test
+    public void testParseAmbiguousKeyValueOption() {
+        class App {
+            @Option(names = "-x") String x;
+            @Option(names = "-x=abc") String xabc;
+        }
+        try {
+            CommandLine.populateCommand(new App(), "-x=abc");
+            fail("Expected exception");
+        } catch (MissingParameterException ex) {
+            assertEquals("Missing required parameter for option '-x=abc' (<xabc>)", ex.getMessage());
+        }
+        assertEquals(format("[picocli WARN] Both '-x=abc' and '-x' are valid option names in <main class>. Using '-x=abc'...%n"), systemErrRule.getLog());
+    }
+
+    @Test
+    public void testParseAmbiguousKeyValueOption2() {
+        class App {
+            @Option(names = "-x") String x;
+            @Option(names = "-x=abc") String xabc;
+        }
+        App app = CommandLine.populateCommand(new App(), "-x=abc=xyz");
+        assertNull(app.xabc);
+        assertEquals("abc=xyz", app.x);
     }
 }

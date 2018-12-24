@@ -7251,7 +7251,9 @@ public class CommandLine {
                 if (separatorIndex > 0) {
                     String key = arg.substring(0, separatorIndex);
                     // be greedy. Consume the whole arg as an option if possible.
-                    if (commandSpec.optionsMap().containsKey(key) && !commandSpec.optionsMap().containsKey(arg)) {
+                    if (commandSpec.optionsMap().containsKey(key) && commandSpec.optionsMap().containsKey(arg)) {
+                        tracer.warn("Both '%s' and '%s' are valid option names in %s. Using '%s'...%n", arg, key, getCommandName(), arg);
+                    } else if (commandSpec.optionsMap().containsKey(key)) {
                         paramAttachedToOption = true;
                         String optionParam = arg.substring(separatorIndex + separator.length());
                         args.push(optionParam);
