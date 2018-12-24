@@ -8,6 +8,8 @@ import java.util.concurrent.TimeUnit;
 import org.jline.reader.Completer;
 import org.jline.reader.LineReader;
 import org.jline.reader.LineReaderBuilder;
+import org.jline.reader.EndOfFileException;
+import org.jline.reader.UserInterruptException;
 import org.jline.reader.impl.DefaultParser;
 import org.jline.reader.impl.LineReaderImpl;
 import org.jline.terminal.TerminalBuilder;
@@ -107,9 +109,16 @@ public class Example {
 
             // start the shell and process input until the user quits with Ctl-D
             String line;
-            while (true) {    
-                line = reader.readLine(prompt, rightPrompt, (MaskingCallback) null, null);
-                CommandLine.run(commands, line.split("\\s+"));
+            while (true) {
+                try {
+                    line = reader.readLine(prompt, rightPrompt, (MaskingCallback) null, null);
+                    CommandLine.run(commands, line.split("\\s+"));
+                } catch (UserInterruptException e) {
+                    // Ignore
+                } catch (EndOfFileException e) {
+                    return;
+                }
+                    
             }
         } catch (Throwable t) {
             t.printStackTrace();
