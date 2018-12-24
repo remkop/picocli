@@ -369,4 +369,63 @@ public class ArgSplitTest {
         assertEquals("-Dspring.profiles.active=foo,bar -Dspring.mail.host=smtp.mailtrap.io", app.parameters.get("AppOptions"));
         assertEquals("", app.parameters.get("OtherOptions"));
     }
+
+    @Test
+    public void testArgSpecSplitValueDebug() {
+        PositionalParamSpec positional = PositionalParamSpec.builder().splitRegex("b").build();
+
+        System.setProperty("picocli.trace", "DEBUG");
+        String[] values = positional.splitValue("abc", new CommandLine.Model.ParserSpec().splitQuotedStrings(true), CommandLine.Range.valueOf("1"), 1);
+        System.clearProperty("picocli.trace");
+
+        assertArrayEquals(new String[] {"a", "c"}, values);
+    }
+
+    @Test
+    public void testArgSpecSplitWithEscapedBackslashInsideQuote() {
+        PositionalParamSpec positional = PositionalParamSpec.builder().splitRegex(";").build();
+
+        System.setProperty("picocli.trace", "DEBUG");
+        String value = "\"abc\\\\\\\";def\"";
+        String[] values = positional.splitValue(value, new CommandLine.Model.ParserSpec().splitQuotedStrings(false), CommandLine.Range.valueOf("1"), 1);
+        System.clearProperty("picocli.trace");
+
+        assertArrayEquals(new String[] {"\"abc\\\\\\\";def\""}, values);
+    }
+
+    @Test
+    public void testArgSpecSplitWithEscapedBackslashOutsideQuote() {
+        PositionalParamSpec positional = PositionalParamSpec.builder().splitRegex(";").build();
+
+        System.setProperty("picocli.trace", "DEBUG");
+        String value = "\\\\\"abc\\\";def\";\\\"a\\";
+        String[] values = positional.splitValue(value, new CommandLine.Model.ParserSpec().splitQuotedStrings(false), CommandLine.Range.valueOf("1"), 1);
+        System.clearProperty("picocli.trace");
+
+        assertArrayEquals(new String[] {"\\\\\"abc\\\";def\"", "\\\"a\\"}, values);
+    }
+
+    @Test
+    public void testArgSpecSplitBalancedQuotedValueDebug() {
+        PositionalParamSpec positional = PositionalParamSpec.builder().splitRegex(";").build();
+
+        System.setProperty("picocli.trace", "DEBUG");
+        String value = "\"abc\\\";def\"";
+        String[] values = positional.splitValue(value, new CommandLine.Model.ParserSpec().splitQuotedStrings(false), CommandLine.Range.valueOf("1"), 1);
+        System.clearProperty("picocli.trace");
+
+        assertArrayEquals(new String[] {"\"abc\\\";def\""}, values);
+    }
+
+    @Test
+    public void testArgSpecSplitUnbalancedQuotedValueDebug() {
+        PositionalParamSpec positional = PositionalParamSpec.builder().splitRegex(";").build();
+
+        System.setProperty("picocli.trace", "DEBUG");
+        String value = "\"abc\\\";def";
+        String[] values = positional.splitValue(value, new CommandLine.Model.ParserSpec().splitQuotedStrings(false), CommandLine.Range.valueOf("1"), 1);
+        System.clearProperty("picocli.trace");
+
+        assertArrayEquals(new String[] {"\"abc\\\"", "def"}, values);
+    }
 }
