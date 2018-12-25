@@ -100,6 +100,7 @@ See the module's [README](https://github.com/remkop/picocli/blob/master/picocli-
 - [#569] Facilitate customization of the synopsis: split `Help.detailedSynopsis()` into protected methods.
 - [#572] `CommandSpec.addMethodSubcommands` now throws `picocli.CommandLine.InitializationException` instead of `java.lang.UnsupportedOperationException` when the user object of the parent command is a `java.lang.reflect.Method`.
 - [#508] Added `@Option(order = <int>)` attribute to allow explicit control of option ordering in the usage help message; useful when mixing methods and fields with `@Option` annotation.
+- [#576] Bugfix: fixed StringIndexOutOfBoundsException in shell-jline2 completion when cursor was before `=` when option parameter was attached to option name.
 
 ## <a name="3.9.0-deprecated"></a> Deprecations
 No features were deprecated in this release.
