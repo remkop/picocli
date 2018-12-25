@@ -24,7 +24,7 @@ import picocli.shell.jline3.PicocliJLineCompleter;
 
 /**
  * Example that demonstrates how to build an interactive shell with JLine3 and picocli.
- * @since 3.7
+ * @since 3.9
  */
 public class Example {
 
@@ -117,8 +117,7 @@ public class Example {
                     // Ignore
                 } catch (EndOfFileException e) {
                     return;
-                }
-                    
+                }                    
             }
         } catch (Throwable t) {
             t.printStackTrace();
