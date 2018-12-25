@@ -113,7 +113,7 @@ function _picocli_picocompletion-demo_sub1() {
   COMMANDS=""
   FLAG_OPTS=""
   ARG_OPTS="--num --str --candidates"
-  str2_OPTION_ARGS="a b c" # --candidates values
+  str2_OPTION_ARGS="aaa bbb ccc" # --candidates values
 
   compopt +o default
 

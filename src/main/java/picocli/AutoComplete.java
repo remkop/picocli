@@ -149,11 +149,6 @@ public class AutoComplete {
         }
         return builder.toString();
     }
-    private static class EnumNameFunction implements Function<Enum<?>, String> {
-        public String apply(final Enum<?> anEnum) {
-            return anEnum.name();
-        }
-    }
 
     private static class NullFunction implements Function<CharSequence, String> {
         public String apply(CharSequence value) { return value.toString(); }
@@ -167,11 +162,6 @@ public class AutoComplete {
             return f.type() == Boolean.TYPE || f.type() == Boolean.class;
         }
     }
-    private static class EnumArgFilter implements Predicate<ArgSpec> {
-        public boolean test(ArgSpec f) {
-            return f.type().isEnum();
-        }
-    }
     private static class HasCompletions implements Predicate<ArgSpec> {
         public boolean test(ArgSpec f) {
             return f.completionCandidates() != null;
@@ -181,13 +171,6 @@ public class AutoComplete {
         return new Predicate<T>() {
             public boolean test(T t) {
                 return !original.test(t);
-            }
-        };
-    }
-    private static <T> Predicate<T> and(final Predicate<T> left, final Predicate<T> right) {
-        return new Predicate<T>() {
-            public boolean test(T t) {
-                return left.test(t) && right.test(t);
             }
         };
     }
@@ -577,9 +560,10 @@ public class AutoComplete {
         if (argIndex < 0      || argIndex >= args.length)                 { throw new IllegalArgumentException("Invalid argIndex " + argIndex + ": args array only has " + args.length + " elements."); }
         if (positionInArg < 0 || positionInArg > args[argIndex].length()) { throw new IllegalArgumentException("Invalid positionInArg " + positionInArg + ": args[" + argIndex + "] (" + args[argIndex] + ") only has " + args[argIndex].length() + " characters."); }
 
+        String currentArg = args[argIndex];
         boolean reset = spec.parser().collectErrors();
         try {
-            String committedPrefix = args[argIndex].substring(0, positionInArg);
+            String committedPrefix = currentArg.substring(0, positionInArg);
 
             spec.parser().collectErrors(true);
             CommandLine parser = new CommandLine(spec);
@@ -593,12 +577,23 @@ public class AutoComplete {
                     addCandidatesForArgsFollowing(((CommandSpec) obj).parent(), candidates);
 
                 } else if (obj instanceof OptionSpec) { // option
-                    int sep = args[argIndex].indexOf(spec.parser().separator());
+                    int sep = currentArg.indexOf(spec.parser().separator());
                     if (sep < 0 || positionInArg < sep) { // no '=' or cursor before '='
                         addCandidatesForArgsFollowing(findCommandFor((OptionSpec) obj, spec), candidates);
                     } else {
-                        committedPrefix = args[argIndex].substring(sep + 1, positionInArg);
                         addCandidatesForArgsFollowing((OptionSpec) obj, candidates);
+
+                        int sepLength = spec.parser().separator().length();
+                        if (positionInArg < sep + sepLength) {
+                            int posInSeparator = positionInArg - sep;
+                            String prefix = spec.parser().separator().substring(posInSeparator);
+                            for (int i = 0; i < candidates.size(); i++) {
+                                candidates.set(i, prefix + candidates.get(i));
+                            }
+                            committedPrefix = currentArg.substring(sep, positionInArg);
+                        } else {
+                            committedPrefix = currentArg.substring(sep + sepLength, positionInArg);
+                        }
                     }
 
                 } else if (obj instanceof PositionalParamSpec) { // positional
