@@ -597,6 +597,7 @@ public class AutoComplete {
                     }
 
                 } else if (obj instanceof PositionalParamSpec) { // positional
+                    //addCandidatesForArgsFollowing(obj, candidates);
                     addCandidatesForArgsFollowing(findCommandFor((PositionalParamSpec) obj, spec), candidates);
 
                 } else {

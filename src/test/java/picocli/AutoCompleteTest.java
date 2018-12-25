@@ -109,6 +109,7 @@ public class AutoCompleteTest {
     public static class Sub2 {
         @Option(names = "--num2", description = "another number") int number2;
         @Option(names = {"--directory", "-d"}, description = "a directory") File directory;
+        @Parameters(arity = "0..1") Possibilities possibilities;
     }
     @Command(description = "Second level sub-subcommand 1")
     public static class Sub2Child1 {
@@ -570,18 +571,23 @@ public class AutoCompleteTest {
         test(spec, a("sub1", "--candidates", "a", "--"),      3, 2, cur, l("candidates", "num", "str"));
         test(spec, a("sub1", "--num"),                        2, 0, cur, l());
         test(spec, a("sub1", "--str"),                        2, 0, cur, l());
-        test(spec, a("sub2"),                                 1, 0, cur, l("--directory", "--num2", "-d", "subsub1", "subsub2"));
+        test(spec, a("sub2"),                                 1, 0, cur, l("--directory", "--num2", "-d", "Aaa", "Bbb", "Ccc", "subsub1", "subsub2"));
         test(spec, a("sub2", "-"),                            1, 1, cur, l("-directory", "-num2", "d"));
         test(spec, a("sub2", "-d"),                           2, 0, cur, l());
-        test(spec, a("sub2", "-d", "/"),                      3, 0, cur, l("--directory", "--num2", "-d", "subsub1", "subsub2"));
+        test(spec, a("sub2", "-d", "/"),                      3, 0, cur, l("--directory", "--num2", "-d", "Aaa", "Bbb", "Ccc", "subsub1", "subsub2"));
         test(spec, a("sub2", "-d", "/", "-"),                 3, 1, cur, l("-directory", "-num2", "d"));
         test(spec, a("sub2", "-d", "/", "--"),                3, 2, cur, l("directory", "num2"));
         test(spec, a("sub2", "-d", "/", "--n"),               3, 3, cur, l("um2"));
         test(spec, a("sub2", "-d", "/", "--num2"),            3, 6, cur, l(""));
         test(spec, a("sub2", "-d", "/", "--num2"),            4, 0, cur, l());
         test(spec, a("sub2", "-d", "/", "--num2", "0"),       4, 1, cur, l());
-        test(spec, a("sub2", "-d", "/", "--num2", "0"),       5, 0, cur, l("--directory", "--num2", "-d", "subsub1", "subsub2"));
+        test(spec, a("sub2", "-d", "/", "--num2", "0"),       5, 0, cur, l("--directory", "--num2", "-d", "Aaa", "Bbb", "Ccc", "subsub1", "subsub2"));
         test(spec, a("sub2", "-d", "/", "--num2", "0", "s"),  5, 1, cur, l("ubsub1", "ubsub2"));
+        test(spec, a("sub2", "A"),                            1, 1, cur, l("aa"));
+        test(spec, a("sub2", "Aaa"),                          1, 3, cur, l(""));
+        test(spec, a("sub2", "Aaa"),                          2, 0, cur, l("--directory", "--num2", "-d", "Aaa", "Bbb", "Ccc", "subsub1", "subsub2"));
+        test(spec, a("sub2", "Aaa", "s"),                     2, 1, cur, l("ubsub1", "ubsub2"));
+        test(spec, a("sub2", "Aaa", "subsub1"),               3, 0, cur, l("--host", "-h"));
         test(spec, a("sub2", "subsub1"),                      2, 0, cur, l("--host", "-h"));
         test(spec, a("sub2", "subsub2"),                      2, 0, cur, l("--timeUnit", "--timeout", "-t", "-u", "aaa", "bbb", "ccc"));
         test(spec, a("sub2", "subsub2", "-"),                 2, 1, cur, l("-timeUnit", "-timeout", "t", "u"));
@@ -683,6 +689,20 @@ public class AutoCompleteTest {
         test(spec, a("-x", "A"),          1, 1, cur, l("aa"));
         test(spec, a("-x", "Aaa"),        2, 0, cur, l("Aaa", "Bbb", "Ccc")); // suggest 2nd arg of same type
         test(spec, a("-x", "Aaa", "Bbb"), 3, 0, cur, l("-x")); // we have 2 args for first -x. Suggest -x again.
+    }
+
+    @Test
+    public void testCompleteFindPositionalForTopLevelCommand() {
+        class App {
+            @Parameters() List<Possibilities> poss;
+        }
+        CommandSpec spec = CommandSpec.forAnnotatedObject(new App());
+        int cur = 500;
+        test(spec, a(),                    0, 0, cur, l("Aaa", "Bbb", "Ccc"));
+        test(spec, a("A"),          0, 0, cur, l("Aaa", "Bbb", "Ccc"));
+        test(spec, a("A"),          0, 1, cur, l("aa"));
+        test(spec, a("Aaa"),        1, 0, cur, l("Aaa", "Bbb", "Ccc"));
+        test(spec, a("Aaa", "Bbb"), 2, 0, cur, l("Aaa", "Bbb", "Ccc"));
     }
 
     @Test
