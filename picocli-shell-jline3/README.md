@@ -29,7 +29,7 @@ The picocli user manual is [here](https://picocli.info), and the GitHub project 
 
 ## Command Completer
 `PicocliJLineCompleter` is a small component that generates completion candidates to allow users to
-get command line TAB auto-completion for a picocli-based application running in a JLine 2 shell.
+get command line TAB auto-completion for a picocli-based application running in a JLine 3 shell.
 
 ## Example
 
@@ -58,7 +58,7 @@ import picocli.shell.jline3.PicocliJLineCompleter;
 
 /**
  * Example that demonstrates how to build an interactive shell with JLine3 and picocli.
- * @since 3.7
+ * @since 3.9
  */
 public class Example {
 
@@ -144,8 +144,14 @@ public class Example {
             // start the shell and process input until the user quits with Ctl-D
             String line;
             while (true) {    
-                line = reader.readLine(prompt, rightPrompt, (MaskingCallback) null, null);
-                CommandLine.run(commands, line.split("\\s+"));
+                try {
+                    line = reader.readLine(prompt, rightPrompt, (MaskingCallback) null, null);
+                    CommandLine.run(commands, line.split("\\s+"));
+                } catch (UserInterruptException e) {
+                    // Ignore
+                } catch (EndOfFileException e) {
+                    return;
+                }
             }
         } catch (Throwable t) {
             t.printStackTrace();

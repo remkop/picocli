@@ -140,6 +140,7 @@ task bumpReadmeVersion {
             fileset(dir: '.', includes: 'README.md')
             fileset(dir: './picocli-codegen/', includes: 'README.md')
             fileset(dir: './picocli-shell-jline2/', includes: 'README.md')
+            fileset(dir: './picocli-shell-jline3/', includes: 'README.md')
         }
     }
 }
