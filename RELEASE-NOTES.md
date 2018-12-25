@@ -3,6 +3,11 @@
 # <a name="3.9.0"></a> Picocli 3.9.0 (UNRELEASED)
 The picocli community is pleased to announce picocli 3.9.0.
 
+This release contains bugfixes and enhancements in the main picocli module, and adds a new module: `picocli-shell-jline3`.
+
+Picocli Shell JLine3 (`picocli-shell-jline3`) contains components and documentation for building
+interactive shell command line applications with JLine 3 and picocli.
+
 This release contains API enhancements to allow customization of the usage help message:
 
 * help section renderer API
@@ -77,7 +82,18 @@ However, when mixing `@Option` methods and `@Option` fields, options do not reli
 The `@Option(order = <int>)` attribute can be used to explicitly control the position in the usage help message at which the option should be shown. Options with a lower number are shown before options with a higher number.
 
 
+### <a name="3.9.0-picocli-shell-jline3"></a> New Module `picocli-shell-jline3`
+Picocli Shell JLine3 contains components and documentation for building interactive shell command line applications with JLine 3 and picocli.
+
+This release contains the `picocli.shell.jline3.PicocliJLineCompleter` class. 
+`PicocliJLineCompleter` is a small component that generates completion candidates to allow users to get command line TAB auto-completion for a picocli-based application running in a JLine 3 shell.
+It is similar to the class with the same name in the `picocli.shell.jline2` package in the `picocli-shell-jline2` module.
+
+See the module's [README](https://github.com/remkop/picocli/blob/master/picocli-shell-jline3/README.md) for more details.
+
+
 ## <a name="3.9.0-fixes"></a> Fixed issues
+- [#574] Add `picocli-shell-jline3` module. Thanks to [mattirn](https://github.com/mattirn) for the pull request.
 - [#567] Usage message customization initial implementation. Thanks to [Christian Helmer](https://github.com/SysLord) for the pull request.
 - [#530] Usage message customization. Thanks to [stechio](https://github.com/stechio) for raising the request and productive discussions.
 - [#570] Command method options and positional parameter Object values are now cleared correctly when reusing CommandLine. Thanks to [Christian Helmer](https://github.com/SysLord) for the pull request.

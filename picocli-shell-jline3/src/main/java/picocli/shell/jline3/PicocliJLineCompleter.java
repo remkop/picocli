@@ -16,7 +16,7 @@ import java.lang.CharSequence;
  * candidates for the specified command line based on the {@link CommandSpec} that
  * this {@code PicocliJLineCompleter} was constructed with.
  *
- * @since 3.7
+ * @since 3.9
  */
 public class PicocliJLineCompleter implements Completer {
     private final CommandSpec spec;
