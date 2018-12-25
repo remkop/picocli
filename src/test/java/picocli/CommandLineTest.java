@@ -15,11 +15,15 @@
  */
 package picocli;
 
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -50,7 +54,6 @@ import picocli.CommandLine.Model.CommandSpec;
 
 import static java.lang.String.format;
 import static org.hamcrest.CoreMatchers.containsString;
-import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.*;
 import static picocli.CommandLine.Command;
 import static picocli.CommandLine.DuplicateOptionAnnotationsException;
@@ -63,14 +66,12 @@ import static picocli.CommandLine.InitializationException;
 import static picocli.CommandLine.MissingParameterException;
 import static picocli.CommandLine.MissingTypeConverterException;
 import static picocli.CommandLine.Mixin;
-import static picocli.CommandLine.Model;
 import static picocli.CommandLine.Option;
 import static picocli.CommandLine.OverwrittenOptionException;
 import static picocli.CommandLine.ParameterException;
 import static picocli.CommandLine.ParameterIndexGapException;
 import static picocli.CommandLine.Parameters;
 import static picocli.CommandLine.ParseResult;
-import static picocli.CommandLine.RunAll;
 import static picocli.CommandLine.Unmatched;
 import static picocli.CommandLine.UnmatchedArgumentException;
 import static picocli.HelpTestUtil.setTraceLevel;
@@ -2865,30 +2866,98 @@ public class CommandLineTest {
         assertEquals(Arrays.asList("@", "abc"), app.files);
     }
 
-    @Test
-    public void testAtFileSimplified() {
-        System.setProperty("picocli.useSimplifiedAtFiles", "true");
-        class App {
-            @Option(names = "--simpleArg")
-            private boolean simple;
-
-            @Option(names = "--argWithSpaces")
-            private String withSpaces;
-
-            @Option(names = "--quotedArg")
-            private String quoted;
-
-            @Option(names = "--multiArg", arity = "1..*")
-            private List<String> strings;
-
-            @Option(names = "--urlArg")
-            private URL url;
-
-            @Option(names = "--unescapedBackslashArg")
-            private String unescaped;
+    /**
+     *
+     *
+     * @param source
+     * @return Will have a newline at the end, no matter if the source file had one.
+     * @throws IOException
+     */
+    static String readFile(File source) throws IOException {
+        String newLine = System.getProperty("line.separator", "\n");
+        BufferedReader reader = null;
+        try {
+            reader = new BufferedReader(new FileReader(source));
+            String line = null;
+            StringBuilder sb = new StringBuilder();
+            while ((line = reader.readLine()) != null) {
+                sb.append(line);
+                sb.append(newLine);
+            }
+            sb.append(newLine); // enforce a newline at the end
+            return sb.toString();
+        } finally {
+            if (reader != null) {
+                reader.close();
+            }
         }
-        File file = findFile("/argfile-simplified.txt");
-        App app = CommandLine.populateCommand(new App(), "@" + file.getAbsolutePath());
+    }
+
+    static void writeFile(File target, String contents) throws IOException {
+        BufferedWriter writer = null;
+        try {
+            writer = new BufferedWriter(new FileWriter(target));
+            writer.append(contents);
+        } finally {
+            if (writer != null) {
+                writer.close();
+            }
+        }
+    }
+
+    private static class AtFileTestingApp {
+        @Option(names = "--simpleArg")
+        private boolean simple;
+
+        @Option(names = "--argWithSpaces")
+        private String withSpaces;
+
+        @Option(names = "--quotedArg")
+        private String quoted;
+
+        @Option(names = "--multiArg", arity = "1..*")
+        private List<String> strings;
+
+        @Option(names = "--urlArg")
+        private URL url;
+
+        @Option(names = "--unescapedBackslashArg")
+        private String unescaped;
+    }
+
+    @Test
+    public void testAtFileSimplified() throws IOException {
+        System.setProperty("picocli.useSimplifiedAtFiles", "true");
+        /*
+         * first copy the old file and ensure it has a newline at the end. we do it this way to ensure that editors
+         * can not mess up the file by removing the newline, therefore invalidating this test.
+         */
+        File oldFile = findFile("/argfile-simplified.txt");
+        String contents = readFile(oldFile); // this is where we ensure the newline is there
+        File newFile = File.createTempFile("picocli","atfile");
+        writeFile(newFile, contents);
+        AtFileTestingApp app = CommandLine.populateCommand(new AtFileTestingApp(), "@" + newFile.getAbsolutePath());
+        assertTrue(app.simple);
+        assertEquals("something with spaces", app.withSpaces);
+        assertEquals("\"something else\"", app.quoted);
+        assertEquals(Arrays.asList("something else", "yet something else"), app.strings);
+        assertEquals("https://picocli.info/", app.url.toString());
+        assertEquals("C:\\Program Files\\picocli.txt", app.unescaped);
+    }
+
+    @Test
+    public void testAtFileEndingWithoutNewline() throws IOException {
+        System.setProperty("picocli.useSimplifiedAtFiles", "true");
+        /*
+         * first copy the old file and ensure it has no newline at the end. we do it this way to ensure that editors
+         * can not mess up the file by adding the newline, therefore invalidating this test.
+         */
+        File oldFile = findFile("/argfile-simplified.txt");
+        String contents = readFile(oldFile).trim(); // this is where we remove the newline
+        File newFile = File.createTempFile("picocli","atfile");
+        writeFile(newFile, contents);
+        // then use the new file as the CLI at-file
+        AtFileTestingApp app = CommandLine.populateCommand(new AtFileTestingApp(), "@" + newFile.getAbsolutePath());
         assertTrue(app.simple);
         assertEquals("something with spaces", app.withSpaces);
         assertEquals("\"something else\"", app.quoted);
@@ -2901,18 +2970,8 @@ public class CommandLineTest {
     public void testAtFileSimplifiedWithQuotesTrimmed() {
         System.setProperty("picocli.useSimplifiedAtFiles", "");
         System.setProperty("picocli.trimQuotes", "true");
-        class App {
-            @Option(names = "--quotedArg")
-            private String quoted;
-
-            @Option(names = "--urlArg")
-            private URL url;
-
-            @Option(names = "--unescapedBackslashArg")
-            private String unescaped;
-        }
         File file = findFile("/argfile-simplified-quoted.txt");
-        App app = CommandLine.populateCommand(new App(), "@" + file.getAbsolutePath());
+        AtFileTestingApp app = CommandLine.populateCommand(new AtFileTestingApp(), "@" + file.getAbsolutePath());
         assertEquals("something else", app.quoted);
         assertEquals("https://picocli.info/", app.url.toString());
         assertEquals("C:\\Program Files\\picocli.txt", app.unescaped);
