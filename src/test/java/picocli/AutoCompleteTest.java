@@ -25,6 +25,7 @@ import org.junit.contrib.java.lang.system.SystemOutRule;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Model.CommandSpec;
 import picocli.CommandLine.Model.OptionSpec;
+import picocli.CommandLine.Model.PositionalParamSpec;
 import picocli.CommandLine.Option;
 import picocli.CommandLine.Parameters;
 
@@ -35,6 +36,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.net.InetAddress;
 import java.net.URL;
 import java.util.ArrayList;
@@ -561,6 +563,7 @@ public class AutoCompleteTest {
         test(spec, a("sub1", "--c"),                          1, 3, cur, l("andidates"));
         test(spec, a("sub1", "--candidates"),                 2, 0, cur, l("aaa", "bbb", "ccc"));
         test(spec, a("sub1", "--candidates"),                 1, 12, cur, l(""));
+        test(spec, a("sub1", "--candidates="),                1, 11, cur, l("s")); // cursor before 's'
         test(spec, a("sub1", "--candidates="),                1, 12, cur, l("=aaa", "=bbb", "=ccc"));
         test(spec, a("sub1", "--candidates="),                1, 13, cur, l("aaa", "bbb", "ccc"));
         test(spec, a("sub1", "--candidates=a"),               1, 13, cur, l("aaa", "bbb", "ccc"));
@@ -742,5 +745,59 @@ public class AutoCompleteTest {
         assertFalse(descriptor.equals(new AutoComplete.CommandDescriptor("a", "x")));
         assertFalse(descriptor.equals(new AutoComplete.CommandDescriptor("x", "b")));
         assertFalse(descriptor.equals(new AutoComplete.CommandDescriptor("x", "x")));
+    }
+
+    @Test
+    public void testIsPicocliModelObject() throws Exception {
+        Method m = AutoComplete.class.getDeclaredMethod("isPicocliModelObject", Object.class);
+        m.setAccessible(true);
+        assertFalse((Boolean) m.invoke(null, "blah"));
+        assertTrue((Boolean) m.invoke(null, CommandSpec.create()));
+        assertTrue((Boolean) m.invoke(null, OptionSpec.builder("-x").build()));
+        assertTrue((Boolean) m.invoke(null, PositionalParamSpec.builder().build()));
+    }
+
+    @Test
+    public void testAddCandidatesForArgsFollowingObject() throws Exception {
+        Method m = AutoComplete.class.getDeclaredMethod("addCandidatesForArgsFollowing", Object.class, List.class);
+        m.setAccessible(true);
+        List<String> candidates = new ArrayList<String>();
+        m.invoke(null, null, candidates);
+        assertTrue("null Object adds no candidates", candidates.isEmpty());
+
+        m.invoke(null, new Object(), candidates);
+        assertTrue("non-PicocliModelObject Object adds no candidates", candidates.isEmpty());
+
+        List<String> completions = Arrays.asList("x", "y", "z");
+        PositionalParamSpec positional = PositionalParamSpec.builder().completionCandidates(completions).build();
+        m.invoke(null, positional, candidates);
+        assertEquals("PositionalParamSpec adds completion candidates", completions, candidates);
+    }
+
+    @Test
+    public void testAddCandidatesForArgsFollowingNullCommandAddsNoCandidates() throws Exception {
+        Method m = AutoComplete.class.getDeclaredMethod("addCandidatesForArgsFollowing", CommandSpec.class, List.class);
+        m.setAccessible(true);
+        List<String> candidates = new ArrayList<String>();
+        m.invoke(null, null, candidates);
+        assertTrue("null CommandSpec adds no candidates", candidates.isEmpty());
+    }
+
+    @Test
+    public void testAddCandidatesForArgsFollowingNullOptionAddsNoCandidates() throws Exception {
+        Method m = AutoComplete.class.getDeclaredMethod("addCandidatesForArgsFollowing", OptionSpec.class, List.class);
+        m.setAccessible(true);
+        List<String> candidates = new ArrayList<String>();
+        m.invoke(null, null, candidates);
+        assertTrue("null OptionSpec adds no candidates", candidates.isEmpty());
+    }
+
+    @Test
+    public void testAddCandidatesForArgsFollowingNullPositionalParamAddsNoCandidates() throws Exception {
+        Method m = AutoComplete.class.getDeclaredMethod("addCandidatesForArgsFollowing", PositionalParamSpec.class, List.class);
+        m.setAccessible(true);
+        List<String> candidates = new ArrayList<String>();
+        m.invoke(null, null, candidates);
+        assertTrue("null PositionalParamSpec adds no candidates", candidates.isEmpty());
     }
 }
