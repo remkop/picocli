@@ -275,6 +275,26 @@ public class AutoCompleteTest {
     }
 
     @Test
+    public void testAutoCompleteAppCommandScriptFileWillOverwriteIfRequested() throws Exception {
+        File dir = new File(System.getProperty("java.io.tmpdir"));
+        File commandScript = new File(dir, "picocli.AutoComplete");
+        if (commandScript.exists()) {assertTrue(commandScript.delete());}
+        commandScript.deleteOnExit();
+
+        // create the file
+        FileOutputStream fous = new FileOutputStream(commandScript, false);
+        fous.close();
+        assertEquals(0, commandScript.length());
+
+        File completionScript = new File(dir, commandScript.getName() + "_completion");
+        AutoComplete.main("--writeCommandScript", "--force", String.format("-o=%s", completionScript.getAbsolutePath()), "picocli.AutoComplete$App");
+
+        assertEquals("", systemErrRule.getLog());
+        assertNotEquals(0, commandScript.length());
+        assertTrue(commandScript.delete());
+    }
+
+    @Test
     public void testAutoCompleteAppBothScriptFilesForceOverwrite() throws Exception {
         File dir = new File(System.getProperty("java.io.tmpdir"));
         File commandScript = new File(dir, "picocli.AutoComplete");
