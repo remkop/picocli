@@ -2266,6 +2266,7 @@ public class CommandLineTest {
         UnmatchedArgumentException ex = new UnmatchedArgumentException(new CommandLine(CommandSpec.create()), "aa");
         assertNotNull(ex.getUnmatched());
         assertTrue(ex.getUnmatched().isEmpty());
+        assertTrue(ex.getSuggestions().isEmpty());
     }
 
     @Test
@@ -2273,6 +2274,7 @@ public class CommandLineTest {
         UnmatchedArgumentException ex = new UnmatchedArgumentException(new CommandLine(CommandSpec.create()), new ArrayList<String>());
         assertNotNull(ex.getUnmatched());
         assertTrue(ex.getUnmatched().isEmpty());
+        assertTrue(ex.getSuggestions().isEmpty());
 
         ex = new UnmatchedArgumentException(new CommandLine(CommandSpec.create()), Arrays.asList("a", "b"));
         assertEquals(Arrays.asList("a", "b"), ex.getUnmatched());
@@ -2283,6 +2285,7 @@ public class CommandLineTest {
         UnmatchedArgumentException ex = new UnmatchedArgumentException(new CommandLine(CommandSpec.create()), new Stack<String>());
         assertNotNull(ex.getUnmatched());
         assertTrue(ex.getUnmatched().isEmpty());
+        assertTrue(ex.getSuggestions().isEmpty());
 
         Stack<String> stack = new Stack<String>();
         stack.push("x");
