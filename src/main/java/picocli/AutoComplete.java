@@ -162,11 +162,6 @@ public class AutoComplete {
             return f.type() == Boolean.TYPE || f.type() == Boolean.class;
         }
     }
-    private static class HasCompletions implements Predicate<ArgSpec> {
-        public boolean test(ArgSpec f) {
-            return f.completionCandidates() != null;
-        }
-    }
     private static <T> Predicate<T> negate(final Predicate<T> original) {
         return new Predicate<T>() {
             public boolean test(T t) {
@@ -461,9 +456,10 @@ public class AutoComplete {
         buff.append(format(HEADER, commandName, sub, functionName, commands, flagOptionNames, argOptionNames));
 
         // Generate completion lists for options with a known set of valid values (including java enums)
-        List<OptionSpec> optionsWithCompletionCandidates = filter(commandSpec.options(), new HasCompletions());
-        for (OptionSpec f : optionsWithCompletionCandidates) {
-            generateCompletionCandidates(buff, f);
+        for (OptionSpec f : commandSpec.options()) {
+            if (f.completionCandidates() != null) {
+                generateCompletionCandidates(buff, f);
+            }
         }
         // TODO generate completion lists for other option types:
         // Charset, Currency, Locale, TimeZone, ByteOrder,
@@ -472,7 +468,7 @@ public class AutoComplete {
         // sql.Types?
 
         // Now generate the "case" switches for the options whose arguments we can generate completions for
-        buff.append(generateOptionsSwitch(argOptionFields, optionsWithCompletionCandidates));
+        buff.append(generateOptionsSwitch(argOptionFields));
 
         // Generate the footer: a default COMPREPLY to fall back to, and the function closing brace.
         buff.append(format(FOOTER));
@@ -493,8 +489,8 @@ public class AutoComplete {
         return result;
     }
 
-    private static String generateOptionsSwitch(List<OptionSpec> argOptions, List<OptionSpec> enumOptions) {
-        String optionsCases = generateOptionsCases(argOptions, enumOptions, "", "${CURR_WORD}");
+    private static String generateOptionsSwitch(List<OptionSpec> argOptions) {
+        String optionsCases = generateOptionsCases(argOptions, "", "${CURR_WORD}");
 
         if (optionsCases.length() == 0) {
             return "";
@@ -510,10 +506,10 @@ public class AutoComplete {
         return buff.toString();
     }
 
-    private static String generateOptionsCases(List<OptionSpec> argOptionFields, List<OptionSpec> enumOptions, String indent, String currWord) {
+    private static String generateOptionsCases(List<OptionSpec> argOptionFields, String indent, String currWord) {
         StringBuilder buff = new StringBuilder(1024);
         for (OptionSpec option : argOptionFields) {
-            if (enumOptions.contains(option) || option.completionCandidates() != null) {
+            if (option.completionCandidates() != null) {
                 buff.append(format("%s    %s)\n", indent, concat("|", option.names()))); // "    -u|--timeUnit)\n"
                 buff.append(format("%s      COMPREPLY=( $( compgen -W \"${%s_OPTION_ARGS}\" -- %s ) )\n", indent, bashify(option.paramLabel()), currWord));
                 buff.append(format("%s      return $?\n", indent));
