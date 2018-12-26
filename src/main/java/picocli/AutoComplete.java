@@ -104,8 +104,12 @@ public class AutoComplete {
                 if (writeCommandScript) {
                     commandScript = new File(autoCompleteScript.getAbsoluteFile().getParentFile(), commandName);
                 }
-                if (commandScript != null && !overwriteIfExists && checkExists(commandScript)) { return; }
-                if (!overwriteIfExists && checkExists(autoCompleteScript)) { return; }
+                if (commandScript != null && !overwriteIfExists && checkExists(commandScript)) {
+                    return;
+                }
+                if (!overwriteIfExists && checkExists(autoCompleteScript)) {
+                    return;
+                }
 
                 AutoComplete.bash(commandName, autoCompleteScript, commandScript, commandLine);
 
@@ -117,7 +121,7 @@ public class AutoComplete {
 
         private boolean checkExists(final File file) {
             if (file.exists()) {
-                System.err.println(file.getAbsolutePath() + " exists. Specify -f to overwrite.");
+                System.err.printf("ERROR: picocli.AutoComplete: %s exists. Specify --force to overwrite.%n", file.getAbsolutePath());
                 CommandLine.usage(this, System.err);
                 return true;
             }

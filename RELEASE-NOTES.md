@@ -101,12 +101,15 @@ See the module's [README](https://github.com/remkop/picocli/blob/master/picocli-
 - [#572] `CommandSpec.addMethodSubcommands` now throws `picocli.CommandLine.InitializationException` instead of `java.lang.UnsupportedOperationException` when the user object of the parent command is a `java.lang.reflect.Method`.
 - [#508] Added `@Option(order = <int>)` attribute to allow explicit control of option ordering in the usage help message; useful when mixing methods and fields with `@Option` annotation.
 - [#576] Bugfix: fixed StringIndexOutOfBoundsException in shell-jline2 completion when cursor was before `=` when option parameter was attached to option name.
+- [#579] Improve AutoComplete error message when not overwriting existing files.
 
 ## <a name="3.9.0-deprecated"></a> Deprecations
 No features were deprecated in this release.
 
 ## <a name="3.9.0-breaking-changes"></a> Potential breaking changes
 `CommandSpec.addMethodSubcommands` now throws `InitializationException` instead of `java.lang.UnsupportedOperationException` when the user object of the parent command is a `java.lang.reflect.Method`.
+
+AutoComplete application now prints different error message when not overwriting existing script files. This may break tests that verify the console output.
 
 
 # <a name="3.8.2"></a> Picocli 3.8.2

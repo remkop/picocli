@@ -249,7 +249,7 @@ public class AutoCompleteTest {
         AutoComplete.main(String.format("-o=%s", completionScript.getAbsolutePath()), "picocli.AutoComplete$App");
 
         String expected = String.format("" +
-                "%s exists. Specify -f to overwrite.%n" +
+                "ERROR: picocli.AutoComplete: %s exists. Specify --force to overwrite.%n" +
                 "%s", completionScript.getAbsolutePath(), AUTO_COMPLETE_APP_USAGE);
         assertEquals(expected, systemErrRule.getLog());
     }
@@ -269,7 +269,7 @@ public class AutoCompleteTest {
         AutoComplete.main("--writeCommandScript", String.format("-o=%s", completionScript.getAbsolutePath()), "picocli.AutoComplete$App");
 
         String expected = String.format("" +
-                "%s exists. Specify -f to overwrite.%n" +
+                "ERROR: picocli.AutoComplete: %s exists. Specify --force to overwrite.%n" +
                 "%s", commandScript.getAbsolutePath(), AUTO_COMPLETE_APP_USAGE);
         assertEquals(expected, systemErrRule.getLog());
     }
