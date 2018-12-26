@@ -10622,7 +10622,7 @@ public class CommandLine {
         }
         /** Returns the unmatched command line arguments.
          * @since 3.3.0 */
-        public List<String> getUnmatched() { return Collections.unmodifiableList(unmatched); }
+        public List<String> getUnmatched() { return unmatched == null ? Collections.<String>emptyList() : Collections.unmodifiableList(unmatched); }
         /** Returns {@code true} if the first unmatched command line arguments resembles an option, {@code false} otherwise.
          * @since 3.3.0 */
         public boolean isUnknownOption() { return isUnknownOption(unmatched, getCommandLine()); }

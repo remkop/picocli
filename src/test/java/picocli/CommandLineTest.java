@@ -34,21 +34,7 @@ import java.net.URI;
 import java.net.URL;
 import java.security.MessageDigest;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Queue;
-import java.util.Set;
-import java.util.SortedSet;
-import java.util.TreeMap;
-import java.util.TreeSet;
+import java.util.*;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
@@ -60,6 +46,7 @@ import org.junit.contrib.java.lang.system.ProvideSystemProperty;
 import org.junit.contrib.java.lang.system.RestoreSystemProperties;
 import org.junit.contrib.java.lang.system.SystemErrRule;
 import org.junit.rules.TestRule;
+import picocli.CommandLine.Model.CommandSpec;
 
 import static java.lang.String.format;
 import static org.hamcrest.CoreMatchers.containsString;
@@ -2273,6 +2260,38 @@ public class CommandLineTest {
             assertEquals("IllegalStateException: Queue full while processing argument at or before arg[1] 'a,b,c' in [-queue, a,b,c]: java.lang.IllegalStateException: Queue full", ex.getMessage());
         }
     }
+
+    @Test
+    public void testUnmatchedExceptionStringConstructor() {
+        UnmatchedArgumentException ex = new UnmatchedArgumentException(new CommandLine(CommandSpec.create()), "aa");
+        assertNotNull(ex.getUnmatched());
+        assertTrue(ex.getUnmatched().isEmpty());
+    }
+
+    @Test
+    public void testUnmatchedExceptionListConstructor() {
+        UnmatchedArgumentException ex = new UnmatchedArgumentException(new CommandLine(CommandSpec.create()), new ArrayList<String>());
+        assertNotNull(ex.getUnmatched());
+        assertTrue(ex.getUnmatched().isEmpty());
+
+        ex = new UnmatchedArgumentException(new CommandLine(CommandSpec.create()), Arrays.asList("a", "b"));
+        assertEquals(Arrays.asList("a", "b"), ex.getUnmatched());
+    }
+
+    @Test
+    public void testUnmatchedExceptionStackConstructor() {
+        UnmatchedArgumentException ex = new UnmatchedArgumentException(new CommandLine(CommandSpec.create()), new Stack<String>());
+        assertNotNull(ex.getUnmatched());
+        assertTrue(ex.getUnmatched().isEmpty());
+
+        Stack<String> stack = new Stack<String>();
+        stack.push("x");
+        stack.push("y");
+        stack.push("z");
+        ex = new UnmatchedArgumentException(new CommandLine(CommandSpec.create()), stack);
+        assertEquals(Arrays.asList("z", "y", "x"), ex.getUnmatched());
+    }
+
     @Test
     public void test149UnmatchedShortOptionsAreMisinterpretedAsOperands() {
         class App {
@@ -2287,18 +2306,21 @@ public class CommandLineTest {
             fail("UnmatchedArgumentException expected for -xx");
         } catch (UnmatchedArgumentException ex) {
             assertEquals("Unknown option: -xx", ex.getMessage());
+            assertEquals(Arrays.asList("-xx"), ex.getUnmatched());
         }
         try {
             CommandLine.populateCommand(new App(), "-x", "-a", "aValue");
             fail("UnmatchedArgumentException expected for -x");
         } catch (UnmatchedArgumentException ex) {
             assertEquals("Unknown option: -x", ex.getMessage());
+            assertEquals(Arrays.asList("-x"), ex.getUnmatched());
         }
         try {
             CommandLine.populateCommand(new App(), "--x", "-a", "aValue");
             fail("UnmatchedArgumentException expected for --x");
         } catch (UnmatchedArgumentException ex) {
             assertEquals("Unknown option: --x", ex.getMessage());
+            assertEquals(Arrays.asList("--x"), ex.getUnmatched());
         }
     }
     @Test
