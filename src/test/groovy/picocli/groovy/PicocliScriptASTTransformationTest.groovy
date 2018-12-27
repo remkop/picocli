@@ -381,14 +381,18 @@ import picocli.CommandLine.Parameters
         assert !trans.isCustomScriptBodyMethod(null)
 
         ClassNode returnType = new ClassNode(String.class)
-        MethodNode methodNode = new MethodNode("run", 0, returnType, new Parameter[0], new ClassNode[0], (Statement) null)
-        methodNode.declaringClass = ClassHelper.SCRIPT_TYPE
+        MethodNode run = new MethodNode("run", 0, returnType, new Parameter[0], new ClassNode[0], (Statement) null)
+        run.declaringClass = ClassHelper.SCRIPT_TYPE
 
-        assert !trans.isCustomScriptBodyMethod(methodNode)
+        assert !trans.isCustomScriptBodyMethod(run)
 
         Parameter p = new Parameter(new ClassNode(String.class), "param")
-        methodNode.parameters = [p].toArray(new Parameter[0])
-        assert trans.isCustomScriptBodyMethod(methodNode)
+        run.parameters = [p].toArray(new Parameter[0])
+        assert trans.isCustomScriptBodyMethod(run)
 
+        MethodNode other = new MethodNode("other", 0, returnType, new Parameter[0], new ClassNode[0], (Statement) null)
+        other.declaringClass = ClassHelper.SCRIPT_TYPE
+
+        assert trans.isCustomScriptBodyMethod(other)
     }
 }
