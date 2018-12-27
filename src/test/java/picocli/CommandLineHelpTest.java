@@ -2875,6 +2875,42 @@ public class CommandLineHelpTest {
     }
 
     @Test
+    public void testHelpCreateLayout_CreatesDefaultColumns() {
+        Help help = new Help(CommandSpec.create(), new ColorScheme(Help.Ansi.OFF));
+        Help.Layout layout = help.createDefaultLayout();
+
+        TextTable expected = TextTable.forDefaultColumns(Help.Ansi.OFF, 80);
+        assertEquals(expected.columns().length, layout.table.columns().length);
+        for (int i = 0; i < expected.columns().length; i++) {
+            assertEquals(expected.columns()[i].indent, layout.table.columns()[i].indent);
+            assertEquals(expected.columns()[i].width, layout.table.columns()[i].width);
+            assertEquals(expected.columns()[i].overflow, layout.table.columns()[i].overflow);
+        }
+    }
+
+    @Test
+    public void testMinimalParameterLabelRenderer() {
+        Help.IParamLabelRenderer renderer = Help.createMinimalParamLabelRenderer();
+        assertEquals("", renderer.separator());
+    }
+
+    @Test
+    public void testMinimalOptionRenderer() {
+        Help.MinimalOptionRenderer renderer = new Help.MinimalOptionRenderer();
+        Text[][] texts = renderer.render(OptionSpec.builder("-x").build(),
+                Help.createMinimalParamLabelRenderer(), new ColorScheme());
+        assertEquals("", texts[0][1].plainString());
+    }
+
+    @Test
+    public void testMinimalParameterRenderer() {
+        Help.MinimalParameterRenderer renderer = new Help.MinimalParameterRenderer();
+        Text[][] texts = renderer.render(PositionalParamSpec.builder().build(),
+                Help.createMinimalParamLabelRenderer(), new ColorScheme());
+        assertEquals("", texts[0][1].plainString());
+    }
+
+    @Test
     public void testTextTableConstructorRequiresAtLeastOneColumn() {
         try {
             new TextTable(Help.Ansi.OFF, new Help.Column[0]);
