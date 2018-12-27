@@ -16,6 +16,11 @@
 
 package picocli.groovy
 
+import org.codehaus.groovy.ast.ClassHelper
+import org.codehaus.groovy.ast.ClassNode
+import org.codehaus.groovy.ast.MethodNode
+import org.codehaus.groovy.ast.Parameter
+import org.codehaus.groovy.ast.stmt.Statement
 import org.codehaus.groovy.control.ErrorCollector
 import org.codehaus.groovy.control.MultipleCompilationErrorsException
 import org.codehaus.groovy.control.messages.SyntaxErrorMessage
@@ -370,4 +375,20 @@ import picocli.CommandLine.Parameters
         assert 123 == result
     }
 
+    @Test
+    void testIsCustomScriptBodyMethod() {
+        PicocliScriptASTTransformation trans = new PicocliScriptASTTransformation()
+        assert !trans.isCustomScriptBodyMethod(null)
+
+        ClassNode returnType = new ClassNode(String.class)
+        MethodNode methodNode = new MethodNode("run", 0, returnType, new Parameter[0], new ClassNode[0], (Statement) null)
+        methodNode.declaringClass = ClassHelper.SCRIPT_TYPE
+
+        assert !trans.isCustomScriptBodyMethod(methodNode)
+
+        Parameter p = new Parameter(new ClassNode(String.class), "param")
+        methodNode.parameters = [p].toArray(new Parameter[0])
+        assert trans.isCustomScriptBodyMethod(methodNode)
+
+    }
 }

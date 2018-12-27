@@ -10229,7 +10229,7 @@ public class CommandLine {
                     for (int i = 0; i < plain.length(); i++, end = i) {
                         char c = plain.charAt(i);
                         boolean eol = c == '\n';
-                        eol |= (c == '\r' && i + 1 < plain.length() && plain.charAt(i + 1) == '\n' && ++i > 0); // \r\n
+                        if (c == '\r' && i + 1 < plain.length() && plain.charAt(i + 1) == '\n') { eol = true; i++; } // \r\n
                         eol |= c == '\r';
                         if (eol) {
                             result.add(this.substring(start, end));

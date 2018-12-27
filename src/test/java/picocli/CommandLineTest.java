@@ -884,6 +884,40 @@ public class CommandLineTest {
         assertEquals(stripAnsiTrace(expected), stripAnsiTrace(actual));
     }
 
+    @Test
+    public void testTracerIsWarn() {
+        final String PROPERTY = "picocli.trace";
+        String old = System.getProperty(PROPERTY);
+
+        try {
+            System.clearProperty(PROPERTY);
+            assertTrue("WARN enabled by default", new CommandLine.Tracer().isWarn());
+
+            System.setProperty(PROPERTY, "OFF");
+            assertFalse("WARN can be disabled by setting to OFF", new CommandLine.Tracer().isWarn());
+
+            System.setProperty(PROPERTY, "WARN");
+            assertTrue("WARN can be explicitly enabled", new CommandLine.Tracer().isWarn());
+
+        } finally {
+            if (old == null) {
+                System.clearProperty(PROPERTY);
+            } else {
+                System.setProperty(PROPERTY, old);
+            }
+        }
+    }
+
+    @Test
+    public void testAssertEquals() throws Exception {
+        Method m = Class.forName("picocli.CommandLine$Assert").getDeclaredMethod("equals", Object.class, Object.class);
+        m.setAccessible(true);
+        assertTrue("null equals null", (Boolean) m.invoke(null, null, null));
+        assertFalse("String !equals null", (Boolean) m.invoke(null, "", null));
+        assertFalse("null !equals String", (Boolean) m.invoke(null, null, ""));
+        assertTrue("String equals String", (Boolean) m.invoke(null, "", ""));
+    }
+
     private File[] fileArray(final String ... paths) {
         File[] result = new File[paths.length];
         for (int i = 0; i < result.length; i++) {
@@ -2293,6 +2327,36 @@ public class CommandLineTest {
         stack.push("z");
         ex = new UnmatchedArgumentException(new CommandLine(CommandSpec.create()), stack);
         assertEquals(Arrays.asList("z", "y", "x"), ex.getUnmatched());
+    }
+
+    @Test
+    public void testUnmatchedExceptionIsUnknownOption() {
+        CommandLine cmd = new CommandLine(CommandSpec.create());
+
+        assertFalse("unmatch list is null", new UnmatchedArgumentException(cmd, "").isUnknownOption());
+        assertFalse("unmatch list is empty", new UnmatchedArgumentException(cmd, new ArrayList<String>()).isUnknownOption());
+
+        List<String> likeAnOption = Arrays.asList("-x");
+        assertTrue("first unmatched resembles option", new UnmatchedArgumentException(cmd, likeAnOption).isUnknownOption());
+
+        List<String> unlikeOption = Arrays.asList("xxx");
+        assertFalse("first unmatched doesn't resembles option", new UnmatchedArgumentException(cmd, unlikeOption).isUnknownOption());
+    }
+
+    @Test
+    public void testParameterExceptionDisallowsArgSpecAndValueBothNull() {
+        CommandLine cmd = new CommandLine(CommandSpec.create());
+
+        try {
+            new ParameterException(cmd, "", null, null);
+        } catch (IllegalArgumentException ex) {
+            assertEquals("ArgSpec and value cannot both be null", ex.getMessage());
+        }
+        try {
+            new ParameterException(cmd, "", new Throwable(), null, null);
+        } catch (IllegalArgumentException ex) {
+            assertEquals("ArgSpec and value cannot both be null", ex.getMessage());
+        }
     }
 
     @Test

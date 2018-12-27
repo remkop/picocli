@@ -1243,6 +1243,18 @@ public class CommandLineHelpTest {
     }
 
     @Test
+    public void testSortByShortestOptionNameAlphabetically_handlesNulls() throws Exception {
+        Help.SortByShortestOptionNameAlphabetically sort = new Help.SortByShortestOptionNameAlphabetically();
+        OptionSpec a = OptionSpec.builder("-a").build();
+        OptionSpec b = OptionSpec.builder("-b").build();
+        assertEquals(1, sort.compare(null, a));
+        assertEquals(-1, sort.compare(a, null));
+        assertEquals(-1, sort.compare(a, b));
+        assertEquals(0, sort.compare(a, a));
+        assertEquals(1, sort.compare(b, a));
+    }
+
+    @Test
     public void testSortByOptionOrder() throws Exception {
         class App {
             @Option(names = {"-a"}, order = 9) boolean a;
@@ -2812,6 +2824,89 @@ public class CommandLineHelpTest {
             assertEquals(ansi.new Text(""), lines[i++]);
         }
     }
+
+    @Test
+    public void testTextHashCode() {
+        Help.Ansi ansi = Help.Ansi.ON;
+        assertEquals(ansi.new Text("a").hashCode(), ansi.new Text("a").hashCode());
+        assertNotEquals(ansi.new Text("a").hashCode(), ansi.new Text("b").hashCode());
+    }
+
+    @Test
+    public void testTextAppendString() {
+        Help.Ansi ansi = Help.Ansi.ON;
+        assertEquals(ansi.new Text("a").append("xyz"), ansi.new Text("a").concat("xyz"));
+    }
+
+    @Test
+    public void testTextAppendText() {
+        Help.Ansi ansi = Help.Ansi.ON;
+        Text xyz = ansi.new Text("xyz");
+        assertEquals(ansi.new Text("a").append(xyz), ansi.new Text("a").concat(xyz));
+    }
+
+    @Test
+    public void testStyleParseAllowsMissingClosingBrackets() {
+        IStyle whiteBg = Style.parse("bg(white")[0];
+        assertEquals(Style.bg_white.on(), whiteBg.on());
+
+        IStyle blackFg = Style.parse("fg(black")[0];
+        assertEquals(Style.fg_black.on(), blackFg.on());
+    }
+
+    @Test
+    public void testColorSchemeDefaultConstructorHasAnsiAuto() {
+        ColorScheme colorScheme = new ColorScheme();
+        assertEquals(Help.Ansi.AUTO, colorScheme.ansi());
+    }
+
+    @Test
+    public void testLayoutConstructorCreatesDefaultColumns() {
+        ColorScheme colorScheme = new ColorScheme();
+        Help.Layout layout = new Help.Layout(colorScheme, 99);
+
+        TextTable expected = TextTable.forDefaultColumns(Help.Ansi.OFF, 99);
+        assertEquals(expected.columns().length, layout.table.columns().length);
+        for (int i = 0; i < expected.columns().length; i++) {
+            assertEquals(expected.columns()[i].indent, layout.table.columns()[i].indent);
+            assertEquals(expected.columns()[i].width, layout.table.columns()[i].width);
+            assertEquals(expected.columns()[i].overflow, layout.table.columns()[i].overflow);
+        }
+    }
+
+    @Test
+    public void testTextTableConstructorRequiresAtLeastOneColumn() {
+        try {
+            new TextTable(Help.Ansi.OFF, new Help.Column[0]);
+        } catch (IllegalArgumentException ex) {
+            assertEquals("At least one column is required", ex.getMessage());
+        }
+    }
+
+    @Test
+    public void testTextTablePutValue() {
+        TextTable tt = new TextTable(Help.Ansi.OFF, new Help.Column[] {new Help.Column(30, 2, Help.Column.Overflow.SPAN)});
+        try {
+            tt.putValue(1, 0, Help.Ansi.OFF.text("abc"));
+        } catch (IllegalArgumentException ex) {
+            assertEquals("Cannot write to row 1: rowCount=0", ex.getMessage());
+        }
+    }
+
+    @Test
+    public void testTextTableAddRowValues() {
+        TextTable tt = new TextTable(Help.Ansi.OFF, new Help.Column[] {new Help.Column(30, 2, Help.Column.Overflow.SPAN)});
+        tt.addRowValues(new String[] {null});
+        assertEquals(Help.Ansi.EMPTY_TEXT, tt.textAt(0, 0));
+    }
+
+    @Test
+    public void testTextTableCellAt() {
+        TextTable tt = new TextTable(Help.Ansi.OFF, new Help.Column[] {new Help.Column(30, 2, Help.Column.Overflow.SPAN)});
+        tt.addRowValues(new String[] {null});
+        assertEquals(Help.Ansi.EMPTY_TEXT, tt.cellAt(0, 0));
+    }
+
     @Test
     public void testEmbeddedNewLinesInUsageSections() throws UnsupportedEncodingException {
         @Command(description = "first line\nsecond line\nthird line", headerHeading = "headerHeading1\nheaderHeading2",

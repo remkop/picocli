@@ -330,6 +330,33 @@ throw new IllegalStateException("Hi this is a test exception")
         assert params.positional.contains("123")
     }
 
+    @Test
+    void testCommandLinePropertyIsSetByBaseScript() {
+        def script = '''
+@picocli.CommandLine.Command
+@picocli.groovy.PicocliScript
+import groovy.transform.Field
+import picocli.CommandLine
+import picocli.CommandLine.Parameters
+
+@Parameters(description = "some parameters")
+@Field List<String> parameters
+
+@Field CommandLine commandLine;
+
+commandLine
+'''
+        GroovyShell shell = new GroovyShell(new Binding())
+        shell.context.setVariable('args', ["Hi"] as String[])
+
+        ByteArrayOutputStream baos = new ByteArrayOutputStream()
+        System.setOut(new PrintStream(baos))
+        def result = shell.evaluate script
+
+        assert result && result instanceof CommandLine
+        assert ((CommandLine) result).parseResult.matchedPositional(0).value == ["Hi"]
+    }
+
 
     @Test
     void testScriptWithInnerClass() {
