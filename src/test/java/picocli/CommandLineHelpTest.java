@@ -2884,13 +2884,27 @@ public class CommandLineHelpTest {
     }
 
     @Test
-    public void testTextTablePutValue() {
+    public void testTextTablePutValue_DisallowsInvalidRowIndex() {
         TextTable tt = new TextTable(Help.Ansi.OFF, new Help.Column[] {new Help.Column(30, 2, Help.Column.Overflow.SPAN)});
         try {
             tt.putValue(1, 0, Help.Ansi.OFF.text("abc"));
         } catch (IllegalArgumentException ex) {
             assertEquals("Cannot write to row 1: rowCount=0", ex.getMessage());
         }
+    }
+
+    @Test
+    public void testTextTablePutValue_NullOrEmpty() {
+        TextTable tt = new TextTable(Help.Ansi.OFF, new Help.Column[] {new Help.Column(30, 2, Help.Column.Overflow.SPAN)});
+        tt.addEmptyRow();
+
+        TextTable.Cell cell00 = tt.putValue(0, 0, null);
+        assertEquals(0, cell00.column);
+        assertEquals(0, cell00.row);
+
+        TextTable.Cell other00 = tt.putValue(0, 0, Help.Ansi.EMPTY_TEXT);
+        assertEquals(0, other00.column);
+        assertEquals(0, other00.row);
     }
 
     @Test
