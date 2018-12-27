@@ -216,6 +216,22 @@ class Arg {};
     }
 
     @Test
+    void testAnnotationCannotBeAnnotatedWithPicocliScript() {
+        def script = '''
+@picocli.groovy.PicocliScript
+@picocli.CommandLine.Command
+def a = 234
+a
+'''
+        try {
+            new GroovyShell().evaluate script
+            fail("Expected exception")
+        } catch (MissingPropertyException ex) {
+            assertEquals("No such property: args for class: Script1", ex.getMessage())
+        }
+    }
+
+    @Test
     void testPicocliScriptAnnotationValueMustBeAClassLiteral() {
         def script = '''
 @Command(name = "test-command", description = "invalid annotation")
@@ -373,6 +389,26 @@ import picocli.CommandLine.Parameters
 '''
         def result = new GroovyShell().evaluate script
         assert 123 == result
+    }
+
+    @Test
+    void testBaseScriptAnnotationDoesNotTransformPicocliCommand() {
+        def script = '''
+@picocli.CommandLine.Command
+@groovy.transform.BaseScript
+import groovy.transform.Field
+import picocli.CommandLine.Parameters
+
+@Parameters(description = "some parameters")
+@Field List<String> parameters
+
+123
+'''
+        try {
+            new GroovyShell().evaluate script
+            fail("expected exception")
+        } catch (Throwable ok) {
+        }
     }
 
     @Test
