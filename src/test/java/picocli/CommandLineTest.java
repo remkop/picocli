@@ -2393,6 +2393,33 @@ public class CommandLineTest {
     }
 
     @Test
+    public void testCreateDescriptionFirstLines() throws Exception {
+        Method m = Help.class.getDeclaredMethod("createDescriptionFirstLines",
+                Help.ColorScheme.class, Model.ArgSpec.class, String[].class, boolean[].class);
+        m.setAccessible(true);
+
+        String[][] input = new String[][] {
+                new String[0],
+                new String[] {""},
+                new String[] {"a", "b", "c"}
+        };
+        Help.Ansi.Text[][] expectedOutput = new Help.Ansi.Text[][] {
+                new Help.Ansi.Text[] {Help.Ansi.OFF.text("")},
+                new Help.Ansi.Text[] {Help.Ansi.OFF.text("")},
+                new Help.Ansi.Text[] {Help.Ansi.OFF.text("a"), Help.Ansi.OFF.text("b"), Help.Ansi.OFF.text("c")}
+        };
+        for (int i = 0; i < input.length; i++) {
+            String[] description = input[i];
+            Help.Ansi.Text[] result = (Help.Ansi.Text[]) m.invoke(null, new Help.ColorScheme(Help.Ansi.OFF), null, description, new boolean[3]);
+            Help.Ansi.Text[] expected = expectedOutput[i];
+
+            for (int j = 0; j < result.length; j++) {
+                assertEquals(expected[j], result[j]);
+            }
+        }
+    }
+
+    @Test
     public void testAbbreviatedSynopsis() {
 
     }
