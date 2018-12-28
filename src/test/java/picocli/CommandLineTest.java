@@ -2353,6 +2353,15 @@ public class CommandLineTest {
     }
 
     @Test
+    public void testFormat() throws Exception {
+        Method m = Help.class.getDeclaredMethod("format", String.class, Object[].class);
+        m.setAccessible(true);
+
+        String result = (String) m.invoke(null, (String) null, new Object[]{"abc"});
+        assertEquals("", result);
+    }
+
+    @Test
     public void testParameterExceptionDisallowsArgSpecAndValueBothNull() {
         CommandLine cmd = new CommandLine(CommandSpec.create());
 
