@@ -2362,6 +2362,12 @@ public class CommandLineTest {
     }
 
     @Test
+    public void testJoin2() {
+        StringBuilder sb = Help.join(Help.Ansi.OFF, 80, null, new StringBuilder("abc"));
+        assertEquals("abc", sb.toString());
+    }
+
+    @Test
     public void testParameterExceptionDisallowsArgSpecAndValueBothNull() {
         CommandLine cmd = new CommandLine(CommandSpec.create());
 
