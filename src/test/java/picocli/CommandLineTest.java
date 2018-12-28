@@ -2382,9 +2382,20 @@ public class CommandLineTest {
         m.setAccessible(true);
 
         String result = (String) m.invoke(null, Help.Ansi.OFF, 80, "\r\n", new Object[0]);
-        assertEquals("\r\n", result);
+        assertEquals(String.format("%n"), result);
     }
 
+    @Test
+    public void testDetailedSynopsis() {
+        Help help = new Help(CommandSpec.create(), new Help.ColorScheme(Help.Ansi.OFF));
+        String str = help.detailedSynopsis(new Help.SortByShortestOptionNameAlphabetically(), true);
+        assertEquals(String.format("<main class>%n"), str);
+    }
+
+    @Test
+    public void testAbbreviatedSynopsis() {
+
+    }
     @Test
     public void testParameterExceptionDisallowsArgSpecAndValueBothNull() {
         CommandLine cmd = new CommandLine(CommandSpec.create());
