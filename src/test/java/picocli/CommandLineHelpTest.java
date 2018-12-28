@@ -3045,7 +3045,29 @@ public class CommandLineHelpTest {
 
     @Test
     public void testAbbreviatedSynopsis() {
+        CommandSpec spec = CommandSpec.create();
+        spec.addPositional(PositionalParamSpec.builder().paramLabel("a").hidden(true).build());
+        spec.addPositional(PositionalParamSpec.builder().paramLabel("b").build());
+        Help help = new Help(spec, new Help.ColorScheme(Help.Ansi.OFF));
+        String actual = help.abbreviatedSynopsis();
+        assertEquals(String.format("<main class> b...%n"), actual);
+    }
 
+    @Test
+    public void testSynopsis() {
+        Help help = new Help(CommandSpec.create(), new Help.ColorScheme(Help.Ansi.OFF));
+        String actual = help.synopsis();
+        assertEquals(String.format("<main class>%n"), actual);
+    }
+
+    @Test
+    public void testAddSubcommand() {
+        @Command(name = "app", mixinStandardHelpOptions = true)
+        class App { }
+        Help help = new Help(new CommandLine(CommandSpec.create()).getCommandSpec(), new Help.ColorScheme(Help.Ansi.OFF));
+        help.addSubcommand("boo", new App());
+        assertEquals(1, help.subcommands().size());
+        assertEquals("app", help.subcommands().get("boo").commandSpec().name());
     }
 
     @Test
