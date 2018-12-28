@@ -2368,6 +2368,24 @@ public class CommandLineTest {
     }
 
     @Test
+    public void testCountTrailingSpaces() throws Exception {
+        Method m = Help.class.getDeclaredMethod("countTrailingSpaces", String.class);
+        m.setAccessible(true);
+
+        int result = (Integer) m.invoke(null, (String) null);
+        assertEquals(0, result);
+    }
+
+    @Test
+    public void testHeading() throws Exception {
+        Method m = Help.class.getDeclaredMethod("heading", Help.Ansi.class, int.class, String.class, Object[].class);
+        m.setAccessible(true);
+
+        String result = (String) m.invoke(null, Help.Ansi.OFF, 80, "\r\n", new Object[0]);
+        assertEquals("\r\n", result);
+    }
+
+    @Test
     public void testParameterExceptionDisallowsArgSpecAndValueBothNull() {
         CommandLine cmd = new CommandLine(CommandSpec.create());
 
