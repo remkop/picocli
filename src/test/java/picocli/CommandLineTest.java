@@ -2344,6 +2344,15 @@ public class CommandLineTest {
     }
 
     @Test
+    public void testJoin() throws Exception {
+        Method m = Help.class.getDeclaredMethod("join", String[].class, int.class, int.class, String.class);
+        m.setAccessible(true);
+
+        String result = (String) m.invoke(null, (String[]) null, 0, 0, "abc");
+        assertEquals("", result);
+    }
+
+    @Test
     public void testParameterExceptionDisallowsArgSpecAndValueBothNull() {
         CommandLine cmd = new CommandLine(CommandSpec.create());
 
