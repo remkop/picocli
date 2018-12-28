@@ -31,6 +31,7 @@ import picocli.CommandLine.Help.TextTable;
 import java.io.*;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.net.InetAddress;
 import java.net.URI;
 import java.net.URL;
@@ -2955,6 +2956,96 @@ public class CommandLineHelpTest {
         TextTable tt = new TextTable(Help.Ansi.OFF, new Help.Column[] {new Help.Column(30, 2, Help.Column.Overflow.SPAN)});
         tt.addRowValues(new String[] {null});
         assertEquals(Help.Ansi.EMPTY_TEXT, tt.cellAt(0, 0));
+    }
+
+    @Test
+    public void testJoin() throws Exception {
+        Method m = Help.class.getDeclaredMethod("join", String[].class, int.class, int.class, String.class);
+        m.setAccessible(true);
+
+        String result = (String) m.invoke(null, (String[]) null, 0, 0, "abc");
+        assertEquals("", result);
+    }
+
+    @Test
+    public void testFormat() throws Exception {
+        Method m = Help.class.getDeclaredMethod("format", String.class, Object[].class);
+        m.setAccessible(true);
+
+        String result = (String) m.invoke(null, (String) null, new Object[]{"abc"});
+        assertEquals("", result);
+    }
+
+    @Test
+    public void testJoin2() {
+        StringBuilder sb = Help.join(Help.Ansi.OFF, 80, null, new StringBuilder("abc"));
+        assertEquals("abc", sb.toString());
+    }
+
+    @Test
+    public void testCountTrailingSpaces() throws Exception {
+        Method m = Help.class.getDeclaredMethod("countTrailingSpaces", String.class);
+        m.setAccessible(true);
+
+        int result = (Integer) m.invoke(null, (String) null);
+        assertEquals(0, result);
+    }
+
+    @Test
+    public void testHeading() throws Exception {
+        Method m = Help.class.getDeclaredMethod("heading", Help.Ansi.class, int.class, String.class, Object[].class);
+        m.setAccessible(true);
+
+        String result = (String) m.invoke(null, Help.Ansi.OFF, 80, "\r\n", new Object[0]);
+        assertEquals(String.format("%n"), result);
+
+        String result2 = (String) m.invoke(null, Help.Ansi.OFF, 80, "boom", new Object[0]);
+        assertEquals(String.format("boom"), result2);
+    }
+
+    @Test
+    public void testAddAllSubcommands() {
+        Help help = new Help(CommandSpec.create(), new Help.ColorScheme(Help.Ansi.OFF));
+        help.addAllSubcommands(null);
+        assertTrue(help.subcommands().isEmpty());
+    }
+    @Test
+    public void testDetailedSynopsis() {
+        Help help = new Help(CommandSpec.create(), new Help.ColorScheme(Help.Ansi.OFF));
+        String str = help.detailedSynopsis(new Help.SortByShortestOptionNameAlphabetically(), true);
+        assertEquals(String.format("<main class>%n"), str);
+    }
+
+    @Test
+    public void testCreateDescriptionFirstLines() throws Exception {
+        Method m = Help.class.getDeclaredMethod("createDescriptionFirstLines",
+                Help.ColorScheme.class, Model.ArgSpec.class, String[].class, boolean[].class);
+        m.setAccessible(true);
+
+        String[][] input = new String[][] {
+                new String[0],
+                new String[] {""},
+                new String[] {"a", "b", "c"}
+        };
+        Help.Ansi.Text[][] expectedOutput = new Help.Ansi.Text[][] {
+                new Help.Ansi.Text[] {Help.Ansi.OFF.text("")},
+                new Help.Ansi.Text[] {Help.Ansi.OFF.text("")},
+                new Help.Ansi.Text[] {Help.Ansi.OFF.text("a"), Help.Ansi.OFF.text("b"), Help.Ansi.OFF.text("c")}
+        };
+        for (int i = 0; i < input.length; i++) {
+            String[] description = input[i];
+            Help.Ansi.Text[] result = (Help.Ansi.Text[]) m.invoke(null, new Help.ColorScheme(Help.Ansi.OFF), null, description, new boolean[3]);
+            Help.Ansi.Text[] expected = expectedOutput[i];
+
+            for (int j = 0; j < result.length; j++) {
+                assertEquals(expected[j], result[j]);
+            }
+        }
+    }
+
+    @Test
+    public void testAbbreviatedSynopsis() {
+
     }
 
     @Test
