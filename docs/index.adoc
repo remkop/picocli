@@ -1864,9 +1864,26 @@ This overrides the value of system property `picocli.ansi`. For example:
 ----
 import picocli.CommandLine.Help.Ansi;
 
-App app = CommandLine.usage(new App(), System.out, Ansi.OFF, args);
+// print usage help message to STDOUT without ANSI escape codes
+CommandLine.usage(new App(), System.out, Ansi.OFF);
 ----
 
+=== Heuristics for Enabling ANSI
+
+Below is the exact sequence of steps picocli uses to determine whether or not to emit ANSI escape codes.
+
+1. If `Ansi.ON` or `Ansi.OFF` is <<Forcing ANSI On/Off,explicitly specified>>, either via system property `picocli.ansi` or programmatically, this value is used.
+1. ANSI is disabled when environment variable https://no-color.org/[`NO_COLOR`] is defined (regardless of its value).
+1. ANSI is enabled when environment variable https://bixense.com/clicolors/[`CLICOLOR_FORCE`] is defined and has any value other than `0` (zero).
+1. ANSI is disabled when environment variable https://bixense.com/clicolors/[`CLICOLOR == 0`].
+1. ANSI is disabled when environment variable https://conemu.github.io/en/AnsiEscapeCodes.html#Environment_variable[`ConEmuANSI == OFF`].
+1. ANSI is enabled when JAnsi Console is https://github.com/fusesource/jansi[installed].
+1. ANSI is disabled when Picocli https://stackoverflow.com/questions/1403772/how-can-i-check-if-a-java-programs-input-output-streams-are-connected-to-a-term[_guesses_] the program's output stream is not connected to a terminal: when `System.console()` returns `null`. This check is omitted if picocli _guesses_ the program is running in a Windows https://www.cygwin.com/[Cygwin] or http://www.mingw.org/wiki/MSYS[MSYS] environment: when system property `os.name` starts with `"Windows"` and either environment variable `TERM` starts with `xterm` or environment variable `OSTYPE` is defined.
+1. ANSI is enabled when environment variable https://github.com/adoxa/ansicon/blob/master/readme.txt[`ANSICON`] is defined.
+1. ANSI is enabled when environment variable https://bixense.com/clicolors/[`CLICOLOR == 1`].
+1. ANSI is enabled when environment variable https://conemu.github.io/en/AnsiEscapeCodes.html#Environment_variable[`ConEmuANSI == ON`].
+1. ANSI is enabled when picocli detects the program is running in a non-Windows OS (system property `os.name` does not start with `"Windows"`).
+1. ANSI is enabled when picocli _guesses_ the program is running in a https://www.cygwin.com/[Cygwin] or http://www.mingw.org/wiki/MSYS[MSYS] environment (either environment variable `TERM` starts with `xterm` or environment variable `OSTYPE` is defined).
 
 
 == Usage Help API

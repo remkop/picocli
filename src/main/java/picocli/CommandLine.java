@@ -9939,9 +9939,17 @@ public class CommandLine {
             /** Forced OFF: never emit ANSI escape code regardless of the platform. */
             OFF;
             static Text EMPTY_TEXT = OFF.new Text(0);
-            static final boolean isWindows  = System.getProperty("os.name").startsWith("Windows");
-            static final boolean isXterm    = System.getenv("TERM") != null && System.getenv("TERM").startsWith("xterm");
-            static final boolean hasOsType  = System.getenv("OSTYPE") != null; // null on Windows unless on Cygwin or MSYS
+            static final boolean isWindows      = System.getProperty("os.name").startsWith("Windows");
+            static final boolean isXterm        = System.getenv("TERM") != null && System.getenv("TERM").startsWith("xterm");
+            static final boolean hasOsType      = System.getenv("OSTYPE") != null;                    // null on Windows unless on Cygwin or MSYS
+            static final boolean hintDisabled   = System.getenv("NO_COLOR") != null                   // https://no-color.org/
+                                               || "0".equals(System.getenv("CLICOLOR"))               // Jan Niklas Hasse's https://bixense.com/clicolors/ proposal
+                                               || "OFF".equalsIgnoreCase(System.getenv("ConEmuANSI"));// https://conemu.github.io/en/AnsiEscapeCodes.html#Environment_variable
+            static final boolean hintEnabled    = System.getenv("ANSICON") != null                    // https://github.com/adoxa/ansicon/blob/master/readme.txt
+                                               || "1".equals(System.getenv("CLICOLOR"))               // Jan Niklas Hasse's https://bixense.com/clicolors/ proposal
+                                               || "ON".equalsIgnoreCase(System.getenv("ConEmuANSI")); // https://conemu.github.io/en/AnsiEscapeCodes.html#Environment_variable
+            static final boolean hintForced     = System.getenv("CLICOLOR_FORCE") != null             // Jan Niklas Hasse's https://bixense.com/clicolors/ proposal
+                                               && !"0".equals(System.getenv("CLICOLOR_FORCE"));
             static Boolean tty;
             static boolean isTTY() {
                 if (tty == null) { tty = calcTTY(); }
@@ -9949,11 +9957,18 @@ public class CommandLine {
             }
             // http://stackoverflow.com/questions/1403772/how-can-i-check-if-a-java-programs-input-output-streams-are-connected-to-a-term
             static boolean calcTTY() {
-                if (isWindows && (isXterm || hasOsType)) { return true; } // Cygwin uses pseudo-tty and console is always null...
                 try { return System.class.getDeclaredMethod("console").invoke(null) != null; }
                 catch (Throwable reflectionFailed) { return true; }
             }
-            private static boolean ansiPossible() { return (isTTY() && (!isWindows || isXterm || hasOsType)) || isJansiConsoleInstalled(); }
+            static boolean isPseudoTTY() { return isWindows && (isXterm || hasOsType); } // Cygwin uses pseudo-tty and console is always null...
+
+            static boolean ansiPossible() {
+                if (hintDisabled)               { return false; }
+                if (hintForced)                 { return true; }
+                if (isJansiConsoleInstalled())  { return true; }
+                if (!isTTY() && !isPseudoTTY()) { return false; }
+                return hintEnabled || !isWindows || isXterm || hasOsType;
+            }
 
             private static boolean isJansiConsoleInstalled() {
                 try {
@@ -9971,7 +9986,8 @@ public class CommandLine {
             public boolean enabled() {
                 if (this == ON)  { return true; }
                 if (this == OFF) { return false; }
-                return (System.getProperty("picocli.ansi") == null ? ansiPossible() : Boolean.getBoolean("picocli.ansi"));
+                boolean auto = System.getProperty("picocli.ansi") == null || "AUTO".equalsIgnoreCase(System.getProperty("picocli.ansi"));
+                return auto ? ansiPossible() : Boolean.getBoolean("picocli.ansi");
             }
             /**
              * Returns a new Text object for this Ansi mode, encapsulating the specified string

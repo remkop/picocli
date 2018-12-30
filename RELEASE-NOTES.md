@@ -13,6 +13,8 @@ This release contains API enhancements to allow customization of the usage help 
 * help section renderer API
 * option order attribute
 
+This release has improved heuristics to decide whether ANSI escape codes should be emitted or not.
+
 Bugfix: Command method options and positional parameter Object values are now cleared correctly when reusing a CommandLine instance.
 
 This is the forty-fifth public release.
@@ -91,6 +93,16 @@ It is similar to the class with the same name in the `picocli.shell.jline2` pack
 
 See the module's [README](https://github.com/remkop/picocli/blob/master/picocli-shell-jline3/README.md) for more details.
 
+### <a name="3.9.0-ANSI-heuristics"></a> Improved ANSI Heuristics
+This release has improved heuristics to decide whether ANSI escape codes should be emitted or not.
+
+Added support for the following environment variables to control enabling ANSI:
+
+* [`NO_COLOR`](https://no-color.org/)
+* [`CLICOLOR_FORCE`](https://bixense.com/clicolors/)
+* [`CLICOLOR`](https://bixense.com/clicolors/)
+* [`ConEmuANSI`](https://conemu.github.io/en/AnsiEscapeCodes.html#Environment_variable)
+* [`ANSICON`](https://github.com/adoxa/ansicon/blob/master/readme.txt)
 
 ## <a name="3.9.0-fixes"></a> Fixed issues
 - [#574] Add `picocli-shell-jline3` module. Thanks to [mattirn](https://github.com/mattirn) for the pull request.
@@ -102,6 +114,7 @@ See the module's [README](https://github.com/remkop/picocli/blob/master/picocli-
 - [#508] Added `@Option(order = <int>)` attribute to allow explicit control of option ordering in the usage help message; useful when mixing methods and fields with `@Option` annotation.
 - [#576] Bugfix: fixed StringIndexOutOfBoundsException in shell-jline2 completion when cursor was before `=` when option parameter was attached to option name.
 - [#579] Improve AutoComplete error message when not overwriting existing files.
+- [#581] Added support for ConEmu, ANSICON and other environment variables to improve the ANSI heuristics. Documented the heuristics in the user manual.
 
 ## <a name="3.9.0-deprecated"></a> Deprecations
 No features were deprecated in this release.
