@@ -7013,7 +7013,8 @@ public class CommandLine {
             if (tracer.isInfo()) {tracer.info("Picocli version: %s%n", versionString());}
             if (tracer.isInfo()) {tracer.info("Parsing %d command line args %s%n", args.length, Arrays.toString(args));}
             if (tracer.isDebug()){tracer.debug("Parser configuration: %s%n", config());}
-            if (tracer.isDebug()){tracer.debug("(ANSI is %s by default: TTY=%s, isXTERM=%s, hasOSTYPE=%s, isWindows=%s, JansiConsoleInstalled=%s)%n", Help.Ansi.ansiPossible() ? "enabled" : "disabled", Help.Ansi.isTTY(), Help.Ansi.isXterm, Help.Ansi.hasOsType, Help.Ansi.isWindows, Help.Ansi.isJansiConsoleInstalled());}
+            if (tracer.isDebug()){tracer.debug("(ANSI is %s by default: isatty=%s, XTERM=%s, OSTYPE=%s, isWindows=%s, JansiConsoleInstalled=%s, ANSICON=%s, ConEmuANSI=%s, NO_COLOR=%s, CLICOLOR=%s, CLICOLOR_FORCE=%s)%n",
+                    Help.Ansi.ansiPossible() ? "enabled" : "disabled", Help.Ansi.isTTY(), System.getenv("XTERM"), System.getenv("OSTYPE"), Help.Ansi.isWindows(), Help.Ansi.isJansiConsoleInstalled(), System.getenv("ANSICON"), System.getenv("ConEmuANSI"), System.getenv("NO_COLOR"), System.getenv("CLICOLOR"), System.getenv("CLICOLOR_FORCE"));}
             List<String> expanded = new ArrayList<String>();
             for (String arg : args) { addOrExpand(arg, expanded, new LinkedHashSet<String>()); }
             Stack<String> arguments = new Stack<String>();
@@ -9939,38 +9940,51 @@ public class CommandLine {
             /** Forced OFF: never emit ANSI escape code regardless of the platform. */
             OFF;
             static Text EMPTY_TEXT = OFF.new Text(0);
-            static final boolean isWindows      = System.getProperty("os.name").startsWith("Windows");
-            static final boolean isXterm        = System.getenv("TERM") != null && System.getenv("TERM").startsWith("xterm");
-            static final boolean hasOsType      = System.getenv("OSTYPE") != null;                    // null on Windows unless on Cygwin or MSYS
-            static final boolean hintDisabled   = System.getenv("NO_COLOR") != null                   // https://no-color.org/
-                                               || "0".equals(System.getenv("CLICOLOR"))               // Jan Niklas Hasse's https://bixense.com/clicolors/ proposal
-                                               || "OFF".equalsIgnoreCase(System.getenv("ConEmuANSI"));// https://conemu.github.io/en/AnsiEscapeCodes.html#Environment_variable
-            static final boolean hintEnabled    = System.getenv("ANSICON") != null                    // https://github.com/adoxa/ansicon/blob/master/readme.txt
-                                               || "1".equals(System.getenv("CLICOLOR"))               // Jan Niklas Hasse's https://bixense.com/clicolors/ proposal
-                                               || "ON".equalsIgnoreCase(System.getenv("ConEmuANSI")); // https://conemu.github.io/en/AnsiEscapeCodes.html#Environment_variable
-            static final boolean hintForced     = System.getenv("CLICOLOR_FORCE") != null             // Jan Niklas Hasse's https://bixense.com/clicolors/ proposal
-                                               && !"0".equals(System.getenv("CLICOLOR_FORCE"));
+
             static Boolean tty;
             static boolean isTTY() {
                 if (tty == null) { tty = calcTTY(); }
                 return tty;
             }
-            // http://stackoverflow.com/questions/1403772/how-can-i-check-if-a-java-programs-input-output-streams-are-connected-to-a-term
+            static final boolean isWindows()    { return System.getProperty("os.name").startsWith("Windows"); }
+            static final boolean isXterm()      { return System.getenv("TERM") != null && System.getenv("TERM").startsWith("xterm"); }
+            // null on Windows unless on Cygwin or MSYS
+            static final boolean hasOsType()    { return System.getenv("OSTYPE") != null; }
+
+            // see Jan Niklas Hasse's https://bixense.com/clicolors/ proposal
+            // https://conemu.github.io/en/AnsiEscapeCodes.html#Environment_variable
+            static final boolean hintDisabled() { return "0".equals(System.getenv("CLICOLOR"))
+                                               || "OFF".equals(System.getenv("ConEmuANSI")); }
+
+            /** https://github.com/adoxa/ansicon/blob/master/readme.txt,
+             * Jan Niklas Hasse's https://bixense.com/clicolors/ proposal,
+             * https://conemu.github.io/en/AnsiEscapeCodes.html#Environment_variable */
+            static final boolean hintEnabled() { return System.getenv("ANSICON") != null
+                                               || "1".equals(System.getenv("CLICOLOR"))
+                                               || "ON".equals(System.getenv("ConEmuANSI")); }
+            /** https://no-color.org/ */
+            static final boolean forceDisabled() { return System.getenv("NO_COLOR") != null; }
+
+            /** Jan Niklas Hasse's https://bixense.com/clicolors/ proposal */
+            static final boolean forceEnabled() { return System.getenv("CLICOLOR_FORCE") != null
+                                               && !"0".equals(System.getenv("CLICOLOR_FORCE"));}
+            /** http://stackoverflow.com/questions/1403772/how-can-i-check-if-a-java-programs-input-output-streams-are-connected-to-a-term */
             static boolean calcTTY() {
                 try { return System.class.getDeclaredMethod("console").invoke(null) != null; }
                 catch (Throwable reflectionFailed) { return true; }
             }
-            static boolean isPseudoTTY() { return isWindows && (isXterm || hasOsType); } // Cygwin uses pseudo-tty and console is always null...
+            /** Cygwin and MSYS use pseudo-tty and console is always null... */
+            static boolean isPseudoTTY() { return isWindows() && (isXterm() || hasOsType()); }
 
             static boolean ansiPossible() {
-                if (hintDisabled)               { return false; }
-                if (hintForced)                 { return true; }
-                if (isJansiConsoleInstalled())  { return true; }
-                if (!isTTY() && !isPseudoTTY()) { return false; }
-                return hintEnabled || !isWindows || isXterm || hasOsType;
+                if (forceDisabled())              { return false; }
+                if (forceEnabled())               { return true; }
+                if (isJansiConsoleInstalled())    { return true; }
+                if (hintDisabled())               { return false; }
+                if (!isTTY() && !isPseudoTTY())   { return false; }
+                return hintEnabled() || !isWindows() || isXterm() || hasOsType();
             }
-
-            private static boolean isJansiConsoleInstalled() {
+            static boolean isJansiConsoleInstalled() {
                 try {
                     Class<?> ansiConsole = Class.forName("org.fusesource.jansi.AnsiConsole");
                     Field out = ansiConsole.getField("out");
@@ -9986,7 +10000,8 @@ public class CommandLine {
             public boolean enabled() {
                 if (this == ON)  { return true; }
                 if (this == OFF) { return false; }
-                boolean auto = System.getProperty("picocli.ansi") == null || "AUTO".equalsIgnoreCase(System.getProperty("picocli.ansi"));
+                String ansi = System.getProperty("picocli.ansi");
+                boolean auto = ansi == null || "AUTO".equalsIgnoreCase(ansi);
                 return auto ? ansiPossible() : Boolean.getBoolean("picocli.ansi");
             }
             /**

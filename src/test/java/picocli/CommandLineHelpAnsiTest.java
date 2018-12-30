@@ -4,8 +4,11 @@ import org.fusesource.jansi.AnsiConsole;
 import org.junit.After;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.contrib.java.lang.system.ProvideSystemProperty;
+import org.junit.contrib.java.lang.system.EnvironmentVariables;
+import org.junit.contrib.java.lang.system.RestoreSystemProperties;
 import org.junit.contrib.java.lang.system.SystemOutRule;
+import org.junit.rules.TestRule;
+import picocli.CommandLine.Help.Ansi;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -20,10 +23,19 @@ import static picocli.HelpTestUtil.usageString;
 public class CommandLineHelpAnsiTest {
     private static final String LINESEP = System.getProperty("line.separator");
 
+    private static final String[] ANSI_ENVIRONMENT_VARIABLES = new String[] {
+            "TERM", "OSTYPE", "NO_COLOR", "ANSICON", "CLICOLOR", "ConEmuANSI", "CLICOLOR_FORCE"
+    };
+
     @Rule
-    public final ProvideSystemProperty ansiOFF = new ProvideSystemProperty("picocli.ansi", "false");
+    // allows tests to set any kind of properties they like, without having to individually roll them back
+    public final TestRule restoreSystemProperties = new RestoreSystemProperties();
+
     @Rule
     public final SystemOutRule systemOutRule = new SystemOutRule().enableLog().muteForSuccessfulTests();
+
+    @Rule
+    public final EnvironmentVariables environmentVariables = new EnvironmentVariables();
 
     @After
     public void after() {
@@ -36,60 +48,60 @@ public class CommandLineHelpAnsiTest {
     @Test
     public void testTextWithMultipleStyledSections() {
         assertEquals("\u001B[1m<main class>\u001B[21m\u001B[0m [\u001B[33m-v\u001B[39m\u001B[0m] [\u001B[33m-c\u001B[39m\u001B[0m [\u001B[3m<count>\u001B[23m\u001B[0m]]",
-                CommandLine.Help.Ansi.ON.new Text("@|bold <main class>|@ [@|yellow -v|@] [@|yellow -c|@ [@|italic <count>|@]]").toString());
+                Ansi.ON.new Text("@|bold <main class>|@ [@|yellow -v|@] [@|yellow -c|@ [@|italic <count>|@]]").toString());
     }
 
     @Test
     public void testTextAdjacentStyles() {
         assertEquals("\u001B[3m<commit\u001B[23m\u001B[0m\u001B[3m>\u001B[23m\u001B[0m%n",
-                CommandLine.Help.Ansi.ON.new Text("@|italic <commit|@@|italic >|@%n").toString());
+                Ansi.ON.new Text("@|italic <commit|@@|italic >|@%n").toString());
     }
 
     @Test
     public void testTextNoConversionWithoutClosingTag() {
-        assertEquals("\u001B[3mabc\u001B[23m\u001B[0m", CommandLine.Help.Ansi.ON.new Text("@|italic abc|@").toString());
-        assertEquals("@|italic abc",                    CommandLine.Help.Ansi.ON.new Text("@|italic abc").toString());
+        assertEquals("\u001B[3mabc\u001B[23m\u001B[0m", Ansi.ON.new Text("@|italic abc|@").toString());
+        assertEquals("@|italic abc",                    Ansi.ON.new Text("@|italic abc").toString());
     }
 
     @Test
     public void testTextNoConversionWithoutSpaceSeparator() {
-        assertEquals("\u001B[3ma\u001B[23m\u001B[0m", CommandLine.Help.Ansi.ON.new Text("@|italic a|@").toString());
-        assertEquals("@|italic|@",                    CommandLine.Help.Ansi.ON.new Text("@|italic|@").toString());
-        assertEquals("",                              CommandLine.Help.Ansi.ON.new Text("@|italic |@").toString());
+        assertEquals("\u001B[3ma\u001B[23m\u001B[0m", Ansi.ON.new Text("@|italic a|@").toString());
+        assertEquals("@|italic|@",                    Ansi.ON.new Text("@|italic|@").toString());
+        assertEquals("",                              Ansi.ON.new Text("@|italic |@").toString());
     }
 
     @Test
     public void testPalette236ColorForegroundIndex() {
-        assertEquals("\u001B[38;5;45mabc\u001B[39m\u001B[0m", CommandLine.Help.Ansi.ON.new Text("@|fg(45) abc|@").toString());
+        assertEquals("\u001B[38;5;45mabc\u001B[39m\u001B[0m", Ansi.ON.new Text("@|fg(45) abc|@").toString());
     }
 
     @Test
     public void testPalette236ColorForegroundRgb() {
         int num = 16 + 36 * 5 + 6 * 5 + 5;
-        assertEquals("\u001B[38;5;" + num + "mabc\u001B[39m\u001B[0m", CommandLine.Help.Ansi.ON.new Text("@|fg(5;5;5) abc|@").toString());
+        assertEquals("\u001B[38;5;" + num + "mabc\u001B[39m\u001B[0m", Ansi.ON.new Text("@|fg(5;5;5) abc|@").toString());
     }
 
     @Test
     public void testPalette236ColorBackgroundIndex() {
-        assertEquals("\u001B[48;5;77mabc\u001B[49m\u001B[0m", CommandLine.Help.Ansi.ON.new Text("@|bg(77) abc|@").toString());
+        assertEquals("\u001B[48;5;77mabc\u001B[49m\u001B[0m", Ansi.ON.new Text("@|bg(77) abc|@").toString());
     }
 
     @Test
     public void testPalette236ColorBackgroundRgb() {
         int num = 16 + 36 * 3 + 6 * 3 + 3;
-        assertEquals("\u001B[48;5;" + num + "mabc\u001B[49m\u001B[0m", CommandLine.Help.Ansi.ON.new Text("@|bg(3;3;3) abc|@").toString());
+        assertEquals("\u001B[48;5;" + num + "mabc\u001B[49m\u001B[0m", Ansi.ON.new Text("@|bg(3;3;3) abc|@").toString());
     }
 
     @Test
     public void testAnsiEnabled() {
-        assertTrue(CommandLine.Help.Ansi.ON.enabled());
-        assertFalse(CommandLine.Help.Ansi.OFF.enabled());
+        assertTrue(Ansi.ON.enabled());
+        assertFalse(Ansi.OFF.enabled());
 
         System.setProperty("picocli.ansi", "true");
-        assertEquals(true, CommandLine.Help.Ansi.AUTO.enabled());
+        assertEquals(true, Ansi.AUTO.enabled());
 
         System.setProperty("picocli.ansi", "false");
-        assertEquals(false, CommandLine.Help.Ansi.AUTO.enabled());
+        assertEquals(false, Ansi.AUTO.enabled());
 
         System.clearProperty("picocli.ansi");
         boolean isWindows = System.getProperty("os.name").startsWith("Windows");
@@ -97,12 +109,15 @@ public class CommandLineHelpAnsiTest {
         boolean hasOsType = System.getenv("OSTYPE") != null; // null on Windows unless on Cygwin or MSYS
         boolean isAtty    = (isWindows && (isXterm || hasOsType)) // cygwin pseudo-tty
                 || hasConsole();
-        assertEquals((isAtty && (!isWindows || isXterm || hasOsType)) || isJansiConsoleInstalled(), CommandLine.Help.Ansi.AUTO.enabled());
+        assertEquals((isAtty && (!isWindows || isXterm || hasOsType)) || isJansiConsoleInstalled(), Ansi.AUTO.enabled());
 
-        if (isWindows && !CommandLine.Help.Ansi.AUTO.enabled()) {
+        if (isWindows && !Ansi.AUTO.enabled()) {
             AnsiConsole.systemInstall();
-            assertTrue(CommandLine.Help.Ansi.AUTO.enabled());
-            AnsiConsole.systemUninstall();
+            try {
+                assertTrue(Ansi.AUTO.enabled());
+            } finally {
+                AnsiConsole.systemUninstall();
+            }
         }
     }
 
@@ -128,7 +143,7 @@ public class CommandLineHelpAnsiTest {
             @CommandLine.Option(names = {"--help", "-h"}, hidden = true) boolean helpRequested;
             @CommandLine.Parameters(paramLabel = "FILE", arity = "1..*") File[] files;
         }
-        CommandLine.Help.Ansi ansi = CommandLine.Help.Ansi.ON;
+        Ansi ansi = Ansi.ON;
         // default color scheme
         assertEquals(ansi.new Text("@|bold <main class>|@ [@|yellow -v|@] [@|yellow -c|@=@|italic <count>|@] @|yellow FILE|@..." + LINESEP),
                 new CommandLine.Help(new App(), ansi).synopsis(0));
@@ -149,12 +164,12 @@ public class CommandLineHelpAnsiTest {
             @CommandLine.Option(names = {"--help", "-h"}, hidden = true) boolean helpRequested;
             @CommandLine.Parameters(paramLabel = "FILE", arity = "1..*") File[] files;
         }
-        CommandLine.Help.Ansi ansi = CommandLine.Help.Ansi.ON;
+        Ansi ansi = Ansi.ON;
         CommandLine.Help.ColorScheme explicit = new CommandLine.Help.ColorScheme(ansi)
-                .commands(CommandLine.Help.Ansi.Style.faint, CommandLine.Help.Ansi.Style.bg_magenta)
-                .options(CommandLine.Help.Ansi.Style.bg_red)
-                .parameters(CommandLine.Help.Ansi.Style.reverse)
-                .optionParams(CommandLine.Help.Ansi.Style.bg_green);
+                .commands(Ansi.Style.faint, Ansi.Style.bg_magenta)
+                .options(Ansi.Style.bg_red)
+                .parameters(Ansi.Style.reverse)
+                .optionParams(Ansi.Style.bg_green);
         // default color scheme
         assertEquals(ansi.new Text("@|faint,bg(magenta) <main class>|@ [@|bg(red) -v|@] [@|bg(red) -c|@=@|bg(green) <count>|@] @|reverse FILE|@..." + LINESEP),
                 new CommandLine.Help(CommandLine.Model.CommandSpec.forAnnotatedObject(new App(), CommandLine.defaultFactory()), explicit).synopsis(0));
@@ -168,8 +183,8 @@ public class CommandLineHelpAnsiTest {
     }
     @Test
     public void testUsageWithCustomColorScheme() throws UnsupportedEncodingException {
-        CommandLine.Help.ColorScheme scheme = new CommandLine.Help.ColorScheme(CommandLine.Help.Ansi.ON)
-                .options(CommandLine.Help.Ansi.Style.bg_magenta).parameters(CommandLine.Help.Ansi.Style.bg_cyan).optionParams(CommandLine.Help.Ansi.Style.bg_yellow).commands(CommandLine.Help.Ansi.Style.reverse);
+        CommandLine.Help.ColorScheme scheme = new CommandLine.Help.ColorScheme(Ansi.ON)
+                .options(Ansi.Style.bg_magenta).parameters(Ansi.Style.bg_cyan).optionParams(Ansi.Style.bg_yellow).commands(Ansi.Style.reverse);
         class Args {
             @CommandLine.Parameters(description = "param desc") String[] params;
             @CommandLine.Option(names = "-x", description = "option desc") String[] options;
@@ -182,7 +197,7 @@ public class CommandLineHelpAnsiTest {
                 "Usage: @|reverse <main class>|@ [@|bg_magenta -x|@=@|bg_yellow <options>|@]... [@|bg_cyan <params>|@...]%n" +
                 "      [@|bg_cyan <params>|@...]   param desc%n" +
                 "  @|bg_magenta -x|@=@|bg_yellow <|@@|bg_yellow options>|@        option desc%n");
-        assertEquals(CommandLine.Help.Ansi.ON.new Text(expected).toString(), actual);
+        assertEquals(Ansi.ON.new Text(expected).toString(), actual);
     }
 
     @Test
@@ -195,7 +210,7 @@ public class CommandLineHelpAnsiTest {
             @CommandLine.Parameters
             File[] files;
         }
-        CommandLine.Help help = new CommandLine.Help(new App(), CommandLine.Help.Ansi.OFF);
+        CommandLine.Help help = new CommandLine.Help(new App(), Ansi.OFF);
         assertEquals("<main class> [OPTIONS] [<files>...]" + LINESEP, help.synopsis(0));
     }
 
@@ -209,8 +224,8 @@ public class CommandLineHelpAnsiTest {
             @CommandLine.Parameters
             File[] files;
         }
-        CommandLine.Help help = new CommandLine.Help(new App(), CommandLine.Help.Ansi.ON);
-        assertEquals(CommandLine.Help.Ansi.ON.new Text("@|bold <main class>|@ [OPTIONS] [@|yellow <files>|@...]" + LINESEP).toString(), help.synopsis(0));
+        CommandLine.Help help = new CommandLine.Help(new App(), Ansi.ON);
+        assertEquals(Ansi.ON.new Text("@|bold <main class>|@ [OPTIONS] [@|yellow <files>|@...]" + LINESEP).toString(), help.synopsis(0));
     }
 
     @Test
@@ -222,7 +237,7 @@ public class CommandLineHelpAnsiTest {
             @CommandLine.Parameters
             File[] files;
         }
-        CommandLine.Help help = new CommandLine.Help(new App(), CommandLine.Help.Ansi.OFF);
+        CommandLine.Help help = new CommandLine.Help(new App(), Ansi.OFF);
         assertEquals("<main class> [-v] [-c:<count>] [<files>...]" + LINESEP, help.synopsis(0));
     }
 
@@ -235,8 +250,8 @@ public class CommandLineHelpAnsiTest {
             @CommandLine.Parameters
             File[] files;
         }
-        CommandLine.Help help = new CommandLine.Help(new App(), CommandLine.Help.Ansi.ON);
-        assertEquals(CommandLine.Help.Ansi.ON.new Text("@|bold <main class>|@ [@|yellow -v|@] [@|yellow -c|@:@|italic <count>|@] [@|yellow <files>|@...]" + LINESEP),
+        CommandLine.Help help = new CommandLine.Help(new App(), Ansi.ON);
+        assertEquals(Ansi.ON.new Text("@|bold <main class>|@ [@|yellow -v|@] [@|yellow -c|@:@|italic <count>|@] [@|yellow <files>|@...]" + LINESEP),
                 help.synopsis(0));
     }
 
@@ -248,7 +263,7 @@ public class CommandLineHelpAnsiTest {
             @CommandLine.Option(names = {"--help", "-h"}, hidden = true) boolean helpRequested;
             @CommandLine.Parameters(paramLabel = "FILE") File[] files;
         }
-        CommandLine.Help help = new CommandLine.Help(new App(), CommandLine.Help.Ansi.OFF);
+        CommandLine.Help help = new CommandLine.Help(new App(), Ansi.OFF);
         assertEquals("<main class> [-v] [-c=<count>] [FILE...]" + LINESEP, help.synopsis(0));
     }
 
@@ -260,8 +275,8 @@ public class CommandLineHelpAnsiTest {
             @CommandLine.Option(names = {"--help", "-h"}, hidden = true) boolean helpRequested;
             @CommandLine.Parameters(paramLabel = "FILE") File[] files;
         }
-        CommandLine.Help help = new CommandLine.Help(new App(), CommandLine.Help.Ansi.ON);
-        assertEquals(CommandLine.Help.Ansi.ON.new Text("@|bold <main class>|@ [@|yellow -v|@] [@|yellow -c|@=@|italic <count>|@] [@|yellow FILE|@...]" + LINESEP),
+        CommandLine.Help help = new CommandLine.Help(new App(), Ansi.ON);
+        assertEquals(Ansi.ON.new Text("@|bold <main class>|@ [@|yellow -v|@] [@|yellow -c|@=@|italic <count>|@] [@|yellow FILE|@...]" + LINESEP),
                 help.synopsis(0));
     }
 
@@ -273,7 +288,7 @@ public class CommandLineHelpAnsiTest {
             @CommandLine.Option(names = {"--help", "-h"}, hidden = true) boolean helpRequested;
             @CommandLine.Parameters(paramLabel = "FILE", arity = "1..*") File[] files;
         }
-        CommandLine.Help help = new CommandLine.Help(new App(), CommandLine.Help.Ansi.OFF);
+        CommandLine.Help help = new CommandLine.Help(new App(), Ansi.OFF);
         assertEquals("<main class> [-v] [-c=<count>] FILE..." + LINESEP, help.synopsis(0));
     }
 
@@ -285,8 +300,8 @@ public class CommandLineHelpAnsiTest {
             @CommandLine.Option(names = {"--help", "-h"}, hidden = true) boolean helpRequested;
             @CommandLine.Parameters(paramLabel = "FILE", arity = "1..*") File[] files;
         }
-        CommandLine.Help help = new CommandLine.Help(new App(), CommandLine.Help.Ansi.ON);
-        assertEquals(CommandLine.Help.Ansi.ON.new Text("@|bold <main class>|@ [@|yellow -v|@] [@|yellow -c|@=@|italic <count>|@] @|yellow FILE|@..." + LINESEP),
+        CommandLine.Help help = new CommandLine.Help(new App(), Ansi.ON);
+        assertEquals(Ansi.ON.new Text("@|bold <main class>|@ [@|yellow -v|@] [@|yellow -c|@=@|italic <count>|@] @|yellow FILE|@..." + LINESEP),
                 help.synopsis(0));
     }
 
@@ -301,7 +316,7 @@ public class CommandLineHelpAnsiTest {
             @CommandLine.Option(names = {"--Xxxx", "-X"}, required = true) Boolean requiredXBoolean;
             @CommandLine.Option(names = {"--count", "-c"}, paramLabel = "COUNT") int count;
         }
-        CommandLine.Help help = new CommandLine.Help(new App(), CommandLine.Help.Ansi.OFF);
+        CommandLine.Help help = new CommandLine.Help(new App(), Ansi.OFF);
         assertEquals("<main class> -AVX [-avx] [-c=COUNT]" + LINESEP, help.synopsis(0));
     }
 
@@ -316,8 +331,8 @@ public class CommandLineHelpAnsiTest {
             @CommandLine.Option(names = {"--Xxxx", "-X"}, required = true) Boolean requiredXBoolean;
             @CommandLine.Option(names = {"--count", "-c"}, paramLabel = "COUNT") int count;
         }
-        CommandLine.Help help = new CommandLine.Help(new App(), CommandLine.Help.Ansi.ON);
-        assertEquals(CommandLine.Help.Ansi.ON.new Text("@|bold <main class>|@ @|yellow -AVX|@ [@|yellow -avx|@] [@|yellow -c|@=@|italic COUNT|@]" + LINESEP),
+        CommandLine.Help help = new CommandLine.Help(new App(), Ansi.ON);
+        assertEquals(Ansi.ON.new Text("@|bold <main class>|@ @|yellow -AVX|@ [@|yellow -avx|@] [@|yellow -c|@=@|italic COUNT|@]" + LINESEP),
                 help.synopsis(0));
     }
 
@@ -341,7 +356,7 @@ public class CommandLineHelpAnsiTest {
             @CommandLine.Option(names = {"--ddd", "-d"}, paramLabel = "<folder>", arity="1..2") File[] d;
             @CommandLine.Option(names = {"--include", "-i"}, paramLabel = "<includePattern>") String pattern;
         }
-        CommandLine.Help help = new CommandLine.Help(new App(), CommandLine.Help.Ansi.OFF);
+        CommandLine.Help help = new CommandLine.Help(new App(), Ansi.OFF);
         String expected = "" +
                 "Usage: small-test-program [-!?acorv] [--version] [-h <number>] [-i" + LINESEP +
                 "                          <includePattern>] [-p <file>|<folder>] [-d <folder>" + LINESEP +
@@ -365,7 +380,7 @@ public class CommandLineHelpAnsiTest {
             @CommandLine.Option(names = "--third-long-option-name", paramLabel = "<third-long-option-value>") int c;
             @CommandLine.Option(names = "--fourth-long-option-name", paramLabel = "<fourth-long-option-value>") int d;
         }
-        CommandLine.Help help = new CommandLine.Help(new App(), CommandLine.Help.Ansi.OFF);
+        CommandLine.Help help = new CommandLine.Help(new App(), Ansi.OFF);
         assertEquals(String.format(
                 "<best-app-ever> [--another-long-option-name=<another-long-option-value>]%n" +
                         "                [--fourth-long-option-name=<fourth-long-option-value>]%n" +
@@ -383,7 +398,7 @@ public class CommandLineHelpAnsiTest {
             @CommandLine.Option(names = "--third-long-option-name", paramLabel = "<third-long-option-value>") int c;
             @CommandLine.Option(names = "--fourth-long-option-name", paramLabel = "<fourth-long-option-value>") int d;
         }
-        CommandLine.Help help = new CommandLine.Help(new App(), CommandLine.Help.Ansi.OFF);
+        CommandLine.Help help = new CommandLine.Help(new App(), Ansi.OFF);
         assertEquals(String.format(
                 "<best-app-ever> [--another-long-option-name=^[<another-long-option-value>]]%n" +
                         "                [--fourth-long-option-name=<fourth-long-option-value>]%n" +
@@ -401,8 +416,8 @@ public class CommandLineHelpAnsiTest {
             @CommandLine.Option(names = "--third-long-option-name", paramLabel = "<third-long-option-value>") int c;
             @CommandLine.Option(names = "--fourth-long-option-name", paramLabel = "<fourth-long-option-value>") int d;
         }
-        CommandLine.Help help = new CommandLine.Help(new App(), CommandLine.Help.Ansi.ON);
-        assertEquals(CommandLine.Help.Ansi.ON.new Text(String.format(
+        CommandLine.Help help = new CommandLine.Help(new App(), Ansi.ON);
+        assertEquals(Ansi.ON.new Text(String.format(
                 "@|bold <best-app-ever>|@ [@|yellow --another-long-option-name|@=@|italic ^[<another-long-option-value>]|@]%n" +
                         "                [@|yellow --fourth-long-option-name|@=@|italic <fourth-long-option-value>|@]%n" +
                         "                [@|yellow --long-option@-name|@=@|italic <long-option-valu@@e>|@]%n" +
@@ -412,59 +427,59 @@ public class CommandLineHelpAnsiTest {
 
     @Test
     public void testUsageMainCommand_NoAnsi() {
-        String actual = usageString(Demo.mainCommand(), CommandLine.Help.Ansi.OFF);
+        String actual = usageString(Demo.mainCommand(), Ansi.OFF);
         assertEquals(String.format(Demo.EXPECTED_USAGE_MAIN), actual);
     }
 
     @Test
     public void testUsageMainCommand_ANSI() {
-        String actual = usageString(Demo.mainCommand(), CommandLine.Help.Ansi.ON);
-        assertEquals(CommandLine.Help.Ansi.ON.new Text(String.format(Demo.EXPECTED_USAGE_MAIN_ANSI)), actual);
+        String actual = usageString(Demo.mainCommand(), Ansi.ON);
+        assertEquals(Ansi.ON.new Text(String.format(Demo.EXPECTED_USAGE_MAIN_ANSI)), actual);
     }
 
     @Test
     public void testUsageSubcommandGitStatus_NoAnsi() {
-        String actual = usageString(new Demo.GitStatus(), CommandLine.Help.Ansi.OFF);
+        String actual = usageString(new Demo.GitStatus(), Ansi.OFF);
         assertEquals(String.format(Demo.EXPECTED_USAGE_GITSTATUS), actual);
     }
 
     @Test
     public void testUsageSubcommandGitStatus_ANSI() {
-        String actual = usageString(new Demo.GitStatus(), CommandLine.Help.Ansi.ON);
-        assertEquals(CommandLine.Help.Ansi.ON.new Text(String.format(Demo.EXPECTED_USAGE_GITSTATUS_ANSI)), actual);
+        String actual = usageString(new Demo.GitStatus(), Ansi.ON);
+        assertEquals(Ansi.ON.new Text(String.format(Demo.EXPECTED_USAGE_GITSTATUS_ANSI)), actual);
     }
 
     @Test
     public void testUsageSubcommandGitCommit_NoAnsi() {
-        String actual = usageString(new Demo.GitCommit(), CommandLine.Help.Ansi.OFF);
+        String actual = usageString(new Demo.GitCommit(), Ansi.OFF);
         assertEquals(String.format(Demo.EXPECTED_USAGE_GITCOMMIT), actual);
     }
 
     @Test
     public void testUsageSubcommandGitCommit_ANSI() {
-        String actual = usageString(new Demo.GitCommit(), CommandLine.Help.Ansi.ON);
-        assertEquals(CommandLine.Help.Ansi.ON.new Text(String.format(Demo.EXPECTED_USAGE_GITCOMMIT_ANSI)), actual);
+        String actual = usageString(new Demo.GitCommit(), Ansi.ON);
+        assertEquals(Ansi.ON.new Text(String.format(Demo.EXPECTED_USAGE_GITCOMMIT_ANSI)), actual);
     }
 
     @Test
     public void testTextConstructorPlain() {
-        assertEquals("--NoAnsiFormat", CommandLine.Help.Ansi.ON.new Text("--NoAnsiFormat").toString());
+        assertEquals("--NoAnsiFormat", Ansi.ON.new Text("--NoAnsiFormat").toString());
     }
 
     @Test
     public void testTextConstructorWithStyle() {
-        assertEquals("\u001B[1m--NoAnsiFormat\u001B[21m\u001B[0m", CommandLine.Help.Ansi.ON.new Text("@|bold --NoAnsiFormat|@").toString());
+        assertEquals("\u001B[1m--NoAnsiFormat\u001B[21m\u001B[0m", Ansi.ON.new Text("@|bold --NoAnsiFormat|@").toString());
     }
 
     @Test
     public void testTextApply() {
-        CommandLine.Help.Ansi.Text txt = CommandLine.Help.Ansi.ON.apply("--p", Arrays.<CommandLine.Help.Ansi.IStyle>asList(CommandLine.Help.Ansi.Style.fg_red, CommandLine.Help.Ansi.Style.bold));
-        assertEquals(CommandLine.Help.Ansi.ON.new Text("@|fg(red),bold --p|@"), txt);
+        Ansi.Text txt = Ansi.ON.apply("--p", Arrays.<Ansi.IStyle>asList(Ansi.Style.fg_red, Ansi.Style.bold));
+        assertEquals(Ansi.ON.new Text("@|fg(red),bold --p|@"), txt);
     }
 
     @Test
     public void testTextDefaultColorScheme() {
-        CommandLine.Help.Ansi ansi = CommandLine.Help.Ansi.ON;
+        Ansi ansi = Ansi.ON;
         CommandLine.Help.ColorScheme scheme = CommandLine.Help.defaultColorScheme(ansi);
         assertEquals(scheme.ansi().new Text("@|yellow -p|@"),      scheme.optionText("-p"));
         assertEquals(scheme.ansi().new Text("@|bold command|@"),  scheme.commandText("command"));
@@ -474,8 +489,8 @@ public class CommandLineHelpAnsiTest {
 
     @Test
     public void testTextSubString() {
-        CommandLine.Help.Ansi ansi = CommandLine.Help.Ansi.ON;
-        CommandLine.Help.Ansi.Text txt =   ansi.new Text("@|bold 01234|@").concat("56").concat("@|underline 7890|@");
+        Ansi ansi = Ansi.ON;
+        Ansi.Text txt =   ansi.new Text("@|bold 01234|@").concat("56").concat("@|underline 7890|@");
         assertEquals(ansi.new Text("@|bold 01234|@56@|underline 7890|@"), txt.substring(0));
         assertEquals(ansi.new Text("@|bold 1234|@56@|underline 7890|@"), txt.substring(1));
         assertEquals(ansi.new Text("@|bold 234|@56@|underline 7890|@"), txt.substring(2));
@@ -508,7 +523,7 @@ public class CommandLineHelpAnsiTest {
         assertEquals(ansi.new Text("@|bold 2|@"), txt.substring(2, 3));
         assertEquals(ansi.new Text("@|underline 8|@"), txt.substring(8, 9));
 
-        CommandLine.Help.Ansi.Text txt2 =  ansi.new Text("@|bold abc|@@|underline DEF|@");
+        Ansi.Text txt2 =  ansi.new Text("@|bold abc|@@|underline DEF|@");
         assertEquals(ansi.new Text("@|bold abc|@@|underline DEF|@"), txt2.substring(0));
         assertEquals(ansi.new Text("@|bold bc|@@|underline DEF|@"), txt2.substring(1));
         assertEquals(ansi.new Text("@|bold abc|@@|underline DE|@"), txt2.substring(0,5));
@@ -516,14 +531,14 @@ public class CommandLineHelpAnsiTest {
     }
     @Test
     public void testTextSplitLines() {
-        CommandLine.Help.Ansi ansi = CommandLine.Help.Ansi.ON;
-        CommandLine.Help.Ansi.Text[] all = {
+        Ansi ansi = Ansi.ON;
+        Ansi.Text[] all = {
                 ansi.new Text("@|bold 012\n34|@").concat("5\nAA\n6").concat("@|underline 78\n90|@"),
                 ansi.new Text("@|bold 012\r34|@").concat("5\rAA\r6").concat("@|underline 78\r90|@"),
                 ansi.new Text("@|bold 012\r\n34|@").concat("5\r\nAA\r\n6").concat("@|underline 78\r\n90|@"),
         };
-        for (CommandLine.Help.Ansi.Text text : all) {
-            CommandLine.Help.Ansi.Text[] lines = text.splitLines();
+        for (Ansi.Text text : all) {
+            Ansi.Text[] lines = text.splitLines();
             int i = 0;
             assertEquals(ansi.new Text("@|bold 012|@"), lines[i++]);
             assertEquals(ansi.new Text("@|bold 34|@5"), lines[i++]);
@@ -534,14 +549,14 @@ public class CommandLineHelpAnsiTest {
     }
     @Test
     public void testTextSplitLinesStartEnd() {
-        CommandLine.Help.Ansi ansi = CommandLine.Help.Ansi.ON;
-        CommandLine.Help.Ansi.Text[] all = {
+        Ansi ansi = Ansi.ON;
+        Ansi.Text[] all = {
                 ansi.new Text("\n@|bold 012\n34|@").concat("5\nAA\n6").concat("@|underline 78\n90|@\n"),
                 ansi.new Text("\r@|bold 012\r34|@").concat("5\rAA\r6").concat("@|underline 78\r90|@\r"),
                 ansi.new Text("\r\n@|bold 012\r\n34|@").concat("5\r\nAA\r\n6").concat("@|underline 78\r\n90|@\r\n"),
         };
-        for (CommandLine.Help.Ansi.Text text : all) {
-            CommandLine.Help.Ansi.Text[] lines = text.splitLines();
+        for (Ansi.Text text : all) {
+            Ansi.Text[] lines = text.splitLines();
             int i = 0;
             assertEquals(ansi.new Text(""), lines[i++]);
             assertEquals(ansi.new Text("@|bold 012|@"), lines[i++]);
@@ -554,14 +569,14 @@ public class CommandLineHelpAnsiTest {
     }
     @Test
     public void testTextSplitLinesStartEndIntermediate() {
-        CommandLine.Help.Ansi ansi = CommandLine.Help.Ansi.ON;
-        CommandLine.Help.Ansi.Text[] all = {
+        Ansi ansi = Ansi.ON;
+        Ansi.Text[] all = {
                 ansi.new Text("\n@|bold 012\n\n\n34|@").concat("5\n\n\nAA\n\n\n6").concat("@|underline 78\n90|@\n"),
                 ansi.new Text("\r@|bold 012\r\r\r34|@").concat("5\r\r\rAA\r\r\r6").concat("@|underline 78\r90|@\r"),
                 ansi.new Text("\r\n@|bold 012\r\n\r\n\r\n34|@").concat("5\r\n\r\n\r\nAA\r\n\r\n\r\n6").concat("@|underline 78\r\n90|@\r\n"),
         };
-        for (CommandLine.Help.Ansi.Text text : all) {
-            CommandLine.Help.Ansi.Text[] lines = text.splitLines();
+        for (Ansi.Text text : all) {
+            Ansi.Text[] lines = text.splitLines();
             int i = 0;
             assertEquals(ansi.new Text(""), lines[i++]);
             assertEquals(ansi.new Text("@|bold 012|@"), lines[i++]);
@@ -581,44 +596,44 @@ public class CommandLineHelpAnsiTest {
 
     @Test
     public void testTextHashCode() {
-        CommandLine.Help.Ansi ansi = CommandLine.Help.Ansi.ON;
+        Ansi ansi = Ansi.ON;
         assertEquals(ansi.new Text("a").hashCode(), ansi.new Text("a").hashCode());
         assertNotEquals(ansi.new Text("a").hashCode(), ansi.new Text("b").hashCode());
     }
 
     @Test
     public void testTextAppendString() {
-        CommandLine.Help.Ansi ansi = CommandLine.Help.Ansi.ON;
+        Ansi ansi = Ansi.ON;
         assertEquals(ansi.new Text("a").append("xyz"), ansi.new Text("a").concat("xyz"));
     }
 
     @Test
     public void testTextAppendText() {
-        CommandLine.Help.Ansi ansi = CommandLine.Help.Ansi.ON;
-        CommandLine.Help.Ansi.Text xyz = ansi.new Text("xyz");
+        Ansi ansi = Ansi.ON;
+        Ansi.Text xyz = ansi.new Text("xyz");
         assertEquals(ansi.new Text("a").append(xyz), ansi.new Text("a").concat(xyz));
     }
 
     @Test
     public void testStyleParseAllowsMissingClosingBrackets() {
-        CommandLine.Help.Ansi.IStyle whiteBg = CommandLine.Help.Ansi.Style.parse("bg(white")[0];
-        assertEquals(CommandLine.Help.Ansi.Style.bg_white.on(), whiteBg.on());
+        Ansi.IStyle whiteBg = Ansi.Style.parse("bg(white")[0];
+        assertEquals(Ansi.Style.bg_white.on(), whiteBg.on());
 
-        CommandLine.Help.Ansi.IStyle blackFg = CommandLine.Help.Ansi.Style.parse("fg(black")[0];
-        assertEquals(CommandLine.Help.Ansi.Style.fg_black.on(), blackFg.on());
+        Ansi.IStyle blackFg = Ansi.Style.parse("fg(black")[0];
+        assertEquals(Ansi.Style.fg_black.on(), blackFg.on());
     }
 
     @Test
     public void testColorSchemeDefaultConstructorHasAnsiAuto() {
         CommandLine.Help.ColorScheme colorScheme = new CommandLine.Help.ColorScheme();
-        assertEquals(CommandLine.Help.Ansi.AUTO, colorScheme.ansi());
+        assertEquals(Ansi.AUTO, colorScheme.ansi());
     }
 
     @Test
     public void testCommandLine_printVersionInfo_printsArrayOfPlainTextStrings() {
         @CommandLine.Command(version = {"Versioned Command 1.0", "512-bit superdeluxe", "(c) 2017"}) class Versioned {}
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        new CommandLine(new Versioned()).printVersionHelp(new PrintStream(baos, true), CommandLine.Help.Ansi.OFF);
+        new CommandLine(new Versioned()).printVersionHelp(new PrintStream(baos, true), Ansi.OFF);
         String result = baos.toString();
         assertEquals(String.format("Versioned Command 1.0%n512-bit superdeluxe%n(c) 2017%n"), result);
     }
@@ -627,7 +642,7 @@ public class CommandLineHelpAnsiTest {
     public void testCommandLine_printVersionInfo_printsSingleStringWithMarkup() {
         @CommandLine.Command(version = "@|red 1.0|@") class Versioned {}
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        new CommandLine(new Versioned()).printVersionHelp(new PrintStream(baos, true), CommandLine.Help.Ansi.ON);
+        new CommandLine(new Versioned()).printVersionHelp(new PrintStream(baos, true), Ansi.ON);
         String result = baos.toString();
         assertEquals(String.format("\u001B[31m1.0\u001B[39m\u001B[0m%n"), result);
     }
@@ -640,7 +655,7 @@ public class CommandLineHelpAnsiTest {
                 "@|red,bg(white) (c) 2017|@" })
         class Versioned {}
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        new CommandLine(new Versioned()).printVersionHelp(new PrintStream(baos, true), CommandLine.Help.Ansi.ON);
+        new CommandLine(new Versioned()).printVersionHelp(new PrintStream(baos, true), Ansi.ON);
         String result = baos.toString();
         assertEquals(String.format("" +
                 "\u001B[33mVersioned Command 1.0\u001B[39m\u001B[0m%n" +
@@ -652,7 +667,7 @@ public class CommandLineHelpAnsiTest {
         @CommandLine.Command(version = {"First line %1$s", "Second line %2$s", "Third line %s %s"}) class Versioned {}
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         PrintStream ps = new PrintStream(baos, true);
-        new CommandLine(new Versioned()).printVersionHelp(ps, CommandLine.Help.Ansi.OFF, "VALUE1", "VALUE2", "VALUE3");
+        new CommandLine(new Versioned()).printVersionHelp(ps, Ansi.OFF, "VALUE1", "VALUE2", "VALUE3");
         String result = baos.toString();
         assertEquals(String.format("First line VALUE1%nSecond line VALUE2%nThird line VALUE1 VALUE2%n"), result);
     }
@@ -700,7 +715,7 @@ public class CommandLineHelpAnsiTest {
         String[] args = {"@|bold VALUE1|@", "@|underline VALUE2|@", "VALUE3"};
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         PrintStream ps = new PrintStream(baos, true);
-        commandLine.printVersionHelp(ps, CommandLine.Help.Ansi.ON, (Object[]) args);
+        commandLine.printVersionHelp(ps, Ansi.ON, (Object[]) args);
         String result = baos.toString();
         assertEquals(String.format("" +
                 "\u001B[33mVersioned Command 1.0\u001B[39m\u001B[0m%n" +
@@ -708,4 +723,344 @@ public class CommandLineHelpAnsiTest {
                 "\u001B[31m\u001B[47m(c) 2017\u001B[49m\u001B[39m\u001B[0m\u001B[4mVALUE2\u001B[24m\u001B[0m%n"), result);
     }
 
+    @Test
+    public void testAnsiIsWindowsDependsOnSystemProperty() {
+        System.setProperty("os.name", "MMIX");
+        assertFalse(Ansi.isWindows());
+
+        System.setProperty("os.name", "Windows");
+        assertTrue(Ansi.isWindows());
+
+        System.setProperty("os.name", "Windows 10 build 12345");
+        assertTrue(Ansi.isWindows());
+    }
+
+    @Test
+    public void testAnsiIsXtermDependsOnEnvironmentVariable() {
+        environmentVariables.clear(ANSI_ENVIRONMENT_VARIABLES);
+        assertFalse(Ansi.isXterm());
+
+        environmentVariables.set("TERM", "random value");
+        assertFalse(Ansi.isXterm());
+
+        environmentVariables.set("TERM", "xterm");
+        assertTrue(Ansi.isXterm());
+
+        environmentVariables.set("TERM", "xterm asfasfasf");
+        assertTrue(Ansi.isXterm());
+    }
+
+    @Test
+    public void testAnsiHasOstypeDependsOnEnvironmentVariable() {
+        environmentVariables.clear(ANSI_ENVIRONMENT_VARIABLES);
+        assertFalse(Ansi.hasOsType());
+
+        environmentVariables.set("OSTYPE", "");
+        assertTrue(Ansi.hasOsType());
+
+        environmentVariables.set("OSTYPE", "42");
+        assertTrue(Ansi.hasOsType());
+    }
+
+    @Test
+    public void testAnsiIsPseudoTtyDependsOnWindowsXtermOrOsType() {
+        System.setProperty("os.name", "MMIX");
+        environmentVariables.clear(ANSI_ENVIRONMENT_VARIABLES);
+        assertFalse("OSTYPE and XTERM are not set", Ansi.isPseudoTTY());
+
+        System.setProperty("os.name", "Windows 10 build 12345");
+        environmentVariables.set("OSTYPE", "222");
+        environmentVariables.set("TERM", "xterm");
+        assertTrue(Ansi.isPseudoTTY());
+
+        System.setProperty("os.name", "MMIX");
+        assertFalse("Not Windows", Ansi.isPseudoTTY());
+
+        System.setProperty("os.name", "Windows 10 build 12345"); // restore
+        assertTrue("restored", Ansi.isPseudoTTY());
+        environmentVariables.clear("OSTYPE");
+        assertTrue("Missing OSTYPE, but TERM=xterm", Ansi.isPseudoTTY());
+
+        environmentVariables.set("OSTYPE", "anything");
+        assertTrue("restored", Ansi.isPseudoTTY());
+        environmentVariables.clear("XTERM");
+        assertTrue("Missing XTERM, but OSTYPE defined", Ansi.isPseudoTTY());
+    }
+
+    @Test
+    public void testAnsiHintDisabledTrueIfCLICOLORZero() {
+        environmentVariables.clear(ANSI_ENVIRONMENT_VARIABLES);
+        assertFalse("no env vars set", Ansi.hintDisabled());
+
+        environmentVariables.set("CLICOLOR", "");
+        assertFalse("Just defining CLICOLOR is not enough", Ansi.hintDisabled());
+
+        environmentVariables.set("CLICOLOR", "1");
+        assertFalse("CLICOLOR=1 is not enough", Ansi.hintDisabled());
+
+        environmentVariables.set("CLICOLOR", "false");
+        assertFalse("CLICOLOR=false is not enough", Ansi.hintDisabled());
+
+        environmentVariables.set("CLICOLOR", "0");
+        assertTrue("CLICOLOR=0 disables", Ansi.hintDisabled());
+    }
+
+    @Test
+    public void testAnsiHintDisabledTrueIfConEmuANSIisOFF() {
+        environmentVariables.clear(ANSI_ENVIRONMENT_VARIABLES);
+        assertFalse("no env vars set", Ansi.hintDisabled());
+
+        environmentVariables.set("ConEmuANSI", "");
+        assertFalse("Just defining ConEmuANSI is not enough", Ansi.hintDisabled());
+
+        environmentVariables.set("ConEmuANSI", "0");
+        assertFalse("ConEmuANSI=0 is not enough", Ansi.hintDisabled());
+
+        environmentVariables.set("ConEmuANSI", "false");
+        assertFalse("ConEmuANSI=false is not enough", Ansi.hintDisabled());
+
+        environmentVariables.set("ConEmuANSI", "off");
+        assertFalse("ConEmuANSI=off does not disable", Ansi.hintDisabled());
+
+        environmentVariables.set("ConEmuANSI", "Off");
+        assertFalse("ConEmuANSI=Off does not disable", Ansi.hintDisabled());
+
+        environmentVariables.set("ConEmuANSI", "OFF");
+        assertTrue("ConEmuANSI=OFF disables", Ansi.hintDisabled());
+    }
+
+
+    @Test
+    public void testAnsiHintEnbledTrueIfANSICONDefined() {
+        environmentVariables.clear(ANSI_ENVIRONMENT_VARIABLES);
+        assertFalse("no env vars set", Ansi.hintEnabled());
+
+        environmentVariables.set("ANSICON", "");
+        assertTrue("ANSICON defined without value", Ansi.hintEnabled());
+
+        environmentVariables.set("ANSICON", "abc");
+        assertTrue("ANSICON defined any value", Ansi.hintEnabled());
+    }
+
+    @Test
+    public void testAnsiHintEnbledTrueIfCLICOLOROne() {
+        environmentVariables.clear(ANSI_ENVIRONMENT_VARIABLES);
+        assertFalse("no env vars set", Ansi.hintEnabled());
+
+        environmentVariables.set("CLICOLOR", "");
+        assertFalse("Just defining CLICOLOR is not enough", Ansi.hintEnabled());
+
+        environmentVariables.set("CLICOLOR", "0");
+        assertFalse("CLICOLOR=0 is not enough", Ansi.hintEnabled());
+
+        environmentVariables.set("CLICOLOR", "true");
+        assertFalse("CLICOLOR=true is not enough", Ansi.hintEnabled());
+
+        environmentVariables.set("CLICOLOR", "1");
+        assertTrue("CLICOLOR=1 enables", Ansi.hintEnabled());
+    }
+
+    @Test
+    public void testAnsiHintEnabledTrueIfConEmuANSIisON() {
+        environmentVariables.clear(ANSI_ENVIRONMENT_VARIABLES);
+        assertFalse("no env vars set", Ansi.hintEnabled());
+
+        environmentVariables.set("ConEmuANSI", "");
+        assertFalse("Just defining ConEmuANSI is not enough", Ansi.hintEnabled());
+
+        environmentVariables.set("ConEmuANSI", "1");
+        assertFalse("ConEmuANSI=1 is not enough", Ansi.hintEnabled());
+
+        environmentVariables.set("ConEmuANSI", "true");
+        assertFalse("ConEmuANSI=true is not enough", Ansi.hintEnabled());
+
+        environmentVariables.set("ConEmuANSI", "on");
+        assertFalse("ConEmuANSI=on does not enables", Ansi.hintEnabled());
+
+        environmentVariables.set("ConEmuANSI", "On");
+        assertFalse("ConEmuANSI=On does not enables", Ansi.hintEnabled());
+
+        environmentVariables.set("ConEmuANSI", "ON");
+        assertTrue("ConEmuANSI=ON enables", Ansi.hintEnabled());
+    }
+
+    @Test
+    public void testAnsiForceEnabledTrueIfCLICOLOR_FORCEisDefinedAndNonZero() {
+        environmentVariables.clear(ANSI_ENVIRONMENT_VARIABLES);
+        assertFalse("no env vars set", Ansi.forceEnabled());
+
+        environmentVariables.set("CLICOLOR_FORCE", "");
+        assertTrue("Just defining CLICOLOR_FORCE is enough", Ansi.forceEnabled());
+
+        environmentVariables.set("CLICOLOR_FORCE", "1");
+        assertTrue("CLICOLOR_FORCE=1 is enough", Ansi.forceEnabled());
+
+        environmentVariables.set("CLICOLOR_FORCE", "0");
+        assertFalse("CLICOLOR_FORCE=0 is not forced", Ansi.forceEnabled());
+    }
+
+    @Test
+    public void testAnsiForceDisabledTrueIfNO_COLORDefined() {
+        environmentVariables.clear(ANSI_ENVIRONMENT_VARIABLES);
+        assertFalse("no env vars set", Ansi.forceDisabled());
+
+        environmentVariables.set("NO_COLOR", "");
+        assertTrue("NO_COLOR defined without value", Ansi.forceDisabled());
+
+        environmentVariables.set("NO_COLOR", "abc");
+        assertTrue("NO_COLOR defined any value", Ansi.forceDisabled());
+    }
+
+    @Test
+    public void testAnsiOnEnabled() {
+        assertTrue(Ansi.ON.enabled());
+    }
+
+    @Test
+    public void testAnsiOffDisabled() {
+        assertFalse(Ansi.OFF.enabled());
+    }
+
+    @Test
+    public void testAnsiAutoForceDisabledOverridesForceEnabled() {
+        environmentVariables.clear(ANSI_ENVIRONMENT_VARIABLES);
+        environmentVariables.set("NO_COLOR", "");
+        environmentVariables.set("CLICOLOR_FORCE", "1");
+        assertTrue(Ansi.forceDisabled());
+        assertTrue(Ansi.forceEnabled());
+        assertFalse(Ansi.hintDisabled());
+        assertFalse(Ansi.hintEnabled());
+        assertFalse("forceDisabled overrides forceEnabled", Ansi.AUTO.enabled());
+    }
+
+    @Test
+    public void testAnsiAutoForceDisabledOverridesHintEnabled() {
+        environmentVariables.clear(ANSI_ENVIRONMENT_VARIABLES);
+        environmentVariables.set("NO_COLOR", "");
+        environmentVariables.set("CLICOLOR", "1");
+        assertTrue(Ansi.forceDisabled());
+        assertFalse(Ansi.forceEnabled());
+        assertFalse(Ansi.hintDisabled());
+        assertTrue(Ansi.hintEnabled());
+        assertFalse("forceDisabled overrides hintEnabled", Ansi.AUTO.enabled());
+    }
+
+    @Test
+    public void testAnsiAutoForcedEnabledOverridesHintDisabled() {
+        environmentVariables.clear(ANSI_ENVIRONMENT_VARIABLES);
+        environmentVariables.set("CLICOLOR", "0");
+        environmentVariables.set("CLICOLOR_FORCE", "1");
+        assertFalse(Ansi.forceDisabled());
+        assertTrue(Ansi.hintDisabled());
+        assertTrue(Ansi.forceEnabled());
+        assertFalse(Ansi.hintEnabled());
+        assertTrue("forceEnabled overrides hintDisabled", Ansi.AUTO.enabled());
+
+        environmentVariables.clear(ANSI_ENVIRONMENT_VARIABLES);
+        environmentVariables.set("ConEmuANSI", "OFF");
+        environmentVariables.set("CLICOLOR_FORCE", "1");
+        assertFalse(Ansi.forceDisabled());
+        assertTrue(Ansi.hintDisabled());
+        assertTrue(Ansi.forceEnabled());
+        assertFalse(Ansi.hintEnabled());
+        assertTrue("forceEnabled overrides hintDisabled 2", Ansi.AUTO.enabled());
+    }
+
+    @Test
+    public void testAnsiAutoJansiConsoleInstalledOverridesHintDisabled() {
+        environmentVariables.clear(ANSI_ENVIRONMENT_VARIABLES);
+        environmentVariables.set("CLICOLOR", "0"); // hint disabled
+        System.setProperty("os.name", "Windows");
+        assertTrue(Ansi.isWindows());
+        assertFalse(Ansi.isPseudoTTY());
+        assertFalse(Ansi.forceDisabled());
+        assertFalse(Ansi.forceEnabled());
+        assertTrue(Ansi.hintDisabled());
+        assertFalse(Ansi.hintEnabled());
+
+        assertFalse(Ansi.isJansiConsoleInstalled());
+        AnsiConsole.systemInstall();
+        try {
+            assertTrue(Ansi.isJansiConsoleInstalled());
+            assertTrue(Ansi.AUTO.enabled());
+        } finally {
+            AnsiConsole.systemUninstall();
+        }
+    }
+
+    @Test
+    public void testAnsiAutoHintDisabledOverridesHintEnabled() {
+        environmentVariables.clear(ANSI_ENVIRONMENT_VARIABLES);
+        environmentVariables.set("CLICOLOR", "0"); // hint disabled
+        environmentVariables.set("ANSICON", "1"); // hint enabled
+        System.setProperty("os.name", "Windows");
+        assertTrue(Ansi.isWindows());
+        environmentVariables.set("TERM", "xterm"); // fake Cygwin
+        assertTrue(Ansi.isPseudoTTY());
+
+        assertFalse(Ansi.isJansiConsoleInstalled());
+
+        assertFalse(Ansi.forceDisabled());
+        assertFalse(Ansi.forceEnabled());
+        assertTrue(Ansi.hintDisabled());
+        assertTrue(Ansi.hintEnabled());
+
+        assertFalse("Disabled overrides enabled", Ansi.AUTO.enabled());
+    }
+
+    @Test
+    public void testAnsiAutoDisabledIfNoTty() {
+        if (Ansi.isTTY()) { return; } //
+        environmentVariables.clear(ANSI_ENVIRONMENT_VARIABLES);
+        System.setProperty("os.name", "Windows");
+        assertTrue(Ansi.isWindows());
+        assertFalse(Ansi.isPseudoTTY());
+        assertFalse(Ansi.isJansiConsoleInstalled());
+
+        assertFalse(Ansi.forceDisabled());
+        assertFalse(Ansi.forceEnabled());
+        assertFalse(Ansi.hintDisabled());
+        assertFalse(Ansi.hintEnabled());
+
+        assertFalse("Must have TTY if no JAnsi", Ansi.AUTO.enabled());
+    }
+
+    @Test
+    public void testAnsiAutoEnabledIfNotWindows() {
+        if (!Ansi.isTTY()) { return; } // needs TTY for this test
+        environmentVariables.clear(ANSI_ENVIRONMENT_VARIABLES);
+        System.setProperty("os.name", "MMIX");
+        assertFalse(Ansi.isWindows());
+        assertFalse(Ansi.isPseudoTTY()); // TODO Mock this?
+        assertFalse(Ansi.isJansiConsoleInstalled());
+
+        assertFalse(Ansi.forceDisabled());
+        assertFalse(Ansi.forceEnabled());
+        assertFalse(Ansi.hintDisabled());
+        assertFalse(Ansi.hintEnabled());
+
+        assertTrue("If have TTY, enabled on non-Windows", Ansi.AUTO.enabled());
+    }
+
+    @Test
+    public void testAnsiAutoEnabledIfWindowsPseudoTTY() {
+        environmentVariables.clear(ANSI_ENVIRONMENT_VARIABLES);
+        System.setProperty("os.name", "Windows");
+        assertTrue(Ansi.isWindows());
+        assertFalse(Ansi.isJansiConsoleInstalled());
+
+        assertFalse(Ansi.forceDisabled());
+        assertFalse(Ansi.forceEnabled());
+        assertFalse(Ansi.hintDisabled());
+        assertFalse(Ansi.hintEnabled());
+
+        environmentVariables.set("TERM", "xterm");
+        assertTrue(Ansi.isPseudoTTY());
+        assertTrue("If have Cygwin pseudo-TTY, enabled on Windows", Ansi.AUTO.enabled());
+
+        environmentVariables.clear(ANSI_ENVIRONMENT_VARIABLES);
+        environmentVariables.set("OSTYPE", "Windows");
+        assertTrue(Ansi.isPseudoTTY());
+        assertTrue("If have MSYS pseudo-TTY, enabled on Windows", Ansi.AUTO.enabled());
+    }
 }

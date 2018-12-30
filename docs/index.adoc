@@ -1875,9 +1875,9 @@ Below is the exact sequence of steps picocli uses to determine whether or not to
 1. If `Ansi.ON` or `Ansi.OFF` is <<Forcing ANSI On/Off,explicitly specified>>, either via system property `picocli.ansi` or programmatically, this value is used.
 1. ANSI is disabled when environment variable https://no-color.org/[`NO_COLOR`] is defined (regardless of its value).
 1. ANSI is enabled when environment variable https://bixense.com/clicolors/[`CLICOLOR_FORCE`] is defined and has any value other than `0` (zero).
+1. ANSI is enabled when JAnsi Console is https://github.com/fusesource/jansi[installed].
 1. ANSI is disabled when environment variable https://bixense.com/clicolors/[`CLICOLOR == 0`].
 1. ANSI is disabled when environment variable https://conemu.github.io/en/AnsiEscapeCodes.html#Environment_variable[`ConEmuANSI == OFF`].
-1. ANSI is enabled when JAnsi Console is https://github.com/fusesource/jansi[installed].
 1. ANSI is disabled when Picocli https://stackoverflow.com/questions/1403772/how-can-i-check-if-a-java-programs-input-output-streams-are-connected-to-a-term[_guesses_] the program's output stream is not connected to a terminal: when `System.console()` returns `null`. This check is omitted if picocli _guesses_ the program is running in a Windows https://www.cygwin.com/[Cygwin] or http://www.mingw.org/wiki/MSYS[MSYS] environment: when system property `os.name` starts with `"Windows"` and either environment variable `TERM` starts with `xterm` or environment variable `OSTYPE` is defined.
 1. ANSI is enabled when environment variable https://github.com/adoxa/ansicon/blob/master/readme.txt[`ANSICON`] is defined.
 1. ANSI is enabled when environment variable https://bixense.com/clicolors/[`CLICOLOR == 1`].
