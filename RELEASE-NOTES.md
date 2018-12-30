@@ -5,17 +5,19 @@ The picocli community is pleased to announce picocli 3.9.0.
 
 This release contains bugfixes and enhancements in the main picocli module, and adds a new module: `picocli-shell-jline3`.
 
-Picocli Shell JLine3 (`picocli-shell-jline3`) contains components and documentation for building
+The new module Picocli Shell JLine3 (`picocli-shell-jline3`) contains components and documentation for building
 interactive shell command line applications with JLine 3 and picocli.
 
 This release contains API enhancements to allow customization of the usage help message:
 
-* help section renderer API
-* option order attribute
+* help section renderers can be added, replaced or removed
+* help section keys to reorder sections in the usage help message
+* help factory to create custom `Help` instances
+* option order attribute to reorder options in the usage help message option list
 
-This release has improved heuristics to decide whether ANSI escape codes should be emitted or not.
+This release also has improved heuristics to decide whether ANSI escape codes should be emitted or not.
 
-Bugfix: Command method options and positional parameter Object values are now cleared correctly when reusing a CommandLine instance.
+Finally, this release contains a bugfix: `@Command` method options and positional parameter values are now cleared correctly when reusing a `CommandLine` instance.
 
 This is the forty-fifth public release.
 Picocli follows [semantic versioning](http://semver.org/).
@@ -42,16 +44,36 @@ By default this map contains the predefined section renderers:
 Map<String, IHelpSectionRenderer> map = new HashMap<>();
 map.put(SECTION_KEY_HEADER_HEADING,         help -> help.headerHeading());
 map.put(SECTION_KEY_HEADER,                 help -> help.header());
-map.put(SECTION_KEY_SYNOPSIS_HEADING,       help -> help.synopsisHeading());      //e.g. Usage:
-map.put(SECTION_KEY_SYNOPSIS,               help -> help.synopsis(help.synopsisHeadingLength())); //e.g. <cmd> [OPTIONS] <subcmd> [COMMAND-OPTIONS] [ARGUMENTS]
-map.put(SECTION_KEY_DESCRIPTION_HEADING,    help -> help.descriptionHeading());   //e.g. %nDescription:%n%n
-map.put(SECTION_KEY_DESCRIPTION,            help -> help.description());          //e.g. {"Converts foos to bars.", "Use options to control conversion mode."}
-map.put(SECTION_KEY_PARAMETER_LIST_HEADING, help -> help.parameterListHeading()); //e.g. %nPositional parameters:%n%n
-map.put(SECTION_KEY_PARAMETER_LIST,         help -> help.parameterList());        //e.g. [FILE...] the files to convert
-map.put(SECTION_KEY_OPTION_LIST_HEADING,    help -> help.optionListHeading());    //e.g. %nOptions:%n%n
-map.put(SECTION_KEY_OPTION_LIST,            help -> help.optionList());           //e.g. -h, --help   displays this help and exits
-map.put(SECTION_KEY_COMMAND_LIST_HEADING,   help -> help.commandListHeading());   //e.g. %nCommands:%n%n
-map.put(SECTION_KEY_COMMAND_LIST,           help -> help.commandList());          //e.g.    add       adds the frup to the frooble
+
+//e.g. Usage:
+map.put(SECTION_KEY_SYNOPSIS_HEADING,       help -> help.synopsisHeading());
+
+//e.g. <cmd> [OPTIONS] <subcmd> [COMMAND-OPTIONS] [ARGUMENTS]
+map.put(SECTION_KEY_SYNOPSIS,               help -> help.synopsis(help.synopsisHeadingLength()));
+
+//e.g. %nDescription:%n%n
+map.put(SECTION_KEY_DESCRIPTION_HEADING,    help -> help.descriptionHeading());
+
+//e.g. {"Converts foos to bars.", "Use options to control conversion mode."}
+map.put(SECTION_KEY_DESCRIPTION,            help -> help.description());
+
+//e.g. %nPositional parameters:%n%n
+map.put(SECTION_KEY_PARAMETER_LIST_HEADING, help -> help.parameterListHeading());
+
+//e.g. [FILE...] the files to convert
+map.put(SECTION_KEY_PARAMETER_LIST,         help -> help.parameterList());
+
+//e.g. %nOptions:%n%n
+map.put(SECTION_KEY_OPTION_LIST_HEADING,    help -> help.optionListHeading());
+
+//e.g. -h, --help   displays this help and exits
+map.put(SECTION_KEY_OPTION_LIST,            help -> help.optionList());
+
+//e.g. %nCommands:%n%n
+map.put(SECTION_KEY_COMMAND_LIST_HEADING,   help -> help.commandListHeading());
+
+//e.g.    add       adds the frup to the frooble
+map.put(SECTION_KEY_COMMAND_LIST,           help -> help.commandList());
 map.put(SECTION_KEY_FOOTER_HEADING,         help -> help.footerHeading());
 map.put(SECTION_KEY_FOOTER,                 help -> help.footer());
 ```
@@ -96,7 +118,7 @@ See the module's [README](https://github.com/remkop/picocli/blob/master/picocli-
 ### <a name="3.9.0-ANSI-heuristics"></a> Improved ANSI Heuristics
 This release has improved heuristics to decide whether ANSI escape codes should be emitted or not.
 
-Added support for the following environment variables to control enabling ANSI:
+Support was added for the following environment variables to control enabling ANSI:
 
 * [`NO_COLOR`](https://no-color.org/)
 * [`CLICOLOR_FORCE`](https://bixense.com/clicolors/)
