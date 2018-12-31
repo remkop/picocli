@@ -1066,6 +1066,54 @@ public class SubcommandTests {
         assertTrue(grandChildCount > 0);
     }
 
+    @Test
+    public void testSetUseSimplifiedAtFiles_BeforeSubcommandsAdded() {
+        @Command
+        class TopLevel {}
+        CommandLine commandLine = new CommandLine(new TopLevel());
+        assertFalse(commandLine.isUseSimplifiedAtFiles());
+        commandLine.setUseSimplifiedAtFiles(true);
+        assertTrue(commandLine.isUseSimplifiedAtFiles());
+
+        int childCount = 0;
+        int grandChildCount = 0;
+        commandLine.addSubcommand("main", createNestedCommand());
+        for (CommandLine sub : commandLine.getSubcommands().values()) {
+            childCount++;
+            assertFalse("subcommand added afterwards is not impacted", sub.isUseSimplifiedAtFiles());
+            for (CommandLine subsub : sub.getSubcommands().values()) {
+                grandChildCount++;
+                assertFalse("subcommand added afterwards is not impacted", subsub.isUseSimplifiedAtFiles());
+            }
+        }
+        assertTrue(childCount > 0);
+        assertTrue(grandChildCount > 0);
+    }
+
+    @Test
+    public void testSetUseSimplifiedAtFiles_AfterSubcommandsAdded() {
+        @Command
+        class TopLevel {}
+        CommandLine commandLine = new CommandLine(new TopLevel());
+        commandLine.addSubcommand("main", createNestedCommand());
+        assertFalse(commandLine.isUseSimplifiedAtFiles());
+        commandLine.setUseSimplifiedAtFiles(true);
+        assertTrue(commandLine.isUseSimplifiedAtFiles());
+
+        int childCount = 0;
+        int grandChildCount = 0;
+        for (CommandLine sub : commandLine.getSubcommands().values()) {
+            childCount++;
+            assertTrue(sub.isUseSimplifiedAtFiles());
+            for (CommandLine subsub : sub.getSubcommands().values()) {
+                grandChildCount++;
+                assertTrue(subsub.isUseSimplifiedAtFiles());
+            }
+        }
+        assertTrue(childCount > 0);
+        assertTrue(grandChildCount > 0);
+    }
+
     @Command(mixinStandardHelpOptions = true) class Top563 {}
     @Command(mixinStandardHelpOptions = true) class Sub563 {}
 

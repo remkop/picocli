@@ -51,6 +51,7 @@ import org.junit.contrib.java.lang.system.RestoreSystemProperties;
 import org.junit.contrib.java.lang.system.SystemErrRule;
 import org.junit.rules.TestRule;
 import picocli.CommandLine.Model.CommandSpec;
+import picocli.CommandLine.Model.ParserSpec;
 
 import static java.lang.String.format;
 import static org.hamcrest.CoreMatchers.containsString;
@@ -840,7 +841,7 @@ public class CommandLineTest {
                         "[picocli DEBUG] Creating CommandSpec for object of class picocli.CommandLineTest$CompactFields with factory picocli.CommandLine$DefaultFactory%n" +
                         "[picocli INFO] Picocli version: %3$s%n" +
                         "[picocli INFO] Parsing 6 command line args [-oout, --, -r, -v, p1, p2]%n" +
-                        "[picocli DEBUG] Parser configuration: posixClusteredShortOptionsAllowed=true, stopAtPositional=false, stopAtUnmatched=false, separator=null, overwrittenOptionsAllowed=false, unmatchedArgumentsAllowed=false, expandAtFiles=true, atFileCommentChar=#, endOfOptionsDelimiter=--, limitSplit=false, aritySatisfiedByAttachedOptionParam=false, toggleBooleanFlags=true, unmatchedOptionsArePositionalParams=false, collectErrors=false,caseInsensitiveEnumValuesAllowed=false, trimQuotes=false, splitQuotedStrings=false%n" +
+                        "[picocli DEBUG] Parser configuration: posixClusteredShortOptionsAllowed=true, stopAtPositional=false, stopAtUnmatched=false, separator=null, overwrittenOptionsAllowed=false, unmatchedArgumentsAllowed=false, expandAtFiles=true, atFileCommentChar=#, useSimplifiedAtFiles=false, endOfOptionsDelimiter=--, limitSplit=false, aritySatisfiedByAttachedOptionParam=false, toggleBooleanFlags=true, unmatchedOptionsArePositionalParams=false, collectErrors=false,caseInsensitiveEnumValuesAllowed=false, trimQuotes=false, splitQuotedStrings=false%n" +
                         "[picocli DEBUG] (ANSI is disabled by default: isatty=...)%n" +
                         "[picocli DEBUG] Set initial value for field boolean picocli.CommandLineTest$CompactFields.verbose of type boolean to false.%n" +
                         "[picocli DEBUG] Set initial value for field boolean picocli.CommandLineTest$CompactFields.recursive of type boolean to false.%n" +
@@ -1733,7 +1734,7 @@ public class CommandLineTest {
                         "[picocli DEBUG] Creating CommandSpec for object of class picocli.Demo$GitTag with factory picocli.CommandLine$DefaultFactory%n" +
                         "[picocli INFO] Picocli version: %3$s%n" +
                         "[picocli INFO] Parsing 8 command line args [--git-dir=/home/rpopma/picocli, commit, -m, \"Fixed typos\", --, src1.java, src2.java, src3.java]%n" +
-                        "[picocli DEBUG] Parser configuration: posixClusteredShortOptionsAllowed=true, stopAtPositional=false, stopAtUnmatched=false, separator=null, overwrittenOptionsAllowed=false, unmatchedArgumentsAllowed=false, expandAtFiles=true, atFileCommentChar=#, endOfOptionsDelimiter=--, limitSplit=false, aritySatisfiedByAttachedOptionParam=false, toggleBooleanFlags=true, unmatchedOptionsArePositionalParams=false, collectErrors=false,caseInsensitiveEnumValuesAllowed=false, trimQuotes=false, splitQuotedStrings=false%n" +
+                        "[picocli DEBUG] Parser configuration: posixClusteredShortOptionsAllowed=true, stopAtPositional=false, stopAtUnmatched=false, separator=null, overwrittenOptionsAllowed=false, unmatchedArgumentsAllowed=false, expandAtFiles=true, atFileCommentChar=#, useSimplifiedAtFiles=false, endOfOptionsDelimiter=--, limitSplit=false, aritySatisfiedByAttachedOptionParam=false, toggleBooleanFlags=true, unmatchedOptionsArePositionalParams=false, collectErrors=false,caseInsensitiveEnumValuesAllowed=false, trimQuotes=false, splitQuotedStrings=false%n" +
                         "[picocli DEBUG] (ANSI is disabled by default: isatty=...)%n" +
                         "[picocli DEBUG] Set initial value for field java.io.File picocli.Demo$Git.gitDir of type class java.io.File to null.%n" +
                         "[picocli DEBUG] Set initial value for field boolean picocli.CommandLine$AutoHelpMixin.helpRequested of type boolean to false.%n" +
@@ -2923,6 +2924,52 @@ public class CommandLineTest {
 
         @Option(names = "--unescapedBackslashArg")
         private String unescaped;
+    }
+
+    @Test
+    public void testUseSimplifiedAtFilesCanBeSetProgrammatically() {
+        ParserSpec parser = new ParserSpec();
+        assertFalse(parser.useSimplifiedAtFiles());
+
+        parser.useSimplifiedAtFiles(true);
+        assertTrue(parser.useSimplifiedAtFiles());
+    }
+
+    @Test
+    public void testUseSimplifiedAtFilesFromSystemProperty() {
+        ParserSpec parser = new ParserSpec();
+        assertFalse(parser.useSimplifiedAtFiles());
+
+        System.setProperty("picocli.useSimplifiedAtFiles", "true");
+        assertTrue(parser.useSimplifiedAtFiles());
+    }
+
+    @Test
+    public void testUseSimplifiedAtFilesFromSystemPropertyCaseInsensitive() {
+        ParserSpec parser = new ParserSpec();
+        assertFalse(parser.useSimplifiedAtFiles());
+
+        System.setProperty("picocli.useSimplifiedAtFiles", "TRUE");
+        assertTrue(parser.useSimplifiedAtFiles());
+    }
+
+    @Test
+    public void testUseSimplifiedAtFilesFromEmptySystemProperty() {
+        ParserSpec parser = new ParserSpec();
+        assertFalse(parser.useSimplifiedAtFiles());
+
+        System.setProperty("picocli.useSimplifiedAtFiles", "");
+        assertTrue(parser.useSimplifiedAtFiles());
+    }
+
+    @Test
+    public void testUseSimplifiedAtFilesIsOverriddenBySystemProperty() {
+        ParserSpec parser = new ParserSpec();
+        assertFalse(parser.useSimplifiedAtFiles());
+
+        parser.useSimplifiedAtFiles(true);
+        System.setProperty("picocli.useSimplifiedAtFiles", "false");
+        assertFalse(parser.useSimplifiedAtFiles());
     }
 
     @Test

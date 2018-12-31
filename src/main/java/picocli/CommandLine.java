@@ -2343,6 +2343,29 @@ public class CommandLine {
         }
         return this;
     }
+
+    /** Returns whether to use a simplified argument file format that is compatible with JCommander.
+     * In this format, every line (except empty lines and comment lines)
+     * is interpreted as a single argument. Arguments containing whitespace do not need to be quoted.
+     * When system property {@code "picocli.useSimplifiedAtFiles"} is defined, the system property value overrides the programmatically set value.
+     * @return whether to use a simplified argument file format. The default is {@code false}.
+     * @since 3.9 */
+    public boolean isUseSimplifiedAtFiles() { return getCommandSpec().parser().useSimplifiedAtFiles(); }
+
+    /** Sets whether to use a simplified argument file format that is compatible with JCommander.
+     * In this format, every line (except empty lines and comment lines)
+     * is interpreted as a single argument. Arguments containing whitespace do not need to be quoted.
+     * When system property {@code "picocli.useSimplifiedAtFiles"} is defined, the system property value overrides the programmatically set value.
+     * @param simplifiedAtFiles whether to use a simplified argument file format. The default is {@code false}.
+     * @return this {@code CommandLine} object, to allow method chaining
+     * @since 3.9 */
+    public CommandLine setUseSimplifiedAtFiles(boolean simplifiedAtFiles) {
+        getCommandSpec().parser().useSimplifiedAtFiles(simplifiedAtFiles);
+        for (CommandLine command : getCommandSpec().subcommands().values()) {
+            command.setUseSimplifiedAtFiles(simplifiedAtFiles);
+        }
+        return this;
+    }
     private static boolean empty(String str) { return str == null || str.trim().length() == 0; }
     private static boolean empty(Object[] array) { return array == null || array.length == 0; }
     private static String str(String[] arr, int i) { return (arr == null || arr.length <= i) ? "" : arr[i]; }
@@ -4773,6 +4796,7 @@ public class CommandLine {
             private boolean overwrittenOptionsAllowed = false;
             private boolean unmatchedArgumentsAllowed = false;
             private boolean expandAtFiles = true;
+            private boolean useSimplifiedAtFiles = false;
             private Character atFileCommentChar = '#';
             private boolean posixClusteredShortOptionsAllowed = true;
             private boolean unmatchedOptionsArePositionalParams = false;
@@ -4805,6 +4829,15 @@ public class CommandLine {
             /** @see CommandLine#getAtFileCommentChar()
              * @since 3.5 */
             public Character atFileCommentChar()               { return atFileCommentChar; }
+            /** @see CommandLine#isUseSimplifiedAtFiles()
+             * @since 3.9 */
+            public boolean useSimplifiedAtFiles()              {
+                String value = System.getProperty("picocli.useSimplifiedAtFiles");
+                if (value != null) {
+                    return "".equals(value) || Boolean.valueOf(value);
+                }
+                return useSimplifiedAtFiles;
+            }
             /** @see CommandLine#isPosixClusteredShortOptionsAllowed() */
             public boolean posixClusteredShortOptionsAllowed() { return posixClusteredShortOptionsAllowed; }
             /** @see CommandLine#isCaseInsensitiveEnumValuesAllowed()
@@ -4850,6 +4883,9 @@ public class CommandLine {
             /** @see CommandLine#setAtFileCommentChar(Character)
              * @since 3.5 */
             public ParserSpec atFileCommentChar(Character atFileCommentChar)               { this.atFileCommentChar = atFileCommentChar; return this; }
+            /** @see CommandLine#setUseSimplifiedAtFiles(boolean)
+             * @since 3.9 */
+            public ParserSpec useSimplifiedAtFiles(boolean useSimplifiedAtFiles)           { this.useSimplifiedAtFiles = useSimplifiedAtFiles; return this; }
             /** @see CommandLine#setPosixClusteredShortOptionsAllowed(boolean) */
             public ParserSpec posixClusteredShortOptionsAllowed(boolean posixClusteredShortOptionsAllowed) { this.posixClusteredShortOptionsAllowed = posixClusteredShortOptionsAllowed; return this; }
             /** @see CommandLine#setCaseInsensitiveEnumValuesAllowed(boolean)
@@ -4886,12 +4922,12 @@ public class CommandLine {
             public String toString() {
                 return String.format("posixClusteredShortOptionsAllowed=%s, stopAtPositional=%s, stopAtUnmatched=%s, " +
                                 "separator=%s, overwrittenOptionsAllowed=%s, unmatchedArgumentsAllowed=%s, expandAtFiles=%s, " +
-                                "atFileCommentChar=%s, endOfOptionsDelimiter=%s, limitSplit=%s, aritySatisfiedByAttachedOptionParam=%s, " +
+                                "atFileCommentChar=%s, useSimplifiedAtFiles=%s, endOfOptionsDelimiter=%s, limitSplit=%s, aritySatisfiedByAttachedOptionParam=%s, " +
                                 "toggleBooleanFlags=%s, unmatchedOptionsArePositionalParams=%s, collectErrors=%s," +
                                 "caseInsensitiveEnumValuesAllowed=%s, trimQuotes=%s, splitQuotedStrings=%s",
                         posixClusteredShortOptionsAllowed, stopAtPositional, stopAtUnmatched,
                         separator, overwrittenOptionsAllowed, unmatchedArgumentsAllowed, expandAtFiles,
-                        atFileCommentChar, endOfOptionsDelimiter, limitSplit, aritySatisfiedByAttachedOptionParam,
+                        atFileCommentChar, useSimplifiedAtFiles, endOfOptionsDelimiter, limitSplit, aritySatisfiedByAttachedOptionParam,
                         toggleBooleanFlags, unmatchedOptionsArePositionalParams, collectErrors,
                         caseInsensitiveEnumValuesAllowed, trimQuotes, splitQuotedStrings);
             }
@@ -7054,10 +7090,10 @@ public class CommandLine {
             try {
                 visited.add(file.getAbsolutePath());
                 reader = new LineNumberReader(new FileReader(file));
-                if (useSimplifiedAtFiles()) {
+                if (commandSpec.parser().useSimplifiedAtFiles()) {
                     String token;
                     while ((token = reader.readLine()) != null) {
-                        if (token.length() > 0 && !token.trim().startsWith("#")) {
+                        if (token.length() > 0 && !token.trim().startsWith(String.valueOf(commandSpec.parser().atFileCommentChar()))) {
                             addOrExpand(token, result, visited);
                         }
                     }
@@ -7083,14 +7119,6 @@ public class CommandLine {
             if (tracer.isInfo()) {tracer.info("Expanded file @%s to arguments %s%n", fileName, result);}
             arguments.addAll(result);
         }
-
-        private boolean useSimplifiedAtFiles() {
-            //return commandSpec.parser.useSimplifiedAtFiles();
-            String value = System.getProperty("picocli.useSimplifiedAtFiles");
-            if ("".equals(value)) { value = "true"; }
-            return Boolean.valueOf(value);
-        }
-
         private void clear() {
             position = 0;
             endOfOptions = false;
