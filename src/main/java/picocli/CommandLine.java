@@ -7057,7 +7057,7 @@ public class CommandLine {
                 if (useSimplifiedAtFiles()) {
                     String token;
                     while ((token = reader.readLine()) != null) {
-                        if (!token.startsWith("#")) {
+                        if (token.length() > 0 && !token.trim().startsWith("#")) {
                             addOrExpand(token, result, visited);
                         }
                     }

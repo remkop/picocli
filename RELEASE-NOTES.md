@@ -17,6 +17,8 @@ This release contains API enhancements to allow customization of the usage help 
 
 This release also has improved heuristics to decide whether ANSI escape codes should be emitted or not.
 
+The simplified @-file (argument file) format is now fully compatible with JCommander: empty lines are ignored and comments may start with leading whitespace.
+
 Finally, this release contains a bugfix: `@Command` method options and positional parameter values are now cleared correctly when reusing a `CommandLine` instance.
 
 This is the forty-fifth public release.
@@ -137,6 +139,7 @@ Support was added for the following environment variables to control enabling AN
 - [#576] Bugfix: fixed StringIndexOutOfBoundsException in shell-jline2 completion when cursor was before `=` when option parameter was attached to option name.
 - [#579] Improve AutoComplete error message when not overwriting existing files.
 - [#581] Added support for ConEmu, ANSICON and other environment variables to improve the ANSI heuristics. Documented the heuristics in the user manual.
+- [#573] Make simplified @files JCommander-compatible: ignore empty lines and comments starting with whitespace. Thanks to [Lukáš Petrovický](https://github.com/triceo) for the pull request with test to reproduce the issue.
 
 ## <a name="3.9.0-deprecated"></a> Deprecations
 No features were deprecated in this release.

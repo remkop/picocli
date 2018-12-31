@@ -378,9 +378,9 @@ with an additional '@' symbol, e.g. '@@somearg' will become '@somearg' and not b
 This feature is similar to the 'Command Line Argument File' processing supported by gcc, javadoc and javac.
 The documentation for these tools shows further examples.
 
-From picocli 3.8.1, a simpler argument file format is also supported where every line (except comment lines)
+From picocli 3.8.1, a simpler argument file format is also supported where every line (except empty lines and comment lines)
 is interpreted as a single argument. Arguments containing whitespace do not need to be quoted,
-but it is not possible to have arguments with embedded newlines.
+but it is not possible to have arguments with embedded newlines or to have empty string arguments without quotes.
 
 Set system property `picocli.useSimplifiedAtFiles` without a value or with value `"true"`
 (case-insensitive) to enable this simpler argument file format.
