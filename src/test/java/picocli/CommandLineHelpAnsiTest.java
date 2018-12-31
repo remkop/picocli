@@ -922,6 +922,36 @@ public class CommandLineHelpAnsiTest {
     }
 
     @Test
+    public void testAnsiAutoIfSystemPropertyPicocliAnsiCleared() {
+        environmentVariables.set("CLICOLOR_FORCE", "1");
+
+        System.clearProperty("picocli.ansi");
+        assertTrue(Ansi.AUTO.enabled());
+    }
+
+    @Test
+    public void testAnsiAutoIfSystemPropertyPicocliAnsiIsAuto() {
+        environmentVariables.set("CLICOLOR_FORCE", "1");
+
+        System.setProperty("picocli.ansi", "auto");
+        assertTrue(Ansi.AUTO.enabled());
+
+        System.setProperty("picocli.ansi", "Auto");
+        assertTrue(Ansi.AUTO.enabled());
+
+        System.setProperty("picocli.ansi", "AUTO");
+        assertTrue(Ansi.AUTO.enabled());
+    }
+
+    @Test
+    public void testAnsiOffIfSystemPropertyPicocliAnsiIsNotAuto() {
+        System.setProperty("picocli.ansi", "auto1");
+
+        environmentVariables.set("CLICOLOR_FORCE", "1");
+        assertFalse(Ansi.AUTO.enabled());
+    }
+
+    @Test
     public void testAnsiAutoForceDisabledOverridesForceEnabled() {
         environmentVariables.clear(ANSI_ENVIRONMENT_VARIABLES);
         environmentVariables.set("NO_COLOR", "");
