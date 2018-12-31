@@ -2557,6 +2557,9 @@ public class CommandLineHelpTest {
 
         String result2 = (String) m.invoke(null, Help.Ansi.OFF, 80, "boom", new Object[0]);
         assertEquals(String.format("boom"), result2);
+
+        String result3 = (String) m.invoke(null, Help.Ansi.OFF, 80, null, new Object[0]);
+        assertEquals("", result3);
     }
 
     @Test
