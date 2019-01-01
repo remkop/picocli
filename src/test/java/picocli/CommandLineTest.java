@@ -4013,7 +4013,38 @@ public class CommandLineTest {
         class App {
             @Parameters(arity = "*") List<String> all;
         }
-        App app = CommandLine.populateCommand(new App(), "--", "a", "b");
-        assertEquals(Arrays.asList("a", "b"), app.all);
+        App app1 = CommandLine.populateCommand(new App(), "--", "a", "b");
+        assertEquals(Arrays.asList("a", "b"), app1.all);
+    }
+
+    @Test
+    public void testVarargCanConsumeNextValue2() {
+        @Command(subcommands = HelpCommand.class)
+        class App {
+            @Option(names = "-x", arity = "*") List<String> x;
+            @Option(names = "-y", arity = "*") List<Integer> y;
+            @Unmatched List<String> unmatched;
+        }
+
+        App app = CommandLine.populateCommand(new App(), "--", "-x", "3", "a", "b");
+        assertEquals(Arrays.asList("-x", "3", "a", "b"), app.unmatched);
+
+        app = CommandLine.populateCommand(new App(), "-x", "3", "a", "b");
+        assertEquals(Arrays.asList("3", "a", "b"), app.x);
+
+        app = CommandLine.populateCommand(new App(), "-y", "3", "a", "b");
+        assertNull(app.x);
+        assertEquals(Arrays.asList(3), app.y);
+        assertEquals(Arrays.asList("a", "b"), app.unmatched);
+
+        app = CommandLine.populateCommand(new App(), "-y", "3", "-x", "a", "b");
+        assertEquals(Arrays.asList("a", "b"), app.x);
+        assertEquals(Arrays.asList(3), app.y);
+        assertNull(app.unmatched);
+
+        app = CommandLine.populateCommand(new App(), "-y", "3", "help", "a", "b");
+        assertNull(app.x);
+        assertEquals(Arrays.asList(3), app.y);
+        assertNull(app.unmatched);
     }
 }
