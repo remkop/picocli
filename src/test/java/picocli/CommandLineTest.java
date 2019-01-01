@@ -4007,4 +4007,13 @@ public class CommandLineTest {
         new CommandLine(new App()).parseArgs("-x");
         assertTrue(systemErrRule.getLog().contains("App.x has 'help' annotation: not validating required fields"));
     }
+
+    @Test
+    public void testVarargCanConsumeNextValue() {
+        class App {
+            @Parameters(arity = "*") List<String> all;
+        }
+        App app = CommandLine.populateCommand(new App(), "--", "a", "b");
+        assertEquals(Arrays.asList("a", "b"), app.all);
+    }
 }
