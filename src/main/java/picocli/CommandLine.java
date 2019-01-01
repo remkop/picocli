@@ -8041,7 +8041,7 @@ public class CommandLine {
         char[] readPassword(String prompt) {
             try {
                 Object console = System.class.getDeclaredMethod("console").invoke(null);
-                Method method = console.getClass().getDeclaredMethod("readPassword", String.class, Object[].class);
+                Method method = Class.forName("java.io.Console").getDeclaredMethod("readPassword", String.class, Object[].class);
                 return (char[]) method.invoke(console, prompt, new Object[0]);
             } catch (Exception e) {
                 System.out.print(prompt);
