@@ -19,7 +19,7 @@ This release also has improved heuristics to decide whether ANSI escape codes sh
 
 The simplified @-file (argument file) format is now fully compatible with JCommander: empty lines are ignored and comments may start with leading whitespace.
 
-Finally, this release contains a bugfix: `@Command` method options and positional parameter values are now cleared correctly when reusing a `CommandLine` instance.
+Finally, this release contains some bugfix: `@Command` method options and positional parameter values are now cleared correctly when reusing a `CommandLine` instance, and the default exception handler now correctly respects the exit code for all exceptions.
 
 This is the forty-fifth public release.
 Picocli follows [semantic versioning](http://semver.org/).
@@ -141,7 +141,7 @@ Support was added for the following environment variables to control enabling AN
 - [#581] Added support for ConEmu, ANSICON and other environment variables to improve the ANSI heuristics. Documented the heuristics in the user manual.
 - [#573] Make simplified @files JCommander-compatible: ignore empty lines and comments starting with whitespace. Thanks to [Lukáš Petrovický](https://github.com/triceo) for the pull request with test to reproduce the issue.
 - [#578] Add API for simplified @files argument files.
-- [#583] Bugfix: Default exception handler should exit on exception if exitCode was set.
+- [#583] Bugfix: Default exception handler should exit on exception if exitCode was set, regardless of exception type.
 
 ## <a name="3.9.0-deprecated"></a> Deprecations
 No features were deprecated in this release.
