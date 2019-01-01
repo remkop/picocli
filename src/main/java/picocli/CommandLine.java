@@ -8287,7 +8287,7 @@ public class CommandLine {
                 } catch (InvocationTargetException e) {
                     throw new TypeConversionException(String.format("cannot convert '%s' to %s (%s)", s, method.getReturnType(), e.getTargetException()));
                 } catch (Exception e) {
-                    throw new TypeConversionException(String.format("cannot convert '%s' to %s (%s)", s, method.getReturnType(), e));
+                    throw new TypeConversionException(String.format("Internal error converting '%s' to %s (%s)", s, method.getReturnType(), e));
                 }
             }
         }

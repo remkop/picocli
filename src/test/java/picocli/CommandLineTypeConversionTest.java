@@ -16,7 +16,10 @@
 package picocli;
 
 import java.io.File;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.net.InetAddress;
@@ -42,6 +45,7 @@ import org.junit.Test;
 import picocli.CommandLine.ITypeConverter;
 import picocli.CommandLine.Option;
 import picocli.CommandLine.Parameters;
+import picocli.CommandLine.TypeConversionException;
 
 import static java.util.concurrent.TimeUnit.*;
 import static org.junit.Assert.*;
@@ -879,5 +883,23 @@ public class CommandLineTypeConversionTest {
         assertTrue("java.sql.Timestamp", registry.containsKey(java.sql.Timestamp.class));
         assertFalse("java.sql.Connection", registry.containsKey(java.sql.Connection.class));
         assertTrue("java.sql.Driver", registry.containsKey(java.sql.Driver.class));
+    }
+
+    @Test
+    public void testReflectionConverterExceptionHandling() throws Exception {
+        Class<?> c = Class.forName("picocli.CommandLine$BuiltIn$ReflectionConverter");
+        Constructor<?> constructor = c.getDeclaredConstructor(Method.class, Class[].class);
+
+        Method cannotInvoke = Object.class.getDeclaredMethod("toString");
+        Object reflectionConverter = constructor.newInstance(cannotInvoke, new Class[0]);
+
+        Method convert = c.getDeclaredMethod("convert", String.class);
+        try {
+            convert.invoke(reflectionConverter, "command line parameter");
+            fail("Expected exception: invoking toString() as a static method on a null object");
+        } catch (InvocationTargetException ex) {
+            TypeConversionException actual = (TypeConversionException) ex.getTargetException();
+            assertTrue(actual.getMessage().startsWith("Internal error converting 'command line parameter' to class java.lang.String"));
+        }
     }
 }
