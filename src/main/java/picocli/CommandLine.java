@@ -994,9 +994,23 @@ public class CommandLine {
          * or otherwise, if an exit code {@linkplain #andExit(int) was set}, calls {@code System.exit} with the configured
          * exit code to terminate the currently running Java virtual machine. */
         protected R returnResultOrExit(R result) {
-            if (hasExitCode()) { System.exit(exitCode()); }
+            if (hasExitCode()) { exit(exitCode()); }
             return result;
         }
+
+        /** Convenience method for subclasses that throws the specified ExecutionException if no exit code was set,
+         * or otherwise, if an exit code {@linkplain #andExit(int) was set}, prints the stacktrace of the specified exception
+         * to the diagnostic error stream and calls {@code System.exit} with the configured
+         * exit code to terminate the currently running Java virtual machine. */
+        protected R throwOrExit(ExecutionException ex) {
+            if (hasExitCode()) {
+                ex.printStackTrace(this.err());
+                exit(exitCode());
+            }
+            throw ex;
+        }
+        /** Calls {@code System.exit(int)} with the specified exit code. */
+        protected void exit(int exitCode) { System.exit(exitCode); }
 
         /** Returns {@code this} to allow method chaining when calling the setters for a fluent API. */
         protected abstract T self();
@@ -1052,7 +1066,8 @@ public class CommandLine {
          * @return nothing: this method always rethrows the specified exception
          * @throws ExecutionException always rethrows the specified exception
          * @since 3.0 */
-        public R handleExecutionException(ExecutionException ex, ParseResult parseResult) { throw ex; }
+        public R handleExecutionException(ExecutionException ex, ParseResult parseResult) { return throwOrExit(ex); }
+
         @Override protected DefaultExceptionHandler<R> self() { return this; }
     }
     /** Convenience method that returns {@code new DefaultExceptionHandler<List<Object>>()}. */

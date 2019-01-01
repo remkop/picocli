@@ -17,10 +17,7 @@ package picocli;
 
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.contrib.java.lang.system.ExpectedSystemExit;
-import org.junit.contrib.java.lang.system.ProvideSystemProperty;
-import org.junit.contrib.java.lang.system.SystemErrRule;
-import org.junit.contrib.java.lang.system.SystemOutRule;
+import org.junit.contrib.java.lang.system.*;
 import picocli.CommandLine.Model.CommandSpec;
 
 import java.io.ByteArrayOutputStream;
@@ -342,13 +339,21 @@ public class CommandLineParseWithHandlersTest {
         return new DefaultExceptionHandler<List<Object>>();
     }
 
-    @Test(expected = RuntimeException.class)
-    public void testNoSystemExitForOtherExceptions() {
+    @Test
+    public void testSystemExitForOtherExceptions() {
         @Command class App implements Runnable {
             public void run() {
                 throw new RuntimeException("blah");
             }
         }
+        exit.expectSystemExitWithStatus(25);
+        exit.checkAssertionAfterwards(new Assertion() {
+            public void checkAssertion() {
+                String actual = systemErrRule.getLog();
+                assertTrue(actual.startsWith("picocli.CommandLine$ExecutionException: Error while running command (picocli.CommandLineParseWithHandlersTest"));
+                assertTrue(actual.contains("java.lang.RuntimeException: blah"));
+            }
+        });
         new CommandLine(new App()).parseWithHandlers(new RunFirst().andExit(23),
                 defaultExceptionHandler().andExit(25));
     }

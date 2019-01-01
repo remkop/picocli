@@ -141,6 +141,7 @@ Support was added for the following environment variables to control enabling AN
 - [#581] Added support for ConEmu, ANSICON and other environment variables to improve the ANSI heuristics. Documented the heuristics in the user manual.
 - [#573] Make simplified @files JCommander-compatible: ignore empty lines and comments starting with whitespace. Thanks to [Lukáš Petrovický](https://github.com/triceo) for the pull request with test to reproduce the issue.
 - [#578] Add API for simplified @files argument files.
+- [#583] Bugfix: Default exception handler should exit on exception if exitCode was set.
 
 ## <a name="3.9.0-deprecated"></a> Deprecations
 No features were deprecated in this release.
