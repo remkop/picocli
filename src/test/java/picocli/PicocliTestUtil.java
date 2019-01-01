@@ -1,5 +1,6 @@
 package picocli;
 
+import java.lang.reflect.Field;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -44,4 +45,9 @@ public class PicocliTestUtil {
         return result;
     }
 
+    public static Object interpreter(CommandLine cmd) throws Exception {
+        Field field = CommandLine.class.getDeclaredField("interpreter");
+        field.setAccessible(true);
+        return field.get(cmd);
+    }
 }

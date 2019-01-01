@@ -3951,4 +3951,24 @@ public class CommandLineTest {
         assertNull(app.xabc);
         assertEquals("abc=xyz", app.x);
     }
+
+    @Test
+    public void testInterpreterUnquote() throws Exception {
+        Class c = Class.forName("picocli.CommandLine$Interpreter");
+        Method unquote = c.getDeclaredMethod("unquote", String.class);
+        unquote.setAccessible(true);
+
+        CommandSpec spec = CommandSpec.create();
+        spec.parser().trimQuotes(true);
+        CommandLine cmd = new CommandLine(spec);
+        Object interpreter = PicocliTestUtil.interpreter(cmd);
+
+        assertNull(unquote.invoke(interpreter, new Object[]{null}));
+        assertEquals("abc", unquote.invoke(interpreter, "\"abc\""));
+        assertEquals("", unquote.invoke(interpreter, "\"\""));
+        assertEquals("only balanced quotes 1", "\"abc", unquote.invoke(interpreter, "\"abc"));
+        assertEquals("only balanced quotes 2", "abc\"", unquote.invoke(interpreter, "abc\""));
+        assertEquals("only balanced quotes 3", "\"", unquote.invoke(interpreter, "\""));
+        assertEquals("no quotes", "X", unquote.invoke(interpreter, "X"));
+    }
 }
