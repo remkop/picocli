@@ -2563,6 +2563,14 @@ public class CommandLineHelpTest {
     }
 
     @Test
+    public void testHelpCreateDetailedSynopsisOptionsText() {
+        Help help = new Help(CommandSpec.create().addOption(OptionSpec.builder("xx").build()),
+                new ColorScheme(Help.Ansi.OFF));
+        Text text = help.createDetailedSynopsisOptionsText(null, true);
+        assertEquals(" [xx]", text.toString());
+    }
+
+    @Test
     public void testAddAllSubcommands() {
         Help help = new Help(CommandSpec.create(), new Help.ColorScheme(Help.Ansi.OFF));
         help.addAllSubcommands(null);
@@ -3204,6 +3212,31 @@ public class CommandLineHelpTest {
         assertEquals(expected, sw.toString());
     }
 
+    @Test
+    public void testHelpSubcommandRunDoesNothingIfParentNotSet() {
+        HelpCommand cmd = new HelpCommand();
+        cmd.run();
+        assertEquals("", this.systemOutRule.getLog());
+    }
+
+    @Test
+    public void testHelpSubcommandRunPrintsParentUsageIfParentSet() {
+        HelpCommand cmd = new HelpCommand();
+        CommandLine help = new CommandLine(cmd);
+        CommandSpec spec = CommandSpec.create().name("parent");
+        spec.usageMessage().description("the parent command");
+        spec.addSubcommand("parent", help);
+        new CommandLine(spec); // make sure parent spec has a CommandLine
+
+        cmd.init(help, Help.Ansi.OFF, System.out, System.err);
+        cmd.run();
+        String expected = String.format("" +
+                "Usage: parent [COMMAND]%n" +
+                "the parent command%n" +
+                "Commands:%n" +
+                "  parent  Displays help information about the specified command%n");
+        assertEquals(expected, this.systemOutRule.getLog());
+    }
 
     @Test
     public void testUsageHelpForNestedSubcommands() {
