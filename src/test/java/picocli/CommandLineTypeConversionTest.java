@@ -429,6 +429,7 @@ public class CommandLineTypeConversionTest {
         Field fqcn = c.getDeclaredField("FQCN");
         fqcn.setAccessible(true);
 
+        Object original = fqcn.get(null);
         fqcn.set(null, "a.b.c"); // change FQCN to an unknown class
         assertEquals("a.b.c", fqcn.get(null));
 
@@ -438,6 +439,8 @@ public class CommandLineTypeConversionTest {
         } catch (InvocationTargetException outer) {
             TypeConversionException ex = (TypeConversionException) outer.getTargetException();
             assertTrue(ex.getMessage().startsWith("Unable to create new java.sql.Time with long value " + now));
+        } finally {
+            fqcn.set(null, original); // change FQCN back to java.sql.Time for other tests
         }
     }
 
