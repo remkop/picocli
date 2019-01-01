@@ -3971,4 +3971,30 @@ public class CommandLineTest {
         assertEquals("only balanced quotes 3", "\"", unquote.invoke(interpreter, "\""));
         assertEquals("no quotes", "X", unquote.invoke(interpreter, "X"));
     }
+
+    @Test
+    public void testAssertNoMissingParametersOption() {
+        class App {
+            @Option(names = "-x") int x;
+        }
+        CommandLine cmd = new CommandLine(new App());
+        cmd.getCommandSpec().parser().collectErrors(true);
+        ParseResult parseResult = cmd.parseArgs("-x");
+        List<Exception> errors = parseResult.errors();
+        assertEquals(1, errors.size());
+        assertEquals("Missing required parameter for option '-x' (<x>)", errors.get(0).getMessage());
+    }
+
+    @Test
+    public void testAssertNoMissingParametersPositional() {
+        class App {
+            @Parameters(arity = "1") int x;
+        }
+        CommandLine cmd = new CommandLine(new App());
+        cmd.getCommandSpec().parser().collectErrors(true);
+        ParseResult parseResult = cmd.parseArgs();
+        List<Exception> errors = parseResult.errors();
+        assertEquals(1, errors.size());
+        assertEquals("Missing required parameter: <x>", errors.get(0).getMessage());
+    }
 }
