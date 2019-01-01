@@ -145,6 +145,7 @@ Support was added for the following environment variables to control enabling AN
 - [#570] Bugfix: Command method options and positional parameter Object values are now cleared correctly when reusing CommandLine. Thanks to [Christian Helmer](https://github.com/SysLord) for the pull request.
 - [#576] Bugfix: fixed StringIndexOutOfBoundsException in shell-jline2 completion when cursor was before `=` when option parameter was attached to option name.
 - [#583] Bugfix: Default exception handler now exits on exception if exitCode was set, regardless of exception type.
+- [#584] Add documentation for generating autocompletion script during a Maven build. Thanks to [Bob Tiernay](https://github.com/bobtiernay-okta).
 
 ## <a name="3.9.0-deprecated"></a> Deprecations
 No features were deprecated in this release.
