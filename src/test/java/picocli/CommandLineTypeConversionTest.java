@@ -443,6 +443,25 @@ public class CommandLineTypeConversionTest {
             fqcn.set(null, original); // change FQCN back to java.sql.Time for other tests
         }
     }
+    @Test
+    public void testISO8601TimeConverterRegisterIfAvailableExceptionHandling() throws Exception {
+        Class<?> c = Class.forName("picocli.CommandLine$BuiltIn$ISO8601TimeConverter");
+        Object converter = c.newInstance();
+
+        Method registerIfAvailable = c.getDeclaredMethod("registerIfAvailable", Map.class, CommandLine.Tracer.class);
+
+        System.setProperty("picocli.trace", "DEBUG");
+        CommandLine.Tracer tracer = new CommandLine.Tracer();
+
+        registerIfAvailable.invoke(converter, null, tracer);
+
+        String expected = String.format("[picocli DEBUG] Could not register converter for java.sql.Time: java.lang.NullPointerException%n");
+        assertEquals(expected, systemErrRule.getLog());
+
+        systemErrRule.clearLog();
+        registerIfAvailable.invoke(null, null, tracer);
+        assertEquals("logged only once", "", systemErrRule.getLog());
+    }
 
     @Test
     public void testTimeFormatHHmmssColonInvalidError() throws ParseException {
