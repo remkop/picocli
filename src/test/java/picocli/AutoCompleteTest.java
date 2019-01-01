@@ -19,9 +19,7 @@ import org.hamcrest.CoreMatchers;
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.contrib.java.lang.system.ProvideSystemProperty;
-import org.junit.contrib.java.lang.system.SystemErrRule;
-import org.junit.contrib.java.lang.system.SystemOutRule;
+import org.junit.contrib.java.lang.system.*;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Model.CommandSpec;
 import picocli.CommandLine.Model.OptionSpec;
@@ -63,6 +61,9 @@ public class AutoCompleteTest {
 
     @Rule
     public final SystemOutRule systemOutRule = new SystemOutRule().enableLog().muteForSuccessfulTests();
+
+    @Rule
+    public final ExpectedSystemExit exit = ExpectedSystemExit.none();
 
     public static class BasicExample implements Runnable {
         @Option(names = {"-u", "--timeUnit"}) private TimeUnit timeUnit;
@@ -201,44 +202,57 @@ public class AutoCompleteTest {
             "  -h, --help                 Display this help message and quit.%n");
 
     @Test
-    public void testAutoCompleteAppHelp() throws Exception {
+    public void testAutoCompleteAppHelp() {
         String[][] argsList = new String[][] {
                 {"-h"},
                 {"--help"},
         };
-        for (String[] args : argsList) {
+        for (final String[] args : argsList) {
+            exit.expectSystemExitWithStatus(AutoComplete.EXIT_CODE_SUCCESS);
+            exit.checkAssertionAfterwards(new Assertion() {
+                public void checkAssertion() {
+                    assertEquals(args[0], AUTO_COMPLETE_APP_USAGE, systemOutRule.getLog());
+                    systemOutRule.clearLog();
+                }
+            });
             AutoComplete.main(args);
-            assertEquals(AUTO_COMPLETE_APP_USAGE, systemErrRule.getLog());
-            systemErrRule.clearLog();
         }
     }
 
     @Test
-    public void testAutoCompleteRequiresCommandLineFQCN() throws Exception {
+    public void testAutoCompleteRequiresCommandLineFQCN() {
+        exit.expectSystemExitWithStatus(AutoComplete.EXIT_CODE_INVALID_INPUT);
+        exit.checkAssertionAfterwards(new Assertion() {
+            public void checkAssertion() {
+                String expected = String.format("Missing required parameter: <commandLineFQCN>%n") + AUTO_COMPLETE_APP_USAGE;
+                assertEquals(expected, systemErrRule.getLog());
+            }
+        });
         AutoComplete.main();
-
-        String expected = String.format("Missing required parameter: <commandLineFQCN>%n") + AUTO_COMPLETE_APP_USAGE;
-        assertEquals(expected, systemErrRule.getLog());
     }
 
     @Test
-    public void testAutoCompleteAppCannotInstantiate() throws Exception {
+    public void testAutoCompleteAppCannotInstantiate() {
         @Command(name = "test")
         class TestApp {
             public TestApp(String noDefaultConstructor) { throw new RuntimeException();}
         }
 
+        exit.expectSystemExitWithStatus(AutoComplete.EXIT_CODE_EXECUTION_ERROR);
+        exit.checkAssertionAfterwards(new Assertion() {
+            public void checkAssertion() {
+                String actual = systemErrRule.getLog();
+                assertTrue(actual.startsWith("java.lang.NoSuchMethodException: picocli.AutoCompleteTest$1TestApp.<init>()"));
+                assertTrue(actual.contains(AUTO_COMPLETE_APP_USAGE));
+            }
+        });
         AutoComplete.main(TestApp.class.getName());
-
-        String actual = systemErrRule.getLog();
-        assertTrue(actual.startsWith("java.lang.NoSuchMethodException: picocli.AutoCompleteTest$1TestApp.<init>()"));
-        assertTrue(actual.endsWith(AUTO_COMPLETE_APP_USAGE));
     }
 
     @Test
     public void testAutoCompleteAppCompletionScriptFileWillNotOverwrite() throws Exception {
         File dir = new File(System.getProperty("java.io.tmpdir"));
-        File completionScript = new File(dir, "App_completion");
+        final File completionScript = new File(dir, "App_completion");
         if (completionScript.exists()) {assertTrue(completionScript.delete());}
         completionScript.deleteOnExit();
 
@@ -246,18 +260,22 @@ public class AutoCompleteTest {
         FileOutputStream fous = new FileOutputStream(completionScript, false);
         fous.close();
 
+        exit.expectSystemExitWithStatus(AutoComplete.EXIT_CODE_COMPLETION_SCRIPT_EXISTS);
+        exit.checkAssertionAfterwards(new Assertion() {
+            public void checkAssertion() {
+                String expected = String.format("" +
+                        "ERROR: picocli.AutoComplete: %s exists. Specify --force to overwrite.%n" +
+                        "%s", completionScript.getAbsolutePath(), AUTO_COMPLETE_APP_USAGE);
+                assertTrue(systemErrRule.getLog().startsWith(expected));
+            }
+        });
         AutoComplete.main(String.format("-o=%s", completionScript.getAbsolutePath()), "picocli.AutoComplete$App");
-
-        String expected = String.format("" +
-                "ERROR: picocli.AutoComplete: %s exists. Specify --force to overwrite.%n" +
-                "%s", completionScript.getAbsolutePath(), AUTO_COMPLETE_APP_USAGE);
-        assertEquals(expected, systemErrRule.getLog());
     }
 
     @Test
     public void testAutoCompleteAppCommandScriptFileWillNotOverwrite() throws Exception {
         File dir = new File(System.getProperty("java.io.tmpdir"));
-        File commandScript = new File(dir, "picocli.AutoComplete");
+        final File commandScript = new File(dir, "picocli.AutoComplete");
         if (commandScript.exists()) {assertTrue(commandScript.delete());}
         commandScript.deleteOnExit();
 
@@ -266,18 +284,23 @@ public class AutoCompleteTest {
         fous.close();
 
         File completionScript = new File(dir, commandScript.getName() + "_completion");
-        AutoComplete.main("--writeCommandScript", String.format("-o=%s", completionScript.getAbsolutePath()), "picocli.AutoComplete$App");
 
-        String expected = String.format("" +
-                "ERROR: picocli.AutoComplete: %s exists. Specify --force to overwrite.%n" +
-                "%s", commandScript.getAbsolutePath(), AUTO_COMPLETE_APP_USAGE);
-        assertEquals(expected, systemErrRule.getLog());
+        exit.expectSystemExitWithStatus(AutoComplete.EXIT_CODE_COMMAND_SCRIPT_EXISTS);
+        exit.checkAssertionAfterwards(new Assertion() {
+            public void checkAssertion() {
+                String expected = String.format("" +
+                        "ERROR: picocli.AutoComplete: %s exists. Specify --force to overwrite.%n" +
+                        "%s", commandScript.getAbsolutePath(), AUTO_COMPLETE_APP_USAGE);
+                assertTrue(systemErrRule.getLog().startsWith(expected));
+            }
+        });
+        AutoComplete.main("--writeCommandScript", String.format("-o=%s", completionScript.getAbsolutePath()), "picocli.AutoComplete$App");
     }
 
     @Test
     public void testAutoCompleteAppCommandScriptFileWillOverwriteIfRequested() throws Exception {
         File dir = new File(System.getProperty("java.io.tmpdir"));
-        File commandScript = new File(dir, "picocli.AutoComplete");
+        final File commandScript = new File(dir, "picocli.AutoComplete");
         if (commandScript.exists()) {assertTrue(commandScript.delete());}
         commandScript.deleteOnExit();
 
@@ -287,17 +310,22 @@ public class AutoCompleteTest {
         assertEquals(0, commandScript.length());
 
         File completionScript = new File(dir, commandScript.getName() + "_completion");
-        AutoComplete.main("--writeCommandScript", "--force", String.format("-o=%s", completionScript.getAbsolutePath()), "picocli.AutoComplete$App");
 
-        assertEquals("", systemErrRule.getLog());
-        assertNotEquals(0, commandScript.length());
-        assertTrue(commandScript.delete());
+        exit.expectSystemExitWithStatus(AutoComplete.EXIT_CODE_SUCCESS);
+        exit.checkAssertionAfterwards(new Assertion() {
+            public void checkAssertion() {
+                assertEquals("", systemErrRule.getLog());
+                assertNotEquals(0, commandScript.length());
+                assertTrue(commandScript.delete());
+            }
+        });
+        AutoComplete.main("--writeCommandScript", "--force", String.format("-o=%s", completionScript.getAbsolutePath()), "picocli.AutoComplete$App");
     }
 
     @Test
     public void testAutoCompleteAppBothScriptFilesForceOverwrite() throws Exception {
         File dir = new File(System.getProperty("java.io.tmpdir"));
-        File commandScript = new File(dir, "picocli.AutoComplete");
+        final File commandScript = new File(dir, "picocli.AutoComplete");
         if (commandScript.exists()) {assertTrue(commandScript.delete());}
         commandScript.deleteOnExit();
 
@@ -305,7 +333,7 @@ public class AutoCompleteTest {
         FileOutputStream fous1 = new FileOutputStream(commandScript, false);
         fous1.close();
 
-        File completionScript = new File(dir, commandScript.getName() + "_completion");
+        final File completionScript = new File(dir, commandScript.getName() + "_completion");
         if (completionScript.exists()) {assertTrue(completionScript.delete());}
         completionScript.deleteOnExit();
 
@@ -313,37 +341,45 @@ public class AutoCompleteTest {
         FileOutputStream fous2 = new FileOutputStream(completionScript, false);
         fous2.close();
 
+        exit.expectSystemExitWithStatus(AutoComplete.EXIT_CODE_SUCCESS);
+        exit.checkAssertionAfterwards(new Assertion() {
+            public void checkAssertion() throws Exception {
+                byte[] command = readBytes(commandScript);
+                assertEquals(("" +
+                        "#!/usr/bin/env bash\n" +
+                        "\n" +
+                        "LIBS=path/to/libs\n" +
+                        "CP=\"${LIBS}/myApp.jar\"\n" +
+                        "java -cp \"${CP}\" 'picocli.AutoComplete$App' $@"), new String(command, "UTF8"));
+
+                byte[] completion = readBytes(completionScript);
+
+                String expected = expectedCompletionScriptForAutoCompleteApp();
+                assertEquals(expected, new String(completion, "UTF8"));
+            }
+        });
         AutoComplete.main("--force", "--writeCommandScript", String.format("-o=%s", completionScript.getAbsolutePath()), "picocli.AutoComplete$App");
-
-        byte[] command = readBytes(commandScript);
-        assertEquals(("" +
-                "#!/usr/bin/env bash\n" +
-                "\n" +
-                "LIBS=path/to/libs\n" +
-                "CP=\"${LIBS}/myApp.jar\"\n" +
-                "java -cp \"${CP}\" 'picocli.AutoComplete$App' $@"), new String(command, "UTF8"));
-
-        byte[] completion = readBytes(completionScript);
-
-        String expected = expectedCompletionScriptForAutoCompleteApp();
-        assertEquals(expected, new String(completion, "UTF8"));
     }
 
     @Test
     public void testAutoCompleteAppGeneratesScriptNameBasedOnCommandName() throws Exception {
 
-        String commandName = "bestCommandEver";
-        File completionScript = new File(commandName + "_completion");
+        final String commandName = "bestCommandEver";
+        final File completionScript = new File(commandName + "_completion");
         if (completionScript.exists()) {assertTrue(completionScript.delete());}
         completionScript.deleteOnExit();
 
+        exit.expectSystemExitWithStatus(AutoComplete.EXIT_CODE_SUCCESS);
+        exit.checkAssertionAfterwards(new Assertion() {
+            public void checkAssertion() throws Exception {
+                byte[] completion = readBytes(completionScript);
+                assertTrue(completionScript.delete());
+
+                String expected = expectedCompletionScriptForAutoCompleteApp().replaceAll("picocli\\.AutoComplete", commandName);
+                assertEquals(expected, new String(completion, "UTF8"));
+            }
+        });
         AutoComplete.main(String.format("--name=%s", commandName), "picocli.AutoComplete$App");
-
-        byte[] completion = readBytes(completionScript);
-        assertTrue(completionScript.delete());
-
-        String expected = expectedCompletionScriptForAutoCompleteApp().replaceAll("picocli\\.AutoComplete", commandName);
-        assertEquals(expected, new String(completion, "UTF8"));
     }
 
     private String expectedCompletionScriptForAutoCompleteApp() {
@@ -543,15 +579,20 @@ public class AutoCompleteTest {
     @Test
     public void test306_SupportGeneratingAutocompletionScriptForNonPublicCommandClasses() {
         File dir = new File(System.getProperty("java.io.tmpdir"));
-        File completionScript = new File(dir, "App_completion");
+        final File completionScript = new File(dir, "App_completion");
         if (completionScript.exists()) {assertTrue(completionScript.delete());}
         completionScript.deleteOnExit();
 
-        AutoComplete.main(String.format("-o=%s", completionScript.getAbsolutePath()), PrivateCommandClass.class.getName());
-        assertEquals("", systemErrRule.getLog());
-        assertEquals("", systemOutRule.getLog());
+        exit.expectSystemExitWithStatus(AutoComplete.EXIT_CODE_SUCCESS);
+        exit.checkAssertionAfterwards(new Assertion() {
+            public void checkAssertion() {
+                assertEquals("", systemErrRule.getLog());
+                assertEquals("", systemOutRule.getLog());
 
-        completionScript.delete();
+                completionScript.delete();
+            }
+        });
+        AutoComplete.main(String.format("-o=%s", completionScript.getAbsolutePath()), PrivateCommandClass.class.getName());
     }
 
     @Test

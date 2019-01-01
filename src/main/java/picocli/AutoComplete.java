@@ -42,6 +42,17 @@ import static java.lang.String.*;
  * Stand-alone tool that generates bash auto-complete scripts for picocli-based command line applications.
  */
 public class AutoComplete {
+    /** Normal exit code of this application ({@value}). */
+    public static final int EXIT_CODE_SUCCESS = 0;
+    /** Exit code of this application when the specified command line arguments are invalid ({@value}). */
+    public static final int EXIT_CODE_INVALID_INPUT = 1;
+    /** Exit code of this application when the specified command script exists ({@value}). */
+    public static final int EXIT_CODE_COMMAND_SCRIPT_EXISTS = 2;
+    /** Exit code of this application when the specified completion script exists ({@value}). */
+    public static final int EXIT_CODE_COMPLETION_SCRIPT_EXISTS = 3;
+    /** Exit code of this application when an exception was encountered during operation ({@value}). */
+    public static final int EXIT_CODE_EXECUTION_ERROR = 4;
+
     private AutoComplete() { }
 
     /**
@@ -50,7 +61,11 @@ public class AutoComplete {
      *      the fully qualified class name of the annotated {@code @Command} class to generate a completion script for.
      *      Other parameters are optional. Specify {@code -h} to see details on the available options.
      */
-    public static void main(String... args) { CommandLine.run(new App(), System.err, args); }
+    public static void main(String... args) {
+        new CommandLine(new App()).parseWithHandlers(
+                new CommandLine.RunLast().andExit(EXIT_CODE_SUCCESS),
+                CommandLine.defaultExceptionHandler().andExit(EXIT_CODE_INVALID_INPUT), args);
+    }
 
     /**
      * CLI command class for generating completion script.
@@ -105,9 +120,11 @@ public class AutoComplete {
                     commandScript = new File(autoCompleteScript.getAbsoluteFile().getParentFile(), commandName);
                 }
                 if (commandScript != null && !overwriteIfExists && checkExists(commandScript)) {
+                    exit(EXIT_CODE_COMMAND_SCRIPT_EXISTS);
                     return;
                 }
                 if (!overwriteIfExists && checkExists(autoCompleteScript)) {
+                    exit(EXIT_CODE_COMPLETION_SCRIPT_EXISTS);
                     return;
                 }
 
@@ -116,6 +133,7 @@ public class AutoComplete {
             } catch (Exception ex) {
                 ex.printStackTrace();
                 CommandLine.usage(new App(), System.err);
+                exit(EXIT_CODE_EXECUTION_ERROR);
             }
         }
 
@@ -127,6 +145,8 @@ public class AutoComplete {
             }
             return false;
         }
+
+        private void exit(int exitCode) { System.exit(exitCode); }
     }
 
     private static interface Function<T, V> {
