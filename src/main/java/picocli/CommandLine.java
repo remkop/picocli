@@ -7481,7 +7481,7 @@ public class CommandLine {
                 String name = argSpec.isOption() ? ((OptionSpec) argSpec).longestName() : "position " + position;
                 String prompt = String.format("Enter value for %s (%s): ", name, str(argSpec.renderedDescription(), 0));
                 if (tracer.isDebug()) {tracer.debug("Reading value for %s from console...%n", name);}
-                char[] value = readPassword(prompt, false);
+                char[] value = readPassword(prompt);
                 if (tracer.isDebug()) {tracer.debug("User entered '%s' for %s.%n", value, name);}
                 workingStack.push(new String(value));
             }
@@ -8038,18 +8038,11 @@ public class CommandLine {
                         : value;
         }
 
-        char[] readPassword(String prompt, boolean echoInput) {
+        char[] readPassword(String prompt) {
             try {
                 Object console = System.class.getDeclaredMethod("console").invoke(null);
-                Method method;
-                if (echoInput) {
-                    method = console.getClass().getDeclaredMethod("readLine", String.class, Object[].class);
-                    String line = (String) method.invoke(console, prompt, new Object[0]);
-                    return line.toCharArray();
-                } else {
-                    method = console.getClass().getDeclaredMethod("readPassword", String.class, Object[].class);
-                    return (char[]) method.invoke(console, prompt, new Object[0]);
-                }
+                Method method = console.getClass().getDeclaredMethod("readPassword", String.class, Object[].class);
+                return (char[]) method.invoke(console, prompt, new Object[0]);
             } catch (Exception e) {
                 System.out.print(prompt);
                 InputStreamReader isr = new InputStreamReader(System.in);
