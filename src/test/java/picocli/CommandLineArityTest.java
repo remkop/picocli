@@ -1387,6 +1387,19 @@ public class CommandLineArityTest {
         ValSepC val3a = parseCommonsCliCompatible(new ValSepC(), "-b1,2,3".split(" "));
         assertArrayEquals(new String[]{"1", "2,3"}, val3a.b);
     }
+
+    @Test
+    public void testCommonsCliCompatibleSeparatorHandlingForMaps() {
+        class ValSepC {
+            @Option(names = "-b", arity="1..2", split=",") Map<String, String> b;
+        }
+        ValSepC val3a = parseCommonsCliCompatible(new ValSepC(), "-ba=1,b=2,c=3".split(" "));
+        Map<String, String> expected = new LinkedHashMap<String, String>();
+        expected.put("a", "1");
+        expected.put("b", "2,c=3");
+        assertEquals(expected, val3a.b);
+    }
+
     private <T> T parseCommonsCliCompatible(T obj, String[] args) {
         CommandLine cmd = new CommandLine(obj);
         cmd.getCommandSpec().parser()
