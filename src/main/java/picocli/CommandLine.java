@@ -8150,7 +8150,7 @@ public class CommandLine {
          * {@code HH:mm:ss.SSS}, {@code HH:mm:ss,SSS}. Other formats result in a ParameterException. */
         static class ISO8601TimeConverter implements ITypeConverter<Object> {
             // Implementation note: use reflection so that picocli only requires the java.base module in Java 9.
-            private static final String FQCN = "java.sql.Time";
+            private static /*final*/ String FQCN = "java.sql.Time"; // non-final for testing
             public Object convert(String value) {
                 try {
                     if (value.length() <= 5) {

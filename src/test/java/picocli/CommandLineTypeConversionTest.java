@@ -16,10 +16,7 @@
 package picocli;
 
 import java.io.File;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
+import java.lang.reflect.*;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.net.InetAddress;
@@ -218,6 +215,15 @@ public class CommandLineTypeConversionTest {
 //        assertEquals("Driver", DriverManager.getDriver("org.apache.derby.jdbc.EmbeddedDriver"), bean.aDriver);
     }
     @Test
+    public void testTypeConversionSucceedsForAlternativeValidInput() throws Exception {
+        SupportedTypes bean = CommandLine.populateCommand(new SupportedTypes(),
+                "-byteOrder", "BIG_ENDIAN", //
+                "-NetworkInterface", "invalid;`!"
+        );
+        assertEquals("ByteOrder", ByteOrder.BIG_ENDIAN, bean.aByteOrder);
+        assertEquals("NetworkInterface", null, bean.aNetInterface);
+    }
+    @Test
     public void testByteFieldsAreDecimal() {
         try {
             CommandLine.populateCommand(new SupportedTypes(), "-byte", "0x1F", "-Byte", "0x0F");
@@ -392,6 +398,49 @@ public class CommandLineTypeConversionTest {
             assertEquals("Invalid value for option '-Time': '23:59:587' is not a HH:mm[:ss[.SSS]] time", expected.getMessage());
         }
     }
+    @Test
+    public void testTimeFormatHHmmssSSSSInvalidError() throws ParseException {
+        try {
+            CommandLine.populateCommand(new SupportedTypes(), "-Time", "23:59:58.1234");
+            fail("Invalid format was accepted");
+        } catch (CommandLine.ParameterException expected) {
+            assertEquals("Invalid value for option '-Time': '23:59:58.1234' is not a HH:mm[:ss[.SSS]] time", expected.getMessage());
+        }
+    }
+    @Test
+    public void testISO8601TimeConverterWhenJavaSqlModuleAvailable() throws Exception {
+        Class<?> c = Class.forName("picocli.CommandLine$BuiltIn$ISO8601TimeConverter");
+        Object converter = c.newInstance();
+        Method createTime = c.getDeclaredMethod("createTime", long.class);
+        createTime.setAccessible(true);
+        long now = System.currentTimeMillis();
+        Time actual = (Time) createTime.invoke(converter, now);
+        assertEquals("ISO8601TimeConverter works if java.sql module is available", new Time(now), actual);
+    }
+    @Test
+    public void testISO8601TimeConverterExceptionHandling() throws Exception {
+        Class<?> c = Class.forName("picocli.CommandLine$BuiltIn$ISO8601TimeConverter");
+        Object converter = c.newInstance();
+        Method createTime = c.getDeclaredMethod("createTime", long.class);
+        createTime.setAccessible(true);
+        long now = System.currentTimeMillis();
+
+        // simulate the absence of the java.sql module
+        Field fqcn = c.getDeclaredField("FQCN");
+        fqcn.setAccessible(true);
+
+        fqcn.set(null, "a.b.c"); // change FQCN to an unknown class
+        assertEquals("a.b.c", fqcn.get(null));
+
+        try {
+            createTime.invoke(converter, now);
+            fail("Expect exception");
+        } catch (InvocationTargetException outer) {
+            TypeConversionException ex = (TypeConversionException) outer.getTargetException();
+            assertTrue(ex.getMessage().startsWith("Unable to create new java.sql.Time with long value " + now));
+        }
+    }
+
     @Test
     public void testTimeFormatHHmmssColonInvalidError() throws ParseException {
         try {
@@ -928,5 +977,21 @@ public class CommandLineTypeConversionTest {
         systemErrRule.clearLog();
         registerIfAvailable.invoke(null, null, tracer, "a.b.c", null, null, null);
         assertEquals("logged only once", "", systemErrRule.getLog());
+    }
+
+    @Ignore("NetworkInterface.getByName returns null - does not throw an exception")
+    @Test
+    public void testNetworkInterfaceConverterExceptionHandling() {
+        class App {
+            @Parameters
+            NetworkInterface nic;
+        }
+
+        try {
+            CommandLine.populateCommand(new App(), "abc0988$%&'($#{{}},.,,notANIC");
+            fail("Expect exception");
+        } catch (TypeConversionException ex) {
+            assertEquals("", ex.getMessage());
+        }
     }
 }
