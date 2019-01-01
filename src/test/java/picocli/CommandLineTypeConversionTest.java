@@ -40,8 +40,12 @@ import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 
 import org.junit.Ignore;
+import org.junit.Rule;
 import org.junit.Test;
 
+import org.junit.contrib.java.lang.system.RestoreSystemProperties;
+import org.junit.contrib.java.lang.system.SystemErrRule;
+import org.junit.rules.TestRule;
 import picocli.CommandLine.ITypeConverter;
 import picocli.CommandLine.Option;
 import picocli.CommandLine.Parameters;
@@ -51,6 +55,11 @@ import static java.util.concurrent.TimeUnit.*;
 import static org.junit.Assert.*;
 
 public class CommandLineTypeConversionTest {
+    // allows tests to set any kind of properties they like, without having to individually roll them back
+    @Rule
+    public final TestRule restoreSystemProperties = new RestoreSystemProperties();
+    @Rule
+    public final SystemErrRule systemErrRule = new SystemErrRule().enableLog().muteForSuccessfulTests();
 
     static class SupportedTypes {
         @Option(names = "-boolean")       boolean booleanField;
@@ -901,5 +910,23 @@ public class CommandLineTypeConversionTest {
             TypeConversionException actual = (TypeConversionException) ex.getTargetException();
             assertTrue(actual.getMessage().startsWith("Internal error converting 'command line parameter' to class java.lang.String"));
         }
+    }
+
+    @Test
+    public void testRegisterIfAvailableExceptionHandling() throws Exception {
+        Class<?> c = Class.forName("picocli.CommandLine$BuiltIn");
+        Method registerIfAvailable = c.getDeclaredMethod("registerIfAvailable", Map.class, CommandLine.Tracer.class,
+                String.class, String.class, String.class, Class[].class);
+
+        System.setProperty("picocli.trace", "DEBUG");
+        CommandLine.Tracer tracer = new CommandLine.Tracer();
+
+        registerIfAvailable.invoke(null, null, tracer, "a.b.c", null, null, null);
+        String expected = String.format("[picocli DEBUG] Could not register converter for a.b.c: java.lang.ClassNotFoundException: a.b.c%n");
+        assertEquals(expected, systemErrRule.getLog());
+
+        systemErrRule.clearLog();
+        registerIfAvailable.invoke(null, null, tracer, "a.b.c", null, null, null);
+        assertEquals("logged only once", "", systemErrRule.getLog());
     }
 }
