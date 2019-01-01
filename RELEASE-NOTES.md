@@ -19,6 +19,8 @@ This release also has improved heuristics to decide whether ANSI escape codes sh
 
 The simplified @-file (argument file) format is now fully compatible with JCommander: empty lines are ignored and comments may start with leading whitespace.
 
+The `picocli.Autocompletion` application now returns a non-zero exit code on error, to facilitate incorporating it into the build.
+
 Finally, this release contains some bugfix: `@Command` method options and positional parameter values are now cleared correctly when reusing a `CommandLine` instance, and the default exception handler now correctly respects the exit code for all exceptions.
 
 This is the forty-fifth public release.
@@ -130,18 +132,19 @@ Support was added for the following environment variables to control enabling AN
 
 ## <a name="3.9.0-fixes"></a> Fixed issues
 - [#574] Add `picocli-shell-jline3` module. Thanks to [mattirn](https://github.com/mattirn) for the pull request.
-- [#567] Usage message customization initial implementation. Thanks to [Christian Helmer](https://github.com/SysLord) for the pull request.
-- [#530] Usage message customization. Thanks to [stechio](https://github.com/stechio) for raising the request and productive discussions.
-- [#570] Command method options and positional parameter Object values are now cleared correctly when reusing CommandLine. Thanks to [Christian Helmer](https://github.com/SysLord) for the pull request.
+- [#567] Usage message customization API initial implementation. Thanks to [Christian Helmer](https://github.com/SysLord) for the pull request.
+- [#530] Added API for easily customizing the usage help message. Thanks to [stechio](https://github.com/stechio) for raising the request and productive discussions.
 - [#569] Facilitate customization of the synopsis: split `Help.detailedSynopsis()` into protected methods.
-- [#572] `CommandSpec.addMethodSubcommands` now throws `picocli.CommandLine.InitializationException` instead of `java.lang.UnsupportedOperationException` when the user object of the parent command is a `java.lang.reflect.Method`.
-- [#508] Added `@Option(order = <int>)` attribute to allow explicit control of option ordering in the usage help message; useful when mixing methods and fields with `@Option` annotation.
-- [#576] Bugfix: fixed StringIndexOutOfBoundsException in shell-jline2 completion when cursor was before `=` when option parameter was attached to option name.
-- [#579] Improve AutoComplete error message when not overwriting existing files.
-- [#581] Added support for ConEmu, ANSICON and other environment variables to improve the ANSI heuristics. Documented the heuristics in the user manual.
-- [#573] Make simplified @files JCommander-compatible: ignore empty lines and comments starting with whitespace. Thanks to [Lukáš Petrovický](https://github.com/triceo) for the pull request with test to reproduce the issue.
+- [#508] Annotation API: added `@Option(order = <int>)` attribute to allow explicit control of option ordering in the usage help message; useful when mixing methods and fields with `@Option` annotation.
 - [#578] Add API for simplified @files argument files.
-- [#583] Bugfix: Default exception handler should exit on exception if exitCode was set, regardless of exception type.
+- [#573] Make simplified @files JCommander-compatible: ignore empty lines and comments starting with whitespace. Thanks to [Lukáš Petrovický](https://github.com/triceo) for the pull request with test to reproduce the issue.
+- [#572] `CommandSpec.addMethodSubcommands` now throws `picocli.CommandLine.InitializationException` instead of `java.lang.UnsupportedOperationException` when the user object of the parent command is a `java.lang.reflect.Method`.
+- [#579] Improved AutoComplete error message when not overwriting existing files.
+- [#581] Added support for ConEmu, ANSICON and other environment variables to improve the ANSI heuristics. Documented the heuristics in the user manual.
+- [#582] `picocli.AutoComplete` now returns a non-zero return code on error. Thanks to [Bob Tiernay](https://github.com/bobtiernay-okta) for the suggestion.
+- [#570] Bugfix: Command method options and positional parameter Object values are now cleared correctly when reusing CommandLine. Thanks to [Christian Helmer](https://github.com/SysLord) for the pull request.
+- [#576] Bugfix: fixed StringIndexOutOfBoundsException in shell-jline2 completion when cursor was before `=` when option parameter was attached to option name.
+- [#583] Bugfix: Default exception handler now exits on exception if exitCode was set, regardless of exception type.
 
 ## <a name="3.9.0-deprecated"></a> Deprecations
 No features were deprecated in this release.
