@@ -3997,4 +3997,14 @@ public class CommandLineTest {
         assertEquals(1, errors.size());
         assertEquals("Missing required parameter: <x>", errors.get(0).getMessage());
     }
+
+    @Test
+    public void testUpdateHelpRequested() {
+        class App {
+            @Option(names = "-x", help = true) boolean x;
+        }
+        System.setProperty("picocli.trace", "INFO");
+        new CommandLine(new App()).parseArgs("-x");
+        assertTrue(systemErrRule.getLog().contains("App.x has 'help' annotation: not validating required fields"));
+    }
 }
