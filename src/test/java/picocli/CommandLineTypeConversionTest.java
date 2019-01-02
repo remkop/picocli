@@ -1058,4 +1058,16 @@ public class CommandLineTypeConversionTest {
             assertEquals("Unmatched arguments: a:c, 1:3", ex.getMessage());
         }
     }
+
+    @Test
+    public void testMapArgumentsArity() {
+        class App {
+            @Parameters(arity = "2") Map<String, String> map;
+        }
+        try {
+            CommandLine.populateCommand(new App(), "a=c");
+        } catch (MissingParameterException ex) {
+            assertEquals("positional parameter at index 0..* (<String=String>) requires at least 2 values, but only 1 were specified: [a=c]", ex.getMessage());
+        }
+    }
 }
