@@ -3398,6 +3398,20 @@ public class CommandLineTest {
     }
 
     @Test
+    public void testUnmatchedAnnotationWithInstantiatedList() {
+        setTraceLevel("OFF");
+        class App {
+            @Unmatched List<String> unmatched = new ArrayList<String>();
+            @Option(names = "-o") String option;
+        }
+        App app = new App();
+        CommandLine commandLine = new CommandLine(app);
+        commandLine.parse("-t", "-x", "abc");
+        assertEquals(Arrays.asList("-t", "-x", "abc"), commandLine.getUnmatchedArguments());
+        assertEquals(Arrays.asList("-t", "-x", "abc"), app.unmatched);
+    }
+
+    @Test
     public void testUnmatchedAnnotationInstantiatesList() {
         setTraceLevel("OFF");
         class App {
