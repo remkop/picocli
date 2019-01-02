@@ -1022,11 +1022,19 @@ public class CommandLineTypeConversionTest {
         }
     }
     @Test
-    public void testCollectionsAreAddedExplosively() {
+    public void testCollectionsAreAddedExplosivelyToCollection() {
         class App {
             @Parameters(converter = SplitSemiColonConverter.class) List<String> all;
         }
         App app = CommandLine.populateCommand(new App(), "a;b;c", "1;2;3");
         assertEquals(Arrays.asList("a", "b", "c", "1", "2", "3"), app.all);
+    }
+    @Test
+    public void testCollectionsAreAddedExplosivelyToArray() {
+        class App {
+            @Parameters(converter = SplitSemiColonConverter.class) String[] all;
+        }
+        App app = CommandLine.populateCommand(new App(), "a;b;c", "1;2;3");
+        assertEquals(new String[] {"a", "b", "c", "1", "2", "3"}, app.all);
     }
 }
