@@ -2561,6 +2561,13 @@ public class CommandLineHelpTest {
         String result3 = (String) m.invoke(null, Help.Ansi.OFF, 80, null, new Object[0]);
         assertEquals("", result3);
     }
+    @Test
+    public void trimTrailingLineSeparator() {
+        assertEquals("abc", Help.trimLineSeparator("abc"));
+        String lineSep = System.getProperty("line.separator");
+        assertEquals("abc", Help.trimLineSeparator("abc" + lineSep));
+        assertEquals("abc" + lineSep, Help.trimLineSeparator("abc" + lineSep + lineSep));
+    }
 
     @Test
     public void testHelpCreateDetailedSynopsisOptionsText() {

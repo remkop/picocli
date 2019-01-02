@@ -8860,11 +8860,13 @@ public class CommandLine {
 
         private static String heading(Ansi ansi, int usageWidth, String values, Object... params) {
             StringBuilder sb = join(ansi, usageWidth, new String[] {values}, new StringBuilder(), params);
-            String result = sb.toString();
-            result = result.endsWith(System.getProperty("line.separator"))
-                    ? result.substring(0, result.length() - System.getProperty("line.separator").length()) : result;
-            return result + new String(spaces(countTrailingSpaces(values)));
+            return trimLineSeparator(sb.toString()) + new String(spaces(countTrailingSpaces(values)));
         }
+        static String trimLineSeparator(String result) {
+            return result.endsWith(System.getProperty("line.separator"))
+                    ? result.substring(0, result.length() - System.getProperty("line.separator").length()) : result;
+        }
+
         private static char[] spaces(int length) { char[] result = new char[length]; Arrays.fill(result, ' '); return result; }
         private static int countTrailingSpaces(String str) {
             if (str == null) {return 0;}
