@@ -930,12 +930,15 @@ public class CommandLineModelTest {
         CommandLine cl = new CommandLine(cmd);
         cl.parseArgs("-x", "1", "2", "3");
         assertArrayEquals(new String[] {"1", "2", "3"}, (String[]) cmd.findOption("x").getValue());
+        assertArrayEquals(new String[] {"1", "2", "3"}, (String[]) cmd.findOption('x').getValue());
 
         cl.parseArgs("-x", "4", "5");
         assertArrayEquals(new String[] {"4", "5"}, (String[]) cmd.findOption("x").getValue());
+        assertArrayEquals(new String[] {"4", "5"}, (String[]) cmd.findOption('x').getValue());
 
         cl.parseArgs();
         assertArrayEquals(new String[] {"ABC"}, (String[]) cmd.findOption("x").getValue());
+        assertArrayEquals(new String[] {"ABC"}, (String[]) cmd.findOption('x').getValue());
     }
 
     @Test
