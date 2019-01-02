@@ -1016,4 +1016,17 @@ public class CommandLineTypeConversionTest {
             assertEquals("", ex.getMessage());
         }
     }
+    static class SplitSemiColonConverter implements ITypeConverter<List<String>> {
+        public List<String> convert(String value) throws Exception {
+            return Arrays.asList(value.split(";"));
+        }
+    }
+    @Test
+    public void testCollectionsAreAddedExplosively() {
+        class App {
+            @Parameters(converter = SplitSemiColonConverter.class) List<String> all;
+        }
+        App app = CommandLine.populateCommand(new App(), "a;b;c", "1;2;3");
+        assertEquals(Arrays.asList("a", "b", "c", "1", "2", "3"), app.all);
+    }
 }
