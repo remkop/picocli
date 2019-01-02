@@ -597,7 +597,7 @@ public class CommandLineArityTest {
     @Test
     public void testBooleanOptionsArity0_nConsume1ArgumentIfPossible() { // ignores varargs
         BooleanOptionsArity0_nAndParameters
-                params = CommandLine.populateCommand(new BooleanOptionsArity0_nAndParameters(), "-bool false false true".split(" "));
+                params = CommandLine.populateCommand(new BooleanOptionsArity0_nAndParameters(), "-bool=false false true".split(" "));
         assertFalse(params.bool);
         assertArrayEquals(new String[]{ "false", "true" }, params.params);
     }
