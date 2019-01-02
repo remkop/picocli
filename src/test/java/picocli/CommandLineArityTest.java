@@ -584,7 +584,7 @@ public class CommandLineArityTest {
         BooleanOptionsArity0_nAndParameters
                 params = CommandLine.populateCommand(new BooleanOptionsArity0_nAndParameters(), "-bool true".split(" "));
         assertTrue(params.bool);
-        assertArrayEquals(new String[0], params.params);
+        assertNull(params.params);
     }
 
     @Test
