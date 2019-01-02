@@ -50,8 +50,11 @@ import org.junit.contrib.java.lang.system.ProvideSystemProperty;
 import org.junit.contrib.java.lang.system.RestoreSystemProperties;
 import org.junit.contrib.java.lang.system.SystemErrRule;
 import org.junit.rules.TestRule;
+import picocli.CommandLine.Model.ArgSpec;
 import picocli.CommandLine.Model.CommandSpec;
 import picocli.CommandLine.Model.ParserSpec;
+import picocli.CommandLine.Model.PositionalParamSpec;
+import picocli.CommandLine.Range;
 
 import static java.lang.String.format;
 import static org.hamcrest.CoreMatchers.containsString;
@@ -3985,6 +3988,33 @@ public class CommandLineTest {
         assertEquals("only balanced quotes 2", "abc\"", unquote.invoke(interpreter, "abc\""));
         assertEquals("only balanced quotes 3", "\"", unquote.invoke(interpreter, "\""));
         assertEquals("no quotes", "X", unquote.invoke(interpreter, "X"));
+    }
+
+    @Test
+    public void testInterpreterApplyValueToSingleValuedField() throws Exception {
+        Class c = Class.forName("picocli.CommandLine$Interpreter");
+        Class lookBehindClass = Class.forName("picocli.CommandLine$LookBehind");
+        Method applyValueToSingleValuedField = c.getDeclaredMethod("applyValueToSingleValuedField",
+                ArgSpec.class,
+                lookBehindClass,
+                Range.class,
+                Stack.class, Set.class, String.class);
+        applyValueToSingleValuedField.setAccessible(true);
+
+        CommandSpec spec = CommandSpec.create();
+        spec.parser().trimQuotes(true);
+        CommandLine cmd = new CommandLine(spec);
+        Object interpreter = PicocliTestUtil.interpreter(cmd);
+        Method clear = c.getDeclaredMethod("clear");
+        clear.setAccessible(true);
+        clear.invoke(interpreter); // initializes the interpreter instance
+
+        PositionalParamSpec arg = PositionalParamSpec.builder().arity("1").build();
+        Object SEPARATE = lookBehindClass.getDeclaredField("SEPARATE").get(null);
+
+        int value = (Integer) applyValueToSingleValuedField.invoke(interpreter,
+                arg, SEPARATE, Range.valueOf("1"), new Stack<String>(), new HashSet<String>(), "");
+        assertEquals(0, value);
     }
 
     @Test
