@@ -1459,6 +1459,20 @@ public class CommandLineArityTest {
     }
 
     @Test
+    public void testRangeArityMismatchingTypeCount() {
+        class InvalidMapTypes {
+            @Option(names = "-D", arity = "1..3", type = Integer.class) // invalid: only one type
+            TreeMap<Integer, String> map;
+        }
+        try {
+            CommandLine.populateCommand(new InvalidMapTypes(), "-D", "1=a");
+            fail("expect exception");
+        } catch (ParameterException ex) {
+            assertEquals("field java.util.TreeMap<Integer, String> picocli.CommandLineArityTest$1InvalidMapTypes.map needs two types (one for the map key, one for the value) but only has 1 types configured.", ex.getMessage());
+        }
+    }
+
+    @Test
     public void testVariableArityMap() {
         class App {
             @Option(names = "-D", arity = "1..*")
