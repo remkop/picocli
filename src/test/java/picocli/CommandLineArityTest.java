@@ -571,12 +571,35 @@ public class CommandLineArityTest {
         @Option(names = {"-v", "-other"}, arity="0..*") boolean vOrOther;
         @Option(names = "-r") boolean rBoolean;
     }
+
+    @Test
+    public void testBooleanOptionsArity0_nFalse() {
+        BooleanOptionsArity0_nAndParameters
+                params = CommandLine.populateCommand(new BooleanOptionsArity0_nAndParameters(), "-bool false".split(" "));
+        assertFalse(params.bool);
+    }
+
+    @Test
+    public void testBooleanOptionsArity0_nTrue() {
+        BooleanOptionsArity0_nAndParameters
+                params = CommandLine.populateCommand(new BooleanOptionsArity0_nAndParameters(), "-bool true".split(" "));
+        assertTrue(params.bool);
+        assertArrayEquals(new String[0], params.params);
+    }
+
+    @Test
+    public void testBooleanOptionsArity0_nX() {
+        BooleanOptionsArity0_nAndParameters
+                params = CommandLine.populateCommand(new BooleanOptionsArity0_nAndParameters(), "-bool x".split(" "));
+        assertTrue(params.bool);
+        assertArrayEquals(new String[]{ "x" }, params.params);
+    }
     @Test
     public void testBooleanOptionsArity0_nConsume1ArgumentIfPossible() { // ignores varargs
         BooleanOptionsArity0_nAndParameters
                 params = CommandLine.populateCommand(new BooleanOptionsArity0_nAndParameters(), "-bool false false true".split(" "));
         assertFalse(params.bool);
-        assertArrayEquals(new String[]{ "false", "true"}, params.params);
+        assertArrayEquals(new String[]{ "false", "true" }, params.params);
     }
     @Test
     public void testBooleanOptionsArity0_nRequiresNoArgument() { // ignores varargs
@@ -738,7 +761,7 @@ public class CommandLineArityTest {
         IntOptionArity1_nAndParameters
                 params = CommandLine.populateCommand(new IntOptionArity1_nAndParameters(), "-int 23 42 7".split(" "));
         assertEquals(23, params.anInt);
-        assertArrayEquals(new int[]{ 42, 7}, params.intParams);
+        assertArrayEquals(new int[]{ 42, 7 }, params.intParams);
     }
 
     @Test

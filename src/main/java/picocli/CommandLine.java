@@ -7540,7 +7540,7 @@ public class CommandLine {
                 if (cls == Boolean.class || cls == Boolean.TYPE) {
 
                     // boolean option with arity = 0..1 or 0..*: value MAY be a param
-                    if (arity.max > 0 && "true".equalsIgnoreCase(value) || "false".equalsIgnoreCase(value)) {
+                    if (arity.max > 0 && ("true".equalsIgnoreCase(value) || "false".equalsIgnoreCase(value))) {
                         result = 1;            // if it is a varargs we only consume 1 argument if it is a boolean value
                         if (!lookBehind.isAttached()) { parseResult.nowProcessing(argSpec, value); }
                     } else if (lookBehind != LookBehind.ATTACHED_WITH_SEPARATOR) { // if attached, try converting the value to boolean (and fail if invalid value)
@@ -7575,15 +7575,14 @@ public class CommandLine {
             Object newValue = tryConvert(argSpec, -1, converter, value, cls);
             Object oldValue = argSpec.getValue();
             String traceMessage = "Setting %s to '%3$s' (was '%2$s') for %4$s%n";
-            if (initialized != null) {
-                if (initialized.contains(argSpec)) {
-                    if (!isOverwrittenOptionsAllowed()) {
-                        throw new OverwrittenOptionException(CommandLine.this, argSpec, optionDescription("", argSpec, 0) +  " should be specified only once");
-                    }
-                    traceMessage = "Overwriting %s value '%s' with '%s' for %s%n";
+            if (initialized.contains(argSpec)) {
+                if (!isOverwrittenOptionsAllowed()) {
+                    throw new OverwrittenOptionException(CommandLine.this, argSpec, optionDescription("", argSpec, 0) +  " should be specified only once");
                 }
-                initialized.add(argSpec);
+                traceMessage = "Overwriting %s value '%s' with '%s' for %s%n";
             }
+            initialized.add(argSpec);
+
             if (tracer.isInfo()) { tracer.info(traceMessage, argSpec.toString(), String.valueOf(oldValue), String.valueOf(newValue), argDescription); }
             argSpec.setValue(newValue);
             parseResult.addOriginalStringValue(argSpec, value);// #279 track empty string value if no command line argument was consumed
