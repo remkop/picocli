@@ -321,6 +321,25 @@ public class CommandLineParseWithHandlersTest {
     }
 
     @Test
+    public void testExitCodeFromParseResultHandler2() {
+        @Command class App implements Runnable {
+            public void run() {
+            }
+        }
+        MyHandler handler = new MyHandler();
+        new CommandLine(new App()).parseWithHandler(handler.andExit(23), new String[]{});
+        assertEquals(23, handler.exitCode);
+    }
+    static class MyHandler extends RunLast {
+        int exitCode;
+
+        @Override
+        protected void exit(int exitCode) {
+            this.exitCode = exitCode;
+        }
+    }
+
+    @Test
     public void testExitCodeFromExceptionHandler() {
         @Command class App implements Runnable {
             public void run() {
@@ -339,6 +358,29 @@ public class CommandLineParseWithHandlersTest {
         return new DefaultExceptionHandler<List<Object>>();
     }
 
+    @Test
+    public void testExitCodeFromExceptionHandler2() {
+        @Command class App implements Runnable {
+            public void run() {
+                throw new ParameterException(new CommandLine(this), "blah");
+            }
+        }
+        CustomExceptionHandler<List<Object>> handler = new CustomExceptionHandler<List<Object>>();
+        new CommandLine(new App()).parseWithHandlers(new RunFirst().andExit(23), handler.andExit(25));
+        assertEquals(format("" +
+                        "blah%n" +
+                        "Usage: <main class>%n"), systemErrRule.getLog());
+        assertEquals(25, handler.exitCode);
+    }
+
+    static class CustomExceptionHandler<R> extends DefaultExceptionHandler<R> {
+        int exitCode;
+
+        @Override
+        protected void exit(int exitCode) {
+            this.exitCode = exitCode;
+        }
+    }
     @Test
     public void testSystemExitForOtherExceptions() {
         @Command class App implements Runnable {
