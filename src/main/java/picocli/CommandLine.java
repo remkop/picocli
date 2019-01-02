@@ -5364,7 +5364,6 @@ public class CommandLine {
             }
 
             protected boolean equalsImpl(ArgSpec other) {
-                if (other == this) { return true; }
                 boolean result = Assert.equals(this.defaultValue, other.defaultValue)
                         && Assert.equals(this.type, other.type)
                         && Assert.equals(this.arity, other.arity)
