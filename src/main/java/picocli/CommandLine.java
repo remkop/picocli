@@ -10234,6 +10234,15 @@ public class CommandLine {
                  * @param maxLength max length of this text */
                 public Text(int maxLength) { this.maxLength = maxLength; }
 
+                /** Copy constructor.
+                 * @since 3.9 */
+                public Text(Text other) {
+                    this.maxLength = other.maxLength;
+                    this.from = other.from;
+                    this.length = other.length;
+                    this.plain = new StringBuilder(other.plain);
+                    this.sections = new ArrayList<StyledSection>(other.sections);
+                }
                 /**
                  * Constructs a Text with the specified String, which may contain markup like
                  * {@code @|bg(red),white,underline some text|@}.
@@ -10283,13 +10292,10 @@ public class CommandLine {
                 private void addStyledSection(int start, int length, String startStyle, String endStyle) {
                     sections.add(new StyledSection(start, length, startStyle, endStyle));
                 }
-                public Object clone() {
-                    try { return super.clone(); } catch (CloneNotSupportedException e) { throw new IllegalStateException(e); }
-                }
+                public Object clone() { return new Text(this); }
 
                 public Text[] splitLines() {
                     List<Text> result = new ArrayList<Text>();
-                    boolean trailingEmptyString = plain.length() == 0;
                     int start = 0, end = 0;
                     for (int i = 0; i < plain.length(); i++, end = i) {
                         char c = plain.charAt(i);
@@ -10298,13 +10304,11 @@ public class CommandLine {
                         eol |= c == '\r';
                         if (eol) {
                             result.add(this.substring(start, end));
-                            trailingEmptyString = i == plain.length() - 1;
                             start = i + 1;
                         }
                     }
-                    if (start < plain.length() || trailingEmptyString) {
-                        result.add(this.substring(start, plain.length()));
-                    }
+                    // add remainder (may be empty string)
+                    result.add(this.substring(start, plain.length()));
                     return result.toArray(new Text[result.size()]);
                 }
 

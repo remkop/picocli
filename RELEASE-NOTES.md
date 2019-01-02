@@ -146,6 +146,7 @@ Support was added for the following environment variables to control enabling AN
 - [#576] Bugfix: fixed StringIndexOutOfBoundsException in shell-jline2 completion when cursor was before `=` when option parameter was attached to option name.
 - [#583] Bugfix: Default exception handler now exits on exception if exitCode was set, regardless of exception type.
 - [#584] Add documentation for generating autocompletion script during a Maven build. Thanks to [Bob Tiernay](https://github.com/bobtiernay-okta).
+- [#586] Replace Ansi.Text.clone() with copy constructor.
 
 ## <a name="3.9.0-deprecated"></a> Deprecations
 No features were deprecated in this release.

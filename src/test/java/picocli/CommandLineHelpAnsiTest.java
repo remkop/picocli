@@ -550,10 +550,13 @@ public class CommandLineHelpAnsiTest {
     @Test
     public void testTextSplitLinesEmpty() {
         Ansi ansi = Ansi.ON;
-        Ansi.Text text = ansi.new Text("");
+        Ansi.Text text = ansi.new Text("abc\n\n\n");
         Ansi.Text[] lines = text.splitLines();
-        assertEquals(1, lines.length);
-        assertEquals(ansi.new Text(""), lines[0]);
+        assertEquals(4, lines.length);
+        assertEquals(ansi.new Text("abc"), lines[0]);
+        assertEquals(ansi.new Text(""), lines[1]);
+        assertEquals(ansi.new Text(""), lines[2]);
+        assertEquals(ansi.new Text(""), lines[3]);
     }
     @Test
     public void testTextSplitLinesStartEnd() {
