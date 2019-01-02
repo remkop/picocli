@@ -43,10 +43,7 @@ import org.junit.Test;
 import org.junit.contrib.java.lang.system.RestoreSystemProperties;
 import org.junit.contrib.java.lang.system.SystemErrRule;
 import org.junit.rules.TestRule;
-import picocli.CommandLine.ITypeConverter;
-import picocli.CommandLine.Option;
-import picocli.CommandLine.Parameters;
-import picocli.CommandLine.TypeConversionException;
+import picocli.CommandLine.*;
 
 import static java.util.concurrent.TimeUnit.*;
 import static org.junit.Assert.*;
@@ -1035,6 +1032,30 @@ public class CommandLineTypeConversionTest {
             @Parameters(converter = SplitSemiColonConverter.class) String[] all;
         }
         App app = CommandLine.populateCommand(new App(), "a;b;c", "1;2;3");
-        assertEquals(new String[] {"a", "b", "c", "1", "2", "3"}, app.all);
+        assertArrayEquals(new String[] {"a", "b", "c", "1", "2", "3"}, app.all);
+    }
+
+    @Test
+    public void testMapArgumentsMustContainEquals() {
+        class App {
+            @Parameters Map<String, String> map;
+        }
+        try {
+            CommandLine.populateCommand(new App(), "a:c", "1:3");
+        } catch (UnmatchedArgumentException ex) {
+            assertEquals("Unmatched arguments: a:c, 1:3", ex.getMessage());
+        }
+    }
+
+    @Test
+    public void testMapArgumentsMustContainEquals2() {
+        class App {
+            @Parameters(split = "==") Map<String, String> map;
+        }
+        try {
+            CommandLine.populateCommand(new App(), "a:c", "1:3");
+        } catch (UnmatchedArgumentException ex) {
+            assertEquals("Unmatched arguments: a:c, 1:3", ex.getMessage());
+        }
     }
 }
