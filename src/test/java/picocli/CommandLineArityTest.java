@@ -1472,4 +1472,73 @@ public class CommandLineArityTest {
         map.put(3, "c");
         assertEquals(map, app.map);
     }
+
+    @Test
+    public void testRangeArity0To3Map0() {
+        class App {
+            @Option(names = "-D", arity = "0..3")
+            TreeMap<Integer, String> map;
+        }
+
+        App app = CommandLine.populateCommand(new App(), "-D");
+        assertEquals(new TreeMap<Integer, String>(), app.map);
+    }
+
+    @Test
+    public void testRangeArity1To3Map1() {
+        class App {
+            @Option(names = "-D", arity = "1..3")
+            TreeMap<Integer, String> map;
+
+            @Option(names = "-x")
+            int x;
+        }
+
+        App app = CommandLine.populateCommand(new App(), "-D", "1=a", "-x", "123");
+        TreeMap<Integer, String> map = new TreeMap<Integer, String>();
+        map.put(1, "a");
+        assertEquals(map, app.map);
+        assertEquals(123, app.x);
+    }
+
+    @Test
+    public void testRangeArity1To3Map2() {
+        class App {
+            @Option(names = "-D", arity = "1..3")
+            TreeMap<Integer, String> map;
+        }
+
+        App app = CommandLine.populateCommand(new App(), "-D", "1=a", "2=b");
+        TreeMap<Integer, String> map = new TreeMap<Integer, String>();
+        map.put(1, "a");
+        map.put(2, "b");
+        assertEquals(map, app.map);
+    }
+
+    @Test
+    public void testRangeArity1To3Map3() {
+        class App {
+            @Option(names = "-D", arity = "1..3")
+            TreeMap<Integer, String> map;
+        }
+
+        App app = CommandLine.populateCommand(new App(), "-D", "1=a", "2=b", "3=c");
+        TreeMap<Integer, String> map = new TreeMap<Integer, String>();
+        map.put(1, "a");
+        map.put(2, "b");
+        map.put(3, "c");
+        assertEquals(map, app.map);
+    }
+
+    @Test
+    public void testMapArgumentsArity() {
+        class App {
+            @Parameters(arity = "2") Map<String, String> map;
+        }
+        try {
+            CommandLine.populateCommand(new App(), "a=c");
+        } catch (MissingParameterException ex) {
+            assertEquals("positional parameter at index 0..* (<String=String>) requires at least 2 values, but only 1 were specified: [a=c]", ex.getMessage());
+        }
+    }
 }
