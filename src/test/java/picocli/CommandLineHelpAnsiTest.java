@@ -548,6 +548,14 @@ public class CommandLineHelpAnsiTest {
         }
     }
     @Test
+    public void testTextSplitLinesEmpty() {
+        Ansi ansi = Ansi.ON;
+        Ansi.Text text = ansi.new Text("");
+        Ansi.Text[] lines = text.splitLines();
+        assertEquals(1, lines.length);
+        assertEquals(ansi.new Text(""), lines[0]);
+    }
+    @Test
     public void testTextSplitLinesStartEnd() {
         Ansi ansi = Ansi.ON;
         Ansi.Text[] all = {
