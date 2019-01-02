@@ -381,6 +381,39 @@ public class CommandLineParseWithHandlersTest {
             this.exitCode = exitCode;
         }
     }
+
+    @Test
+    public void testExitCodeFromExceptionHandler3() {
+        @Command class App implements Runnable {
+            public void run() {
+                throw new ParameterException(new CommandLine(this), "blah");
+            }
+        }
+        CustomNoThrowExceptionHandler<List<Object>> handler = new CustomNoThrowExceptionHandler<List<Object>>();
+        new CommandLine(new App()).parseWithHandlers(new RunFirst().andExit(23), handler.andExit(25));
+        assertEquals(format("" +
+                "blah%n" +
+                "Usage: <main class>%n"), systemErrRule.getLog());
+        assertEquals(25, handler.exitCode);
+    }
+    static class CustomNoThrowExceptionHandler<R> extends DefaultExceptionHandler<R> {
+        int exitCode;
+
+        @Override
+        protected R throwOrExit(ExecutionException ex) {
+            try {
+                super.throwOrExit(ex);
+            } catch (ExecutionException caught) {
+            }
+            return null;
+        }
+
+        @Override
+        protected void exit(int exitCode) {
+            this.exitCode = exitCode;
+        }
+    }
+
     @Test
     public void testSystemExitForOtherExceptions() {
         @Command class App implements Runnable {
