@@ -15,10 +15,8 @@
  */
 package picocli;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.*;
+import org.junit.contrib.java.lang.system.SystemErrRule;
 import picocli.CommandLine.*;
 import picocli.CommandLine.Model.PositionalParamSpec;
 
@@ -34,6 +32,9 @@ import static picocli.HelpTestUtil.setTraceLevel;
 public class CommandLineArityTest {
     @Before public void setUp() { System.clearProperty("picocli.trace"); }
     @After public void tearDown() { System.clearProperty("picocli.trace"); }
+
+    @Rule
+    public final SystemErrRule systemErrRule = new SystemErrRule().enableLog().muteForSuccessfulTests();
 
     @Test
     public void testArityConstructor_fixedRange() {
@@ -1235,10 +1236,12 @@ public class CommandLineArityTest {
             @Parameters(index = "1..*", arity = "*") List<String> params;
         }
         Cmd cmd = new Cmd();
+        System.setProperty("picocli.trace", "DEBUG");
         new CommandLine(cmd).setStopAtPositional(true).parse("foo", "xx", "--alpha", "--beta");
         assertEquals("foo", cmd.foo);
         assertEquals(null, cmd.alpha);
         assertEquals(Arrays.asList("xx", "--alpha", "--beta"), cmd.params);
+        assertTrue(systemErrRule.getLog().contains("Parser was configured with stopAtPositional=true, treating remaining arguments as positional parameters."));
     }
 
     @Test
