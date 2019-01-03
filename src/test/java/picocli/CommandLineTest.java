@@ -44,16 +44,14 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.contrib.java.lang.system.ProvideSystemProperty;
 import org.junit.contrib.java.lang.system.RestoreSystemProperties;
 import org.junit.contrib.java.lang.system.SystemErrRule;
 import org.junit.rules.TestRule;
-import picocli.CommandLine.Model.ArgSpec;
-import picocli.CommandLine.Model.CommandSpec;
-import picocli.CommandLine.Model.ParserSpec;
-import picocli.CommandLine.Model.PositionalParamSpec;
+import picocli.CommandLine.Model.*;
 import picocli.CommandLine.Range;
 
 import static java.lang.String.format;
@@ -921,6 +919,20 @@ public class CommandLineTest {
         assertFalse("String !equals null", (Boolean) m.invoke(null, "", null));
         assertFalse("null !equals String", (Boolean) m.invoke(null, null, ""));
         assertTrue("String equals String", (Boolean) m.invoke(null, "", ""));
+    }
+
+    @Test
+    public void testAssertAssertTrue() throws Exception {
+        Method m = Class.forName("picocli.CommandLine$Assert").getDeclaredMethod("assertTrue", boolean.class, String.class);
+        m.setAccessible(true);
+
+        m.invoke(null, true, "not thrown");
+        try {
+            m.invoke(null, false, "thrown");
+        } catch (InvocationTargetException ex) {
+            IllegalStateException actual = (IllegalStateException) ex.getTargetException();
+            assertEquals("thrown", actual.getMessage());
+        }
     }
 
     private File[] fileArray(final String ... paths) {
@@ -4015,6 +4027,40 @@ public class CommandLineTest {
         int value = (Integer) applyValueToSingleValuedField.invoke(interpreter,
                 arg, SEPARATE, Range.valueOf("1"), new Stack<String>(), new HashSet<String>(), "");
         assertEquals(0, value);
+    }
+
+    @Ignore
+    @Test
+    public void testInterpreterProcessClusteredShortOptions() throws Exception {
+        Class c = Class.forName("picocli.CommandLine$Interpreter");
+        Method processClusteredShortOptions = c.getDeclaredMethod("processClusteredShortOptions",
+                Collection.class, Set.class, String.class, Stack.class);
+        processClusteredShortOptions.setAccessible(true);
+
+        CommandSpec spec = CommandSpec.create();
+        spec.addOption(OptionSpec.builder("-x").arity("0").build());
+        spec.parser().trimQuotes(true);
+        CommandLine cmd = new CommandLine(spec);
+        Object interpreter = PicocliTestUtil.interpreter(cmd);
+
+        Stack<String> stack = new Stack<String>();
+        String arg = "-xa";
+        processClusteredShortOptions.invoke(interpreter, new ArrayList<ArgSpec>(), new HashSet<String>(), arg, stack);
+        // TODO
+    }
+
+    @Test
+    public void testInterpreterProcessClusteredShortOptions_complex() {
+        class App {
+            @Option(names = "-x", arity = "1", split = ",") String x;
+            @Parameters List<String> remainder;
+        }
+        App app = new App();
+        CommandLine cmd = new CommandLine(app);
+        cmd.getCommandSpec().parser().aritySatisfiedByAttachedOptionParam(true);
+        cmd.parseArgs("-xa,b,c", "d", "e");
+        assertEquals("a,b,c", app.x);
+        assertEquals(Arrays.asList("d", "e"), app.remainder);
     }
 
     @Test

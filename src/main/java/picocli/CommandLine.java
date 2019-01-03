@@ -7512,7 +7512,7 @@ public class CommandLine {
             }
             if (workingStack != args && !workingStack.isEmpty()) {
                 args.push(workingStack.pop());
-                if (!workingStack.isEmpty()) {throw new IllegalStateException("Working stack should be empty but was " + new ArrayList<String>(workingStack));}
+                Assert.assertTrue(workingStack.isEmpty(), "Working stack should be empty but was " + new ArrayList<String>(workingStack));
             }
             return result;
         }
@@ -10446,6 +10446,9 @@ public class CommandLine {
         static boolean equals(Object obj1, Object obj2) { return obj1 == null ? obj2 == null : obj1.equals(obj2); }
         static int hashCode(Object obj) {return obj == null ? 0 : obj.hashCode(); }
         static int hashCode(boolean bool) {return bool ? 1 : 0; }
+        static void assertTrue(boolean condition, String message) {
+            if (!condition) throw new IllegalStateException(message);
+        }
         private Assert() {} // private constructor: never instantiate
     }
     private enum TraceLevel { OFF, WARN, INFO, DEBUG;

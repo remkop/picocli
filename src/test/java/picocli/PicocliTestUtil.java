@@ -1,6 +1,8 @@
 package picocli;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -48,6 +50,20 @@ public class PicocliTestUtil {
     public static Object interpreter(CommandLine cmd) throws Exception {
         Field field = CommandLine.class.getDeclaredField("interpreter");
         field.setAccessible(true);
-        return field.get(cmd);
+        Object interpreter =  field.get(cmd);
+
+        Class c = Class.forName("picocli.CommandLine$Interpreter");
+        Method clear = c.getDeclaredMethod("clear");
+        clear.setAccessible(true);
+        clear.invoke(interpreter); // initializes the interpreter instance
+
+        Field parseResultField = c.getDeclaredField("parseResult");
+        parseResultField.setAccessible(true);
+        Field nowProcessing = CommandLine.ParseResult.Builder.class.getDeclaredField("nowProcessing");
+        nowProcessing.setAccessible(true);
+        Object parseResult = parseResultField.get(interpreter);
+        nowProcessing.set(parseResult, new ArrayList<Object>());
+
+        return interpreter;
     }
 }
