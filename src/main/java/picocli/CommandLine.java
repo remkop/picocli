@@ -4870,7 +4870,7 @@ public class CommandLine {
             /** Returns true if arguments should be split first before any further processing and the number of
              * parts resulting from the split is limited to the max arity of the argument. */
             public boolean limitSplit()                        { return limitSplit; }
-            /** Returns true if options with attached arguments should not consume subsequent arguments and should not validate arity. */
+            /** Returns true if options with attached arguments should not consume subsequent arguments and should not validate arity. The default is {@code false}. */
             public boolean aritySatisfiedByAttachedOptionParam() { return aritySatisfiedByAttachedOptionParam; }
             /** Returns true if exceptions during parsing should be collected instead of thrown.
              * Multiple errors may be encountered during parsing. These can be obtained from {@link ParseResult#errors()}.
@@ -4919,7 +4919,7 @@ public class CommandLine {
              * @since 3.2 */
             public ParserSpec collectErrors(boolean collectErrors)                         { this.collectErrors = collectErrors; return this; }
 
-            /** Returns true if options with attached arguments should not consume subsequent arguments and should not validate arity. */
+            /** Returns true if options with attached arguments should not consume subsequent arguments and should not validate arity. The default is {@code false}.*/
             public ParserSpec aritySatisfiedByAttachedOptionParam(boolean newValue) { aritySatisfiedByAttachedOptionParam = newValue; return this; }
 
             /** Sets whether arguments should be {@linkplain ArgSpec#splitRegex() split} first before any further processing.
