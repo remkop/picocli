@@ -19,7 +19,7 @@ This release also has improved heuristics to decide whether ANSI escape codes sh
 
 The simplified @-file (argument file) format is now fully compatible with JCommander: empty lines are ignored and comments may start with leading whitespace.
 
-The `picocli.Autocompletion` application now returns a non-zero exit code on error, to facilitate incorporating it into the build.
+The `picocli.Autocompletion` application now accepts a parameter specifying a custom factory, and returns a non-zero exit code on error, to facilitate incorporating it into the build.
 
 Finally, this release contains some bugfix: `@Command` method options and positional parameter values are now cleared correctly when reusing a `CommandLine` instance, and the default exception handler now correctly respects the exit code for all exceptions.
 
@@ -139,8 +139,9 @@ Support was added for the following environment variables to control enabling AN
 - [#578] Add API for simplified @files argument files.
 - [#573] Make simplified @files JCommander-compatible: ignore empty lines and comments starting with whitespace. Thanks to [Lukáš Petrovický](https://github.com/triceo) for the pull request with test to reproduce the issue.
 - [#572] `CommandSpec.addMethodSubcommands` now throws `picocli.CommandLine.InitializationException` instead of `java.lang.UnsupportedOperationException` when the user object of the parent command is a `java.lang.reflect.Method`.
-- [#579] Improved AutoComplete error message when not overwriting existing files.
 - [#581] Added support for ConEmu, ANSICON and other environment variables to improve the ANSI heuristics. Documented the heuristics in the user manual.
+- [#579] Improved `AutoComplete` error message when not overwriting existing files.
+- [#585] `picocli.AutoComplete` now accepts a parameter specifying a custom `IFactory` implementation. Thanks to [Bob Tiernay](https://github.com/bobtiernay-okta) for the suggestion.
 - [#582] `picocli.AutoComplete` now returns a non-zero return code on error. Thanks to [Bob Tiernay](https://github.com/bobtiernay-okta) for the suggestion.
 - [#570] Bugfix: Command method options and positional parameter Object values are now cleared correctly when reusing CommandLine. Thanks to [Christian Helmer](https://github.com/SysLord) for the pull request.
 - [#576] Bugfix: fixed StringIndexOutOfBoundsException in shell-jline2 completion when cursor was before `=` when option parameter was attached to option name.

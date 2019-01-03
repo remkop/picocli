@@ -27,14 +27,11 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import picocli.CommandLine.Command;
+import picocli.CommandLine.*;
 import picocli.CommandLine.Model.PositionalParamSpec;
-import picocli.CommandLine.Option;
-import picocli.CommandLine.Parameters;
 import picocli.CommandLine.Model.ArgSpec;
 import picocli.CommandLine.Model.CommandSpec;
 import picocli.CommandLine.Model.OptionSpec;
-import picocli.CommandLine.ParseResult;
 
 import static java.lang.String.*;
 
@@ -78,13 +75,17 @@ public class AutoComplete {
                 "@Command class to generate a completion script for.")
         String commandLineFQCN;
 
-        @Option(names = {"-n", "--name"}, description = "Name of the command to create a completion script for. " +
+        @Option(names = {"-c", "--factory"}, description = "Optionally specify the fully qualified class name of the custom factory to use to instantiate the command class. " +
+                "When omitted, the default picocli factory is used.")
+        String factoryClass;
+
+        @Option(names = {"-n", "--name"}, description = "Optionally specify the name of the command to create a completion script for. " +
                 "When omitted, the annotated class @Command 'name' attribute is used. " +
                 "If no @Command 'name' attribute exists, '<CLASS-SIMPLE-NAME>' (in lower-case) is used.")
         String commandName;
 
         @Option(names = {"-o", "--completionScript"},
-                description = "Path of the completion script file to generate. " +
+                description = "Optionally specify the path of the completion script file to generate. " +
                         "When omitted, a file named '<commandName>_completion' " +
                         "is generated in the current directory.")
         File autoCompleteScript;
@@ -102,8 +103,12 @@ public class AutoComplete {
 
         public void run() {
             try {
+                IFactory factory = CommandLine.defaultFactory();
+                if (factoryClass != null) {
+                    factory = (IFactory) factory.create(Class.forName(factoryClass));
+                }
                 Class<?> cls = Class.forName(commandLineFQCN);
-                Object instance = CommandLine.defaultFactory().create(cls);
+                Object instance = factory.create(cls);
                 CommandLine commandLine = new CommandLine(instance);
 
                 if (commandName == null) {
