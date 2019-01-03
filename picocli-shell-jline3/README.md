@@ -44,6 +44,9 @@ import java.util.concurrent.TimeUnit;
 import org.jline.reader.Completer;
 import org.jline.reader.LineReader;
 import org.jline.reader.LineReaderBuilder;
+import org.jline.reader.EndOfFileException;
+import org.jline.reader.UserInterruptException;
+import org.jline.reader.ParsedLine;
 import org.jline.reader.impl.DefaultParser;
 import org.jline.reader.impl.LineReaderImpl;
 import org.jline.terminal.TerminalBuilder;
@@ -143,15 +146,17 @@ public class Example {
 
             // start the shell and process input until the user quits with Ctl-D
             String line;
-            while (true) {    
+            while (true) {
                 try {
                     line = reader.readLine(prompt, rightPrompt, (MaskingCallback) null, null);
-                    CommandLine.run(commands, line.split("\\s+"));
+                    ParsedLine pl = reader.getParser().parse(line, 0);
+                    String[] arguments = pl.words().toArray(new String[0]);
+                    CommandLine.run(commands, arguments);
                 } catch (UserInterruptException e) {
                     // Ignore
                 } catch (EndOfFileException e) {
                     return;
-                }
+                }                    
             }
         } catch (Throwable t) {
             t.printStackTrace();

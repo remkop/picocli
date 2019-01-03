@@ -137,6 +137,7 @@ Support was added for the following environment variables to control enabling AN
 
 ## <a name="3.9.0-fixes"></a> Fixed issues
 - [#574] Add `picocli-shell-jline3` module. Thanks to [mattirn](https://github.com/mattirn) for the pull request.
+- [#587] Enhance `picocli-shell-jline3` example by using JLine's `DefaultParser` to split lines into arguments. Thanks to [mattirn](https://github.com/mattirn) for the pull request.
 - [#567] Usage message customization API initial implementation. Thanks to [Christian Helmer](https://github.com/SysLord) for the pull request.
 - [#530] Added API for easily customizing the usage help message. Thanks to [stechio](https://github.com/stechio) for raising the request and productive discussions.
 - [#569] Facilitate customization of the synopsis: split `Help.detailedSynopsis()` into protected methods.
