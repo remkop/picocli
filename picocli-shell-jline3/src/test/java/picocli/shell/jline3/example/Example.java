@@ -10,6 +10,7 @@ import org.jline.reader.LineReader;
 import org.jline.reader.LineReaderBuilder;
 import org.jline.reader.EndOfFileException;
 import org.jline.reader.UserInterruptException;
+import org.jline.reader.ParsedLine;
 import org.jline.reader.impl.DefaultParser;
 import org.jline.reader.impl.LineReaderImpl;
 import org.jline.terminal.TerminalBuilder;
@@ -112,7 +113,10 @@ public class Example {
             while (true) {
                 try {
                     line = reader.readLine(prompt, rightPrompt, (MaskingCallback) null, null);
-                    CommandLine.run(commands, line.split("\\s+"));
+                    ParsedLine pl = reader.getParser().parse(line, 0);
+                    String[] _args = new String[pl.words().size()];
+                    _args = pl.words().toArray(_args);
+                    CommandLine.run(commands, _args);
                 } catch (UserInterruptException e) {
                     // Ignore
                 } catch (EndOfFileException e) {
