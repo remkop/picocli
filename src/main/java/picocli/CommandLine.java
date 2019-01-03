@@ -7419,7 +7419,7 @@ public class CommandLine {
                     if (tracer.isDebug()) {tracer.debug("Found option '%s%s' in %s: %s, arity=%s%n", prefix, cluster.charAt(0), arg,
                             argSpec, arity);}
                     required.remove(argSpec);
-                    cluster = cluster.length() > 0 ? cluster.substring(1) : "";
+                    cluster = cluster.substring(1);
                     paramAttachedToOption = cluster.length() > 0;
                     LookBehind lookBehind = paramAttachedToOption ? LookBehind.ATTACHED : LookBehind.SEPARATE;
                     if (cluster.startsWith(config().separator())) {// attached with separator, like -f=FILE or -v=true
