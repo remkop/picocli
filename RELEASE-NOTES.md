@@ -21,7 +21,12 @@ The simplified @-file (argument file) format is now fully compatible with JComma
 
 The `picocli.Autocompletion` application now accepts a parameter specifying a custom factory, and returns a non-zero exit code on error, to facilitate incorporating it into the build.
 
-Finally, this release contains some bugfix: `@Command` method options and positional parameter values are now cleared correctly when reusing a `CommandLine` instance, and the default exception handler now correctly respects the exit code for all exceptions.
+Bug fixes in this release: 
+
+* `@Command` method options and positional parameter values are now cleared correctly when reusing a `CommandLine` instance
+* the default exception handler now correctly respects the exit code for all exceptions
+
+Finally, this release improves internal quality and robustness by increasing the test code coverage. About 300 tests were added to bring the total to 1300+ tests. This improved line coverage to 98% (was 88%) and complexity coverage to 98% (was 82%).
 
 This is the forty-fifth public release.
 Picocli follows [semantic versioning](http://semver.org/).
@@ -148,6 +153,7 @@ Support was added for the following environment variables to control enabling AN
 - [#583] Bugfix: Default exception handler now exits on exception if exitCode was set, regardless of exception type.
 - [#584] Add documentation for generating autocompletion script during a Maven build. Thanks to [Bob Tiernay](https://github.com/bobtiernay-okta).
 - [#586] Replace Ansi.Text.clone() with copy constructor.
+- [#571] Improve test code coverage. Added ~300 tests to bring the total to 1300+ tests. Improved line coverage to 98% (was 88%) and complexity coverage to 98% (was 82%).
 
 ## <a name="3.9.0-deprecated"></a> Deprecations
 No features were deprecated in this release.
