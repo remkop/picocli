@@ -4018,6 +4018,15 @@ public class CommandLine {
              * @since 3.1 */
             public String[] aliases() { return aliases.toArray(new String[0]); }
 
+            /** Returns all names of this command, including {@link #name()} and {@link #aliases()}.
+             * @since 3.9 */
+            public Set<String> names() {
+                Set<String> result = new LinkedHashSet<String>();
+                result.add(name());
+                result.addAll(Arrays.asList(aliases()));
+                return result;
+            }
+
             /** Returns the list of all options and positional parameters configured for this command.
              * @return an immutable list of all options and positional parameters for this command. */
             public List<ArgSpec> args() { return Collections.unmodifiableList(args); }

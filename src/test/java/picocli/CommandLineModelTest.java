@@ -1334,6 +1334,15 @@ public class CommandLineModelTest {
     }
 
     @Test
+    public void testNamesIncludesAliases() {
+        CommandSpec spec = CommandSpec.wrapWithoutInspection(null);
+        spec.aliases("a", "b", "d");
+        spec.name("c");
+        Set<String> all = spec.names();
+        assertArrayEquals(new String[] {"c", "a", "b", "d"}, all.toArray(new String[0]));
+    }
+
+    @Test
     public void testInitHelpCommand() {
         CommandSpec spec = CommandSpec.wrapWithoutInspection(null);
         assertFalse(spec.helpCommand());

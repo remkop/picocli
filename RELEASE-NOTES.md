@@ -142,6 +142,7 @@ Support was added for the following environment variables to control enabling AN
 - [#530] Added API for easily customizing the usage help message. Thanks to [stechio](https://github.com/stechio) for raising the request and productive discussions.
 - [#569] Facilitate customization of the synopsis: split `Help.detailedSynopsis()` into protected methods.
 - [#508] Annotation API: added `@Option(order = <int>)` attribute to allow explicit control of option ordering in the usage help message; useful when mixing methods and fields with `@Option` annotation.
+- [#588] Added method `CommandSpec.names` returning both `name` and `aliases`.
 - [#578] Add API for simplified @files argument files.
 - [#573] Make simplified @files JCommander-compatible: ignore empty lines and comments starting with whitespace. Thanks to [Lukáš Petrovický](https://github.com/triceo) for the pull request with test to reproduce the issue.
 - [#572] `CommandSpec.addMethodSubcommands` now throws `picocli.CommandLine.InitializationException` instead of `java.lang.UnsupportedOperationException` when the user object of the parent command is a `java.lang.reflect.Method`.
