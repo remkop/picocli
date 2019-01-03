@@ -6253,12 +6253,15 @@ public class CommandLine {
              * @return the String value found in the resource bundle for the specified key, or the specified default value
              */
             public String getString(String key, String defaultValue) {
-                if (rb == null || keys.isEmpty()) { return defaultValue; }
+                if (isEmpty()) { return defaultValue; }
                 String cmd = spec.qualifiedName(".");
                 if (keys.contains(cmd + "." + key)) { return rb.getString(cmd + "." + key); }
                 if (keys.contains(key)) { return rb.getString(key); }
                 return defaultValue;
             }
+
+            boolean isEmpty() { return rb == null || keys.isEmpty(); }
+
             /** Returns the String array value found in the resource bundle for the specified key, or the specified default value if not found.
              * Multi-line strings can be specified in the resource bundle with {@code key.0}, {@code key.1}, {@code key.2}, etc.
              * @param key unqualified resource bundle key. This method will first try to find a value by qualifying the key with the command's fully qualified name,
@@ -6267,7 +6270,7 @@ public class CommandLine {
              * @return the String array value found in the resource bundle for the specified key, or the specified default value
              */
             public String[] getStringArray(String key, String[] defaultValues) {
-                if (rb == null || keys.isEmpty()) { return defaultValues; }
+                if (isEmpty()) { return defaultValues; }
                 String cmd = spec.qualifiedName(".");
                 List<String> result = addAllWithPrefix(rb, cmd + "." + key, keys, new ArrayList<String>());
                 if (!result.isEmpty()) { return result.toArray(new String[0]); }
