@@ -513,8 +513,8 @@ table.CodeRay td.code>pre{padding:0}
 <div id="header">
 <h1>picocli - a mighty tiny command line interface</h1>
 <div class="details">
-<span id="revnumber">version 3.8.2,</span>
-<span id="revdate">2018-12-05</span>
+<span id="revnumber">version 3.9.0,</span>
+<span id="revdate">2019-01-04</span>
 </div>
 <div id="toc" class="toc2">
 <div id="toctitle">Features</div>
@@ -598,16 +598,17 @@ table.CodeRay td.code>pre{padding:0}
 <li><a href="#_command_name">10.2. Command Name</a></li>
 <li><a href="#_parameter_labels">10.3. Parameter Labels</a></li>
 <li><a href="#_unsorted_option_list">10.4. Unsorted Option List</a></li>
-<li><a href="#_abbreviated_synopsis">10.5. Abbreviated Synopsis</a></li>
-<li><a href="#_custom_synopsis">10.6. Custom Synopsis</a></li>
-<li><a href="#_header_and_footer">10.7. Header and Footer</a></li>
-<li><a href="#_section_headings">10.8. Section Headings</a></li>
-<li><a href="#_expanded_example">10.9. Expanded Example</a></li>
-<li><a href="#_option_parameter_separators">10.10. Option-Parameter Separators</a></li>
-<li><a href="#_hidden_options_and_parameters">10.11. Hidden Options and Parameters</a></li>
-<li><a href="#_show_default_values">10.12. Show Default Values</a></li>
-<li><a href="#_required_option_marker">10.13. Required-Option Marker</a></li>
-<li><a href="#_usage_width">10.14. Usage Width</a></li>
+<li><a href="#_reordering_options">10.5. Reordering Options</a></li>
+<li><a href="#_abbreviated_synopsis">10.6. Abbreviated Synopsis</a></li>
+<li><a href="#_custom_synopsis">10.7. Custom Synopsis</a></li>
+<li><a href="#_header_and_footer">10.8. Header and Footer</a></li>
+<li><a href="#_section_headings">10.9. Section Headings</a></li>
+<li><a href="#_expanded_example">10.10. Expanded Example</a></li>
+<li><a href="#_option_parameter_separators">10.11. Option-Parameter Separators</a></li>
+<li><a href="#_hidden_options_and_parameters">10.12. Hidden Options and Parameters</a></li>
+<li><a href="#_show_default_values">10.13. Show Default Values</a></li>
+<li><a href="#_required_option_marker">10.14. Required-Option Marker</a></li>
+<li><a href="#_usage_width">10.15. Usage Width</a></li>
 </ul>
 </li>
 <li><a href="#_ansi_colors_and_styles">11. ANSI Colors and Styles</a>
@@ -618,6 +619,7 @@ table.CodeRay td.code>pre{padding:0}
 <li><a href="#_configuring_fixed_elements">11.4. Configuring Fixed Elements</a></li>
 <li><a href="#_supported_platforms">11.5. Supported Platforms</a></li>
 <li><a href="#_forcing_ansi_on_off">11.6. Forcing ANSI On/Off</a></li>
+<li><a href="#_heuristics_for_enabling_ansi">11.7. Heuristics for Enabling ANSI</a></li>
 </ul>
 </li>
 <li><a href="#_usage_help_api">12. Usage Help API</a>
@@ -1092,6 +1094,8 @@ DoubleDashDemo demo = <span class="keyword">new</span> DoubleDashDemo();
 </div>
 <div class="sect2">
 <h3 id="AtFiles">2.7. @-files</h3>
+<div class="sect3">
+<h4 id="_argument_files_for_long_command_lines">2.7.1. Argument Files for Long Command Lines</h4>
 <div class="paragraph">
 <p>Users sometimes run into system limitations on the length of a command line when creating a
 command line with lots of options or with long arguments for options.</p>
@@ -1160,15 +1164,20 @@ with an additional '@' symbol, e.g. '@@somearg' will become '@somearg' and not b
 <p>This feature is similar to the 'Command Line Argument File' processing supported by gcc, javadoc and javac.
 The documentation for these tools shows further examples.</p>
 </div>
+</div>
+<div class="sect3">
+<h4 id="_simplified_format">2.7.2. Simplified Format</h4>
 <div class="paragraph">
-<p>From picocli 3.8.1, a simpler argument file format is also supported where every line (except comment lines)
+<p>From picocli 3.8.1, a simpler argument file format is also supported where every line (except empty lines and comment lines)
 is interpreted as a single argument. Arguments containing whitespace do not need to be quoted,
-but it is not possible to have arguments with embedded newlines.</p>
+but it is not possible to have arguments with embedded newlines or to have empty string arguments without quotes.
+From picocli 3.9, this simpler argument format is fully compatible with <a href="http://jcommander.org/#__syntax">JCommander</a>'s <code>@-file</code> argument file format.</p>
 </div>
 <div class="paragraph">
-<p>Set system property <code>picocli.useSimplifiedAtFiles</code> without a value or with value <code>"true"</code>
-(case-insensitive) to enable this simpler argument file format.
-This simplified format is similar to the argument file format supported by <a href="http://jcommander.org/">JCommander</a>.</p>
+<p>You can tell picocli to use the simplified argument file format programmatically with <code>CommandLine.setUseSimplifiedAtFiles(true)</code>,
+or with a system property: set system property <code>picocli.useSimplifiedAtFiles</code> without a value or with value <code>"true"</code>
+(case-insensitive) to enable this simpler argument file format. The system property is useful to allow end users control over the format.</p>
+</div>
 </div>
 </div>
 </div>
@@ -2782,7 +2791,17 @@ For demonstration purposes the above example mixes the all-uppercase (e.g., <cod
 </div>
 </div>
 <div class="sect2">
-<h3 id="_abbreviated_synopsis">10.5. Abbreviated Synopsis</h3>
+<h3 id="_reordering_options">10.5. Reordering Options</h3>
+<div class="paragraph">
+<p>When mixing <code>@Option</code> methods and <code>@Option</code> fields, options do not reliably appear in declaration order.</p>
+</div>
+<div class="paragraph">
+<p>The <code>@Option(order = &lt;int&gt;)</code> attribute can be used to explicitly control the position in the usage help message at which the option should be shown.
+Options with a lower number are shown before options with a higher number.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_abbreviated_synopsis">10.6. Abbreviated Synopsis</h3>
 <div class="paragraph">
 <p>If a command is very complex and has many options, it is sometimes desirable to suppress details from the synopsis with the <code>abbreviateSynopsis</code> attribute. For example:</p>
 </div>
@@ -2806,7 +2825,7 @@ For demonstration purposes the above example mixes the all-uppercase (e.g., <cod
 </div>
 </div>
 <div class="sect2">
-<h3 id="_custom_synopsis">10.6. Custom Synopsis</h3>
+<h3 id="_custom_synopsis">10.7. Custom Synopsis</h3>
 <div class="paragraph">
 <p>For even more control of the synopsis, use the <code>customSynopsis</code> attribute to specify one ore more synopsis lines. For example:</p>
 </div>
@@ -2834,7 +2853,7 @@ For demonstration purposes the above example mixes the all-uppercase (e.g., <cod
 </div>
 </div>
 <div class="sect2">
-<h3 id="_header_and_footer">10.7. Header and Footer</h3>
+<h3 id="_header_and_footer">10.8. Header and Footer</h3>
 <div class="paragraph">
 <p>The <code>header</code> will be shown at the top of the usage help message (before the synopsis). The first header line is also the line shown in the subcommand list if your command has subcommands (see <a href="#_usage_help_for_subcommands">Usage Help for Subcommands</a>).</p>
 </div>
@@ -2847,7 +2866,7 @@ Each element of the attribute String array is displayed on a separate line.</p>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_section_headings">10.8. Section Headings</h3>
+<h3 id="_section_headings">10.9. Section Headings</h3>
 <div class="paragraph">
 <p>Section headers can be used to make usage message layout appear more spacious. Section headings may contain embedded line separator (<code>%n</code>) format specifiers:</p>
 </div>
@@ -2871,7 +2890,7 @@ Each element of the attribute String array is displayed on a separate line.</p>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_expanded_example">10.9. Expanded Example</h3>
+<h3 id="_expanded_example">10.10. Expanded Example</h3>
 <div class="paragraph">
 <p>The below example demonstrates what a customized usage message can look like.
 Note how section headings with line separators can create a more spacious usage message,
@@ -2929,7 +2948,7 @@ Options:
 </div>
 </div>
 <div class="sect2">
-<h3 id="_option_parameter_separators">10.10. Option-Parameter Separators</h3>
+<h3 id="_option_parameter_separators">10.11. Option-Parameter Separators</h3>
 <div class="paragraph">
 <p>The separator displayed between options and option parameters (<code>=</code> by default)
 in the synopsis and the option list can be configured with the <code>separator</code> attribute.</p>
@@ -2953,7 +2972,7 @@ the <code>@Command(separator = " ")</code> annotation also affects how picocli p
 </div>
 </div>
 <div class="sect2">
-<h3 id="_hidden_options_and_parameters">10.11. Hidden Options and Parameters</h3>
+<h3 id="_hidden_options_and_parameters">10.12. Hidden Options and Parameters</h3>
 <div class="paragraph">
 <p>Options and Parameters with the <code>hidden</code> attribute set to <code>true</code> will not be shown in the usage help message.
 This is useful for example when a parameter at some index is captured into multiple fields:
@@ -2987,9 +3006,9 @@ by default each of these fields would be shown in the usage message, which would
 </div>
 </div>
 <div class="sect2">
-<h3 id="_show_default_values">10.12. Show Default Values</h3>
+<h3 id="_show_default_values">10.13. Show Default Values</h3>
 <div class="sect3">
-<h4 id="__code_default_value_code_variable">10.12.1. <code>${DEFAULT-VALUE}</code> Variable</h4>
+<h4 id="__code_default_value_code_variable">10.13.1. <code>${DEFAULT-VALUE}</code> Variable</h4>
 <div class="paragraph">
 <p>From picocli 3.2, it is possible to embed the <a href="#_default_values">default values</a> in the description for an option or positional parameter by
 specifying the variable <code>${DEFAULT-VALUE}</code> in the description text.
@@ -3021,7 +3040,7 @@ CommandLine.usage(<span class="keyword">new</span> DefaultValues(), <span class=
 </div>
 </div>
 <div class="sect3">
-<h4 id="__code_completion_candidates_code_variable">10.12.2. <code>${COMPLETION-CANDIDATES}</code> Variable</h4>
+<h4 id="__code_completion_candidates_code_variable">10.13.2. <code>${COMPLETION-CANDIDATES}</code> Variable</h4>
 <div class="paragraph">
 <p>Similarly, it is possible to embed the completion candidates in the description for an option or positional parameter by
 specifying the variable <code>${COMPLETION-CANDIDATES}</code> in the description text.</p>
@@ -3061,7 +3080,7 @@ CommandLine.usage(<span class="keyword">new</span> ValidValuesDemo(), <span clas
 </div>
 </div>
 <div class="sect3">
-<h4 id="_legacy_configuration_for_displaying_default_values">10.12.3. Legacy Configuration for Displaying Default Values</h4>
+<h4 id="_legacy_configuration_for_displaying_default_values">10.13.3. Legacy Configuration for Displaying Default Values</h4>
 <div class="paragraph">
 <p>Prior to picocli 3.2, you need to use the <code>@Command(showDefaultValues = true)</code> attribute to append the default value of
  all non-<code>null</code> options and positional parameters to the description column.</p>
@@ -3090,7 +3109,7 @@ This attribute accepts three values:</p>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_required_option_marker">10.13. Required-Option Marker</h3>
+<h3 id="_required_option_marker">10.14. Required-Option Marker</h3>
 <div class="paragraph">
 <p>Required options can be marked in the option list by the character specified with the <code>requiredOptionMarker</code> attribute. By default options are not marked because the synopsis shows users which options are required and which are optional. This feature may be useful in combination with <code>abbreviatedSynopsis</code>. For example:</p>
 </div>
@@ -3115,7 +3134,7 @@ This attribute accepts three values:</p>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_usage_width">10.14. Usage Width</h3>
+<h3 id="_usage_width">10.15. Usage Width</h3>
 <div class="paragraph">
 <p>The default width of the usage help message is 80 characters.
 System property <code>picocli.usage.width</code> can be used to specify a custom width.
@@ -3393,8 +3412,58 @@ This overrides the value of system property <code>picocli.ansi</code>. For examp
 <div class="content">
 <pre class="CodeRay highlight"><code data-lang="java"><span class="keyword">import</span> <span class="include">picocli.CommandLine.Help.Ansi</span>;
 
-App app = CommandLine.usage(<span class="keyword">new</span> App(), <span class="predefined-type">System</span>.out, Ansi.OFF, args);</code></pre>
+<span class="comment">// print usage help message to STDOUT without ANSI escape codes</span>
+CommandLine.usage(<span class="keyword">new</span> App(), <span class="predefined-type">System</span>.out, Ansi.OFF);</code></pre>
 </div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_heuristics_for_enabling_ansi">11.7. Heuristics for Enabling ANSI</h3>
+<div class="paragraph">
+<p>Below is the exact sequence of steps picocli uses to determine whether or not to emit ANSI escape codes.</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>If <code>Ansi.ON</code> or <code>Ansi.OFF</code> is <a href="#_forcing_ansi_on_off">explicitly specified</a>, either via system property <code>picocli.ansi</code> or programmatically, this value is used.</p>
+</li>
+<li>
+<p>ANSI is disabled when environment variable <a href="https://no-color.org/"><code>NO_COLOR</code></a> is defined (regardless of its value).</p>
+</li>
+<li>
+<p>ANSI is enabled when environment variable <a href="https://bixense.com/clicolors/"><code>CLICOLOR_FORCE</code></a> is defined and has any value other than <code>0</code> (zero).</p>
+</li>
+<li>
+<p>ANSI is enabled when JAnsi Console is <a href="https://github.com/fusesource/jansi">installed</a>.</p>
+</li>
+<li>
+<p>ANSI is disabled when environment variable <a href="https://bixense.com/clicolors/"><code>CLICOLOR == 0</code></a>.</p>
+</li>
+<li>
+<p>ANSI is disabled when environment variable <a href="https://conemu.github.io/en/AnsiEscapeCodes.html#Environment_variable"><code>ConEmuANSI == OFF</code></a>.</p>
+</li>
+<li>
+<p>ANSI is disabled when Picocli <a href="https://stackoverflow.com/questions/1403772/how-can-i-check-if-a-java-programs-input-output-streams-are-connected-to-a-term"><em>guesses</em></a> the program&#8217;s output stream is not connected to a terminal: when <code>System.console()</code> returns <code>null</code>. This check is omitted if picocli <em>guesses</em> the program is running in a Windows <a href="https://www.cygwin.com/">Cygwin</a> or <a href="http://www.mingw.org/wiki/MSYS">MSYS</a> environment: when system property <code>os.name</code> starts with <code>"Windows"</code> and either environment variable <code>TERM</code> starts with <code>xterm</code> or environment variable <code>OSTYPE</code> is defined.</p>
+</li>
+<li>
+<p>ANSI is enabled when environment variable <a href="https://github.com/adoxa/ansicon/blob/master/readme.txt"><code>ANSICON</code></a> is defined.</p>
+</li>
+<li>
+<p>ANSI is enabled when environment variable <a href="https://bixense.com/clicolors/"><code>CLICOLOR == 1</code></a>.</p>
+</li>
+<li>
+<p>ANSI is enabled when environment variable <a href="https://conemu.github.io/en/AnsiEscapeCodes.html#Environment_variable"><code>ConEmuANSI == ON</code></a>.</p>
+</li>
+<li>
+<p>ANSI is enabled when picocli detects the program is running in a non-Windows OS (system property <code>os.name</code> does not start with <code>"Windows"</code>).</p>
+</li>
+<li>
+<p>ANSI is enabled when picocli <em>guesses</em> the program is running in a <a href="https://www.cygwin.com/">Cygwin</a> or <a href="http://www.mingw.org/wiki/MSYS">MSYS</a> environment (either environment variable <code>TERM</code> starts with <code>xterm</code> or environment variable <code>OSTYPE</code> is defined).</p>
+</li>
+</ol>
+</div>
+<div class="paragraph">
+<p>ANSI escape codes are not emitted if none of the above apply.</p>
 </div>
 </div>
 </div>
@@ -3413,30 +3482,106 @@ Details of the Help API are out of scope for this document, but the following se
 <p>One thing you may want to do is reorder sections of the usage message or add custom sections.</p>
 </div>
 <div class="paragraph">
-<p>To reorder sections, you need to use the <code>CommandLine.Help</code> class directly. The <code>CommandLine.usage</code> method implementation looks like this:</p>
+<p>Picocli 3.9 introduces new API to facilitate customizing the usage help message:
+<code>IHelpFactory</code> allows applications to plug in <code>Help</code> subclasses, and
+<code>IHelpSectionRenderer</code> allows applications to add custom sections to the usage help message, or redefine existing sections.</p>
+</div>
+<div class="paragraph">
+<p>The usage help message is no longer hard-coded, but is now constructed from the section renderers defined in <code>CommandLine::getHelpSectionMap</code> (or <code>UsageMessageSpec::sectionMap</code> for a single <code>CommandSpec</code>).
+By default this map contains the predefined section renderers:</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="CodeRay highlight"><code data-lang="java">Help help = <span class="keyword">new</span> Help(annotatedObject);
-<span class="predefined-type">StringBuilder</span> sb = <span class="keyword">new</span> <span class="predefined-type">StringBuilder</span>()
-        .append(help.headerHeading())
-        .append(help.header())
-        .append(help.synopsisHeading())      <span class="comment">//e.g. Usage:</span>
-        .append(help.synopsis())             <span class="comment">//e.g. &lt;main&gt; [OPTIONS] [ARGUMENTS]</span>
-        .append(help.descriptionHeading())   <span class="comment">//e.g. %nDescription:%n%n</span>
-        .append(help.description())          <span class="comment">//e.g. &quot;application description&quot;</span>
-        .append(help.parameterListHeading()) <span class="comment">//e.g. %nPositional parameters:%n%n</span>
-        .append(help.parameterList())        <span class="comment">//e.g. [FILE...] the files to convert</span>
-        .append(help.optionListHeading())    <span class="comment">//e.g. %nOptions:%n%n</span>
-        .append(help.optionList())           <span class="comment">//e.g. -h, --help   displays this help</span>
-        .append(help.commandListHeading())   <span class="comment">//e.g. %nCommands:%n%n</span>
-        .append(help.commandList())          <span class="comment">//e.g.    add       adds a to b</span>
-        .append(help.footerHeading())
-        .append(help.footer());</code></pre>
+<pre class="CodeRay highlight"><code data-lang="java"><span class="comment">// The default section renderers delegate to methods in Help for their implementation</span>
+<span class="comment">// (using Java 8 lambda notation for brevity):</span>
+<span class="predefined-type">Map</span>&lt;<span class="predefined-type">String</span>, IHelpSectionRenderer&gt; map = <span class="keyword">new</span> <span class="predefined-type">HashMap</span>&lt;&gt;();
+map.put(SECTION_KEY_HEADER_HEADING,         help -&gt; help.headerHeading());
+map.put(SECTION_KEY_HEADER,                 help -&gt; help.header());
+
+<span class="comment">//e.g. Usage:</span>
+map.put(SECTION_KEY_SYNOPSIS_HEADING,       help -&gt; help.synopsisHeading());
+
+<span class="comment">//e.g. &lt;cmd&gt; [OPTIONS] &lt;subcmd&gt; [COMMAND-OPTIONS] [ARGUMENTS]</span>
+map.put(SECTION_KEY_SYNOPSIS,               help -&gt; help.synopsis(help.synopsisHeadingLength()));
+
+<span class="comment">//e.g. %nDescription:%n%n</span>
+map.put(SECTION_KEY_DESCRIPTION_HEADING,    help -&gt; help.descriptionHeading());
+
+<span class="comment">//e.g. {&quot;Converts foos to bars.&quot;, &quot;Use options to control conversion mode.&quot;}</span>
+map.put(SECTION_KEY_DESCRIPTION,            help -&gt; help.description());
+
+<span class="comment">//e.g. %nPositional parameters:%n%n</span>
+map.put(SECTION_KEY_PARAMETER_LIST_HEADING, help -&gt; help.parameterListHeading());
+
+<span class="comment">//e.g. [FILE...] the files to convert</span>
+map.put(SECTION_KEY_PARAMETER_LIST,         help -&gt; help.parameterList());
+
+<span class="comment">//e.g. %nOptions:%n%n</span>
+map.put(SECTION_KEY_OPTION_LIST_HEADING,    help -&gt; help.optionListHeading());
+
+<span class="comment">//e.g. -h, --help   displays this help and exits</span>
+map.put(SECTION_KEY_OPTION_LIST,            help -&gt; help.optionList());
+
+<span class="comment">//e.g. %nCommands:%n%n</span>
+map.put(SECTION_KEY_COMMAND_LIST_HEADING,   help -&gt; help.commandListHeading());
+
+<span class="comment">//e.g.    add       adds the frup to the frooble</span>
+map.put(SECTION_KEY_COMMAND_LIST,           help -&gt; help.commandList());
+map.put(SECTION_KEY_FOOTER_HEADING,         help -&gt; help.footerHeading());
+map.put(SECTION_KEY_FOOTER,                 help -&gt; help.footer());</code></pre>
 </div>
 </div>
 <div class="paragraph">
-<p>In your application, instead of calling <code>CommandLine.usage(new MainClass(), System.err)</code>, you can alter the above code to, for example, list subcommands first, then global options and finally the parameters.</p>
+<p>Applications can add, remove or replace sections in this map. The <code>CommandLine::getHelpSectionKeys</code> method (or <code>UsageMessageSpec::sectionKeys</code> for a single <code>CommandSpec</code>) returns the section keys in the order that the usage help message should render the sections. The default keys are (in order):</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>SECTION_KEY_HEADER_HEADING</p>
+</li>
+<li>
+<p>SECTION_KEY_HEADER</p>
+</li>
+<li>
+<p>SECTION_KEY_SYNOPSIS_HEADING</p>
+</li>
+<li>
+<p>SECTION_KEY_SYNOPSIS</p>
+</li>
+<li>
+<p>SECTION_KEY_DESCRIPTION_HEADING</p>
+</li>
+<li>
+<p>SECTION_KEY_DESCRIPTION</p>
+</li>
+<li>
+<p>SECTION_KEY_PARAMETER_LIST_HEADING</p>
+</li>
+<li>
+<p>SECTION_KEY_PARAMETER_LIST</p>
+</li>
+<li>
+<p>SECTION_KEY_OPTION_LIST_HEADING</p>
+</li>
+<li>
+<p>SECTION_KEY_OPTION_LIST</p>
+</li>
+<li>
+<p>SECTION_KEY_COMMAND_LIST_HEADING</p>
+</li>
+<li>
+<p>SECTION_KEY_COMMAND_LIST</p>
+</li>
+<li>
+<p>SECTION_KEY_FOOTER_HEADING</p>
+</li>
+<li>
+<p>SECTION_KEY_FOOTER</p>
+</li>
+</ol>
+</div>
+<div class="paragraph">
+<p>This ordering may be modified with the <code>CommandLine::setHelpSectionKeys</code> setter method (or <code>UsageMessageSpec::sectionKeys(List)</code> for a single <code>CommandSpec</code>).</p>
 </div>
 </div>
 <div class="sect2">
@@ -3919,6 +4064,11 @@ are not validated (similar to <a href="#_help_options">help options</a>).</p>
 <span class="type">class</span> <span class="class">GrandChild3Command3</span> { }
 ...</code></pre>
 </div>
+</div>
+<div class="paragraph">
+<p>By default, the usage help message only shows the subcommands of the specified command,
+and not the nested sub-subcommands. This can be customized by specifying your own <a href="#_reordering_sections"><code>IHelpSectionRenderer</code></a> for the command list section.
+The <code>picocli-examples</code> module has an <a href="https://github.com/remkop/picocli/blob/master/picocli-examples/src/main/java/picocli/examples/customhelp/ShowAll.java">example</a> that shows how to accomplish this.</p>
 </div>
 </div>
 </div>
@@ -5003,7 +5153,7 @@ The script body is executed if the user input was valid and did not request usag
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="CodeRay highlight"><code data-lang="groovy"><span class="annotation">@Grab</span>(<span class="string"><span class="delimiter">'</span><span class="content">info.picocli:picocli:3.8.2</span><span class="delimiter">'</span></span>)
+<pre class="CodeRay highlight"><code data-lang="groovy"><span class="annotation">@Grab</span>(<span class="string"><span class="delimiter">'</span><span class="content">info.picocli:picocli:3.9.0</span><span class="delimiter">'</span></span>)
 <span class="annotation">@Command</span>(name = <span class="string"><span class="delimiter">&quot;</span><span class="content">myScript</span><span class="delimiter">&quot;</span></span>,
         mixinStandardHelpOptions = <span class="predefined-constant">true</span>, <span class="comment">// add --help and --version options</span>
         description = <span class="string"><span class="delimiter">&quot;</span><span class="content">@|bold Groovy script|@ @|underline picocli|@ example</span><span class="delimiter">&quot;</span></span>)
@@ -5038,7 +5188,7 @@ When using a Groovy version older than 2.4.7, use this workaround for the <a hre
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="CodeRay highlight"><code data-lang="groovy"><span class="annotation">@Grab</span>(<span class="string"><span class="delimiter">'</span><span class="content">info.picocli:picocli:3.8.2</span><span class="delimiter">'</span></span>)
+<pre class="CodeRay highlight"><code data-lang="groovy"><span class="annotation">@Grab</span>(<span class="string"><span class="delimiter">'</span><span class="content">info.picocli:picocli:3.9.0</span><span class="delimiter">'</span></span>)
 <span class="annotation">@GrabExclude</span>(<span class="string"><span class="delimiter">'</span><span class="content">org.codehaus.groovy:groovy-all</span><span class="delimiter">'</span></span>) <span class="comment">// work around GROOVY-7613</span>
 ...</code></pre>
 </div>
@@ -5196,7 +5346,7 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
 <h3 id="_gradle">25.1. Gradle</h3>
 <div class="listingblock">
 <div class="content">
-<pre>compile 'info.picocli:picocli:3.8.2'</pre>
+<pre>compile 'info.picocli:picocli:3.9.0'</pre>
 </div>
 </div>
 </div>
@@ -5207,7 +5357,7 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
 <pre>&lt;dependency&gt;
   &lt;groupId&gt;info.picocli&lt;/groupId&gt;
   &lt;artifactId&gt;picocli&lt;/artifactId&gt;
-  &lt;version&gt;3.8.2&lt;/version&gt;
+  &lt;version&gt;3.9.0&lt;/version&gt;
 &lt;/dependency&gt;</pre>
 </div>
 </div>
@@ -5216,7 +5366,7 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
 <h3 id="_scala_sbt">25.3. Scala SBT</h3>
 <div class="listingblock">
 <div class="content">
-<pre>libraryDependencies += "info.picocli" % "picocli" % "3.8.2"</pre>
+<pre>libraryDependencies += "info.picocli" % "picocli" % "3.9.0"</pre>
 </div>
 </div>
 </div>
@@ -5224,7 +5374,7 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
 <h3 id="_ivy">25.4. Ivy</h3>
 <div class="listingblock">
 <div class="content">
-<pre>&lt;dependency org="info.picocli" name="picocli" rev="3.8.2" /&gt;</pre>
+<pre>&lt;dependency org="info.picocli" name="picocli" rev="3.9.0" /&gt;</pre>
 </div>
 </div>
 </div>
@@ -5240,8 +5390,8 @@ This facilitates including it in your project in source form to avoid having an 
 </div>
 <div id="footer">
 <div id="footer-text">
-Version 3.8.2<br>
-Last updated 2018-12-05 07:01:48 +09:00
+Version 3.9.0<br>
+Last updated 2019-01-04 21:43:32 +09:00
 </div>
 </div>
 </body>

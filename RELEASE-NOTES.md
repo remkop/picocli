@@ -1,6 +1,6 @@
 # picocli Release Notes
 
-# <a name="3.9.0"></a> Picocli 3.9.0 (UNRELEASED)
+# <a name="3.9.0"></a> Picocli 3.9.0
 The picocli community is pleased to announce picocli 3.9.0.
 
 This release contains bugfixes and enhancements in the main picocli module, and adds a new module: `picocli-shell-jline3`.

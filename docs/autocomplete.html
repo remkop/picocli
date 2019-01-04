@@ -513,8 +513,8 @@ table.CodeRay td.code>pre{padding:0}
 <div id="header">
 <h1>Autocomplete for Java Command Line Applications</h1>
 <div class="details">
-<span id="revnumber">version 3.8.2,</span>
-<span id="revdate">2018-12-05</span>
+<span id="revnumber">version 3.9.0,</span>
+<span id="revdate">2019-01-04</span>
 </div>
 <div id="toc" class="toc2">
 <div id="toctitle">Table of Contents</div>
@@ -558,11 +558,16 @@ table.CodeRay td.code>pre{padding:0}
 </li>
 <li><a href="#_installing_completion_scripts_permanently_in_bash">6. Installing Completion Scripts Permanently in Bash</a></li>
 <li><a href="#_installing_completion_scripts_permanently_in_zsh">7. Installing Completion Scripts Permanently in ZSH</a></li>
-<li><a href="#_picocli_user_manual">8. Picocli User Manual</a></li>
-<li><a href="#_github_project">9. GitHub Project</a></li>
-<li><a href="#_issue_tracker">10. Issue Tracker</a></li>
-<li><a href="#_license">11. License</a></li>
-<li><a href="#_releases">12. Releases</a></li>
+<li><a href="#_generating_completion_scripts_during_the_build">8. Generating Completion Scripts During the Build</a>
+<ul class="sectlevel2">
+<li><a href="#_maven_example">8.1. Maven Example</a></li>
+</ul>
+</li>
+<li><a href="#_picocli_user_manual">9. Picocli User Manual</a></li>
+<li><a href="#_github_project">10. GitHub Project</a></li>
+<li><a href="#_issue_tracker">11. Issue Tracker</a></li>
+<li><a href="#_license">12. License</a></li>
+<li><a href="#_releases">13. Releases</a></li>
 </ul>
 </div>
 </div>
@@ -617,7 +622,7 @@ list if the typed characters are still ambiguous, or else complete the subcomman
 <p>First, create an executable command that runs the main application class. For this tutorial, the command name is <code>jchecksum</code>.</p>
 </div>
 <div class="paragraph">
-<p>We use an <a href="https://en.wikipedia.org/wiki/Alias_(command)">alias</a> here to create the command (see <a href="#Alternative Ways to Create Commands">alternatives</a>):</p>
+<p>We use an <a href="https://en.wikipedia.org/wiki/Alias_(command)">alias</a> here to create the command (see <a href="#_alternative_ways_to_define_commands">alternatives</a>):</p>
 </div>
 <div class="listingblock">
 <div class="content">
@@ -1041,7 +1046,46 @@ done</code></pre>
 </div>
 </div>
 <div class="sect1">
-<h2 id="_picocli_user_manual">8. Picocli User Manual</h2>
+<h2 id="_generating_completion_scripts_during_the_build">8. Generating Completion Scripts During the Build</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>It may be useful to generate your completion scripts automatically during the build.
+Below is an example Maven snippet that demonstrates how to achieve this.</p>
+</div>
+<div class="sect2">
+<h3 id="_maven_example">8.1. Maven Example</h3>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="xml"><span class="tag">&lt;plugin&gt;</span>
+  <span class="tag">&lt;groupId&gt;</span>org.codehaus.mojo<span class="tag">&lt;/groupId&gt;</span>
+  <span class="tag">&lt;artifactId&gt;</span>exec-maven-plugin<span class="tag">&lt;/artifactId&gt;</span>
+  <span class="tag">&lt;version&gt;</span>${exec-maven-plugin.version}<span class="tag">&lt;/version&gt;</span>
+  <span class="tag">&lt;executions&gt;</span>
+    <span class="tag">&lt;execution&gt;</span>
+      <span class="tag">&lt;id&gt;</span>generate-autocompletion-script<span class="tag">&lt;/id&gt;</span>
+      <span class="tag">&lt;phase&gt;</span>package<span class="tag">&lt;/phase&gt;</span>
+      <span class="tag">&lt;goals&gt;</span>
+        <span class="tag">&lt;goal&gt;</span>java<span class="tag">&lt;/goal&gt;</span>
+      <span class="tag">&lt;/goals&gt;</span>
+      <span class="tag">&lt;configuration&gt;</span>
+        <span class="tag">&lt;mainClass&gt;</span>picocli.AutoComplete<span class="tag">&lt;/mainClass&gt;</span>
+        <span class="tag">&lt;arguments&gt;</span>
+          <span class="tag">&lt;argument&gt;</span>--force<span class="tag">&lt;/argument&gt;</span><span class="comment">&lt;!-- overwrite if exists --&gt;</span>
+          <span class="tag">&lt;argument&gt;</span>--completionScript<span class="tag">&lt;/argument&gt;</span>
+          <span class="tag">&lt;argument&gt;</span>${project.build.directory}/mycommand_completion.sh<span class="tag">&lt;/argument&gt;</span>
+          <span class="tag">&lt;argument&gt;</span>com.mycompany.mypackage.MyCommand<span class="tag">&lt;/argument&gt;</span><span class="comment">&lt;!-- replace with your class --&gt;</span>
+        <span class="tag">&lt;/arguments&gt;</span>
+      <span class="tag">&lt;/configuration&gt;</span>
+    <span class="tag">&lt;/execution&gt;</span>
+  <span class="tag">&lt;/executions&gt;</span>
+<span class="tag">&lt;/plugin&gt;</span></code></pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_picocli_user_manual">9. Picocli User Manual</h2>
 <div class="sectionbody">
 <div class="paragraph">
 <p>The <a href="index.html">picocli user manual</a> explains how to build Java command line applications with picocli.</p>
@@ -1049,7 +1093,7 @@ done</code></pre>
 </div>
 </div>
 <div class="sect1">
-<h2 id="_github_project">9. GitHub Project</h2>
+<h2 id="_github_project">10. GitHub Project</h2>
 <div class="sectionbody">
 <div class="paragraph">
 <p>The <a href="https://github.com/remkop/picocli">GitHub project</a> has the source code, tests, build scripts, etc.</p>
@@ -1061,7 +1105,7 @@ done</code></pre>
 </div>
 </div>
 <div class="sect1">
-<h2 id="_issue_tracker">10. Issue Tracker</h2>
+<h2 id="_issue_tracker">11. Issue Tracker</h2>
 <div class="sectionbody">
 <div class="paragraph">
 <p>Please use the <a href="https://github.com/remkop/picocli/issues">Issue Tracker</a> to report bugs or request features.</p>
@@ -1069,7 +1113,7 @@ done</code></pre>
 </div>
 </div>
 <div class="sect1">
-<h2 id="_license">11. License</h2>
+<h2 id="_license">12. License</h2>
 <div class="sectionbody">
 <div class="paragraph">
 <p>Picocli is licensed under the <a href="https://github.com/remkop/picocli/blob/master/LICENSE">Apache License 2.0</a>.</p>
@@ -1077,7 +1121,7 @@ done</code></pre>
 </div>
 </div>
 <div class="sect1">
-<h2 id="_releases">12. Releases</h2>
+<h2 id="_releases">13. Releases</h2>
 <div class="sectionbody">
 <div class="paragraph">
 <p>Previous versions are available from the GitHub project <a href="https://github.com/remkop/picocli/releases">Releases</a>.</p>
@@ -1087,8 +1131,8 @@ done</code></pre>
 </div>
 <div id="footer">
 <div id="footer-text">
-Version 3.8.2<br>
-Last updated 2018-12-05 07:01:49 +09:00
+Version 3.9.0<br>
+Last updated 2019-01-04 21:50:35 +09:00
 </div>
 </div>
 </body>
