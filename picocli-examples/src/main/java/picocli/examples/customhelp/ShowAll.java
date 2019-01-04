@@ -47,7 +47,7 @@ public class ShowAll {
 }
 
 class MyCommandListRenderer implements IHelpSectionRenderer {
-    //@Override // Java6+
+    //@Override
     public String render(Help help) {
         CommandSpec spec = help.commandSpec();
         if (spec.subcommands().isEmpty()) { return ""; }
