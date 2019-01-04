@@ -156,6 +156,7 @@ Support was added for the following environment variables to control enabling AN
 - [#584] Add documentation for generating autocompletion script during a Maven build. Thanks to [Bob Tiernay](https://github.com/bobtiernay-okta).
 - [#586] Replace Ansi.Text.clone() with copy constructor.
 - [#571] Improve test code coverage. Added ~300 tests to bring the total to 1300+ tests. Improved line coverage to 98% (was 88%) and complexity coverage to 98% (was 82%).
+- [#590] Fail the build if test coverage falls below minimum threshold.
 
 ## <a name="3.9.0-deprecated"></a> Deprecations
 No features were deprecated in this release.

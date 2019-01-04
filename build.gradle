@@ -133,6 +133,18 @@ jacocoTestReport {
         html.enabled false
     }
 }
+jacocoTestCoverageVerification {
+    violationRules {
+        rule {
+            limit {
+                minimum = 0.98
+            }
+        }
+    }
+}
+// run coverage verification during the build (and fail when appropriate)
+check.dependsOn jacocoTestCoverageVerification
+
 task bumpReadmeVersion {
     doLast {
         // README.md
