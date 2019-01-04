@@ -47,9 +47,13 @@ public class ShowAll {
 }
 
 class MyCommandListRenderer implements IHelpSectionRenderer {
+    //@Override // Java6+
     public String render(Help help) {
         CommandSpec spec = help.commandSpec();
         if (spec.subcommands().isEmpty()) { return ""; }
+
+        // prepare layout: two columns
+        // the left column overflows, the right column wraps if text is too long
         TextTable textTable = TextTable.forColumns(help.ansi(),
                 new Column(15, 2, Overflow.SPAN),
                 new Column(spec.usageMessage().width() - 15, 2, Overflow.WRAP));
@@ -61,8 +65,11 @@ class MyCommandListRenderer implements IHelpSectionRenderer {
     }
 
     private void addHierarchy(CommandLine cmd, TextTable textTable, String indent) {
+        // create comma-separated list of command name and aliases
         String names = cmd.getCommandSpec().names().toString();
         names = names.substring(1, names.length() - 1); // remove leading '[' and trailing ']'
+
+        // command description is taken from header or description
         String description = description(cmd.getCommandSpec().usageMessage());
 
         // add a line for this command to the layout
