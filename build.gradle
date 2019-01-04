@@ -60,6 +60,8 @@ allprojects {
     javadoc {
         destinationDir   = file("build/docs/apidocs")
     }
+    javadoc.options.addStringOption('Xdoclint:none', '-quiet')
+
     // work around https://github.com/gradle/gradle/issues/4046
     javadoc.dependsOn('copyJavadocDocFiles')
     task copyJavadocDocFiles(type: Copy) {
