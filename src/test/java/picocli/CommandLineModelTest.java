@@ -1329,7 +1329,7 @@ public class CommandLineModelTest {
     public void testAliasesWithEmptyArray() {
         CommandSpec spec = CommandSpec.wrapWithoutInspection(null);
         assertArrayEquals(new String[0], spec.aliases());
-        spec.aliases(null);
+        spec.aliases((String[]) null);
         assertArrayEquals(new String[0], spec.aliases());
     }
 

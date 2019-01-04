@@ -47,6 +47,7 @@ public class PicocliTestUtil {
         return result;
     }
 
+    @SuppressWarnings("unchecked")
     public static Object interpreter(CommandLine cmd) throws Exception {
         Field field = CommandLine.class.getDeclaredField("interpreter");
         field.setAccessible(true);

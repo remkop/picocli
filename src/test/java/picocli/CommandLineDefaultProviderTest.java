@@ -122,6 +122,7 @@ public class CommandLineDefaultProviderTest {
         assertNull(cmd.getDefaultValueProvider());
     }
 
+    @SuppressWarnings("unchecked")
     @Test(expected = UnsupportedOperationException.class)
     public void testNoDefaultProviderThrowsUnsupportedOperation() throws Exception {
         Class<IDefaultValueProvider> c = (Class<IDefaultValueProvider>) Class.forName("picocli.CommandLine$NoDefaultProvider");

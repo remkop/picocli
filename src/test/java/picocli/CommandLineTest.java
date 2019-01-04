@@ -3982,6 +3982,7 @@ public class CommandLineTest {
         assertEquals("abc=xyz", app.x);
     }
 
+    @SuppressWarnings("unchecked")
     @Test
     public void testInterpreterUnquote() throws Exception {
         Class c = Class.forName("picocli.CommandLine$Interpreter");
@@ -4002,6 +4003,7 @@ public class CommandLineTest {
         assertEquals("no quotes", "X", unquote.invoke(interpreter, "X"));
     }
 
+    @SuppressWarnings("unchecked")
     @Test
     public void testInterpreterApplyValueToSingleValuedField() throws Exception {
         Class c = Class.forName("picocli.CommandLine$Interpreter");
@@ -4029,6 +4031,7 @@ public class CommandLineTest {
         assertEquals(0, value);
     }
 
+    @SuppressWarnings("unchecked")
     @Ignore
     @Test
     public void testInterpreterProcessClusteredShortOptions() throws Exception {

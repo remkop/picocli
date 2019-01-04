@@ -394,7 +394,8 @@ public class AutoCompleteTest {
         public NonDefaultCommand(int i) {}
     }
     public static class MyFactory implements CommandLine.IFactory {
-        public <K> K create(Class<K> cls) throws Exception {
+        @SuppressWarnings("unchecked")
+        public <K> K create(Class<K> cls) {
             return (K) new NonDefaultCommand(123);
         }
     }

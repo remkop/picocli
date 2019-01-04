@@ -216,6 +216,7 @@ public class CommandLineArityTest {
         assertEquals(Range.valueOf("0..1"), Range.defaultArity(ImplicitBoolField.class.getDeclaredField("c")));
     }
 
+    @SuppressWarnings("deprecation")
     @Test
     public void testDefaultArity_Class() {
         assertEquals(Range.valueOf("0"), Range.defaultArity(Boolean.TYPE));

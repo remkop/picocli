@@ -240,6 +240,7 @@ public class CompletionCandidatesTest {
         assertNull(candidates);
     }
 
+    @SuppressWarnings("unchecked")
     @Test(expected = UnsupportedOperationException.class)
     public void testNoCompletionCandidatesThrowsUnsupportedOperation() throws Exception {
         Class<Iterable<String>> c = (Class<Iterable<String>>) Class.forName("picocli.CommandLine$NoCompletionCandidates");

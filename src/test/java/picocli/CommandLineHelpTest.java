@@ -2507,6 +2507,7 @@ public class CommandLineHelpTest {
         assertEquals(Help.Ansi.EMPTY_TEXT, tt.textAt(0, 0));
     }
 
+    @SuppressWarnings("deprecation")
     @Test
     public void testTextTableCellAt() {
         TextTable tt = new TextTable(Help.Ansi.OFF, new Help.Column[] {new Help.Column(30, 2, Help.Column.Overflow.SPAN)});
@@ -2583,6 +2584,7 @@ public class CommandLineHelpTest {
         help.addAllSubcommands(null);
         assertTrue(help.subcommands().isEmpty());
     }
+    @SuppressWarnings("deprecation")
     @Test
     public void testDetailedSynopsis() {
         Help help = new Help(CommandSpec.create(), new Help.ColorScheme(Help.Ansi.OFF));
@@ -2627,6 +2629,7 @@ public class CommandLineHelpTest {
         assertEquals(String.format("<main class> b...%n"), actual);
     }
 
+    @SuppressWarnings("deprecation")
     @Test
     public void testSynopsis() {
         Help help = new Help(CommandSpec.create(), new Help.ColorScheme(Help.Ansi.OFF));
@@ -2634,6 +2637,7 @@ public class CommandLineHelpTest {
         assertEquals(String.format("<main class>%n"), actual);
     }
 
+    @SuppressWarnings("deprecation")
     @Test
     public void testAddSubcommand() {
         @Command(name = "app", mixinStandardHelpOptions = true)
@@ -2878,7 +2882,8 @@ public class CommandLineHelpTest {
                 "");
         assertEquals(expected, actual);
     }
-    
+
+    @SuppressWarnings("deprecation")
     @Test
     public void testPrintHelpIfRequested1ReturnsTrueForUsageHelp() throws IOException {
         class App {

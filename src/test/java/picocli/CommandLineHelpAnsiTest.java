@@ -612,12 +612,14 @@ public class CommandLineHelpAnsiTest {
         assertNotEquals(ansi.new Text("a").hashCode(), ansi.new Text("b").hashCode());
     }
 
+    @SuppressWarnings("deprecation")
     @Test
     public void testTextAppendString() {
         Ansi ansi = Ansi.ON;
         assertEquals(ansi.new Text("a").append("xyz"), ansi.new Text("a").concat("xyz"));
     }
 
+    @SuppressWarnings("deprecation")
     @Test
     public void testTextAppendText() {
         Ansi ansi = Ansi.ON;

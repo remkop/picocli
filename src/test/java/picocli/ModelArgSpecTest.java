@@ -93,6 +93,7 @@ public class ModelArgSpecTest {
         assertEquals("abc", newVal[0]);
     }
 
+    @SuppressWarnings("deprecation")
     @Test
     public void testArgSpecSetValueWithCommandLineCallsSetter() {
         final Object[] newVal = new Object[1];
