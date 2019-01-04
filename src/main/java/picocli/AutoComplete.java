@@ -345,18 +345,18 @@ public class AutoComplete {
     public static String bash(String scriptName, CommandLine commandLine) {
         if (scriptName == null)  { throw new NullPointerException("scriptName"); }
         if (commandLine == null) { throw new NullPointerException("commandLine"); }
-        String result = "";
-        result += format(HEADER, scriptName, CommandLine.VERSION);
+        StringBuilder result = new StringBuilder();
+        result.append(format(HEADER, scriptName, CommandLine.VERSION));
 
         Map<CommandDescriptor, CommandLine> function2command = new LinkedHashMap<CommandDescriptor, CommandLine>();
-        result += generateEntryPointFunction(scriptName, commandLine, function2command);
+        result.append(generateEntryPointFunction(scriptName, commandLine, function2command));
 
         for (Map.Entry<CommandDescriptor, CommandLine> functionSpec : function2command.entrySet()) {
             CommandDescriptor descriptor = functionSpec.getKey();
-            result += generateFunctionForCommand(descriptor.functionName, descriptor.commandName, functionSpec.getValue());
+            result.append(generateFunctionForCommand(descriptor.functionName, descriptor.commandName, functionSpec.getValue()));
         }
-        result += format(FOOTER, scriptName);
-        return result;
+        result.append(format(FOOTER, scriptName));
+        return result.toString();
     }
 
     private static String generateEntryPointFunction(String scriptName,
