@@ -3698,11 +3698,15 @@ public class CommandLineTest {
 
         c = new MyCommand();
         new CommandLine(c).setTrimQuotes(true).parseArgs(args);
-        assertEquals("\"-Dspring.profiles.active=test -Dspring.mail.host=smtp.mailtrap.io\"", c.parameters.get("AppOptions"));
+        assertEquals("-Dspring.profiles.active=test -Dspring.mail.host=smtp.mailtrap.io", c.parameters.get("AppOptions"));
 
         args = new String[] {"-p", "\"AppOptions=-Dspring.profiles.active=test -Dspring.mail.host=smtp.mailtrap.io\""};
-        c = CommandLine.populateCommand(new MyCommand(), args);
-        assertNull(c.parameters.get("AppOptions"));
+        try {
+            c = CommandLine.populateCommand(new MyCommand(), args);
+            fail("Expected exception");
+        } catch (ParameterException ex) {
+            assertEquals("Value for option option '--parameter' (<String=String>) should be in KEY=VALUE format but was \"AppOptions=-Dspring.profiles.active=test -Dspring.mail.host=smtp.mailtrap.io\"", ex.getMessage());
+        }
 
         c = new MyCommand();
         new CommandLine(c).setTrimQuotes(true).parseArgs(args);

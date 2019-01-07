@@ -5299,7 +5299,7 @@ public class CommandLine {
                 if (parser.splitQuotedStrings()) {
                     return debug(value.split(splitRegex(), limit), "Split (ignoring quotes)", value);
                 }
-                return debug(splitRespectingQuotedStrings(value, limit, parser), "Split", value);
+                return debug(splitRespectingQuotedStrings(value, limit, parser, this, splitRegex()), "Split", value);
             }
             private String[] debug(String[] result, String msg, String value) {
                 Tracer t = new Tracer();
@@ -5307,7 +5307,7 @@ public class CommandLine {
                 return result;
             }
             // @since 3.7
-            private String[] splitRespectingQuotedStrings(String value, int limit, ParserSpec parser) {
+            private static String[] splitRespectingQuotedStrings(String value, int limit, ParserSpec parser, ArgSpec argSpec, String splitRegex) {
                 StringBuilder splittable = new StringBuilder();
                 StringBuilder temp = new StringBuilder();
                 StringBuilder current = splittable;
@@ -5335,22 +5335,22 @@ public class CommandLine {
                     current.appendCodePoint(ch);
                 }
                 if (temp.length() > 0) {
-                    new Tracer().warn("Unbalanced quotes in [%s] for %s (value=%s)%n", temp, this, value);
+                    new Tracer().warn("Unbalanced quotes in [%s] for %s (value=%s)%n", temp, argSpec, value);
                     quotedValues.add(temp.toString());
                     temp.setLength(0);
                 }
-                String[] result = splittable.toString().split(splitRegex(), limit);
+                String[] result = splittable.toString().split(splitRegex, limit);
                 for (int i = 0; i < result.length; i++) {
                     result[i] = restoreQuotedValues(result[i], quotedValues, parser);
                 }
                 if (!quotedValues.isEmpty()) {
-                    new Tracer().warn("Unable to respect quotes while splitting value %s for %s (unprocessed remainder: %s)%n", value, this, quotedValues);
-                    return value.split(splitRegex(), limit);
+                    new Tracer().warn("Unable to respect quotes while splitting value %s for %s (unprocessed remainder: %s)%n", value, argSpec, quotedValues);
+                    return value.split(splitRegex, limit);
                 }
                 return result;
             }
 
-            private String restoreQuotedValues(String part, Queue<String> quotedValues, ParserSpec parser) {
+            private static String restoreQuotedValues(String part, Queue<String> quotedValues, ParserSpec parser) {
                 StringBuilder result = new StringBuilder();
                 boolean escaping = false, inQuote = false, skip = false;
                 for (int ch = 0, i = 0; i < part.length(); i += Character.charCount(ch)) {
@@ -7711,8 +7711,9 @@ public class CommandLine {
         }
 
         private String[] splitKeyValue(ArgSpec argSpec, String value) {
-            String[] keyValue = value.split("=", 2);
-            if (keyValue.length < 2) {
+            String[] keyValue = ArgSpec.splitRespectingQuotedStrings(value, 2, config(), argSpec, "=");
+
+                if (keyValue.length < 2) {
                 String splitRegex = argSpec.splitRegex();
                 if (splitRegex.length() == 0) {
                     throw new ParameterException(CommandLine.this, "Value for option " + optionDescription("",

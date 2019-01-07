@@ -20,14 +20,36 @@ Picocli follows [semantic versioning](http://semver.org/).
 ## <a name="3.9.1-fixes"></a> Fixed issues
 - [#592] Error message now shows `enum` constant names, not `toString()` values, after value mismatch. Thanks to [startewho](https://github.com/startewho) for the bug report.
 - [#591] Replace some String concatenation with StringBuilder in `picocli.AutoComplete`. Thanks to [Sergio Escalante](https://github.com/sergioescala) for the pull request.
+- [#594] Add support for quoted map keys with embedded '=' characters. Thanks to [Pubudu Fernando](https://github.com/pubudu91) for the suggestion.
 
 ## <a name="3.9.1-deprecated"></a> Deprecations
 No features were deprecated in this release.
 
 ## <a name="3.9.1-breaking-changes"></a> Potential breaking changes
-This release has no breaking changes.
+The new wupport for quoted map keys with embedded '=' characters [#594] may inpact some existing applications.
+If `CommandLine::setTrimQuotes()` is set to `true`, quotes are now removed from map keys and map values. This did not use to be the case.
 
+For example:
 
+```java
+class App {
+    @Option(names = "-p") Map<String, String> map;
+}
+```
+When `CommandLine::setTrimQuotes()` was set to `true`, given input like the below:
+
+```
+-p AppOptions="-Da=b -Dx=y"
+```
+The above used to result in a map with key `AppOptions` and value `"-Da=b -Dx=y"` (including the quotes), but the same program and input now results in a map with key `AppOptions` and value `-Da=b -Dx=y` (without quotes). 
+
+Also, when `CommandLine::setTrimQuotes()` is `false` (the default), input like the below will now cause a `ParameterException` ("value should be in KEY=VALUE format"):
+
+```
+-p "AppOptions=-Da=b -Dx=y"
+```
+Prior to this release, the above was silently ignored (no errors but also no key-value pairs in the resulting map).
+ 
 
 # <a name="3.9.0"></a> Picocli 3.9.0
 The picocli community is pleased to announce picocli 3.9.0.

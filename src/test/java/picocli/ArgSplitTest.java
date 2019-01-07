@@ -1,5 +1,6 @@
 package picocli;
 
+import org.junit.Ignore;
 import org.junit.Test;
 import picocli.CommandLine.MissingParameterException;
 import picocli.CommandLine.Model.ArgSpec;
@@ -10,10 +11,7 @@ import picocli.CommandLine.Parameters;
 import picocli.CommandLine.Range;
 import picocli.CommandLine.UnmatchedArgumentException;
 
-import java.util.Arrays;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static org.junit.Assert.*;
 
@@ -427,5 +425,105 @@ public class ArgSplitTest {
         System.clearProperty("picocli.trace");
 
         assertArrayEquals(new String[] {"\"abc\\\"", "def"}, values);
+    }
+    @Test
+    public void testQuotedMapKeysDefault() {
+        class App {
+            @Option(names = "-e")
+            Map<String, String> runtimeParams = new HashMap<String, String>();
+        }
+
+        App app = new App();
+        new CommandLine(app).parseArgs("-e", "\"a=b=c\"=foo");
+        assertTrue(app.runtimeParams.containsKey("\"a=b=c\""));
+        assertEquals("foo", app.runtimeParams.get("\"a=b=c\""));
+
+        new CommandLine(app).parseArgs("-e", "\"a=b=c\"=\"x=y=z\"");
+        assertTrue(app.runtimeParams.containsKey("\"a=b=c\""));
+        assertEquals("\"x=y=z\"", app.runtimeParams.get("\"a=b=c\""));
+    }
+    @Test
+    public void testQuotedMapKeysDefaultWithSplit() {
+        class App {
+            @Option(names = "-e", split = ",")
+            Map<String, String> map = new HashMap<String, String>();
+        }
+
+        App app = new App();
+        new CommandLine(app).parseArgs("-e", "\"a=b=c\"=foo,\"d=e=f\"=bar");
+        assertTrue(app.map.containsKey("\"a=b=c\""));
+        assertTrue(app.map.containsKey("\"d=e=f\""));
+        assertEquals("foo", app.map.get("\"a=b=c\""));
+        assertEquals("bar", app.map.get("\"d=e=f\""));
+
+        new CommandLine(app).parseArgs("-e", "\"a=b=c\"=\"x=y=z\",\"d=e=f\"=\"x2=y2\"");
+        assertTrue(app.map.containsKey("\"a=b=c\""));
+        assertTrue(app.map.containsKey("\"d=e=f\""));
+        assertEquals("\"x=y=z\"", app.map.get("\"a=b=c\""));
+        assertEquals("\"x2=y2\"", app.map.get("\"d=e=f\""));
+    }
+    @Test
+    public void testQuotedMapKeysTrimQuotes() {
+        class App {
+            @Option(names = "-e")
+            Map<String, String> map = new HashMap<String, String>();
+        }
+
+        App app = new App();
+        new CommandLine(app).setTrimQuotes(true).parseArgs("-e", "\"a=b=c\"=foo");
+        assertTrue(app.map.containsKey("a=b=c"));
+        assertEquals("foo", app.map.get("a=b=c"));
+
+        new CommandLine(app).setTrimQuotes(true).parseArgs("-e", "\"a=b=c\"=x=y=z");
+        assertTrue(app.map.keySet().toString(), app.map.containsKey("a=b=c"));
+        assertEquals("x=y=z", app.map.get("a=b=c"));
+    }
+    @Ignore("Needs support for nested quoting #595")
+    @Test
+    public void testQuotedMapKeysTrimQuotesWithSplit() {
+        class App {
+            @Option(names = "-e", split = ",")
+            Map<String, String> map = new HashMap<String, String>();
+        }
+
+        App app = new App();
+        new CommandLine(app).setTrimQuotes(true).parseArgs("-e", "\"\"'a=b=c'=foo\",\"'d=e=f'=bar\"\"");
+        assertTrue(app.map.containsKey("a=b=c"));
+        assertTrue(app.map.containsKey("d=e=f"));
+        assertEquals("foo", app.map.get("a=b=c"));
+        assertEquals("bar", app.map.get("d=e=f"));
+
+        new CommandLine(app).setTrimQuotes(true).parseArgs("-e", "\"\"'a=b=c'=x=y=z\",\"'d=e=f'=x2=y2\"\"");
+        assertTrue(app.map.keySet().toString(), app.map.containsKey("a=b=c"));
+        assertTrue(app.map.keySet().toString(), app.map.containsKey("d=e=f"));
+        assertEquals("x=y=z", app.map.get("a=b=c"));
+        assertEquals("x2=y2", app.map.get("d=e=f"));
+    }
+    @Test
+    public void testQuotedMapKeysAndQuotedMapValuesNeedExtraQuotes() {
+        class App {
+            @Option(names = "-e")
+            Map<String, String> map = new HashMap<String, String>();
+        }
+
+        App app = new App();
+        new CommandLine(app).setTrimQuotes(true).parseArgs("-e", "\"\"a=b=c\"=\"x y z\"\"");
+        assertTrue(app.map.keySet().toString(), app.map.containsKey("a=b=c"));
+        assertEquals("x y z", app.map.get("a=b=c"));
+    }
+    @Ignore("Needs support for nested quoting #595")
+    @Test
+    public void testQuotedMapKeysAndQuotedMapValuesNeedExtraQuotesWithSplit() {
+        class App {
+            @Option(names = "-e", split = ",")
+            Map<String, String> map = new HashMap<String, String>();
+        }
+
+        App app = new App();
+        new CommandLine(app).setTrimQuotes(true).parseArgs("-e", "\"\"'a=b=c'='x y z'\",\"'d=e=f'='x2 y2'\"\"");
+        assertTrue(app.map.keySet().toString(), app.map.containsKey("a=b=c"));
+        assertTrue(app.map.keySet().toString(), app.map.containsKey("d=e=f"));
+        assertEquals("x y z", app.map.get("a=b=c"));
+        assertEquals("x2 y2", app.map.get("d=e=f"));
     }
 }
