@@ -1822,9 +1822,9 @@ public class CommandLineTest {
         String expected = format("" +
                         "[picocli INFO] Picocli version: %s%n" +
                         "[picocli INFO] Parsing 6 command line args [-f, 111, -f, 222, -f, 333]%n" +
-                        "[picocli INFO] Setting field String picocli.CommandLineTest$16App.field to '111' (was 'null') for option -f%n" +
-                        "[picocli INFO] Overwriting field String picocli.CommandLineTest$16App.field value '111' with '222' for option -f%n" +
-                        "[picocli INFO] Overwriting field String picocli.CommandLineTest$16App.field value '222' with '333' for option -f%n",
+                        "[picocli INFO] Setting field String %2$s.field to '111' (was 'null') for option -f%n" +
+                        "[picocli INFO] Overwriting field String %2$s.field value '111' with '222' for option -f%n" +
+                        "[picocli INFO] Overwriting field String %2$s.field value '222' with '333' for option -f%n",
                 CommandLine.versionString(),
                 App.class.getName());
         String actual = new String(baos.toByteArray(), "UTF8");
@@ -1849,9 +1849,12 @@ public class CommandLineTest {
         String expected = format("" +
                 "[picocli INFO] Picocli version: %s%n" +
                 "[picocli INFO] Parsing 4 command line args [1=a, 2=b, 3=c, 4=d]%n" +
-                "[picocli INFO] Putting [1 : a] in LinkedHashMap<Integer, String> field java.util.Map<Integer, String> picocli.CommandLineTest$17App.message for args[0] at position 0%n" +
-                "[picocli INFO] Putting [2 : b] in LinkedHashMap<Integer, String> field java.util.Map<Integer, String> picocli.CommandLineTest$17App.message for args[0] at position 0%n" +
-                "[picocli INFO] Unmatched arguments: [3=c, 4=d]%n", CommandLine.versionString());
+                "[picocli INFO] Putting [1 : a] in LinkedHashMap<Integer, String> field java.util.Map<Integer, String> %s.message for args[0] at position 0%n" +
+                "[picocli INFO] Putting [2 : b] in LinkedHashMap<Integer, String> field java.util.Map<Integer, String> %s.message for args[0] at position 0%n" +
+                "[picocli INFO] Unmatched arguments: [3=c, 4=d]%n",
+                CommandLine.versionString(),
+                App.class.getName(),
+                App.class.getName());
         String actual = new String(baos.toByteArray(), "UTF8");
         //System.out.println(actual);
         assertEquals(expected, actual);
