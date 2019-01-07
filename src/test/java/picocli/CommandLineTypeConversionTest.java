@@ -738,7 +738,7 @@ public class CommandLineTypeConversionTest {
             fail("Accepted invalid timeunit");
         } catch (Exception ex) {
             String prefix = "Invalid value for option '-timeUnit': expected one of ";
-            String suffix = "but was 'xyz'";
+            String suffix = " (case-sensitive) but was 'xyz'";
             assertEquals(prefix, ex.getMessage().substring(0, prefix.length()));
             assertEquals(suffix, ex.getMessage().substring(ex.getMessage().length() - suffix.length(), ex.getMessage().length()));
         }
@@ -753,6 +753,35 @@ public class CommandLineTypeConversionTest {
         List<TimeUnit> expected = new ArrayList<TimeUnit>(Arrays.asList(TimeUnit.SECONDS, TimeUnit.MICROSECONDS, TimeUnit.NANOSECONDS));
         assertEquals(expected, params.timeUnitList);
     }
+    enum MyTestEnum {
+        BIG, SMALL, TINY;
+        @Override
+        public String toString() { return name().toLowerCase(); }
+    }
+    @Test
+    public void testEnumTypeConversionErrorMessageUsesConstantValuesNotToString() {
+        class App {
+            @Option(names = "-e") MyTestEnum myEnum;
+        }
+        App params = new App();
+        try {
+            new CommandLine(params).parse("-e big".split(" "));
+        } catch (ParameterException ex) {
+            assertEquals("Invalid value for option '-e': expected one of [BIG, SMALL, TINY] (case-sensitive) but was 'big'", ex.getMessage());
+        }
+    }
+    @Test
+    public void testEnumCaseInsensitiveTypeConversionErrorMessageUsesConstantValuesNotToString() {
+        class App {
+            @Option(names = "-e") MyTestEnum myEnum;
+        }
+        App params = new App();
+        try {
+            new CommandLine(params).setCaseInsensitiveEnumValuesAllowed(true).parse("-e big".split(" "));
+        } catch (ParameterException ex) {
+            assertEquals("Invalid value for option '-e': expected one of [BIG, SMALL, TINY] (case-insensitive) but was 'big'", ex.getMessage());
+        }
+    }
     @Test
     public void testEnumArrayTypeConversionFailsForInvalidInput() {
         try {
@@ -760,7 +789,7 @@ public class CommandLineTypeConversionTest {
             fail("Accepted invalid timeunit");
         } catch (Exception ex) {
             String prefix = "Invalid value for option '-timeUnitArray' at index 0 (<timeUnitArray>): expected one of ";
-            String suffix = "but was 'a'";
+            String suffix = " (case-sensitive) but was 'a'";
             assertEquals(prefix, ex.getMessage().substring(0, prefix.length()));
             assertEquals(suffix, ex.getMessage().substring(ex.getMessage().length() - suffix.length(), ex.getMessage().length()));
         }
@@ -772,7 +801,7 @@ public class CommandLineTypeConversionTest {
             fail("Accepted invalid timeunit");
         } catch (Exception ex) {
             String prefix = "Invalid value for option '-timeUnitList' at index 1 (<timeUnitList>): expected one of ";
-            String suffix = " but was 'b'";
+            String suffix = " (case-sensitive) but was 'b'";
             assertEquals(prefix, ex.getMessage().substring(0, prefix.length()));
             assertEquals(suffix, ex.getMessage().substring(ex.getMessage().length() - suffix.length(), ex.getMessage().length()));
         }

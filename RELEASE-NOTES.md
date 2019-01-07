@@ -1,5 +1,33 @@
 # picocli Release Notes
 
+# <a name="3.9.1"></a> Picocli 3.9.1 (UNRELEASED)
+The picocli community is pleased to announce picocli 3.9.1.
+
+This release contains bugfixes and enhancements.
+
+This is the forty-sixth public release.
+Picocli follows [semantic versioning](http://semver.org/).
+
+## <a name="3.9.1"></a> Table of Contents
+* [New and noteworthy](#3.9.1-new)
+* [Fixed issues](#3.9.1-fixes)
+* [Deprecations](#3.9.1-deprecated)
+* [Potential breaking changes](#3.9.1-breaking-changes)
+
+## <a name="3.9.1-new"></a> New and Noteworthy
+
+
+## <a name="3.9.1-fixes"></a> Fixed issues
+- [#592] Error message now shows `enum` constant names, not `toString()` values, after value mismatch. Thanks to [startewho](https://github.com/startewho) for the bug report.
+
+## <a name="3.9.1-deprecated"></a> Deprecations
+No features were deprecated in this release.
+
+## <a name="3.9.1-breaking-changes"></a> Potential breaking changes
+This release has no breaking changes.
+
+
+
 # <a name="3.9.0"></a> Picocli 3.9.0
 The picocli community is pleased to announce picocli 3.9.0.
 

@@ -141,7 +141,7 @@ import static picocli.CommandLine.Help.Column.Overflow.WRAP;
 public class CommandLine {
     
     /** This is picocli version {@value}. */
-    public static final String VERSION = "4.0.0-SNAPSHOT";
+    public static final String VERSION = "3.9.1-SNAPSHOT";
 
     private final Tracer tracer = new Tracer();
     private final CommandSpec commandSpec;
@@ -5239,7 +5239,7 @@ public class CommandLine {
             /** Sets the value of this argument to the specified value and returns the previous value. Delegates to the current {@link #setter()}.
              * @deprecated use {@link #setValue(Object)} instead. This was a design mistake.
              * @since 3.5 */
-            public <T> T setValue(T newValue, CommandLine commandLine) throws PicocliException {
+            @Deprecated public <T> T setValue(T newValue, CommandLine commandLine) throws PicocliException {
                 return setValue(newValue);
             }
 
@@ -7993,15 +7993,21 @@ public class CommandLine {
                 return new ITypeConverter<Object>() {
                     @SuppressWarnings("unchecked")
                     public Object convert(String value) throws Exception {
+                        String sensitivity = "case-sensitive";
                         if (commandSpec.parser().caseInsensitiveEnumValuesAllowed()) {
                             String upper = value.toUpperCase();
                             for (Object enumConstant : type.getEnumConstants()) {
                                 if (upper.equals(String.valueOf(enumConstant).toUpperCase())) { return enumConstant; }
                             }
+                            sensitivity = "case-insensitive";
                         }
                         try { return Enum.valueOf((Class<Enum>) type, value); }
-                        catch (Exception ex) { throw new TypeConversionException(
-                                String.format("expected one of %s but was '%s'", Arrays.asList(type.getEnumConstants()), value)); }
+                        catch (Exception ex) {
+                            Enum<?>[] constants = ((Class<Enum<?>>) type).getEnumConstants();
+                            String[] names = new String[constants.length];
+                            for (int i = 0; i < names.length; i++) { names[i] = constants[i].name(); }
+                            throw new TypeConversionException(
+                                String.format("expected one of %s (%s) but was '%s'", Arrays.asList(names), sensitivity, value)); }
                     }
                 };
             }
