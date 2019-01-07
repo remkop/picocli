@@ -26,7 +26,7 @@ Picocli follows [semantic versioning](http://semver.org/).
 No features were deprecated in this release.
 
 ## <a name="3.9.1-breaking-changes"></a> Potential breaking changes
-The new wupport for quoted map keys with embedded '=' characters [#594] may inpact some existing applications.
+The new support for quoted map keys with embedded '=' characters [#594] may inpact some existing applications.
 If `CommandLine::setTrimQuotes()` is set to `true`, quotes are now removed from map keys and map values. This did not use to be the case.
 
 For example:
