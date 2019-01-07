@@ -387,8 +387,8 @@ but it is not possible to have arguments with embedded newlines or to have empty
 From picocli 3.9, this simpler argument format is fully compatible with http://jcommander.org/#__syntax[JCommander]'s `@-file` argument file format.
 
 You can tell picocli to use the simplified argument file format programmatically with `CommandLine.setUseSimplifiedAtFiles(true)`,
-or with a system property: set system property `picocli.useSimplifiedAtFiles` without a value or with value `"true"`
-(case-insensitive) to enable this simpler argument file format. The system property is useful to allow end users control over the format.
+or by setting system property `picocli.useSimplifiedAtFiles` without a value or with value `"true"`
+(case-insensitive). The system property is useful to allow end users control over the format.
 
 
 == Strongly Typed Everything
