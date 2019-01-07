@@ -19,6 +19,7 @@ Picocli follows [semantic versioning](http://semver.org/).
 
 ## <a name="3.9.1-fixes"></a> Fixed issues
 - [#592] Error message now shows `enum` constant names, not `toString()` values, after value mismatch. Thanks to [startewho](https://github.com/startewho) for the bug report.
+- [#591] Replace some String concatenation with StringBuilder in `picocli.AutoComplete`. Thanks to [Sergio Escalante](https://github.com/sergioescala) for the pull request.
 
 ## <a name="3.9.1-deprecated"></a> Deprecations
 No features were deprecated in this release.
