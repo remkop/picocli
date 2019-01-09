@@ -246,6 +246,7 @@ public class AutoCompleteTest {
                 {"-h"},
                 {"--help"},
         };
+        System.setProperty("picocli.autocomplete.systemExitOnSuccess", "false");
         for (final String[] args : argsList) {
             AutoComplete.main(args);
             assertEquals(args[0], AUTO_COMPLETE_APP_USAGE, systemOutRule.getLog());
@@ -288,6 +289,7 @@ public class AutoCompleteTest {
                 assertTrue(actual.contains(AUTO_COMPLETE_APP_USAGE));
             }
         });
+        System.setProperty("picocli.autocomplete.systemExitOnSuccess", "false");
         System.setProperty("picocli.autocomplete.systemExitOnError", "YES");
         AutoComplete.main(TestApp.class.getName());
     }

@@ -65,10 +65,8 @@ public class AutoComplete {
         if (exitOnError()) { exceptionHandler.andExit(EXIT_CODE_INVALID_INPUT); }
 
         List<Object> result = new CommandLine(new App()).parseWithHandlers(resultHandler, exceptionHandler, args);
-        int exitCode = result == null || result.isEmpty() ? EXIT_CODE_SUCCESS : (Integer) result.get(0);
-        if (exitCode == EXIT_CODE_SUCCESS && exitOnSuccess()) {
-            System.exit(EXIT_CODE_SUCCESS);
-        } else if (exitOnError()) {
+        int exitCode = result == null ? EXIT_CODE_SUCCESS : (Integer) result.get(0);
+        if ((exitCode == EXIT_CODE_SUCCESS && exitOnSuccess()) || (exitCode != EXIT_CODE_SUCCESS && exitOnError())) {
             System.exit(exitCode);
         }
     }
