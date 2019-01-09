@@ -59,16 +59,34 @@ public class AutoComplete {
      *      Other parameters are optional. Specify {@code -h} to see details on the available options.
      */
     public static void main(String... args) {
-        new CommandLine(new App()).parseWithHandlers(
-                new CommandLine.RunLast().andExit(EXIT_CODE_SUCCESS),
-                CommandLine.defaultExceptionHandler().andExit(EXIT_CODE_INVALID_INPUT), args);
+        AbstractParseResultHandler<List<Object>> resultHandler = new CommandLine.RunLast();
+        if (exitOnSuccess()) { resultHandler.andExit(EXIT_CODE_SUCCESS); }
+        DefaultExceptionHandler<List<Object>> exceptionHandler = CommandLine.defaultExceptionHandler();
+        if (exitOnError()) { exceptionHandler.andExit(EXIT_CODE_INVALID_INPUT); }
+        new CommandLine(new App()).parseWithHandlers(resultHandler, exceptionHandler, args);
+    }
+
+    private static boolean exitOnSuccess() {
+        return !"false".equalsIgnoreCase(System.getProperty("picocli.autocomplete.systemExitOnSuccess"));
+    }
+
+    private static boolean exitOnError() {
+        return !"false".equalsIgnoreCase(System.getProperty("picocli.autocomplete.systemExitOnError"));
     }
 
     /**
      * CLI command class for generating completion script.
      */
     @Command(name = "picocli.AutoComplete", sortOptions = false,
-            description = "Generates a bash completion script for the specified command class.")
+            description = "Generates a bash completion script for the specified command class.",
+            footerHeading = "%n@|bold Exit Code|@%n",
+            footer = {"Set the following system properties to control the exit code of this program:",
+                    " \"@|yellow picocli.autocomplete.systemExitOnSuccess|@\" - call `System.exit(0)` when",
+                    "                                              execution completes normally",
+                    " \"@|yellow picocli.autocomplete.systemExitOnError|@\"   - call `System.exit(ERROR_CODE)`",
+                    "                                              when an error occurs",
+                    "If these system properties are not defined or have value \"false\", this program completes without terminating the JVM."
+            })
     private static class App implements Runnable {
 
         @Parameters(arity = "1", description = "Fully qualified class name of the annotated " +
@@ -151,7 +169,14 @@ public class AutoComplete {
             return false;
         }
 
-        private void exit(int exitCode) { System.exit(exitCode); }
+        private void exit(int exitCode) {
+            if (exitCode == 0 && exitOnSuccess()) {
+                System.exit(0);
+            }
+            if (exitOnError()) {
+                System.exit(exitCode);
+            }
+        }
     }
 
     private static interface Function<T, V> {

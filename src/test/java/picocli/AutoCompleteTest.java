@@ -206,7 +206,16 @@ public class AutoCompleteTest {
             "  -w, --writeCommandScript   Write a '<commandName>' sample command script to the%n" +
             "                               same directory as the completion script.%n" +
             "  -f, --force                Overwrite existing script files.%n" +
-            "  -h, --help                 Display this help message and quit.%n");
+            "  -h, --help                 Display this help message and quit.%n" +
+            "%n" +
+            "Exit Code%n" +
+            "Set the following system properties to control the exit code of this program:%n" +
+            " \"picocli.autocomplete.systemExitOnSuccess\" - call `System.exit(0)` when%n" +
+            "                                              execution completes normally%n" +
+            " \"picocli.autocomplete.systemExitOnError\"   - call `System.exit(ERROR_CODE)`%n" +
+            "                                              when an error occurs%n" +
+            "If these system properties are not defined or have value \"false\", this program%n" +
+            "completes without terminating the JVM.%n");
 
     @Test
     public void testAutoCompleteAppHelp() {
