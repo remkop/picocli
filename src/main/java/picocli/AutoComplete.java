@@ -26,6 +26,7 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Callable;
 
 import picocli.CommandLine.*;
 import picocli.CommandLine.Model.PositionalParamSpec;
@@ -60,18 +61,29 @@ public class AutoComplete {
      */
     public static void main(String... args) {
         AbstractParseResultHandler<List<Object>> resultHandler = new CommandLine.RunLast();
-        if (exitOnSuccess()) { resultHandler.andExit(EXIT_CODE_SUCCESS); }
         DefaultExceptionHandler<List<Object>> exceptionHandler = CommandLine.defaultExceptionHandler();
         if (exitOnError()) { exceptionHandler.andExit(EXIT_CODE_INVALID_INPUT); }
-        new CommandLine(new App()).parseWithHandlers(resultHandler, exceptionHandler, args);
+
+        List<Object> result = new CommandLine(new App()).parseWithHandlers(resultHandler, exceptionHandler, args);
+        int exitCode = result == null || result.isEmpty() ? EXIT_CODE_SUCCESS : (Integer) result.get(0);
+        if (exitCode == EXIT_CODE_SUCCESS && exitOnSuccess()) {
+            System.exit(EXIT_CODE_SUCCESS);
+        } else if (exitOnError()) {
+            System.exit(exitCode);
+        }
     }
 
     private static boolean exitOnSuccess() {
-        return !"false".equalsIgnoreCase(System.getProperty("picocli.autocomplete.systemExitOnSuccess"));
+        return syspropDefinedAndNotFalse("picocli.autocomplete.systemExitOnSuccess");
     }
 
     private static boolean exitOnError() {
-        return !"false".equalsIgnoreCase(System.getProperty("picocli.autocomplete.systemExitOnError"));
+        return syspropDefinedAndNotFalse("picocli.autocomplete.systemExitOnError");
+    }
+
+    private static boolean syspropDefinedAndNotFalse(String key) {
+        String value = System.getProperty(key);
+        return value != null && !"false".equalsIgnoreCase(value);
     }
 
     /**
@@ -87,7 +99,7 @@ public class AutoComplete {
                     "                                              when an error occurs",
                     "If these system properties are not defined or have value \"false\", this program completes without terminating the JVM."
             })
-    private static class App implements Runnable {
+    private static class App implements Callable<Integer> {
 
         @Parameters(arity = "1", description = "Fully qualified class name of the annotated " +
                 "@Command class to generate a completion script for.")
@@ -119,7 +131,7 @@ public class AutoComplete {
         @Option(names = { "-h", "--help"}, usageHelp = true, description = "Display this help message and quit.")
         boolean usageHelpRequested;
 
-        public void run() {
+        public Integer call() {
             try {
                 IFactory factory = CommandLine.defaultFactory();
                 if (factoryClass != null) {
@@ -143,20 +155,19 @@ public class AutoComplete {
                     commandScript = new File(autoCompleteScript.getAbsoluteFile().getParentFile(), commandName);
                 }
                 if (commandScript != null && !overwriteIfExists && checkExists(commandScript)) {
-                    exit(EXIT_CODE_COMMAND_SCRIPT_EXISTS);
-                    return;
+                    return EXIT_CODE_COMMAND_SCRIPT_EXISTS;
                 }
                 if (!overwriteIfExists && checkExists(autoCompleteScript)) {
-                    exit(EXIT_CODE_COMPLETION_SCRIPT_EXISTS);
-                    return;
+                    return EXIT_CODE_COMPLETION_SCRIPT_EXISTS;
                 }
 
                 AutoComplete.bash(commandName, autoCompleteScript, commandScript, commandLine);
+                return EXIT_CODE_SUCCESS;
 
             } catch (Exception ex) {
                 ex.printStackTrace();
                 CommandLine.usage(new App(), System.err);
-                exit(EXIT_CODE_EXECUTION_ERROR);
+                return EXIT_CODE_EXECUTION_ERROR;
             }
         }
 
@@ -167,15 +178,6 @@ public class AutoComplete {
                 return true;
             }
             return false;
-        }
-
-        private void exit(int exitCode) {
-            if (exitCode == 0 && exitOnSuccess()) {
-                System.exit(0);
-            }
-            if (exitOnError()) {
-                System.exit(exitCode);
-            }
         }
     }
 
