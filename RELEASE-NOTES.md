@@ -3,6 +3,10 @@
 # <a name="3.9.1"></a> Picocli 3.9.1 (UNRELEASED)
 The picocli community is pleased to announce picocli 3.9.1.
 
+The `picocli.AutoComplete` application no longer calls `System.exit()` unless requested by setting system property `picocli.autocomplete.systemExitOnError` or `picocli.autocomplete.systemExitOnSuccess` to any value other than `false`. Applications that rely on the exit codes introduced in picocli 3.9.0 need to set these system properties.
+
+This release adds support for quoted map keys with embedded '=' characters.
+
 This release contains bugfixes and enhancements.
 
 This is the forty-sixth public release.
@@ -27,6 +31,9 @@ Picocli follows [semantic versioning](http://semver.org/).
 No features were deprecated in this release.
 
 ## <a name="3.9.1-breaking-changes"></a> Potential breaking changes
+The `picocli.AutoComplete` application no longer calls `System.exit()` unless requested by setting system property `picocli.autocomplete.systemExitOnError` or `picocli.autocomplete.systemExitOnSuccess` to any value other than `false`.
+Applications that rely on the exit codes introduced in picocli 3.9.0 need to set these system properties.
+
 The new support for quoted map keys with embedded '=' characters [#594] may inpact some existing applications.
 If `CommandLine::setTrimQuotes()` is set to `true`, quotes are now removed from map keys and map values. This did not use to be the case.
 

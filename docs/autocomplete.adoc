@@ -335,6 +335,8 @@ It may be useful to generate your completion scripts automatically during the bu
 Below is an example Maven snippet that demonstrates how to achieve this.
 
 === Maven Example
+TIP: Setting system property `picocli.autocomplete.systemExitOnError` ensures the build fails if there is any problem generating the completion script (requires picocli v3.9.1).
+
 [source,xml]
 ----
 <plugin>
@@ -346,19 +348,23 @@ Below is an example Maven snippet that demonstrates how to achieve this.
       <id>generate-autocompletion-script</id>
       <phase>package</phase>
       <goals>
-        <goal>java</goal>
+        <goal>exec</goal>
       </goals>
-      <configuration>
-        <mainClass>picocli.AutoComplete</mainClass>
-        <arguments>
-          <argument>--force</argument><!-- overwrite if exists -->
-          <argument>--completionScript</argument>
-          <argument>${project.build.directory}/mycommand_completion.sh</argument>
-          <argument>com.mycompany.mypackage.MyCommand</argument><!-- replace with your class -->
-        </arguments>
-      </configuration>
     </execution>
   </executions>
+  <configuration>
+    <executable>java</executable>
+    <arguments>
+      <argument>-Dpicocli.autocomplete.systemExitOnError</argument>
+      <argument>-cp</argument>
+      <classpath/>
+      <argument>picocli.AutoComplete</argument>
+      <argument>--force</argument><!-- overwrite if exists -->
+      <argument>--completionScript</argument>
+      <argument>${project.build.directory}/mycommand_completion.sh</argument>
+      <argument>mypackage.MyCommand</argument><!-- replace with your class -->
+    </arguments>
+  </configuration>
 </plugin>
 ----
 
