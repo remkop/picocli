@@ -26,6 +26,7 @@ Picocli follows [semantic versioning](http://semver.org/).
 - [#591] Replace some String concatenation in `picocli.AutoComplete` with StringBuilder. Thanks to [Sergio Escalante](https://github.com/sergioescala) for the pull request.
 - [#594] Add support for quoted map keys with embedded '=' characters. Thanks to [Pubudu Fernando](https://github.com/pubudu91) for the suggestion.
 - [#596] `picocli.AutoComplete` should not call `System.exit()` unless requested. Thanks to [Markus Heiden](https://github.com/markusheiden), [Bob Tiernay](https://github.com/bobtiernay-okta) and [RobertZenz](https://github.com/RobertZenz) for analysis and ideas contributing to the solution.
+- [#593] Use Gradle Bintray Plugin to publish artifacts to Bintray.
 
 ## <a name="3.9.1-deprecated"></a> Deprecations
 No features were deprecated in this release.

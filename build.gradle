@@ -9,6 +9,7 @@ buildscript {
 
     dependencies {
         classpath 'org.asciidoctor:asciidoctor-gradle-plugin:1.5.3'
+        classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:1.+'
     }
 }
 
@@ -16,10 +17,12 @@ apply plugin: 'org.asciidoctor.convert'
 apply plugin: 'jacoco'
 apply plugin: 'distribution'
 apply plugin: 'maven-publish'
+apply plugin: 'com.jfrog.bintray'
 
 allprojects {
     apply plugin: 'groovy'
     apply plugin: 'java'
+    apply plugin: 'java-library' // to avoid https://github.com/gradle/gradle/issues/1118
     sourceCompatibility = 1.5
     targetCompatibility = 1.5
 
@@ -104,6 +107,38 @@ allprojects {
                 from javadocJar
                 from ('LICENSE')
                 from ("$rootDir/RELEASE-NOTES.md")
+            }
+        }
+    }
+
+    ext {
+        bintrayUsername   = System.getenv('BINTRAY_USER')
+        bintrayApiKey     = System.getenv('BINTRAY_KEY')
+        bintrayDryRun     = false
+        mavenOssUser      = System.getenv('MAVEN_OSS_USER')
+        mavenOssPassword  = System.getenv('MAVEN_OSS_PASSWORD')
+        mavenOssSync      = false
+        
+        // pom configuration for MavenPublication
+        pomConfig = {
+            licenses {
+                license {
+                    name "The Apache Software License, version 2.0"
+                    url "http://www.apache.org/licenses/LICENSE-2.0.txt"
+                    distribution "repo"
+                }
+            }
+            developers {
+                developer {
+                    id "rpopma"
+                    name "Remko Popma"
+                    email "rpopma@apache.org"
+                }
+            }
+            scm {
+                url "https://github.com/remkop/picocli/tree/master"
+                connection 'scm:git:https://github.com/remkop/picocli.git'
+                developerConnection 'scm:git:ssh://github.com:remkop/picocli.git'
             }
         }
     }
@@ -205,20 +240,56 @@ task copyDocs(type: Copy) {
 }
 
 ext {
-    bintrayBaseUrl    = 'https://api.bintray.com/maven'
-    bintrayRepository = 'picocli'
     bintrayPackage    = 'picocli'
-    bintrayUsername   = System.getenv('BINTRAY_USER')
-    bintrayApiKey     = System.getenv('BINTRAY_KEY')
+    bintrayWebsiteUrl = 'http://picocli.info'
+    bintrayLabels     = ['cli', 'cli framework', 'java', 'command line', 'ergonomic', 'library', 'parser', 'ansi', 'colors', 'annotations', 'reflection', 'usage', 'help', 'customizable', 'stand-alone application', 'main method', 'picocli']
+}
+bintray {
+    user = bintrayUsername
+    key  = bintrayApiKey
+    publications = ['MyPublication']
+    dryRun   = bintrayDryRun //[Default: false] Whether to run this as dry-run, without deploying
+    publish  = false //[Default: false] Whether version should be auto published after an upload    
+    override = false //[Default: false] Whether to override version artifacts already published    
+    //Package configuration. The plugin will use the repo and name properties to check if the package already exists. In that case, there's no need to configure the other package properties (like userOrg, desc, etc).
+    pkg {
+        repo     = 'picocli'
+        name     = bintrayPackage
+        userOrg  = 'remkop'
+        licenses = ['Apache-2.0']
+        desc = description
+        websiteUrl = bintrayWebsiteUrl
+        issueTrackerUrl = 'https://github.com/remkop/picocli/issues'
+        vcsUrl   = 'https://github.com/remkop/picocli.git'
+        labels = bintrayLabels
+        publicDownloadNumbers = false
+        githubRepo = 'remkop/picocli' //Optional Github repository
+        githubReleaseNotesFile = 'RELEASE-NOTES.md' //Optional Github readme file
+        version {
+            name     = "$projectVersion"
+            desc     = description
+            released = new Date()
+            vcsTag   = "v$projectVersion"
+            mavenCentralSync {
+                sync = mavenOssSync //[Default: true] Determines whether to sync the version to Maven Central.
+                user = mavenOssUser //OSS user token: mandatory
+                password = mavenOssPassword //OSS user password: mandatory
+                close = '1' //Optional property. By default the staging repository is closed and artifacts are released to Maven Central. You can optionally turn this behaviour off (by puting 0 as value) and release the version manually.
+            }
+        }
+    }
 }
 publishing {
     publications {
-        plugin(MavenPublication) {
+        MyPublication(MavenPublication) {
             from components.java
             artifact sourcesJar
             artifact testJar
             artifact testSourcesJar
             artifact javadocJar
+            groupId 'info.picocli'
+            artifactId bintrayPackage
+            version "$projectVersion"
             pom.withXml {
                 def root = asNode()
                 root.appendNode('packaging',     'jar')
@@ -226,35 +297,7 @@ publishing {
                 root.appendNode('description',   description)
                 root.appendNode('url',           'http://picocli.info')
                 root.appendNode('inceptionYear', '2017')
-
-                def license = root.appendNode('licenses').appendNode('license')
-                license.appendNode('name',         'The Apache Software License, version 2.0')
-                license.appendNode('url',          'http://www.apache.org/licenses/LICENSE-2.0.txt')
-                license.appendNode('distribution', 'repo')
-
-                def developer = root.appendNode('developers').appendNode('developer')
-                developer.appendNode('id',    'rpopma')
-                developer.appendNode('name',  'Remko Popma')
-                developer.appendNode('email', 'rpopma@apache.org')
-
-                def scm = root.appendNode('scm')
-                scm.appendNode('connection',          'scm:git:https://github.com/remkop/picocli.git')
-                scm.appendNode('developerConnection', 'scm:git:ssh://github.com:remkop/picocli.git')
-                scm.appendNode('url',                 'https://github.com/remkop/picocli/tree/master')
-            }
-        }
-    }
-    repositories {
-        maven {
-            name 'myLocal'
-            url "file://$rootDir/../repo/$bintrayUsername"
-        }
-        maven {
-            name 'Bintray'
-            url "$bintrayBaseUrl/$bintrayUsername/$bintrayRepository/$bintrayPackage"
-            credentials {
-                username = bintrayUsername
-                password = bintrayApiKey
+                root.children().last() + pomConfig
             }
         }
     }
