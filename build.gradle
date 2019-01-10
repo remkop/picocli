@@ -114,10 +114,8 @@ allprojects {
     ext {
         bintrayUsername   = System.getenv('BINTRAY_USER')
         bintrayApiKey     = System.getenv('BINTRAY_KEY')
-        bintrayDryRun     = false
         mavenOssUser      = System.getenv('MAVEN_OSS_USER')
         mavenOssPassword  = System.getenv('MAVEN_OSS_PASSWORD')
-        mavenOssSync      = false
         
         // pom configuration for MavenPublication
         pomConfig = {
@@ -249,8 +247,8 @@ bintray {
     key  = bintrayApiKey
     publications = ['MyPublication']
     dryRun   = bintrayDryRun //[Default: false] Whether to run this as dry-run, without deploying
-    publish  = false //[Default: false] Whether version should be auto published after an upload    
-    override = false //[Default: false] Whether to override version artifacts already published    
+    publish  = bintrayPublish //[Default: false] Whether version should be auto published after an upload    
+    override = bintrayOverride //[Default: false] Whether to override version artifacts already published    
     //Package configuration. The plugin will use the repo and name properties to check if the package already exists. In that case, there's no need to configure the other package properties (like userOrg, desc, etc).
     pkg {
         repo     = 'picocli'
@@ -300,6 +298,14 @@ publishing {
                 root.children().last() + pomConfig
             }
         }
+    }
+}
+allprojects {
+    ext {
+        bintrayDryRun     = false //[Default: false] Whether to run this as dry-run, without deploying
+        bintrayPublish    = false //[Default: false] Whether version should be auto published after an upload 
+        bintrayOverride   = false //[Default: false] Whether to override version artifacts already published   
+        mavenOssSync      = false //[Default: true] Determines whether to sync the version to Maven Central.
     }
 }
 /*
