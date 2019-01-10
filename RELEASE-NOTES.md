@@ -1,6 +1,6 @@
 # picocli Release Notes
 
-# <a name="3.9.1"></a> Picocli 3.9.1 (UNRELEASED)
+# <a name="3.9.1"></a> Picocli 3.9.1
 The picocli community is pleased to announce picocli 3.9.1.
 
 The `picocli.AutoComplete` application no longer calls `System.exit()` unless requested by setting system property `picocli.autocomplete.systemExitOnError` or `picocli.autocomplete.systemExitOnSuccess` to any value other than `false`. Applications that rely on the exit codes introduced in picocli 3.9.0 need to set these system properties.

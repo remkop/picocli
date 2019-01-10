@@ -513,8 +513,8 @@ table.CodeRay td.code>pre{padding:0}
 <div id="header">
 <h1>picocli - a mighty tiny command line interface</h1>
 <div class="details">
-<span id="revnumber">version 3.9.0,</span>
-<span id="revdate">2019-01-04</span>
+<span id="revnumber">version 3.9.1,</span>
+<span id="revdate">2019-01-10</span>
 </div>
 <div id="toc" class="toc2">
 <div id="toctitle">Features</div>
@@ -1175,8 +1175,8 @@ From picocli 3.9, this simpler argument format is fully compatible with <a href=
 </div>
 <div class="paragraph">
 <p>You can tell picocli to use the simplified argument file format programmatically with <code>CommandLine.setUseSimplifiedAtFiles(true)</code>,
-or with a system property: set system property <code>picocli.useSimplifiedAtFiles</code> without a value or with value <code>"true"</code>
-(case-insensitive) to enable this simpler argument file format. The system property is useful to allow end users control over the format.</p>
+or by setting system property <code>picocli.useSimplifiedAtFiles</code> without a value or with value <code>"true"</code>
+(case-insensitive). The system property is useful to allow end users control over the format.</p>
 </div>
 </div>
 </div>
@@ -5153,7 +5153,7 @@ The script body is executed if the user input was valid and did not request usag
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="CodeRay highlight"><code data-lang="groovy"><span class="annotation">@Grab</span>(<span class="string"><span class="delimiter">'</span><span class="content">info.picocli:picocli:3.9.0</span><span class="delimiter">'</span></span>)
+<pre class="CodeRay highlight"><code data-lang="groovy"><span class="annotation">@Grab</span>(<span class="string"><span class="delimiter">'</span><span class="content">info.picocli:picocli:3.9.1</span><span class="delimiter">'</span></span>)
 <span class="annotation">@Command</span>(name = <span class="string"><span class="delimiter">&quot;</span><span class="content">myScript</span><span class="delimiter">&quot;</span></span>,
         mixinStandardHelpOptions = <span class="predefined-constant">true</span>, <span class="comment">// add --help and --version options</span>
         description = <span class="string"><span class="delimiter">&quot;</span><span class="content">@|bold Groovy script|@ @|underline picocli|@ example</span><span class="delimiter">&quot;</span></span>)
@@ -5188,7 +5188,7 @@ When using a Groovy version older than 2.4.7, use this workaround for the <a hre
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="CodeRay highlight"><code data-lang="groovy"><span class="annotation">@Grab</span>(<span class="string"><span class="delimiter">'</span><span class="content">info.picocli:picocli:3.9.0</span><span class="delimiter">'</span></span>)
+<pre class="CodeRay highlight"><code data-lang="groovy"><span class="annotation">@Grab</span>(<span class="string"><span class="delimiter">'</span><span class="content">info.picocli:picocli:3.9.1</span><span class="delimiter">'</span></span>)
 <span class="annotation">@GrabExclude</span>(<span class="string"><span class="delimiter">'</span><span class="content">org.codehaus.groovy:groovy-all</span><span class="delimiter">'</span></span>) <span class="comment">// work around GROOVY-7613</span>
 ...</code></pre>
 </div>
@@ -5346,7 +5346,7 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
 <h3 id="_gradle">25.1. Gradle</h3>
 <div class="listingblock">
 <div class="content">
-<pre>compile 'info.picocli:picocli:3.9.0'</pre>
+<pre>compile 'info.picocli:picocli:3.9.1'</pre>
 </div>
 </div>
 </div>
@@ -5357,7 +5357,7 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
 <pre>&lt;dependency&gt;
   &lt;groupId&gt;info.picocli&lt;/groupId&gt;
   &lt;artifactId&gt;picocli&lt;/artifactId&gt;
-  &lt;version&gt;3.9.0&lt;/version&gt;
+  &lt;version&gt;3.9.1&lt;/version&gt;
 &lt;/dependency&gt;</pre>
 </div>
 </div>
@@ -5366,7 +5366,7 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
 <h3 id="_scala_sbt">25.3. Scala SBT</h3>
 <div class="listingblock">
 <div class="content">
-<pre>libraryDependencies += "info.picocli" % "picocli" % "3.9.0"</pre>
+<pre>libraryDependencies += "info.picocli" % "picocli" % "3.9.1"</pre>
 </div>
 </div>
 </div>
@@ -5374,7 +5374,7 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
 <h3 id="_ivy">25.4. Ivy</h3>
 <div class="listingblock">
 <div class="content">
-<pre>&lt;dependency org="info.picocli" name="picocli" rev="3.9.0" /&gt;</pre>
+<pre>&lt;dependency org="info.picocli" name="picocli" rev="3.9.1" /&gt;</pre>
 </div>
 </div>
 </div>
@@ -5390,8 +5390,8 @@ This facilitates including it in your project in source form to avoid having an 
 </div>
 <div id="footer">
 <div id="footer-text">
-Version 3.9.0<br>
-Last updated 2019-01-04 21:43:32 +09:00
+Version 3.9.1<br>
+Last updated 2019-01-10 23:49:28 +09:00
 </div>
 </div>
 </body>

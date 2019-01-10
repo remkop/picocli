@@ -314,7 +314,8 @@ Release procedure:
 7a update README.md (latest version, release notes)
 8. commit -m "Release picocli version ..."
 9. tag v$version
-10. gradlew publishPluginPublicationToBintrayRepository
+10.a gradlew bintrayUpload - to publish to bintray.com
+10.b gradlew bintrayPublish - to sign, publish and Maven central sync task)
 
 11. edit version numbers: increase minor version and add -SNAPSHOT classifier
 12. gradlew bumpVersion

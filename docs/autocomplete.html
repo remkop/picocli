@@ -513,8 +513,8 @@ table.CodeRay td.code>pre{padding:0}
 <div id="header">
 <h1>Autocomplete for Java Command Line Applications</h1>
 <div class="details">
-<span id="revnumber">version 3.9.0,</span>
-<span id="revdate">2019-01-04</span>
+<span id="revnumber">version 3.9.1,</span>
+<span id="revdate">2019-01-10</span>
 </div>
 <div id="toc" class="toc2">
 <div id="toctitle">Table of Contents</div>
@@ -1054,6 +1054,18 @@ Below is an example Maven snippet that demonstrates how to achieve this.</p>
 </div>
 <div class="sect2">
 <h3 id="_maven_example">8.1. Maven Example</h3>
+<div class="admonitionblock tip">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-tip" title="Tip"></i>
+</td>
+<td class="content">
+Setting system property <code>picocli.autocomplete.systemExitOnError</code> ensures the build fails if there is any problem generating the completion script (requires picocli v3.9.1).
+</td>
+</tr>
+</table>
+</div>
 <div class="listingblock">
 <div class="content">
 <pre class="CodeRay highlight"><code data-lang="xml"><span class="tag">&lt;plugin&gt;</span>
@@ -1065,19 +1077,23 @@ Below is an example Maven snippet that demonstrates how to achieve this.</p>
       <span class="tag">&lt;id&gt;</span>generate-autocompletion-script<span class="tag">&lt;/id&gt;</span>
       <span class="tag">&lt;phase&gt;</span>package<span class="tag">&lt;/phase&gt;</span>
       <span class="tag">&lt;goals&gt;</span>
-        <span class="tag">&lt;goal&gt;</span>java<span class="tag">&lt;/goal&gt;</span>
+        <span class="tag">&lt;goal&gt;</span>exec<span class="tag">&lt;/goal&gt;</span>
       <span class="tag">&lt;/goals&gt;</span>
-      <span class="tag">&lt;configuration&gt;</span>
-        <span class="tag">&lt;mainClass&gt;</span>picocli.AutoComplete<span class="tag">&lt;/mainClass&gt;</span>
-        <span class="tag">&lt;arguments&gt;</span>
-          <span class="tag">&lt;argument&gt;</span>--force<span class="tag">&lt;/argument&gt;</span><span class="comment">&lt;!-- overwrite if exists --&gt;</span>
-          <span class="tag">&lt;argument&gt;</span>--completionScript<span class="tag">&lt;/argument&gt;</span>
-          <span class="tag">&lt;argument&gt;</span>${project.build.directory}/mycommand_completion.sh<span class="tag">&lt;/argument&gt;</span>
-          <span class="tag">&lt;argument&gt;</span>com.mycompany.mypackage.MyCommand<span class="tag">&lt;/argument&gt;</span><span class="comment">&lt;!-- replace with your class --&gt;</span>
-        <span class="tag">&lt;/arguments&gt;</span>
-      <span class="tag">&lt;/configuration&gt;</span>
     <span class="tag">&lt;/execution&gt;</span>
   <span class="tag">&lt;/executions&gt;</span>
+  <span class="tag">&lt;configuration&gt;</span>
+    <span class="tag">&lt;executable&gt;</span>java<span class="tag">&lt;/executable&gt;</span>
+    <span class="tag">&lt;arguments&gt;</span>
+      <span class="tag">&lt;argument&gt;</span>-Dpicocli.autocomplete.systemExitOnError<span class="tag">&lt;/argument&gt;</span>
+      <span class="tag">&lt;argument&gt;</span>-cp<span class="tag">&lt;/argument&gt;</span>
+      <span class="tag">&lt;classpath</span><span class="tag">/&gt;</span>
+      <span class="tag">&lt;argument&gt;</span>picocli.AutoComplete<span class="tag">&lt;/argument&gt;</span>
+      <span class="tag">&lt;argument&gt;</span>--force<span class="tag">&lt;/argument&gt;</span><span class="comment">&lt;!-- overwrite if exists --&gt;</span>
+      <span class="tag">&lt;argument&gt;</span>--completionScript<span class="tag">&lt;/argument&gt;</span>
+      <span class="tag">&lt;argument&gt;</span>${project.build.directory}/mycommand_completion.sh<span class="tag">&lt;/argument&gt;</span>
+      <span class="tag">&lt;argument&gt;</span>mypackage.MyCommand<span class="tag">&lt;/argument&gt;</span><span class="comment">&lt;!-- replace with your class --&gt;</span>
+    <span class="tag">&lt;/arguments&gt;</span>
+  <span class="tag">&lt;/configuration&gt;</span>
 <span class="tag">&lt;/plugin&gt;</span></code></pre>
 </div>
 </div>
@@ -1131,8 +1147,8 @@ Below is an example Maven snippet that demonstrates how to achieve this.</p>
 </div>
 <div id="footer">
 <div id="footer-text">
-Version 3.9.0<br>
-Last updated 2019-01-04 21:50:35 +09:00
+Version 3.9.1<br>
+Last updated 2019-01-10 23:49:28 +09:00
 </div>
 </div>
 </body>
