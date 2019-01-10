@@ -237,6 +237,14 @@ task copyDocs(type: Copy) {
     into 'docs'
 }
 
+allprojects {
+    ext {
+        bintrayDryRun     = false //[Default: false] Whether to run this as dry-run, without deploying
+        bintrayPublish    = false //[Default: false] Whether version should be auto published after an upload 
+        bintrayOverride   = false //[Default: false] Whether to override version artifacts already published   
+        mavenOssSync      = false //[Default: true] Determines whether to sync the version to Maven Central.
+    }
+}
 ext {
     bintrayPackage    = 'picocli'
     bintrayWebsiteUrl = 'http://picocli.info'
@@ -300,14 +308,6 @@ publishing {
         }
     }
 }
-allprojects {
-    ext {
-        bintrayDryRun     = false //[Default: false] Whether to run this as dry-run, without deploying
-        bintrayPublish    = false //[Default: false] Whether version should be auto published after an upload 
-        bintrayOverride   = false //[Default: false] Whether to override version artifacts already published   
-        mavenOssSync      = false //[Default: true] Determines whether to sync the version to Maven Central.
-    }
-}
 /*
 Release procedure:
 1. edit version numbers: remove -SNAPSHOT classifier
@@ -320,8 +320,7 @@ Release procedure:
 7a update README.md (latest version, release notes)
 8. commit -m "Release picocli version ..."
 9. tag v$version
-10.a gradlew bintrayUpload - to publish to bintray.com
-10.b gradlew bintrayPublish - to sign, publish and Maven central sync task)
+10. gradlew bintrayUpload - to publish to bintray.com
 
 11. edit version numbers: increase minor version and add -SNAPSHOT classifier
 12. gradlew bumpVersion
