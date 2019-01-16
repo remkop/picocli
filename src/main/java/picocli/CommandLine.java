@@ -7953,7 +7953,7 @@ public class CommandLine {
             isHelpRequested |= command.helpCommand();
         }
         private void updateHelpRequested(ArgSpec argSpec) {
-            if (argSpec.isOption()) {
+            if (!parseResult.isInitializingDefaultValues && argSpec.isOption()) {
                 OptionSpec option = (OptionSpec) argSpec;
                 isHelpRequested                  |= is(argSpec, "help", option.help());
                 parseResult.versionHelpRequested |= is(argSpec, "versionHelp", option.versionHelp());

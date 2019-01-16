@@ -1,5 +1,33 @@
 # picocli Release Notes
 
+
+# <a name="3.9.2"></a> Picocli 3.9.2 (UNRELEASED)
+The picocli community is pleased to announce picocli 3.9.2.
+
+This release contains bugfixes and enhancements.
+
+This is the forty-seventh public release.
+Picocli follows [semantic versioning](http://semver.org/).
+
+## <a name="3.9.2"></a> Table of Contents
+* [New and noteworthy](#3.9.2-new)
+* [Fixed issues](#3.9.2-fixes)
+* [Deprecations](#3.9.2-deprecated)
+* [Potential breaking changes](#3.9.2-breaking-changes)
+
+## <a name="3.9.2-new"></a> New and Noteworthy
+
+
+## <a name="3.9.2-fixes"></a> Fixed issues
+- [#608] Bugfix: defaulting `usageHelp` or `versionHelp` options incorrectly prevents validation of required options and positional parameters. Thanks to [Pietro Braione](https://github.com/pietrobraione) for the bug report.
+
+## <a name="3.9.2-deprecated"></a> Deprecations
+No features were deprecated in this release.
+
+## <a name="3.9.2-breaking-changes"></a> Potential breaking changes
+
+
+
 # <a name="3.9.1"></a> Picocli 3.9.1
 The picocli community is pleased to announce picocli 3.9.1.
 

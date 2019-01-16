@@ -4148,4 +4148,21 @@ public class CommandLineTest {
         assertEquals(Arrays.asList(3), app.y);
         assertNull(app.unmatched);
     }
+
+    @Test(expected = MissingParameterException.class)
+    public void testBooleanOptionDefaulting() {
+        class App {
+            @Option(names = "-h", usageHelp = true, defaultValue = "false")
+            boolean helpAsked;
+
+            @Option(names = "-V", versionHelp = true, defaultValue = "false")
+            boolean versionAsked;
+
+            @Parameters
+            String compulsoryParameter;
+        }
+        System.setProperty("picocli.trace", "DEBUG");
+        CommandLine commandLine = new CommandLine(new App());
+        commandLine.parseArgs(new String[0]);
+    }
 }
