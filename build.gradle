@@ -164,6 +164,9 @@ asciidoctor {
     outputDir = file('build/docs')
     logDocuments = true
 }
+jacoco {
+    toolVersion = "0.8.2"
+}
 jacocoTestReport {
     reports {
         xml.enabled true
