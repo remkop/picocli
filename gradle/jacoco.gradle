@@ -1,0 +1,24 @@
+apply plugin: 'java'
+apply plugin: 'jacoco'
+
+jacoco {
+    toolVersion = "0.8.2"
+}
+jacocoTestReport {
+    reports {
+        xml.enabled true
+        html.enabled false
+    }
+}
+jacocoTestCoverageVerification {
+    violationRules {
+        rule {
+            limit {
+                minimum = 0.98
+            }
+        }
+    }
+}
+// run coverage verification during the build (and fail when appropriate)
+check.dependsOn jacocoTestCoverageVerification
+//test.finalizedBy jacocoTestReport

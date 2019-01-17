@@ -14,7 +14,6 @@ buildscript {
 }
 
 apply plugin: 'org.asciidoctor.convert'
-apply plugin: 'jacoco'
 apply plugin: 'distribution'
 apply plugin: 'maven-publish'
 apply plugin: 'com.jfrog.bintray'
@@ -164,27 +163,13 @@ asciidoctor {
     outputDir = file('build/docs')
     logDocuments = true
 }
-jacoco {
-    toolVersion = "0.8.2"
+// jacoco 0.8.2 does not work with Java 13; gradle 4.x has no JavaVersion enum value for Java 12
+if (org.gradle.api.JavaVersion.current().isJava11Compatible()) {
+    project.logger.lifecycle("skipping jacoco test for Java version ${org.gradle.api.JavaVersion.current()}")
+} else {
+    project.logger.lifecycle("applying jacoco build file for Java version ${org.gradle.api.JavaVersion.current()}")
+    apply from: "gradle/jacoco.gradle"
 }
-jacocoTestReport {
-    reports {
-        xml.enabled true
-        html.enabled false
-    }
-}
-jacocoTestCoverageVerification {
-    violationRules {
-        rule {
-            limit {
-                minimum = 0.98
-            }
-        }
-    }
-}
-// run coverage verification during the build (and fail when appropriate)
-check.dependsOn jacocoTestCoverageVerification
-
 task bumpReadmeVersion {
     doLast {
         // README.md
