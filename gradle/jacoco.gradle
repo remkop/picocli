@@ -20,5 +20,5 @@ jacocoTestCoverageVerification {
     }
 }
 // run coverage verification during the build (and fail when appropriate)
-check.dependsOn jacocoTestCoverageVerification
-//test.finalizedBy jacocoTestReport
+check.finalizedBy jacocoTestCoverageVerification
+check.finalizedBy jacocoTestReport
