@@ -8,7 +8,7 @@ plugins {
 group 'info.picocli'
 description 'Picocli Shell JLine2 - easily build interactive shell applications with JLine 2 and picocli.'
 version "$projectVersion"
-sourceCompatibility = 1.5
+//sourceCompatibility = 1.5
 
 dependencies {
     compile rootProject
