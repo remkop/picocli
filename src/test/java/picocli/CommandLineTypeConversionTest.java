@@ -524,7 +524,7 @@ public class CommandLineTypeConversionTest {
     }
     @Test
     public void testInetAddressConvertersInvalidError() {
-        parseInvalidValue("-InetAddress", "%$::a?*!a", "java.net.UnknownHostException: %$::a?*!a");
+        parseInvalidValue("-InetAddress", "%$::a?*!a", "java.net.UnknownHostException: ");
     }
     @Test
     public void testUUIDConvertersInvalidError() {
