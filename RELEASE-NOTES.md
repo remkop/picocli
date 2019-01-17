@@ -19,6 +19,7 @@ Picocli follows [semantic versioning](http://semver.org/).
 
 
 ## <a name="3.9.2-fixes"></a> Fixed issues
+- [#602] Make CommandLine in AutoComplete use correct IFactory implementation. Thanks to [Mikołaj Krzyżanowski](https://github.com/MikolajK) for the pull request.
 - [#608] Bugfix: defaulting `usageHelp` or `versionHelp` options incorrectly prevents validation of required options and positional parameters. Thanks to [Pietro Braione](https://github.com/pietrobraione) for the bug report.
 
 ## <a name="3.9.2-deprecated"></a> Deprecations
