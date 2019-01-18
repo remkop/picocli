@@ -95,6 +95,7 @@ Join the [picocli Google group](https://groups.google.com/d/forum/picocli) if yo
 * Picocli is used in the Intuit [Karate](https://github.com/intuit/karate) standalone JAR / executable.
 * Picocli is part of [Ballerina](https://ballerina.io/). Ballerina uses picocli for all its command line utilities.
 * Picocli is used in the [CheckStyle](https://checkstyle.org/cmdline.html) standalone JAR / executable from Checkstyle 8.15.
+* Picocli is included in the [OpenJDK Quality Outreach](https://wiki.openjdk.java.net/display/quality/Quality+Outreach) list of Free Open Source Software (FOSS) projects that actively test against OpenJDK builds.
 
 <img src="https://picocli.info/images/downloads-201812.png">
 
