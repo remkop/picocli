@@ -3338,7 +3338,7 @@ object MyApp {
 ----
 
 == Mailing List
-Join the [picocli Google group](https://groups.google.com/d/forum/picocli) if you are interested in discussing anything picocli-related.
+Join the https://groups.google.com/d/forum/picocli[picocli Google group] if you are interested in discussing anything picocli-related.
 
 == API Javadoc
 Picocli API Javadoc can be found https://remkop.github.io/picocli/apidocs[here].
