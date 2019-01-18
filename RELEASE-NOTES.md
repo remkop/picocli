@@ -23,6 +23,7 @@ Picocli follows [semantic versioning](http://semver.org/).
 - [#608] Bugfix: defaulting `usageHelp` or `versionHelp` options incorrectly prevents validation of required options and positional parameters. Thanks to [Pietro Braione](https://github.com/pietrobraione) for the bug report.
 - [#606] Doc: Added subcommand example. Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
 - [#610] Build: add JDKs to Travis CI build.
+- [#609] Created mailing list `picocli at googlegroups dot com`: [picocli Google group](https://groups.google.com/d/forum/picocli).
 
 ## <a name="3.9.2-deprecated"></a> Deprecations
 No features were deprecated in this release.
