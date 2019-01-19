@@ -3452,9 +3452,6 @@ object MyApp {
 }
 ----
 
-== Mailing List
-Join the https://groups.google.com/d/forum/picocli[picocli Google group] if you are interested in discussing anything picocli-related.
-
 == API Javadoc
 Picocli API Javadoc can be found https://remkop.github.io/picocli/apidocs[here].
 
@@ -3464,7 +3461,10 @@ The https://github.com/remkop/picocli[GitHub project] has the source code, tests
 Star icon:star-o[] and/or fork icon:code-fork[] this project on GitHub if you like it!
 
 == Issue Tracker
-Please use the https://github.com/remkop/picocli/issues[Issue Tracker] to report bugs or request features.
+The GitHub https://github.com/remkop/picocli/issues[Issue Tracker] can be used to report bugs or request features. There is also a <<Mailing List>>, and for questions where the user community may know the answer, https://stackoverflow.com/questions/tagged/picocli[StackOverflow] is both a good resource and a great way to build an online knowledge base.
+
+== Mailing List
+Join the https://groups.google.com/d/forum/picocli[picocli Google group] if you are interested in discussing anything picocli-related and receiving announcements on new releases.
 
 == License
 Picocli is licensed under the https://github.com/remkop/picocli/blob/master/LICENSE[Apache License 2.0].
