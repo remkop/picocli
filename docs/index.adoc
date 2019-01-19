@@ -985,7 +985,7 @@ When unmatched arguments are allowed, the above input will be accepted and a WAR
 
 The unmatched argument values can be obtained with the `CommandLine.getUnmatchedArguments()` method.
 
-=== `@Unmatched` annotation
+=== `@Unmatched` annotation [[unmatched-annotation]]
 From picocli 3.0, fields annotated with `@Unmatched` will be populated with the unmatched arguments.
 The field must be of type `String[]` or `List<String>`.
 
@@ -2986,58 +2986,6 @@ public interface IFactory {
 
 If no factory is specified, a default factory is used. The default factory requires that the classes to instantiate have a public no-argument constructor: it instantiates the class by calling first calling `clazz.newInstance()`, and if that fails, `clazz.getDeclaredConstructor().newInstance()`.
 
-=== Dependency Injection
-You can specify a <<Custom Factory>> to integrate with a Dependency Injection container.
-
-The below example shows how to create an `IFactory` implementation with a Guice `Injector`:
-
-[source,java]
-----
-import com.google.inject.*;
-import picocli.CommandLine.IFactory;
-
-public class GuiceFactory implements IFactory {
-    private final Injector injector = Guice.createInjector(new DemoModule());
-
-    @Override
-    public <K> K create(Class<K> aClass) throws Exception {
-        return injector.getInstance(aClass);
-    }
-
-    static class DemoModule extends AbstractModule {
-        @Override
-        protected void configure() {
-            bind(java.util.List.class).to(java.util.LinkedList.class);
-            bind(Runnable.class).to(InjectionDemo.class);
-        }
-    }
-}
-----
-
-Use the custom factory when creating a `CommandLine` instance, or when invoking the `run` or `call` convenience methods:
-
-[source,java]
-----
-import javax.inject.Inject;
-
-@Command(name = "di-demo")
-public class InjectionDemo implements Runnable {
-    @Inject java.util.List list;
-
-    @Option(names = "-x") int x;
-
-    public static void main(String[] args) {
-        CommandLine.run(Runnable.class, new GuiceFactory(), args);
-    }
-
-    @Override
-    public void run() {
-        assert list instanceof java.util.LinkedList;
-    }
-}
-----
-
-
 === Boolean Options with Parameters
 By default the value of a boolean field is toggled to its logical negative when the field's option is specified on the command line.
 
@@ -3163,6 +3111,141 @@ the https://www.gnu.org/prep/standards/html_node/Command_002dLine-Interfaces.htm
 
 Generally, many applications use options for optional values and parameters for mandatory values.
 However, picocli lets you make options required if you want to, see <<Required Arguments>>.
+
+
+== Dependency Injection
+
+=== Guice Example
+The below example shows how to create a <<Custom Factory,custom `IFactory`>> implementation with a Guice `Injector`:
+
+[source,java]
+----
+import com.google.inject.*;
+import picocli.CommandLine.IFactory;
+
+public class GuiceFactory implements IFactory {
+    private final Injector injector = Guice.createInjector(new DemoModule());
+
+    @Override
+    public <K> K create(Class<K> aClass) throws Exception {
+        return injector.getInstance(aClass);
+    }
+
+    static class DemoModule extends AbstractModule {
+        @Override
+        protected void configure() {
+            bind(java.util.List.class).to(java.util.LinkedList.class);
+            bind(Runnable.class).to(InjectionDemo.class);
+        }
+    }
+}
+----
+
+Use the custom factory when creating a `CommandLine` instance, or when invoking the `run` or `call` convenience methods:
+
+[source,java]
+----
+import javax.inject.Inject;
+
+@Command(name = "di-demo")
+public class InjectionDemo implements Runnable {
+    @Inject java.util.List list;
+
+    @Option(names = "-x") int x;
+
+    public static void main(String[] args) {
+        CommandLine.run(Runnable.class, new GuiceFactory(), args);
+    }
+
+    @Override
+    public void run() {
+        assert list instanceof java.util.LinkedList;
+    }
+}
+----
+
+=== Spring Boot Example
+A custom factory is not always necessary.
+The below example shows how to use picocli with Spring Boot:
+
+[source,java]
+----
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.CommandLineRunner;
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+import picocli.CommandLine;
+
+@SpringBootApplication
+public class MySpringBootApp implements CommandLineRunner {
+
+    @Autowired
+    private MyCommand myCommand;
+
+    public static void main(String[] args) {
+        // let Spring instantiate and inject dependencies
+        SpringApplication.run(MySpringBootApp.class, args);
+    }
+
+    @Override
+    public void run(String... args) {
+        // let picocli parse command line args and run the business logic
+        CommandLine.call(myCommand, args);
+    }
+}
+----
+
+[TIP]
+====
+It may be a good idea to define an option `--spring.config.location` in your command.
+Spring Boot allows end users to specify the `spring.config.location` Spring environment property as a command line option to specify an alternative location for the `application.properties` file.
+Defining this option prevents picocli from throwing an `UnmatchedArgumentException` ("Unknown option") when it sees an option it cannot match.
+You can make it a `hidden` option so it is not shown in the usage help message, or add a description that explains its meaning.
+
+Alternatively, you can define an <<unmatched-annotation,unmatched>> field to capture _all_ unknown options (and positional parameters):
+
+[source,java]
+----
+@Unmatched List<String> unmatched;
+----
+====
+
+When your command is annotated with `@org.springframework.stereotype.Component` Spring can autodetect it for dependency injection.
+The business logic of your command looks like any other picocli command with options and parameters.
+
+[source,java]
+----
+import org.springframework.stereotype.Component;
+import org.springframework.beans.factory.annotation.Autowired;
+import picocli.CommandLine.Command;
+import picocli.CommandLine.Option;
+import java.util.concurrent.Callable;
+
+@Component
+@Command(name = "myCommand")
+public class MyCommand implements Callable<Void> {
+
+    @Autowired
+    private SomeService someService;
+
+    // Prevent "Unknown option" error when users use
+    // the Spring Boot parameter 'spring.config.location' to specify
+    // an alternative location for the application.properties file.
+    @Option(names = "--spring.config.location", hidden = true)
+    private String springConfigLocation;
+
+    @Option(names = { "-x", "--option" }, description = "example option")
+    private boolean flag;
+
+    public Void call() throws Exception {
+        // business logic here
+        return null;
+    }
+}
+----
+
+=== Micronaut Example
+The Micronaut microservices framework provides https://docs.micronaut.io/latest/guide/index.html#picocli[built-in support] for picocli with its `PicocliRunner` class.
 
 == Tracing
 Picocli v1.0 introduced support for parser tracing to facilitate troubleshooting.

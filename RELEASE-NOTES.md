@@ -8,6 +8,7 @@ This release contains bugfixes and enhancements.
 
 Picocli now has a mailing list `picocli at googlegroups dot com`. Alternatively visit the [picocli Google group](https://groups.google.com/d/forum/picocli) web interface.
 
+The user manual has improved documentation for internationalization and localization, and the section on Dependency Injection now has a Spring Boot example and link to the Micronaut user manual.
 
 
 This is the forty-seventh public release.
@@ -21,6 +22,9 @@ Picocli follows [semantic versioning](http://semver.org/).
 
 ## <a name="3.9.2-new"></a> New and Noteworthy
 
+Picocli now has a mailing list `picocli at googlegroups dot com`. Alternatively visit the [picocli Google group](https://groups.google.com/d/forum/picocli) web interface.
+
+The user manual has improved documentation for internationalization and localization. Dependency Injection is now a top-level section and now has a Spring Boot example and link to the Micronaut user manual.
 
 ## <a name="3.9.2-fixes"></a> Fixed issues
 - [#602] Make CommandLine in AutoComplete use correct IFactory implementation. Thanks to [Mikołaj Krzyżanowski](https://github.com/MikolajK) for the pull request.
@@ -28,6 +32,7 @@ Picocli follows [semantic versioning](http://semver.org/).
 - [#612] Bugfix: Usage help for booleans options with `arity = "1"` now correctly show the option parameter in synopsis. Thanks to [prewersk](https://github.com/prewersk) for the bug report.
 - [#606] Doc: Added subcommand example. Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
 - [#605] Doc: Improved documentation for internationalization and localization. Thanks to [Andreas Deininger](https://github.com/deining) for raising this.
+- [#604] Doc: Improve user manual section on Dependency Injection: add Spring Boot example. Thanks to [Alistair Rutherford](https://github.com/alistairrutherford) for the example code.
 - [#610] Build: add JDKs to Travis CI build.
 - [#609] Created mailing list `picocli at googlegroups dot com`: [picocli Google group](https://groups.google.com/d/forum/picocli).
 
