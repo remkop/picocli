@@ -2541,7 +2541,7 @@ help = Show this help message and exit.
 version = Print version information and exit.
 ----
 
-=== Commands Can Share a Resource Bundle
+=== Shared Resource Bundles
 
 Resources for multiple commands can be specified in a single ResourceBundle. Keys and their value can be
 shared by multiple commands (so you don't need to repeat them for every command), but alternatively, keys can be prefixed with
@@ -2560,9 +2560,13 @@ usage.footer.0 = footer line 0
 usage.footer.1 = footer line 1
 ----
 
-=== Localizing the Built-in Help Subcommand
+=== Localizing the Built-In Help
 
 The built-in `picocli.CommandLine.HelpCommand` can be localized as follows:
+
+* `help.usage.header` controls the help command summary in the subcommand list
+* `helpCommand.help` is the resource bundle key for the `--help` option of the help subcommand
+* `helpCommand.command` is the resource bundle key for the `COMMAND` positional parameter of the help subcommand
 
 [source]
 ----
@@ -2577,7 +2581,7 @@ helpCommand.help = Shared description of --help option of built-in help subcomma
 helpCommand.command = Shared description of COMMAND parameter of built-in help subcommand
 ----
 
-=== Localizing Options with a Default Value
+=== Localizing Default Values
 Options with a <<Default Values,default value>> can use the `${DEFAULT-VALUE}` variable in the localized option description in the resource bundle:
 
 [source]
