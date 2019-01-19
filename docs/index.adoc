@@ -3247,6 +3247,36 @@ public class MyCommand implements Callable<Void> {
 === Micronaut Example
 The Micronaut microservices framework provides https://docs.micronaut.io/latest/guide/index.html#picocli[built-in support] for picocli with its `PicocliRunner` class.
 
+[source,java]
+----
+import io.micronaut.configuration.picocli.PicocliRunner;
+import io.micronaut.http.annotation.*;
+import io.micronaut.http.client.*;
+import javax.inject.Inject;
+
+import picocli.CommandLine.Command;
+import picocli.CommandLine.Option;
+
+@Command(name = "myMicronautApp")
+public class MyMicronautApp implements Runnable {
+
+    @Client("https://api.github.com")
+    @Inject RxHttpClient client;
+
+    @Option(names = {"-x", "--option"}, description = "example option")
+    boolean flag;
+
+    public static void main(String[] args) throws Exception {
+        // let Micronaut instantiate and inject services
+        PicocliRunner.run(MyMicronautApp.class, args);
+    }
+
+    public void run() {
+        // business logic here
+    }
+}
+----
+
 == Tracing
 Picocli v1.0 introduced support for parser tracing to facilitate troubleshooting.
 
