@@ -6,6 +6,9 @@ The picocli community is pleased to announce picocli 3.9.2.
 
 This release contains bugfixes and enhancements.
 
+Picocli now has a mailing list `picocli at googlegroups dot com`. Alternatively visit the [picocli Google group](https://groups.google.com/d/forum/picocli) web interface.
+
+
 
 This is the forty-seventh public release.
 Picocli follows [semantic versioning](http://semver.org/).
