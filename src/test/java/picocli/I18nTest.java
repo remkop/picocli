@@ -517,4 +517,57 @@ public class I18nTest {
                 "  -f, --force        Disable checks.%n");
         assertEquals(pushUsage, git.getSubcommands().get("push").getUsageMessage());
     }
+
+    @Test
+    public void testLocalizeBuiltInHelp_Shared() {
+        String expected = String.format("" +
+                "Shared header heading%n" +
+                "i18n-sub HELP command header%n" +
+                "%n" +
+                "Usage: i18n-top i18n-sub help [-h] [COMMAND...]%n" +
+                "Shared description 0%n" +
+                "Shared description 1%n" +
+                "Shared description 2%n" +
+                "      [COMMAND...]   Shared description of COMMAND parameter of built-in help%n" +
+                "                       subcommand%n" +
+                "  -h, --help         Shared description of --help option of built-in help subcommand%n" +
+                "Shared footer heading%n" +
+                "Shared footer%n");
+
+        Locale original = Locale.getDefault();
+        Locale.setDefault(Locale.ENGLISH);
+        try {
+            assertEquals(expected, new CommandLine(new I18nCommand())
+                    .getSubcommands().get("i18n-sub")
+                    .getSubcommands().get("help").getUsageMessage());
+        } finally {
+            Locale.setDefault(original);
+        }
+    }
+
+    @Test
+    public void testLocalizeBuiltInHelp_Specialized() {
+        String expected = String.format("" +
+                "Shared header heading%n" +
+                "i18n-top HELP command header%n" +
+                "%n" +
+                "Usage: i18n-top help [-h] [COMMAND...]%n" +
+                "Shared description 0%n" +
+                "Shared description 1%n" +
+                "Shared description 2%n" +
+                "      [COMMAND...]   Specialized description of COMMAND parameter of i18-top help%n" +
+                "                       subcommand%n" +
+                "  -h, --help         Specialized description of --help option of i18-top help%n" +
+                "                       subcommand%n" +
+                "Shared footer heading%n" +
+                "Shared footer%n");
+
+        Locale original = Locale.getDefault();
+        Locale.setDefault(Locale.ENGLISH);
+        try {
+            assertEquals(expected, new CommandLine(new I18nCommand()).getSubcommands().get("help").getUsageMessage());
+        } finally {
+            Locale.setDefault(original);
+        }
+    }
 }

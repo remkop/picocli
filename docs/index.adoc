@@ -22,7 +22,7 @@ Every main method deserves picocli!
 image:logo/horizontal.png[picocli the Mighty Tiny Command Line Interface,width=800]
 
 The user manual for the latest release is at http://picocli.info.
-Busy and impatient people may be interested in the link:quick-guide.html[Quick Guide].
+For the busy and impatient: there is also a link:quick-guide.html[Quick Guide].
 
 == Introduction
 Picocli is a one-file framework for creating Java command line applications with almost zero code.
@@ -2484,6 +2484,8 @@ Command attributes may be defined multiple times, but only one value is preserve
 From version 3.6, usage help message sections and the description for options and positional parameters can be specified in a resource bundle.
 A resource bundle can be set via annotations and programmatically.
 
+=== Configuration
+
 Annotation example:
 
 [source,java]
@@ -2502,6 +2504,7 @@ CommandLine cmd = new CommandLine(new I18nDemo2());
 cmd.setResourceBundle(ResourceBundle.getBundle("my.org.I18nDemo2_Messages"));
 ----
 
+=== Example Resource Bundle
 Example properties resource bundle:
 
 [source]
@@ -2538,9 +2541,10 @@ help = Show this help message and exit.
 version = Print version information and exit.
 ----
 
+=== Commands Can Share a Resource Bundle
 
 Resources for multiple commands can be specified in a single ResourceBundle. Keys and their value can be
-shared by multiple commands (so you don't need to repeat them for every command), but keys can be prefixed with
+shared by multiple commands (so you don't need to repeat them for every command), but alternatively, keys can be prefixed with
 `command name + "."` to specify different values for different commands.
 The most specific key wins. For example:
 
@@ -2556,6 +2560,30 @@ usage.footer.0 = footer line 0
 usage.footer.1 = footer line 1
 ----
 
+=== Localizing the Built-in Help Subcommand
+
+The built-in `picocli.CommandLine.HelpCommand` can be localized as follows:
+
+[source]
+----
+# for a specific subcommand, e.g., `parent help`
+parent.help.usage.header=This is the `help` subcommand of the `parent` command
+parent.help.helpCommand.help = Specialized description of --help option of help subcommand for parent command
+parent.help.helpCommand.command = Specialized description of COMMAND parameter of help subcommand for parent command
+
+# or have one global entry for the `help` subcommand (for any and all commands)
+help.usage.header=This is the `help` subcommand
+helpCommand.help = Shared description of --help option of built-in help subcommand
+helpCommand.command = Shared description of COMMAND parameter of built-in help subcommand
+----
+
+=== Localizing Options with a Default Value
+Options with a <<Default Values,default value>> can use the `${DEFAULT-VALUE}` variable in the localized option description in the resource bundle:
+
+[source]
+----
+userName=Specify the user name. The default is ${DEFAULT-VALUE}.
+----
 
 
 == Tips & Tricks

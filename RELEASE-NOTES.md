@@ -6,6 +6,7 @@ The picocli community is pleased to announce picocli 3.9.2.
 
 This release contains bugfixes and enhancements.
 
+
 This is the forty-seventh public release.
 Picocli follows [semantic versioning](http://semver.org/).
 
@@ -23,6 +24,7 @@ Picocli follows [semantic versioning](http://semver.org/).
 - [#608] Bugfix: defaulting `usageHelp` or `versionHelp` options incorrectly prevents validation of required options and positional parameters. Thanks to [Pietro Braione](https://github.com/pietrobraione) for the bug report.
 - [#612] Bugfix: Usage help for booleans options with `arity = "1"` now correctly show the option parameter in synopsis. Thanks to [prewersk](https://github.com/prewersk) for the bug report.
 - [#606] Doc: Added subcommand example. Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
+- [#605] Doc: Improved documentation for internationalization and localization. Thanks to [Andreas Deininger](https://github.com/deining) for raising this.
 - [#610] Build: add JDKs to Travis CI build.
 - [#609] Created mailing list `picocli at googlegroups dot com`: [picocli Google group](https://groups.google.com/d/forum/picocli).
 
