@@ -3697,4 +3697,19 @@ public class CommandLineHelpTest {
         String expected = "abc";
         assertEquals(expected, actual);
     }
+
+    @Test
+    public void testBooleanOptionWithArity1() {
+        @Command(mixinStandardHelpOptions = true)
+        class ExampleCommand {
+            @Option(names = { "-b" }, arity = "1")
+            boolean booleanWithArity1;
+        }
+        String expected = String.format("" +
+                "Usage: <main class> [-hV] [-b=<booleanWithArity1>]%n" +
+                "  -b=<booleanWithArity1>%n" +
+                "  -h, --help                Show this help message and exit.%n" +
+                "  -V, --version             Print version information and exit.%n");
+        assertEquals(expected, new CommandLine(new ExampleCommand()).getUsageMessage(Help.Ansi.OFF));
+    }
 }

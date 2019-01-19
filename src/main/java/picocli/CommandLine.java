@@ -8703,7 +8703,8 @@ public class CommandLine {
                 StringBuilder clusteredOptional = new StringBuilder("-");
                 for (OptionSpec option : options) {
                     if (option.hidden()) { continue; }
-                    if (option.type() == boolean.class || option.type() == Boolean.class) {
+                    boolean isFlagOption = option.type() == boolean.class || option.type() == Boolean.class;
+                    if (isFlagOption && option.arity().max <= 0) { // #612 consider arity: boolean options may require a parameter
                         String shortestName = option.shortestName();
                         if (shortestName.length() == 2 && shortestName.startsWith("-")) {
                             booleanOptions.add(option);
