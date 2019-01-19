@@ -2,7 +2,7 @@ apply plugin: 'java'
 apply plugin: 'jacoco'
 
 jacoco {
-    toolVersion = "0.8.2"
+    toolVersion = "$jacocoVersion"
 }
 jacocoTestReport {
     reports {

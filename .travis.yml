@@ -34,7 +34,6 @@ before_script:
   - ./cc-test-reporter before-build
 script:
   - ./gradlew check --info
-#  - ./gradlew jacocoTestReport
 after_success:
   - bash <(curl -s https://codecov.io/bash)
   - ./cc-test-reporter after-build --exit-code $TRAVIS_TEST_RESULT

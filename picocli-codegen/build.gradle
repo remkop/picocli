@@ -8,7 +8,6 @@ plugins {
 group 'info.picocli'
 description 'Picocli Code Generation - Tools to generate documentation, configuration, source code and other files from a picocli model.'
 version "$projectVersion"
-//sourceCompatibility = 1.5
 
 dependencies {
     compile rootProject
@@ -16,13 +15,13 @@ dependencies {
 }
 jar {
     manifest {
-        attributes  'Specification-Title'   : 'Picocli Code Generation',
-                'Specification-Vendor'  : 'Remko Popma',
-                'Specification-Version' : version,
-                'Implementation-Title'  : 'Picocli Code Generation',
-                'Implementation-Vendor' : 'Remko Popma',
-                'Implementation-Version': version,
-                'Automatic-Module-Name' : 'info.picocli.codegen'
+        attributes 'Specification-Title'   : 'Picocli Code Generation',
+                   'Specification-Vendor'  : 'Remko Popma',
+                   'Specification-Version' : version,
+                   'Implementation-Title'  : 'Picocli Code Generation',
+                   'Implementation-Vendor' : 'Remko Popma',
+                   'Implementation-Version': version,
+                   'Automatic-Module-Name' : 'info.picocli.codegen'
     }
 }
 
