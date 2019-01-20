@@ -513,8 +513,8 @@ table.CodeRay td.code>pre{padding:0}
 <div id="header">
 <h1>picocli - a mighty tiny command line interface</h1>
 <div class="details">
-<span id="revnumber">version 3.9.1,</span>
-<span id="revdate">2019-01-10</span>
+<span id="revnumber">version 3.9.2,</span>
+<span id="revdate">2019-01-20</span>
 </div>
 <div id="toc" class="toc2">
 <div id="toctitle">Features</div>
@@ -568,7 +568,7 @@ table.CodeRay td.code>pre{padding:0}
 <li><a href="#_overwriting_single_options">7.1. Overwriting Single Options</a></li>
 <li><a href="#_stop_at_positional">7.2. Stop At Positional</a></li>
 <li><a href="#_unmatched_input">7.3. Unmatched Input</a></li>
-<li><a href="#__code_unmatched_code_annotation">7.4. <code>@Unmatched</code> annotation</a></li>
+<li><a href="#unmatched-annotation">7.4. <code>@Unmatched</code> annotation</a></li>
 <li><a href="#_unknown_options">7.5. Unknown Options</a></li>
 <li><a href="#_stop_at_unmatched">7.6. Stop At Unmatched</a></li>
 <li><a href="#_toggle_boolean_flags">7.7. Toggle Boolean Flags</a></li>
@@ -649,7 +649,15 @@ table.CodeRay td.code>pre{padding:0}
 <li><a href="#_reuse_combinations">14.3. Reuse Combinations</a></li>
 </ul>
 </li>
-<li><a href="#_internationalization">15. Internationalization</a></li>
+<li><a href="#_internationalization">15. Internationalization</a>
+<ul class="sectlevel2">
+<li><a href="#_configuration">15.1. Configuration</a></li>
+<li><a href="#_example_resource_bundle">15.2. Example Resource Bundle</a></li>
+<li><a href="#_shared_resource_bundles">15.3. Shared Resource Bundles</a></li>
+<li><a href="#_localizing_the_built_in_help">15.4. Localizing the Built-In Help</a></li>
+<li><a href="#_localizing_default_values">15.5. Localizing Default Values</a></li>
+</ul>
+</li>
 <li><a href="#_tips_tricks">16. Tips &amp; Tricks</a>
 <ul class="sectlevel2">
 <li><a href="#option-parameters-methods">16.1. <code>@Option</code> and <code>@Parameters</code> Methods</a></li>
@@ -660,35 +668,41 @@ table.CodeRay td.code>pre{padding:0}
 <li><a href="#_exit_code">16.6. Exit Code</a></li>
 <li><a href="#__code_spec_code_annotation">16.7. <code>@Spec</code> Annotation</a></li>
 <li><a href="#_custom_factory">16.8. Custom Factory</a></li>
-<li><a href="#_dependency_injection">16.9. Dependency Injection</a></li>
-<li><a href="#_boolean_options_with_parameters">16.10. Boolean Options with Parameters</a></li>
-<li><a href="#_hexadecimal_values">16.11. Hexadecimal Values</a></li>
-<li><a href="#_option_parameter_separators_2">16.12. Option-Parameter Separators</a></li>
-<li><a href="#_best_practices_for_command_line_interfaces">16.13. Best Practices for Command Line Interfaces</a></li>
+<li><a href="#_boolean_options_with_parameters">16.9. Boolean Options with Parameters</a></li>
+<li><a href="#_hexadecimal_values">16.10. Hexadecimal Values</a></li>
+<li><a href="#_option_parameter_separators_2">16.11. Option-Parameter Separators</a></li>
+<li><a href="#_best_practices_for_command_line_interfaces">16.12. Best Practices for Command Line Interfaces</a></li>
 </ul>
 </li>
-<li><a href="#_tracing">17. Tracing</a></li>
-<li><a href="#_tab_autocomplete">18. TAB Autocomplete</a></li>
-<li><a href="#_picocli_in_other_languages">19. Picocli in Other Languages</a>
+<li><a href="#_dependency_injection">17. Dependency Injection</a>
 <ul class="sectlevel2">
-<li><a href="#_groovy">19.1. Groovy</a></li>
-<li><a href="#_kotlin">19.2. Kotlin</a></li>
-<li><a href="#_scala">19.3. Scala</a></li>
+<li><a href="#_guice_example">17.1. Guice Example</a></li>
+<li><a href="#_spring_boot_example">17.2. Spring Boot Example</a></li>
+<li><a href="#_micronaut_example">17.3. Micronaut Example</a></li>
 </ul>
 </li>
-<li><a href="#_mailing_list">20. Mailing List</a></li>
+<li><a href="#_tracing">18. Tracing</a></li>
+<li><a href="#_tab_autocomplete">19. TAB Autocomplete</a></li>
+<li><a href="#_picocli_in_other_languages">20. Picocli in Other Languages</a>
+<ul class="sectlevel2">
+<li><a href="#_groovy">20.1. Groovy</a></li>
+<li><a href="#_kotlin">20.2. Kotlin</a></li>
+<li><a href="#_scala">20.3. Scala</a></li>
+</ul>
+</li>
 <li><a href="#_api_javadoc">21. API Javadoc</a></li>
 <li><a href="#_github_project">22. GitHub Project</a></li>
 <li><a href="#_issue_tracker">23. Issue Tracker</a></li>
-<li><a href="#_license">24. License</a></li>
-<li><a href="#_releases">25. Releases</a></li>
-<li><a href="#_download">26. Download</a>
+<li><a href="#_mailing_list">24. Mailing List</a></li>
+<li><a href="#_license">25. License</a></li>
+<li><a href="#_releases">26. Releases</a></li>
+<li><a href="#_download">27. Download</a>
 <ul class="sectlevel2">
-<li><a href="#_gradle">26.1. Gradle</a></li>
-<li><a href="#_maven">26.2. Maven</a></li>
-<li><a href="#_scala_sbt">26.3. Scala SBT</a></li>
-<li><a href="#_ivy">26.4. Ivy</a></li>
-<li><a href="#_source">26.5. Source</a></li>
+<li><a href="#_gradle">27.1. Gradle</a></li>
+<li><a href="#_maven">27.2. Maven</a></li>
+<li><a href="#_scala_sbt">27.3. Scala SBT</a></li>
+<li><a href="#_ivy">27.4. Ivy</a></li>
+<li><a href="#_source">27.5. Source</a></li>
 </ul>
 </li>
 </ul>
@@ -712,7 +726,7 @@ Every main method deserves picocli!
 </div>
 <div class="paragraph">
 <p>The user manual for the latest release is at <a href="http://picocli.info" class="bare">http://picocli.info</a>.
-Busy and impatient people may be interested in the <a href="quick-guide.html">Quick Guide</a>.</p>
+For the busy and impatient: there is also a <a href="quick-guide.html">Quick Guide</a>.</p>
 </div>
 </div>
 </div>
@@ -2140,7 +2154,7 @@ When unmatched arguments are allowed, the above input will be accepted and a WAR
 </div>
 </div>
 <div class="sect2">
-<h3 id="__code_unmatched_code_annotation">7.4. <code>@Unmatched</code> annotation</h3>
+<h3 id="unmatched-annotation">7.4. <code>@Unmatched</code> annotation</h3>
 <div class="paragraph">
 <p>From picocli 3.0, fields annotated with <code>@Unmatched</code> will be populated with the unmatched arguments.
 The field must be of type <code>String[]</code> or <code>List&lt;String&gt;</code>.</p>
@@ -4241,6 +4255,8 @@ commandLine.parse(<span class="string"><span class="delimiter">&quot;</span><spa
 <p>From version 3.6, usage help message sections and the description for options and positional parameters can be specified in a resource bundle.
 A resource bundle can be set via annotations and programmatically.</p>
 </div>
+<div class="sect2">
+<h3 id="_configuration">15.1. Configuration</h3>
 <div class="paragraph">
 <p>Annotation example:</p>
 </div>
@@ -4261,6 +4277,9 @@ CommandLine cmd = <span class="keyword">new</span> CommandLine(<span class="keyw
 cmd.setResourceBundle(<span class="predefined-type">ResourceBundle</span>.getBundle(<span class="string"><span class="delimiter">&quot;</span><span class="content">my.org.I18nDemo2_Messages</span><span class="delimiter">&quot;</span></span>));</code></pre>
 </div>
 </div>
+</div>
+<div class="sect2">
+<h3 id="_example_resource_bundle">15.2. Example Resource Bundle</h3>
 <div class="paragraph">
 <p>Example properties resource bundle:</p>
 </div>
@@ -4298,9 +4317,12 @@ help = Show this help message and exit.
 version = Print version information and exit.</code></pre>
 </div>
 </div>
+</div>
+<div class="sect2">
+<h3 id="_shared_resource_bundles">15.3. Shared Resource Bundles</h3>
 <div class="paragraph">
 <p>Resources for multiple commands can be specified in a single ResourceBundle. Keys and their value can be
-shared by multiple commands (so you don&#8217;t need to repeat them for every command), but keys can be prefixed with
+shared by multiple commands (so you don&#8217;t need to repeat them for every command), but alternatively, keys can be prefixed with
 <code>command name + "."</code> to specify different values for different commands.
 The most specific key wins. For example:</p>
 </div>
@@ -4314,6 +4336,50 @@ jfrog.rt.upload.usage.header = Upload files.
 usage.footerHeading = Environment Variables:
 usage.footer.0 = footer line 0
 usage.footer.1 = footer line 1</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_localizing_the_built_in_help">15.4. Localizing the Built-In Help</h3>
+<div class="paragraph">
+<p>The built-in <code>picocli.CommandLine.HelpCommand</code> can be localized as follows:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>help.usage.header</code> controls the help command summary in the subcommand list</p>
+</li>
+<li>
+<p><code>helpCommand.help</code> is the resource bundle key for the <code>--help</code> option of the help subcommand</p>
+</li>
+<li>
+<p><code>helpCommand.command</code> is the resource bundle key for the <code>COMMAND</code> positional parameter of the help subcommand</p>
+</li>
+</ul>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code># for a specific subcommand, e.g., `parent help`
+parent.help.usage.header=This is the `help` subcommand of the `parent` command
+parent.help.helpCommand.help = Specialized description of --help option of help subcommand for parent command
+parent.help.helpCommand.command = Specialized description of COMMAND parameter of help subcommand for parent command
+
+# or have one global entry for the `help` subcommand (for any and all commands)
+help.usage.header=This is the `help` subcommand
+helpCommand.help = Shared description of --help option of built-in help subcommand
+helpCommand.command = Shared description of COMMAND parameter of built-in help subcommand</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_localizing_default_values">15.5. Localizing Default Values</h3>
+<div class="paragraph">
+<p>Options with a <a href="#_default_values">default value</a> can use the <code>${DEFAULT-VALUE}</code> variable in the localized option description in the resource bundle:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code>userName=Specify the user name. The default is ${DEFAULT-VALUE}.</code></pre>
+</div>
 </div>
 </div>
 </div>
@@ -4812,63 +4878,7 @@ CommandLine cmdLine = <span class="keyword">new</span> CommandLine(<span class="
 </div>
 </div>
 <div class="sect2">
-<h3 id="_dependency_injection">16.9. Dependency Injection</h3>
-<div class="paragraph">
-<p>You can specify a <a href="#_custom_factory">Custom Factory</a> to integrate with a Dependency Injection container.</p>
-</div>
-<div class="paragraph">
-<p>The below example shows how to create an <code>IFactory</code> implementation with a Guice <code>Injector</code>:</p>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre class="CodeRay highlight"><code data-lang="java"><span class="keyword">import</span> <span class="include">com.google.inject</span>.*;
-<span class="keyword">import</span> <span class="include">picocli.CommandLine.IFactory</span>;
-
-<span class="directive">public</span> <span class="type">class</span> <span class="class">GuiceFactory</span> <span class="directive">implements</span> IFactory {
-    <span class="directive">private</span> <span class="directive">final</span> Injector injector = Guice.createInjector(<span class="keyword">new</span> DemoModule());
-
-    <span class="annotation">@Override</span>
-    <span class="directive">public</span> &lt;K&gt; K create(<span class="predefined-type">Class</span>&lt;K&gt; aClass) <span class="directive">throws</span> <span class="exception">Exception</span> {
-        <span class="keyword">return</span> injector.getInstance(aClass);
-    }
-
-    <span class="directive">static</span> <span class="type">class</span> <span class="class">DemoModule</span> <span class="directive">extends</span> AbstractModule {
-        <span class="annotation">@Override</span>
-        <span class="directive">protected</span> <span class="type">void</span> configure() {
-            bind(java.util.List.class).to(java.util.LinkedList.class);
-            bind(<span class="predefined-type">Runnable</span>.class).to(InjectionDemo.class);
-        }
-    }
-}</code></pre>
-</div>
-</div>
-<div class="paragraph">
-<p>Use the custom factory when creating a <code>CommandLine</code> instance, or when invoking the <code>run</code> or <code>call</code> convenience methods:</p>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre class="CodeRay highlight"><code data-lang="java"><span class="keyword">import</span> <span class="include">javax.inject.Inject</span>;
-
-<span class="annotation">@Command</span>(name = <span class="string"><span class="delimiter">&quot;</span><span class="content">di-demo</span><span class="delimiter">&quot;</span></span>)
-<span class="directive">public</span> <span class="type">class</span> <span class="class">InjectionDemo</span> <span class="directive">implements</span> <span class="predefined-type">Runnable</span> {
-    <span class="annotation">@Inject</span> java.util.List list;
-
-    <span class="annotation">@Option</span>(names = <span class="string"><span class="delimiter">&quot;</span><span class="content">-x</span><span class="delimiter">&quot;</span></span>) <span class="type">int</span> x;
-
-    <span class="directive">public</span> <span class="directive">static</span> <span class="type">void</span> main(<span class="predefined-type">String</span><span class="type">[]</span> args) {
-        CommandLine.run(<span class="predefined-type">Runnable</span>.class, <span class="keyword">new</span> GuiceFactory(), args);
-    }
-
-    <span class="annotation">@Override</span>
-    <span class="directive">public</span> <span class="type">void</span> run() {
-        <span class="keyword">assert</span> list <span class="keyword">instanceof</span> java.util.LinkedList;
-    }
-}</code></pre>
-</div>
-</div>
-</div>
-<div class="sect2">
-<h3 id="_boolean_options_with_parameters">16.10. Boolean Options with Parameters</h3>
+<h3 id="_boolean_options_with_parameters">16.9. Boolean Options with Parameters</h3>
 <div class="paragraph">
 <p>By default the value of a boolean field is toggled to its logical negative when the field&#8217;s option is specified on the command line.</p>
 </div>
@@ -4902,7 +4912,7 @@ CommandLine cmdLine = <span class="keyword">new</span> CommandLine(<span class="
 </div>
 </div>
 <div class="sect2">
-<h3 id="_hexadecimal_values">16.11. Hexadecimal Values</h3>
+<h3 id="_hexadecimal_values">16.10. Hexadecimal Values</h3>
 <div class="paragraph">
 <p>Numeric values are interpreted as decimal numbers by default. If you want picocli to be more flexible, you can
 register a custom type converter that delegates to the <a href="https://docs.oracle.com/javase/8/docs/api/java/lang/Integer.html#decode-java.lang.String-">decode</a> method to convert strings to numbers.</p>
@@ -4954,9 +4964,9 @@ commandLine.registerConverter(<span class="predefined-type">Integer</span>.TYPE,
 </div>
 </div>
 <div class="sect2">
-<h3 id="_option_parameter_separators_2">16.12. Option-Parameter Separators</h3>
+<h3 id="_option_parameter_separators_2">16.11. Option-Parameter Separators</h3>
 <div class="sect3">
-<h4 id="_default_separators">16.12.1. Default Separators</h4>
+<h4 id="_default_separators">16.11.1. Default Separators</h4>
 <div class="paragraph">
 <p>Options may take an <em>option parameter</em> (also called <em>option-argument</em>).
 For POSIX-style short options (like <code>-f</code> or <code>-c</code>), the option parameter may be attached to the option,
@@ -4986,7 +4996,7 @@ That is, all of the below are equivalent:</p>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_custom_separators">16.12.2. Custom Separators</h4>
+<h4 id="_custom_separators">16.11.2. Custom Separators</h4>
 <div class="paragraph">
 <p>The separator string can be customized programmatically or declaratively.</p>
 </div>
@@ -5024,7 +5034,7 @@ commandLine.parse(<span class="string"><span class="delimiter">&quot;</span><spa
 </div>
 </div>
 <div class="sect2">
-<h3 id="_best_practices_for_command_line_interfaces">16.13. Best Practices for Command Line Interfaces</h3>
+<h3 id="_best_practices_for_command_line_interfaces">16.12. Best Practices for Command Line Interfaces</h3>
 <div class="paragraph">
 <p>When designing your command line application,
 the <a href="https://www.gnu.org/prep/standards/html_node/Command_002dLine-Interfaces.html#Command_002dLine-Interfaces">GNU recommendations</a> for command line interfaces and <a href="http://pubs.opengroup.org/onlinepubs/9699919799/basedefs/V1_chap12.html#tag_12_02">POSIX Utility Guidelines</a> may be useful.</p>
@@ -5037,7 +5047,195 @@ However, picocli lets you make options required if you want to, see <a href="#_r
 </div>
 </div>
 <div class="sect1">
-<h2 id="_tracing">17. Tracing</h2>
+<h2 id="_dependency_injection">17. Dependency Injection</h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_guice_example">17.1. Guice Example</h3>
+<div class="paragraph">
+<p>The below example shows how to create a <a href="#_custom_factory">custom <code>IFactory</code></a> implementation with a Guice <code>Injector</code>:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="java"><span class="keyword">import</span> <span class="include">com.google.inject</span>.*;
+<span class="keyword">import</span> <span class="include">picocli.CommandLine.IFactory</span>;
+
+<span class="directive">public</span> <span class="type">class</span> <span class="class">GuiceFactory</span> <span class="directive">implements</span> IFactory {
+    <span class="directive">private</span> <span class="directive">final</span> Injector injector = Guice.createInjector(<span class="keyword">new</span> DemoModule());
+
+    <span class="annotation">@Override</span>
+    <span class="directive">public</span> &lt;K&gt; K create(<span class="predefined-type">Class</span>&lt;K&gt; aClass) <span class="directive">throws</span> <span class="exception">Exception</span> {
+        <span class="keyword">return</span> injector.getInstance(aClass);
+    }
+
+    <span class="directive">static</span> <span class="type">class</span> <span class="class">DemoModule</span> <span class="directive">extends</span> AbstractModule {
+        <span class="annotation">@Override</span>
+        <span class="directive">protected</span> <span class="type">void</span> configure() {
+            bind(java.util.List.class).to(java.util.LinkedList.class);
+            bind(<span class="predefined-type">Runnable</span>.class).to(InjectionDemo.class);
+        }
+    }
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Use the custom factory when creating a <code>CommandLine</code> instance, or when invoking the <code>run</code> or <code>call</code> convenience methods:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="java"><span class="keyword">import</span> <span class="include">javax.inject.Inject</span>;
+
+<span class="annotation">@Command</span>(name = <span class="string"><span class="delimiter">&quot;</span><span class="content">di-demo</span><span class="delimiter">&quot;</span></span>)
+<span class="directive">public</span> <span class="type">class</span> <span class="class">InjectionDemo</span> <span class="directive">implements</span> <span class="predefined-type">Runnable</span> {
+    <span class="annotation">@Inject</span> java.util.List list;
+
+    <span class="annotation">@Option</span>(names = <span class="string"><span class="delimiter">&quot;</span><span class="content">-x</span><span class="delimiter">&quot;</span></span>) <span class="type">int</span> x;
+
+    <span class="directive">public</span> <span class="directive">static</span> <span class="type">void</span> main(<span class="predefined-type">String</span><span class="type">[]</span> args) {
+        CommandLine.run(<span class="predefined-type">Runnable</span>.class, <span class="keyword">new</span> GuiceFactory(), args);
+    }
+
+    <span class="annotation">@Override</span>
+    <span class="directive">public</span> <span class="type">void</span> run() {
+        <span class="keyword">assert</span> list <span class="keyword">instanceof</span> java.util.LinkedList;
+    }
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_spring_boot_example">17.2. Spring Boot Example</h3>
+<div class="paragraph">
+<p>A custom factory is not always necessary.
+The below example shows how to use picocli with Spring Boot:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="java"><span class="keyword">import</span> <span class="include">org.springframework.beans.factory.annotation.Autowired</span>;
+<span class="keyword">import</span> <span class="include">org.springframework.boot.CommandLineRunner</span>;
+<span class="keyword">import</span> <span class="include">org.springframework.boot.SpringApplication</span>;
+<span class="keyword">import</span> <span class="include">org.springframework.boot.autoconfigure.SpringBootApplication</span>;
+<span class="keyword">import</span> <span class="include">picocli.CommandLine</span>;
+
+<span class="annotation">@SpringBootApplication</span>
+<span class="directive">public</span> <span class="type">class</span> <span class="class">MySpringBootApp</span> <span class="directive">implements</span> CommandLineRunner {
+
+    <span class="annotation">@Autowired</span>
+    <span class="directive">private</span> MyCommand myCommand;
+
+    <span class="directive">public</span> <span class="directive">static</span> <span class="type">void</span> main(<span class="predefined-type">String</span><span class="type">[]</span> args) {
+        <span class="comment">// let Spring instantiate and inject dependencies</span>
+        SpringApplication.run(MySpringBootApp.class, args);
+    }
+
+    <span class="annotation">@Override</span>
+    <span class="directive">public</span> <span class="type">void</span> run(<span class="predefined-type">String</span>... args) {
+        <span class="comment">// let picocli parse command line args and run the business logic</span>
+        CommandLine.call(myCommand, args);
+    }
+}</code></pre>
+</div>
+</div>
+<div class="admonitionblock tip">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-tip" title="Tip"></i>
+</td>
+<td class="content">
+<div class="paragraph">
+<p>It may be a good idea to define an option <code>--spring.config.location</code> in your command.
+Spring Boot allows end users to specify the <code>spring.config.location</code> Spring environment property as a command line option to specify an alternative location for the <code>application.properties</code> file.
+Defining this option prevents picocli from throwing an <code>UnmatchedArgumentException</code> ("Unknown option") when it sees an option it cannot match.
+You can make it a <code>hidden</code> option so it is not shown in the usage help message, or add a description that explains its meaning.</p>
+</div>
+<div class="paragraph">
+<p>Alternatively, you can define an <a href="#unmatched-annotation">unmatched</a> field to capture <em>all</em> unknown options (and positional parameters):</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="java"><span class="annotation">@Unmatched</span> <span class="predefined-type">List</span>&lt;<span class="predefined-type">String</span>&gt; unmatched;</code></pre>
+</div>
+</div>
+</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>When your command is annotated with <code>@org.springframework.stereotype.Component</code> Spring can autodetect it for dependency injection.
+The business logic of your command looks like any other picocli command with options and parameters.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="java"><span class="keyword">import</span> <span class="include">org.springframework.stereotype.Component</span>;
+<span class="keyword">import</span> <span class="include">org.springframework.beans.factory.annotation.Autowired</span>;
+<span class="keyword">import</span> <span class="include">picocli.CommandLine.Command</span>;
+<span class="keyword">import</span> <span class="include">picocli.CommandLine.Option</span>;
+<span class="keyword">import</span> <span class="include">java.util.concurrent.Callable</span>;
+
+<span class="annotation">@Component</span>
+<span class="annotation">@Command</span>(name = <span class="string"><span class="delimiter">&quot;</span><span class="content">myCommand</span><span class="delimiter">&quot;</span></span>)
+<span class="directive">public</span> <span class="type">class</span> <span class="class">MyCommand</span> <span class="directive">implements</span> <span class="predefined-type">Callable</span>&lt;<span class="predefined-type">Void</span>&gt; {
+
+    <span class="annotation">@Autowired</span>
+    <span class="directive">private</span> SomeService someService;
+
+    <span class="comment">// Prevent &quot;Unknown option&quot; error when users use</span>
+    <span class="comment">// the Spring Boot parameter 'spring.config.location' to specify</span>
+    <span class="comment">// an alternative location for the application.properties file.</span>
+    <span class="annotation">@Option</span>(names = <span class="string"><span class="delimiter">&quot;</span><span class="content">--spring.config.location</span><span class="delimiter">&quot;</span></span>, hidden = <span class="predefined-constant">true</span>)
+    <span class="directive">private</span> <span class="predefined-type">String</span> springConfigLocation;
+
+    <span class="annotation">@Option</span>(names = { <span class="string"><span class="delimiter">&quot;</span><span class="content">-x</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">--option</span><span class="delimiter">&quot;</span></span> }, description = <span class="string"><span class="delimiter">&quot;</span><span class="content">example option</span><span class="delimiter">&quot;</span></span>)
+    <span class="directive">private</span> <span class="type">boolean</span> flag;
+
+    <span class="directive">public</span> <span class="predefined-type">Void</span> call() <span class="directive">throws</span> <span class="exception">Exception</span> {
+        <span class="comment">// business logic here</span>
+        <span class="keyword">return</span> <span class="predefined-constant">null</span>;
+    }
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_micronaut_example">17.3. Micronaut Example</h3>
+<div class="paragraph">
+<p>The Micronaut microservices framework provides <a href="https://docs.micronaut.io/latest/guide/index.html#picocli">built-in support</a> for picocli with its <code>PicocliRunner</code> class.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="java"><span class="keyword">import</span> <span class="include">io.micronaut.configuration.picocli.PicocliRunner</span>;
+<span class="keyword">import</span> <span class="include">io.micronaut.http.annotation</span>.*;
+<span class="keyword">import</span> <span class="include">io.micronaut.http.client</span>.*;
+<span class="keyword">import</span> <span class="include">javax.inject.Inject</span>;
+
+<span class="keyword">import</span> <span class="include">picocli.CommandLine.Command</span>;
+<span class="keyword">import</span> <span class="include">picocli.CommandLine.Option</span>;
+
+<span class="annotation">@Command</span>(name = <span class="string"><span class="delimiter">&quot;</span><span class="content">myMicronautApp</span><span class="delimiter">&quot;</span></span>)
+<span class="directive">public</span> <span class="type">class</span> <span class="class">MyMicronautApp</span> <span class="directive">implements</span> <span class="predefined-type">Runnable</span> {
+
+    <span class="annotation">@Client</span>(<span class="string"><span class="delimiter">&quot;</span><span class="content">https://api.github.com</span><span class="delimiter">&quot;</span></span>)
+    <span class="annotation">@Inject</span> RxHttpClient client;
+
+    <span class="annotation">@Option</span>(names = {<span class="string"><span class="delimiter">&quot;</span><span class="content">-x</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">--option</span><span class="delimiter">&quot;</span></span>}, description = <span class="string"><span class="delimiter">&quot;</span><span class="content">example option</span><span class="delimiter">&quot;</span></span>)
+    <span class="type">boolean</span> flag;
+
+    <span class="directive">public</span> <span class="directive">static</span> <span class="type">void</span> main(<span class="predefined-type">String</span><span class="type">[]</span> args) <span class="directive">throws</span> <span class="exception">Exception</span> {
+        <span class="comment">// let Micronaut instantiate and inject services</span>
+        PicocliRunner.run(MyMicronautApp.class, args);
+    }
+
+    <span class="directive">public</span> <span class="type">void</span> run() {
+        <span class="comment">// business logic here</span>
+    }
+}</code></pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_tracing">18. Tracing</h2>
 <div class="sectionbody">
 <div class="paragraph">
 <p>Picocli v1.0 introduced support for parser tracing to facilitate troubleshooting.</p>
@@ -5099,7 +5297,7 @@ unalias git</code></pre>
 </div>
 </div>
 <div class="sect1">
-<h2 id="_tab_autocomplete">18. TAB Autocomplete</h2>
+<h2 id="_tab_autocomplete">19. TAB Autocomplete</h2>
 <div class="sectionbody">
 <div class="paragraph">
 <p>Picocli-based applications can now have command line completion in Bash or Zsh Unix shells.
@@ -5108,13 +5306,13 @@ See the <a href="autocomplete.html">Autocomplete for Java Command Line Applicati
 </div>
 </div>
 <div class="sect1">
-<h2 id="_picocli_in_other_languages">19. Picocli in Other Languages</h2>
+<h2 id="_picocli_in_other_languages">20. Picocli in Other Languages</h2>
 <div class="sectionbody">
 <div class="paragraph">
 <p>Picocli may be used in other JVM languages that support annotations.</p>
 </div>
 <div class="sect2">
-<h3 id="_groovy">19.1. Groovy</h3>
+<h3 id="_groovy">20.1. Groovy</h3>
 <div class="paragraph">
 <p>In Groovy, use <code>[</code> and <code>]</code> to surround array values, instead of the <code>{</code> and <code>}</code> used in Java.</p>
 </div>
@@ -5154,7 +5352,7 @@ The script body is executed if the user input was valid and did not request usag
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="CodeRay highlight"><code data-lang="groovy"><span class="annotation">@Grab</span>(<span class="string"><span class="delimiter">'</span><span class="content">info.picocli:picocli:3.9.1</span><span class="delimiter">'</span></span>)
+<pre class="CodeRay highlight"><code data-lang="groovy"><span class="annotation">@Grab</span>(<span class="string"><span class="delimiter">'</span><span class="content">info.picocli:picocli:3.9.2</span><span class="delimiter">'</span></span>)
 <span class="annotation">@Command</span>(name = <span class="string"><span class="delimiter">&quot;</span><span class="content">myScript</span><span class="delimiter">&quot;</span></span>,
         mixinStandardHelpOptions = <span class="predefined-constant">true</span>, <span class="comment">// add --help and --version options</span>
         description = <span class="string"><span class="delimiter">&quot;</span><span class="content">@|bold Groovy script|@ @|underline picocli|@ example</span><span class="delimiter">&quot;</span></span>)
@@ -5189,14 +5387,14 @@ When using a Groovy version older than 2.4.7, use this workaround for the <a hre
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="CodeRay highlight"><code data-lang="groovy"><span class="annotation">@Grab</span>(<span class="string"><span class="delimiter">'</span><span class="content">info.picocli:picocli:3.9.1</span><span class="delimiter">'</span></span>)
+<pre class="CodeRay highlight"><code data-lang="groovy"><span class="annotation">@Grab</span>(<span class="string"><span class="delimiter">'</span><span class="content">info.picocli:picocli:3.9.2</span><span class="delimiter">'</span></span>)
 <span class="annotation">@GrabExclude</span>(<span class="string"><span class="delimiter">'</span><span class="content">org.codehaus.groovy:groovy-all</span><span class="delimiter">'</span></span>) <span class="comment">// work around GROOVY-7613</span>
 ...</code></pre>
 </div>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_kotlin">19.2. Kotlin</h3>
+<h3 id="_kotlin">20.2. Kotlin</h3>
 <div class="paragraph">
 <p>Kotlin 1.2 (released Nov 28, 2017) officially supports <a href="http://kotlinlang.org/docs/reference/whatsnew12.html#array-literals-in-annotations">array literals in annotations</a>, allowing a more compact notation:</p>
 </div>
@@ -5260,7 +5458,7 @@ fun main(args: Array&lt;String&gt;) = CommandLine.run(MyApp(), *args)</code></pr
 </div>
 </div>
 <div class="sect2">
-<h3 id="_scala">19.3. Scala</h3>
+<h3 id="_scala">20.3. Scala</h3>
 <div class="paragraph">
 <p>Scala does not allow specifying array annotation attribute as a single value,
 so be aware that you will have to write <code>Array(&#8230;&#8203;)</code> for the <code>names</code>, <code>description</code> and <code>type</code> attributes.</p>
@@ -5293,14 +5491,6 @@ object MyApp {
 </div>
 </div>
 <div class="sect1">
-<h2 id="_mailing_list">20. Mailing List</h2>
-<div class="sectionbody">
-<div class="paragraph">
-<p>Join the <a href="https://groups.google.com/d/forum/picocli">picocli Google group</a> if you are interested in discussing anything picocli-related.</p>
-</div>
-</div>
-</div>
-<div class="sect1">
 <h2 id="_api_javadoc">21. API Javadoc</h2>
 <div class="sectionbody">
 <div class="paragraph">
@@ -5315,8 +5505,7 @@ object MyApp {
 <p>The <a href="https://github.com/remkop/picocli">GitHub project</a> has the source code, tests, build scripts, etc.</p>
 </div>
 <div class="paragraph">
-<p>Star <span class="icon"><i class="fa fa-star-o"></i></span> and/or fork <span class="icon"><i class="fa fa-code-fork"></i></span> this project on GitHub if you like it!
-</p>
+<p>Star <span class="icon"><i class="fa fa-star-o"></i></span> and/or fork <span class="icon"><i class="fa fa-code-fork"></i></span> this project on GitHub if you like it!</p>
 </div>
 </div>
 </div>
@@ -5324,12 +5513,20 @@ object MyApp {
 <h2 id="_issue_tracker">23. Issue Tracker</h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>Please use the <a href="https://github.com/remkop/picocli/issues">Issue Tracker</a> to report bugs or request features.</p>
+<p>The GitHub <a href="https://github.com/remkop/picocli/issues">Issue Tracker</a> can be used to report bugs or request features. There is also a <a href="#_mailing_list">Mailing List</a>, and for questions where the user community may know the answer, <a href="https://stackoverflow.com/questions/tagged/picocli">StackOverflow</a> is both a good resource and a great way to build an online knowledge base.</p>
 </div>
 </div>
 </div>
 <div class="sect1">
-<h2 id="_license">24. License</h2>
+<h2 id="_mailing_list">24. Mailing List</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Join the <a href="https://groups.google.com/d/forum/picocli">picocli Google group</a> if you are interested in discussing anything picocli-related and receiving announcements on new releases.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_license">25. License</h2>
 <div class="sectionbody">
 <div class="paragraph">
 <p>Picocli is licensed under the <a href="https://github.com/remkop/picocli/blob/master/LICENSE">Apache License 2.0</a>.</p>
@@ -5337,7 +5534,7 @@ object MyApp {
 </div>
 </div>
 <div class="sect1">
-<h2 id="_releases">25. Releases</h2>
+<h2 id="_releases">26. Releases</h2>
 <div class="sectionbody">
 <div class="paragraph">
 <p>Previous versions are available from the GitHub project <a href="https://github.com/remkop/picocli/releases">Releases</a>.</p>
@@ -5345,50 +5542,50 @@ object MyApp {
 </div>
 </div>
 <div class="sect1">
-<h2 id="_download">26. Download</h2>
+<h2 id="_download">27. Download</h2>
 <div class="sectionbody">
 <div class="paragraph">
 <p>You can add picocli as an external dependency to your project, or you can include it as source.
 See the <a href="#_source">source code</a> below. Copy and paste it into a file called <code>CommandLine.java</code>, add it to your project, and enjoy!</p>
 </div>
 <div class="sect2">
-<h3 id="_gradle">26.1. Gradle</h3>
+<h3 id="_gradle">27.1. Gradle</h3>
 <div class="listingblock">
 <div class="content">
-<pre>compile 'info.picocli:picocli:3.9.1'</pre>
+<pre>compile 'info.picocli:picocli:3.9.2'</pre>
 </div>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_maven">26.2. Maven</h3>
+<h3 id="_maven">27.2. Maven</h3>
 <div class="listingblock">
 <div class="content">
 <pre>&lt;dependency&gt;
   &lt;groupId&gt;info.picocli&lt;/groupId&gt;
   &lt;artifactId&gt;picocli&lt;/artifactId&gt;
-  &lt;version&gt;3.9.1&lt;/version&gt;
+  &lt;version&gt;3.9.2&lt;/version&gt;
 &lt;/dependency&gt;</pre>
 </div>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_scala_sbt">26.3. Scala SBT</h3>
+<h3 id="_scala_sbt">27.3. Scala SBT</h3>
 <div class="listingblock">
 <div class="content">
-<pre>libraryDependencies += "info.picocli" % "picocli" % "3.9.1"</pre>
+<pre>libraryDependencies += "info.picocli" % "picocli" % "3.9.2"</pre>
 </div>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_ivy">26.4. Ivy</h3>
+<h3 id="_ivy">27.4. Ivy</h3>
 <div class="listingblock">
 <div class="content">
-<pre>&lt;dependency org="info.picocli" name="picocli" rev="3.9.1" /&gt;</pre>
+<pre>&lt;dependency org="info.picocli" name="picocli" rev="3.9.2" /&gt;</pre>
 </div>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_source">26.5. Source</h3>
+<h3 id="_source">27.5. Source</h3>
 <div class="paragraph">
 <p>Picocli has only one source file: <a href="https://github.com/remkop/picocli/blob/master/src/main/java/picocli/CommandLine.java">CommandLine.java</a>.
 This facilitates including it in your project in source form to avoid having an external dependency on picocli.</p>
@@ -5399,8 +5596,8 @@ This facilitates including it in your project in source form to avoid having an 
 </div>
 <div id="footer">
 <div id="footer-text">
-Version 3.9.1<br>
-Last updated 2019-01-18 19:00:12 +09:00
+Version 3.9.2<br>
+Last updated 2019-01-20 19:51:22 +09:00
 </div>
 </div>
 </body>

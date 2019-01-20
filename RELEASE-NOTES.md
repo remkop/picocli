@@ -1,7 +1,7 @@
 # picocli Release Notes
 
 
-# <a name="3.9.2"></a> Picocli 3.9.2 (UNRELEASED)
+# <a name="3.9.2"></a> Picocli 3.9.2
 The picocli community is pleased to announce picocli 3.9.2.
 
 This release contains bugfixes and enhancements.
@@ -10,6 +10,9 @@ Picocli now has a mailing list `picocli at googlegroups dot com`. Alternatively 
 
 The user manual has improved documentation for internationalization and localization, and the section on Dependency Injection now has a Spring Boot example and link to the Micronaut user manual.
 
+Bugfixes: `AutoComplete` now uses the specified `IFactory` correctly for `CommandLine`; defaulting `usageHelp` or `versionHelp` options no longer prevents validation of required options; and usage help for booleans options with `arity = "1"` now correctly show the option parameter in the synopsis.
+
+Many thanks to the many members of the picocli community who contributed pull requests, bug reports and participated in discussions!
 
 This is the forty-seventh public release.
 Picocli follows [semantic versioning](http://semver.org/).
@@ -27,8 +30,8 @@ Picocli now has a mailing list `picocli at googlegroups dot com`. Alternatively 
 The user manual has improved documentation for internationalization and localization. Dependency Injection is now a top-level section and now has a Spring Boot example and link to the Micronaut user manual.
 
 ## <a name="3.9.2-fixes"></a> Fixed issues
-- [#602] Make CommandLine in AutoComplete use correct IFactory implementation. Thanks to [Mikołaj Krzyżanowski](https://github.com/MikolajK) for the pull request.
-- [#608] Bugfix: defaulting `usageHelp` or `versionHelp` options incorrectly prevents validation of required options and positional parameters. Thanks to [Pietro Braione](https://github.com/pietrobraione) for the bug report.
+- [#602] Make `CommandLine` in `AutoComplete` use correct `IFactory` implementation. Thanks to [Mikołaj Krzyżanowski](https://github.com/MikolajK) for the pull request.
+- [#608] Bugfix: defaulting `usageHelp` or `versionHelp` options incorrectly prevented validation of required options and positional parameters. Thanks to [Pietro Braione](https://github.com/pietrobraione) for the bug report.
 - [#612] Bugfix: Usage help for booleans options with `arity = "1"` now correctly show the option parameter in synopsis. Thanks to [prewersk](https://github.com/prewersk) for the bug report.
 - [#606] Doc: Added subcommand example. Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
 - [#605] Doc: Improved documentation for internationalization and localization. Thanks to [Andreas Deininger](https://github.com/deining) for raising this.

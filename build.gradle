@@ -230,9 +230,9 @@ task copyDocs(type: Copy) {
 allprojects {
     ext {
         bintrayDryRun     = false //[Default: false] Whether to run this as dry-run, without deploying
-        bintrayPublish    = false //[Default: false] Whether version should be auto published after an upload 
+        bintrayPublish    = true //[Default: false] Whether version should be auto published after an upload 
         bintrayOverride   = false //[Default: false] Whether to override version artifacts already published   
-        mavenOssSync      = false //[Default: true] Determines whether to sync the version to Maven Central.
+        mavenOssSync      = true //[Default: true] Determines whether to sync the version to Maven Central.
     }
 }
 ext {

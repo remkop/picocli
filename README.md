@@ -45,7 +45,7 @@ Picocli-based applications can easily [integrate](https://picocli.info/#_depende
 ![Picocli Demo help message with ANSI colors](docs/images/picocli.Demo.png?raw=true)
 
 ### Releases
-* [Releases](https://github.com/remkop/picocli/releases) - Latest: 3.9.1 [Release Notes](https://github.com/remkop/picocli/releases/tag/v3.9.1)
+* [Releases](https://github.com/remkop/picocli/releases) - Latest: 3.9.2 [Release Notes](https://github.com/remkop/picocli/releases/tag/v3.9.2)
 * Older: Picocli 3.0.0 [Release Notes](https://github.com/remkop/picocli/releases/tag/v3.0.0)
 * Older: Picocli 2.0 [Release Notes](https://github.com/remkop/picocli/releases/tag/v2.0.0)
 
@@ -74,7 +74,7 @@ Picocli-based applications can easily [integrate](https://picocli.info/#_depende
 * [Picocli 2.0: 以少求多](https://picocli.info/zh/picocli-2.0-do-more-with-less.html) 
 
 ### Mailing List
-Join the [picocli Google group](https://groups.google.com/d/forum/picocli) if you are interested in discussing anything picocli-related.
+Join the [picocli Google group](https://groups.google.com/d/forum/picocli) if you are interested in discussing anything picocli-related and receiving announcements on new releases.
 
 ### Related
 * Check out Thibaud Lepretre's [picocli Spring boot starter](https://github.com/kakawait/picocli-spring-boot-starter)!
@@ -181,35 +181,35 @@ See the [source code](https://github.com/remkop/picocli/blob/master/src/main/jav
 
 ### Gradle
 ```
-compile 'info.picocli:picocli:3.9.1'
+compile 'info.picocli:picocli:3.9.2'
 ```
 ### Maven
 ```
 <dependency>
   <groupId>info.picocli</groupId>
   <artifactId>picocli</artifactId>
-  <version>3.9.1</version>
+  <version>3.9.2</version>
 </dependency>
 ```
 ### Scala SBT
 ```
-libraryDependencies += "info.picocli" % "picocli" % "3.9.1"
+libraryDependencies += "info.picocli" % "picocli" % "3.9.2"
 ```
 ### Ivy
 ```
-<dependency org="info.picocli" name="picocli" rev="3.9.1" />
+<dependency org="info.picocli" name="picocli" rev="3.9.2" />
 ```
 ### Grape
 ```groovy
 @Grapes(
-    @Grab(group='info.picocli', module='picocli', version='3.9.1')
+    @Grab(group='info.picocli', module='picocli', version='3.9.2')
 )
 ```
 ### Leiningen
 ```
-[info.picocli/picocli "3.9.1"]
+[info.picocli/picocli "3.9.2"]
 ```
 ### Buildr
 ```
-'info.picocli:picocli:jar:3.9.1'
+'info.picocli:picocli:jar:3.9.2'
 ```
