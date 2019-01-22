@@ -1,5 +1,33 @@
 # picocli Release Notes
 
+# <a name="3.9.3"></a> Picocli 3.9.3 (UNRELEASED)
+The picocli community is pleased to announce picocli 3.9.3.
+
+This release contains bugfixes and enhancements.
+
+
+This is the forty-eight public release.
+Picocli follows [semantic versioning](http://semver.org/).
+
+## <a name="3.9.3"></a> Table of Contents
+* [New and noteworthy](#3.9.3-new)
+* [Fixed issues](#3.9.3-fixes)
+* [Deprecations](#3.9.3-deprecated)
+* [Potential breaking changes](#3.9.3-breaking-changes)
+
+## <a name="3.9.3-new"></a> New and Noteworthy
+
+
+## <a name="3.9.3-fixes"></a> Fixed issues
+- [#613] Enhancement: Improve picocli heuristics for unmatched options: single-character arguments that don't exactly match options (like `-`) should be considered positional parameters. Thanks to [Oliver Weiler](https://github.com/helpermethod) for the bug report.
+
+## <a name="3.9.3-deprecated"></a> Deprecations
+No features were deprecated in this release.
+
+## <a name="3.9.3-breaking-changes"></a> Potential breaking changes
+This release has no breaking changes.
+
+
 
 # <a name="3.9.2"></a> Picocli 3.9.2
 The picocli community is pleased to announce picocli 3.9.2.

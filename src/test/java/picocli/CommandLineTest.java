@@ -4165,4 +4165,24 @@ public class CommandLineTest {
         CommandLine commandLine = new CommandLine(new App());
         commandLine.parseArgs(new String[0]);
     }
+
+    @Test
+    public void testIssue613SingleDashPositionalParam() {
+        @Command(name = "dashtest", mixinStandardHelpOptions = true)
+        class App {
+            @Parameters(index = "0")
+            private String json;
+            @Parameters(index = "1")
+            private String template;
+        }
+        System.setProperty("picocli.trace", "DEBUG");
+        App app = new App();
+        CommandLine commandLine = new CommandLine(app);
+        //commandLine.setUnmatchedOptionsArePositionalParams(true);
+
+        commandLine.parseArgs("-", "~/hello.mustache");
+        assertEquals("-", app.json);
+        assertEquals("~/hello.mustache", app.template);
+        assertTrue(systemErrRule.getLog().contains("Single-character arguments that don't match known options are considered positional parameters"));
+    }
 }

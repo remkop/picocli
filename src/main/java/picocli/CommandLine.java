@@ -4240,9 +4240,13 @@ public class CommandLine {
                     if (tracer != null && tracer.isDebug()) {tracer.debug("Parser is configured to treat all unmatched options as positional parameter%n", arg);}
                     return false;
                 }
+                if (arg.length() == 1) {
+                    if (tracer != null && tracer.isDebug()) {tracer.debug("Single-character arguments that don't match known options are considered positional parameters%n", arg);}
+                    return false;
+                }
                 if (options().isEmpty()) {
                     boolean result = arg.startsWith("-");
-                    if (tracer != null && tracer.isDebug()) {tracer.debug("%s %s an option%n", arg, (result ? "resembles" : "doesn't resemble"));}
+                    if (tracer != null && tracer.isDebug()) {tracer.debug("'%s' %s an option%n", arg, (result ? "resembles" : "doesn't resemble"));}
                     return result;
                 }
                 int count = 0;
@@ -4252,7 +4256,7 @@ public class CommandLine {
                     }
                 }
                 boolean result = count > 0 && count * 10 >= optionsMap().size() * 9; // at least one prefix char in common with 9 out of 10 options
-                if (tracer != null && tracer.isDebug()) {tracer.debug("%s %s an option: %d matching prefix chars out of %d option names%n", arg, (result ? "resembles" : "doesn't resemble"), count, optionsMap().size());}
+                if (tracer != null && tracer.isDebug()) {tracer.debug("'%s' %s an option: %d matching prefix chars out of %d option names%n", arg, (result ? "resembles" : "doesn't resemble"), count, optionsMap().size());}
                 return result;
             }
         }
