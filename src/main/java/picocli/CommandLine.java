@@ -1688,7 +1688,7 @@ public class CommandLine {
      */
     public void printVersionHelp(PrintStream out, Help.Ansi ansi, Object... params) {
         for (String versionInfo : getCommandSpec().version()) {
-            out.println(ansi.new Text(String.format(versionInfo, params)));
+            out.println(ansi.new Text(format(versionInfo, params)));
         }
     }
 
@@ -2387,6 +2387,16 @@ public class CommandLine {
     private static boolean isBoolean(Class<?> type) { return type == Boolean.class || type == Boolean.TYPE; }
     private static CommandLine toCommandLine(Object obj, IFactory factory) { return obj instanceof CommandLine ? (CommandLine) obj : new CommandLine(obj, factory);}
     private static boolean isMultiValue(Class<?> cls) { return cls.isArray() || Collection.class.isAssignableFrom(cls) || Map.class.isAssignableFrom(cls); }
+    private static String format(String formatString, Object... params) {
+        try {
+            return formatString == null ? "" : String.format(formatString, params);
+        } catch (IllegalFormatException ex) {
+            new Tracer().warn("Could not format '%s' (Underlying error: %s). " +
+                    "Using raw String: '%%n' format strings have not been replaced with newlines. " +
+                    "Please ensure to escape '%%' characters with another '%%'.%n", formatString, ex.getMessage());
+            return formatString;
+        }
+    }
 
     private static class NoCompletionCandidates implements Iterable<String> {
         public Iterator<String> iterator() { throw new UnsupportedOperationException(); }
@@ -5121,7 +5131,7 @@ public class CommandLine {
                 String defaultValueString = defaultValueString();
                 String[] result = new String[desc.length];
                 for (int i = 0; i < desc.length; i++) {
-                    result[i] = String.format(desc[i].replace(DESCRIPTION_VARIABLE_DEFAULT_VALUE, defaultValueString)
+                    result[i] = format(desc[i].replace(DESCRIPTION_VARIABLE_DEFAULT_VALUE, defaultValueString)
                             .replace(DESCRIPTION_VARIABLE_COMPLETION_CANDIDATES, candidates.toString()));
                 }
                 return result;
@@ -8917,9 +8927,6 @@ public class CommandLine {
                 table.toString(sb);
             }
             return sb;
-        }
-        private static String format(String formatString,  Object... params) {
-            return formatString == null ? "" : String.format(formatString, params);
         }
         private int width() { return commandSpec.usageMessage().width(); }
         /** Returns command custom synopsis as a string. A custom synopsis can be zero or more lines, and can be

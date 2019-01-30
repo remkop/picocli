@@ -19,6 +19,7 @@ import org.junit.After;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.contrib.java.lang.system.ProvideSystemProperty;
+import org.junit.contrib.java.lang.system.SystemErrRule;
 import org.junit.contrib.java.lang.system.SystemOutRule;
 import picocli.CommandLine.*;
 import picocli.CommandLine.Model.*;
@@ -55,6 +56,8 @@ public class CommandLineHelpTest {
     public final ProvideSystemProperty ansiOFF = new ProvideSystemProperty("picocli.ansi", "false");
     @Rule
     public final SystemOutRule systemOutRule = new SystemOutRule().enableLog().muteForSuccessfulTests();
+    @Rule
+    public final SystemErrRule systemErrRule = new SystemErrRule().enableLog().muteForSuccessfulTests();
 
     @After
     public void after() {
@@ -3711,5 +3714,31 @@ public class CommandLineHelpTest {
                 "  -h, --help                Show this help message and exit.%n" +
                 "  -V, --version             Print version information and exit.%n");
         assertEquals(expected, new CommandLine(new ExampleCommand()).getUsageMessage(Help.Ansi.OFF));
+    }
+
+    @Test
+    public void testIssue615DescriptionContainingPercentChar() {
+        class App {
+            @Option(names = {"--excludebase"},
+                    arity="1..*",
+                    description = "exclude child files of cTree (only works with --ctree).%n"
+                            + "Currently must be explicit or with trailing % for truncated glob."
+            )
+            public String[] excludeBase;
+        }
+        String expected = String.format("" +
+                "Usage: <main class> [--excludebase=<excludeBase>...]...%n" +
+                "      --excludebase=<excludeBase>...%n" +
+                "         exclude child files of cTree (only works with --ctree).%%nCurrently must be%n" +
+                "           explicit or with trailing %% for truncated glob.%n");
+        String actual = new CommandLine(new App()).getUsageMessage();
+        assertEquals(expected, actual);
+
+        assertTrue(systemErrRule.getLog().contains(
+                "[picocli WARN] Could not format 'exclude child files of cTree (only works with --ctree).%n" +
+                        "Currently must be explicit or with trailing % for truncated glob.' " +
+                        "(Underlying error: Format specifier ' f'). " +
+                        "Using raw String: '%n' format strings have not been replaced with newlines. " +
+                        "Please ensure to escape '%' characters with another '%'."));
     }
 }
