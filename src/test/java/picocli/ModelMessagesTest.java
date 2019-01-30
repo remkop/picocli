@@ -19,7 +19,7 @@ public class ModelMessagesTest {
 
     @Test
     public void testMessagesCopyNonNull() {
-        Messages orig = new Messages(CommandSpec.create(), null);
+        Messages orig = new Messages(CommandSpec.create(), (ResourceBundle) null);
         Messages copy = Messages.copy(CommandSpec.create(), orig);
         assertNull(copy.resourceBundle());
     }
@@ -27,21 +27,21 @@ public class ModelMessagesTest {
     @Test
     public void testMessagesCommandSpec() {
         CommandSpec spec = CommandSpec.create();
-        Messages orig = new Messages(spec, null);
+        Messages orig = new Messages(spec, (ResourceBundle) null);
         assertSame(spec, orig.commandSpec());
     }
 
     @Test
     public void testMessagesEmpty() {
         assertTrue(Messages.empty((Messages) null));
-        assertTrue(Messages.empty(new Messages(CommandSpec.create(), null)));
+        assertTrue(Messages.empty(new Messages(CommandSpec.create(), (ResourceBundle) null)));
     }
 
     @Test
     public void testMessagesGetStringNullKey() {
         String def = "abc";
-        assertSame(def, new Messages(CommandSpec.create(), null).getString(null, def));
-        assertSame(def, new Messages(CommandSpec.create(), null).getString("help", def));
+        assertSame(def, new Messages(CommandSpec.create(), (ResourceBundle) null).getString(null, def));
+        assertSame(def, new Messages(CommandSpec.create(), (ResourceBundle) null).getString("help", def));
 
         ResourceBundle rb = ResourceBundle.getBundle("picocli.SharedMessages");
         assertSame(def, new Messages(CommandSpec.create(), rb).getString(null, def));
@@ -52,8 +52,8 @@ public class ModelMessagesTest {
     @Test
     public void testMessagesGetStringArrayNullKey() {
         String[] def = {"abc"};
-        assertSame(def, new Messages(CommandSpec.create(), null).getStringArray(null, def));
-        assertSame(def, new Messages(CommandSpec.create(), null).getStringArray("help", def));
+        assertSame(def, new Messages(CommandSpec.create(), (ResourceBundle) null).getStringArray(null, def));
+        assertSame(def, new Messages(CommandSpec.create(), (ResourceBundle) null).getStringArray("help", def));
 
         ResourceBundle rb = ResourceBundle.getBundle("picocli.SharedMessages");
         assertSame(def, new Messages(CommandSpec.create(), rb).getStringArray(null, def));

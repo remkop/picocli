@@ -27,6 +27,36 @@
     ]
   },
   {
+    "name" : "java.lang.System",
+    "allDeclaredConstructors" : true,
+    "allPublicConstructors" : true,
+    "allDeclaredMethods" : true,
+    "allPublicMethods" : true,
+    "methods" : [
+      { "name" : "console", "parameterTypes" : [] }
+    ]
+  },
+  {
+    "name" : "org.fusesource.jansi.AnsiConsole",
+    "allDeclaredConstructors" : true,
+    "allPublicConstructors" : true,
+    "allDeclaredMethods" : true,
+    "allPublicMethods" : true,
+    "fields" : [
+      { "name" : "out" }
+    ]
+  },
+  {
+    "name" : "java.util.ResourceBundle",
+    "allDeclaredConstructors" : true,
+    "allPublicConstructors" : true,
+    "allDeclaredMethods" : true,
+    "allPublicMethods" : true,
+    "methods" : [
+      { "name" : "getBaseBundleName", "parameterTypes" : [] }
+    ]
+  },
+  {
     "name" : "java.time.Duration",
     "allDeclaredConstructors" : true,
     "allPublicConstructors" : true,
@@ -233,7 +263,7 @@
     ],
     "methods" : [
       { "name" : "setMinimum", "parameterTypes" : ["int"] },
-      { "name" : "setOtherFiles", "parameterTypes" : ["[Ljava.io.File;"] },
+      { "name" : "setOtherFiles", "parameterTypes" : ["java.util.List"] },
       { "name" : "multiply", "parameterTypes" : ["int", "int"] }
     ]
   },
@@ -287,7 +317,7 @@
     "allPublicMethods" : true
   },
   {
-    "name" : "[Ljava.io.File;",
+    "name" : "java.util.List",
     "allDeclaredConstructors" : true,
     "allPublicConstructors" : true,
     "allDeclaredMethods" : true,

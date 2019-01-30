@@ -41,7 +41,7 @@ public class Example implements Runnable {
     List<String> unmatched;
 
     private int minimum;
-    private File[] otherFiles;
+    private List<File> otherFiles;
 
     @Command
     int multiply(@Option(names = "--count") int count,
@@ -59,7 +59,7 @@ public class Example implements Runnable {
     }
 
     @Parameters(index = "1..*")
-    public void setOtherFiles(File[] otherFiles) {
+    public void setOtherFiles(List<File> otherFiles) {
         for (File f : otherFiles) {
             if (!f.exists()) {
                 throw new ParameterException(spec.commandLine(), "File " + f.getAbsolutePath() + " must exist");
@@ -70,7 +70,7 @@ public class Example implements Runnable {
 
     public void run() {
         System.out.printf("timeUnit=%s, length=%s, file=%s, unmatched=%s, minimum=%s, otherFiles=%s%n",
-                timeUnit, mixin.length, file, unmatched, minimum, Arrays.toString(otherFiles));
+                timeUnit, mixin.length, file, unmatched, minimum, otherFiles);
     }
 
     public static void main(String[] args) {

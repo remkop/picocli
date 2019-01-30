@@ -44,7 +44,6 @@ import picocli.CommandLine.Help.Ansi.Text;
 import picocli.CommandLine.Model.*;
 
 import static java.util.Locale.ENGLISH;
-import static picocli.CommandLine.Model.ArgsReflection.abbreviate;
 import static picocli.CommandLine.Help.Column.Overflow.SPAN;
 import static picocli.CommandLine.Help.Column.Overflow.TRUNCATE;
 import static picocli.CommandLine.Help.Column.Overflow.WRAP;
@@ -139,7 +138,7 @@ import static picocli.CommandLine.Help.Column.Overflow.WRAP;
  * </p>
  */
 public class CommandLine {
-    
+
     /** This is picocli version {@value}. */
     public static final String VERSION = "3.9.3-SNAPSHOT";
 
@@ -3367,13 +3366,13 @@ public class CommandLine {
          */
         Help create(CommandSpec commandSpec, Help.ColorScheme colorScheme);
     }
-    
+
     private static class DefaultHelpFactory implements IHelpFactory {
         public Help create(CommandSpec commandSpec, Help.ColorScheme colorScheme) {
             return new Help(commandSpec, colorScheme);
         }
     }
-    
+
     /**
      * Factory for instantiating classes that are registered declaratively with annotation attributes, like
      * {@link Command#subcommands()}, {@link Option#converter()}, {@link Parameters#converter()} and {@link Command#versionProvider()}.
@@ -3460,7 +3459,7 @@ public class CommandLine {
          * @param field the field whose Option annotation to inspect
          * @return a new {@code Range} based on the Option arity annotation on the specified field */
         public static Range optionArity(Field field) { return optionArity(new TypedMember(field)); }
-        private static Range optionArity(TypedMember member) {
+        private static Range optionArity(IAnnotatedElement member) {
             return member.isAnnotationPresent(Option.class)
                     ? adjustForType(Range.valueOf(member.getAnnotation(Option.class).arity()), member)
                     : new Range(0, 0, false, true, "0");
@@ -3470,7 +3469,7 @@ public class CommandLine {
          * @param field the field whose Parameters annotation to inspect
          * @return a new {@code Range} based on the Parameters arity annotation on the specified field */
         public static Range parameterArity(Field field) { return parameterArity(new TypedMember(field)); }
-        private static Range parameterArity(TypedMember member) {
+        private static Range parameterArity(IAnnotatedElement member) {
             if (member.isAnnotationPresent(Parameters.class)) {
                 return adjustForType(Range.valueOf(member.getAnnotation(Parameters.class).arity()), member);
             } else {
@@ -3483,19 +3482,19 @@ public class CommandLine {
          * @param field the field whose Parameters annotation to inspect
          * @return a new {@code Range} based on the Parameters index annotation on the specified field */
         public static Range parameterIndex(Field field) { return parameterIndex(new TypedMember(field)); }
-        private static Range parameterIndex(TypedMember member) {
+        private static Range parameterIndex(IAnnotatedElement member) {
             if (member.isAnnotationPresent(Parameters.class)) {
                 Range result = Range.valueOf(member.getAnnotation(Parameters.class).index());
                 if (!result.isUnspecified) { return result; }
             }
             if (member.isMethodParameter()) {
-                int min = ((MethodParam) member.accessible).position;
+                int min = member.getMethodParamPosition();
                 int max = member.isMultiValue() ? Integer.MAX_VALUE : min;
                 return new Range(min, max, member.isMultiValue(), false, "");
             }
             return Range.valueOf("*"); // the default
         }
-        static Range adjustForType(Range result, TypedMember member) {
+        static Range adjustForType(Range result, IAnnotatedElement member) {
             return result.isUnspecified ? defaultArity(member) : result;
         }
         /** Returns the default arity {@code Range}: for {@link Option options} this is 0 for booleans and 1 for
@@ -3505,16 +3504,14 @@ public class CommandLine {
          * @return a new {@code Range} indicating the default arity of the specified field
          * @since 2.0 */
         public static Range defaultArity(Field field) { return defaultArity(new TypedMember(field)); }
-        private static Range defaultArity(TypedMember member) {
-            Class<?> type = member.getType();
+        private static Range defaultArity(IAnnotatedElement member) {
+            ITypeInfo info = member.getTypeInfo();
             if (member.isAnnotationPresent(Option.class)) {
-                Class<?>[] typeAttribute = ArgsReflection
-                        .inferTypes(type, member.getAnnotation(Option.class).type(), member.getGenericType());
-                boolean zeroArgs = isBoolean(type) || (isMultiValue(type) && isBoolean(typeAttribute[0]));
+                boolean zeroArgs = info.isBoolean() || (info.isMultiValue() && info.getAuxiliaryTypeInfos().get(0).isBoolean());
                 return zeroArgs ? Range.valueOf("0").unspecified(true)
                                 : Range.valueOf("1").unspecified(true);
             }
-            if (isMultiValue(type)) {
+            if (info.isMultiValue()) {
                 return Range.valueOf("0..1").unspecified(true);
             }
             return Range.valueOf("1").unspecified(true);// for single-valued fields (incl. boolean positional parameters)
@@ -3527,7 +3524,7 @@ public class CommandLine {
             return isBoolean(type) ? Range.valueOf("0").unspecified(true) : Range.valueOf("1").unspecified(true);
         }
         private int size() { return 1 + max - min; }
-        static Range parameterCapacity(TypedMember member) {
+        static Range parameterCapacity(IAnnotatedElement member) {
             Range arity = parameterArity(member);
             if (!member.isMultiValue()) { return arity; }
             Range index = parameterIndex(member);
@@ -3589,6 +3586,9 @@ public class CommandLine {
          * @param unspecified the {@code unspecified} value of the returned Range object
          * @return a new Range object with the specified {@code unspecified} value */
         public Range unspecified(boolean unspecified) { return new Range(min, max, isVariable, unspecified, originalValue); }
+        /** Returns {@code true} if this Range is a default value, {@code false} if the user specified this value.
+         * @since 4.0 */
+        public boolean isUnspecified() { return isUnspecified; }
 
         /**
          * Returns {@code true} if this Range includes the specified value, {@code false} otherwise.
@@ -3689,6 +3689,9 @@ public class CommandLine {
             /** Constant Boolean holding the default setting for whether this is a help command: <code>{@value}</code>.*/
             static final Boolean DEFAULT_IS_HELP_COMMAND = Boolean.FALSE;
 
+            /** Constant Boolean holding the default setting for whether method commands should be added as subcommands: <code>{@value}</code>.*/
+            static final Boolean DEFAULT_IS_ADD_METHOD_SUBCOMMANDS = Boolean.TRUE;
+
             private final Map<String, CommandLine> commands = new LinkedHashMap<String, CommandLine>();
             private final Map<String, OptionSpec> optionsByNameMap = new LinkedHashMap<String, OptionSpec>();
             private final Map<Character, OptionSpec> posixOptionsByKeyMap = new LinkedHashMap<Character, OptionSpec>();
@@ -3704,6 +3707,7 @@ public class CommandLine {
             private final Object userObject;
             private CommandLine commandLine;
             private CommandSpec parent;
+            private Boolean isAddMethodSubcommands;
     
             private String name;
             private Set<String> aliases = new LinkedHashSet<String>();
@@ -3813,6 +3817,24 @@ public class CommandLine {
             /** Initializes the usageMessage specification for this command from the specified settings and returns this commandSpec.*/
             public CommandSpec usageMessage(UsageMessageSpec settings) { usageMessage.initFrom(settings, this); return this; }
 
+            /** Returns the resource bundle base name for this command.
+             * @return the resource bundle base name from the {@linkplain UsageMessageSpec#messages()}
+             * @since 4.0 */
+            public String resourceBundleBaseName() { return Messages.resourceBundleBaseName(usageMessage.messages()); }
+            /** Initializes the resource bundle for this command: sets the {@link UsageMessageSpec#messages(Messages) UsageMessageSpec.messages} to
+             * a {@link Messages Messages} object created from this command spec and the specified bundle, and then sets the
+             * {@link ArgSpec#messages(Messages) ArgSpec.messages} of all options and positional parameters in this command
+             * to the same {@code Messages} instance. Subcommands are not modified.
+             * <p>This method is preferable to {@link #resourceBundle(ResourceBundle)} for pre-Java 8</p>
+             * @param resourceBundleBaseName the base name of the ResourceBundle to set, may be {@code null}
+             * @return this commandSpec
+             * @see #addSubcommand(String, CommandLine)
+             * @since 4.0 */
+            public CommandSpec resourceBundleBaseName(String resourceBundleBaseName) {
+                ResourceBundle bundle = resourceBundleBaseName == null ? null : ResourceBundle.getBundle(resourceBundleBaseName);
+                setBundle(resourceBundleBaseName, bundle);
+                return this;
+            }
             /** Returns the resource bundle for this command.
              * @return the resource bundle from the {@linkplain UsageMessageSpec#messages()}
              * @since 3.6 */
@@ -3826,9 +3848,12 @@ public class CommandLine {
              * @see #addSubcommand(String, CommandLine)
              * @since 3.6 */
             public CommandSpec resourceBundle(ResourceBundle bundle) {
-                usageMessage().messages(new Messages(this, bundle));
-                updateArgSpecMessages();
+                setBundle(Messages.extractName(bundle), bundle);
                 return this;
+            }
+            private void setBundle(String bundleBaseName, ResourceBundle bundle) {
+                usageMessage().messages(new Messages(this, bundleBaseName, bundle));
+                updateArgSpecMessages();
             }
             private void updateArgSpecMessages() {
                 for (OptionSpec opt : options()) { opt.messages(usageMessage().messages()); }
@@ -3862,17 +3887,24 @@ public class CommandLine {
                     previous = commands.put(alias, subCommandLine);
                     if (previous != null && previous != subCommandLine) { throw new InitializationException("Alias '" + alias + "' for subcommand '" + name + "' is already used by another subcommand of '" + this.name() + "'"); }
                 }
-                subSpec.initResourceBundle(resourceBundle());
+                subSpec.initCommandHierarchyWithResourceBundle(resourceBundleBaseName());
                 return this;
             }
-            private void initResourceBundle(ResourceBundle bundle) {
+            private void initCommandHierarchyWithResourceBundle(String bundleBaseName) {
                 if (resourceBundle() == null) {
-                    resourceBundle(bundle);
+                    resourceBundleBaseName(bundleBaseName);
                 }
                 for (CommandLine sub : commands.values()) { // percolate down the hierarchy
-                    sub.getCommandSpec().initResourceBundle(resourceBundle());
+                    sub.getCommandSpec().initCommandHierarchyWithResourceBundle(bundleBaseName);
                 }
             }
+
+            /** Returns whether method commands should be added as subcommands. Used by the annotation processor.
+             * @since 4.0 */
+            public boolean isAddMethodSubcommands() { return (isAddMethodSubcommands == null) ? DEFAULT_IS_ADD_METHOD_SUBCOMMANDS : isAddMethodSubcommands; }
+            /** Sets whether method commands should be added as subcommands. Used by the annotation processor.
+             * @since 4.0 */
+            public CommandSpec setAddMethodSubcommands(Boolean addMethodSubcommands) { isAddMethodSubcommands = addMethodSubcommands; return this; }
 
             /** Reflects on the class of the {@linkplain #userObject() user object} and registers any command methods
              * (class methods annotated with {@code @Command}) as subcommands.
@@ -3899,6 +3931,7 @@ public class CommandLine {
                     CommandLine cmd = new CommandLine(method, factory);
                     addSubcommand(cmd.getCommandName(), cmd);
                 }
+                isAddMethodSubcommands = true;
                 return this;
             }
 
@@ -4180,7 +4213,30 @@ public class CommandLine {
              * @param newValue the string representation
              * @return this CommandSpec for method chaining */
             public CommandSpec withToString(String newValue) { this.toString = newValue; return this; }
-    
+
+            /**
+             * Updates the following attributes from the specified {@code @Command} annotation:
+             * aliases, {@link ParserSpec#separator() parser separator}, command name, version, help command,
+             * version provider, default provider and {@link UsageMessageSpec usage message spec}.
+             * @param cmd the {@code @Command} annotation to get attribute values from
+             * @param factory factory used to instantiate classes
+             * @since 3.7
+             */
+            public void updateCommandAttributes(Command cmd, IFactory factory) {
+                aliases(cmd.aliases());
+                parser().updateSeparator(cmd.separator());
+                updateName(cmd.name());
+                updateVersion(cmd.version());
+                updateHelpCommand(cmd.helpCommand());
+                updateAddMethodSubcommands(cmd.addMethodSubcommands());
+                usageMessage().updateFromCommand(cmd, this);
+
+                if (factory != null) {
+                    updateVersionProvider(cmd.versionProvider(), factory);
+                    initDefaultValueProvider(cmd.defaultValueProvider(), factory);
+                }
+            }
+
             void initName(String value)                 { if (initializable(name, value, DEFAULT_COMMAND_NAME))                           {name = value;} }
             void initHelpCommand(boolean value)         { if (initializable(isHelpCommand, value, DEFAULT_IS_HELP_COMMAND))               {isHelpCommand = value;} }
             void initVersion(String[] value)            { if (initializable(version, value, UsageMessageSpec.DEFAULT_MULTI_LINE))         {version = value.clone();} }
@@ -4191,6 +4247,7 @@ public class CommandLine {
             }
             void updateName(String value)               { if (isNonDefault(value, DEFAULT_COMMAND_NAME))                 {name = value;} }
             void updateHelpCommand(boolean value)       { if (isNonDefault(value, DEFAULT_IS_HELP_COMMAND))              {isHelpCommand = value;} }
+            void updateAddMethodSubcommands(boolean value) { if (isNonDefault(value, DEFAULT_IS_ADD_METHOD_SUBCOMMANDS)) {isAddMethodSubcommands = value;} }
             void updateVersion(String[] value)          { if (isNonDefault(value, UsageMessageSpec.DEFAULT_MULTI_LINE))  {version = value.clone();} }
             void updateVersionProvider(Class<? extends IVersionProvider> value, IFactory factory) {
                 if (isNonDefault(value, NoVersionProvider.class)) { versionProvider = (DefaultFactory.createVersionProvider(factory, value)); }
@@ -4767,8 +4824,9 @@ public class CommandLine {
                 if (isNonDefault(cmd.optionListHeading(), DEFAULT_SINGLE_VALUE))              {optionListHeading = cmd.optionListHeading();}
                 if (isNonDefault(cmd.usageHelpWidth(), DEFAULT_USAGE_WIDTH))                  {width(cmd.usageHelpWidth());} // validate
 
-                ResourceBundle rb = empty(cmd.resourceBundle()) ? null : ResourceBundle.getBundle(cmd.resourceBundle());
-                if (rb != null) { messages(new Messages(commandSpec, rb)); } // else preserve superclass bundle
+                if (!empty(cmd.resourceBundle())) { // else preserve superclass bundle
+                    messages(new Messages(commandSpec, cmd.resourceBundle()));
+                }
             }
             void initFromMixin(UsageMessageSpec mixin, CommandSpec commandSpec) {
                 if (initializable(synopsisHeading, mixin.synopsisHeading(), DEFAULT_SYNOPSIS_HEADING))                 {synopsisHeading = mixin.synopsisHeading();}
@@ -4996,13 +5054,13 @@ public class CommandLine {
             private final Help.Visibility showDefaultValue;
             private Messages messages;
             CommandSpec commandSpec;
+            private final Object userObject;
 
             // parser fields
             private final boolean interactive;
             private final boolean required;
             private final String splitRegex;
-            private final Class<?> type;
-            private final Class<?>[] auxiliaryTypes;
+            private final ITypeInfo typeInfo;
             private final ITypeConverter<?>[] converters;
             private final Iterable<String> completionCandidates;
             private final String defaultValue;
@@ -5019,6 +5077,7 @@ public class CommandLine {
 
             /** Constructs a new {@code ArgSpec}. */
             private <T extends Builder<T>> ArgSpec(Builder<T> builder) {
+                userObject = builder.userObject;
                 description = builder.description == null ? new String[0] : builder.description;
                 descriptionKey = builder.descriptionKey;
                 splitRegex = builder.splitRegex == null ? "" : builder.splitRegex;
@@ -5028,10 +5087,10 @@ public class CommandLine {
                 showDefaultValue = builder.showDefaultValue == null ? Help.Visibility.ON_DEMAND : builder.showDefaultValue;
                 hidden = builder.hidden;
                 interactive = builder.interactive;
-                required = builder.required && builder.defaultValue == null; //#261 not required if it has a default
-                defaultValue = builder.defaultValue;
                 initialValue = builder.initialValue;
                 hasInitialValue = builder.hasInitialValue;
+                defaultValue = NO_DEFAULT_VALUE.equals(builder.defaultValue) ? null : builder.defaultValue;
+                required = builder.required && defaultValue == null; //#261 not required if it has a default
                 toString = builder.toString;
                 getter = builder.getter;
                 setter = builder.setter;
@@ -5046,38 +5105,17 @@ public class CommandLine {
                     tempArity = tempArity.unspecified(true);
                 }
                 arity = tempArity;
-    
-                if (builder.type == null) {
-                    if (builder.auxiliaryTypes == null || builder.auxiliaryTypes.length == 0) {
-                        if (arity.isVariable || arity.max > 1) {
-                            type = String[].class;
-                        } else if (arity.max == 1) {
-                            type = String.class;
-                        } else {
-                            type = isOption() ? boolean.class : String.class;
-                        }
-                    } else {
-                        type = builder.auxiliaryTypes[0];
-                    }
+
+                if (builder.typeInfo == null) {
+                    this.typeInfo = RuntimeTypeInfo.create(builder.type, builder.auxiliaryTypes,
+                            Collections.<String>emptyList(), arity, (isOption() ? boolean.class : String.class));
                 } else {
-                    type = builder.type;
+                    this.typeInfo = builder.typeInfo;
                 }
-                if (builder.auxiliaryTypes == null || builder.auxiliaryTypes.length == 0) {
-                    if (type.isArray()) {
-                        auxiliaryTypes = new Class<?>[]{type.getComponentType()};
-                    } else if (Collection.class.isAssignableFrom(type)) { // type is a collection but element type is unspecified
-                        auxiliaryTypes = new Class<?>[] {String.class}; // use String elements
-                    } else if (Map.class.isAssignableFrom(type)) { // type is a map but element type is unspecified
-                        auxiliaryTypes = new Class<?>[] {String.class, String.class}; // use String keys and String values
-                    } else {
-                        auxiliaryTypes = new Class<?>[] {type};
-                    }
-                } else {
-                    auxiliaryTypes = builder.auxiliaryTypes;
-                }
-                if (builder.completionCandidates == null && auxiliaryTypes[0].isEnum()) {
+
+                if (builder.completionCandidates == null && typeInfo.isEnum()) {
                     List<String> list = new ArrayList<String>();
-                    for (Object c : auxiliaryTypes[0].getEnumConstants()) { list.add(c.toString()); }
+                    for (Object c : typeInfo.getEnumConstantNames()) { list.add(c.toString()); }
                     completionCandidates = Collections.unmodifiableList(list);
                 } else {
                     completionCandidates = builder.completionCandidates;
@@ -5143,7 +5181,7 @@ public class CommandLine {
     
             /** Returns auxiliary type information used when the {@link #type()} is a generic {@code Collection}, {@code Map} or an abstract class.
              * @see Option#type() */
-            public Class<?>[] auxiliaryTypes() { return auxiliaryTypes.clone(); }
+            public Class<?>[] auxiliaryTypes() { return typeInfo.getAuxiliaryTypes(); }
     
             /** Returns one or more {@link CommandLine.ITypeConverter type converters} to use to convert the command line
              * argument into a strongly typed value (or key-value pair for map fields). This is useful when a particular
@@ -5160,7 +5198,16 @@ public class CommandLine {
             public boolean hidden()        { return hidden; }
     
             /** Returns the type to convert the option or positional parameter to before {@linkplain #setValue(Object) setting} the value. */
-            public Class<?> type()         { return type; }
+            public Class<?> type()         { return typeInfo.getType(); }
+
+            /** Returns the {@code ITypeInfo} that can be used both at compile time (by annotation processors) and at runtime.
+             * @since 4.0 */
+            public ITypeInfo typeInfo()    { return typeInfo; }
+
+            /** Returns the user object associated with this option or positional parameters.
+             * @return may return the annotated program element, or some other useful object
+             * @since 4.0 */
+            public Object userObject()     { return userObject; }
     
             /** Returns the default value of this option or positional parameter, before splitting and type conversion.
              * This method returns the programmatically set value; this may differ from the default value that is actually used:
@@ -5248,7 +5295,7 @@ public class CommandLine {
             }
 
             /** Returns {@code true} if this argument's {@link #type()} is an array, a {@code Collection} or a {@code Map}, {@code false} otherwise. */
-            public boolean isMultiValue()     { return CommandLine.isMultiValue(type()); }
+            public boolean isMultiValue()     { return typeInfo.isMultiValue(); }
             /** Returns {@code true} if this argument is a named option, {@code false} otherwise. */
             public abstract boolean isOption();
             /** Returns {@code true} if this argument is a positional parameter, {@code false} otherwise. */
@@ -5378,7 +5425,6 @@ public class CommandLine {
 
             protected boolean equalsImpl(ArgSpec other) {
                 boolean result = Assert.equals(this.defaultValue, other.defaultValue)
-                        && Assert.equals(this.type, other.type)
                         && Assert.equals(this.arity, other.arity)
                         && Assert.equals(this.hidden, other.hidden)
                         && Assert.equals(this.paramLabel, other.paramLabel)
@@ -5387,14 +5433,13 @@ public class CommandLine {
                         && Assert.equals(this.splitRegex, other.splitRegex)
                         && Arrays.equals(this.description, other.description)
                         && Assert.equals(this.descriptionKey, other.descriptionKey)
-                        && Arrays.equals(this.auxiliaryTypes, other.auxiliaryTypes)
+                        && this.typeInfo.equals(other.typeInfo)
                         ;
                 return result;
             }
             protected int hashCodeImpl() {
                 return 17
                         + 37 * Assert.hashCode(defaultValue)
-                        + 37 * Assert.hashCode(type)
                         + 37 * Assert.hashCode(arity)
                         + 37 * Assert.hashCode(hidden)
                         + 37 * Assert.hashCode(paramLabel)
@@ -5403,11 +5448,12 @@ public class CommandLine {
                         + 37 * Assert.hashCode(splitRegex)
                         + 37 * Arrays.hashCode(description)
                         + 37 * Assert.hashCode(descriptionKey)
-                        + 37 * Arrays.hashCode(auxiliaryTypes)
+                        + 37 * typeInfo.hashCode()
                         ;
             }
     
             abstract static class Builder<T extends Builder<T>> {
+                private Object userObject;
                 private Range arity;
                 private String[] description;
                 private String descriptionKey;
@@ -5419,6 +5465,7 @@ public class CommandLine {
                 private boolean hidden;
                 private Class<?> type;
                 private Class<?>[] auxiliaryTypes;
+                private ITypeInfo typeInfo;
                 private ITypeConverter<?>[] converters;
                 private String defaultValue;
                 private Object initialValue;
@@ -5431,8 +5478,8 @@ public class CommandLine {
 
                 Builder() {}
                 Builder(ArgSpec original) {
+                    userObject = original.userObject;
                     arity = original.arity;
-                    auxiliaryTypes = original.auxiliaryTypes;
                     converters = original.converters;
                     defaultValue = original.defaultValue;
                     description = original.description;
@@ -5447,10 +5494,79 @@ public class CommandLine {
                     completionCandidates = original.completionCandidates;
                     splitRegex = original.splitRegex;
                     toString = original.toString;
-                    type = original.type;
                     descriptionKey = original.descriptionKey;
+                    setTypeInfo(original.typeInfo);
                 }
-    
+                Builder(IAnnotatedElement source) {
+                    userObject = source.userObject();
+                    setTypeInfo(source.getTypeInfo());
+                    toString = source.getToString();
+                    getter = source.getter();
+                    setter = source.setter();
+                    hasInitialValue = source.hasInitialValue();
+                    try { initialValue = source.getter().get(); } catch (Exception ex) { initialValue = null; }
+                }
+                Builder(Option option, IAnnotatedElement source, IFactory factory) {
+                    this(source);
+                    arity = Range.optionArity(source);
+                    required = option.required();
+
+                    paramLabel = inferLabel(option.paramLabel(), source.getName(), source.getTypeInfo());
+
+                    hideParamSyntax = option.hideParamSyntax();
+                    interactive = option.interactive();
+                    description = option.description();
+                    descriptionKey = option.descriptionKey();
+                    splitRegex = option.split();
+                    hidden = option.hidden();
+                    defaultValue = option.defaultValue();
+                    showDefaultValue = option.showDefaultValue();
+                    if (factory != null) {
+                        converters = DefaultFactory.createConverter(factory, option.converter());
+                        if (!NoCompletionCandidates.class.equals(option.completionCandidates())) {
+                            completionCandidates = DefaultFactory.createCompletionCandidates(factory, option.completionCandidates());
+                        }
+                    }
+                }
+                Builder(Parameters parameters, IAnnotatedElement source, IFactory factory) {
+                    this(source);
+                    arity = Range.parameterArity(source);
+                    required = arity.min > 0;
+
+                    // method parameters may be positional parameters without @Parameters annotation
+                    if (parameters == null) {
+                        paramLabel = inferLabel(null, source.getName(), source.getTypeInfo());
+                    } else {
+                        paramLabel = inferLabel(parameters.paramLabel(), source.getName(), source.getTypeInfo());
+
+                        hideParamSyntax = parameters.hideParamSyntax();
+                        interactive = parameters.interactive();
+                        description = parameters.description();
+                        descriptionKey = parameters.descriptionKey();
+                        splitRegex = parameters.split();
+                        hidden = parameters.hidden();
+                        defaultValue = parameters.defaultValue();
+                        showDefaultValue = parameters.showDefaultValue();
+                        if (factory != null) { // annotation processors will pass a null factory
+                            converters = DefaultFactory.createConverter(factory, parameters.converter());
+                            if (!NoCompletionCandidates.class.equals(parameters.completionCandidates())) {
+                                completionCandidates = DefaultFactory.createCompletionCandidates(factory, parameters.completionCandidates());
+                            }
+                        }
+                    }
+                }
+                private static String inferLabel(String label, String fieldName, ITypeInfo typeInfo) {
+                    if (!empty(label)) { return label.trim(); }
+                    String name = fieldName;
+                    if (typeInfo.isMap()) { // #195 better param labels for map fields
+                        List<ITypeInfo> aux = typeInfo.getAuxiliaryTypeInfos();
+                        if (aux.size() < 2 || aux.get(0) == null || aux.get(1) == null) {
+                            name = "String=String";
+                        } else { name = aux.get(0).getClassSimpleName() + "=" + aux.get(1).getClassSimpleName(); }
+                    }
+                    return "<" + name + ">";
+                }
+
                 public    abstract ArgSpec build();
                 protected abstract T self(); // subclasses must override to return "this"
                 /** Returns whether this is a required option or positional parameter.
@@ -5504,6 +5620,17 @@ public class CommandLine {
 
                 /** Returns the type to convert the option or positional parameter to before {@linkplain #setValue(Object) setting} the value. */
                 public Class<?> type()         { return type; }
+
+                /** Returns the type info for this option or positional parameter.
+                 * @return type information that does not require {@code Class} objects and be constructed both at runtime and compile time
+                 * @since 4.0
+                 */
+                public ITypeInfo typeInfo()    { return typeInfo; }
+
+                /** Returns the user object associated with this option or positional parameters.
+                 * @return may return the annotated program element, or some other useful object
+                 * @since 4.0 */
+                public Object userObject()     { return userObject; }
 
                 /** Returns the default value of this option or positional parameter, before splitting and type conversion.
                  * A value of {@code null} means this option or positional parameter does not have a default. */
@@ -5577,7 +5704,7 @@ public class CommandLine {
 
                 /** Sets the completion candidates for this option or positional parameter, and returns this builder.
                  * @since 3.2 */
-                public T completionCandidates(Iterable<String> completionCandidates) { this.completionCandidates = Assert.notNull(completionCandidates, "completionCandidates"); return self(); }
+                public T completionCandidates(Iterable<String> completionCandidates) { this.completionCandidates = completionCandidates; return self(); }
 
                 /** Sets whether this option should be excluded from the usage message, and returns this builder. */
                 public T hidden(boolean hidden)              { this.hidden = hidden; return self(); }
@@ -5585,11 +5712,31 @@ public class CommandLine {
                 /** Sets the type to convert the option or positional parameter to before {@linkplain #setValue(Object) setting} the value, and returns this builder.
                  * @param propertyType the type of this option or parameter. For multi-value options and positional parameters this can be an array, or a (sub-type of) Collection or Map. */
                 public T type(Class<?> propertyType)         { this.type = Assert.notNull(propertyType, "type"); return self(); }
-    
+
+                /** Sets the type info for this option or positional parameter, and returns this builder.
+                 * @param typeInfo type information that does not require {@code Class} objects and be constructed both at runtime and compile time
+                 * @since 4.0 */
+                public T typeInfo(ITypeInfo typeInfo) {
+                    setTypeInfo(Assert.notNull(typeInfo, "typeInfo"));
+                    return self();
+                }
+                private void setTypeInfo(ITypeInfo newValue) {
+                    this.typeInfo = newValue;
+                    if (typeInfo != null) {
+                        type = typeInfo.getType();
+                        auxiliaryTypes = typeInfo.getAuxiliaryTypes();
+                    }
+                }
+
+                /** Sets the user object associated with this option or positional parameters, and returns this builder.
+                 * @param userObject may be the annotated program element, or some other useful object
+                 * @since 4.0 */
+                public T userObject(Object userObject)     { this.userObject = Assert.notNull(userObject, "userObject"); return self(); }
+
                 /** Sets the default value of this option or positional parameter to the specified value, and returns this builder.
                  * Before parsing the command line, the result of {@linkplain #splitRegex() splitting} and {@linkplain #converters() type converting}
                  * this default value is applied to the option or positional parameter. A value of {@code null} or {@code "__no_default_value__"} means no default. */
-                public T defaultValue(String defaultValue)   { this.defaultValue = NO_DEFAULT_VALUE.equals(defaultValue) ? null : defaultValue; return self(); }
+                public T defaultValue(String defaultValue)   { this.defaultValue = defaultValue; return self(); }
 
                 /** Sets the initial value of this option or positional parameter to the specified value, and returns this builder.
                  * If {@link #hasInitialValue()} is true, the option will be reset to the initial value before parsing (regardless
@@ -5657,7 +5804,7 @@ public class CommandLine {
             private boolean usageHelp;
             private boolean versionHelp;
             private int order;
-    
+
             public static OptionSpec.Builder builder(String name, String... names) {
                 String[] copy = new String[Assert.notNull(names, "names").length + 1];
                 copy[0] = Assert.notNull(name, "name");
@@ -5665,7 +5812,8 @@ public class CommandLine {
                 return new Builder(copy);
             }
             public static OptionSpec.Builder builder(String[] names) { return new Builder(names); }
-    
+            public static OptionSpec.Builder builder(IAnnotatedElement source, IFactory factory) { return new Builder(source, factory); }
+
             /** Ensures all attributes of this {@code OptionSpec} have a valid value; throws an {@link InitializationException} if this cannot be achieved. */
             private OptionSpec(Builder builder) {
                 super(builder);
@@ -5677,7 +5825,7 @@ public class CommandLine {
                 usageHelp = builder.usageHelp;
                 versionHelp = builder.versionHelp;
                 order = builder.order;
-    
+
                 if (names.length == 0 || Arrays.asList(names).contains("")) {
                     throw new InitializationException("Invalid names: " + Arrays.toString(names));
                 }
@@ -5724,8 +5872,9 @@ public class CommandLine {
             /** Returns the longest {@linkplain #names() option name}. */
             public String longestName() { return Help.ShortestFirst.longestFirst(names.clone())[0]; }
 
-            /** Returns the shortest {@linkplain #names() option name}. */
-            String shortestName() { return Help.ShortestFirst.sort(names.clone())[0]; }
+            /** Returns the shortest {@linkplain #names() option name}.
+             * @since 3.8 */
+            public String shortestName() { return Help.ShortestFirst.sort(names.clone())[0]; }
 
             /** Returns the position in the options list in the usage help message at which this option should be shown.
              * Options with a lower number are shown before options with a higher number.
@@ -5776,7 +5925,7 @@ public class CommandLine {
                 private boolean usageHelp;
                 private boolean versionHelp;
                 private int order = DEFAULT_ORDER;
-    
+
                 private Builder(String[] names) { this.names = names; }
                 private Builder(OptionSpec original) {
                     super(original);
@@ -5786,7 +5935,16 @@ public class CommandLine {
                     versionHelp = original.versionHelp;
                     order = original.order;
                 }
-    
+                private Builder(IAnnotatedElement member, IFactory factory) {
+                    super(member.getAnnotation(Option.class), member, factory);
+                    Option option = member.getAnnotation(Option.class);
+                    names = option.names();
+                    help = option.help();
+                    usageHelp = option.usageHelp();
+                    versionHelp = option.versionHelp();
+                    order = option.order();
+                }
+
                 /** Returns a valid {@code OptionSpec} instance. */
                 @Override public OptionSpec build() { return new OptionSpec(this); }
                 /** Returns this builder. */
@@ -5886,6 +6044,8 @@ public class CommandLine {
                 capacity = builder.capacity == null ? Range.parameterCapacity(arity(), index) : builder.capacity;
                 if (toString == null) { toString = "positional parameter[" + index() + "]"; }
             }
+            public static Builder builder() { return new Builder(); }
+            public static Builder builder(IAnnotatedElement source, IFactory factory) { return new Builder(source, factory); }
             /** Returns a new Builder initialized with the attributes from this {@code PositionalParamSpec}. Calling {@code build} immediately will return a copy of this {@code PositionalParamSpec}.
              * @return a builder that can create a copy of this spec
              */
@@ -5914,7 +6074,6 @@ public class CommandLine {
              * @see Parameters#index() */
             public Range index()            { return index; }
             private Range capacity()        { return capacity; }
-            public static Builder builder() { return new Builder(); }
 
             public int hashCode() {
                 return super.hashCodeImpl()
@@ -5945,6 +6104,11 @@ public class CommandLine {
                     super(original);
                     index = original.index;
                     capacity = original.capacity;
+                }
+                private Builder(IAnnotatedElement member, IFactory factory) {
+                    super(member.getAnnotation(Parameters.class), member, factory);
+                    index = Range.parameterIndex(member);
+                    capacity = Range.parameterCapacity(member);
                 }
                 /** Returns a valid {@code PositionalParamSpec} instance. */
                 @Override public PositionalParamSpec build() { return new PositionalParamSpec(this); }
@@ -6010,8 +6174,9 @@ public class CommandLine {
                 }
             }
         }
-        /** mock java.lang.reflect.Parameter (not available before Java 8) */
-        static class MethodParam extends AccessibleObject {
+        /** Command method parameter, similar to java.lang.reflect.Parameter (not available before Java 8).
+         * @since 4.0 */
+        public static class MethodParam extends AccessibleObject {
             final Method method;
             final int paramIndex;
             final String name;
@@ -6044,24 +6209,214 @@ public class CommandLine {
             @Override public boolean isAccessible() throws SecurityException { return method.isAccessible(); }
             @Override public String toString() { return method.toString() + ":" + getName(); }
         }
-        static class TypedMember {
+
+        /** Encapculates type information for an option or parameter to make this information available both at runtime
+         * and at compile time (when {@code Class} values are not available).
+         * Most of the methods in this interface (but not all!) are safe to use by annotation processors.
+         * @since 4.0
+         */
+        public interface ITypeInfo {
+            /** Returns {@code true} if {@link #getType()} is {@code boolean} or {@code java.lang.Boolean}. */
+            boolean isBoolean();
+            /** Returns {@code true} if {@link #getType()} is an array, map or collection. */
+            boolean isMultiValue();
+            boolean isArray();
+            boolean isCollection();
+            boolean isMap();
+            /** Returns {@code true} if {@link #getType()} is an enum. */
+            boolean isEnum();
+            List<String> getEnumConstantNames();
+            String getClassName();
+            String getClassSimpleName();
+            /** Returns type information of components or elements of a {@link #isMultiValue() multivalue} type. */
+            List<ITypeInfo> getAuxiliaryTypeInfos();
+            /** Returns the names of the type arguments if this is a generic type. For example, returns {@code ["java.lang.String"]} if this type is {@code List<String>}. */
+            List<String> getActualGenericTypeArguments();
+
+            /** Returns the class that the option or parameter value should be converted to when matched on the command
+             * line. This method is <em>not</em> safe for annotation processors to use.
+             * @return the class that the option or parameter value should be converted to
+             */
+            Class<?> getType();
+            /** Returns the component class of an array, or the parameter type of a generic Collection, or the parameter
+             * types of the key and the value of a generic Map.
+             * This method is <em>not</em> safe for annotation processors to use.
+             * @return the component type or types of an array, Collection or Map type
+             */
+            Class<?>[] getAuxiliaryTypes();
+        }
+        static class RuntimeTypeInfo implements ITypeInfo {
+            private final Class<?> type;
+            private final Class<?>[] auxiliaryTypes;
+            private final List<String> actualGenericTypeArguments;
+
+            private RuntimeTypeInfo(Class<?> type, Class<?>[] auxiliaryTypes, List<String> actualGenericTypeArguments) {
+                this.type = Assert.notNull(type, "type");
+                this.auxiliaryTypes = Assert.notNull(auxiliaryTypes, "auxiliaryTypes").clone();
+                this.actualGenericTypeArguments = actualGenericTypeArguments == null ? Collections.<String>emptyList() : Collections.unmodifiableList(new ArrayList<String>(actualGenericTypeArguments));
+            }
+
+            static ITypeInfo createForAuxType(Class<?> type) {
+                return create(type, new Class[0], (Type) null, Range.valueOf("1"), String.class);
+            }
+            public static ITypeInfo create(Class<?> type,
+                                           Class<?>[] annotationTypes,
+                                           Type genericType,
+                                           Range arity,
+                                           Class<?> defaultType) {
+                Class<?>[] auxiliaryTypes = RuntimeTypeInfo.inferTypes(type, annotationTypes, genericType);
+                List<String> actualGenericTypeArguments = new ArrayList<String>();
+                if (genericType instanceof ParameterizedType)  {
+                    Class[] declaredTypeParameters = extractTypeParameters((ParameterizedType) genericType);
+                    for (Class<?> c : declaredTypeParameters) { actualGenericTypeArguments.add(c.getName()); }
+                }
+                return create(type, auxiliaryTypes, actualGenericTypeArguments, arity, defaultType);
+            }
+
+            public static ITypeInfo create(Class<?> type, Class<?>[] auxiliaryTypes, List<String> actualGenericTypeArguments, Range arity, Class<?> defaultType) {
+                if (type == null) {
+                    if (auxiliaryTypes == null || auxiliaryTypes.length == 0) {
+                        if (arity.isVariable || arity.max > 1) {
+                            type = String[].class;
+                        } else if (arity.max == 1) {
+                            type = String.class;
+                        } else {
+                            type = defaultType;
+                        }
+                    } else {
+                        type = auxiliaryTypes[0];
+                    }
+                }
+                if (auxiliaryTypes == null || auxiliaryTypes.length == 0) {
+                    if (type.isArray()) {
+                        auxiliaryTypes = new Class<?>[] {type.getComponentType()};
+                    } else if (Collection.class.isAssignableFrom(type)) { // type is a collection but element type is unspecified
+                        auxiliaryTypes = new Class<?>[] {String.class}; // use String elements
+                    } else if (Map.class.isAssignableFrom(type)) { // type is a map but element type is unspecified
+                        auxiliaryTypes = new Class<?>[] {String.class, String.class}; // use String keys and String values
+                    } else {
+                        auxiliaryTypes = new Class<?>[] {type};
+                    }
+                }
+                return new RuntimeTypeInfo(type, auxiliaryTypes, actualGenericTypeArguments);
+            }
+            static Class<?>[] inferTypes(Class<?> propertyType, Class<?>[] annotationTypes, Type genericType) {
+                if (annotationTypes != null && annotationTypes.length > 0) { return annotationTypes; }
+                if (propertyType.isArray()) { return new Class<?>[] { propertyType.getComponentType() }; }
+                if (CommandLine.isMultiValue(propertyType)) {
+                    if (genericType instanceof ParameterizedType) {// e.g. Map<Long, ? extends Number>
+                        return extractTypeParameters((ParameterizedType) genericType);
+                    }
+                    return new Class<?>[] {String.class, String.class}; // field is multi-value but not ParameterizedType
+                }
+                return new Class<?>[] {propertyType}; // not a multi-value field
+            }
+
+            static Class<?>[] extractTypeParameters(ParameterizedType genericType) {
+                ParameterizedType parameterizedType = genericType;
+                Type[] paramTypes = parameterizedType.getActualTypeArguments(); // e.g. ? extends Number
+                Class<?>[] result = new Class<?>[paramTypes.length];
+                for (int i = 0; i < paramTypes.length; i++) {
+                    if (paramTypes[i] instanceof Class) { result[i] = (Class<?>) paramTypes[i]; continue; } // e.g. Long
+                    if (paramTypes[i] instanceof WildcardType) { // e.g. ? extends Number
+                        WildcardType wildcardType = (WildcardType) paramTypes[i];
+                        Type[] lower = wildcardType.getLowerBounds(); // e.g. []
+                        if (lower.length > 0 && lower[0] instanceof Class) { result[i] = (Class<?>) lower[0]; continue; }
+                        Type[] upper = wildcardType.getUpperBounds(); // e.g. Number
+                        if (upper.length > 0 && upper[0] instanceof Class) { result[i] = (Class<?>) upper[0]; continue; }
+                    }
+                    Arrays.fill(result, String.class); return result; // too convoluted generic type, giving up
+                }
+                return result; // we inferred all types from ParameterizedType
+            }
+
+            public boolean isBoolean()            { return auxiliaryTypes[0] == boolean.class || auxiliaryTypes[0] == Boolean.class; }
+            public boolean isMultiValue()         { return CommandLine.isMultiValue(type); }
+            public boolean isArray()              { return type.isArray(); }
+            public boolean isCollection()         { return Collection.class.isAssignableFrom(type); }
+            public boolean isMap()                { return Map.class.isAssignableFrom(type); }
+            public boolean isEnum()               { return auxiliaryTypes[0].isEnum(); }
+            public String getClassName()          { return type.getName(); }
+            public String getClassSimpleName()    { return type.getSimpleName(); }
+            public Class<?> getType()             { return type; }
+            public Class<?>[] getAuxiliaryTypes() { return auxiliaryTypes; }
+            public List<String> getActualGenericTypeArguments() { return actualGenericTypeArguments; }
+
+            public List<ITypeInfo> getAuxiliaryTypeInfos()  {
+                List<ITypeInfo> result = new ArrayList<ITypeInfo>();
+                for (Class<?> c : auxiliaryTypes) { result.add(createForAuxType(c)); }
+                return result;
+            }
+            public List<String> getEnumConstantNames() {
+                if (!isEnum()) { return Collections.emptyList(); }
+                List<String> result = new ArrayList<String>();
+                for (Object c : auxiliaryTypes[0].getEnumConstants()) { result.add(c.toString()); }
+                return result;
+            }
+
+            public boolean equals(Object obj) {
+                if (obj == this) { return true; }
+                if (!(obj instanceof RuntimeTypeInfo)) { return false; }
+                RuntimeTypeInfo other = (RuntimeTypeInfo) obj;
+                return Arrays.equals(other.auxiliaryTypes, auxiliaryTypes) && type.equals(other.type);
+            }
+            public int hashCode() {
+                return Arrays.hashCode(auxiliaryTypes) + 37 * Assert.hashCode(type);
+            }
+            public String toString() {
+                return String.format("RuntimeTypeInfo(%s, aux=%s, collection=%s, map=%s)",
+                        type.getCanonicalName(), Arrays.toString(auxiliaryTypes), isCollection(), isMap());
+            }
+        }
+        /** Internal interface to allow annotation processors to construct a command model at compile time.
+         * @since 4.0 */
+        public interface IAnnotatedElement {
+            Object userObject();
+            boolean isAnnotationPresent(Class<? extends Annotation> annotationClass);
+            <T extends Annotation> T getAnnotation(Class<T> annotationClass);
+            String getName();
+            String getMixinName();
+            boolean isArgSpec();
+            boolean isOption();
+            boolean isParameter();
+            boolean isMixin();
+            boolean isUnmatched();
+            boolean isInjectSpec();
+            boolean isMultiValue();
+            boolean hasInitialValue();
+            boolean isMethodParameter();
+            int getMethodParamPosition();
+            CommandLine.Model.IGetter getter();
+            CommandLine.Model.ISetter setter();
+            ITypeInfo getTypeInfo();
+            String getToString();
+        }
+
+        static class TypedMember implements IAnnotatedElement {
             final AccessibleObject accessible;
             final String name;
-            final Class<?> type;
-            final Type genericType;
+            final ITypeInfo typeInfo;
             final boolean hasInitialValue;
             private IGetter getter;
             private ISetter setter;
+            static TypedMember createIfAnnotated(Field field, Object scope) {
+                return isAnnotated(field) ? new TypedMember(field, scope) : null;
+            }
+            static boolean isAnnotated(AnnotatedElement e) {
+                return false
+                        || e.isAnnotationPresent(Option.class)
+                        || e.isAnnotationPresent(Parameters.class)
+                        || e.isAnnotationPresent(Unmatched.class)
+                        || e.isAnnotationPresent(Mixin.class)
+                        || e.isAnnotationPresent(Spec.class)
+                        || e.isAnnotationPresent(ParentCommand.class);
+            }
             TypedMember(Field field) {
                 accessible = Assert.notNull(field, "field");
                 accessible.setAccessible(true);
                 name = field.getName();
-                type = field.getType();
-                genericType = field.getGenericType();
+                typeInfo = createTypeInfo(field.getType(), field.getGenericType());
                 hasInitialValue = true;
-            }
-            static TypedMember createIfAnnotated(Field field, Object scope) {
-                return isAnnotated(field) ? new TypedMember(field, scope) : null;
             }
             private TypedMember(Field field, Object scope) {
                 this(field);
@@ -6084,8 +6439,7 @@ public class CommandLine {
                 if (isSetter == isGetter) { throw new InitializationException("Invalid method, must be either getter or setter: " + method); }
                 if (isGetter) {
                     hasInitialValue = true;
-                    type = method.getReturnType();
-                    genericType = method.getGenericReturnType();
+                    typeInfo = createTypeInfo(method.getReturnType(), method.getGenericReturnType());
                     if (Proxy.isProxyClass(scope.getClass())) {
                         PicocliInvocationHandler handler = (PicocliInvocationHandler) Proxy.getInvocationHandler(scope);
                         PicocliInvocationHandler.ProxyBinding binding = handler.new ProxyBinding(method);
@@ -6098,8 +6452,7 @@ public class CommandLine {
                     }
                 } else {
                     hasInitialValue = false;
-                    type = parameterTypes[0];
-                    genericType = method.getGenericParameterTypes()[0];
+                    typeInfo = createTypeInfo(parameterTypes[0], method.getGenericParameterTypes()[0]);
                     MethodBinding binding = new MethodBinding(scope, method, spec);
                     getter = binding; setter = binding;
                 }
@@ -6108,9 +6461,7 @@ public class CommandLine {
                 accessible = Assert.notNull(param, "command method parameter");
                 accessible.setAccessible(true);
                 name = param.getName();
-                type = param.getType();
-                genericType = param.getParameterizedType();
-
+                typeInfo = createTypeInfo(param.getType(), param.getParameterizedType());
                 // bind parameter
                 ObjectBinding binding = new ObjectBinding();
                 getter = binding; setter = binding;
@@ -6118,7 +6469,23 @@ public class CommandLine {
                 hasInitialValue = true;
             }
 
+            private ITypeInfo createTypeInfo(Class<?> type, Type genericType) {
+                Range arity = null;
+                if (isOption())    { arity = Range.valueOf(getAnnotation(Option.class).arity()); }
+                if (isParameter()) { arity = Range.valueOf(getAnnotation(Parameters.class).arity()); }
+                if (arity == null || arity.isUnspecified) {
+                    if (isOption()) {
+                        arity = (type == null || isBoolean(type)) ? Range.valueOf("0") : Range.valueOf("1");
+                    } else {
+                        arity = Range.valueOf("1");
+                    }
+                    arity = arity.unspecified(true);
+                }
+                return RuntimeTypeInfo.create(type, annotationTypes(), genericType, arity, (isOption() ? boolean.class : String.class));
+            }
+
             private void initializeInitialValue(Object arg) {
+                Class<?> type = typeInfo.getType();
                 try {
                     if      (type == Boolean.TYPE  ) { setter.set(false); }
                     else if (type == Byte.TYPE     ) { setter.set(Byte.valueOf((byte) 0)); }
@@ -6133,37 +6500,40 @@ public class CommandLine {
                     throw new InitializationException("Could not set initial value for " + arg + ": " + ex.toString(), ex);
                 }
             }
-            static boolean isAnnotated(AnnotatedElement e) {
-                return false
-                        || e.isAnnotationPresent(Option.class)
-                        || e.isAnnotationPresent(Parameters.class)
-                        || e.isAnnotationPresent(Unmatched.class)
-                        || e.isAnnotationPresent(Mixin.class)
-                        || e.isAnnotationPresent(Spec.class)
-                        || e.isAnnotationPresent(ParentCommand.class);
+            public Object userObject()      { return accessible; }
+            public boolean isAnnotationPresent(Class<? extends Annotation> annotationClass) { return accessible.isAnnotationPresent(annotationClass); }
+            public <T extends Annotation> T getAnnotation(Class<T> annotationClass) { return accessible.getAnnotation(annotationClass); }
+            public String getName()         { return name; }
+            public boolean isArgSpec()      { return isOption() || isParameter() || (isMethodParameter() && !isMixin()); }
+            public boolean isOption()       { return isAnnotationPresent(Option.class); }
+            public boolean isParameter()    { return isAnnotationPresent(Parameters.class); }
+            public boolean isMixin()        { return isAnnotationPresent(Mixin.class); }
+            public boolean isUnmatched()    { return isAnnotationPresent(Unmatched.class); }
+            public boolean isInjectSpec()   { return isAnnotationPresent(Spec.class); }
+            public boolean isMultiValue()   { return CommandLine.isMultiValue(getType()); }
+            public IGetter getter()         { return getter; }
+            public ISetter setter()         { return setter; }
+            public ITypeInfo getTypeInfo()  { return typeInfo; }
+            public Class<?> getType()       { return typeInfo.getType(); }
+            public Class<?>[] getAuxiliaryTypes() { return typeInfo.getAuxiliaryTypes(); }
+            private Class<?>[] annotationTypes() {
+                if (isOption())    { return getAnnotation(Option.class).type(); }
+                if (isParameter()) { return getAnnotation(Parameters.class).type(); }
+                return new Class[0];
             }
-            boolean isAnnotationPresent(Class<? extends Annotation> annotationClass) { return accessible.isAnnotationPresent(annotationClass); }
-            <T extends Annotation> T getAnnotation(Class<T> annotationClass) { return accessible.getAnnotation(annotationClass); }
-            String name()            { return name; }
-            boolean isArgSpec()      { return isOption() || isParameter() || (isMethodParameter() && !isMixin()); }
-            boolean isOption()       { return isAnnotationPresent(Option.class); }
-            boolean isParameter()    { return isAnnotationPresent(Parameters.class); }
-            boolean isMixin()        { return isAnnotationPresent(Mixin.class); }
-            boolean isUnmatched()    { return isAnnotationPresent(Unmatched.class); }
-            boolean isInjectSpec()   { return isAnnotationPresent(Spec.class); }
-            boolean isMultiValue()   { return CommandLine.isMultiValue(getType()); }
-            IGetter getter()         { return getter; }
-            ISetter setter()         { return setter; }
-            Class<?> getType()       { return type; }
-            Type getGenericType()    { return genericType; }
             public String toString() { return accessible.toString(); }
-            String toGenericString() { return accessible instanceof Field ? ((Field) accessible).toGenericString() : accessible instanceof Method ? ((Method) accessible).toGenericString() : ((MethodParam)accessible).toString(); }
-            boolean isMethodParameter() { return accessible instanceof MethodParam; }
-            String mixinName()    {
-                String annotationName = getAnnotation(Mixin.class).name();
-                return empty(annotationName) ? name() : annotationName;
+            public String getToString()  {
+                if (isMixin()) { return abbreviate("mixin from member " + toGenericString()); }
+                return (accessible instanceof Field ? "field " : accessible instanceof Method ? "method " : accessible.getClass().getSimpleName() + " ") + abbreviate(toGenericString());
             }
-
+            public String toGenericString() { return accessible instanceof Field ? ((Field) accessible).toGenericString() : accessible instanceof Method ? ((Method) accessible).toGenericString() : ((MethodParam)accessible).toString(); }
+            public boolean hasInitialValue()    { return hasInitialValue; }
+            public boolean isMethodParameter()  { return accessible instanceof MethodParam; }
+            public int getMethodParamPosition() { return isMethodParameter() ? ((MethodParam) accessible).position : -1; }
+            public String getMixinName()    {
+                String annotationName = getAnnotation(Mixin.class).name();
+                return empty(annotationName) ? getName() : annotationName;
+            }
             static String propertyName(String methodName) {
                 if (methodName.length() > 3 && (methodName.startsWith("get") || methodName.startsWith("set"))) { return decapitalize(methodName.substring(3)); }
                 return decapitalize(methodName);
@@ -6173,6 +6543,12 @@ public class CommandLine {
                 char[] chars = name.toCharArray();
                 chars[0] = Character.toLowerCase(chars[0]);
                 return new String(chars);
+            }
+            static String abbreviate(String text) {
+                return text.replace("private ", "")
+                        .replace("protected ", "")
+                        .replace("public ", "")
+                        .replace("java.lang.", "");
             }
         }
 
@@ -6234,12 +6610,28 @@ public class CommandLine {
          * @since 3.6 */
         public static class Messages {
             private final CommandSpec spec;
+            private final String bundleBaseName;
             private final ResourceBundle rb;
             private final Set<String> keys;
+            public Messages(CommandSpec spec, String baseName) {
+                this(spec, baseName, createBundle(baseName));
+            }
             public Messages(CommandSpec spec, ResourceBundle rb) {
+                this(spec, extractName(rb), rb);
+            }
+            public Messages(CommandSpec spec, String baseName, ResourceBundle rb) {
                 this.spec = Assert.notNull(spec, "CommandSpec");
+                this.bundleBaseName = baseName;
                 this.rb = rb;
                 this.keys = keys(rb);
+            }
+            private static ResourceBundle createBundle(String baseName) {
+                return ResourceBundle.getBundle(baseName);
+            }
+            private static String extractName(ResourceBundle rb) {
+                try { // ResourceBundle.getBaseBundleName was introduced in Java 8
+                    return (String) ResourceBundle.class.getDeclaredMethod("getBaseBundleName").invoke(rb);
+                } catch (Exception ignored) { return ""; }
             }
             private static Set<String> keys(ResourceBundle rb) {
                 if (rb == null) { return Collections.emptySet(); }
@@ -6254,7 +6646,7 @@ public class CommandLine {
              * @return a Messages object with the specified CommandSpec and the ResourceBundle of the specified Messages object
              */
             public static Messages copy(CommandSpec spec, Messages original) {
-                return original == null ? null : new Messages(spec, original.rb);
+                return original == null ? null : new Messages(spec, original.bundleBaseName, original.rb);
             }
             /** Returns {@code true} if the specified {@code Messages} is {@code null} or has a {@code null ResourceBundle}. */
             public static boolean empty(Messages messages) { return messages == null || messages.rb == null; }
@@ -6301,8 +6693,14 @@ public class CommandLine {
                     }
                 }
             }
+            /** Returns the ResourceBundle of the specified Messages object or {@code null} if the specified Messages object is {@code null}.
+             * @since 4.0 */
+            public static String resourceBundleBaseName(Messages messages) { return messages == null ? null : messages.resourceBundleBaseName(); }
             /** Returns the ResourceBundle of the specified Messages object or {@code null} if the specified Messages object is {@code null}. */
             public static ResourceBundle resourceBundle(Messages messages) { return messages == null ? null : messages.resourceBundle(); }
+            /** Returns the base name of the ResourceBundle of this object or {@code null}.
+             * @since 4.0 */
+            public String resourceBundleBaseName() { return bundleBaseName; }
             /** Returns the ResourceBundle of this object or {@code null}. */
             public ResourceBundle resourceBundle() { return rb; }
             /** Returns the CommandSpec of this object, never {@code null}. */
@@ -6345,8 +6743,12 @@ public class CommandLine {
                 boolean mixinStandardHelpOptions = false;
                 while (!hierarchy.isEmpty()) {
                     cls = hierarchy.pop();
-                    boolean thisCommandHasAnnotation = updateCommandAttributes(cls, result, factory);
-                    hasCommandAnnotation |= thisCommandHasAnnotation;
+                    Command cmd = cls.getAnnotation(Command.class);
+                    if (cmd != null) {
+                        result.updateCommandAttributes(cmd, factory);
+                        initSubcommands(cmd, result, factory);
+                        hasCommandAnnotation = true;
+                    }
                     hasCommandAnnotation |= initFromAnnotatedFields(instance, cls, result, factory);
                     if (cls.isAnnotationPresent(Command.class)) {
                         mixinStandardHelpOptions |= cls.getAnnotation(Command.class).mixinStandardHelpOptions();
@@ -6357,7 +6759,11 @@ public class CommandLine {
                     Method method = (Method) command;
                     t.debug("Using method %s as command %n", method);
                     commandClassName = method.toString();
-                    hasCommandAnnotation |= updateCommandAttributes(method, result, factory);
+                    Command cmd = method.getAnnotation(Command.class);
+                    result.updateCommandAttributes(cmd, factory);
+                    result.setAddMethodSubcommands(false); // method commands don't have method subcommands
+                    initSubcommands(cmd, result, factory);
+                    hasCommandAnnotation = true;
                     result.mixinStandardHelpOptions(method.getAnnotation(Command.class).mixinStandardHelpOptions());
                     initFromMethodParameters(instance, method, result, factory);
                     // set command name to method name, unless @Command#name is set
@@ -6368,31 +6774,6 @@ public class CommandLine {
                 if (annotationsAreMandatory) {validateCommandSpec(result, hasCommandAnnotation, commandClassName); }
                 result.withToString(commandClassName).validate();
                 return result;
-            }
-
-            private static boolean updateCommandAttributes(Class<?> cls, CommandSpec commandSpec, IFactory factory) {
-                // superclass values should not overwrite values if both class and superclass have a @Command annotation
-                if (!cls.isAnnotationPresent(Command.class)) { return false; }
-
-                Command cmd = cls.getAnnotation(Command.class);
-                return updateCommandAttributes(cmd, commandSpec, factory);
-            }
-            private static boolean updateCommandAttributes(Method method, CommandSpec commandSpec, IFactory factory) {
-                Command cmd = method.getAnnotation(Command.class);
-                return updateCommandAttributes(cmd, commandSpec, factory);
-            }
-            private static boolean updateCommandAttributes(Command cmd, CommandSpec commandSpec, IFactory factory) {
-                commandSpec.aliases(cmd.aliases());
-                commandSpec.parser().updateSeparator(cmd.separator());
-                commandSpec.updateName(cmd.name());
-                commandSpec.updateVersion(cmd.version());
-                commandSpec.updateHelpCommand(cmd.helpCommand());
-                commandSpec.updateVersionProvider(cmd.versionProvider(), factory);
-                commandSpec.initDefaultValueProvider(cmd.defaultValueProvider(), factory);
-                commandSpec.usageMessage().updateFromCommand(cmd, commandSpec);
-
-                initSubcommands(cmd, commandSpec, factory);
-                return true;
             }
             private static void initSubcommands(Command cmd, CommandSpec parent, IFactory factory) {
                 for (Class<?> sub : cmd.subcommands()) {
@@ -6454,7 +6835,7 @@ public class CommandLine {
                 if (member == null) { return result; }
                 if (member.isMixin()) {
                     validateMixin(member);
-                    receiver.addMixin(member.mixinName(), buildMixinForField(member, factory));
+                    receiver.addMixin(member.getMixinName(), buildMixinForField(member, factory));
                     result = true;
                 }
                 if (member.isUnmatched()) {
@@ -6464,9 +6845,9 @@ public class CommandLine {
                 if (member.isArgSpec()) {
                     validateArgSpecField(member);
                     Messages msg = receiver.usageMessage.messages();
-                    if (member.isOption())         { receiver.addOption(ArgsReflection.extractOptionSpec(member, factory)); }
-                    else if (member.isParameter()) { receiver.addPositional(ArgsReflection.extractPositionalParamSpec(member, factory)); }
-                    else                           { receiver.addPositional(ArgsReflection.extractUnannotatedPositionalParamSpec(member, factory)); }
+                    if (member.isOption())         { receiver.addOption(OptionSpec.builder(member, factory).build()); }
+                    else if (member.isParameter()) { receiver.addPositional(PositionalParamSpec.builder(member, factory).build()); }
+                    else                           { receiver.addPositional(PositionalParamSpec.builder(member, factory).build()); }
                 }
                 if (member.isInjectSpec()) {
                     validateInjectSpec(member);
@@ -6497,7 +6878,7 @@ public class CommandLine {
                     throw new DuplicateOptionAnnotationsException("A member cannot be both a @Mixin command and an @Unmatched but '" + member + "' is both.");
                 }
             }
-            private static void validateUnmatched(TypedMember member) {
+            private static void validateUnmatched(IAnnotatedElement member) {
                 if (member.isUnmatched() && member.isArgSpec()) {
                     throw new DuplicateOptionAnnotationsException("A member cannot have both @Unmatched and @Option or @Parameters annotations, but '" + member + "' has both.");
                 }
@@ -6533,30 +6914,32 @@ public class CommandLine {
                 if (member.isMixin()) {
                     throw new DuplicateOptionAnnotationsException("A member cannot have both @Spec and @Mixin annotations, but '" + member + "' has both.");
                 }
-                if (member.getType() != CommandSpec.class) { throw new InitializationException("@picocli.CommandLine.Spec annotation is only supported on fields of type " + CommandSpec.class.getName()); }
+                if (!CommandSpec.class.getName().equals(member.getTypeInfo().getClassName())) {
+                    throw new InitializationException("@picocli.CommandLine.Spec annotation is only supported on fields of type " + CommandSpec.class.getName());
+                }
             }
-            private static CommandSpec buildMixinForField(TypedMember member, IFactory factory) {
+            private static CommandSpec buildMixinForField(IAnnotatedElement member, IFactory factory) {
                 try {
                     Object userObject = member.getter().get();
                     if (userObject == null) {
-                        userObject = factory.create(member.getType());
+                        userObject = factory.create(member.getTypeInfo().getType());
                         member.setter().set(userObject);
                     }
                     CommandSpec result = CommandSpec.forAnnotatedObject(userObject, factory);
-                    return result.withToString(abbreviate("mixin from member " + member.toGenericString()));
+                    return result.withToString(member.getToString());
                 } catch (InitializationException ex) {
                     throw ex;
                 } catch (Exception ex) {
                     throw new InitializationException("Could not access or modify mixin member " + member + ": " + ex, ex);
                 }
             }
-            private static UnmatchedArgsBinding buildUnmatchedForField(final TypedMember member) {
-                if (!(member.getType().equals(String[].class) ||
-                        (List.class.isAssignableFrom(member.getType()) && member.getGenericType() instanceof ParameterizedType
-                                && ((ParameterizedType) member.getGenericType()).getActualTypeArguments()[0].equals(String.class)))) {
+            private static UnmatchedArgsBinding buildUnmatchedForField(final IAnnotatedElement member) {
+                ITypeInfo info = member.getTypeInfo();
+                if (!(info.getClassName().equals(String[].class.getName()) ||
+                        (info.isCollection() && info.getActualGenericTypeArguments().equals(Arrays.asList(String.class.getName()))))) {
                     throw new InitializationException("Invalid type for " + member + ": must be either String[] or List<String>");
                 }
-                if (member.getType().equals(String[].class)) {
+                if (info.getClassName().equals(String[].class.getName())) {
                     return UnmatchedArgsBinding.forStringArrayConsumer(member.setter());
                 } else {
                     return UnmatchedArgsBinding.forStringCollectionSupplier(new IGetter() {
@@ -6573,138 +6956,6 @@ public class CommandLine {
             }
         }
 
-        /** Helper class to reflectively create OptionSpec and PositionalParamSpec objects from annotated elements.
-         * Package protected for testing. CONSIDER THIS CLASS PRIVATE.  */
-        static class ArgsReflection {
-            static OptionSpec extractOptionSpec(TypedMember member, IFactory factory) {
-                Option option = member.getAnnotation(Option.class);
-                OptionSpec.Builder builder = OptionSpec.builder(option.names());
-                initCommon(builder, member);
-
-                builder.order(option.order());
-                builder.help(option.help());
-                builder.usageHelp(option.usageHelp());
-                builder.versionHelp(option.versionHelp());
-                builder.showDefaultValue(option.showDefaultValue());
-                if (!NoCompletionCandidates.class.equals(option.completionCandidates())) {
-                    builder.completionCandidates(DefaultFactory.createCompletionCandidates(factory, option.completionCandidates()));
-                }
-
-                builder.arity(Range.optionArity(member));
-                builder.required(option.required());
-                builder.interactive(option.interactive());
-                Class<?>[] elementTypes = inferTypes(member.getType(), option.type(), member.getGenericType());
-                builder.auxiliaryTypes(elementTypes);
-                builder.paramLabel(inferLabel(option.paramLabel(), member.name(), member.getType(), elementTypes));
-                builder.hideParamSyntax(option.hideParamSyntax());
-                builder.description(option.description());
-                builder.descriptionKey(option.descriptionKey());
-                builder.splitRegex(option.split());
-                builder.hidden(option.hidden());
-                builder.defaultValue(option.defaultValue());
-                builder.converters(DefaultFactory.createConverter(factory, option.converter()));
-                return builder.build();
-            }
-            static PositionalParamSpec extractPositionalParamSpec(TypedMember member, IFactory factory) {
-                PositionalParamSpec.Builder builder = PositionalParamSpec.builder();
-                initCommon(builder, member);
-                Range arity = Range.parameterArity(member);
-                builder.arity(arity);
-                builder.index(Range.parameterIndex(member));
-                builder.capacity(Range.parameterCapacity(member));
-                builder.required(arity.min > 0);
-
-                Parameters parameters = member.getAnnotation(Parameters.class);
-                builder.interactive(parameters.interactive());
-                Class<?>[] elementTypes = inferTypes(member.getType(), parameters.type(), member.getGenericType());
-                builder.auxiliaryTypes(elementTypes);
-                builder.paramLabel(inferLabel(parameters.paramLabel(), member.name(), member.getType(), elementTypes));
-                builder.hideParamSyntax(parameters.hideParamSyntax());
-                builder.description(parameters.description());
-                builder.descriptionKey(parameters.descriptionKey());
-                builder.splitRegex(parameters.split());
-                builder.hidden(parameters.hidden());
-                builder.defaultValue(parameters.defaultValue());
-                builder.converters(DefaultFactory.createConverter(factory, parameters.converter()));
-                builder.showDefaultValue(parameters.showDefaultValue());
-                if (!NoCompletionCandidates.class.equals(parameters.completionCandidates())) {
-                    builder.completionCandidates(DefaultFactory.createCompletionCandidates(factory, parameters.completionCandidates()));
-                }
-                return builder.build();
-            }
-            static PositionalParamSpec extractUnannotatedPositionalParamSpec(TypedMember member, IFactory factory) {
-                PositionalParamSpec.Builder builder = PositionalParamSpec.builder();
-                initCommon(builder, member);
-                Range arity = Range.parameterArity(member);
-                builder.arity(arity);
-                builder.index(Range.parameterIndex(member));
-                builder.capacity(Range.parameterCapacity(member));
-                builder.required(arity.min > 0);
-
-                builder.interactive(false);
-                Class<?>[] elementTypes = inferTypes(member.getType(), new Class<?>[] {}, member.getGenericType());
-                builder.auxiliaryTypes(elementTypes);
-                builder.paramLabel(inferLabel(null, member.name(), member.getType(), elementTypes));
-                builder.hideParamSyntax(false);
-                builder.description(new String[0]);
-                builder.splitRegex("");
-                builder.hidden(false);
-                builder.defaultValue(null);
-                builder.converters();
-                builder.showDefaultValue(Help.Visibility.ON_DEMAND);
-                return builder.build();
-            }
-            private static void initCommon(ArgSpec.Builder<?> builder, TypedMember member) {
-                builder.type(member.getType());
-                builder.withToString((member.accessible instanceof Field ? "field " : member.accessible instanceof Method ? "method " : member.accessible.getClass().getSimpleName() + " ") + abbreviate(member.toGenericString()));
-
-                builder.getter(member.getter()).setter(member.setter());
-                builder.hasInitialValue(member.hasInitialValue);
-                try { builder.initialValue(member.getter().get()); } catch (Exception ex) { builder.initialValue(null); }
-            }
-            static String abbreviate(String text) {
-                return text.replace("private ", "")
-                        .replace("protected ", "")
-                        .replace("public ", "")
-                        .replace("java.lang.", "");
-            }
-            private static String inferLabel(String label, String fieldName, Class<?> fieldType, Class<?>[] types) {
-                if (!empty(label)) { return label.trim(); }
-                String name = fieldName;
-                if (Map.class.isAssignableFrom(fieldType)) { // #195 better param labels for map fields
-                    Class<?>[] paramTypes = types;
-                    if (paramTypes.length < 2 || paramTypes[0] == null || paramTypes[1] == null) {
-                        name = "String=String";
-                    } else { name = paramTypes[0].getSimpleName() + "=" + paramTypes[1].getSimpleName(); }
-                }
-                return "<" + name + ">";
-            }
-            private static Class<?>[] inferTypes(Class<?> propertyType, Class<?>[] annotationTypes, Type genericType) {
-                if (annotationTypes.length > 0) { return annotationTypes; }
-                if (propertyType.isArray()) { return new Class<?>[] { propertyType.getComponentType() }; }
-                if (CommandLine.isMultiValue(propertyType)) {
-                    if (genericType instanceof ParameterizedType) {// e.g. Map<Long, ? extends Number>
-                        ParameterizedType parameterizedType = (ParameterizedType) genericType;
-                        Type[] paramTypes = parameterizedType.getActualTypeArguments(); // e.g. ? extends Number
-                        Class<?>[] result = new Class<?>[paramTypes.length];
-                        for (int i = 0; i < paramTypes.length; i++) {
-                            if (paramTypes[i] instanceof Class) { result[i] = (Class<?>) paramTypes[i]; continue; } // e.g. Long
-                            if (paramTypes[i] instanceof WildcardType) { // e.g. ? extends Number
-                                WildcardType wildcardType = (WildcardType) paramTypes[i];
-                                Type[] lower = wildcardType.getLowerBounds(); // e.g. []
-                                if (lower.length > 0 && lower[0] instanceof Class) { result[i] = (Class<?>) lower[0]; continue; }
-                                Type[] upper = wildcardType.getUpperBounds(); // e.g. Number
-                                if (upper.length > 0 && upper[0] instanceof Class) { result[i] = (Class<?>) upper[0]; continue; }
-                            }
-                            Arrays.fill(result, String.class); return result; // too convoluted generic type, giving up
-                        }
-                        return result; // we inferred all types from ParameterizedType
-                    }
-                    return new Class<?>[] {String.class, String.class}; // field is multi-value but not ParameterizedType
-                }
-                return new Class<?>[] {propertyType}; // not a multi-value field
-            }
-        }
         static class FieldBinding implements IGetter, ISetter {
             private final Object scope;
             private final Field field;
@@ -6725,6 +6976,10 @@ public class CommandLine {
                 } catch (Exception ex) {
                     throw new PicocliException("Could not set value for field " + field + " to " + value, ex);
                 }
+            }
+            public String toString() {
+                return String.format("%s(%s %s.%s)", getClass().getCanonicalName(), field.getType().getCanonicalName(),
+                        field.getDeclaringClass().getCanonicalName(), field.getName());
             }
         }
         static class MethodBinding implements IGetter, ISetter {
@@ -6755,6 +7010,9 @@ public class CommandLine {
                 CommandLine cmd = spec.commandLine() == null ? new CommandLine(spec) : spec.commandLine();
                 return new ParameterException(cmd, "Could not invoke " + method + " with " + value, t);
             }
+            public String toString() {
+                return String.format("%s(%s)", getClass().getCanonicalName(), method);
+            }
         }
         private static class PicocliInvocationHandler implements InvocationHandler {
             final Map<String, Object> map = new HashMap<String, Object>();
@@ -6779,6 +7037,9 @@ public class CommandLine {
                 @SuppressWarnings("unchecked") T result = value;
                 this.value = value;
                 return result;
+            }
+            public String toString() {
+                return String.format("%s(value=%s)", getClass().getCanonicalName(), value);
             }
         }
     }
@@ -8437,7 +8698,7 @@ public class CommandLine {
          */
         String render(Help help);
     }
-    
+
     /**
      * A collection of methods and inner classes that provide fine-grained control over the contents and layout of
      * the usage help message to display to end users when help is requested or invalid input values were specified.
@@ -8537,7 +8798,7 @@ public class CommandLine {
         /** Returns the {@code ColorScheme} model that this Help was constructed with.
          * @since 3.0 */
         public ColorScheme colorScheme() { return colorScheme; }
-        
+
         /** Returns the {@code IHelpFactory} that this Help was constructed with.
          * @since 3.9 */
         private IHelpFactory getHelpFactory() { return commandSpec.usageMessage().helpFactory(); }
@@ -8555,7 +8816,7 @@ public class CommandLine {
          * of the {@link ParserSpec#separator()} at construction time. If the separator is modified after Help construction, you
          * may need to re-initialize this field by calling {@link #createDefaultParamLabelRenderer()} again. */
         public IParamLabelRenderer parameterLabelRenderer() {return parameterLabelRenderer;}
-        
+
         /** Registers all specified subcommands with this Help.
          * @param commands maps the command names to the associated CommandLine object
          * @return this Help instance (for method chaining)
@@ -8608,7 +8869,7 @@ public class CommandLine {
          * @deprecated
          */
         @Deprecated public Help addSubcommand(String commandName, Object command) {
-            commands.put(commandName, 
+            commands.put(commandName,
                     getHelpFactory().create(CommandSpec.forAnnotatedObject(command, commandSpec.commandLine().factory), defaultColorScheme(Ansi.AUTO)));
             return this;
         }
@@ -8707,7 +8968,7 @@ public class CommandLine {
                 StringBuilder clusteredOptional = new StringBuilder("-");
                 for (OptionSpec option : options) {
                     if (option.hidden()) { continue; }
-                    boolean isFlagOption = option.type() == boolean.class || option.type() == Boolean.class;
+                    boolean isFlagOption = option.typeInfo().isBoolean();
                     if (isFlagOption && option.arity().max <= 0) { // #612 consider arity: boolean options may require a parameter
                         String shortestName = option.shortestName();
                         if (shortestName.length() == 2 && shortestName.startsWith("-")) {

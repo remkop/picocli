@@ -89,7 +89,7 @@ public class ModelCommandReflectionTest {
     @Test
     public void testValidateUnmatched() throws Exception {
         Class<?> reflection = Class.forName("picocli.CommandLine$Model$CommandReflection");
-        Method validateUnmatched = reflection.getDeclaredMethod("validateUnmatched", CommandLine.Model.TypedMember.class);
+        Method validateUnmatched = reflection.getDeclaredMethod("validateUnmatched", CommandLine.Model.IAnnotatedElement.class);
         validateUnmatched.setAccessible(true);
 
         CommandLine.Model.TypedMember typedMember = new CommandLine.Model.TypedMember(TypedMemberObj.class.getDeclaredField("x"));

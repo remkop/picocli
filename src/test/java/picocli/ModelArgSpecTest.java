@@ -3,10 +3,15 @@ package picocli;
 import org.junit.Test;
 import picocli.CommandLine.Model.IGetter;
 import picocli.CommandLine.Model.ISetter;
+import picocli.CommandLine.Model.ITypeInfo;
 import picocli.CommandLine.Model.PositionalParamSpec;
+import picocli.CommandLine.Model.RuntimeTypeInfo;
 
+import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 import static org.junit.Assert.*;
 import static org.junit.Assert.assertArrayEquals;
@@ -191,5 +196,47 @@ public class ModelArgSpecTest {
                 .completionCandidates(candidates);
 
         assertEquals(candidates, positional.completionCandidates());
+    }
+
+    @Test
+    public void testArgSpecBuilderInferLabel() throws Exception{
+        Method m = CommandLine.Model.ArgSpec.Builder.class.getDeclaredMethod("inferLabel", String.class, String.class, ITypeInfo.class);
+        m.setAccessible(true);
+        assertEquals("<String=String>", m.invoke(null, "", "fieldName", typeInfo(new Class[0])));
+        assertEquals("<String=String>", m.invoke(null, "", "fieldName", typeInfo(new Class[]{Integer.class})));
+        assertEquals("<String=String>", m.invoke(null, "", "fieldName", typeInfo(new Class[]{null, Integer.class})));
+        assertEquals("<String=String>", m.invoke(null, "", "fieldName", typeInfo(new Class[]{Integer.class, null})));
+        assertEquals("<Integer=Integer>", m.invoke(null, "", "fieldName", typeInfo(new Class[]{Integer.class, Integer.class})));
+    }
+
+    private ITypeInfo typeInfo(final Class<?>[] aux) {
+        return new TypeInfoAdapter() {
+            public boolean isMap() { return true; }
+            public List<ITypeInfo> getAuxiliaryTypeInfos() {
+                List<ITypeInfo> result = new ArrayList<ITypeInfo>();
+                for (final Class<?> c : aux) {
+                    if (c == null) { result.add(null); }
+                    result.add(new TypeInfoAdapter() {
+                        public String getClassSimpleName() { return c.getSimpleName(); }
+                    });
+                }
+                return result;
+            }
+        };
+    }
+    static class TypeInfoAdapter implements ITypeInfo {
+        public boolean isMap() { return false; }
+        public List<ITypeInfo> getAuxiliaryTypeInfos() { return null; }
+        public List<String> getActualGenericTypeArguments() { return null; }
+        public boolean isBoolean() { return false; }
+        public boolean isMultiValue() { return false; }
+        public boolean isArray() { return false; }
+        public boolean isCollection() { return false; }
+        public boolean isEnum() { return false; }
+        public List<String> getEnumConstantNames() { return null; }
+        public String getClassName() { return null; }
+        public String getClassSimpleName() { return null; }
+        public Class<?> getType() { return null; }
+        public Class<?>[] getAuxiliaryTypes() { return new Class[0]; }
     }
 }

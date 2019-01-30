@@ -1,0 +1,65 @@
+---
+CommandSpec:
+  name: '<main class>'
+  aliases: []
+  userObject: picocli.example.messages.CommandWithBundle.CommandWithBundle
+  helpCommand: false
+  defaultValueProvider: null
+  versionProvider: null
+  version: []
+  Options: []
+  PositionalParams: []
+  UnmatchedArgsBindings: []
+  Mixins: []
+  UsageMessageSpec:
+    width: 80
+    abbreviateSynopsis: false
+    hidden: false
+    showDefaultValues: false
+    sortOptions: true
+    requiredOptionMarker: ' '
+    headerHeading: 'the headerHeading'
+    header: [header0, header1, header2, header3]
+    synopsisHeading: 'Usage: '
+    customSynopsis: []
+    descriptionHeading: 'the descriptionHeading'
+    description: [Version control system, description0, description1, description2, description3]
+    parameterListHeading: ''
+    optionListHeading: ''
+    commandListHeading: 'Commands:%n'
+    footerHeading: 'the footerHeading'
+    footer: [footer0, footer1, footer2, footer3]
+  ParserSpec:
+    separator: '='
+    endOfOptionsDelimiter: '--'
+    expandAtFiles: true
+    atFileCommentChar: '#'
+    overwrittenOptionsAllowed: false
+    unmatchedArgumentsAllowed: false
+    unmatchedOptionsArePositionalParams: false
+    stopAtUnmatched: false
+    stopAtPositional: false
+    posixClusteredShortOptionsAllowed: true
+    aritySatisfiedByAttachedOptionParam: false
+    caseInsensitiveEnumValuesAllowed: false
+    collectErrors: false
+    limitSplit: false
+    toggleBooleanFlags: true
+  ResourceBundle:
+    usage.header.0: 'header0'
+    usage.header.1: 'header1'
+    usage.headerHeading: 'the headerHeading'
+    usage.descriptionHeading: 'the descriptionHeading'
+    usage.header.2: 'header2'
+    usage.header.3: 'header3'
+    usage.footerHeading: 'the footerHeading'
+    usage.description.3: 'description3'
+    usage.footer.1: 'footer1'
+    usage.footer.0: 'footer0'
+    usage.description: 'Version control system'
+    usage.footer.3: 'footer3'
+    usage.description.0: 'description0'
+    usage.footer.2: 'footer2'
+    usage.description.1: 'description1'
+    usage.description.2: 'description2'
+  Subcommands: []

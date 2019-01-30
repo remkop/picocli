@@ -1,0 +1,353 @@
+---
+CommandSpec:
+  name: 'mixee'
+  aliases: []
+  userObject: picocli.examples.mixin.CommandWithMixin@31221be2
+  helpCommand: false
+  defaultValueProvider: null
+  versionProvider: null
+  version: []
+  Options:
+  - names: [-x]
+    usageHelp: false
+    versionHelp: false
+    description: [reusable option you want in many commands]
+    descriptionKey: ''
+    typeInfo: RuntimeTypeInfo(int, aux=[int], collection=false, map=false)
+    arity: 1
+    splitRegex: ''
+    interactive: false
+    required: false
+    hidden: false
+    hideParamSyntax: false
+    defaultValue: 'null'
+    showDefaultValue: ON_DEMAND
+    hasInitialValue: true
+    initialValue: '0'
+    paramLabel: '<x>'
+    converters: []
+    completionCandidates: null
+    getter: picocli.CommandLine.Model.FieldBinding(int picocli.examples.mixin.CommonOption.x)
+    setter: picocli.CommandLine.Model.FieldBinding(int picocli.examples.mixin.CommonOption.x)
+  - names: [-y]
+    usageHelp: false
+    versionHelp: false
+    description: [command option]
+    descriptionKey: ''
+    typeInfo: RuntimeTypeInfo(int, aux=[int], collection=false, map=false)
+    arity: 1
+    splitRegex: ''
+    interactive: false
+    required: false
+    hidden: false
+    hideParamSyntax: false
+    defaultValue: 'null'
+    showDefaultValue: ON_DEMAND
+    hasInitialValue: true
+    initialValue: '0'
+    paramLabel: '<y>'
+    converters: []
+    completionCandidates: null
+    getter: picocli.CommandLine.Model.FieldBinding(int picocli.examples.mixin.CommandWithMixin.y)
+    setter: picocli.CommandLine.Model.FieldBinding(int picocli.examples.mixin.CommandWithMixin.y)
+  PositionalParams: []
+  UnmatchedArgsBindings: []
+  Mixins:
+  # commonOption
+  - name: '<main class>'
+    aliases: []
+    userObject: picocli.examples.mixin.CommonOption@377dca04
+    helpCommand: false
+    defaultValueProvider: null
+    versionProvider: null
+    version: []
+    Options:
+    - names: [-x]
+      usageHelp: false
+      versionHelp: false
+      description: [reusable option you want in many commands]
+      descriptionKey: ''
+      typeInfo: RuntimeTypeInfo(int, aux=[int], collection=false, map=false)
+      arity: 1
+      splitRegex: ''
+      interactive: false
+      required: false
+      hidden: false
+      hideParamSyntax: false
+      defaultValue: 'null'
+      showDefaultValue: ON_DEMAND
+      hasInitialValue: true
+      initialValue: '0'
+      paramLabel: '<x>'
+      converters: []
+      completionCandidates: null
+      getter: picocli.CommandLine.Model.FieldBinding(int picocli.examples.mixin.CommonOption.x)
+      setter: picocli.CommandLine.Model.FieldBinding(int picocli.examples.mixin.CommonOption.x)
+    PositionalParams: []
+    UnmatchedArgsBindings: []
+    Mixins: []
+    UsageMessageSpec:
+      width: 80
+      abbreviateSynopsis: false
+      hidden: false
+      showDefaultValues: false
+      sortOptions: true
+      requiredOptionMarker: ' '
+      headerHeading: ''
+      header: []
+      synopsisHeading: 'Usage: '
+      customSynopsis: []
+      descriptionHeading: ''
+      description: []
+      parameterListHeading: ''
+      optionListHeading: ''
+      commandListHeading: 'Commands:%n'
+      footerHeading: ''
+      footer: [Common footer]
+    ParserSpec:
+      separator: '='
+      endOfOptionsDelimiter: '--'
+      expandAtFiles: true
+      atFileCommentChar: '#'
+      overwrittenOptionsAllowed: false
+      unmatchedArgumentsAllowed: false
+      unmatchedOptionsArePositionalParams: false
+      stopAtUnmatched: false
+      stopAtPositional: false
+      posixClusteredShortOptionsAllowed: true
+      aritySatisfiedByAttachedOptionParam: false
+      caseInsensitiveEnumValuesAllowed: false
+      collectErrors: false
+      limitSplit: false
+      toggleBooleanFlags: true
+    Subcommands: []
+  UsageMessageSpec:
+    width: 80
+    abbreviateSynopsis: false
+    hidden: false
+    showDefaultValues: false
+    sortOptions: true
+    requiredOptionMarker: ' '
+    headerHeading: ''
+    header: []
+    synopsisHeading: 'Usage: '
+    customSynopsis: []
+    descriptionHeading: ''
+    description: [This command has a footer and an option mixed in]
+    parameterListHeading: ''
+    optionListHeading: ''
+    commandListHeading: 'Commands:%n'
+    footerHeading: ''
+    footer: [Common footer]
+  ParserSpec:
+    separator: '='
+    endOfOptionsDelimiter: '--'
+    expandAtFiles: true
+    atFileCommentChar: '#'
+    overwrittenOptionsAllowed: false
+    unmatchedArgumentsAllowed: false
+    unmatchedOptionsArePositionalParams: false
+    stopAtUnmatched: false
+    stopAtPositional: false
+    posixClusteredShortOptionsAllowed: true
+    aritySatisfiedByAttachedOptionParam: false
+    caseInsensitiveEnumValuesAllowed: false
+    collectErrors: false
+    limitSplit: false
+    toggleBooleanFlags: true
+  Subcommands:
+  # doit
+  - name: 'doit'
+    aliases: []
+    userObject: public void picocli.examples.mixin.CommandWithMixin.doit(picocli.examples.mixin.CommonOption,int,java.lang.String,java.lang.String)
+    helpCommand: false
+    defaultValueProvider: null
+    versionProvider: null
+    version: []
+    Options:
+    - names: [-x]
+      usageHelp: false
+      versionHelp: false
+      description: [reusable option you want in many commands]
+      descriptionKey: ''
+      typeInfo: RuntimeTypeInfo(int, aux=[int], collection=false, map=false)
+      arity: 1
+      splitRegex: ''
+      interactive: false
+      required: false
+      hidden: false
+      hideParamSyntax: false
+      defaultValue: 'null'
+      showDefaultValue: ON_DEMAND
+      hasInitialValue: true
+      initialValue: '0'
+      paramLabel: '<x>'
+      converters: []
+      completionCandidates: null
+      getter: picocli.CommandLine.Model.FieldBinding(int picocli.examples.mixin.CommonOption.x)
+      setter: picocli.CommandLine.Model.FieldBinding(int picocli.examples.mixin.CommonOption.x)
+    - names: [-z]
+      usageHelp: false
+      versionHelp: false
+      description: []
+      descriptionKey: ''
+      typeInfo: RuntimeTypeInfo(int, aux=[int], collection=false, map=false)
+      arity: 1
+      splitRegex: ''
+      interactive: false
+      required: false
+      hidden: false
+      hideParamSyntax: false
+      defaultValue: 'null'
+      showDefaultValue: ON_DEMAND
+      hasInitialValue: true
+      initialValue: '0'
+      paramLabel: '<arg1>'
+      converters: []
+      completionCandidates: null
+      getter: picocli.CommandLine.Model.ObjectBinding(value=0)
+      setter: picocli.CommandLine.Model.ObjectBinding(value=0)
+    PositionalParams:
+    - index: 0
+      description: []
+      descriptionKey: ''
+      typeInfo: RuntimeTypeInfo(java.lang.String, aux=[class java.lang.String], collection=false, map=false)
+      arity: 1
+      splitRegex: ''
+      interactive: false
+      required: true
+      hidden: false
+      hideParamSyntax: false
+      defaultValue: 'null'
+      showDefaultValue: ON_DEMAND
+      hasInitialValue: false
+      initialValue: 'null'
+      paramLabel: '<arg2>'
+      converters: []
+      completionCandidates: null
+      getter: picocli.CommandLine.Model.ObjectBinding(value=null)
+      setter: picocli.CommandLine.Model.ObjectBinding(value=null)
+    - index: 1
+      description: []
+      descriptionKey: 'null'
+      typeInfo: RuntimeTypeInfo(java.lang.String, aux=[class java.lang.String], collection=false, map=false)
+      arity: 1
+      splitRegex: ''
+      interactive: false
+      required: true
+      hidden: false
+      hideParamSyntax: false
+      defaultValue: 'null'
+      showDefaultValue: ON_DEMAND
+      hasInitialValue: false
+      initialValue: 'null'
+      paramLabel: '<arg3>'
+      converters: []
+      completionCandidates: null
+      getter: picocli.CommandLine.Model.ObjectBinding(value=null)
+      setter: picocli.CommandLine.Model.ObjectBinding(value=null)
+    UnmatchedArgsBindings: []
+    Mixins:
+    # arg0
+    - name: '<main class>'
+      aliases: []
+      userObject: picocli.examples.mixin.CommonOption@728938a9
+      helpCommand: false
+      defaultValueProvider: null
+      versionProvider: null
+      version: []
+      Options:
+      - names: [-x]
+        usageHelp: false
+        versionHelp: false
+        description: [reusable option you want in many commands]
+        descriptionKey: ''
+        typeInfo: RuntimeTypeInfo(int, aux=[int], collection=false, map=false)
+        arity: 1
+        splitRegex: ''
+        interactive: false
+        required: false
+        hidden: false
+        hideParamSyntax: false
+        defaultValue: 'null'
+        showDefaultValue: ON_DEMAND
+        hasInitialValue: true
+        initialValue: '0'
+        paramLabel: '<x>'
+        converters: []
+        completionCandidates: null
+        getter: picocli.CommandLine.Model.FieldBinding(int picocli.examples.mixin.CommonOption.x)
+        setter: picocli.CommandLine.Model.FieldBinding(int picocli.examples.mixin.CommonOption.x)
+      PositionalParams: []
+      UnmatchedArgsBindings: []
+      Mixins: []
+      UsageMessageSpec:
+        width: 80
+        abbreviateSynopsis: false
+        hidden: false
+        showDefaultValues: false
+        sortOptions: true
+        requiredOptionMarker: ' '
+        headerHeading: ''
+        header: []
+        synopsisHeading: 'Usage: '
+        customSynopsis: []
+        descriptionHeading: ''
+        description: []
+        parameterListHeading: ''
+        optionListHeading: ''
+        commandListHeading: 'Commands:%n'
+        footerHeading: ''
+        footer: [Common footer]
+      ParserSpec:
+        separator: '='
+        endOfOptionsDelimiter: '--'
+        expandAtFiles: true
+        atFileCommentChar: '#'
+        overwrittenOptionsAllowed: false
+        unmatchedArgumentsAllowed: false
+        unmatchedOptionsArePositionalParams: false
+        stopAtUnmatched: false
+        stopAtPositional: false
+        posixClusteredShortOptionsAllowed: true
+        aritySatisfiedByAttachedOptionParam: false
+        caseInsensitiveEnumValuesAllowed: false
+        collectErrors: false
+        limitSplit: false
+        toggleBooleanFlags: true
+      Subcommands: []
+    UsageMessageSpec:
+      width: 80
+      abbreviateSynopsis: false
+      hidden: false
+      showDefaultValues: false
+      sortOptions: true
+      requiredOptionMarker: ' '
+      headerHeading: ''
+      header: []
+      synopsisHeading: 'Usage: '
+      customSynopsis: []
+      descriptionHeading: ''
+      description: []
+      parameterListHeading: ''
+      optionListHeading: ''
+      commandListHeading: 'Commands:%n'
+      footerHeading: ''
+      footer: [Common footer]
+    ParserSpec:
+      separator: '='
+      endOfOptionsDelimiter: '--'
+      expandAtFiles: true
+      atFileCommentChar: '#'
+      overwrittenOptionsAllowed: false
+      unmatchedArgumentsAllowed: false
+      unmatchedOptionsArePositionalParams: false
+      stopAtUnmatched: false
+      stopAtPositional: false
+      posixClusteredShortOptionsAllowed: true
+      aritySatisfiedByAttachedOptionParam: false
+      caseInsensitiveEnumValuesAllowed: false
+      collectErrors: false
+      limitSplit: false
+      toggleBooleanFlags: true
+    Subcommands: []

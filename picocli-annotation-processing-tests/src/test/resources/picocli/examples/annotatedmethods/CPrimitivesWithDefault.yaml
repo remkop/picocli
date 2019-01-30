@@ -1,0 +1,195 @@
+---
+CommandSpec:
+  name: '<main class>'
+  aliases: []
+  userObject: picocli.CommandLineAnnotatedMethodImplTest$PrimitivesWithDefault@2626b418
+  helpCommand: false
+  defaultValueProvider: null
+  versionProvider: null
+  version: []
+  Options:
+  - names: [-b]
+    usageHelp: false
+    versionHelp: false
+    description: []
+    descriptionKey: ''
+    typeInfo: RuntimeTypeInfo(boolean, aux=[boolean], collection=false, map=false)
+    arity: 0
+    splitRegex: ''
+    interactive: false
+    required: false
+    hidden: false
+    hideParamSyntax: false
+    defaultValue: 'true'
+    showDefaultValue: ON_DEMAND
+    hasInitialValue: false
+    initialValue: 'null'
+    paramLabel: '<boolean>'
+    converters: []
+    completionCandidates: null
+    getter: picocli.CommandLine.Model.MethodBinding(void picocli.CommandLineAnnotatedMethodImplTest$PrimitivesWithDefault.setBoolean(boolean))
+    setter: picocli.CommandLine.Model.MethodBinding(void picocli.CommandLineAnnotatedMethodImplTest$PrimitivesWithDefault.setBoolean(boolean))
+  - names: [-d]
+    usageHelp: false
+    versionHelp: false
+    description: []
+    descriptionKey: ''
+    typeInfo: RuntimeTypeInfo(double, aux=[double], collection=false, map=false)
+    arity: 1
+    splitRegex: ''
+    interactive: false
+    required: false
+    hidden: false
+    hideParamSyntax: false
+    defaultValue: '16.6'
+    showDefaultValue: ON_DEMAND
+    hasInitialValue: false
+    initialValue: 'null'
+    paramLabel: '<double>'
+    converters: []
+    completionCandidates: null
+    getter: picocli.CommandLine.Model.MethodBinding(void picocli.CommandLineAnnotatedMethodImplTest$PrimitivesWithDefault.setDouble(double))
+    setter: picocli.CommandLine.Model.MethodBinding(void picocli.CommandLineAnnotatedMethodImplTest$PrimitivesWithDefault.setDouble(double))
+  - names: [-f]
+    usageHelp: false
+    versionHelp: false
+    description: []
+    descriptionKey: ''
+    typeInfo: RuntimeTypeInfo(float, aux=[float], collection=false, map=false)
+    arity: 1
+    splitRegex: ''
+    interactive: false
+    required: false
+    hidden: false
+    hideParamSyntax: false
+    defaultValue: '15.5'
+    showDefaultValue: ON_DEMAND
+    hasInitialValue: false
+    initialValue: 'null'
+    paramLabel: '<float>'
+    converters: []
+    completionCandidates: null
+    getter: picocli.CommandLine.Model.MethodBinding(void picocli.CommandLineAnnotatedMethodImplTest$PrimitivesWithDefault.setFloat(float))
+    setter: picocli.CommandLine.Model.MethodBinding(void picocli.CommandLineAnnotatedMethodImplTest$PrimitivesWithDefault.setFloat(float))
+  - names: [-i]
+    usageHelp: false
+    versionHelp: false
+    description: []
+    descriptionKey: ''
+    typeInfo: RuntimeTypeInfo(int, aux=[int], collection=false, map=false)
+    arity: 1
+    splitRegex: ''
+    interactive: false
+    required: false
+    hidden: false
+    hideParamSyntax: false
+    defaultValue: '13'
+    showDefaultValue: ON_DEMAND
+    hasInitialValue: false
+    initialValue: 'null'
+    paramLabel: '<int>'
+    converters: []
+    completionCandidates: null
+    getter: picocli.CommandLine.Model.MethodBinding(void picocli.CommandLineAnnotatedMethodImplTest$PrimitivesWithDefault.setInt(int))
+    setter: picocli.CommandLine.Model.MethodBinding(void picocli.CommandLineAnnotatedMethodImplTest$PrimitivesWithDefault.setInt(int))
+  - names: [-l]
+    usageHelp: false
+    versionHelp: false
+    description: []
+    descriptionKey: ''
+    typeInfo: RuntimeTypeInfo(long, aux=[long], collection=false, map=false)
+    arity: 1
+    splitRegex: ''
+    interactive: false
+    required: false
+    hidden: false
+    hideParamSyntax: false
+    defaultValue: '14'
+    showDefaultValue: ON_DEMAND
+    hasInitialValue: false
+    initialValue: 'null'
+    paramLabel: '<long>'
+    converters: []
+    completionCandidates: null
+    getter: picocli.CommandLine.Model.MethodBinding(void picocli.CommandLineAnnotatedMethodImplTest$PrimitivesWithDefault.setLong(long))
+    setter: picocli.CommandLine.Model.MethodBinding(void picocli.CommandLineAnnotatedMethodImplTest$PrimitivesWithDefault.setLong(long))
+  - names: [-s]
+    usageHelp: false
+    versionHelp: false
+    description: []
+    descriptionKey: ''
+    typeInfo: RuntimeTypeInfo(short, aux=[short], collection=false, map=false)
+    arity: 1
+    splitRegex: ''
+    interactive: false
+    required: false
+    hidden: false
+    hideParamSyntax: false
+    defaultValue: '12'
+    showDefaultValue: ON_DEMAND
+    hasInitialValue: false
+    initialValue: 'null'
+    paramLabel: '<short>'
+    converters: []
+    completionCandidates: null
+    getter: picocli.CommandLine.Model.MethodBinding(void picocli.CommandLineAnnotatedMethodImplTest$PrimitivesWithDefault.setShort(short))
+    setter: picocli.CommandLine.Model.MethodBinding(void picocli.CommandLineAnnotatedMethodImplTest$PrimitivesWithDefault.setShort(short))
+  - names: [-y]
+    usageHelp: false
+    versionHelp: false
+    description: []
+    descriptionKey: ''
+    typeInfo: RuntimeTypeInfo(byte, aux=[byte], collection=false, map=false)
+    arity: 1
+    splitRegex: ''
+    interactive: false
+    required: false
+    hidden: false
+    hideParamSyntax: false
+    defaultValue: '11'
+    showDefaultValue: ON_DEMAND
+    hasInitialValue: false
+    initialValue: 'null'
+    paramLabel: '<byte>'
+    converters: []
+    completionCandidates: null
+    getter: picocli.CommandLine.Model.MethodBinding(void picocli.CommandLineAnnotatedMethodImplTest$PrimitivesWithDefault.setByte(byte))
+    setter: picocli.CommandLine.Model.MethodBinding(void picocli.CommandLineAnnotatedMethodImplTest$PrimitivesWithDefault.setByte(byte))
+  PositionalParams: []
+  UnmatchedArgsBindings: []
+  Mixins: []
+  UsageMessageSpec:
+    width: 80
+    abbreviateSynopsis: false
+    hidden: false
+    showDefaultValues: false
+    sortOptions: true
+    requiredOptionMarker: ' '
+    headerHeading: ''
+    header: []
+    synopsisHeading: 'Usage: '
+    customSynopsis: []
+    descriptionHeading: ''
+    description: []
+    parameterListHeading: ''
+    optionListHeading: ''
+    commandListHeading: 'Commands:%n'
+    footerHeading: ''
+    footer: []
+  ParserSpec:
+    separator: '='
+    endOfOptionsDelimiter: '--'
+    expandAtFiles: true
+    atFileCommentChar: '#'
+    overwrittenOptionsAllowed: false
+    unmatchedArgumentsAllowed: false
+    unmatchedOptionsArePositionalParams: false
+    stopAtUnmatched: false
+    stopAtPositional: false
+    posixClusteredShortOptionsAllowed: true
+    aritySatisfiedByAttachedOptionParam: false
+    caseInsensitiveEnumValuesAllowed: false
+    collectErrors: false
+    limitSplit: false
+    toggleBooleanFlags: true
+  Subcommands: []

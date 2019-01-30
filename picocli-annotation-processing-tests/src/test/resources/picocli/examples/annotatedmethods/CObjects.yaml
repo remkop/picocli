@@ -1,0 +1,300 @@
+---
+CommandSpec:
+  name: '<main class>'
+  aliases: []
+  userObject: picocli.CommandLineAnnotatedMethodImplTest$Objects@2626b418
+  helpCommand: false
+  defaultValueProvider: null
+  versionProvider: null
+  version: []
+  Options:
+  - names: [-b]
+    usageHelp: false
+    versionHelp: false
+    description: []
+    descriptionKey: ''
+    typeInfo: RuntimeTypeInfo(java.lang.Boolean, aux=[class java.lang.Boolean], collection=false, map=false)
+    arity: 0
+    splitRegex: ''
+    interactive: false
+    required: false
+    hidden: false
+    hideParamSyntax: false
+    defaultValue: 'null'
+    showDefaultValue: ON_DEMAND
+    hasInitialValue: false
+    initialValue: 'null'
+    paramLabel: '<boolean>'
+    converters: []
+    completionCandidates: null
+    getter: picocli.CommandLine.Model.MethodBinding(void picocli.CommandLineAnnotatedMethodImplTest$Objects.setBoolean(java.lang.Boolean))
+    setter: picocli.CommandLine.Model.MethodBinding(void picocli.CommandLineAnnotatedMethodImplTest$Objects.setBoolean(java.lang.Boolean))
+  - names: [-bigint]
+    usageHelp: false
+    versionHelp: false
+    description: []
+    descriptionKey: ''
+    typeInfo: RuntimeTypeInfo(java.math.BigInteger, aux=[class java.math.BigInteger], collection=false, map=false)
+    arity: 1
+    splitRegex: ''
+    interactive: false
+    required: false
+    hidden: false
+    hideParamSyntax: false
+    defaultValue: 'null'
+    showDefaultValue: ON_DEMAND
+    hasInitialValue: false
+    initialValue: 'null'
+    paramLabel: '<bigInteger>'
+    converters: []
+    completionCandidates: null
+    getter: picocli.CommandLine.Model.MethodBinding(void picocli.CommandLineAnnotatedMethodImplTest$Objects.setBigInteger(java.math.BigInteger))
+    setter: picocli.CommandLine.Model.MethodBinding(void picocli.CommandLineAnnotatedMethodImplTest$Objects.setBigInteger(java.math.BigInteger))
+  - names: [-d]
+    usageHelp: false
+    versionHelp: false
+    description: []
+    descriptionKey: ''
+    typeInfo: RuntimeTypeInfo(java.lang.Double, aux=[class java.lang.Double], collection=false, map=false)
+    arity: 1
+    splitRegex: ''
+    interactive: false
+    required: false
+    hidden: false
+    hideParamSyntax: false
+    defaultValue: 'null'
+    showDefaultValue: ON_DEMAND
+    hasInitialValue: false
+    initialValue: 'null'
+    paramLabel: '<double>'
+    converters: []
+    completionCandidates: null
+    getter: picocli.CommandLine.Model.MethodBinding(void picocli.CommandLineAnnotatedMethodImplTest$Objects.setDouble(java.lang.Double))
+    setter: picocli.CommandLine.Model.MethodBinding(void picocli.CommandLineAnnotatedMethodImplTest$Objects.setDouble(java.lang.Double))
+  - names: [-f]
+    usageHelp: false
+    versionHelp: false
+    description: []
+    descriptionKey: ''
+    typeInfo: RuntimeTypeInfo(java.lang.Float, aux=[class java.lang.Float], collection=false, map=false)
+    arity: 1
+    splitRegex: ''
+    interactive: false
+    required: false
+    hidden: false
+    hideParamSyntax: false
+    defaultValue: 'null'
+    showDefaultValue: ON_DEMAND
+    hasInitialValue: false
+    initialValue: 'null'
+    paramLabel: '<float>'
+    converters: []
+    completionCandidates: null
+    getter: picocli.CommandLine.Model.MethodBinding(void picocli.CommandLineAnnotatedMethodImplTest$Objects.setFloat(java.lang.Float))
+    setter: picocli.CommandLine.Model.MethodBinding(void picocli.CommandLineAnnotatedMethodImplTest$Objects.setFloat(java.lang.Float))
+  - names: [-i]
+    usageHelp: false
+    versionHelp: false
+    description: []
+    descriptionKey: ''
+    typeInfo: RuntimeTypeInfo(java.lang.Integer, aux=[class java.lang.Integer], collection=false, map=false)
+    arity: 1
+    splitRegex: ''
+    interactive: false
+    required: false
+    hidden: false
+    hideParamSyntax: false
+    defaultValue: 'null'
+    showDefaultValue: ON_DEMAND
+    hasInitialValue: false
+    initialValue: 'null'
+    paramLabel: '<int>'
+    converters: []
+    completionCandidates: null
+    getter: picocli.CommandLine.Model.MethodBinding(void picocli.CommandLineAnnotatedMethodImplTest$Objects.setInt(java.lang.Integer))
+    setter: picocli.CommandLine.Model.MethodBinding(void picocli.CommandLineAnnotatedMethodImplTest$Objects.setInt(java.lang.Integer))
+  - names: [-l]
+    usageHelp: false
+    versionHelp: false
+    description: []
+    descriptionKey: ''
+    typeInfo: RuntimeTypeInfo(java.lang.Long, aux=[class java.lang.Long], collection=false, map=false)
+    arity: 1
+    splitRegex: ''
+    interactive: false
+    required: false
+    hidden: false
+    hideParamSyntax: false
+    defaultValue: 'null'
+    showDefaultValue: ON_DEMAND
+    hasInitialValue: false
+    initialValue: 'null'
+    paramLabel: '<long>'
+    converters: []
+    completionCandidates: null
+    getter: picocli.CommandLine.Model.MethodBinding(void picocli.CommandLineAnnotatedMethodImplTest$Objects.setLong(java.lang.Long))
+    setter: picocli.CommandLine.Model.MethodBinding(void picocli.CommandLineAnnotatedMethodImplTest$Objects.setLong(java.lang.Long))
+  - names: [-list]
+    usageHelp: false
+    versionHelp: false
+    description: []
+    descriptionKey: ''
+    typeInfo: RuntimeTypeInfo(java.util.List, aux=[class java.lang.String], collection=true, map=false)
+    arity: 1
+    splitRegex: ''
+    interactive: false
+    required: false
+    hidden: false
+    hideParamSyntax: false
+    defaultValue: 'null'
+    showDefaultValue: ON_DEMAND
+    hasInitialValue: false
+    initialValue: 'null'
+    paramLabel: '<list>'
+    converters: []
+    completionCandidates: null
+    getter: picocli.CommandLine.Model.MethodBinding(void picocli.CommandLineAnnotatedMethodImplTest$Objects.setList(java.util.List))
+    setter: picocli.CommandLine.Model.MethodBinding(void picocli.CommandLineAnnotatedMethodImplTest$Objects.setList(java.util.List))
+  - names: [-map]
+    usageHelp: false
+    versionHelp: false
+    description: []
+    descriptionKey: ''
+    typeInfo: RuntimeTypeInfo(java.util.Map, aux=[class java.lang.Integer, class java.lang.Double], collection=false, map=true)
+    arity: 1
+    splitRegex: ''
+    interactive: false
+    required: false
+    hidden: false
+    hideParamSyntax: false
+    defaultValue: 'null'
+    showDefaultValue: ON_DEMAND
+    hasInitialValue: false
+    initialValue: 'null'
+    paramLabel: '<Integer=Double>'
+    converters: []
+    completionCandidates: null
+    getter: picocli.CommandLine.Model.MethodBinding(void picocli.CommandLineAnnotatedMethodImplTest$Objects.setMap(java.util.Map))
+    setter: picocli.CommandLine.Model.MethodBinding(void picocli.CommandLineAnnotatedMethodImplTest$Objects.setMap(java.util.Map))
+  - names: [-s]
+    usageHelp: false
+    versionHelp: false
+    description: []
+    descriptionKey: ''
+    typeInfo: RuntimeTypeInfo(java.lang.Short, aux=[class java.lang.Short], collection=false, map=false)
+    arity: 1
+    splitRegex: ''
+    interactive: false
+    required: false
+    hidden: false
+    hideParamSyntax: false
+    defaultValue: 'null'
+    showDefaultValue: ON_DEMAND
+    hasInitialValue: false
+    initialValue: 'null'
+    paramLabel: '<short>'
+    converters: []
+    completionCandidates: null
+    getter: picocli.CommandLine.Model.MethodBinding(void picocli.CommandLineAnnotatedMethodImplTest$Objects.setShort(java.lang.Short))
+    setter: picocli.CommandLine.Model.MethodBinding(void picocli.CommandLineAnnotatedMethodImplTest$Objects.setShort(java.lang.Short))
+  - names: [-set]
+    usageHelp: false
+    versionHelp: false
+    description: []
+    descriptionKey: ''
+    typeInfo: RuntimeTypeInfo(java.util.SortedSet, aux=[class java.lang.Short], collection=true, map=false)
+    arity: 1
+    splitRegex: ''
+    interactive: false
+    required: false
+    hidden: false
+    hideParamSyntax: false
+    defaultValue: 'null'
+    showDefaultValue: ON_DEMAND
+    hasInitialValue: false
+    initialValue: 'null'
+    paramLabel: '<sortedSet>'
+    converters: []
+    completionCandidates: null
+    getter: picocli.CommandLine.Model.MethodBinding(void picocli.CommandLineAnnotatedMethodImplTest$Objects.setSortedSet(java.util.SortedSet))
+    setter: picocli.CommandLine.Model.MethodBinding(void picocli.CommandLineAnnotatedMethodImplTest$Objects.setSortedSet(java.util.SortedSet))
+  - names: [-string]
+    usageHelp: false
+    versionHelp: false
+    description: []
+    descriptionKey: ''
+    typeInfo: RuntimeTypeInfo(java.lang.String, aux=[class java.lang.String], collection=false, map=false)
+    arity: 1
+    splitRegex: ''
+    interactive: false
+    required: false
+    hidden: false
+    hideParamSyntax: false
+    defaultValue: 'null'
+    showDefaultValue: ON_DEMAND
+    hasInitialValue: false
+    initialValue: 'null'
+    paramLabel: '<string>'
+    converters: []
+    completionCandidates: null
+    getter: picocli.CommandLine.Model.MethodBinding(void picocli.CommandLineAnnotatedMethodImplTest$Objects.setString(java.lang.String))
+    setter: picocli.CommandLine.Model.MethodBinding(void picocli.CommandLineAnnotatedMethodImplTest$Objects.setString(java.lang.String))
+  - names: [-y]
+    usageHelp: false
+    versionHelp: false
+    description: []
+    descriptionKey: ''
+    typeInfo: RuntimeTypeInfo(java.lang.Byte, aux=[class java.lang.Byte], collection=false, map=false)
+    arity: 1
+    splitRegex: ''
+    interactive: false
+    required: false
+    hidden: false
+    hideParamSyntax: false
+    defaultValue: 'null'
+    showDefaultValue: ON_DEMAND
+    hasInitialValue: false
+    initialValue: 'null'
+    paramLabel: '<byte>'
+    converters: []
+    completionCandidates: null
+    getter: picocli.CommandLine.Model.MethodBinding(void picocli.CommandLineAnnotatedMethodImplTest$Objects.setByte(java.lang.Byte))
+    setter: picocli.CommandLine.Model.MethodBinding(void picocli.CommandLineAnnotatedMethodImplTest$Objects.setByte(java.lang.Byte))
+  PositionalParams: []
+  UnmatchedArgsBindings: []
+  Mixins: []
+  UsageMessageSpec:
+    width: 80
+    abbreviateSynopsis: false
+    hidden: false
+    showDefaultValues: false
+    sortOptions: true
+    requiredOptionMarker: ' '
+    headerHeading: ''
+    header: []
+    synopsisHeading: 'Usage: '
+    customSynopsis: []
+    descriptionHeading: ''
+    description: []
+    parameterListHeading: ''
+    optionListHeading: ''
+    commandListHeading: 'Commands:%n'
+    footerHeading: ''
+    footer: []
+  ParserSpec:
+    separator: '='
+    endOfOptionsDelimiter: '--'
+    expandAtFiles: true
+    atFileCommentChar: '#'
+    overwrittenOptionsAllowed: false
+    unmatchedArgumentsAllowed: false
+    unmatchedOptionsArePositionalParams: false
+    stopAtUnmatched: false
+    stopAtPositional: false
+    posixClusteredShortOptionsAllowed: true
+    aritySatisfiedByAttachedOptionParam: false
+    caseInsensitiveEnumValuesAllowed: false
+    collectErrors: false
+    limitSplit: false
+    toggleBooleanFlags: true
+  Subcommands: []

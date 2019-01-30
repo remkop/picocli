@@ -1,0 +1,28 @@
+plugins {
+    id 'java'
+}
+
+group 'info.picocli'
+description 'Picocli Annotation Processing Tests - Tests Annotation Processors for picocli Annotations.'
+version "$projectVersion"
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+
+dependencies {
+    compile rootProject
+    compile project(':picocli-codegen')
+    testCompile "junit:junit:$junitVersion",
+            "com.google.testing.compile:compile-testing:$compileTestingVersion",
+            files(org.gradle.internal.jvm.Jvm.current().getToolsJar()) // workaround https://github.com/google/compile-testing/issues/102 (and #28)
+}
+jar {
+    manifest {
+        attributes 'Specification-Title': 'Picocli Annotation Processing Tests',
+                'Specification-Vendor'  : 'Remko Popma',
+                'Specification-Version' : version,
+                'Implementation-Title'  : 'Picocli Annotation Processing Tests',
+                'Implementation-Vendor' : 'Remko Popma',
+                'Implementation-Version': version,
+                'Automatic-Module-Name' : 'info.picocli.annotation.processing.tests'
+    }
+}

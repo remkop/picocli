@@ -1,0 +1,195 @@
+---
+CommandSpec:
+  name: '<main class>'
+  aliases: []
+  userObject: null
+  helpCommand: false
+  defaultValueProvider: null
+  versionProvider: null
+  version: []
+  Options:
+  - names: [-b]
+    usageHelp: false
+    versionHelp: false
+    description: []
+    descriptionKey: ''
+    typeInfo: RuntimeTypeInfo(boolean, aux=[boolean], collection=false, map=false)
+    arity: 0
+    splitRegex: ''
+    interactive: false
+    required: false
+    hidden: false
+    hideParamSyntax: false
+    defaultValue: 'true'
+    showDefaultValue: ON_DEMAND
+    hasInitialValue: true
+    initialValue: 'false'
+    paramLabel: '<aBoolean>'
+    converters: []
+    completionCandidates: null
+    getter: picocli.CommandLine$Model$PicocliInvocationHandler$ProxyBinding@5a07e868
+    setter: picocli.CommandLine$Model$PicocliInvocationHandler$ProxyBinding@5a07e868
+  - names: [-d]
+    usageHelp: false
+    versionHelp: false
+    description: []
+    descriptionKey: ''
+    typeInfo: RuntimeTypeInfo(double, aux=[double], collection=false, map=false)
+    arity: 1
+    splitRegex: ''
+    interactive: false
+    required: false
+    hidden: false
+    hideParamSyntax: false
+    defaultValue: '16.6'
+    showDefaultValue: ON_DEMAND
+    hasInitialValue: true
+    initialValue: '0.0'
+    paramLabel: '<aDouble>'
+    converters: []
+    completionCandidates: null
+    getter: picocli.CommandLine$Model$PicocliInvocationHandler$ProxyBinding@76ed5528
+    setter: picocli.CommandLine$Model$PicocliInvocationHandler$ProxyBinding@76ed5528
+  - names: [-f]
+    usageHelp: false
+    versionHelp: false
+    description: []
+    descriptionKey: ''
+    typeInfo: RuntimeTypeInfo(float, aux=[float], collection=false, map=false)
+    arity: 1
+    splitRegex: ''
+    interactive: false
+    required: false
+    hidden: false
+    hideParamSyntax: false
+    defaultValue: '15.5'
+    showDefaultValue: ON_DEMAND
+    hasInitialValue: true
+    initialValue: '0.0'
+    paramLabel: '<aFloat>'
+    converters: []
+    completionCandidates: null
+    getter: picocli.CommandLine$Model$PicocliInvocationHandler$ProxyBinding@2c7b84de
+    setter: picocli.CommandLine$Model$PicocliInvocationHandler$ProxyBinding@2c7b84de
+  - names: [-i]
+    usageHelp: false
+    versionHelp: false
+    description: []
+    descriptionKey: ''
+    typeInfo: RuntimeTypeInfo(int, aux=[int], collection=false, map=false)
+    arity: 1
+    splitRegex: ''
+    interactive: false
+    required: false
+    hidden: false
+    hideParamSyntax: false
+    defaultValue: '13'
+    showDefaultValue: ON_DEMAND
+    hasInitialValue: true
+    initialValue: '0'
+    paramLabel: '<anInt>'
+    converters: []
+    completionCandidates: null
+    getter: picocli.CommandLine$Model$PicocliInvocationHandler$ProxyBinding@3fee733d
+    setter: picocli.CommandLine$Model$PicocliInvocationHandler$ProxyBinding@3fee733d
+  - names: [-l]
+    usageHelp: false
+    versionHelp: false
+    description: []
+    descriptionKey: ''
+    typeInfo: RuntimeTypeInfo(long, aux=[long], collection=false, map=false)
+    arity: 1
+    splitRegex: ''
+    interactive: false
+    required: false
+    hidden: false
+    hideParamSyntax: false
+    defaultValue: '14'
+    showDefaultValue: ON_DEMAND
+    hasInitialValue: true
+    initialValue: '0'
+    paramLabel: '<aLong>'
+    converters: []
+    completionCandidates: null
+    getter: picocli.CommandLine$Model$PicocliInvocationHandler$ProxyBinding@5acf9800
+    setter: picocli.CommandLine$Model$PicocliInvocationHandler$ProxyBinding@5acf9800
+  - names: [-s]
+    usageHelp: false
+    versionHelp: false
+    description: []
+    descriptionKey: ''
+    typeInfo: RuntimeTypeInfo(short, aux=[short], collection=false, map=false)
+    arity: 1
+    splitRegex: ''
+    interactive: false
+    required: false
+    hidden: false
+    hideParamSyntax: false
+    defaultValue: '12'
+    showDefaultValue: ON_DEMAND
+    hasInitialValue: true
+    initialValue: '0'
+    paramLabel: '<aShort>'
+    converters: []
+    completionCandidates: null
+    getter: picocli.CommandLine$Model$PicocliInvocationHandler$ProxyBinding@4617c264
+    setter: picocli.CommandLine$Model$PicocliInvocationHandler$ProxyBinding@4617c264
+  - names: [-y]
+    usageHelp: false
+    versionHelp: false
+    description: []
+    descriptionKey: ''
+    typeInfo: RuntimeTypeInfo(byte, aux=[byte], collection=false, map=false)
+    arity: 1
+    splitRegex: ''
+    interactive: false
+    required: false
+    hidden: false
+    hideParamSyntax: false
+    defaultValue: '11'
+    showDefaultValue: ON_DEMAND
+    hasInitialValue: true
+    initialValue: '0'
+    paramLabel: '<aByte>'
+    converters: []
+    completionCandidates: null
+    getter: picocli.CommandLine$Model$PicocliInvocationHandler$ProxyBinding@36baf30c
+    setter: picocli.CommandLine$Model$PicocliInvocationHandler$ProxyBinding@36baf30c
+  PositionalParams: []
+  UnmatchedArgsBindings: []
+  Mixins: []
+  UsageMessageSpec:
+    width: 80
+    abbreviateSynopsis: false
+    hidden: false
+    showDefaultValues: false
+    sortOptions: true
+    requiredOptionMarker: ' '
+    headerHeading: ''
+    header: []
+    synopsisHeading: 'Usage: '
+    customSynopsis: []
+    descriptionHeading: ''
+    description: []
+    parameterListHeading: ''
+    optionListHeading: ''
+    commandListHeading: 'Commands:%n'
+    footerHeading: ''
+    footer: []
+  ParserSpec:
+    separator: '='
+    endOfOptionsDelimiter: '--'
+    expandAtFiles: true
+    atFileCommentChar: '#'
+    overwrittenOptionsAllowed: false
+    unmatchedArgumentsAllowed: false
+    unmatchedOptionsArePositionalParams: false
+    stopAtUnmatched: false
+    stopAtPositional: false
+    posixClusteredShortOptionsAllowed: true
+    aritySatisfiedByAttachedOptionParam: false
+    caseInsensitiveEnumValuesAllowed: false
+    collectErrors: false
+    limitSplit: false
+    toggleBooleanFlags: true
+  Subcommands: []

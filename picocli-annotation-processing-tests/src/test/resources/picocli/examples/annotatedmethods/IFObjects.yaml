@@ -1,0 +1,300 @@
+---
+CommandSpec:
+  name: '<main class>'
+  aliases: []
+  userObject: null
+  helpCommand: false
+  defaultValueProvider: null
+  versionProvider: null
+  version: []
+  Options:
+  - names: [-b]
+    usageHelp: false
+    versionHelp: false
+    description: []
+    descriptionKey: ''
+    typeInfo: RuntimeTypeInfo(java.lang.Boolean, aux=[class java.lang.Boolean], collection=false, map=false)
+    arity: 0
+    splitRegex: ''
+    interactive: false
+    required: false
+    hidden: false
+    hideParamSyntax: false
+    defaultValue: 'null'
+    showDefaultValue: ON_DEMAND
+    hasInitialValue: true
+    initialValue: 'null'
+    paramLabel: '<aBoolean>'
+    converters: []
+    completionCandidates: null
+    getter: picocli.CommandLine$Model$PicocliInvocationHandler$ProxyBinding@5a07e868
+    setter: picocli.CommandLine$Model$PicocliInvocationHandler$ProxyBinding@5a07e868
+  - names: [-bigint]
+    usageHelp: false
+    versionHelp: false
+    description: []
+    descriptionKey: ''
+    typeInfo: RuntimeTypeInfo(java.math.BigInteger, aux=[class java.math.BigInteger], collection=false, map=false)
+    arity: 1
+    splitRegex: ''
+    interactive: false
+    required: false
+    hidden: false
+    hideParamSyntax: false
+    defaultValue: 'null'
+    showDefaultValue: ON_DEMAND
+    hasInitialValue: true
+    initialValue: 'null'
+    paramLabel: '<aBigInteger>'
+    converters: []
+    completionCandidates: null
+    getter: picocli.CommandLine$Model$PicocliInvocationHandler$ProxyBinding@76ed5528
+    setter: picocli.CommandLine$Model$PicocliInvocationHandler$ProxyBinding@76ed5528
+  - names: [-d]
+    usageHelp: false
+    versionHelp: false
+    description: []
+    descriptionKey: ''
+    typeInfo: RuntimeTypeInfo(java.lang.Double, aux=[class java.lang.Double], collection=false, map=false)
+    arity: 1
+    splitRegex: ''
+    interactive: false
+    required: false
+    hidden: false
+    hideParamSyntax: false
+    defaultValue: 'null'
+    showDefaultValue: ON_DEMAND
+    hasInitialValue: true
+    initialValue: 'null'
+    paramLabel: '<aDouble>'
+    converters: []
+    completionCandidates: null
+    getter: picocli.CommandLine$Model$PicocliInvocationHandler$ProxyBinding@2c7b84de
+    setter: picocli.CommandLine$Model$PicocliInvocationHandler$ProxyBinding@2c7b84de
+  - names: [-f]
+    usageHelp: false
+    versionHelp: false
+    description: []
+    descriptionKey: ''
+    typeInfo: RuntimeTypeInfo(java.lang.Float, aux=[class java.lang.Float], collection=false, map=false)
+    arity: 1
+    splitRegex: ''
+    interactive: false
+    required: false
+    hidden: false
+    hideParamSyntax: false
+    defaultValue: 'null'
+    showDefaultValue: ON_DEMAND
+    hasInitialValue: true
+    initialValue: 'null'
+    paramLabel: '<aFloat>'
+    converters: []
+    completionCandidates: null
+    getter: picocli.CommandLine$Model$PicocliInvocationHandler$ProxyBinding@3fee733d
+    setter: picocli.CommandLine$Model$PicocliInvocationHandler$ProxyBinding@3fee733d
+  - names: [-i]
+    usageHelp: false
+    versionHelp: false
+    description: []
+    descriptionKey: ''
+    typeInfo: RuntimeTypeInfo(java.lang.Integer, aux=[class java.lang.Integer], collection=false, map=false)
+    arity: 1
+    splitRegex: ''
+    interactive: false
+    required: false
+    hidden: false
+    hideParamSyntax: false
+    defaultValue: 'null'
+    showDefaultValue: ON_DEMAND
+    hasInitialValue: true
+    initialValue: 'null'
+    paramLabel: '<anInt>'
+    converters: []
+    completionCandidates: null
+    getter: picocli.CommandLine$Model$PicocliInvocationHandler$ProxyBinding@5acf9800
+    setter: picocli.CommandLine$Model$PicocliInvocationHandler$ProxyBinding@5acf9800
+  - names: [-l]
+    usageHelp: false
+    versionHelp: false
+    description: []
+    descriptionKey: ''
+    typeInfo: RuntimeTypeInfo(java.lang.Long, aux=[class java.lang.Long], collection=false, map=false)
+    arity: 1
+    splitRegex: ''
+    interactive: false
+    required: false
+    hidden: false
+    hideParamSyntax: false
+    defaultValue: 'null'
+    showDefaultValue: ON_DEMAND
+    hasInitialValue: true
+    initialValue: 'null'
+    paramLabel: '<aLong>'
+    converters: []
+    completionCandidates: null
+    getter: picocli.CommandLine$Model$PicocliInvocationHandler$ProxyBinding@4617c264
+    setter: picocli.CommandLine$Model$PicocliInvocationHandler$ProxyBinding@4617c264
+  - names: [-list]
+    usageHelp: false
+    versionHelp: false
+    description: []
+    descriptionKey: ''
+    typeInfo: RuntimeTypeInfo(java.util.List, aux=[class java.lang.String], collection=true, map=false)
+    arity: 1
+    splitRegex: ''
+    interactive: false
+    required: false
+    hidden: false
+    hideParamSyntax: false
+    defaultValue: 'null'
+    showDefaultValue: ON_DEMAND
+    hasInitialValue: true
+    initialValue: 'null'
+    paramLabel: '<list>'
+    converters: []
+    completionCandidates: null
+    getter: picocli.CommandLine$Model$PicocliInvocationHandler$ProxyBinding@36baf30c
+    setter: picocli.CommandLine$Model$PicocliInvocationHandler$ProxyBinding@36baf30c
+  - names: [-map]
+    usageHelp: false
+    versionHelp: false
+    description: []
+    descriptionKey: ''
+    typeInfo: RuntimeTypeInfo(java.util.Map, aux=[class java.lang.Integer, class java.lang.Double], collection=false, map=true)
+    arity: 1
+    splitRegex: ''
+    interactive: false
+    required: false
+    hidden: false
+    hideParamSyntax: false
+    defaultValue: 'null'
+    showDefaultValue: ON_DEMAND
+    hasInitialValue: true
+    initialValue: 'null'
+    paramLabel: '<Integer=Double>'
+    converters: []
+    completionCandidates: null
+    getter: picocli.CommandLine$Model$PicocliInvocationHandler$ProxyBinding@7a81197d
+    setter: picocli.CommandLine$Model$PicocliInvocationHandler$ProxyBinding@7a81197d
+  - names: [-s]
+    usageHelp: false
+    versionHelp: false
+    description: []
+    descriptionKey: ''
+    typeInfo: RuntimeTypeInfo(java.lang.Short, aux=[class java.lang.Short], collection=false, map=false)
+    arity: 1
+    splitRegex: ''
+    interactive: false
+    required: false
+    hidden: false
+    hideParamSyntax: false
+    defaultValue: 'null'
+    showDefaultValue: ON_DEMAND
+    hasInitialValue: true
+    initialValue: 'null'
+    paramLabel: '<aShort>'
+    converters: []
+    completionCandidates: null
+    getter: picocli.CommandLine$Model$PicocliInvocationHandler$ProxyBinding@5ca881b5
+    setter: picocli.CommandLine$Model$PicocliInvocationHandler$ProxyBinding@5ca881b5
+  - names: [-set]
+    usageHelp: false
+    versionHelp: false
+    description: []
+    descriptionKey: ''
+    typeInfo: RuntimeTypeInfo(java.util.SortedSet, aux=[class java.lang.Short], collection=true, map=false)
+    arity: 1
+    splitRegex: ''
+    interactive: false
+    required: false
+    hidden: false
+    hideParamSyntax: false
+    defaultValue: 'null'
+    showDefaultValue: ON_DEMAND
+    hasInitialValue: true
+    initialValue: 'null'
+    paramLabel: '<sortedSet>'
+    converters: []
+    completionCandidates: null
+    getter: picocli.CommandLine$Model$PicocliInvocationHandler$ProxyBinding@24d46ca6
+    setter: picocli.CommandLine$Model$PicocliInvocationHandler$ProxyBinding@24d46ca6
+  - names: [-string]
+    usageHelp: false
+    versionHelp: false
+    description: []
+    descriptionKey: ''
+    typeInfo: RuntimeTypeInfo(java.lang.String, aux=[class java.lang.String], collection=false, map=false)
+    arity: 1
+    splitRegex: ''
+    interactive: false
+    required: false
+    hidden: false
+    hideParamSyntax: false
+    defaultValue: 'null'
+    showDefaultValue: ON_DEMAND
+    hasInitialValue: true
+    initialValue: 'null'
+    paramLabel: '<aString>'
+    converters: []
+    completionCandidates: null
+    getter: picocli.CommandLine$Model$PicocliInvocationHandler$ProxyBinding@4517d9a3
+    setter: picocli.CommandLine$Model$PicocliInvocationHandler$ProxyBinding@4517d9a3
+  - names: [-y]
+    usageHelp: false
+    versionHelp: false
+    description: []
+    descriptionKey: ''
+    typeInfo: RuntimeTypeInfo(java.lang.Byte, aux=[class java.lang.Byte], collection=false, map=false)
+    arity: 1
+    splitRegex: ''
+    interactive: false
+    required: false
+    hidden: false
+    hideParamSyntax: false
+    defaultValue: 'null'
+    showDefaultValue: ON_DEMAND
+    hasInitialValue: true
+    initialValue: 'null'
+    paramLabel: '<aByte>'
+    converters: []
+    completionCandidates: null
+    getter: picocli.CommandLine$Model$PicocliInvocationHandler$ProxyBinding@372f7a8d
+    setter: picocli.CommandLine$Model$PicocliInvocationHandler$ProxyBinding@372f7a8d
+  PositionalParams: []
+  UnmatchedArgsBindings: []
+  Mixins: []
+  UsageMessageSpec:
+    width: 80
+    abbreviateSynopsis: false
+    hidden: false
+    showDefaultValues: false
+    sortOptions: true
+    requiredOptionMarker: ' '
+    headerHeading: ''
+    header: []
+    synopsisHeading: 'Usage: '
+    customSynopsis: []
+    descriptionHeading: ''
+    description: []
+    parameterListHeading: ''
+    optionListHeading: ''
+    commandListHeading: 'Commands:%n'
+    footerHeading: ''
+    footer: []
+  ParserSpec:
+    separator: '='
+    endOfOptionsDelimiter: '--'
+    expandAtFiles: true
+    atFileCommentChar: '#'
+    overwrittenOptionsAllowed: false
+    unmatchedArgumentsAllowed: false
+    unmatchedOptionsArePositionalParams: false
+    stopAtUnmatched: false
+    stopAtPositional: false
+    posixClusteredShortOptionsAllowed: true
+    aritySatisfiedByAttachedOptionParam: false
+    caseInsensitiveEnumValuesAllowed: false
+    collectErrors: false
+    limitSplit: false
+    toggleBooleanFlags: true
+  Subcommands: []

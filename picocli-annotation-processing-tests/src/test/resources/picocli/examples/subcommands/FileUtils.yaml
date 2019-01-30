@@ -1,0 +1,137 @@
+---
+CommandSpec:
+  name: 'fileutils'
+  aliases: []
+  userObject: picocli.examples.subcommands.ParentCommandDemo$FileUtils@2e0fa5d3
+  helpCommand: false
+  defaultValueProvider: null
+  versionProvider: null
+  version: []
+  Options:
+  - names: [-d, --directory]
+    usageHelp: false
+    versionHelp: false
+    description: [this option applies to all subcommands]
+    descriptionKey: ''
+    typeInfo: RuntimeTypeInfo(java.io.File, aux=[class java.io.File], collection=false, map=false)
+    arity: 1
+    splitRegex: ''
+    interactive: false
+    required: false
+    hidden: false
+    hideParamSyntax: false
+    defaultValue: 'null'
+    showDefaultValue: ON_DEMAND
+    hasInitialValue: true
+    initialValue: 'null'
+    paramLabel: '<baseDirectory>'
+    converters: []
+    completionCandidates: null
+    getter: picocli.CommandLine.Model.FieldBinding(java.io.File picocli.examples.subcommands.ParentCommandDemo.FileUtils.baseDirectory)
+    setter: picocli.CommandLine.Model.FieldBinding(java.io.File picocli.examples.subcommands.ParentCommandDemo.FileUtils.baseDirectory)
+  PositionalParams: []
+  UnmatchedArgsBindings: []
+  Mixins: []
+  UsageMessageSpec:
+    width: 80
+    abbreviateSynopsis: false
+    hidden: false
+    showDefaultValues: false
+    sortOptions: true
+    requiredOptionMarker: ' '
+    headerHeading: ''
+    header: []
+    synopsisHeading: 'Usage: '
+    customSynopsis: []
+    descriptionHeading: ''
+    description: []
+    parameterListHeading: ''
+    optionListHeading: ''
+    commandListHeading: 'Commands:%n'
+    footerHeading: ''
+    footer: []
+  ParserSpec:
+    separator: '='
+    endOfOptionsDelimiter: '--'
+    expandAtFiles: true
+    atFileCommentChar: '#'
+    overwrittenOptionsAllowed: false
+    unmatchedArgumentsAllowed: false
+    unmatchedOptionsArePositionalParams: false
+    stopAtUnmatched: false
+    stopAtPositional: false
+    posixClusteredShortOptionsAllowed: true
+    aritySatisfiedByAttachedOptionParam: false
+    caseInsensitiveEnumValuesAllowed: false
+    collectErrors: false
+    limitSplit: false
+    toggleBooleanFlags: true
+  Subcommands:
+  # list
+  - name: 'list'
+    aliases: []
+    userObject: picocli.examples.subcommands.ParentCommandDemo$List@5010be6
+    helpCommand: false
+    defaultValueProvider: null
+    versionProvider: null
+    version: []
+    Options:
+    - names: [-r, --recursive]
+      usageHelp: false
+      versionHelp: false
+      description: [Recursively list subdirectories]
+      descriptionKey: ''
+      typeInfo: RuntimeTypeInfo(boolean, aux=[boolean], collection=false, map=false)
+      arity: 0
+      splitRegex: ''
+      interactive: false
+      required: false
+      hidden: false
+      hideParamSyntax: false
+      defaultValue: 'null'
+      showDefaultValue: ON_DEMAND
+      hasInitialValue: true
+      initialValue: 'false'
+      paramLabel: '<recursive>'
+      converters: []
+      completionCandidates: null
+      getter: picocli.CommandLine.Model.FieldBinding(boolean picocli.examples.subcommands.ParentCommandDemo.List.recursive)
+      setter: picocli.CommandLine.Model.FieldBinding(boolean picocli.examples.subcommands.ParentCommandDemo.List.recursive)
+    PositionalParams: []
+    UnmatchedArgsBindings: []
+    Mixins: []
+    UsageMessageSpec:
+      width: 80
+      abbreviateSynopsis: false
+      hidden: false
+      showDefaultValues: false
+      sortOptions: true
+      requiredOptionMarker: ' '
+      headerHeading: ''
+      header: []
+      synopsisHeading: 'Usage: '
+      customSynopsis: []
+      descriptionHeading: ''
+      description: []
+      parameterListHeading: ''
+      optionListHeading: ''
+      commandListHeading: 'Commands:%n'
+      footerHeading: ''
+      footer: []
+    ParserSpec:
+      separator: '='
+      endOfOptionsDelimiter: '--'
+      expandAtFiles: true
+      atFileCommentChar: '#'
+      overwrittenOptionsAllowed: false
+      unmatchedArgumentsAllowed: false
+      unmatchedOptionsArePositionalParams: false
+      stopAtUnmatched: false
+      stopAtPositional: false
+      posixClusteredShortOptionsAllowed: true
+      aritySatisfiedByAttachedOptionParam: false
+      caseInsensitiveEnumValuesAllowed: false
+      collectErrors: false
+      limitSplit: false
+      toggleBooleanFlags: true
+    Subcommands: []
