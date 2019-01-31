@@ -2529,7 +2529,7 @@ public class CommandLineHelpTest {
 
     @Test
     public void testFormat() throws Exception {
-        Method m = Help.class.getDeclaredMethod("format", String.class, Object[].class);
+        Method m = CommandLine.class.getDeclaredMethod("format", String.class, Object[].class);
         m.setAccessible(true);
 
         String result = (String) m.invoke(null, (String) null, new Object[]{"abc"});
@@ -3737,7 +3737,9 @@ public class CommandLineHelpTest {
         assertTrue(systemErrRule.getLog().contains(
                 "[picocli WARN] Could not format 'exclude child files of cTree (only works with --ctree).%n" +
                         "Currently must be explicit or with trailing % for truncated glob.' " +
-                        "(Underlying error: Format specifier ' f'). " +
+                        "(Underlying error:"));
+        assertTrue(systemErrRule.getLog().contains(
+                "). " +
                         "Using raw String: '%n' format strings have not been replaced with newlines. " +
                         "Please ensure to escape '%' characters with another '%'."));
     }
