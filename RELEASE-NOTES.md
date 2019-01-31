@@ -20,6 +20,7 @@ Picocli follows [semantic versioning](http://semver.org/).
 
 ## <a name="3.9.3-fixes"></a> Fixed issues
 - [#613] Enhancement: Improve picocli heuristics for unmatched options: single-character arguments that don't exactly match options (like `-`) should be considered positional parameters. Thanks to [Oliver Weiler](https://github.com/helpermethod) for the bug report.
+- [#615] Bugfix: Opaque stacktrace for "%" in Option description. Thanks to [petermr](https://github.com/petermr) for the bug report.
 - [#616] Bugfix: showDefaultValues=true with defaultValueProvider did not render defaultValues in usage help. Thanks to [Sebastian Thomschke](https://github.com/sebthom) for the bug report.
 
 ## <a name="3.9.3-deprecated"></a> Deprecations
