@@ -5248,14 +5248,7 @@ public class CommandLine {
              * @see CommandSpec#defaultValueProvider()
              * @see ArgSpec#defaultValue() */
             public String defaultValueString() {
-                String fromProvider = null;
-                IDefaultValueProvider defaultValueProvider = null;
-                try {
-                    defaultValueProvider = commandSpec.defaultValueProvider();
-                    fromProvider = defaultValueProvider == null ? null : defaultValueProvider.defaultValue(this);
-                } catch (Exception ex) {
-                    new Tracer().info("Error getting default value for %s from %s: %s", this, defaultValueProvider, ex);
-                }
+                String fromProvider = defaultValueFromProvider();
                 String defaultVal = fromProvider == null ? this.defaultValue() : fromProvider;
                 Object value = defaultVal == null ? initialValue() : defaultVal;
                 if (value != null && value.getClass().isArray()) {
@@ -5266,6 +5259,18 @@ public class CommandLine {
                     return sb.insert(0, "[").append("]").toString();
                 }
                 return String.valueOf(value);
+            }
+
+            private String defaultValueFromProvider() {
+                String fromProvider = null;
+                IDefaultValueProvider defaultValueProvider = null;
+                try {
+                    defaultValueProvider = commandSpec.defaultValueProvider();
+                    fromProvider = defaultValueProvider == null ? null : defaultValueProvider.defaultValue(this);
+                } catch (Exception ex) {
+                    new Tracer().info("Error getting default value for %s from %s: %s", this, defaultValueProvider, ex);
+                }
+                return fromProvider;
             }
 
             /** Returns the explicitly set completion candidates for this option or positional parameter, valid enum
@@ -5337,7 +5342,7 @@ public class CommandLine {
             protected boolean internalShowDefaultValue(boolean usageHelpShowDefaults) {
                 if (showDefaultValue() == Help.Visibility.ALWAYS)   { return true; }  // override global usage help setting
                 if (showDefaultValue() == Help.Visibility.NEVER)    { return false; } // override global usage help setting
-                if (initialValue == null && defaultValue() == null) { return false; } // no default value to show
+                if (initialValue == null && defaultValue() == null && defaultValueFromProvider() == null) { return false; } // no default value to show
                 return usageHelpShowDefaults && !isBoolean(type());
             }
             /** Returns the Messages for this arg specification, or {@code null}.

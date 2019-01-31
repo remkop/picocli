@@ -209,7 +209,8 @@ public class CommandLineDefaultProviderTest {
                 "  -d=<string>    Default: XYZ%n");
         CommandLine cmd = new CommandLine(App.class);
         cmd.setDefaultValueProvider(new IDefaultValueProvider() {
-            public String defaultValue(ArgSpec argSpec) throws Exception {
+            public String defaultValue(ArgSpec argSpec) throws
+                    Exception {
                 return "XYZ";
             }
         });
@@ -242,5 +243,36 @@ public class CommandLineDefaultProviderTest {
             }
         });
         assertEquals(expected2, cmd.getUsageMessage(CommandLine.Help.Ansi.OFF));
+    }
+    static class FooDefaultProvider implements IDefaultValueProvider {
+        public String defaultValue(ArgSpec argSpec) throws Exception {
+            return "DURATION".equals(argSpec.paramLabel()) ? "1200" : null;
+        }
+    }
+
+    @Test
+    public void testIssue616DefaultProviderWithShowDefaultValues() {
+        @Command(name = "foo", mixinStandardHelpOptions = true,
+        defaultValueProvider = FooDefaultProvider.class,
+        showDefaultValues = true)
+        class FooCommand implements Runnable {
+
+            @Option(names = {"-d", "--duration"}, paramLabel = "DURATION", arity = "1",
+            description = "The duration, in seconds.")
+            Integer duration;
+
+            public void run() {
+                System.out.printf("duration=%s%n", duration);
+            }
+        }
+
+        String expected = String.format("" +
+                "Usage: foo [-hV] [-d=DURATION]%n" +
+                "  -d, --duration=DURATION   The duration, in seconds.%n" +
+                "                              Default: 1200%n" +
+                "  -h, --help                Show this help message and exit.%n" +
+                "  -V, --version             Print version information and exit.%n");
+        String actual = new CommandLine(new FooCommand()).getUsageMessage();
+        assertEquals(expected, actual);
     }
 }
