@@ -253,6 +253,17 @@ public class CommandLineArityTest {
     }
 
     @Test
+    public void testIsUnspecified()  {
+        class App {
+            @Parameters List<String> unspecified;
+            @Parameters(arity = "2") List<String> specified;
+        }
+        CommandLine cmd = new CommandLine(new App());
+        assertTrue(cmd.getCommandSpec().positionalParameters().get(0).arity().isUnspecified());
+        assertFalse(cmd.getCommandSpec().positionalParameters().get(1).arity().isUnspecified());
+    }
+
+    @Test
     public void testRangeEquals_OtherType()  {
         assertFalse(Range.valueOf("0").equals(123));
         assertNotEquals(Range.valueOf("0"), 123);

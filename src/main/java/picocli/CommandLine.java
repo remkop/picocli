@@ -6151,7 +6151,8 @@ public class CommandLine {
     
                 /** Sets the index or range specifying which of the command line arguments should be assigned to this positional parameter, and returns this builder. */
                 public Builder index(Range index)   { this.index = index; return self(); }
-    
+
+                Range capacity()                   { return capacity; }
                 Builder capacity(Range capacity)   { this.capacity = capacity; return self(); }
             }
         }
@@ -6277,7 +6278,7 @@ public class CommandLine {
             private final Class<?>[] auxiliaryTypes;
             private final List<String> actualGenericTypeArguments;
 
-            private RuntimeTypeInfo(Class<?> type, Class<?>[] auxiliaryTypes, List<String> actualGenericTypeArguments) {
+            RuntimeTypeInfo(Class<?> type, Class<?>[] auxiliaryTypes, List<String> actualGenericTypeArguments) {
                 this.type = Assert.notNull(type, "type");
                 this.auxiliaryTypes = Assert.notNull(auxiliaryTypes, "auxiliaryTypes").clone();
                 this.actualGenericTypeArguments = actualGenericTypeArguments == null ? Collections.<String>emptyList() : Collections.unmodifiableList(new ArrayList<String>(actualGenericTypeArguments));
@@ -6484,7 +6485,7 @@ public class CommandLine {
                     getter = binding; setter = binding;
                 }
             }
-            private TypedMember(MethodParam param, Object scope) {
+            TypedMember(MethodParam param, Object scope) {
                 accessible = Assert.notNull(param, "command method parameter");
                 accessible.setAccessible(true);
                 name = param.getName();
