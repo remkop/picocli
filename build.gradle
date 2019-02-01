@@ -331,9 +331,8 @@ Release procedure:
 
 (When releasing from branch)
 25. Switch to master
-26. Update RELEASE-NOTES.md (insert changes from branch)
-27. Update last release version in README
-28. Update `projectPreviousVersion` in build.gradle
-29. gradlew copyDocs
-30. commit -m "Update master for release x.x (from branch x.x)"
+26. cherry-pick the "Release picocli version ..." commit
+27. gradlew bumpVersion
+28. check modified files
+29. commit -m "Update master for next development cycle after release x.x (from branch x.x)"
 */
