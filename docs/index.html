@@ -513,8 +513,8 @@ table.CodeRay td.code>pre{padding:0}
 <div id="header">
 <h1>picocli - a mighty tiny command line interface</h1>
 <div class="details">
-<span id="revnumber">version 3.9.2,</span>
-<span id="revdate">2019-01-20</span>
+<span id="revnumber">version 3.9.3,</span>
+<span id="revdate">2019-02-01</span>
 </div>
 <div id="toc" class="toc2">
 <div id="toctitle">Features</div>
@@ -602,13 +602,14 @@ table.CodeRay td.code>pre{padding:0}
 <li><a href="#_abbreviated_synopsis">10.6. Abbreviated Synopsis</a></li>
 <li><a href="#_custom_synopsis">10.7. Custom Synopsis</a></li>
 <li><a href="#_header_and_footer">10.8. Header and Footer</a></li>
-<li><a href="#_section_headings">10.9. Section Headings</a></li>
-<li><a href="#_expanded_example">10.10. Expanded Example</a></li>
-<li><a href="#_option_parameter_separators">10.11. Option-Parameter Separators</a></li>
-<li><a href="#_hidden_options_and_parameters">10.12. Hidden Options and Parameters</a></li>
-<li><a href="#_show_default_values">10.13. Show Default Values</a></li>
-<li><a href="#_required_option_marker">10.14. Required-Option Marker</a></li>
-<li><a href="#_usage_width">10.15. Usage Width</a></li>
+<li><a href="#_format_specifiers">10.9. Format Specifiers</a></li>
+<li><a href="#_section_headings">10.10. Section Headings</a></li>
+<li><a href="#_expanded_example">10.11. Expanded Example</a></li>
+<li><a href="#_option_parameter_separators">10.12. Option-Parameter Separators</a></li>
+<li><a href="#_hidden_options_and_parameters">10.13. Hidden Options and Parameters</a></li>
+<li><a href="#_show_default_values">10.14. Show Default Values</a></li>
+<li><a href="#_required_option_marker">10.15. Required-Option Marker</a></li>
+<li><a href="#_usage_width">10.16. Usage Width</a></li>
 </ul>
 </li>
 <li><a href="#_ansi_colors_and_styles">11. ANSI Colors and Styles</a>
@@ -2614,7 +2615,7 @@ Build 12345
 <p><span class="image"><img src="images/VersionInfoWithColors.png" alt="Screenshot of version information containing markup with Ansi styles and colors"></span></p>
 </div>
 <div class="paragraph">
-<p>From picocli v1.0, the <code>version</code> may contain <a href="https://docs.oracle.com/javase/7/docs/api/java/util/Formatter.html">format specifiers</a>:</p>
+<p>From picocli v1.0, the <code>version</code> may contain <a href="#_format_specifiers">format specifiers</a>:</p>
 </div>
 <div class="listingblock">
 <div class="content">
@@ -2774,10 +2775,10 @@ Use the <code>paramLabel</code> attribute to display a different name. For examp
 <div class="content">
 <pre class="CodeRay highlight"><code data-lang="java"><span class="annotation">@Command</span>()
 <span class="type">class</span> <span class="class">ParamLabels</span> {
-    <span class="annotation">@Option</span>(names = <span class="string"><span class="delimiter">&quot;</span><span class="content">-f</span><span class="delimiter">&quot;</span></span>,    paramLabel = <span class="string"><span class="delimiter">&quot;</span><span class="content">FILE</span><span class="delimiter">&quot;</span></span>, description = <span class="string"><span class="delimiter">&quot;</span><span class="content">a file</span><span class="delimiter">&quot;</span></span>)      <span class="predefined-type">File</span> f;
-    <span class="annotation">@Option</span>(names = <span class="string"><span class="delimiter">&quot;</span><span class="content">-n</span><span class="delimiter">&quot;</span></span>,    description = <span class="string"><span class="delimiter">&quot;</span><span class="content">a number option</span><span class="delimiter">&quot;</span></span>)                  <span class="type">int</span> number;
-    <span class="annotation">@Parameters</span>(index = <span class="string"><span class="delimiter">&quot;</span><span class="content">0</span><span class="delimiter">&quot;</span></span>, paramLabel = <span class="string"><span class="delimiter">&quot;</span><span class="content">NUM</span><span class="delimiter">&quot;</span></span>, description = <span class="string"><span class="delimiter">&quot;</span><span class="content">number param</span><span class="delimiter">&quot;</span></span>) <span class="type">int</span> n;
-    <span class="annotation">@Parameters</span>(index = <span class="string"><span class="delimiter">&quot;</span><span class="content">1</span><span class="delimiter">&quot;</span></span>, description = <span class="string"><span class="delimiter">&quot;</span><span class="content">the host parameter</span><span class="delimiter">&quot;</span></span>)               <span class="predefined-type">InetAddress</span> host;
+    <span class="annotation">@Option</span>(names = <span class="string"><span class="delimiter">&quot;</span><span class="content">-f</span><span class="delimiter">&quot;</span></span>,    description = <span class="string"><span class="delimiter">&quot;</span><span class="content">a file</span><span class="delimiter">&quot;</span></span>,       paramLabel = <span class="string"><span class="delimiter">&quot;</span><span class="content">FILE</span><span class="delimiter">&quot;</span></span>) <span class="predefined-type">File</span> f;
+    <span class="annotation">@Option</span>(names = <span class="string"><span class="delimiter">&quot;</span><span class="content">-n</span><span class="delimiter">&quot;</span></span>,    description = <span class="string"><span class="delimiter">&quot;</span><span class="content">a number option</span><span class="delimiter">&quot;</span></span>)                   <span class="type">int</span> number;
+    <span class="annotation">@Parameters</span>(index = <span class="string"><span class="delimiter">&quot;</span><span class="content">0</span><span class="delimiter">&quot;</span></span>, description = <span class="string"><span class="delimiter">&quot;</span><span class="content">number param</span><span class="delimiter">&quot;</span></span>, paramLabel = <span class="string"><span class="delimiter">&quot;</span><span class="content">NUM</span><span class="delimiter">&quot;</span></span>)  <span class="type">int</span> n;
+    <span class="annotation">@Parameters</span>(index = <span class="string"><span class="delimiter">&quot;</span><span class="content">1</span><span class="delimiter">&quot;</span></span>, description = <span class="string"><span class="delimiter">&quot;</span><span class="content">the host parameter</span><span class="delimiter">&quot;</span></span>)                <span class="predefined-type">InetAddress</span> host;
 }</code></pre>
 </div>
 </div>
@@ -2873,17 +2874,45 @@ Options with a lower number are shown before options with a higher number.</p>
 <p>The <code>header</code> will be shown at the top of the usage help message (before the synopsis). The first header line is also the line shown in the subcommand list if your command has subcommands (see <a href="#_usage_help_for_subcommands">Usage Help for Subcommands</a>).</p>
 </div>
 <div class="paragraph">
-<p>Use the <code>footer</code> attribute to specify one or more lines to show below the generated usage help message.
-Each element of the attribute String array is displayed on a separate line.</p>
+<p>Use the <code>footer</code> attribute to specify one or more lines to show below the generated usage help message.</p>
 </div>
 <div class="paragraph">
-<p>The <code>headerHeading</code> and <code>footerHeading</code> may contain format specifiers. See <a href="#_section_headings">Section Headings</a>.</p>
+<p>Each element of the attribute String array is displayed on a separate line.</p>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_section_headings">10.9. Section Headings</h3>
+<h3 id="_format_specifiers">10.9. Format Specifiers</h3>
 <div class="paragraph">
-<p>Section headers can be used to make usage message layout appear more spacious. Section headings may contain embedded line separator (<code>%n</code>) format specifiers:</p>
+<p>All usage help message elements can have embedded line separator (<code>%n</code>) format specifiers.
+These are converted to the platform-specific line separator when the usage help message is printed.</p>
+</div>
+<div class="paragraph">
+<p><a href="#_static_version_information">Version help</a> may have format specifiers that format additional arguments passed to the <code>printVersionHelp</code> method.</p>
+</div>
+<div class="paragraph">
+<p>See the <a href="https://docs.oracle.com/javase/8/docs/api/java/util/Formatter.html">java.util.Formatter javadoc</a> for details.</p>
+</div>
+<div class="admonitionblock important">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-important" title="Important"></i>
+</td>
+<td class="content">
+Note that to show percent <code>'%'</code> characters in the usage help message, they need to be escaped with another <code>%</code>. For example: <code>@Parameters(description = "%%-age of the total")</code> is rendered as <code>%-age of the total</code>.
+</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>An alternative way to control the layout of the usage help message is that some sections (<code>header</code>, <code>footer</code>, and <code>description</code>) can be specified as an array of Strings,
+where each element of the array is displayed on a separate line in the usage help message.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_section_headings">10.10. Section Headings</h3>
+<div class="paragraph">
+<p>Section headers can be used to make usage message layout appear more spacious. The example below demonstrates the use of embedded line separator (<code>%n</code>) format specifiers:</p>
 </div>
 <div class="listingblock">
 <div class="content">
@@ -2905,7 +2934,7 @@ Each element of the attribute String array is displayed on a separate line.</p>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_expanded_example">10.10. Expanded Example</h3>
+<h3 id="_expanded_example">10.11. Expanded Example</h3>
 <div class="paragraph">
 <p>The below example demonstrates what a customized usage message can look like.
 Note how section headings with line separators can create a more spacious usage message,
@@ -2963,7 +2992,7 @@ Options:
 </div>
 </div>
 <div class="sect2">
-<h3 id="_option_parameter_separators">10.11. Option-Parameter Separators</h3>
+<h3 id="_option_parameter_separators">10.12. Option-Parameter Separators</h3>
 <div class="paragraph">
 <p>The separator displayed between options and option parameters (<code>=</code> by default)
 in the synopsis and the option list can be configured with the <code>separator</code> attribute.</p>
@@ -2987,7 +3016,7 @@ the <code>@Command(separator = " ")</code> annotation also affects how picocli p
 </div>
 </div>
 <div class="sect2">
-<h3 id="_hidden_options_and_parameters">10.12. Hidden Options and Parameters</h3>
+<h3 id="_hidden_options_and_parameters">10.13. Hidden Options and Parameters</h3>
 <div class="paragraph">
 <p>Options and Parameters with the <code>hidden</code> attribute set to <code>true</code> will not be shown in the usage help message.
 This is useful for example when a parameter at some index is captured into multiple fields:
@@ -3021,9 +3050,9 @@ by default each of these fields would be shown in the usage message, which would
 </div>
 </div>
 <div class="sect2">
-<h3 id="_show_default_values">10.13. Show Default Values</h3>
+<h3 id="_show_default_values">10.14. Show Default Values</h3>
 <div class="sect3">
-<h4 id="__code_default_value_code_variable">10.13.1. <code>${DEFAULT-VALUE}</code> Variable</h4>
+<h4 id="__code_default_value_code_variable">10.14.1. <code>${DEFAULT-VALUE}</code> Variable</h4>
 <div class="paragraph">
 <p>From picocli 3.2, it is possible to embed the <a href="#_default_values">default values</a> in the description for an option or positional parameter by
 specifying the variable <code>${DEFAULT-VALUE}</code> in the description text.
@@ -3055,7 +3084,7 @@ CommandLine.usage(<span class="keyword">new</span> DefaultValues(), <span class=
 </div>
 </div>
 <div class="sect3">
-<h4 id="__code_completion_candidates_code_variable">10.13.2. <code>${COMPLETION-CANDIDATES}</code> Variable</h4>
+<h4 id="__code_completion_candidates_code_variable">10.14.2. <code>${COMPLETION-CANDIDATES}</code> Variable</h4>
 <div class="paragraph">
 <p>Similarly, it is possible to embed the completion candidates in the description for an option or positional parameter by
 specifying the variable <code>${COMPLETION-CANDIDATES}</code> in the description text.</p>
@@ -3095,7 +3124,7 @@ CommandLine.usage(<span class="keyword">new</span> ValidValuesDemo(), <span clas
 </div>
 </div>
 <div class="sect3">
-<h4 id="_legacy_configuration_for_displaying_default_values">10.13.3. Legacy Configuration for Displaying Default Values</h4>
+<h4 id="_legacy_configuration_for_displaying_default_values">10.14.3. Legacy Configuration for Displaying Default Values</h4>
 <div class="paragraph">
 <p>Prior to picocli 3.2, you need to use the <code>@Command(showDefaultValues = true)</code> attribute to append the default value of
  all non-<code>null</code> options and positional parameters to the description column.</p>
@@ -3124,7 +3153,7 @@ This attribute accepts three values:</p>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_required_option_marker">10.14. Required-Option Marker</h3>
+<h3 id="_required_option_marker">10.15. Required-Option Marker</h3>
 <div class="paragraph">
 <p>Required options can be marked in the option list by the character specified with the <code>requiredOptionMarker</code> attribute. By default options are not marked because the synopsis shows users which options are required and which are optional. This feature may be useful in combination with <code>abbreviatedSynopsis</code>. For example:</p>
 </div>
@@ -3149,7 +3178,7 @@ This attribute accepts three values:</p>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_usage_width">10.15. Usage Width</h3>
+<h3 id="_usage_width">10.16. Usage Width</h3>
 <div class="paragraph">
 <p>The default width of the usage help message is 80 characters.
 System property <code>picocli.usage.width</code> can be used to specify a custom width.
@@ -3925,6 +3954,9 @@ The most commonly used git commands are:
   rebase    Forward-port local commits to the updated upstream head.
   tag       Create, list, delete or verify a tag object signed with GPG.</pre>
 </div>
+</div>
+<div class="paragraph">
+<p>The description of each subcommand in the command list is taken from the subcommand&#8217;s first <code>header</code> line, or the first <code>description</code> line if it does not have a <code>header</code> defined.</p>
 </div>
 <div class="paragraph">
 <p>The above usage help message is produced from the annotations on the class below:</p>
@@ -5352,7 +5384,7 @@ The script body is executed if the user input was valid and did not request usag
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="CodeRay highlight"><code data-lang="groovy"><span class="annotation">@Grab</span>(<span class="string"><span class="delimiter">'</span><span class="content">info.picocli:picocli:3.9.2</span><span class="delimiter">'</span></span>)
+<pre class="CodeRay highlight"><code data-lang="groovy"><span class="annotation">@Grab</span>(<span class="string"><span class="delimiter">'</span><span class="content">info.picocli:picocli:3.9.3</span><span class="delimiter">'</span></span>)
 <span class="annotation">@Command</span>(name = <span class="string"><span class="delimiter">&quot;</span><span class="content">myScript</span><span class="delimiter">&quot;</span></span>,
         mixinStandardHelpOptions = <span class="predefined-constant">true</span>, <span class="comment">// add --help and --version options</span>
         description = <span class="string"><span class="delimiter">&quot;</span><span class="content">@|bold Groovy script|@ @|underline picocli|@ example</span><span class="delimiter">&quot;</span></span>)
@@ -5387,7 +5419,7 @@ When using a Groovy version older than 2.4.7, use this workaround for the <a hre
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="CodeRay highlight"><code data-lang="groovy"><span class="annotation">@Grab</span>(<span class="string"><span class="delimiter">'</span><span class="content">info.picocli:picocli:3.9.2</span><span class="delimiter">'</span></span>)
+<pre class="CodeRay highlight"><code data-lang="groovy"><span class="annotation">@Grab</span>(<span class="string"><span class="delimiter">'</span><span class="content">info.picocli:picocli:3.9.3</span><span class="delimiter">'</span></span>)
 <span class="annotation">@GrabExclude</span>(<span class="string"><span class="delimiter">'</span><span class="content">org.codehaus.groovy:groovy-all</span><span class="delimiter">'</span></span>) <span class="comment">// work around GROOVY-7613</span>
 ...</code></pre>
 </div>
@@ -5552,7 +5584,7 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
 <h3 id="_gradle">27.1. Gradle</h3>
 <div class="listingblock">
 <div class="content">
-<pre>compile 'info.picocli:picocli:3.9.2'</pre>
+<pre>compile 'info.picocli:picocli:3.9.3'</pre>
 </div>
 </div>
 </div>
@@ -5563,7 +5595,7 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
 <pre>&lt;dependency&gt;
   &lt;groupId&gt;info.picocli&lt;/groupId&gt;
   &lt;artifactId&gt;picocli&lt;/artifactId&gt;
-  &lt;version&gt;3.9.2&lt;/version&gt;
+  &lt;version&gt;3.9.3&lt;/version&gt;
 &lt;/dependency&gt;</pre>
 </div>
 </div>
@@ -5572,7 +5604,7 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
 <h3 id="_scala_sbt">27.3. Scala SBT</h3>
 <div class="listingblock">
 <div class="content">
-<pre>libraryDependencies += "info.picocli" % "picocli" % "3.9.2"</pre>
+<pre>libraryDependencies += "info.picocli" % "picocli" % "3.9.3"</pre>
 </div>
 </div>
 </div>
@@ -5580,7 +5612,7 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
 <h3 id="_ivy">27.4. Ivy</h3>
 <div class="listingblock">
 <div class="content">
-<pre>&lt;dependency org="info.picocli" name="picocli" rev="3.9.2" /&gt;</pre>
+<pre>&lt;dependency org="info.picocli" name="picocli" rev="3.9.3" /&gt;</pre>
 </div>
 </div>
 </div>
@@ -5596,8 +5628,8 @@ This facilitates including it in your project in source form to avoid having an 
 </div>
 <div id="footer">
 <div id="footer-text">
-Version 3.9.2<br>
-Last updated 2019-01-20 19:51:22 +09:00
+Version 3.9.3<br>
+Last updated 2019-02-01 18:42:58 +09:00
 </div>
 </div>
 </body>
