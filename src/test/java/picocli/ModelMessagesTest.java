@@ -4,7 +4,9 @@ import org.junit.Test;
 import picocli.CommandLine.Model.CommandSpec;
 import picocli.CommandLine.Model.Messages;
 
+import java.util.Enumeration;
 import java.util.ResourceBundle;
+import java.util.Vector;
 
 import static org.junit.Assert.*;
 import static org.junit.Assert.assertNotEquals;
@@ -35,6 +37,22 @@ public class ModelMessagesTest {
     public void testMessagesEmpty() {
         assertTrue(Messages.empty((Messages) null));
         assertTrue(Messages.empty(new Messages(CommandSpec.create(), (ResourceBundle) null)));
+    }
+
+    @Test
+    public void testMessagesIsEmpty() {
+        assertTrue(new Messages(CommandSpec.create(), (ResourceBundle) null).isEmpty());
+    }
+
+    @Test
+    public void testMessagesIsEmptyForEmptyResourceBundle() {
+        ResourceBundle rb = new ResourceBundle() {
+            protected Object handleGetObject(String key) { return null; }
+            public Enumeration<String> getKeys() {
+                return new Vector<String>().elements();
+            }
+        };
+        assertTrue(new Messages(CommandSpec.create(), rb).isEmpty());
     }
 
     @Test

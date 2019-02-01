@@ -4,18 +4,18 @@ import org.junit.Test;
 import picocli.CommandLine.Model.IGetter;
 import picocli.CommandLine.Model.ISetter;
 import picocli.CommandLine.Model.ITypeInfo;
+import picocli.CommandLine.Model.OptionSpec;
+import picocli.CommandLine.Model.OptionSpec.Builder;
 import picocli.CommandLine.Model.PositionalParamSpec;
 import picocli.CommandLine.Model.RuntimeTypeInfo;
 
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 
 import static org.junit.Assert.*;
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertSame;
 
 public class ModelArgSpecTest {
 
@@ -238,5 +238,68 @@ public class ModelArgSpecTest {
         public String getClassSimpleName() { return null; }
         public Class<?> getType() { return null; }
         public Class<?>[] getAuxiliaryTypes() { return new Class[0]; }
+    }
+
+    @Test
+    public void testArgSpecUserObject() {
+        class App {
+            @CommandLine.Parameters
+            List<String> args;
+            @CommandLine.Option(names = "-x") String x;
+        }
+        CommandLine cmd =  new CommandLine(new App());
+        Object x = cmd.getCommandSpec().findOption("x").userObject();
+        assertEquals(Field.class, x.getClass());
+        assertEquals("x", ((Field) x).getName());
+
+        Object args = cmd.getCommandSpec().positionalParameters().get(0).userObject();
+        assertEquals(Field.class, args.getClass());
+        assertEquals("args", ((Field) args).getName());
+    }
+
+    @Test
+    public void testArgSpecBuilderUserObject() {
+        assertNull(OptionSpec.builder("-x").userObject());
+        assertEquals("aaa", OptionSpec.builder("-x").userObject("aaa").userObject());
+
+        assertNull(PositionalParamSpec.builder().userObject());
+        assertEquals("aaa", PositionalParamSpec.builder().userObject("aaa").userObject());
+    }
+
+    @Test
+    public void testArgSpecBuilderTypeInfo() {
+        ITypeInfo typeInfo = OptionSpec.builder("-x").typeInfo();
+        assertNull(typeInfo);
+    }
+
+    @Test
+    public void testArgSpecBuilderSetTypeInfo() {
+        ITypeInfo typeInfo = new RuntimeTypeInfo(List.class, new Class[]{String.class}, Arrays.asList("boo"));
+        Builder builder = OptionSpec.builder("-x").typeInfo(typeInfo);
+        assertSame(typeInfo, builder.typeInfo());
+        assertEquals(List.class, builder.type());
+        assertArrayEquals(new Class[]{String.class}, builder.auxiliaryTypes());
+
+        try {
+            builder.typeInfo(null);
+            fail("Expected NPE");
+        } catch (NullPointerException ok) {
+        }
+    }
+
+    @Test
+    public void testArgSpecBuilderObjectBindingToString() {
+        Builder builder = OptionSpec.builder("-x");
+        assertEquals("picocli.CommandLine.Model.ObjectBinding(value=null)", builder.getter().toString());
+    }
+
+    @Test
+    public void testPositionalParamSpecBuilderCapacity() {
+        PositionalParamSpec.Builder builder = PositionalParamSpec.builder();
+        assertNull(builder.capacity());
+
+        CommandLine.Range value = CommandLine.Range.valueOf("1..2");
+        builder.capacity(value);
+        assertSame(value, builder.capacity());
     }
 }

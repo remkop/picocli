@@ -44,4 +44,15 @@ public class ModelFieldBindingTest {
         assertEquals(987, value.publicGetX());
         assertEquals(987, binding.get());
     }
+
+    @Test
+    public void testFieldBindingToString() throws Exception {
+        Field f = ModelMethodBindingBean.class.getDeclaredField("x");
+        f.setAccessible(true);
+
+        ModelMethodBindingBean value = new ModelMethodBindingBean();
+        FieldBinding binding = new FieldBinding(value, f);
+
+        assertEquals("picocli.CommandLine.Model.FieldBinding(int picocli.ModelMethodBindingBean.x)", binding.toString());
+    }
 }

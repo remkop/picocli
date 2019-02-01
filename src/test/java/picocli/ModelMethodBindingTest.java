@@ -148,4 +148,15 @@ public class ModelMethodBindingTest {
             assertSame(spec, pex.getCommandLine().getCommandSpec());
         }
     }
+
+    @Test
+    public void testToString() throws Exception {
+        Method setX = ModelMethodBindingBean.class.getDeclaredMethod("setX", int.class);
+        setX.setAccessible(true);
+
+        ModelMethodBindingBean value = new ModelMethodBindingBean();
+        MethodBinding binding = new MethodBinding(value, setX, CommandSpec.create());
+
+        assertEquals("picocli.CommandLine.Model.MethodBinding(private void picocli.ModelMethodBindingBean.setX(int))", binding.toString());
+    }
 }
