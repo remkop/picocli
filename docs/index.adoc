@@ -1309,7 +1309,7 @@ The markup will be rendered as ANSI escape codes on supported systems.
 
 image:VersionInfoWithColors.png[Screenshot of version information containing markup with Ansi styles and colors]
 
-From picocli v1.0, the `version` may contain https://docs.oracle.com/javase/7/docs/api/java/util/Formatter.html[format specifiers]:
+From picocli v1.0, the `version` may contain <<Format Specifiers,format specifiers>>:
 
 [source,java]
 ----
@@ -1432,10 +1432,10 @@ Some annotated fields in the below example class have a `paramLabel` attribute a
 ----
 @Command()
 class ParamLabels {
-    @Option(names = "-f",    paramLabel = "FILE", description = "a file")      File f;
-    @Option(names = "-n",    description = "a number option")                  int number;
-    @Parameters(index = "0", paramLabel = "NUM", description = "number param") int n;
-    @Parameters(index = "1", description = "the host parameter")               InetAddress host;
+    @Option(names = "-f",    description = "a file",       paramLabel = "FILE") File f;
+    @Option(names = "-n",    description = "a number option")                   int number;
+    @Parameters(index = "0", description = "number param", paramLabel = "NUM")  int n;
+    @Parameters(index = "1", description = "the host parameter")                InetAddress host;
 }
 ----
 NOTE: For demonstration purposes the above example mixes the all-uppercase (e.g., `NUM`) style label and the fish bracket (e.g., `<number>`) style labels. For real applications, mixing these label styles should be avoided. An application should consistently use only one style.
@@ -1495,12 +1495,24 @@ class Ln { ... }
 The `header` will be shown at the top of the usage help message (before the synopsis). The first header line is also the line shown in the subcommand list if your command has subcommands (see <<Usage Help for Subcommands>>).
 
 Use the `footer` attribute to specify one or more lines to show below the generated usage help message.
+
 Each element of the attribute String array is displayed on a separate line.
 
-The `headerHeading` and `footerHeading` may contain format specifiers. See <<Section Headings>>.
+=== Format Specifiers
+All usage help message elements can have embedded line separator (`%n`) format specifiers.
+These are converted to the platform-specific line separator when the usage help message is printed.
+
+<<Static Version Information,Version help>> may have format specifiers that format additional arguments passed to the `printVersionHelp` method.
+
+See the https://docs.oracle.com/javase/8/docs/api/java/util/Formatter.html[java.util.Formatter javadoc] for details.
+
+IMPORTANT: Note that to show percent `'%'` characters in the usage help message, they need to be escaped with another `%`. For example: `@Parameters(description = "%%-age of the total")` is rendered as `%-age of the total`.
+
+An alternative way to control the layout of the usage help message is that some sections (`header`, `footer`, and `description`) can be specified as an array of Strings,
+where each element of the array is displayed on a separate line in the usage help message.
 
 === Section Headings
-Section headers can be used to make usage message layout appear more spacious. Section headings may contain embedded line separator (`%n`) format specifiers:
+Section headers can be used to make usage message layout appear more spacious. The example below demonstrates the use of embedded line separator (`%n`) format specifiers:
 [source,java]
 ----
 @Command(name = "commit",
@@ -2234,6 +2246,8 @@ The most commonly used git commands are:
   rebase    Forward-port local commits to the updated upstream head.
   tag       Create, list, delete or verify a tag object signed with GPG.
 ----
+
+The description of each subcommand in the command list is taken from the subcommand's first `header` line, or the first `description` line if it does not have a `header` defined.
 
 The above usage help message is produced from the annotations on the class below:
 [source,java]
