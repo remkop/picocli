@@ -3423,41 +3423,33 @@ public class CommandLine {
     private static class DefaultFactory implements IFactory {
         private final Object outer;
 	
-	public DefaultFactory () { this.outer = null; }
-	public DefaultFactory(Object outer) { this.outer = outer; }
+        public DefaultFactory () { this.outer = null; }
+        public DefaultFactory(Object outer) { this.outer = outer; }
 
-	// Modified from src/test/java/picocli/InnerClassFactory.java
-	public <T> T create(final Class<T> cls) throws Exception {
-	    try {
-		Constructor<T> constructor = cls.getDeclaredConstructor(outer.getClass());
-		return constructor.newInstance(outer);
-	    } catch (Exception ex) {
-		try {
-		    Constructor<T> constructor = cls.getDeclaredConstructor(outer.getClass());
-		    constructor.setAccessible(true);
-		    return constructor.newInstance(outer);
-		}
-		catch (Exception e2) {
-		    try {
-		        return cls.newInstance();
-		    }
-		    catch (Exception ex3) {
-		       try {
-			    Constructor<T> constructor = cls.getDeclaredConstructor();
-			    return constructor.newInstance();
-			}
-		        catch (Exception ex4) {
-			    try {
-				Constructor<T> constructor = cls.getDeclaredConstructor();
-				constructor.setAccessible(true);
-				return constructor.newInstance();
-			    }
-			    catch (Exception ex5) {
-			        throw new InitializationException("Could not instantiate " + cls.getName() + " either with or without construction parameter " + outer + ": " + ex, ex);
-			    }
-		        }
-		    }
-		}
+        // Modified from src/test/java/picocli/InnerClassFactory.java
+        public <T> T create(final Class<T> cls) throws Exception {
+            try {
+                Constructor<T> constructor = cls.getDeclaredConstructor(outer.getClass());
+                return constructor.newInstance(outer);
+            }
+            catch (SecurityException ex) {
+                Constructor<T> constructor = cls.getDeclaredConstructor(outer.getClass());
+                constructor.setAccessible(true);
+                return constructor.newInstance(outer);
+	    }
+            catch (NoSuchMethodException ex) {
+                try {
+                    Constructor<T> constructor = cls.getDeclaredConstructor();
+                    return constructor.newInstance();
+                }
+                catch (SecurityException ex2) {
+                    Constructor<T> constructor = cls.getDeclaredConstructor();
+                    constructor.setAccessible(true);
+                    return constructor.newInstance();
+	        }
+                catch (NoSuchMethodException ex2) {
+                    return cls.newInstance();
+                }
 	    }
 	}
         private static ITypeConverter<?>[] createConverter(IFactory factory, Class<? extends ITypeConverter<?>>[] classes) {
