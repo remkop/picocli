@@ -160,7 +160,7 @@ public class CommandLine {
      * @throws InitializationException if the specified command object does not have a {@link Command}, {@link Option} or {@link Parameters} annotation
      */
     public CommandLine(Object command) {
-        this(command, new DefaultFactory());
+        this(command, new DefaultFactory(command));
     }
     /**
      * Constructs a new {@code CommandLine} interpreter with the specified object (which may be an annotated user object or a {@link CommandSpec CommandSpec}) and object factory.
@@ -772,7 +772,7 @@ public class CommandLine {
      * @since 0.9.7
      */
     public static <T> T populateCommand(T command, String... args) {
-        CommandLine cli = toCommandLine(command, new DefaultFactory());
+        CommandLine cli = toCommandLine(command, new DefaultFactory(command));
         cli.parse(args);
         return command;
     }
@@ -1541,7 +1541,7 @@ public class CommandLine {
      * @throws IllegalArgumentException if the specified command object does not have a {@link Command}, {@link Option} or {@link Parameters} annotation
      */
     public static void usage(Object command, PrintStream out) {
-        toCommandLine(command, new DefaultFactory()).usage(out);
+        toCommandLine(command, new DefaultFactory(command)).usage(out);
     }
 
     /**
@@ -1553,7 +1553,7 @@ public class CommandLine {
      * @throws IllegalArgumentException if the specified command object does not have a {@link Command}, {@link Option} or {@link Parameters} annotation
      */
     public static void usage(Object command, PrintStream out, Help.Ansi ansi) {
-        toCommandLine(command, new DefaultFactory()).usage(out, ansi);
+        toCommandLine(command, new DefaultFactory(command)).usage(out, ansi);
     }
 
     /**
@@ -1565,7 +1565,7 @@ public class CommandLine {
      * @throws IllegalArgumentException if the specified command object does not have a {@link Command}, {@link Option} or {@link Parameters} annotation
      */
     public static void usage(Object command, PrintStream out, Help.ColorScheme colorScheme) {
-        toCommandLine(command, new DefaultFactory()).usage(out, colorScheme);
+        toCommandLine(command, new DefaultFactory(command)).usage(out, colorScheme);
     }
 
     /**
@@ -3418,17 +3418,32 @@ public class CommandLine {
         <K> K create(Class<K> cls) throws Exception;
     }
     /** Returns a default {@link IFactory} implementation. Package-protected for testing purposes. */
-    static IFactory defaultFactory() { return new DefaultFactory(); }
+    static IFactory defaultFactory() { return defaultFactory(null); }
+    static IFactory defaultFactory(Object command) { return new DefaultFactory(command); }
     private static class DefaultFactory implements IFactory {
-        public <T> T create(Class<T> cls) throws Exception {
-            try {
-                return cls.newInstance();
-            } catch (Exception ex) {
-                Constructor<T> constructor = cls.getDeclaredConstructor();
-                constructor.setAccessible(true);
-                return constructor.newInstance();
-            }
-        }
+        private final Object outer;
+	
+	public DefaultFactory () { this.outer = null; }
+	public DefaultFactory(Object outer) { this.outer = outer; }
+
+	// Modified from src/test/java/picocli/InnerClassFactory.java
+	public <T> T create(final Class<T> cls) throws Exception {
+	    try {
+		Constructor<T> constructor = cls.getDeclaredConstructor(outer.getClass());
+		return constructor.newInstance(outer);
+	    } catch (Exception ex) {
+		try {
+		    return cls.newInstance();
+		} catch (Exception ex2) {
+		    try {
+			Constructor<T> constructor = cls.getDeclaredConstructor();
+			return constructor.newInstance();
+		    } catch (Exception ex3) {
+			throw new InitializationException("Could not instantiate " + cls.getName() + " either with or without construction parameter " + outer + ": " + ex, ex);
+		    }
+		}
+	    }
+	}
         private static ITypeConverter<?>[] createConverter(IFactory factory, Class<? extends ITypeConverter<?>>[] classes) {
             ITypeConverter<?>[] result = new ITypeConverter<?>[classes.length];
             for (int i = 0; i < classes.length; i++) { result[i] = create(factory, classes[i]); }
@@ -3755,7 +3770,7 @@ public class CommandLine {
              * @param userObject the user object annotated with {@link Command}, {@link Option} and/or {@link Parameters} annotations.
              * @throws InitializationException if the specified object has no picocli annotations or has invalid annotations
              */
-            public static CommandSpec forAnnotatedObject(Object userObject) { return forAnnotatedObject(userObject, new DefaultFactory()); }
+            public static CommandSpec forAnnotatedObject(Object userObject) { return forAnnotatedObject(userObject, new DefaultFactory(userObject)); }
 
             /** Creates and returns a new {@code CommandSpec} initialized from the specified associated user object. The specified
              * user object must have at least one {@link Command}, {@link Option} or {@link Parameters} annotation.
@@ -3770,7 +3785,7 @@ public class CommandLine {
              * @param userObject the user object annotated with {@link Command}, {@link Option} and/or {@link Parameters} annotations.
              * @throws InitializationException if the specified object has invalid annotations
              */
-            public static CommandSpec forAnnotatedObjectLenient(Object userObject) { return forAnnotatedObjectLenient(userObject, new DefaultFactory()); }
+            public static CommandSpec forAnnotatedObjectLenient(Object userObject) { return forAnnotatedObjectLenient(userObject, new DefaultFactory(userObject)); }
 
             /** Creates and returns a new {@code CommandSpec} initialized from the specified associated user object. If the specified
              * user object has no {@link Command}, {@link Option} or {@link Parameters} annotations, an empty {@code CommandSpec} is returned.
@@ -3936,7 +3951,7 @@ public class CommandLine {
              * @see #addSubcommand(String, CommandLine)
              * @since 3.6.0
              */
-            public CommandSpec addMethodSubcommands() { return addMethodSubcommands(new DefaultFactory()); }
+            public CommandSpec addMethodSubcommands() { return addMethodSubcommands(new DefaultFactory(userObject)); }
 
             /** Reflects on the class of the {@linkplain #userObject() user object} and registers any command methods
              * (class methods annotated with {@code @Command}) as subcommands.
@@ -4214,7 +4229,7 @@ public class CommandLine {
              * @see Command#mixinStandardHelpOptions() */
             public CommandSpec mixinStandardHelpOptions(boolean newValue) {
                 if (newValue) {
-                    CommandSpec mixin = CommandSpec.forAnnotatedObject(new AutoHelpMixin(), new DefaultFactory());
+                    CommandSpec mixin = CommandSpec.forAnnotatedObject(new AutoHelpMixin(), new DefaultFactory(userObject));
                     addMixin(AutoHelpMixin.KEY, mixin);
                 } else {
                     CommandSpec helpMixin = mixins.remove(AutoHelpMixin.KEY);
@@ -8801,7 +8816,7 @@ public class CommandLine {
          * @param colorScheme the color scheme to use
          * @deprecated use {@link picocli.CommandLine.Help#Help(picocli.CommandLine.Model.CommandSpec, picocli.CommandLine.Help.ColorScheme)}  */
         @Deprecated public Help(Object command, ColorScheme colorScheme) {
-            this(CommandSpec.forAnnotatedObject(command, new DefaultFactory()), colorScheme);
+            this(CommandSpec.forAnnotatedObject(command, new DefaultFactory(command)), colorScheme);
         }
         /** Constructs a new {@code Help} instance with the specified color scheme, initialized from annotatations
          * on the specified class and superclasses.
