@@ -3853,7 +3853,7 @@ public class CommandLine {
              * @see #addSubcommand(String, CommandLine)
              * @since 4.0 */
             public CommandSpec resourceBundleBaseName(String resourceBundleBaseName) {
-                ResourceBundle bundle = resourceBundleBaseName == null ? null : ResourceBundle.getBundle(resourceBundleBaseName);
+                ResourceBundle bundle = empty(resourceBundleBaseName) ? null : ResourceBundle.getBundle(resourceBundleBaseName);
                 setBundle(resourceBundleBaseName, bundle);
                 return this;
             }
@@ -3900,24 +3900,27 @@ public class CommandLine {
              * @param subCommandLine the subcommand to envoke when the name is encountered on the command line
              * @return this {@code CommandSpec} object for method chaining */
             public CommandSpec addSubcommand(String name, CommandLine subCommandLine) {
+                Tracer t = new Tracer();
+                if (t.isDebug()) {t.debug("Adding subcommand '%s' to '%s'%n", name, this.qualifiedName());}
                 CommandLine previous = commands.put(name, subCommandLine);
                 if (previous != null && previous != subCommandLine) { throw new InitializationException("Another subcommand named '" + name + "' already exists for command '" + this.name() + "'"); }
                 CommandSpec subSpec = subCommandLine.getCommandSpec();
                 if (subSpec.name == null) { subSpec.name(name); }
                 subSpec.parent(this);
                 for (String alias : subSpec.aliases()) {
+                    if (t.isDebug()) {t.debug("Adding alias '%s' for subcommand '%s' to '%s'%n", alias, name, this.qualifiedName());}
                     previous = commands.put(alias, subCommandLine);
                     if (previous != null && previous != subCommandLine) { throw new InitializationException("Alias '" + alias + "' for subcommand '" + name + "' is already used by another subcommand of '" + this.name() + "'"); }
                 }
-                subSpec.initCommandHierarchyWithResourceBundle(resourceBundleBaseName());
+                subSpec.initCommandHierarchyWithResourceBundle(resourceBundleBaseName(), resourceBundle());
                 return this;
             }
-            private void initCommandHierarchyWithResourceBundle(String bundleBaseName) {
+            private void initCommandHierarchyWithResourceBundle(String bundleBaseName, ResourceBundle rb) {
                 if (resourceBundle() == null) {
-                    resourceBundleBaseName(bundleBaseName);
+                    setBundle(bundleBaseName, rb);
                 }
                 for (CommandLine sub : commands.values()) { // percolate down the hierarchy
-                    sub.getCommandSpec().initCommandHierarchyWithResourceBundle(bundleBaseName);
+                    sub.getCommandSpec().initCommandHierarchyWithResourceBundle(bundleBaseName, rb);
                 }
             }
 
@@ -3949,12 +3952,18 @@ public class CommandLine {
                 if (userObject() instanceof Method) {
                      throw new InitializationException("Cannot discover subcommand methods of this Command Method: " + userObject());
                 }
-                for (Method method : getCommandMethods(userObject().getClass(), null)) {
-                    CommandLine cmd = new CommandLine(method, factory);
-                    addSubcommand(cmd.getCommandName(), cmd);
+                for (CommandLine sub : createMethodSubcommands(userObject().getClass(), factory)) {
+                    addSubcommand(sub.getCommandName(), sub);
                 }
                 isAddMethodSubcommands = true;
                 return this;
+            }
+            static List<CommandLine> createMethodSubcommands(Class<?> cls, IFactory factory) {
+                List<CommandLine> result = new ArrayList<CommandLine>();
+                for (Method method : getCommandMethods(cls, null)) {
+                    result.add(new CommandLine(method, factory));
+                }
+                return result;
             }
 
             /** Returns the parent command of this subcommand, or {@code null} if this is a top-level command. */
@@ -6774,7 +6783,7 @@ public class CommandLine {
                     Command cmd = cls.getAnnotation(Command.class);
                     if (cmd != null) {
                         result.updateCommandAttributes(cmd, factory);
-                        initSubcommands(cmd, result, factory);
+                        initSubcommands(cmd, cls, result, factory);
                         hasCommandAnnotation = true;
                     }
                     hasCommandAnnotation |= initFromAnnotatedFields(instance, cls, result, factory);
@@ -6790,7 +6799,7 @@ public class CommandLine {
                     Command cmd = method.getAnnotation(Command.class);
                     result.updateCommandAttributes(cmd, factory);
                     result.setAddMethodSubcommands(false); // method commands don't have method subcommands
-                    initSubcommands(cmd, result, factory);
+                    initSubcommands(cmd, null, result, factory);
                     hasCommandAnnotation = true;
                     result.mixinStandardHelpOptions(method.getAnnotation(Command.class).mixinStandardHelpOptions());
                     initFromMethodParameters(instance, method, result, factory);
@@ -6803,7 +6812,7 @@ public class CommandLine {
                 result.withToString(commandClassName).validate();
                 return result;
             }
-            private static void initSubcommands(Command cmd, CommandSpec parent, IFactory factory) {
+            private static void initSubcommands(Command cmd, Class<?> cls, CommandSpec parent, IFactory factory) {
                 for (Class<?> sub : cmd.subcommands()) {
                     try {
                         if (Help.class == sub) { throw new InitializationException(Help.class.getName() + " is not a valid subcommand. Did you mean " + HelpCommand.class.getName() + "?"); }
@@ -6819,8 +6828,10 @@ public class CommandLine {
                                 sub.getName() + ": " + ex, ex);
                     }
                 }
-                if (cmd.addMethodSubcommands() && !(parent.userObject() instanceof Method)) {
-                    parent.addMethodSubcommands(factory);
+                if (cmd.addMethodSubcommands() && cls != null) {
+                    for (CommandLine sub : CommandSpec.createMethodSubcommands(cls, factory)) {
+                        parent.addSubcommand(sub.getCommandName(), sub);
+                    }
                 }
             }
             static void initParentCommand(Object subcommand, Object parent) {

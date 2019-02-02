@@ -1,5 +1,34 @@
 # picocli Release Notes
 
+# <a name="3.9.4"></a> Picocli 3.9.4 (UNRELEASED)
+The picocli community is pleased to announce picocli 3.9.4.
+
+This release contains bugfixes and enhancements.
+
+
+This is the forty-nineth public release.
+Picocli follows [semantic versioning](http://semver.org/).
+
+## <a name="3.9.4"></a> Table of Contents
+* [New and noteworthy](#3.9.4-new)
+* [Fixed issues](#3.9.4-fixes)
+* [Deprecations](#3.9.4-deprecated)
+* [Potential breaking changes](#3.9.4-breaking-changes)
+
+## <a name="3.9.4-new"></a> New and Noteworthy
+
+
+## <a name="3.9.4-fixes"></a> Fixed issues
+- [#619] Bugfix: Method subcommands in commands that subclass another command caused `InitializationException`: "Another subcommand named 'method' already exists...". Thanks to [PorygonZRocks](https://github.com/PorygonZRocks) for the bug report.
+
+## <a name="3.9.4-deprecated"></a> Deprecations
+No features were deprecated in this release.
+
+## <a name="3.9.4-breaking-changes"></a> Potential breaking changes
+This release has no breaking changes.
+
+
+
 # <a name="3.9.3"></a> Picocli 3.9.3
 The picocli community is pleased to announce picocli 3.9.3.
 
@@ -28,7 +57,6 @@ No features were deprecated in this release.
 
 ## <a name="3.9.3-breaking-changes"></a> Potential breaking changes
 This release has no breaking changes.
-
 
 
 # <a name="3.9.2"></a> Picocli 3.9.2
