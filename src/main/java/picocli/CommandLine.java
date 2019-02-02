@@ -3432,23 +3432,33 @@ public class CommandLine {
                 Constructor<T> constructor = cls.getDeclaredConstructor(outer.getClass());
                 return constructor.newInstance(outer);
             }
-            catch (SecurityException|IllegalAccessException ex) {
-                Constructor<T> constructor = cls.getDeclaredConstructor(outer.getClass());
-                constructor.setAccessible(true);
-                return constructor.newInstance(outer);
-	    }
-            catch (NoSuchMethodException ex) {
-                try {
-                    Constructor<T> constructor = cls.getDeclaredConstructor();
-                    return constructor.newInstance();
-                }
-                catch (SecurityException|IllegalAccessException ex2) {
-                    Constructor<T> constructor = cls.getDeclaredConstructor();
+	    catch (Exception ex) {
+                if (ex instanceof SecurityException|| ex instanceof IllegalAccessException) {
+                    Constructor<T> constructor = cls.getDeclaredConstructor(outer.getClass());
                     constructor.setAccessible(true);
-                    return constructor.newInstance();
+                    return constructor.newInstance(outer);
 	        }
-                catch (NoSuchMethodException ex2) {
-                    return cls.newInstance();
+                else if (ex instanceof NoSuchMethodException) {
+                    try {
+                        Constructor<T> constructor = cls.getDeclaredConstructor();
+                        return constructor.newInstance();
+                    }
+                    catch (Exception ex2) {
+                        if (ex2 instanceof SecurityException|| ex2 instanceof IllegalAccessException) {
+                            Constructor<T> constructor = cls.getDeclaredConstructor();
+                            constructor.setAccessible(true);
+                            return constructor.newInstance();
+	                }
+                        else if (ex2 instanceof NoSuchMethodException) {
+                                return cls.newInstance();
+			}
+                        else {
+                            throw ex2;
+                        }
+	            }
+	        }
+                else {
+                    throw ex;
                 }
 	    }
 	}
