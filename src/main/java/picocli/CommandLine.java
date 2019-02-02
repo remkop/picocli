@@ -3433,13 +3433,29 @@ public class CommandLine {
 		return constructor.newInstance(outer);
 	    } catch (Exception ex) {
 		try {
-		    return cls.newInstance();
-		} catch (Exception ex2) {
+		    Constructor<T> constructor = cls.getDeclaredConstructor(outer.getClass());
+		    constructor.setAccessible(true);
+		    return constructor.newInstance(outer);
+		}
+		catch (Exception e2) {
 		    try {
-			Constructor<T> constructor = cls.getDeclaredConstructor();
-			return constructor.newInstance();
-		    } catch (Exception ex3) {
-			throw new InitializationException("Could not instantiate " + cls.getName() + " either with or without construction parameter " + outer + ": " + ex, ex);
+		        return cls.newInstance();
+		    }
+		    catch (Exception ex3) {
+		       try {
+			    Constructor<T> constructor = cls.getDeclaredConstructor();
+			    return constructor.newInstance();
+			}
+		        catch (Exception ex4) {
+			    try {
+				Constructor<T> constructor = cls.getDeclaredConstructor();
+				constructor.setAccessible(true);
+				return constructor.newInstance();
+			    }
+			    catch (Exception ex5) {
+			        throw new InitializationException("Could not instantiate " + cls.getName() + " either with or without construction parameter " + outer + ": " + ex, ex);
+			    }
+		        }
 		    }
 		}
 	    }
