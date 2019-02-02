@@ -26,6 +26,7 @@ import java.io.UnsupportedEncodingException;
 import java.util.concurrent.Callable;
 
 import static org.junit.Assert.*;
+import static picocli.HelpTestUtil.setTraceLevel;
 import static picocli.HelpTestUtil.usageString;
 
 public class CommandLineMixinTest {
@@ -863,5 +864,34 @@ public class CommandLineMixinTest {
         } catch (ParameterException ex) {
             assertEquals("RAPTOR error", ex.getMessage());
         }
+    }
+
+    @Command(name="super")
+    static class SuperClass {
+    }
+
+    @Command(name="sub")
+    static class SubClass extends SuperClass {
+        @Command(name="method")
+        public void method() {}
+    }
+    @Command(name="main", subcommands= {SuperClass.class, SubClass.class})
+    static class Main {
+    }
+
+    @Test
+    public void testIssue619MethodSubcommandInSubclassAddedTwice() {
+        //setTraceLevel("DEBUG");
+        CommandLine commandLine = new CommandLine(new Main());
+        assertEquals(2, commandLine.getSubcommands().size());
+
+        CommandLine zuper = commandLine.getSubcommands().get("super");
+        assertEquals(0, zuper.getSubcommands().size());
+
+        CommandLine sub = commandLine.getSubcommands().get("sub");
+        assertEquals(1, sub.getSubcommands().size());
+
+        CommandLine method = sub.getSubcommands().get("method");
+        assertEquals(0, method.getSubcommands().size());
     }
 }
