@@ -3432,7 +3432,7 @@ public class CommandLine {
                 Constructor<T> constructor = cls.getDeclaredConstructor(outer.getClass());
                 return constructor.newInstance(outer);
             }
-            catch (SecurityException ex) {
+            catch (SecurityException|IllegalAccessException ex) {
                 Constructor<T> constructor = cls.getDeclaredConstructor(outer.getClass());
                 constructor.setAccessible(true);
                 return constructor.newInstance(outer);
@@ -3442,7 +3442,7 @@ public class CommandLine {
                     Constructor<T> constructor = cls.getDeclaredConstructor();
                     return constructor.newInstance();
                 }
-                catch (SecurityException ex2) {
+                catch (SecurityException|IllegalAccessException ex2) {
                     Constructor<T> constructor = cls.getDeclaredConstructor();
                     constructor.setAccessible(true);
                     return constructor.newInstance();
