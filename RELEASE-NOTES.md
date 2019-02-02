@@ -1,6 +1,6 @@
 # picocli Release Notes
 
-# <a name="3.9.4"></a> Picocli 3.9.4
+# <a name="3.9.4"></a> Picocli 3.9.4 (UNRELEASED)
 The picocli community is pleased to announce picocli 3.9.4.
 
 This release contains bugfixes and enhancements.
