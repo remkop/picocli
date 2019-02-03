@@ -280,8 +280,10 @@ public class ReflectionConfigGenerator {
 
         private void visitFieldBinding(Object fieldBinding) throws IllegalAccessException, NoSuchFieldException {
             Field field = (Field) accessibleField(fieldBinding.getClass(), REFLECTED_FIELD_BINDING_FIELD).get(fieldBinding);
+            getOrCreateClass(field.getDeclaringClass()).addField(field.getName());
+
             Object scope = accessibleField(fieldBinding.getClass(), REFLECTED_BINDING_FIELD_SCOPE).get(fieldBinding);
-            getOrCreateClass(scope.getClass()).addField(field.getName());
+            getOrCreateClass(scope.getClass());
         }
 
         private void visitMethodBinding(Object methodBinding) throws IllegalAccessException, NoSuchFieldException {
