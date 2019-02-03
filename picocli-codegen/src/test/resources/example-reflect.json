@@ -1,30 +1,31 @@
 [
   {
-    "name" : "java.lang.reflect.Method",
+    "name" : "[Ljava.lang.String;",
     "allDeclaredConstructors" : true,
     "allPublicConstructors" : true,
     "allDeclaredMethods" : true,
     "allPublicMethods" : true
   },
   {
-    "name" : "java.lang.reflect.Executable",
+    "name" : "java.io.File",
     "allDeclaredConstructors" : true,
     "allPublicConstructors" : true,
     "allDeclaredMethods" : true,
-    "allPublicMethods" : true,
-    "methods" : [
-      { "name" : "getParameters", "parameterTypes" : [] }
-    ]
+    "allPublicMethods" : true
   },
   {
-    "name" : "java.lang.reflect.Parameter",
+    "name" : "java.lang.Object",
     "allDeclaredConstructors" : true,
     "allPublicConstructors" : true,
     "allDeclaredMethods" : true,
-    "allPublicMethods" : true,
-    "methods" : [
-      { "name" : "getName", "parameterTypes" : [] }
-    ]
+    "allPublicMethods" : true
+  },
+  {
+    "name" : "java.lang.String",
+    "allDeclaredConstructors" : true,
+    "allPublicConstructors" : true,
+    "allDeclaredMethods" : true,
+    "allPublicMethods" : true
   },
   {
     "name" : "java.lang.System",
@@ -37,23 +38,82 @@
     ]
   },
   {
-    "name" : "org.fusesource.jansi.AnsiConsole",
-    "allDeclaredConstructors" : true,
-    "allPublicConstructors" : true,
-    "allDeclaredMethods" : true,
-    "allPublicMethods" : true,
-    "fields" : [
-      { "name" : "out" }
-    ]
-  },
-  {
-    "name" : "java.util.ResourceBundle",
+    "name" : "java.lang.reflect.Executable",
     "allDeclaredConstructors" : true,
     "allPublicConstructors" : true,
     "allDeclaredMethods" : true,
     "allPublicMethods" : true,
     "methods" : [
-      { "name" : "getBaseBundleName", "parameterTypes" : [] }
+      { "name" : "getParameters", "parameterTypes" : [] }
+    ]
+  },
+  {
+    "name" : "java.lang.reflect.Method",
+    "allDeclaredConstructors" : true,
+    "allPublicConstructors" : true,
+    "allDeclaredMethods" : true,
+    "allPublicMethods" : true
+  },
+  {
+    "name" : "java.lang.reflect.Parameter",
+    "allDeclaredConstructors" : true,
+    "allPublicConstructors" : true,
+    "allDeclaredMethods" : true,
+    "allPublicMethods" : true,
+    "methods" : [
+      { "name" : "getName", "parameterTypes" : [] }
+    ]
+  },
+  {
+    "name" : "java.nio.file.Path",
+    "allDeclaredConstructors" : true,
+    "allPublicConstructors" : true,
+    "allDeclaredMethods" : true,
+    "allPublicMethods" : true
+  },
+  {
+    "name" : "java.nio.file.Paths",
+    "allDeclaredConstructors" : true,
+    "allPublicConstructors" : true,
+    "allDeclaredMethods" : true,
+    "allPublicMethods" : true,
+    "methods" : [
+      { "name" : "get", "parameterTypes" : ["java.lang.String", "[Ljava.lang.String;"] }
+    ]
+  },
+  {
+    "name" : "java.sql.Connection",
+    "allDeclaredConstructors" : true,
+    "allPublicConstructors" : true,
+    "allDeclaredMethods" : true,
+    "allPublicMethods" : true
+  },
+  {
+    "name" : "java.sql.Driver",
+    "allDeclaredConstructors" : true,
+    "allPublicConstructors" : true,
+    "allDeclaredMethods" : true,
+    "allPublicMethods" : true
+  },
+  {
+    "name" : "java.sql.DriverManager",
+    "allDeclaredConstructors" : true,
+    "allPublicConstructors" : true,
+    "allDeclaredMethods" : true,
+    "allPublicMethods" : true,
+    "methods" : [
+      { "name" : "getConnection", "parameterTypes" : ["java.lang.String"] },
+      { "name" : "getDriver", "parameterTypes" : ["java.lang.String"] }
+    ]
+  },
+  {
+    "name" : "java.sql.Timestamp",
+    "allDeclaredConstructors" : true,
+    "allPublicConstructors" : true,
+    "allDeclaredMethods" : true,
+    "allPublicMethods" : true,
+    "methods" : [
+      { "name" : "valueOf", "parameterTypes" : ["java.lang.String"] }
     ]
   },
   {
@@ -167,16 +227,6 @@
     ]
   },
   {
-    "name" : "java.time.ZonedDateTime",
-    "allDeclaredConstructors" : true,
-    "allPublicConstructors" : true,
-    "allDeclaredMethods" : true,
-    "allPublicMethods" : true,
-    "methods" : [
-      { "name" : "parse", "parameterTypes" : ["java.lang.CharSequence"] }
-    ]
-  },
-  {
     "name" : "java.time.ZoneId",
     "allDeclaredConstructors" : true,
     "allPublicConstructors" : true,
@@ -197,55 +247,76 @@
     ]
   },
   {
-    "name" : "java.nio.file.Path",
-    "allDeclaredConstructors" : true,
-    "allPublicConstructors" : true,
-    "allDeclaredMethods" : true,
-    "allPublicMethods" : true
-  },
-  {
-    "name" : "java.nio.file.Paths",
+    "name" : "java.time.ZonedDateTime",
     "allDeclaredConstructors" : true,
     "allPublicConstructors" : true,
     "allDeclaredMethods" : true,
     "allPublicMethods" : true,
     "methods" : [
-      { "name" : "get", "parameterTypes" : ["java.lang.String", "[Ljava.lang.String;"] }
+      { "name" : "parse", "parameterTypes" : ["java.lang.CharSequence"] }
     ]
   },
   {
-    "name" : "java.sql.Connection",
+    "name" : "java.util.Collections$UnmodifiableRandomAccessList",
     "allDeclaredConstructors" : true,
     "allPublicConstructors" : true,
     "allDeclaredMethods" : true,
     "allPublicMethods" : true
   },
   {
-    "name" : "java.sql.Driver",
+    "name" : "java.util.List",
     "allDeclaredConstructors" : true,
     "allPublicConstructors" : true,
     "allDeclaredMethods" : true,
     "allPublicMethods" : true
   },
   {
-    "name" : "java.sql.DriverManager",
+    "name" : "java.util.ResourceBundle",
     "allDeclaredConstructors" : true,
     "allPublicConstructors" : true,
     "allDeclaredMethods" : true,
     "allPublicMethods" : true,
     "methods" : [
-      { "name" : "getConnection", "parameterTypes" : ["java.lang.String"] },
-      { "name" : "getDriver", "parameterTypes" : ["java.lang.String"] }
+      { "name" : "getBaseBundleName", "parameterTypes" : [] }
     ]
   },
   {
-    "name" : "java.sql.Timestamp",
+    "name" : "java.util.concurrent.TimeUnit",
+    "allDeclaredConstructors" : true,
+    "allPublicConstructors" : true,
+    "allDeclaredMethods" : true,
+    "allPublicMethods" : true
+  },
+  {
+    "name" : "org.fusesource.jansi.AnsiConsole",
     "allDeclaredConstructors" : true,
     "allPublicConstructors" : true,
     "allDeclaredMethods" : true,
     "allPublicMethods" : true,
-    "methods" : [
-      { "name" : "valueOf", "parameterTypes" : ["java.lang.String"] }
+    "fields" : [
+      { "name" : "out" }
+    ]
+  },
+  {
+    "name" : "picocli.CommandLine$AutoHelpMixin",
+    "allDeclaredConstructors" : true,
+    "allPublicConstructors" : true,
+    "allDeclaredMethods" : true,
+    "allPublicMethods" : true,
+    "fields" : [
+      { "name" : "helpRequested" },
+      { "name" : "versionRequested" }
+    ]
+  },
+  {
+    "name" : "picocli.CommandLine$HelpCommand",
+    "allDeclaredConstructors" : true,
+    "allPublicConstructors" : true,
+    "allDeclaredMethods" : true,
+    "allPublicMethods" : true,
+    "fields" : [
+      { "name" : "helpRequested" },
+      { "name" : "commands" }
     ]
   },
   {
@@ -268,27 +339,6 @@
     ]
   },
   {
-    "name" : "java.lang.Object",
-    "allDeclaredConstructors" : true,
-    "allPublicConstructors" : true,
-    "allDeclaredMethods" : true,
-    "allPublicMethods" : true
-  },
-  {
-    "name" : "java.util.concurrent.TimeUnit",
-    "allDeclaredConstructors" : true,
-    "allPublicConstructors" : true,
-    "allDeclaredMethods" : true,
-    "allPublicMethods" : true
-  },
-  {
-    "name" : "java.util.Collections$UnmodifiableRandomAccessList",
-    "allDeclaredConstructors" : true,
-    "allPublicConstructors" : true,
-    "allDeclaredMethods" : true,
-    "allPublicMethods" : true
-  },
-  {
     "name" : "picocli.codegen.aot.graalvm.Example$ExampleMixin",
     "allDeclaredConstructors" : true,
     "allPublicConstructors" : true,
@@ -297,55 +347,5 @@
     "fields" : [
       { "name" : "length" }
     ]
-  },
-  {
-    "name" : "picocli.CommandLine$AutoHelpMixin",
-    "allDeclaredConstructors" : true,
-    "allPublicConstructors" : true,
-    "allDeclaredMethods" : true,
-    "allPublicMethods" : true,
-    "fields" : [
-      { "name" : "helpRequested" },
-      { "name" : "versionRequested" }
-    ]
-  },
-  {
-    "name" : "java.io.File",
-    "allDeclaredConstructors" : true,
-    "allPublicConstructors" : true,
-    "allDeclaredMethods" : true,
-    "allPublicMethods" : true
-  },
-  {
-    "name" : "java.util.List",
-    "allDeclaredConstructors" : true,
-    "allPublicConstructors" : true,
-    "allDeclaredMethods" : true,
-    "allPublicMethods" : true
-  },
-  {
-    "name" : "picocli.CommandLine$HelpCommand",
-    "allDeclaredConstructors" : true,
-    "allPublicConstructors" : true,
-    "allDeclaredMethods" : true,
-    "allPublicMethods" : true,
-    "fields" : [
-      { "name" : "helpRequested" },
-      { "name" : "commands" }
-    ]
-  },
-  {
-    "name" : "[Ljava.lang.String;",
-    "allDeclaredConstructors" : true,
-    "allPublicConstructors" : true,
-    "allDeclaredMethods" : true,
-    "allPublicMethods" : true
-  },
-  {
-    "name" : "java.lang.String",
-    "allDeclaredConstructors" : true,
-    "allPublicConstructors" : true,
-    "allDeclaredMethods" : true,
-    "allPublicMethods" : true
   }
 ]

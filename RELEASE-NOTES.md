@@ -21,6 +21,7 @@ Picocli follows [semantic versioning](http://semver.org/).
 ## <a name="3.9.4-fixes"></a> Fixed issues
 - [#619] Bugfix: Method subcommands in commands that subclass another command caused `InitializationException`: "Another subcommand named 'method' already exists...". Thanks to [PorygonZRocks](https://github.com/PorygonZRocks) for the bug report.
 - [#622] Bugfix: ReflectionConfigGenerator incorrectly lists superclass fields as fields of the concrete subclass, causing "GraalVM error: Error parsing reflection configuration in json". Thanks to [Sebastian Thomschke](https://github.com/sebthom) for the bug report.
+- [#623] ReflectionConfigGenerator now generates json in alphabetic order.
 
 ## <a name="3.9.4-deprecated"></a> Deprecations
 No features were deprecated in this release.

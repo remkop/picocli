@@ -18,13 +18,7 @@ import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.Callable;
 
 /**
@@ -138,7 +132,7 @@ public class ReflectionConfigGenerator {
     }
 
     static final class Visitor {
-        Map<String, ReflectedClass> visited = new LinkedHashMap<String, ReflectedClass>();
+        Map<String, ReflectedClass> visited = new TreeMap<String, ReflectedClass>();
 
         Visitor() {
             getOrCreateClass(Method.class);
