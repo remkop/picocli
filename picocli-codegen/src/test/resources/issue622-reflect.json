@@ -1,0 +1,280 @@
+[
+  {
+    "name" : "java.lang.reflect.Method",
+    "allDeclaredConstructors" : true,
+    "allPublicConstructors" : true,
+    "allDeclaredMethods" : true,
+    "allPublicMethods" : true
+  },
+  {
+    "name" : "java.lang.reflect.Executable",
+    "allDeclaredConstructors" : true,
+    "allPublicConstructors" : true,
+    "allDeclaredMethods" : true,
+    "allPublicMethods" : true,
+    "methods" : [
+      { "name" : "getParameters", "parameterTypes" : [] }
+    ]
+  },
+  {
+    "name" : "java.lang.reflect.Parameter",
+    "allDeclaredConstructors" : true,
+    "allPublicConstructors" : true,
+    "allDeclaredMethods" : true,
+    "allPublicMethods" : true,
+    "methods" : [
+      { "name" : "getName", "parameterTypes" : [] }
+    ]
+  },
+  {
+    "name" : "java.time.Duration",
+    "allDeclaredConstructors" : true,
+    "allPublicConstructors" : true,
+    "allDeclaredMethods" : true,
+    "allPublicMethods" : true,
+    "methods" : [
+      { "name" : "parse", "parameterTypes" : ["java.lang.CharSequence"] }
+    ]
+  },
+  {
+    "name" : "java.time.Instant",
+    "allDeclaredConstructors" : true,
+    "allPublicConstructors" : true,
+    "allDeclaredMethods" : true,
+    "allPublicMethods" : true,
+    "methods" : [
+      { "name" : "parse", "parameterTypes" : ["java.lang.CharSequence"] }
+    ]
+  },
+  {
+    "name" : "java.time.LocalDate",
+    "allDeclaredConstructors" : true,
+    "allPublicConstructors" : true,
+    "allDeclaredMethods" : true,
+    "allPublicMethods" : true,
+    "methods" : [
+      { "name" : "parse", "parameterTypes" : ["java.lang.CharSequence"] }
+    ]
+  },
+  {
+    "name" : "java.time.LocalDateTime",
+    "allDeclaredConstructors" : true,
+    "allPublicConstructors" : true,
+    "allDeclaredMethods" : true,
+    "allPublicMethods" : true,
+    "methods" : [
+      { "name" : "parse", "parameterTypes" : ["java.lang.CharSequence"] }
+    ]
+  },
+  {
+    "name" : "java.time.LocalTime",
+    "allDeclaredConstructors" : true,
+    "allPublicConstructors" : true,
+    "allDeclaredMethods" : true,
+    "allPublicMethods" : true,
+    "methods" : [
+      { "name" : "parse", "parameterTypes" : ["java.lang.CharSequence"] }
+    ]
+  },
+  {
+    "name" : "java.time.MonthDay",
+    "allDeclaredConstructors" : true,
+    "allPublicConstructors" : true,
+    "allDeclaredMethods" : true,
+    "allPublicMethods" : true,
+    "methods" : [
+      { "name" : "parse", "parameterTypes" : ["java.lang.CharSequence"] }
+    ]
+  },
+  {
+    "name" : "java.time.OffsetDateTime",
+    "allDeclaredConstructors" : true,
+    "allPublicConstructors" : true,
+    "allDeclaredMethods" : true,
+    "allPublicMethods" : true,
+    "methods" : [
+      { "name" : "parse", "parameterTypes" : ["java.lang.CharSequence"] }
+    ]
+  },
+  {
+    "name" : "java.time.OffsetTime",
+    "allDeclaredConstructors" : true,
+    "allPublicConstructors" : true,
+    "allDeclaredMethods" : true,
+    "allPublicMethods" : true,
+    "methods" : [
+      { "name" : "parse", "parameterTypes" : ["java.lang.CharSequence"] }
+    ]
+  },
+  {
+    "name" : "java.time.Period",
+    "allDeclaredConstructors" : true,
+    "allPublicConstructors" : true,
+    "allDeclaredMethods" : true,
+    "allPublicMethods" : true,
+    "methods" : [
+      { "name" : "parse", "parameterTypes" : ["java.lang.CharSequence"] }
+    ]
+  },
+  {
+    "name" : "java.time.Year",
+    "allDeclaredConstructors" : true,
+    "allPublicConstructors" : true,
+    "allDeclaredMethods" : true,
+    "allPublicMethods" : true,
+    "methods" : [
+      { "name" : "parse", "parameterTypes" : ["java.lang.CharSequence"] }
+    ]
+  },
+  {
+    "name" : "java.time.YearMonth",
+    "allDeclaredConstructors" : true,
+    "allPublicConstructors" : true,
+    "allDeclaredMethods" : true,
+    "allPublicMethods" : true,
+    "methods" : [
+      { "name" : "parse", "parameterTypes" : ["java.lang.CharSequence"] }
+    ]
+  },
+  {
+    "name" : "java.time.ZonedDateTime",
+    "allDeclaredConstructors" : true,
+    "allPublicConstructors" : true,
+    "allDeclaredMethods" : true,
+    "allPublicMethods" : true,
+    "methods" : [
+      { "name" : "parse", "parameterTypes" : ["java.lang.CharSequence"] }
+    ]
+  },
+  {
+    "name" : "java.time.ZoneId",
+    "allDeclaredConstructors" : true,
+    "allPublicConstructors" : true,
+    "allDeclaredMethods" : true,
+    "allPublicMethods" : true,
+    "methods" : [
+      { "name" : "of", "parameterTypes" : ["java.lang.String"] }
+    ]
+  },
+  {
+    "name" : "java.time.ZoneOffset",
+    "allDeclaredConstructors" : true,
+    "allPublicConstructors" : true,
+    "allDeclaredMethods" : true,
+    "allPublicMethods" : true,
+    "methods" : [
+      { "name" : "of", "parameterTypes" : ["java.lang.String"] }
+    ]
+  },
+  {
+    "name" : "java.nio.file.Path",
+    "allDeclaredConstructors" : true,
+    "allPublicConstructors" : true,
+    "allDeclaredMethods" : true,
+    "allPublicMethods" : true
+  },
+  {
+    "name" : "java.nio.file.Paths",
+    "allDeclaredConstructors" : true,
+    "allPublicConstructors" : true,
+    "allDeclaredMethods" : true,
+    "allPublicMethods" : true,
+    "methods" : [
+      { "name" : "get", "parameterTypes" : ["java.lang.String", "[Ljava.lang.String;"] }
+    ]
+  },
+  {
+    "name" : "java.sql.Connection",
+    "allDeclaredConstructors" : true,
+    "allPublicConstructors" : true,
+    "allDeclaredMethods" : true,
+    "allPublicMethods" : true
+  },
+  {
+    "name" : "java.sql.Driver",
+    "allDeclaredConstructors" : true,
+    "allPublicConstructors" : true,
+    "allDeclaredMethods" : true,
+    "allPublicMethods" : true
+  },
+  {
+    "name" : "java.sql.DriverManager",
+    "allDeclaredConstructors" : true,
+    "allPublicConstructors" : true,
+    "allDeclaredMethods" : true,
+    "allPublicMethods" : true,
+    "methods" : [
+      { "name" : "getConnection", "parameterTypes" : ["java.lang.String"] },
+      { "name" : "getDriver", "parameterTypes" : ["java.lang.String"] }
+    ]
+  },
+  {
+    "name" : "java.sql.Timestamp",
+    "allDeclaredConstructors" : true,
+    "allPublicConstructors" : true,
+    "allDeclaredMethods" : true,
+    "allPublicMethods" : true,
+    "methods" : [
+      { "name" : "valueOf", "parameterTypes" : ["java.lang.String"] }
+    ]
+  },
+  {
+    "name" : "picocli.codegen.aot.graalvm.Issue622App",
+    "allDeclaredConstructors" : true,
+    "allPublicConstructors" : true,
+    "allDeclaredMethods" : true,
+    "allPublicMethods" : true
+  },
+  {
+    "name" : "picocli.codegen.aot.graalvm.Issue622AbstractCommand",
+    "allDeclaredConstructors" : true,
+    "allPublicConstructors" : true,
+    "allDeclaredMethods" : true,
+    "allPublicMethods" : true,
+    "fields" : [
+      { "name" : "verbose" },
+      { "name" : "file" }
+    ]
+  },
+  {
+    "name" : "java.lang.Object",
+    "allDeclaredConstructors" : true,
+    "allPublicConstructors" : true,
+    "allDeclaredMethods" : true,
+    "allPublicMethods" : true
+  },
+  {
+    "name" : "java.io.File",
+    "allDeclaredConstructors" : true,
+    "allPublicConstructors" : true,
+    "allDeclaredMethods" : true,
+    "allPublicMethods" : true
+  },
+  {
+    "name" : "picocli.codegen.aot.graalvm.Issue622Command1",
+    "allDeclaredConstructors" : true,
+    "allPublicConstructors" : true,
+    "allDeclaredMethods" : true,
+    "allPublicMethods" : true
+  },
+  {
+    "name" : "picocli.codegen.aot.graalvm.Issue622Command2",
+    "allDeclaredConstructors" : true,
+    "allPublicConstructors" : true,
+    "allDeclaredMethods" : true,
+    "allPublicMethods" : true,
+    "fields" : [
+      { "name" : "x" }
+    ]
+  },
+  {
+    "name" : "picocli.codegen.aot.graalvm.Issue622Command2Sub",
+    "allDeclaredConstructors" : true,
+    "allPublicConstructors" : true,
+    "allDeclaredMethods" : true,
+    "allPublicMethods" : true,
+    "fields" : [
+      { "name" : "x" }
+    ]
+  }
+]
