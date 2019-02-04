@@ -335,8 +335,8 @@ public class ReflectionConfigGenerator {
     }
     static class ReflectedClass {
         private final String name;
-        private final Set<ReflectedField> fields = new LinkedHashSet<ReflectedField>();
-        private final Set<ReflectedMethod> methods = new LinkedHashSet<ReflectedMethod>();
+        private final Set<ReflectedField> fields = new TreeSet<ReflectedField>();
+        private final Set<ReflectedMethod> methods = new TreeSet<ReflectedMethod>();
 
         ReflectedClass(String name) {
             this.name = name;
@@ -391,7 +391,7 @@ public class ReflectionConfigGenerator {
             return result;
         }
     }
-    static class ReflectedMethod {
+    static class ReflectedMethod implements Comparable<ReflectedMethod> {
         private final String name;
         private final String[] paramTypes;
 
@@ -421,8 +421,16 @@ public class ReflectionConfigGenerator {
             }
             return result.toString();
         }
+
+        public int compareTo(ReflectedMethod o) {
+            int result = name.compareTo(o.name);
+            if (result == 0) {
+                result = Arrays.toString(this.paramTypes).compareTo(Arrays.toString(o.paramTypes));
+            }
+            return result;
+        }
     }
-    static class ReflectedField {
+    static class ReflectedField implements Comparable<ReflectedField> {
         private final String name;
 
         ReflectedField(String name) {
@@ -436,6 +444,10 @@ public class ReflectionConfigGenerator {
         @Override
         public String toString() {
             return String.format("{ \"name\" : \"%s\" }", name);
+        }
+
+        public int compareTo(ReflectedField o) {
+            return name.compareTo(o.name);
         }
     }
 }
