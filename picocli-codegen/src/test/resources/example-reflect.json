@@ -315,8 +315,8 @@
     "allDeclaredMethods" : true,
     "allPublicMethods" : true,
     "fields" : [
-      { "name" : "helpRequested" },
-      { "name" : "commands" }
+      { "name" : "commands" },
+      { "name" : "helpRequested" }
     ]
   },
   {
@@ -326,16 +326,16 @@
     "allDeclaredMethods" : true,
     "allPublicMethods" : true,
     "fields" : [
-      { "name" : "spec" },
+      { "name" : "file" },
       { "name" : "mixin" },
-      { "name" : "unmatched" },
+      { "name" : "spec" },
       { "name" : "timeUnit" },
-      { "name" : "file" }
+      { "name" : "unmatched" }
     ],
     "methods" : [
+      { "name" : "multiply", "parameterTypes" : ["int", "int"] },
       { "name" : "setMinimum", "parameterTypes" : ["int"] },
-      { "name" : "setOtherFiles", "parameterTypes" : ["java.util.List"] },
-      { "name" : "multiply", "parameterTypes" : ["int", "int"] }
+      { "name" : "setOtherFiles", "parameterTypes" : ["java.util.List"] }
     ]
   },
   {
