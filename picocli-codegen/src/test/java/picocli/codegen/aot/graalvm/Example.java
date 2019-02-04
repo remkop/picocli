@@ -70,7 +70,7 @@ public class Example implements Runnable {
 
     public void run() {
         System.out.printf("timeUnit=%s, length=%s, file=%s, unmatched=%s, minimum=%s, otherFiles=%s%n",
-                timeUnit, mixin.length, file, unmatched, minimum, Arrays.toString(otherFiles));
+                timeUnit, mixin.length, file, unmatched, minimum, otherFiles.toString());
     }
 
     public static void main(String[] args) {
