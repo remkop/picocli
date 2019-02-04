@@ -139,6 +139,13 @@ public class ReflectionConfigGenerator {
             getOrCreateClassName("java.lang.reflect.Executable").addMethod("getParameters");
             getOrCreateClassName("java.lang.reflect.Parameter").addMethod("getName");
 
+            // ANSI color enabled detection
+            getOrCreateClassName("java.lang.System").addMethod("console");
+            getOrCreateClassName("org.fusesource.jansi.AnsiConsole").addField("out");
+
+            // picocli 4.0
+            getOrCreateClassName("java.util.ResourceBundle").addMethod("getBaseBundleName");
+
             // type converters registered with reflection
             getOrCreateClassName("java.time.Duration").addMethod("parse", CharSequence.class);
             getOrCreateClassName("java.time.Instant").addMethod("parse", CharSequence.class);
