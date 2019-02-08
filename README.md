@@ -100,7 +100,7 @@ Join the [picocli Google group](https://groups.google.com/d/forum/picocli) if yo
 * Picocli is used in the Apache Hive benchmark CLI.
 
 
-<img src="https://picocli.info/images/downloads-201812.png">
+<img src="https://picocli.info/images/downloads-201901.png">
 
 Glad to see more people are using picocli. We must be doing something right. :-) 
 
