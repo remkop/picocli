@@ -2739,6 +2739,13 @@ public class CommandLine {
          * @since 3.9
          */
         int order() default -1;
+
+        /**
+         * Specify one or more {@linkplain Group groups} that this option is part of.
+         * @return the name or names of the group(s) that this option belongs to.
+         * @since 4.0
+         */
+        String[] groups() default {};
     }
     /**
      * <p>
@@ -2918,6 +2925,13 @@ public class CommandLine {
          * @since 3.6
          */
         String descriptionKey() default "";
+
+        /**
+         * Specify one or more {@linkplain Group groups} that this positional parameter is part of.
+         * @return the name or names of the group(s) that this positional parameter belongs to.
+         * @since 4.0
+         */
+        String[] groups() default {};
     }
 
     /**
@@ -3290,6 +3304,72 @@ public class CommandLine {
          * @since 3.7
          */
         int usageHelpWidth() default 80;
+
+        /** Optionally define argument {@linkplain Group groups}; groups can be used to define mutually exclusive arguments,
+         * arguments that must co-occur, or to customize the usage help message.
+         * @since 4.0 */
+        Group[] groups() default {};
+    }
+    /** A {@code Command} may define one or more {@code ArgGroups}: a group of options, positional parameters or a mixture of the two.
+     * Groups can be used:
+     * <ul>
+     *     <li>to define mutually exclusive arguments. By default, options and positional parameters
+     *     in a group are mutually exclusive unless you set {@link #exclusive() exclusive = false}.
+     *     Picocli will throw a {@link MutuallyExclusiveArgsException} if the command line arguments contain multiple arguments that are mutually exclusive.</li>
+     *     <li>to define a set of arguments that must co-occur. Set {@link #exclusive() exclusive = false}
+     *     to define a group of options and positional parameters that must always be specified together.
+     *     Picocli will throw a {@link MissingParameterException MissingParameterException} if not all the options and positional parameters in a co-occurring group are specified together.</li>
+     *     <li>to create option sections in the usage help message.
+     *     To be shown in the usage help message, a group needs to have a {@link #heading() heading} (which may come from a {@linkplain #headingKey() resource bundle}).
+     *     Groups without a heading are just used for validation and do not change the usage help message.
+     *     Set {@link #validate() validate = false} for groups whose purpose is only to customize the usage help message.</li>
+     * </ul>
+     * <p>Groups may be {@linkplain #required() required}. For a group of mutually exclusive arguments,
+     * making the group required means that one of the arguments in the group must appear on the command line, or a {@link MissingParameterException MissingParameterException} is thrown.
+     * For a group of co-occurring arguments, all arguments in the group must appear on the command line.
+     * </p>
+     * @see Group
+     * @since 4.0 */
+    @Retention(RetentionPolicy.RUNTIME)
+    @Target({})
+    public @interface Group {
+        /** The name of this group. Must be unique in the command. */
+        String name();
+
+        /** The heading of this group, used when generating the usage documentation.
+         * When neither a {@link #heading() heading} nor a {@link #headingKey() headingKey} are specified,
+         * this group is used for validation only and does not change the usage help message. */
+        String heading() default "";
+
+        /** ResourceBundle key for this group's usage help message section heading.
+         * When neither a {@link #heading() heading} nor a {@link #headingKey() headingKey} are specified,
+         * this group is used for validation only and does not change the usage help message. */
+        String headingKey() default "";
+        /** Determines whether this is a mutually exclusive group; {@code true} by default.
+         * If {@code false}, this is a co-occurring group. Ignored if {@link #validate()} is {@code false}. */
+        boolean exclusive() default true;
+        /** Determines whether this is a required group; {@code false} by default.
+         * For a group of mutually exclusive arguments, making the group required means that
+         * one of the arguments in the group must appear on the command line, or a MissingParameterException is thrown.
+         * For a group of co-occurring arguments, all arguments in the group must appear on the command line.
+         * Ignored if {@link #validate()} is {@code false}. */
+        boolean required() default false;
+        /** Determines whether picocli should validate the rules of this group ({@code true} by default):
+         * for a mutually exclusive group validation means verifying that no more than one arguments in the group is specified on the command line;
+         * for a co-ocurring group validation means verifying that all arguments in the group are specified on the command line.
+         * Set {@link #validate() validate = false} for groups whose purpose is only to customize the usage help message.
+         * @see #required()
+         * @see #heading() */
+        boolean validate() default true;
+        /** Determines the position in the options list in the usage help message at which this group should be shown.
+         * Options with a lower number are shown before options with a higher number.
+         * This attribute is only honored if {@link UsageMessageSpec#sortOptions()} is {@code false} for this command.*/
+        int order() default -1;
+        /**
+         * Specify one or more {@linkplain Group groups} that this group is part of.
+         * @return the name or names of the group(s) that this group belongs to.
+         */
+        String[] groups() default {};
     }
     /**
      * <p>
@@ -3723,6 +3803,7 @@ public class CommandLine {
             private final List<OptionSpec> options = new ArrayList<OptionSpec>();
             private final List<PositionalParamSpec> positionalParameters = new ArrayList<PositionalParamSpec>();
             private final List<UnmatchedArgsBinding> unmatchedArgs = new ArrayList<UnmatchedArgsBinding>();
+            private final Map<String, GroupSpec> groups = new LinkedHashMap<String, GroupSpec>();
             private final ParserSpec parser = new ParserSpec();
             private final UsageMessageSpec usageMessage = new UsageMessageSpec();
 
@@ -3738,7 +3819,7 @@ public class CommandLine {
             private IDefaultValueProvider defaultValueProvider;
             private String[] version;
             private String toString;
-    
+
             private CommandSpec(Object userObject) { this.userObject = userObject; }
     
             /** Creates and returns a new {@code CommandSpec} without any associated user object. */
@@ -4016,7 +4097,16 @@ public class CommandLine {
                 positional.commandSpec = this;
                 return this;
             }
-    
+
+            /** Adds the specified {@linkplain GroupSpec argument group} to the groups in this command.
+             * @param group the group spec to add
+             * @return this CommandSpec for method chaining
+             * @since 4.0 */
+            public CommandSpec addGroup(GroupSpec group) {
+                this.groups.put(group.name(), group);
+                return this;
+            }
+
             /** Adds the specified mixin {@code CommandSpec} object to the map of mixins for this command.
              * @param name the name that can be used to later retrieve the mixin
              * @param mixin the mixin whose options and positional parameters and other attributes to add to this command
@@ -4056,7 +4146,12 @@ public class CommandLine {
             /** Returns the list of positional parameters configured for this command.
              * @return an immutable list of positional parameters that this command recognizes. */
             public List<PositionalParamSpec> positionalParameters() { return Collections.unmodifiableList(positionalParameters); }
-    
+
+            /** Returns the {@linkplain GroupSpec argument groups} in this command.
+             * @return an immutable map of groups of options and positional parameters in this command
+             * @since 4.0 */
+            public Map<String, GroupSpec> groups() { return Collections.unmodifiableMap(groups); }
+
             /** Returns a map of the option names to option spec objects configured for this command.
              * @return an immutable map of options that this command recognizes. */
             public Map<String, OptionSpec> optionsMap() { return Collections.unmodifiableMap(optionsByNameMap); }
@@ -5100,6 +5195,7 @@ public class CommandLine {
             private final IGetter getter;
             private final ISetter setter;
             private final Range arity;
+            private final List<String> groupNames;
             private List<String> stringValues = new ArrayList<String>();
             private List<String> originalStringValues = new ArrayList<String>();
             protected String toString;
@@ -5125,6 +5221,7 @@ public class CommandLine {
                 toString = builder.toString;
                 getter = builder.getter;
                 setter = builder.setter;
+                groupNames = Collections.unmodifiableList(new ArrayList<String>(builder.groupNames()));
 
                 Range tempArity = builder.arity;
                 if (tempArity == null) {
@@ -5336,7 +5433,14 @@ public class CommandLine {
             public abstract boolean isOption();
             /** Returns {@code true} if this argument is a positional parameter, {@code false} otherwise. */
             public abstract boolean isPositional();
-    
+
+            /** Return the names of the groups that this option or positional parameter belongs to; may be empty but not {@code null}.
+             * Make sure this option or positional parameter has the name of the group set correctly before
+             * {@link GroupSpec.Builder#addArg(ArgSpec) adding} it to a group.
+             * @return immutable list of group names that this option or positional parameter belongs to
+             * @since 4.0 */
+            public List<String> groupNames() { return groupNames; }
+
             /** Returns the untyped command line arguments matched by this option or positional parameter spec.
              * @return the matched arguments after {@linkplain #splitRegex() splitting}, but before type conversion.
              *      For map properties, {@code "key=value"} values are split into the key and the value part. */
@@ -5487,7 +5591,7 @@ public class CommandLine {
                         + 37 * typeInfo.hashCode()
                         ;
             }
-    
+
             abstract static class Builder<T extends Builder<T>> {
                 private Object userObject;
                 private Range arity;
@@ -5511,6 +5615,7 @@ public class CommandLine {
                 private String toString;
                 private IGetter getter = new ObjectBinding();
                 private ISetter setter = (ISetter) getter;
+                private List<String> groupNames = new ArrayList<String>();
 
                 Builder() {}
                 Builder(ArgSpec original) {
@@ -5532,6 +5637,7 @@ public class CommandLine {
                     toString = original.toString;
                     descriptionKey = original.descriptionKey;
                     setTypeInfo(original.typeInfo);
+                    groupNames.addAll(original.groupNames);
                 }
                 Builder(IAnnotatedElement source) {
                     userObject = source.userObject();
@@ -5563,6 +5669,7 @@ public class CommandLine {
                             completionCandidates = DefaultFactory.createCompletionCandidates(factory, option.completionCandidates());
                         }
                     }
+                    groupNames.addAll(Arrays.asList(option.groups()));
                 }
                 Builder(Parameters parameters, IAnnotatedElement source, IFactory factory) {
                     this(source);
@@ -5589,6 +5696,7 @@ public class CommandLine {
                                 completionCandidates = DefaultFactory.createCompletionCandidates(factory, parameters.completionCandidates());
                             }
                         }
+                        groupNames.addAll(Arrays.asList(parameters.groups()));
                     }
                 }
                 private static String inferLabel(String label, String fieldName, ITypeInfo typeInfo) {
@@ -5691,13 +5799,20 @@ public class CommandLine {
                 /** Returns the {@link ISetter} that is responsible for modifying the value of this argument. */
                 public ISetter setter()        { return setter; }
 
+                /** Return the names of the groups that this option or positional parameter belongs to; may be empty but not {@code null}.
+                 * Make sure this option or positional parameter has the name of the group set correctly before
+                 * {@link GroupSpec.Builder#addArg(ArgSpec) adding} it to a group.
+                 * @return list of group names that this option or positional parameter belongs to
+                 * @since 4.0 */
+                public List<String> groupNames()   { return groupNames; }
+
                 public String toString() { return toString; }
 
                 /** Sets whether this is a required option or positional parameter, and returns this builder. */
                 public T required(boolean required)          { this.required = required; return self(); }
 
                 /** Sets whether this option prompts the user to enter a value on the command line, and returns this builder. */
-                public T interactive(boolean interactive)          { this.interactive = interactive; return self(); }
+                public T interactive(boolean interactive)    { this.interactive = interactive; return self(); }
 
                 /** Sets the description of this option, used when generating the usage documentation, and returns this builder.
                  * @see Option#description() */
@@ -5790,6 +5905,16 @@ public class CommandLine {
 
                 /** Sets the string respresentation of this option or positional parameter to the specified value, and returns this builder. */
                 public T withToString(String toString)       { this.toString = toString; return self(); }
+
+                /** Sets the mutable list of groups that this option or positional parameter belongs to.
+                 * @see Option#groups()
+                 * @since 4.0 */
+                public T groupNames(String... names) { return groupNames(new ArrayList<String>(Arrays.asList(names))); }
+
+                /** Sets the mutable list of groups that this option or positional parameter belongs to.
+                 * @see Option#groups()
+                 * @since 4.0 */
+                public T groupNames(List<String> names) { groupNames = Assert.notNull(names, "names"); return self(); }
             }
         }
         /** The {@code OptionSpec} class models aspects of a <em>named option</em> of a {@linkplain CommandSpec command}, including whether
@@ -6163,6 +6288,347 @@ public class CommandLine {
 
                 Range capacity()                   { return capacity; }
                 Builder capacity(Range capacity)   { this.capacity = capacity; return self(); }
+            }
+        }
+
+        /** The {@code GroupSpec} class models a {@link Group group} of arguments (options, positional parameters or a mixture of the two).
+         * @see Group
+         * @since 4.0 */
+        public static class GroupSpec {
+            static final int DEFAULT_ORDER = -1;
+            private final String name;
+            private final String heading;
+            private final String headingKey;
+            private final boolean exclusive;
+            private final boolean required;
+            private final boolean validate;
+            private final int order;
+            private final Map<String, GroupSpec> groups;
+            private final List<String> groupNames;
+            private final List<OptionSpec> options;
+            private final List<PositionalParamSpec> positionals;
+
+            GroupSpec(GroupSpec.Builder builder) {
+                name       = Assert.notNull(builder.name, "name");
+                heading    = builder.heading;
+                headingKey = builder.headingKey;
+                exclusive  = builder.exclusive;
+                required   = builder.required;
+                validate   = builder.validate;
+                order      = builder.order;
+
+                if (builder.args().isEmpty()) { throw new InitializationException("Group '" + name + "' has no options or positional parameters"); }
+                List<OptionSpec> optionList = new ArrayList<OptionSpec>();
+                List<PositionalParamSpec> positionalList = new ArrayList<PositionalParamSpec>();
+                for (ArgSpec arg : builder.args()) {
+                    if (arg.isOption()) { optionList.add((OptionSpec) arg); }
+                    else { positionalList.add((PositionalParamSpec) arg); }
+                }
+                options     = Collections.unmodifiableList(optionList);
+                positionals = Collections.unmodifiableList(positionalList);
+
+                Map<String, GroupSpec> groupMap = new LinkedHashMap<String, GroupSpec>();
+                for (GroupSpec group : builder.groups()) {
+                    GroupSpec previous = groupMap.put(group.name(), group);
+                    if (previous != null && !previous.equals(group)) { throw new DuplicateNameException("Different Groups should not use the same name '" + group.name() + "'");}
+                }
+                groups = Collections.unmodifiableMap(groupMap);
+                groupNames = Collections.unmodifiableList(new ArrayList<String>(builder.groupNames()));
+            }
+
+            /** Returns a new {@link Builder} with the group name set to the specified value.
+             * @param name name of the new group
+             * @return a new Builder instance */
+            public static Builder builder(String name) { return new Builder().name(name); }
+
+            /** Returns a new {@link Builder} initialized from the specified annotation values.
+             * @param group annotation values
+             * @return a new Builder instance */
+            public static Builder builder(Group group) {
+                return new Builder().name(group.name())
+                        .heading(group.heading())
+                        .headingKey(group.headingKey())
+                        .exclusive(group.exclusive())
+                        .required(group.required())
+                        .validate(group.validate())
+                        .order(group.order())
+                        .groupNames(Arrays.asList(group.groups()));
+            }
+
+            /** Returns the name of this group. Must be unique in the command.
+             * @see Group#name() */
+            public String name() { return name; }
+
+            /** Returns whether this is a mutually exclusive group; {@code true} by default.
+             * If {@code false}, this is a co-occurring group. Ignored if {@link #validate()} is {@code false}.
+             * @see Group#exclusive() */
+            public boolean exclusive() { return exclusive; }
+
+            /** Returns whether this is a required group; {@code false} by default.
+             * For a group of mutually exclusive arguments, making the group required means that one of the arguments in the group must appear on the command line, or a MissingParameterException is thrown. For a group of co-occurring arguments, all arguments in the group must appear on the command line.
+             * Ignored if {@link #validate()} is {@code false}.
+             * @see Group#required() */
+            public boolean required() { return required; }
+
+            /** Returns whether picocli should validate the rules of this group:
+             * for a mutually exclusive group this means that no more than one arguments in the group is specified on the command line;
+             * for a co-ocurring group this means that all arguments in the group are specified on the command line.
+             * {@code true} by default.
+             * @see Group#validate() */
+            public boolean validate() { return validate; }
+
+            /** Returns the position in the options list in the usage help message at which this group should be shown.
+             * Options with a lower number are shown before options with a higher number.
+             * This attribute is only honored if {@link UsageMessageSpec#sortOptions()} is {@code false} for this command. */
+            public int order() { return this.order; }
+
+            /** Returns the heading of this group (may be {@code null}), used when generating the usage documentation.
+             * @see Group#heading() */
+            public String heading()  { return heading; }
+
+            /** Returns the heading key of this group (may be {@code null}), used to get the heading from a resource bundle.
+             * @see Group#headingKey()  */
+            public String headingKey() { return headingKey; }
+
+            /** Return the names of the groups that this group belongs to; may be empty but not {@code null}.
+             * Make sure this group has the name of the groups it belongs to set correctly before
+             * {@link GroupSpec.Builder#addGroup(GroupSpec) adding} it to a group.
+             * @return immutable list of group names that this group belongs to
+             * @since 4.0 */
+            public List<String> groupNames() { return groupNames; }
+
+            /** Return the groups that this group belongs to; may be empty but not {@code null}.
+             * @return immutable map of groups by name that this group belongs to.
+             * @see Group#groups() */
+            public Map<String, GroupSpec> groups() { return groups; }
+
+            /** Return the positional parameters in this group; may be empty but not {@code null}.
+             * @see Parameters#groups() */
+            public List<PositionalParamSpec> positionalParameters() {
+                return positionals;
+            }
+
+            /** Return the options in this group; may be empty but not {@code null}.
+             * @see Option#groups() */
+            public List<OptionSpec> options() { return options; }
+
+            @Override public boolean equals(Object obj) {
+                if (obj == this) { return true; }
+                if (!(obj instanceof GroupSpec)) { return false; }
+                GroupSpec other = (GroupSpec) obj;
+                return Assert.equals(name, other.name)
+                        && exclusive == other.exclusive
+                        && required == other.required
+                        && validate == other.validate
+                        && order == other.order
+                        && Assert.equals(heading, other.heading)
+                        && Assert.equals(headingKey, other.headingKey)
+                        && Assert.equals(groups.keySet(), other.groups.keySet())
+                        && Assert.equals(new HashSet<OptionSpec>(options), new HashSet<OptionSpec>(other.options))
+                        && Assert.equals(new HashSet<PositionalParamSpec>(positionals), new HashSet<PositionalParamSpec>(other.positionals));
+            }
+
+            @Override public int hashCode() {
+                int result = 17;
+                result += 37 * result + Assert.hashCode(name);
+                result += 37 * result + Assert.hashCode(exclusive);
+                result += 37 * result + Assert.hashCode(required);
+                result += 37 * result + Assert.hashCode(validate);
+                result += 37 * result + order;
+                result += 37 * result + Assert.hashCode(heading);
+                result += 37 * result + Assert.hashCode(headingKey);
+                result += 37 * result + Assert.hashCode(groups.keySet());
+                result += 37 * result + Assert.hashCodeSum(options);
+                result += 37 * result + Assert.hashCodeSum(positionals);
+                return result;
+            }
+
+            @Override public String toString() {
+                List<String> optionNames = new ArrayList<String>();
+                for (OptionSpec o : options()) { optionNames.add(o.shortestName()); }
+                List<String> positionalNames = new ArrayList<String>();
+                for (PositionalParamSpec p : positionalParameters()) { positionalNames.add(p.index() + " (" + p.paramLabel() + ")"); }
+                return "Group[" + name + ", exclusive=" + exclusive + ", required=" + required +
+                        ", validate=" + validate + ", order="+ order + ", options=" + optionNames +
+                        ", positionals=" + positionalNames + ", groups=" + groups.keySet() +
+                        ", headingKey=" + quote(headingKey) + ", heading=" + quote(heading) + "]";
+            }
+            private static String quote(String s) { return s == null ? "null" : "'" + s + "'"; }
+
+            static List<Builder> topologicalSort(List<Builder> all) {
+                Map<String, Builder> groupsByName = new TreeMap<String, Builder>();
+                for (Builder g : all) { groupsByName.put(g.name(), g); }
+                return topologicalSort(groupsByName);
+            }
+
+            private static List<Builder> topologicalSort(Map<String, Builder> groupsByName) {
+                // build directed graph
+                for (Builder g : groupsByName.values()) { g.groupsDependingOnMe.clear(); }
+                for (Builder g : groupsByName.values()) {
+                    for (String depName : g.groupNames()) {
+                        Builder dependency = groupsByName.get(depName);
+                        if (dependency == null) {
+                            throw new IllegalStateException("Group '" + g.name + "' depends on '" + depName + "', but no group with name '" + depName + "' exists.");
+                        }
+                        dependency.groupsDependingOnMe.add(g);
+                    }
+                }
+                // reset flags used by topological sort
+                for (Builder g : groupsByName.values()) { g.topologicalSortDone = null; }
+
+                List<Builder> result = new LinkedList<Builder>();
+                List<String> processing = new LinkedList<String>();
+                while (!groupsByName.isEmpty()) {
+                    Builder g = groupsByName.entrySet().iterator().next().getValue();
+                    if (g.topologicalSortDone == null) {
+                        visit(g, processing, result);
+                    }
+                    groupsByName.remove(g.name());
+                }
+                return result;
+            }
+
+            private static void visit(Builder n, List<String> processing, List<Builder> result) {
+                if (n == null || n.topologicalSortDone == Boolean.TRUE) { return; }
+                processing.add(0, n.name);
+                if (n.topologicalSortDone == Boolean.FALSE) { throw new IllegalStateException("Cyclic group dependency: " + n + " in " + processing); }
+                n.topologicalSortDone = Boolean.FALSE;
+
+                for (Builder m : n.groupsDependingOnMe) { visit(m, processing, result); }
+                processing.remove(n.name);
+                n.topologicalSortDone = Boolean.TRUE;
+                result.add(0, n);
+            }
+
+            /** Builder responsible for creating valid {@code GroupSpec} objects.
+             * @since 4.0 */
+            public static class Builder {
+                private String name;
+                private String heading;
+                private String headingKey;
+                private boolean exclusive         = true;
+                private boolean required          = false;
+                private boolean validate          = true;
+                private int order                 = DEFAULT_ORDER;
+                private List<ArgSpec> args        = new ArrayList<ArgSpec>();
+                private List<String> groupNames   = new ArrayList<String>();
+                private List<GroupSpec> groups = new ArrayList<GroupSpec>();
+
+                // for topological sorting; private only
+                private Boolean topologicalSortDone;
+                private List<Builder> groupsDependingOnMe = new ArrayList<Builder>();
+
+                Builder() {}
+                /** Returns a valid {@code GroupSpec} instance. */
+                public GroupSpec build() { return new GroupSpec(this); }
+
+                /** Returns the name of this group. Must be unique in the command.
+                 * @see Group#name() */
+                public String name() { return name; }
+
+                /** Sets the name of this group. Must be unique in the command.
+                 * @see Group#name() */
+                public Builder name(String name) { this.name = Assert.notNull(name, "name"); return this; }
+
+                /** Returns whether this is a mutually exclusive group; {@code true} by default.
+                 * If {@code false}, this is a co-occurring group. Ignored if {@link #validate()} is {@code false}.
+                 * @see Group#exclusive() */
+                public boolean exclusive() { return exclusive; }
+                /** Sets whether this is a mutually exclusive group; {@code true} by default.
+                 * If {@code false}, this is a co-occurring group. Ignored if {@link #validate()} is {@code false}.
+                 * @see Group#exclusive() */
+                public Builder exclusive(boolean newValue) { exclusive = newValue; return this; }
+
+                /** Returns whether this is a required group; {@code false} by default.
+                 * For a group of mutually exclusive arguments, making the group required means that one of the arguments in the group must appear on the command line, or a MissingParameterException is thrown. For a group of co-occurring arguments, all arguments in the group must appear on the command line.
+                 * Ignored if {@link #validate()} is {@code false}.
+                 * @see Group#required() */
+                public boolean required() { return required; }
+                /** Sets whether this is a required group; {@code false} by default.
+                 * For a group of mutually exclusive arguments, making the group required means that one of the arguments in the group must appear on the command line, or a MissingParameterException is thrown. For a group of co-occurring arguments, all arguments in the group must appear on the command line.
+                 * Ignored if {@link #validate()} is {@code false}.
+                 * @see Group#required() */
+                public Builder required(boolean newValue) { required = newValue; return this; }
+
+                /** Returns whether picocli should validate the rules of this group:
+                 * for a mutually exclusive group this means that no more than one arguments in the group is specified on the command line;
+                 * for a co-ocurring group this means that all arguments in the group are specified on the command line.
+                 * {@code true} by default.
+                 * @see Group#validate() */
+                public boolean validate() { return validate; }
+                /** Sets whether picocli should validate the rules of this group:
+                 * for a mutually exclusive group this means that no more than one arguments in the group is specified on the command line;
+                 * for a co-ocurring group this means that all arguments in the group are specified on the command line.
+                 * {@code true} by default.
+                 * @see Group#validate() */
+                public Builder validate(boolean newValue) { validate = newValue; return this; }
+
+                /** Returns the position in the options list in the usage help message at which this group should be shown.
+                 * Options with a lower number are shown before options with a higher number.
+                 * This attribute is only honored if {@link UsageMessageSpec#sortOptions()} is {@code false} for this command.*/
+                public int order() { return order; }
+
+                /** Sets the position in the options list in the usage help message at which this group should be shown, and returns this builder. */
+                public Builder order(int order) { this.order = order; return this; }
+
+                /** Returns the heading of this group, used when generating the usage documentation.
+                 * @see Group#heading() */
+                public String heading() { return heading; }
+
+                /** Sets the heading of this group (may be {@code null}), used when generating the usage documentation.
+                 * @see Group#heading() */
+                public Builder heading(String newValue) { this.heading = newValue; return this; }
+
+                /** Returns the heading key of this group, used to get the heading from a resource bundle.
+                 * @see Group#headingKey()  */
+                public String headingKey() { return headingKey; }
+                /** Sets the heading key of this group, used to get the heading from a resource bundle.
+                 * @see Group#headingKey()  */
+                public Builder headingKey(String newValue) { this.headingKey = newValue; return this; }
+
+                /** Returns the mutable list of groups that this group belongs to.
+                 * Make sure this group has the name of the groups it belongs to set correctly before
+                 * {@link GroupSpec.Builder#addGroup(GroupSpec) adding} it to a group.
+                 * @see Group#groups() */
+                public List<String> groupNames() { return groupNames; }
+
+                /** Sets the mutable list of groups that this group belongs to.
+                 * Make sure this group has the name of the groups it belongs to set correctly before
+                 * {@link GroupSpec.Builder#addGroup(GroupSpec) adding} it to a group.
+                 * @see Group#groups() */
+                public Builder groupNames(String... names) { return groupNames(new ArrayList<String>(Arrays.asList(names))); }
+
+                /** Sets the mutable list of groups that this group belongs to.
+                 * Make sure this group has the name of the groups it belongs to set correctly before
+                 * {@link GroupSpec.Builder#addGroup(GroupSpec) adding} it to a group.
+                 * @see Group#groups() */
+                public Builder groupNames(List<String> names) { groupNames = Assert.notNull(names, "names"); return this; }
+
+                /** Adds the specified argument to the list of options and positional parameters that depend on this group.
+                 * @throws InitializationException if the {@linkplain ArgSpec#groupNames() group names} of the specified argument do not contain the name of this group */
+                public Builder addArg(ArgSpec arg) {
+                    validateGroupNames(arg.groupNames(), arg.toString());
+                    args.add(arg);
+                    return this;
+                }
+
+                /** Returns the list of options and positional parameters that depend on this group.*/
+                public List<ArgSpec> args() { return args; }
+
+                /** Adds the specified group to the list of groups that this group depends on.
+                 * @throws InitializationException if the {@linkplain GroupSpec#groupNames() group names} of the specified group do not contain the name of this group */
+                public Builder addGroup(GroupSpec group) {
+                    validateGroupNames(group.groupNames(), "group " + group.name());
+                    groups.add(group);
+                    return this;
+                }
+
+                /** Returns the list of groups that this group depends on.*/
+                public List<GroupSpec> groups() { return groups; }
+
+                private void validateGroupNames(List<String> names, String source) {
+                    if (!names.contains(name())) { throw new InitializationException("Group names " + names + " in " + source + " missing name of this group: '" + name() + "'"); }
+                }
             }
         }
 
@@ -6774,6 +7240,7 @@ public class CommandLine {
 
                 CommandSpec result = CommandSpec.wrapWithoutInspection(Assert.notNull(instance, "command"));
 
+                Map<String, GroupSpec.Builder> groupBuilders = new LinkedHashMap<String, GroupSpec.Builder>();
                 Stack<Class<?>> hierarchy = new Stack<Class<?>>();
                 while (cls != null) { hierarchy.add(cls); cls = cls.getSuperclass(); }
                 boolean hasCommandAnnotation = false;
@@ -6784,9 +7251,10 @@ public class CommandLine {
                     if (cmd != null) {
                         result.updateCommandAttributes(cmd, factory);
                         initSubcommands(cmd, cls, result, factory);
+                        addGroups(cmd, groupBuilders);
                         hasCommandAnnotation = true;
                     }
-                    hasCommandAnnotation |= initFromAnnotatedFields(instance, cls, result, factory);
+                    hasCommandAnnotation |= initFromAnnotatedFields(instance, cls, result, groupBuilders, factory);
                     if (cls.isAnnotationPresent(Command.class)) {
                         mixinStandardHelpOptions |= cls.getAnnotation(Command.class).mixinStandardHelpOptions();
                     }
@@ -6800,18 +7268,41 @@ public class CommandLine {
                     result.updateCommandAttributes(cmd, factory);
                     result.setAddMethodSubcommands(false); // method commands don't have method subcommands
                     initSubcommands(cmd, null, result, factory);
+                    addGroups(cmd, groupBuilders);
                     hasCommandAnnotation = true;
                     result.mixinStandardHelpOptions(method.getAnnotation(Command.class).mixinStandardHelpOptions());
-                    initFromMethodParameters(instance, method, result, factory);
+                    initFromMethodParameters(instance, method, result, groupBuilders, factory);
                     // set command name to method name, unless @Command#name is set
                     result.initName(((Method)command).getName());
                 }
                 result.updateArgSpecMessages();
 
+                // Group initialization:
+                // by now all options and parameters have been added to the correct group builder.
+                // Next, add the groups themselves, then validate.
+                List<GroupSpec.Builder> sorted = GroupSpec.topologicalSort(groupBuilders);
+                for (GroupSpec.Builder builder : sorted) {
+                    // the groups that this group depends on should have been added now, so we can build it
+                    GroupSpec group = builder.build();
+                    for (String groupName : group.groupNames()) {
+                        GroupSpec.Builder dependency = groupBuilders.get(groupName);
+                        if (dependency == null) { throw new InitializationException("Group '" + group.name() + "' is annotated with groups = '" + groupName + "', but no such group exists."); }
+                        dependency.addGroup(group);
+                    }
+                    result.addGroup(group);
+                }
+
                 if (annotationsAreMandatory) {validateCommandSpec(result, hasCommandAnnotation, commandClassName); }
                 result.withToString(commandClassName).validate();
                 return result;
             }
+
+            private static void addGroups(Command cmd, Map<String, GroupSpec.Builder> groups) {
+                for (Group group : cmd.groups()) {
+                    groups.put(group.name(), GroupSpec.builder(group));
+                }
+            }
+
             private static void initSubcommands(Command cmd, Class<?> cls, CommandSpec parent, IFactory factory) {
                 for (Class<?> sub : cmd.subcommands()) {
                     try {
@@ -6859,17 +7350,20 @@ public class CommandLine {
                 }
                 return subCommand.name();
             }
-            private static boolean initFromAnnotatedFields(Object scope, Class<?> cls, CommandSpec receiver, IFactory factory) {
+            private static boolean initFromAnnotatedFields(Object scope, Class<?> cls, CommandSpec receiver, Map<String, GroupSpec.Builder> groups, IFactory factory) {
                 boolean result = false;
                 for (Field field : cls.getDeclaredFields()) {
-                    result |= initFromAnnotatedTypedMembers(TypedMember.createIfAnnotated(field, scope), receiver, factory);
+                    result |= initFromAnnotatedTypedMembers(TypedMember.createIfAnnotated(field, scope), receiver, groups, factory);
                 }
                 for (Method method : cls.getDeclaredMethods()) {
-                    result |= initFromAnnotatedTypedMembers(TypedMember.createIfAnnotated(method, scope, receiver), receiver, factory);
+                    result |= initFromAnnotatedTypedMembers(TypedMember.createIfAnnotated(method, scope, receiver), receiver, groups, factory);
                 }
                 return result;
             }
-            private static boolean initFromAnnotatedTypedMembers(TypedMember member, CommandSpec receiver, IFactory factory) {
+            private static boolean initFromAnnotatedTypedMembers(TypedMember member,
+                                                                 CommandSpec receiver,
+                                                                 Map<String, GroupSpec.Builder> groups,
+                                                                 IFactory factory) {
                 boolean result = false;
                 if (member == null) { return result; }
                 if (member.isMixin()) {
@@ -6884,9 +7378,16 @@ public class CommandLine {
                 if (member.isArgSpec()) {
                     validateArgSpecField(member);
                     Messages msg = receiver.usageMessage.messages();
-                    if (member.isOption())         { receiver.addOption(OptionSpec.builder(member, factory).build()); }
-                    else if (member.isParameter()) { receiver.addPositional(PositionalParamSpec.builder(member, factory).build()); }
-                    else                           { receiver.addPositional(PositionalParamSpec.builder(member, factory).build()); }
+                    ArgSpec arg;
+                    if (member.isOption())         { arg = OptionSpec.builder(member, factory).build(); }
+                    else if (member.isParameter()) { arg = PositionalParamSpec.builder(member, factory).build(); }
+                    else                           { arg = PositionalParamSpec.builder(member, factory).build(); }
+                    for (String groupName : arg.groupNames()) {
+                        GroupSpec.Builder group = groups.get(groupName);
+                        if (group == null) { throw new InitializationException(member.getToString() + " is annotated with groups = '" + groupName + "', but no such group exists."); }
+                        group.addArg(arg);
+                    }
+                    receiver.add(arg);
                 }
                 if (member.isInjectSpec()) {
                     validateInjectSpec(member);
@@ -6894,7 +7395,7 @@ public class CommandLine {
                 }
                 return result;
             }
-            private static boolean initFromMethodParameters(Object scope, Method method, CommandSpec receiver, IFactory factory) {
+            private static boolean initFromMethodParameters(Object scope, Method method, CommandSpec receiver, Map<String, GroupSpec.Builder> groups, IFactory factory) {
                 boolean result = false;
                 int optionCount = 0;
                 for (int i = 0, count = method.getParameterTypes().length; i < count; i++) {
@@ -6904,7 +7405,7 @@ public class CommandLine {
                     } else {
                         param.position = i - optionCount;
                     }
-                    result |= initFromAnnotatedTypedMembers(new TypedMember(param, scope), receiver, factory);
+                    result |= initFromAnnotatedTypedMembers(new TypedMember(param, scope), receiver, groups, factory);
                 }
                 return result;
             }
@@ -10767,6 +11268,11 @@ public class CommandLine {
         static boolean equals(Object obj1, Object obj2) { return obj1 == null ? obj2 == null : obj1.equals(obj2); }
         static int hashCode(Object obj) {return obj == null ? 0 : obj.hashCode(); }
         static int hashCode(boolean bool) {return bool ? 1 : 0; }
+        /** Order-independent hash code; returns sum of component hash codes. */
+        static int hashCodeSum(Collection<?> list) {
+            if (list == null) { return 0; }
+            int result = 0; for (Object o : list) result += hashCode(o); return result;
+        }
         static void assertTrue(boolean condition, String message) {
             if (!condition) throw new IllegalStateException(message);
         }
@@ -10982,10 +11488,16 @@ public class CommandLine {
         }
     }
 
+    /** Exception indicating that multiple named elements have incorrectly used the same name.
+     * @since 4.0 */
+    public static class DuplicateNameException extends InitializationException {
+        private static final long serialVersionUID = -4126747467955626054L;
+        public DuplicateNameException(String msg) { super(msg); }
+    }
     /**
      * Exception indicating that multiple fields have been annotated with the same Option name.
      */
-    public static class DuplicateOptionAnnotationsException extends InitializationException {
+    public static class DuplicateOptionAnnotationsException extends DuplicateNameException {
         private static final long serialVersionUID = -3355128012575075641L;
         public DuplicateOptionAnnotationsException(String msg) { super(msg); }
 
