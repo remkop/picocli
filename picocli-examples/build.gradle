@@ -1,9 +1,18 @@
 description 'Java and Groovy examples for the picocli project.'
 
+sourceCompatibility = 1.8 // for the JSR-380 BeanValidation example
+targetCompatibility = 1.8
 dependencies {
     compile rootProject
     compile "org.apache.ivy:ivy:$ivyVersion", // for Intelli/J
-            "org.codehaus.groovy:groovy-all:$groovyVersion"
+            "org.codehaus.groovy:groovy-all:$groovyVersion",
+
+            // for the JSR-380 BeanValidation example
+            "javax.validation:validation-api:2.0.0.Final",
+            "org.hibernate.validator:hibernate-validator:6.0.2.Final",
+            "org.hibernate.validator:hibernate-validator-annotation-processor:6.0.2.Final",
+            "javax.el:javax.el-api:3.0.0",
+            "org.glassfish.web:javax.el:2.2.6"
 }
 
 def generatedResources = "$buildDir/generated-resources/main"
