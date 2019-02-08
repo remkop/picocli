@@ -4,13 +4,18 @@ import org.junit.Test;
 import picocli.CommandLine.Group;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.InitializationException;
+import picocli.CommandLine.MissingParameterException;
+import picocli.CommandLine.Model.ArgSpec;
 import picocli.CommandLine.Model.GroupSpec;
 import picocli.CommandLine.Model.CommandSpec;
 import picocli.CommandLine.Model.OptionSpec;
 import picocli.CommandLine.Model.PositionalParamSpec;
+import picocli.CommandLine.MutuallyExclusiveArgsException;
 import picocli.CommandLine.Option;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -53,7 +58,7 @@ public class GroupTest {
 
     @Test
     public void testGroupSpec_builderFactoryMethodSetsName() {
-        CommandLine.Model.GroupSpec.Builder builder = CommandLine.Model.GroupSpec.builder("AAA");
+        GroupSpec.Builder builder = GroupSpec.builder("AAA");
         builder.addArg(OPTION);
 
         assertEquals("AAA", builder.name());
@@ -62,7 +67,7 @@ public class GroupTest {
 
     @Test
     public void testGroupSpecBuilderNameMutable() {
-        CommandLine.Model.GroupSpec.Builder builder = CommandLine.Model.GroupSpec.builder("AAA");
+        GroupSpec.Builder builder = GroupSpec.builder("AAA");
         assertEquals("AAA", builder.name());
         builder.name("BBB");
         assertEquals("BBB", builder.name());
@@ -74,12 +79,12 @@ public class GroupTest {
     @Test
     public void testGroupSpecBuilderNullNameDisallowed() {
         try {
-            CommandLine.Model.GroupSpec.builder((String) null);
+            GroupSpec.builder((String) null);
             fail("Expected exception");
         } catch (NullPointerException ok) {
         }
 
-        GroupSpec.Builder builder = CommandLine.Model.GroupSpec.builder(""); // TODO empty name ok?
+        GroupSpec.Builder builder = GroupSpec.builder(""); // TODO empty name ok?
         try {
             builder.name(null);
             fail("Expected exception");
@@ -90,7 +95,7 @@ public class GroupTest {
     @Test
     public void testGroupSpecBuilderNullAnnotationDisallowed() {
         try {
-            CommandLine.Model.GroupSpec.builder((CommandLine.Group) null);
+            GroupSpec.builder((CommandLine.Group) null);
             fail("Expected exception");
         } catch (NullPointerException ok) {
         }
@@ -108,7 +113,7 @@ public class GroupTest {
         Command command = App.class.getAnnotation(Command.class);
         CommandLine.Group annotation = command.groups()[0];
         try {
-            CommandLine.Model.GroupSpec.builder(annotation).build();
+            GroupSpec.builder(annotation).build();
             fail("Expected exception");
         } catch (InitializationException ex) {
             assertEquals("Group 'abc' has no options or positional parameters", ex.getMessage());
@@ -122,12 +127,13 @@ public class GroupTest {
                 exclusive = false, validate = false, required = true,
                 headingKey = "headingKeyXXX", heading = "headingXXX", order = 123))
         class App {
-            @Option(names = "-x", groups = "abc") int x;
+            @Option(names = "-x", groups = "abc")
+            int x;
         }
 
         CommandLine commandLine = new CommandLine(new App());
         assertEquals(1, commandLine.getCommandSpec().groups().size());
-        CommandLine.Model.GroupSpec group = commandLine.getCommandSpec().groups().get("abc");
+        GroupSpec group = commandLine.getCommandSpec().groups().get("abc");
         assertNotNull(group);
 
         assertEquals("abc", group.name());
@@ -139,9 +145,8 @@ public class GroupTest {
         assertEquals(123, group.order());
 
         assertTrue(group.groups().isEmpty());
-        assertTrue(group.positionalParameters().isEmpty());
-        assertEquals(1, group.options().size());
-        OptionSpec option = group.options().get(0);
+        assertEquals(1, group.args().size());
+        OptionSpec option = (OptionSpec) group.args().iterator().next();
         assertEquals("-x", option.shortestName());
         assertEquals(Arrays.asList("abc"), option.groupNames());
         assertEquals(1, option.groupNames().size());
@@ -150,12 +155,12 @@ public class GroupTest {
 
     @Test
     public void testGroupSpecBuilderExclusiveTrueByDefault() {
-        assertTrue(CommandLine.Model.GroupSpec.builder("A").exclusive());
+        assertTrue(GroupSpec.builder("A").exclusive());
     }
 
     @Test
     public void testGroupSpecBuilderExclusiveMutable() {
-        CommandLine.Model.GroupSpec.Builder builder = CommandLine.Model.GroupSpec.builder("A");
+        GroupSpec.Builder builder = GroupSpec.builder("A");
         assertTrue(builder.exclusive());
         builder.exclusive(false);
         assertFalse(builder.exclusive());
@@ -163,12 +168,12 @@ public class GroupTest {
 
     @Test
     public void testGroupSpecBuilderRequiredFalseByDefault() {
-        assertFalse(CommandLine.Model.GroupSpec.builder("A").required());
+        assertFalse(GroupSpec.builder("A").required());
     }
 
     @Test
     public void testGroupSpecBuilderRequiredMutable() {
-        CommandLine.Model.GroupSpec.Builder builder = CommandLine.Model.GroupSpec.builder("A");
+        GroupSpec.Builder builder = GroupSpec.builder("A");
         assertFalse(builder.required());
         builder.required(true);
         assertTrue(builder.required());
@@ -181,7 +186,7 @@ public class GroupTest {
 
     @Test
     public void testGroupSpecBuilderValidateMutable() {
-        CommandLine.Model.GroupSpec.Builder builder = CommandLine.Model.GroupSpec.builder("A");
+        GroupSpec.Builder builder = GroupSpec.builder("A");
         assertTrue(builder.validate());
         builder.validate(false);
         assertFalse(builder.validate());
@@ -189,12 +194,12 @@ public class GroupTest {
 
     @Test
     public void testGroupSpecBuilderGroupNamesEmptyByDefault() {
-        assertTrue(CommandLine.Model.GroupSpec.builder("A").groupNames().isEmpty());
+        assertTrue(GroupSpec.builder("A").groupNames().isEmpty());
     }
 
     @Test
     public void testGroupSpecBuilderGroupNamesMutable() {
-        CommandLine.Model.GroupSpec.Builder builder = GroupSpec.builder("A");
+        GroupSpec.Builder builder = GroupSpec.builder("A");
         assertTrue(builder.groupNames().isEmpty());
         builder.groupNames().add("B");
         builder.groupNames().add("C");
@@ -221,25 +226,25 @@ public class GroupTest {
 
     @Test
     public void testGroupSpecBuilderOrderMinusOneByDefault() {
-        assertEquals(CommandLine.Model.GroupSpec.DEFAULT_ORDER, CommandLine.Model.GroupSpec.builder("A").order());
+        assertEquals(GroupSpec.DEFAULT_ORDER, GroupSpec.builder("A").order());
     }
 
     @Test
     public void testGroupSpecBuilderOrderMutable() {
-        GroupSpec.Builder builder = CommandLine.Model.GroupSpec.builder("A");
-        assertEquals(CommandLine.Model.GroupSpec.DEFAULT_ORDER, builder.order());
+        GroupSpec.Builder builder = GroupSpec.builder("A");
+        assertEquals(GroupSpec.DEFAULT_ORDER, builder.order());
         builder.order(34);
         assertEquals(34, builder.order());
     }
 
     @Test
     public void testGroupSpecBuilderHeadingNullByDefault() {
-        assertNull(CommandLine.Model.GroupSpec.builder("A").heading());
+        assertNull(GroupSpec.builder("A").heading());
     }
 
     @Test
     public void testGroupSpecBuilderHeadingMutable() {
-        CommandLine.Model.GroupSpec.Builder builder = CommandLine.Model.GroupSpec.builder("A");
+        GroupSpec.Builder builder = GroupSpec.builder("A");
         assertNull(builder.heading());
         builder.heading("This is a header");
         assertEquals("This is a header", builder.heading());
@@ -247,12 +252,12 @@ public class GroupTest {
 
     @Test
     public void testGroupSpecBuilderHeadingKeyNullByDefault() {
-        assertNull(CommandLine.Model.GroupSpec.builder("A").headingKey());
+        assertNull(GroupSpec.builder("A").headingKey());
     }
 
     @Test
     public void testGroupSpecBuilderHeadingKeyMutable() {
-        GroupSpec.Builder builder = CommandLine.Model.GroupSpec.builder("A");
+        GroupSpec.Builder builder = GroupSpec.builder("A");
         assertNull(builder.headingKey());
         builder.headingKey("KEY");
         assertEquals("KEY", builder.headingKey());
@@ -275,9 +280,9 @@ public class GroupTest {
 
     @Test
     public void testGroupSpecBuilderBuildCopiesBuilderAttributes() {
-        GroupSpec.Builder builder = CommandLine.Model.GroupSpec.builder("A");
+        GroupSpec.Builder builder = GroupSpec.builder("A");
         builder.addArg(OPTION);
-        CommandLine.Model.GroupSpec group = builder.build();
+        GroupSpec group = builder.build();
 
         assertEquals("A", group.name());
         assertEquals(builder.name(), group.name());
@@ -291,7 +296,7 @@ public class GroupTest {
         assertTrue(group.validate());
         assertEquals(builder.validate(), group.validate());
 
-        assertEquals(CommandLine.Model.GroupSpec.DEFAULT_ORDER, group.order());
+        assertEquals(GroupSpec.DEFAULT_ORDER, group.order());
         assertEquals(builder.order(), group.order());
 
         assertNull(group.heading());
@@ -310,17 +315,17 @@ public class GroupTest {
 
     @Test
     public void testGroupSpecBuilderBuildCopiesBuilderAttributesNonDefault() {
-        CommandLine.Model.GroupSpec.Builder builder = CommandLine.Model.GroupSpec.builder("A");
+        GroupSpec.Builder builder = GroupSpec.builder("A");
         builder.heading("my heading");
         builder.headingKey("my headingKey");
         builder.order(123);
         builder.exclusive(false);
         builder.validate(false);
         builder.required(true);
-        builder.addGroup(CommandLine.Model.GroupSpec.builder("B").addArg(OPTION).groupNames("A").build());
+        builder.addGroup(GroupSpec.builder("B").addArg(OPTION).groupNames("A").build());
 
         builder.addArg(OPTION);
-        CommandLine.Model.GroupSpec group = builder.build();
+        GroupSpec group = builder.build();
 
         assertEquals("A", group.name());
         assertEquals(builder.name(), group.name());
@@ -350,31 +355,31 @@ public class GroupTest {
 
     @Test
     public void testGroupSpecToString() {
-        String expected = "Group[A, exclusive=true, required=false, validate=true, order=-1, options=[-x], positionals=[], groups=[], headingKey=null, heading=null]";
-        assertEquals(expected, CommandLine.Model.GroupSpec.builder("A").addArg(OPTION).build().toString());
+        String expected = "Group[A, exclusive=true, required=false, validate=true, order=-1, args=[-x], groups=[], headingKey=null, heading=null]";
+        assertEquals(expected, GroupSpec.builder("A").addArg(OPTION).build().toString());
 
-        CommandLine.Model.GroupSpec.Builder builder = CommandLine.Model.GroupSpec.builder("A");
+        GroupSpec.Builder builder = GroupSpec.builder("A");
         builder.heading("my heading");
         builder.headingKey("my headingKey");
         builder.order(123);
         builder.exclusive(false);
         builder.validate(false);
         builder.required(true);
-        builder.addGroup(CommandLine.Model.GroupSpec.builder("B").groupNames("A").addArg(OPTION).build());
+        builder.addGroup(GroupSpec.builder("B").groupNames("A").addArg(OPTION).build());
         builder.addArg(PositionalParamSpec.builder().index("0..1").paramLabel("FILE").groupNames("A").build());
 
-        String expected2 = "Group[A, exclusive=false, required=true, validate=false, order=123, options=[], positionals=[0..1 (FILE)], groups=[B], headingKey='my headingKey', heading='my heading']";
+        String expected2 = "Group[A, exclusive=false, required=true, validate=false, order=123, args=[params[0..1]=FILE], groups=[B], headingKey='my headingKey', heading='my heading']";
         assertEquals(expected2, builder.build().toString());
     }
 
     @Test
     public void testGroupSpecEquals() {
-        CommandLine.Model.GroupSpec.Builder builder = CommandLine.Model.GroupSpec.builder("A");
+        GroupSpec.Builder builder = GroupSpec.builder("A");
         builder.addArg(OPTION);
-        CommandLine.Model.GroupSpec a = builder.build();
+        GroupSpec a = builder.build();
         assertEquals(a, a);
         assertNotSame(a, GroupSpec.builder("A").addArg(OPTION).build());
-        assertEquals(a, CommandLine.Model.GroupSpec.builder("A").addArg(OPTION).build());
+        assertEquals(a, GroupSpec.builder("A").addArg(OPTION).build());
 
         OptionSpec otherOption = OptionSpec.builder("-y").groupNames("A").build();
         assertNotEquals(a, GroupSpec.builder("A").addArg(OPTION).addArg(otherOption).build());
@@ -410,14 +415,14 @@ public class GroupTest {
 
     @Test
     public void testGroupSpecHashCode() {
-        CommandLine.Model.GroupSpec.Builder builder = CommandLine.Model.GroupSpec.builder("A");
+        GroupSpec.Builder builder = GroupSpec.builder("A");
         builder.addArg(OPTION);
-        CommandLine.Model.GroupSpec a = builder.build();
+        GroupSpec a = builder.build();
         assertEquals(a.hashCode(), a.hashCode());
-        assertEquals(a.hashCode(), CommandLine.Model.GroupSpec.builder("A").addArg(OPTION).build().hashCode());
+        assertEquals(a.hashCode(), GroupSpec.builder("A").addArg(OPTION).build().hashCode());
 
         OptionSpec otherOption = OptionSpec.builder("-y").groupNames("A").build();
-        assertNotEquals(a.hashCode(), CommandLine.Model.GroupSpec.builder("A").addArg(OPTION).addArg(otherOption).build().hashCode());
+        assertNotEquals(a.hashCode(), GroupSpec.builder("A").addArg(OPTION).addArg(otherOption).build().hashCode());
 
         builder.heading("my heading");
         assertNotEquals(a.hashCode(), builder.build().hashCode());
@@ -443,7 +448,7 @@ public class GroupTest {
         assertNotEquals(a.hashCode(), builder.build().hashCode());
         assertEquals(builder.build().hashCode(), builder.build().hashCode());
 
-        builder.groups().add(CommandLine.Model.GroupSpec.builder("B").groupNames("A").addArg(OPTION).build());
+        builder.groups().add(GroupSpec.builder("B").groupNames("A").addArg(OPTION).build());
         assertNotEquals(a.hashCode(), builder.build().hashCode());
         assertEquals(builder.build().hashCode(), builder.build().hashCode());
     }
@@ -459,18 +464,16 @@ public class GroupTest {
         }
         CommandLine cmd = new CommandLine(new App());
         CommandSpec spec = cmd.getCommandSpec();
-        Map<String, CommandLine.Model.GroupSpec> groups = spec.groups();
+        Map<String, GroupSpec> groups = spec.groups();
         assertEquals(1, groups.size());
 
-        CommandLine.Model.GroupSpec group = groups.get("AAA");
+        GroupSpec group = groups.get("AAA");
         assertNotNull(group);
 
-        assertTrue(group.positionalParameters().isEmpty());
-
-        List<OptionSpec> options = group.options();
+        List<ArgSpec> options = new ArrayList<ArgSpec>(group.args());
         assertEquals(2, options.size());
-        assertEquals("-x", options.get(0).shortestName());
-        assertEquals("-y", options.get(1).shortestName());
+        assertEquals("-x", ((OptionSpec) options.get(0)).shortestName());
+        assertEquals("-y", ((OptionSpec) options.get(1)).shortestName());
 
         assertEquals(1, options.get(0).groupNames().size());
         assertEquals(Arrays.asList("AAA"), options.get(0).groupNames());
@@ -480,21 +483,256 @@ public class GroupTest {
     }
 
     @Test
-    public void testProgrammatic1() {
+    public void testProgrammatic() {
         CommandSpec spec = CommandSpec.create();
         spec.addOption(OptionSpec.builder("-x").groupNames("EXCL").build());
         spec.addOption(OptionSpec.builder("-y").groupNames("EXCL").build());
         spec.addOption(OptionSpec.builder("-z").groupNames("ALL").build());
 
-        CommandLine.Model.GroupSpec exclusive = CommandLine.Model.GroupSpec.builder("EXCL")
+        GroupSpec exclusive = GroupSpec.builder("EXCL")
                 .groupNames("ALL")
                 .addArg(spec.findOption("-x"))
                 .addArg(spec.findOption("-y")).build();
-        CommandLine.Model.GroupSpec cooccur = CommandLine.Model.GroupSpec.builder("ALL")
+        GroupSpec cooccur = GroupSpec.builder("ALL")
                 .addArg(spec.findOption("-z"))
                 .addGroup(exclusive).build();
         spec.addGroup(exclusive);
         spec.addGroup(cooccur);
 
     }
-} // TODO test MutuallyExclusiveArgsException
+
+    static final OptionSpec OPTION_A = OptionSpec.builder("-a").build();
+    static final OptionSpec OPTION_B = OptionSpec.builder("-b").build();
+    static final OptionSpec OPTION_C = OptionSpec.builder("-c").build();
+
+    @Test
+    public void testValidationNonRequiredExclusive_ActualTwo() {
+        GroupSpec group = GroupSpec.builder("blah").addArg(OPTION_A).addArg(OPTION_B).build();
+        CommandLine cmd = new CommandLine(CommandSpec.create());
+
+        try {
+            group.validateConstraints(cmd, Arrays.<ArgSpec>asList(OPTION_A, OPTION_B));
+            fail("Expected exception");
+        } catch (MutuallyExclusiveArgsException ex) {
+            assertEquals("Error: -a, -b are mutually exclusive (specify only one)", ex.getMessage());
+        }
+    }
+
+    @Test
+    public void testReflectionValidationNonRequiredExclusive_ActualTwo() {
+        @Command(groups = @Group(name = "X"))
+        class App {
+            @Option(names = "-a", groups = "X") boolean a;
+            @Option(names = "-b", groups = "X") boolean b;
+        }
+        try {
+            CommandLine.populateCommand(new App(), "-a", "-b");
+            fail("Expected exception");
+        } catch (MutuallyExclusiveArgsException ex) {
+            assertEquals("Error: -a, -b are mutually exclusive (specify only one)", ex.getMessage());
+        }
+    }
+
+    @Test
+    public void testValidationNonRequiredExclusive_ActualZero() {
+        GroupSpec group = GroupSpec.builder("blah").addArg(OPTION_A).addArg(OPTION_B).build();
+        CommandLine cmd = new CommandLine(CommandSpec.create());
+
+        group.validateConstraints(cmd, Collections.<ArgSpec>emptyList());
+    }
+
+    @Test
+    public void testReflectionValidationNonRequiredExclusive_ActualZero() {
+        @Command(groups = @Group(name = "X"))
+        class App {
+            @Option(names = "-a", groups = "X") boolean a;
+            @Option(names = "-b", groups = "X") boolean b;
+        }
+        // no errors
+        CommandLine.populateCommand(new App());
+    }
+
+    @Test
+    public void testValidationRequiredExclusive_ActualZero() {
+        GroupSpec group = GroupSpec.builder("blah").required(true).addArg(OPTION_A).addArg(OPTION_B).build();
+        CommandLine cmd = new CommandLine(CommandSpec.create());
+
+        try {
+            group.validateConstraints(cmd, Collections.<ArgSpec>emptyList());
+            fail("Expected exception");
+        } catch (MissingParameterException ex) {
+            assertEquals("Error: Missing required argument (specify one of these): -a, -b", ex.getMessage());
+        }
+    }
+
+    @Test
+    public void testReflectionValidationRequiredExclusive_ActualZero() {
+        @Command(groups = @Group(name = "X", required = true))
+        class App {
+            @Option(names = "-a", groups = "X") boolean a;
+            @Option(names = "-b", groups = "X") boolean b;
+        }
+        try {
+            CommandLine.populateCommand(new App());
+            fail("Expected exception");
+        } catch (MissingParameterException ex) {
+            assertEquals("Error: Missing required argument (specify one of these): -a, -b", ex.getMessage());
+        }
+    }
+
+    @Test
+    public void testValidationNonRequiredNonExclusive_All() {
+        GroupSpec group = GroupSpec.builder("blah").exclusive(false).addArg(OPTION_A).addArg(OPTION_B).addArg(OPTION_C).build();
+        CommandLine cmd = new CommandLine(CommandSpec.create());
+
+        // no error
+        group.validateConstraints(cmd, Arrays.<ArgSpec>asList(OPTION_A, OPTION_B, OPTION_C));
+    }
+
+    @Test
+    public void testReflectionValidationNonRequiredNonExclusive_All() {
+        @Command(groups = @Group(name = "X", exclusive = false))
+        class App {
+            @Option(names = "-a", groups = "X") boolean a;
+            @Option(names = "-b", groups = "X") boolean b;
+            @Option(names = "-c", groups = "X") boolean c;
+        }
+        CommandLine.populateCommand(new App(), "-a", "-b", "-c");
+    }
+
+    @Test
+    public void testValidationNonRequiredNonExclusive_Partial() {
+        GroupSpec group = GroupSpec.builder("blah").exclusive(false).addArg(OPTION_A).addArg(OPTION_B).addArg(OPTION_C).build();
+        CommandLine cmd = new CommandLine(CommandSpec.create());
+
+        try {
+            group.validateConstraints(cmd, Arrays.<ArgSpec>asList(OPTION_A, OPTION_B));
+            fail("Expected exception");
+        } catch (MissingParameterException ex) {
+            assertEquals("Error: Missing required argument(s): -c", ex.getMessage());
+        }
+    }
+
+    @Test
+    public void testReflectionValidationNonRequiredNonExclusive_Partial() {
+        @Command(groups = @Group(name = "X", exclusive = false))
+        class App {
+            @Option(names = "-a", groups = "X") boolean a;
+            @Option(names = "-b", groups = "X") boolean b;
+            @Option(names = "-c", groups = "X") boolean c;
+        }
+        try {
+            CommandLine.populateCommand(new App(), "-a", "-b");
+            fail("Expected exception");
+        } catch (MissingParameterException ex) {
+            assertEquals("Error: Missing required argument(s): -c", ex.getMessage());
+        }
+    }
+
+    @Test
+    public void testValidationNonRequiredNonExclusive_Zero() {
+        GroupSpec group = GroupSpec.builder("blah").exclusive(false).addArg(OPTION_A).addArg(OPTION_B).addArg(OPTION_C).build();
+        CommandLine cmd = new CommandLine(CommandSpec.create());
+
+        // no error
+        group.validateConstraints(cmd, Collections.<ArgSpec>emptyList());
+    }
+
+    @Test
+    public void testReflectionValidationNonRequiredNonExclusive_Zero() {
+        @Command(groups = @Group(name = "X", exclusive = false))
+        class App {
+            @Option(names = "-a", groups = "X") boolean a;
+            @Option(names = "-b", groups = "X") boolean b;
+            @Option(names = "-c", groups = "X") boolean c;
+        }
+        CommandLine.populateCommand(new App());
+    }
+
+    @Test
+    public void testValidationRequiredNonExclusive_All() {
+        GroupSpec group = GroupSpec.builder("blah").required(true).exclusive(false).addArg(OPTION_A).addArg(OPTION_B).addArg(OPTION_C).build();
+        CommandLine cmd = new CommandLine(CommandSpec.create());
+
+        // no error
+        group.validateConstraints(cmd, Arrays.<ArgSpec>asList(OPTION_A, OPTION_B, OPTION_C));
+    }
+
+    @Test
+    public void testReflectionValidationRequiredNonExclusive_All() {
+        @Command(groups = @Group(name = "X", exclusive = false, required = true))
+        class App {
+            @Option(names = "-a", groups = "X") boolean a;
+            @Option(names = "-b", groups = "X") boolean b;
+            @Option(names = "-c", groups = "X") boolean c;
+        }
+        CommandLine.populateCommand(new App(), "-a", "-b", "-c");
+    }
+
+    @Test
+    public void testValidationRequiredNonExclusive_Partial() {
+        GroupSpec group = GroupSpec.builder("blah").required(true).exclusive(false).addArg(OPTION_A).addArg(OPTION_B).addArg(OPTION_C).build();
+        CommandLine cmd = new CommandLine(CommandSpec.create());
+
+        try {
+            group.validateConstraints(cmd, Arrays.<ArgSpec>asList(OPTION_B));
+            fail("Expected exception");
+        } catch (MissingParameterException ex) {
+            assertEquals("Error: Missing required argument(s): -a, -c", ex.getMessage());
+        }
+    }
+
+    @Test
+    public void testReflectionValidationRequiredNonExclusive_Partial() {
+        @Command(groups = @Group(name = "X", exclusive = false, required = true))
+        class App {
+            @Option(names = "-a", groups = "X") boolean a;
+            @Option(names = "-b", groups = "X") boolean b;
+            @Option(names = "-c", groups = "X") boolean c;
+        }
+        try {
+            CommandLine.populateCommand(new App(), "-b");
+            fail("Expected exception");
+        } catch (MissingParameterException ex) {
+            assertEquals("Error: Missing required argument(s): -a, -c", ex.getMessage());
+        }
+    }
+
+    @Test
+    public void testValidationRequiredNonExclusive_Zero() {
+        GroupSpec group = GroupSpec.builder("blah").required(true).exclusive(false)
+                .addArg(OPTION_A).addArg(OPTION_B).addArg(OPTION_C).build();
+        CommandLine cmd = new CommandLine(CommandSpec.create());
+
+        try {
+            group.validateConstraints(cmd, Collections.<ArgSpec>emptyList());
+            fail("Expected exception");
+        } catch (MissingParameterException ex) {
+            assertEquals("Error: Missing required argument(s): -a, -c, -b", ex.getMessage());
+        }
+    }
+
+    @Test
+    public void testReflectionValidationRequiredNonExclusive_Zero() {
+        @Command(groups = @Group(name = "X", exclusive = false, required = true))
+        class App {
+            @Option(names = "-a", groups = "X") boolean a;
+            @Option(names = "-b", groups = "X") boolean b;
+            @Option(names = "-c", groups = "X") boolean c;
+        }
+        try {
+            CommandLine.populateCommand(new App());
+            fail("Expected exception");
+        } catch (MissingParameterException ex) {
+            assertEquals("Error: Missing required argument(s): -a, -b, -c", ex.getMessage());
+        }
+    }
+
+    @Test
+    public void testRequiredGroupIgnoreDefaults() {
+        // TODO what are the semantics?
+        // 1. exclusive required group: one must exist. If none specified, fail, even if all members have a default.
+        // 2. co-occurring required group: all must exist. If any missing, fail, even if it has a default.
+
+    }
+}

@@ -5435,8 +5435,7 @@ public class CommandLine {
             public abstract boolean isPositional();
 
             /** Return the names of the groups that this option or positional parameter belongs to; may be empty but not {@code null}.
-             * Make sure this option or positional parameter has the name of the group set correctly before
-             * {@link GroupSpec.Builder#addArg(ArgSpec) adding} it to a group.
+             * Used internally by picocli when building a model from the annotations. May be ignored when using programmatic API.
              * @return immutable list of group names that this option or positional parameter belongs to
              * @since 4.0 */
             public List<String> groupNames() { return groupNames; }
@@ -5590,6 +5589,21 @@ public class CommandLine {
                         + 37 * Assert.hashCode(descriptionKey)
                         + 37 * typeInfo.hashCode()
                         ;
+            }
+
+            private static String describe(Collection<ArgSpec> args) {
+                StringBuilder sb = new StringBuilder();
+                for (ArgSpec arg : args) {
+                    if (sb.length() > 0) { sb.append(", "); }
+                    sb.append(describe(arg, "="));
+                }
+                return sb.toString();
+            }
+            private static String describe(ArgSpec argSpec, String separator) {
+                String prefix = (argSpec.isOption())
+                        ? ((OptionSpec) argSpec).longestName()
+                        : "params[" + ((PositionalParamSpec) argSpec).index() + "]";
+                return argSpec.arity().max > 0 ? prefix + separator + argSpec.paramLabel() : prefix;
             }
 
             abstract static class Builder<T extends Builder<T>> {
@@ -5800,8 +5814,7 @@ public class CommandLine {
                 public ISetter setter()        { return setter; }
 
                 /** Return the names of the groups that this option or positional parameter belongs to; may be empty but not {@code null}.
-                 * Make sure this option or positional parameter has the name of the group set correctly before
-                 * {@link GroupSpec.Builder#addArg(ArgSpec) adding} it to a group.
+                 * Used internally by picocli when building a model from the annotations. May be ignored when using programmatic API.
                  * @return list of group names that this option or positional parameter belongs to
                  * @since 4.0 */
                 public List<String> groupNames()   { return groupNames; }
@@ -6305,8 +6318,7 @@ public class CommandLine {
             private final int order;
             private final Map<String, GroupSpec> groups;
             private final List<String> groupNames;
-            private final List<OptionSpec> options;
-            private final List<PositionalParamSpec> positionals;
+            private final Set<ArgSpec> args;
 
             GroupSpec(GroupSpec.Builder builder) {
                 name       = Assert.notNull(builder.name, "name");
@@ -6318,14 +6330,7 @@ public class CommandLine {
                 order      = builder.order;
 
                 if (builder.args().isEmpty()) { throw new InitializationException("Group '" + name + "' has no options or positional parameters"); }
-                List<OptionSpec> optionList = new ArrayList<OptionSpec>();
-                List<PositionalParamSpec> positionalList = new ArrayList<PositionalParamSpec>();
-                for (ArgSpec arg : builder.args()) {
-                    if (arg.isOption()) { optionList.add((OptionSpec) arg); }
-                    else { positionalList.add((PositionalParamSpec) arg); }
-                }
-                options     = Collections.unmodifiableList(optionList);
-                positionals = Collections.unmodifiableList(positionalList);
+                args = Collections.unmodifiableSet(new LinkedHashSet<ArgSpec>(builder.args()));
 
                 Map<String, GroupSpec> groupMap = new LinkedHashMap<String, GroupSpec>();
                 for (GroupSpec group : builder.groups()) {
@@ -6391,8 +6396,7 @@ public class CommandLine {
             public String headingKey() { return headingKey; }
 
             /** Return the names of the groups that this group belongs to; may be empty but not {@code null}.
-             * Make sure this group has the name of the groups it belongs to set correctly before
-             * {@link GroupSpec.Builder#addGroup(GroupSpec) adding} it to a group.
+             * Used internally by picocli when building a model from the annotations. May be ignored when using programmatic API.
              * @return immutable list of group names that this group belongs to
              * @since 4.0 */
             public List<String> groupNames() { return groupNames; }
@@ -6402,15 +6406,12 @@ public class CommandLine {
              * @see Group#groups() */
             public Map<String, GroupSpec> groups() { return groups; }
 
-            /** Return the positional parameters in this group; may be empty but not {@code null}.
+            /** Return the options and positional parameters in this group; may be empty but not {@code null}.
+             * @see Option#groups()
              * @see Parameters#groups() */
-            public List<PositionalParamSpec> positionalParameters() {
-                return positionals;
+            public Set<ArgSpec> args() {
+                return args;
             }
-
-            /** Return the options in this group; may be empty but not {@code null}.
-             * @see Option#groups() */
-            public List<OptionSpec> options() { return options; }
 
             @Override public boolean equals(Object obj) {
                 if (obj == this) { return true; }
@@ -6424,8 +6425,7 @@ public class CommandLine {
                         && Assert.equals(heading, other.heading)
                         && Assert.equals(headingKey, other.headingKey)
                         && Assert.equals(groups.keySet(), other.groups.keySet())
-                        && Assert.equals(new HashSet<OptionSpec>(options), new HashSet<OptionSpec>(other.options))
-                        && Assert.equals(new HashSet<PositionalParamSpec>(positionals), new HashSet<PositionalParamSpec>(other.positionals));
+                        && Assert.equals(args, other.args);
             }
 
             @Override public int hashCode() {
@@ -6438,19 +6438,23 @@ public class CommandLine {
                 result += 37 * result + Assert.hashCode(heading);
                 result += 37 * result + Assert.hashCode(headingKey);
                 result += 37 * result + Assert.hashCode(groups.keySet());
-                result += 37 * result + Assert.hashCodeSum(options);
-                result += 37 * result + Assert.hashCodeSum(positionals);
+                result += 37 * result + Assert.hashCode(args);
                 return result;
             }
 
             @Override public String toString() {
-                List<String> optionNames = new ArrayList<String>();
-                for (OptionSpec o : options()) { optionNames.add(o.shortestName()); }
-                List<String> positionalNames = new ArrayList<String>();
-                for (PositionalParamSpec p : positionalParameters()) { positionalNames.add(p.index() + " (" + p.paramLabel() + ")"); }
+                List<String> argNames = new ArrayList<String>();
+                for (ArgSpec arg : args()) {
+                    if (arg instanceof OptionSpec) {
+                        argNames.add(((OptionSpec) arg).shortestName());
+                    } else {
+                        PositionalParamSpec p = (PositionalParamSpec) arg;
+                        argNames.add(p.index() + " (" + p.paramLabel() + ")");
+                    }
+                }
                 return "Group[" + name + ", exclusive=" + exclusive + ", required=" + required +
-                        ", validate=" + validate + ", order="+ order + ", options=" + optionNames +
-                        ", positionals=" + positionalNames + ", groups=" + groups.keySet() +
+                        ", validate=" + validate + ", order="+ order + ", args=[" + ArgSpec.describe(args()) +
+                        "], groups=" + groups.keySet() +
                         ", headingKey=" + quote(headingKey) + ", heading=" + quote(heading) + "]";
             }
             private static String quote(String s) { return s == null ? "null" : "'" + s + "'"; }
@@ -6498,6 +6502,33 @@ public class CommandLine {
                 processing.remove(n.name);
                 n.topologicalSortDone = Boolean.TRUE;
                 result.add(0, n);
+            }
+
+            /** Throws an exception if the constraints in this group are not met by the specified match. */
+            void validateConstraints(CommandLine commandLine, Collection<ArgSpec> matched) {
+                if (!validate()) { return; }
+                Set<ArgSpec> intersection = new HashSet<ArgSpec>(this.args());
+                intersection.retainAll(matched);
+                if (exclusive()) {
+                    if (intersection.size() > 1) {
+                        throw new MutuallyExclusiveArgsException(commandLine,
+                                "Error: " + ArgSpec.describe(intersection) + " are mutually exclusive (specify only one)");
+                    }
+                    // check that exactly one member was matched
+                    if (required() && intersection.size() < 1) {
+                        throw new MissingParameterException(commandLine, args(),
+                                "Error: Missing required argument (specify one of these): " + ArgSpec.describe(args()));
+                    }
+                } else { // co-occurring group
+                    Set<ArgSpec> missing = new HashSet<ArgSpec>(this.args());
+                    missing.removeAll(matched);
+                    boolean haveMissing = !missing.isEmpty();
+                    boolean someButNotAllSpecified = haveMissing && !intersection.isEmpty();
+                    if ((required() && haveMissing) || (!required() && someButNotAllSpecified)) {
+                        throw new MissingParameterException(commandLine, args(),
+                                "Error: Missing required argument(s): " + ArgSpec.describe(missing));
+                    }
+                }
             }
 
             /** Builder responsible for creating valid {@code GroupSpec} objects.
@@ -6587,14 +6618,12 @@ public class CommandLine {
                 public Builder headingKey(String newValue) { this.headingKey = newValue; return this; }
 
                 /** Returns the mutable list of groups that this group belongs to.
-                 * Make sure this group has the name of the groups it belongs to set correctly before
-                 * {@link GroupSpec.Builder#addGroup(GroupSpec) adding} it to a group.
+                 * Used internally by picocli when building a model from the annotations. May be ignored when using programmatic API.
                  * @see Group#groups() */
                 public List<String> groupNames() { return groupNames; }
 
                 /** Sets the mutable list of groups that this group belongs to.
-                 * Make sure this group has the name of the groups it belongs to set correctly before
-                 * {@link GroupSpec.Builder#addGroup(GroupSpec) adding} it to a group.
+                 * Used internally by picocli when building a model from the annotations. May be ignored when using programmatic API.
                  * @see Group#groups() */
                 public Builder groupNames(String... names) { return groupNames(new ArrayList<String>(Arrays.asList(names))); }
 
@@ -6604,10 +6633,8 @@ public class CommandLine {
                  * @see Group#groups() */
                 public Builder groupNames(List<String> names) { groupNames = Assert.notNull(names, "names"); return this; }
 
-                /** Adds the specified argument to the list of options and positional parameters that depend on this group.
-                 * @throws InitializationException if the {@linkplain ArgSpec#groupNames() group names} of the specified argument do not contain the name of this group */
+                /** Adds the specified argument to the list of options and positional parameters that depend on this group. */
                 public Builder addArg(ArgSpec arg) {
-                    validateGroupNames(arg.groupNames(), arg.toString());
                     args.add(arg);
                     return this;
                 }
@@ -6615,20 +6642,14 @@ public class CommandLine {
                 /** Returns the list of options and positional parameters that depend on this group.*/
                 public List<ArgSpec> args() { return args; }
 
-                /** Adds the specified group to the list of groups that this group depends on.
-                 * @throws InitializationException if the {@linkplain GroupSpec#groupNames() group names} of the specified group do not contain the name of this group */
+                /** Adds the specified group to the list of groups that this group depends on. */
                 public Builder addGroup(GroupSpec group) {
-                    validateGroupNames(group.groupNames(), "group " + group.name());
                     groups.add(group);
                     return this;
                 }
 
                 /** Returns the list of groups that this group depends on.*/
                 public List<GroupSpec> groups() { return groups; }
-
-                private void validateGroupNames(List<String> names, String source) {
-                    if (!names.contains(name())) { throw new InitializationException("Group names " + names + " in " + source + " missing name of this group: '" + name() + "'"); }
-                }
             }
         }
 
@@ -8009,6 +8030,11 @@ public class CommandLine {
                     parseResult.unmatched.add(argumentStack.pop());
                 }
             } while (!argumentStack.isEmpty() && continueOnError);
+
+            validateConstraints(argumentStack, required, initialized);
+        }
+
+        private void validateConstraints(Stack<String> argumentStack, List<ArgSpec> required, Set<ArgSpec> matched) {
             if (!isAnyHelpRequested() && !required.isEmpty()) {
                 for (ArgSpec missing : required) {
                     if (missing.isOption()) {
@@ -8025,6 +8051,9 @@ public class CommandLine {
                 }
                 if (!isUnmatchedArgumentsAllowed()) { maybeThrow(new UnmatchedArgumentException(CommandLine.this, Collections.unmodifiableList(parseResult.unmatched))); }
                 if (tracer.isInfo()) { tracer.info("Unmatched arguments: %s%n", parseResult.unmatched); }
+            }
+            for (GroupSpec group : commandSpec.groups().values()) {
+                group.validateConstraints(commandSpec.commandLine(), matched);
             }
         }
 
@@ -11268,11 +11297,6 @@ public class CommandLine {
         static boolean equals(Object obj1, Object obj2) { return obj1 == null ? obj2 == null : obj1.equals(obj2); }
         static int hashCode(Object obj) {return obj == null ? 0 : obj.hashCode(); }
         static int hashCode(boolean bool) {return bool ? 1 : 0; }
-        /** Order-independent hash code; returns sum of component hash codes. */
-        static int hashCodeSum(Collection<?> list) {
-            if (list == null) { return 0; }
-            int result = 0; for (Object o : list) result += hashCode(o); return result;
-        }
         static void assertTrue(boolean condition, String message) {
             if (!condition) throw new IllegalStateException(message);
         }
@@ -11472,20 +11496,20 @@ public class CommandLine {
         private static MissingParameterException create(CommandLine cmd, Collection<ArgSpec> missing, String separator) {
             if (missing.size() == 1) {
                 return new MissingParameterException(cmd, missing, "Missing required option '"
-                        + describe(missing.iterator().next(), separator) + "'");
+                        + ArgSpec.describe(missing.iterator().next(), separator) + "'");
             }
             List<String> names = new ArrayList<String>(missing.size());
             for (ArgSpec argSpec : missing) {
-                names.add(describe(argSpec, separator));
+                names.add(ArgSpec.describe(argSpec, separator));
             }
             return new MissingParameterException(cmd, missing, "Missing required options " + names.toString());
         }
-        private static String describe(ArgSpec argSpec, String separator) {
-            String prefix = (argSpec.isOption())
-                ? ((OptionSpec) argSpec).longestName() + separator
-                : "params[" + ((PositionalParamSpec) argSpec).index() + "]" + separator;
-            return prefix + argSpec.paramLabel();
-        }
+    }
+    /** Exception indicating that the user input included multiple arguments from a mutually exclusive group.
+     * @since 4.0 */
+    public static class MutuallyExclusiveArgsException extends ParameterException {
+        private static final long serialVersionUID = -5557715106221420986L;
+        public MutuallyExclusiveArgsException(CommandLine commandLine, String msg) { super(commandLine, msg); }
     }
 
     /** Exception indicating that multiple named elements have incorrectly used the same name.
