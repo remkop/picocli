@@ -2741,7 +2741,7 @@ public class CommandLine {
         int order() default -1;
 
         /**
-         * Specify one or more {@linkplain Group groups} that this option is part of.
+         * Specify one or more {@linkplain ArgGroup groups} that this option is part of.
          * @return the name or names of the group(s) that this option belongs to.
          * @since 4.0
          */
@@ -2927,7 +2927,7 @@ public class CommandLine {
         String descriptionKey() default "";
 
         /**
-         * Specify one or more {@linkplain Group groups} that this positional parameter is part of.
+         * Specify one or more {@linkplain ArgGroup groups} that this positional parameter is part of.
          * @return the name or names of the group(s) that this positional parameter belongs to.
          * @since 4.0
          */
@@ -3305,10 +3305,10 @@ public class CommandLine {
          */
         int usageHelpWidth() default 80;
 
-        /** Optionally define argument {@linkplain Group groups}; groups can be used to define mutually exclusive arguments,
+        /** Optionally define argument {@linkplain ArgGroup groups}; groups can be used to define mutually exclusive arguments,
          * arguments that must co-occur, or to customize the usage help message.
          * @since 4.0 */
-        Group[] groups() default {};
+        ArgGroup[] argGroups() default {};
     }
     /** A {@code Command} may define one or more {@code ArgGroups}: a group of options, positional parameters or a mixture of the two.
      * Groups can be used:
@@ -3328,11 +3328,17 @@ public class CommandLine {
      * making the group required means that one of the arguments in the group must appear on the command line, or a {@link MissingParameterException MissingParameterException} is thrown.
      * For a group of co-occurring arguments, all arguments in the group must appear on the command line.
      * </p>
-     * @see Group
+     * <p>Groups can be composed by specifying {@linkplain #subgroups() subgroups} for validation purposes:</p>
+     * <ul>
+     * <li>When the parent group is mutually exclusive, only one of the subgroups may be present.</li>
+     * <li>When the parent group is a co-occurring group, all subgroups must be present.</li>
+     * <li>When the parent group is required, at least one subgroup must be present.</li>
+     * </ul>
+     * @see ArgGroupSpec
      * @since 4.0 */
     @Retention(RetentionPolicy.RUNTIME)
     @Target({})
-    public @interface Group {
+    public @interface ArgGroup {
         /** The name of this group. Must be unique in the command. */
         String name();
 
@@ -3366,10 +3372,37 @@ public class CommandLine {
          * This attribute is only honored if {@link UsageMessageSpec#sortOptions()} is {@code false} for this command.*/
         int order() default -1;
         /**
-         * Specify one or more {@linkplain Group groups} that this group is part of.
-         * @return the name or names of the group(s) that this group belongs to.
+         * Specify one or more {@linkplain ArgGroup groups} that this group is composed of. A composite group contains other groups.
+         * <p>For example:
+         * <pre>{@code
+         * @Command(argGroups = {
+         *         @ArgGroup(name = "EXCL",      exclusive = true,  required = true),
+         *         @ArgGroup(name = "ALL",       exclusive = false, required = true),
+         *         @ArgGroup(name = "COMPOSITE", exclusive = false, required = false,
+         *                   subgroups = {"ALL", "EXCL"}),
+         * })
+         * class App {
+         *     @Option(names = "-x", groups = "EXCL") boolean x;
+         *     @Option(names = "-y", groups = "EXCL") boolean y;
+         *     @Option(names = "-a", groups = "ALL") boolean a;
+         *     @Option(names = "-b", groups = "ALL") boolean b;
+         * }
+         * }</pre>
+         * This defines a composite group with the following synopsis:
+         * <pre>{@code [(-x | -y) (-a -b)]}</pre>
+         * The composite group consists of the required exclusive group {@code (-x | -y)}
+         * and the required co-occurring group {@code (-a -b)}.
+         * </p><p>Valid user input for this group would be:</p>
+         * <ul>
+         *   <li>no options at all (because the composite group is non-required)</li>
+         *   <li>{@code -x -a -b} (in any order)</li>
+         *   <li>{@code -y -a -b} (in any order)</li>
+         * </ul>
+         * <p>Any other combination of -x, -y, -a and -b would give a validation error.</p>
+         *
+         * @return the name or names of the group(s) that together make up this group.
          */
-        String[] groups() default {};
+        String[] subgroups() default {};
     }
     /**
      * <p>
@@ -3803,7 +3836,7 @@ public class CommandLine {
             private final List<OptionSpec> options = new ArrayList<OptionSpec>();
             private final List<PositionalParamSpec> positionalParameters = new ArrayList<PositionalParamSpec>();
             private final List<UnmatchedArgsBinding> unmatchedArgs = new ArrayList<UnmatchedArgsBinding>();
-            private final Map<String, GroupSpec> groups = new LinkedHashMap<String, GroupSpec>();
+            private final Map<String, ArgGroupSpec> groups = new LinkedHashMap<String, ArgGroupSpec>();
             private final ParserSpec parser = new ParserSpec();
             private final UsageMessageSpec usageMessage = new UsageMessageSpec();
 
@@ -4098,11 +4131,19 @@ public class CommandLine {
                 return this;
             }
 
-            /** Adds the specified {@linkplain GroupSpec argument group} to the groups in this command.
+            /** Adds the specified {@linkplain ArgGroupSpec argument group} to the groups in this command.
+             * Groups must be added in topological order: subgroups should be added before the composite that references them.
              * @param group the group spec to add
              * @return this CommandSpec for method chaining
+             * @throws InitializationException if a group is added that references a subgroup that has not yet been added
+             * @see ArgGroupSpec#topologicalSort(Map)
              * @since 4.0 */
-            public CommandSpec addGroup(GroupSpec group) {
+            public CommandSpec addArgGroup(ArgGroupSpec group) {
+                for (ArgGroupSpec subgroup : group.subgroups().values()) {
+                    if (!groups.containsKey(subgroup.name())) {
+                        throw new InitializationException("Groups must be added in topological order: subgroups should be added before the composite that references them.");
+                    }
+                }
                 this.groups.put(group.name(), group);
                 return this;
             }
@@ -4147,10 +4188,10 @@ public class CommandLine {
              * @return an immutable list of positional parameters that this command recognizes. */
             public List<PositionalParamSpec> positionalParameters() { return Collections.unmodifiableList(positionalParameters); }
 
-            /** Returns the {@linkplain GroupSpec argument groups} in this command.
+            /** Returns the {@linkplain ArgGroupSpec argument groups} in this command.
              * @return an immutable map of groups of options and positional parameters in this command
              * @since 4.0 */
-            public Map<String, GroupSpec> groups() { return Collections.unmodifiableMap(groups); }
+            public Map<String, ArgGroupSpec> argGroups() { return Collections.unmodifiableMap(groups); }
 
             /** Returns a map of the option names to option spec objects configured for this command.
              * @return an immutable map of options that this command recognizes. */
@@ -6304,10 +6345,10 @@ public class CommandLine {
             }
         }
 
-        /** The {@code GroupSpec} class models a {@link Group group} of arguments (options, positional parameters or a mixture of the two).
-         * @see Group
+        /** The {@code ArgGroupSpec} class models a {@link ArgGroup group} of arguments (options, positional parameters or a mixture of the two).
+         * @see ArgGroup
          * @since 4.0 */
-        public static class GroupSpec {
+        public static class ArgGroupSpec {
             static final int DEFAULT_ORDER = -1;
             private final String name;
             private final String heading;
@@ -6316,11 +6357,12 @@ public class CommandLine {
             private final boolean required;
             private final boolean validate;
             private final int order;
-            private final Map<String, GroupSpec> groups;
-            private final List<String> groupNames;
+            private final Map<String, ArgGroupSpec> subgroups;
+            private final List<String> subgroupNames;
             private final Set<ArgSpec> args;
+            private final List<ArgGroupSpec> parentGroups;
 
-            GroupSpec(GroupSpec.Builder builder) {
+            ArgGroupSpec(ArgGroupSpec.Builder builder) {
                 name       = Assert.notNull(builder.name, "name");
                 heading    = builder.heading;
                 headingKey = builder.headingKey;
@@ -6329,16 +6371,18 @@ public class CommandLine {
                 validate   = builder.validate;
                 order      = builder.order;
 
-                if (builder.args().isEmpty()) { throw new InitializationException("Group '" + name + "' has no options or positional parameters"); }
                 args = Collections.unmodifiableSet(new LinkedHashSet<ArgSpec>(builder.args()));
 
-                Map<String, GroupSpec> groupMap = new LinkedHashMap<String, GroupSpec>();
-                for (GroupSpec group : builder.groups()) {
-                    GroupSpec previous = groupMap.put(group.name(), group);
-                    if (previous != null && !previous.equals(group)) { throw new DuplicateNameException("Different Groups should not use the same name '" + group.name() + "'");}
+                Map<String, ArgGroupSpec> groupMap = new LinkedHashMap<String, ArgGroupSpec>();
+                for (ArgGroupSpec subgroup : builder.subgroups()) {
+                    ArgGroupSpec previous = groupMap.put(subgroup.name(), subgroup);
+                    if (previous != null && !previous.equals(subgroup)) { throw new DuplicateNameException("Different subgroups should not use the same name '" + subgroup.name() + "'");}
                 }
-                groups = Collections.unmodifiableMap(groupMap);
-                groupNames = Collections.unmodifiableList(new ArrayList<String>(builder.groupNames()));
+                parentGroups = new ArrayList<ArgGroupSpec>();
+                subgroups = Collections.unmodifiableMap(groupMap);
+                subgroupNames = Collections.unmodifiableList(new ArrayList<String>(builder.subgroupNames()));
+                if (args.isEmpty() && subgroups.isEmpty()) { throw new InitializationException("ArgGroup '" + name + "' has no options or positional parameters, and no subgroups"); }
+                for (ArgGroupSpec subgroup : subgroups.values()) { subgroup.parentGroups.add(this); }
             }
 
             /** Returns a new {@link Builder} with the group name set to the specified value.
@@ -6349,7 +6393,7 @@ public class CommandLine {
             /** Returns a new {@link Builder} initialized from the specified annotation values.
              * @param group annotation values
              * @return a new Builder instance */
-            public static Builder builder(Group group) {
+            public static Builder builder(ArgGroup group) {
                 return new Builder().name(group.name())
                         .heading(group.heading())
                         .headingKey(group.headingKey())
@@ -6357,29 +6401,29 @@ public class CommandLine {
                         .required(group.required())
                         .validate(group.validate())
                         .order(group.order())
-                        .groupNames(Arrays.asList(group.groups()));
+                        .subgroupNames(Arrays.asList(group.subgroups()));
             }
 
             /** Returns the name of this group. Must be unique in the command.
-             * @see Group#name() */
+             * @see ArgGroup#name() */
             public String name() { return name; }
 
             /** Returns whether this is a mutually exclusive group; {@code true} by default.
              * If {@code false}, this is a co-occurring group. Ignored if {@link #validate()} is {@code false}.
-             * @see Group#exclusive() */
+             * @see ArgGroup#exclusive() */
             public boolean exclusive() { return exclusive; }
 
             /** Returns whether this is a required group; {@code false} by default.
              * For a group of mutually exclusive arguments, making the group required means that one of the arguments in the group must appear on the command line, or a MissingParameterException is thrown. For a group of co-occurring arguments, all arguments in the group must appear on the command line.
              * Ignored if {@link #validate()} is {@code false}.
-             * @see Group#required() */
+             * @see ArgGroup#required() */
             public boolean required() { return required; }
 
             /** Returns whether picocli should validate the rules of this group:
              * for a mutually exclusive group this means that no more than one arguments in the group is specified on the command line;
              * for a co-ocurring group this means that all arguments in the group are specified on the command line.
              * {@code true} by default.
-             * @see Group#validate() */
+             * @see ArgGroup#validate() */
             public boolean validate() { return validate; }
 
             /** Returns the position in the options list in the usage help message at which this group should be shown.
@@ -6388,23 +6432,23 @@ public class CommandLine {
             public int order() { return this.order; }
 
             /** Returns the heading of this group (may be {@code null}), used when generating the usage documentation.
-             * @see Group#heading() */
+             * @see ArgGroup#heading() */
             public String heading()  { return heading; }
 
             /** Returns the heading key of this group (may be {@code null}), used to get the heading from a resource bundle.
-             * @see Group#headingKey()  */
+             * @see ArgGroup#headingKey()  */
             public String headingKey() { return headingKey; }
 
-            /** Return the names of the groups that this group belongs to; may be empty but not {@code null}.
+            /** Return the names of the subgroups that this group is composed of; may be empty but not {@code null}.
              * Used internally by picocli when building a model from the annotations. May be ignored when using programmatic API.
-             * @return immutable list of group names that this group belongs to
+             * @return immutable list of subgroup names that this group is composed of
              * @since 4.0 */
-            public List<String> groupNames() { return groupNames; }
+            public List<String> subgroupNames() { return subgroupNames; }
 
-            /** Return the groups that this group belongs to; may be empty but not {@code null}.
-             * @return immutable map of groups by name that this group belongs to.
-             * @see Group#groups() */
-            public Map<String, GroupSpec> groups() { return groups; }
+            /** Return the subgroups that this group is composed of; may be empty but not {@code null}.
+             * @return immutable map of subgroups by name that this group is composed of.
+             * @see ArgGroup#subgroups() */
+            public Map<String, ArgGroupSpec> subgroups() { return subgroups; }
 
             /** Return the options and positional parameters in this group; may be empty but not {@code null}.
              * @see Option#groups()
@@ -6413,10 +6457,30 @@ public class CommandLine {
                 return args;
             }
 
+            public String synopsis() {
+                String infix = exclusive() ? " | " : " ";
+                String result = "";
+                for (ArgSpec arg : args()) {
+                    if (result.length() > 0) { result += infix; }
+                    if (arg instanceof OptionSpec) {
+                        result += ((OptionSpec) arg).shortestName();
+                    } else {
+                        result += arg.paramLabel();
+                    }
+                }
+                for (ArgGroupSpec subgroup : subgroups().values()) {
+                    if (result.length() > 0) { result += infix; }
+                    result += subgroup.synopsis();
+                }
+                String prefix = required() ? "(" : "[";
+                String postfix = required() ? ")" : "]";
+                return prefix + result + postfix;
+            }
+
             @Override public boolean equals(Object obj) {
                 if (obj == this) { return true; }
-                if (!(obj instanceof GroupSpec)) { return false; }
-                GroupSpec other = (GroupSpec) obj;
+                if (!(obj instanceof ArgGroupSpec)) { return false; }
+                ArgGroupSpec other = (ArgGroupSpec) obj;
                 return Assert.equals(name, other.name)
                         && exclusive == other.exclusive
                         && required == other.required
@@ -6424,7 +6488,7 @@ public class CommandLine {
                         && order == other.order
                         && Assert.equals(heading, other.heading)
                         && Assert.equals(headingKey, other.headingKey)
-                        && Assert.equals(groups.keySet(), other.groups.keySet())
+                        && Assert.equals(subgroups.keySet(), other.subgroups.keySet())
                         && Assert.equals(args, other.args);
             }
 
@@ -6437,7 +6501,7 @@ public class CommandLine {
                 result += 37 * result + order;
                 result += 37 * result + Assert.hashCode(heading);
                 result += 37 * result + Assert.hashCode(headingKey);
-                result += 37 * result + Assert.hashCode(groups.keySet());
+                result += 37 * result + Assert.hashCode(subgroups.keySet());
                 result += 37 * result + Assert.hashCode(args);
                 return result;
             }
@@ -6452,9 +6516,9 @@ public class CommandLine {
                         argNames.add(p.index() + " (" + p.paramLabel() + ")");
                     }
                 }
-                return "Group[" + name + ", exclusive=" + exclusive + ", required=" + required +
+                return "ArgGroup[" + name + ", exclusive=" + exclusive + ", required=" + required +
                         ", validate=" + validate + ", order="+ order + ", args=[" + ArgSpec.describe(args()) +
-                        "], groups=" + groups.keySet() +
+                        "], subgroups=" + subgroups.keySet() +
                         ", headingKey=" + quote(headingKey) + ", heading=" + quote(heading) + "]";
             }
             private static String quote(String s) { return s == null ? "null" : "'" + s + "'"; }
@@ -6465,16 +6529,24 @@ public class CommandLine {
                 return topologicalSort(groupsByName);
             }
 
-            private static List<Builder> topologicalSort(Map<String, Builder> groupsByName) {
+            /**
+             * Sorts groups in topological order, based on the builder's {@link Builder#subgroupNames() subgroupNames}:
+             * subgroups should come before the composite group that references them.
+             * @param original the source map (this is not modified)
+             * @return a list of ArgGroupSpec.Builders in topological order
+             * @since 4.0
+             */
+            private static List<Builder> topologicalSort(Map<String, Builder> original) {
+                Map<String, Builder> groupsByName = new HashMap<String, Builder>(original);
                 // build directed graph
-                for (Builder g : groupsByName.values()) { g.groupsDependingOnMe.clear(); }
+                for (Builder g : groupsByName.values()) { g.compositesReferencingMe.clear(); }
                 for (Builder g : groupsByName.values()) {
-                    for (String depName : g.groupNames()) {
-                        Builder dependency = groupsByName.get(depName);
-                        if (dependency == null) {
-                            throw new IllegalStateException("Group '" + g.name + "' depends on '" + depName + "', but no group with name '" + depName + "' exists.");
+                    for (String subName : g.subgroupNames()) {
+                        Builder subgroup = groupsByName.get(subName);
+                        if (subgroup == null) {
+                            throw new InitializationException("ArgGroup '" + g.name + "' depends on '" + subName + "', but no group with name '" + subName + "' exists.");
                         }
-                        dependency.groupsDependingOnMe.add(g);
+                        subgroup.compositesReferencingMe.add(g);
                     }
                 }
                 // reset flags used by topological sort
@@ -6485,113 +6557,183 @@ public class CommandLine {
                 while (!groupsByName.isEmpty()) {
                     Builder g = groupsByName.entrySet().iterator().next().getValue();
                     if (g.topologicalSortDone == null) {
-                        visit(g, processing, result);
+                        visit(g, original, processing, result);
                     }
                     groupsByName.remove(g.name());
                 }
                 return result;
             }
 
-            private static void visit(Builder n, List<String> processing, List<Builder> result) {
+            private static void visit(Builder n, Map<String, Builder> all, List<String> processing, List<Builder> result) {
                 if (n == null || n.topologicalSortDone == Boolean.TRUE) { return; }
                 processing.add(0, n.name);
-                if (n.topologicalSortDone == Boolean.FALSE) { throw new IllegalStateException("Cyclic group dependency: " + n + " in " + processing); }
+                if (n.topologicalSortDone == Boolean.FALSE) {
+                    throw new InitializationException("Cyclic group dependency: " + n + " in " + processing);
+                }
                 n.topologicalSortDone = Boolean.FALSE;
 
-                for (Builder m : n.groupsDependingOnMe) { visit(m, processing, result); }
+                for (Builder m : n.compositesReferencingMe) { visit(m, all, processing, result); }
                 processing.remove(n.name);
                 n.topologicalSortDone = Boolean.TRUE;
                 result.add(0, n);
             }
 
+            enum GroupValidationResult {
+                SUCCESS_PRESENT, SUCCESS_ABSENT,
+                FAILURE_PRESENT, FAILURE_ABSENT, FAILURE_PARTIAL;
+                boolean blockingFailure() { return this == FAILURE_PRESENT || this == FAILURE_PARTIAL; }
+                boolean absent()          { return this == SUCCESS_ABSENT  || this == FAILURE_ABSENT; }
+                boolean present()         { return this == SUCCESS_PRESENT /*|| this == FAILURE_PRESENT*/; }
+            }
+
+            private ParameterException validationException;
+            private GroupValidationResult validationResult;
+
+            void clearValidationResult() {
+                validationException = null;
+                validationResult = null;
+            }
+
             /** Throws an exception if the constraints in this group are not met by the specified match. */
             void validateConstraints(CommandLine commandLine, Collection<ArgSpec> matched) {
                 if (!validate()) { return; }
-                Set<ArgSpec> intersection = new HashSet<ArgSpec>(this.args());
-                intersection.retainAll(matched);
-                if (exclusive()) {
-                    if (intersection.size() > 1) {
-                        throw new MutuallyExclusiveArgsException(commandLine,
-                                "Error: " + ArgSpec.describe(intersection) + " are mutually exclusive (specify only one)");
-                    }
-                    // check that exactly one member was matched
-                    if (required() && intersection.size() < 1) {
-                        throw new MissingParameterException(commandLine, args(),
-                                "Error: Missing required argument (specify one of these): " + ArgSpec.describe(args()));
-                    }
-                } else { // co-occurring group
-                    Set<ArgSpec> missing = new HashSet<ArgSpec>(this.args());
-                    missing.removeAll(matched);
-                    boolean haveMissing = !missing.isEmpty();
-                    boolean someButNotAllSpecified = haveMissing && !intersection.isEmpty();
-                    if ((required() && haveMissing) || (!required() && someButNotAllSpecified)) {
-                        throw new MissingParameterException(commandLine, args(),
-                                "Error: Missing required argument(s): " + ArgSpec.describe(missing));
-                    }
+
+                validationResult = validateArgs(commandLine, matched);
+                if (validationResult == GroupValidationResult.FAILURE_PRESENT
+                        || validationResult == GroupValidationResult.FAILURE_PARTIAL) {
+                    throw validationException; // composite parent validations cannot succeed anyway
+                }
+                // validate groups
+                EnumSet<GroupValidationResult> validationResults = validateGroups(commandLine);
+
+                if (validationResults.contains(GroupValidationResult.FAILURE_PRESENT)
+                || validationResults.contains(GroupValidationResult.FAILURE_PARTIAL)) {
+                    throw validationException; // composite parent validations cannot succeed anyway
+                }
+                if (validationException != null && parentGroups.isEmpty()) {
+                    throw validationException;
                 }
             }
 
-            /** Builder responsible for creating valid {@code GroupSpec} objects.
+            private EnumSet<GroupValidationResult> validateGroups(CommandLine commandLine) {
+                EnumSet<GroupValidationResult> validationResults = EnumSet.of(validationResult);
+                if (subgroups().isEmpty()) { return validationResults; }
+                int elementCount = args().size() + subgroups().size();
+                int presentCount = validationResult.present() ? 1 : 0;
+                for (ArgGroupSpec subgroup : subgroups().values()) {
+                    validationResults.add(Assert.notNull(subgroup.validationResult, "subgroup validation result"));
+                    if (subgroup.validationResult.present()) { presentCount++; }
+                }
+                validationResult = validate(commandLine, presentCount, presentCount < elementCount,
+                        presentCount > 0 && presentCount < elementCount, synopsis(), synopsis(), synopsis());
+                return validationResults;
+            }
+
+            private GroupValidationResult validateArgs(CommandLine commandLine, Collection<ArgSpec> matched) {
+                if (args().isEmpty()) { return GroupValidationResult.SUCCESS_ABSENT; }
+                Set<ArgSpec> intersection = new HashSet<ArgSpec>(this.args());
+                intersection.retainAll(matched);
+                int presentCount = intersection.size();
+                Set<ArgSpec> missing = new HashSet<ArgSpec>(this.args());
+                missing.removeAll(matched);
+                boolean haveMissing = !missing.isEmpty();
+                boolean someButNotAllSpecified = haveMissing && !intersection.isEmpty();
+                String exclusiveElements = ArgSpec.describe(intersection);
+                String requiredElements = ArgSpec.describe(args());
+                String missingElements = ArgSpec.describe(missing);
+
+                return validate(commandLine, presentCount, haveMissing, someButNotAllSpecified, exclusiveElements, requiredElements, missingElements);
+            }
+
+            private GroupValidationResult validate(CommandLine commandLine, int presentCount, boolean haveMissing, boolean someButNotAllSpecified, String exclusiveElements, String requiredElements, String missingElements) {
+                if (exclusive()) {
+                    if (presentCount > 1) {
+                        validationException = new MutuallyExclusiveArgsException(commandLine,
+                                "Error: " + exclusiveElements + " are mutually exclusive (specify only one)");
+                        return GroupValidationResult.FAILURE_PRESENT;
+                    }
+                    // check that exactly one member was matched
+                    if (required() && presentCount < 1) {
+                        validationException = new MissingParameterException(commandLine, args(),
+                                "Error: Missing required argument (specify one of these): " + requiredElements);
+                        return GroupValidationResult.FAILURE_ABSENT;
+                    }
+                    return GroupValidationResult.SUCCESS_PRESENT;
+                } else { // co-occurring group
+                    if ((required() && haveMissing)) {
+                        validationException = new MissingParameterException(commandLine, args(),
+                                "Error: Missing required argument(s): " + missingElements);
+                        return GroupValidationResult.FAILURE_ABSENT;
+                    } else if (!required() && someButNotAllSpecified) {
+                        validationException = new MissingParameterException(commandLine, args(),
+                                "Error: Missing required argument(s): " + missingElements);
+                        return GroupValidationResult.FAILURE_PARTIAL;
+                    }
+                    return haveMissing ? GroupValidationResult.SUCCESS_ABSENT : GroupValidationResult.SUCCESS_PRESENT;
+                }
+            }
+
+            /** Builder responsible for creating valid {@code ArgGroupSpec} objects.
              * @since 4.0 */
             public static class Builder {
                 private String name;
                 private String heading;
                 private String headingKey;
-                private boolean exclusive         = true;
-                private boolean required          = false;
-                private boolean validate          = true;
-                private int order                 = DEFAULT_ORDER;
-                private List<ArgSpec> args        = new ArrayList<ArgSpec>();
-                private List<String> groupNames   = new ArrayList<String>();
-                private List<GroupSpec> groups = new ArrayList<GroupSpec>();
+                private boolean exclusive  = true;
+                private boolean required   = false;
+                private boolean validate   = true;
+                private int order          = DEFAULT_ORDER;
+                private List<ArgSpec> args = new ArrayList<ArgSpec>();
+                private List<String> subgroupNames   = new ArrayList<String>();
+                private List<ArgGroupSpec> subgroups = new ArrayList<ArgGroupSpec>();
 
                 // for topological sorting; private only
                 private Boolean topologicalSortDone;
-                private List<Builder> groupsDependingOnMe = new ArrayList<Builder>();
+                private List<Builder> compositesReferencingMe = new ArrayList<Builder>();
 
                 Builder() {}
-                /** Returns a valid {@code GroupSpec} instance. */
-                public GroupSpec build() { return new GroupSpec(this); }
+                /** Returns a valid {@code ArgGroupSpec} instance. */
+                public ArgGroupSpec build() { return new ArgGroupSpec(this); }
 
                 /** Returns the name of this group. Must be unique in the command.
-                 * @see Group#name() */
+                 * @see ArgGroup#name() */
                 public String name() { return name; }
 
                 /** Sets the name of this group. Must be unique in the command.
-                 * @see Group#name() */
+                 * @see ArgGroup#name() */
                 public Builder name(String name) { this.name = Assert.notNull(name, "name"); return this; }
 
                 /** Returns whether this is a mutually exclusive group; {@code true} by default.
                  * If {@code false}, this is a co-occurring group. Ignored if {@link #validate()} is {@code false}.
-                 * @see Group#exclusive() */
+                 * @see ArgGroup#exclusive() */
                 public boolean exclusive() { return exclusive; }
                 /** Sets whether this is a mutually exclusive group; {@code true} by default.
                  * If {@code false}, this is a co-occurring group. Ignored if {@link #validate()} is {@code false}.
-                 * @see Group#exclusive() */
+                 * @see ArgGroup#exclusive() */
                 public Builder exclusive(boolean newValue) { exclusive = newValue; return this; }
 
                 /** Returns whether this is a required group; {@code false} by default.
                  * For a group of mutually exclusive arguments, making the group required means that one of the arguments in the group must appear on the command line, or a MissingParameterException is thrown. For a group of co-occurring arguments, all arguments in the group must appear on the command line.
                  * Ignored if {@link #validate()} is {@code false}.
-                 * @see Group#required() */
+                 * @see ArgGroup#required() */
                 public boolean required() { return required; }
                 /** Sets whether this is a required group; {@code false} by default.
                  * For a group of mutually exclusive arguments, making the group required means that one of the arguments in the group must appear on the command line, or a MissingParameterException is thrown. For a group of co-occurring arguments, all arguments in the group must appear on the command line.
                  * Ignored if {@link #validate()} is {@code false}.
-                 * @see Group#required() */
+                 * @see ArgGroup#required() */
                 public Builder required(boolean newValue) { required = newValue; return this; }
 
                 /** Returns whether picocli should validate the rules of this group:
                  * for a mutually exclusive group this means that no more than one arguments in the group is specified on the command line;
                  * for a co-ocurring group this means that all arguments in the group are specified on the command line.
                  * {@code true} by default.
-                 * @see Group#validate() */
+                 * @see ArgGroup#validate() */
                 public boolean validate() { return validate; }
                 /** Sets whether picocli should validate the rules of this group:
                  * for a mutually exclusive group this means that no more than one arguments in the group is specified on the command line;
                  * for a co-ocurring group this means that all arguments in the group are specified on the command line.
                  * {@code true} by default.
-                 * @see Group#validate() */
+                 * @see ArgGroup#validate() */
                 public Builder validate(boolean newValue) { validate = newValue; return this; }
 
                 /** Returns the position in the options list in the usage help message at which this group should be shown.
@@ -6603,35 +6745,33 @@ public class CommandLine {
                 public Builder order(int order) { this.order = order; return this; }
 
                 /** Returns the heading of this group, used when generating the usage documentation.
-                 * @see Group#heading() */
+                 * @see ArgGroup#heading() */
                 public String heading() { return heading; }
 
                 /** Sets the heading of this group (may be {@code null}), used when generating the usage documentation.
-                 * @see Group#heading() */
+                 * @see ArgGroup#heading() */
                 public Builder heading(String newValue) { this.heading = newValue; return this; }
 
                 /** Returns the heading key of this group, used to get the heading from a resource bundle.
-                 * @see Group#headingKey()  */
+                 * @see ArgGroup#headingKey()  */
                 public String headingKey() { return headingKey; }
                 /** Sets the heading key of this group, used to get the heading from a resource bundle.
-                 * @see Group#headingKey()  */
+                 * @see ArgGroup#headingKey()  */
                 public Builder headingKey(String newValue) { this.headingKey = newValue; return this; }
 
-                /** Returns the mutable list of groups that this group belongs to.
+                /** Returns the mutable list of subgroups that this group is composed of.
                  * Used internally by picocli when building a model from the annotations. May be ignored when using programmatic API.
-                 * @see Group#groups() */
-                public List<String> groupNames() { return groupNames; }
+                 * @see ArgGroup#subgroups() */
+                public List<String> subgroupNames() { return subgroupNames; }
 
-                /** Sets the mutable list of groups that this group belongs to.
+                /** Sets the mutable list of subgroups that this group is composed of.
                  * Used internally by picocli when building a model from the annotations. May be ignored when using programmatic API.
-                 * @see Group#groups() */
-                public Builder groupNames(String... names) { return groupNames(new ArrayList<String>(Arrays.asList(names))); }
+                 * @see ArgGroup#subgroups() */
+                public Builder subgroupNames(String... names) { return subgroupNames(new ArrayList<String>(Arrays.asList(names))); }
 
-                /** Sets the mutable list of groups that this group belongs to.
-                 * Make sure this group has the name of the groups it belongs to set correctly before
-                 * {@link GroupSpec.Builder#addGroup(GroupSpec) adding} it to a group.
-                 * @see Group#groups() */
-                public Builder groupNames(List<String> names) { groupNames = Assert.notNull(names, "names"); return this; }
+                /** Sets the mutable list of subgroups that this group is composed of.
+                 * @see ArgGroup#subgroups() */
+                public Builder subgroupNames(List<String> names) { subgroupNames = Assert.notNull(names, "names"); return this; }
 
                 /** Adds the specified argument to the list of options and positional parameters that depend on this group. */
                 public Builder addArg(ArgSpec arg) {
@@ -6642,14 +6782,18 @@ public class CommandLine {
                 /** Returns the list of options and positional parameters that depend on this group.*/
                 public List<ArgSpec> args() { return args; }
 
-                /** Adds the specified group to the list of groups that this group depends on. */
-                public Builder addGroup(GroupSpec group) {
-                    groups.add(group);
+                /** Adds the specified group to the list of subgroups that this group is composed of. */
+                public Builder addSubgroup(ArgGroupSpec group) {
+                    subgroups.add(group);
                     return this;
                 }
 
-                /** Returns the list of groups that this group depends on.*/
-                public List<GroupSpec> groups() { return groups; }
+                /** Returns the list of subgroups that this group is composed of.*/
+                public List<ArgGroupSpec> subgroups() { return subgroups; }
+
+                @Override public String toString() {
+                    return "ArgGroupSpec.Builder[" + name + ", -> " + subgroupNames + "]";
+                }
             }
         }
 
@@ -7261,7 +7405,7 @@ public class CommandLine {
 
                 CommandSpec result = CommandSpec.wrapWithoutInspection(Assert.notNull(instance, "command"));
 
-                Map<String, GroupSpec.Builder> groupBuilders = new LinkedHashMap<String, GroupSpec.Builder>();
+                Map<String, ArgGroupSpec.Builder> groupBuilders = new LinkedHashMap<String, ArgGroupSpec.Builder>();
                 Stack<Class<?>> hierarchy = new Stack<Class<?>>();
                 while (cls != null) { hierarchy.add(cls); cls = cls.getSuperclass(); }
                 boolean hasCommandAnnotation = false;
@@ -7298,19 +7442,19 @@ public class CommandLine {
                 }
                 result.updateArgSpecMessages();
 
-                // Group initialization:
+                // ArgGroup initialization:
                 // by now all options and parameters have been added to the correct group builder.
-                // Next, add the groups themselves, then validate.
-                List<GroupSpec.Builder> sorted = GroupSpec.topologicalSort(groupBuilders);
-                for (GroupSpec.Builder builder : sorted) {
+                // Next, add the groups themselves: first build the simple groups that have no subgroups,
+                // then build the groups that only have simple groups as subgroups, etc.
+                List<ArgGroupSpec.Builder> sorted = ArgGroupSpec.topologicalSort(groupBuilders);
+                for (ArgGroupSpec.Builder builder : sorted) {
                     // the groups that this group depends on should have been added now, so we can build it
-                    GroupSpec group = builder.build();
-                    for (String groupName : group.groupNames()) {
-                        GroupSpec.Builder dependency = groupBuilders.get(groupName);
-                        if (dependency == null) { throw new InitializationException("Group '" + group.name() + "' is annotated with groups = '" + groupName + "', but no such group exists."); }
-                        dependency.addGroup(group);
+                    for (String subgroupName : builder.subgroupNames()) {
+                        ArgGroupSpec subgroup = result.argGroups().get(subgroupName);
+                        if (subgroup == null) { throw new InitializationException("ArgGroup '" + builder.name() + "' is annotated with subgroups = '" + subgroupName + "', but no such group exists."); }
+                        builder.addSubgroup(subgroup);
                     }
-                    result.addGroup(group);
+                    result.addArgGroup(builder.build());
                 }
 
                 if (annotationsAreMandatory) {validateCommandSpec(result, hasCommandAnnotation, commandClassName); }
@@ -7318,9 +7462,9 @@ public class CommandLine {
                 return result;
             }
 
-            private static void addGroups(Command cmd, Map<String, GroupSpec.Builder> groups) {
-                for (Group group : cmd.groups()) {
-                    groups.put(group.name(), GroupSpec.builder(group));
+            private static void addGroups(Command cmd, Map<String, ArgGroupSpec.Builder> groups) {
+                for (ArgGroup group : cmd.argGroups()) {
+                    groups.put(group.name(), ArgGroupSpec.builder(group));
                 }
             }
 
@@ -7371,7 +7515,7 @@ public class CommandLine {
                 }
                 return subCommand.name();
             }
-            private static boolean initFromAnnotatedFields(Object scope, Class<?> cls, CommandSpec receiver, Map<String, GroupSpec.Builder> groups, IFactory factory) {
+            private static boolean initFromAnnotatedFields(Object scope, Class<?> cls, CommandSpec receiver, Map<String, ArgGroupSpec.Builder> groups, IFactory factory) {
                 boolean result = false;
                 for (Field field : cls.getDeclaredFields()) {
                     result |= initFromAnnotatedTypedMembers(TypedMember.createIfAnnotated(field, scope), receiver, groups, factory);
@@ -7383,7 +7527,7 @@ public class CommandLine {
             }
             private static boolean initFromAnnotatedTypedMembers(TypedMember member,
                                                                  CommandSpec receiver,
-                                                                 Map<String, GroupSpec.Builder> groups,
+                                                                 Map<String, ArgGroupSpec.Builder> groups,
                                                                  IFactory factory) {
                 boolean result = false;
                 if (member == null) { return result; }
@@ -7404,7 +7548,7 @@ public class CommandLine {
                     else if (member.isParameter()) { arg = PositionalParamSpec.builder(member, factory).build(); }
                     else                           { arg = PositionalParamSpec.builder(member, factory).build(); }
                     for (String groupName : arg.groupNames()) {
-                        GroupSpec.Builder group = groups.get(groupName);
+                        ArgGroupSpec.Builder group = groups.get(groupName);
                         if (group == null) { throw new InitializationException(member.getToString() + " is annotated with groups = '" + groupName + "', but no such group exists."); }
                         group.addArg(arg);
                     }
@@ -7416,7 +7560,7 @@ public class CommandLine {
                 }
                 return result;
             }
-            private static boolean initFromMethodParameters(Object scope, Method method, CommandSpec receiver, Map<String, GroupSpec.Builder> groups, IFactory factory) {
+            private static boolean initFromMethodParameters(Object scope, Method method, CommandSpec receiver, Map<String, ArgGroupSpec.Builder> groups, IFactory factory) {
                 boolean result = false;
                 int optionCount = 0;
                 for (int i = 0, count = method.getParameterTypes().length; i < count; i++) {
@@ -8052,7 +8196,11 @@ public class CommandLine {
                 if (!isUnmatchedArgumentsAllowed()) { maybeThrow(new UnmatchedArgumentException(CommandLine.this, Collections.unmodifiableList(parseResult.unmatched))); }
                 if (tracer.isInfo()) { tracer.info("Unmatched arguments: %s%n", parseResult.unmatched); }
             }
-            for (GroupSpec group : commandSpec.groups().values()) {
+            // loop over groups in topological order
+            for (ArgGroupSpec group : commandSpec.argGroups().values()) {
+                group.clearValidationResult();
+            }
+            for (ArgGroupSpec group : commandSpec.argGroups().values()) {
                 group.validateConstraints(commandSpec.commandLine(), matched);
             }
         }
