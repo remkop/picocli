@@ -1,5 +1,6 @@
 package picocli;
 
+import org.junit.Ignore;
 import org.junit.Test;
 import picocli.CommandLine.ArgGroup;
 import picocli.CommandLine.Command;
@@ -1064,11 +1065,39 @@ public class ArgGroupTest {
         assertEquals("[-x -y -z ARG1 ARG2 ARG3 [-a | -b | -c] (-e | -f)]", composite.build().synopsis());
     }
 
+    @Ignore
     @Test
-    public void testRequiredGroupIgnoreDefaults() {
-        // TODO what are the semantics?
-        // 1. exclusive required group: one must exist. If none specified, fail, even if all members have a default.
-        // 2. co-occurring required group: all must exist. If any missing, fail, even if it has a default.
+    public void testUsageHelpRequiredExclusiveGroup() {
+        @Command(argGroups = {
+                @ArgGroup(name = "EXCL", exclusive = true, required = true),
+        })
+        class App {
+            @Option(names = "-x", groups = "EXCL") boolean x;
+            @Option(names = "-y", groups = "EXCL") boolean y;
+        }
+        String expected = String.format("" +
+                "Usage: <main class> (-x | -y)%n" +
+                "  -x%n" +
+                "  -y%n");
+        String actual = new CommandLine(new App()).getUsageMessage();
+        assertEquals(expected, actual);
+    }
 
+    @Ignore
+    @Test
+    public void testUsageHelpNonRequiredExclusiveGroup() {
+        @Command(argGroups = {
+                @ArgGroup(name = "EXCL", exclusive = true, required = false),
+        })
+        class App {
+            @Option(names = "-x", groups = "EXCL") boolean x;
+            @Option(names = "-y", groups = "EXCL") boolean y;
+        }
+        String expected = String.format("" +
+                "Usage: <main class> [-x | -y]%n" +
+                "  -x%n" +
+                "  -y%n");
+        String actual = new CommandLine(new App()).getUsageMessage();
+        assertEquals(expected, actual);
     }
 }

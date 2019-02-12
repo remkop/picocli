@@ -6477,6 +6477,50 @@ public class CommandLine {
                 return prefix + result + postfix;
             }
 
+            public Text synopsisText(Help.ColorScheme colorScheme) {
+                String infix = exclusive() ? " | " : " ";
+                Text result = colorScheme.ansi().new Text(0);
+                for (ArgSpec arg : args()) {
+                    if (result.length > 0) { result = result.concat(infix); }
+                    if (arg instanceof OptionSpec) {
+                        result = concatOptionText(result, colorScheme, (OptionSpec) arg);
+                    } else {
+                        result = concatPositionalText(result, colorScheme, (PositionalParamSpec) arg);
+                    }
+                }
+                for (ArgGroupSpec subgroup : subgroups().values()) {
+                    if (result.length > 0) { result = result.concat(infix); }
+                    result = result.concat(subgroup.synopsisText(colorScheme));
+                }
+                String prefix = required() ? "(" : "[";
+                String postfix = required() ? ")" : "]";
+                return colorScheme.ansi().text(prefix).concat(result).concat(postfix);
+            }
+
+            private Text concatOptionText(Text text, Help.ColorScheme colorScheme, OptionSpec option) {
+                if (!option.hidden()) {
+                    Text name = colorScheme.optionText(option.shortestName());
+                    Text param = createLabelRenderer(option.commandSpec).renderParameterLabel(option, colorScheme.ansi(), colorScheme.optionParamStyles);
+                    text = text.concat(name).concat(param).concat("");
+                    if (option.isMultiValue()) { // e.g., -x=VAL [-x=VAL]...
+                        text = text.concat(" [").concat(name).concat(param).concat("]...");
+                    }
+                }
+                return text;
+            }
+
+            private Text concatPositionalText(Text text, Help.ColorScheme colorScheme, PositionalParamSpec positionalParam) {
+                if (!positionalParam.hidden()) {
+                    text = text.concat(" ");
+                    Text label = createLabelRenderer(positionalParam.commandSpec).renderParameterLabel(positionalParam, colorScheme.ansi(), colorScheme.parameterStyles);
+                    text = text.concat(label);
+                }
+                return text;
+            }
+            public Help.IParamLabelRenderer createLabelRenderer(CommandSpec commandSpec) {
+                return new Help.DefaultParamLabelRenderer(commandSpec);
+            }
+
             @Override public boolean equals(Object obj) {
                 if (obj == this) { return true; }
                 if (!(obj instanceof ArgGroupSpec)) { return false; }
