@@ -135,7 +135,7 @@ public class LenientParsingTest {
 
         cmd.parse(new String[] {"-t"});
         assertEquals(3, cmd.getParseResult().errors().size());
-        assertEquals("Missing required options [-v=<more>, params[0]=<mandatory>, params[1]=<alsoMandatory>]", cmd.getParseResult().errors().get(0).getMessage());
+        assertEquals("Missing required options [-v, params[0]=<mandatory>, params[1]=<alsoMandatory>]", cmd.getParseResult().errors().get(0).getMessage());
         assertEquals("Missing required parameters: <mandatory>, <alsoMandatory>", cmd.getParseResult().errors().get(1).getMessage());
         assertEquals("Missing required parameter: <alsoMandatory>", cmd.getParseResult().errors().get(2).getMessage());
     }

@@ -5644,7 +5644,7 @@ public class CommandLine {
                 String prefix = (argSpec.isOption())
                         ? ((OptionSpec) argSpec).longestName()
                         : "params[" + ((PositionalParamSpec) argSpec).index() + "]";
-                return argSpec.arity().max > 0 ? prefix + separator + argSpec.paramLabel() : prefix;
+                return argSpec.arity().min > 0 ? prefix + separator + argSpec.paramLabel() : prefix;
             }
 
             abstract static class Builder<T extends Builder<T>> {
@@ -6631,10 +6631,10 @@ public class CommandLine {
 
             private GroupValidationResult validateArgs(CommandLine commandLine, Collection<ArgSpec> matched) {
                 if (args().isEmpty()) { return GroupValidationResult.SUCCESS_ABSENT; }
-                Set<ArgSpec> intersection = new HashSet<ArgSpec>(this.args());
+                Set<ArgSpec> intersection = new LinkedHashSet<ArgSpec>(this.args());
                 intersection.retainAll(matched);
                 int presentCount = intersection.size();
-                Set<ArgSpec> missing = new HashSet<ArgSpec>(this.args());
+                Set<ArgSpec> missing = new LinkedHashSet<ArgSpec>(this.args());
                 missing.removeAll(matched);
                 boolean haveMissing = !missing.isEmpty();
                 boolean someButNotAllSpecified = haveMissing && !intersection.isEmpty();
@@ -8155,7 +8155,7 @@ public class CommandLine {
                             .subcommands().size());}
             parsedCommands.add(CommandLine.this);
             List<ArgSpec> required = new ArrayList<ArgSpec>(commandSpec.requiredArgs());
-            Set<ArgSpec> initialized = new HashSet<ArgSpec>();
+            Set<ArgSpec> initialized = new LinkedHashSet<ArgSpec>();
             Collections.sort(required, new PositionalParametersSorter());
             boolean continueOnError = commandSpec.parser().collectErrors();
             do {

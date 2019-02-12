@@ -708,7 +708,7 @@ public class ArgGroupTest {
             group.validateConstraints(cmd, Collections.<ArgSpec>emptyList());
             fail("Expected exception");
         } catch (MissingParameterException ex) {
-            assertEquals("Error: Missing required argument(s): -a, -c, -b", ex.getMessage());
+            assertEquals("Error: Missing required argument(s): -a, -b, -c", ex.getMessage());
         }
     }
 

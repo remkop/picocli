@@ -271,7 +271,7 @@ public class CommandLineModelTest {
         CommandSpec helpCommand = CommandSpec.create().helpCommand(true);
         assertTrue(helpCommand.helpCommand());
 
-        CommandSpec parent = CommandSpec.create().addOption(OptionSpec.builder("-x").required(true).build());
+        CommandSpec parent = CommandSpec.create().addOption(OptionSpec.builder("-x").type(String.class).required(true).build());
         parent.addSubcommand("help", helpCommand);
 
         CommandLine commandLine = new CommandLine(parent);
