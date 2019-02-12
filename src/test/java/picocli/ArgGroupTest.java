@@ -729,12 +729,12 @@ public class ArgGroupTest {
     }
 
     @Test
-    public void testReflectionValidationMultipleGroups() {
+    public void testReflectionValidationCompositeRequiredGroup() {
         @Command(argGroups = {
                 @ArgGroup(name = "ALL", exclusive = false, required = false),
                 @ArgGroup(name = "EXCL", exclusive = true, required = true),
                 @ArgGroup(name = "COMPOSITE", exclusive = true, required = true,
-                        subgroups = {"ALL", "EXCL"}),
+                        subgroups = {"ALL", "EXCL"})
         })
         class App {
             @Option(names = "-x", groups = "EXCL") boolean x;
@@ -742,45 +742,63 @@ public class ArgGroupTest {
             @Option(names = "-a", groups = "ALL") boolean a;
             @Option(names = "-b", groups = "ALL") boolean b;
         }
-        try {
-            CommandLine.populateCommand(new App(), "-a");
-            fail("Expected exception");
-        } catch (MissingParameterException ex) {
-            assertEquals("Error: Missing required argument(s): -b", ex.getMessage());
-        }
-        try {
-            CommandLine.populateCommand(new App(), "-b");
-            fail("Expected exception");
-        } catch (MissingParameterException ex) {
-            assertEquals("Error: Missing required argument(s): -a", ex.getMessage());
-        }
+        validateInput(new App(), MissingParameterException.class,      "Error: Missing required argument(s): -b",                                "-a");
+        validateInput(new App(), MissingParameterException.class,      "Error: Missing required argument(s): -a",                                "-b");
+        validateInput(new App(), MutuallyExclusiveArgsException.class, "Error: -x, -y are mutually exclusive (specify only one)",                "-x", "-y");
+        validateInput(new App(), MissingParameterException.class,      "Error: Missing required argument(s): -b",                                "-x", "-a");
+        validateInput(new App(), MissingParameterException.class,      "Error: Missing required argument(s): -a",                                "-x", "-b");
+        validateInput(new App(), MutuallyExclusiveArgsException.class, "Error: ([-a -b] | (-x | -y)) are mutually exclusive (specify only one)", "-a", "-x", "-b");
+        validateInput(new App(), MutuallyExclusiveArgsException.class, "Error: ([-a -b] | (-x | -y)) are mutually exclusive (specify only one)", "-a", "-y", "-b");
+
+        // no input
+        validateInput(new App(), MissingParameterException.class,      "Error: Missing required argument (specify one of these): ([-a -b] | (-x | -y))");
+
         // no error
-        CommandLine.populateCommand(new App(), "-a", "-b");
-        CommandLine.populateCommand(new App(), "-x");
-        CommandLine.populateCommand(new App(), "-y");
-        try {
-            CommandLine.populateCommand(new App(), "-x", "-y");
-            fail("Expected exception");
-        } catch (MutuallyExclusiveArgsException ex) {
-            assertEquals("Error: -x, -y are mutually exclusive (specify only one)", ex.getMessage());
+        validateInput(new App(), null, null, "-a", "-b");
+        validateInput(new App(), null, null, "-x");
+        validateInput(new App(), null, null, "-y");
+    }
+
+    @Test
+    public void testReflectionValidationCompositeNonRequiredGroup() {
+        @Command(argGroups = {
+                @ArgGroup(name = "ALL", exclusive = false, required = false),
+                @ArgGroup(name = "EXCL", exclusive = true, required = true),
+                @ArgGroup(name = "COMPOSITE", exclusive = true, required = false,
+                        subgroups = {"ALL", "EXCL"})
+        })
+        class App {
+            @Option(names = "-x", groups = "EXCL") boolean x;
+            @Option(names = "-y", groups = "EXCL") boolean y;
+            @Option(names = "-a", groups = "ALL") boolean a;
+            @Option(names = "-b", groups = "ALL") boolean b;
         }
+        validateInput(new App(), MissingParameterException.class,      "Error: Missing required argument(s): -b",                                "-a");
+        validateInput(new App(), MissingParameterException.class,      "Error: Missing required argument(s): -a",                                "-b");
+        validateInput(new App(), MutuallyExclusiveArgsException.class, "Error: -x, -y are mutually exclusive (specify only one)",                "-x", "-y");
+        validateInput(new App(), MissingParameterException.class,      "Error: Missing required argument(s): -b",                                "-x", "-a");
+        validateInput(new App(), MissingParameterException.class,      "Error: Missing required argument(s): -a",                                "-x", "-b");
+        validateInput(new App(), MutuallyExclusiveArgsException.class, "Error: [[-a -b] | (-x | -y)] are mutually exclusive (specify only one)", "-a", "-x", "-b");
+        validateInput(new App(), MutuallyExclusiveArgsException.class, "Error: [[-a -b] | (-x | -y)] are mutually exclusive (specify only one)", "-a", "-y", "-b");
+
+        // no input: ok because composite as a whole is optional
+        validateInput(new App(), null, null);
+
+        // no error
+        validateInput(new App(), null, null, "-a", "-b");
+        validateInput(new App(), null, null, "-x");
+        validateInput(new App(), null, null, "-y");
+    }
+
+    private void validateInput(Object userObject, Class<? extends Exception> exceptionClass, String errorMessage, String... args) {
         try {
-            CommandLine.populateCommand(new App(), "-x", "-a");
-            fail("Expected exception");
-        } catch (MissingParameterException ex) {
-            assertEquals("Error: Missing required argument(s): -b", ex.getMessage());
-        }
-        try {
-            CommandLine.populateCommand(new App(), "-a", "-x", "-b");
-            fail("Expected exception");
-        } catch (MutuallyExclusiveArgsException ex) {
-            assertEquals("Error: ([-a -b] | (-x | -y)) are mutually exclusive (specify only one)", ex.getMessage());
-        }
-        try {
-            CommandLine.populateCommand(new App(), "-a", "-y", "-b");
-            fail("Expected exception");
-        } catch (MutuallyExclusiveArgsException ex) {
-            assertEquals("Error: ([-a -b] | (-x | -y)) are mutually exclusive (specify only one)", ex.getMessage());
+            CommandLine.populateCommand(userObject, args);
+            if (exceptionClass != null) {
+                fail("Expected " + exceptionClass.getSimpleName() + " for " + Arrays.asList(args));
+            }
+        } catch (Exception ex) {
+            assertEquals("Exception for input " + Arrays.asList(args), exceptionClass, ex.getClass());
+            assertEquals(errorMessage, ex.getMessage());
         }
     }
 
