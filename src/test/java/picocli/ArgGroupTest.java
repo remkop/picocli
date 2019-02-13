@@ -4,6 +4,7 @@ import org.junit.Ignore;
 import org.junit.Test;
 import picocli.CommandLine.ArgGroup;
 import picocli.CommandLine.Command;
+import picocli.CommandLine.Help;
 import picocli.CommandLine.InitializationException;
 import picocli.CommandLine.MissingParameterException;
 import picocli.CommandLine.Model.ArgSpec;
@@ -1065,7 +1066,6 @@ public class ArgGroupTest {
         assertEquals("[-x -y -z ARG1 ARG2 ARG3 [-a | -b | -c] (-e | -f)]", composite.build().synopsis());
     }
 
-    @Ignore
     @Test
     public void testUsageHelpRequiredExclusiveGroup() {
         @Command(argGroups = {
@@ -1079,11 +1079,10 @@ public class ArgGroupTest {
                 "Usage: <main class> (-x | -y)%n" +
                 "  -x%n" +
                 "  -y%n");
-        String actual = new CommandLine(new App()).getUsageMessage();
+        String actual = new CommandLine(new App()).getUsageMessage(Help.Ansi.OFF);
         assertEquals(expected, actual);
     }
 
-    @Ignore
     @Test
     public void testUsageHelpNonRequiredExclusiveGroup() {
         @Command(argGroups = {
@@ -1097,7 +1096,121 @@ public class ArgGroupTest {
                 "Usage: <main class> [-x | -y]%n" +
                 "  -x%n" +
                 "  -y%n");
-        String actual = new CommandLine(new App()).getUsageMessage();
+        String actual = new CommandLine(new App()).getUsageMessage(Help.Ansi.OFF);
+        assertEquals(expected, actual);
+    }
+
+    @Test
+    public void testUsageHelpRequiredNonExclusiveGroup() {
+        @Command(argGroups = {
+                @ArgGroup(name = "G", exclusive = false, required = true),
+        })
+        class App {
+            @Option(names = "-x", groups = "G") boolean x;
+            @Option(names = "-y", groups = "G") boolean y;
+        }
+        String expected = String.format("" +
+                "Usage: <main class> (-x -y)%n" +
+                "  -x%n" +
+                "  -y%n");
+        String actual = new CommandLine(new App()).getUsageMessage(Help.Ansi.OFF);
+        assertEquals(expected, actual);
+    }
+
+    @Test
+    public void testUsageHelpNonRequiredNonExclusiveGroup() {
+        @Command(argGroups = {
+                @ArgGroup(name = "G", exclusive = false, required = false),
+        })
+        class App {
+            @Option(names = "-x", groups = "G") boolean x;
+            @Option(names = "-y", groups = "G") boolean y;
+        }
+        String expected = String.format("" +
+                "Usage: <main class> [-x -y]%n" +
+                "  -x%n" +
+                "  -y%n");
+        String actual = new CommandLine(new App()).getUsageMessage(Help.Ansi.OFF);
+        assertEquals(expected, actual);
+    }
+
+    @Test
+    public void testUsageHelpNonValidatingGroupDoesNotImpactSynopsis() {
+        @Command(argGroups = {
+                @ArgGroup(name = "G", validate = false),
+        })
+        class App {
+            @Option(names = "-x", groups = "G") boolean x;
+            @Option(names = "-y", groups = "G") boolean y;
+        }
+        String expected = String.format("" +
+                "Usage: <main class> [-xy]%n" +
+                "  -x%n" +
+                "  -y%n");
+        String actual = new CommandLine(new App()).getUsageMessage(Help.Ansi.OFF);
+        assertEquals(expected, actual);
+    }
+
+    @Test
+    public void testCompositeGroupSynopsis() {
+        @Command(argGroups = {
+                @ArgGroup(name = "ALL", exclusive = false, required = false),
+                @ArgGroup(name = "EXCL", exclusive = true, required = true),
+                @ArgGroup(name = "COMPOSITE", exclusive = true, required = false,
+                        subgroups = {"ALL", "EXCL"})
+        })
+        class App {
+            @Option(names = "-x", groups = "EXCL")
+            int x;
+            @Option(names = "-y", groups = "EXCL")
+            int y;
+            @Option(names = "-a", groups = "ALL")
+            int a;
+            @Option(names = "-b", groups = "ALL")
+            int b;
+            @Option(names = "-c", groups = "ALL")
+            int c;
+        }
+        String expected = String.format("" +
+                "Usage: <main class> [[-a=<a> -b=<b> -c=<c>] | (-x=<x> | -y=<y>)]%n" +
+                "  -a=<a>%n" +
+                "  -b=<b>%n" +
+                "  -c=<c>%n" +
+                "  -x=<x>%n" +
+                "  -y=<y>%n");
+        String actual = new CommandLine(new App()).getUsageMessage(Help.Ansi.OFF);
+        assertEquals(expected, actual);
+    }
+
+    @Test
+    public void testCompositeGroupSynopsisAnsi() {
+        @Command(argGroups = {
+                @ArgGroup(name = "ALL", exclusive = false, required = false),
+                @ArgGroup(name = "EXCL", exclusive = true, required = true),
+                @ArgGroup(name = "COMPOSITE", exclusive = true, required = false,
+                        subgroups = {"ALL", "EXCL"})
+        })
+        class App {
+            @Option(names = "-x", groups = "EXCL")
+            int x;
+            @Option(names = "-y", groups = "EXCL")
+            int y;
+            @Option(names = "-a", groups = "ALL")
+            int a;
+            @Option(names = "-b", groups = "ALL")
+            int b;
+            @Option(names = "-c", groups = "ALL")
+            int c;
+        }
+        String expected = String.format("" +
+                "Usage: @|bold <main class>|@ [[@|yellow -a|@=@|italic <a>|@ @|yellow -b|@=@|italic <b>|@ @|yellow -c|@=@|italic <c>|@] | (@|yellow -x|@=@|italic <x>|@ | @|yellow -y|@=@|italic <y>|@)]%n" +
+                "  @|yellow -a|@=@|italic <|@@|italic a>|@%n" +
+                "  @|yellow -b|@=@|italic <|@@|italic b>|@%n" +
+                "  @|yellow -c|@=@|italic <|@@|italic c>|@%n" +
+                "  @|yellow -x|@=@|italic <|@@|italic x>|@%n" +
+                "  @|yellow -y|@=@|italic <|@@|italic y>|@%n");
+        expected = Help.Ansi.ON.string(expected);
+        String actual = new CommandLine(new App()).getUsageMessage(Help.Ansi.ON);
         assertEquals(expected, actual);
     }
 }

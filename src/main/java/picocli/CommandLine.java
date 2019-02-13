@@ -9702,27 +9702,63 @@ public class CommandLine {
          * @return a detailed synopsis
          * @since 3.0 */
         public String detailedSynopsis(int synopsisHeadingLength, Comparator<OptionSpec> optionSort, boolean clusterBooleanOptions) {
-            Text optionText = createDetailedSynopsisOptionsText(optionSort, clusterBooleanOptions);
-            Text positionalParamText = createDetailedSynopsisPositionalsText();
+            Set<ArgSpec> argsInGroups = new HashSet<ArgSpec>();
+            Text groupsText = createDetailedSynopsisGroupsText(argsInGroups);
+            Text optionText = createDetailedSynopsisOptionsText(argsInGroups, optionSort, clusterBooleanOptions);
+            Text positionalParamText = createDetailedSynopsisPositionalsText(argsInGroups);
             Text commandText = createDetailedSynopsisCommandText();
 
-            Text text = optionText.concat(positionalParamText).concat(commandText);
+            Text text = groupsText.concat(optionText).concat(positionalParamText).concat(commandText);
 
             return insertSynopsisCommandName(synopsisHeadingLength, text);
         }
 
+        /** Returns a Text object containing a partial detailed synopsis showing only the options and positional parameters in
+         * the specified {@linkplain ArgGroup#validate() validating} {@linkplain ArgGroup groups}, starting with a {@code " "} space.
+         * @param outparam_groupArgs all options and positional parameters in the groups this method generates a synopsis for;
+         *                           these options and positional parameters should be excluded from appearing elsewhere in the synopsis
+         * @return the formatted groups synopsis elements, starting with a {@code " "} space, or an empty Text if this command has no validating groups
+         * @since 4.0 */
+        protected Text createDetailedSynopsisGroupsText(Set<ArgSpec> outparam_groupArgs) {
+            Set<ArgGroupSpec> remove = new HashSet<ArgGroupSpec>();
+            List<ArgGroupSpec> groups = new ArrayList<ArgGroupSpec>(commandSpec().argGroups().values());
+            for (ArgGroupSpec group : groups) {
+                if (group.validate()) {
+                    // remove subgroups
+                    remove.addAll(group.subgroups().values());
+
+                    // exclude options and positional parameters in this group
+                    outparam_groupArgs.addAll(group.args());
+
+                    // exclude options and positional parameters in the subgroups
+                    for (ArgGroupSpec subgroup : group.subgroups().values()) {
+                        outparam_groupArgs.addAll(subgroup.args());
+                    }
+                } else {
+                    remove.add(group); // non-validating groups should not impact synopsis
+                }
+            }
+            groups.removeAll(remove);
+            Text groupText = ansi().new Text(0);
+            for (ArgGroupSpec group : groups) {
+                groupText = groupText.concat(" ").concat(group.synopsisText(colorScheme()));
+            }
+            return groupText;
+        }
         /** Returns a Text object containing a partial detailed synopsis showing only the options, starting with a {@code " "} space.
          * Follows the unix convention of showing optional options and parameters in square brackets ({@code [ ]}).
+         * @param done the list of options and positional parameters for which a synopsis was already generated. Options in this set should be excluded.
          * @param optionSort comparator to sort options or {@code null} if options should not be sorted
          * @param clusterBooleanOptions {@code true} if boolean short options should be clustered into a single string
          * @return the formatted options, starting with a {@code " "} space, or an empty Text if this command has no named options
          * @since 3.9 */
-        protected Text createDetailedSynopsisOptionsText(Comparator<OptionSpec> optionSort, boolean clusterBooleanOptions) {
+        protected Text createDetailedSynopsisOptionsText(Collection<ArgSpec> done, Comparator<OptionSpec> optionSort, boolean clusterBooleanOptions) {
             Text optionText = ansi().new Text(0);
             List<OptionSpec> options = new ArrayList<OptionSpec>(commandSpec.options()); // iterate in declaration order
             if (optionSort != null) {
                 Collections.sort(options, optionSort);// iterate in specified sort order
             }
+            options.removeAll(done);
             if (clusterBooleanOptions) { // cluster all short boolean options into a single string
                 List<OptionSpec> booleanOptions = new ArrayList<OptionSpec>();
                 StringBuilder clusteredRequired = new StringBuilder("-");
@@ -9772,11 +9808,14 @@ public class CommandLine {
 
         /** Returns a Text object containing a partial detailed synopsis showing only the positional parameters, starting with a {@code " "} space.
          * Follows the unix convention of showing optional options and parameters in square brackets ({@code [ ]}).
+         * @param done the list of options and positional parameters for which a synopsis was already generated. Positional parameters in this set should be excluded.
          * @return the formatted positional parameters, starting with a {@code " "} space, or an empty Text if this command has no positional parameters
          * @since 3.9 */
-        protected Text createDetailedSynopsisPositionalsText() {
+        protected Text createDetailedSynopsisPositionalsText(Collection<ArgSpec> done) {
             Text positionalParamText = ansi().new Text(0);
-            for (PositionalParamSpec positionalParam : commandSpec.positionalParameters()) {
+            List<PositionalParamSpec> positionals = new ArrayList<PositionalParamSpec>(commandSpec.positionalParameters()); // iterate in declaration order
+            positionals.removeAll(done);
+            for (PositionalParamSpec positionalParam : positionals) {
                 if (!positionalParam.hidden()) {
                     positionalParamText = positionalParamText.concat(" ");
                     Text label = parameterLabelRenderer().renderParameterLabel(positionalParam, colorScheme.ansi(), colorScheme.parameterStyles);

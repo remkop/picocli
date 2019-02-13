@@ -21,27 +21,56 @@ import org.junit.Test;
 import org.junit.contrib.java.lang.system.ProvideSystemProperty;
 import org.junit.contrib.java.lang.system.SystemErrRule;
 import org.junit.contrib.java.lang.system.SystemOutRule;
-import picocli.CommandLine.*;
-import picocli.CommandLine.Model.*;
+import picocli.CommandLine.Command;
+import picocli.CommandLine.ExecutionException;
+import picocli.CommandLine.Help;
 import picocli.CommandLine.Help.Ansi.IStyle;
 import picocli.CommandLine.Help.Ansi.Style;
 import picocli.CommandLine.Help.Ansi.Text;
 import picocli.CommandLine.Help.ColorScheme;
 import picocli.CommandLine.Help.TextTable;
+import picocli.CommandLine.HelpCommand;
+import picocli.CommandLine.IHelpFactory;
+import picocli.CommandLine.IHelpSectionRenderer;
+import picocli.CommandLine.IVersionProvider;
+import picocli.CommandLine.InitializationException;
+import picocli.CommandLine.Model;
+import picocli.CommandLine.Model.ArgSpec;
+import picocli.CommandLine.Model.CommandSpec;
+import picocli.CommandLine.Model.OptionSpec;
+import picocli.CommandLine.Model.PositionalParamSpec;
+import picocli.CommandLine.Model.UsageMessageSpec;
+import picocli.CommandLine.Option;
+import picocli.CommandLine.Parameters;
+import picocli.CommandLine.ParseResult;
 
-import java.io.*;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.IOException;
+import java.io.PrintStream;
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.net.InetAddress;
 import java.net.URI;
 import java.net.URL;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 import static java.lang.String.format;
 import static org.junit.Assert.*;
-import static picocli.CommandLine.Help.Visibility.*;
+import static picocli.CommandLine.Help.Visibility.ALWAYS;
+import static picocli.CommandLine.Help.Visibility.NEVER;
+import static picocli.CommandLine.Help.Visibility.ON_DEMAND;
 import static picocli.HelpTestUtil.textArray;
 import static picocli.HelpTestUtil.usageString;
 import static picocli.ModelTestUtil.options;
@@ -2577,7 +2606,7 @@ public class CommandLineHelpTest {
     public void testHelpCreateDetailedSynopsisOptionsText() {
         Help help = new Help(CommandSpec.create().addOption(OptionSpec.builder("xx").build()),
                 new ColorScheme(Help.Ansi.OFF));
-        Text text = help.createDetailedSynopsisOptionsText(null, true);
+        Text text = help.createDetailedSynopsisOptionsText(new ArrayList<ArgSpec>(), null, true);
         assertEquals(" [xx]", text.toString());
     }
 
