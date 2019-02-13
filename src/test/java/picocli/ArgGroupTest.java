@@ -1160,16 +1160,11 @@ public class ArgGroupTest {
                         subgroups = {"ALL", "EXCL"})
         })
         class App {
-            @Option(names = "-x", groups = "EXCL")
-            int x;
-            @Option(names = "-y", groups = "EXCL")
-            int y;
-            @Option(names = "-a", groups = "ALL")
-            int a;
-            @Option(names = "-b", groups = "ALL")
-            int b;
-            @Option(names = "-c", groups = "ALL")
-            int c;
+            @Option(names = "-x", groups = "EXCL") int x;
+            @Option(names = "-y", groups = "EXCL") int y;
+            @Option(names = "-a", groups = "ALL") int a;
+            @Option(names = "-b", groups = "ALL") int b;
+            @Option(names = "-c", groups = "ALL") int c;
         }
         String expected = String.format("" +
                 "Usage: <main class> [[-a=<a> -b=<b> -c=<c>] | (-x=<x> | -y=<y>)]%n" +
@@ -1191,16 +1186,11 @@ public class ArgGroupTest {
                         subgroups = {"ALL", "EXCL"})
         })
         class App {
-            @Option(names = "-x", groups = "EXCL")
-            int x;
-            @Option(names = "-y", groups = "EXCL")
-            int y;
-            @Option(names = "-a", groups = "ALL")
-            int a;
-            @Option(names = "-b", groups = "ALL")
-            int b;
-            @Option(names = "-c", groups = "ALL")
-            int c;
+            @Option(names = "-x", groups = "EXCL") int x;
+            @Option(names = "-y", groups = "EXCL") int y;
+            @Option(names = "-a", groups = "ALL") int a;
+            @Option(names = "-b", groups = "ALL") int b;
+            @Option(names = "-c", groups = "ALL") int c;
         }
         String expected = String.format("" +
                 "Usage: @|bold <main class>|@ [[@|yellow -a|@=@|italic <a>|@ @|yellow -b|@=@|italic <b>|@ @|yellow -c|@=@|italic <c>|@] | (@|yellow -x|@=@|italic <x>|@ | @|yellow -y|@=@|italic <y>|@)]%n" +
@@ -1211,6 +1201,53 @@ public class ArgGroupTest {
                 "  @|yellow -y|@=@|italic <|@@|italic y>|@%n");
         expected = Help.Ansi.ON.string(expected);
         String actual = new CommandLine(new App()).getUsageMessage(Help.Ansi.ON);
+        assertEquals(expected, actual);
+    }
+
+    @Test
+    public void testGroupUsageHelpOptionList() {
+        @Command(argGroups = {
+                @ArgGroup(name = "ALL", exclusive = false, required = false, order = 10,
+                        heading = "Co-occurring options:%nThese options must appear together, or not at all.%n"),
+                @ArgGroup(name = "EXCL", exclusive = true, required = true, order = 20,
+                        heading = "Exclusive options:%n"),
+                @ArgGroup(name = "COMPOSITE", exclusive = true, required = false,
+                        subgroups = {"ALL", "EXCL"}),
+                @ArgGroup(name = "INITIAL", validate = false, heading = "", order = 0),
+                @ArgGroup(name = "REMAINDER", validate = false, heading = "Remaining options:%n", order = 100)
+        })
+        class App {
+            @Option(names = "-x", groups = "EXCL") int x;
+            @Option(names = "-y", groups = "EXCL") int y;
+            @Option(names = "-a", groups = "ALL") int a;
+            @Option(names = "-b", groups = "ALL") int b;
+            @Option(names = "-c", groups = "ALL") int c;
+            @Option(names = "-A", groups = "INITIAL") int A;
+            @Option(names = "-B", groups = "INITIAL") boolean B;
+            @Option(names = "-C", groups = "INITIAL") boolean C;
+            @Option(names = "-D", groups = "REMAINDER") int D;
+            @Option(names = "-E", groups = "REMAINDER") boolean E;
+            @Option(names = "-F", groups = "REMAINDER") boolean F;
+        }
+        String expected = String.format("" +
+                "Usage: <main class> [[-a=<a> -b=<b> -c=<c>] | (-x=<x> | -y=<y>)] [-BCEF]%n" +
+                "                    [-A=<A>] [-D=<D>]%n" +
+                "  -A=<A>%n" +
+                "  -B%n" +
+                "  -C%n" +
+                "Co-occurring options:%n" +
+                "These options must appear together, or not at all.%n" +
+                "  -a=<a>%n" +
+                "  -b=<b>%n" +
+                "  -c=<c>%n" +
+                "Exclusive options:%n" +
+                "  -x=<x>%n" +
+                "  -y=<y>%n" +
+                "Remaining options:%n" +
+                "  -D=<D>%n" +
+                "  -E%n" +
+                "  -F%n");
+        String actual = new CommandLine(new App()).getUsageMessage(Help.Ansi.OFF);
         assertEquals(expected, actual);
     }
 }

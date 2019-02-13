@@ -3345,12 +3345,12 @@ public class CommandLine {
         /** The heading of this group, used when generating the usage documentation.
          * When neither a {@link #heading() heading} nor a {@link #headingKey() headingKey} are specified,
          * this group is used for validation only and does not change the usage help message. */
-        String heading() default "";
+        String heading() default "__no_heading__";
 
         /** ResourceBundle key for this group's usage help message section heading.
          * When neither a {@link #heading() heading} nor a {@link #headingKey() headingKey} are specified,
          * this group is used for validation only and does not change the usage help message. */
-        String headingKey() default "";
+        String headingKey() default "__no_heading_key__";
         /** Determines whether this is a mutually exclusive group; {@code true} by default.
          * If {@code false}, this is a co-occurring group. Ignored if {@link #validate()} is {@code false}. */
         boolean exclusive() default true;
@@ -6012,7 +6012,7 @@ public class CommandLine {
          * This behaviour can be customized by installing a custom {@link IGetter} and {@link ISetter} on the {@code OptionSpec}.
          * </p>
          * @since 3.0 */
-        public static class OptionSpec extends ArgSpec {
+        public static class OptionSpec extends ArgSpec implements IOrdered {
             static final int DEFAULT_ORDER = -1;
             private String[] names;
             private boolean help;
@@ -6345,11 +6345,22 @@ public class CommandLine {
             }
         }
 
+        /** Interface for sorting {@link OptionSpec options} and {@link ArgGroupSpec groups} together.
+         * @since 4.0 */
+        public interface IOrdered {
+            /** Returns the position in the options list in the usage help message at which this element should be shown.
+             * Elements with a lower number are shown before elements with a higher number.
+             * This attribute is only honored if {@link UsageMessageSpec#sortOptions()} is {@code false} for this command. */
+            int order();
+        }
+
         /** The {@code ArgGroupSpec} class models a {@link ArgGroup group} of arguments (options, positional parameters or a mixture of the two).
          * @see ArgGroup
          * @since 4.0 */
-        public static class ArgGroupSpec {
+        public static class ArgGroupSpec implements IOrdered {
             static final int DEFAULT_ORDER = -1;
+            private static final String NO_HEADING = "__no_heading__";
+            private static final String NO_HEADING_KEY = "__no_heading_key__";
             private final String name;
             private final String heading;
             private final String headingKey;
@@ -6364,8 +6375,8 @@ public class CommandLine {
 
             ArgGroupSpec(ArgGroupSpec.Builder builder) {
                 name       = Assert.notNull(builder.name, "name");
-                heading    = builder.heading;
-                headingKey = builder.headingKey;
+                heading    = NO_HEADING.equals(builder.heading) ? null : builder.heading;
+                headingKey = NO_HEADING_KEY.equals(builder.headingKey) ? null : builder.headingKey;
                 exclusive  = builder.exclusive;
                 required   = builder.required;
                 validate   = builder.validate;
@@ -6455,6 +6466,21 @@ public class CommandLine {
              * @see Parameters#groups() */
             public Set<ArgSpec> args() {
                 return args;
+            }
+
+            /** Returns the list of positional parameters configured for this group.
+             * @return an immutable list of positional parameters in this group. */
+            public List<PositionalParamSpec> positionalParameters() {
+                List<PositionalParamSpec> result = new ArrayList<PositionalParamSpec>();
+                for (ArgSpec arg : args()) { if (arg instanceof PositionalParamSpec) { result.add((PositionalParamSpec) arg); } }
+                return Collections.unmodifiableList(result);
+            }
+            /** Returns the list of options configured for this group.
+             * @return an immutable list of options in this group. */
+            public List<OptionSpec> options() {
+                List<OptionSpec> result = new ArrayList<OptionSpec>();
+                for (ArgSpec arg : args()) { if (arg instanceof OptionSpec) { result.add((OptionSpec) arg); } }
+                return Collections.unmodifiableList(result);
             }
 
             public String synopsis() {
@@ -9912,7 +9938,6 @@ public class CommandLine {
          * then {@linkplain Layout#addOption(CommandLine.Model.OptionSpec, CommandLine.Help.IParamLabelRenderer) adds} all non-hidden options to the
          * specified TextTable and returns the result of TextTable.toString().
          * @param layout responsible for rendering the option list
-         * @param optionSort determines in what order {@code Options} should be listed. Declared order if {@code null}
          * @param valueLabelRenderer used for options with a parameter
          * @return the fully formatted option list
          * @since 3.0 */
@@ -9921,8 +9946,37 @@ public class CommandLine {
             if (optionSort != null) {
                 Collections.sort(options, optionSort); // default: sort options ABC
             }
-            layout.addOptions(options, valueLabelRenderer);
-            return layout.toString();
+            List<ArgGroupSpec> groups = new ArrayList<ArgGroupSpec>(commandSpec.argGroups().values());
+            for (Iterator<ArgGroupSpec> iter = groups.iterator(); iter.hasNext(); ) {
+                ArgGroupSpec group = iter.next();
+                if (group.heading() == null) {
+                    iter.remove();
+                } else {
+                    options.removeAll(group.args());
+                }
+            }
+            if (groups.isEmpty()) {
+                layout.addOptions(options, valueLabelRenderer);
+                return layout.toString();
+            } else {
+                int longOptionColumnWidth = calcLongOptionColumnWidth();
+                Collections.sort(groups, new SortByOrder<ArgGroupSpec>());
+                StringBuilder sb = new StringBuilder();
+                for (ArgGroupSpec group : groups) {
+                    if (!empty(group.heading())) { // support empty String heading to allow "group-less" options before grouped options (groups with headers)
+                        sb.append(heading(ansi(), width(), group.heading()));
+                    }
+                    Layout groupLayout = createLayout(longOptionColumnWidth);
+                    groupLayout.addPositionalParameters(group.positionalParameters(), valueLabelRenderer);
+                    List<OptionSpec> groupOptions = new ArrayList<OptionSpec>(group.options());
+                    if (optionSort != null) {
+                        Collections.sort(groupOptions, optionSort);
+                    }
+                    groupLayout.addOptions(groupOptions, valueLabelRenderer);
+                    sb.append(groupLayout);
+                }
+                return sb.toString();
+            }
         }
 
         /**
@@ -10212,11 +10266,11 @@ public class CommandLine {
         /** Sorts short strings before longer strings.
          * @return a comparators that sorts short strings before longer strings */
         public static Comparator<String> shortestFirst() { return new ShortestFirst(); }
-        /** Sorts {@link OptionSpec OptionSpecs} by their option {@linkplain Option#order() order}, lowest first, highest last.
+        /** Sorts {@link OptionSpec options} by their option {@linkplain IOrdered#order() order}, lowest first, highest last.
          * @return a comparator that sorts OptionSpecs by their order
          * @since 3.9*/
         static Comparator<OptionSpec> createOrderComparator() {
-            return new SortByOptionOrder();
+            return new SortByOrder<OptionSpec>();
         }
 
         /** Returns whether ANSI escape codes are enabled or not.
@@ -10642,8 +10696,8 @@ public class CommandLine {
                 return result == 0 ? super.compare(o1, o2) : result;
             }
         }
-        static class SortByOptionOrder implements Comparator<OptionSpec> {
-            public int compare(OptionSpec o1, OptionSpec o2) {
+        static class SortByOrder<T extends IOrdered> implements Comparator<T> {
+            public int compare(T o1, T o2) {
                 return Integer.signum(o1.order() - o2.order());
             }
         }
