@@ -5219,6 +5219,7 @@ public class CommandLine {
             private final String[] description;
             private final String descriptionKey;
             private final Help.Visibility showDefaultValue;
+            public final List<ArgGroupSpec> groups = new ArrayList<ArgGroupSpec>();
             private Messages messages;
             CommandSpec commandSpec;
             private final Object userObject;
@@ -5480,6 +5481,10 @@ public class CommandLine {
              * @return immutable list of group names that this option or positional parameter belongs to
              * @since 4.0 */
             public List<String> groupNames() { return groupNames; }
+
+            /** Returns an unmodifiable list of groups this option or positional parameter belongs to.
+             * @since 4.0 */
+            public List<ArgGroupSpec> groups() { return Collections.unmodifiableList(groups); }
 
             /** Returns the untyped command line arguments matched by this option or positional parameter spec.
              * @return the matched arguments after {@linkplain #splitRegex() splitting}, but before type conversion.
@@ -6394,6 +6399,7 @@ public class CommandLine {
                 subgroupNames = Collections.unmodifiableList(new ArrayList<String>(builder.subgroupNames()));
                 if (args.isEmpty() && subgroups.isEmpty()) { throw new InitializationException("ArgGroup '" + name + "' has no options or positional parameters, and no subgroups"); }
                 for (ArgGroupSpec subgroup : subgroups.values()) { subgroup.parentGroups.add(this); }
+                for (ArgSpec arg : args) { arg.groups.add(this); }
             }
 
             /** Returns a new {@link Builder} with the group name set to the specified value.
@@ -6537,7 +6543,6 @@ public class CommandLine {
 
             private Text concatPositionalText(Text text, Help.ColorScheme colorScheme, PositionalParamSpec positionalParam) {
                 if (!positionalParam.hidden()) {
-                    text = text.concat(" ");
                     Text label = createLabelRenderer(positionalParam.commandSpec).renderParameterLabel(positionalParam, colorScheme.ansi(), colorScheme.parameterStyles);
                     text = text.concat(label);
                 }
@@ -8251,10 +8256,12 @@ public class CommandLine {
         private void validateConstraints(Stack<String> argumentStack, List<ArgSpec> required, Set<ArgSpec> matched) {
             if (!isAnyHelpRequested() && !required.isEmpty()) {
                 for (ArgSpec missing : required) {
-                    if (missing.isOption()) {
-                        maybeThrow(MissingParameterException.create(CommandLine.this, required, config().separator()));
-                    } else {
-                        assertNoMissingParameters(missing, missing.arity(), argumentStack);
+                    if (missing.groups().isEmpty()) { // otherwise let the group do the validation
+                        if (missing.isOption()) {
+                            maybeThrow(MissingParameterException.create(CommandLine.this, required, config().separator()));
+                        } else {
+                            assertNoMissingParameters(missing, missing.arity(), argumentStack);
+                        }
                     }
                 }
             }
@@ -9946,37 +9953,37 @@ public class CommandLine {
             if (optionSort != null) {
                 Collections.sort(options, optionSort); // default: sort options ABC
             }
-            List<ArgGroupSpec> groups = new ArrayList<ArgGroupSpec>(commandSpec.argGroups().values());
-            for (Iterator<ArgGroupSpec> iter = groups.iterator(); iter.hasNext(); ) {
-                ArgGroupSpec group = iter.next();
-                if (group.heading() == null) {
-                    iter.remove();
-                } else {
-                    options.removeAll(group.args());
+            List<ArgGroupSpec> groups = optionListGroups();
+            for (ArgGroupSpec group : groups) { options.removeAll(group.options()); }
+
+            StringBuilder sb = new StringBuilder();
+            layout.addOptions(options, valueLabelRenderer);
+            sb.append(layout.toString());
+
+            int longOptionColumnWidth = calcLongOptionColumnWidth();
+            Collections.sort(groups, new SortByOrder<ArgGroupSpec>());
+            for (ArgGroupSpec group : groups) {
+                sb.append(heading(ansi(), width(), group.heading()));
+
+                Layout groupLayout = createLayout(longOptionColumnWidth);
+                groupLayout.addPositionalParameters(group.positionalParameters(), valueLabelRenderer);
+                List<OptionSpec> groupOptions = new ArrayList<OptionSpec>(group.options());
+                if (optionSort != null) {
+                    Collections.sort(groupOptions, optionSort);
                 }
+                groupLayout.addOptions(groupOptions, valueLabelRenderer);
+                sb.append(groupLayout);
             }
-            if (groups.isEmpty()) {
-                layout.addOptions(options, valueLabelRenderer);
-                return layout.toString();
-            } else {
-                int longOptionColumnWidth = calcLongOptionColumnWidth();
-                Collections.sort(groups, new SortByOrder<ArgGroupSpec>());
-                StringBuilder sb = new StringBuilder();
-                for (ArgGroupSpec group : groups) {
-                    if (!empty(group.heading())) { // support empty String heading to allow "group-less" options before grouped options (groups with headers)
-                        sb.append(heading(ansi(), width(), group.heading()));
-                    }
-                    Layout groupLayout = createLayout(longOptionColumnWidth);
-                    groupLayout.addPositionalParameters(group.positionalParameters(), valueLabelRenderer);
-                    List<OptionSpec> groupOptions = new ArrayList<OptionSpec>(group.options());
-                    if (optionSort != null) {
-                        Collections.sort(groupOptions, optionSort);
-                    }
-                    groupLayout.addOptions(groupOptions, valueLabelRenderer);
-                    sb.append(groupLayout);
-                }
-                return sb.toString();
+            return sb.toString();
+        }
+
+        /** Returns the list of {@code ArgGroupSpec}s with a non-{@code null} heading. */
+        private List<ArgGroupSpec> optionListGroups() {
+            List<ArgGroupSpec> result = new ArrayList<ArgGroupSpec>();
+            for (ArgGroupSpec group : commandSpec.argGroups().values()) {
+                if (group.heading() != null) { result.add(group); }
             }
+            return result;
         }
 
         /**
@@ -9993,7 +10000,11 @@ public class CommandLine {
          * @return the section of the usage help message that lists the parameters
          */
         public String parameterList(Layout layout, IParamLabelRenderer paramLabelRenderer) {
-            layout.addPositionalParameters(commandSpec.positionalParameters(), paramLabelRenderer);
+            List<PositionalParamSpec> positionals = new ArrayList<PositionalParamSpec>(commandSpec.positionalParameters());
+            List<ArgGroupSpec> groups = optionListGroups();
+            for (ArgGroupSpec group : groups) { positionals.removeAll(group.positionalParameters()); }
+
+            layout.addPositionalParameters(positionals, paramLabelRenderer);
             return layout.toString();
         }
 

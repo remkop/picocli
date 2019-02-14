@@ -14,7 +14,9 @@ import picocli.CommandLine.Model.OptionSpec;
 import picocli.CommandLine.Model.PositionalParamSpec;
 import picocli.CommandLine.MutuallyExclusiveArgsException;
 import picocli.CommandLine.Option;
+import picocli.CommandLine.Parameters;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -1249,5 +1251,153 @@ public class ArgGroupTest {
                 "  -F%n");
         String actual = new CommandLine(new App()).getUsageMessage(Help.Ansi.OFF);
         assertEquals(expected, actual);
+    }
+
+    @Test
+    public void testGroupUsageHelpOptionListOptionsWithoutGroupsPrecedeGroups() {
+        @Command(argGroups = {
+                @ArgGroup(name = "ALL", exclusive = false, required = false, order = 10,
+                        heading = "Co-occurring options:%nThese options must appear together, or not at all.%n"),
+                @ArgGroup(name = "EXCL", exclusive = true, required = true, order = 20,
+                        heading = "Exclusive options:%n"),
+                @ArgGroup(name = "COMPOSITE", exclusive = true, required = false,
+                        subgroups = {"ALL", "EXCL"}),
+                @ArgGroup(name = "REMAINDER", validate = false, heading = "Remaining options:%n", order = 100)
+        })
+        class App {
+            @Option(names = "-x", groups = "EXCL") int x;
+            @Option(names = "-y", groups = "EXCL") int y;
+            @Option(names = "-a", groups = "ALL") int a;
+            @Option(names = "-b", groups = "ALL") int b;
+            @Option(names = "-c", groups = "ALL") int c;
+            @Option(names = "-A") int A;
+            @Option(names = "-B") boolean B;
+            @Option(names = "-C") boolean C;
+            @Option(names = "-D", groups = "REMAINDER") int D;
+            @Option(names = "-E", groups = "REMAINDER") boolean E;
+            @Option(names = "-F", groups = "REMAINDER") boolean F;
+        }
+        String expected = String.format("" +
+                "Usage: <main class> [[-a=<a> -b=<b> -c=<c>] | (-x=<x> | -y=<y>)] [-BCEF]%n" +
+                "                    [-A=<A>] [-D=<D>]%n" +
+                "  -A=<A>%n" +
+                "  -B%n" +
+                "  -C%n" +
+                "Co-occurring options:%n" +
+                "These options must appear together, or not at all.%n" +
+                "  -a=<a>%n" +
+                "  -b=<b>%n" +
+                "  -c=<c>%n" +
+                "Exclusive options:%n" +
+                "  -x=<x>%n" +
+                "  -y=<y>%n" +
+                "Remaining options:%n" +
+                "  -D=<D>%n" +
+                "  -E%n" +
+                "  -F%n");
+        String actual = new CommandLine(new App()).getUsageMessage(Help.Ansi.OFF);
+        assertEquals(expected, actual);
+    }
+
+    @Ignore("Currently gives error: Missing required parameter: <f2>")
+    @Test
+    public void testGroupWithOptionsAndPositionals() {
+        @Command(argGroups = {
+                @ArgGroup(name = "ALL", exclusive = false, required = false, order = 10,
+                        heading = "Co-occurring args:%nThese options must appear together, or not at all.%n"),
+        })
+        class App {
+            @Option(names = "-a", groups = "ALL") int a;
+            @Parameters(index = "0", groups = "ALL") File f0;
+            @Parameters(index = "1", groups = "ALL") File f1;
+            @Parameters(index = "2") File f2;
+        }
+        String expected = String.format("" +
+                "Usage: <main class> [-a=<a> <f0> <f1>] <f2>%n" +
+                "      <f2>%n" +
+                "Co-occurring args:%n" +
+                "These options must appear together, or not at all.%n" +
+                "      <f0>%n" +
+                "      <f1>%n" +
+                "  -a=<a>%n");
+        CommandLine cmd = new CommandLine(new App());
+        String actual = cmd.getUsageMessage(Help.Ansi.OFF);
+        assertEquals(expected, actual);
+
+        CommandLine.ParseResult parseResult = cmd.parseArgs("FILE2");
+        assertTrue(parseResult.hasMatchedPositional(0));
+        assertEquals("<f2>", parseResult.matchedPositional(0).paramLabel());
+    }
+
+    @Test
+    public void testGroupUsageHelpOptionListOptionsGroupWithMixedOptionsAndPositionals() {
+        @Command(argGroups = {
+                @ArgGroup(name = "ALL", exclusive = false, required = false, order = 10,
+                        heading = "Co-occurring options:%nThese options must appear together, or not at all.%n"),
+                @ArgGroup(name = "EXCL", exclusive = true, required = true, order = 20,
+                        heading = "Exclusive options:%n"),
+                @ArgGroup(name = "COMPOSITE", exclusive = true, required = false,
+                        subgroups = {"ALL", "EXCL"}),
+                @ArgGroup(name = "REMAINDER", validate = false, heading = "Remaining options:%n", order = 100)
+        })
+        class App {
+            @Option(names = "-x", groups = "EXCL") int x;
+            @Option(names = "-y", groups = "EXCL") int y;
+            @Option(names = "-a", groups = "ALL") int a;
+            @Parameters(index = "0", groups = "ALL") File f0;
+            @Parameters(index = "1", groups = "ALL") File f1;
+            @Parameters(index = "2") File f2;
+            @Option(names = "-A") int A;
+            @Option(names = "-B") boolean B;
+            @Option(names = "-C") boolean C;
+            @Option(names = "-D", groups = "REMAINDER") int D;
+            @Option(names = "-E", groups = "REMAINDER") boolean E;
+            @Option(names = "-F", groups = "REMAINDER") boolean F;
+        }
+        String expected = String.format("" +
+                "Usage: <main class> [[-a=<a> <f0> <f1>] | (-x=<x> | -y=<y>)] [-BCEF] [-A=<A>]%n" +
+                "                    [-D=<D>] <f2>%n" +
+                "      <f2>%n" +
+                "  -A=<A>%n" +
+                "  -B%n" +
+                "  -C%n" +
+                "Co-occurring options:%n" +
+                "These options must appear together, or not at all.%n" +
+                "      <f0>%n" +
+                "      <f1>%n" +
+                "  -a=<a>%n" +
+                "Exclusive options:%n" +
+                "  -x=<x>%n" +
+                "  -y=<y>%n" +
+                "Remaining options:%n" +
+                "  -D=<D>%n" +
+                "  -E%n" +
+                "  -F%n");
+        String actual = new CommandLine(new App()).getUsageMessage(Help.Ansi.OFF);
+        assertEquals(expected, actual);
+    }
+    
+    @Test
+    public void testRequiredArgsInAGroupAreNotValidated() {
+        @Command(argGroups = {
+                @ArgGroup(name = "ALL", exclusive = false, required = true),
+                @ArgGroup(name = "EXCL", exclusive = true, required = false, subgroups = "ALL"),
+        })
+        class App {
+            @Option(names = "-a", required = true, groups = "ALL") int a;
+            @Parameters(index = "0", groups = "ALL") File f0;
+            @Option(names = "-x", required = true, groups = "EXCL") boolean x;
+        }
+        String expected = String.format("" +
+                "Usage: <main class> [-x | (-a=<a> <f0>)]%n" +
+                "      <f0>%n" +
+                "  -a=<a>%n" +
+                "  -x%n");
+
+        CommandLine cmd = new CommandLine(new App());
+        String actual = cmd.getUsageMessage(Help.Ansi.OFF);
+        assertEquals(expected, actual);
+
+        cmd.parseArgs(); // no error
     }
 }
