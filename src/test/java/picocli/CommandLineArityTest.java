@@ -639,7 +639,7 @@ public class CommandLineArityTest {
             CommandLine.populateCommand(new BooleanOptionsArity0_nAndParameters(), "-rv234 -bool".split(" "));
             fail("Expected exception");
         } catch (UnmatchedArgumentException ok) {
-            assertEquals("Unknown option: -234", ok.getMessage());
+            assertEquals("Unknown option: -234 (while processing option: '-rv234')", ok.getMessage());
         }
     }
     @Test

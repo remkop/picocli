@@ -195,7 +195,7 @@ public class LenientParsingTest {
         cmd.getCommandSpec().parser().collectErrors(true);
         cmd.parse("-rv234 -bool".split(" "));
         assertEquals(1, cmd.getParseResult().errors().size());
-        assertEquals("Unknown option: -234", cmd.getParseResult().errors().get(0).getMessage());
+        assertEquals("Unknown option: -234 (while processing option: '-rv234')", cmd.getParseResult().errors().get(0).getMessage());
     }
 
     @Test

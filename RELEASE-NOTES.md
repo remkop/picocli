@@ -7,8 +7,11 @@ This release contains bugfixes and enhancements.
 
 From this release, `enum`-typed options and positional parameters that are multi-value can be stored in `EnumSet` collections, as well as other Collections, arrays and Maps. 
 
-Bugfixes: `ReflectionConfigGenerator` incorrectly listed superclass fields as fields of the concrete subclass, causing "GraalVM error: Error parsing reflection configuration in json" when creating a native image,
-and method subcommands in commands that subclass another command caused `InitializationException`.
+Also, a better error message is now shown when unknown options are encountered while processing clustered short options. The new error message includes both the failing part and the original command line argument.
+
+Bugfixes: 
+* `ReflectionConfigGenerator` incorrectly listed superclass fields as fields of the concrete subclass, causing "GraalVM error: Error parsing reflection configuration in json" when creating a native image.
+* Method subcommands in commands that subclass another command caused `InitializationException`.
 
 
 This is the forty-nineth public release.
@@ -28,6 +31,7 @@ Picocli follows [semantic versioning](http://semver.org/).
 - [#619] Bugfix: Method subcommands in commands that subclass another command caused `InitializationException`: "Another subcommand named 'method' already exists...". Thanks to [PorygonZRocks](https://github.com/PorygonZRocks) for the bug report.
 - [#622] Bugfix: `ReflectionConfigGenerator` incorrectly listed superclass fields as fields of the concrete subclass, causing "GraalVM error: Error parsing reflection configuration in json". Thanks to [Sebastian Thomschke](https://github.com/sebthom) for the bug report.
 - [#623] `ReflectionConfigGenerator` now generates json in alphabetic order.
+- [#627] Improve error message for unknown options when processing clustered short options. 
 
 ## <a name="3.9.4-deprecated"></a> Deprecations
 No features were deprecated in this release.
