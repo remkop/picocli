@@ -748,7 +748,7 @@ public class CommandLine {
      * @since 0.9.7
      */
     public List<String> getUnmatchedArguments() {
-        return interpreter.parseResult == null ? Collections.<String>emptyList() : Collections.unmodifiableList(interpreter.parseResult.unmatched);
+        return interpreter.parseResult == null ? Collections.<String>emptyList() : UnmatchedArgumentException.stripErrorMessage(interpreter.parseResult.unmatched);
     }
 
     /**
@@ -8536,6 +8536,9 @@ public class CommandLine {
                         }
                         // remainder was part of a clustered group that could not be completely parsed
                         if (tracer.isDebug()) {tracer.debug("No option found for %s in %s%n", cluster, arg);}
+                        String tmp = args.pop();
+                        tmp = tmp + " (while processing option: '" + arg + "')";
+                        args.push(tmp);
                         handleUnmatchedArgument(args);
                     } else {
                         args.push(cluster);
@@ -11839,12 +11842,12 @@ public class CommandLine {
      * {@link Option} or {@link Parameters}. */
     public static class UnmatchedArgumentException extends ParameterException {
         private static final long serialVersionUID = -8700426380701452440L;
-        private List<String> unmatched;
+        private List<String> unmatched = Collections.<String>emptyList();
         public UnmatchedArgumentException(CommandLine commandLine, String msg) { super(commandLine, msg); }
         public UnmatchedArgumentException(CommandLine commandLine, Stack<String> args) { this(commandLine, new ArrayList<String>(reverse(args))); }
         public UnmatchedArgumentException(CommandLine commandLine, List<String> args) {
             this(commandLine, describe(args, commandLine) + (args.size() == 1 ? ": " : "s: ") + str(args));
-            unmatched = args;
+            unmatched = args == null ? Collections.<String>emptyList() : args;
         }
         /** Returns {@code true} and prints suggested solutions to the specified stream if such solutions exist, otherwise returns {@code false}.
          * @since 3.3.0 */
@@ -11853,7 +11856,16 @@ public class CommandLine {
         }
         /** Returns the unmatched command line arguments.
          * @since 3.3.0 */
-        public List<String> getUnmatched() { return unmatched == null ? Collections.<String>emptyList() : Collections.unmodifiableList(unmatched); }
+        public List<String> getUnmatched() { return stripErrorMessage(unmatched); }
+        static List<String> stripErrorMessage(List<String> unmatched) {
+            List<String> result = new ArrayList<String>();
+            for (String s : unmatched) {
+                if (s == null) { result.add(null); }
+                int pos = s.indexOf(" (while processing option:");
+                result.add(pos < 0 ? s : s.substring(0, pos));
+            }
+            return Collections.unmodifiableList(result);
+        }
         /** Returns {@code true} if the first unmatched command line arguments resembles an option, {@code false} otherwise.
          * @since 3.3.0 */
         public boolean isUnknownOption() { return isUnknownOption(unmatched, getCommandLine()); }
