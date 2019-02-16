@@ -47,6 +47,8 @@ import picocli.CommandLine.*;
 
 import static java.util.concurrent.TimeUnit.*;
 import static org.junit.Assert.*;
+import static picocli.CommandLineTypeConversionTest.ResultTypes.COMPLETE;
+import static picocli.CommandLineTypeConversionTest.ResultTypes.PARTIAL;
 
 public class CommandLineTypeConversionTest {
     // allows tests to set any kind of properties they like, without having to individually roll them back
@@ -1086,5 +1088,43 @@ public class CommandLineTypeConversionTest {
         } catch (UnmatchedArgumentException ex) {
             assertEquals("Unmatched arguments: a:c, 1:3", ex.getMessage());
         }
+    }
+    enum ResultTypes {
+        NONE,
+        PARTIAL,
+        COMPLETE
+    }
+    @Test
+    public void testIssue628EnumSetWithNullInitialValue() {
+        class App {
+            @Option(names = "--result-types", split = ",")
+            private EnumSet<ResultTypes> resultTypes = null;
+        }
+        App app = new App();
+        new CommandLine(app).parseArgs("--result-types", "PARTIAL,COMPLETE");
+
+        assertEquals(EnumSet.of(PARTIAL, COMPLETE), app.resultTypes);
+    }
+    @Test
+    public void testIssue628EnumSetWithEmptyInitialValue() {
+        class App {
+            @Option(names = "--result-types", split = ",")
+            private EnumSet<ResultTypes> resultTypes = EnumSet.noneOf(ResultTypes.class);
+        }
+        App app = new App();
+        new CommandLine(app).parseArgs("--result-types", "PARTIAL,COMPLETE");
+
+        assertEquals(EnumSet.of(PARTIAL, COMPLETE), app.resultTypes);
+    }
+    @Test
+    public void testIssue628EnumSetWithNonEmptyInitialValue() {
+        class App {
+            @Option(names = "--result-types", split = ",")
+            private EnumSet<ResultTypes> resultTypes = EnumSet.of(ResultTypes.COMPLETE);
+        }
+        App app = new App();
+        new CommandLine(app).parseArgs("--result-types", "PARTIAL,COMPLETE");
+
+        assertEquals(EnumSet.of(PARTIAL, COMPLETE), app.resultTypes);
     }
 }

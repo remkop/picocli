@@ -5,6 +5,11 @@ The picocli community is pleased to announce picocli 3.9.4.
 
 This release contains bugfixes and enhancements.
 
+From this release, `enum`-typed options and positional parameters that are multi-value can be stored in `EnumSet` collections, as well as other Collections, arrays and Maps. 
+
+Bugfixes: `ReflectionConfigGenerator` incorrectly listed superclass fields as fields of the concrete subclass, causing "GraalVM error: Error parsing reflection configuration in json" when creating a native image,
+and method subcommands in commands that subclass another command caused `InitializationException`.
+
 
 This is the forty-nineth public release.
 Picocli follows [semantic versioning](http://semver.org/).
@@ -19,9 +24,10 @@ Picocli follows [semantic versioning](http://semver.org/).
 
 
 ## <a name="3.9.4-fixes"></a> Fixed issues
+- [#628] Add support for collecting `enum` multi-value options and positional parameters in `EnumSet<>` collections. Thanks to [Lee Atkinson](https://github.com/leeatkinson) for raising this.
 - [#619] Bugfix: Method subcommands in commands that subclass another command caused `InitializationException`: "Another subcommand named 'method' already exists...". Thanks to [PorygonZRocks](https://github.com/PorygonZRocks) for the bug report.
-- [#622] Bugfix: ReflectionConfigGenerator incorrectly lists superclass fields as fields of the concrete subclass, causing "GraalVM error: Error parsing reflection configuration in json". Thanks to [Sebastian Thomschke](https://github.com/sebthom) for the bug report.
-- [#623] ReflectionConfigGenerator now generates json in alphabetic order.
+- [#622] Bugfix: `ReflectionConfigGenerator` incorrectly listed superclass fields as fields of the concrete subclass, causing "GraalVM error: Error parsing reflection configuration in json". Thanks to [Sebastian Thomschke](https://github.com/sebthom) for the bug report.
+- [#623] `ReflectionConfigGenerator` now generates json in alphabetic order.
 
 ## <a name="3.9.4-deprecated"></a> Deprecations
 No features were deprecated in this release.

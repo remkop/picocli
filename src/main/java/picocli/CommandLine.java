@@ -7819,7 +7819,7 @@ public class CommandLine {
             List<Object> converted = consumeArguments(argSpec, lookBehind, arity, args, type, argDescription);
             if (collection == null || (!collection.isEmpty() && !initialized.contains(argSpec))) {
                 tracer.debug("Initializing binding for %s with empty %s%n", optionDescription("", argSpec, 0), argSpec.type().getSimpleName());
-                collection = createCollection(argSpec.type()); // collection type
+                collection = createCollection(argSpec.type(), type); // collection type, element type
                 argSpec.setValue(collection);
             }
             initialized.add(argSpec);
@@ -8007,7 +8007,7 @@ public class CommandLine {
             return value;
         }
         @SuppressWarnings("unchecked")
-        private Collection<Object> createCollection(Class<?> collectionClass) throws Exception {
+        private Collection<Object> createCollection(Class<?> collectionClass, Class<?> elementType) throws Exception {
             if (collectionClass.isInterface()) {
                 if (List.class.isAssignableFrom(collectionClass)) {
                     return new ArrayList<Object>();
@@ -8020,8 +8020,12 @@ public class CommandLine {
                 }
                 return new ArrayList<Object>();
             }
+            if (EnumSet.class.isAssignableFrom(collectionClass) && Enum.class.isAssignableFrom(elementType)) {
+                Object enumSet = EnumSet.noneOf((Class<Enum>) elementType);
+                return (Collection<Object>) enumSet;
+            }
             // custom Collection implementation class must have default constructor
-            return (Collection<Object>) collectionClass.newInstance();
+            return (Collection<Object>) factory.create(collectionClass);
         }
         @SuppressWarnings("unchecked") private Map<Object, Object> createMap(Class<?> mapClass) throws Exception {
             try { // if it is an implementation class, instantiate it
