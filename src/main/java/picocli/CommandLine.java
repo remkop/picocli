@@ -3844,7 +3844,7 @@ public class CommandLine {
             private CommandLine commandLine;
             private CommandSpec parent;
             private Boolean isAddMethodSubcommands;
-    
+
             private String name;
             private Set<String> aliases = new LinkedHashSet<String>();
             private Boolean isHelpCommand;

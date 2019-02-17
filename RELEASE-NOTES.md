@@ -1,11 +1,11 @@
 # picocli Release Notes
 
-# <a name="3.9.4"></a> Picocli 3.9.4 (UNRELEASED)
+# <a name="3.9.4"></a> Picocli 3.9.4
 The picocli community is pleased to announce picocli 3.9.4.
 
 This release contains bugfixes and enhancements.
 
-From this release, `enum`-typed options and positional parameters that are multi-value can be stored in `EnumSet` collections, as well as other Collections, arrays and Maps. 
+From this release, `enum`-typed options and positional parameters that are multi-value can be stored in `EnumSet` collections (in addition to other Collections, arrays and Maps). 
 
 Also, a better error message is now shown when unknown options are encountered while processing clustered short options. The new error message includes both the failing part and the original command line argument.
 
