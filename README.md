@@ -45,7 +45,7 @@ Picocli-based applications can easily [integrate](https://picocli.info/#_depende
 ![Picocli Demo help message with ANSI colors](docs/images/picocli.Demo.png?raw=true)
 
 ### Releases
-* [Releases](https://github.com/remkop/picocli/releases) - Latest: 3.9.3 [Release Notes](https://github.com/remkop/picocli/releases/tag/v3.9.3)
+* [Releases](https://github.com/remkop/picocli/releases) - Latest: 3.9.4 [Release Notes](https://github.com/remkop/picocli/releases/tag/v3.9.4)
 * Older: Picocli 3.0.0 [Release Notes](https://github.com/remkop/picocli/releases/tag/v3.0.0)
 * Older: Picocli 2.0 [Release Notes](https://github.com/remkop/picocli/releases/tag/v2.0.0)
 
@@ -181,35 +181,35 @@ See the [source code](https://github.com/remkop/picocli/blob/master/src/main/jav
 
 ### Gradle
 ```
-compile 'info.picocli:picocli:3.9.3'
+compile 'info.picocli:picocli:3.9.4'
 ```
 ### Maven
 ```
 <dependency>
   <groupId>info.picocli</groupId>
   <artifactId>picocli</artifactId>
-  <version>3.9.3</version>
+  <version>3.9.4</version>
 </dependency>
 ```
 ### Scala SBT
 ```
-libraryDependencies += "info.picocli" % "picocli" % "3.9.3"
+libraryDependencies += "info.picocli" % "picocli" % "3.9.4"
 ```
 ### Ivy
 ```
-<dependency org="info.picocli" name="picocli" rev="3.9.3" />
+<dependency org="info.picocli" name="picocli" rev="3.9.4" />
 ```
 ### Grape
 ```groovy
 @Grapes(
-    @Grab(group='info.picocli', module='picocli', version='3.9.3')
+    @Grab(group='info.picocli', module='picocli', version='3.9.4')
 )
 ```
 ### Leiningen
 ```
-[info.picocli/picocli "3.9.3"]
+[info.picocli/picocli "3.9.4"]
 ```
 ### Buildr
 ```
-'info.picocli:picocli:jar:3.9.3'
+'info.picocli:picocli:jar:3.9.4'
 ```
