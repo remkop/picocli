@@ -26,6 +26,7 @@ Picocli follows [semantic versioning](http://semver.org/).
 
 ## <a name="3.9.5-fixes"></a> Fixed issues
 - [#630] Avoid loading `org.fusesource.jansi.AnsiConsole` when not running on Windows to avoid JVM crashes on non-Windows platforms.
+- [#632] ReflectionConfigGenerator now specifies the `allowWrite = true` attribute for final fields.
 
 ## <a name="3.9.5-deprecated"></a> Deprecations
 No features were deprecated in this release.

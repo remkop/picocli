@@ -329,8 +329,8 @@
       { "name" : "file" },
       { "name" : "mixin" },
       { "name" : "spec" },
-      { "name" : "timeUnit" },
-      { "name" : "unmatched" }
+      { "name" : "timeUnit", "allowWrite" : true },
+      { "name" : "unmatched", "allowWrite" : true }
     ],
     "methods" : [
       { "name" : "multiply", "parameterTypes" : ["int", "int"] },

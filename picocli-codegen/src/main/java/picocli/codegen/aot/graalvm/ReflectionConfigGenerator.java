@@ -17,6 +17,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.lang.reflect.Proxy;
 import java.util.*;
 import java.util.concurrent.Callable;
@@ -141,7 +142,7 @@ public class ReflectionConfigGenerator {
 
             // ANSI color enabled detection
             getOrCreateClassName("java.lang.System").addMethod("console");
-            getOrCreateClassName("org.fusesource.jansi.AnsiConsole").addField("out");
+            getOrCreateClassName("org.fusesource.jansi.AnsiConsole").addField("out", false);
 
             // picocli 4.0
             getOrCreateClassName("java.util.ResourceBundle").addMethod("getBaseBundleName");
@@ -213,19 +214,23 @@ public class ReflectionConfigGenerator {
             Field[] declaredFields = cls.getDeclaredFields();
             for (Field f : declaredFields) {
                 if (f.isAnnotationPresent(CommandLine.Spec.class)) {
-                    reflectedClass.addField(f.getName());
+                    reflectedClass.addField(f.getName(), isFinal(f));
                 }
                 if (f.isAnnotationPresent(CommandLine.ParentCommand.class)) {
-                    reflectedClass.addField(f.getName());
+                    reflectedClass.addField(f.getName(), isFinal(f));
                 }
                 if (f.isAnnotationPresent(CommandLine.Mixin.class)) {
-                    reflectedClass.addField(f.getName());
+                    reflectedClass.addField(f.getName(), isFinal(f));
                 }
                 if (f.isAnnotationPresent(CommandLine.Unmatched.class)) {
-                    reflectedClass.addField(f.getName());
+                    reflectedClass.addField(f.getName(), isFinal(f));
                 }
             }
             visitAnnotatedFields(cls.getSuperclass());
+        }
+
+        private boolean isFinal(Field f) {
+            return (f.getModifiers() & Modifier.FINAL) == Modifier.FINAL;
         }
 
         private void visitArgSpec(ArgSpec argSpec) throws NoSuchFieldException, IllegalAccessException {
@@ -281,7 +286,8 @@ public class ReflectionConfigGenerator {
 
         private void visitFieldBinding(Object fieldBinding) throws IllegalAccessException, NoSuchFieldException {
             Field field = (Field) accessibleField(fieldBinding.getClass(), REFLECTED_FIELD_BINDING_FIELD).get(fieldBinding);
-            getOrCreateClass(field.getDeclaringClass()).addField(field.getName());
+            getOrCreateClass(field.getDeclaringClass())
+                    .addField(field.getName(), isFinal(field));
 
             Object scope = accessibleField(fieldBinding.getClass(), REFLECTED_BINDING_FIELD_SCOPE).get(fieldBinding);
             getOrCreateClass(scope.getClass());
@@ -342,8 +348,8 @@ public class ReflectionConfigGenerator {
             this.name = name;
         }
 
-        ReflectedClass addField(String fieldName) {
-            fields.add(new ReflectedField(fieldName));
+        ReflectedClass addField(String fieldName, boolean isFinal) {
+            fields.add(new ReflectedField(fieldName, isFinal));
             return this;
         }
 
@@ -432,9 +438,11 @@ public class ReflectionConfigGenerator {
     }
     static class ReflectedField implements Comparable<ReflectedField> {
         private final String name;
+        private final boolean isFinal;
 
-        ReflectedField(String name) {
+        ReflectedField(String name, boolean isFinal) {
             this.name = name;
+            this.isFinal = isFinal;
         }
         @Override public int hashCode() { return name.hashCode(); }
         @Override public boolean equals(Object o) {
@@ -443,7 +451,9 @@ public class ReflectionConfigGenerator {
 
         @Override
         public String toString() {
-            return String.format("{ \"name\" : \"%s\" }", name);
+            return isFinal
+                    ? String.format("{ \"name\" : \"%s\", \"allowWrite\" : true }", name)
+                    : String.format("{ \"name\" : \"%s\" }", name);
         }
 
         public int compareTo(ReflectedField o) {
