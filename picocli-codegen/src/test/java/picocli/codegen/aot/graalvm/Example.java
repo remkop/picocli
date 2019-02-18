@@ -11,6 +11,7 @@ import picocli.CommandLine.Spec;
 import picocli.CommandLine.Unmatched;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -26,7 +27,7 @@ public class Example implements Runnable {
     }
 
     @Option(names = "-t")
-    TimeUnit timeUnit;
+    final TimeUnit timeUnit = TimeUnit.SECONDS;
 
     @Parameters(index = "0")
     File file;
@@ -38,7 +39,7 @@ public class Example implements Runnable {
     ExampleMixin mixin;
 
     @Unmatched
-    List<String> unmatched;
+    final List<String> unmatched = new ArrayList<String>();
 
     private int minimum;
     private List<File> otherFiles;
