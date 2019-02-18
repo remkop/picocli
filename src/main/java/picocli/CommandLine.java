@@ -10079,11 +10079,11 @@ public class CommandLine {
             static boolean isPseudoTTY() { return isWindows() && (isXterm() || hasOsType()); }
 
             static boolean ansiPossible() {
-                if (forceDisabled())              { return false; }
-                if (forceEnabled())               { return true; }
-                if (isJansiConsoleInstalled())    { return true; }
-                if (hintDisabled())               { return false; }
-                if (!isTTY() && !isPseudoTTY())   { return false; }
+                if (forceDisabled())                          { return false; }
+                if (forceEnabled())                           { return true; }
+                if (isWindows() && isJansiConsoleInstalled()) { return true; } // #630 JVM crash loading jansi.AnsiConsole on Linux
+                if (hintDisabled())                           { return false; }
+                if (!isTTY() && !isPseudoTTY())               { return false; }
                 return hintEnabled() || !isWindows() || isXterm() || hasOsType();
             }
             static boolean isJansiConsoleInstalled() {

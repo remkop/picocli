@@ -1,5 +1,39 @@
 # picocli Release Notes
 
+# <a name="3.9.5"></a> Picocli 3.9.5
+The picocli community is pleased to announce picocli 3.9.5.
+
+This release contains a critical workaround to protect against JVM crashes when running on RedHat Linux 3.10.0-327.44.2.el7.x86_64.
+
+Picocli 3.9.0 introduced a change in the heuristics for emitting ANSI escape characters. As part of this change, picocli may load the `org.fusesource.jansi.AnsiConsole` class from the JAnsi library when not running on Windows. This may crash the JVM (see [fusesource/jansi-native#17](https://github.com/fusesource/jansi-native/issues/17)).
+
+The workaround in this release is to only load the `AnsiConsole` class when running on Windows.
+
+Users using 3.9.0 and higher are strongly recommended to upgrade to 3.9.5 or later.
+
+
+This is the fiftieth public release.
+Picocli follows [semantic versioning](http://semver.org/).
+
+## <a name="3.9.5"></a> Table of Contents
+* [New and noteworthy](#3.9.5-new)
+* [Fixed issues](#3.9.5-fixes)
+* [Deprecations](#3.9.5-deprecated)
+* [Potential breaking changes](#3.9.5-breaking-changes)
+
+## <a name="3.9.5-new"></a> New and Noteworthy
+
+
+## <a name="3.9.5-fixes"></a> Fixed issues
+- [#630] Avoid loading `org.fusesource.jansi.AnsiConsole` when not running on Windows to avoid JVM crashes on non-Windows platforms.
+
+## <a name="3.9.5-deprecated"></a> Deprecations
+No features were deprecated in this release.
+
+## <a name="3.9.5-breaking-changes"></a> Potential breaking changes
+This release has no breaking changes.
+
+
 # <a name="3.9.4"></a> Picocli 3.9.4
 The picocli community is pleased to announce picocli 3.9.4.
 
