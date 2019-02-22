@@ -6,6 +6,10 @@
 
 > a mighty tiny command line processor
 
+
+image:images/logo/horizontal.png[picocli a Mighty Tiny Command Line Interface]
+
+
 Picocli is a one-file framework for creating JVM command line applications (in Java, Groovy, Kotlin, Scala, etc.) with almost zero code.
 It has an annotations API and a programmatic API, and features usage help with ANSI colors, command line autocompletion and support for nested subcommands.
 Its source code lives in a single file, so you have the option to include it in source form; this lets end users run picocli-based applications without requiring picocli as an external dependency.
@@ -14,11 +18,14 @@ Its source code lives in a single file, so you have the option to include it in 
 == Example
 Let's take a look at an example to see what a picocli-based command line application looks like.
 
+=== A CheckSum Utility
+We will use this small, but realistic, example CheckSum utility to demonstrate various picocli features.
+
 [[CheckSum-application]]
 [source,java,linenums]
 ----
 @Command(description = "Prints the checksum (MD5 by default) of a file to STDOUT.",
-         name = "checksum", mixinStandardHelpOptions = true, version = "checksum 3.0")
+       name = "jchecksum", mixinStandardHelpOptions = true, version = "jchecksum 3.0")
 class CheckSum implements Callable<Void> {
 
     @Parameters(index = "0", description = "The file whose checksum to calculate.")
@@ -38,7 +45,7 @@ class CheckSum implements Callable<Void> {
         // your business logic goes here...
         byte[] fileContents = Files.readAllBytes(file.toPath());
         byte[] digest = MessageDigest.getInstance(algorithm).digest(fileContents);
-        System.out.println(javax.xml.bind.DatatypeConverter.printHexBinary(digest));
+        System.out.printf("%0" + (digest.length*2) + "x%n", new BigInteger(1,digest));
         return null;
     }
 }
@@ -49,22 +56,12 @@ Given that this program has only 25 lines of code, you may be surprised at how m
 Let's run this program, first without any input:
 
 ----
-$ java CheckSum
+$ java picocli.example.CheckSum
 ----
 
 This gives an error message saying the `<file>` parameter is missing:
 
 image:images/checksum-help.png[]
-//----
-//Missing required parameter: <file>
-//Usage: checksum [-hV] [-a=<algorithm>] <file>
-//Prints the checksum (MD5 by default) of a file to STDOUT.
-//      <file>      The file whose checksum to calculate.
-//  -a, --algorithm=<algorithm>
-//                  MD5, SHA-1, SHA-256, ...
-//  -h, --help      Show this help message and exit.
-//  -V, --version   Print version information and exit.
-//----
 
 The `<file>` positional parameter does not have a default, so this a mandatory parameter. The `--algorithm` option does have a default: `"MD5"`, so it is optional.
 
@@ -73,14 +70,14 @@ Note that our program does not have any logic to validate the user input. The va
 Now let's try running this program with some valid input, and see how the output compares to the GNU `md5sum` and `sha1sum` utilities:
 
 ----
-$ java CheckSum picocli-3.9.5.jar
+$ java picocli.example.CheckSum picocli-3.9.5.jar
 509e3e2602854d5b88e2e7baa476a7fe
 
 $ md5sum picocli-3.9.5.jar
 509e3e2602854d5b88e2e7baa476a7fe *picocli-3.9.5.jar
 
 
-$ java CheckSum --algorithm=SHA1 picocli-3.9.5.jar
+$ java picocli.example.CheckSum --algorithm=SHA1 picocli-3.9.5.jar
 f659a2feef0e8f7f8458aaf7d36c4d92f65320c8
 
 $ sha1sum picocli-3.9.5.jar
@@ -94,14 +91,14 @@ You may have noticed that the error message above showed two more options: `--he
 These two options were added because we defined the command with `@Command(mixinStandardHelpOptions = true /* ... */)`. Usage help and version information are so common for command line applications that picocli provides this shortcut. Internally this uses a mechanism called "mixins" and we will go into more detail later on how you can define your own mixins to define reusable elements. But first, let's see what these options actually do, starting with the `--version` option.
 
 ----
-$ java CheckSum --version
-checksum 3.0
+$ java picocli.example.CheckSum --version
+jchecksum 3.0
 ----
-The version information shown is what was specified in the command annotation: `@Command(version = "checksum 3.0" /* ... */)`. We will show later that you can also get the version information from a JAR file's manifest or some other place. Next, the `--help` option:
+The version information shown is what was specified in the command annotation: `@Command(version = "jchecksum 3.0" /* ... */)`. We will show later that you can also get the version information from a JAR file's manifest or some other place. Next, the `--help` option:
 
 ----
-$ java CheckSum --help
-Usage: checksum [-hV] [-a=<algorithm>] <file>
+$ java picocli.example.CheckSum --help
+Usage: jchecksum [-hV] [-a=<algorithm>] <file>
 Prints the checksum (MD5 by default) of a file to STDOUT.
       <file>      The file whose checksum to calculate.
   -a, --algorithm=<algorithm>
@@ -110,22 +107,24 @@ Prints the checksum (MD5 by default) of a file to STDOUT.
   -V, --version   Print version information and exit.
 ----
 
-The usage help message looks familiar; it is what was shown after the error message "Missing required parameter: <file>" when we gave the program invalid input. The synopsis (after "Usage:") shows the command name as `checksum`, since that is what we specified in the command definition `@Command(name = "checksum" /* ... */)`.
+The usage help message looks familiar; it is what was shown after the error message "Missing required parameter: <file>" when we gave the program invalid input. The synopsis (after "Usage:") shows the command name as `jchecksum`, since that is what we specified in the command definition `@Command(name = "jchecksum" /* ... */)`.
 
 To summarize, we just created a full-fledged application with all the bells and whistles expected from a production-quality command line utility, using a minimal amount of code.
 
 === What's Next in this Article
-In the rest of this article we will first take a look at picocli's "entry points": there are APIs for just parsing command line parameters and there are "convenience APIs" that parse the user input and automatically invoke the business logic of your application.
+In the rest of this article we will take a quick tour of picocli's cababilities.
 
-We will also go into the details of defining options and positional parameters, how picocli converts argument Strings to strongly typed option values, how to define options that can be specified multiple times and options that take multiple parameters.
+First we will take a look at picocli's "entry points": there are methods for just parsing command line parameters and there are "convenience methods" that parse the user input and automatically invoke the business logic of your application.
+
+Next, we will go into some detail of defining options and positional parameters, how picocli converts argument Strings to strongly typed option values, how to define options that can be specified multiple times, including map options like `-Dkey=value`.
 
 After that there is a section on how to customize the usage help and version help, and liven things up with ANSI colors.
 
-Many larger command line applications have subcommands, `git` being a famous example. We will show how picocli makes it very easy to create commands with subcommands.
+Many larger command line applications have subcommands, `git` being a famous example. We will show how picocli makes it very easy to create commands with subcommands, and how you can use mixins to reuse common options or common command configurations.
 
 Furthermore this article will explain how picocli can give your application autocompletion in bash and zsh, how Groovy scripts can use the picocli annotations, and how to build command line applications that integrate with Dependency Injection containers like Spring Boot and Micronaut.
 
-We will briefly touch on advanced user input validation and how picocli can be used to create interactive shell applications with the `JLine` library. We will wrap up with some Tips and Tricks and a brief comparison with other command line libraries.
+Finally, we will briefly touch on how picocli can be used to create interactive shell applications with the `JLine` library, and wrap up with a small tutorial for creating native executables with GraalVM to make amazingly fast command line tools.
 
 == Defining and Running a Picocli Application
 
@@ -136,9 +135,12 @@ The general outline of any command line application is:
 * parse the user input
 * inspect the result
 
-Picocli offers an annotations API and a programmatic API. In this section we will focus on the annotations API. The Tips and Tricks section below will briefly show the programmatic API.
+Picocli offers an annotations API and a programmatic API (the "model"). In this article we will focus on the annotations API.
 
-To define a command or a subcommand, annotate a class or a method with `@Command`. The `@Command` annotation is not strictly necessary, but useful because it is a convenient way to set the command name, description, and other elements of the usage help message. Subcommands can be specified in the `@Command` annotation but can also be added to a command programmatically.
+.Classes and Interfaces for Defining a CommandSpec Model
+image:images/class-diagram-definition.png[Classes and Interfaces for Defining a CommandSpec Model, pdfwidth=95%]
+
+To define a command or a subcommand, annotate a class or a method with `@Command`. The `@Command` annotation can be omitted, but is a convenient way to set the command name, description, and other elements of the usage help message. Subcommands can be specified in the `@Command` annotation but can also be added to a command programmatically.
 
 To define options and positional parameters, annotate a field or a method with `@Option` or `@Parameters`. Here is an example of a minimal command:
 
@@ -154,7 +156,7 @@ For the next step, parsing the user input, there are broadly two approaches: eit
 === Simply Parsing
 The static method `CommandLine::populateCommand` accepts a command object and an array of command line arguments. It parses the input, injects values for matched options and positional parameters into the annotated elements of the command, and returns the command object. For example:
 
-.Using the `CommandLine::populateCommand` method for simple use cases
+.Using the `populateCommand` method for simple use cases
 [source,java]
 ----
 String[] args = new String[] {"-x", "5"};
@@ -164,7 +166,7 @@ assert result.x == 5;
 
 The `populateCommand` static method is useful for very straightforward commands and for testing, but is limited. To customize the parser behaviour you need to create a `CommandLine` instance and call the `parseArgs` method:
 
-.Using the `CommandLine::parseArgs` method for more flexibility
+.Using the `parseArgs` method for more flexibility
 [source,java]
 ----
 Minimal minimal = new Minimal();
@@ -177,6 +179,7 @@ assert cmd.getUnmatchedArguments().equals(Arrays.asList("-y=unknown"))
 ----
 
 === Parsing and Running
+
 The above examples are a bit academic. A real-world application needs to be more robust, specifically:
 
 . Handle invalid user input, and report any problems to the user (potentially suggesting alternative options and subcommands for simple typos if we want to get fancy).
@@ -184,16 +187,19 @@ The above examples are a bit academic. A real-world application needs to be more
 . Check if the user requested version information, and print this information and abort processing if this was the case.
 . Finally, run the business logic of the application.
 
+.Classes Related to Parsing Command Line Arguments
+image:images/class-diagram-parsing.png[Classes Related to Parsing Command Line Arguments]
+
 The above is so common that picocli provides some shortcuts, the so-called "convenience" methods. These methods take care of invalid user input and requests for usage help and version information as described above.
 
-* `CommandLine` static methods `run`, `call` and `invoke` accept a Runnable, Callable or a `@Command`-annotated method. Any subcommands in the annotations must also be a `@Command`-annotated method or a class implementing Runnable or Callable. After the input was parsed successfully, the Runnable, Callable or method of the subcommand specified by the end user on the command line is invoked.
-* `CommandLine` instance methods `parseWithHandler` and `parseWithHandlers` calls the specified result handler when parsing succeeds, or the exception handler when an error occurred. The `run`, `call` and `invoke` static methods delegate to this method with the `RunLast` result handler and default exception handler.
+* `CommandLine` static methods `run`, `call` and `invoke` accept a Runnable, Callable or a `@Command`-annotated Method object. Any subcommands constructed from the annotations must also be `@Command`-annotated Methods or classes implementing Runnable or Callable. After the input was parsed successfully, the Runnable, Callable or Method for the subcommand specified by the end user on the command line is invoked.
+* `CommandLine` instance methods `parseWithHandler` and `parseWithHandlers` calls the specified result handler when parsing succeeds, or the exception handler when an error occurred. The `run`, `call` and `invoke` static methods delegate to this method with the default result handler (`RunLast`) and default exception handler.
 
 The default result handler (`RunLast`) takes care of requests for usage help and version information as described above, and invokes the most specific subcommand. The default exception handler takes care of invalid user input and runtime errors in the business logic.
 
 The static `run`, `call` and `invoke` methods are simple and straightforward but are limited in that they won't allow you to customize the parser behaviour or the usage help message. The `parseWithHandler` methods are more verbose but more flexible. For example:
 
-.Using the `CommandLine::parseWithHandler` method for more flexibility
+.Using the `parseWithHandler` method for more flexibility
 [source,java]
 ----
 class MyRunnable implements Runnable {
@@ -227,6 +233,7 @@ int defaultValue = -1;
 assert parseResult.hasMatchedOption("-x");
 assert parseResult.matchedOptionValue("-x", defaultValue) == 5;
 ----
+
 
 == Options and Positional Parameters
 Command line arguments can be separated into _options_  and _positional parameters_. Options have a name, positional parameters are values without a name. Positional parameters often follow the options, but they may be mixed.
@@ -319,7 +326,7 @@ class Login implements Callable<Object> {
     @Option(names = {"-u", "--user"}, description = "User name")
     String user;
 
-    @Option(names = {"-p", "--passphrase"}, description = "Passphrase", interactive = true)
+    @Option(names = {"-p", "--passphrase"}, interactive=true, description="Passphrase")
     String password;
 
     public Object call() throws Exception {
@@ -687,8 +694,8 @@ In this example we will use the `CheckSum` application from the beginning of thi
 #!/usr/bin/env bash
 
 LIBS=/home/user/me/libs
-CP="${LIBS}/checksum-1.0.jar:${LIBS}/picocli-3.9.5.jar"
-java -cp "${CP}" 'com.example.CheckSum' $@
+CP="${LIBS}/checksum.jar:${LIBS}/picocli-3.9.5.jar"
+java -cp "${CP}" 'picocli.example.CheckSum' $@
 ----
 
 You probably want to `chmod 755 jchecksum` to make the script executable. Try calling it on the command line with `./jchecksum --version` to see if the script works.
@@ -696,7 +703,7 @@ You probably want to `chmod 755 jchecksum` to make the script executable. Try ca
 To generate a completion script, we call `picocli.AutoComplete`, and give it the name of the class and the name of the command:
 [source,bash]
 ----
-java -cp "checksum-1.0.jar:picocli-3.9.5.jar" picocli.AutoComplete -n jchecksum com.example.CheckSum
+java -cp "checksum.jar:picocli-3.9.5.jar" picocli.AutoComplete -n jchecksum picocli.example.CheckSum
 ----
 
 This will generate a file called `jchecksum_completion` in the current directory.
@@ -717,6 +724,21 @@ To install the completion script permanently, add it to your `.bash_profile`. Be
 $ for f in $(find . -name "*_completion"); do line=". $(pwd)/$f"; grep "$line" ~/.bash_profile || echo "$line" >> ~/.bash_profile; done
 ----
 
+=== Completion Candidates
+Picocli can deduce completion candidates for parameters of certain types. For example, `File`, `Path`, `InetAddress` and `enum` types allow picocli to generate completion candidates from the current directory, your `/etc/hosts` file, and the enum values, respectively.
+
+Additionally, you can specify `completionCandidates` for an option. For example, in the `CheckSum` application, we can get completion for the `--algorithms` option parameter by defining the option as follows:
+
+[source,java]
+----
+private static class AlgoList extends ArrayList<String> {
+    AlgoList() { super(Arrays.asList("MD5", "SHA-1", "SHA-256")); }
+}
+@Option(names = {"-a", "--algorithm"}, completionCandidates = AlgoList.class,
+        description = "${COMPLETION-CANDIDATES}, ...")
+private String algorithm = "MD5";
+----
+Values in the `completionCandidates` list are shown as completion candidates when the user presses `[TAB]` after the `-a` option, similarly to as if the option was an `enum` type.
 
 == Groovy Scripts
 Picocli offers special support for Groovy scripts, to allow the picocli annotations to be used directly in the script without creating a class. All that is needed is to add the `@picocli.groovy.PicocliScript` annotation to the script. For example:
@@ -725,17 +747,17 @@ Picocli offers special support for Groovy scripts, to allow the picocli annotati
 ----
 @Grab('info.picocli:picocli:3.9.5')
 @Command(header = [
-        $/@|bold,green    ___                            ___ _           _                  |@/$,
-        $/@|bold,green   / __|_ _ ___  _____ ___  _     / __| |_  ___ __| |__ ____  _ _ __  |@/$,
-        $/@|bold,green  | (_ | '_/ _ \/ _ \ V / || |   | (__| ' \/ -_) _| / /(_-< || | '  \ |@/$,
-        $/@|bold,green   \___|_| \___/\___/\_/ \_, |    \___|_||_\___\__|_\_\/__/\_,_|_|_|_||@/$,
-        $/@|bold,green                         |__/                                         |@/$
-        ],
-        description = "Print a checksum of each specified FILE.",
-        mixinStandardHelpOptions = true, version = 'checksum v1.2.3', showDefaultValues = true,
-        footerHeading = "%nFor more details, see:%n",
-        footer = ["[1] https://docs.oracle.com/javase/9/docs/specs/security/standard-names.html",
-                "ASCII Art thanks to http://patorjk.com/software/taag/"]
+ $/@|green    ___                            ___ _           _                  |@/$,
+ $/@|green   / __|_ _ ___  _____ ___  _     / __| |_  ___ __| |__ ____  _ _ __  |@/$,
+ $/@|green  | (_ | '_/ _ \/ _ \ V / || |   | (__| ' \/ -_) _| / /(_-< || | '  \ |@/$,
+ $/@|green   \___|_| \___/\___/\_/ \_, |    \___|_||_\___\__|_\_\/__/\_,_|_|_|_||@/$,
+ $/@|green                         |__/                                         |@/$
+ ],
+    description = "Print a checksum of each specified FILE.",
+    mixinStandardHelpOptions = true, version = 'gchecksum v1.2.3', showDefaultValues = true,
+    footerHeading = "%nFor more details, see:%n",
+    footer = ["[1] https://docs.oracle.com/javase/9/docs/specs/security/standard-names.html",
+            "ASCII Art thanks to http://patorjk.com/software/taag/"]
 )
 @picocli.groovy.PicocliScript
 import groovy.transform.Field
@@ -751,7 +773,7 @@ import static picocli.CommandLine.*
 @Field private String algorithm = "MD5"
 
 files.each {
-  println MessageDigest.getInstance(algorithm).digest(it.bytes).encodeHex().toString() + "\t" + it
+  println ""+MessageDigest.getInstance(algorithm).digest(it.bytes).encodeHex()+"\t"+it
 }
 ----
 The usage help message for our script looks like this:
@@ -819,9 +841,39 @@ public class MyCommand implements Callable<Void> {
 ----
 
 === Micronaut
-Other than Spring, I should mention Micronaut. Micronaut is an up-and-coming star in the world of microservices, and has strong dependency injection capabilities. It is worth checking out.
+Micronaut is an up-and-coming star in the world of microservices, and has strong dependency injection capabilities. It minimizes runtime reflection and instead uses annotation processing at compile time, resulting in very fast startup time and reduced memory footprint.
 
-Micronaut offers special support for using picocli to create standalone command-line applications that use and interact with services in a Microservice infrastructure. The Micronaut CLI itself is also implemented using picocli under the hood to support the subcommands like `create-app`, `create-function`, etc.
+Micronaut offers special support for using picocli to create standalone command-line applications that use and interact with services in a Microservice infrastructure with its `PicocliRunner` class. The Micronaut CLI itself is also implemented using picocli under the hood to support its subcommands like `mn create-app`, `mn create-function`, etc.
+
+[source,java]
+----
+import io.micronaut.configuration.picocli.PicocliRunner;
+import io.micronaut.http.annotation.*;
+import io.micronaut.http.client.*;
+import javax.inject.Inject;
+
+import picocli.CommandLine.Command;
+import picocli.CommandLine.Option;
+
+@Command(name = "myMicronautApp")
+public class MyMicronautApp implements Runnable {
+
+    @Client("https://api.github.com")
+    @Inject RxHttpClient client;
+
+    @Option(names = {"-x", "--option"}, description = "example option")
+    boolean flag;
+
+    public static void main(String[] args) throws Exception {
+        // let Micronaut instantiate and inject services
+        PicocliRunner.run(MyMicronautApp.class, args);
+    }
+
+    public void run() {
+        // business logic here
+    }
+}
+----
 
 
 == Interactive Shell Applications
@@ -831,9 +883,9 @@ From the JLine web site: "It is similar in functionality to BSD editline and GNU
 
 JLine and picocli complement each other well. JLine has support for history, highlighting, input tokenization, and a framework for command line completion. Picocli can parse an array of strings and execute a command or subcommand.
 
-Combining these two libraries makes it easy to build powerful interactive shell applications. Picocli has two modules, `picocli-shell-jline2` and `picocli-shell-jline2`, for this purpose.
+Combining these two libraries makes it easy to build powerful interactive shell applications. Picocli has two modules, `picocli-shell-jline2` and `picocli-shell-jline3`, for this purpose.
 
-These modules have a `PicocliJLineCompleter` class that shows context-sensitive completion candidates for options, option parameters and subcommands of a set of picocli commands. (The readme of each module has an example.) Applications that use picocli to define their commands no longer need to hand-code Completers for their commands and options. (An early version of this is used in the Micronaut CLI.)
+These modules have a `PicocliJLineCompleter` class that shows context-sensitive completion candidates for options, option parameters and subcommands of a set of picocli commands. The readme of the modules has an example. Applications that use picocli to define their commands no longer need to hand-code Completers for their commands and options. (An early version of this is used in the Micronaut CLI.)
 
 == Blazingly Fast with GraalVM
 
@@ -850,7 +902,7 @@ The `picocli-codegen` module includes the `ReflectionConfigGenerator` tool that 
 ----
 java -cp \
 picocli-3.9.5.jar:picocli-codegen-3.9.5.jar:checksum.jar \
-picocli.codegen.aot.graalvm.ReflectionConfigGenerator com.example.CheckSum > reflect.json
+picocli.codegen.aot.graalvm.ReflectionConfigGenerator picocli.example.CheckSum > reflect.json
 ----
 
 The generated `reflect.json` files looks something like this:
@@ -859,7 +911,7 @@ The generated `reflect.json` files looks something like this:
 ----
 [
   {
-    "name" : "com.example.CheckSum",
+    "name" : "picocli.example.CheckSum",
     "allDeclaredConstructors" : true,
     "allPublicConstructors" : true,
     "allDeclaredMethods" : true,
@@ -881,9 +933,10 @@ We create a native image for our application with the following command:
 ----
 graalvm-ce-1.0.0-rc12/bin/native-image \
     -cp picocli-3.9.5.jar:checksum.jar:jansi-1.17.1.jar \
-    -H:ReflectionConfigurationFiles=reflect.json -H:+ReportUnsupportedElementsAtRuntime \
-    -H:Name=jchecksum
-    --static --no-server com.example.CheckSum
+    -H:ReflectionConfigurationFiles=reflect.json \
+    -H:+ReportUnsupportedElementsAtRuntime \
+    -H:Name=jchecksum \
+    --static --no-server picocli.example.CheckSum
 ----
 
 The `reflect.json` is in the current directory, and I added `-H:+ReportUnsupportedElementsAtRuntime` to get a useful error message in case something goes wrong.
@@ -898,31 +951,32 @@ To compare the difference in startup speed, compare running it in HotSpot versus
 [source]
 ----
 $ time java -cp "picocli-3.9.5.jar;checksum.jar" \
-    com.example.CheckSum --version
-checksum 3.0
+    picocli.example.CheckSum picocli-3.9.5.jar
+509e3e2602854d5b88e2e7baa476a7fe
 
-real    0m0.324s
-user    0m0.375s
-sys     0m0.141s
+real    0m0.517s
+user    0m0.869s
+sys     0m0.082s
 ----
 
-On Java Hotspot, it takes about a third of a second to start the JVM and print the version information. Now, we run the native image:
+On Oracle Hotspot, it takes about half a second to start the JVM and print the checksum. Now, we run the native image:
 
 .Running the native image
 [source]
 ----
-$ time ./jchecksum --version
-checksum 3.0
+$ time ./jchecksum picocli-3.9.5.jar
+509e3e2602854d5b88e2e7baa476a7fe
 
-real    0m0.038s
-user    0m0.000s
-sys     0m0.031s
+real    0m0.006s
+user    0m0.003s
+sys     0m0.002s
 ----
 
-The startup time is now down to 38 milliseconds! This is on the Ubuntu distribution on Windows Subsystem for Linux on Windows 10.
+The execution time is now down to 6 milliseconds!
 
 All command line parsing functionality works as expected, with type conversion, validation and help with ANSI colors. This is exciting news when you want to write command line applications and services in Java and have them run instantaneously.
 
 
 == Conclusion
-I would have liked to tell you more. I haven't been able to talk about resource bundles, @-files, parser configuration options, the `@ParentCommand` annotation, the `@Spec` annotation, the programmatic API, and various other topics. I hope I've been able to give you some idea of picocli's capabilities, and where it could be useful. Don't hesitate to star the project on GitHub if you like it!
+Picocli has many more features you may be interested in, like resource bundles, @-files, parser configuration options, the `@ParentCommand` annotation, the `@Spec` annotation, the programmatic API, and more... I hope I've been able to give you some idea of picocli's capabilities, and where it could be useful. Star the project on GitHub if you like it!
+
