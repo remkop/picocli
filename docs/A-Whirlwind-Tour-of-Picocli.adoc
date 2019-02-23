@@ -1,4 +1,5 @@
 = A Whirlwind Tour of Picocli
+:author: Remko Popma
 :source-highlighter: coderay
 :icons: font
 //:imagesdir: http://picocli.info
@@ -25,7 +26,7 @@ We will use this small, but realistic, example CheckSum utility to demonstrate v
 [source,java,linenums]
 ----
 @Command(description = "Prints the checksum (MD5 by default) of a file to STDOUT.",
-       name = "jchecksum", mixinStandardHelpOptions = true, version = "jchecksum 3.0")
+         name = "checksum", mixinStandardHelpOptions = true, version = "checksum 3.0")
 class CheckSum implements Callable<Void> {
 
     @Parameters(index = "0", description = "The file whose checksum to calculate.")
@@ -92,13 +93,13 @@ These two options were added because we defined the command with `@Command(mixin
 
 ----
 $ java picocli.example.CheckSum --version
-jchecksum 3.0
+checksum 3.0
 ----
-The version information shown is what was specified in the command annotation: `@Command(version = "jchecksum 3.0" /* ... */)`. We will show later that you can also get the version information from a JAR file's manifest or some other place. Next, the `--help` option:
+The version information shown is what was specified in the command annotation: `@Command(version = "checksum 3.0" /* ... */)`. We will show later that you can also get the version information from a JAR file's manifest or some other place. Next, the `--help` option:
 
 ----
 $ java picocli.example.CheckSum --help
-Usage: jchecksum [-hV] [-a=<algorithm>] <file>
+Usage: checksum [-hV] [-a=<algorithm>] <file>
 Prints the checksum (MD5 by default) of a file to STDOUT.
       <file>      The file whose checksum to calculate.
   -a, --algorithm=<algorithm>
@@ -107,7 +108,7 @@ Prints the checksum (MD5 by default) of a file to STDOUT.
   -V, --version   Print version information and exit.
 ----
 
-The usage help message looks familiar; it is what was shown after the error message "Missing required parameter: <file>" when we gave the program invalid input. The synopsis (after "Usage:") shows the command name as `jchecksum`, since that is what we specified in the command definition `@Command(name = "jchecksum" /* ... */)`.
+The usage help message looks familiar; it is what was shown after the error message "Missing required parameter: <file>" when we gave the program invalid input. The synopsis (after "Usage:") shows the command name as `checksum`, since that is what we specified in the command definition `@Command(name = "checksum" /* ... */)`.
 
 To summarize, we just created a full-fledged application with all the bells and whistles expected from a production-quality command line utility, using a minimal amount of code.
 
@@ -171,7 +172,7 @@ The `populateCommand` static method is useful for very straightforward commands 
 ----
 Minimal minimal = new Minimal();
 CommandLine cmd = new CommandLine(minimal)
-    .setUnmatchedArgumentsAllowed(true); // configure the parser to accept unknown arguments
+    .setUnmatchedArgumentsAllowed(true); // configure parser to accept unknown args
 
 cmd.parseArgs("-x", "5", "-y=unknown");
 assert minimal.x == 5;
@@ -326,7 +327,7 @@ class Login implements Callable<Object> {
     @Option(names = {"-u", "--user"}, description = "User name")
     String user;
 
-    @Option(names = {"-p", "--passphrase"}, interactive=true, description="Passphrase")
+    @Option(names={"-p", "--passphrase"}, interactive=true, description="Passphrase")
     String password;
 
     public Object call() throws Exception {
@@ -367,8 +368,8 @@ For example:
 [source,java]
 ----
 class PositionalParameters {
-    @Parameters(hidden = true)  // "hidden": don't show this parameter in usage help message
-    List<String> allParameters; // no "index" attribute: captures _all_ arguments (as Strings)
+    @Parameters(hidden = true)  // "hidden": don't show this param in usage help
+    List<String> allParameters; // no "index" attribute: captures _all_ arguments
 
     @Parameters(index = "0")    InetAddress host;
     @Parameters(index = "1")    int port;
@@ -447,7 +448,8 @@ class Convert {
 ----
 String[] args = { "-patterns", "a*b", "-patterns", "[a-e][i-u]",
                   "file1.txt", "file2.txt",
-                  "-uDAYS=3", "-u", "HOURS=23", "-u=MINUTES=59", "--timeUnit=SECONDS=13"};
+                  "-uDAYS=3", "-u", "HOURS=23", "-u=MINUTES=59",
+                  "--timeUnit=SECONDS=13", "-Dkey=value};
 Convert convert = CommandLine.populateCommand(new Convert(), args);
 
 // convert.patterns now has two Pattern objects
@@ -616,9 +618,9 @@ A third, more compact, way to register subcommands is to have a `@Command` class
 
 [source,java]
 ----
-@Command(name = "git", mixinStandardHelpOptions = true, resourceBundle = "Git_Messages")
+@Command(name = "git", resourceBundle = "Git_Messages")
 class Git {
-    @Option(names = "--git-dir", descriptionKey = "GITDIR")
+    @Option(names = "--git-dir", descriptionKey = "GITDIR") // description from bundle
     Path path;
 
     @Command
@@ -687,7 +689,7 @@ In the case of multiple possible completions, the Unix shell will display all su
 === Generating a Completion Script
 First, we need to create a starter script to run your command line application. The name of this script will be the name of your command.
 
-In this example we will use the `CheckSum` application from the beginning of this article. Let's say we want to call our command `jchecksum`, so we create a starter script called `jchecksum`, with the following content:
+In this example we will use the `CheckSum` application from the beginning of this article. Let's say we want to call our command `checksum`, so we create a starter script called `checksum`, with the following content:
 
 [source,bash]
 ----
@@ -698,24 +700,24 @@ CP="${LIBS}/checksum.jar:${LIBS}/picocli-3.9.5.jar"
 java -cp "${CP}" 'picocli.example.CheckSum' $@
 ----
 
-You probably want to `chmod 755 jchecksum` to make the script executable. Try calling it on the command line with `./jchecksum --version` to see if the script works.
+You probably want to `chmod 755 checksum` to make the script executable. Try calling it on the command line with `./checksum --version` to see if the script works.
 
 To generate a completion script, we call `picocli.AutoComplete`, and give it the name of the class and the name of the command:
 [source,bash]
 ----
-java -cp "checksum.jar:picocli-3.9.5.jar" picocli.AutoComplete -n jchecksum picocli.example.CheckSum
+java -cp "checksum.jar:picocli-3.9.5.jar" picocli.AutoComplete -n checksum picocli.example.CheckSum
 ----
 
-This will generate a file called `jchecksum_completion` in the current directory.
+This will generate a file called `checksum_completion` in the current directory.
 
 === Installing the Completion Script
 Simply source the completion script to install it in your current bash session:
 
 [source,bash]
 ----
-. jchecksum_completion
+. checksum_completion
 ----
-Now, if your type `jchecksum [TAB]` the bash shell will show the available options for this command.
+Now, if your type `checksum [TAB]` the bash shell will show the available options for this command.
 
 To install the completion script permanently, add it to your `.bash_profile`. Below is a one-liner that adds all completion scripts in the current directory to your `.bash_profile`. It will not create duplicate entries, so it can be invoked multiple times.
 
@@ -725,7 +727,7 @@ $ for f in $(find . -name "*_completion"); do line=". $(pwd)/$f"; grep "$line" ~
 ----
 
 === Completion Candidates
-Picocli can deduce completion candidates for parameters of certain types. For example, `File`, `Path`, `InetAddress` and `enum` types allow picocli to generate completion candidates from the current directory, your `/etc/hosts` file, and the enum values, respectively.
+Other than options and subcommands, picocli can deduce completion candidates for parameters of certain types. For example, `File`, `Path`, `InetAddress` and `enum` types allow picocli to generate completion candidates from the current directory, your `/etc/hosts` file, and the enum values, respectively.
 
 Additionally, you can specify `completionCandidates` for an option. For example, in the `CheckSum` application, we can get completion for the `--algorithms` option parameter by defining the option as follows:
 
@@ -754,17 +756,19 @@ Picocli offers special support for Groovy scripts, to allow the picocli annotati
  $/@|green                         |__/                                         |@/$
  ],
     description = "Print a checksum of each specified FILE.",
-    mixinStandardHelpOptions = true, version = 'gchecksum v1.2.3', showDefaultValues = true,
-    footerHeading = "%nFor more details, see:%n",
-    footer = ["[1] https://docs.oracle.com/javase/9/docs/specs/security/standard-names.html",
-            "ASCII Art thanks to http://patorjk.com/software/taag/"]
+    mixinStandardHelpOptions = true, version = 'gchecksum v1.2.3',
+    footerHeading = "%nFor more details, see:%n", showDefaultValues = true,
+    footer = [
+      "[1] https://docs.oracle.com/javase/9/docs/specs/security/standard-names.html",
+      "ASCII Art thanks to http://patorjk.com/software/taag/" ]
 )
 @picocli.groovy.PicocliScript
 import groovy.transform.Field
 import java.security.MessageDigest
 import static picocli.CommandLine.*
 
-@Parameters(arity="1", paramLabel="FILE", description="The file(s) whose checksum to calculate.")
+@Parameters(arity = "1", paramLabel = "FILE",
+            description = "The file(s) whose checksum to calculate.")
 @Field private File[] files
 
 @Option(names = ["-a", "--algorithm"], description = [
@@ -783,7 +787,7 @@ image:images/GroovyChecksumWithBanner.png[Customized header and footer with styl
 
 == Dependency Injection
 === Spring Boot
-The below example shows how to use picocli with Spring Boot:
+When your command is annotated with `@org.springframework.stereotype.Component`, Spring can autodetect it for dependency injection. The below example shows how to use picocli with Spring Boot:
 
 [source,java]
 ----
@@ -812,7 +816,7 @@ public class MySpringBootApp implements CommandLineRunner {
 }
 ----
 
-When your command is annotated with `@org.springframework.stereotype.Component`, Spring can autodetect it for dependency injection. The business logic of your command looks like any other picocli command with options and parameters.
+The business logic of your command looks like any other picocli command with options and parameters.
 
 [source,java]
 ----
@@ -848,8 +852,8 @@ Micronaut offers special support for using picocli to create standalone command-
 [source,java]
 ----
 import io.micronaut.configuration.picocli.PicocliRunner;
-import io.micronaut.http.annotation.*;
-import io.micronaut.http.client.*;
+import io.micronaut.http.client.annotation.Client;
+import io.micronaut.http.client.RxHttpClient;
 import javax.inject.Inject;
 
 import picocli.CommandLine.Command;
@@ -935,7 +939,7 @@ graalvm-ce-1.0.0-rc12/bin/native-image \
     -cp picocli-3.9.5.jar:checksum.jar:jansi-1.17.1.jar \
     -H:ReflectionConfigurationFiles=reflect.json \
     -H:+ReportUnsupportedElementsAtRuntime \
-    -H:Name=jchecksum \
+    -H:Name=checksum \
     --static --no-server picocli.example.CheckSum
 ----
 
@@ -943,7 +947,7 @@ The `reflect.json` is in the current directory, and I added `-H:+ReportUnsupport
 
 
 === Running the Native Image
-If compilation went well, we now have a native executable `jchecksum` in the current directory.
+If compilation went well, we now have a native executable `checksum` in the current directory.
 
 To compare the difference in startup speed, compare running it in HotSpot versus the native executable.
 
@@ -964,7 +968,7 @@ On Oracle Hotspot, it takes about half a second to start the JVM and print the c
 .Running the native image
 [source]
 ----
-$ time ./jchecksum picocli-3.9.5.jar
+$ time ./checksum picocli-3.9.5.jar
 509e3e2602854d5b88e2e7baa476a7fe
 
 real    0m0.006s
