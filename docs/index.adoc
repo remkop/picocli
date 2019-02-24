@@ -2555,6 +2555,23 @@ help = Show this help message and exit.
 version = Print version information and exit.
 ----
 
+For options and positional parameters, the `descriptionKey` can be used to localize the description.
+
+When the `descriptionKey` is omitted, the https://picocli.info/apidocs/picocli/CommandLine.Option.html#descriptionKey--[fallback for options] is any option name without the leading dashes, for example:
+
+----
+# For @Option(names = {"-v", "--verbose) boolean[] verbose;
+verbose = Show more detail during execution. \
+          May be specified multiple times for increasing verbosity.
+----
+
+For https://picocli.info/apidocs/picocli/CommandLine.Parameters.html#descriptionKey--[positional parameters] the fallback key is the `paramLabel + [ index ]`, for example:
+
+----
+# For @Parameters(paramLabel="FILES") File[];
+FILES[0..*] = The files to process.
+----
+
 === Shared Resource Bundles
 
 Resources for multiple commands can be specified in a single ResourceBundle. Keys and their value can be
