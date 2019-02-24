@@ -4349,6 +4349,28 @@ help = Show this help message and exit.
 version = Print version information and exit.</code></pre>
 </div>
 </div>
+<div class="paragraph">
+<p>For options and positional parameters, the <code>descriptionKey</code> can be used to localize the description.</p>
+</div>
+<div class="paragraph">
+<p>When the <code>descriptionKey</code> is omitted, the <a href="https://picocli.info/apidocs/picocli/CommandLine.Option.html#descriptionKey--">fallback for options</a> is any option name without the leading dashes, for example:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre># For @Option(names = {"-v", "--verbose) boolean[] verbose;
+verbose = Show more detail during execution. \
+          May be specified multiple times for increasing verbosity.</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>For <a href="https://picocli.info/apidocs/picocli/CommandLine.Parameters.html#descriptionKey--">positional parameters</a> the fallback key is the <code>paramLabel + [ index ]</code>, for example:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre># For @Parameters(paramLabel="FILES") File[];
+FILES[0..*] = The files to process.</pre>
+</div>
+</div>
 </div>
 <div class="sect2">
 <h3 id="_shared_resource_bundles">15.3. Shared Resource Bundles</h3>
