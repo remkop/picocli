@@ -669,7 +669,8 @@ public class Demo implements Runnable {
 
     static
     // tag::CheckSum[]
-    @Command(name = "checksum", description = "Prints the checksum (MD5 by default) of a file to STDOUT.")
+    @Command(description = "Prints the checksum (MD5 by default) of a file to STDOUT.",
+            name = "checksum", mixinStandardHelpOptions = true, version = "checksum 3.0")
     class CheckSum implements Callable<Void> {
 
         @Parameters(index = "0", description = "The file whose checksum to calculate.")
@@ -677,9 +678,6 @@ public class Demo implements Runnable {
 
         @Option(names = {"-a", "--algorithm"}, description = "MD5, SHA-1, SHA-256, ...")
         private String algorithm = "MD5";
-
-        @Option(names = {"-h", "--help"}, usageHelp = true, description = "Show this help message and exit.")
-        private boolean helpRequested;
 
         public static void main(String[] args) throws Exception {
             // CheckSum implements Callable,
@@ -689,10 +687,6 @@ public class Demo implements Runnable {
 
         public Void call() throws Exception {
             // business logic: do different things depending on options the user specified
-            if (helpRequested) {
-                CommandLine.usage(this, System.err);
-                return null;
-            }
             byte[] digest = MessageDigest.getInstance(algorithm).digest(readBytes(file));
             print(digest, System.out);
             return null;
