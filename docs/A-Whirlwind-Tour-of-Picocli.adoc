@@ -23,6 +23,7 @@ Let's take a look at an example to see what a picocli-based command line applica
 We will use this small, but realistic, example CheckSum utility to demonstrate various picocli features.
 
 [[CheckSum-application]]
+.Checksum: an example picocli-based command line application
 [source,java,linenums]
 ----
 @Command(description = "Prints the checksum (MD5 by default) of a file to STDOUT.",
@@ -56,6 +57,7 @@ Given that this program has only 25 lines of code, you may be surprised at how m
 
 Let's run this program, first without any input:
 
+.Testing the program with invalid input
 ----
 $ java picocli.example.CheckSum
 ----
@@ -70,6 +72,7 @@ Note that our program does not have any logic to validate the user input. The va
 
 Now let's try running this program with some valid input, and see how the output compares to the GNU `md5sum` and `sha1sum` utilities:
 
+.Comparing our `CheckSum` utility against `md5sum` and `sha1sum`
 ----
 $ java picocli.example.CheckSum picocli-3.9.5.jar
 509e3e2602854d5b88e2e7baa476a7fe
@@ -91,12 +94,14 @@ You may have noticed that the error message above showed two more options: `--he
 
 These two options were added because we defined the command with `@Command(mixinStandardHelpOptions = true /* ... */)`. Usage help and version information are so common for command line applications that picocli provides this shortcut. Internally this uses a mechanism called "mixins" and we will go into more detail later on how you can define your own mixins to define reusable elements. But first, let's see what these options actually do, starting with the `--version` option.
 
+.Testing the version option
 ----
 $ java picocli.example.CheckSum --version
 checksum 3.0
 ----
 The version information shown is what was specified in the command annotation: `@Command(version = "checksum 3.0" /* ... */)`. We will show later that you can also get the version information from a JAR file's manifest or some other place. Next, the `--help` option:
 
+.Testing the help option
 ----
 $ java picocli.example.CheckSum --help
 Usage: checksum [-hV] [-a=<algorithm>] <file>
@@ -225,6 +230,7 @@ When options and positional parameters were defined programmatically instead of 
 
 Via the `ParseResult` class the application can determine whether an option or positional parameter was specified on the command line, what its value was, whether the user requested usage help or version info, whether a subcommand was specified, whether any undefined options were specified, and more. For example:
 
+.Using the `ParseResult` class for inspecting the parse results
 [source,java]
 ----
 CommandLine cmd = new CommandLine(new Minimal());
@@ -241,13 +247,14 @@ Command line arguments can be separated into _options_  and _positional paramete
 
 image:images/OptionsAndParameters2.png[Example command with annotated @Option and @Parameters]
 
-Picocli has separate annotations for options and positional parameters. The `@Option` and `@Parameters` annotations can be used on fields and on methods. In the examples below we will mostly use annotated fields, and the <Alternative Styles> section near the end of this article will demonstrate annotated methods.
+Picocli has separate annotations for options and positional parameters. The `@Option` and `@Parameters` annotations can be used on fields and on methods. Annotated methods can be useful to do validation on single options and positional parameters. In the examples below we will mostly use annotated fields.
 
 === Option Names
 There are no restrictions on the option name prefix: applications are free to create Windows DOS-style options like `/A` `/B`, Unix POSIX-style short options like `-x` `-y`, GNU-style long options like `--long-option` or anything else. You can also use all styles together for a single option if you want. An option can have as many names as you want.
 
 Picocli does have special support for POSIX-style short options, in the sense that the parser recognizes clustered short options. For example, given the following command definition:
 
+.Example command with single-character POSIX-style options
 [source,java]
 ----
 @Command(name = "tar")
@@ -259,6 +266,7 @@ class Tar {
 ----
 Picocli will consider the following two inputs equivalent to each other:
 
+.Multiple short options can be specified separately or grouped together after a single '-' delimiter
 ----
 tar -xvfTARFILE
 tar -x -v -f TARFILE
@@ -268,6 +276,7 @@ tar -x -v -f TARFILE
 === Default Values
 As we already saw earlier with the `CheckSum` example in the beginning of this article, an easy way to give an option or positional parameter a default value is to assign the annotated field a value in its declaration. The initial value becomes the default value:
 
+.Defining a default value in the field declaration
 [source,java]
 ----
 @Option(names = "-x")
@@ -279,6 +288,7 @@ File file = new File(System.getProperty("user.home"));
 
 Both the `@Option` and the `@Parameters` annotations also have a `defaultValue` attribute where a default value can be specified. This is especially useful for annotated methods. For example:
 
+.Defining a default value using annotations
 [source,java]
 ----
 @Option(names = "-x", defaultValue = "123", paramLabel = "MULTIPLIER",
@@ -286,19 +296,21 @@ Both the `@Option` and the `@Parameters` annotations also have a `defaultValue` 
 void setMultiplier(int multiplier) { this.multiplier = multiplier; }
 
 @Parameters(defaultValue = ".", paramLabel = "DIRECTORY",
-            description = "The directory to write to, "${DEFAULT-VALUE}" by default.")
+            description = "The directory to write to, '${DEFAULT-VALUE}' by default.")
 void setDirectory(File directory) { this.directory = directory; }
 ----
 
 Two things to note: the description may contain a `${DEFAULT-VALUE}` variable that will be replaced with the option's default value in the usage help message. Also, use the `paramLabel` to specify the name of the option parameter or positional parameter in the usage help. For example:
 
+.Showing default values in the usage help message with `${DEFAULT-VALUE}` variables
 ----
-     DIRECTORY   The directory to write to, "." by default.
+     DIRECTORY   The directory to write to, '.' by default.
  -x=MULTIPLIER   The multiplier, 123 by default.
 ----
 
-Another way is to implement the `IDefaultProvider` interface, for example to get defaults from a properties file. The interface looks like the below.
+An alternative is to implement the `IDefaultProvider` interface, for example to get defaults from a properties file. The interface looks like the below.
 
+.The `IDefaultProvider` interface for externalizing default values
 [source,java]
 ----
 public interface IDefaultValueProvider {
@@ -309,6 +321,8 @@ public interface IDefaultValueProvider {
 NOTE: The `ArgSpec` class is part of the programmatic API and is the superclass of `OptionSpec` and `PositionalParamSpec`.
 
 The default provider can be wired into the command via the `@Command` annotation:
+
+.Using a custom default provider
 [source,java]
 ----
 @Command(defaultProvider = MyDefaultProvider.class)
@@ -321,6 +335,7 @@ For options and positional parameters marked as `interactive`, the user is promp
 
 Example usage:
 
+.Example command with an interactive password option
 [source,java]
 ----
 class Login implements Callable<Object> {
@@ -365,6 +380,7 @@ The `index` attribute accepts _range_ values, so an annotation like `@Parameters
 
 For example:
 
+.Positional parameters can be defined with and without the `index` attribute
 [source,java]
 ----
 class PositionalParameters {
@@ -385,6 +401,7 @@ Out of the box, picocli supports many common types: all primitive types and thei
 
 If necessary, applications can customize and extend this by defining their own type converters. The `ITypeConverter` interface looks like this:
 
+.Custom type converters need to implement the `ITypeConverter` interface
 [source,java]
 ----
 public interface ITypeConverter<K> {
@@ -394,6 +411,7 @@ public interface ITypeConverter<K> {
 
 Custom type converters can be registered with the `CommandLine::registerConverter(Class, ITypeConverter)` method. All options and positional parameters with the specified type will be converted by the specified converter. For example:
 
+.Registering custom type converters
 [source,java]
 ----
 CommandLine cmd = new CommandLine(app)
@@ -403,6 +421,7 @@ cmd.registerConverter(Cipher.class, s -> Cipher.getInstance(s));
 
 Type converters can also be registered for specific options and positional parameters:
 
+.Example of registering a custom type converter for a single option
 [source,java]
 ----
 class App {
@@ -424,6 +443,7 @@ class SqlTypeConverter implements ITypeConverter<Integer> {
 == Multiple Values
 Multiple parameters, or multiple occurrences of an option can be captured in an array, `Map` or `Collection` field. The elements can be of any type for which a converter is registered. For example:
 
+.Defining options and positional parameters that can be specified multiple times on the command line
 [source,java]
 ----
 import java.util.regex.Pattern;
@@ -444,12 +464,13 @@ class Convert {
 }
 ----
 
+.Example input and expected result for multi-value options and positional parameters
 [source,java]
 ----
 String[] args = { "-patterns", "a*b", "-patterns", "[a-e][i-u]",
                   "file1.txt", "file2.txt",
                   "-uDAYS=3", "-u", "HOURS=23", "-u=MINUTES=59",
-                  "--timeUnit=SECONDS=13", "-Dkey=value};
+                  "--timeUnit=SECONDS=13", "-Dkey=value" };
 Convert convert = CommandLine.populateCommand(new Convert(), args);
 
 // convert.patterns now has two Pattern objects
@@ -460,6 +481,7 @@ Convert convert = CommandLine.populateCommand(new Convert(), args);
 === Split Regex
 Options and parameters may specify a `split` regular expression used to split each option parameter into smaller substrings. Each of these substrings is converted to the type of the collection or array.
 
+.Example of an option with a `split` regex
 [source,java]
 ----
 @Option(names = "-option", split = ",")
@@ -473,8 +495,9 @@ A single command line argument like the following will be split up and three `in
 == Dynamic Version Information
 Remember that the `CheckSum` example showed version information from a static `@Command(version = "xxx")` attribute? Often you want to manage version information in a single place, and have picocli obtain this information dynamically at runtime. For example, an implementation may return version information obtained from the JAR manifest, a properties file or some other source.
 
-The `@Command` annotation supports a `versionProvider` attribute, where applications cay specify a `IVersionProvider` implementation class:
+The `@Command` annotation supports a `versionProvider` attribute, where applications can specify a `IVersionProvider` implementation class:
 
+.Example command with a custom version provider
 [source,java]
 ----
 @Command(versionProvider = my.custom.VersionProvider.class)
@@ -484,6 +507,7 @@ class App { ... }
 
 Custom version providers need to implement the `picocli.CommandLine.IVersionProvider` interface:
 
+.The `IVersionProvider` interface for externalizing version information
 [source,java]
 ----
 public interface IVersionProvider {
@@ -499,13 +523,15 @@ We have already seen some of the annotation attributes that can be used to custo
 
 There is also a `${COMPLETION-CANDIDATES}` variable that can be used in the description of an option or positional parameter that will be expanded into the values of an `enum`, or the `completionCandidates` of a non-`enum` option.
 
-Below follow a few more.
+Below follow a few more annotation attributes for customizing the usage help message.
 
 === Usage Width
 The default width of the usage help message is 80 characters. This can be modified with the `@Command(usageHelpWidth = <int>)` attribute. End users can override with system property `picocli.usage.width`.
 
 === Section Headings
-Section headers can be used to make usage message layout appear more spacious. The example below demonstrates the use of embedded line separator (`%n`) format specifiers:
+Section headings can be used to make usage message layout appear more spacious. The example below demonstrates the use of embedded line separator (`%n`) format specifiers:
+
+.Using annotation attributes to customize the usage help message
 [source,java]
 ----
 @Command(name = "commit",
@@ -530,6 +556,8 @@ By default, options are sorted alphabetically. You can switch this off by settin
 
 === Abbreviated Synopsis
 If a command is very complex and has many options, it is sometimes desirable to suppress details from the synopsis with the `@Command(abbreviateSynopsis = true)` attribute. An abbreviated synopsis looks something like this:
+
+.Example abbreviated synopsis
 ----
 Usage: <main class> [OPTIONS] [<files>...]
 ----
@@ -537,6 +565,8 @@ Note that the positional parameters are not abbreviated.
 
 === Custom Synopsis
 For even more control of the synopsis, use the `customSynopsis` attribute to specify one ore more synopsis lines. For example:
+
+.Example custom synopsis with multiple lines
 ----
 Usage: ln [OPTION]... [-T] TARGET LINK_NAME   (1st form)
   or:  ln [OPTION]... TARGET                  (2nd form)
@@ -544,6 +574,8 @@ Usage: ln [OPTION]... [-T] TARGET LINK_NAME   (1st form)
   or:  ln [OPTION]... -t DIRECTORY TARGET...  (4th form)
 ----
 To produce a synopsis like the above, specify the literal text in the `customSynopsis` attribute:
+
+.Using the `customSynopsis` attribute to define a multi-line custom synopsis
 [source,java]
 ----
 @Command(synopsisHeading = "", customSynopsis = {
@@ -565,6 +597,7 @@ In addition, you can use colors and styles in the descriptions, header and foote
 
 Picocli supports a custom markup notation for mixing colors and styles in text, where `@|` starts a styled section, and `|@` ends it. Immediately following the `@|` is a comma-separated list of colors and styles, so `@|STYLE1[,STYLE2]... text|@`. For example:
 
+.Using markup notation for embedding colors and styles in usage help text
 [source,java]
 ----
 @Command(description = "Custom @|bold,underline styles|@ and @|fg(red) colors|@.")
@@ -573,6 +606,7 @@ image:images/DescriptionWithColors.png[Description with Ansi styles and colors]
 
 Adding a banner is easy. The usage help is the face of your application, so be creative!
 
+.Using the command `header` to define a banner
 [source,java]
 ----
 @Command(header = {
@@ -594,6 +628,7 @@ Picocli has extensive support for subcommands: subcommands are easy to create, c
 
 Subcommands can be registered declaratively with the `@Command` annotation's `subcommands` attribute, like this:
 
+.Defining subcommands declaratively with annotations
 [source,java]
 ----
 @Command(subcommands = {
@@ -606,6 +641,7 @@ public class Git { ... }
 
 Alternatively, subcommands can be registered programmatically with the `CommandLine.addSubcommand` method, like this:
 
+.Defining subcommands programmatically with `addSubcommand`
 [source,java]
 ----
 CommandLine commandLine = new CommandLine(new Git())
@@ -616,6 +652,7 @@ CommandLine commandLine = new CommandLine(new Git())
 
 A third, more compact, way to register subcommands is to have a `@Command` class with `@Command`-annotated methods. The methods are automatically registered as subcommands of the `@Command` class. For example:
 
+.By default, `@Command`-annotated methods are registered as subcommands of the enclosing `@Command` class
 [source,java]
 ----
 @Command(name = "git", resourceBundle = "Git_Messages")
@@ -638,6 +675,7 @@ You may find yourself defining the same options, parameters or command attribute
 
 For example, let's say that we want to reuse some usage help attributes that give a spacious layout, and a `verbosity` option. We create a `ReusableOptions` class, like this:
 
+.Example of some attributes and an option we want to reuse in multiple commands
 [source,java]
 ----
 @Command(synopsisHeading      = "%nUsage:%n%n",
@@ -656,6 +694,7 @@ public class ReusableOptions {
 
 A command can include a mixin by annotating a field with `@Mixin`. All picocli annotations found in the mixin class are added to the command that has a field annotated with `@Mixin`. The following example shows how we would mix in the sample `ReusableOptions` class defined above:
 
+.Using the `@Mixin` annotation to apply reusable attributes to a command
 [source,java]
 ----
 @Command(name = "zip", description = "Example reuse with @Mixin annotation.")
@@ -670,6 +709,7 @@ public class MyCommand {
 
 This adds the `-v` option to the `zip` command. After parsing, the results can be obtained from the annotated fields as usual:
 
+.Inspecting the parse result of a command with a mixin
 [source,java]
 ----
 MyCommand zip = CommandLine.populateCommand(new MyCommand(), "-vvv");
@@ -687,10 +727,11 @@ With this script installed, users can type the first few letters of a subcommand
 In the case of multiple possible completions, the Unix shell will display all subcommands or options beginning with those few characters. The user can type more characters and press TAB again to see a new, narrowed-down list if the typed characters are still ambiguous, or else complete the subcommand or option.
 
 === Generating a Completion Script
-First, we need to create a starter script to run your command line application. The name of this script will be the name of your command.
+First, we need to create a starter script to run our command line application. The name of this script will be the name of our command.
 
-In this example we will use the `CheckSum` application from the beginning of this article. Let's say we want to call our command `checksum`, so we create a starter script called `checksum`, with the following content:
+In this example we will use the `CheckSum` application from the beginning of this article. Let's say we want to call our command `checksum`, so we create a starter script called `checksum`, with the following contents:
 
+.Contents of the `checksum` starter script
 [source,bash]
 ----
 #!/usr/bin/env bash
@@ -702,10 +743,12 @@ java -cp "${CP}" 'picocli.example.CheckSum' $@
 
 You probably want to `chmod 755 checksum` to make the script executable. Try calling it on the command line with `./checksum --version` to see if the script works.
 
-To generate a completion script, we call `picocli.AutoComplete`, and give it the name of the class and the name of the command:
+Next, we generate the completion script for our `checksum` command. To do this, we invoke `picocli.AutoComplete`, and give it the name of the class and the name of the command:
+
+.Generating a completion script
 [source,bash]
 ----
-java -cp "checksum.jar:picocli-3.9.5.jar" picocli.AutoComplete -n checksum picocli.example.CheckSum
+$ java -cp "checksum.jar:picocli-3.9.5.jar" picocli.AutoComplete -n checksum picocli.example.CheckSum
 ----
 
 This will generate a file called `checksum_completion` in the current directory.
@@ -713,14 +756,16 @@ This will generate a file called `checksum_completion` in the current directory.
 === Installing the Completion Script
 Simply source the completion script to install it in your current bash session:
 
+.Installing the completion script in the current session
 [source,bash]
 ----
-. checksum_completion
+$ . checksum_completion
 ----
-Now, if your type `checksum [TAB]` the bash shell will show the available options for this command.
+Now, if you type `checksum [TAB]` the bash shell will show the available options for this command.
 
 To install the completion script permanently, add it to your `.bash_profile`. Below is a one-liner that adds all completion scripts in the current directory to your `.bash_profile`. It will not create duplicate entries, so it can be invoked multiple times.
 
+.Installing the completion script more permanently in your `.bash_profile`
 [source,bash]
 ----
 $ for f in $(find . -name "*_completion"); do line=". $(pwd)/$f"; grep "$line" ~/.bash_profile || echo "$line" >> ~/.bash_profile; done
@@ -731,6 +776,7 @@ Other than options and subcommands, picocli can deduce completion candidates for
 
 Additionally, you can specify `completionCandidates` for an option. For example, in the `CheckSum` application, we can get completion for the `--algorithms` option parameter by defining the option as follows:
 
+.Defining `completionCandidates` for an option to allow autocompletion on option parameters
 [source,java]
 ----
 private static class AlgoList extends ArrayList<String> {
@@ -740,11 +786,12 @@ private static class AlgoList extends ArrayList<String> {
         description = "${COMPLETION-CANDIDATES}, ...")
 private String algorithm = "MD5";
 ----
-Values in the `completionCandidates` list are shown as completion candidates when the user presses `[TAB]` after the `-a` option, similarly to as if the option was an `enum` type.
+Values in the `completionCandidates` list are shown as completion candidates when the user presses `[TAB]` after the `-a` option, similarly to `enum` typed options.
 
 == Groovy Scripts
 Picocli offers special support for Groovy scripts, to allow the picocli annotations to be used directly in the script without creating a class. All that is needed is to add the `@picocli.groovy.PicocliScript` annotation to the script. For example:
 
+.Using picocli annotations in a Groovy script
 [source,groovy, linenums]
 ----
 @Grab('info.picocli:picocli:3.9.5')
@@ -756,7 +803,7 @@ Picocli offers special support for Groovy scripts, to allow the picocli annotati
  $/@|green                         |__/                                         |@/$
  ],
     description = "Print a checksum of each specified FILE.",
-    mixinStandardHelpOptions = true, version = 'gchecksum v1.2.3',
+    mixinStandardHelpOptions = true, version = 'checksum v1.2.3',
     footerHeading = "%nFor more details, see:%n", showDefaultValues = true,
     footer = [
       "[1] https://docs.oracle.com/javase/9/docs/specs/security/standard-names.html",
@@ -789,6 +836,7 @@ image:images/GroovyChecksumWithBanner.png[Customized header and footer with styl
 === Spring Boot
 When your command is annotated with `@org.springframework.stereotype.Component`, Spring can autodetect it for dependency injection. The below example shows how to use picocli with Spring Boot:
 
+.Entry point of an application using picocli with Spring Boot
 [source,java]
 ----
 import org.springframework.beans.factory.annotation.Autowired;
@@ -818,6 +866,7 @@ public class MySpringBootApp implements CommandLineRunner {
 
 The business logic of your command looks like any other picocli command with options and parameters.
 
+.Example picocli command using services injected by Spring Boot
 [source,java]
 ----
 import org.springframework.stereotype.Component;
@@ -847,8 +896,9 @@ public class MyCommand implements Callable<Void> {
 === Micronaut
 Micronaut is an up-and-coming star in the world of microservices, and has strong dependency injection capabilities. It minimizes runtime reflection and instead uses annotation processing at compile time, resulting in very fast startup time and reduced memory footprint.
 
-Micronaut offers special support for using picocli to create standalone command-line applications that use and interact with services in a Microservice infrastructure with its `PicocliRunner` class. The Micronaut CLI itself is also implemented using picocli under the hood to support its subcommands like `mn create-app`, `mn create-function`, etc.
+Micronaut offers special support for using picocli to create standalone command-line applications that use and interact with services in a Microservice infrastructure with its `PicocliRunner` class. You may be interested to know that the Micronaut CLI itself is also implemented using picocli under the hood to support its subcommands like `mn create-app`, `mn create-function`, etc.
 
+.Example picocli command with a `PicocliRunner` entry point, using services injected by Micronaut
 [source,java]
 ----
 import io.micronaut.configuration.picocli.PicocliRunner;
@@ -889,7 +939,7 @@ JLine and picocli complement each other well. JLine has support for history, hig
 
 Combining these two libraries makes it easy to build powerful interactive shell applications. Picocli has two modules, `picocli-shell-jline2` and `picocli-shell-jline3`, for this purpose.
 
-These modules have a `PicocliJLineCompleter` class that shows context-sensitive completion candidates for options, option parameters and subcommands of a set of picocli commands. The readme of the modules has an example. Applications that use picocli to define their commands no longer need to hand-code Completers for their commands and options. (An early version of this is used in the Micronaut CLI.)
+These modules have a `PicocliJLineCompleter` class that shows context-sensitive completion candidates for options, option parameters and subcommands of a set of picocli commands. The readme of the modules have examples. Applications that use picocli to define their commands no longer need to hand-code JLine Completers for their commands and options. (An early version of this is used in the Micronaut CLI.)
 
 == Blazingly Fast with GraalVM
 
@@ -899,9 +949,11 @@ GraalVM allows you to compile your programs ahead-of-time into a native executab
 
 GraalVM has limited support for Java reflection and it needs to know ahead of time the reflectively accessed program elements.
 
-The `picocli-codegen` module includes the `ReflectionConfigGenerator` tool that generates a GraalVM configuration file. This configuration file lists the program elements that will be accessed reflectively in a picocli-based application. This configuration file should be passed to the `-H:ReflectionConfigurationFiles=/path/to/reflectconfig` option of the `native-image` GraalVM utility.
+The `picocli-codegen` module includes a `ReflectionConfigGenerator` tool that generates a GraalVM configuration file. This configuration file lists the program elements that will be accessed reflectively in a picocli-based application. This configuration file should be passed to the `-H:ReflectionConfigurationFiles=/path/to/reflectconfig` option of the `native-image` GraalVM utility.
 
 === Generating the Configuration File
+
+.Using the `ReflectionConfigGenerator` tool to generate a reflection configuration file for GraalVM
 [source,bash]
 ----
 java -cp \
@@ -911,6 +963,7 @@ picocli.codegen.aot.graalvm.ReflectionConfigGenerator picocli.example.CheckSum >
 
 The generated `reflect.json` files looks something like this:
 
+.Partial contents of a generated reflection configuration file
 [source,json]
 ----
 [
@@ -933,6 +986,7 @@ The generated `reflect.json` files looks something like this:
 
 We create a native image for our application with the following command:
 
+.Creating a native executable for our application
 [source,bash]
 ----
 graalvm-ce-1.0.0-rc12/bin/native-image \
