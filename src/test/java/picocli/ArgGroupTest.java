@@ -110,7 +110,7 @@ public class ArgGroupTest {
     public void testGroupSpecBuilderFromAnnotationFailsIfNoOptionsOrSubgroups() {
         @Command(argGroups =
         @ArgGroup(name = "abc",
-                exclusive = false, validate = false, required = true,
+                exclusive = false, validate = false, multiplicity = "1",
                 headingKey = "headingKeyXXX", heading = "headingXXX", order = 123))
         class App {
         }
@@ -128,7 +128,7 @@ public class ArgGroupTest {
     public void testGroupSpecBuilderFromAnnotation() {
         @Command(argGroups =
         @ArgGroup(name = "abc",
-                exclusive = false, validate = false, required = true,
+                exclusive = false, validate = false, multiplicity = "1",
                 headingKey = "headingKeyXXX", heading = "headingXXX", order = 123))
         class App {
             @Option(names = "-x", groups = "abc")
@@ -143,7 +143,7 @@ public class ArgGroupTest {
         assertEquals("abc", group.name());
         assertEquals(false, group.exclusive());
         assertEquals(false, group.validate());
-        assertEquals(true, group.required());
+        assertEquals(CommandLine.Range.valueOf("1"), group.multiplicity());
         assertEquals("headingKeyXXX", group.headingKey());
         assertEquals("headingXXX", group.heading());
         assertEquals(123, group.order());
@@ -172,15 +172,15 @@ public class ArgGroupTest {
 
     @Test
     public void testGroupSpecBuilderRequiredFalseByDefault() {
-        assertFalse(ArgGroupSpec.builder("A").required());
+        assertEquals(CommandLine.Range.valueOf("0..1"), ArgGroupSpec.builder("A").multiplicity());
     }
 
     @Test
     public void testGroupSpecBuilderRequiredMutable() {
         ArgGroupSpec.Builder builder = ArgGroupSpec.builder("A");
-        assertFalse(builder.required());
-        builder.required(true);
-        assertTrue(builder.required());
+        assertEquals(CommandLine.Range.valueOf("0..1"), builder.multiplicity());
+        builder.multiplicity("1");
+        assertEquals(CommandLine.Range.valueOf("1"), builder.multiplicity());
     }
 
     @Test
@@ -294,8 +294,8 @@ public class ArgGroupTest {
         assertTrue(group.exclusive());
         assertEquals(builder.exclusive(), group.exclusive());
 
-        assertFalse(group.required());
-        assertEquals(builder.required(), group.required());
+        assertEquals(CommandLine.Range.valueOf("0..1"), group.multiplicity());
+        assertEquals(builder.multiplicity(), group.multiplicity());
 
         assertTrue(group.validate());
         assertEquals(builder.validate(), group.validate());
@@ -325,7 +325,7 @@ public class ArgGroupTest {
         builder.order(123);
         builder.exclusive(false);
         builder.validate(false);
-        builder.required(true);
+        builder.multiplicity("1");
         builder.addSubgroup(ArgGroupSpec.builder("B").addArg(OPTION).subgroupNames("A").build());
 
         builder.addArg(OPTION);
@@ -337,8 +337,8 @@ public class ArgGroupTest {
         assertFalse(group.exclusive());
         assertEquals(builder.exclusive(), group.exclusive());
 
-        assertTrue(group.required());
-        assertEquals(builder.required(), group.required());
+        assertEquals(CommandLine.Range.valueOf("1"), group.multiplicity());
+        assertEquals(builder.multiplicity(), group.multiplicity());
 
         assertFalse(group.validate());
         assertEquals(builder.validate(), group.validate());
@@ -359,7 +359,7 @@ public class ArgGroupTest {
 
     @Test
     public void testGroupSpecToString() {
-        String expected = "ArgGroup[A, exclusive=true, required=false, validate=true, order=-1, args=[-x], subgroups=[], headingKey=null, heading=null]";
+        String expected = "ArgGroup[A, exclusive=true, multiplicity=0..1, validate=true, order=-1, args=[-x], subgroups=[], headingKey=null, heading=null]";
         assertEquals(expected, ArgGroupSpec.builder("A").addArg(OPTION).build().toString());
 
         ArgGroupSpec.Builder builder = ArgGroupSpec.builder("A");
@@ -368,11 +368,11 @@ public class ArgGroupTest {
         builder.order(123);
         builder.exclusive(false);
         builder.validate(false);
-        builder.required(true);
+        builder.multiplicity("1");
         builder.addSubgroup(ArgGroupSpec.builder("B").subgroupNames("A").addArg(OPTION).build());
         builder.addArg(PositionalParamSpec.builder().index("0..1").paramLabel("FILE").groupNames("A").build());
 
-        String expected2 = "ArgGroup[A, exclusive=false, required=true, validate=false, order=123, args=[params[0..1]=FILE], subgroups=[B], headingKey='my headingKey', heading='my heading']";
+        String expected2 = "ArgGroup[A, exclusive=false, multiplicity=1, validate=false, order=123, args=[params[0..1]=FILE], subgroups=[B], headingKey='my headingKey', heading='my heading']";
         assertEquals(expected2, builder.build().toString());
     }
 
@@ -408,7 +408,7 @@ public class ArgGroupTest {
         assertNotEquals(a, builder.build());
         assertEquals(builder.build(), builder.build());
 
-        builder.required(true);
+        builder.multiplicity("1");
         assertNotEquals(a, builder.build());
         assertEquals(builder.build(), builder.build());
 
@@ -448,7 +448,7 @@ public class ArgGroupTest {
         assertNotEquals(a.hashCode(), builder.build().hashCode());
         assertEquals(builder.build().hashCode(), builder.build().hashCode());
 
-        builder.required(true);
+        builder.multiplicity("1");
         assertNotEquals(a.hashCode(), builder.build().hashCode());
         assertEquals(builder.build().hashCode(), builder.build().hashCode());
 
@@ -558,7 +558,7 @@ public class ArgGroupTest {
 
     @Test
     public void testValidationRequiredExclusive_ActualZero() {
-        ArgGroupSpec group = ArgGroupSpec.builder("blah").required(true).addArg(OPTION_A).addArg(OPTION_B).build();
+        ArgGroupSpec group = ArgGroupSpec.builder("blah").multiplicity("1").addArg(OPTION_A).addArg(OPTION_B).build();
         CommandLine cmd = new CommandLine(CommandSpec.create());
 
         try {
@@ -571,7 +571,7 @@ public class ArgGroupTest {
 
     @Test
     public void testReflectionValidationRequiredExclusive_ActualZero() {
-        @Command(argGroups = @CommandLine.ArgGroup(name = "X", required = true))
+        @Command(argGroups = @CommandLine.ArgGroup(name = "X", multiplicity = "1"))
         class App {
             @Option(names = "-a", groups = "X") boolean a;
             @Option(names = "-b", groups = "X") boolean b;
@@ -655,7 +655,7 @@ public class ArgGroupTest {
 
     @Test
     public void testValidationRequiredNonExclusive_All() {
-        ArgGroupSpec group = ArgGroupSpec.builder("blah").required(true).exclusive(false).addArg(OPTION_A).addArg(OPTION_B).addArg(OPTION_C).build();
+        ArgGroupSpec group = ArgGroupSpec.builder("blah").multiplicity("1").exclusive(false).addArg(OPTION_A).addArg(OPTION_B).addArg(OPTION_C).build();
         CommandLine cmd = new CommandLine(CommandSpec.create());
 
         // no error
@@ -664,7 +664,7 @@ public class ArgGroupTest {
 
     @Test
     public void testReflectionValidationRequiredNonExclusive_All() {
-        @Command(argGroups = @CommandLine.ArgGroup(name = "X", exclusive = false, required = true))
+        @Command(argGroups = @CommandLine.ArgGroup(name = "X", exclusive = false, multiplicity = "1"))
         class App {
             @Option(names = "-a", groups = "X") boolean a;
             @Option(names = "-b", groups = "X") boolean b;
@@ -675,7 +675,7 @@ public class ArgGroupTest {
 
     @Test
     public void testValidationRequiredNonExclusive_Partial() {
-        ArgGroupSpec group = ArgGroupSpec.builder("blah").required(true).exclusive(false).addArg(OPTION_A).addArg(OPTION_B).addArg(OPTION_C).build();
+        ArgGroupSpec group = ArgGroupSpec.builder("blah").multiplicity("1").exclusive(false).addArg(OPTION_A).addArg(OPTION_B).addArg(OPTION_C).build();
         CommandLine cmd = new CommandLine(CommandSpec.create());
 
         try {
@@ -688,7 +688,7 @@ public class ArgGroupTest {
 
     @Test
     public void testReflectionValidationRequiredNonExclusive_Partial() {
-        @Command(argGroups = @ArgGroup(name = "X", exclusive = false, required = true))
+        @Command(argGroups = @ArgGroup(name = "X", exclusive = false, multiplicity = "1"))
         class App {
             @Option(names = "-a", groups = "X") boolean a;
             @Option(names = "-b", groups = "X") boolean b;
@@ -704,7 +704,7 @@ public class ArgGroupTest {
 
     @Test
     public void testValidationRequiredNonExclusive_Zero() {
-        ArgGroupSpec group = ArgGroupSpec.builder("blah").required(true).exclusive(false)
+        ArgGroupSpec group = ArgGroupSpec.builder("blah").multiplicity("1").exclusive(false)
                 .addArg(OPTION_A).addArg(OPTION_B).addArg(OPTION_C).build();
         CommandLine cmd = new CommandLine(CommandSpec.create());
 
@@ -718,7 +718,7 @@ public class ArgGroupTest {
 
     @Test
     public void testReflectionValidationRequiredNonExclusive_Zero() {
-        @Command(argGroups = @ArgGroup(name = "X", exclusive = false, required = true))
+        @Command(argGroups = @ArgGroup(name = "X", exclusive = false, multiplicity = "1"))
         class App {
             @Option(names = "-a", groups = "X") boolean a;
             @Option(names = "-b", groups = "X") boolean b;
@@ -735,9 +735,9 @@ public class ArgGroupTest {
     @Test
     public void testReflectionValidationCompositeRequiredGroup() {
         @Command(argGroups = {
-                @ArgGroup(name = "ALL", exclusive = false, required = false),
-                @ArgGroup(name = "EXCL", exclusive = true, required = true),
-                @ArgGroup(name = "COMPOSITE", exclusive = true, required = true,
+                @ArgGroup(name = "ALL", exclusive = false, multiplicity = "0..1"),
+                @ArgGroup(name = "EXCL", exclusive = true, multiplicity = "1"),
+                @ArgGroup(name = "COMPOSITE", exclusive = true, multiplicity = "1",
                         subgroups = {"ALL", "EXCL"})
         })
         class App {
@@ -766,9 +766,9 @@ public class ArgGroupTest {
     @Test
     public void testReflectionValidationCompositeNonRequiredGroup() {
         @Command(argGroups = {
-                @ArgGroup(name = "ALL", exclusive = false, required = false),
-                @ArgGroup(name = "EXCL", exclusive = true, required = true),
-                @ArgGroup(name = "COMPOSITE", exclusive = true, required = false,
+                @ArgGroup(name = "ALL", exclusive = false, multiplicity = "0..1"),
+                @ArgGroup(name = "EXCL", exclusive = true, multiplicity = "1"),
+                @ArgGroup(name = "COMPOSITE", exclusive = true, multiplicity = "0..1",
                         subgroups = {"ALL", "EXCL"})
         })
         class App {
@@ -883,52 +883,87 @@ public class ArgGroupTest {
                 .addArg(OptionSpec.builder("-c").build());
         assertEquals("[-a | -b | -c]", builder.build().synopsis());
 
-        builder.required(true);
+        builder.multiplicity("1");
         assertEquals("(-a | -b | -c)", builder.build().synopsis());
 
+        builder.multiplicity("2");
+        assertEquals("(-a | -b | -c) (-a | -b | -c)", builder.build().synopsis());
+
+        builder.multiplicity("1..3");
+        assertEquals("(-a | -b | -c) [-a | -b | -c] [-a | -b | -c]", builder.build().synopsis());
+
+        builder.multiplicity("1..*");
+        assertEquals("(-a | -b | -c)...", builder.build().synopsis());
+
+        builder.multiplicity("1");
         builder.exclusive(false);
         assertEquals("(-a -b -c)", builder.build().synopsis());
 
-        builder.required(false);
+        builder.multiplicity("0..1");
         assertEquals("[-a -b -c]", builder.build().synopsis());
+
+        builder.multiplicity("0..2");
+        assertEquals("[-a -b -c] [-a -b -c]", builder.build().synopsis());
+
+        builder.multiplicity("0..3");
+        assertEquals("[-a -b -c] [-a -b -c] [-a -b -c]", builder.build().synopsis());
+
+        builder.multiplicity("0..*");
+        assertEquals("[-a -b -c]...", builder.build().synopsis());
     }
 
     @Test
     public void testSynopsisOnlyPositionals() {
         ArgGroupSpec.Builder builder = ArgGroupSpec.builder("G")
-                .addArg(PositionalParamSpec.builder().paramLabel("ARG1").build())
-                .addArg(PositionalParamSpec.builder().paramLabel("ARG2").build())
-                .addArg(PositionalParamSpec.builder().paramLabel("ARG3").build());
+                .addArg(PositionalParamSpec.builder().index("0").paramLabel("ARG1").build())
+                .addArg(PositionalParamSpec.builder().index("1").paramLabel("ARG2").build())
+                .addArg(PositionalParamSpec.builder().index("2").paramLabel("ARG3").build());
         assertEquals("[ARG1 | ARG2 | ARG3]", builder.build().synopsis());
 
-        builder.required(true);
+        builder.multiplicity("1");
         assertEquals("(ARG1 | ARG2 | ARG3)", builder.build().synopsis());
 
+        builder.multiplicity("2");
+        assertEquals("(ARG1 | ARG2 | ARG3) (ARG1 | ARG2 | ARG3)", builder.build().synopsis());
+
+        builder.multiplicity("1..3");
+        assertEquals("(ARG1 | ARG2 | ARG3) [ARG1 | ARG2 | ARG3] [ARG1 | ARG2 | ARG3]", builder.build().synopsis());
+
+        builder.multiplicity("1..*");
+        assertEquals("(ARG1 | ARG2 | ARG3)...", builder.build().synopsis());
+
+        builder.multiplicity("1");
         builder.exclusive(false);
         assertEquals("(ARG1 ARG2 ARG3)", builder.build().synopsis());
 
-        builder.required(false);
+        builder.multiplicity("0..1");
         assertEquals("[ARG1 ARG2 ARG3]", builder.build().synopsis());
+
+        builder.multiplicity("0..2");
+        assertEquals("[ARG1 ARG2 ARG3] [ARG1 ARG2 ARG3]", builder.build().synopsis());
+
+        builder.multiplicity("0..*");
+        assertEquals("[ARG1 ARG2 ARG3]...", builder.build().synopsis());
     }
 
     @Test
     public void testSynopsisMixOptionsPositionals() {
         ArgGroupSpec.Builder builder = ArgGroupSpec.builder("G")
-                .addArg(PositionalParamSpec.builder().paramLabel("ARG1").build())
-                .addArg(PositionalParamSpec.builder().paramLabel("ARG2").build())
-                .addArg(PositionalParamSpec.builder().paramLabel("ARG3").build())
+                .addArg(PositionalParamSpec.builder().index("0").paramLabel("ARG1").build())
+                .addArg(PositionalParamSpec.builder().index("0").paramLabel("ARG2").build())
+                .addArg(PositionalParamSpec.builder().index("0").paramLabel("ARG3").build())
                 .addArg(OptionSpec.builder("-a").build())
                 .addArg(OptionSpec.builder("-b").build())
                 .addArg(OptionSpec.builder("-c").build());
         assertEquals("[ARG1 | ARG2 | ARG3 | -a | -b | -c]", builder.build().synopsis());
 
-        builder.required(true);
+        builder.multiplicity("1");
         assertEquals("(ARG1 | ARG2 | ARG3 | -a | -b | -c)", builder.build().synopsis());
 
         builder.exclusive(false);
         assertEquals("(ARG1 ARG2 ARG3 -a -b -c)", builder.build().synopsis());
 
-        builder.required(false);
+        builder.multiplicity("0..1");
         assertEquals("[ARG1 ARG2 ARG3 -a -b -c]", builder.build().synopsis());
     }
 
@@ -943,13 +978,13 @@ public class ArgGroupTest {
                 .addArg(OptionSpec.builder("-e").build())
                 .addArg(OptionSpec.builder("-e").build())
                 .addArg(OptionSpec.builder("-f").build())
-                .required(true);
+                .multiplicity("1");
 
         ArgGroupSpec.Builder b3 = ArgGroupSpec.builder("B3")
                 .addArg(OptionSpec.builder("-g").build())
                 .addArg(OptionSpec.builder("-h").build())
                 .addArg(OptionSpec.builder("-i").build())
-                .required(true)
+                .multiplicity("1")
                 .exclusive(false);
 
         ArgGroupSpec.Builder composite = ArgGroupSpec.builder("COMPOSITE")
@@ -959,14 +994,21 @@ public class ArgGroupTest {
 
         assertEquals("[[-a | -b | -c] | (-e | -f) | (-g -h -i)]", composite.build().synopsis());
 
-        composite.required(true);
+        composite.multiplicity("1");
         assertEquals("([-a | -b | -c] | (-e | -f) | (-g -h -i))", composite.build().synopsis());
 
+        composite.multiplicity("1..*");
+        assertEquals("([-a | -b | -c] | (-e | -f) | (-g -h -i))...", composite.build().synopsis());
+
+        composite.multiplicity("1");
         composite.exclusive(false);
         assertEquals("([-a | -b | -c] (-e | -f) (-g -h -i))", composite.build().synopsis());
 
-        composite.required(false);
+        composite.multiplicity("0..1");
         assertEquals("[[-a | -b | -c] (-e | -f) (-g -h -i)]", composite.build().synopsis());
+
+        composite.multiplicity("0..*");
+        assertEquals("[[-a | -b | -c] (-e | -f) (-g -h -i)]...", composite.build().synopsis());
     }
 
     @Test
@@ -980,7 +1022,7 @@ public class ArgGroupTest {
                 .addArg(OptionSpec.builder("-e").build())
                 .addArg(OptionSpec.builder("-e").build())
                 .addArg(OptionSpec.builder("-f").build())
-                .required(true);
+                .multiplicity("1");
 
         ArgGroupSpec.Builder composite = ArgGroupSpec.builder("COMPOSITE")
                 .addSubgroup(b1.build())
@@ -991,13 +1033,13 @@ public class ArgGroupTest {
 
         assertEquals("[-x | -y | -z | [-a | -b | -c] | (-e | -f)]", composite.build().synopsis());
 
-        composite.required(true);
+        composite.multiplicity("1");
         assertEquals("(-x | -y | -z | [-a | -b | -c] | (-e | -f))", composite.build().synopsis());
 
         composite.exclusive(false);
         assertEquals("(-x -y -z [-a | -b | -c] (-e | -f))", composite.build().synopsis());
 
-        composite.required(false);
+        composite.multiplicity("0..1");
         assertEquals("[-x -y -z [-a | -b | -c] (-e | -f)]", composite.build().synopsis());
     }
 
@@ -1012,24 +1054,24 @@ public class ArgGroupTest {
                 .addArg(OptionSpec.builder("-e").build())
                 .addArg(OptionSpec.builder("-e").build())
                 .addArg(OptionSpec.builder("-f").build())
-                .required(true);
+                .multiplicity("1");
 
         ArgGroupSpec.Builder composite = ArgGroupSpec.builder("COMPOSITE")
                 .addSubgroup(b1.build())
                 .addSubgroup(b2.build())
-                .addArg(PositionalParamSpec.builder().paramLabel("ARG1").build())
-                .addArg(PositionalParamSpec.builder().paramLabel("ARG2").build())
-                .addArg(PositionalParamSpec.builder().paramLabel("ARG3").build());
+                .addArg(PositionalParamSpec.builder().index("0").paramLabel("ARG1").build())
+                .addArg(PositionalParamSpec.builder().index("0").paramLabel("ARG2").build())
+                .addArg(PositionalParamSpec.builder().index("0").paramLabel("ARG3").build());
 
         assertEquals("[ARG1 | ARG2 | ARG3 | [-a | -b | -c] | (-e | -f)]", composite.build().synopsis());
 
-        composite.required(true);
+        composite.multiplicity("1");
         assertEquals("(ARG1 | ARG2 | ARG3 | [-a | -b | -c] | (-e | -f))", composite.build().synopsis());
 
         composite.exclusive(false);
         assertEquals("(ARG1 ARG2 ARG3 [-a | -b | -c] (-e | -f))", composite.build().synopsis());
 
-        composite.required(false);
+        composite.multiplicity("0..1");
         assertEquals("[ARG1 ARG2 ARG3 [-a | -b | -c] (-e | -f)]", composite.build().synopsis());
     }
 
@@ -1044,7 +1086,7 @@ public class ArgGroupTest {
                 .addArg(OptionSpec.builder("-e").build())
                 .addArg(OptionSpec.builder("-e").build())
                 .addArg(OptionSpec.builder("-f").build())
-                .required(true);
+                .multiplicity("1");
 
         ArgGroupSpec.Builder composite = ArgGroupSpec.builder("COMPOSITE")
                 .addSubgroup(b1.build())
@@ -1052,26 +1094,26 @@ public class ArgGroupTest {
                 .addArg(OptionSpec.builder("-x").build())
                 .addArg(OptionSpec.builder("-y").build())
                 .addArg(OptionSpec.builder("-z").build())
-                .addArg(PositionalParamSpec.builder().paramLabel("ARG1").build())
-                .addArg(PositionalParamSpec.builder().paramLabel("ARG2").build())
-                .addArg(PositionalParamSpec.builder().paramLabel("ARG3").build());
+                .addArg(PositionalParamSpec.builder().index("0").paramLabel("ARG1").build())
+                .addArg(PositionalParamSpec.builder().index("1").paramLabel("ARG2").build())
+                .addArg(PositionalParamSpec.builder().index("2").paramLabel("ARG3").build());
 
         assertEquals("[-x | -y | -z | ARG1 | ARG2 | ARG3 | [-a | -b | -c] | (-e | -f)]", composite.build().synopsis());
 
-        composite.required(true);
+        composite.multiplicity("1");
         assertEquals("(-x | -y | -z | ARG1 | ARG2 | ARG3 | [-a | -b | -c] | (-e | -f))", composite.build().synopsis());
 
         composite.exclusive(false);
         assertEquals("(-x -y -z ARG1 ARG2 ARG3 [-a | -b | -c] (-e | -f))", composite.build().synopsis());
 
-        composite.required(false);
+        composite.multiplicity("0..1");
         assertEquals("[-x -y -z ARG1 ARG2 ARG3 [-a | -b | -c] (-e | -f)]", composite.build().synopsis());
     }
 
     @Test
     public void testUsageHelpRequiredExclusiveGroup() {
         @Command(argGroups = {
-                @ArgGroup(name = "EXCL", exclusive = true, required = true),
+                @ArgGroup(name = "EXCL", exclusive = true, multiplicity = "1"),
         })
         class App {
             @Option(names = "-x", groups = "EXCL") boolean x;
@@ -1088,7 +1130,7 @@ public class ArgGroupTest {
     @Test
     public void testUsageHelpNonRequiredExclusiveGroup() {
         @Command(argGroups = {
-                @ArgGroup(name = "EXCL", exclusive = true, required = false),
+                @ArgGroup(name = "EXCL", exclusive = true, multiplicity = "0..1"),
         })
         class App {
             @Option(names = "-x", groups = "EXCL") boolean x;
@@ -1105,7 +1147,7 @@ public class ArgGroupTest {
     @Test
     public void testUsageHelpRequiredNonExclusiveGroup() {
         @Command(argGroups = {
-                @ArgGroup(name = "G", exclusive = false, required = true),
+                @ArgGroup(name = "G", exclusive = false, multiplicity = "1"),
         })
         class App {
             @Option(names = "-x", groups = "G") boolean x;
@@ -1122,7 +1164,7 @@ public class ArgGroupTest {
     @Test
     public void testUsageHelpNonRequiredNonExclusiveGroup() {
         @Command(argGroups = {
-                @ArgGroup(name = "G", exclusive = false, required = false),
+                @ArgGroup(name = "G", exclusive = false, multiplicity = "0..1"),
         })
         class App {
             @Option(names = "-x", groups = "G") boolean x;
@@ -1156,9 +1198,9 @@ public class ArgGroupTest {
     @Test
     public void testCompositeGroupSynopsis() {
         @Command(argGroups = {
-                @ArgGroup(name = "ALL", exclusive = false, required = false),
-                @ArgGroup(name = "EXCL", exclusive = true, required = true),
-                @ArgGroup(name = "COMPOSITE", exclusive = true, required = false,
+                @ArgGroup(name = "ALL", exclusive = false, multiplicity = "0..1"),
+                @ArgGroup(name = "EXCL", exclusive = true, multiplicity = "1"),
+                @ArgGroup(name = "COMPOSITE", exclusive = true, multiplicity = "0..1",
                         subgroups = {"ALL", "EXCL"})
         })
         class App {
@@ -1182,9 +1224,9 @@ public class ArgGroupTest {
     @Test
     public void testCompositeGroupSynopsisAnsi() {
         @Command(argGroups = {
-                @ArgGroup(name = "ALL", exclusive = false, required = false),
-                @ArgGroup(name = "EXCL", exclusive = true, required = true),
-                @ArgGroup(name = "COMPOSITE", exclusive = true, required = false,
+                @ArgGroup(name = "ALL", exclusive = false, multiplicity = "0..1"),
+                @ArgGroup(name = "EXCL", exclusive = true, multiplicity = "1"),
+                @ArgGroup(name = "COMPOSITE", exclusive = true, multiplicity = "0..1",
                         subgroups = {"ALL", "EXCL"})
         })
         class App {
@@ -1209,11 +1251,11 @@ public class ArgGroupTest {
     @Test
     public void testGroupUsageHelpOptionList() {
         @Command(argGroups = {
-                @ArgGroup(name = "ALL", exclusive = false, required = false, order = 10,
+                @ArgGroup(name = "ALL", exclusive = false, multiplicity = "0..1", order = 10,
                         heading = "Co-occurring options:%nThese options must appear together, or not at all.%n"),
-                @ArgGroup(name = "EXCL", exclusive = true, required = true, order = 20,
+                @ArgGroup(name = "EXCL", exclusive = true, multiplicity = "1", order = 20,
                         heading = "Exclusive options:%n"),
-                @ArgGroup(name = "COMPOSITE", exclusive = true, required = false,
+                @ArgGroup(name = "COMPOSITE", exclusive = true, multiplicity = "0..1",
                         subgroups = {"ALL", "EXCL"}),
                 @ArgGroup(name = "INITIAL", validate = false, heading = "", order = 0),
                 @ArgGroup(name = "REMAINDER", validate = false, heading = "Remaining options:%n", order = 100)
@@ -1256,11 +1298,11 @@ public class ArgGroupTest {
     @Test
     public void testGroupUsageHelpOptionListOptionsWithoutGroupsPrecedeGroups() {
         @Command(argGroups = {
-                @ArgGroup(name = "ALL", exclusive = false, required = false, order = 10,
+                @ArgGroup(name = "ALL", exclusive = false, multiplicity = "0..1", order = 10,
                         heading = "Co-occurring options:%nThese options must appear together, or not at all.%n"),
-                @ArgGroup(name = "EXCL", exclusive = true, required = true, order = 20,
+                @ArgGroup(name = "EXCL", exclusive = true, multiplicity = "1", order = 20,
                         heading = "Exclusive options:%n"),
-                @ArgGroup(name = "COMPOSITE", exclusive = true, required = false,
+                @ArgGroup(name = "COMPOSITE", exclusive = true, multiplicity = "0..1",
                         subgroups = {"ALL", "EXCL"}),
                 @ArgGroup(name = "REMAINDER", validate = false, heading = "Remaining options:%n", order = 100)
         })
@@ -1303,7 +1345,7 @@ public class ArgGroupTest {
     @Test
     public void testGroupWithOptionsAndPositionals() {
         @Command(argGroups = {
-                @ArgGroup(name = "ALL", exclusive = false, required = false, order = 10,
+                @ArgGroup(name = "ALL", exclusive = false, multiplicity = "0..1", order = 10,
                         heading = "Co-occurring args:%nThese options must appear together, or not at all.%n"),
         })
         class App {
@@ -1332,11 +1374,11 @@ public class ArgGroupTest {
     @Test
     public void testGroupUsageHelpOptionListOptionsGroupWithMixedOptionsAndPositionals() {
         @Command(argGroups = {
-                @ArgGroup(name = "ALL", exclusive = false, required = false, order = 10,
+                @ArgGroup(name = "ALL", exclusive = false, multiplicity = "0..1", order = 10,
                         heading = "Co-occurring options:%nThese options must appear together, or not at all.%n"),
-                @ArgGroup(name = "EXCL", exclusive = true, required = true, order = 20,
+                @ArgGroup(name = "EXCL", exclusive = true, multiplicity = "1", order = 20,
                         heading = "Exclusive options:%n"),
-                @ArgGroup(name = "COMPOSITE", exclusive = true, required = false,
+                @ArgGroup(name = "COMPOSITE", exclusive = true, multiplicity = "0..1",
                         subgroups = {"ALL", "EXCL"}),
                 @ArgGroup(name = "REMAINDER", validate = false, heading = "Remaining options:%n", order = 100)
         })
@@ -1380,8 +1422,8 @@ public class ArgGroupTest {
     @Test
     public void testRequiredArgsInAGroupAreNotValidated() {
         @Command(argGroups = {
-                @ArgGroup(name = "ALL", exclusive = false, required = true),
-                @ArgGroup(name = "EXCL", exclusive = true, required = false, subgroups = "ALL"),
+                @ArgGroup(name = "ALL", exclusive = false, multiplicity = "1"),
+                @ArgGroup(name = "EXCL", exclusive = true, multiplicity = "0..1", subgroups = "ALL"),
         })
         class App {
             @Option(names = "-a", required = true, groups = "ALL") int a;

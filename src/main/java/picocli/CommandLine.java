@@ -3324,8 +3324,8 @@ public class CommandLine {
      *     Groups without a heading are just used for validation and do not change the usage help message.
      *     Set {@link #validate() validate = false} for groups whose purpose is only to customize the usage help message.</li>
      * </ul>
-     * <p>Groups may be {@linkplain #required() required}. For a group of mutually exclusive arguments,
-     * making the group required means that one of the arguments in the group must appear on the command line, or a {@link MissingParameterException MissingParameterException} is thrown.
+     * <p>Groups may be optional ({@code multiplicity = "0..1"}), required ({@code multiplicity = "1"}), or repeating groups ({@code multiplicity = "0..*"} or {@code multiplicity = "1..*"}).
+     * For a group of mutually exclusive arguments, making the group required means that one of the arguments in the group must appear on the command line, or a {@link MissingParameterException MissingParameterException} is thrown.
      * For a group of co-occurring arguments, all arguments in the group must appear on the command line.
      * </p>
      * <p>Groups can be composed by specifying {@linkplain #subgroups() subgroups} for validation purposes:</p>
@@ -3354,17 +3354,17 @@ public class CommandLine {
         /** Determines whether this is a mutually exclusive group; {@code true} by default.
          * If {@code false}, this is a co-occurring group. Ignored if {@link #validate()} is {@code false}. */
         boolean exclusive() default true;
-        /** Determines whether this is a required group; {@code false} by default.
-         * For a group of mutually exclusive arguments, making the group required means that
+        /** Determines how often this group can be specified on the command line; {@code "0..1"} (optional) by default.
+         * For a group of mutually exclusive arguments, making the group required {@code multiplicity = "1"} means that
          * one of the arguments in the group must appear on the command line, or a MissingParameterException is thrown.
-         * For a group of co-occurring arguments, all arguments in the group must appear on the command line.
+         * For a group of co-occurring arguments, making the group required means that all arguments in the group must appear on the command line.
          * Ignored if {@link #validate()} is {@code false}. */
-        boolean required() default false;
+        String multiplicity() default "0..1";
         /** Determines whether picocli should validate the rules of this group ({@code true} by default):
          * for a mutually exclusive group validation means verifying that no more than one arguments in the group is specified on the command line;
          * for a co-ocurring group validation means verifying that all arguments in the group are specified on the command line.
          * Set {@link #validate() validate = false} for groups whose purpose is only to customize the usage help message.
-         * @see #required()
+         * @see #multiplicity()
          * @see #heading() */
         boolean validate() default true;
         /** Determines the position in the options list in the usage help message at which this group should be shown.
@@ -6370,7 +6370,7 @@ public class CommandLine {
             private final String heading;
             private final String headingKey;
             private final boolean exclusive;
-            private final boolean required;
+            private final Range multiplicity;
             private final boolean validate;
             private final int order;
             private final Map<String, ArgGroupSpec> subgroups;
@@ -6379,13 +6379,13 @@ public class CommandLine {
             private final List<ArgGroupSpec> parentGroups;
 
             ArgGroupSpec(ArgGroupSpec.Builder builder) {
-                name       = Assert.notNull(builder.name, "name");
-                heading    = NO_HEADING.equals(builder.heading) ? null : builder.heading;
-                headingKey = NO_HEADING_KEY.equals(builder.headingKey) ? null : builder.headingKey;
-                exclusive  = builder.exclusive;
-                required   = builder.required;
-                validate   = builder.validate;
-                order      = builder.order;
+                name         = Assert.notNull(builder.name, "name");
+                heading      = NO_HEADING.equals(builder.heading) ? null : builder.heading;
+                headingKey   = NO_HEADING_KEY.equals(builder.headingKey) ? null : builder.headingKey;
+                exclusive    = builder.exclusive;
+                multiplicity = builder.multiplicity;
+                validate     = builder.validate;
+                order        = builder.order;
 
                 args = Collections.unmodifiableSet(new LinkedHashSet<ArgSpec>(builder.args()));
 
@@ -6415,7 +6415,7 @@ public class CommandLine {
                         .heading(group.heading())
                         .headingKey(group.headingKey())
                         .exclusive(group.exclusive())
-                        .required(group.required())
+                        .multiplicity(group.multiplicity())
                         .validate(group.validate())
                         .order(group.order())
                         .subgroupNames(Arrays.asList(group.subgroups()));
@@ -6430,11 +6430,13 @@ public class CommandLine {
              * @see ArgGroup#exclusive() */
             public boolean exclusive() { return exclusive; }
 
-            /** Returns whether this is a required group; {@code false} by default.
-             * For a group of mutually exclusive arguments, making the group required means that one of the arguments in the group must appear on the command line, or a MissingParameterException is thrown. For a group of co-occurring arguments, all arguments in the group must appear on the command line.
+            /** Returns the multiplicity of this group: how many occurrences it may have on the command line; {@code "0..1"} (optional) by default.
+             * A group can be made required by specifying a multiplicity of {@code "1"}. For a group of mutually exclusive arguments,
+             * being required means that one of the arguments in the group must appear on the command line, or a MissingParameterException is thrown.
+             * For a group of co-occurring arguments, being required means that all arguments in the group must appear on the command line.
              * Ignored if {@link #validate()} is {@code false}.
-             * @see ArgGroup#required() */
-            public boolean required() { return required; }
+             * @see ArgGroup#multiplicity() */
+            public Range multiplicity() { return multiplicity; }
 
             /** Returns whether picocli should validate the rules of this group:
              * for a mutually exclusive group this means that no more than one arguments in the group is specified on the command line;
@@ -6490,43 +6492,39 @@ public class CommandLine {
             }
 
             public String synopsis() {
-                String infix = exclusive() ? " | " : " ";
-                String result = "";
-                for (ArgSpec arg : args()) {
-                    if (result.length() > 0) { result += infix; }
-                    if (arg instanceof OptionSpec) {
-                        result += ((OptionSpec) arg).shortestName();
-                    } else {
-                        result += arg.paramLabel();
-                    }
-                }
-                for (ArgGroupSpec subgroup : subgroups().values()) {
-                    if (result.length() > 0) { result += infix; }
-                    result += subgroup.synopsis();
-                }
-                String prefix = required() ? "(" : "[";
-                String postfix = required() ? ")" : "]";
-                return prefix + result + postfix;
+                return synopsisText(new Help.ColorScheme(Help.Ansi.OFF)).toString();
             }
 
             public Text synopsisText(Help.ColorScheme colorScheme) {
                 String infix = exclusive() ? " | " : " ";
-                Text result = colorScheme.ansi().new Text(0);
+                Text synopsis = colorScheme.ansi().new Text(0);
                 for (ArgSpec arg : args()) {
-                    if (result.length > 0) { result = result.concat(infix); }
+                    if (synopsis.length > 0) { synopsis = synopsis.concat(infix); }
                     if (arg instanceof OptionSpec) {
-                        result = concatOptionText(result, colorScheme, (OptionSpec) arg);
+                        synopsis = concatOptionText(synopsis, colorScheme, (OptionSpec) arg);
                     } else {
-                        result = concatPositionalText(result, colorScheme, (PositionalParamSpec) arg);
+                        synopsis = concatPositionalText(synopsis, colorScheme, (PositionalParamSpec) arg);
                     }
                 }
                 for (ArgGroupSpec subgroup : subgroups().values()) {
-                    if (result.length > 0) { result = result.concat(infix); }
-                    result = result.concat(subgroup.synopsisText(colorScheme));
+                    if (synopsis.length > 0) { synopsis = synopsis.concat(infix); }
+                    synopsis = synopsis.concat(subgroup.synopsisText(colorScheme));
                 }
-                String prefix = required() ? "(" : "[";
-                String postfix = required() ? ")" : "]";
-                return colorScheme.ansi().text(prefix).concat(result).concat(postfix);
+                String prefix = multiplicity().min > 0 ? "(" : "[";
+                String postfix = multiplicity().min > 0 ? ")" : "]";
+                Text result = colorScheme.ansi().text(prefix).concat(synopsis).concat(postfix);
+                if (multiplicity().isVariable) {
+                    result = result.concat("...");
+                } else {
+                    int i = 1;
+                    for (; i < multiplicity.min; i++) {
+                        result = result.concat(" (").concat(synopsis).concat(")");
+                    }
+                    for (; i < multiplicity.max; i++) {
+                        result = result.concat(" [").concat(synopsis).concat("]");
+                    }
+                }
+                return result;
             }
 
             private Text concatOptionText(Text text, Help.ColorScheme colorScheme, OptionSpec option) {
@@ -6549,7 +6547,7 @@ public class CommandLine {
                 return text;
             }
             public Help.IParamLabelRenderer createLabelRenderer(CommandSpec commandSpec) {
-                return new Help.DefaultParamLabelRenderer(commandSpec);
+                return new Help.DefaultParamLabelRenderer(commandSpec == null ? CommandSpec.create() : commandSpec);
             }
 
             @Override public boolean equals(Object obj) {
@@ -6558,7 +6556,7 @@ public class CommandLine {
                 ArgGroupSpec other = (ArgGroupSpec) obj;
                 return Assert.equals(name, other.name)
                         && exclusive == other.exclusive
-                        && required == other.required
+                        && Assert.equals(multiplicity, other.multiplicity)
                         && validate == other.validate
                         && order == other.order
                         && Assert.equals(heading, other.heading)
@@ -6571,7 +6569,7 @@ public class CommandLine {
                 int result = 17;
                 result += 37 * result + Assert.hashCode(name);
                 result += 37 * result + Assert.hashCode(exclusive);
-                result += 37 * result + Assert.hashCode(required);
+                result += 37 * result + Assert.hashCode(multiplicity);
                 result += 37 * result + Assert.hashCode(validate);
                 result += 37 * result + order;
                 result += 37 * result + Assert.hashCode(heading);
@@ -6591,7 +6589,7 @@ public class CommandLine {
                         argNames.add(p.index() + " (" + p.paramLabel() + ")");
                     }
                 }
-                return "ArgGroup[" + name + ", exclusive=" + exclusive + ", required=" + required +
+                return "ArgGroup[" + name + ", exclusive=" + exclusive + ", multiplicity=" + multiplicity +
                         ", validate=" + validate + ", order="+ order + ", args=[" + ArgSpec.describe(args()) +
                         "], subgroups=" + subgroups.keySet() +
                         ", headingKey=" + quote(headingKey) + ", heading=" + quote(heading) + "]";
@@ -6728,18 +6726,18 @@ public class CommandLine {
                         return GroupValidationResult.FAILURE_PRESENT;
                     }
                     // check that exactly one member was matched
-                    if (required() && presentCount < 1) {
+                    if (multiplicity().min > 0 && presentCount < 1) {
                         validationException = new MissingParameterException(commandLine, args(),
                                 "Error: Missing required argument (specify one of these): " + requiredElements);
                         return GroupValidationResult.FAILURE_ABSENT;
                     }
                     return GroupValidationResult.SUCCESS_PRESENT;
                 } else { // co-occurring group
-                    if ((required() && haveMissing)) {
+                    if ((multiplicity().min > 0 && haveMissing)) {
                         validationException = new MissingParameterException(commandLine, args(),
                                 "Error: Missing required argument(s): " + missingElements);
                         return GroupValidationResult.FAILURE_ABSENT;
-                    } else if (!required() && someButNotAllSpecified) {
+                    } else if (multiplicity().min == 0 && someButNotAllSpecified) {
                         validationException = new MissingParameterException(commandLine, args(),
                                 "Error: Missing required argument(s): " + missingElements);
                         return GroupValidationResult.FAILURE_PARTIAL;
@@ -6755,7 +6753,7 @@ public class CommandLine {
                 private String heading;
                 private String headingKey;
                 private boolean exclusive  = true;
-                private boolean required   = false;
+                private Range multiplicity = Range.valueOf("0..1");
                 private boolean validate   = true;
                 private int order          = DEFAULT_ORDER;
                 private List<ArgSpec> args = new ArrayList<ArgSpec>();
@@ -6787,16 +6785,27 @@ public class CommandLine {
                  * @see ArgGroup#exclusive() */
                 public Builder exclusive(boolean newValue) { exclusive = newValue; return this; }
 
-                /** Returns whether this is a required group; {@code false} by default.
-                 * For a group of mutually exclusive arguments, making the group required means that one of the arguments in the group must appear on the command line, or a MissingParameterException is thrown. For a group of co-occurring arguments, all arguments in the group must appear on the command line.
+                /** Returns the multiplicity of this group: how many occurrences it may have on the command line; {@code "0..1"} (optional) by default.
+                 * A group can be made required by specifying a multiplicity of {@code "1"}. For a group of mutually exclusive arguments,
+                 * being required means that one of the arguments in the group must appear on the command line, or a MissingParameterException is thrown.
+                 * For a group of co-occurring arguments, being required means that all arguments in the group must appear on the command line.
                  * Ignored if {@link #validate()} is {@code false}.
-                 * @see ArgGroup#required() */
-                public boolean required() { return required; }
-                /** Sets whether this is a required group; {@code false} by default.
-                 * For a group of mutually exclusive arguments, making the group required means that one of the arguments in the group must appear on the command line, or a MissingParameterException is thrown. For a group of co-occurring arguments, all arguments in the group must appear on the command line.
+                 * @see ArgGroup#multiplicity() */
+                public Range multiplicity() { return multiplicity; }
+                /** Sets the multiplicity of this group: how many occurrences it may have on the command line; {@code "0..1"} (optional) by default.
+                 * A group can be made required by specifying a multiplicity of {@code "1"}. For a group of mutually exclusive arguments,
+                 * being required means that one of the arguments in the group must appear on the command line, or a MissingParameterException is thrown.
+                 * For a group of co-occurring arguments, being required means that all arguments in the group must appear on the command line.
                  * Ignored if {@link #validate()} is {@code false}.
-                 * @see ArgGroup#required() */
-                public Builder required(boolean newValue) { required = newValue; return this; }
+                 * @see ArgGroup#multiplicity() */
+                public Builder multiplicity(String newValue) { return multiplicity(Range.valueOf(newValue)); }
+                /** Sets the multiplicity of this group: how many occurrences it may have on the command line; {@code "0..1"} (optional) by default.
+                 * A group can be made required by specifying a multiplicity of {@code "1"}. For a group of mutually exclusive arguments,
+                 * being required means that one of the arguments in the group must appear on the command line, or a MissingParameterException is thrown.
+                 * For a group of co-occurring arguments, being required means that all arguments in the group must appear on the command line.
+                 * Ignored if {@link #validate()} is {@code false}.
+                 * @see ArgGroup#multiplicity() */
+                public Builder multiplicity(Range newValue) { multiplicity = newValue; return this; }
 
                 /** Returns whether picocli should validate the rules of this group:
                  * for a mutually exclusive group this means that no more than one arguments in the group is specified on the command line;
