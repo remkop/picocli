@@ -118,7 +118,7 @@ The usage help message looks familiar; it is what was shown after the error mess
 To summarize, we just created a full-fledged application with all the bells and whistles expected from a production-quality command line utility, using a minimal amount of code.
 
 === What's Next in this Article
-In the rest of this article we will take a quick tour of picocli's cababilities.
+In the rest of this article we will take a quick tour of picocli's capabilities.
 
 First we will take a look at picocli's "entry points": there are methods for just parsing command line parameters and there are "convenience methods" that parse the user input and automatically invoke the business logic of your application.
 
