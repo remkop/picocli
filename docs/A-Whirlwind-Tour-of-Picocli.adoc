@@ -124,7 +124,7 @@ First we will take a look at picocli's "entry points": there are methods for jus
 
 Next, we will go into some detail of defining options and positional parameters, how picocli converts argument Strings to strongly typed option values, how to define options that can be specified multiple times, including map options like `-Dkey=value`.
 
-After that there is a section on how to customize the usage help and version help, and liven things up with ANSI colors.
+Next, we will show how to customize the usage help and version help, and liven things up with ANSI colors.
 
 Many larger command line applications have subcommands, `git` being a famous example. We will show how picocli makes it very easy to create commands with subcommands, and how you can use mixins to reuse common options or common command configurations.
 
