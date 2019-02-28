@@ -120,31 +120,21 @@ To summarize, we just created a full-fledged application with all the bells and 
 === What's Next in this Article
 In the rest of this article we will take a quick tour of picocli's capabilities.
 
-First we will take a look at picocli's "entry points": there are methods for just parsing command line parameters and there are "convenience methods" that parse the user input and automatically invoke the business logic of your application.
-
-Next, we will go into some detail of defining options and positional parameters, how picocli converts argument Strings to strongly typed option values, how to define options that can be specified multiple times, including map options like `-Dkey=value`.
+First we will go into some detail of defining commands with options and positional parameters, how picocli converts argument Strings to strongly typed option values, how to define options that can be specified multiple times, including map options like `-Dkey=value`.
 
 Next, we will show how to customize the usage help and version help, and liven things up with ANSI colors.
 
 Many larger command line applications have subcommands, `git` being a famous example. We will show how picocli makes it very easy to create commands with subcommands, and how you can use mixins to reuse common options or common command configurations.
 
+After that, we will take a look at picocli's "entry points": there are methods for just parsing command line parameters and there are "convenience methods" that parse the user input and automatically invoke the business logic of your application.
+
 Furthermore this article will explain how picocli can give your application autocompletion in bash and zsh, how Groovy scripts can use the picocli annotations, and how to build command line applications that integrate with Dependency Injection containers like Spring Boot and Micronaut.
 
 Finally, we will briefly touch on how picocli can be used to create interactive shell applications with the `JLine` library, and wrap up with a small tutorial for creating native executables with GraalVM to make amazingly fast command line tools.
 
-== Defining and Running a Picocli Application
+== Defining a Picocli Command
 
-The general outline of any command line application is:
-
-* define the top-level command and its subcommands
-* define options and positional parameters
-* parse the user input
-* inspect the result
-
-Picocli offers an annotations API and a programmatic API (the "model"). In this article we will focus on the annotations API.
-
-.Classes and Interfaces for Defining a CommandSpec Model
-image:images/class-diagram-definition.png[Classes and Interfaces for Defining a CommandSpec Model, pdfwidth=95%]
+Picocli offers an annotations API and a programmatic API. The programmatic API is useful for dynamically creating commands and command line options on the fly. Typical use cases are domain-specific languages. For example, Groovy's CliBuilder is implemented using picocli's programmatic API. Details of the programmatic API are out of scope of this article, but are documented on the project GitHub site. In this article we will focus on the annotations API.
 
 To define a command or a subcommand, annotate a class or a method with `@Command`. The `@Command` annotation can be omitted, but is a convenient way to set the command name, description, and other elements of the usage help message. Subcommands can be specified in the `@Command` annotation but can also be added to a command programmatically.
 
@@ -157,90 +147,7 @@ class Minimal {
 }
 ----
 
-For the next step, parsing the user input, there are broadly two approaches: either just parse the input, or parse the input and run the business logic.
-
-=== Simply Parsing
-The static method `CommandLine::populateCommand` accepts a command object and an array of command line arguments. It parses the input, injects values for matched options and positional parameters into the annotated elements of the command, and returns the command object. For example:
-
-.Using the `populateCommand` method for simple use cases
-[source,java]
-----
-String[] args = new String[] {"-x", "5"};
-Minimal result = CommandLine.populateCommand(new Minimal(), args);
-assert result.x == 5;
-----
-
-The `populateCommand` static method is useful for very straightforward commands and for testing, but is limited. To customize the parser behaviour you need to create a `CommandLine` instance and call the `parseArgs` method:
-
-.Using the `parseArgs` method for more flexibility
-[source,java]
-----
-Minimal minimal = new Minimal();
-CommandLine cmd = new CommandLine(minimal)
-    .setUnmatchedArgumentsAllowed(true); // configure parser to accept unknown args
-
-cmd.parseArgs("-x", "5", "-y=unknown");
-assert minimal.x == 5;
-assert cmd.getUnmatchedArguments().equals(Arrays.asList("-y=unknown"))
-----
-
-=== Parsing and Running
-
-The above examples are a bit academic. A real-world application needs to be more robust, specifically:
-
-. Handle invalid user input, and report any problems to the user (potentially suggesting alternative options and subcommands for simple typos if we want to get fancy).
-. Check if the user requested usage help, and print this help and abort processing if this was the case.
-. Check if the user requested version information, and print this information and abort processing if this was the case.
-. Finally, run the business logic of the application.
-
-.Classes Related to Parsing Command Line Arguments
-image:images/class-diagram-parsing.png[Classes Related to Parsing Command Line Arguments]
-
-The above is so common that picocli provides some shortcuts, the so-called "convenience" methods. These methods take care of invalid user input and requests for usage help and version information as described above.
-
-* `CommandLine` static methods `run`, `call` and `invoke` accept a Runnable, Callable or a `@Command`-annotated Method object. Any subcommands constructed from the annotations must also be `@Command`-annotated Methods or classes implementing Runnable or Callable. After the input was parsed successfully, the Runnable, Callable or Method for the subcommand specified by the end user on the command line is invoked.
-* `CommandLine` instance methods `parseWithHandler` and `parseWithHandlers` calls the specified result handler when parsing succeeds, or the exception handler when an error occurred. The `run`, `call` and `invoke` static methods delegate to this method with the default result handler (`RunLast`) and default exception handler.
-
-The default result handler (`RunLast`) takes care of requests for usage help and version information as described above, and invokes the most specific subcommand. The default exception handler takes care of invalid user input and runtime errors in the business logic.
-
-The static `run`, `call` and `invoke` methods are simple and straightforward but are limited in that they won't allow you to customize the parser behaviour or the usage help message. The `parseWithHandler` methods are more verbose but more flexible. For example:
-
-.Using the `parseWithHandler` method for more flexibility
-[source,java]
-----
-class MyRunnable implements Runnable {
-    @Option(names = "-x") int x;
-
-    public void run() {
-        System.out.println("You specified " + x);
-    }
-}
-CommandLine cmd = new CommandLine(new MyRunnable())
-    .setCommandName("myRunnable")        // customize usage help message
-    .setUnmatchedArgumentsAllowed(true); // customize parser behaviour
-
-cmd.parseWithHandler(new RunLast(), "-x", "5");
-----
-
-
-=== Inspecting the Parse Result
-After parsing, the application needs to inspect the specified options and positional parameters to determine what action to take. When using the annotations API, the most straightforward thing to do is to inspect the value of the fields annotated with `@Option` and `@Parameters`.
-
-When options and positional parameters were defined programmatically instead of with the annotations API, the alternative is to inspect the `ParseResult` object returned by the `CommandLine::parseArgs` method.
-
-Via the `ParseResult` class the application can determine whether an option or positional parameter was specified on the command line, what its value was, whether the user requested usage help or version info, whether a subcommand was specified, whether any undefined options were specified, and more. For example:
-
-.Using the `ParseResult` class for inspecting the parse results
-[source,java]
-----
-CommandLine cmd = new CommandLine(new Minimal());
-ParseResult parseResult = cmd.parseArgs("-x", "5");
-
-int defaultValue = -1;
-assert parseResult.hasMatchedOption("-x");
-assert parseResult.matchedOptionValue("-x", defaultValue) == 5;
-----
-
+There is a separate section on subcommands below, but first we will discuss options and positional parameters.
 
 == Options and Positional Parameters
 Command line arguments can be separated into _options_  and _positional parameters_. Options have a name, positional parameters are values without a name. Positional parameters often follow the options, but they may be mixed.
@@ -717,6 +624,115 @@ MyCommand zip = CommandLine.populateCommand(new MyCommand(), "-vvv");
 // the options defined in ReusableOptions have been added to the zip command
 assert zip.myMixin.verbosity.length == 3;
 ----
+
+== Parsing and Running a Picocli Application
+
+The general outline of any command line application is:
+
+* define the top-level command and its subcommands
+* define options and positional parameters
+* parse the user input
+* inspect the result
+
+The previous sections explained how to define commands with options and positional parameters. For reference, the diagram below gives a high-level overview of the classes and interfaces involved in defining commands.
+
+.Classes and Interfaces for Defining a CommandSpec Model
+image:images/class-diagram-definition.png[Classes and Interfaces for Defining a CommandSpec Model, pdfwidth=95%]
+
+
+In the following sections we discuss parsing and running picocli applications. In our examples we will use the minimal command that we saw earlier:
+
+[source,java]
+----
+class Minimal {
+    @Option(names = "-x") int x;
+}
+----
+
+For the next step, parsing the user input, there are broadly two approaches: either just parse the input, or parse the input and run the business logic.
+
+=== Simply Parsing
+The static method `CommandLine::populateCommand` accepts a command object and an array of command line arguments. It parses the input, injects values for matched options and positional parameters into the annotated elements of the command, and returns the command object. For example:
+
+.Using the `populateCommand` method for simple use cases
+[source,java]
+----
+String[] args = new String[] {"-x", "5"};
+Minimal result = CommandLine.populateCommand(new Minimal(), args);
+assert result.x == 5;
+----
+
+The `populateCommand` static method is useful for very straightforward commands and for testing, but is limited. To customize the parser behaviour you need to create a `CommandLine` instance and call the `parseArgs` method:
+
+.Using the `parseArgs` method for more flexibility
+[source,java]
+----
+Minimal minimal = new Minimal();
+CommandLine cmd = new CommandLine(minimal)
+    .setUnmatchedArgumentsAllowed(true); // configure parser to accept unknown args
+
+cmd.parseArgs("-x", "5", "-y=unknown");
+assert minimal.x == 5;
+assert cmd.getUnmatchedArguments().equals(Arrays.asList("-y=unknown"))
+----
+
+=== Parsing and Running
+
+The above examples are a bit academic. A real-world application needs to be more robust, specifically:
+
+. Handle invalid user input, and report any problems to the user (potentially suggesting alternative options and subcommands for simple typos if we want to get fancy).
+. Check if the user requested usage help, and print this help and abort processing if this was the case.
+. Check if the user requested version information, and print this information and abort processing if this was the case.
+. Finally, run the business logic of the application.
+
+.Classes Related to Parsing Command Line Arguments
+image:images/class-diagram-parsing.png[Classes Related to Parsing Command Line Arguments]
+
+The above is so common that picocli provides some shortcuts, the so-called "convenience" methods. These methods take care of invalid user input and requests for usage help and version information as described above.
+
+* `CommandLine` static methods `run`, `call` and `invoke` accept a Runnable, Callable or a `@Command`-annotated Method object. Any subcommands constructed from the annotations must also be `@Command`-annotated Methods or classes implementing Runnable or Callable. After the input was parsed successfully, the Runnable, Callable or Method for the subcommand specified by the end user on the command line is invoked.
+* `CommandLine` instance methods `parseWithHandler` and `parseWithHandlers` calls the specified result handler when parsing succeeds, or the exception handler when an error occurred. The `run`, `call` and `invoke` static methods delegate to this method with the default result handler (`RunLast`) and default exception handler.
+
+The default result handler (`RunLast`) takes care of requests for usage help and version information as described above, and invokes the most specific subcommand. The default exception handler takes care of invalid user input and runtime errors in the business logic.
+
+The static `run`, `call` and `invoke` methods are simple and straightforward but are limited in that they won't allow you to customize the parser behaviour or the usage help message. The `parseWithHandler` methods are more verbose but more flexible. For example:
+
+.Using the `parseWithHandler` method for more flexibility
+[source,java]
+----
+class MyRunnable implements Runnable {
+    @Option(names = "-x") int x;
+
+    public void run() {
+        System.out.println("You specified " + x);
+    }
+}
+CommandLine cmd = new CommandLine(new MyRunnable())
+    .setCommandName("myRunnable")        // customize usage help message
+    .setUnmatchedArgumentsAllowed(true); // customize parser behaviour
+
+cmd.parseWithHandler(new RunLast(), "-x", "5");
+----
+
+
+=== Inspecting the Parse Result
+After parsing, the application needs to inspect the specified options and positional parameters to determine what action to take. When using the annotations API, the most straightforward thing to do is to inspect the value of the fields annotated with `@Option` and `@Parameters`.
+
+When options and positional parameters were defined programmatically instead of with the annotations API, the alternative is to inspect the `ParseResult` object returned by the `CommandLine::parseArgs` method.
+
+Via the `ParseResult` class the application can determine whether an option or positional parameter was specified on the command line, what its value was, whether the user requested usage help or version info, whether a subcommand was specified, whether any undefined options were specified, and more. For example:
+
+.Using the `ParseResult` class for inspecting the parse results
+[source,java]
+----
+CommandLine cmd = new CommandLine(new Minimal());
+ParseResult parseResult = cmd.parseArgs("-x", "5");
+
+int defaultValue = -1;
+assert parseResult.hasMatchedOption("-x");
+assert parseResult.matchedOptionValue("-x", defaultValue) == 5;
+----
+
 
 
 == Autocompletion
