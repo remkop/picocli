@@ -3772,4 +3772,27 @@ public class CommandLineHelpTest {
                         "Using raw String: '%n' format strings have not been replaced with newlines. " +
                         "Please ensure to escape '%' characters with another '%'."));
     }
+
+    @Test
+    public void testDescriptionWithDefaultValueContainingPercentChar() {
+        class App {
+            @Option(names = {"-f"},
+                    defaultValue = "%s - page %d of %d",
+                    description = "format string. Default: ${DEFAULT-VALUE}")
+            public String formatString;
+        }
+        String expected = String.format("" +
+                "Usage: <main class> [-f=<formatString>]%n" +
+                "  -f=<formatString>    format string. Default: %%s - page %%d of %%d%n");
+        String actual = new CommandLine(new App()).getUsageMessage();
+        assertEquals(expected, actual);
+
+        assertFalse(systemErrRule.getLog().contains(
+                "[picocli WARN] Could not format 'format string. Default: %s - page %d of %d' " +
+                        "(Underlying error:"));
+        assertFalse(systemErrRule.getLog().contains(
+                "). " +
+                        "Using raw String: '%n' format strings have not been replaced with newlines. " +
+                        "Please ensure to escape '%' characters with another '%'."));
+    }
 }
