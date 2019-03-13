@@ -5152,7 +5152,7 @@ public class CommandLine {
                 String defaultValueString = defaultValueString();
                 String[] result = new String[desc.length];
                 for (int i = 0; i < desc.length; i++) {
-                    result[i] = format(desc[i].replace(DESCRIPTION_VARIABLE_DEFAULT_VALUE, defaultValueString)
+                    result[i] = format(desc[i].replace(DESCRIPTION_VARIABLE_DEFAULT_VALUE, defaultValueString.replace("%", "%%"))
                             .replace(DESCRIPTION_VARIABLE_COMPLETION_CANDIDATES, candidates.toString()));
                 }
                 return result;
