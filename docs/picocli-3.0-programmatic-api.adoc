@@ -323,7 +323,7 @@ try {
             System.out.printf("%d: %s%n", i, f);
         }
     }
-} catch (ParseException invalidInput) {
+} catch (ParameterException invalidInput) {
     System.err.println(invalidInput.getMessage());
     invalidInput.getCommandLine().usage(System.err);
 }

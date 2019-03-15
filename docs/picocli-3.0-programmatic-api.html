@@ -950,7 +950,7 @@ CommandLine commandLine = <span class="keyword">new</span> CommandLine(spec);
             <span class="predefined-type">System</span>.out.printf(<span class="string"><span class="delimiter">&quot;</span><span class="content">%d: %s%n</span><span class="delimiter">&quot;</span></span>, i, f);
         }
     }
-} <span class="keyword">catch</span> (<span class="exception">ParseException</span> invalidInput) {
+} <span class="keyword">catch</span> (<span class="exception">ParameterException</span> invalidInput) {
     <span class="predefined-type">System</span>.err.println(invalidInput.getMessage());
     invalidInput.getCommandLine().usage(<span class="predefined-type">System</span>.err);
 }</code></pre>
